@@ -14,6 +14,10 @@ import (
 
 // --- helpers ---
 
+func testCrescentFoundationSuit(i int) int {
+	return []int{domain.CardDesignSpade, domain.CardDesignClover, domain.CardDesignHeart, domain.CardDesignDiamond}[i%4]
+}
+
 func newTestCrescent() *domain.Crescent {
 	tc := domain.NewTrumpCardsWithDecks(2, 0)
 	return domain.NewCrescent(tc)
@@ -80,12 +84,12 @@ func TestCrescent_Reset(t *testing.T) {
 	for i := 0; i < domain.CrescentAscendingFoundationCnt; i++ {
 		require.Len(t, foundation[i], 1, "ascending foundation %d should be seeded with one card", i)
 		assert.Equal(t, 1, foundation[i][0].GetValue(), "ascending seed should be an Ace")
-		assert.Equal(t, domain.CrescentFoundationSuit(i), foundation[i][0].GetDesign())
+		assert.Equal(t, testCrescentFoundationSuit(i), foundation[i][0].GetDesign())
 	}
 	for i := domain.CrescentAscendingFoundationCnt; i < domain.CrescentFoundationCnt; i++ {
 		require.Len(t, foundation[i], 1, "descending foundation %d should be seeded with one card", i)
 		assert.Equal(t, domain.CardValueMax, foundation[i][0].GetValue(), "descending seed should be a King")
-		assert.Equal(t, domain.CrescentFoundationSuit(i), foundation[i][0].GetDesign())
+		assert.Equal(t, testCrescentFoundationSuit(i), foundation[i][0].GetDesign())
 	}
 }
 
@@ -110,8 +114,8 @@ func TestCrescent_FoundationSuitHelpers(t *testing.T) {
 		{7, domain.CardDesignDiamond, false},
 	}
 	for _, c := range cases {
-		assert.Equal(t, c.suit, domain.CrescentFoundationSuit(c.idx), "suit for foundation %d", c.idx)
-		assert.Equal(t, c.ascends, domain.CrescentIsAscendingFoundation(c.idx), "direction for foundation %d", c.idx)
+		assert.Equal(t, c.suit, testCrescentFoundationSuit(c.idx), "suit for foundation %d", c.idx)
+		assert.Equal(t, c.ascends, c.idx < domain.CrescentAscendingFoundationCnt, "direction for foundation %d", c.idx)
 	}
 }
 
@@ -584,7 +588,7 @@ func TestCrescent_GameClear(t *testing.T) {
 
 	var fnd [domain.CrescentFoundationCnt][]*domain.Card
 	for i := 0; i < domain.CrescentAscendingFoundationCnt; i++ {
-		suit := domain.CrescentFoundationSuit(i)
+		suit := testCrescentFoundationSuit(i)
 		pile := make([]*domain.Card, 0, domain.CardValueMax)
 		for v := 1; v <= domain.CardValueMax; v++ {
 			pile = append(pile, makeCrescentCard(suit, v))
@@ -592,7 +596,7 @@ func TestCrescent_GameClear(t *testing.T) {
 		fnd[i] = pile
 	}
 	for i := domain.CrescentAscendingFoundationCnt; i < domain.CrescentFoundationCnt-1; i++ {
-		suit := domain.CrescentFoundationSuit(i)
+		suit := testCrescentFoundationSuit(i)
 		pile := make([]*domain.Card, 0, domain.CardValueMax)
 		for v := domain.CardValueMax; v >= 1; v-- {
 			pile = append(pile, makeCrescentCard(suit, v))
@@ -601,7 +605,7 @@ func TestCrescent_GameClear(t *testing.T) {
 	}
 	// Leave the last descending foundation with just K placed; the missing card is on the tableau.
 	lastIdx := domain.CrescentFoundationCnt - 1
-	lastSuit := domain.CrescentFoundationSuit(lastIdx)
+	lastSuit := testCrescentFoundationSuit(lastIdx)
 	pile := make([]*domain.Card, 0, domain.CardValueMax-1)
 	for v := domain.CardValueMax; v >= 3; v-- {
 		pile = append(pile, makeCrescentCard(lastSuit, v))

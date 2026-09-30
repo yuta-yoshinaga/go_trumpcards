@@ -65,14 +65,6 @@ func DefaultBurracoConfig() CanastaConfig {
 	return cfg
 }
 
-// NewBurracoPlayer はブラーコプレイヤーを生成する（CanastaPlayer と同一）。
-func NewBurracoPlayer(isHuman bool) *CanastaPlayer { return NewCanastaPlayer(isHuman) }
-
-// NewBurraco はブラーコゲームを生成する（ポゼット有効の Canasta）。
-func NewBurraco(trumpCards *TrumpCards, players []*CanastaPlayer, config CanastaConfig) *Canasta {
-	return NewCanasta(trumpCards, players, config)
-}
-
 // NewDefaultBurraco は標準的な2人ブラーコ（人間1 + CPU1, 108枚デッキ）を生成する。
 func NewDefaultBurraco() *Canasta {
 	players := []*CanastaPlayer{

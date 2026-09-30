@@ -468,12 +468,6 @@ func crescentFoundationSuit(fIdx int) int {
 	return suits[fIdx%CrescentAscendingFoundationCnt]
 }
 
-// CrescentFoundationSuit ファンデーション ID から対応スートを返す (公開ヘルパ)。
-func CrescentFoundationSuit(fIdx int) int { return crescentFoundationSuit(fIdx) }
-
-// CrescentIsAscendingFoundation 昇順ファンデーションかを返す。
-func CrescentIsAscendingFoundation(fIdx int) bool { return fIdx < CrescentAscendingFoundationCnt }
-
 // checkGameClear ゲームクリア判定。
 func (cr *Crescent) checkGameClear() {
 	total := 0

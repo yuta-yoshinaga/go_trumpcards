@@ -39,8 +39,8 @@ func setupBurracoWebMock() *interfaces.MockBurracoGame {
 
 func makeBurracoPlayers() []*domain.BurracoPlayer {
 	return []*domain.BurracoPlayer{
-		domain.NewBurracoPlayer(true),
-		domain.NewBurracoPlayer(false),
+		domain.NewCanastaPlayer(true),
+		domain.NewCanastaPlayer(false),
 	}
 }
 

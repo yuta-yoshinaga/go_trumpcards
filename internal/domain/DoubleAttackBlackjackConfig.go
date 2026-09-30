@@ -149,17 +149,3 @@ const (
 
 // DoubleAttackPhaseMax は最大のフェーズ値 (復元時の範囲検査に使う)。
 const DoubleAttackPhaseMax = DoubleAttackPhaseResult
-
-// DoubleAttackPhaseName はフェーズの識別子を返す (i18n キーの一部に使う)。
-func DoubleAttackPhaseName(p DoubleAttackPhase) string {
-	switch p {
-	case DoubleAttackPhaseBet:
-		return "bet"
-	case DoubleAttackPhaseAttack:
-		return "attack"
-	case DoubleAttackPhasePlay:
-		return "play"
-	default:
-		return "result"
-	}
-}

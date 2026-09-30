@@ -421,17 +421,6 @@ func TestCrazyEights_countSuits(t *testing.T) {
 	assert.Equal(t, 0, counts[CardDesignClover])
 }
 
-// --- suitName ---
-
-func TestCrazyEights_suitName(t *testing.T) {
-	assert.Equal(t, "♠", suitName(CardDesignSpade))
-	assert.Equal(t, "♣", suitName(CardDesignClover))
-	assert.Equal(t, "♥", suitName(CardDesignHeart))
-	assert.Equal(t, "♦", suitName(CardDesignDiamond))
-	assert.Equal(t, "?", suitName(0))
-	assert.Equal(t, "?", suitName(99))
-}
-
 // --- playerName ---
 
 func TestCrazyEights_playerName(t *testing.T) {

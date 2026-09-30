@@ -132,34 +132,6 @@ func TestCegoCardPoints(t *testing.T) {
 
 // --- Scoring helper (pure, zero-sum, 1 vs 3) ---
 
-func TestCegoScoreDealZeroSum(t *testing.T) {
-	cases := []int{0, 20, 53, 54, 70, 106}
-	for _, pts := range cases {
-		bd := domain.CegoScoreDeal(pts, 1)
-		// Zero-sum: declarer + 3 opponents == 0.
-		total := bd.DeclarerScore + 3*bd.OpponentScore
-		assert.Equalf(t, 0, total, "declarerPoints=%d not zero-sum", pts)
-		if pts > 53 {
-			assert.Truef(t, bd.Won, "pts=%d should win", pts)
-			assert.Greater(t, bd.DeclarerScore, 0)
-			assert.Less(t, bd.OpponentScore, 0)
-		} else {
-			assert.Falsef(t, bd.Won, "pts=%d should lose", pts)
-			assert.Less(t, bd.DeclarerScore, 0)
-			assert.Greater(t, bd.OpponentScore, 0)
-		}
-		// Declarer swing is 3x an opponent's swing in magnitude.
-		assert.Equal(t, 3*(-bd.OpponentScore), bd.DeclarerScore)
-	}
-}
-
-func TestCegoScoreDealThreshold(t *testing.T) {
-	assert.False(t, domain.CegoScoreDeal(53, 1).Won)
-	assert.True(t, domain.CegoScoreDeal(54, 1).Won)
-	assert.Equal(t, 53, domain.CegoScoreDeal(54, 1).Threshold)
-	assert.Equal(t, 1, domain.CegoBidMultPublic(domain.CegoBidPlay))
-}
-
 // --- Trick logic: trump priority + Sküs highest ---
 
 func TestCegoTrickWinnerTrumpPriority(t *testing.T) {

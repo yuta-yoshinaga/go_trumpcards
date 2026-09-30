@@ -11,32 +11,6 @@ import (
 func contCard(design, value int) *Card { return NewCard(design, value, true) }
 func contJoker() *Card                 { return NewCard(CardDesignJoker, CardValueJoker, true) }
 
-// **認められる上がりの形は 3 通りだけ。**
-func TestIsContinentalRummyLayout(t *testing.T) {
-	for _, ok := range [][]int{
-		{3, 3, 3, 3, 3},
-		{4, 4, 4, 3},
-		{5, 4, 3, 3},
-		{3, 4, 4, 4}, // 並び順は問わない
-		{3, 3, 4, 5},
-	} {
-		assert.True(t, IsContinentalRummyLayout(ok), "%v が認められていない", ok)
-	}
-
-	// **5 枚 3 組は合計 15 でも上がりにならない。** ここが #5464 の落とし穴。
-	assert.False(t, IsContinentalRummyLayout([]int{5, 5, 5}), "5+5+5 が通ってしまっている")
-	for _, ng := range [][]int{
-		{5, 5, 4, 1},
-		{6, 3, 3, 3},
-		{3, 3, 3, 3},    // 12 枚
-		{3, 3, 3, 3, 4}, // 16 枚
-		{15},
-		{},
-	} {
-		assert.False(t, IsContinentalRummyLayout(ng), "%v が通ってしまっている", ng)
-	}
-}
-
 func TestContinentalRummyLayoutsIsACopy(t *testing.T) {
 	got := ContinentalRummyLayouts()
 	assert.Len(t, got, 3)

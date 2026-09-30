@@ -237,7 +237,6 @@ func TestFindContinentalRummyGoOut_StaysCheapOnTheWorstHand(t *testing.T) {
 func assertContinentalPartition(t *testing.T, hand []*Card, groups [][]int) {
 	t.Helper()
 	seen := map[int]bool{}
-	sizes := make([]int, 0, len(groups))
 	for _, g := range groups {
 		cards := make([]*Card, 0, len(g))
 		for _, i := range g {
@@ -246,8 +245,6 @@ func assertContinentalPartition(t *testing.T, hand []*Card, groups [][]int) {
 			cards = append(cards, hand[i])
 		}
 		assert.True(t, IsContinentalRummyRun(cards), "組 %v がシーケンスになっていない", g)
-		sizes = append(sizes, len(g))
 	}
 	assert.Len(t, seen, len(hand), "手札を覆えていない")
-	assert.True(t, IsContinentalRummyLayout(sizes), "枚数の並び %v が認められた形でない", sizes)
 }

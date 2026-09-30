@@ -111,22 +111,6 @@ const (
 // ChemindeFerPhaseMax は最大のフェーズ値 (復元時の範囲検査に使う)。
 const ChemindeFerPhaseMax = ChemindeFerPhaseRoundEnd
 
-// ChemindeFerPhaseName はフェーズの識別子を返す (i18n キーの一部に使う)。
-func ChemindeFerPhaseName(p ChemindeFerPhase) string {
-	switch p {
-	case ChemindeFerPhaseStake:
-		return "stake"
-	case ChemindeFerPhaseBet:
-		return "bet"
-	case ChemindeFerPhasePunterDraw:
-		return "punterDraw"
-	case ChemindeFerPhaseBankerDraw:
-		return "bankerDraw"
-	default:
-		return "roundEnd"
-	}
-}
-
 // ChemindeFerResult は 1 ラウンドの決着。
 type ChemindeFerResult int
 

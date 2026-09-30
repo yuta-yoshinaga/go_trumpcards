@@ -224,15 +224,3 @@ const (
 
 // CrazyFourPokerPhaseMax は最大のフェーズ値 (復元時の範囲検査に使う)。
 const CrazyFourPokerPhaseMax = CrazyFourPokerPhaseResult
-
-// CrazyFourPokerPhaseName はフェーズの識別子を返す (i18n キーの一部に使う)。
-func CrazyFourPokerPhaseName(p CrazyFourPokerPhase) string {
-	switch p {
-	case CrazyFourPokerPhaseBet:
-		return "bet"
-	case CrazyFourPokerPhaseDecide:
-		return "decide"
-	default:
-		return "result"
-	}
-}

@@ -39,8 +39,8 @@ func setupBiribaWebMock() *interfaces.MockBiribaGame {
 
 func makeBiribaPlayers() []*domain.BiribaPlayer {
 	return []*domain.BiribaPlayer{
-		domain.NewBiribaPlayer(true),
-		domain.NewBiribaPlayer(false),
+		domain.NewCanastaPlayer(true),
+		domain.NewCanastaPlayer(false),
 	}
 }
 

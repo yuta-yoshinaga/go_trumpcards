@@ -3,6 +3,7 @@ package usecase
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -314,7 +315,7 @@ func TestChemindeFerInteractor_DrawOrStandRejectsOtherPhases(t *testing.T) {
 		domain.ChemindeFerPhaseBet,
 		domain.ChemindeFerPhaseRoundEnd,
 	} {
-		t.Run(domain.ChemindeFerPhaseName(phase), func(t *testing.T) {
+		t.Run(fmt.Sprint(phase), func(t *testing.T) {
 			mg, mp, ci := newChemindeFerInteractorForTest()
 			mg.On("GetGameEndFlag").Return(false)
 			mg.On("GetPhase").Return(phase)
