@@ -287,11 +287,6 @@ func canPlaceOnFoundation(card *Card, fIdx int, foundation [FreeCellFoundationCn
 	return card.GetValue() == count+1
 }
 
-// stateKey returns the state key for the solver's initial state (used in tests).
-func (s *freeCellSolver) stateKey() [52]uint16 {
-	return stateKeyFromState(s.initialState)
-}
-
 // stateKeyFromState encodes the board state into a compact key for memoization.
 // Each card (identified by (design-1)*13+value-1) maps to a uint16 location.
 // Tableau: col*64 + pos + 1 (supports up to 63 cards per column).

@@ -308,11 +308,6 @@ func stalactitesFoundationIndexFor(card *Card, foundation [StalactitesFoundation
 	return -1
 }
 
-// stateKey returns the state key for the solver's initial state (used in tests).
-func (s *stalactitesSolver) stateKey() [52]uint16 {
-	return stalactitesStateKeyFromState(s.initialState)
-}
-
 // stalactitesStateKeyFromState encodes the board state into a compact key for memoization.
 // Each card (identified by (design-1)*13+value-1) maps to a uint16 location.
 // Tableau: col*64 + pos + 1 (supports up to 63 cards per column).

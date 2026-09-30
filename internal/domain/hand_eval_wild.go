@@ -1,19 +1,5 @@
 package domain
 
-// countWilds returns the number of wild cards in the hand.
-func countWilds(cards []*Card, isWild func(*Card) bool) int {
-	if isWild == nil {
-		return 0
-	}
-	count := 0
-	for _, c := range cards {
-		if isWild(c) {
-			count++
-		}
-	}
-	return count
-}
-
 // evalWildHand evaluates a 5-card poker hand that may contain wild cards.
 // It returns the best achievable hand rank and whether any wild cards were used.
 // If isWild is nil, all cards are treated as non-wild.
