@@ -112,7 +112,7 @@ function CurdsAndWheyPageContent() {
 
   useActionKeyboardNav({
     bindings: actionBindings,
-    enabled: canAct && !loading,
+    enabled: (canAct || (state?.phase === CurdsAndWheyPhase.GAME_OVER && state.canUndo)) && !loading,
   });
 
   const [selected, setSelected] = useState<Selection | null>(null);
@@ -309,7 +309,7 @@ function CurdsAndWheyPageContent() {
       <GameFooter className={`${gameTheme.curdsandwhey.footer} px-3 py-2.5`}>
         <ErrorAlert message={error} onRetry={retry} />
         <div className="flex flex-wrap gap-2 items-center" data-tutorial="cw-controls">
-          {canAct && state.canUndo && (
+          {state.canUndo && (
             <button
               type="button"
               className={btnSecondary}

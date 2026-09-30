@@ -102,6 +102,32 @@ describe('CurdsAndWheyPage', () => {
     }
   });
 
+  it('allows undo after a stalemate and restores the returned board and move count', async () => {
+    const before = makeState({ moveCount: 4, canUndo: true });
+    const stuck = makeState({ phase: 2, moveCount: 5, canUndo: true });
+    mockExec.mockResolvedValueOnce(stuck).mockResolvedValueOnce(before);
+    renderWithProviders(<CurdsAndWheyPage />);
+    const undo = await screen.findByTestId('undo-button');
+    expect(screen.queryByTestId('hint-button')).not.toBeInTheDocument();
+    fireEvent.click(undo);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('u'));
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('プレイ中'));
+    expect(
+      screen.getByText((_, element) => element?.textContent === '完成スート: 0 / 4 · 手数: 4'),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('hint-button')).toBeInTheDocument();
+  });
+
+  it.each([
+    ['clear', 1],
+    ['give up', 2],
+  ])('does not expose undo after %s', async (_name, phase) => {
+    mockExec.mockResolvedValue(makeState({ phase, canUndo: false }));
+    renderWithProviders(<CurdsAndWheyPage />);
+    await screen.findByTestId('column-0');
+    expect(screen.queryByTestId('undo-button')).not.toBeInTheDocument();
+  });
+
   it('undo shortcut matches the button and is unavailable without an undo', async () => {
     mockExec.mockResolvedValue(makeState({ canUndo: true }));
     const { unmount } = renderWithProviders(<CurdsAndWheyPage />);

@@ -35,6 +35,17 @@ func TestCurdsAndWheyWebPresenter_Output(t *testing.T) {
 		assert.Contains(t, p.Output(ssStateCW(t, `{"ph":2}`), nil), "curdsandwhey.gameOver")
 	})
 
+	t.Run("undo is available only after a reversible stalemate", func(t *testing.T) {
+		stuck := ssStateCW(t, `{"ph":2,"mc":5,"al":[{"a":"gameover"}],"hi":[{"ph":0,"mc":4}]}`)
+		assert.Contains(t, p.Output(stuck, nil), `"canUndo":true`)
+
+		gaveUp := ssStateCW(t, `{"ph":2,"mc":4,"al":[{"a":"giveup"}],"hi":[{"ph":0,"mc":4}]}`)
+		assert.Contains(t, p.Output(gaveUp, nil), `"canUndo":false`)
+
+		cleared := ssStateCW(t, `{"ph":1,"mc":4,"al":[{"a":"clear"}],"hi":[{"ph":0,"mc":3}]}`)
+		assert.Contains(t, p.Output(cleared, nil), `"canUndo":false`)
+	})
+
 	// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
 	// レスポンスで、ページの state にはマージされない (#4483)。
 	t.Run("output carries the hint", func(t *testing.T) {
