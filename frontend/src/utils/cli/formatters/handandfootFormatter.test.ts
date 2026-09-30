@@ -3,6 +3,7 @@ import type { HandAndFootResponse } from '../../../types/card';
 import { formatHandAndFootState } from './handandfootFormatter';
 
 const baseState: HandAndFootResponse = {
+  minMeld: 50,
   players: [
     {
       id: 0,

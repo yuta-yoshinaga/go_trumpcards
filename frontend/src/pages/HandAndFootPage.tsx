@@ -30,7 +30,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { HandAndFootResponse } from '../types/card';
 import { HandAndFootPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { canastaMinMeld, canastaSelectionPoints } from '../utils/canastaScore';
+import { canastaFamilySelectionPoints } from '../utils/canastaFamilyScore';
 import { cardAlt } from '../utils/cardAlt';
 import { HANDANDFOOT_HELP, parseHandAndFootCommand } from '../utils/cli/commands/handandfootCommands';
 import { formatHandAndFootState } from '../utils/cli/formatters/handandfootFormatter';
@@ -148,8 +148,9 @@ function HandAndFootPageContent() {
 
   // Meld phase: show the selected cards' running point total and, until the
   // team has opened (no melds yet), the initial-meld minimum so the player can
-  // tell if the selection qualifies. Point values + minimum bands mirror the
-  // shared Canasta-family scoring (the backend uses CanastaCardValue). The
+  // tell if the selection qualifies. Point values mirror the shared
+  // Canasta-family table (domain.CanastaFamilyCardValue); the minimum is the
+  // server's `minMeld`. The
   // readout also gates the meld button now (#5663): below the minimum the
   // button is disabled, so the player is not sent to a server rejection.
   // **メルドフェーズ以外では 0 点・未達なしを返す。** null を返すと、この値を
@@ -162,13 +163,13 @@ function HandAndFootPageContent() {
     const selectedCards = selectedCardIndices
       .map((i) => humanPlayer.cards[i])
       .filter((c): c is NonNullable<typeof c> => !!c);
-    const selectedPoints = canastaSelectionPoints(selectedCards);
+    const selectedPoints = canastaFamilySelectionPoints(selectedCards);
     const team = state?.teams.find((tm) => tm.team === humanPlayer.team);
     const needInitial = (team?.melds.length ?? 0) === 0;
-    const minMeld = canastaMinMeld(humanPlayer.cumulativeScore);
+    const minMeld = state.minMeld;
     const met = selectedPoints >= minMeld;
     return { selectedPoints, needInitial, minMeld, met, below: needInitial && !met };
-  }, [isMeldPhase, humanPlayer, selectedCardIndices, state?.teams]);
+  }, [isMeldPhase, humanPlayer, selectedCardIndices, state?.teams, state?.minMeld]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();

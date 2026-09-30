@@ -4380,6 +4380,7 @@ const baseBoliviaPlayers: BoliviaPlayerData[] = [
 
 /** Base Bolivia state used as the default for {@link makeBoliviaState}. A 4-player 2-team Canasta variant with three decks; defaults to the human Draw phase (phase 0). */
 const baseBoliviaState: BoliviaResponse = {
+  minMeld: 50,
   players: baseBoliviaPlayers,
   teamScores: [0, 0],
   phase: 0,
@@ -4480,6 +4481,7 @@ const baseSambaPlayers: SambaPlayerData[] = [
 
 /** Base Samba state used as the default for {@link makeSambaState}. A 4-player 2-team Canasta variant with three decks; defaults to the human Draw phase (phase 0). */
 const baseSambaState: SambaResponse = {
+  minMeld: 50,
   players: baseSambaPlayers,
   teamScores: [0, 0],
   phase: 0,

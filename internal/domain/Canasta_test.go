@@ -174,7 +174,7 @@ func TestCanastaIsBlack3(t *testing.T) {
 	}
 }
 
-func TestFamilyCardValue(t *testing.T) {
+func TestCanastaFamilyCardValue(t *testing.T) {
 	tests := []struct {
 		name   string
 		card   *domain.Card

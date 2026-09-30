@@ -62,6 +62,8 @@ export interface BoliviaPlayerData {
 
 /** Full Bolivia game state returned from the API. */
 export interface BoliviaResponse extends BaseGameResponse {
+  /** Server-calculated minimum for the human player’s initial meld. */
+  minMeld: number;
   players: BoliviaPlayerData[];
   teamScores: number[];
   phase: number;

@@ -30,13 +30,13 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, SambaResponse } from '../types/card';
 import { SambaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { canastaFamilySelectionPoints } from '../utils/canastaFamilyScore';
 import { cardAlt } from '../utils/cardAlt';
 import { parseSambaCommand, SAMBA_HELP } from '../utils/cli/commands/sambaCommands';
 import { formatSambaState } from '../utils/cli/formatters/sambaFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
-import { sambaMinMeld, sambaSelectionPoints } from '../utils/sambaScore';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /**
@@ -142,12 +142,12 @@ function SambaPageContent() {
   const meldPointInfo = useMemo(() => {
     if (!isMeldPhase || !humanPlayer) return null;
     const selectedCards = selectedCardIndices.map((i) => humanPlayer.cards[i]).filter((c): c is Card => Boolean(c));
-    const selectedPoints = sambaSelectionPoints(selectedCards);
+    const selectedPoints = canastaFamilySelectionPoints(selectedCards);
     const needInitial = !humanPlayer.hasInitMeld;
-    const minMeld = sambaMinMeld(humanPlayer.cumulativeScore);
+    const minMeld = state.minMeld;
     const shortfall = Math.max(0, minMeld - selectedPoints);
     return { selectedPoints, needInitial, minMeld, shortfall, below: needInitial && shortfall > 0 };
-  }, [isMeldPhase, humanPlayer, selectedCardIndices]);
+  }, [isMeldPhase, humanPlayer, selectedCardIndices, state?.minMeld]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();

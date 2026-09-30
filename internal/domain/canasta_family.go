@@ -3,8 +3,8 @@
 package domain
 
 // CanastaMinMeld はキャナスタ系の初回メルド最低点を累積得点から返す。
-// Web の canastaMinMeld と同じ帯 (マイナス 15 / 1500 未満 50 / 3000 未満 90 /
-// それ以上 120)。
+// Canasta / Bolivia / Samba / HandAndFoot で共有する初回メルド最低点の帯。
+// Web は応答の minMeld でこの値を受け取る。
 func CanastaMinMeld(cumulativeScore int) int {
 	switch {
 	case cumulativeScore < 0:
@@ -18,7 +18,8 @@ func CanastaMinMeld(cumulativeScore int) int {
 	}
 }
 
-// CanastaFamilyCardValue カードの点数を返す
+// CanastaFamilyCardValue は Canasta 系 4 ゲーム共通の札点数を返す (Joker 50 / 2・A 20 / 8〜K 10 / 黒 3 と 4〜7 は 5)。
+// Web の canastaFamilyCardValue と golden vectors で一致を検査する。
 func CanastaFamilyCardValue(card *Card) int {
 	if card.GetDesign() == CardDesignJoker {
 		return 50
