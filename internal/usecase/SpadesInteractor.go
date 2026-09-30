@@ -99,12 +99,7 @@ func (si *SpadesInteractor) NextTrick() string {
 // NextRound ラウンドをスコアリングして次のラウンドへ進む
 func (si *SpadesInteractor) NextRound() string {
 	si.Game.ScoreRound()
-	if out, blocked := guardGameEnd(si.Game, si.sp); blocked {
-		return out
-	}
-	si.Game.NextRound()
-	si.runCpuBids()
-	return si.sp.Output(si.Game, nil)
+	return advanceRound(si.Game, si.sp, si.runCpuBids)
 }
 
 // GetConfig 現在の設定を取得

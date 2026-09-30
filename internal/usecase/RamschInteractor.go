@@ -56,14 +56,7 @@ func (si *RamschInteractor) ResetWithConfig(cfg domain.RamschConfig) string {
 
 // Play plays a card from the human's hand.
 func (si *RamschInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(si.Game, si.sp); blocked {
-		return out
-	}
-	if err := si.Game.PlayerPlay(cardIndex); err != nil {
-		return si.sp.Output(si.Game, err)
-	}
-	si.runCpuTurns()
-	return si.sp.Output(si.Game, nil)
+	return humanAction(si.Game, si.sp, func() error { return si.Game.PlayerPlay(cardIndex) }, si.runCpuTurns)
 }
 
 // NextTrick advances to the next trick and runs CPU turns.
@@ -79,12 +72,7 @@ func (si *RamschInteractor) NextTrick() string {
 // NextRound scores the round and starts the next.
 func (si *RamschInteractor) NextRound() string {
 	si.Game.ScoreRound()
-	if out, blocked := guardGameEnd(si.Game, si.sp); blocked {
-		return out
-	}
-	si.Game.NextRound()
-	si.runCpuAutoPhases()
-	return si.sp.Output(si.Game, nil)
+	return advanceRound(si.Game, si.sp, si.runCpuAutoPhases)
 }
 
 // GetConfig returns the current configuration.

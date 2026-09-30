@@ -94,12 +94,7 @@ func (ni *NapInteractor) NextTrick() string {
 // NextRound ラウンドをスコアリングして次のラウンドへ進む
 func (ni *NapInteractor) NextRound() string {
 	ni.Game.ScoreRound()
-	if out, blocked := guardGameEnd(ni.Game, ni.sp); blocked {
-		return out
-	}
-	ni.Game.NextRound()
-	ni.advanceCpu()
-	return ni.sp.Output(ni.Game, nil)
+	return advanceRound(ni.Game, ni.sp, ni.advanceCpu)
 }
 
 // GetConfig 現在の設定を取得

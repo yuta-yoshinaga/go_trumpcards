@@ -80,12 +80,7 @@ func (ci *CatchTenInteractor) NextTrick() string {
 // NextRound 次のラウンドへ進む (ラウンドのスコアリングはトリック解決時に自動実行済み)
 func (ci *CatchTenInteractor) NextRound() string {
 	ci.Game.ScoreRound()
-	if out, blocked := guardGameEnd(ci.Game, ci.cp); blocked {
-		return out
-	}
-	ci.Game.NextRound()
-	ci.runCpuTurns()
-	return ci.cp.Output(ci.Game, nil)
+	return advanceRound(ci.Game, ci.cp, ci.runCpuTurns)
 }
 
 // GetConfig 現在の設定を取得

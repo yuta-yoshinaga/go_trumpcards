@@ -90,12 +90,7 @@ func (li *LooInteractor) Play(cardIndex int) string {
 // NextRound ディールを精算して次のディールへ進む。
 func (li *LooInteractor) NextRound() string {
 	li.Game.ScoreRound()
-	if out, blocked := guardGameEnd(li.Game, li.cp); blocked {
-		return out
-	}
-	li.Game.NextRound()
-	li.advance()
-	return li.cp.Output(li.Game, nil)
+	return advanceRound(li.Game, li.cp, li.advance)
 }
 
 // GetConfig 現在の設定を返す。

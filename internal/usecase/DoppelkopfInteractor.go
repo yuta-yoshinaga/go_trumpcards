@@ -94,12 +94,7 @@ func (di *DoppelkopfInteractor) NextTrick() string {
 // NextRound ラウンドをスコアリングして次のラウンドへ進む
 func (di *DoppelkopfInteractor) NextRound() string {
 	di.Game.ScoreRound()
-	if out, blocked := guardGameEnd(di.Game, di.dp); blocked {
-		return out
-	}
-	di.Game.NextRound()
-	di.runCpuTurns()
-	return di.dp.Output(di.Game, nil)
+	return advanceRound(di.Game, di.dp, di.runCpuTurns)
 }
 
 // GetConfig 現在の設定を取得

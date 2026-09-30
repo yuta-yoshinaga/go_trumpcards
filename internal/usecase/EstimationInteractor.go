@@ -86,14 +86,7 @@ func (ei *EstimationInteractor) act(fn func() error) string {
 
 // Play カードをプレイ
 func (ei *EstimationInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(ei.Game, ei.ep); blocked {
-		return out
-	}
-	if err := ei.Game.PlayerPlay(cardIndex); err != nil {
-		return ei.ep.Output(ei.Game, err)
-	}
-	ei.runCpuTurns()
-	return ei.ep.Output(ei.Game, nil)
+	return humanAction(ei.Game, ei.ep, func() error { return ei.Game.PlayerPlay(cardIndex) }, ei.runCpuTurns)
 }
 
 // NextRound 次のラウンドへ進む

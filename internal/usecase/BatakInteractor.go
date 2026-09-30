@@ -100,12 +100,7 @@ func (ci *BatakInteractor) NextTrick() string {
 // NextRound ラウンドをスコアリングして次のラウンドへ進む
 func (ci *BatakInteractor) NextRound() string {
 	ci.Game.ScoreRound()
-	if out, blocked := guardGameEnd(ci.Game, ci.sp); blocked {
-		return out
-	}
-	ci.Game.NextRound()
-	ci.runCpuBids()
-	return ci.sp.Output(ci.Game, nil)
+	return advanceRound(ci.Game, ci.sp, ci.runCpuBids)
 }
 
 // GetConfig 現在の設定を取得

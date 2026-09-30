@@ -57,14 +57,7 @@ func (ti *OpenFaceChineseInteractor) ResetWithConfig(cfg domain.OpenFaceChineseC
 
 // Place 保留カードを指定段に置く
 func (ti *OpenFaceChineseInteractor) Place(row int) string {
-	if out, blocked := guardNotPlayable(ti.Game, ti.sp); blocked {
-		return out
-	}
-	if err := ti.Game.PlayerPlace(row); err != nil {
-		return ti.sp.Output(ti.Game, err)
-	}
-	ti.advanceCpu()
-	return ti.sp.Output(ti.Game, nil)
+	return humanAction(ti.Game, ti.sp, func() error { return ti.Game.PlayerPlace(row) }, ti.advanceCpu)
 }
 
 // NextRound 次のラウンドへ進む

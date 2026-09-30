@@ -146,12 +146,7 @@ func (ci *CegoInteractor) NextTrick() string {
 // NextRound ディールをスコアリングして次のディールへ進む
 func (ci *CegoInteractor) NextRound() string {
 	ci.Game.ScoreRound()
-	if out, blocked := guardGameEnd(ci.Game, ci.tp); blocked {
-		return out
-	}
-	ci.Game.NextRound()
-	ci.advance()
-	return ci.tp.Output(ci.Game, nil)
+	return advanceRound(ci.Game, ci.tp, ci.advance)
 }
 
 // GetConfig 現在の設定を取得

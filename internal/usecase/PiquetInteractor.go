@@ -99,14 +99,7 @@ func (pi *PiquetInteractor) ResolveDeclaration() string {
 
 // Play カードをプレイ
 func (pi *PiquetInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(pi.Game, pi.pp); blocked {
-		return out
-	}
-	if err := pi.Game.PlayCard(cardIndex); err != nil {
-		return pi.pp.Output(pi.Game, err)
-	}
-	pi.runCpuPlay()
-	return pi.pp.Output(pi.Game, nil)
+	return humanAction(pi.Game, pi.pp, func() error { return pi.Game.PlayCard(cardIndex) }, pi.runCpuPlay)
 }
 
 // NextDeal 次のディールへ進む

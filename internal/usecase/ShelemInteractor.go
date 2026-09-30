@@ -95,14 +95,7 @@ func (si *ShelemInteractor) act(fn func() error) string {
 
 // Play カードをプレイ
 func (si *ShelemInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(si.Game, si.sp); blocked {
-		return out
-	}
-	if err := si.Game.PlayerPlay(cardIndex); err != nil {
-		return si.sp.Output(si.Game, err)
-	}
-	si.runCpuTurns()
-	return si.sp.Output(si.Game, nil)
+	return humanAction(si.Game, si.sp, func() error { return si.Game.PlayerPlay(cardIndex) }, si.runCpuTurns)
 }
 
 // NextRound 次のラウンドへ進む

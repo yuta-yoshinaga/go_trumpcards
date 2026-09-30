@@ -94,12 +94,7 @@ func (pi *PreferenceInteractor) NextTrick() string {
 // NextRound ラウンドをスコアリングして次のラウンドへ進む
 func (pi *PreferenceInteractor) NextRound() string {
 	pi.Game.ScoreRound()
-	if out, blocked := guardGameEnd(pi.Game, pi.sp); blocked {
-		return out
-	}
-	pi.Game.NextRound()
-	pi.advanceCpu()
-	return pi.sp.Output(pi.Game, nil)
+	return advanceRound(pi.Game, pi.sp, pi.advanceCpu)
 }
 
 // GetConfig 現在の設定を取得

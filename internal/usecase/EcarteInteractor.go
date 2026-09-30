@@ -65,62 +65,27 @@ func (ei *EcarteInteractor) ResetWithConfig(cfg domain.EcarteConfig) string {
 
 // Propose elder が交換を提案する
 func (ei *EcarteInteractor) Propose() string {
-	if out, blocked := guardNotPlayable(ei.Game, ei.ep); blocked {
-		return out
-	}
-	if err := ei.Game.PlayerPropose(); err != nil {
-		return ei.ep.Output(ei.Game, err)
-	}
-	ei.runCpuTurns()
-	return ei.ep.Output(ei.Game, nil)
+	return humanAction(ei.Game, ei.ep, func() error { return ei.Game.PlayerPropose() }, ei.runCpuTurns)
 }
 
 // Stand elder が交換せずに勝負する
 func (ei *EcarteInteractor) Stand() string {
-	if out, blocked := guardNotPlayable(ei.Game, ei.ep); blocked {
-		return out
-	}
-	if err := ei.Game.PlayerStand(); err != nil {
-		return ei.ep.Output(ei.Game, err)
-	}
-	ei.runCpuTurns()
-	return ei.ep.Output(ei.Game, nil)
+	return humanAction(ei.Game, ei.ep, func() error { return ei.Game.PlayerStand() }, ei.runCpuTurns)
 }
 
 // Respond 親が提案に承諾/拒否する
 func (ei *EcarteInteractor) Respond(accept bool) string {
-	if out, blocked := guardNotPlayable(ei.Game, ei.ep); blocked {
-		return out
-	}
-	if err := ei.Game.PlayerRespond(accept); err != nil {
-		return ei.ep.Output(ei.Game, err)
-	}
-	ei.runCpuTurns()
-	return ei.ep.Output(ei.Game, nil)
+	return humanAction(ei.Game, ei.ep, func() error { return ei.Game.PlayerRespond(accept) }, ei.runCpuTurns)
 }
 
 // Discard 捨て札を選んで引き直す
 func (ei *EcarteInteractor) Discard(indices []int) string {
-	if out, blocked := guardNotPlayable(ei.Game, ei.ep); blocked {
-		return out
-	}
-	if err := ei.Game.PlayerDiscard(indices); err != nil {
-		return ei.ep.Output(ei.Game, err)
-	}
-	ei.runCpuTurns()
-	return ei.ep.Output(ei.Game, nil)
+	return humanAction(ei.Game, ei.ep, func() error { return ei.Game.PlayerDiscard(indices) }, ei.runCpuTurns)
 }
 
 // Play カードをプレイ
 func (ei *EcarteInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(ei.Game, ei.ep); blocked {
-		return out
-	}
-	if err := ei.Game.PlayerPlay(cardIndex); err != nil {
-		return ei.ep.Output(ei.Game, err)
-	}
-	ei.runCpuTurns()
-	return ei.ep.Output(ei.Game, nil)
+	return humanAction(ei.Game, ei.ep, func() error { return ei.Game.PlayerPlay(cardIndex) }, ei.runCpuTurns)
 }
 
 // NextRound 次のディールへ進む

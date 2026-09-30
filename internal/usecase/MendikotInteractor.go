@@ -59,14 +59,7 @@ func (mi *MendikotInteractor) ResetWithConfig(cfg domain.MendikotConfig) string 
 
 // Play カードをプレイ
 func (mi *MendikotInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(mi.Game, mi.mp); blocked {
-		return out
-	}
-	if err := mi.Game.PlayerPlay(cardIndex); err != nil {
-		return mi.mp.Output(mi.Game, err)
-	}
-	mi.runCpuTurns()
-	return mi.mp.Output(mi.Game, nil)
+	return humanAction(mi.Game, mi.mp, func() error { return mi.Game.PlayerPlay(cardIndex) }, mi.runCpuTurns)
 }
 
 // NextHand 次のハンドへ進む

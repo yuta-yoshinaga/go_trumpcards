@@ -138,12 +138,7 @@ func (si *SkatInteractor) NextTrick() string {
 // NextRound scores the round and starts the next.
 func (si *SkatInteractor) NextRound() string {
 	si.Game.ScoreRound()
-	if out, blocked := guardGameEnd(si.Game, si.sp); blocked {
-		return out
-	}
-	si.Game.NextRound()
-	si.runCpuAutoPhases()
-	return si.sp.Output(si.Game, nil)
+	return advanceRound(si.Game, si.sp, si.runCpuAutoPhases)
 }
 
 // GetConfig returns the current configuration.

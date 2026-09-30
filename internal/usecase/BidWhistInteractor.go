@@ -112,14 +112,7 @@ func (bi *BidWhistInteractor) ExchangeKitty(discardIndices []int) string {
 
 // Play カードをプレイ
 func (bi *BidWhistInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(bi.Game, bi.fp); blocked {
-		return out
-	}
-	if err := bi.Game.PlayerPlay(cardIndex); err != nil {
-		return bi.fp.Output(bi.Game, err)
-	}
-	bi.runCpuTurns()
-	return bi.fp.Output(bi.Game, nil)
+	return humanAction(bi.Game, bi.fp, func() error { return bi.Game.PlayerPlay(cardIndex) }, bi.runCpuTurns)
 }
 
 // NextTrick トリックを解決して次のトリックへ進む
@@ -136,12 +129,7 @@ func (bi *BidWhistInteractor) NextTrick() string {
 // NextRound ラウンドをスコアリングして次のラウンドへ進む
 func (bi *BidWhistInteractor) NextRound() string {
 	bi.Game.ScoreRound()
-	if out, blocked := guardGameEnd(bi.Game, bi.fp); blocked {
-		return out
-	}
-	bi.Game.NextRound()
-	bi.advanceCpu()
-	return bi.fp.Output(bi.Game, nil)
+	return advanceRound(bi.Game, bi.fp, bi.advanceCpu)
 }
 
 // GetConfig 現在の設定を取得

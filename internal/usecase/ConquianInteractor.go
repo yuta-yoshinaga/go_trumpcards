@@ -60,26 +60,12 @@ func (ci *ConquianInteractor) ResetWithConfig(cfg domain.ConquianConfig) string 
 
 // DrawFromStock 山札からカードを引く
 func (ci *ConquianInteractor) DrawFromStock() string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerDrawFromStock(); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerDrawFromStock() }, ci.runCpuTurns)
 }
 
 // DrawFromDiscard 捨て札からカードを引く
 func (ci *ConquianInteractor) DrawFromDiscard() string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerDrawFromDiscard(); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerDrawFromDiscard() }, ci.runCpuTurns)
 }
 
 // Meld メルドを並べる/付ける
@@ -90,26 +76,12 @@ func (ci *ConquianInteractor) Meld(meldGroups [][]int) string {
 // MeldWithTargets は延長先メルドの指定つきでメルドする。extendTargets[i] は
 // meldGroups[i] の延長先。指定が無ければ従来どおり最初に延長できるメルドへ。
 func (ci *ConquianInteractor) MeldWithTargets(meldGroups [][]int, extendTargets []int) string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerMeldWithTargets(meldGroups, extendTargets); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerMeldWithTargets(meldGroups, extendTargets) }, ci.runCpuTurns)
 }
 
 // Discard カードを捨てる
 func (ci *ConquianInteractor) Discard(cardIndex int) string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerDiscard(cardIndex); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerDiscard(cardIndex) }, ci.runCpuTurns)
 }
 
 // NextRound 次のラウンドへ進む

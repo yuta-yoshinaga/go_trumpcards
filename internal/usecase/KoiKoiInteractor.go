@@ -56,26 +56,12 @@ func (ki *KoiKoiInteractor) ResetWithConfig(cfg domain.KoiKoiConfig) string {
 
 // Play 手札を出す。
 func (ki *KoiKoiInteractor) Play(handIdx, fieldIdx int) string {
-	if out, blocked := guardNotPlayable(ki.Game, ki.cp); blocked {
-		return out
-	}
-	if err := ki.Game.PlayerPlay(handIdx, fieldIdx); err != nil {
-		return ki.cp.Output(ki.Game, err)
-	}
-	ki.advance()
-	return ki.cp.Output(ki.Game, nil)
+	return humanAction(ki.Game, ki.cp, func() error { return ki.Game.PlayerPlay(handIdx, fieldIdx) }, ki.advance)
 }
 
 // Decide こいこい決断。
 func (ki *KoiKoiInteractor) Decide(koikoi bool) string {
-	if out, blocked := guardNotPlayable(ki.Game, ki.cp); blocked {
-		return out
-	}
-	if err := ki.Game.PlayerDecide(koikoi); err != nil {
-		return ki.cp.Output(ki.Game, err)
-	}
-	ki.advance()
-	return ki.cp.Output(ki.Game, nil)
+	return humanAction(ki.Game, ki.cp, func() error { return ki.Game.PlayerDecide(koikoi) }, ki.advance)
 }
 
 // NextRound 次のラウンドを開始する。

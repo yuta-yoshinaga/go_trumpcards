@@ -79,12 +79,7 @@ func (wi *WhistInteractor) NextTrick() string {
 // NextRound ラウンドをスコアリングして次のラウンドへ進む
 func (wi *WhistInteractor) NextRound() string {
 	wi.Game.ScoreRound()
-	if out, blocked := guardGameEnd(wi.Game, wi.wp); blocked {
-		return out
-	}
-	wi.Game.NextRound()
-	wi.runCpuTurns()
-	return wi.wp.Output(wi.Game, nil)
+	return advanceRound(wi.Game, wi.wp, wi.runCpuTurns)
 }
 
 // GetConfig 現在の設定を取得

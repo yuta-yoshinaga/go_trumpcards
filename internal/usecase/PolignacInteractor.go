@@ -83,14 +83,7 @@ func (pi *PolignacInteractor) Pass() string {
 
 // Play カードをプレイ
 func (pi *PolignacInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(pi.Game, pi.pp); blocked {
-		return out
-	}
-	if err := pi.Game.PlayerPlay(cardIndex); err != nil {
-		return pi.pp.Output(pi.Game, err)
-	}
-	pi.runCpuTurns()
-	return pi.pp.Output(pi.Game, nil)
+	return humanAction(pi.Game, pi.pp, func() error { return pi.Game.PlayerPlay(cardIndex) }, pi.runCpuTurns)
 }
 
 // NextRound 次のラウンドへ進む

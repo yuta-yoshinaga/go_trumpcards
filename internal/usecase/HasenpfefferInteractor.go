@@ -84,14 +84,7 @@ func (hi *HasenpfefferInteractor) Discard(cardIndex, suit int) string {
 
 // Play カードをプレイ
 func (hi *HasenpfefferInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(hi.Game, hi.hp); blocked {
-		return out
-	}
-	if err := hi.Game.PlayerPlay(cardIndex); err != nil {
-		return hi.hp.Output(hi.Game, err)
-	}
-	hi.advance()
-	return hi.hp.Output(hi.Game, nil)
+	return humanAction(hi.Game, hi.hp, func() error { return hi.Game.PlayerPlay(cardIndex) }, hi.advance)
 }
 
 // NextHand 次のハンドへ進む

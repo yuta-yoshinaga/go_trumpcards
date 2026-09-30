@@ -56,26 +56,12 @@ func (si *SchnapsenInteractor) ResetWithConfig(cfg domain.SchnapsenConfig) strin
 
 // Play カードをプレイ
 func (si *SchnapsenInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(si.Game, si.sp); blocked {
-		return out
-	}
-	if err := si.Game.PlayerPlay(cardIndex); err != nil {
-		return si.sp.Output(si.Game, err)
-	}
-	si.afterHumanAction()
-	return si.sp.Output(si.Game, nil)
+	return humanAction(si.Game, si.sp, func() error { return si.Game.PlayerPlay(cardIndex) }, si.afterHumanAction)
 }
 
 // DeclareMarriage マリアージュを宣言してその K/Q をリードする
 func (si *SchnapsenInteractor) DeclareMarriage(cardIndex int) string {
-	if out, blocked := guardNotPlayable(si.Game, si.sp); blocked {
-		return out
-	}
-	if err := si.Game.PlayerDeclareMarriage(cardIndex); err != nil {
-		return si.sp.Output(si.Game, err)
-	}
-	si.afterHumanAction()
-	return si.sp.Output(si.Game, nil)
+	return humanAction(si.Game, si.sp, func() error { return si.Game.PlayerDeclareMarriage(cardIndex) }, si.afterHumanAction)
 }
 
 // afterHumanAction 人間のプレイ/宣言後の共通処理。トリックが揃ったら解決し、CPUターンを進める。
