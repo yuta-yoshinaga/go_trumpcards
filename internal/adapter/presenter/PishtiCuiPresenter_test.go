@@ -204,6 +204,7 @@ func TestPishtiCuiPresenter_ProvisionalScoreCountsCardPoints(t *testing.T) {
 	out := p.Output(g, nil)
 	assert.Contains(t, out, i18n.Tf("pishti.provisional",
 		"name", i18n.T("cuiPlayerYou"), "score", strconv.Itoa(want)))
+	assert.Contains(t, out, i18n.Tf("pishti.scoreBreakdown", "cards", strconv.Itoa(domain.PishtiScoreTenDiamonds), "pisti", "0", "most", strconv.Itoa(domain.PishtiScoreMostCards)))
 	// カード点を落とす実装なら +3 だけになる。その数字が出ていないことを見る。
 	assert.NotContains(t, out, i18n.Tf("pishti.provisional",
 		"name", i18n.T("cuiPlayerYou"), "score", strconv.Itoa(domain.PishtiScoreMostCards)))

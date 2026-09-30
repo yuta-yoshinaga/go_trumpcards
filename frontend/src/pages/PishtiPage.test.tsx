@@ -23,6 +23,8 @@ function makePlayer(overrides: Partial<PishtiPlayer> = {}): PishtiPlayer {
     cards: [],
     capturedCount: 0,
     pistiBonus: 0,
+    cardPoints: 0,
+    mostCapturedPoints: 0,
     provisionalScore: 0,
     finalScore: 0,
     ...overrides,
@@ -323,8 +325,16 @@ describe('PishtiPage', () => {
         players: [
           // 捕獲 10 枚 / ピシュティ 10 点だが、サーバの答えは 26 点。
           // 枚数とボーナスだけからは絶対に出ない数字。
-          makePlayer({ id: 0, isHuman: true, capturedCount: 10, pistiBonus: 10, provisionalScore: 26 }),
-          makePlayer({ id: 1, capturedCount: 4, provisionalScore: 4 }),
+          makePlayer({
+            id: 0,
+            isHuman: true,
+            capturedCount: 10,
+            pistiBonus: 10,
+            provisionalScore: 26,
+            cardPoints: 13,
+            mostCapturedPoints: 3,
+          }),
+          makePlayer({ id: 1, capturedCount: 4, provisionalScore: 4, cardPoints: 4 }),
           makePlayer({ id: 2, capturedCount: 0, provisionalScore: 0 }),
           makePlayer({ id: 3, capturedCount: 0, provisionalScore: 0 }),
         ],
@@ -333,10 +343,15 @@ describe('PishtiPage', () => {
     renderWithProviders(<PishtiPage />);
     const humanReadout = await screen.findByTestId('pishti-provisional-0');
     expect(humanReadout).toHaveTextContent('暫定 26点');
+    expect(screen.getByTestId('pishti-breakdown-0')).toHaveTextContent(
+      'カード点 13 / Pişti賞 10 / 最多捕獲 3点（暫定）',
+    );
     // 枚数とボーナスから組み直すと 13 点になる。その数字が出ていないこと。
     expect(humanReadout).not.toHaveTextContent('暫定 13点');
     // 何も捕っていない席でも渡された値を出す。
     expect(screen.getByTestId('pishti-provisional-1')).toHaveTextContent('暫定 4点');
+    expect(screen.getByTestId('pishti-breakdown-1')).toHaveTextContent('カード点 4');
+    expect(screen.getByTestId('pishti-breakdown-1')).toHaveTextContent('最多捕獲 0点（暫定）');
     // The disclosure note is shown during play.
     expect(screen.getByTestId('pishti-provisional-note')).toBeInTheDocument();
   });

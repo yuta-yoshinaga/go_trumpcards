@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
@@ -46,6 +47,7 @@ func (pwp *PishtiWebPresenter) Output(pg interfaces.PishtiGame, lastErr error) s
 	// から近似していて、実際の得点源 (A / J / ♣2 / ♦10) が終局まで見えなかった
 	// (#6468)。CUI が読むのと同じ値をそのまま渡す。
 	provisional := pg.GetProvisionalScores()
+	leader := pg.GetProvisionalLeader()
 
 	for i := 0; i < pg.GetPlayerCnt(); i++ {
 		player := pg.GetPlayer(i)
@@ -56,15 +58,21 @@ func (pwp *PishtiWebPresenter) Output(pg interfaces.PishtiGame, lastErr error) s
 		if i < len(scores) {
 			score = scores[i]
 		}
+		mostCapturedPoints := 0
+		if i == leader {
+			mostCapturedPoints = domain.PishtiScoreMostCards
+		}
 		resObj.Players = append(resObj.Players, &controller.PishtiWebOutputPlayer{
-			ID:               i,
-			IsHuman:          player.GetIsHuman(),
-			CardCount:        player.GetCardsSize(),
-			Cards:            playerCardsToOutput(player, player.GetIsHuman()),
-			CapturedCount:    player.CapturedCount(),
-			PistiBonus:       player.GetPistiBonus(),
-			ProvisionalScore: provisionalAt(provisional, i),
-			FinalScore:       score,
+			ID:                 i,
+			IsHuman:            player.GetIsHuman(),
+			CardCount:          player.GetCardsSize(),
+			Cards:              playerCardsToOutput(player, player.GetIsHuman()),
+			CapturedCount:      player.CapturedCount(),
+			PistiBonus:         player.GetPistiBonus(),
+			CardPoints:         provisionalAt(provisional, i) - player.GetPistiBonus() - mostCapturedPoints,
+			MostCapturedPoints: mostCapturedPoints,
+			ProvisionalScore:   provisionalAt(provisional, i),
+			FinalScore:         score,
 		})
 	}
 

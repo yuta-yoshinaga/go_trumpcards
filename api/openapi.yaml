@@ -71476,6 +71476,12 @@ components:
               pistiBonus:
                 type: integer
                 description: Accumulated Pişti bonus points
+              cardPoints:
+                type: integer
+                description: Confirmed points from captured scoring cards
+              mostCapturedPoints:
+                type: integer
+                description: Provisional +3 for the sole most-cards leader, otherwise zero
               provisionalScore:
                 type: integer
                 description: >-

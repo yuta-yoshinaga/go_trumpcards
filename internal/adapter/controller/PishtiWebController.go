@@ -32,12 +32,14 @@ type PishtiWebInput struct {
 
 // PishtiWebOutputPlayer は Pişti Web アウトプットプレイヤー。
 type PishtiWebOutputPlayer struct {
-	ID            int              `json:"id"`
-	IsHuman       bool             `json:"isHuman"`
-	CardCount     int              `json:"cardCount"`
-	Cards         []*WebOutputCard `json:"cards"`
-	CapturedCount int              `json:"capturedCount"`
-	PistiBonus    int              `json:"pistiBonus"`
+	ID                 int              `json:"id"`
+	IsHuman            bool             `json:"isHuman"`
+	CardCount          int              `json:"cardCount"`
+	Cards              []*WebOutputCard `json:"cards"`
+	CapturedCount      int              `json:"capturedCount"`
+	PistiBonus         int              `json:"pistiBonus"`
+	CardPoints         int              `json:"cardPoints"`
+	MostCapturedPoints int              `json:"mostCapturedPoints"`
 	// ProvisionalScore は今の捕獲状況から数えた点。**カード点も含む** ──
 	// A / J / ♣2 / ♦10 の配点は捕獲した瞬間に確定するので、途中でも正確に
 	// 数えられる。暫定なのは最多捕獲の +3 だけ (#6468)。

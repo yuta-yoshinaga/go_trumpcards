@@ -22,6 +22,10 @@ export interface PishtiPlayer {
   capturedCount: number;
   /** Accumulated Pişti bonus points. */
   pistiBonus: number;
+  /** Confirmed points from captured scoring cards. */
+  cardPoints: number;
+  /** Currently provisional +3 for the sole most-cards leader, otherwise zero. */
+  mostCapturedPoints: number;
   /**
    * Score from this player's current capture pile.
    *

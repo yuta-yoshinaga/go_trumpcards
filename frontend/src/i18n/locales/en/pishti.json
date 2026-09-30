@@ -9,6 +9,7 @@
   "pistiCelebrationJack": "PİŞTİ +20! (J)",
   "finalScore": "{{score}} pts",
   "provisional": "Provisional {{score}}",
+  "scoreBreakdown": "Cards {{cards}} / Pişti bonus {{pisti}} / Most captured {{most}} (provisional)",
   "provisionalNote": "Provisional totals already include card points (A, J, 2♣, 10♦) and Pişti bonuses. Only the most-cards +3 can still change hands.",
   "pile": "Pile",
   "pileTop": "Pile top",
