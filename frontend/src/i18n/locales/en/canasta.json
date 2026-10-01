@@ -61,7 +61,12 @@
   },
   "score": {
     "cumulative": "Total",
-    "round": "Round"
+    "round": "Round",
+    "meldCards": "Meld cards",
+    "canastaBonus": "Canasta bonus",
+    "red3Bonus": "Red 3 bonus",
+    "goOutBonus": "Going out bonus",
+    "handPenalty": "Hand penalty"
   },
   "tutorial": {
     "drawArea": "The stock and discard area. Draw cards from here.",
