@@ -321,7 +321,7 @@ function DuchessPageContent() {
           aria-label={
             selecting
               ? t('chooseBaseAriaLabel', { idx: fanIdx })
-              : t('fanTopAriaLabel', { card: cardAlt(top), idx: fanIdx })
+              : t('fanTopAriaLabel', { card: cardAlt(top), idx: fanIdx, count: fan.length })
           }
           aria-pressed={selecting ? undefined : isSourceSelected('reserve', fanIdx, undefined)}
           draggable={isPlaying && !loading && !selecting}
