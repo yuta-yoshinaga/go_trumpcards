@@ -47,6 +47,7 @@
   },
   "jacks": {
     "label": "jacks",
+    "unclaimedLabel": "Not yet taken",
     "spade": "♠J",
     "other": "{{suit}}J",
     "spadeAria": "the spade jack (-2)",
