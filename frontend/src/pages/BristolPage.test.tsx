@@ -78,7 +78,7 @@ describe('BristolPage', () => {
     await waitFor(() => expect(liveRegion).toHaveTextContent('手数: 1'));
   });
 
-  it('announces successful draws and moves once, but not rejected moves', async () => {
+  it('announces successful draws and moves, but not rejected moves', async () => {
     mockExec.mockImplementation(async (command) =>
       command === 'move'
         ? { ...playingState, moveCount: 1 }
@@ -92,13 +92,17 @@ describe('BristolPage', () => {
     await waitFor(() => expect(liveRegion).toHaveTextContent('山札から配りました'));
     expect(liveRegion).toHaveTextContent('山札から配りました');
 
+    fireEvent.click(screen.getByRole('button', { name: '山札' }));
+    await waitFor(() => expect(liveRegion).toBeEmptyDOMElement());
+    await waitFor(() => expect(liveRegion).toHaveTextContent('山札から配りました'));
+
     screen.getByRole('button', { name: /降順ビルド列 1/ }).click();
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /降順ビルド列 1/ })).toHaveAttribute('aria-pressed', 'true'),
     );
     screen.getByRole('button', { name: /降順ビルド列 2/ }).click();
     await waitFor(() => expect(liveRegion).toHaveTextContent('場札 1から場札 2に移動しました'));
-    expect(mockExec).toHaveBeenCalledTimes(3); // reset, draw, move
+    expect(mockExec).toHaveBeenCalledTimes(4); // reset, two draws, move
   });
 
   it('does not announce a rejected move', async () => {

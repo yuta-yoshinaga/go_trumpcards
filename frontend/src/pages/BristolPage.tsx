@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { bristolApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -86,27 +86,36 @@ function BristolPageContent() {
     cancelGiveUp,
   } = useGamePageSetup('bristol');
   const [operationAnnouncement, setOperationAnnouncement] = useState('');
+  // Clear first, then set after a beat, so the same sentence twice in a row is still
+  // announced. One pending timer at a time; it is dropped on unmount.
+  const announceTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const announce = useCallback((text: string) => {
+    clearTimeout(announceTimer.current);
+    setOperationAnnouncement('');
+    announceTimer.current = setTimeout(() => setOperationAnnouncement(text), 500);
+  }, []);
+  useEffect(() => () => clearTimeout(announceTimer.current), []);
   const announceSuccessfulOperation = useCallback(
     (res: BristolResponse, args: Parameters<typeof bristolApi.exec>) => {
       if (isRejectedAction(res)) return;
       if (args[0] === 'draw') {
-        setOperationAnnouncement(t('announcement.draw'));
+        const announcement = t('announcement.draw');
+        announce(announcement);
       } else if (args[0] === 'move' && args[1] && args[2]) {
+        const locationKeys: Record<string, string> = {
+          tableau: 'announcement.tableau',
+          foundation: 'announcement.foundation',
+          fan: 'announcement.fan',
+        };
         const location = (zone: BristolMoveZone) =>
-          t(
-            zone.zone === 'tableau'
-              ? 'announcement.tableau'
-              : zone.zone === 'foundation'
-                ? 'announcement.foundation'
-                : 'announcement.fan',
-            {
-              num: (zone.col ?? 0) + (zone.zone === 'tableau' ? 1 : 0),
-            },
-          );
-        setOperationAnnouncement(t('announcement.move', { source: location(args[1]), target: location(args[2]) }));
+          t(locationKeys[zone.zone] ?? 'announcement.fan', {
+            num: (zone.col ?? 0) + (zone.zone === 'tableau' ? 1 : 0),
+          });
+        const announcement = t('announcement.move', { source: location(args[1]), target: location(args[2]) });
+        announce(announcement);
       }
     },
-    [t],
+    [announce, t],
   );
   const {
     state,
