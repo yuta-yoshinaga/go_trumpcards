@@ -84,6 +84,16 @@ describe('MusPage pending stake announcement', () => {
     await i18n.changeLanguage('ja');
   });
 
+  it('omits team labels when the pending bet has no associated teams', async () => {
+    mockExec.mockResolvedValue(makeMusState({ ...respondState, betTeam: -1, lastBettorTeam: -1 }));
+    renderWithProviders(<MusPage />);
+
+    const live = await screen.findByTestId('mus-pending-stake');
+    expect(live).toHaveTextContent('保留中の賭け: 3');
+    expect(live).not.toHaveTextContent('賭けを保持するチーム');
+    expect(live).not.toHaveTextContent('直近に賭けたチーム');
+  });
+
   it('keeps the live region mounted and empty while no bet is pending', async () => {
     mockExec.mockResolvedValue(makeMusState({ phase: 2, pendingStake: 0 }));
     renderWithProviders(<MusPage />);
