@@ -320,7 +320,7 @@ function NapPageContent() {
                   >
                     <div className="mb-1 text-ds-text-primary">{t('bidsAfter')}</div>
                     {state.players.map((p) => {
-                      const bid = state.bids[p.id] ?? 0;
+                      const bid = state.bids[p.id] as number;
                       const bidText = !state.bidDone[p.id]
                         ? t('bidNotDone')
                         : t(
