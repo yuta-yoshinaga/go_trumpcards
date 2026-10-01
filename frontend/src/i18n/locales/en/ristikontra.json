@@ -6,7 +6,7 @@
   "captured": "captured {{count}}",
   "finalScore": "{{score}} cards",
   "provisional": "Provisional {{score}} cards",
-  "provisionalNote": "The provisional score includes only locked-in Pişti bonuses and the most-cards +3. Card points (A, J, 2♣, 10♦) are not yet counted, so final scores will be higher.",
+  "provisionalNote": "The provisional score is the total number of cards captured by each team.",
   "pile": "Pile",
   "pileTop": "Pile top",
   "pileCount": "{{count}} cards",
