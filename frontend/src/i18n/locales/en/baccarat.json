@@ -9,6 +9,7 @@
   "label": {
     "value": "Value: {{value}}",
     "chips": "Chips: {{chips}}",
+    "chipChange": "Change: {{change}}",
     "betAmount": "Bet Amount:",
     "betTarget": "Bet Target:",
     "payout": "Payout: {{payout}}"

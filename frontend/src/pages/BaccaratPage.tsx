@@ -284,7 +284,18 @@ function BaccaratPageContent() {
   } | null>(null);
 
   const { cardWidth } = useCardDimensions();
-  const { state, loading, error, exec: execApi, retry } = useGameApi(baccaratApi.exec);
+  const sessionStartChips = useRef<number | null>(null);
+  const {
+    state,
+    loading,
+    error,
+    exec: execApi,
+    retry,
+  } = useGameApi(baccaratApi.exec, {
+    onSuccess: (response, args) => {
+      if (args[0] === 'reset') sessionStartChips.current = response.chips;
+    },
+  });
   const hintState = useMemo(() => (state ? { ...state, betType } : null), [state, betType]);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('baccarat', hintState);
   // CLI mode
@@ -388,6 +399,7 @@ function BaccaratPageContent() {
   const handleClearHistory = () => {
     execApi('clearhistory');
   };
+  const chipChange = state.chips - (sessionStartChips.current ?? state.chips);
 
   return (
     <GamePageShell
@@ -403,6 +415,7 @@ function BaccaratPageContent() {
       headerExtra={
         <>
           <span>{t('label.chips', { chips: state.chips })}</span>
+          <span>{t('label.chipChange', { change: chipChange > 0 ? `+${chipChange}` : chipChange })}</span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }
