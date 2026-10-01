@@ -387,6 +387,11 @@ function GoFishPageContent() {
                   <button type="button" className={btnPrimary} onClick={handleAsk} disabled={!canAsk}>
                     {t('button.ask')}
                   </button>
+                  {selectedTarget !== null && selectedRank !== null && (
+                    <span data-testid="gofish-ask-preview" className="text-ds-text-primary text-sm">
+                      {t('askPreview', { name: playerName(selectedTarget, false), rank: valueName(selectedRank) })}
+                    </span>
+                  )}
                   <span className="text-ds-text-muted text-xs hidden sm:inline">{t('a11y.kbdHint')}</span>
                 </>
               )}

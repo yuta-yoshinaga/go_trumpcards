@@ -17,6 +17,7 @@
   },
   "selectOpponent": "相手を選択してください",
   "selectRank": "要求するランクを選択してください",
+  "askPreview": "{{name}}にランク{{rank}}を要求します",
   "askResult": {
     "hit": "{{asker}} が {{target}} にランク {{rank}} を要求 → {{count}}枚もらった！",
     "miss": "{{asker}} が {{target}} にランク {{rank}} を要求 → Go Fish!",

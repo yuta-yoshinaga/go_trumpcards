@@ -17,6 +17,7 @@
   },
   "selectOpponent": "Select an opponent",
   "selectRank": "Select a rank to ask for",
+  "askPreview": "Ask {{name}} for rank {{rank}}",
   "askResult": {
     "hit": "{{asker}} asked {{target}} for rank {{rank}} → got {{count}} card(s)!",
     "miss": "{{asker}} asked {{target}} for rank {{rank}} → Go Fish!",

@@ -154,6 +154,33 @@ describe('GoFishPage', () => {
     expect(screen.getByRole('button', { name: '要求する' })).not.toBeDisabled();
   });
 
+  it('shows the selected opponent and rank beside ask and updates when either is cleared or changed', async () => {
+    renderWithProviders(<GoFishPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 2/)).toBeInTheDocument());
+    const askPreview = () => screen.queryByTestId('gofish-ask-preview');
+    expect(askPreview()).not.toBeInTheDocument();
+
+    const opponents = screen.getAllByRole('button', { name: /CPU/ });
+    fireEvent.click(opponents[0]);
+    fireEvent.click(screen.getByRole('button', { name: /♠ 7/ }));
+    expect(askPreview()).toHaveTextContent('CPU 1');
+    expect(askPreview()).toHaveTextContent('7');
+
+    fireEvent.click(opponents[1]);
+    expect(askPreview()).toHaveTextContent('CPU 2');
+    expect(askPreview()).toHaveTextContent('7');
+
+    fireEvent.click(screen.getByRole('button', { name: /♦ 3/ }));
+    expect(askPreview()).toHaveTextContent('CPU 2');
+    expect(askPreview()).toHaveTextContent('3');
+
+    fireEvent.click(screen.getByRole('button', { name: /♠ 7/ }));
+    expect(askPreview()).toHaveTextContent('CPU 2');
+    expect(askPreview()).toHaveTextContent('7');
+    fireEvent.click(opponents[1]);
+    expect(askPreview()).not.toBeInTheDocument();
+  });
+
   it('calls ask command when ask button clicked', async () => {
     renderWithProviders(<GoFishPage />);
     await waitFor(() => expect(screen.getByText(/CPU 2/)).toBeInTheDocument());
