@@ -187,7 +187,7 @@ describe('BarbuPage', () => {
     expect(matrix).toHaveTextContent('♠');
   });
 
-  it('hides the score matrix while a deal is in progress', async () => {
+  it('opens the completed-deal score matrix while a deal is in progress', async () => {
     mockExec.mockResolvedValue(
       makeState({
         phase: 'play',
@@ -198,7 +198,29 @@ describe('BarbuPage', () => {
     );
     renderWithProviders(<BarbuPage />);
     await waitFor(() => expect(screen.getByTestId('play-button')).toBeInTheDocument());
-    expect(screen.queryByTestId('bb-score-matrix')).not.toBeInTheDocument();
+    const history = screen.getByTestId('bb-deal-history');
+    expect(history).not.toHaveAttribute('open');
+    fireEvent.click(within(history).getByText('ディール履歴'));
+    expect(history).toHaveAttribute('open');
+    const matrix = within(history).getByTestId('bb-score-matrix');
+    expect(matrix).toHaveTextContent('ノー・トリック');
+    expect(matrix).toHaveTextContent('-4');
+    fireEvent.click(within(history).getByText('ディール履歴'));
+    expect(history).not.toHaveAttribute('open');
+  });
+
+  it('keeps the score matrix open at game end', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'gameEnd',
+        gameEndFlag: true,
+        dealHistory: [{ contract: 0, trumpSuit: -1, dealerIdx: 0, gained: { 0: -4, 1: 0, 2: -2, 3: 0 } }],
+      }),
+    );
+    renderWithProviders(<BarbuPage />);
+    const history = await screen.findByTestId('bb-deal-history');
+    expect(history).toHaveAttribute('open');
+    expect(within(history).getByTestId('bb-score-matrix')).toHaveTextContent('ノー・トリック');
   });
 
   it('shows the next-deal button at deal end', async () => {
