@@ -49,6 +49,10 @@
     "winner": "{{name}} wins",
     "parda": "Parda (tie)"
   },
+  "trickResult": {
+    "winner": "Baza {{number}}: {{name}} wins",
+    "tie": "Baza {{number}}: Parda (tie)"
+  },
   "hintReason": {
     "leadStrong": "Lead with a strong card",
     "leadLow": "Lead low to save your strong cards",
