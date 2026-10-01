@@ -179,6 +179,15 @@ func (_m *MockPreferenceGame) GetPlayerScores() [domain.PreferencePlayerCnt]int 
 	return ret.Get(0).([domain.PreferencePlayerCnt]int)
 }
 
+// GetScoreBreakdown mock method.
+func (_m *MockPreferenceGame) GetScoreBreakdown() [domain.PreferencePlayerCnt]domain.PreferenceScoreBreakdown {
+	ret := _m.Called()
+	if ret.Get(0) == nil {
+		return [domain.PreferencePlayerCnt]domain.PreferenceScoreBreakdown{}
+	}
+	return ret.Get(0).([domain.PreferencePlayerCnt]domain.PreferenceScoreBreakdown)
+}
+
 // GetRoundTricks モック
 func (_m *MockPreferenceGame) GetRoundTricks() [domain.PreferencePlayerCnt]int {
 	ret := _m.Called()

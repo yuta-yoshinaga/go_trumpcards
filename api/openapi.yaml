@@ -70466,6 +70466,18 @@ components:
           items:
             type: integer
           description: Cumulative game points per player (index = player seat)
+        scoreBreakdown:
+          type: array
+          description: Per-player points awarded in the latest round.
+          items:
+            type: object
+            properties:
+              declarerContract:
+                type: integer
+                description: Points awarded to the declarer for making the contract.
+              defendingContract:
+                type: integer
+                description: Points awarded to defenders when the declarer fails.
         roundTricks:
           type: array
           items:

@@ -3684,6 +3684,11 @@ const basePreferenceState: PreferenceResponse = {
   bidDone: [false, false, false],
   currentTrick: [],
   playerScores: [0, 0, 0],
+  scoreBreakdown: [
+    { declarerContract: 0, defendingContract: 0 },
+    { declarerContract: 0, defendingContract: 0 },
+    { declarerContract: 0, defendingContract: 0 },
+  ],
   roundTricks: [0, 0, 0],
   playableIndices: [],
   gameEndFlag: false,
