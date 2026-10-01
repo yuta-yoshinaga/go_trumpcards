@@ -39785,6 +39785,13 @@ components:
         canSurrender:
           type: boolean
           description: Whether the player can surrender this hand (exactly 2 cards, action phase, not yet stood/busted/surrendered).
+        result:
+          type: integer
+          description: Settled hand result (1=win, 0=push, -1=loss); omitted until settlement.
+          enum: [-1, 0, 1]
+        netChange:
+          type: integer
+          description: Net chips returned for this hand minus its total wager; omitted until settlement.
 
     BlackJackResponse:
       type: object

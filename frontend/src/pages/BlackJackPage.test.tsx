@@ -137,6 +137,8 @@ const endPhaseState: BlackJackResponse = {
       canSplit: false,
       surrendered: false,
       canSurrender: false,
+      result: 1,
+      netChange: 150,
     },
   ],
   phase: 5,
@@ -167,6 +169,26 @@ beforeEach(() => {
 });
 
 describe('BlackJackPage', () => {
+  it('shows settled per-hand result and net change only in the end phase', async () => {
+    mockExec.mockResolvedValueOnce(actionPhaseState);
+    const { unmount } = renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('hand-result-0')).not.toBeInTheDocument();
+    unmount();
+
+    mockExec.mockResolvedValueOnce({
+      ...endPhaseState,
+      hands: [
+        { ...baseHand, result: 1, netChange: 100 },
+        { ...baseHand, result: -1, netChange: -200 },
+      ],
+    });
+    renderWithProviders(<BlackJackPage />);
+    expect(await screen.findByTestId('hand-result-0')).toHaveTextContent('勝ち');
+    expect(screen.getByTestId('hand-result-0')).toHaveTextContent('+100');
+    expect(screen.getByTestId('hand-result-1')).toHaveTextContent('負け');
+    expect(screen.getByTestId('hand-result-1')).toHaveTextContent('-200');
+  });
   it('shows Double Exposure double-down eligibility in the action area', async () => {
     mockDoubleExposureExec.mockResolvedValue(actionPhaseState);
     renderWithProviders(<BlackJackPage variant="doubleexposure" />);

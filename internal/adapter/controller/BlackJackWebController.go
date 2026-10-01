@@ -37,6 +37,8 @@ type BlackJackWebOutputHand struct {
 	CanSplit     bool             `json:"canSplit"`
 	Surrendered  bool             `json:"surrendered"`
 	CanSurrender bool             `json:"canSurrender"`
+	Result       *int             `json:"result,omitempty"`
+	NetChange    int              `json:"netChange,omitempty"`
 }
 
 // BlackJackWebOutputPlayer ブラックジャックWebアウトプットプレイヤー

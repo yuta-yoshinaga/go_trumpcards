@@ -147,5 +147,11 @@
       "samesuit": "7-7-7 (same suit)",
       "spade": "7-7-7 (all spades)"
     }
+  },
+  "handResult": {
+    "win": "Win",
+    "lose": "Loss",
+    "push": "Push",
+    "chips": "chips"
   }
 }
