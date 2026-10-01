@@ -283,9 +283,18 @@ function GermanWhistPageContent() {
                       aria-describedby={
                         canAnnotatePlays && !legalRing.has(idx) ? 'germanwhist-unplayable-reason' : undefined
                       }
-                      className={`disabled:opacity-50 aria-disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                      className={`relative disabled:opacity-50 aria-disabled:opacity-50 ${canAnnotatePlays && legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
                     >
                       <CardImage card={card} width={cardWidth} />
+                      {canAnnotatePlays && legalRing.has(idx) && (
+                        <span
+                          aria-hidden="true"
+                          data-testid="gw-playable-marker"
+                          className="absolute -top-1 -right-1 rounded-full bg-ds-success text-ds-text-primary text-[10px] leading-none px-1 py-0.5"
+                        >
+                          ✓
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>
