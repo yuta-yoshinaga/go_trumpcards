@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, bakersgameApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, FreeCellResponse } from '../types/card';
@@ -616,12 +617,26 @@ describe('BakersGamePage', () => {
 
   // --- Tableau card aria ---
 
-  it('tableau face-up card button has aria-label with card name', async () => {
+  it('tableau face-up card button has aria-label with card name and position', async () => {
     renderWithProviders(<BakersGamePage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
-    const cardButton = screen.getByRole('button', { name: '♠ K' });
-    expect(cardButton).toHaveAttribute('aria-label', '♠ K');
+    const cardButton = screen.getByRole('button', { name: '♠ K、列0・位置0' });
+    expect(cardButton).toHaveAttribute('aria-label', '♠ K、列0・位置0');
+  });
+
+  it('includes zero-based tableau column and position in card accessible names in Japanese and English', async () => {
+    renderWithProviders(<BakersGamePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ K、列0・位置0' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♥ Q、列1・位置0' })).toBeInTheDocument();
+
+    try {
+      await i18n.changeLanguage('en');
+      expect(screen.getByRole('button', { name: '♠ K, column 0, position 0' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '♥ Q, column 1, position 0' })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('tableau face-up card button has aria-pressed false initially and true when selected', async () => {
