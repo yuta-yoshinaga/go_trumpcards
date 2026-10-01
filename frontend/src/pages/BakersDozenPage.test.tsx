@@ -378,7 +378,9 @@ describe('BakersDozenPage legal targets', () => {
   it('rings the column whose top card is one rank higher', async () => {
     await selectSpadeFive();
     await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]').length).toBeGreaterThan(0));
-    expect(screen.getByRole('status', { name: '移動先' })).toHaveTextContent('移動可能なタブロー列: 2');
+    expect(screen.getByRole('status', { name: '移動先' })).toHaveTextContent(
+      '移動元のカード: ♠ 5。移動可能なタブロー列: 2',
+    );
   });
 
   it('announces legal foundation destinations', async () => {
@@ -389,7 +391,9 @@ describe('BakersDozenPage legal targets', () => {
     renderWithProviders(<BakersDozenPage />);
     fireEvent.click(await screen.findByRole('button', { name: '♠ A' }));
     const status = screen.getByTestId('bd-destination-live');
-    await waitFor(() => expect(status).toHaveTextContent('移動可能なタブロー列: なし。組札の移動先: ♠、♣、♥、♦。'));
+    await waitFor(() =>
+      expect(status).toHaveTextContent('移動元のカード: ♠ A。移動可能なタブロー列: なし。組札の移動先: ♠、♣、♥、♦。'),
+    );
   });
 
   it('announces when neither tableau nor foundation has a destination', async () => {
@@ -400,7 +404,7 @@ describe('BakersDozenPage legal targets', () => {
     renderWithProviders(<BakersDozenPage />);
     fireEvent.click(await screen.findByRole('button', { name: '♠ K' }));
     expect(screen.getByTestId('bd-destination-live')).toHaveTextContent(
-      '移動可能なタブロー列: なし。組札の移動先: なし。',
+      '移動元のカード: ♠ K。移動可能なタブロー列: なし。組札の移動先: なし。',
     );
   });
 
@@ -418,13 +422,15 @@ describe('BakersDozenPage legal targets', () => {
     });
     renderWithProviders(<BakersDozenPage />);
     fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
-    expect(screen.getByRole('status', { name: '移動先' })).toHaveTextContent('移動可能なタブロー列: 2、3');
+    expect(screen.getByRole('status', { name: '移動先' })).toHaveTextContent(
+      '移動元のカード: ♠ 5。移動可能なタブロー列: 2、3',
+    );
   });
 
   it('clears the announced destinations after moving the selected card', async () => {
     await selectSpadeFive();
     const status = screen.getByRole('status', { name: '移動先' });
-    expect(status).toHaveTextContent('移動可能なタブロー列: 2');
+    expect(status).toHaveTextContent('移動元のカード: ♠ 5。移動可能なタブロー列: 2');
     fireEvent.click(screen.getByRole('button', { name: '♥ 6' }));
     await waitFor(() => expect(status).toBeEmptyDOMElement());
   });

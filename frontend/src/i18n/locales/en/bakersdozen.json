@@ -31,7 +31,7 @@
   "noHint": "No hint available",
   "destinationStatusLabel": "Move destinations",
   "listSeparator": ", ",
-  "destinationAnnouncement": "Legal tableau columns: {{tableau}}. Legal foundations: {{foundation}}.",
+  "destinationAnnouncement": "Source card: {{card}}. Legal tableau columns: {{tableau}}. Legal foundations: {{foundation}}.",
   "noDestination": "none",
   "tutorial": {
     "foundation": "Build 4 foundation piles by suit from Ace to King.",
