@@ -20,6 +20,7 @@
   "trumpUndeclared": "Trump undeclared",
   "cards": "{{count}} cards",
   "cumulativeScore": "Total: {{score}}",
+  "cumulativeTeamScore": "{{team}} cumulative score: {{score}}",
   "tricks": "Tricks: {{count}}",
   "capturedPoints": "Points: {{count}}",
   "currentTrick": "Current Trick",
