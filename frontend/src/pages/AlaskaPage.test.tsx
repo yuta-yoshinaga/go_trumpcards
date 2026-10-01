@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { alaskaHintApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { AlaskaResponse, Card, CardDesign } from '../types/card';
@@ -64,6 +65,24 @@ beforeEach(() => {
 });
 
 describe('AlaskaPage', () => {
+  it('announces face-up tableau cards with zero-based column and position in Japanese and English', async () => {
+    renderWithProviders(<AlaskaPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /♠ K/ })).toBeInTheDocument());
+
+    expect(screen.getByRole('button', { name: '♠ K、列0・位置0' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 8、列1・位置1' })).toBeInTheDocument();
+    expect(screen.getByLabelText('列1、上から1枚目、裏向き')).toBeInTheDocument();
+
+    try {
+      await i18n.changeLanguage('en');
+      expect(screen.getByRole('button', { name: '♠ K, column 0, position 0' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '♥ 8, column 1, position 1' })).toBeInTheDocument();
+      expect(screen.getByLabelText('Column 1, card 1 from top, face down')).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<AlaskaPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -475,8 +494,8 @@ describe('AlaskaPage block move announcement', () => {
     mockExec.mockResolvedValue(broken);
     renderWithProviders(<AlaskaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /♥ 8/ })).toBeInTheDocument());
-    // 先頭の空カードのボタンは名前が枚数だけになる。
-    expect(screen.getByRole('button', { name: '2枚まとめて移動' })).toBeInTheDocument();
+    // 札名がなくても位置と枚数は読み上げる。
+    expect(screen.getByRole('button', { name: '、列0・位置0 2枚まとめて移動' })).toBeInTheDocument();
   });
 
   // **列の末尾は 1 枚。**「あと0枚と一緒に」は読み上げても意味がない。
