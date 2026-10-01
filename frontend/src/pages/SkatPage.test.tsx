@@ -215,6 +215,14 @@ describe('SkatPage', () => {
     expect(await screen.findByTestId('skat-contract-progress')).toHaveTextContent('宣言者の獲得トリック: 2（条件: 0）');
   });
 
+  it('does not show contract progress without a declarer', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseHumanTurn, declarerIdx: -1 });
+    renderWithProviders(<SkatPage />);
+
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('skat-contract-progress')).not.toBeInTheDocument();
+  });
+
   it('shows and distinguishes the original and final skat at round end', async () => {
     mockExec.mockResolvedValue(roundEndPhase);
     renderWithProviders(<SkatPage />);

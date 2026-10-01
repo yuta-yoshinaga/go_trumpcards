@@ -143,6 +143,7 @@ function SkatPageContent() {
   const isRoundEnd = state.phase === SkatPhase.ROUND_END;
   const isGameEnd = state.phase === SkatPhase.GAME_END || state.gameEndFlag;
 
+  const declarer = state.declarerIdx >= 0 ? state.players[state.declarerIdx] : undefined;
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isHumanTurn = isPlay && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanBidTurn =
@@ -236,12 +237,12 @@ function SkatPageContent() {
                   )}
                 </div>
               )}
-              {(isPlay || isTrickEnd) && state.declarerIdx >= 0 && state.gameType !== SkatGameType.NONE && (
+              {(isPlay || isTrickEnd) && declarer && state.gameType !== SkatGameType.NONE && (
                 <div data-testid="skat-contract-progress" className="text-ds-text-muted">
                   {state.gameType === SkatGameType.NULL
-                    ? t('nullContractProgress', { current: state.players[state.declarerIdx]?.trickCount ?? 0 })
+                    ? t('nullContractProgress', { current: declarer.trickCount })
                     : t('pointsContractProgress', {
-                        current: state.players[state.declarerIdx]?.cardPoints ?? 0,
+                        current: declarer.cardPoints,
                         target: 61,
                       })}
                 </div>
