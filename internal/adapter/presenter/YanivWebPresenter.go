@@ -24,6 +24,7 @@ func (p *YanivWebPresenter) Output(g interfaces.YanivGame, lastErr error) string
 	resObj.AsafWinnerIdx = g.GetAsafWinnerIdx()
 	resObj.IsAsaf = g.GetIsAsaf()
 	resObj.RoundScores = append([]int{}, g.GetRoundScores()...)
+	resObj.RoundScoreHistory = g.GetRoundScoreHistory()
 
 	resObj.PickupCards = make([]*controller.WebOutputCard, 0, len(g.GetPickupCards()))
 	for _, c := range g.GetPickupCards() {

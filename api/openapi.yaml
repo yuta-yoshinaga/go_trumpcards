@@ -47639,6 +47639,13 @@ components:
           items:
             type: integer
           description: Penalty added to each player in the most recent round
+        roundScoreHistory:
+          type: array
+          items:
+            type: array
+            items:
+              type: integer
+          description: Penalty added to each player, indexed by completed round
         config:
           type: object
           properties:

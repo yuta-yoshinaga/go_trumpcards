@@ -389,6 +389,7 @@ func TestYaniv_CpuDiscardEmptyHandDoesNotPanic(t *testing.T) {
 
 func TestYaniv_JSONRoundTrip(t *testing.T) {
 	g := newTestYaniv()
+	g.roundScoreHistory = [][]int{{0, 4, 8, 2}, {3, 0, 1, 5}}
 	data, err := json.Marshal(g)
 	require.NoError(t, err)
 
@@ -398,6 +399,7 @@ func TestYaniv_JSONRoundTrip(t *testing.T) {
 	assert.Equal(t, g.GetRoundNumber(), restored.GetRoundNumber())
 	assert.Equal(t, g.GetDrawPileCount(), restored.GetDrawPileCount())
 	assert.Equal(t, len(g.GetPickupCards()), len(restored.GetPickupCards()))
+	assert.Equal(t, g.GetRoundScoreHistory(), restored.GetRoundScoreHistory())
 }
 
 func TestYaniv_UnmarshalRejectsOversize(t *testing.T) {

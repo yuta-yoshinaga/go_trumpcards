@@ -56,3 +56,6 @@ func (m *MockYanivGame) GetIsAsaf() bool       { return m.Called().Bool(0) }
 func (m *MockYanivGame) GetRoundScores() []int {
 	return m.Called().Get(0).([]int)
 }
+func (m *MockYanivGame) GetRoundScoreHistory() [][]int {
+	return m.Called().Get(0).([][]int)
+}

@@ -35,22 +35,23 @@ const (
 
 // Yaniv Yaniv (ヤニブ) ゲームクラス
 type Yaniv struct {
-	trumpCards       *TrumpCards
-	players          []*YanivPlayer
-	config           YanivConfig
-	phase            YanivPhase
-	currentPlayerIdx int
-	drawPile         []*Card // 山札
-	pickupCards      []*Card // 直前のプレイヤーが捨てた束 (端のみ引ける)
-	pendingDiscard   []*Card // 現プレイヤーが今ターンに捨てた束 (ドロー後に pickupCards となる)
-	deadPile         []*Card // 引かれずに流れたカード (山札切れ時に再シャッフル)
-	gameEndFlag      bool
-	winnerIdx        int
-	roundNumber      int
-	callerIdx        int   // Yaniv を宣言したプレイヤー (-1 = なし)
-	asafWinnerIdx    int   // アサフで宣言者を下回ったプレイヤー (-1 = なし)
-	isAsaf           bool  // 直近の宣言がアサフだったか
-	roundScores      []int // 直近ラウンドで各プレイヤーが加算された失点
+	trumpCards        *TrumpCards
+	players           []*YanivPlayer
+	config            YanivConfig
+	phase             YanivPhase
+	currentPlayerIdx  int
+	drawPile          []*Card // 山札
+	pickupCards       []*Card // 直前のプレイヤーが捨てた束 (端のみ引ける)
+	pendingDiscard    []*Card // 現プレイヤーが今ターンに捨てた束 (ドロー後に pickupCards となる)
+	deadPile          []*Card // 引かれずに流れたカード (山札切れ時に再シャッフル)
+	gameEndFlag       bool
+	winnerIdx         int
+	roundNumber       int
+	callerIdx         int   // Yaniv を宣言したプレイヤー (-1 = なし)
+	asafWinnerIdx     int   // アサフで宣言者を下回ったプレイヤー (-1 = なし)
+	isAsaf            bool  // 直近の宣言がアサフだったか
+	roundScores       []int // 直近ラウンドで各プレイヤーが加算された失点
+	roundScoreHistory [][]int
 	actionLogBase
 	rng *rand.Rand
 }
@@ -119,6 +120,7 @@ func (g *Yaniv) startRound() {
 	g.asafWinnerIdx = -1
 	g.isAsaf = false
 	g.roundScores = make([]int, len(g.players))
+	g.roundScoreHistory = make([][]int, 0)
 
 	for _, p := range g.players {
 		p.Reset()
@@ -483,6 +485,7 @@ func (g *Yaniv) resolveYaniv(callerIdx int) {
 		g.players[i].AddScore(scores[i])
 	}
 	g.roundScores = scores
+	g.roundScoreHistory = append(g.roundScoreHistory, append([]int(nil), scores...))
 
 	for i, p := range g.players {
 		if !p.IsEliminated() && p.GetScore() > g.config.ScoreLimit {
@@ -498,6 +501,7 @@ func (g *Yaniv) resolveYaniv(callerIdx int) {
 func (g *Yaniv) endRoundNoContest() {
 	g.callerIdx = -1
 	g.roundScores = make([]int, len(g.players))
+	g.roundScoreHistory = append(g.roundScoreHistory, append([]int(nil), g.roundScores...))
 	g.appendLog(-1, "round_end", "yaniv.log.roundEnd", nil, nil)
 	g.finishRound()
 }
@@ -787,6 +791,15 @@ func (g *Yaniv) GetIsAsaf() bool { return g.isAsaf }
 // GetRoundScores 直近ラウンドで各プレイヤーが加算された失点を取得する
 func (g *Yaniv) GetRoundScores() []int { return g.roundScores }
 
+// GetRoundScoreHistory returns the penalty points added to each player per completed round.
+func (g *Yaniv) GetRoundScoreHistory() [][]int {
+	history := make([][]int, len(g.roundScoreHistory))
+	for i, scores := range g.roundScoreHistory {
+		history[i] = append([]int(nil), scores...)
+	}
+	return history
+}
+
 // GetConfig ゲーム設定を取得する
 func (g *Yaniv) GetConfig() YanivConfig { return g.config }
 
@@ -835,23 +848,24 @@ func cardsStr(cards []*Card) string {
 
 // yanivJSON is the JSON wire format for Yaniv.
 type yanivJSON struct {
-	TrumpCards       *TrumpCards       `json:"tc"`
-	Players          []*YanivPlayer    `json:"pl"`
-	Config           YanivConfig       `json:"cf"`
-	Phase            YanivPhase        `json:"ph"`
-	CurrentPlayerIdx int               `json:"ci"`
-	DrawPile         []*Card           `json:"wp"`
-	PickupCards      []*Card           `json:"pk"`
-	PendingDiscard   []*Card           `json:"pd"`
-	DeadPile         []*Card           `json:"dd"`
-	GameEndFlag      bool              `json:"ge"`
-	WinnerIdx        int               `json:"wi"`
-	RoundNumber      int               `json:"rn"`
-	CallerIdx        int               `json:"kc"`
-	AsafWinnerIdx    int               `json:"aw"`
-	IsAsaf           bool              `json:"ia"`
-	RoundScores      []int             `json:"rs"`
-	ActionLog        []*ActionLogEntry `json:"al"`
+	TrumpCards        *TrumpCards       `json:"tc"`
+	Players           []*YanivPlayer    `json:"pl"`
+	Config            YanivConfig       `json:"cf"`
+	Phase             YanivPhase        `json:"ph"`
+	CurrentPlayerIdx  int               `json:"ci"`
+	DrawPile          []*Card           `json:"wp"`
+	PickupCards       []*Card           `json:"pk"`
+	PendingDiscard    []*Card           `json:"pd"`
+	DeadPile          []*Card           `json:"dd"`
+	GameEndFlag       bool              `json:"ge"`
+	WinnerIdx         int               `json:"wi"`
+	RoundNumber       int               `json:"rn"`
+	CallerIdx         int               `json:"kc"`
+	AsafWinnerIdx     int               `json:"aw"`
+	IsAsaf            bool              `json:"ia"`
+	RoundScores       []int             `json:"rs"`
+	RoundScoreHistory [][]int           `json:"rsh,omitempty"`
+	ActionLog         []*ActionLogEntry `json:"al"`
 }
 
 // yanivMaxSliceLen caps slice sizes during deserialisation to prevent
@@ -865,23 +879,24 @@ func (g *Yaniv) appendLog(playerIdx int, actionType, detailCode string, detailPa
 // MarshalJSON implements json.Marshaler.
 func (g *Yaniv) MarshalJSON() ([]byte, error) {
 	return json.Marshal(yanivJSON{
-		TrumpCards:       g.trumpCards,
-		Players:          g.players,
-		Config:           g.config,
-		Phase:            g.phase,
-		CurrentPlayerIdx: g.currentPlayerIdx,
-		DrawPile:         g.drawPile,
-		PickupCards:      g.pickupCards,
-		PendingDiscard:   g.pendingDiscard,
-		DeadPile:         g.deadPile,
-		GameEndFlag:      g.gameEndFlag,
-		WinnerIdx:        g.winnerIdx,
-		RoundNumber:      g.roundNumber,
-		CallerIdx:        g.callerIdx,
-		AsafWinnerIdx:    g.asafWinnerIdx,
-		IsAsaf:           g.isAsaf,
-		RoundScores:      g.roundScores,
-		ActionLog:        g.actionLog,
+		TrumpCards:        g.trumpCards,
+		Players:           g.players,
+		Config:            g.config,
+		Phase:             g.phase,
+		CurrentPlayerIdx:  g.currentPlayerIdx,
+		DrawPile:          g.drawPile,
+		PickupCards:       g.pickupCards,
+		PendingDiscard:    g.pendingDiscard,
+		DeadPile:          g.deadPile,
+		GameEndFlag:       g.gameEndFlag,
+		WinnerIdx:         g.winnerIdx,
+		RoundNumber:       g.roundNumber,
+		CallerIdx:         g.callerIdx,
+		AsafWinnerIdx:     g.asafWinnerIdx,
+		IsAsaf:            g.isAsaf,
+		RoundScores:       g.roundScores,
+		RoundScoreHistory: g.roundScoreHistory,
+		ActionLog:         g.actionLog,
 	})
 }
 
@@ -893,7 +908,7 @@ func (g *Yaniv) UnmarshalJSON(data []byte) error {
 	}
 	if len(j.Players) > yanivMaxSliceLen || len(j.DrawPile) > yanivMaxSliceLen ||
 		len(j.PickupCards) > yanivMaxSliceLen || len(j.PendingDiscard) > yanivMaxSliceLen ||
-		len(j.DeadPile) > yanivMaxSliceLen || len(j.RoundScores) > yanivMaxSliceLen ||
+		len(j.DeadPile) > yanivMaxSliceLen || len(j.RoundScores) > yanivMaxSliceLen || len(j.RoundScoreHistory) > yanivMaxSliceLen ||
 		len(j.ActionLog) > yanivMaxSliceLen {
 		return fmt.Errorf("yaniv: input array exceeds maximum allowed size")
 	}
@@ -920,6 +935,10 @@ func (g *Yaniv) UnmarshalJSON(data []byte) error {
 	g.asafWinnerIdx = j.AsafWinnerIdx
 	g.isAsaf = j.IsAsaf
 	g.roundScores = j.RoundScores
+	g.roundScoreHistory = j.RoundScoreHistory
+	if g.roundScoreHistory == nil {
+		g.roundScoreHistory = make([][]int, 0)
+	}
 	if g.roundScores == nil {
 		g.roundScores = make([]int, 0)
 	}

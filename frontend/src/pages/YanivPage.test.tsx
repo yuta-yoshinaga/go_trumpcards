@@ -40,6 +40,7 @@ function makeState(overrides: Partial<YanivResponse> = {}): YanivResponse {
     asafWinnerIdx: -1,
     isAsaf: false,
     roundScores: [],
+    roundScoreHistory: [],
     message: '',
     config: { cpuDifficulty: 1, scoreLimit: 200 },
     ...overrides,
@@ -53,6 +54,22 @@ beforeEach(() => {
 });
 
 describe('YanivPage', () => {
+  it('shows per-round penalties from server state', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        roundScoreHistory: [
+          [0, 4, 8, 2],
+          [3, 0, 1, 5],
+        ],
+      }),
+    );
+    renderWithProviders(<YanivPage />);
+    expect(await screen.findByRole('heading', { name: 'ラウンド別の失点' })).toBeInTheDocument();
+    const rows = screen.getByRole('table').querySelectorAll('tbody tr');
+    expect(rows[0]).toHaveTextContent('10482');
+    expect(rows[1]).toHaveTextContent('23015');
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<YanivPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
