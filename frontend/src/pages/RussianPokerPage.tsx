@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { russianpokerApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -91,9 +91,15 @@ function RussianPokerPageContent() {
 
   const [anteAmount, setAnteAmount] = useState(100);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
+  const [exchangeSelectionAnnouncement, setExchangeSelectionAnnouncement] = useState('');
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(russianpokerApi.exec);
+  const phase = state?.phase;
+
+  useEffect(() => {
+    if (phase !== undefined) setExchangeSelectionAnnouncement('');
+  }, [phase]);
 
   // **ヒントロジックは実装済みで hintFactories にも登録されているのに、
   // ページが useGameHint を import すらしておらず誰にも使われていなかった
@@ -132,11 +138,24 @@ function RussianPokerPageContent() {
   const anteInvalid =
     Number.isNaN(anteAmount) || anteAmount < 10 || anteAmount % 10 !== 0 || anteAmount > (state?.chips ?? 0);
 
-  const toggleSelected = useCallback((idx: number) => {
-    setSelectedIndices((prev) =>
-      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx].sort((a, b) => a - b),
-    );
-  }, []);
+  const toggleSelected = useCallback(
+    (idx: number) => {
+      const next = selectedIndices.includes(idx)
+        ? selectedIndices.filter((i) => i !== idx)
+        : [...selectedIndices, idx].sort((a, b) => a - b);
+      setSelectedIndices(next);
+      if (isActionPhase && state) {
+        setExchangeSelectionAnnouncement(
+          t('exchangeSelectionAnnouncement', {
+            count: next.length,
+            ante: state.anteBet,
+            fee: state.anteBet * next.length,
+          }),
+        );
+      }
+    },
+    [selectedIndices, isActionPhase, state, t],
+  );
 
   const clearSelection = useCallback(() => setSelectedIndices([]), []);
 
@@ -297,6 +316,15 @@ function RussianPokerPageContent() {
         </>
       }
     >
+      <span
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+        data-testid="exchange-selection-announcement"
+      >
+        {exchangeSelectionAnnouncement}
+      </span>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (

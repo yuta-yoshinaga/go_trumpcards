@@ -137,6 +137,31 @@ describe('RussianPokerPage', () => {
     expect(line).toHaveTextContent('選択中: 1枚');
   });
 
+  it('announces the selected exchange count and fee only when cards are toggled during exchange selection', async () => {
+    renderWithProviders(<RussianPokerPage />);
+    await screen.findByTestId('russian-exchange-fee-line');
+
+    const announcement = await screen.findByTestId('exchange-selection-announcement');
+    expect(announcement).toBeEmptyDOMElement();
+    fireEvent.click(screen.getByTestId('player-card-0'));
+    expect(announcement).toHaveTextContent('選択中: 1枚');
+    expect(announcement).toHaveTextContent('手数料: 1枚あたりアンテ × 100 = 100');
+
+    fireEvent.click(screen.getByTestId('player-card-0'));
+    expect(announcement).toHaveTextContent('選択中: 0枚');
+    expect(announcement).toHaveTextContent('手数料: 1枚あたりアンテ × 100 = 0');
+  });
+
+  it('does not announce unrelated updates outside exchange selection', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: RussianPokerPhase.SELECT }));
+    renderWithProviders(<RussianPokerPage />);
+    const card = await screen.findByTestId('player-card-0');
+    const announcement = screen.getByTestId('exchange-selection-announcement');
+    expect(announcement).toBeEmptyDOMElement();
+    fireEvent.click(card);
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
   it('previews kept cards and replacement positions as exchange selection changes', async () => {
     renderWithProviders(<RussianPokerPage />);
     await screen.findByTestId('russian-exchange-fee-line');
