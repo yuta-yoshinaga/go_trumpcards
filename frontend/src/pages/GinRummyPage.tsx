@@ -316,6 +316,7 @@ function GinRummyPageContent() {
                     <AnimatedCard card={state.discardTop} width={cardWidth} />
                     <div className="text-ds-text-muted text-sm">
                       <div>{t('discardTop')}</div>
+                      <div>{t('discardTopCard', { card: cardAlt(state.discardTop) })}</div>
                     </div>
                   </div>
                 )}
