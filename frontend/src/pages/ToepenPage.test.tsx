@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { toepenApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -98,6 +98,7 @@ describe('ToepenPage', () => {
     expect(handButtons).toHaveLength(3);
     const cpuHand = screen.getByRole('img', { name: /CPU1 .*手札/ });
     expect(cpuHand.querySelectorAll('img[src="/images/z01.png"]')).toHaveLength(3);
+    expect(within(cpuHand).queryByRole('img', { name: cardAlt(card('HEART', 11)) })).not.toBeInTheDocument();
   });
 
   it('reveals the CPU hands only after the game ends', async () => {
@@ -111,9 +112,11 @@ describe('ToepenPage', () => {
     );
     renderWithProviders(<ToepenPage />);
 
-    const cpuHand = await screen.findByRole('img', { name: /CPU1 .*手札/ });
+    const cpuHand = await screen.findByRole('group', { name: 'CPU1 の手札（公開）' });
+    for (const revealedCard of cpuCards) {
+      expect(within(cpuHand).getByRole('img', { name: cardAlt(revealedCard) })).toBeInTheDocument();
+    }
     expect(cpuHand.querySelectorAll('img[src^="/images/"]')).toHaveLength(3);
-    expect(cpuHand.querySelector(`img[alt="${cardAlt(cpuCards[0]!)}"]`)).toBeInTheDocument();
     expect(cpuHand.querySelector('img[src="/images/z01.png"]')).not.toBeInTheDocument();
   });
 
