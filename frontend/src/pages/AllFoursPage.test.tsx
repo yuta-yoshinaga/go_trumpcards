@@ -93,6 +93,37 @@ beforeEach(() => {
 });
 
 describe('AllFoursPage', () => {
+  it('keeps an unplayable card focusable and describes the follow-suit rule', async () => {
+    mockExec.mockResolvedValue({
+      ...playState,
+      currentTrick: [{ playerIdx: 1, card: { design: 'HEART', value: 7 } }],
+      players: [
+        {
+          ...baseState.players[0],
+          cards: [
+            { design: 'HEART', value: 5 },
+            { design: 'SPADE', value: 6 },
+          ],
+        },
+        baseState.players[1],
+      ],
+      validPlayIndices: [0],
+    });
+    renderWithProviders(<AllFoursPage />);
+
+    const allowed = (await screen.findByAltText('♥ 5')).closest('button') as HTMLButtonElement;
+    const blocked = screen.getByAltText('♠ 6').closest('button') as HTMLButtonElement;
+    expect(allowed).not.toHaveAttribute('aria-disabled');
+    expect(blocked).toHaveAttribute('aria-disabled', 'true');
+    expect(blocked).not.toBeDisabled();
+    expect(document.getElementById(blocked.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
+      'リードスートを持っている場合は、そのスートか切り札を出してください。',
+    );
+
+    fireEvent.click(blocked);
+    expect(screen.getByRole('button', { name: '出す' })).toBeDisabled();
+  });
+
   it('announces an unplayed trick separately from a completed trick', async () => {
     mockExec.mockResolvedValue(playState);
     const { unmount } = renderWithProviders(<AllFoursPage />);
