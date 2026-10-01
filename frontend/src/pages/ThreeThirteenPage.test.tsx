@@ -33,6 +33,7 @@ const drawPhaseState: ThreeThirteenResponse = {
   ],
   phase: 0,
   round: 2,
+  roundScoreHistory: [[3, 7]],
   maxRound: 11,
   wildRank: 4,
   dealCount: 4,
@@ -120,6 +121,17 @@ describe('ThreeThirteenPage', () => {
     renderWithProviders(<ThreeThirteenPage />);
     const activeTable = await screen.findByTestId('threethirteen-score-table');
     expect(activeTable).not.toHaveTextContent('デッドウッド');
+  });
+
+  it('shows completed round scores by player in the score table', async () => {
+    renderWithProviders(<ThreeThirteenPage />);
+    const table = await screen.findByTestId('threethirteen-score-table');
+    const headers = within(table)
+      .getAllByRole('columnheader')
+      .map((th) => th.textContent);
+    expect(headers).toContain('第1ラウンド');
+    const rows = within(table).getAllByRole('row').slice(1);
+    expect(rows.map((row) => within(row).getAllByRole('cell')[1]?.textContent)).toEqual(['3', '7']);
   });
 
   it('shows predicted post-discard deadwood that changes with card selection', async () => {

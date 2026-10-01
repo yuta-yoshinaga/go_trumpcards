@@ -47020,6 +47020,13 @@ components:
         round:
           type: integer
           description: Current round number (1 to 11)
+        roundScoreHistory:
+          type: array
+          description: Completed round scores, indexed by round then player.
+          items:
+            type: array
+            items:
+              type: integer
         maxRound:
           type: integer
           description: Maximum number of rounds in the game
