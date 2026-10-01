@@ -121,6 +121,12 @@ func (_m *MockHeartsGame) GetCurrentTrick() []*domain.TrickCard {
 	return nil
 }
 
+// CurrentTrickPoints モック
+func (_m *MockHeartsGame) CurrentTrickPoints() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 // GetHeartsBroken モック
 func (_m *MockHeartsGame) GetHeartsBroken() bool {
 	ret := _m.Called()

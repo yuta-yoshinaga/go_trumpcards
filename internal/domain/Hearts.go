@@ -321,10 +321,7 @@ func (h *Hearts) ResolveTrick() {
 	h.players[winnerIdx].AddTrick(trickCards)
 
 	// ポイント計算
-	points := 0
-	for _, tc := range h.currentTrick {
-		points += cardPoints(tc.Card, h.config.OmnibusJD)
-	}
+	points := h.CurrentTrickPoints()
 	h.players[winnerIdx].roundScore += points
 
 	winnerName := playerName(h.players, winnerIdx)
@@ -442,6 +439,15 @@ func (h *Hearts) SetCurrentPlayerIdx(idx int) { h.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
 func (h *Hearts) GetCurrentTrick() []*TrickCard { return h.currentTrick }
+
+// CurrentTrickPoints returns the points represented by the cards in the current trick.
+func (h *Hearts) CurrentTrickPoints() int {
+	points := 0
+	for _, tc := range h.currentTrick {
+		points += cardPoints(tc.Card, h.config.OmnibusJD)
+	}
+	return points
+}
 
 // SetCurrentTrick トリック設定 (テスト用)
 func (h *Hearts) SetCurrentTrick(trick []*TrickCard) { h.currentTrick = trick }

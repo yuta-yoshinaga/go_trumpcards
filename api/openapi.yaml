@@ -41394,6 +41394,7 @@ components:
         - currentPlayerIdx
         - responderIdx
         - currentTrick
+        - trickPoints
         - trickResults
         - leadPlayerIdx
         - manoIdx
@@ -43465,6 +43466,10 @@ components:
           description: Cards played in the current trick so far
           items:
             $ref: '#/components/schemas/HeartsTrickCard'
+        trickPoints:
+          type: integer
+          description: Total points represented by cards in the current trick, including Omnibus J♦ scoring when enabled
+          example: 0
         heartsBroken:
           type: boolean
           description: Whether hearts have been broken this round

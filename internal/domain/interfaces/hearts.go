@@ -47,6 +47,8 @@ type HeartsGame interface {
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// CurrentTrickPoints 現在のトリックの得点を取得する
+	CurrentTrickPoints() int
 	// GetHeartsBroken ハーツブレイク済みかを返す
 	GetHeartsBroken() bool
 	// GetPassDirection パス方向を取得する

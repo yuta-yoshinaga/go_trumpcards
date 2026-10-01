@@ -2594,6 +2594,27 @@ func TestHearts_Omnibus_ResolveTrick_JDiamondGivesNegativePoints(t *testing.T) {
 	assert.Equal(t, -10, h.GetPlayer(0).GetRoundScore())
 }
 
+func TestHearts_CurrentTrickPoints_OmnibusJD(t *testing.T) {
+	trick := []*domain.TrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignDiamond, 11, false)},
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
+	}
+	for _, tc := range []struct {
+		name    string
+		omnibus bool
+		want    int
+	}{{"enabled", true, -9}, {"disabled", false, 1}} {
+		t.Run(tc.name, func(t *testing.T) {
+			h := newTestHeartsOmnibus()
+			cfg := h.GetConfig()
+			cfg.OmnibusJD = tc.omnibus
+			h.SetConfig(cfg)
+			h.SetCurrentTrick(trick)
+			assert.Equal(t, tc.want, h.CurrentTrickPoints())
+		})
+	}
+}
+
 func TestHearts_Omnibus_ResolveTrick_JDiamondPlusHearts(t *testing.T) {
 	h := newTestHeartsOmnibus()
 	h.Reset()

@@ -55,6 +55,7 @@ function makeState(overrides?: Partial<HeartsResponse>): HeartsResponse {
     trickNumber: 1,
     currentPlayerIdx: 0,
     currentTrick: [],
+    trickPoints: 0,
     heartsBroken: false,
     passDirection: 0,
     gameEndFlag: false,

@@ -468,6 +468,7 @@ function HeartsPageContent() {
                     name: state.players[state.leadPlayerIdx]
                       ? playerName(state.players[state.leadPlayerIdx].id, state.players[state.leadPlayerIdx].isHuman)
                       : '',
+                    points: state.trickPoints,
                   })}
                 </div>
               )}
