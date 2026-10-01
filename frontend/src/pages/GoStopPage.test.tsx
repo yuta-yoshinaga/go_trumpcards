@@ -94,6 +94,20 @@ describe('GoStopPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
   });
 
+  it('exposes the selected hand card through aria-pressed and clears it on repeat click', async () => {
+    mockExec.mockResolvedValue(makeGoStopState({ captureOptions: { 0: [0, 1] } }));
+    renderWithProviders(<GoStopPage />);
+
+    const card = await screen.findByTestId('hand-card-0');
+    expect(card).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(card);
+    expect(card).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(card);
+    expect(card).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('requires a field pick for a two-way match, then plays with fieldIndex', async () => {
     mockExec.mockResolvedValue(makeGoStopState({ captureOptions: { 0: [0, 1] } }));
     renderWithProviders(<GoStopPage />);
