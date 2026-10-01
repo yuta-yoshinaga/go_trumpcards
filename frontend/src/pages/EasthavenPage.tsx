@@ -110,9 +110,18 @@ function EasthavenPageContent() {
     retry,
   } = useGameApi<EasthavenResponse, Parameters<typeof easthavenApi.exec>>((...args) => easthavenApi.exec(...args), {
     onSuccess: (res, args) => {
-      if (args[0] !== 'move' || isRejectedAction(res)) return;
+      if (args[0] !== 'move' || !args[1] || !args[2] || isRejectedAction(res)) return;
       const foundationCount = res.foundation.reduce((count, pile) => count + pile.length, 0);
-      setMoveAnnouncement(t('moveAnnouncement', { moveCount: res.moveCount, foundationCount }));
+      const describeZone = (zone: EasthavenMoveZone) =>
+        zone.zone === 'foundation' ? t('foundationZone') : t('tableauColumn', { col: zone.col ?? 0 });
+      setMoveAnnouncement(
+        t('moveAnnouncement', {
+          moveCount: res.moveCount,
+          foundationCount,
+          from: describeZone(args[1]),
+          to: describeZone(args[2]),
+        }),
+      );
     },
   });
 
