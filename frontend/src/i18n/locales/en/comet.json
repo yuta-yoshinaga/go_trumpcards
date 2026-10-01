@@ -18,6 +18,8 @@
   "dead": "Dead hand: {{n}}",
   "pileLabel": "Sequence",
   "pileEmpty": "(nothing played yet)",
+  "pileOmitted_one": "{{count}} leading card omitted",
+  "pileOmitted_other": "{{count}} leading cards omitted",
   "need": "Next rank needed: {{rank}} (**any suit**)",
   "needAny": "You lead a new sequence - play any card.",
   "cards": "{{n}} card(s)",

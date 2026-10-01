@@ -148,6 +148,7 @@ function CometPageContent() {
   const playable = canPlay ? state.playableIdxs : [];
   const mustPass = canPlay && playable.length === 0;
   const shownPile = state.pile.slice(-PILE_TAIL);
+  const omittedPileCount = state.pile.length - shownPile.length;
 
   const handleManualReset = () => {
     hideActionLog();
@@ -225,6 +226,11 @@ function CometPageContent() {
                   className="mb-2 p-2 rounded bg-black/30 flex flex-wrap gap-1 items-center"
                   data-testid="comet-pile"
                 >
+                  {omittedPileCount > 0 && (
+                    <span className="text-ds-text-muted text-sm" data-testid="comet-pile-omitted">
+                      {t('pileOmitted', { count: omittedPileCount })}
+                    </span>
+                  )}
                   {shownPile.length === 0 ? (
                     <span className="text-ds-text-muted text-sm">{t('pileEmpty')}</span>
                   ) : (
