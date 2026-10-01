@@ -24,14 +24,17 @@ export function isSalicLawTarget(
   return top !== undefined && value === top.value + 1;
 }
 
-/** Count legal foundation and bare-king destinations for a selected column. */
-export function countSalicLawTargets(state: SalicLawResponse, source: number): number {
-  let count = 0;
+/** List legal foundation and bare-king destinations for a selected column. */
+export function listSalicLawTargets(
+  state: SalicLawResponse,
+  source: number,
+): { zone: 'foundation' | 'tableau'; idx: number }[] {
+  const targets: { zone: 'foundation' | 'tableau'; idx: number }[] = [];
   for (let i = 0; i < state.foundation.length; i++) {
-    if (isSalicLawTarget(state, source, 'foundation', i)) count++;
+    if (isSalicLawTarget(state, source, 'foundation', i)) targets.push({ zone: 'foundation', idx: i });
   }
   for (let i = 0; i < state.tableau.length; i++) {
-    if (isSalicLawTarget(state, source, 'tableau', i)) count++;
+    if (isSalicLawTarget(state, source, 'tableau', i)) targets.push({ zone: 'tableau', idx: i });
   }
-  return count;
+  return targets;
 }

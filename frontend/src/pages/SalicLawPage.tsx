@@ -35,7 +35,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseSalicLawCommand, SALICLAW_HELP } from '../utils/cli/commands/saliclawCommands';
 import { formatSalicLawState } from '../utils/cli/formatters/saliclawFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { countSalicLawTargets, isSalicLawTarget } from '../utils/saliclawTargets';
+import { isSalicLawTarget, listSalicLawTargets } from '../utils/saliclawTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 // **組札はスートで決まらない。**A から J まで、どのスートでも積める。列と
@@ -178,9 +178,11 @@ function SalicLawPageContent() {
   const isEnded = isGameClear || isGameOver;
   const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
   const autoCompleteReady = state.foundation.some((pile) => pile.length > 0);
-  const selectedTargetCount =
+  const selectedTargets =
     selectedSource?.zone === 'tableau' && selectedSource.col !== undefined
-      ? countSalicLawTargets(state, selectedSource.col)
+      ? listSalicLawTargets(state, selectedSource.col).map(({ zone, idx }) =>
+          zone === 'foundation' ? t('destination.foundation', { idx }) : t('destination.tableau', { idx }),
+        )
       : null;
 
   const isSourceSelected = (zone: string, col?: number) =>
@@ -471,11 +473,14 @@ function SalicLawPageContent() {
               )}
             </div>
             <div data-testid="sl-destination-live" role="status" aria-live="polite" className="sr-only">
-              {selectedTargetCount === null
+              {selectedTargets === null
                 ? ''
-                : selectedTargetCount === 0
+                : selectedTargets.length === 0
                   ? t('selectionNoMoves')
-                  : t('selectionMoves', { count: selectedTargetCount })}
+                  : t('selectionMoves', {
+                      count: selectedTargets.length,
+                      destinations: selectedTargets.join(t('listSeparator')),
+                    })}
             </div>
             <div className="flex justify-center">
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
