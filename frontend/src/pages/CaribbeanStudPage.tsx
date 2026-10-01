@@ -360,21 +360,27 @@ function CaribbeanStudPageContent() {
 
             {isEndPhase && (
               <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
-                {state.antePayout !== 0 && (
-                  <div>
-                    {t('payout.ante')}: {state.antePayout}
-                  </div>
-                )}
-                {state.playPayout !== 0 && (
-                  <div>
-                    {t('payout.play')}: {state.playPayout}
-                  </div>
-                )}
-                {state.jackpotPayout !== 0 && (
-                  <div>
-                    {t('payout.jackpot')}: {state.jackpotPayout}
-                  </div>
-                )}
+                <div>
+                  {t('payout.line', {
+                    bet: t('payout.ante'),
+                    betAmount: state.anteBet,
+                    payoutAmount: state.antePayout,
+                  })}
+                </div>
+                <div>
+                  {t('payout.line', {
+                    bet: t('payout.play'),
+                    betAmount: state.playBet,
+                    payoutAmount: state.playPayout,
+                  })}
+                </div>
+                <div>
+                  {t('payout.line', {
+                    bet: t('payout.jackpot'),
+                    betAmount: state.jackpotBet,
+                    payoutAmount: state.jackpotPayout,
+                  })}
+                </div>
                 <div className="font-bold mt-1">
                   {t('payout.total')}: {state.totalPayout}
                 </div>
