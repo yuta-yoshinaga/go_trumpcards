@@ -15,6 +15,10 @@ export interface HoldemPlayerData {
   handRank: number;
   handName: string;
   bestHand: Card[];
+  /** Omaha live best-five card positions for the human player, before showdown. */
+  liveBestHandHoleIndices?: number[];
+  /** Board-card positions used by Omaha's live best hand. */
+  liveBestHandBoardIndices?: number[];
   /** Best 5-card low hand (Omaha Hi-Lo only; populated at showdown when qualified). */
   lowBestHand?: Card[];
   /** True if the player has a qualifying low hand (Omaha Hi-Lo only). */

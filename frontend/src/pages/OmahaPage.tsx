@@ -27,16 +27,16 @@ import { useCommunityCardAnnouncement } from '../hooks/useCommunityCardAnnouncem
 import { useCommunityPokerGame } from '../hooks/useCommunityPokerGame';
 import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
-import { placeholderCardStyle } from '../styles/cardStyles';
+import { highlightCardStyle, placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { OmahaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
 import { omahaLivePreviewKey } from '../utils/livePokerPreview';
-import { omahaBestFive } from '../utils/omahaBestFive';
 import { findPlayerName } from '../utils/playerUtils';
 
 /** Omaha Hold'em tutorial step definitions. */
@@ -158,17 +158,16 @@ function OmahaPageContent() {
   });
   const communityCardsAnnouncement = useCommunityCardAnnouncement(state?.communityCards ?? [], t);
 
-  // At showdown, highlight the human's winning 5 cards under Omaha's
-  // must-use-exactly-2-hole + 3-board rule (dim the rest).
-  const showdownBest5 = useMemo(() => {
+  // Highlight the human's current best 5 cards under Omaha's must-use-exactly-2-hole + 3-board rule.
+  // Other cards are dimmed and labeled only at showdown.
+  const liveBest5 = useMemo(() => {
     const empty = { holeSet: new Set<number>(), boardSet: new Set<number>() };
-    if (!isShowdown || !humanPlayer || humanPlayer.folded) return empty;
-    const hole = humanPlayer.cards ?? [];
-    const board = state?.communityCards ?? [];
-    const best = omahaBestFive(hole, board);
-    if (!best) return empty;
-    return { holeSet: new Set(best.holeIdx), boardSet: new Set(best.boardIdx) };
-  }, [isShowdown, humanPlayer, state?.communityCards]);
+    if (!humanPlayer || humanPlayer.folded) return empty;
+    return {
+      holeSet: new Set(humanPlayer.liveBestHandHoleIndices ?? []),
+      boardSet: new Set(humanPlayer.liveBestHandBoardIndices ?? []),
+    };
+  }, [humanPlayer]);
   // During play (flop..river), preview the human's current best hand name under
   // Omaha's must-use-exactly-2-hole + 3-board rule. Returns null pre-flop (fewer
   // than 3 board cards) or at showdown (where the winning hand is already shown).
@@ -235,8 +234,8 @@ function OmahaPageContent() {
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
                       ? state.communityCards.map((card, idx) => {
-                          const inBest = showdownBest5.boardSet.has(idx);
-                          const dim = showdownBest5.boardSet.size > 0 && !inBest;
+                          const inBest = liveBest5.boardSet.has(idx);
+                          const dim = isShowdown && liveBest5.boardSet.size > 0 && !inBest;
                           return (
                             <div
                               key={`${card.design}-${card.value}`}
@@ -244,8 +243,14 @@ function OmahaPageContent() {
                                 inBest ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
                               } ${dim ? 'opacity-50' : ''}`}
                               data-best5-board={inBest || undefined}
+                              data-testid={inBest ? `omaha-live-besthand-board-${idx}` : undefined}
                             >
-                              <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                              <AnimatedCard
+                                card={card}
+                                width={cardWidth}
+                                style={inBest ? highlightCardStyle() : placeholderCardStyle}
+                              />
+                              {inBest && <span className="sr-only">{t('cardUsedAria', { card: cardAlt(card) })}</span>}
                             </div>
                           );
                         })
@@ -391,8 +396,8 @@ function OmahaPageContent() {
                 <div className="flex flex-wrap gap-1.5 mb-2" data-tutorial="oh-combination-rule">
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card, idx) => {
-                        const inBest = showdownBest5.holeSet.has(idx);
-                        const showUsage = showdownBest5.holeSet.size > 0;
+                        const inBest = liveBest5.holeSet.has(idx);
+                        const showUsage = isShowdown && liveBest5.holeSet.size > 0;
                         const dim = showUsage && !inBest;
                         return (
                           <div
@@ -401,8 +406,14 @@ function OmahaPageContent() {
                               inBest ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
                             } ${dim ? 'opacity-50' : ''}`}
                             data-best5-hole={inBest || undefined}
+                            data-testid={inBest ? `omaha-live-besthand-hole-${idx}` : undefined}
                           >
-                            <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                            <AnimatedCard
+                              card={card}
+                              width={cardWidth}
+                              style={inBest ? highlightCardStyle() : placeholderCardStyle}
+                            />
+                            {inBest && <span className="sr-only">{t('cardUsedAria', { card: cardAlt(card) })}</span>}
                             {showUsage && (
                               <span
                                 className={`mt-0.5 text-[10px] font-semibold ${inBest ? 'text-ds-success' : 'text-ds-text-muted'}`}

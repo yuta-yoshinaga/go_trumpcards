@@ -42793,6 +42793,16 @@ components:
           description: Best 5-card hand (only populated at showdown)
           items:
             $ref: '#/components/schemas/Card'
+        liveBestHandHoleIndices:
+          type: array
+          description: Omaha hole-card positions used by the human player's current best hand before showdown.
+          items:
+            type: integer
+        liveBestHandBoardIndices:
+          type: array
+          description: Omaha community-card positions used by the human player's current best hand before showdown.
+          items:
+            type: integer
         lowBestHand:
           type: array
           description: |
