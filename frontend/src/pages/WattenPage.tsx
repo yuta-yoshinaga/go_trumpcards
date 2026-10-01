@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { wattenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -133,6 +133,25 @@ function WattenPageContent() {
   // Pending Declare selections (null until the dealer picks each).
   const [selectedRank, setSelectedRank] = useState<number | null>(null);
   const [selectedSuit, setSelectedSuit] = useState<number | null>(null);
+  const previousScores = useRef<number[] | null>(null);
+  const [scoreAnnouncement, setScoreAnnouncement] = useState('');
+
+  useEffect(() => {
+    if (!state) return;
+    if (previousScores.current) {
+      const changedTeams = state.teamScores
+        .map((score, team) => ({ score, team }))
+        .filter(({ score, team }) => previousScores.current?.[team] !== score);
+      if (changedTeams.length > 0) {
+        setScoreAnnouncement(
+          changedTeams
+            .map(({ score, team }) => t('scoreUpdated', { team: t('team', { n: team }), score }))
+            .join(t('listSeparator')),
+        );
+      }
+    }
+    previousScores.current = [...state.teamScores];
+  }, [state, t]);
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset is stable per render of the hook; run once on mount.
@@ -230,6 +249,9 @@ function WattenPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div className="sr-only" role="status" aria-live="polite" data-testid="watten-score-live">
+        {scoreAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (

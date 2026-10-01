@@ -117,6 +117,17 @@ describe('WattenPage', () => {
     });
   });
 
+  it('announces only team scores that change after the initial state', async () => {
+    mockExec.mockResolvedValueOnce(roundEndState).mockResolvedValueOnce(makeWattenState({ teamScores: [2, 0] }));
+    renderWithProviders(<WattenPage />);
+    const live = await screen.findByTestId('watten-score-live');
+    expect(live).toBeEmptyDOMElement();
+    fireEvent.click(screen.getByRole('button', { name: '次のディール' }));
+    await waitFor(() => expect(live).toHaveTextContent('チーム0の得点は2点'));
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveClass('sr-only');
+  });
+
   it('renders the declare phase with the Schlag rank, suit and declare buttons', async () => {
     mockExec.mockResolvedValue(declarePhaseState);
     renderWithProviders(<WattenPage />);
