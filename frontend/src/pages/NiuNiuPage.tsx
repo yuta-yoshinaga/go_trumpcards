@@ -255,28 +255,33 @@ function NiuNiuPageContent() {
                   </details>
                   <div className="flex gap-2 items-center flex-wrap justify-center">
                     <span className="text-sm text-ds-text-muted">{t('betLabel')}</span>
-                    {BET_OPTIONS.map((amount) => (
-                      <button
-                        key={`bet-${amount.toString()}`}
-                        type="button"
-                        className={btnPrimary}
-                        onClick={() => game.handleBet(amount)}
-                        // The loss can be `maxMultiplier` times the stake, so the
-                        // stack has to cover that, not just the stake itself — and
-                        // greying the button out never said so (#4908).
-                        disabled={loading || amount * state.maxMultiplier > state.chips}
-                        title={
-                          amount * state.maxMultiplier > state.chips
-                            ? t('betTooHigh', {
-                                multiplier: state.maxMultiplier,
-                                needed: amount * state.maxMultiplier,
-                              })
-                            : undefined
-                        }
-                      >
-                        {t('betAmount', { amount })}
-                      </button>
-                    ))}
+                    {BET_OPTIONS.map((amount) => {
+                      const betTooHigh = amount * state.maxMultiplier > state.chips;
+                      const reason = betTooHigh
+                        ? t('betTooHigh', {
+                            multiplier: state.maxMultiplier,
+                            needed: amount * state.maxMultiplier,
+                          })
+                        : undefined;
+
+                      return (
+                        <div key={`bet-${amount.toString()}`} className="flex flex-col items-center gap-1">
+                          <button
+                            type="button"
+                            className={btnPrimary}
+                            onClick={() => game.handleBet(amount)}
+                            // The loss can be `maxMultiplier` times the stake, so the
+                            // stack has to cover that, not just the stake itself — and
+                            // greying the button out never said so (#4908).
+                            disabled={loading || betTooHigh}
+                            title={reason}
+                          >
+                            {t('betAmount', { amount })}
+                          </button>
+                          {reason && <span className="text-sm text-ds-warning">{reason}</span>}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
