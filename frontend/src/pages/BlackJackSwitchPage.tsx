@@ -337,6 +337,14 @@ function BlackJackSwitchPageContent() {
                   onChange={setBetAmount}
                   max={Math.min(Math.floor(state.chips / 2), BJSWITCH_MAX_BET)}
                 />
+                <div className="text-ds-text-muted text-sm" data-testid="bjswitch-bet-total">
+                  {t('betSummary.total', { amount: betAmount * 2, chips: state.chips })}
+                </div>
+                {betAmount * 2 > state.chips && (
+                  <p className="text-ds-error text-sm" data-testid="bjswitch-bet-insufficient">
+                    {t('betSummary.overBalance')}
+                  </p>
+                )}
                 <button
                   type="button"
                   className={btnPrimary}

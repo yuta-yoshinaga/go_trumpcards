@@ -135,6 +135,19 @@ describe('BlackJackSwitchPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', expect.any(Number)));
   });
 
+  it('updates the two-hand required amount and shows when it exceeds chips', async () => {
+    mockApi.mockResolvedValue({ ...betState, chips: 100 });
+    renderWithProviders(<BlackJackSwitchPage />);
+    await screen.findByRole('button', { name: /Place Bet|ベットする/ });
+
+    const summary = screen.getByTestId('bjswitch-bet-total');
+    expect(screen.getByTestId('bjswitch-bet-insufficient')).toBeInTheDocument();
+    expect(summary).toHaveTextContent('200（所持チップ 100）');
+    fireEvent.change(screen.getByLabelText('ベット'), { target: { value: '50' } });
+    expect(summary).toHaveTextContent('100（所持チップ 100）');
+    expect(screen.queryByTestId('bjswitch-bet-insufficient')).not.toBeInTheDocument();
+  });
+
   it('shows the rules summary during the bet phase', async () => {
     mockApi.mockResolvedValue(betState);
     renderWithProviders(<BlackJackSwitchPage />);
