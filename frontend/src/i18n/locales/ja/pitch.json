@@ -49,6 +49,7 @@
   "passButton": "パス",
   "dealerMustBid": "親は全員パスのときパスできません。2〜4のビッドを宣言してください。",
   "playButton": "出す",
+  "invalidPlayReason": "リードスートか切り札を出してください",
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",
   "bidPhase": "ビッド宣言 (0=パス, 2-4)",
