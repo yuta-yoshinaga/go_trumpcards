@@ -291,18 +291,36 @@ describe('ShengJiPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeDisabled());
   });
 
-  it('reports the trick, empty or otherwise', async () => {
+  it('announces the lead, every played card, and the empty trick in a persistent live region', async () => {
     renderWithProviders(<ShengJiPage />);
-    await waitFor(() => expect(screen.getByTestId('shengji-trick')).toHaveTextContent('まだ誰も出していません'));
+    const status = screen.getByTestId('shengji-trick-status');
+    expect(status).not.toBeNull();
+    expect(status).toHaveAttribute('aria-live', 'polite');
+    expect(status).toHaveClass('sr-only');
+    await waitFor(() =>
+      expect(screen.getByTestId('shengji-trick-status')).toHaveTextContent('場: まだ誰も出していません'),
+    );
+    const loadedStatus = screen.getByTestId('shengji-trick-status');
 
     mockExec.mockResolvedValue(
       makeState({
-        trick: [{ seat: 1, cards: [card('HEART', 7), card('HEART', 7)] }],
+        trick: [
+          { seat: 1, cards: [card('HEART', 7), card('HEART', 7)] },
+          { seat: 2, cards: [card('SPADE', 9)] },
+        ],
         leadCombo: { kind: 2, rank: 7, size: 2, trump: false, suit: 3 },
       }),
     );
-    renderWithProviders(<ShengJiPage />);
-    await waitFor(() => expect(screen.getAllByTestId('shengji-trick')[1]).toHaveTextContent('対子'));
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(loadedStatus).toHaveTextContent('席1: ♥ 7、♥ 7'));
+    expect(loadedStatus).toHaveTextContent('席2: ♠ 9');
+    expect(loadedStatus).toHaveTextContent('対子');
+
+    mockExec.mockResolvedValue(makeState());
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(loadedStatus).toHaveTextContent('場: まだ誰も出していません'));
   });
 
   describe('hand end', () => {

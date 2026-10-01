@@ -26,6 +26,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, ShengJiResponse } from '../types/card';
 import { ShengJiPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseShengJiCommand, SHENGJI_HELP } from '../utils/cli/commands/shengjiCommands';
 import { formatShengJiState } from '../utils/cli/formatters/shengjiFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
@@ -131,8 +132,39 @@ function ShengJiPageContent() {
     return shengjiEvaluate(picked, state?.level ?? 2, state?.trumpSuit ?? 0);
   }, [selected, state]);
 
+  const trickAnnouncement = !state
+    ? ''
+    : state.trick.length === 0
+      ? t('trickEmpty')
+      : t('trickAnnouncement', {
+          lead: state.leadCombo
+            ? t('trickLead', {
+                combo: t(COMBO_KEYS[state.leadCombo.kind] ?? 'comboSingle'),
+                size: state.leadCombo.size,
+              })
+            : '',
+          plays: state.trick
+            .map((play) =>
+              t('trickPlay', {
+                seat: t('seat', { n: play.seat }),
+                cards: play.cards.map(cardAlt).join(t('listSeparator')),
+              }),
+            )
+            .join(t('listSeparator')),
+        });
+  const trickStatus = (
+    <div role="status" aria-live="polite" className="sr-only" data-testid="shengji-trick-status">
+      {trickAnnouncement}
+    </div>
+  );
+
   if (!state)
-    return <GameSkeleton gameKey="shengji" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 12 }} />;
+    return (
+      <>
+        {trickStatus}
+        <GameSkeleton gameKey="shengji" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 12 }} />
+      </>
+    );
 
   const human = state.players.find((p) => p.isHuman);
   const isGameEnd = state.phase === ShengJiPhase.GAME_END || state.gameEndFlag;
@@ -202,6 +234,7 @@ function ShengJiPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      {trickStatus}
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
