@@ -395,6 +395,19 @@ function ViraPageContent() {
                         })}
                       </div>
                     ))}
+                    {state.declarerIdx >= 0 && state.contract !== ViraContract.PASS && (
+                      <div className="mt-1 text-ds-text-primary" data-testid="vira-contract-settlement">
+                        {state.lastRoundMade
+                          ? t('roundResult.contractMade', {
+                              name: playerName(state.declarerIdx, state.players[state.declarerIdx]?.isHuman ?? false),
+                              contract: t(`contractName.${CONTRACT_KEYS[state.contract] ?? 'pass'}`),
+                            })
+                          : t('roundResult.contractFailed', {
+                              name: playerName(state.declarerIdx, state.players[state.declarerIdx]?.isHuman ?? false),
+                              contract: t(`contractName.${CONTRACT_KEYS[state.contract] ?? 'pass'}`),
+                            })}
+                      </div>
+                    )}
                     {/* 達成側は `pot` ではなく `lastRoundPotWon` を読む ── 精算が
                         `pot` を 0 に潰すので、取った額はそこには残っていない。 */}
                     <div className="mt-1 text-ds-text-primary" data-testid="vira-pot-settlement">

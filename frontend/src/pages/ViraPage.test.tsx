@@ -440,6 +440,30 @@ describe('ViraPage', () => {
 });
 
 describe('ViraPage pot settlement', () => {
+  it('shows the declarer, contract, and made result in settlement', async () => {
+    mockExec.mockResolvedValue(
+      makeViraState({ phase: 3, declarerIdx: 1, contract: 1, lastRoundMade: true, lastRoundPotWon: 7, pot: 0 }),
+    );
+    renderWithProviders(<ViraPage />);
+
+    expect(await screen.findByTestId('vira-contract-settlement')).toHaveTextContent('CPU 1');
+    expect(screen.getByTestId('vira-contract-settlement')).toHaveTextContent('ガスク');
+    expect(screen.getByTestId('vira-contract-settlement')).toHaveTextContent('達成');
+  });
+
+  it('shows contract failure in settlement', async () => {
+    mockExec.mockResolvedValue(makeViraState({ phase: 3, declarerIdx: 1, contract: 3, lastRoundMade: false, pot: 12 }));
+    renderWithProviders(<ViraPage />);
+    expect(await screen.findByTestId('vira-contract-settlement')).toHaveTextContent('失敗');
+  });
+
+  it('omits contract settlement after an all-pass round', async () => {
+    mockExec.mockResolvedValue(makeViraState({ phase: 3, declarerIdx: -1, contract: 0, lastRoundMade: false, pot: 3 }));
+    renderWithProviders(<ViraPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('vira-contract-settlement')).not.toBeInTheDocument();
+  });
+
   it('says the declarer swept the pot when the contract was made', async () => {
     mockExec.mockResolvedValue(makeViraState({ phase: 3, lastRoundMade: true, lastRoundPotWon: 7, pot: 0 }));
     renderWithProviders(<ViraPage />);
