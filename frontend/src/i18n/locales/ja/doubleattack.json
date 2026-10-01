@@ -16,6 +16,7 @@
   "label.upCard": "アップカード",
   "label.yourHands": "あなたの手札",
   "label.hand": "手札{{idx}}",
+  "label.activeHand": "現在操作中",
   "label.score": "点",
   "label.bet": "賭け",
   "label.net": "収支",
