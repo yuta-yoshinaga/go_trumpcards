@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { reversisApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, ReversisResponse } from '../types/card';
 import { ReversisPage } from './ReversisPage';
@@ -89,8 +90,8 @@ describe('ReversisPage', () => {
 
     fireEvent.click(cards[0]);
 
-    await waitFor(() => expect(mockExec).not.toHaveBeenCalledWith('play', 0));
-    expect(mockExec).toHaveBeenCalledTimes(0);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   it('keeps hand cards disabled outside the human play turn', async () => {
