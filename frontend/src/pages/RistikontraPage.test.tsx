@@ -489,7 +489,7 @@ describe('RistikontraPage', () => {
   });
 
   // 途中経過はチームの獲得枚数合計であることを説明する。
-  it('explains the provisional team capture total', async () => {
+  it('shows the team total during play and explains it as the capture total', async () => {
     mockExec.mockResolvedValue(
       makeState({
         players: [
