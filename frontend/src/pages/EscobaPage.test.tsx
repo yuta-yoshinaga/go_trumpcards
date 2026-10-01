@@ -41,6 +41,28 @@ describe('EscobaPage', () => {
     expect(screen.getByTestId('table-card-1')).toBeInTheDocument();
   });
 
+  it('exposes hand and table card selection through aria-pressed', async () => {
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+    const handCard = screen.getByTestId('hand-card-0');
+    const tableCard = screen.getByTestId('table-card-0');
+    expect(handCard).toHaveAttribute('aria-pressed', 'false');
+    expect(tableCard).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(handCard);
+    fireEvent.click(tableCard);
+    expect(handCard).toHaveAttribute('aria-pressed', 'true');
+    expect(tableCard).toHaveAttribute('aria-pressed', 'true');
+    expect(handCard).toHaveClass('-translate-y-2');
+    expect(tableCard).toHaveClass('ring-2');
+
+    fireEvent.click(handCard);
+    fireEvent.click(tableCard);
+    expect(handCard).toHaveAttribute('aria-pressed', 'false');
+    expect(tableCard).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('shows Escoba card values for capture totals', async () => {
     renderWithProviders(<EscobaPage />);
     await waitFor(() => expect(screen.getByTestId('escoba-card-values')).toBeInTheDocument());
