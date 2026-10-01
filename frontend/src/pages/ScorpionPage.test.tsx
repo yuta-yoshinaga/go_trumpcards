@@ -117,13 +117,13 @@ describe('ScorpionPage', () => {
     renderWithProviders(<ScorpionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     // Base labels carry no selection hint.
-    expect(screen.getByRole('button', { name: '♠ K' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ K、列0・位置1' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /選択中/ })).not.toBeInTheDocument();
     // Selecting the top card of a column marks it selected in its label.
-    fireEvent.click(screen.getByRole('button', { name: '♠ K' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: '♠ K 選択中' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '♠ K、列0・位置1' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ K、列0・位置1 選択中' })).toBeInTheDocument());
     // Other cards keep their plain, hint-free label.
-    expect(screen.getByRole('button', { name: '♥ 8' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 8、列1・位置1' })).toBeInTheDocument();
   });
 
   it('shows a face-down stock pile while stock remains and keeps the deal action visible', async () => {
@@ -529,11 +529,11 @@ describe('ScorpionPage', () => {
     mockExec.mockResolvedValue(state);
     renderWithProviders(<ScorpionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const kBtn = screen.getByRole('button', { name: '♠ K' });
+    const kBtn = screen.getByRole('button', { name: '♠ K、列0・位置0' });
     mockExec.mockClear();
     fireEvent.click(kBtn);
     await waitFor(() => expect(kBtn.className).toMatch(/ring-/));
-    const qBtn = screen.getByRole('button', { name: '♠ Q' });
+    const qBtn = screen.getByRole('button', { name: '♠ Q、列1・位置0' });
     fireEvent.click(qBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)));
   });
@@ -546,7 +546,7 @@ describe('ScorpionPage', () => {
     renderWithProviders(<ScorpionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
-    const heart8 = screen.getByRole('button', { name: '♥ 8' });
+    const heart8 = screen.getByRole('button', { name: '♥ 8、列1・位置1' });
     fireEvent.click(heart8);
     await waitFor(() => expect(heart8.className).toMatch(/ring-/));
     // Clicking again deselects (no API call)
@@ -564,7 +564,7 @@ describe('ScorpionPage', () => {
     renderWithProviders(<ScorpionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     // Select ♥8 from col 1
-    const heart8 = screen.getByRole('button', { name: '♥ 8' });
+    const heart8 = screen.getByRole('button', { name: '♥ 8、列1・位置1' });
     mockExec.mockClear();
     fireEvent.click(heart8);
     await waitFor(() => expect(heart8.className).toMatch(/ring-/));
