@@ -15,6 +15,7 @@
   "yourHand": "あなたの手札",
   "currentLow": "現在のロー: {{low}}",
   "currentLowIncomplete": "ロー未完成（5枚揃わず）",
+  "callPotOdds": "コール必要額 {{amount}} · ポットオッズ {{odds}}%",
   "anteBringIn": "アンティ/ブリングイン",
   "bringIn": "ブリングイン",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",

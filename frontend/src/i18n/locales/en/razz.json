@@ -15,6 +15,7 @@
   "yourHand": "Your Hand",
   "currentLow": "Current low: {{low}}",
   "currentLowIncomplete": "Low incomplete (fewer than 5 ranks)",
+  "callPotOdds": "Call {{amount}} · Pot odds {{odds}}%",
   "anteBringIn": "Ante/Bring-in",
   "bringIn": "Bring-in",
   "handNumber": "Hand {{count}} / Lv.{{level}}",
