@@ -12,6 +12,16 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { batak: vi.fn() },
 }));
 
+const mobileFlag = { value: false };
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileFlag.value }),
+  };
+});
+
 const mockExec = vi.mocked(batakApi.exec);
 
 const playPhaseState = makeBatakState({ validPlayIndices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] });
@@ -59,6 +69,7 @@ const spadesBrokenState = makeBatakState({ spadesBroken: true });
 const cpuTurnState = makeBatakState({ currentPlayerIdx: 1 });
 
 beforeEach(() => {
+  mobileFlag.value = false;
   mockExec.mockResolvedValue(playPhaseState);
 });
 
@@ -87,7 +98,8 @@ describe('BatakPage', () => {
     });
   });
 
-  it('shows server score breakdown values only after the round ends', async () => {
+  it.each([false, true])('shows score breakdown in the %s layout without negative zero', async (isMobile) => {
+    mobileFlag.value = isMobile;
     const scoredState = makeBatakState({
       phase: 3,
       players: makeBatakState().players.map((player, index) => ({
@@ -105,6 +117,8 @@ describe('BatakPage', () => {
     expect(breakdown).toHaveTextContent('ビッド成功 7');
     expect(breakdown).toHaveTextContent('ビッド失敗 −5');
     expect(breakdown).toHaveTextContent('子の獲得トリック 2');
+    expect(breakdown).toHaveTextContent('ビッド成功 0');
+    expect(breakdown).not.toHaveTextContent('−0');
   });
 
   it('does not show score breakdown while playing', async () => {

@@ -57,7 +57,7 @@ type batakPlayerJSON struct {
 	RoundScoreHolder *RoundScoreHolder   `json:"rh"`
 	TrickHolder      *TrickHolder        `json:"th"`
 	Bid              int                 `json:"bd"`
-	ScoreBreakdown   BatakScoreBreakdown `json:"sbd,omitempty"`
+	ScoreBreakdown   BatakScoreBreakdown `json:"sbd"`
 }
 
 // MarshalJSON implements json.Marshaler.
