@@ -458,6 +458,19 @@ describe('PaiGowPage', () => {
     await waitFor(() => expect(screen.getAllByRole('img').length).toBe(14));
   });
 
+  it('shows each hand result, including a push, alongside the hands', async () => {
+    mockExec.mockResolvedValue({
+      ...endPhasePlayerWins,
+      highHandResult: 1,
+      lowHandResult: 0,
+    });
+    renderWithProviders(<PaiGowPage />);
+
+    await waitFor(() => expect(screen.getAllByText(/勝ち/).length).toBe(1));
+    expect(screen.getAllByText(/負け/).length).toBe(1);
+    expect(screen.getAllByText(/引き分け/).length).toBe(2);
+  });
+
   // --- Keyboard navigation tests ---
 
   it('pressing b triggers bet in BET phase', async () => {
