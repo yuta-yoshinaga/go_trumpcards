@@ -47,6 +47,8 @@ type ContinentalRummyGame interface {
 	GetPlayer(i int) *domain.ContinentalRummyPlayer
 	// GetLastResult 直前のラウンドの結果を取得する
 	GetLastResult() *domain.ContinentalRummyRoundResult
+	// GetRoundScoreHistory はラウンドごとの各席の加算点履歴を取得する
+	GetRoundScoreHistory() []domain.ContinentalRummyRoundScore
 	// GetWinnerIdx 勝者の席を取得する (-1 = 引き分け)
 	GetWinnerIdx() int
 	// CanGoOut いま上がれるかと、そのとき捨てる札を取得する

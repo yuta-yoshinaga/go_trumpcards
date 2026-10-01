@@ -5579,6 +5579,7 @@ const baseContinentalRummyState: ContinentalRummyResponse = {
     [12, 13, 14],
   ],
   canGoOutOnDeal: false,
+  roundScoreHistory: [],
   hintDiscardIdx: 15,
   hintReason: 'go_out',
   config: { cpuDifficulty: 1, totalRounds: 3 },
