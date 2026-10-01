@@ -30,6 +30,7 @@
   "meldsTitle": "Table Melds",
   "noMelds": "No melds yet",
   "meldOwner": "{{name}}'s melds",
+  "listSeparator": ", ",
   "scores": "Scores",
   "scoresPlayer": "Player",
   "scoresRound": "Round",
@@ -40,6 +41,7 @@
   "meldButton": "Meld",
   "layoffButton": "Lay off",
   "a11y": {
+    "meldGroup": "{{name}}'s meld: {{cards}}",
     "layoffTo": "Lay off onto {{name}}'s meld {{meld}}"
   },
   "discardButton": "Discard",

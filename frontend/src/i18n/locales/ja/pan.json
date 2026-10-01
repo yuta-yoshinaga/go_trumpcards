@@ -30,6 +30,7 @@
   "meldsTitle": "場のメルド",
   "noMelds": "まだメルドはありません",
   "meldOwner": "{{name}} のメルド",
+  "listSeparator": "、",
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",
   "scoresRound": "ラウンド",
@@ -40,6 +41,7 @@
   "meldButton": "メルド",
   "layoffButton": "レイオフ",
   "a11y": {
+    "meldGroup": "{{name}} のメルド: {{cards}}",
     "layoffTo": "{{name}} のメルド {{meld}} にレイオフ"
   },
   "discardButton": "捨てる",

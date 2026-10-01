@@ -611,6 +611,16 @@ describe('PanPage meld candidates', () => {
     await waitFor(() => expect(screen.getByTestId('pan-chip-units-1-0')).toBeInTheDocument());
     expect(screen.queryByTestId('pan-chip-units-1-1')).not.toBeInTheDocument();
   });
+  it('groups each table meld with its owner and card names', async () => {
+    mockExec.mockResolvedValue(valleMeldState);
+    renderWithProviders(<PanPage />);
+
+    const firstMeld = await screen.findByRole('group', { name: 'CPU 1 のメルド: ♦ 5、♥ 5、♣ 5' });
+    const secondMeld = screen.getByRole('group', { name: 'CPU 1 のメルド: ♦ 4、♥ 4、♣ 4' });
+    expect(firstMeld).toBeInTheDocument();
+    expect(secondMeld).toBeInTheDocument();
+    expect(firstMeld).not.toBe(secondMeld);
+  });
   // **同じ「レイオフ」が卓の上に何個も並ぶ。**読み上げではどのプレイヤーの
   // どのメルド宛かが区別できなかった (#6502)。姉妹ゲーム Machiavelli は
   // 既に対象を読ませている。
