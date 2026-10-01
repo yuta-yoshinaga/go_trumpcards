@@ -323,6 +323,28 @@ describe('ShengJiPage', () => {
     await waitFor(() => expect(loadedStatus).toHaveTextContent('場: まだ誰も出していません'));
   });
 
+  it('announces plays without a leading separator when the lead combo is missing', async () => {
+    mockExec.mockResolvedValue(makeState({ trick: [{ seat: 1, cards: [card('HEART', 7)] }], leadCombo: null }));
+    renderWithProviders(<ShengJiPage />);
+    await waitFor(() => expect(screen.getByTestId('shengji-trick-status')).toHaveTextContent('席1: ♥ 7'));
+    expect(screen.getByTestId('shengji-trick-status').textContent).toMatch(/^席1:/);
+  });
+
+  it('keeps the live region DOM node when state arrives after loading', async () => {
+    let resolveState!: (state: ShengJiResponse) => void;
+    mockExec.mockReturnValue(
+      new Promise((resolve) => {
+        resolveState = resolve;
+      }),
+    );
+    renderWithProviders(<ShengJiPage />);
+    const before = screen.getByTestId('shengji-trick-status');
+
+    resolveState(makeState());
+    await waitFor(() => expect(screen.getByTestId('shengji-info')).toBeInTheDocument());
+    expect(screen.getByTestId('shengji-trick-status')).toBe(before);
+  });
+
   describe('hand end', () => {
     it('tells a held hand from a taken one', async () => {
       mockExec.mockResolvedValue(
