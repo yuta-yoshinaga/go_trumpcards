@@ -85,6 +85,26 @@ describe('BidEuchrePage', () => {
     mockExec.mockResolvedValue(makeState());
   });
 
+  it('shows declarer contract progress and defender tricks, updating with the game state', async () => {
+    renderWithProviders(<BidEuchrePage />);
+    await waitFor(() =>
+      expect(screen.getByTestId('bideuchre-contract-progress')).toHaveTextContent(
+        'チーム0: 契約 4トリック中 0トリック獲得',
+      ),
+    );
+    expect(screen.getByTestId('bideuchre-contract-progress')).toHaveTextContent('チーム1（守備側）: 0トリック獲得');
+
+    mockExec.mockResolvedValue(makeState({ teamTricks: [2, 1] }));
+    fireEvent.click(handButtons()[0]);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() =>
+      expect(screen.getByTestId('bideuchre-contract-progress')).toHaveTextContent(
+        'チーム0: 契約 4トリック中 2トリック獲得',
+      ),
+    );
+    expect(screen.getByTestId('bideuchre-contract-progress')).toHaveTextContent('チーム1（守備側）: 1トリック獲得');
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<BidEuchrePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
