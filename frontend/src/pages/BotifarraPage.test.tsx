@@ -196,6 +196,7 @@ describe('BotifarraPage', () => {
     const score = await screen.findByTestId('botifarra-score');
     expect(score).toHaveTextContent('あなた 3');
     expect(score).toHaveTextContent('相手 8');
+    expect(score).toHaveTextContent('上がり点: 101');
     expect(screen.getByTestId('botifarra-round-points')).toHaveTextContent('あなた 40');
     expect(screen.getByTestId('botifarra-round-points')).toHaveTextContent('相手 32');
   });
