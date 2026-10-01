@@ -401,6 +401,7 @@ function SeahavenTowersPageContent() {
                               type="button"
                               onClick={() => handleSelectTarget(tableauColZone)}
                               disabled={!isPlaying || loading}
+                              aria-label={t('emptyColumnAriaLabel', { idx: String(colIdx) })}
                               aria-disabled={!selectedSource || undefined}
                               aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                               style={{ height: cardHeight }}

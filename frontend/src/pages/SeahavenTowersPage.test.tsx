@@ -89,6 +89,22 @@ describe('SeahavenTowersPage', () => {
     expect(kElements.length).toBeGreaterThanOrEqual(1);
   });
 
+  it('labels empty tableau columns with their zero-based index and King-only rule', async () => {
+    const originalLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    renderWithProviders(<SeahavenTowersPage />);
+    expect(await screen.findByRole('button', { name: 'Empty tableau column 2 (Kings only)' })).toBeInTheDocument();
+    await i18n.changeLanguage(originalLanguage);
+  });
+
+  it('labels empty tableau columns in Japanese', async () => {
+    await i18n.changeLanguage('ja');
+    renderWithProviders(<SeahavenTowersPage />);
+    expect(
+      await screen.findByRole('button', { name: '空きタブロー列 2（キングのみ配置できます）' }),
+    ).toBeInTheDocument();
+  });
+
   it('keeps move targets focusable and explains that a source must be selected', async () => {
     renderWithProviders(<SeahavenTowersPage />);
     const target = await screen.findByRole('button', { name: 'リザーブセル 0 (空)' });
