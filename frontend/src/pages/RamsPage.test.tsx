@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ramsApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, RamsResponse } from '../types/card';
 import { RamsPage } from './RamsPage';
@@ -86,6 +87,23 @@ describe('RamsPage', () => {
     expect(cards[0]).toHaveAccessibleName(/出せない/);
     expect(cards[1]).toHaveAccessibleName(/出せる/);
     expect(cards[2]).toHaveAccessibleName(/出せない/);
+    expect(cards[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[0]).toHaveAttribute('aria-describedby', 'rm-unplayable-reason');
+    expect(cards[0]).toHaveAccessibleDescription('この札は今出せません。');
+    expect(cards[1]).not.toHaveAttribute('aria-disabled');
+    expect(cards[1]).not.toHaveAttribute('aria-describedby');
+  });
+
+  it('does not send a card operation when an unplayable card is clicked', async () => {
+    mockExec.mockResolvedValue(playing({ validPlays: [1] }));
+    renderWithProviders(<RamsPage />);
+    const cards = await screen.findAllByRole('button', { name: /を出す/ });
+    mockExec.mockClear();
+
+    fireEvent.click(cards[0]);
+    await flushPendingDispatch();
+
+    expect(mockExec).not.toHaveBeenCalledWith('card', 0);
   });
   it('resets on mount', async () => {
     renderWithProviders(<RamsPage />);
@@ -224,6 +242,7 @@ describe('RamsPage', () => {
     renderWithProviders(<RamsPage />);
     const cards = await screen.findAllByRole('button', { name: /を出す/ });
     expect(cards[0]).toBeDisabled();
+    expect(cards[0]).not.toHaveAttribute('aria-disabled');
   });
 
   it('advances the round when the next-round button is pressed', async () => {

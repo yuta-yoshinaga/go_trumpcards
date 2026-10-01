@@ -31,7 +31,8 @@
     "giveUp": "投了",
     "playAria": "{{card}} を出す",
     "playAriaPlayable": "出せる札、{{card}} を出す",
-    "playAriaUnplayable": "出せない札、{{card}} を出す"
+    "playAriaUnplayable": "出せない札、{{card}} を出す",
+    "unplayableReason": "この札は今出せません。"
   },
   "watching": "このラウンドは降りています。決着まで見ています。",
   "result": {

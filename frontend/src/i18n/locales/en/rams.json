@@ -31,7 +31,8 @@
     "giveUp": "Give up",
     "playAria": "Play {{card}}",
     "playAriaPlayable": "Playable card, play {{card}}",
-    "playAriaUnplayable": "Unplayable card, play {{card}}"
+    "playAriaUnplayable": "Unplayable card, play {{card}}",
+    "unplayableReason": "This card cannot be played now."
   },
   "watching": "You dropped out of this round. Watching it play out.",
   "result": {
