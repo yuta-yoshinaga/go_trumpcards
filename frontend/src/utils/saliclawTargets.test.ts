@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { SalicLawResponse } from '../types/card';
-import { countSalicLawTargets, isSalicLawTarget } from './saliclawTargets';
+import { isSalicLawTarget, listSalicLawTargets } from './saliclawTargets';
 
 function makeState(overrides?: Partial<SalicLawResponse>): SalicLawResponse {
   return {
@@ -75,16 +75,23 @@ describe('isSalicLawTarget', () => {
   });
 });
 
-describe('countSalicLawTargets', () => {
-  it('counts legal destinations across foundations and bare king columns', () => {
+describe('listSalicLawTargets', () => {
+  it('lists legal destinations across foundations and bare king columns', () => {
     const state = makeState({
       tableau: [[card(13)], [card(13), card(1)], [card(13)], [], [], [], [], []],
     });
-    expect(countSalicLawTargets(state, 1)).toBe(4);
+    const targets = listSalicLawTargets(state, 1);
+    expect(targets).toHaveLength(4);
+    expect(targets).toEqual([
+      { zone: 'foundation', idx: 0 },
+      { zone: 'foundation', idx: 1 },
+      { zone: 'tableau', idx: 0 },
+      { zone: 'tableau', idx: 2 },
+    ]);
   });
 
   it('returns zero when the selection is absent or has no legal destination', () => {
-    expect(countSalicLawTargets(makeState(), 0)).toBe(0);
-    expect(countSalicLawTargets(makeState({ tableau: [[card(13), card(4)]] }), 0)).toBe(0);
+    expect(listSalicLawTargets(makeState(), 0)).toEqual([]);
+    expect(listSalicLawTargets(makeState({ tableau: [[card(13), card(4)]] }), 0)).toEqual([]);
   });
 });
