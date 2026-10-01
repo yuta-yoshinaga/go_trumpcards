@@ -349,6 +349,9 @@ func (b *Bisley) GetAceFoundations() [BisleyFoundationCnt][]*Card { return b.ace
 // GetKingFoundations 降順基礎札を取得
 func (b *Bisley) GetKingFoundations() [BisleyFoundationCnt][]*Card { return b.kingFoundations }
 
+// GetFoundationSize returns the number of cards in one suit (the combined ascending and descending foundations).
+func (b *Bisley) GetFoundationSize() int { return CardValueMax }
+
 // GetTableau タブローを取得
 func (b *Bisley) GetTableau() [BisleyTableauCnt][]*BisleyTableauCard { return b.tableau }
 

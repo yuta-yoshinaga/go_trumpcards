@@ -34713,6 +34713,9 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        foundationSize:
+          type: integer
+          description: Number of cards in one suit (the combined ascending and descending foundations).
         phase:
           type: integer
           description: "0=Playing, 1=GameClear, 2=GameOver"

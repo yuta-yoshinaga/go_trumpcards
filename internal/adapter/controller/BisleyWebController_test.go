@@ -18,6 +18,7 @@ func mustBisleyOutputJSON(msg string) string {
 		Tableau:         [][]*controller.BisleyWebOutputTableauCard{},
 		AceFoundations:  [][]*controller.WebOutputCard{},
 		KingFoundations: [][]*controller.WebOutputCard{},
+		FoundationSize:  13,
 		WebOutputBase:   controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
@@ -28,7 +29,7 @@ func mustBisleyOutputJSON(msg string) string {
 }
 
 func TestBisleyWebController_Method(t *testing.T) {
-	mockOutput := `{"tableau":[],"aceFoundations":[],"kingFoundations":[],"phase":0,"moveCount":0,"message":""}`
+	mockOutput := `{"tableau":[],"aceFoundations":[],"kingFoundations":[],"foundationSize":13,"phase":0,"moveCount":0,"message":""}`
 	expectedBody := mockOutput
 
 	biMock := new(usecase.MockBisleyInteractor)
