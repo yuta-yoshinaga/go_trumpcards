@@ -219,6 +219,8 @@ function BeggarMyNeighbourPageContent() {
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const [liveAnnouncement, setLiveAnnouncement] = useState('');
+  const [pileAnnouncement, setPileAnnouncement] = useState('');
+  const previousCentralPileSize = useRef<number | null>(null);
   const wasPayingPenalty = useRef(false);
   useEffect(() => {
     if (!state || state.players.length < 2) return;
@@ -236,6 +238,19 @@ function BeggarMyNeighbourPageContent() {
     }
     wasPayingPenalty.current = isPayingPenalty;
   }, [state, t, tc]);
+
+  useEffect(() => {
+    if (!state || state.players.length < 2) return;
+    const previousSize = previousCentralPileSize.current;
+    previousCentralPileSize.current = state.centralPileSize;
+    if (previousSize === null || previousSize === state.centralPileSize) return;
+
+    setPileAnnouncement(
+      state.centralPileSize === 0 && previousSize > 0
+        ? t('pileAnnounceCollected')
+        : t('pileAnnounceCount', { count: state.centralPileSize }),
+    );
+  }, [state, t]);
 
   if (!state || state.players.length < 2)
     return <GameSkeleton gameKey="beggarmyneighbour" layout={{ kind: 'centered', rows: [2], gap: 'wide' }} />;
@@ -297,6 +312,9 @@ function BeggarMyNeighbourPageContent() {
             {/* Announce the phase (and penalty countdown) to screen readers. */}
             <div className="sr-only" role="status" aria-live="polite" data-testid="bmn-phase-announce">
               {liveAnnouncement}
+            </div>
+            <div className="sr-only" role="status" aria-live="polite" data-testid="bmn-pile-announce">
+              {pileAnnouncement}
             </div>
 
             {/* Held-card totals + round progress so the standings and how close the
