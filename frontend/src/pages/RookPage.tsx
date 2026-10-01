@@ -383,6 +383,7 @@ function RookPageContent() {
                       type="button"
                       onClick={() => selectable && toggleCard(i)}
                       disabled={!selectable}
+                      aria-pressed={selectable ? selected : undefined}
                       className={cardClass}
                       data-testid={`hand-card-${i}`}
                       data-recommended-discard={recommendedDiscard ? 'true' : undefined}
