@@ -179,6 +179,29 @@ describe('VintPage', () => {
     expect(players[2]).toHaveTextContent('チーム0');
   });
 
+  it('shows and updates the declarer side contract trick progress during play', async () => {
+    const first = makeState({
+      players: [seat(0, true, { tricksWon: 2, isDeclarer: true }), seat(1, false), seat(2, false), seat(3, false)],
+      highBid: { player: 0, level: 3, denom: 3, trickValue: 30 },
+      declarerIdx: 0,
+      teamTricks: [2, 0],
+    });
+    const next = makeState({
+      players: [seat(0, true, { tricksWon: 3, isDeclarer: true }), seat(1, false), seat(2, false), seat(3, false)],
+      highBid: { player: 0, level: 3, denom: 3, trickValue: 30 },
+      declarerIdx: 0,
+      teamTricks: [3, 0],
+    });
+    mockExec.mockResolvedValue(first);
+    renderWithProviders(<VintPage />);
+    await waitFor(() => expect(screen.getByTestId('vint-contract-progress')).toHaveTextContent('2 / 9'));
+
+    mockExec.mockResolvedValue(next);
+    fireEvent.click(handButtons()[0]);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(screen.getByTestId('vint-contract-progress')).toHaveTextContent('3 / 9'));
+  });
+
   it('shows both score lines and the game target', async () => {
     mockExec.mockResolvedValue(makeState({ below: [120, 340], above: [50, 0], gamesWon: [1, 0] }));
     renderWithProviders(<VintPage />);

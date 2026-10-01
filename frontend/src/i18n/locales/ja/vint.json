@@ -15,6 +15,9 @@
   "trick": "場",
   "trickCardLabel": "{{card}}（{{name}}）",
   "tricksWon": "トリック {{n}}",
+  "progress": {
+    "line": "宣言側の進捗: {{won}} / {{needed}} トリック"
+  },
   "noDummyNote": "【ダミーはありません。】味方の手札も最後まで伏せられます。",
   "ladderTitle": "宣言の序列（かっこ内はレベル1の単価）",
   "ladderNote": "【♠が最弱でNTが最強。】ブリッジの ♣<♦<♥<♠<NT とは逆です。レベルが1上がるごとに単価は+10。",
