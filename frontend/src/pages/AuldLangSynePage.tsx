@@ -405,7 +405,8 @@ function AuldLangSynePageContent() {
                             : t('foundationTopCompleteAria', { idx, card: cardAlt(top) })
                           : t('foundationEmptyAria', {
                               idx,
-                              rank: nextRankLabel ?? valueName(1),
+                              // An empty pile always waits for an Ace (auldlangsyneNextRank).
+                              rank: valueName(1),
                             })
                       }
                     >
