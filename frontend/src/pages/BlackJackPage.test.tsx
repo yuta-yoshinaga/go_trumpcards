@@ -378,6 +378,37 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(screen.getByText(/スコア 19/)).toBeInTheDocument());
   });
 
+  it('announces the dealer final score and bust reason when the round ends', async () => {
+    mockExec.mockResolvedValue({
+      ...endPhaseState,
+      dealer: { ...endPhaseState.dealer, score: 23 },
+    });
+    renderWithProviders(<BlackJackPage />);
+    const announcement = await screen.findByTestId('bj-end-announcement');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toHaveTextContent('ディーラーの最終スコアは23です。 ディーラーはバストしました。');
+  });
+
+  it('announces only the dealer final score when the dealer does not bust', async () => {
+    mockExec.mockResolvedValue(endPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    const announcement = await screen.findByTestId('bj-end-announcement');
+    expect(announcement).toHaveTextContent('ディーラーの最終スコアは19です。');
+    expect(announcement).not.toHaveTextContent('バスト');
+  });
+
+  it('clears the end announcement when a non-end phase follows END', async () => {
+    mockExec.mockResolvedValueOnce(endPhaseState).mockResolvedValueOnce(actionPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    const announcement = await screen.findByTestId('bj-end-announcement');
+    expect(announcement).toHaveTextContent('ディーラーの最終スコアは19です。');
+
+    fireEvent.click(await screen.findByRole('button', { name: '次のゲーム' }));
+    fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('reset', undefined, expect.anything()));
+    await waitFor(() => expect(announcement).toBeEmptyDOMElement());
+  });
+
   it('shows card back when dealer score is zero', async () => {
     mockExec.mockResolvedValue(actionPhaseState);
     renderWithProviders(<BlackJackPage />);

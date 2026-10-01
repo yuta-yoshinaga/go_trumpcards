@@ -196,6 +196,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
   const { cardWidth, isMobile } = useCardDimensions();
   const [message, setMessage] = useState('');
   const [hitAnnouncement, setHitAnnouncement] = useState('');
+  const [endAnnouncement, setEndAnnouncement] = useState('');
   const previousStateRef = useRef<BlackJackResponse | null>(null);
   const [betAmount, setBetAmount] = useState(10);
   const [dealerHitsSoft17, setDealerHitsSoft17] = useState(false);
@@ -213,8 +214,17 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
   const onSuccess = useCallback(
     (res: BlackJackResponse, args: Parameters<typeof apiClient.exec>) => {
       setMessage(res.message);
+      const previous = previousStateRef.current;
+      if (res.phase === BjPhase.END && previous?.phase !== BjPhase.END) {
+        const dealerFinalScore = res.dealer.score ?? 0;
+        const dealerScoreAnnouncement = t('dealerFinalScore', { score: dealerFinalScore });
+        setEndAnnouncement(
+          dealerFinalScore > 21 ? `${dealerScoreAnnouncement} ${t('dealerBust')}` : dealerScoreAnnouncement,
+        );
+      } else if (res.phase !== BjPhase.END) {
+        setEndAnnouncement('');
+      }
       if (args[0] === 'hit') {
-        const previous = previousStateRef.current;
         const previousHandIndex = previous?.currentHandIdx ?? 0;
         const previousHand = previous?.hands?.[previousHandIndex];
         const updatedHand = res.hands?.[previousHandIndex];
@@ -643,6 +653,16 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
               aria-atomic="true"
             >
               {hitAnnouncement}
+            </div>
+
+            <div
+              className="sr-only"
+              data-testid="bj-end-announcement"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {endAnnouncement}
             </div>
 
             {/* Variant bonus badges (Spanish 21): 7-7-7 / 6-7-8 / 5+card 21 achievements. */}
