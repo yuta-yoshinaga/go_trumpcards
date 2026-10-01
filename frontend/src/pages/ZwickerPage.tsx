@@ -77,7 +77,7 @@ function ZwickerPageContent() {
     prevTurnRef.current = turn;
     // 偽 → 真の**変わり目**だけを読み上げる。毎レンダー同じ文言を入れ直すと、
     // 変化として扱われず読まれないことがある。
-    if (prev === false && turn) setLiveMsg(t('announceYourTurn'));
+    if ((prev === null || prev === false) && turn) setLiveMsg(t('announceYourTurn'));
   }, [state]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('zwicker');
