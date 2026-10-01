@@ -75,10 +75,12 @@ describe('BuraPage', () => {
     renderWithProviders(<BuraPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
 
-    const opponentHand = within(screen.getByRole('img', { name: /CPU.*手札/ }));
+    const opponentHandContainer = screen.getByRole('img', { name: /CPU.*手札/ });
+    const opponentHand = within(opponentHandContainer);
     expect(opponentHand.getAllByAltText('カード裏面')).toHaveLength(2);
     expect(screen.queryByAltText('♥ A')).not.toBeInTheDocument();
     expect(screen.queryByAltText('♦ 10')).not.toBeInTheDocument();
+    expect(opponentHandContainer).not.toHaveAttribute('role', 'group');
 
     // The human's three cards remain buttons; opponent backs are not.
     const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
@@ -96,8 +98,9 @@ describe('BuraPage', () => {
     renderWithProviders(<BuraPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
 
-    expect(screen.getByAltText('♥ A')).toBeInTheDocument();
-    expect(screen.getByAltText('♦ 10')).toBeInTheDocument();
+    const opponentHand = within(screen.getByRole('group', { name: 'CPU の手札（公開）' }));
+    expect(opponentHand.getByRole('img', { name: '♥ A' })).toBeInTheDocument();
+    expect(opponentHand.getByRole('img', { name: '♦ 10' })).toBeInTheDocument();
     expect(screen.queryAllByAltText('カード裏面')).toHaveLength(0);
   });
 
