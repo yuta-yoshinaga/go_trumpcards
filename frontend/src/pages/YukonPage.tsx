@@ -397,6 +397,14 @@ function YukonPageContent() {
               {state.tableau.map((col, colIdx) => (
                 <div key={colIdx} className="flex flex-col items-center" style={{ width: yk.cw }}>
                   <div className="text-game-text-muted text-xs mb-1">{colIdx}</div>
+                  {(() => {
+                    const faceDownCount = col.filter((card) => !card.faceUp).length;
+                    return faceDownCount > 0 ? (
+                      <span className="sr-only">
+                        {t('faceDownCountAria', { column: colIdx, count: faceDownCount })}
+                      </span>
+                    ) : null;
+                  })()}
                   {col.length === 0 ? (
                     <DropZone
                       onDrop={dnd.handleDrop({ zone: 'tableau', col: colIdx })}

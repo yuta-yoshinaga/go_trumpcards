@@ -26,6 +26,8 @@
   "hintConfidenceTableau": "Priority: medium — a move that improves the tableau",
   "selectedMoveCount_one": "Move {{count}} card together",
   "selectedMoveCount_other": "Move {{count}} cards together",
+  "faceDownCountAria_one": "Tableau column {{column}}: {{count}} face-down card",
+  "faceDownCountAria_other": "Tableau column {{column}}: {{count}} face-down cards",
   "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
   "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
   "suitNames": {

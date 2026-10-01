@@ -77,6 +77,31 @@ afterEach(async () => {
 });
 
 describe('YukonPage', () => {
+  it('announces face-down card counts by zero-based tableau column only when present', async () => {
+    renderWithProviders(<YukonPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    expect(screen.getByText('場札 列1、裏向き札 1枚')).toHaveClass('sr-only');
+    expect(screen.getByText('場札 列2、裏向き札 2枚')).toHaveClass('sr-only');
+    expect(screen.getAllByText(/裏向き札/)).toHaveLength(2);
+    expect(screen.getByRole('button', { name: '♥ 8' })).toHaveAttribute('aria-label', '♥ 8');
+  });
+
+  it('does not announce a face-down count for columns with none', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: playingState.tableau.map((column) =>
+        column.map((entry) => ({ ...entry, card: entry.card ?? card('SPADE', 1), faceUp: true })),
+      ),
+    });
+
+    renderWithProviders(<YukonPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    expect(screen.queryByText(/裏向き札/)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 8' })).toHaveAttribute('aria-label', '♥ 8');
+  });
+
   it('adds the move count only to the selected tableau card label', async () => {
     renderWithProviders(<YukonPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
