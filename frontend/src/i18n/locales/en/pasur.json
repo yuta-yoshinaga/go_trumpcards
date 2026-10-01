@@ -33,7 +33,17 @@
   "result": {
     "you": "You win!",
     "cpu": "{{name}} wins.",
-    "tie": "{{n}} players tie."
+    "tie": "{{n}} players tie.",
+    "breakdownTitle": "Final score breakdown",
+    "cardPointsLabel": "Card points:",
+    "soorPointsLabel": "Soor bonus:",
+    "pointsCount": "{{n}} points",
+    "finalScoreLabel": "Final score:",
+    "finalScoreCount": "{{n}} points",
+    "capturedLabel": "Captured:",
+    "capturedCount": "{{n}} cards",
+    "soorsLabel": "Soors:",
+    "soorsCount": "{{n}}"
   },
   "hint": {
     "pasurSoor": "This empties the table -- that capture scores double.",
