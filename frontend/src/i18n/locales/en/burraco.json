@@ -23,6 +23,7 @@
     "hard": "Hard"
   },
   "round": "Round {{n}}",
+  "listSeparator": ", ",
   "drawPile": "Stock: {{count}} cards",
   "discardPile": "Discard: {{count}} cards",
   "handCards": "{{count}} cards",
@@ -68,7 +69,8 @@
   },
   "score": {
     "cumulative": "Total",
-    "round": "Round"
+    "round": "Round",
+    "update": "{{player}}'s round score: {{score}}"
   },
   "tutorial": {
     "drawArea": "The stock and discard area. Draw cards from here.",

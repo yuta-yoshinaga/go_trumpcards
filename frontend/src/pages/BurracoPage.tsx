@@ -190,6 +190,7 @@ function BurracoPageContent() {
   }, []);
 
   const [pozzettoBanner, setPozzettoBanner] = useState<string | null>(null);
+  const [scoreAnnouncement, setScoreAnnouncement] = useState('');
   const [pulsingScoreIds, setPulsingScoreIds] = useState<Set<number>>(new Set());
   const prevPozzettoRef = useRef<boolean[]>([]);
   const prevScoresRef = useRef<number[]>([]);
@@ -212,6 +213,7 @@ function BurracoPageContent() {
     const changedScoreIds = state.players
       .filter((p, i) => prevScores[i] !== undefined && prevScores[i] !== p.roundScore)
       .map((p) => p.id);
+    const changedScores = state.players.filter((p, i) => prevScores[i] !== undefined && prevScores[i] !== p.roundScore);
     prevPozzettoRef.current = state.players.map((p) => p.tookPozzetto);
     prevScoresRef.current = state.players.map((p) => p.roundScore);
 
@@ -223,10 +225,15 @@ function BurracoPageContent() {
     }
     if (changedScoreIds.length > 0) {
       setPulsingScoreIds(new Set(changedScoreIds));
+      setScoreAnnouncement(
+        changedScores
+          .map((p) => t('score.update', { player: playerName(p.id, p.isHuman), score: p.roundScore }))
+          .join(t('listSeparator')),
+      );
       clearTimeout(pulseTimerRef.current ?? undefined);
       pulseTimerRef.current = setTimeout(() => setPulsingScoreIds(new Set()), 1000);
     }
-  }, [state, tc, playSound]);
+  }, [state, tc, playSound, t]);
 
   const kbdConfirmAction = useCallback(() => {
     if (isDiscardPhase) handleDiscard();
@@ -264,6 +271,9 @@ function BurracoPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div role="status" aria-live="polite" className="sr-only" data-testid="bu-score-announcement">
+        {scoreAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (

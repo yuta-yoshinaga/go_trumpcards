@@ -23,6 +23,7 @@
     "hard": "難しい"
   },
   "round": "ラウンド {{n}}",
+  "listSeparator": "、",
   "drawPile": "山札: {{count}}枚",
   "discardPile": "捨て札: {{count}}枚",
   "handCards": "{{count}}枚",
@@ -68,7 +69,8 @@
   },
   "score": {
     "cumulative": "累積",
-    "round": "ラウンド"
+    "round": "ラウンド",
+    "update": "{{player}}のラウンド得点は{{score}}点"
   },
   "tutorial": {
     "drawArea": "山札と捨て札エリアです。ここからカードを引きます。",
