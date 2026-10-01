@@ -30,6 +30,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, FourCardPokerResponse } from '../types/card';
 import { FourCardPokerPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { FOURCARDPOKER_HELP, parseFourCardPokerCommand } from '../utils/cli/commands/fourcardpokerCommands';
 import { formatFourCardPokerState } from '../utils/cli/formatters/fourcardpokerFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
@@ -297,7 +298,15 @@ function FourCardPokerPageContent() {
                         }`}
                         data-fcp-best={inBest || undefined}
                       >
-                        <AnimatedCard card={card} width={cardWidth} />
+                        <AnimatedCard
+                          card={card}
+                          width={cardWidth}
+                          ariaLabel={
+                            isEndPhase
+                              ? t(inBest ? 'bestCardIncluded' : 'bestCardExcluded', { card: cardAlt(card) })
+                              : undefined
+                          }
+                        />
                       </div>
                     );
                   })}
@@ -326,7 +335,15 @@ function FourCardPokerPageContent() {
                         }`}
                         data-fcp-dealer-best={inBest || undefined}
                       >
-                        <AnimatedCard card={card} width={cardWidth} />
+                        <AnimatedCard
+                          card={card}
+                          width={cardWidth}
+                          ariaLabel={
+                            isEndPhase
+                              ? t(inBest ? 'bestCardIncluded' : 'bestCardExcluded', { card: cardAlt(card) })
+                              : undefined
+                          }
+                        />
                       </div>
                     );
                   })}

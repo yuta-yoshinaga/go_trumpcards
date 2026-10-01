@@ -4,6 +4,8 @@
   "dealer": "ディーラー",
   "dealerUpcard": "アップカードのみ表示中",
   "hiddenCard": "非公開のカード",
+  "bestCardIncluded": "{{card}}、最良の役に含まれる",
+  "bestCardExcluded": "{{card}}、最良の役に含まれない",
   "label": {
     "chips": "チップ",
     "ante": "アンテ",

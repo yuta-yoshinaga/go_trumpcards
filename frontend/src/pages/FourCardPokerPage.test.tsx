@@ -336,6 +336,8 @@ describe('FourCardPokerPage', () => {
       // プレイヤー: 9,9,9,5 が役を作り、クラブ 2 は外れる。
       const marked = document.querySelectorAll('[data-fcp-best="true"]');
       expect(marked).toHaveLength(4);
+      expect(screen.getByRole('img', { name: /♠ 9.*最良の役に含まれる/ })).toBeInTheDocument();
+      expect(screen.getByRole('img', { name: /♣ 2.*最良の役に含まれない/ })).toBeInTheDocument();
       const dealerMarked = document.querySelectorAll('[data-fcp-dealer-best="true"]');
       expect(dealerMarked).toHaveLength(4);
     });
@@ -357,6 +359,7 @@ describe('FourCardPokerPage', () => {
 
       expect(document.querySelectorAll('[data-fcp-best="true"]')).toHaveLength(0);
       expect(document.querySelectorAll('[data-fcp-dealer-best="true"]')).toHaveLength(0);
+      expect(screen.queryByRole('img', { name: /最良の役に含まれる|最良の役に含まれない/ })).not.toBeInTheDocument();
     });
   });
 
