@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, fortyThievesApi } from '../api/gameApi';
+import * as autoCompleteState from '../hooks/useAutoCompleteState';
 import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -246,18 +247,22 @@ describe('FortyThievesPage', () => {
     expect(screen.getByTestId('autocomplete-button')).toBeDisabled();
   });
 
-  it('keeps a separate auto-complete status region mounted and announces its start', async () => {
+  it('announces auto-complete start and finish, with no announcement on initial render', async () => {
     mockExec.mockResolvedValue({ ...playingState, stockCount: 0, waste: [] });
+    const originalUseAutoCompleteState = autoCompleteState.useAutoCompleteState;
+    vi.spyOn(autoCompleteState, 'useAutoCompleteState').mockImplementation(() => originalUseAutoCompleteState(3000));
     renderWithProviders(<FortyThievesPage />);
     const region = await screen.findByTestId('ft-autocomplete-announcement');
     expect(region).toHaveAttribute('role', 'status');
     expect(region).toHaveAttribute('aria-live', 'polite');
     expect(region).toHaveClass('sr-only');
-    vi.useFakeTimers();
+    expect(region).toBeEmptyDOMElement();
+
     fireEvent.click(screen.getByTestId('autocomplete-button'));
     expect(region).toHaveTextContent('自動完成を開始しました');
     expect(screen.getByTestId('ft-hint-announcement')).toBeInTheDocument();
-    vi.useRealTimers();
+
+    await vi.waitFor(() => expect(region).toHaveTextContent('自動完成が完了しました'), { timeout: 3500 });
   });
 
   it('clicking give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {

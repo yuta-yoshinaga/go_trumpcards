@@ -20,7 +20,6 @@
   "autoComplete": "Auto Complete",
   "autoCompleteNotReady": "Available when stock and waste are empty",
   "autoCompleteStarted": "Auto-complete started",
-  "autoCompleteProgress": "Auto-completing, move {{moveCount}}",
   "autoCompleteFinished": "Auto-complete finished",
   "undo": "Undo",
   "stalemate": "Stalemate",

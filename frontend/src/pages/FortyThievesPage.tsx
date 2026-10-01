@@ -90,7 +90,6 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 /** Inner content of the Forty Thieves page, wrapped by TutorialProvider. */
 function FortyThievesPageContent() {
   const autoCompleteWasRunning = useRef(false);
-  const lastAutoCompleteMoveCount = useRef<number | null>(null);
   const [autoCompleteAnnouncement, setAutoCompleteAnnouncement] = useState('');
   const selectSourceHintId = useId();
   const {
@@ -129,26 +128,14 @@ function FortyThievesPageContent() {
     handleFoundationShortcut,
     isAutoCompleting,
   } = useFortyThievesGame();
-  const currentMoveCount = state?.moveCount;
-
   useEffect(() => {
     if (isAutoCompleting && !autoCompleteWasRunning.current) {
-      autoCompleteWasRunning.current = true;
-      lastAutoCompleteMoveCount.current = currentMoveCount ?? null;
       setAutoCompleteAnnouncement(t('autoCompleteStarted'));
-      return;
-    }
-    if (isAutoCompleting && currentMoveCount !== undefined && lastAutoCompleteMoveCount.current !== currentMoveCount) {
-      lastAutoCompleteMoveCount.current = currentMoveCount;
-      setAutoCompleteAnnouncement(t('autoCompleteProgress', { moveCount: currentMoveCount }));
-      return;
-    }
-    if (!isAutoCompleting && autoCompleteWasRunning.current) {
-      autoCompleteWasRunning.current = false;
-      lastAutoCompleteMoveCount.current = null;
+    } else if (!isAutoCompleting && autoCompleteWasRunning.current) {
       setAutoCompleteAnnouncement(t('autoCompleteFinished'));
     }
-  }, [isAutoCompleting, currentMoveCount, t]);
+    autoCompleteWasRunning.current = isAutoCompleting;
+  }, [isAutoCompleting, t]);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('fortythieves');
