@@ -9,6 +9,8 @@
   "trumpUndecided": "not yet named",
   "contract": "Contract",
   "contractTricks": "{{n}} tricks",
+  "declarerTrickProgress": "{{team}}: {{won}} / {{target}} contract tricks",
+  "defenderTrickProgress": "{{team}} (defending): {{won}} tricks",
   "playersTitle": "Players",
   "hiddenHand": "{{count}} hidden",
   "yourHand": "Your hand",

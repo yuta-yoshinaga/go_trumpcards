@@ -226,6 +226,24 @@ function BidEuchrePageContent() {
               <div className="text-xs text-ds-text-muted">{t('gameTargetNote', { n: state.gameTarget })}</div>
             </div>
 
+            {isPlay && state.highBid && state.declarerIdx >= 0 && (
+              <div className="mb-2 p-2 rounded bg-black/30 text-sm" data-testid="bideuchre-contract-progress">
+                <div className="text-ds-text-primary">
+                  {t('declarerTrickProgress', {
+                    team: t('team', { n: state.declarerIdx % 2 }),
+                    won: state.teamTricks[state.declarerIdx % 2],
+                    target: state.highBid.value,
+                  })}
+                </div>
+                <div className="text-ds-text-muted">
+                  {t('defenderTrickProgress', {
+                    team: t('team', { n: 1 - (state.declarerIdx % 2) }),
+                    won: state.teamTricks[1 - (state.declarerIdx % 2)],
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Players */}
             <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="bideuchre-players">
               <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
