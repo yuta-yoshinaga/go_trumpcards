@@ -161,6 +161,36 @@ describe('PokerSquaresPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('place', 2, 3));
   });
 
+  it('announces confirmed line scores and the updated total after a scoring placement', async () => {
+    const board = emptyBoard();
+    board[0] = Array.from({ length: 5 }, (_, col) => ({ card: card('HEART', col + 1) }));
+    const scoredState = {
+      ...playingStateWithUndo,
+      board,
+      rowScores: [2, 0, 0, 0, 0],
+      totalScore: 2,
+    };
+    mockApi.mockResolvedValueOnce(playingState).mockResolvedValueOnce(scoredState);
+    renderWithProviders(<PokerSquaresPage />);
+    const live = await screen.findByTestId('ps-confirmed-live');
+    expect(live).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByTestId('cell-0-0'));
+
+    await waitFor(() => expect(live).toHaveTextContent('行 0 は 2 点。合計 2 点'));
+  });
+
+  it('does not announce scores when a placement completes no scored line', async () => {
+    mockApi.mockResolvedValueOnce(playingState).mockResolvedValueOnce(playingStateWithUndo);
+    renderWithProviders(<PokerSquaresPage />);
+    const live = await screen.findByTestId('ps-confirmed-live');
+
+    fireEvent.click(screen.getByTestId('cell-0-0'));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('place', 0, 0));
+
+    expect(live).toBeEmptyDOMElement();
+  });
+
   it('does not place on the first touch tap and keeps the preview visible', async () => {
     const board = emptyBoard();
     board[0][0] = { card: card('HEART', 2) };

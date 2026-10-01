@@ -57,5 +57,9 @@
   "previewPartialPrefix": "〜",
   "previewRowPartialAnnounce": "行 {{row}} は現在{{hand}}の見込みです",
   "previewColPartialAnnounce": "列 {{col}} は現在{{hand}}の見込みです",
+  "listSeparator": "、",
+  "confirmedRowScore": "行 {{row}} は {{score}} 点",
+  "confirmedColScore": "列 {{col}} は {{score}} 点",
+  "confirmedScoreAnnounce": "{{lines}}。合計 {{total}} 点",
   "touchPlaceHint": "もう一度タップで確定"
 }
