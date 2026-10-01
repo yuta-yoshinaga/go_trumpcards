@@ -292,7 +292,11 @@ function FortressPageContent() {
                           }
                         }}
                         disabled={!isPlaying || loading || (!isTop && !selectedSource)}
-                        aria-label={cardAlt(tc.card)}
+                        aria-label={t('cardAriaLabel', {
+                          card: cardAlt(tc.card),
+                          col: colIdx,
+                          pos: cardIdx,
+                        })}
                         aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
                         draggable={isPlaying && !loading && isTop}
                         onDragStart={dnd.handleDragStart(cardZone)}
