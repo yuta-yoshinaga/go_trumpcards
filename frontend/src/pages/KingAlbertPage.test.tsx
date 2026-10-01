@@ -80,6 +80,19 @@ describe('KingAlbertPage', () => {
     expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
   });
 
+  it('announces move count changes but not the initial count', async () => {
+    mockExec.mockResolvedValue({ ...playingState, canUndo: true });
+    renderWithProviders(<KingAlbertPage />);
+    const liveRegion = await screen.findByTestId('ka-move-count-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toHaveClass('sr-only');
+    expect(liveRegion).toBeEmptyDOMElement();
+    mockExec.mockResolvedValue({ ...playingState, moveCount: 4, canUndo: true });
+    fireEvent.click(screen.getByRole('button', { name: '元に戻す' }));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('手数: 4'));
+  });
+
   it('renders 4 foundation suits', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<KingAlbertPage />);
