@@ -151,6 +151,30 @@ describe('AnacondaPage', () => {
     });
   });
 
+  it('shows the additional call amount on the human turn, including when no chips are needed', async () => {
+    // The domain owes currentBet - streetBet (this betting round only); roundBet also
+    // includes earlier rounds, so it is set higher here to prove it is not used.
+    for (const { streetBet, amountText } of [
+      { streetBet: 10, amountText: 'コールに必要な追加額: 15' },
+      { streetBet: 25, amountText: 'コールに追加支払いは不要です' },
+    ]) {
+      mockExec.mockResolvedValueOnce(
+        makeAnacondaState({
+          phase: 2,
+          rollIndex: 1,
+          isHumanTurn: true,
+          currentBet: 25,
+          players: makeAnacondaState().players.map((player) =>
+            player.isHuman ? { ...player, streetBet, roundBet: streetBet + 40 } : player,
+          ),
+        }),
+      );
+      const { unmount } = renderWithProviders(<AnacondaPage />);
+      expect(await screen.findByTestId('anaconda-call-needed')).toHaveTextContent(amountText);
+      unmount();
+    }
+  });
+
   it('disables the Raise button when canRaise is false', async () => {
     mockExec.mockResolvedValue(makeAnacondaState({ phase: 2, isHumanTurn: true, canRaise: false }));
     renderWithProviders(<AnacondaPage />);

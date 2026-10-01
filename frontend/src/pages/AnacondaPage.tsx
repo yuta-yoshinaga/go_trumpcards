@@ -324,6 +324,13 @@ function AnacondaPageContent() {
               <span className="mr-4">{t('pot', { amount: state.pot })}</span>
               <span className="mr-4">{t('ante', { amount: state.ante })}</span>
               {isRollPhase && <span>{t('currentBet', { amount: state.currentBet })}</span>}
+              {isRollPhase && humanTurn && humanPlayer && (
+                <span className="ml-4" data-testid="anaconda-call-needed">
+                  {state.currentBet > humanPlayer.streetBet
+                    ? t('additionalCallAmount', { amount: state.currentBet - humanPlayer.streetBet })
+                    : t('noAdditionalCallAmount')}
+                </span>
+              )}
             </div>
             <LiveAnnouncement
               testId="anaconda-current-bet-live"

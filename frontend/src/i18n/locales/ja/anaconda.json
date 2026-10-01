@@ -21,6 +21,8 @@
   "chips": "チップ: {{amount}}",
   "roundBet": "賭け: {{amount}}",
   "currentBet": "コール額: {{amount}}",
+  "additionalCallAmount": "コールに必要な追加額: {{amount}}",
+  "noAdditionalCallAmount": "コールに追加支払いは不要です",
   "handLabel": "あなたの手札",
   "playersTitle": "プレイヤー",
   "selectedCount": "選択中: {{n}}",
