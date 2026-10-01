@@ -76,6 +76,39 @@ beforeEach(() => {
 });
 
 describe('MonteBankPage', () => {
+  it('ラウンド結果を通算勝敗と累計純収支に一度だけ加算し、resetで初期化する', async () => {
+    mockApi.mockImplementation(async (command) => {
+      if (command === 'bet') {
+        return withState({
+          phase: MonteBankPhase.RESULT,
+          bet: 50,
+          payout: 200,
+          result: MONTE_BANK_RESULT.win,
+          roundNumber: 1,
+        });
+      }
+      return base;
+    });
+    renderWithProviders(<MonteBankPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '賭ける' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: '賭ける' }));
+    await waitFor(() => expect(screen.getByTestId('mb-session-line')).toHaveTextContent('通算勝ち1'));
+    expect(screen.getByTestId('mb-session-line')).toHaveTextContent('通算負け0');
+    expect(screen.getByTestId('mb-session-line')).toHaveTextContent('累計純収支150');
+    expect(screen.getByTestId('mb-result')).toHaveTextContent('収支 150');
+
+    fireEvent.click(screen.getByRole('button', { name: '次のラウンドへ' }));
+    await waitFor(() => expect(screen.getByTestId('mb-session-line')).toHaveTextContent('通算勝ち1'));
+    expect(screen.getByTestId('mb-session-line')).toHaveTextContent('累計純収支150');
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(screen.getByTestId('mb-session-line')).toHaveTextContent('通算勝ち0'));
+    expect(screen.getByTestId('mb-session-line')).toHaveTextContent('通算負け0');
+    expect(screen.getByTestId('mb-session-line')).toHaveTextContent('累計純収支0');
+  });
+
   it('マウント時に reset を呼ぶ', async () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<MonteBankPage />);
