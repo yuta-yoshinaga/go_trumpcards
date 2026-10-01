@@ -9,6 +9,7 @@
   "label": {
     "value": "値: {{value}}",
     "chips": "チップ: {{chips}}",
+    "chipChange": "増減: {{change}}",
     "betAmount": "ベット額:",
     "betTarget": "ベット先:",
     "payout": "配当: {{payout}}"
