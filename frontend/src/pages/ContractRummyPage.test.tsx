@@ -213,6 +213,25 @@ describe('ContractRummyPage', () => {
     );
   });
 
+  it('announces only contract slot progress that changes', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<ContractRummyPage />);
+    const liveRegion = await screen.findByTestId('cr-slot-progress-live');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    const handButtons = screen.getAllByRole('button').filter((button) => button.querySelector('img'));
+    fireEvent.click(handButtons[0]);
+    fireEvent.click(handButtons[1]);
+    fireEvent.click(handButtons[2]);
+    fireEvent.click(screen.getByRole('button', { name: /スロットに追加|Add to slot/ }));
+
+    await waitFor(() => expect(liveRegion).toHaveTextContent('スロット1: 3/3枚、達成'));
+    expect(liveRegion).not.toHaveTextContent('スロット2');
+
+    fireEvent.click(screen.getByTestId('cr-slot-card-0'));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('スロット1: 2/3枚、未達成'));
+  });
+
   it('undoing a slot pop returns the cards to the hand', async () => {
     mockExec.mockResolvedValue(playState);
     renderWithProviders(<ContractRummyPage />);
