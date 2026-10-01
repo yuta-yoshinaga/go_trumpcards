@@ -44,6 +44,7 @@ const baseState: KalookiResponse = {
   gameEndFlag: false,
   winnerIdx: -1,
   roundWinnerIdx: -1,
+  roundScoreHistory: [],
   message: '',
   messageCode: '',
   config: { cpuDifficulty: 1, playerCount: 2, openingThreshold: 51 },

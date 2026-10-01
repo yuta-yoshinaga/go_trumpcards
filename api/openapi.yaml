@@ -64408,6 +64408,7 @@ components:
         - gameEndFlag
         - winnerIdx
         - roundWinnerIdx
+        - roundScoreHistory
         - config
         - message
       properties:
@@ -64440,6 +64441,18 @@ components:
           type: integer
         roundWinnerIdx:
           type: integer
+        roundScoreHistory:
+          type: array
+          description: Completed round penalty scores, with each scores array indexed by player.
+          items:
+            type: object
+            required:
+              - scores
+            properties:
+              scores:
+                type: array
+                items:
+                  type: integer
         config:
           type: object
           properties:
