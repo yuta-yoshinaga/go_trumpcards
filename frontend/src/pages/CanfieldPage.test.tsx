@@ -444,6 +444,26 @@ describe('CanfieldPage', () => {
     expect(source).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('hides the selected-card move controls when a reset response removes the card without changing moveCount', async () => {
+    const resetState: CanfieldResponse = {
+      ...playingState,
+      tableau: [[], ...playingState.tableau.slice(1)],
+    };
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce(resetState);
+    renderWithProviders(<CanfieldPage />);
+    const source = (await screen.findAllByAltText('♠ 7')).at(-1)?.closest('button') as HTMLButtonElement;
+    fireEvent.click(source);
+    expect(screen.getByTestId('cf-selected-move-to-tableau-1')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: '確認' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(screen.queryByTestId('cf-selected-move-to-tableau-1')).not.toBeInTheDocument());
+    expect(screen.queryByTestId('cf-selected-move-to-foundation')).not.toBeInTheDocument();
+    expect(screen.getByText('', { selector: '#cf-tableau-selection-status' })).toBeInTheDocument();
+  });
+
   it('keeps the tableau selection after an invalid move response', async () => {
     renderWithProviders(<CanfieldPage />);
     const source = (await screen.findAllByAltText('♠ 7')).at(-1)?.closest('button') as HTMLButtonElement;

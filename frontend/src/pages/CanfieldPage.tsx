@@ -230,6 +230,10 @@ function CanfieldPageContent() {
 
   const phase = state?.phase ?? CanfieldPhase.PLAYING;
   const isPlaying = phase === CanfieldPhase.PLAYING;
+  const selected =
+    selectedTableauCard && isPlaying && state?.tableau[selectedTableauCard.col]?.[selectedTableauCard.cardIndex]
+      ? selectedTableauCard
+      : null;
   useActionKeyboardNav({ bindings: escapeBindings, enabled: isPlaying && !loading });
 
   // Drag-and-drop: dispatches the same move command as button-based interaction.
@@ -370,22 +374,20 @@ function CanfieldPageContent() {
                 );
               })}
             </div>
-            {isPlaying &&
-              selectedTableauCard &&
-              selectedTableauCard.cardIndex === (state.tableau[selectedTableauCard.col]?.length ?? 0) - 1 && (
-                <button
-                  type="button"
-                  data-testid="cf-selected-move-to-foundation"
-                  className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px] ring-2 ring-ds-accent`}
-                  aria-label={t('selectedMoveToFoundationAriaLabel')}
-                  aria-disabled={loading}
-                  onClick={() => {
-                    if (!loading) handleMoveSelectedToFoundation();
-                  }}
-                >
-                  {t('moveToFoundation')}
-                </button>
-              )}
+            {isPlaying && selected && selected.cardIndex === (state.tableau[selected.col]?.length ?? 0) - 1 && (
+              <button
+                type="button"
+                data-testid="cf-selected-move-to-foundation"
+                className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px] ring-2 ring-ds-accent`}
+                aria-label={t('selectedMoveToFoundationAriaLabel')}
+                aria-disabled={loading}
+                onClick={() => {
+                  if (!loading) handleMoveSelectedToFoundation();
+                }}
+              >
+                {t('moveToFoundation')}
+              </button>
+            )}
 
             {/* Stock / Waste / Reserve */}
             <div className="mb-3 flex gap-3" data-tutorial="cf-stock-waste">
@@ -502,6 +504,7 @@ function CanfieldPageContent() {
                         ) : (
                           col.map((tc, j) => {
                             const cardZone: CanfieldMoveZone = { zone: 'tableau', col: i, cardIndex: j };
+                            const isSelected = selected?.col === i && selected.cardIndex === j;
                             return (
                               <div key={`t-${i}-${j}`} className="absolute" style={{ top: j * 24, left: 0 }}>
                                 <button
@@ -511,14 +514,9 @@ function CanfieldPageContent() {
                                     col: i,
                                     index: j,
                                   })}
-                                  aria-pressed={selectedTableauCard?.col === i && selectedTableauCard.cardIndex === j}
-                                  aria-describedby={
-                                    selectedTableauCard?.col === i && selectedTableauCard.cardIndex === j
-                                      ? 'cf-tableau-selection-status'
-                                      : undefined
-                                  }
+                                  aria-pressed={isSelected}
                                   onClick={() => {
-                                    if (selectedTableauCard?.col === i && selectedTableauCard.cardIndex === j) {
+                                    if (isSelected) {
                                       setSelectedTableauCard(null);
                                     } else {
                                       setSelectedTableauCard({ col: i, cardIndex: j });
@@ -527,7 +525,7 @@ function CanfieldPageContent() {
                                   draggable={isPlaying && !loading}
                                   onDragStart={dnd.handleDragStart(cardZone)}
                                   onDragEnd={dnd.handleDragEnd}
-                                  className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isHintFromTableau(i, j) ? HINT_RING : ''} ${selectedTableauCard?.col === i && selectedTableauCard.cardIndex === j ? 'ring-2 ring-ds-accent' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                  className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isHintFromTableau(i, j) ? HINT_RING : ''} ${isSelected ? 'ring-2 ring-ds-accent' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                                 >
                                   <AnimatedCard card={tc.card} width={cardWidth} draggable={false} />
                                 </button>
@@ -537,7 +535,7 @@ function CanfieldPageContent() {
                         )}
                       </div>
                     </DropZone>
-                    {isPlaying && selectedTableauCard && i !== selectedTableauCard.col && (
+                    {selected && i !== selected.col && (
                       <button
                         type="button"
                         data-testid={`cf-selected-move-to-tableau-${i}`}
@@ -557,45 +555,43 @@ function CanfieldPageContent() {
                       (() => {
                         const actionButtons = (
                           <div className="flex flex-col gap-1">
-                            <>
-                              <button
-                                type="button"
-                                className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
-                                onClick={() => handleMoveWasteToTableau(i)}
-                                disabled={!topWaste || loading}
-                              >
-                                {t('moveWasteToCol', { col: i })}
-                              </button>
-                              <button
-                                type="button"
-                                className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
-                                onClick={() => handleMoveReserveToTableau(i)}
-                                disabled={!topReserve || loading}
-                              >
-                                {t('moveReserveToCol', { col: i })}
-                              </button>
-                              <button
-                                type="button"
-                                className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
-                                onClick={() => handleMoveTableauToFoundation(i)}
-                                disabled={col.length === 0 || loading}
-                              >
-                                {t('moveToFoundation')}
-                              </button>
-                              {state.tableau.map((_, j) =>
-                                j === i ? null : (
-                                  <button
-                                    key={`t-${i}-to-${j}`}
-                                    type="button"
-                                    className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
-                                    onClick={() => handleMoveTableauToTableau(i, col.length - 1, j)}
-                                    disabled={col.length === 0 || loading}
-                                  >
-                                    {t('moveToCol', { col: j })}
-                                  </button>
-                                ),
-                              )}
-                            </>
+                            <button
+                              type="button"
+                              className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
+                              onClick={() => handleMoveWasteToTableau(i)}
+                              disabled={!topWaste || loading}
+                            >
+                              {t('moveWasteToCol', { col: i })}
+                            </button>
+                            <button
+                              type="button"
+                              className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
+                              onClick={() => handleMoveReserveToTableau(i)}
+                              disabled={!topReserve || loading}
+                            >
+                              {t('moveReserveToCol', { col: i })}
+                            </button>
+                            <button
+                              type="button"
+                              className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
+                              onClick={() => handleMoveTableauToFoundation(i)}
+                              disabled={col.length === 0 || loading}
+                            >
+                              {t('moveToFoundation')}
+                            </button>
+                            {state.tableau.map((_, j) =>
+                              j === i ? null : (
+                                <button
+                                  key={`t-${i}-to-${j}`}
+                                  type="button"
+                                  className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
+                                  onClick={() => handleMoveTableauToTableau(i, col.length - 1, j)}
+                                  disabled={col.length === 0 || loading}
+                                >
+                                  {t('moveToCol', { col: j })}
+                                </button>
+                              ),
+                            )}
                           </div>
                         );
                         // Collapse the dense per-column action buttons behind a details
@@ -627,9 +623,9 @@ function CanfieldPageContent() {
               messageParams={state.messageParams}
             />
             <div id="cf-tableau-selection-status" aria-live="polite" className="sr-only">
-              {selectedTableauCard && state.tableau[selectedTableauCard.col]?.[selectedTableauCard.cardIndex]
+              {selected
                 ? t('tableauCardSelected', {
-                    card: cardAlt(state.tableau[selectedTableauCard.col][selectedTableauCard.cardIndex].card),
+                    card: cardAlt(state?.tableau[selected.col]?.[selected.cardIndex]?.card),
                   })
                 : ''}
             </div>
