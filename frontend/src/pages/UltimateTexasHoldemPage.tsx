@@ -184,6 +184,11 @@ function UltimateTexasHoldemPageContent() {
           ? t('phase.river')
           : t('phase.end');
 
+  const hasMadeHand = (isFlopPhase || isRiverPhase) && state.playerHand.length + state.community.length >= 5;
+  const madeHandText = hasMadeHand
+    ? t('madeHand', { hand: t(HAND_RANK_KEYS[state.playerHandRank] ?? 'handRank.0') })
+    : '';
+
   return (
     <GamePageShell
       title={tc('nav.ultimatetexasholdem')}
@@ -420,11 +425,14 @@ function UltimateTexasHoldemPageContent() {
             どこにも出ていなかった。姉妹の Mississippi Stud は ms-made-hand として
             常時出している。ランクはサーバが updatePlayerCurrentRank で
             各ストリート更新するので、判定を2つ持たない。 */}
-        {(isFlopPhase || isRiverPhase) && state.playerHand.length + state.community.length >= 5 && (
+        {madeHandText && (
           <p className="text-center text-sm font-medium pb-1 text-ds-text-primary" data-testid="uth-made-hand">
-            {t('madeHand', { hand: t(HAND_RANK_KEYS[state.playerHandRank] ?? 'handRank.0') })}
+            {madeHandText}
           </p>
         )}
+        <div className="sr-only" role="status" aria-live="polite" data-testid="uth-made-hand-announcement">
+          {madeHandText}
+        </div>
         {isPreFlopPhase &&
           (() => {
             const strength = utHoldemPreflopStrength(state.playerHand);
