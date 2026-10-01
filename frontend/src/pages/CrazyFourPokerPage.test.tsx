@@ -185,6 +185,19 @@ describe('CrazyFourPokerPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('play', { multiplier: 3 }));
   });
 
+  it('各倍率の追加プレイベット額と選択後の総賭け額を表示する', async () => {
+    mockApi.mockResolvedValue(dealt({ queensUpBet: 20, hasAcesOrBetter: true, maxMultiplier: 3 }));
+    renderWithProviders(<CrazyFourPokerPage />);
+
+    await waitFor(() => expect(screen.getByTestId('c4p-play-3')).toBeInTheDocument());
+    expect(screen.getByTestId('c4p-play-wager-1')).toHaveTextContent('追加プレイベット: 50');
+    expect(screen.getByTestId('c4p-play-wager-1')).toHaveTextContent('総賭け額: 170');
+    expect(screen.getByTestId('c4p-play-wager-2')).toHaveTextContent('追加プレイベット: 100');
+    expect(screen.getByTestId('c4p-play-wager-2')).toHaveTextContent('総賭け額: 220');
+    expect(screen.getByTestId('c4p-play-wager-3')).toHaveTextContent('追加プレイベット: 150');
+    expect(screen.getByTestId('c4p-play-wager-3')).toHaveTextContent('総賭け額: 270');
+  });
+
   // 手札が配られたら、プレイヤーに判断させるために役を表示する
   it('shows player hand rank once dealt', async () => {
     mockApi.mockResolvedValue(dealt());
