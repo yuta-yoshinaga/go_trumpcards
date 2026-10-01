@@ -51,6 +51,22 @@ describe('SambaPage', () => {
     expect(screen.getByTestId('sa-meld-points')).toHaveAttribute('aria-live', 'polite');
   });
 
+  it('announces only changed team scores after the initial state', async () => {
+    renderWithProviders(<SambaPage />);
+    const announce = await screen.findByTestId('sa-team-score-announce');
+    expect(announce).toHaveAttribute('role', 'status');
+    expect(announce).toHaveAttribute('aria-live', 'polite');
+    expect(announce).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValue(makeSambaState({ teamScores: [25, 0] }));
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    await waitFor(() => expect(announce).toHaveTextContent('チーム0の得点は25点です'));
+
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    await waitFor(() => expect(screen.getByTestId('sa-team-scores')).toHaveTextContent('チーム0: 25'));
+    expect(announce).toHaveTextContent('チーム0の得点は25点です');
+  });
+
   it('announces when the discard pile becomes frozen', async () => {
     renderWithProviders(<SambaPage />);
     const announce = await screen.findByTestId('sa-frozen-announce');

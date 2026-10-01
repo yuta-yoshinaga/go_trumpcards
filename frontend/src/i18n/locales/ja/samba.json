@@ -82,6 +82,7 @@
   },
   "skipMeldButton": "スキップ",
   "teamLabel": "チーム{{n}}",
+  "teamScoreAnnouncement": "{{team}}の得点は{{score}}点です",
   "teamScores": "チーム0: {{a}} / チーム1: {{b}}",
   "tutorial": {
     "drawArea": "山札と捨て札エリアです。ここからカードを引きます。",
