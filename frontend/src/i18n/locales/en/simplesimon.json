@@ -12,6 +12,8 @@
   "undo": "Undo",
   "empty": "empty",
   "columnNumber": "Column {{col}}",
+  "columnCardCount_one": "{{count}} card",
+  "columnCardCount_other": "{{count}} cards",
   "columnSource": "Source",
   "columnDestination": "Destination",
   "selectSource": "Pick a card to move (a column top, or a same-suit descending run). Double-click to auto-move it to the best column",
