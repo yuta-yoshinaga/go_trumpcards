@@ -972,8 +972,11 @@ describe('EuchrePage', () => {
       expect(right).toHaveTextContent('右');
       expect(left).toHaveAttribute('data-bower', 'left');
       expect(left).toHaveTextContent('左');
+      expect(screen.getByRole('button', { name: '♠ J、右バウアー' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '♣ J、左バウアー' })).toBeInTheDocument();
       // Off-color jack at index 2 carries no badge.
       expect(screen.queryByTestId('eu-bower-badge-2')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '♥ J' })).toBeInTheDocument();
     });
 
     it('does not badge bowers while trump is undecided (pick-up phase)', async () => {
@@ -983,6 +986,8 @@ describe('EuchrePage', () => {
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
       expect(screen.queryByTestId('eu-bower-badge-0')).not.toBeInTheDocument();
       expect(screen.queryByTestId('eu-bower-badge-1')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '♠ J' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '♣ J' })).toBeInTheDocument();
     });
   });
 

@@ -476,7 +476,11 @@ function EuchrePageContent() {
                       type="button"
                       key={`${card.design}-${card.value}-${idx}`}
                       onClick={() => toggleCard(idx)}
-                      aria-label={cardAlt(card)}
+                      aria-label={
+                        role
+                          ? t(role === 'right' ? 'rightBowerCardLabel' : 'leftBowerCardLabel', { card: cardAlt(card) })
+                          : cardAlt(card)
+                      }
                       aria-pressed={selectedCardIndices.includes(idx)}
                       data-legal={isLegal ? 'true' : undefined}
                       className={`relative transition-transform ${focusRingCard}`}
