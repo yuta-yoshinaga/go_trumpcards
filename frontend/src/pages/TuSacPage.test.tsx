@@ -84,6 +84,24 @@ beforeEach(() => {
 });
 
 describe('TuSacPage', () => {
+  it('現在手番の席にだけ手番ラベルを表示する', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        seats: [
+          seat({ isTurn: false }),
+          seat({ name: 'CPU1', isHuman: false, cards: [], handCount: 20, isTurn: true }),
+        ],
+        turnSeat: 1,
+        isHumanTurn: false,
+      }),
+    );
+    renderWithProviders(<TuSacPage />);
+
+    await screen.findByTestId('tusac-seat-1');
+    expect(screen.getByTestId('tusac-seat-1')).toHaveTextContent('手番中');
+    expect(screen.getByTestId('tusac-seat-0')).not.toHaveTextContent('手番中');
+  });
+
   // **5 枚の卒を揃える価値は、狙う前に知りたい** (#5784)。点数はサーバの
   // meldPointsByKind から出す。
   it('組み合わせの点数早見表を出す', async () => {
