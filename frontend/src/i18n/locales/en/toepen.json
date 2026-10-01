@@ -2,6 +2,7 @@
   "cpu": "CPU{{n}}",
   "cpuHand": "CPU{{n}}: {{count}} cards",
   "cpuHandAriaLabel": "CPU{{n}} hand, {{count}} cards face down",
+  "cpuHandRevealedAriaLabel": "CPU{{n}} hand (revealed)",
   "fold": "Fold ({{cost}})",
   "foldCost": "Folding costs {{cost}} -- the stake BEFORE the raise you are declining",
   "folded": "[folded]",
