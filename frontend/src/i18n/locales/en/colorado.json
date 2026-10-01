@@ -6,6 +6,8 @@
   },
   "title": "Colorado",
   "stock": "Stock",
+  "stockCount_one": "{{count}} card",
+  "stockCount_other": "{{count}} cards",
   "waste": "Waste",
   "wasteCount_one": "{{count}} card",
   "wasteCount_other": "{{count}} cards",

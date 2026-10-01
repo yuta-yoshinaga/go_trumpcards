@@ -25,6 +25,14 @@
   "playing": "Playing",
   "noHint": "No hint available",
   "hintAvailable": "A hint is available",
+  "stats": {
+    "title": "Session statistics",
+    "games_one": "Games cleared: {{count}}",
+    "games_other": "Games cleared: {{count}}",
+    "averageMoves_one": "Average moves: {{count}}",
+    "averageMoves_other": "Average moves: {{count}}",
+    "clear": "Reset statistics"
+  },
   "tutorial": {
     "foundation": "The 4 foundations. Build each suit up from the Ace to the King; clear all 52 cards to win.",
     "fan": "Only the top card of each fan can move. Stack it onto a fan whose top is the next-higher card of the same suit.",

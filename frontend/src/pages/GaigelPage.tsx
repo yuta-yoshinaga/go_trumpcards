@@ -234,16 +234,24 @@ function GaigelPageContent() {
           </div>
         )}
 
-        {/* CPU players */}
+        {/* Player list */}
         <div className="mb-3">
-          {state.players
-            .filter((p) => !p.isHuman)
-            .map((p) => (
-              <div key={p.id} className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                {playerName(p.id, p.isHuman)}: {t('team', { n: p.team })} | {t('cards', { count: p.cardCount })} |{' '}
-                {t('trickCount', { count: p.trickCount })}
-              </div>
-            ))}
+          {state.players.map((p) => (
+            <div
+              key={p.id}
+              data-testid={`gaigel-player-${p.id}`}
+              className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+            >
+              {playerName(p.id, p.isHuman)}
+              {p.id === state.dealerIdx && (
+                <span className="ml-1 text-ds-accent" data-testid="gaigel-dealer-badge">
+                  [{t('dealerBadge')}]
+                </span>
+              )}
+              : {t('team', { n: p.team })} | {t('cards', { count: p.cardCount })} |{' '}
+              {t('trickCount', { count: p.trickCount })}
+            </div>
+          ))}
         </div>
 
         {/* Current trick */}

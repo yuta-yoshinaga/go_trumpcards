@@ -7,6 +7,7 @@ import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { FiveCardStudPlayerData, FiveCardStudResponse } from '../types/card';
 import { FiveCardStudPage, FiveCardStudPageContent } from './FiveCardStudPage';
+import { SokoPage } from './SokoPage';
 
 vi.mock('../api/gameApi', () => ({
   fiveCardStudApi: { exec: vi.fn() },
@@ -299,6 +300,20 @@ describe('FiveCardStudPage', () => {
     // Each CPU also has exactly one highlighted latest door card.
     expect(screen.getByTestId('latest-door-cpu-1')).toBeInTheDocument();
     expect(screen.getByTestId('latest-door-cpu-2')).toBeInTheDocument();
+  });
+
+  it('announces Soko latest door cards with their card names for the human and CPUs only', async () => {
+    mockSokoExec.mockResolvedValue(secondStreetState);
+    renderWithProviders(<SokoPage />);
+    expect(await screen.findByRole('img', { name: '♦ 7、最新' })).toBeInTheDocument();
+    expect(screen.getAllByRole('img', { name: '♣ 7、最新' }).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('keeps Five Card Stud latest door card announcements unchanged', async () => {
+    mockExec.mockResolvedValue(secondStreetState);
+    renderWithProviders(<FiveCardStudPage />);
+    expect(await screen.findByTestId('latest-door-human')).not.toHaveAttribute('role', 'img');
+    expect(screen.getByTestId('latest-door-human')).not.toHaveAttribute('aria-label');
   });
 
   it('reveals CPU hand name and hole card during showdown and shows round results', async () => {

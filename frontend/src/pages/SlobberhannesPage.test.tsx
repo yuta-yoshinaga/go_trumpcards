@@ -260,6 +260,31 @@ describe('SlobberhannesPage queen of clubs warning', () => {
     expect(await screen.findByTestId('sh-queen-warning')).toHaveTextContent('♣Q が場に出ています');
   });
 
+  it('warns that the queen location is unknown before it appears', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ players: [seat(0, { cards: [card('SPADE', 1)] }), seat(1), seat(2), seat(3)] }),
+    );
+    renderWithProviders(<SlobberhannesPage />);
+    expect(await screen.findByTestId('sh-queen-unseen-warning')).toHaveTextContent('♣Q はまだ場に出ていません');
+    expect(screen.queryByTestId('sh-queen-warning')).not.toBeInTheDocument();
+  });
+
+  it('does not call the queen unseen when the human holds it', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ players: [seat(0, { cards: [card('CLOVER', 12)] }), seat(1), seat(2), seat(3)] }),
+    );
+    renderWithProviders(<SlobberhannesPage />);
+    expect(await screen.findByText(/♣Q を持っています/)).toBeInTheDocument();
+    expect(screen.queryByTestId('sh-queen-unseen-warning')).not.toBeInTheDocument();
+  });
+
+  it('does not show the unknown-location warning after the queen is taken', async () => {
+    mockExec.mockResolvedValue(makeState({ players: [seat(0), seat(1, { tookQueen: true }), seat(2), seat(3)] }));
+    renderWithProviders(<SlobberhannesPage />);
+    await screen.findByTestId('sh-seat-0');
+    expect(screen.queryByTestId('sh-queen-unseen-warning')).not.toBeInTheDocument();
+  });
+
   it('stays quiet for any other card on the table', async () => {
     mockExec.mockResolvedValue(
       makeState({

@@ -32,6 +32,8 @@
   "points": "今局{{points}}点",
   "score": "通算{{score}}",
   "currentTrick": "現在のトリック",
+  "previousTrick": "直前のトリック",
+  "previousTrickWinner": "勝者: {{name}}",
   "trickWinner": "勝ち",
   "restricted": "リードスートに従う必要があります",
   "bid": "入札",

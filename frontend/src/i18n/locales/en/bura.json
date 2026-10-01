@@ -8,6 +8,7 @@
   "target": "Target",
   "opponentHand": "CPU hand: {{n}} cards",
   "opponentHandAriaLabel": "CPU hand, {{n}} cards face down",
+  "opponentHandRevealedAriaLabel": "CPU hand (revealed)",
   "ledCards": "Led: {{n}} card(s)",
   "leadPlayer": "Led by {{name}}",
   "leadCardAriaLabel": "Card led by {{name}}: {{card}}",

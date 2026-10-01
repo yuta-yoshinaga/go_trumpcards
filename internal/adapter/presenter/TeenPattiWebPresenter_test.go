@@ -20,6 +20,7 @@ func tpSetupWebMock() *interfaces.MockTeenPattiGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetPot").Return(4)
 	m.On("GetStake").Return(1)
+	m.On("GetCallCost", 0).Return(1)
 	m.On("GetPhase").Return(domain.TeenPattiPhaseBetting)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -87,6 +88,16 @@ func TestTeenPattiWebPresenter_Output(t *testing.T) {
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Equal(t, domain.TeenPattiDefaultAnte, resObj.Config.Ante)
 		assert.Equal(t, domain.TeenPattiDefaultStartingChips, resObj.Config.StartingChips)
+	})
+
+	t.Run("human call cost comes from domain", func(t *testing.T) {
+		m, _ := tpSetupWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCallCost")
+		m.On("GetCallCost", 0).Return(37)
+		result := p.Output(m, nil)
+		var resObj controller.TeenPattiWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, 37, resObj.HumanCallCost)
 	})
 
 	t.Run("side show phase message and fields", func(t *testing.T) {

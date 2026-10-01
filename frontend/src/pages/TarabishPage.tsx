@@ -132,8 +132,9 @@ function TarabishPageContent() {
         ? t('phase.bid')
         : t('phase.play');
 
-  // 出せる札に緑の枠を足すだけで、押せなくはしない（サーバが必ず検証する）。
+  // 合法札は緑の枠、非合法札は人間の手番中だけ aria-disabled で示す。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
+  const canAnnotatePlays = isHumanTurn && !loading;
 
   /** A seat's meld, spelled out rather than as a bare number. */
   const meldStr = (p: TarabishPlayer): string => {
@@ -286,7 +287,9 @@ function TarabishPageContent() {
                     <button
                       key={`${card.design}-${card.value}-${idx}`}
                       type="button"
-                      onClick={() => handlePlay(idx)}
+                      onClick={() => {
+                        if (legalRing.has(idx)) handlePlay(idx);
+                      }}
                       disabled={loading || !isHumanTurn}
                       // **切り札だけ点数表が入れ替わる** (#5749)。同じ J でも
                       // 切り札なら 20 点、そうでなければ 2 点。暗算させると
@@ -313,7 +316,11 @@ function TarabishPageContent() {
                                 })
                               : t('actions.playAria', { card: cardAlt(card) })
                       }
-                      className={`relative disabled:opacity-50 ${
+                      aria-disabled={canAnnotatePlays && !legalRing.has(idx) ? true : undefined}
+                      aria-describedby={
+                        canAnnotatePlays && !legalRing.has(idx) ? 'tarabish-unplayable-reason' : undefined
+                      }
+                      className={`relative disabled:opacity-50 aria-disabled:opacity-50 ${
                         legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
                       }`}
                     >
@@ -333,6 +340,9 @@ function TarabishPageContent() {
                     </button>
                   ))}
                 </div>
+                <span id="tarabish-unplayable-reason" className="sr-only">
+                  {t('actions.notPlayableReason')}
+                </span>
               </div>
             )}
 

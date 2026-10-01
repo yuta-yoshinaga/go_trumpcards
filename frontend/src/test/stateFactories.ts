@@ -1,6 +1,7 @@
 import type {
   AluetteResponse,
   AnacondaResponse,
+  AndarBaharResponse,
   BaccaratBanqueResponse,
   BasraResponse,
   BatakResponse,
@@ -116,6 +117,32 @@ export function makeChinchonState(overrides: Partial<ChinchonResponse> = {}): Ch
     layoffableIndices: [],
     message: '',
     config: { playerCount: 2, knockThreshold: 5, eliminationLimit: 100 },
+    ...overrides,
+  };
+}
+
+/** Creates a default Andar Bahar state. */
+export function makeAndarBaharState(overrides?: Partial<AndarBaharResponse>): AndarBaharResponse {
+  return {
+    andarCards: [],
+    baharCards: [],
+    firstColumn: 0,
+    dealtCount: 0,
+    phase: 1,
+    chips: 1000,
+    betAmount: 0,
+    betTarget: 0,
+    sideAmount: 0,
+    sideBand: -1,
+    sideBandProbabilities: [],
+    winner: -1,
+    result: 0,
+    payout: 0,
+    mainPayout: 0,
+    sidePayout: 0,
+    history: [],
+    roundHistory: [],
+    message: '',
     ...overrides,
   };
 }
@@ -3402,6 +3429,7 @@ const baseTeenPattiState: TeenPattiResponse = {
   ],
   pot: 4,
   stake: 1,
+  humanCallCost: 1,
   phase: 0,
   roundNumber: 1,
   dealerIdx: 3,
@@ -3679,6 +3707,11 @@ const basePreferenceState: PreferenceResponse = {
   bidDone: [false, false, false],
   currentTrick: [],
   playerScores: [0, 0, 0],
+  scoreBreakdown: [
+    { declarerContract: 0, defendingContract: 0 },
+    { declarerContract: 0, defendingContract: 0 },
+    { declarerContract: 0, defendingContract: 0 },
+  ],
   roundTricks: [0, 0, 0],
   playableIndices: [],
   gameEndFlag: false,
@@ -3789,6 +3822,7 @@ const baseNapState: NapResponse = {
   contract: 0,
   trumpSuit: 0,
   bids: [0, 0, 0, 0],
+  bidDone: [false, false, false, false],
   currentTrick: [],
   playerScores: [0, 0, 0, 0],
   roundTricks: [0, 0, 0, 0],

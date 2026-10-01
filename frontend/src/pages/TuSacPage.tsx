@@ -214,6 +214,12 @@ function TuSacPageContent() {
                 >
                   <span className="text-ds-text-primary">
                     {seat.name}
+                    {seat.isTurn && (
+                      <span className="text-ds-success">
+                        {' · '}
+                        {t('label.currentTurn')}
+                      </span>
+                    )}
                     {' · '}
                     {/* **相手の手札は届いていない。** 枚数だけが分かる。 */}
                     <span data-testid={`tusac-count-${i}`}>{t('label.handCount', { count: seat.handCount })}</span>

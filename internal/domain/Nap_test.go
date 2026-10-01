@@ -90,6 +90,16 @@ func TestNap_BiddingResolvesHighestDeclarer(t *testing.T) {
 	}
 }
 
+func TestNap_GetBidDone(t *testing.T) {
+	g := newNapAllHuman()
+	if err := g.PlayerBid(NapBidPass); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := g.GetBidDone(), [NapPlayerCnt]bool{true, false, false, false}; got != want {
+		t.Fatalf("GetBidDone() = %v, want %v", got, want)
+	}
+}
+
 func TestNap_CannotUnderbid(t *testing.T) {
 	g := newNapAllHuman()
 	g.Reset()

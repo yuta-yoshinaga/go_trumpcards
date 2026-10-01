@@ -29,6 +29,8 @@ func TestAndarBaharWebPresenter_ArraysAreNeverNull(t *testing.T) {
 			assert.NotEqual(t, "null", string(raw[key]), "%s が null で返っている", key)
 			assert.Equal(t, byte('['), raw[key][0], "%s が配列でない", key)
 		}
+		assert.Contains(t, raw, "roundHistory")
+		assert.Equal(t, byte('['), raw["roundHistory"][0])
 	})
 
 	t.Run("決着後も配列で返る", func(t *testing.T) {
@@ -36,17 +38,18 @@ func TestAndarBaharWebPresenter_ArraysAreNeverNull(t *testing.T) {
 		require.NoError(t, game.Bet(100, domain.AndarBaharBetAndar, 50, domain.AndarBaharSide2To5))
 
 		var out struct {
-			AndarCards  []map[string]any `json:"andarCards"`
-			BaharCards  []map[string]any `json:"baharCards"`
-			History     []int            `json:"history"`
-			DealtCount  int              `json:"dealtCount"`
-			Winner      int              `json:"winner"`
-			Payout      int              `json:"payout"`
-			MainPayout  int              `json:"mainPayout"`
-			SidePayout  int              `json:"sidePayout"`
-			Chips       int              `json:"chips"`
-			FirstColumn int              `json:"firstColumn"`
-			Phase       int              `json:"phase"`
+			AndarCards   []map[string]any                     `json:"andarCards"`
+			BaharCards   []map[string]any                     `json:"baharCards"`
+			History      []int                                `json:"history"`
+			DealtCount   int                                  `json:"dealtCount"`
+			Winner       int                                  `json:"winner"`
+			Payout       int                                  `json:"payout"`
+			MainPayout   int                                  `json:"mainPayout"`
+			SidePayout   int                                  `json:"sidePayout"`
+			Chips        int                                  `json:"chips"`
+			FirstColumn  int                                  `json:"firstColumn"`
+			Phase        int                                  `json:"phase"`
+			RoundHistory []domain.AndarBaharRoundHistoryEntry `json:"roundHistory"`
 		}
 		require.NoError(t, json.Unmarshal([]byte(p.Output(game, nil)), &out))
 
@@ -64,6 +67,8 @@ func TestAndarBaharWebPresenter_ArraysAreNeverNull(t *testing.T) {
 		assert.Equal(t, game.GetChips(), out.Chips)
 		assert.Equal(t, game.GetFirstColumn(), out.FirstColumn)
 		assert.Equal(t, domain.AndarBaharPhaseEnd, out.Phase)
+		require.Len(t, out.RoundHistory, 1)
+		assert.Equal(t, domain.AndarBaharRoundHistoryEntry{Bet: 150, Payout: game.GetPayout(), Chips: game.GetChips()}, out.RoundHistory[0])
 	})
 }
 
@@ -107,6 +112,23 @@ func TestAndarBaharWebPresenter_Output_Fields(t *testing.T) {
 	assert.Equal(t, "andarbahar.result.win", out.MessageCode)
 	assert.Len(t, out.SideBandProbabilities, domain.AndarBaharSide36Plus+1)
 	assert.InDelta(t, 0.0588235294, out.SideBandProbabilities[domain.AndarBaharSideFirst], 1e-9)
+}
+
+func TestAndarBaharWebPresenter_RoundHistoryIsNewestFirstWithoutMutatingDomain(t *testing.T) {
+	game := domain.NewDefaultAndarBahar()
+	require.NoError(t, game.Bet(100, domain.AndarBaharBetAndar, 50, domain.AndarBaharSide2To5))
+	game.Reset()
+	require.NoError(t, game.Bet(200, domain.AndarBaharBetBahar, 0, domain.AndarBaharSideNone))
+	for range 2 {
+		var out struct {
+			RoundHistory []domain.AndarBaharRoundHistoryEntry `json:"roundHistory"`
+		}
+		require.NoError(t, json.Unmarshal([]byte(new(AndarBaharWebPresenter).Output(game, nil)), &out))
+		require.Len(t, out.RoundHistory, 2)
+		assert.Equal(t, 200, out.RoundHistory[0].Bet)
+		assert.Equal(t, 150, out.RoundHistory[1].Bet)
+	}
+	assert.Equal(t, 150, game.GetRoundHistory()[0].Bet, "presenter must not reorder domain history")
 }
 
 func TestAndarBaharWebPresenter_Output_LoseMessage(t *testing.T) {

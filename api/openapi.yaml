@@ -37158,6 +37158,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Card'
+        trickHistory:
+          type: array
+          description: Completed tricks in the current deal, in play order.
+          items:
+            type: object
+            properties:
+              winnerIdx:
+                type: integer
+                description: Seat that won the trick (0-based).
+              points:
+                type: integer
+                description: Card points won in the trick.
         trickLeaderIdx:
           type: integer
         trickNumber:
@@ -46595,6 +46607,17 @@ components:
                 type: integer
               cumulativeScore:
                 type: integer
+              scoreBreakdown:
+                type: object
+                properties:
+                  ace:
+                    type: integer
+                  number:
+                    type: integer
+                  face:
+                    type: integer
+                  seven:
+                    type: integer
         phase:
           type: integer
           description: "Game phase: 0 = Draw, 1 = Play, 2 = RoundEnd, 3 = GameEnd"
@@ -48106,6 +48129,19 @@ components:
                   $ref: '#/components/schemas/Card'
               roundScore:
                 type: integer
+              scoreBreakdown:
+                type: object
+                properties:
+                  meldCards:
+                    type: integer
+                  canastaBonus:
+                    type: integer
+                  red3Bonus:
+                    type: integer
+                  goOutBonus:
+                    type: integer
+                  handPenalty:
+                    type: integer
               cumulativeScore:
                 type: integer
               hasCanasta:
@@ -48280,6 +48316,28 @@ components:
                 type: array
                 items:
                   $ref: '#/components/schemas/Card'
+        scoreBreakdown:
+          type: array
+          description: Per-team breakdown of the last settled round score; penalties are positive values subtracted from the total.
+          items:
+            type: object
+            properties:
+              team:
+                type: integer
+              meldCards:
+                type: integer
+              redCanasta:
+                type: integer
+              blackCanasta:
+                type: integer
+              redThrees:
+                type: integer
+              goingOut:
+                type: integer
+              handPenalty:
+                type: integer
+              footPenalty:
+                type: integer
         phase:
           type: integer
           description: "Game phase: 0 = Draw, 1 = Meld, 2 = Discard, 3 = RoundEnd, 4 = GameEnd"
@@ -62172,6 +62230,19 @@ components:
           description: Winning column per round. Always an array, never null.
           items:
             type: integer
+        roundHistory:
+          type: array
+          description: Bet, payout, and chips after each settled round, newest first.
+          items:
+            type: object
+            required: [bet, payout, chips]
+            properties:
+              bet:
+                type: integer
+              payout:
+                type: integer
+              chips:
+                type: integer
         message:
           type: string
         messageCode:
@@ -69106,7 +69177,12 @@ components:
           type: array
           items:
             type: integer
-          description: Bid placed by each player in seat order (0=Pass, 2=Two, 3=Three, 4=Four, 5=Nap; -1=not yet bid)
+          description: Bid placed by each player in seat order (0=Pass, 2=Two, 3=Three, 4=Four, 5=Nap; use bidDone to distinguish Pass from not yet bid)
+        bidDone:
+          type: array
+          items:
+            type: boolean
+          description: Whether each player has completed bidding, in seat order
         currentTrick:
           type: array
           items:
@@ -70424,6 +70500,18 @@ components:
           items:
             type: integer
           description: Cumulative game points per player (index = player seat)
+        scoreBreakdown:
+          type: array
+          description: Per-player points awarded in the latest round.
+          items:
+            type: object
+            properties:
+              declarerContract:
+                type: integer
+                description: Points awarded to the declarer for making the contract.
+              defendingContract:
+                type: integer
+                description: Points awarded to defenders when the declarer fails.
         roundTricks:
           type: array
           items:
@@ -71001,6 +71089,9 @@ components:
         stake:
           type: integer
           description: Current per-action stake (a Blind player pays this, a Seen player pays double)
+        humanCallCost:
+          type: integer
+          description: Amount the human player must pay to call the current stake
         currentPlayerIdx:
           type: integer
           description: Index of the player whose turn it is

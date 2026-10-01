@@ -50,12 +50,16 @@
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, used {{used}}/{{max}})",
     "accept": "Rebuy",
-    "skip": "Skip"
+    "skip": "Skip",
+    "selected": "Rebuy selected. Updated chip count: {{chips}}",
+    "skipped": "Rebuy skipped. Updated chip count: {{chips}}"
   },
   "addon": {
     "prompt": "Add-on? ({{chips}} chips)",
     "accept": "Add-on",
-    "skip": "Skip"
+    "skip": "Skip",
+    "selected": "Add-on selected. Updated chip count: {{chips}}",
+    "skipped": "Add-on skipped. Updated chip count: {{chips}}"
   },
   "muck": {
     "prompt": "Muck?",

@@ -42,6 +42,13 @@ func (ap *AndarBaharWebPresenter) Output(ab interfaces.AndarBaharGame, lastErr e
 		}
 	}
 	resObj.History = intSliceOrEmpty(ab.GetHistory())
+	resObj.RoundHistory = append([]domain.AndarBaharRoundHistoryEntry(nil), ab.GetRoundHistory()...)
+	if resObj.RoundHistory == nil {
+		resObj.RoundHistory = make([]domain.AndarBaharRoundHistoryEntry, 0)
+	}
+	for left, right := 0, len(resObj.RoundHistory)-1; left < right; left, right = left+1, right-1 {
+		resObj.RoundHistory[left], resObj.RoundHistory[right] = resObj.RoundHistory[right], resObj.RoundHistory[left]
+	}
 
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()

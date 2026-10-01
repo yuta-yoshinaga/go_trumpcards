@@ -48,6 +48,7 @@ func setupKlaberjassWebMock(phase domain.KlaberjassPhase) (*interfaces.MockKlabe
 	m.On("GetTrick").Return([]*domain.Card{kjTestCard(domain.CardDesignHeart, 10), nil})
 	m.On("GetTrickLeaderIdx").Return(0)
 	m.On("GetTrickNumber").Return(2)
+	m.On("GetTrickHistory").Return([]*domain.KlaberjassTrickHistoryEntry{{WinnerIdx: 1, Points: 24}, {WinnerIdx: 0, Points: 17}})
 	m.On("GetSequenceWinner").Return(0)
 	m.On("GetLastTrickWinner").Return(-1).Maybe()
 	m.On("GetBelaHolder").Return(1)
@@ -75,6 +76,17 @@ func setupKlaberjassWebMock(phase domain.KlaberjassPhase) (*interfaces.MockKlabe
 		})
 	}
 	return m, players
+}
+
+func TestKlaberjassWebPresenter_ReportsCompletedTrickHistory(t *testing.T) {
+	m, _ := setupKlaberjassWebMock(domain.KlaberjassPhasePlay)
+	out := parseKlaberjassOutput(t, new(presenter.KlaberjassWebPresenter).Output(m, nil))
+
+	require.Len(t, out.TrickHistory, 2)
+	assert.Equal(t, 1, out.TrickHistory[0].WinnerIdx)
+	assert.Equal(t, 24, out.TrickHistory[0].Points)
+	assert.Equal(t, 0, out.TrickHistory[1].WinnerIdx)
+	assert.Equal(t, 17, out.TrickHistory[1].Points)
 }
 
 func TestKlaberjassWebPresenter_SendsPointBreakdownFromGetters(t *testing.T) {
@@ -198,6 +210,8 @@ func TestKlaberjassWebPresenter_BeteHasItsOwnMessage(t *testing.T) {
 	m.On("GetTrick").Return([]*domain.Card{})
 	m.On("GetTrickLeaderIdx").Return(0)
 	m.On("GetTrickNumber").Return(9)
+	m.On("GetTrickHistory").Return([]*domain.KlaberjassTrickHistoryEntry{})
+	m.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 	m.On("GetSequenceWinner").Return(-1)
 	m.On("GetLastTrickWinner").Return(-1).Maybe()
 	m.On("GetBelaHolder").Return(-1)
@@ -251,6 +265,8 @@ func TestKlaberjassWebPresenter_GameEnd(t *testing.T) {
 			m.On("GetTrick").Return([]*domain.Card{})
 			m.On("GetTrickLeaderIdx").Return(0)
 			m.On("GetTrickNumber").Return(9)
+			m.On("GetTrickHistory").Return([]*domain.KlaberjassTrickHistoryEntry{})
+			m.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 			m.On("GetSequenceWinner").Return(-1)
 			m.On("GetLastTrickWinner").Return(-1).Maybe()
 			m.On("GetBelaHolder").Return(-1)

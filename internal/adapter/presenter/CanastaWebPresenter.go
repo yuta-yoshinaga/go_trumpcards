@@ -81,6 +81,7 @@ func (p *CanastaWebPresenter) buildPlayersOutput(g interfaces.CanastaGame) []*co
 			Red3Count:       len(player.GetRed3s()),
 			Red3s:           red3s,
 			RoundScore:      player.GetRoundScore(),
+			ScoreBreakdown:  player.GetScoreBreakdown(),
 			CumulativeScore: player.GetCumulativeScore(),
 			HasCanasta:      player.HasCanasta(),
 			HasInitMeld:     player.GetHasInitMeld(),

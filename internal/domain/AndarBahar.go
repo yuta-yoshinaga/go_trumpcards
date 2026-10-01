@@ -135,7 +135,15 @@ type AndarBahar struct {
 	sidePayout int
 	actionLogBase
 	// history は罫線用の勝ち列の履歴。
-	history []int
+	history      []int
+	roundHistory []AndarBaharRoundHistoryEntry
+}
+
+// AndarBaharRoundHistoryEntry は精算済みラウンドの金額を記録する。
+type AndarBaharRoundHistoryEntry struct {
+	Bet    int `json:"bet"`
+	Payout int `json:"payout"`
+	Chips  int `json:"chips"`
 }
 
 // NewAndarBahar はコンストラクタ。
@@ -205,7 +213,7 @@ func AndarBaharFirstColumnFor(joker *Card) int {
 }
 
 // ClearHistory は罫線履歴を消す。
-func (ab *AndarBahar) ClearHistory() { ab.history = nil }
+func (ab *AndarBahar) ClearHistory() { ab.history = nil; ab.roundHistory = nil }
 
 // Bet はベットしてラウンドを最後まで進める。
 //
@@ -296,6 +304,10 @@ func (ab *AndarBahar) judge() {
 	ab.mainPayout, ab.sidePayout = ab.calculatePayout()
 	ab.payout = ab.mainPayout + ab.sidePayout
 	ab.chips.AddChips(ab.payout)
+	ab.roundHistory = append(ab.roundHistory, AndarBaharRoundHistoryEntry{Bet: ab.betAmount + ab.sideAmount, Payout: ab.payout, Chips: ab.GetChips()})
+	if len(ab.roundHistory) > 20 {
+		ab.roundHistory = ab.roundHistory[len(ab.roundHistory)-20:]
+	}
 	ab.appendLogCode(-1, "result", "andarbahar.log.result", map[string]string{"columnKey": andarBaharColumnKey(ab.winner), "payout": strconv.Itoa(ab.payout)}, nil)
 
 	ab.gameEndFlag = true
@@ -417,6 +429,9 @@ func (ab *AndarBahar) GetChips() int { return ab.chips.GetChips() }
 // GetHistory は罫線履歴を返す。
 func (ab *AndarBahar) GetHistory() []int { return ab.history }
 
+// GetRoundHistory は精算履歴を返す。
+func (ab *AndarBahar) GetRoundHistory() []AndarBaharRoundHistoryEntry { return ab.roundHistory }
+
 // AndarBaharSideBand は帯 band の下限・上限を返す。
 func AndarBaharSideBand(band int) (int, int, bool) {
 	if band < AndarBaharSideFirst || band > AndarBaharSide36Plus {
@@ -492,49 +507,51 @@ func (ab *AndarBahar) SetHistory(history []int) { ab.history = history }
 
 // andarBaharJSON は AndarBahar の JSON ワイヤーフォーマット。
 type andarBaharJSON struct {
-	TrumpCards  *TrumpCards       `json:"tc"`
-	Joker       *Card             `json:"jk"`
-	Andar       []*Card           `json:"an"`
-	Bahar       []*Card           `json:"bh"`
-	FirstColumn int               `json:"fc"`
-	Chips       *ChipHolder       `json:"ch"`
-	BetAmount   int               `json:"ba"`
-	BetTarget   int               `json:"bt"`
-	SideAmount  int               `json:"sa"`
-	SideBand    int               `json:"sb"`
-	Phase       int               `json:"ps"`
-	GameEndFlag bool              `json:"ge"`
-	Winner      int               `json:"wn"`
-	Result      GameResult        `json:"rs"`
-	Payout      int               `json:"po"`
-	MainPayout  int               `json:"pm"`
-	SidePayout  int               `json:"pd"`
-	ActionLog   []*ActionLogEntry `json:"al"`
-	History     []int             `json:"hi"`
+	TrumpCards   *TrumpCards                   `json:"tc"`
+	Joker        *Card                         `json:"jk"`
+	Andar        []*Card                       `json:"an"`
+	Bahar        []*Card                       `json:"bh"`
+	FirstColumn  int                           `json:"fc"`
+	Chips        *ChipHolder                   `json:"ch"`
+	BetAmount    int                           `json:"ba"`
+	BetTarget    int                           `json:"bt"`
+	SideAmount   int                           `json:"sa"`
+	SideBand     int                           `json:"sb"`
+	Phase        int                           `json:"ps"`
+	GameEndFlag  bool                          `json:"ge"`
+	Winner       int                           `json:"wn"`
+	Result       GameResult                    `json:"rs"`
+	Payout       int                           `json:"po"`
+	MainPayout   int                           `json:"pm"`
+	SidePayout   int                           `json:"pd"`
+	ActionLog    []*ActionLogEntry             `json:"al"`
+	History      []int                         `json:"hi"`
+	RoundHistory []AndarBaharRoundHistoryEntry `json:"rh,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (ab *AndarBahar) MarshalJSON() ([]byte, error) {
 	return json.Marshal(andarBaharJSON{
-		TrumpCards:  ab.trumpCards,
-		Joker:       ab.joker,
-		Andar:       ab.andar,
-		Bahar:       ab.bahar,
-		FirstColumn: ab.firstColumn,
-		Chips:       &ab.chips,
-		BetAmount:   ab.betAmount,
-		BetTarget:   ab.betTarget,
-		SideAmount:  ab.sideAmount,
-		SideBand:    ab.sideBand,
-		Phase:       ab.phase,
-		GameEndFlag: ab.gameEndFlag,
-		Winner:      ab.winner,
-		Result:      ab.result,
-		Payout:      ab.payout,
-		MainPayout:  ab.mainPayout,
-		SidePayout:  ab.sidePayout,
-		ActionLog:   ab.actionLog,
-		History:     ab.history,
+		TrumpCards:   ab.trumpCards,
+		Joker:        ab.joker,
+		Andar:        ab.andar,
+		Bahar:        ab.bahar,
+		FirstColumn:  ab.firstColumn,
+		Chips:        &ab.chips,
+		BetAmount:    ab.betAmount,
+		BetTarget:    ab.betTarget,
+		SideAmount:   ab.sideAmount,
+		SideBand:     ab.sideBand,
+		Phase:        ab.phase,
+		GameEndFlag:  ab.gameEndFlag,
+		Winner:       ab.winner,
+		Result:       ab.result,
+		Payout:       ab.payout,
+		MainPayout:   ab.mainPayout,
+		SidePayout:   ab.sidePayout,
+		ActionLog:    ab.actionLog,
+		History:      ab.history,
+		RoundHistory: ab.roundHistory,
 	})
 }
 
@@ -582,12 +599,16 @@ func (ab *AndarBahar) UnmarshalJSON(data []byte) error {
 	if ab.history == nil {
 		ab.history = make([]int, 0)
 	}
+	ab.roundHistory = j.RoundHistory
+	if ab.roundHistory == nil {
+		ab.roundHistory = make([]AndarBaharRoundHistoryEntry, 0)
+	}
 	return nil
 }
 
 // andarBaharValidateWire は復元しようとしている盤面の不変条件を検証する。
 func andarBaharValidateWire(j *andarBaharJSON) error {
-	if len(j.ActionLog) > andarBaharMaxSliceLen || len(j.History) > andarBaharMaxSliceLen {
+	if len(j.ActionLog) > andarBaharMaxSliceLen || len(j.History) > andarBaharMaxSliceLen || len(j.RoundHistory) > 20 {
 		return errors.New("andarbahar: input array exceeds maximum allowed size")
 	}
 	if j.Phase != AndarBaharPhaseBet && j.Phase != AndarBaharPhaseEnd {

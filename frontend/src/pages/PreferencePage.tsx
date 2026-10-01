@@ -385,6 +385,13 @@ function PreferencePageContent() {
                           name: playerName(p.id, p.isHuman),
                           count: state.roundTricks[p.id] ?? 0,
                         })}
+                        <div className="pl-3 text-xs" data-testid={`preference-score-breakdown-${p.id}`}>
+                          {t('roundResult.declarerContract')}:{' '}
+                          {formatBreakdownScore(state.scoreBreakdown[p.id]?.declarerContract ?? 0)}
+                          {' · '}
+                          {t('roundResult.defendingContract')}:{' '}
+                          {formatBreakdownScore(state.scoreBreakdown[p.id]?.defendingContract ?? 0)}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -520,4 +527,8 @@ function PreferencePageContent() {
       )}
     </GamePageShell>
   );
+}
+
+function formatBreakdownScore(score: number): string {
+  return score < 0 ? `−${Math.abs(score)}` : String(score);
 }

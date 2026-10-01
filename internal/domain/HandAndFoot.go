@@ -79,6 +79,7 @@ type HandAndFoot struct {
 	gameEndFlag      bool
 	winnerTeam       int
 	roundNumber      int
+	scoreBreakdowns  [HandAndFootTeamCnt]HandAndFootScoreBreakdown
 	actionLogBase
 	drewFromDiscard bool
 	drawnCard       *Card
@@ -110,6 +111,7 @@ func NewDefaultHandAndFoot() *HandAndFoot {
 
 // Reset ゲーム初期化
 func (g *HandAndFoot) Reset() {
+	g.scoreBreakdowns = [HandAndFootTeamCnt]HandAndFootScoreBreakdown{}
 	g.gameEndFlag = false
 	g.winnerTeam = -1
 	g.roundNumber = 1
@@ -144,6 +146,7 @@ func (g *HandAndFoot) NextRound() {
 	}
 
 	g.roundNumber++
+	g.scoreBreakdowns = [HandAndFootTeamCnt]HandAndFootScoreBreakdown{}
 	g.discardPile = nil
 	g.drawPile = nil
 	g.isFrozen = false
@@ -990,23 +993,30 @@ func (g *HandAndFoot) cpuBestDiscard(player *HandAndFootPlayer) int {
 // scoreRound ラウンドのスコアを確定する。goOutTeam == -1 のときは上がりなし。
 func (g *HandAndFoot) scoreRound(goOutTeam int) {
 	teamScores := [HandAndFootTeamCnt]int{}
+	g.scoreBreakdowns = [HandAndFootTeamCnt]HandAndFootScoreBreakdown{}
 	for t := 0; t < HandAndFootTeamCnt; t++ {
 		score := 0
 		for _, m := range g.teamMelds[t] {
 			for _, c := range m.Cards {
-				score += CanastaFamilyCardValue(c)
+				v := CanastaFamilyCardValue(c)
+				score += v
+				g.scoreBreakdowns[t].MeldCards += v
 			}
 			if m.IsCanasta() {
 				if m.IsNatural {
 					score += HandAndFootRedCanastaBonus
+					g.scoreBreakdowns[t].RedCanasta += HandAndFootRedCanastaBonus
 				} else {
 					score += HandAndFootBlackCanastaBonus
+					g.scoreBreakdowns[t].BlackCanasta += HandAndFootBlackCanastaBonus
 				}
 			}
 		}
-		score += len(g.teamRed3s[t]) * HandAndFootRed3Bonus
+		g.scoreBreakdowns[t].RedThrees = len(g.teamRed3s[t]) * HandAndFootRed3Bonus
+		score += g.scoreBreakdowns[t].RedThrees
 		if t == goOutTeam {
 			score += HandAndFootGoingOutBonus
+			g.scoreBreakdowns[t].GoingOut = HandAndFootGoingOutBonus
 		}
 		teamScores[t] = score
 	}
@@ -1016,10 +1026,14 @@ func (g *HandAndFoot) scoreRound(goOutTeam int) {
 		player := g.players[i]
 		team := HandAndFootTeamOf(i)
 		for j := 0; j < player.GetCardsSize(); j++ {
-			teamScores[team] -= CanastaFamilyCardValue(player.GetCard(j))
+			v := CanastaFamilyCardValue(player.GetCard(j))
+			teamScores[team] -= v
+			g.scoreBreakdowns[team].HandPenalty += v
 		}
 		for _, c := range player.GetFoot() {
-			teamScores[team] -= CanastaFamilyCardValue(c)
+			v := CanastaFamilyCardValue(c)
+			teamScores[team] -= v
+			g.scoreBreakdowns[team].FootPenalty += v
 		}
 	}
 
@@ -1330,6 +1344,14 @@ func (g *HandAndFoot) SetConfig(cfg HandAndFootConfig) { g.config = cfg }
 // GetDrewFromDiscard 捨て札から引いたか取得
 func (g *HandAndFoot) GetDrewFromDiscard() bool { return g.drewFromDiscard }
 
+// GetScoreBreakdown returns the last settled score breakdown for a team.
+func (g *HandAndFoot) GetScoreBreakdown(team int) HandAndFootScoreBreakdown {
+	if team < 0 || team >= HandAndFootTeamCnt {
+		return HandAndFootScoreBreakdown{}
+	}
+	return g.scoreBreakdowns[team]
+}
+
 // --- Private helpers ---
 
 // sortAllHands 全プレイヤーの手札をソートする
@@ -1346,23 +1368,24 @@ func (g *HandAndFoot) sortHand(playerIdx int) {
 
 // handAndFootJSON is the JSON wire format for HandAndFoot.
 type handAndFootJSON struct {
-	TrumpCards       *TrumpCards          `json:"tc"`
-	Players          []*HandAndFootPlayer `json:"pl"`
-	Team0Melds       []*CanastaMeld       `json:"m0,omitempty"`
-	Team1Melds       []*CanastaMeld       `json:"m1,omitempty"`
-	Team0Red3s       []*Card              `json:"r0,omitempty"`
-	Team1Red3s       []*Card              `json:"r1,omitempty"`
-	Config           HandAndFootConfig    `json:"cf"`
-	Phase            HandAndFootPhase     `json:"ps"`
-	CurrentPlayerIdx int                  `json:"ci"`
-	DiscardPile      []*Card              `json:"dp"`
-	DrawPile         []*Card              `json:"wp"`
-	IsFrozen         bool                 `json:"fr"`
-	GameEndFlag      bool                 `json:"ge"`
-	WinnerTeam       int                  `json:"wt"`
-	RoundNumber      int                  `json:"rn"`
-	ActionLog        []*ActionLogEntry    `json:"al"`
-	DrewFromDiscard  bool                 `json:"dd"`
+	TrumpCards       *TrumpCards                                   `json:"tc"`
+	Players          []*HandAndFootPlayer                          `json:"pl"`
+	Team0Melds       []*CanastaMeld                                `json:"m0,omitempty"`
+	Team1Melds       []*CanastaMeld                                `json:"m1,omitempty"`
+	Team0Red3s       []*Card                                       `json:"r0,omitempty"`
+	Team1Red3s       []*Card                                       `json:"r1,omitempty"`
+	Config           HandAndFootConfig                             `json:"cf"`
+	Phase            HandAndFootPhase                              `json:"ps"`
+	CurrentPlayerIdx int                                           `json:"ci"`
+	DiscardPile      []*Card                                       `json:"dp"`
+	DrawPile         []*Card                                       `json:"wp"`
+	IsFrozen         bool                                          `json:"fr"`
+	GameEndFlag      bool                                          `json:"ge"`
+	WinnerTeam       int                                           `json:"wt"`
+	RoundNumber      int                                           `json:"rn"`
+	ActionLog        []*ActionLogEntry                             `json:"al"`
+	DrewFromDiscard  bool                                          `json:"dd"`
+	ScoreBreakdowns  [HandAndFootTeamCnt]HandAndFootScoreBreakdown `json:"sb,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -1385,6 +1408,7 @@ func (g *HandAndFoot) MarshalJSON() ([]byte, error) {
 		RoundNumber:      g.roundNumber,
 		ActionLog:        g.actionLog,
 		DrewFromDiscard:  g.drewFromDiscard,
+		ScoreBreakdowns:  g.scoreBreakdowns,
 	})
 }
 
@@ -1467,5 +1491,6 @@ func (g *HandAndFoot) UnmarshalJSON(data []byte) error {
 		g.actionLog = make([]*ActionLogEntry, 0)
 	}
 	g.drewFromDiscard = j.DrewFromDiscard
+	g.scoreBreakdowns = j.ScoreBreakdowns
 	return nil
 }

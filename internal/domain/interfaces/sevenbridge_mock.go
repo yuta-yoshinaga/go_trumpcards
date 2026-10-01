@@ -57,6 +57,9 @@ func (m *MockSevenBridgeGame) GetPlayerCnt() int     { return m.Called().Int(0) 
 func (m *MockSevenBridgeGame) GetPlayer(i int) *domain.SevenBridgePlayer {
 	return m.Called(i).Get(0).(*domain.SevenBridgePlayer)
 }
+func (m *MockSevenBridgeGame) GetScoreBreakdown(i int) domain.SevenBridgeScoreBreakdown {
+	return m.Called(i).Get(0).(domain.SevenBridgeScoreBreakdown)
+}
 func (m *MockSevenBridgeGame) GetActionLog() []*domain.ActionLogEntry {
 	return m.Called().Get(0).([]*domain.ActionLogEntry)
 }

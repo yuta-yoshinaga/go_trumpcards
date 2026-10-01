@@ -18,7 +18,11 @@
     "band": "Band",
     "odds": "Pays",
     "chance": "Chance",
-    "noSideBet": "No side bet"
+    "noSideBet": "No side bet",
+    "roundHistory": "Round history",
+    "roundBet": "Bet",
+    "roundPayout": "Payout",
+    "roundChips": "Balance after settlement"
   },
   "button": {
     "betAndar": "Bet Andar",

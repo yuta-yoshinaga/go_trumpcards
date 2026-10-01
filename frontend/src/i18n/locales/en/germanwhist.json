@@ -48,7 +48,7 @@
   "tutorial": {
     "upCard": "The card turned face up. The first half's tricks are played for this one card, and the suit of the very first face-up card is trump for the whole hand.",
     "trick": "Cards played this trick appear here. If you hold the led suit you must follow it.",
-    "hand": "Your hand. Legal cards carry a green ring. In the first half the real decision is whether to win the trick or duck it.",
+    "hand": "Your hand. A check mark and green ring identify legal cards. In the first half the real decision is whether to win the trick or duck it.",
     "actions": "Reset deals again and Give up ends the game. The hint's aim changes between the halves."
   }
 }

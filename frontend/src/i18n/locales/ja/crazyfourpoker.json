@@ -57,5 +57,6 @@
   "wagerSummary.superBonus": "必須 Super Bonus: {{amount}}",
   "wagerSummary.optional": "任意 Queens Up: {{amount}}",
   "wagerSummary.required": "必須分: {{amount}}",
-  "wagerSummary.total": "合計: {{amount}}"
+  "wagerSummary.total": "合計: {{amount}}",
+  "wagerSummary.playChoice": "追加プレイベット: {{playBet}} · 総賭け額: {{total}}"
 }

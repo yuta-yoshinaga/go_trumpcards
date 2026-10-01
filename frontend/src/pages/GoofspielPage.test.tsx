@@ -179,6 +179,8 @@ describe('GoofspielPage', () => {
     renderWithProviders(<GoofspielPage />);
     expect(await screen.findByTestId('gs-seat-1')).toHaveTextContent(/出した札/);
     expect(screen.getByTestId('gs-round-end')).toHaveTextContent(/CPU1 が 9 点/);
+    expect(screen.getByTestId('gs-seat-1')).toHaveTextContent('最高札');
+    expect(screen.getByTestId('gs-bid-margin')).toHaveTextContent('次点との差: 8');
   });
 
   it('announces revealed cards and the round result once, only after reveal', async () => {
@@ -231,6 +233,24 @@ describe('GoofspielPage', () => {
     renderWithProviders(<GoofspielPage />);
     expect(await screen.findByTestId('gs-round-end')).toHaveTextContent(/誰も取りません/);
     expect(screen.getByTestId('gs-reveal-announcement')).toHaveTextContent(/あなた.*♠ 3.*CPU1.*♣ 3.*誰も取りません/);
+    expect(screen.getByTestId('gs-seat-0')).toHaveTextContent('最高札');
+    expect(screen.getByTestId('gs-seat-1')).toHaveTextContent('最高札');
+    expect(screen.queryByTestId('gs-bid-margin')).not.toBeInTheDocument();
+  });
+
+  it('does not show a bid margin when there is no winner', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        currentPrize: undefined,
+        lastWinnerIdx: -1,
+        lastGained: 0,
+        players: [seat(0, { revealedBid: card('SPADE', 8) }), seat(1, { revealedBid: card('CLOVER', 4) })],
+      }),
+    );
+    renderWithProviders(<GoofspielPage />);
+    expect(await screen.findByTestId('gs-seat-0')).toHaveTextContent('最高札');
+    expect(screen.queryByTestId('gs-bid-margin')).not.toBeInTheDocument();
   });
 
   it('turns the next prize on request', async () => {

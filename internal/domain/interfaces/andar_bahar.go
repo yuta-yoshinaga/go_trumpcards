@@ -50,6 +50,8 @@ type AndarBaharGame interface {
 	GetChips() int
 	// GetHistory 罫線履歴
 	GetHistory() []int
+	// GetRoundHistory 精算済みラウンドの金額履歴
+	GetRoundHistory() []domain.AndarBaharRoundHistoryEntry
 	// GetHint 助言のキー
 	GetHint() string
 }
