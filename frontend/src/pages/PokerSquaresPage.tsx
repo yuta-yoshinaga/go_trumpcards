@@ -45,6 +45,11 @@ const POKER_SQUARES_PHASE_KEYS: Readonly<Record<number, string>> = {
   [PokerSquaresPhase.COMPLETE]: 'complete',
 };
 
+/** Reports whether a Poker Squares row or column contains five cards. */
+function isLineComplete(board: PokerSquaresResponse['board'], kind: 'row' | 'col', idx: number): boolean {
+  return kind === 'row' ? board[idx].every((cell) => cell.card != null) : board.every((row) => row[idx].card != null);
+}
+
 /** Poker Squares tutorial step definitions. */
 const POKERSQUARES_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -103,16 +108,19 @@ function PokerSquaresPageContent() {
     onSuccess: (result, args) => {
       const previous = previousStateRef.current;
       previousStateRef.current = result;
-      if (args[0] !== 'place' || !previous) return;
+      if (args[0] !== 'place' || !previous) {
+        setConfirmedAnnouncement('');
+        return;
+      }
       const lines: string[] = [];
       result.rowScores.forEach((score, row) => {
-        const completedNow = result.board[row].every((cell) => cell.card != null);
-        const wasComplete = previous.board[row].every((cell) => cell.card != null);
+        const completedNow = isLineComplete(result.board, 'row', row);
+        const wasComplete = isLineComplete(previous.board, 'row', row);
         if (completedNow && !wasComplete) lines.push(t('confirmedRowScore', { row, score }));
       });
       result.colScores.forEach((score, col) => {
-        const completedNow = result.board.every((row) => row[col].card != null);
-        const wasComplete = previous.board.every((row) => row[col].card != null);
+        const completedNow = isLineComplete(result.board, 'col', col);
+        const wasComplete = isLineComplete(previous.board, 'col', col);
         if (completedNow && !wasComplete) lines.push(t('confirmedColScore', { col, score }));
       });
       setConfirmedAnnouncement(
