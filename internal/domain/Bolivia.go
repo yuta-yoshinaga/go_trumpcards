@@ -1312,15 +1312,7 @@ func (g *Bolivia) scoreRound(goOutPlayerIdx int, goOutBonus int) {
 			team = i % BoliviaTeamCnt
 		}
 		teamRound[team] += score
-		teamBreakdown[team].CardPoints += breakdown.CardPoints
-		teamBreakdown[team].NaturalCanastaBonus += breakdown.NaturalCanastaBonus
-		teamBreakdown[team].MixedCanastaBonus += breakdown.MixedCanastaBonus
-		teamBreakdown[team].EscaleraBonus += breakdown.EscaleraBonus
-		teamBreakdown[team].BoliviaBonus += breakdown.BoliviaBonus
-		teamBreakdown[team].Red3Bonus += breakdown.Red3Bonus
-		teamBreakdown[team].Red3Penalty += breakdown.Red3Penalty
-		teamBreakdown[team].GoOutBonus += breakdown.GoOutBonus
-		teamBreakdown[team].HandPenalty += breakdown.HandPenalty
+		teamBreakdown[team].add(breakdown)
 		g.appendLog(i, "score", "bolivia.log.score", map[string]string{"name": playerName(g.players, i), "score": strconv.Itoa(score), "team": strconv.Itoa(team)}, nil)
 	}
 

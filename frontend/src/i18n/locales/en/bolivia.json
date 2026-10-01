@@ -95,6 +95,7 @@
   },
   "skipMeldButton": "Skip",
   "teamLabel": "Team {{n}}",
+  "yourTeam": "your team",
   "teamScoreSelf": "{{team}} (your team): {{score}}",
   "teamScoreOpponent": "{{team}} (opponent): {{score}}",
   "teamScores": "{{a}} / {{b}}",

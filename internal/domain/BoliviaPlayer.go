@@ -100,6 +100,18 @@ type BoliviaScoreBreakdown struct {
 	HandPenalty         int `json:"handPenalty"`
 }
 
+func (b *BoliviaScoreBreakdown) add(o BoliviaScoreBreakdown) {
+	b.CardPoints += o.CardPoints
+	b.NaturalCanastaBonus += o.NaturalCanastaBonus
+	b.MixedCanastaBonus += o.MixedCanastaBonus
+	b.EscaleraBonus += o.EscaleraBonus
+	b.BoliviaBonus += o.BoliviaBonus
+	b.Red3Bonus += o.Red3Bonus
+	b.Red3Penalty += o.Red3Penalty
+	b.GoOutBonus += o.GoOutBonus
+	b.HandPenalty += o.HandPenalty
+}
+
 // Total returns the net round points represented by the breakdown.
 func (b BoliviaScoreBreakdown) Total() int {
 	return b.CardPoints + b.NaturalCanastaBonus + b.MixedCanastaBonus + b.EscaleraBonus + b.BoliviaBonus + b.Red3Bonus + b.GoOutBonus - b.Red3Penalty - b.HandPenalty

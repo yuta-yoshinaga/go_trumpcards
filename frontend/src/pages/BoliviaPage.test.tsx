@@ -593,6 +593,8 @@ describe('BoliviaPage', () => {
     mockExec.mockResolvedValue(makeBoliviaState({ ...state, phase: 3 }));
     fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
     const breakdown = await screen.findByTestId('bo-score-breakdown-0');
+    expect(breakdown).toHaveTextContent('チーム0');
+    expect(breakdown).toHaveTextContent('あなたのチーム');
     expect(breakdown).toHaveTextContent('37');
     expect(breakdown).toHaveTextContent('500');
     expect(breakdown).toHaveTextContent('1500');
@@ -602,5 +604,9 @@ describe('BoliviaPage', () => {
     expect(breakdown).toHaveTextContent('−65');
     expect(breakdown).toHaveTextContent('100');
     expect(breakdown).toHaveTextContent('ミックスカナスタ0');
+    const opponentBreakdown = await screen.findByTestId('bo-score-breakdown-1');
+    expect(opponentBreakdown).toHaveTextContent('チーム1');
+    expect(opponentBreakdown).not.toHaveTextContent('あなたのチーム');
+    expect(opponentBreakdown).not.toHaveTextContent('−0');
   });
 });

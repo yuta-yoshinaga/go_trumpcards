@@ -95,6 +95,7 @@
   },
   "skipMeldButton": "スキップ",
   "teamLabel": "チーム{{n}}",
+  "yourTeam": "あなたのチーム",
   "teamScoreSelf": "{{team}}（自チーム）: {{score}}",
   "teamScoreOpponent": "{{team}}（相手チーム）: {{score}}",
   "teamScores": "{{a}} / {{b}}",
