@@ -218,7 +218,14 @@ function JassPageContent() {
             .filter((p) => !p.isHuman)
             .map((p) => (
               <div key={p.id} className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                {playerName(p.id, p.isHuman)}: {t('team', { n: p.team })} | {t('cards', { count: p.cardCount })} |{' '}
+                {playerName(p.id, p.isHuman)}:{' '}
+                {p.id === state.dealerIdx && (
+                  <span className="mr-2 text-ds-warning" data-testid={`jass-dealer-${p.id.toString()}`}>
+                    <span aria-hidden="true">♛ </span>
+                    {t('dealerBadge')}
+                  </span>
+                )}
+                {t('team', { n: p.team })} | {t('cards', { count: p.cardCount })} |{' '}
                 {t('trickCount', { count: p.trickCount })}
               </div>
             ))}
@@ -392,20 +399,28 @@ function JassPageContent() {
 
       <GameFooter className={`${gameTheme.jass.footer} px-4 py-2.5`}>
         {humanPlayer && (
-          <PlayerHandSection
-            humanPlayer={humanPlayer}
-            selectedCardIndices={selectedCardIndices}
-            toggleCard={toggleCard}
-            cardWidth={cardWidth}
-            isMobile={isMobile}
-            dataTutorialPrefix="ja"
-            validIndices={isHumanTurn ? state.validPlayIndices : undefined}
-            cardStatusFor={
-              isHumanTurn
-                ? (idx) => t(state.validPlayIndices.includes(idx) ? 'cardPlayable' : 'cardNotPlayable')
-                : undefined
-            }
-          />
+          <>
+            {humanPlayer.id === state.dealerIdx && (
+              <div className="mb-1 text-ds-warning text-sm" data-testid={`jass-dealer-${humanPlayer.id.toString()}`}>
+                <span aria-hidden="true">♛ </span>
+                {t('dealerBadge')}
+              </div>
+            )}
+            <PlayerHandSection
+              humanPlayer={humanPlayer}
+              selectedCardIndices={selectedCardIndices}
+              toggleCard={toggleCard}
+              cardWidth={cardWidth}
+              isMobile={isMobile}
+              dataTutorialPrefix="ja"
+              validIndices={isHumanTurn ? state.validPlayIndices : undefined}
+              cardStatusFor={
+                isHumanTurn
+                  ? (idx) => t(state.validPlayIndices.includes(idx) ? 'cardPlayable' : 'cardNotPlayable')
+                  : undefined
+              }
+            />
+          </>
         )}
 
         <ErrorAlert message={error ?? hintError} onRetry={retry} />

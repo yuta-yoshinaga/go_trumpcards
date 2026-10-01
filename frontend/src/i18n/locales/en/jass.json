@@ -33,7 +33,7 @@
   "teamYou": "Team {{n}} (You)",
   "trumpSuit": "Trump: {{suit}}",
   "noTrump": "Trump not set",
-  "dealer": "Dealer",
+  "dealerBadge": "Dealer",
   "maker": "Maker: Team {{team}}",
   "currentTrick": "Current Trick",
   "previousTrick": "Previous Trick",
