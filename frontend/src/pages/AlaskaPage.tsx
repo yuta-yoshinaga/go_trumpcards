@@ -516,7 +516,7 @@ function AlaskaPageContent() {
                                       aria-label={`${t('tableauCardAriaLabel', {
                                         card: tc.card ? cardAlt(tc.card) : '',
                                         col: colIdx,
-                                        pos: cardIdx,
+                                        pos: cardIdx + 1,
                                       })}${
                                         col.length - cardIdx > 1
                                           ? ` ${t('blockMoveLabel', { n: col.length - cardIdx })}`
