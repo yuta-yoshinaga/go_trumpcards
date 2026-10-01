@@ -132,6 +132,34 @@ describe('OpenFaceChinesePage', () => {
     expect(screen.getByText(/ラウンド: 1/)).toBeInTheDocument();
   });
 
+  it('shows every player total during placing and refreshes scores with game state', async () => {
+    const fourPlayerState = makeState({
+      config: { cpuDifficulty: 0, playerCount: 4, targetRounds: 1 },
+      players: [
+        makePlayer({ totalScore: 12 }),
+        makePlayer({ id: 1, isHuman: false, totalScore: -4 }),
+        makePlayer({ id: 2, isHuman: false, totalScore: 8 }),
+        makePlayer({ id: 3, isHuman: false, totalScore: 0 }),
+      ],
+    });
+    const updatedState = makeState({
+      config: fourPlayerState.config,
+      players: fourPlayerState.players.map((player) => ({ ...player, totalScore: player.totalScore + 3 })),
+    });
+    mockExec.mockResolvedValueOnce(fourPlayerState).mockResolvedValueOnce(updatedState);
+    renderWithProviders(<OpenFaceChinesePage />);
+
+    expect(await screen.findByTestId('ofc-total-score-0')).toBeInTheDocument();
+    expect(screen.getByTestId('ofc-total-score-0')).toHaveTextContent(/あなた\s*累計: 12/);
+    expect(screen.getByTestId('ofc-total-score-1')).toHaveTextContent(/CPU 1\s*累計: -4/);
+    expect(screen.getByTestId('ofc-total-score-2')).toHaveTextContent(/CPU 2\s*累計: 8/);
+    expect(screen.getByTestId('ofc-total-score-3')).toHaveTextContent(/CPU 3\s*累計: 0/);
+
+    fireEvent.click(screen.getByTestId('place-front'));
+    await waitFor(() => expect(screen.getByTestId('ofc-total-score-0')).toHaveTextContent(/累計: 15/));
+    expect(screen.getByTestId('ofc-total-score-1')).toHaveTextContent(/CPU 1\s*累計: -1/);
+  });
+
   it('shows row breakdowns, a visibly distinct tie, and the score equation after scoring', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<OpenFaceChinesePage />);

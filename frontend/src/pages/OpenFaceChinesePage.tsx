@@ -332,7 +332,16 @@ function OpenFaceChinesePageContent() {
               data-tutorial="ofc-info"
             >
               <span className="font-semibold text-ds-warning">{t('round', { round: state.roundNumber })}</span>
-              {human && <span className="text-ds-text-muted">{t('totalScore', { score: human.totalScore })}</span>}
+              {state.players.map((player) => (
+                <span
+                  key={player.id}
+                  className="flex items-center gap-1 text-ds-text-muted"
+                  data-testid={`ofc-total-score-${player.id}`}
+                >
+                  <span>{playerName(player)}</span>
+                  <span>{t('totalScore', { score: player.totalScore })}</span>
+                </span>
+              ))}
             </div>
 
             {/* Announce the pending card by name whenever it changes (persistent region). */}
