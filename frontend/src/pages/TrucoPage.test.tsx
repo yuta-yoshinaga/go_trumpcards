@@ -162,6 +162,31 @@ describe('TrucoPage', () => {
     expect(live.textContent).toBe(`あなた: ${cardAlt(card('SPADE', 1))}、CPU: ${cardAlt(card('HEART', 5))}`);
   });
 
+  it('announces only the completed baza result in a permanent status region', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2, trickResults: [0] }));
+    renderWithProviders(<TrucoPage />);
+    const live = await screen.findByTestId('truco-trick-result-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveClass('sr-only');
+    expect(live).toHaveTextContent('1バサ: あなたの勝ち');
+  });
+
+  it('announces a completed parda', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2, trickResults: [-1] }));
+    renderWithProviders(<TrucoPage />);
+    const live = await screen.findByTestId('truco-trick-result-live');
+    expect(live).toHaveTextContent('1バサ: パルダ（引き分け）');
+  });
+
+  it('keeps the result status region empty during play', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 0, trickResults: [0] }));
+    renderWithProviders(<TrucoPage />);
+    const live = await screen.findByTestId('truco-trick-result-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toBeEmptyDOMElement();
+  });
+
   it('exposes the tutorial target elements for the guided tour', async () => {
     // A card on the table so the trick area (conditionally rendered) is present.
     mockExec.mockResolvedValue(makeState({ currentTrick: [{ playerIdx: 1, card: card('CLOVER', 4) }] }));
