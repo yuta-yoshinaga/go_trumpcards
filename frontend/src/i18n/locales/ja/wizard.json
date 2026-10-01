@@ -48,6 +48,8 @@
   },
   "currentTrick": "現在のトリック",
   "trickAnnouncementEntry": "{{player}}: {{card}}",
+  "trickResultAnnouncement": "{{winner}}がトリックを獲得しました。獲得トリック数: {{counts}}",
+  "trickCountAnnouncementEntry": "{{player}} {{count}}トリック",
   "listSeparator": "、",
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",

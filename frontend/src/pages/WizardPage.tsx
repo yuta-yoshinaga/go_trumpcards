@@ -39,7 +39,7 @@ import { parseWizardCommand, WIZARD_HELP } from '../utils/cli/commands/wizardCom
 import { formatWizardState } from '../utils/cli/formatters/wizardFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { ohHellBidSummary } from '../utils/ohHellBid';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { type WizardBidOutcome, wizardBidAccuracy } from '../utils/wizardBidAccuracy';
 import { isWizardLegalPlay } from '../utils/wizardLegal';
@@ -187,6 +187,21 @@ function WizardPageContent() {
       }
     }
   }, [state, t]);
+
+  const trickResultAnnouncement =
+    state && (state.phase === WizardPhase.TRICK_END || state.phase === WizardPhase.ROUND_END)
+      ? t('trickResultAnnouncement', {
+          winner: findPlayerName(state.players, state.leadPlayerIdx),
+          counts: state.players
+            .map((player) =>
+              t('trickCountAnnouncementEntry', {
+                player: findPlayerName(state.players, player.id),
+                count: player.trickCount,
+              }),
+            )
+            .join(t('listSeparator')),
+        })
+      : '';
 
   const isPlayPhaseForKbd = state?.phase === WizardPhase.PLAY;
   const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
@@ -625,6 +640,9 @@ function WizardPageContent() {
 
             <div data-testid="wizard-trick-live" className="sr-only" role="status" aria-live="polite">
               {trickAnnouncement}
+            </div>
+            <div data-testid="wizard-trick-result-live" className="sr-only" role="status" aria-live="polite">
+              {trickResultAnnouncement}
             </div>
 
             {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
