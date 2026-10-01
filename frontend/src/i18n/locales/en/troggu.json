@@ -32,6 +32,8 @@
   "points": "{{points}} pts this deal",
   "score": "total {{score}}",
   "currentTrick": "Current trick",
+  "previousTrick": "Previous trick",
+  "previousTrickWinner": "Winner: {{name}}",
   "trickWinner": "WIN",
   "restricted": "You must follow the led suit",
   "bid": "Bid",
