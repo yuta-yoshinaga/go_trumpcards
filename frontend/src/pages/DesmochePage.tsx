@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import type { desmocheApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -62,6 +63,7 @@ function DesmochePageContent() {
   // The desmoche move needs a card *inside* a meld, which is a different
   // selection from the hand: {meld index, card index within it}.
   const [meldCard, setMeldCard] = useState<{ meld: number; card: number } | null>(null);
+  const [stockDrawConfirmOpen, setStockDrawConfirmOpen] = useState(false);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('desmoche');
   const cliConfig: CliGameConfig<DesmocheResponse, Parameters<typeof desmocheApi.exec>> = useMemo(
@@ -94,6 +96,14 @@ function DesmochePageContent() {
   const human = state.players.find((p) => p.isHuman);
   const opponents = state.players.filter((p) => !p.isHuman);
   const isHumanTurn = !ended && state.currentPlayerIdx === 0;
+
+  const handleStockDraw = () => {
+    if (state.stockCount === 0) {
+      setStockDrawConfirmOpen(true);
+      return;
+    }
+    game.handleDrawStock();
+  };
 
   const toggleCard = (i: number) => {
     setSelected((prev) => (prev.includes(i) ? prev.filter((n) => n !== i) : [...prev, i]));
@@ -342,7 +352,7 @@ function DesmochePageContent() {
                     data-hint-action="draw"
                     aria-describedby={stockEmpty ? 'desmoche-draw-guide' : undefined}
                     className={`${btnPrimary} min-h-11`}
-                    onClick={game.handleDrawStock}
+                    onClick={handleStockDraw}
                   >
                     {t('drawStock')}
                   </button>
@@ -433,6 +443,18 @@ function DesmochePageContent() {
           </GameFooter>
         </>
       )}
+      <ConfirmDialog
+        open={stockDrawConfirmOpen}
+        title={t('emptyStockConfirmTitle')}
+        message={t('emptyStockConfirmMessage')}
+        confirmLabel={t('emptyStockConfirmButton')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={() => {
+          setStockDrawConfirmOpen(false);
+          game.handleDrawStock();
+        }}
+        onCancel={() => setStockDrawConfirmOpen(false)}
+      />
     </GamePageShell>
   );
 }
