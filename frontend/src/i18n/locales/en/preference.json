@@ -55,7 +55,9 @@
   },
   "roundResult": {
     "title": "Round Result",
-    "tricks": "{{name}} tricks: {{count}}"
+    "tricks": "{{name}} tricks: {{count}}",
+    "declarerContract": "Declarer contract",
+    "defendingContract": "Defending contract"
   },
   "progress": {
     "line": "Declarer progress: {{won}} / {{needed}} tricks",

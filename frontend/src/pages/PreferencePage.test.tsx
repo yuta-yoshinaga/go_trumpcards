@@ -59,7 +59,16 @@ const trickEndState = makePreferenceState({
     { playerIdx: 2, card: { design: 'HEART', value: 1 } },
   ],
 });
-const roundEndState = makePreferenceState({ phase: 3, isHumanBidTurn: false, roundTricks: [6, 2, 2] });
+const roundEndState = makePreferenceState({
+  phase: 3,
+  isHumanBidTurn: false,
+  roundTricks: [6, 2, 2],
+  scoreBreakdown: [
+    { declarerContract: 120, defendingContract: 0 },
+    { declarerContract: 0, defendingContract: -40 },
+    { declarerContract: 0, defendingContract: -40 },
+  ],
+});
 const gameEndState = makePreferenceState({
   phase: 4,
   isHumanBidTurn: false,
@@ -205,6 +214,16 @@ describe('PreferencePage', () => {
     renderWithProviders(<PreferencePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
     expect(screen.getByText('ラウンド結果')).toBeInTheDocument();
+    expect(screen.getByTestId('preference-score-breakdown-0')).toHaveTextContent('宣言者契約: 120');
+    expect(screen.getByTestId('preference-score-breakdown-1')).toHaveTextContent('防御側契約: −40');
+    expect(screen.getByTestId('preference-score-breakdown-2')).toHaveTextContent('防御側契約: −40');
+  });
+
+  it('does not show score breakdown during play', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<PreferencePage />);
+    await waitFor(() => expect(screen.getByTestId('preference-contract-progress')).toBeInTheDocument());
+    expect(screen.queryByTestId('preference-score-breakdown-0')).not.toBeInTheDocument();
   });
 
   it('renders the game end message', async () => {

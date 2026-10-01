@@ -55,7 +55,9 @@
   },
   "roundResult": {
     "title": "ラウンド結果",
-    "tricks": "{{name}} トリック: {{count}}"
+    "tricks": "{{name}} トリック: {{count}}",
+    "declarerContract": "宣言者契約",
+    "defendingContract": "防御側契約"
   },
   "progress": {
     "line": "宣言者の進捗: {{won}} / {{needed}} トリック",
