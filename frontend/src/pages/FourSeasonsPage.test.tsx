@@ -183,6 +183,12 @@ describe('FourSeasonsPage', () => {
     expect(screen.getByTestId('fs-tableau-next-3')).toHaveTextContent('どのカードでも置けます');
   });
 
+  it('includes the top card name in each occupied cross pile label and preserves empty labels', async () => {
+    renderWithProviders(<FourSeasonsPage />);
+    expect(await screen.findByTestId('fs-tableau-0')).toHaveAccessibleName('十字 0: ♥ Q。置けるのは J');
+    expect(screen.getByTestId('fs-tableau-3')).toHaveAccessibleName('十字 3 どのカードでも置けます');
+  });
+
   it('does not move when nothing is selected', async () => {
     renderWithProviders(<FourSeasonsPage />);
     await waitFor(() => expect(screen.getByTestId('fs-foundation-0')).toBeDisabled());

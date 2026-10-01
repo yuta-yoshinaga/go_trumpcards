@@ -410,7 +410,11 @@ function FourSeasonsPageContent() {
                       title={accepts !== null ? t('acceptsTooltip', { rank: valueName(accepts) }) : t('acceptsAny')}
                       aria-label={
                         top
-                          ? `${t('cross')} ${idx} ${t('acceptsTooltip', { rank: valueName(accepts ?? 0) })}`
+                          ? t('crossCardAria', {
+                              col: idx,
+                              card: cardAlt(top),
+                              accepts: t('acceptsTooltip', { rank: valueName(accepts ?? 0) }),
+                            })
                           : `${t('cross')} ${idx} ${t('acceptsAny')}`
                       }
                       className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${selected ? 'ring-2 ring-ds-warning' : ''} ${hintTableau === idx ? 'ring-2 ring-ds-success animate-pulse' : ''} ${source && !selected ? 'ring-2 ring-ds-info/70' : ''}`}
