@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import type { dilotiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -130,6 +130,7 @@ function DilotiPageContent() {
   } = useGameHint('diloti', state);
   const { cardWidth, isMobile } = useCardDimensions();
   const [focusedTableIndices, setFocusedTableIndices] = useState<number[]>([]);
+  const focusHelpId = useId();
 
   if (!state)
     return (
@@ -144,6 +145,11 @@ function DilotiPageContent() {
   const isRoundEnd = state.phase === DilotiPhase.ROUND_END;
   const isGameEnd = state.phase === DilotiPhase.GAME_END || state.gameEndFlag;
   const canPlay = isPlayPhase && state.isHumanTurn;
+  const activeFocusedTableIndices = canPlay && selectedHandIdx !== null ? focusedTableIndices : [];
+  const handleSelectHand = (idx: number) => {
+    setFocusedTableIndices([]);
+    selectHand(idx);
+  };
 
   // **打てる手はサーバが数えたものだけ。** 同ランク・合計一致・宣言が絡むので、
   // 画面側で組み直すと必ずずれる。
@@ -247,7 +253,7 @@ function DilotiPageContent() {
                     state.table.map((c, i) => (
                       <div
                         key={`${c.design}-${c.value}-${i}`}
-                        className={`flex flex-col items-center rounded ${focusedTableIndices.includes(i) ? 'ring-2 ring-ds-warning' : ''}`}
+                        className={`flex flex-col items-center rounded ${activeFocusedTableIndices.includes(i) ? 'ring-2 ring-ds-warning' : ''}`}
                         data-testid={`diloti-table-card-${i}`}
                       >
                         <CardImage card={c} width={cardWidth} />
@@ -291,7 +297,7 @@ function DilotiPageContent() {
                       {takes.length > 0 || declareCands.length > 0 ? t('chooseMove') : t('noCapture')}
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <span id="diloti-focus-help" className="sr-only">
+                      <span id={focusHelpId} className="sr-only">
                         {t('focusTableCards')}
                       </span>
                       {takes.map((o) => (
@@ -299,13 +305,18 @@ function DilotiPageContent() {
                           key={`t-${o.tableIdxs.join('-')}-${o.declIdxs.join('-')}`}
                           type="button"
                           className={btnPrimary}
-                          onClick={() => take(o.tableIdxs, o.declIdxs)}
+                          onClick={() => {
+                            setFocusedTableIndices([]);
+                            take(o.tableIdxs, o.declIdxs);
+                          }}
                           disabled={loading}
                           data-testid={`diloti-take-${[...o.tableIdxs, ...o.declIdxs.map((d) => `d${d}`)].join('-')}`}
                           aria-label={takeAriaLabel(o.tableIdxs, o.declIdxs)}
-                          aria-describedby="diloti-focus-help"
+                          aria-describedby={focusHelpId}
                           onFocus={() => setFocusedTableIndices(o.tableIdxs)}
                           onBlur={() => setFocusedTableIndices([])}
+                          onMouseEnter={() => setFocusedTableIndices(o.tableIdxs)}
+                          onMouseLeave={() => setFocusedTableIndices([])}
                         >
                           {t('takeGroup', { cards: takeLabel(o.tableIdxs, o.declIdxs) })}
                         </button>
@@ -315,16 +326,21 @@ function DilotiPageContent() {
                           key={`d-${c.value}-${c.tableIdxs.join('-')}`}
                           type="button"
                           className={btnSecondary}
-                          onClick={() => declare(c.value, c.tableIdxs)}
+                          onClick={() => {
+                            setFocusedTableIndices([]);
+                            declare(c.value, c.tableIdxs);
+                          }}
                           disabled={loading}
                           data-testid={`diloti-declare-${c.value}-${c.tableIdxs.join('-')}`}
                           aria-label={t('declareGroup', {
                             value: c.value,
                             cards: c.tableIdxs.map((i) => cardAlt(state.table[i])).join(t('listSeparator')),
                           })}
-                          aria-describedby="diloti-focus-help"
+                          aria-describedby={focusHelpId}
                           onFocus={() => setFocusedTableIndices(c.tableIdxs)}
                           onBlur={() => setFocusedTableIndices([])}
+                          onMouseEnter={() => setFocusedTableIndices(c.tableIdxs)}
+                          onMouseLeave={() => setFocusedTableIndices([])}
                         >
                           {t('declareGroup', { value: c.value, cards: c.tableIdxs.join(', ') })}
                         </button>
@@ -421,7 +437,7 @@ function DilotiPageContent() {
                 <PlayerHandSection
                   humanPlayer={humanPlayer}
                   selectedCardIndices={selectedHandIdx === null ? [] : [selectedHandIdx]}
-                  toggleCard={selectHand}
+                  toggleCard={handleSelectHand}
                   cardWidth={cardWidth}
                   isMobile={isMobile}
                   dataTutorialPrefix="diloti"
