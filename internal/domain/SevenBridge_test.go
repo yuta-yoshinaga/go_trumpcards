@@ -890,6 +890,7 @@ func TestSevenBridgePlayer_JSONRoundTrip(t *testing.T) {
 		domain.NewCard(domain.CardDesignHeart, 3, true),
 	})
 	p.SetRoundScore(12)
+	p.ScoreBreakdown = domain.SevenBridgeScoreBreakdown{Ace: 1, Number: 2}
 	b, err := json.Marshal(p)
 	require.NoError(t, err)
 
@@ -899,6 +900,10 @@ func TestSevenBridgePlayer_JSONRoundTrip(t *testing.T) {
 	assert.Equal(t, 1, q.GetCardsSize())
 	assert.Equal(t, 1, q.GetMeldCount())
 	assert.Equal(t, 12, q.GetRoundScore())
+	assert.Equal(t, domain.SevenBridgeScoreBreakdown{Ace: 1, Number: 2}, q.GetScoreBreakdown())
+	legacy := &domain.SevenBridgePlayer{}
+	require.NoError(t, json.Unmarshal([]byte(`{"gp":{},"rh":{},"md":[]}`), legacy))
+	assert.Equal(t, domain.SevenBridgeScoreBreakdown{}, legacy.GetScoreBreakdown())
 }
 
 func TestSevenBridgePlayer_UnmarshalInvalid(t *testing.T) {
@@ -1029,6 +1034,9 @@ func TestSevenBridgeCardPenalty_AllValues(t *testing.T) {
 	require.NoError(t, g.PlayerDiscard(0))
 	assert.Equal(t, 0, g.GetRoundWinnerIdx())
 	assert.Equal(t, 66, g.GetPlayer(0).GetRoundScore()) // 1 + 5 + 50 + 10 = 66
+	assert.Equal(t, 66, g.GetScoreBreakdown(0).Total())
+	assert.Equal(t, domain.SevenBridgeScoreBreakdown{Ace: 1, Number: 5, Face: 10, Seven: 50}, g.GetScoreBreakdown(0))
+	assert.Equal(t, 0, g.GetScoreBreakdown(1).Total())
 }
 
 // Drives dealInitialCards fallback when no 7 is in the remaining draw pile.

@@ -46573,6 +46573,17 @@ components:
                 type: integer
               cumulativeScore:
                 type: integer
+              scoreBreakdown:
+                type: object
+                properties:
+                  ace:
+                    type: integer
+                  number:
+                    type: integer
+                  face:
+                    type: integer
+                  seven:
+                    type: integer
         phase:
           type: integer
           description: "Game phase: 0 = Draw, 1 = Play, 2 = RoundEnd, 3 = GameEnd"
