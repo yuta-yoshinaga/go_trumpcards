@@ -160,6 +160,23 @@ function SambaPageContent() {
     (isDrawPhase || isMeldPhase || isDiscardPhase) && state?.players[state.currentPlayerIdx]?.isHuman === true;
 
   const [meldProgressMsg, setMeldProgressMsg] = useState('');
+  const [teamScoreAnnouncement, setTeamScoreAnnouncement] = useState('');
+  const previousTeamScores = useRef<[number, number] | null>(null);
+  useEffect(() => {
+    if (!state) return;
+    const scores: [number, number] = [state.teamScores[0] ?? 0, state.teamScores[1] ?? 0];
+    const previousScores = previousTeamScores.current;
+    previousTeamScores.current = scores;
+    if (!previousScores) return;
+
+    const updates = scores.flatMap((score, team) =>
+      score !== previousScores[team] ? [t('teamScoreAnnouncement', { team: t('teamLabel', { n: team }), score })] : [],
+    );
+    if (updates.length > 0) {
+      setTeamScoreAnnouncement(updates.join(t('listSeparator')));
+    }
+  }, [state, t]);
+
   const previousHumanTeamMelds = useRef<Map<string, number> | null>(null);
   useEffect(() => {
     if (!state || !humanPlayer) return;
@@ -284,6 +301,9 @@ function SambaPageContent() {
               </span>
               <span className="sr-only" role="status" aria-live="polite" data-testid="sa-meld-progress-announce">
                 {meldProgressMsg}
+              </span>
+              <span className="sr-only" role="status" aria-live="polite" data-testid="sa-team-score-announce">
+                {teamScoreAnnouncement}
               </span>
             </div>
             <div className="text-ds-text-muted text-center mb-2 text-sm" data-testid="sa-team-scores">
