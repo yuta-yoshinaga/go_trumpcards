@@ -253,6 +253,14 @@ function SoloWhistPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <span data-testid="solowhist-highest-bid-live" className="sr-only" role="status" aria-live="polite">
+        {highestBid > 0
+          ? t('bidHighest', {
+              bid: highestBidLabelKey ? t(highestBidLabelKey) : highestBid,
+              player: highestBidderName,
+            })
+          : t('bidNone')}
+      </span>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
