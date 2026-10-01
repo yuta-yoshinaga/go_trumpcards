@@ -21,6 +21,8 @@
   "chips": "Chips: {{amount}}",
   "roundBet": "Bet: {{amount}}",
   "currentBet": "To call: {{amount}}",
+  "additionalCallAmount": "Additional amount to call: {{amount}}",
+  "noAdditionalCallAmount": "No additional chips needed to call",
   "handLabel": "Your hand",
   "playersTitle": "Players",
   "selectedCount": "selected: {{n}}",
