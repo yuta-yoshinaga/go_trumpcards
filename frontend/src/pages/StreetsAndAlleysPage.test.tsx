@@ -116,7 +116,7 @@ describe('StreetsAndAlleysPage', () => {
     renderWithProviders(<StreetsAndAlleysPage />);
     const announcement = await screen.findByTestId('sa-destination-announcement');
     expect(announcement).toHaveAttribute('aria-live', 'polite');
-    expect(announcement).toHaveTextContent('');
+    expect(announcement.textContent).toBe('');
     fireEvent.click(await screen.findByRole('button', { name: /^♠ 5/ }));
     await waitFor(() => expect(announcement).toHaveTextContent('7件'));
     fireEvent.click(screen.getByRole('button', { name: /^♠ 5/ }));
@@ -250,6 +250,21 @@ describe('StreetsAndAlleysPage', () => {
     renderWithProviders(<StreetsAndAlleysPage />);
     await waitFor(() => expect(screen.getByText(/ストリート・アンド・アレイズ/)).toBeInTheDocument());
     expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
+  });
+
+  it('announces only move count changes after the initial render', async () => {
+    mockExec.mockImplementation(async (command) =>
+      command === 'move' ? { ...playingState, moveCount: 4 } : playingState,
+    );
+    renderWithProviders(<StreetsAndAlleysPage />);
+    const announcement = await screen.findByTestId('sa-move-count-announcement');
+    expect(announcement).toHaveAttribute('role', 'status');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toBeEmptyDOMElement();
+
+    fireEvent.click(await screen.findByRole('button', { name: /^♠ 5/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^♥ 6/ }));
+    await waitFor(() => expect(announcement).toHaveTextContent('手数: 4'));
   });
 
   it('renders 4 foundation suits', async () => {
