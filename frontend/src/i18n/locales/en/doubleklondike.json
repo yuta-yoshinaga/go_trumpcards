@@ -8,6 +8,8 @@
   "stock": "Stock",
   "waste": "Waste",
   "foundation": "Foundations",
+  "foundationAriaLabel": "Foundation {{col}}",
+  "foundationTopAriaLabel": "Foundation {{col}}: {{card}}",
   "tableau": "Tableau",
   "stockCount": "Stock left: {{count}}",
   "stockDrawAriaLabel": "Draw from stock, {{count}} cards remaining",
