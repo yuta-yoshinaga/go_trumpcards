@@ -7,9 +7,26 @@ type SpadesPlayer struct {
 	*GamePlayer
 	RoundScoreHolder
 	TrickHolder
-	bid  int // 宣言したトリック数 (-1 = 未ビッド)
-	bags int // 累積バッグ数 (オーバートリック)
+	bid            int // 宣言したトリック数 (-1 = 未ビッド)
+	bags           int // 累積バッグ数 (オーバートリック)
+	scoreBreakdown SpadesScoreBreakdown
 }
+
+// SpadesScoreBreakdown はラウンド得点を構成する実際の加減点。
+type SpadesScoreBreakdown struct {
+	BidScore       int `json:"bidScore"`
+	OvertrickScore int `json:"overtrickScore"`
+	NilScore       int `json:"nilScore"`
+	BagPenalty     int `json:"bagPenalty"`
+}
+
+// Total は内訳の合計を返す。
+func (b SpadesScoreBreakdown) Total() int {
+	return b.BidScore + b.OvertrickScore + b.NilScore - b.BagPenalty
+}
+
+// GetScoreBreakdown はラウンド得点の内訳を返す。
+func (p *SpadesPlayer) GetScoreBreakdown() SpadesScoreBreakdown { return p.scoreBreakdown }
 
 // NewSpadesPlayer コンストラクタ
 func NewSpadesPlayer(isHuman bool) *SpadesPlayer {
@@ -34,16 +51,18 @@ func (p *SpadesPlayer) SetBags(bags int) { p.bags = bags }
 // ResetRound ラウンドをリセット（ビッド・トリック・手札・終了状態を初期化）
 func (p *SpadesPlayer) ResetRound() {
 	p.bid = -1
+	p.scoreBreakdown = SpadesScoreBreakdown{}
 	resetRoundWithTricks(p)
 }
 
 // spadesPlayerJSON is the JSON wire format for SpadesPlayer.
 type spadesPlayerJSON struct {
-	GamePlayer       *GamePlayer       `json:"gp"`
-	RoundScoreHolder *RoundScoreHolder `json:"rh"`
-	TrickHolder      *TrickHolder      `json:"th"`
-	Bid              int               `json:"bd"`
-	Bags             int               `json:"bg"`
+	GamePlayer       *GamePlayer          `json:"gp"`
+	RoundScoreHolder *RoundScoreHolder    `json:"rh"`
+	TrickHolder      *TrickHolder         `json:"th"`
+	Bid              int                  `json:"bd"`
+	Bags             int                  `json:"bg"`
+	ScoreBreakdown   SpadesScoreBreakdown `json:"sb"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -54,6 +73,7 @@ func (p *SpadesPlayer) MarshalJSON() ([]byte, error) {
 		TrickHolder:      &p.TrickHolder,
 		Bid:              p.bid,
 		Bags:             p.bags,
+		ScoreBreakdown:   p.scoreBreakdown,
 	})
 }
 
@@ -76,5 +96,6 @@ func (p *SpadesPlayer) UnmarshalJSON(data []byte) error {
 	}
 	p.bid = j.Bid
 	p.bags = j.Bags
+	p.scoreBreakdown = j.ScoreBreakdown
 	return nil
 }

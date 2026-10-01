@@ -302,6 +302,7 @@ const spadesPlayers: SpadesResponse['players'] = [
     cumulativeScore: 0,
     trickCount: 0,
     bags: 0,
+    scoreBreakdown: { bidScore: 0, overtrickScore: 0, nilScore: 0, bagPenalty: 0 },
   },
   {
     id: 1,
@@ -313,6 +314,7 @@ const spadesPlayers: SpadesResponse['players'] = [
     cumulativeScore: 10,
     trickCount: 1,
     bags: 2,
+    scoreBreakdown: { bidScore: 30, overtrickScore: 1, nilScore: 0, bagPenalty: 0 },
   },
   {
     id: 2,
@@ -324,6 +326,7 @@ const spadesPlayers: SpadesResponse['players'] = [
     cumulativeScore: 20,
     trickCount: 2,
     bags: 1,
+    scoreBreakdown: { bidScore: 30, overtrickScore: 2, nilScore: 0, bagPenalty: 0 },
   },
   {
     id: 3,
@@ -335,6 +338,7 @@ const spadesPlayers: SpadesResponse['players'] = [
     cumulativeScore: 5,
     trickCount: 0,
     bags: 0,
+    scoreBreakdown: { bidScore: 0, overtrickScore: 0, nilScore: 0, bagPenalty: 0 },
   },
 ];
 

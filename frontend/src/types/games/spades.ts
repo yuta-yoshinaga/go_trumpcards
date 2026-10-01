@@ -14,6 +14,7 @@ export interface SpadesPlayerData {
   cumulativeScore: number;
   trickCount: number;
   bags: number;
+  scoreBreakdown: { bidScore: number; overtrickScore: number; nilScore: number; bagPenalty: number };
 }
 
 /** A card played in a Spades trick. */

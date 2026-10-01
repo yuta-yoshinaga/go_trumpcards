@@ -31,6 +31,7 @@ const defaultState: SpadesResponse = {
       cumulativeScore: 0,
       trickCount: 0,
       bags: 0,
+      scoreBreakdown: { bidScore: 0, overtrickScore: 0, nilScore: 0, bagPenalty: 0 },
     },
     {
       id: 1,
@@ -42,6 +43,7 @@ const defaultState: SpadesResponse = {
       cumulativeScore: 0,
       trickCount: 0,
       bags: 0,
+      scoreBreakdown: { bidScore: 0, overtrickScore: 0, nilScore: 0, bagPenalty: 0 },
     },
     {
       id: 2,
@@ -53,6 +55,7 @@ const defaultState: SpadesResponse = {
       cumulativeScore: 0,
       trickCount: 0,
       bags: 0,
+      scoreBreakdown: { bidScore: 0, overtrickScore: 0, nilScore: 0, bagPenalty: 0 },
     },
     {
       id: 3,
@@ -64,6 +67,7 @@ const defaultState: SpadesResponse = {
       cumulativeScore: 0,
       trickCount: 0,
       bags: 0,
+      scoreBreakdown: { bidScore: 0, overtrickScore: 0, nilScore: 0, bagPenalty: 0 },
     },
   ],
   phase: 0,

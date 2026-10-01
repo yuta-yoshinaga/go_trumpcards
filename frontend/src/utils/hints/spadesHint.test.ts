@@ -18,6 +18,7 @@ function makeState(overrides: Partial<SpadesResponse> = {}): SpadesResponse {
         cumulativeScore: 0,
         trickCount: 0,
         bags: 0,
+        scoreBreakdown: { bidScore: 0, overtrickScore: 0, nilScore: 0, bagPenalty: 0 },
       },
       {
         id: 1,
@@ -29,6 +30,7 @@ function makeState(overrides: Partial<SpadesResponse> = {}): SpadesResponse {
         cumulativeScore: 0,
         trickCount: 0,
         bags: 0,
+        scoreBreakdown: { bidScore: 0, overtrickScore: 0, nilScore: 0, bagPenalty: 0 },
       },
       {
         id: 2,
@@ -40,6 +42,7 @@ function makeState(overrides: Partial<SpadesResponse> = {}): SpadesResponse {
         cumulativeScore: 0,
         trickCount: 0,
         bags: 0,
+        scoreBreakdown: { bidScore: 0, overtrickScore: 0, nilScore: 0, bagPenalty: 0 },
       },
       {
         id: 3,
@@ -51,6 +54,7 @@ function makeState(overrides: Partial<SpadesResponse> = {}): SpadesResponse {
         cumulativeScore: 0,
         trickCount: 0,
         bags: 0,
+        scoreBreakdown: { bidScore: 0, overtrickScore: 0, nilScore: 0, bagPenalty: 0 },
       },
     ],
     phase: SpadesPhase.BID,
