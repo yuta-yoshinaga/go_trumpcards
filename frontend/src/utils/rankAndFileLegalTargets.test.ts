@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Card, CardDesign, RankAndFileResponse, RankAndFileTableauCard } from '../types/card';
-import { rankAndFileLegalTargetCount } from './rankAndFileLegalTargets';
+import { rankAndFileLegalTargetCount, rankAndFileLegalTargets } from './rankAndFileLegalTargets';
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 const tc = (design: CardDesign, value: number, faceUp = true): RankAndFileTableauCard => ({
@@ -98,5 +98,19 @@ describe('rankAndFileLegalTargetCount', () => {
   it('does not count an illegal foundation move', () => {
     const current = state([[tc('SPADE', 2)], []]);
     expect(rankAndFileLegalTargetCount(current, { zone: 'tableau', col: 0, cardIndex: 0 })).toBe(1);
+  });
+});
+
+describe('rankAndFileLegalTargets', () => {
+  it('returns legal tableau columns and a foundation target by destination type', () => {
+    const current = state([[], [tc('HEART', 8)], [tc('SPADE', 8)]], {
+      waste: [card('SPADE', 7)],
+      foundation: [[card('SPADE', 6)], [], [], [], [], [], [], []],
+    });
+    expect(rankAndFileLegalTargets(current, { zone: 'waste' })).toEqual([
+      { zone: 'tableau', col: 0 },
+      { zone: 'tableau', col: 1 },
+      { zone: 'foundation', col: 0 },
+    ]);
   });
 });

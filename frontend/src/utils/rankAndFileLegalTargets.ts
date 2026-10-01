@@ -7,17 +7,20 @@ import { rankAndFileFoundationTarget } from './rankAndFileFoundationTarget';
  * Mirrors RankAndFile.MoveWasteToTableau / MoveTableauToTableau and
  * MoveWasteToFoundation / MoveTableauToFoundation in internal/domain/RankAndFile.go.
  */
-export function rankAndFileLegalTargetCount(state: RankAndFileResponse, source: RankAndFileMoveZone): number {
+export function rankAndFileLegalTargets(
+  state: RankAndFileResponse,
+  source: RankAndFileMoveZone,
+): Array<{ zone: 'tableau' | 'foundation'; col: number }> {
   const isWaste = source.zone === 'waste';
   const col = source.col ?? -1;
   const cardIndex = source.cardIndex ?? -1;
   const card = isWaste ? state.waste[state.waste.length - 1] : state.tableau[col]?.[cardIndex]?.card;
-  if (!card) return 0;
+  if (!card) return [];
 
   const sequenceIsMovable = isWaste || (state.sequenceStarts[col] ?? []).includes(cardIndex);
-  if (!sequenceIsMovable) return 0;
+  if (!sequenceIsMovable) return [];
 
-  let count = 0;
+  const targets: Array<{ zone: 'tableau' | 'foundation'; col: number }> = [];
   for (let targetCol = 0; targetCol < state.tableau.length; targetCol++) {
     if (!isWaste && targetCol === col) continue;
     const target = state.tableau[targetCol] ?? [];
@@ -26,14 +29,20 @@ export function rankAndFileLegalTargetCount(state: RankAndFileResponse, source: 
       target.length === 0 ||
       (top?.faceUp && top.card && isOppositeColor(card.design, top.card.design) && card.value === top.card.value - 1)
     ) {
-      count++;
+      targets.push({ zone: 'tableau', col: targetCol });
     }
   }
 
   const isWasteTop = isWaste;
   const isTableauTop = !isWaste && cardIndex === (state.tableau[col]?.length ?? 0) - 1;
-  if ((isWasteTop || isTableauTop) && rankAndFileFoundationTarget(card, state.foundation)) count++;
-  return count;
+  const foundationTarget = (isWasteTop || isTableauTop) && rankAndFileFoundationTarget(card, state.foundation);
+  if (foundationTarget) targets.push({ zone: 'foundation', col: foundationTarget.col ?? 0 });
+  return targets;
+}
+
+/** Count legal destinations for a selected source. */
+export function rankAndFileLegalTargetCount(state: RankAndFileResponse, source: RankAndFileMoveZone): number {
+  return rankAndFileLegalTargets(state, source).length;
 }
 
 function isOppositeColor(a: string, b: string): boolean {

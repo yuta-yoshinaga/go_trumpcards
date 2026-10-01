@@ -42,6 +42,8 @@
     "rankandfileDraw": "Nothing else can move — draw from the stock"
   },
   "cannotGrab": "cannot be picked up",
-  "moveTargetCount": "{{count}} legal move destinations",
+  "tableauMoveTarget": "tableau column {{col}}",
+  "foundationMoveTarget": "foundation",
+  "listSeparator": ", ",
   "noMoveTargets": "No legal move destinations"
 }

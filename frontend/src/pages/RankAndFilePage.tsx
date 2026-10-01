@@ -35,7 +35,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt, suitSymbol } from '../utils/cardAlt';
 import { parseRankandfileCommand, RANKANDFILE_HELP } from '../utils/cli/commands/rankandfileCommands';
 import { formatRankandfileState } from '../utils/cli/formatters/rankandfileFormatter';
-import { rankAndFileLegalTargetCount } from '../utils/rankAndFileLegalTargets';
+import { rankAndFileLegalTargets } from '../utils/rankAndFileLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
@@ -216,7 +216,17 @@ function RankAndFilePageContent() {
         : (state.tableau[hint.fromCol]?.[hint.cardIndex]?.card ?? null);
   const hintCardName = hintCard ? cardAlt(hintCard) : '';
   const hintDest = hint ? formatHintZone(t, hint.toZone, hint.toCol) : '';
-  const legalTargetCount = selectedSource ? rankAndFileLegalTargetCount(state, selectedSource) : null;
+  const legalTargets = selectedSource ? rankAndFileLegalTargets(state, selectedSource) : null;
+  const legalTargetAnnouncement =
+    legalTargets === null
+      ? ''
+      : legalTargets.length === 0
+        ? t('noMoveTargets')
+        : legalTargets
+            .map((target) =>
+              target.zone === 'tableau' ? t('tableauMoveTarget', { col: target.col }) : t('foundationMoveTarget'),
+            )
+            .join(t('listSeparator'));
 
   // Ring highlight tying the hint text to the actual source/target cards, mirroring
   // Yukon/RussianSolitaire. Clears automatically once the move is played (hint → null).
@@ -263,11 +273,7 @@ function RankAndFilePageContent() {
         {tc('label.selectSourceFirst')}
       </span>
       <div className="sr-only" role="status" aria-live="polite" data-testid="rf-move-target-announcement">
-        {legalTargetCount === null
-          ? ''
-          : legalTargetCount === 0
-            ? t('noMoveTargets')
-            : t('moveTargetCount', { count: legalTargetCount })}
+        {legalTargetAnnouncement}
       </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
