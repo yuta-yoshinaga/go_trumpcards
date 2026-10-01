@@ -112,6 +112,7 @@ const NAPOLEON_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 const SUIT_KEYS: Record<number, string> = { 1: 'spade', 2: 'club', 3: 'heart', 4: 'diamond' };
 const DESIGN_ORDER: Readonly<Record<string, number>> = { SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4 };
+const MAX_BID = 17;
 
 /** Renders the Napoleon game page with bidding, trump declaration, kitty exchange, trick play, and scoring. */
 export const NapoleonPage = withTutorial(NapoleonPageContent, 'napoleon', NP_TUTORIAL_STEPS);
@@ -214,7 +215,8 @@ function NapoleonPageContent() {
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
   const minLegalBid = Math.max(napoleonConfig.minBid, state.highestBid + 1);
-  const isBidValueLegal = bidValue >= minLegalBid && bidValue <= 17;
+  const effectiveBidValue = Math.max(bidValue, minLegalBid);
+  const isBidValueLegal = effectiveBidValue <= MAX_BID;
   const isHumanNapoleon = isTrumpDeclaration && state.players[state.napoleonIdx]?.isHuman === true;
   const isHumanExchange = isKittyExchange && state.players[state.napoleonIdx]?.isHuman === true;
   // Napoleon-side face-card progress toward the bid (target). The adjutant's
@@ -679,8 +681,8 @@ function NapoleonPageContent() {
                   <input
                     type="number"
                     min={minLegalBid}
-                    max={17}
-                    value={bidValue}
+                    max={MAX_BID}
+                    value={effectiveBidValue}
                     onChange={(e) => setBidValue(Number(e.target.value))}
                     className="w-16 px-2 py-1 rounded bg-white/20 text-ds-text-primary text-center"
                     aria-label={t('bidInputLabel')}
@@ -689,7 +691,7 @@ function NapoleonPageContent() {
                     type="button"
                     className={`${btnPrimary}${!isBidValueLegal ? ' opacity-50 cursor-not-allowed active:scale-100 hover:shadow-none' : ''}`}
                     onClick={() => {
-                      if (isBidValueLegal) handleBid(bidValue);
+                      if (isBidValueLegal) handleBid(effectiveBidValue);
                     }}
                     disabled={loading}
                     aria-disabled={!isBidValueLegal || undefined}

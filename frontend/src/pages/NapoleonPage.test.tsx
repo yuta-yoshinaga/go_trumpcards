@@ -267,6 +267,31 @@ describe('NapoleonPage', () => {
     await waitFor(() => expect(screen.getByLabelText('ビッド数入力')).toHaveAttribute('min', '16'));
   });
 
+  it('raises the displayed bid to the current minimum and allows submitting it', async () => {
+    mockExec.mockResolvedValue({ ...bidPhaseState, highestBid: 13 });
+    renderWithProviders(<NapoleonPage />);
+    const bidInput = await screen.findByLabelText('ビッド数入力');
+    expect(bidInput).toHaveValue(14);
+    const bidButton = screen.getByRole('button', { name: 'ビッド' });
+    expect(bidButton).not.toHaveAttribute('aria-disabled');
+
+    mockExec.mockClear();
+    fireEvent.click(bidButton);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', 14));
+  });
+
+  it('raises the displayed bid when the configured minimum increases', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<NapoleonPage />);
+    const bidInput = await screen.findByLabelText('ビッド数入力');
+    fireEvent.change(bidInput, { target: { value: '12' } });
+    fireEvent.click(screen.getByText('設定'));
+    fireEvent.change(screen.getAllByRole('combobox')[2], { target: { value: '14' } });
+
+    expect(bidInput).toHaveValue(14);
+    expect(screen.getByRole('button', { name: 'ビッド' })).not.toHaveAttribute('aria-disabled');
+  });
+
   it('keeps pass available and blocks bidding when no higher bid is possible', async () => {
     mockExec.mockResolvedValue({ ...bidPhaseState, highestBid: 17 });
     renderWithProviders(<NapoleonPage />);
