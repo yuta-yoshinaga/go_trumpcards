@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { duchessApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, DuchessResponse, DuchessTableauCard } from '../types/card';
@@ -157,6 +158,27 @@ describe('DuchessPage', () => {
     renderWithProviders(<DuchessPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'めくる' })).toBeDisabled());
     expect(screen.getByRole('button', { name: /山札 残り35枚/ })).toBeDisabled();
+  });
+
+  it('includes the remaining fan count in normal reserve names and keeps the base-rank action name', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<DuchessPage />);
+    const fanTop = await screen.findByRole('button', { name: '♣ 2（扇0の一番上・残り1枚）' });
+    expect(fanTop).toBeInTheDocument();
+
+    const previousLanguage = i18n.language;
+    try {
+      await i18n.changeLanguage('en');
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(<DuchessPage />);
+      expect(await screen.findByRole('button', { name: /top of fan 0, 1 remaining/ })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+
+    mockExec.mockResolvedValue(awaitingBaseState);
+    renderWithProviders(<DuchessPage />);
+    expect(await screen.findByRole('button', { name: 'リザーブ扇 2 の札を開始ランクにする' })).toBeInTheDocument();
   });
 
   it('selects a reserve top as a move source once the rank is set', async () => {

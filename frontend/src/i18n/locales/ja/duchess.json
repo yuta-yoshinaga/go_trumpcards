@@ -13,7 +13,7 @@
   "emptyFanAriaLabel": "リザーブ扇 {{idx}} は空です",
   "emptyFoundationAriaLabel": "空の組札{{idx}} ({{suit}})",
   "emptyWasteAriaLabel": "捨て札は空です",
-  "fanTopAriaLabel": "{{card}}（扇{{idx}}の一番上）",
+  "fanTopAriaLabel": "{{card}}（扇{{idx}}の一番上・残り{{count}}枚）",
   "foundation": "組札",
   "foundationAriaLabel": "{{suit}} 組札{{idx}} {{count}}枚",
   "frontendHint": {
