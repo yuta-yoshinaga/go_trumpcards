@@ -43,7 +43,9 @@
     "raise": "レイズ",
     "flushBonus": "フラッシュボーナス",
     "straightFlush": "ストレートフラッシュ",
-    "total": "合計"
+    "total": "総配当",
+    "betTotal": "合計ベット",
+    "net": "差引収支"
   },
   "hintReason": {
     "raise3x": "6枚以上のフラッシュ — 3倍レイズ推奨",

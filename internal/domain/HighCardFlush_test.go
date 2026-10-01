@@ -601,6 +601,66 @@ func TestHighCardFlush_TotalPayout(t *testing.T) {
 	assert.Equal(t, total, hcf.GetTotalPayout())
 }
 
+func TestHighCardFlush_NetChangeMatchesChipSettlement(t *testing.T) {
+	tests := []struct {
+		name string
+		play func(*domain.HighCardFlush) error
+	}{
+		{
+			name: "win with raise",
+			play: func(hcf *domain.HighCardFlush) error {
+				hcf.SetPlayerHand(makeHCFCards(
+					[2]int{domain.CardDesignHeart, 10}, [2]int{domain.CardDesignHeart, 11},
+					[2]int{domain.CardDesignHeart, 12}, [2]int{domain.CardDesignHeart, 13},
+					[2]int{domain.CardDesignClover, 4}, [2]int{domain.CardDesignClover, 6}, [2]int{domain.CardDesignDiamond, 8},
+				))
+				hcf.SetDealerHand(makeHCFCards(
+					[2]int{domain.CardDesignSpade, 13}, [2]int{domain.CardDesignSpade, 9},
+					[2]int{domain.CardDesignSpade, 1}, [2]int{domain.CardDesignHeart, 7},
+					[2]int{domain.CardDesignClover, 4}, [2]int{domain.CardDesignClover, 6}, [2]int{domain.CardDesignDiamond, 8},
+				))
+				return hcf.Raise(1)
+			},
+		},
+		{
+			name: "fold loses ante and side bets",
+			play: func(hcf *domain.HighCardFlush) error {
+				hcf.SetPlayerHand(makeHCFCards(
+					[2]int{domain.CardDesignHeart, 2}, [2]int{domain.CardDesignSpade, 5},
+					[2]int{domain.CardDesignClover, 8}, [2]int{domain.CardDesignDiamond, 4},
+					[2]int{domain.CardDesignHeart, 9}, [2]int{domain.CardDesignSpade, 6}, [2]int{domain.CardDesignDiamond, 8},
+				))
+				return hcf.Fold()
+			},
+		},
+		{
+			name: "fold wins flush bonus",
+			play: func(hcf *domain.HighCardFlush) error {
+				hcf.SetPlayerHand(makeHCFCards(
+					[2]int{domain.CardDesignHeart, 5}, [2]int{domain.CardDesignHeart, 6},
+					[2]int{domain.CardDesignHeart, 7}, [2]int{domain.CardDesignHeart, 8},
+					[2]int{domain.CardDesignHeart, 9}, [2]int{domain.CardDesignSpade, 2}, [2]int{domain.CardDesignClover, 3},
+				))
+				return hcf.Fold()
+			},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			hcf := domain.NewDefaultHighCardFlush()
+			chipsBefore := hcf.GetChips()
+			require.NoError(t, hcf.Bet(100, 10, 10))
+			require.NoError(t, tc.play(hcf))
+			assert.Equal(t, hcf.GetChips()-chipsBefore, hcf.GetNetChange())
+			wantTotalBet := 120
+			if hcf.GetRaiseBet() > 0 {
+				wantTotalBet += hcf.GetRaiseBet()
+			}
+			assert.Equal(t, wantTotalBet, hcf.GetTotalBet())
+		})
+	}
+}
+
 func TestHighCardFlush_FullRound_RaiseAndDealResults(t *testing.T) {
 	// Drive a full round through Bet → Raise to ensure deterministic chip accounting.
 	hcf := domain.NewDefaultHighCardFlush()

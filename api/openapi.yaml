@@ -66421,6 +66421,12 @@ components:
         totalPayout:
           type: integer
           description: Sum of all payouts.
+        totalBet:
+          type: integer
+          description: Sum of all bets placed this round.
+        netChange:
+          type: integer
+          description: Chip balance change for this round (total payout minus total bets).
         dealerQualified:
           type: boolean
           description: True when the dealer's best flush is 3+ cards with high card 9 or better.

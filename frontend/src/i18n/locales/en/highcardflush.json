@@ -43,7 +43,9 @@
     "raise": "Raise",
     "flushBonus": "Flush Bonus",
     "straightFlush": "Straight Flush",
-    "total": "Total"
+    "total": "Total payout",
+    "betTotal": "Total bet",
+    "net": "Net result"
   },
   "hintReason": {
     "raise3x": "6+ card flush — recommend Raise x3",
