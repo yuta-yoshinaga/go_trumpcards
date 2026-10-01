@@ -18,6 +18,7 @@
     "chanceRemaining": "Chances left: {{count}}"
   },
   "chanceResponder": "Responding: {{player}}",
+  "chanceTimeRemaining": "{{seconds}}s remaining",
   "settings": {
     "cpuDifficulty": "CPU difficulty",
     "difficulty": {
