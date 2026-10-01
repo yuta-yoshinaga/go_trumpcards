@@ -62153,6 +62153,19 @@ components:
           description: Winning column per round. Always an array, never null.
           items:
             type: integer
+        roundHistory:
+          type: array
+          description: Bet, payout, and chips after each settled round, newest first.
+          items:
+            type: object
+            required: [bet, payout, chips]
+            properties:
+              bet:
+                type: integer
+              payout:
+                type: integer
+              chips:
+                type: integer
         message:
           type: string
         messageCode:

@@ -48,6 +48,7 @@ const betState: AndarBaharResponse = {
   mainPayout: 0,
   sidePayout: 0,
   history: [],
+  roundHistory: [],
   message: '',
 };
 
@@ -84,6 +85,21 @@ beforeEach(() => {
 });
 
 describe('AndarBaharPage', () => {
+  it('shows settled round history in response order with original values', async () => {
+    mockApi.mockResolvedValue({
+      ...betState,
+      roundHistory: [
+        { bet: 150, payout: 190, chips: 1040 },
+        { bet: 100, payout: 0, chips: 940 },
+      ],
+    });
+    renderWithProviders(<AndarBaharPage />);
+    const table = await screen.findByTestId('andarbahar-round-history');
+    expect(table).toHaveTextContent('150');
+    expect(table).toHaveTextContent('190');
+    expect(table).toHaveTextContent('1040');
+    expect(table.textContent?.indexOf('1040')).toBeLessThan(table.textContent?.indexOf('940') ?? 0);
+  });
   it('exposes localized names and counts for each road result', async () => {
     mockApi.mockResolvedValue({
       ...betState,

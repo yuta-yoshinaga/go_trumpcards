@@ -18,7 +18,11 @@
     "band": "帯",
     "odds": "配当",
     "chance": "確率",
-    "noSideBet": "賭けない"
+    "noSideBet": "賭けない",
+    "roundHistory": "ラウンド別収支",
+    "roundBet": "賭け額",
+    "roundPayout": "払い戻し",
+    "roundChips": "精算後残高"
   },
   "button": {
     "betAndar": "アンダーに賭ける",
