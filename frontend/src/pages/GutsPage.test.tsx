@@ -105,6 +105,22 @@ describe('GutsPage', () => {
     }
   });
 
+  it('exposes each player as a list item with a combined accessible summary', async () => {
+    const state = makeGutsState({
+      phase: 1,
+      players: [
+        { ...resultState.players[0], chips: 230, roundBet: 10, handName: 'highcard' },
+        ...resultState.players.slice(1),
+      ],
+    });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<GutsPage />);
+
+    const list = await screen.findByTestId('guts-player-list');
+    const player = list.querySelector('li');
+    expect(player).toHaveAccessibleName('あなた。チップ: 230。賭け: 10。勝者。ハイカード');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<GutsPage />);

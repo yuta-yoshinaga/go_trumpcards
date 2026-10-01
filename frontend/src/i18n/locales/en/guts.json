@@ -20,6 +20,8 @@
   "roundBet": "Bet: {{amount}}",
   "handLabel": "Your hand",
   "playersTitle": "Players",
+  "playerSummary": "{{name}}. Chips: {{chips}}. Bet: {{bet}}. {{status}}",
+  "playerSummaryWithHand": "{{name}}. Chips: {{chips}}. Bet: {{bet}}. {{status}}. {{hand}}",
   "declareNotice": "Your turn — declare In (stay) or Out (fold).",
   "declareMoney": {
     "chips": "Balance: {{amount}}",
