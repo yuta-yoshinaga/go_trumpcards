@@ -40,11 +40,6 @@ export function rankAndFileLegalTargets(
   return targets;
 }
 
-/** Count legal destinations for a selected source. */
-export function rankAndFileLegalTargetCount(state: RankAndFileResponse, source: RankAndFileMoveZone): number {
-  return rankAndFileLegalTargets(state, source).length;
-}
-
 function isOppositeColor(a: string, b: string): boolean {
   const red = (design: string) => design === 'HEART' || design === 'DIAMOND';
   return red(a) !== red(b);
