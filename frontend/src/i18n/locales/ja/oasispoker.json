@@ -12,6 +12,8 @@
   },
   "button": {
     "bet": "ベット",
+    "minimum": "最小額",
+    "maximum": "最大額",
     "exchange": "交換",
     "stand": "ステイ",
     "play": "コール",
