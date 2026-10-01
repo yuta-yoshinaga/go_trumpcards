@@ -96,6 +96,28 @@ describe('CassinoPage', () => {
     expect(within(breakdown).getByTestId('cs-breakdown-player-2')).toHaveTextContent('所持');
   });
 
+  it('shows zero for score categories missing from a game-end breakdown', async () => {
+    const detail = {
+      cards: {},
+      spades: {},
+      aces: {},
+      hasBigCasino: -1,
+      hasLittleCasino: -1,
+      sweeps: {},
+      gained: {},
+    } as unknown as NonNullable<CassinoResponse['lastRoundDetail']>;
+    mockExec.mockResolvedValue(makeState({ gameEndFlag: true, lastRoundDetail: detail }));
+
+    renderWithProviders(<CassinoPage />);
+
+    const player = within(await screen.findByTestId('cs-score-breakdown')).getByTestId('cs-breakdown-player-0');
+    expect(
+      within(player)
+        .getAllByRole('cell')
+        .map((cell) => cell.textContent),
+    ).toEqual(['0', '0', '0', '0', '—', '—', '0']);
+  });
+
   it('exposes pressed state for selectable hand, table, and build cards', async () => {
     mockExec.mockResolvedValue(
       makeState({ builds: [{ cards: [card('SPADE', 2)], value: 5, ownerIdx: 0, isMulti: false }] as never }),
