@@ -48309,6 +48309,28 @@ components:
                 type: array
                 items:
                   $ref: '#/components/schemas/Card'
+        scoreBreakdown:
+          type: array
+          description: Per-team breakdown of the last settled round score; penalties are positive values subtracted from the total.
+          items:
+            type: object
+            properties:
+              team:
+                type: integer
+              meldCards:
+                type: integer
+              redCanasta:
+                type: integer
+              blackCanasta:
+                type: integer
+              redThrees:
+                type: integer
+              goingOut:
+                type: integer
+              handPenalty:
+                type: integer
+              footPenalty:
+                type: integer
         phase:
           type: integer
           description: "Game phase: 0 = Draw, 1 = Meld, 2 = Discard, 3 = RoundEnd, 4 = GameEnd"

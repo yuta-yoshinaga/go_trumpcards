@@ -31,6 +31,8 @@ func setupHandAndFootWebMock() *interfaces.MockHandAndFootGame {
 	m.On("GetTeamMelds", 1).Return(([]*domain.CanastaMeld)(nil))
 	m.On("GetTeamRed3s", 0).Return(([]*domain.Card)(nil))
 	m.On("GetTeamRed3s", 1).Return(([]*domain.Card)(nil))
+	m.On("GetScoreBreakdown", 0).Return(domain.HandAndFootScoreBreakdown{MeldCards: 10, RedCanasta: 500, HandPenalty: 5})
+	m.On("GetScoreBreakdown", 1).Return(domain.HandAndFootScoreBreakdown{})
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	return m
 }
@@ -60,6 +62,11 @@ func TestHandAndFootWebPresenter_Output(t *testing.T) {
 		require.Equal(4, len(resObj.Players))
 		require.Equal(50, resObj.MinMeld)
 		require.Equal(2, len(resObj.Teams))
+		require.Len(resObj.ScoreBreakdown, 2)
+		require.Equal(0, resObj.ScoreBreakdown[0].Team)
+		require.Equal(10, resObj.ScoreBreakdown[0].MeldCards)
+		require.Equal(500, resObj.ScoreBreakdown[0].RedCanasta)
+		require.Equal(5, resObj.ScoreBreakdown[0].HandPenalty)
 		require.False(resObj.GameEndFlag)
 		require.Equal(0, resObj.CurrentPlayerIdx)
 		require.Equal(1, resObj.RoundNumber)
