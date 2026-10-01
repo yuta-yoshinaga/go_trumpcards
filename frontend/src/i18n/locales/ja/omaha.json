@@ -95,6 +95,7 @@
   },
   "cardUsed": "使用",
   "cardUnused": "未使用",
+  "cardUsedAria": "最善役に使用するカード: {{card}}",
   "potAwards": {
     "mainPot": "メインポット",
     "sidePot": "サイドポット{{n}}",

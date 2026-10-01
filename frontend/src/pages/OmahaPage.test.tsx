@@ -166,6 +166,9 @@ const preFlopWithBetState: OmahaResponse = {
 const flopState: OmahaResponse = {
   ...preFlopState,
   phase: 2,
+  players: preFlopState.players.map((player) =>
+    player.isHuman ? { ...player, liveBestHandHoleIndices: [2, 3], liveBestHandBoardIndices: [0, 1, 2] } : player,
+  ),
   communityCards: [
     { design: 'SPADE', value: 10 },
     { design: 'HEART', value: 5 },
@@ -176,7 +179,13 @@ const flopState: OmahaResponse = {
 /** SHOWDOWN (phase 5) */
 const showdownState: OmahaResponse = {
   players: [
-    humanPlayer({ handName: '\u30ef\u30f3\u30da\u30a2', currentBet: 0, chips: 950 }),
+    humanPlayer({
+      handName: '\u30ef\u30f3\u30da\u30a2',
+      currentBet: 0,
+      chips: 950,
+      liveBestHandHoleIndices: [0, 1],
+      liveBestHandBoardIndices: [0, 1, 2],
+    }),
     cpuPlayer(1, {
       handName: '\u30c4\u30fc\u30da\u30a2',
       folded: false,
@@ -334,6 +343,8 @@ describe('OmahaPage', () => {
     const badge = await screen.findByTestId('omaha-live-besthand');
     expect(badge).toHaveTextContent('現在の役');
     expect(screen.getByTestId('omaha-live-besthand-name')).toHaveTextContent('ツーペア');
+    expect(screen.getByTestId('omaha-live-besthand-hole-2')).toBeInTheDocument();
+    expect(screen.getByTestId('omaha-live-besthand-board-0')).toBeInTheDocument();
   });
 
   it('updates the live best-hand preview as more board cards appear (full house on turn)', async () => {
