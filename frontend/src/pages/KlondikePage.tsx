@@ -354,7 +354,7 @@ function KlondikePageContent() {
                       style={{ width: kl.cw, height: kl.ch }}
                       className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                     >
-                      {t('draw')}
+                      {t('redealShort')}
                     </button>
                   )}
                 </div>

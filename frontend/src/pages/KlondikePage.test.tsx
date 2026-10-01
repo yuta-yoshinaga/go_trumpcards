@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, klondikeApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -138,9 +138,9 @@ describe('KlondikePage', () => {
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
     const stockLabel = screen.getByText('山札 (0)');
-    expect(
-      within(stockLabel.parentElement as HTMLElement).getByRole('button', { name: 'ウェイストを山札に戻して配り直す' }),
-    ).toBeInTheDocument();
+    const stockArea = within(stockLabel.parentElement as HTMLElement);
+    const redealButton = stockArea.getByRole('button', { name: '配り直す — ウェイストを山札に戻します' });
+    expect(redealButton).toHaveTextContent('配り直す');
   });
 
   it('distinguishes drawing from redealing in English', async () => {
@@ -148,13 +148,18 @@ describe('KlondikePage', () => {
     try {
       mockExec.mockResolvedValue(playingEmptyStockState);
       renderWithProviders(<KlondikePage />);
-      await waitFor(() =>
-        expect(screen.getByRole('button', { name: 'Redeal the waste back into the stock' })).toBeInTheDocument(),
-      );
+      await waitFor(() => expect(screen.getByText('Stock (0)')).toBeInTheDocument());
+      const emptyStockLabel = screen.getByText('Stock (0)');
+      const stockArea = within(emptyStockLabel.parentElement as HTMLElement);
+      const redealButton = stockArea.getByRole('button', { name: 'Redeal — return the waste to the stock' });
+      expect(redealButton).toHaveTextContent('Redeal');
 
+      cleanup();
       mockExec.mockResolvedValue(playingState);
       renderWithProviders(<KlondikePage />);
-      await waitFor(() => expect(screen.getByRole('button', { name: 'Draw' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByText(/^Stock \(/)).toBeInTheDocument());
+      const stockLabel = screen.getByText(/^Stock \(/);
+      expect(within(stockLabel.parentElement as HTMLElement).getByRole('button', { name: 'Draw' })).toBeInTheDocument();
     } finally {
       await i18n.changeLanguage('ja');
     }
