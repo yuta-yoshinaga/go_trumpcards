@@ -6,6 +6,7 @@
   },
   "title": "コロラド",
   "stock": "山札",
+  "stockCount": "{{count}}枚",
   "waste": "捨て札",
   "wasteCount": "{{count}}枚",
   "tableau": "場札",
