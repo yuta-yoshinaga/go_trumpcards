@@ -138,6 +138,7 @@ describe('CinchPage', () => {
     expect(bids).toHaveTextContent('CPU 1: パス');
     expect(bids).toHaveTextContent('CPU 2: 4');
     expect(bids).toHaveTextContent('CPU 3: 未入札');
+    expect(screen.queryByTestId('cinch-dealer-bid-notice')).not.toBeInTheDocument();
 
     mockExec.mockResolvedValue(
       makeCinchState({
