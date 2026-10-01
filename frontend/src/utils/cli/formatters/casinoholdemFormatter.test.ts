@@ -21,6 +21,7 @@ const baseState: CasinoHoldemResponse = {
   callPayout: 0,
   bonusPayout: 0,
   totalPayout: 0,
+  netChange: 0,
   playerHandRank: 0,
   dealerHandRank: 0,
   message: '',

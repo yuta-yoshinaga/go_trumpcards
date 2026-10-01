@@ -51578,6 +51578,7 @@ components:
         - callPayout
         - bonusPayout
         - totalPayout
+        - netChange
         - playerHandRank
         - dealerHandRank
         - message
@@ -51647,6 +51648,10 @@ components:
         totalPayout:
           type: integer
           description: Total payout for the round (sum of all payouts)
+          example: 0
+        netChange:
+          type: integer
+          description: Net chip change for the round (total payout minus all wagers)
           example: 0
         playerHandRank:
           type: integer

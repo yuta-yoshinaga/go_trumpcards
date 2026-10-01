@@ -31,6 +31,7 @@ type CasinoHoldemWebOutput struct {
 	CallPayout     int              `json:"callPayout"`
 	BonusPayout    int              `json:"bonusPayout"`
 	TotalPayout    int              `json:"totalPayout"`
+	NetChange      int              `json:"netChange"`
 	PlayerHandRank int              `json:"playerHandRank"`
 	DealerHandRank int              `json:"dealerHandRank"`
 	WebOutputBase

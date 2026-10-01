@@ -183,6 +183,30 @@ func TestCasinoHoldem_Resolve_PlayerWinsWithRoyalFlush(t *testing.T) {
 	assert.Equal(t, 100+100*domain.CasinoHoldemAntePayRoyalFlush, g.GetAntePayout())
 	// コール: 200*2 = 400
 	assert.Equal(t, 400, g.GetCallPayout())
+	assert.Equal(t, 10200, g.GetNetChange())
+}
+
+func TestCasinoHoldem_GetNetChange_LossAndFold(t *testing.T) {
+	t.Run("loss", func(t *testing.T) {
+		g := domain.NewDefaultCasinoHoldem()
+		g.SetAnteBet(100)
+		g.SetBonusBet(50)
+		g.SetCallBet(200)
+		// All wagers are lost and there are no payouts.
+		assert.Equal(t, -350, g.GetNetChange())
+	})
+	t.Run("fold forfeits ante and bonus", func(t *testing.T) {
+		g := domain.NewDefaultCasinoHoldem()
+		require.NoError(t, g.Bet(100, 0))
+		require.NoError(t, g.Fold())
+		assert.Equal(t, -100, g.GetNetChange())
+	})
+	t.Run("no bonus wager", func(t *testing.T) {
+		g := domain.NewDefaultCasinoHoldem()
+		g.SetAnteBet(100)
+		g.SetCallBet(200)
+		assert.Equal(t, -300, g.GetNetChange())
+	})
 }
 
 // 配当ロジック：ディーラーがクオリファイしない（High Card のみ）

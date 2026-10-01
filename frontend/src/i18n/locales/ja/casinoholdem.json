@@ -37,7 +37,9 @@
     "ante": "アンテ",
     "call": "コール",
     "bonus": "AAボーナス",
-    "total": "合計"
+    "total": "合計",
+    "netChange": "純増減",
+    "noNetChange": "増減なし"
   },
   "handRank": {
     "0": "ハイカード",

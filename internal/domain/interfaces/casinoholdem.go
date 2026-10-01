@@ -44,6 +44,8 @@ type CasinoHoldemGame interface {
 	GetBonusPayout() int
 	// GetTotalPayout 合計配当を取得する
 	GetTotalPayout() int
+	// GetNetChange このラウンドの純増減チップ数を取得する
+	GetNetChange() int
 	// GetPlayerHandRank プレイヤーハンドランクを取得する
 	GetPlayerHandRank() int
 	// GetDealerHandRank ディーラーハンドランクを取得する

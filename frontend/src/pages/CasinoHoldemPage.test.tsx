@@ -32,6 +32,7 @@ const betPhaseState: CasinoHoldemResponse = {
   callPayout: 0,
   bonusPayout: 0,
   totalPayout: 0,
+  netChange: 0,
   playerHandRank: 0,
   dealerHandRank: 0,
   message: '',
@@ -189,6 +190,28 @@ describe('CasinoHoldemPage', () => {
     await waitFor(() => expect(screen.getByText('勝利！')).toBeInTheDocument());
     expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument();
     expect(screen.getByText('ディーラークオリファイ')).toBeInTheDocument();
+  });
+
+  it.each([
+    ['increase', { ...endPlayerWins, netChange: 10200 }, '+10200'],
+    ['decrease', { ...endDealerWins, netChange: -300 }, '-300'],
+    ['no wager', { ...betPhaseState, phase: 3, netChange: 0 }, '増減なし'],
+  ])('shows net chip change for %s', async (_name, state, expected) => {
+    mockApi.mockResolvedValue(state);
+    renderWithProviders(<CasinoHoldemPage />);
+    expect(await screen.findByTestId('net-change')).toHaveTextContent(expected);
+  });
+
+  it('shows localized net chip change in English', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockApi.mockResolvedValue({ ...betPhaseState, phase: 3, netChange: 0 });
+      renderWithProviders(<CasinoHoldemPage />);
+      expect(await screen.findByTestId('net-change')).toHaveTextContent('Net change: No net change');
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('shows end phase with dealer wins', async () => {
