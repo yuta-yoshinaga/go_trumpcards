@@ -65,7 +65,8 @@
     "title": "ディール結果",
     "outcome": "結果: {{outcome}}",
     "declarer": "デクレアラー: {{name}}",
-    "captured": "宣言者側の獲得点: {{points}} 点"
+    "captured": "宣言者側の獲得点: {{points}} 点",
+    "required": "成功に必要な点: {{points}} 点"
   },
   "hintAvailable": "ヒント",
   "hint": {

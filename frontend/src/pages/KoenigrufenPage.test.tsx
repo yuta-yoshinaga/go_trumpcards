@@ -256,6 +256,7 @@ describe('KoenigrufenPage', () => {
     );
     renderWithProviders(<KoenigrufenPage />);
     await waitFor(() => expect(screen.getByTestId('koenigrufen-result')).toHaveTextContent('宣言者側の獲得点: 70 点'));
+    expect(screen.getByTestId('koenigrufen-result')).toHaveTextContent('成功に必要な点: 54 点');
   });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
