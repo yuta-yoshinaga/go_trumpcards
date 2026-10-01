@@ -1,6 +1,7 @@
 import type {
   AluetteResponse,
   AnacondaResponse,
+  AndarBaharResponse,
   BaccaratBanqueResponse,
   BasraResponse,
   BatakResponse,
@@ -96,6 +97,32 @@ import type {
   WattenResponse,
   ZwanzigerrufenResponse,
 } from '../types/card';
+
+/** Creates a default Andar Bahar state. */
+export function makeAndarBaharState(overrides?: Partial<AndarBaharResponse>): AndarBaharResponse {
+  return {
+    andarCards: [],
+    baharCards: [],
+    firstColumn: 0,
+    dealtCount: 0,
+    phase: 1,
+    chips: 1000,
+    betAmount: 0,
+    betTarget: 0,
+    sideAmount: 0,
+    sideBand: -1,
+    sideBandProbabilities: [],
+    winner: -1,
+    result: 0,
+    payout: 0,
+    mainPayout: 0,
+    sidePayout: 0,
+    history: [],
+    roundHistory: [],
+    message: '',
+    ...overrides,
+  };
+}
 
 /** Creates a default Egyptian Ratscrew state. */
 export function makeEgyptianRatscrewState(overrides?: Partial<EgyptianRatscrewResponse>): EgyptianRatscrewResponse {

@@ -26,6 +26,21 @@ func TestAndarBaharActionLogUsesDetailCode(t *testing.T) {
 	assert.Equal(t, map[string]string{"column": "アンダー", "amount": "100"}, entry.DetailParams)
 }
 
+func TestAndarBaharRoundHistoryAndClearPreserveChips(t *testing.T) {
+	ab := newAndarBaharForTest(t)
+	require.NoError(t, ab.Bet(100, AndarBaharBetAndar, 50, AndarBaharSide2To5))
+	chips := ab.GetChips()
+	require.Len(t, ab.GetRoundHistory(), 1)
+	entry := ab.GetRoundHistory()[0]
+	assert.Equal(t, 150, entry.Bet)
+	assert.Equal(t, ab.GetPayout(), entry.Payout)
+	assert.Equal(t, chips, entry.Chips)
+	ab.ClearHistory()
+	assert.Empty(t, ab.GetRoundHistory())
+	assert.Empty(t, ab.GetHistory())
+	assert.Equal(t, chips, ab.GetChips(), "履歴クリアはチップ残高を変えない")
+}
+
 // **先に配る列は基準札の色で決まる。** 黒ならアンダー、赤ならバハール。
 func TestAndarBaharFirstColumnFollowsTheJokerColour(t *testing.T) {
 	t.Parallel()
