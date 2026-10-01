@@ -4,6 +4,8 @@ import { toepenApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, ToepenPlayer, ToepenResponse } from '../types/card';
+import { ToepenPhase } from '../types/phases';
+import { cardAlt } from '../utils/cardAlt';
 import { ToepenPage } from './ToepenPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -94,6 +96,25 @@ describe('ToepenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     const handButtons = screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'play');
     expect(handButtons).toHaveLength(3);
+    const cpuHand = screen.getByRole('img', { name: /CPU1 .*手札/ });
+    expect(cpuHand.querySelectorAll('img[src="/images/z01.png"]')).toHaveLength(3);
+  });
+
+  it('reveals the CPU hands only after the game ends', async () => {
+    const cpuCards = [card('HEART', 12), card('DIAMOND', 13), card('SPADE', 1)];
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        phase: ToepenPhase.GAME_END,
+        gameEndFlag: true,
+        players: [human(), cpu(1, { cards: cpuCards, hidden: false }), cpu(2), cpu(3)],
+      }),
+    );
+    renderWithProviders(<ToepenPage />);
+
+    const cpuHand = await screen.findByRole('img', { name: /CPU1 .*手札/ });
+    expect(cpuHand.querySelectorAll('img[src^="/images/"]')).toHaveLength(3);
+    expect(cpuHand.querySelector(`img[alt="${cardAlt(cpuCards[0]!)}"]`)).toBeInTheDocument();
+    expect(cpuHand.querySelector('img[src="/images/z01.png"]')).not.toBeInTheDocument();
   });
 
   it('labels each trick card with its player and marks folded players in text', async () => {
