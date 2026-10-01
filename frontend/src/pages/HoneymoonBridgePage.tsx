@@ -303,6 +303,12 @@ function HoneymoonBridgePageContent() {
                   {t('header.took', { n: String(p.trickCount) })}
                   {' / '}
                   {t('header.score', { n: String(p.score) })}
+                  {(isDraw || state.phase === HoneymoonBridgePhase.PLAY) && (
+                    <>
+                      {' / '}
+                      {t('header.handCount', { n: String(p.cardCount) })}
+                    </>
+                  )}
                 </div>
               ))}
             </div>

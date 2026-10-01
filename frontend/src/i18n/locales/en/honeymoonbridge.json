@@ -19,6 +19,7 @@
     "noBid": "no bid",
     "took": "tricks {{n}}",
     "score": "total {{n}}",
+    "handCount": "cards {{n}}",
     "declarer": "[declarer]",
     "dealer": "[dealer]",
     "you": "You",

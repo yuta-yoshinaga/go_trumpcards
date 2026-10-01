@@ -252,6 +252,22 @@ describe('HoneymoonBridgePage', () => {
     expect(screen.getByTestId('hb-seat-0')).not.toHaveTextContent(/落札者/);
   });
 
+  it('shows the current hand size for every seat during draw and contract play', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [seat(0, { cardCount: 4 }), seat(1, { cardCount: 9 })],
+      }),
+    );
+    renderWithProviders(<HoneymoonBridgePage />);
+    expect(await screen.findByTestId('hb-seat-0')).toHaveTextContent('手札 4枚');
+    expect(screen.getByTestId('hb-seat-1')).toHaveTextContent('手札 9枚');
+
+    mockExec.mockResolvedValue(playing({ players: [seat(0, { cardCount: 3 }), seat(1, { cardCount: 8 })] }));
+    fireEvent.click((await screen.findAllByRole('button', { name: /を出す/ }))[0]);
+    await waitFor(() => expect(screen.getByTestId('hb-seat-0')).toHaveTextContent('手札 3枚'));
+    expect(screen.getByTestId('hb-seat-1')).toHaveTextContent('手札 8枚');
+  });
+
   it('marks the human seat during bidding and play only', async () => {
     mockExec.mockResolvedValue(bidding());
     const { unmount } = renderWithProviders(<HoneymoonBridgePage />);
