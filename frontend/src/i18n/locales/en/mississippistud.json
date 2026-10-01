@@ -1,6 +1,7 @@
 {
   "title": "Mississippi Stud",
   "player": "Player",
+  "chipsChanged": "Chips changed to {{chips}}",
   "label": {
     "chips": "Chips",
     "ante": "Ante",
