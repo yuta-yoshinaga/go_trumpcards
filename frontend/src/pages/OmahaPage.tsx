@@ -158,9 +158,9 @@ function OmahaPageContent() {
   });
   const communityCardsAnnouncement = useCommunityCardAnnouncement(state?.communityCards ?? [], t);
 
-  // At showdown, highlight the human's winning 5 cards under Omaha's
-  // must-use-exactly-2-hole + 3-board rule (dim the rest).
-  const showdownBest5 = useMemo(() => {
+  // Highlight the human's current best 5 cards under Omaha's must-use-exactly-2-hole + 3-board rule.
+  // Other cards are dimmed and labeled only at showdown.
+  const liveBest5 = useMemo(() => {
     const empty = { holeSet: new Set<number>(), boardSet: new Set<number>() };
     if (!humanPlayer || humanPlayer.folded) return empty;
     return {
@@ -234,8 +234,8 @@ function OmahaPageContent() {
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
                       ? state.communityCards.map((card, idx) => {
-                          const inBest = showdownBest5.boardSet.has(idx);
-                          const dim = showdownBest5.boardSet.size > 0 && !inBest;
+                          const inBest = liveBest5.boardSet.has(idx);
+                          const dim = isShowdown && liveBest5.boardSet.size > 0 && !inBest;
                           return (
                             <div
                               key={`${card.design}-${card.value}`}
@@ -396,8 +396,8 @@ function OmahaPageContent() {
                 <div className="flex flex-wrap gap-1.5 mb-2" data-tutorial="oh-combination-rule">
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card, idx) => {
-                        const inBest = showdownBest5.holeSet.has(idx);
-                        const showUsage = showdownBest5.holeSet.size > 0;
+                        const inBest = liveBest5.holeSet.has(idx);
+                        const showUsage = isShowdown && liveBest5.holeSet.size > 0;
                         const dim = showUsage && !inBest;
                         return (
                           <div

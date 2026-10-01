@@ -347,6 +347,17 @@ describe('OmahaPage', () => {
     expect(screen.getByTestId('omaha-live-besthand-board-0')).toBeInTheDocument();
   });
 
+  it('highlights the live best hand post-flop without dimming or labeling other cards', async () => {
+    mockExec.mockResolvedValue(flopState);
+    const { container } = renderWithProviders(<OmahaPage />);
+    await screen.findByTestId('omaha-live-besthand');
+    expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(2);
+    expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(3);
+    expect(container.querySelectorAll('.opacity-50')).toHaveLength(0);
+    expect(screen.queryByTestId('omaha-hole-unused')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('omaha-hole-used')).not.toBeInTheDocument();
+  });
+
   it('updates the live best-hand preview as more board cards appear (full house on turn)', async () => {
     // A third ten on the turn -> hole T♦ 5♣ + board T♠ T♣ 5♥ = tens full of fives.
     mockExec.mockResolvedValue({
@@ -444,6 +455,7 @@ describe('OmahaPage', () => {
     // Omaha must-use-2 rule → exactly 2 hole and 3 board cards highlighted.
     expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(2);
     expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(3);
+    expect(container.querySelectorAll('.opacity-50').length).toBeGreaterThan(0);
   });
 
   it('does not show CPU hand name badge when CPU is folded in showdown', async () => {

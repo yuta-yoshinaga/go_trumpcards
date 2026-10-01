@@ -30,25 +30,11 @@ func (owp *OmahaWebPresenter) buildOutput(o interfaces.OmahaGame, lastErr error)
 		if o.GetPhase() != domain.OmahaPhaseShowdown && o.GetPhase() != domain.OmahaPhaseEnd {
 			_, best = player.PeekBestHand(o.GetCommunityCards())
 		}
-		for _, card := range best {
-			found := false
-			for idx := 0; idx < player.GetCardsSize(); idx++ {
-				if player.GetCard(idx) == card {
-					resObj.Players[i].LiveBestHandHoleIndices = append(resObj.Players[i].LiveBestHandHoleIndices, idx)
-					found = true
-					break
-				}
-			}
-			if found {
-				continue
-			}
-			for idx, boardCard := range o.GetCommunityCards() {
-				if boardCard == card {
-					resObj.Players[i].LiveBestHandBoardIndices = append(resObj.Players[i].LiveBestHandBoardIndices, idx)
-					break
-				}
-			}
+		hole := make([]*domain.Card, player.GetCardsSize())
+		for idx := range hole {
+			hole[idx] = player.GetCard(idx)
 		}
+		resObj.Players[i].LiveBestHandHoleIndices, resObj.Players[i].LiveBestHandBoardIndices = liveBestHandIndices(hole, o.GetCommunityCards(), best)
 		break
 	}
 	resObj.IsHiLo = o.GetIsHiLo()

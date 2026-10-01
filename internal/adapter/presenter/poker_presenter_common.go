@@ -54,6 +54,33 @@ type communityCardPresenterPlayer interface {
 	GetBestHand() []*domain.Card
 }
 
+// liveBestHandIndices maps best-hand card pointers to their hole-card and board indices.
+func liveBestHandIndices(hole []*domain.Card, board []*domain.Card, best []*domain.Card) (holeIdx, boardIdx []int) {
+	if best == nil {
+		return nil, nil
+	}
+	for _, card := range best {
+		found := false
+		for idx, holeCard := range hole {
+			if holeCard == card {
+				holeIdx = append(holeIdx, idx)
+				found = true
+				break
+			}
+		}
+		if found {
+			continue
+		}
+		for idx, boardCard := range board {
+			if boardCard == card {
+				boardIdx = append(boardIdx, idx)
+				break
+			}
+		}
+	}
+	return holeIdx, boardIdx
+}
+
 // lowHandPresenterPlayer はオプショナルなロー手札情報を提供するプレイヤー
 // インターフェース (Omaha Hi-Lo 用)。OmahaPlayer のみ実装している。
 type lowHandPresenterPlayer interface {
