@@ -102,6 +102,7 @@ function SlyFoxPageContent() {
   useMountReset(runApi);
 
   const [source, setSource] = useState<Source | null>(null);
+  const [sourceAnnouncement, setSourceAnnouncement] = useState('');
 
   const {
     hint: frontendHint,
@@ -150,8 +151,14 @@ function SlyFoxPageContent() {
   // **山札は配りボタンではなく「配り先を選ぶモード」に入る。**捨て札が無いので、
   // 行き先を決めずに札をめくることはできない。
   const toggleDealing = useCallback(() => {
-    setSource((prev) => (prev?.kind === 'dealing' ? null : { kind: 'dealing' }));
-  }, []);
+    if (source?.kind === 'dealing') {
+      setSource(null);
+      setSourceAnnouncement(t('selectionCleared'));
+      return;
+    }
+    setSource({ kind: 'dealing' });
+    setSourceAnnouncement(t('selectionPrompt', { source: t('stock'), target: t('dealTarget') }));
+  }, [source, t]);
 
   const handleHint = useCallback(() => {
     void runApi('hint');
@@ -194,9 +201,17 @@ function SlyFoxPageContent() {
         setSource(null);
         return;
       }
-      setSource((prev) => (prev?.kind === 'tableau' && prev.idx === idx ? null : { kind: 'tableau', idx }));
+      if (source?.kind === 'tableau' && source.idx === idx) {
+        setSource(null);
+        setSourceAnnouncement(t('selectionCleared'));
+        return;
+      }
+      setSource({ kind: 'tableau', idx });
+      setSourceAnnouncement(
+        t('selectionPrompt', { source: `${t('tableau')} ${idx.toString()}`, target: t('selectTarget') }),
+      );
     },
-    [runApi, source],
+    [runApi, source, t],
   );
 
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
@@ -436,13 +451,23 @@ function SlyFoxPageContent() {
                   </div>
                 )}
               </div>
+              <div data-testid="slyfox-selection-live" role="status" aria-live="polite" className="sr-only">
+                {sourceAnnouncement}
+              </div>
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
               {source && (
                 <div className="mt-2 text-xs text-ds-text-muted">
                   {t('selectTarget')}:{' '}
                   {source.kind === 'dealing' ? t('dealTarget') : `${t('tableau')} ${source.idx.toString()}`}{' '}
-                  <button type="button" className={`${btnOutline} ml-2 text-xs`} onClick={() => setSource(null)}>
+                  <button
+                    type="button"
+                    className={`${btnOutline} ml-2 text-xs`}
+                    onClick={() => {
+                      setSource(null);
+                      setSourceAnnouncement(t('selectionCleared'));
+                    }}
+                  >
                     {t('deselect')}
                   </button>
                 </div>

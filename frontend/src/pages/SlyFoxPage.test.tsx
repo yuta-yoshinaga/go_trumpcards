@@ -276,11 +276,17 @@ describe('SlyFoxPage', () => {
   it('deselects via the cancel button', async () => {
     renderWithProviders(<SlyFoxPage />);
     await waitFor(() => expect(screen.getByTestId('co-deal-button')).toBeInTheDocument());
+    const selectionStatus = screen.getByTestId('slyfox-selection-live');
+    expect(selectionStatus).toHaveAttribute('role', 'status');
+    expect(selectionStatus).toHaveAttribute('aria-live', 'polite');
+    expect(selectionStatus).toHaveClass('sr-only');
     fireEvent.click(screen.getByTestId('co-deal-button'));
     await waitFor(() => expect(screen.getByRole('button', { name: 'キャンセル' })).toBeInTheDocument());
+    expect(selectionStatus).toHaveTextContent('山札を操作元に選択しました。配り先');
 
     fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
     await waitFor(() => expect(screen.getByTestId('co-deal-button')).toHaveAttribute('aria-pressed', 'false'));
+    expect(selectionStatus).toHaveTextContent('操作元の選択を解除しました');
   });
 
   it('clicking the selected pile again deselects it', async () => {
@@ -288,8 +294,12 @@ describe('SlyFoxPage', () => {
     await waitFor(() => expect(screen.getByTestId('co-tableau-0')).toBeInTheDocument());
     fireEvent.click(screen.getByTestId('co-tableau-0'));
     await waitFor(() => expect(screen.getByTestId('co-tableau-0')).toHaveAttribute('aria-pressed', 'true'));
+    expect(screen.getByTestId('slyfox-selection-live')).toHaveTextContent(
+      'リザーブ 0を操作元に選択しました。移動先を選択してください',
+    );
     fireEvent.click(screen.getByTestId('co-tableau-0'));
     await waitFor(() => expect(screen.getByTestId('co-tableau-0')).toHaveAttribute('aria-pressed', 'false'));
+    expect(screen.getByTestId('slyfox-selection-live')).toHaveTextContent('操作元の選択を解除しました');
   });
 
   it('hides the playing controls once the game clears', async () => {
