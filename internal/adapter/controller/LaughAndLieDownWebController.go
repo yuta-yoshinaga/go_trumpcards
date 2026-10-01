@@ -33,9 +33,11 @@ type LaughAndLieDownWebOutputPlayer struct {
 	WonCount int `json:"wonCount"`
 	// LaidDown は「取れなくなって手札を場に置いた」か。
 	LaidDown bool `json:"laidDown"`
-	// Score は収支。終局まで 0。
-	Score  int  `json:"score"`
-	Hidden bool `json:"hidden"`
+	// Score は終局時の最終収支。
+	Score int `json:"score"`
+	// RunningScore は対局中の暫定収支。終局後は最終収支と同じ。
+	RunningScore int  `json:"runningScore"`
+	Hidden       bool `json:"hidden"`
 }
 
 // LaughAndLieDownWebOutputHint ヒント出力

@@ -14,6 +14,7 @@
   "opponentHandAriaLabel": "{{name}} holds {{n}} face-down card(s)",
   "yourHand": "Your hand",
   "score": "net {{n}}",
+  "runningScore": "running net {{n}}",
   "lastIn": "was last in: +{{amount}}",
   "landscapeBanner": "Landscape mode recommended",
   "phase.play": "In progress",

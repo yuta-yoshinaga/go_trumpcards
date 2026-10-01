@@ -179,7 +179,7 @@ function LaughAndLieDownPageContent() {
                     {' · '}
                     {t('won', { n: o.wonCount })}
                     {o.laidDown && ` · ${t('laidDown')}`}
-                    {ended && ` · ${t('score', { n: o.score })}`}
+                    {ended ? ` · ${t('score', { n: o.score })}` : ` · ${t('runningScore', { n: o.runningScore })}`}
                     {ended && state.lastInIdx === o.id && (
                       <span data-testid={`lld-lastin-${o.id.toString()}`}>
                         {` · ${t('lastIn', { amount: state.lastInBonus })}`}
@@ -220,7 +220,9 @@ function LaughAndLieDownPageContent() {
                 {' · '}
                 {t('won', { n: human?.wonCount ?? 0 })}
                 {human?.laidDown && ` · ${t('laidDown')}`}
-                {ended && ` · ${t('score', { n: human?.score ?? 0 })}`}
+                {ended
+                  ? ` · ${t('score', { n: human?.score ?? 0 })}`
+                  : ` · ${t('runningScore', { n: human?.runningScore ?? 0 })}`}
                 {/* **既に訳文もサーバのデータもあったのに、画面が一度も読んでいなかった**
                     (#5576)。最終点差の理由の一つがどこにも出ないまま終わっていた。 */}
                 {ended && state.lastInIdx === 0 && (

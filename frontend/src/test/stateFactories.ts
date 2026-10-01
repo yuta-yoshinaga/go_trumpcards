@@ -44,6 +44,7 @@ import type {
   KnockoutWhistResponse,
   KoenigrufenResponse,
   KoiKoiResponse,
+  LaughAndLieDownResponse,
   LooResponse,
   MadrassoResponse,
   ManilleResponse,
@@ -5911,6 +5912,36 @@ export function makeCasinoHoldemState(overrides?: Partial<CasinoHoldemResponse>)
     netChange: 0,
     playerHandRank: 0,
     dealerHandRank: 0,
+    message: '',
+    ...overrides,
+  };
+}
+
+/** Creates a default Laugh and Lie Down state with running scores for every seat. */
+export function makeLaughAndLieDownState(overrides?: Partial<LaughAndLieDownResponse>): LaughAndLieDownResponse {
+  const player = (id: number, isHuman: boolean) => ({
+    id,
+    isHuman,
+    cardCount: 0,
+    cards: [],
+    wonCount: 8,
+    laidDown: false,
+    score: 0,
+    runningScore: 0,
+    hidden: !isHuman,
+  });
+  return {
+    players: [player(0, true), player(1, false), player(2, false), player(3, false), player(4, false)],
+    layout: [],
+    phase: 0,
+    currentPlayerIdx: 0,
+    validIndices: [],
+    threeTakeIndices: [],
+    dealerIdx: 0,
+    lastInIdx: -1,
+    lastInBonus: 5,
+    pot: 11,
+    gameEndFlag: false,
     message: '',
     ...overrides,
   };
