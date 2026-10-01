@@ -19,6 +19,7 @@
     "noBid": "宣言なし",
     "took": "獲得{{n}}",
     "score": "累計{{n}}",
+    "handCount": "手札 {{n}}枚",
     "declarer": "[落札者]",
     "dealer": "[親]",
     "you": "あなた",
