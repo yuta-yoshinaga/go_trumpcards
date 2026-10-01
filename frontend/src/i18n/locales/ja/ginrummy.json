@@ -22,6 +22,7 @@
   "round": "ラウンド {{n}}",
   "drawPile": "山札: {{count}}枚",
   "discardTop": "捨て札",
+  "discardTopCard": "捨て札のカード: {{card}}",
   "cards": "{{count}}枚",
   "cumulativeScore": "累計: {{score}}",
   "roundScore": "ラウンド: {{score}}",
