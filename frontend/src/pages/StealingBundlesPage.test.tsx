@@ -64,6 +64,28 @@ beforeEach(() => {
 });
 
 describe('StealingBundlesPage', () => {
+  it('shows each bundle size, its gap to the largest bundle, and tied leaders', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          seat(0, { bundleSize: 6 }),
+          seat(1, { bundleSize: 9 }),
+          seat(2, { bundleSize: 9 }),
+          seat(3, { bundleSize: 4 }),
+        ],
+      }),
+    );
+    renderWithProviders(<StealingBundlesPage />);
+
+    const humanSeat = await screen.findByTestId('sb-seat-0');
+    expect(humanSeat).toHaveTextContent('束6枚');
+    expect(humanSeat).toHaveTextContent('首位まで3枚');
+    expect(within(screen.getByTestId('sb-seat-1')).getByText('束9枚')).toBeInTheDocument();
+    expect(screen.getByTestId('sb-seat-1')).toHaveTextContent('首位（同数）');
+    expect(screen.getByTestId('sb-seat-2')).toHaveTextContent('首位（同数）');
+    expect(screen.getByTestId('sb-seat-3')).toHaveTextContent('首位まで5枚');
+  });
+
   it('announces available actions and targets, selection changes, and turn end in a persistent live region', async () => {
     mockExec.mockResolvedValue(
       makeState({
