@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tysiacApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeTysiacState } from '../test/stateFactories';
 import { TysiacPage } from './TysiacPage';
@@ -77,6 +78,23 @@ describe('TysiacPage', () => {
     });
     // The human (seat 0) is the default Declarer.
     expect(screen.getByText('デクレアラー')).toBeInTheDocument();
+  });
+
+  it('marks only the dealer seat independently from the Declarer seat', async () => {
+    const previousLanguage = i18n.language;
+    renderWithProviders(<TysiacPage />);
+    await waitFor(() => expect(screen.getByTestId('tysiac-dealer-2')).toBeInTheDocument());
+
+    expect(screen.getByTestId('tysiac-dealer-2')).toHaveTextContent('◆');
+    expect(screen.getByTestId('tysiac-dealer-2')).toHaveTextContent('ディーラー');
+    expect(screen.queryByTestId('tysiac-dealer-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('tysiac-dealer-1')).not.toBeInTheDocument();
+    expect(screen.getByTestId('tysiac-declarer-0')).toHaveTextContent('デクレアラー');
+
+    await i18n.changeLanguage('en');
+    expect(screen.getByTestId('tysiac-dealer-2')).toHaveTextContent('Dealer');
+    expect(screen.getByTestId('tysiac-declarer-0')).toHaveTextContent('Declarer');
+    await i18n.changeLanguage(previousLanguage);
   });
 
   it('shows a marriage banner during play (trump-suit K-Q ♥ scores +100)', async () => {
