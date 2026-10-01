@@ -308,6 +308,7 @@ describe('QuodlibetPage', () => {
 
     // 初期状態では第1候補 (プラス) の説明が表示される
     expect(descPanel).toHaveTextContent(jaQuodlibet.contractDesc.plus);
+    expect(screen.queryByTestId('quodlibet-current-contract-desc')).not.toBeInTheDocument();
 
     // ホバーで表示が変わり、離れると戻る (値を変えると表示も変わる)
     fireEvent.mouseEnter(badNeighbourBtn);
@@ -330,6 +331,7 @@ describe('QuodlibetPage', () => {
     mockExec.mockResolvedValue(playState);
     renderWithProviders(<QuodlibetPage />);
     await screen.findByTestId('quodlibet-play');
+    expect(screen.queryByTestId('quodlibet-contract-desc')).not.toBeInTheDocument();
     expect(screen.getByTestId('quodlibet-current-contract-desc')).toHaveTextContent(jaQuodlibet.contractDesc.minus);
   });
 
