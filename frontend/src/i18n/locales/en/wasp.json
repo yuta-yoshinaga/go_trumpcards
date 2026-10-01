@@ -17,6 +17,7 @@
   "empty": "Empty",
   "anyCard": "Any card",
   "legalDestination": "Legal destination",
+  "cardAriaLabel": "{{card}}, column {{col}}, position {{pos}}",
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",
   "playing": "Playing",
