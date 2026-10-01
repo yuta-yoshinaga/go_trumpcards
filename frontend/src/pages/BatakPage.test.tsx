@@ -87,6 +87,32 @@ describe('BatakPage', () => {
     });
   });
 
+  it('shows server score breakdown values only after the round ends', async () => {
+    const scoredState = makeBatakState({
+      phase: 3,
+      players: makeBatakState().players.map((player, index) => ({
+        ...player,
+        scoreBreakdown:
+          index === 0
+            ? { declarerBidPoints: 7, declarerBidPenalty: 0, defenderTricks: 0 }
+            : { declarerBidPoints: 0, declarerBidPenalty: 5, defenderTricks: 2 },
+      })),
+    });
+    mockExec.mockResolvedValue(scoredState);
+    renderWithProviders(<BatakPage />);
+
+    const breakdown = await screen.findByTestId('batak-score-breakdown');
+    expect(breakdown).toHaveTextContent('ビッド成功 7');
+    expect(breakdown).toHaveTextContent('ビッド失敗 −5');
+    expect(breakdown).toHaveTextContent('子の獲得トリック 2');
+  });
+
+  it('does not show score breakdown while playing', async () => {
+    renderWithProviders(<BatakPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    expect(screen.queryByTestId('batak-score-breakdown')).not.toBeInTheDocument();
+  });
+
   it('renders bid buttons only from minLegalBid to 13, and does not show buttons below minLegalBid', async () => {
     const customBidState = makeBatakState({
       ...bidPhaseState,

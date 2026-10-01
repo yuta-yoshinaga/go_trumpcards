@@ -385,6 +385,25 @@ function BatakPageContent() {
                         </tbody>
                       </table>
                     </div>
+                    {(isRoundEnd || isGameEnd) && (
+                      <div className="mt-2 space-y-1" data-testid="batak-score-breakdown">
+                        <div>{t('scoreBreakdown')}</div>
+                        {state.players.map((p) => (
+                          <div key={p.id}>
+                            <span>{playerName(p.id, p.isHuman)}: </span>
+                            <span>
+                              {t('scoreBreakdownBidPoints')} {p.scoreBreakdown.declarerBidPoints},{' '}
+                            </span>
+                            <span>
+                              {t('scoreBreakdownBidPenalty')} −{p.scoreBreakdown.declarerBidPenalty},{' '}
+                            </span>
+                            <span>
+                              {t('scoreBreakdownDefenderTricks')} {p.scoreBreakdown.defenderTricks}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <ScrollFadeHint />
                   </details>
                 ) : (
@@ -424,6 +443,25 @@ function BatakPageContent() {
                         </tbody>
                       </table>
                     </div>
+                    {(isRoundEnd || isGameEnd) && (
+                      <div className="mt-2 space-y-1" data-testid="batak-score-breakdown">
+                        <div>{t('scoreBreakdown')}</div>
+                        {state.players.map((p) => (
+                          <div key={p.id}>
+                            <span>{playerName(p.id, p.isHuman)}: </span>
+                            <span>
+                              {t('scoreBreakdownBidPoints')} {p.scoreBreakdown.declarerBidPoints},{' '}
+                            </span>
+                            <span>
+                              {t('scoreBreakdownBidPenalty')} −{p.scoreBreakdown.declarerBidPenalty},{' '}
+                            </span>
+                            <span>
+                              {t('scoreBreakdownDefenderTricks')} {p.scoreBreakdown.defenderTricks}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
                 <RoundScoreAnnouncement

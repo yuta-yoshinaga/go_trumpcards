@@ -464,6 +464,7 @@ const batakPlayers: BatakResponse['players'] = [
     roundScore: 0,
     cumulativeScore: 0,
     trickCount: 0,
+    scoreBreakdown: { declarerBidPoints: 0, declarerBidPenalty: 0, defenderTricks: 0 },
   },
   {
     id: 1,
@@ -474,6 +475,7 @@ const batakPlayers: BatakResponse['players'] = [
     roundScore: 0,
     cumulativeScore: 4,
     trickCount: 1,
+    scoreBreakdown: { declarerBidPoints: 0, declarerBidPenalty: 0, defenderTricks: 0 },
   },
   {
     id: 2,
@@ -484,6 +486,7 @@ const batakPlayers: BatakResponse['players'] = [
     roundScore: 0,
     cumulativeScore: 3,
     trickCount: 2,
+    scoreBreakdown: { declarerBidPoints: 0, declarerBidPenalty: 0, defenderTricks: 0 },
   },
   {
     id: 3,
@@ -494,6 +497,7 @@ const batakPlayers: BatakResponse['players'] = [
     roundScore: 0,
     cumulativeScore: -5,
     trickCount: 5,
+    scoreBreakdown: { declarerBidPoints: 0, declarerBidPenalty: 0, defenderTricks: 0 },
   },
 ];
 
