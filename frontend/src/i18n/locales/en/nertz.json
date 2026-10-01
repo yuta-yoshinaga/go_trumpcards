@@ -12,6 +12,8 @@
     "tableau": "Tableau",
     "waste": "Waste",
     "stock": "Stock",
+    "stockDrawAria_one": "Draw from stock, {{count}} card remaining",
+    "stockDrawAria_other": "Draw from stock, {{count}} cards remaining",
     "foundation": "Foundation",
     "foundationN": "Foundation {{n}} ({{size}}/{{max}} cards)",
     "remaining": "left",

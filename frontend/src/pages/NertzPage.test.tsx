@@ -125,7 +125,7 @@ describe('NertzPage', () => {
       </MemoryRouter>,
     );
     await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '35' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ストックを引く、残り35枚' })).toBeInTheDocument();
   });
 
   it('renders each CPU tableau and visible waste card', async () => {
@@ -262,10 +262,10 @@ describe('NertzPage', () => {
         <NertzPage />
       </MemoryRouter>,
     );
-    await waitFor(() => expect(screen.getByRole('button', { name: '35' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ストックを引く、残り35枚' })).toBeInTheDocument());
     mockExec.mockClear();
     mockExec.mockResolvedValue(playingState);
-    fireEvent.click(screen.getByRole('button', { name: '35' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ストックを引く、残り35枚' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('d', { playerIdx: 0 }));
   });
 
