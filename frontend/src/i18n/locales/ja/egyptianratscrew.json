@@ -18,6 +18,7 @@
     "chanceRemaining": "残りチャンス: {{count}}"
   },
   "chanceResponder": "応答: {{player}}",
+  "chanceTimeRemaining": "残り{{seconds}}秒",
   "settings": {
     "cpuDifficulty": "CPU難易度",
     "difficulty": {
