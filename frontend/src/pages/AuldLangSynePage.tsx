@@ -399,9 +399,14 @@ function AuldLangSynePageContent() {
                       data-legal-target={isLegalTarget ? 'true' : undefined}
                       title={upcomingLabel ? t('upcomingRanksTooltip', { sequence: upcomingLabel }) : undefined}
                       aria-label={
-                        nextRankLabel
-                          ? `${t('foundation')} ${idx} ${t('nextRankAria', { rank: nextRankLabel })}`
-                          : `${t('foundation')} ${idx} ${t('foundationCompleteAria')}`
+                        top
+                          ? nextRankLabel
+                            ? t('foundationTopAria', { idx, card: cardAlt(top), rank: nextRankLabel })
+                            : t('foundationTopCompleteAria', { idx, card: cardAlt(top) })
+                          : t('foundationEmptyAria', {
+                              idx,
+                              rank: nextRankLabel ?? valueName(1),
+                            })
                       }
                     >
                       <span className="text-[11px] mb-0.5 text-ds-text-muted">F{idx}</span>
