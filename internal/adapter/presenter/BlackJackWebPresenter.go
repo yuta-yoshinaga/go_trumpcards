@@ -94,7 +94,8 @@ func (bjp *BlackJackWebPresenter) buildHandsOutput(bj interfaces.BlackJackGame) 
 		if bj.GetPhase() == domain.BJPhaseEnd {
 			result := int(hand.GetResult())
 			h.Result = &result
-			h.NetChange = hand.GetNetChange()
+			netChange := hand.GetNetChange()
+			h.NetChange = &netChange
 		}
 		out[i] = h
 	}

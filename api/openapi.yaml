@@ -39791,7 +39791,7 @@ components:
           enum: [-1, 0, 1]
         netChange:
           type: integer
-          description: Net chips returned for this hand minus its total wager; omitted until settlement.
+          description: Net chips returned for this hand minus its total wager; omitted until settlement and always included in the END phase, including as 0 for a push.
 
     BlackJackResponse:
       type: object

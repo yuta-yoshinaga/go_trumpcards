@@ -189,6 +189,25 @@ describe('BlackJackPage', () => {
     expect(screen.getByTestId('hand-result-1')).toHaveTextContent('負け');
     expect(screen.getByTestId('hand-result-1')).toHaveTextContent('-200');
   });
+  it('shows a signed zero for a push and omits the separator without settlement amount', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...endPhaseState,
+      hands: [{ ...baseHand, result: 0, netChange: 0 }],
+    });
+    const { unmount } = renderWithProviders(<BlackJackPage />);
+    const pushResult = await screen.findByTestId('hand-result-0');
+    expect(pushResult).toHaveTextContent('引き分け · ±0');
+    unmount();
+
+    mockExec.mockResolvedValueOnce({
+      ...endPhaseState,
+      hands: [{ ...baseHand, result: 0 }],
+    });
+    renderWithProviders(<BlackJackPage />);
+    const unsettledResult = await screen.findByTestId('hand-result-0');
+    expect(unsettledResult).toHaveTextContent('引き分け');
+    expect(unsettledResult).not.toHaveTextContent('·');
+  });
   it('shows Double Exposure double-down eligibility in the action area', async () => {
     mockDoubleExposureExec.mockResolvedValue(actionPhaseState);
     renderWithProviders(<BlackJackPage variant="doubleexposure" />);
