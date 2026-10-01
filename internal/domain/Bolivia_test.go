@@ -527,6 +527,32 @@ func TestBolivia_ScoringPaysEachMeldKindItsOwnBonus(t *testing.T) {
 	assert.Greater(t, BoliviaEscaleraBonus, BoliviaNaturalCanastaBonus)
 }
 
+func TestBolivia_ScoreBreakdownMatchesRoundScore(t *testing.T) {
+	players := make([]*BoliviaPlayer, BoliviaPlayerCnt)
+	for i := range players {
+		players[i] = NewBoliviaPlayer(i == 0, i%BoliviaTeamCnt)
+	}
+	players[0].SetHasInitMeld(true)
+	players[0].SetMelds([]*BoliviaMeld{{Kind: BoliviaMeldSet, IsNatural: true, Cards: boliviaSeven(CardDesignSpade, 5)}})
+	players[0].AddRed3(bolCard(CardDesignHeart, 3))
+	players[2].AddCard(bolCard(CardDesignSpade, 4))
+	g := NewBolivia(newBoliviaDeck(), players, DefaultBoliviaConfig())
+	g.scoreRound(0, BoliviaGoingOutBonus)
+	breakdown := players[0].GetScoreBreakdown()
+	assert.Equal(t, g.GetTeamScore(0), breakdown.Total())
+	assert.Equal(t, BoliviaNaturalCanastaBonus, breakdown.NaturalCanastaBonus)
+	assert.Equal(t, BoliviaRed3Bonus, breakdown.Red3Bonus)
+	assert.Equal(t, BoliviaGoingOutBonus, breakdown.GoOutBonus)
+	assert.Equal(t, CanastaFamilyCardValue(bolCard(CardDesignSpade, 4)), breakdown.HandPenalty)
+	snapshot, err := json.Marshal(g)
+	require.NoError(t, err)
+	restored := NewBolivia(newBoliviaDeck(), nil, DefaultBoliviaConfig())
+	require.NoError(t, json.Unmarshal(snapshot, restored))
+	assert.Equal(t, breakdown, restored.GetPlayer(0).GetScoreBreakdown())
+	players[0].ResetRound()
+	assert.Equal(t, BoliviaScoreBreakdown{}, players[0].GetScoreBreakdown())
+}
+
 func TestBolivia_TeamHasInitMeld(t *testing.T) {
 	g := newBoliviaGame(t)
 

@@ -75,6 +75,8 @@ func TestBoliviaWebPresenter_Output(t *testing.T) {
 		require.Equal(2, len(resObj.TeamScores))
 		require.Equal(0, resObj.Players[0].Team)
 		require.Equal(1, resObj.Players[1].Team)
+		require.Equal(domain.BoliviaScoreBreakdown{}, resObj.Players[0].ScoreBreakdown)
+		assert.Contains(t, result, `"scoreBreakdown"`)
 	})
 
 	t.Run("canGoOut is exposed", func(t *testing.T) {

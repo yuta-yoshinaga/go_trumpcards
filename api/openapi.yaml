@@ -74329,6 +74329,27 @@ components:
                   $ref: '#/components/schemas/Card'
               roundScore:
                 type: integer
+              scoreBreakdown:
+                type: object
+                properties:
+                  cardPoints:
+                    type: integer
+                  naturalCanastaBonus:
+                    type: integer
+                  mixedCanastaBonus:
+                    type: integer
+                  escaleraBonus:
+                    type: integer
+                  boliviaBonus:
+                    type: integer
+                  red3Bonus:
+                    type: integer
+                  red3Penalty:
+                    type: integer
+                  goOutBonus:
+                    type: integer
+                  handPenalty:
+                    type: integer
               cumulativeScore:
                 type: integer
               hasCanasta:

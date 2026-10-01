@@ -1259,27 +1259,28 @@ func (g *Bolivia) cpuBestDiscardSmart(player *BoliviaPlayer) int {
 // scoreRound ラウンドのスコアをチーム単位で確定する
 func (g *Bolivia) scoreRound(goOutPlayerIdx int, goOutBonus int) {
 	teamRound := make([]int, BoliviaTeamCnt)
+	teamBreakdown := make([]BoliviaScoreBreakdown, BoliviaTeamCnt)
 
 	for i, player := range g.players {
-		score := 0
+		breakdown := BoliviaScoreBreakdown{}
 		for _, m := range player.melds {
 			for _, c := range m.Cards {
-				score += CanastaFamilyCardValue(c)
+				breakdown.CardPoints += CanastaFamilyCardValue(c)
 			}
 			if m.IsCanasta() {
 				if m.IsNatural {
-					score += BoliviaNaturalCanastaBonus
+					breakdown.NaturalCanastaBonus += BoliviaNaturalCanastaBonus
 				} else {
-					score += BoliviaMixedCanastaBonus
+					breakdown.MixedCanastaBonus += BoliviaMixedCanastaBonus
 				}
 			}
 			if m.IsEscalera() {
-				score += BoliviaEscaleraBonus
+				breakdown.EscaleraBonus += BoliviaEscaleraBonus
 			}
 			// **ボリビアはこの形式で最も重い加点。** ワイルド 7 枚を貯める
 			// のは手札を丸ごと 1 つの賭けに使うことなので、それに見合う。
 			if m.IsBoliviaCanasta() {
-				score += BoliviaBoliviaBonus
+				breakdown.BoliviaBonus += BoliviaBoliviaBonus
 			}
 		}
 
@@ -1292,24 +1293,34 @@ func (g *Bolivia) scoreRound(goOutPlayerIdx int, goOutBonus int) {
 			red3Score = BoliviaAllRed3Bonus
 		}
 		if teamMelded {
-			score += red3Score
+			breakdown.Red3Bonus += red3Score
 		} else {
-			score -= red3Score
+			breakdown.Red3Penalty += red3Score
 		}
 
 		if i == goOutPlayerIdx {
-			score += goOutBonus
+			breakdown.GoOutBonus += goOutBonus
 		}
 
 		for j := 0; j < player.GetCardsSize(); j++ {
-			score -= CanastaFamilyCardValue(player.GetCard(j))
+			breakdown.HandPenalty += CanastaFamilyCardValue(player.GetCard(j))
 		}
+		score := breakdown.Total()
 
 		team := player.team
 		if team < 0 || team >= BoliviaTeamCnt {
 			team = i % BoliviaTeamCnt
 		}
 		teamRound[team] += score
+		teamBreakdown[team].CardPoints += breakdown.CardPoints
+		teamBreakdown[team].NaturalCanastaBonus += breakdown.NaturalCanastaBonus
+		teamBreakdown[team].MixedCanastaBonus += breakdown.MixedCanastaBonus
+		teamBreakdown[team].EscaleraBonus += breakdown.EscaleraBonus
+		teamBreakdown[team].BoliviaBonus += breakdown.BoliviaBonus
+		teamBreakdown[team].Red3Bonus += breakdown.Red3Bonus
+		teamBreakdown[team].Red3Penalty += breakdown.Red3Penalty
+		teamBreakdown[team].GoOutBonus += breakdown.GoOutBonus
+		teamBreakdown[team].HandPenalty += breakdown.HandPenalty
 		g.appendLog(i, "score", "bolivia.log.score", map[string]string{"name": playerName(g.players, i), "score": strconv.Itoa(score), "team": strconv.Itoa(team)}, nil)
 	}
 
@@ -1324,6 +1335,8 @@ func (g *Bolivia) scoreRound(goOutPlayerIdx int, goOutBonus int) {
 			continue
 		}
 		player.SetRoundScore(teamRound[team])
+		breakdown := teamBreakdown[team]
+		player.scoreBreakdown = &breakdown
 		player.SetCumulativeScore(g.teamScores[team])
 	}
 
