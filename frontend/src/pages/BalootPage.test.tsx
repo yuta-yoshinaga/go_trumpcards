@@ -94,6 +94,14 @@ describe('BalootPage', () => {
     });
   });
 
+  it('uses zero when either score array omits a team value', async () => {
+    mockExec.mockResolvedValue(makeState({ scores: [], roundPoints: [] } as Partial<BalootResponse>));
+    renderWithProviders(<BalootPage />);
+
+    expect(await screen.findByTestId('bl-cumulative-score')).toHaveTextContent('累計得点: あなたのチーム 0 － 相手 0');
+    expect(screen.getByTestId('bl-round-points')).toHaveTextContent('今回のラウンド: あなたのチーム 0 － 相手 0');
+  });
+
   // **序列はモードで入れ替わる。** 有効な方だけを出し、他方は出さない。
   it('prints the Sun order under Sun', async () => {
     mockExec.mockResolvedValue(playing({ mode: 1 } as Partial<BalootResponse>));
