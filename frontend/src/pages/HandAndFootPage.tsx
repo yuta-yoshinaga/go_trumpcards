@@ -377,6 +377,34 @@ function HandAndFootPageContent() {
                       ))}
                     </tbody>
                   </table>
+                  {(isRoundEnd || isGameEnd) && state.scoreBreakdown.length > 0 && (
+                    <div data-testid="hf-score-breakdown" className="mt-2 border-t border-white/20 pt-2">
+                      <h3 className="text-sm font-semibold text-ds-text-primary">{t('score.breakdown')}</h3>
+                      {state.scoreBreakdown.map((breakdown) => (
+                        <div key={breakdown.team} className="mt-1 text-xs text-ds-text-muted">
+                          <h4 className="font-medium">{t('team', { n: breakdown.team + 1 })}</h4>
+                          <dl className="grid grid-cols-2 gap-x-2">
+                            {(
+                              [
+                                ['meldCards', breakdown.meldCards],
+                                ['redCanasta', breakdown.redCanasta],
+                                ['blackCanasta', breakdown.blackCanasta],
+                                ['redThrees', breakdown.redThrees],
+                                ['goingOut', breakdown.goingOut],
+                                ['handPenalty', -breakdown.handPenalty],
+                                ['footPenalty', -breakdown.footPenalty],
+                              ] as const
+                            ).map(([key, value]) => (
+                              <div key={key} className="flex justify-between gap-2">
+                                <dt>{t(`score.${key}`)}</dt>
+                                <dd>{value < 0 ? `−${Math.abs(value)}` : value}</dd>
+                              </div>
+                            ))}
+                          </dl>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* CPU hands (shown at round/game end) */}
