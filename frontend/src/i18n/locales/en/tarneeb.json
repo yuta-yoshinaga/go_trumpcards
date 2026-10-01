@@ -20,6 +20,7 @@
   "trick": "Trick {{n}}",
   "trump": "Trump",
   "trumpUndeclared": "not yet declared",
+  "trumpDeclared": "{{symbol}} {{suit}}",
   "suitName": {
     "spade": "Spade",
     "club": "Club",
