@@ -187,6 +187,42 @@ beforeEach(() => {
 });
 
 describe('SkatPage', () => {
+  it.each([SkatGameType.SUIT, SkatGameType.GRAND])(
+    'shows card-point progress for game type %i while playing',
+    async (gameType) => {
+      mockExec.mockResolvedValue({
+        ...playPhaseHumanTurn,
+        gameType,
+        players: playPhaseHumanTurn.players.map((player, index) =>
+          index === 0 ? { ...player, cardPoints: 37 } : player,
+        ),
+      });
+      renderWithProviders(<SkatPage />);
+
+      expect(await screen.findByTestId('skat-contract-progress')).toHaveTextContent('37 / 61');
+    },
+  );
+
+  it('shows null trick progress while playing', async () => {
+    mockExec.mockResolvedValue({
+      ...nullGamePhase,
+      phase: SkatPhase.PLAY,
+      trickNumber: 4,
+      players: nullGamePhase.players.map((player, index) => (index === 0 ? { ...player, trickCount: 2 } : player)),
+    });
+    renderWithProviders(<SkatPage />);
+
+    expect(await screen.findByTestId('skat-contract-progress')).toHaveTextContent('宣言者の獲得トリック: 2（条件: 0）');
+  });
+
+  it('does not show contract progress without a declarer', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseHumanTurn, declarerIdx: -1 });
+    renderWithProviders(<SkatPage />);
+
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('skat-contract-progress')).not.toBeInTheDocument();
+  });
+
   it('shows and distinguishes the original and final skat at round end', async () => {
     mockExec.mockResolvedValue(roundEndPhase);
     renderWithProviders(<SkatPage />);
