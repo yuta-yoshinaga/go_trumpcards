@@ -22,6 +22,7 @@
   "trumpUnset": "undecided",
   "turnUp": "Turn-up: {{card}}",
   "cards": "{{count}} cards",
+  "unplayableCardReason": "If you have a card of the led suit, play that suit or a trump.",
   "currentTrick": "Current Trick",
   "trickUnplayed": "No cards have been played yet",
   "trickComplete": "Trick complete",
