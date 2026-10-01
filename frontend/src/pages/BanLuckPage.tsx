@@ -124,6 +124,8 @@ function BanLuckPageContent() {
   const human = state.seats[state.humanSeat];
   const humanWon = gameOver && state.winnerSeat === state.humanSeat;
 
+  const bankerSeat = state.seats[state.bankerSeat];
+
   return (
     <GamePageShell
       title={tc('nav.banluck')}
@@ -209,6 +211,25 @@ function BanLuckPageContent() {
                         <span data-testid={`bl-result-${i}`}>
                           {' · '}
                           {t(`rank.${rankKeyOf(seat.rank)}`)}
+                          {!seat.isBanker && bankerSeat && (
+                            <span data-testid={`bl-comparison-${i}`}>
+                              {' · '}
+                              {t('result.comparison', {
+                                banker: bankerSeat.name,
+                                playerScore: seat.score,
+                                bankerScore: bankerSeat.score,
+                                outcome: t(
+                                  `outcome.${
+                                    seat.outcome === BAN_LUCK_OUTCOME.win
+                                      ? 'win'
+                                      : seat.outcome === BAN_LUCK_OUTCOME.lose
+                                        ? 'lose'
+                                        : 'push'
+                                  }`,
+                                ),
+                              })}
+                            </span>
+                          )}
                           {(() => {
                             const payoutRank = seat.isBanker
                               ? seat.rank
