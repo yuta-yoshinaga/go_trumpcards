@@ -513,10 +513,44 @@ describe('ShitheadPage', () => {
     expect(screen.getByTestId('sh-action-1')).toHaveTextContent('CPU1');
   });
 
-  it('shows no feed before anyone has acted', async () => {
+  it('keeps an empty live region before anyone has acted', async () => {
     mockExec.mockResolvedValue(humanTurnState);
     renderWithProviders(<ShitheadPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
-    expect(screen.queryByTestId('sh-action-feed')).not.toBeInTheDocument();
+    const feed = screen.getByTestId('sh-action-feed');
+    expect(feed).toHaveAttribute('role', 'status');
+    expect(feed).toHaveAttribute('aria-live', 'polite');
+    expect(feed).toBeEmptyDOMElement();
+  });
+
+  it('announces human and CPU actions through the live region', async () => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      humanAction: {
+        playerIdx: 0,
+        source: 'hand',
+        playedCards: [{ design: 'CLOVER', value: 4 }],
+        pickup: false,
+        burned: false,
+        skipped: false,
+      },
+      cpuActions: [
+        {
+          playerIdx: 1,
+          source: 'hand',
+          playedCards: [{ design: 'SPADE', value: 10 }],
+          pickup: false,
+          burned: true,
+          skipped: true,
+        },
+      ],
+    });
+    renderWithProviders(<ShitheadPage />);
+
+    const feed = await screen.findByTestId('sh-action-feed');
+    await waitFor(() => expect(feed).toHaveTextContent('あなた'));
+    expect(feed).toHaveTextContent('CPU1');
+    expect(feed).toHaveTextContent('場札焼却');
+    expect(feed).toHaveTextContent('次をスキップ');
   });
 });
