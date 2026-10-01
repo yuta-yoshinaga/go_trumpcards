@@ -236,6 +236,16 @@ function SkatPageContent() {
                   )}
                 </div>
               )}
+              {(isPlay || isTrickEnd) && state.declarerIdx >= 0 && state.gameType !== SkatGameType.NONE && (
+                <div data-testid="skat-contract-progress" className="text-ds-text-muted">
+                  {state.gameType === SkatGameType.NULL
+                    ? t('nullContractProgress', { current: state.players[state.declarerIdx]?.trickCount ?? 0 })
+                    : t('pointsContractProgress', {
+                        current: state.players[state.declarerIdx]?.cardPoints ?? 0,
+                        target: 61,
+                      })}
+                </div>
+              )}
             </div>
 
             <GameMessageBox
