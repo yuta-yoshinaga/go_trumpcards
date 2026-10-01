@@ -1,6 +1,8 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { brusquembilleApi } from '../api/gameApi';
+import en from '../i18n/locales/en/brusquembille.json';
+import ja from '../i18n/locales/ja/brusquembille.json';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BrusquembilleResponse, Card } from '../types/card';
@@ -57,6 +59,15 @@ beforeEach(() => {
 });
 
 describe('BrusquembillePage', () => {
+  it('describes the 32-card deck and card points in both tutorials', () => {
+    for (const locale of [en, ja]) {
+      expect(locale.subtitle).toMatch(/32/);
+      expect(locale.subtitle).not.toMatch(/40/);
+      expect(locale.tutorial.hand).toMatch(/10\s*=\s*10/);
+      expect(locale.tutorial.hand).not.toMatch(/3\s*=\s*10/);
+    }
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<BrusquembillePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { playerCnt: 2 }));
