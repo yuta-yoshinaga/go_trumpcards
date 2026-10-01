@@ -94,6 +94,28 @@ describe('CinchPage', () => {
     expect(screen.getByRole('button', { name: '1' })).toBeInTheDocument();
   });
 
+  it('marks the dealer in the bid status and explains the forced minimum bid to a human dealer', async () => {
+    mockExec.mockResolvedValue(
+      makeCinchState({
+        phase: 0,
+        bidPlayerIdx: 0,
+        dealerIdx: 0,
+        bidWinnerIdx: -1,
+        currentBid: 0,
+        isHumanTurn: true,
+        players: makeCinchState().players.map((player) => ({ ...player, bid: -1 })),
+      }),
+    );
+    renderWithProviders(<CinchPage />);
+
+    const bids = await screen.findByTestId('cinch-bid-status');
+    expect(bids).toHaveTextContent('あなた: 未入札');
+    expect(bids).toHaveTextContent('ディーラー');
+    expect(await screen.findByTestId('cinch-dealer-bid-notice')).toHaveTextContent(
+      '全員がパスした場合、ディーラーはパスできず、1以上をビッドする必要があります。',
+    );
+  });
+
   it('shows each player bid status during bidding and updates it from the response', async () => {
     mockExec.mockResolvedValue(
       makeCinchState({
