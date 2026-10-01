@@ -25,6 +25,8 @@
     "cpuTurn": "CPU {{id}}'s turn",
     "suitScores": "Suit totals",
     "suitBadge": "{{score}}/{{max}}",
+    "suitBadgeAria": "{{suit}}, {{badge}}",
+    "suitBadgeAriaHighest": "{{suit}}, {{badge}}, highest score",
     "stopCalledBy": "Stop is in effect ({{name}}) — this is the final round"
   },
   "settings": {
