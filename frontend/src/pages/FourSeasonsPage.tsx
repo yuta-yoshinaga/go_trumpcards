@@ -60,6 +60,8 @@ export function fourseasonsNextRank(topValue: number | undefined, pileLength: nu
  * The rank a cross pile accepts next: one below the top, wrapping so a King
  * goes under an Ace. `null` means the pile is empty and takes any card.
  */
+export function fourseasonsTableauNextRank(topValue: number): number;
+export function fourseasonsTableauNextRank(topValue: undefined): null;
 export function fourseasonsTableauNextRank(topValue: number | undefined): number | null {
   if (topValue === undefined) return null;
   return ((topValue + FOUNDATION_PILE_FULL - 2) % FOUNDATION_PILE_FULL) + 1;
@@ -413,7 +415,7 @@ function FourSeasonsPageContent() {
                           ? t('crossCardAria', {
                               col: idx,
                               card: cardAlt(top),
-                              accepts: t('acceptsTooltip', { rank: valueName(accepts ?? 0) }),
+                              accepts: t('acceptsTooltip', { rank: valueName(fourseasonsTableauNextRank(top.value)) }),
                             })
                           : `${t('cross')} ${idx} ${t('acceptsAny')}`
                       }
