@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { Fragment, useCallback, useMemo } from 'react';
 import type { canastaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
@@ -377,11 +377,31 @@ function CanastaPageContent() {
                     </thead>
                     <tbody>
                       {state.players.map((p) => (
-                        <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                          <td>{playerName(p.id, p.isHuman)}</td>
-                          <td className="text-center">{p.roundScore}</td>
-                          <td className="text-center">{p.cumulativeScore}</td>
-                        </tr>
+                        <Fragment key={p.id}>
+                          <tr className={p.isHuman ? 'text-ds-accent' : ''}>
+                            <td>{playerName(p.id, p.isHuman)}</td>
+                            <td className="text-center">{p.roundScore}</td>
+                            <td className="text-center">{p.cumulativeScore}</td>
+                          </tr>
+                          {(isRoundEnd || isGameEnd) && (
+                            <tr>
+                              <td colSpan={3} className="pb-2">
+                                <dl className="grid grid-cols-2 gap-x-2 text-xs">
+                                  <dt>{t('score.meldCards')}</dt>
+                                  <dd className="text-right">{p.scoreBreakdown.meldCards}</dd>
+                                  <dt>{t('score.canastaBonus')}</dt>
+                                  <dd className="text-right">{p.scoreBreakdown.canastaBonus}</dd>
+                                  <dt>{t('score.red3Bonus')}</dt>
+                                  <dd className="text-right">{p.scoreBreakdown.red3Bonus}</dd>
+                                  <dt>{t('score.goOutBonus')}</dt>
+                                  <dd className="text-right">{p.scoreBreakdown.goOutBonus}</dd>
+                                  <dt>{t('score.handPenalty')}</dt>
+                                  <dd className="text-right">−{p.scoreBreakdown.handPenalty}</dd>
+                                </dl>
+                              </td>
+                            </tr>
+                          )}
+                        </Fragment>
                       ))}
                     </tbody>
                   </table>

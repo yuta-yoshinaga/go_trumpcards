@@ -28,6 +28,7 @@ const basePlayers: CanastaPlayerData[] = [
     red3s: [],
     roundScore: 0,
     cumulativeScore: 0,
+    scoreBreakdown: { meldCards: 0, canastaBonus: 0, red3Bonus: 0, goOutBonus: 0, handPenalty: 0 },
     hasCanasta: false,
     hasInitMeld: false,
   },
@@ -41,6 +42,7 @@ const basePlayers: CanastaPlayerData[] = [
     red3s: [],
     roundScore: 0,
     cumulativeScore: 0,
+    scoreBreakdown: { meldCards: 0, canastaBonus: 0, red3Bonus: 0, goOutBonus: 0, handPenalty: 0 },
     hasCanasta: false,
     hasInitMeld: false,
   },
@@ -129,6 +131,36 @@ describe('CanastaPage', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<CanastaPage />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('shows server score breakdown only at round or game end, including hand penalty as a negative value', async () => {
+    const completedState: CanastaResponse = {
+      ...roundEndState,
+      players: [
+        {
+          ...basePlayers[0],
+          roundScore: 120,
+          scoreBreakdown: { meldCards: 70, canastaBonus: 50, red3Bonus: 100, goOutBonus: 100, handPenalty: 35 },
+        },
+        {
+          ...basePlayers[1],
+          roundScore: -20,
+          scoreBreakdown: { meldCards: 15, canastaBonus: 0, red3Bonus: 0, goOutBonus: 0, handPenalty: 35 },
+        },
+      ],
+    };
+    mockExec.mockResolvedValue(completedState);
+    const view = renderWithProviders(<CanastaPage />);
+    expect(await screen.findAllByText('メルド札')).toHaveLength(2);
+    expect(screen.getByText('70')).toBeInTheDocument();
+    expect(screen.getAllByText('100')).toHaveLength(2);
+    expect(screen.getAllByText('−35')).toHaveLength(2);
+
+    view.unmount();
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<CanastaPage />);
+    await waitFor(() => expect(screen.getAllByText('ラウンド').length).toBeGreaterThan(0));
+    expect(screen.queryByText('メルド札')).not.toBeInTheDocument();
   });
 
   it('calls reset on mount', async () => {
