@@ -1,5 +1,7 @@
 {
   "title": "リッケン",
+  "currentBid": "現在の最高契約：{{contract}}（{{name}}）",
+  "currentBidNone": "現在の最高契約：なし",
   "bidGuide": "いまより強い契約を宣言するか、降りてください",
   "callGuide": "切り札を決めてください",
   "playGuide": "出せる札だけが選べます",

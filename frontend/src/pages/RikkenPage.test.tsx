@@ -135,6 +135,20 @@ describe('RikkenPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
   });
 
+  it('shows that there is no current highest contract when bidding starts', async () => {
+    mockApi.mockResolvedValue(bidState);
+    renderWithProviders(<RikkenPage />);
+
+    expect(await screen.findByTestId('rikken-current-bid')).toHaveTextContent('現在の最高契約：なし');
+  });
+
+  it('shows the current highest contract and its declarer in the bidding controls', async () => {
+    mockApi.mockResolvedValue({ ...bidState, contract: RikkenContract.MISERE, declarerIdx: 2 });
+    renderWithProviders(<RikkenPage />);
+
+    expect(await screen.findByTestId('rikken-current-bid')).toHaveTextContent('現在の最高契約：ミゼール（0）（CPU 2）');
+  });
+
   it('offers all four contracts plus pass', async () => {
     mockApi.mockResolvedValue(bidState);
     renderWithProviders(<RikkenPage />);
