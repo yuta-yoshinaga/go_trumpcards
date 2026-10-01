@@ -336,6 +336,33 @@ describe('SixBidSoloPage', () => {
     await waitFor(() => expect(screen.queryByTestId('sixbidsolo-contract')).not.toBeInTheDocument());
   });
 
+  it('shows ordered bids and passes during the bidding phase', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: SixBidSoloPhase.BID,
+        bids: [
+          { player: 0, kind: 0 },
+          { player: 1, kind: 2 },
+        ],
+      }),
+    );
+    renderWithProviders(<SixBidSoloPage />);
+
+    const history = await screen.findByTestId('sixbidsolo-bid-history');
+    expect(history.querySelectorAll('li')).toHaveLength(2);
+    expect(history.querySelectorAll('li')[0]).toHaveTextContent('あなた');
+    expect(history.querySelectorAll('li')[0]).toHaveTextContent('パス');
+    expect(history.querySelectorAll('li')[1]).toHaveTextContent('CPU 1');
+    expect(history.querySelectorAll('li')[1]).toHaveTextContent('ハート・ソロ');
+  });
+
+  it('distinguishes an empty bid history from an unrecorded player bid', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: SixBidSoloPhase.BID, bids: [] }));
+    renderWithProviders(<SixBidSoloPage />);
+
+    expect(await screen.findByTestId('sixbidsolo-bid-history-empty')).toHaveTextContent('まだ入札はありません');
+  });
+
   // **コール・ソロで指名された札が表示される。**
   it('shows the called card when one is named', async () => {
     mockExec.mockResolvedValue(makeState({ calledCard: card('HEART', 13) }));
