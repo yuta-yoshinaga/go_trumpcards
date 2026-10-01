@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { quodlibetApi } from '../api/gameApi';
+import i18n from '../i18n';
 import enQuodlibet from '../i18n/locales/en/quodlibet.json';
 import jaQuodlibet from '../i18n/locales/ja/quodlibet.json';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -325,12 +326,41 @@ describe('QuodlibetPage', () => {
     expect(descPanel).toHaveTextContent(jaQuodlibet.contractDesc.plus);
   });
 
-  // 負のコントロール: 種目選択フェーズでない局面では説明パネルも出ない
-  it('hides the description panel when not in contract selection phase', async () => {
+  it('shows the current contract description during play', async () => {
     mockExec.mockResolvedValue(playState);
     renderWithProviders(<QuodlibetPage />);
     await screen.findByTestId('quodlibet-play');
-    expect(screen.queryByTestId('quodlibet-contract-desc')).not.toBeInTheDocument();
+    expect(screen.getByTestId('quodlibet-current-contract-desc')).toHaveTextContent(jaQuodlibet.contractDesc.minus);
+  });
+
+  it('shows the current shedding contract description during play', async () => {
+    mockExec.mockResolvedValueOnce(
+      makeQuodlibetState({
+        phase: 'play',
+        isContractPhase: false,
+        currentContract: 10,
+        currentContractName: 'quadrature',
+        isShedding: true,
+      }),
+    );
+    renderWithProviders(<QuodlibetPage />);
+    await screen.findByTestId('quodlibet-play');
+    expect(screen.getByTestId('quodlibet-current-contract-desc')).toHaveTextContent(
+      jaQuodlibet.contractDesc.quadrature,
+    );
+  });
+
+  it('shows the current contract description in English', async () => {
+    const originalLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(playState);
+      renderWithProviders(<QuodlibetPage />);
+      await screen.findByTestId('quodlibet-play');
+      expect(screen.getByTestId('quodlibet-current-contract-desc')).toHaveTextContent(enQuodlibet.contractDesc.minus);
+    } finally {
+      await i18n.changeLanguage(originalLanguage);
+    }
   });
 
   // 全12種目の説明文が ja / en の両方で未解決プレースホルダなく定義されていること

@@ -213,6 +213,11 @@ function QuodlibetPageContent() {
                   {t('contract', { name: t(`contractName.${state.currentContractName}`) })}
                 </span>
               )}
+              {!isContractPhase && state.currentContract >= 0 && (
+                <span className="ml-2 text-sm text-ds-text-muted" data-testid="quodlibet-current-contract-desc">
+                  {t(`contractDesc.${state.currentContractName}`)}
+                </span>
+              )}
               {!state.isShedding && state.currentContract >= 0 && (
                 <span className="ml-4">{t('trick', { n: state.trickNumber, total: state.trickCount })}</span>
               )}
