@@ -444,6 +444,20 @@ describe('CanfieldPage', () => {
     expect(source).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('toggles a tableau card selection off when clicking the selected card again', async () => {
+    renderWithProviders(<CanfieldPage />);
+    const source = (await screen.findAllByAltText('♠ 7')).at(-1)?.closest('button') as HTMLButtonElement;
+
+    fireEvent.click(source);
+    expect(source).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('♠ 7を選択中。移動先を選んでください')).toBeInTheDocument();
+
+    fireEvent.click(source);
+    expect(source).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByText('', { selector: '#cf-tableau-selection-status' })).toBeInTheDocument();
+    expect(screen.queryByTestId('cf-selected-move-to-tableau-1')).not.toBeInTheDocument();
+  });
+
   it('hides the selected-card move controls when a reset response removes the card without changing moveCount', async () => {
     const resetState: CanfieldResponse = {
       ...playingState,
