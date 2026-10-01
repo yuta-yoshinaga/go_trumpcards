@@ -20,6 +20,11 @@
   "passed": "パス",
   "currentTrick": "現在のトリック",
   "trickEmpty": "(まだカードがありません)",
+  "announcement": {
+    "listSeparator": "、",
+    "cardPlayed": "{{name}}が{{card}}を出しました",
+    "trickWon": "{{name}}がトリックを取りました"
+  },
   "tricksLabel": "目標トリック数",
   "selectTricks": "トリック数を選択 (1-7):",
   "dirUptown": "アップタウン",
