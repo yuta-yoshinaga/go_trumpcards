@@ -234,8 +234,25 @@ function MusPageContent() {
                   中身だけを差し替える ── 領域と中身が同じコミットで DOM に入ると、
                   変化として扱われず読み上げられないことがある。 */}
               <div className="mt-1 text-ds-warning" role="status" aria-live="polite" data-testid="mus-pending-stake">
-                {state.pendingStake !== 0 &&
-                  t('pendingStake', { amount: state.pendingStake === -1 ? t('ordagoLabel') : state.pendingStake })}
+                {state.pendingStake !== 0 && (
+                  <>
+                    <span>
+                      {t('pendingStake', { amount: state.pendingStake === -1 ? t('ordagoLabel') : state.pendingStake })}
+                    </span>
+                    {state.betTeam >= 0 && (
+                      <span className="block">
+                        {t('betTeamLabel', { team: state.betTeam })}
+                        {state.betTeam === state.humanTeam ? ` (${t('yourTeam')})` : ''}
+                      </span>
+                    )}
+                    {state.lastBettorTeam >= 0 && (
+                      <span className="block">
+                        {t('lastBettorTeamLabel', { team: state.lastBettorTeam })}
+                        {state.lastBettorTeam === state.humanTeam ? ` (${t('yourTeam')})` : ''}
+                      </span>
+                    )}
+                  </>
+                )}
               </div>
             </div>
 

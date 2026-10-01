@@ -30,6 +30,8 @@
   "amarrakos": "アマラコ",
   "amarrakosProgress": "チーム{{team}}: {{score}} / {{target}}点、残り{{remaining}}点",
   "pendingStake": "保留中の賭け: {{amount}}",
+  "betTeamLabel": "賭けを保持するチーム: チーム{{team}}",
+  "lastBettorTeamLabel": "直近に賭けたチーム: チーム{{team}}",
   "ordagoLabel": "オルダゴ（全賭け）",
   "musPrompt": "ムス（交換）にしますか、それともコルテ（勝負）にしますか？",
   "discardPrompt": "交換するカードを選んでください（なければ全保持）。",
