@@ -197,7 +197,12 @@ function LaBelleLuciePageContent() {
           ? t('movableFan')
           : '';
     const ariaLabel = topCard
-      ? t('fanAriaLabel', { index: idx + 1, card: cardAlt(topCard), state: fanState })
+      ? t('fanAriaLabel', {
+          index: idx + 1,
+          card: cardAlt(topCard),
+          cardCount: t('fanCardCount', { count: fan.length }),
+          state: fanState,
+        })
       : t('emptyFanAriaLabel', { index: idx + 1 });
     // **リングは 1 つだけ選ぶ。** Tailwind の ring-* は同じ box-shadow 変数を
     // 共有するので重ねられない —— 連結すると、生成された CSS の順序で
