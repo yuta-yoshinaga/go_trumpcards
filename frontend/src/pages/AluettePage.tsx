@@ -315,6 +315,14 @@ function AluettePageContent() {
                         読者にさせない (バックエンドの settleRound と同じ条件)。 */}
                       <div className="mt-1 text-ds-text-primary" data-testid="aluette-team-tally">
                         {t('roundResult.teamTally', { team0: meneTeamTricks[0], team1: meneTeamTricks[1] })}
+                        {[0, 1].map((team) => (
+                          <div key={team}>
+                            {t('roundResult.tricksRemaining', {
+                              team,
+                              count: Math.max(0, ALUETTE_TRICKS_TO_WIN - meneTeamTricks[team]),
+                            })}
+                          </div>
+                        ))}
                       </div>
                       {meneWinner !== null && (
                         <div data-testid="aluette-meine-winner">

@@ -49,6 +49,7 @@
     "title": "メーヌ結果",
     "tricks": "{{name}} トリック: {{count}}",
     "teamTally": "チーム合計: チーム0 {{team0}} / チーム1 {{team1}}（3トリック以上でメーヌ獲得。4-1 でも 3-2 でも 1 点）",
+    "tricksRemaining": "チーム{{team}}：メーヌ獲得まで残り{{count}}トリック",
     "meineWinner": "このメーヌを取ったのは チーム{{team}}"
   },
   "hintAvailable": "ヒント",
