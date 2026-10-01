@@ -21,6 +21,7 @@
   "foundationAriaLabel": "Foundation {{idx}}, {{count}} cards",
   "emptyFoundationAriaLabel": "Empty foundation {{idx}}",
   "emptyPileAriaLabel": "Empty pile {{pile}}",
+  "tableauCardAriaLabel": "{{card}}, pile {{pile}}",
   "terraceAriaLabel": "Terrace {{card}}, {{count}} cards left (foundations only)",
   "emptyTerraceAriaLabel": "The terrace is empty",
   "stockAriaLabel": "Stock, {{count}} cards left",
