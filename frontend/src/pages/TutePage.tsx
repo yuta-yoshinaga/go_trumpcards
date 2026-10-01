@@ -255,6 +255,20 @@ function TutePageContent() {
                   </div>
                 </div>
 
+                <details className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                  <summary className="cursor-pointer select-none min-h-[44px] flex items-center text-ds-text-primary">
+                    {t('scoringReference.title')}
+                  </summary>
+                  <div className="mt-1">
+                    <div>{t('scoringReference.ace')}</div>
+                    <div>{t('scoringReference.three')}</div>
+                    <div>{t('scoringReference.king')}</div>
+                    <div>{t('scoringReference.queen')}</div>
+                    <div>{t('scoringReference.jack')}</div>
+                    <div className="mt-1">{t('scoringReference.lastTrick')}</div>
+                  </div>
+                </details>
+
                 {/* Declared marriage suits (persistent readout of state.declaredSuits) */}
                 <div
                   className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
