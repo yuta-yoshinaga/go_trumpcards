@@ -573,6 +573,10 @@ function BinokelPageContent() {
 
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
+            <span className="sr-only" role="status" aria-live="polite" data-testid="bn-dabb-selection-live">
+              {isDabbTurn ? t('dabbSelectionCount', { count: selectedCardIndices.length }) : ''}
+            </span>
+
             {/* Server hint result */}
             <div data-testid="binokel-hint-live" role="status" aria-live="polite">
               {hint?.reason && (
