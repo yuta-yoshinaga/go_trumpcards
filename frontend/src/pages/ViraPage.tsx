@@ -231,6 +231,10 @@ function ViraPageContent() {
     reset();
   };
 
+  // The settlement line names a declarer only when there was a contract (PASS has none).
+  const settlementDeclarer = state.contract !== ViraContract.PASS ? state.players[state.declarerIdx] : undefined;
+  const settlementContractKey = settlementDeclarer ? CONTRACT_KEYS[state.contract] : undefined;
+
   return (
     <GamePageShell
       title={tc('nav.vira')}
@@ -395,17 +399,12 @@ function ViraPageContent() {
                         })}
                       </div>
                     ))}
-                    {state.declarerIdx >= 0 && state.contract !== ViraContract.PASS && (
+                    {settlementDeclarer && settlementContractKey && (
                       <div className="mt-1 text-ds-text-primary" data-testid="vira-contract-settlement">
-                        {state.lastRoundMade
-                          ? t('roundResult.contractMade', {
-                              name: playerName(state.declarerIdx, state.players[state.declarerIdx]?.isHuman ?? false),
-                              contract: t(`contractName.${CONTRACT_KEYS[state.contract] ?? 'pass'}`),
-                            })
-                          : t('roundResult.contractFailed', {
-                              name: playerName(state.declarerIdx, state.players[state.declarerIdx]?.isHuman ?? false),
-                              contract: t(`contractName.${CONTRACT_KEYS[state.contract] ?? 'pass'}`),
-                            })}
+                        {t(state.lastRoundMade ? 'roundResult.contractMade' : 'roundResult.contractFailed', {
+                          name: playerName(state.declarerIdx, settlementDeclarer.isHuman),
+                          contract: t(`contractName.${settlementContractKey}`),
+                        })}
                       </div>
                     )}
                     {/* 達成側は `pot` ではなく `lastRoundPotWon` を読む ── 精算が
