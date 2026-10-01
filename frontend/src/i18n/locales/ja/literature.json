@@ -34,6 +34,8 @@
   "claimWonLine": "{{name}} をチーム{{team}}が獲得しました",
   "claimCancelledLine": "{{name}} は【無効】になりました（所在の申告が誤り。相手には渡りません）",
   "claimLostLine": "{{name}} は相手（チーム{{team}}）の獲得になりました",
+  "claimHistoryTitle": "所在宣言履歴",
+  "claimHistoryMore": "さらに{{count}}件（展開すると全件表示）",
   "lastClaimTitle": "直近の宣言",
   "settings": {
     "title": "設定"
