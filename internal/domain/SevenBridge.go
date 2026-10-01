@@ -98,6 +98,7 @@ func (g *SevenBridge) Reset() {
 
 	for _, p := range g.players {
 		p.SetRoundScore(0)
+		p.ScoreBreakdown = SevenBridgeScoreBreakdown{}
 		p.SetCumulativeScore(0)
 		p.Reset()
 		p.SetIsFinished(false)
@@ -817,10 +818,22 @@ func (g *SevenBridge) finishRound(winnerIdx int) {
 		loserIdx := 1 - winnerIdx
 		loser := g.players[loserIdx]
 		for i := 0; i < loser.GetCardsSize(); i++ {
-			loserTotal += sevenBridgeCardPenalty(loser.GetCard(i))
+			card := loser.GetCard(i)
+			penalty := sevenBridgeCardPenalty(card)
+			loserTotal += penalty
+			switch {
+			case card.GetValue() == SevenBridgePivotRank:
+				g.players[winnerIdx].ScoreBreakdown.Seven += penalty
+			case card.GetValue() == 1:
+				g.players[winnerIdx].ScoreBreakdown.Ace += penalty
+			case card.GetValue() >= 10:
+				g.players[winnerIdx].ScoreBreakdown.Face += penalty
+			default:
+				g.players[winnerIdx].ScoreBreakdown.Number += penalty
+			}
 		}
 		// 勝者のラウンドスコア = 相手のペナルティ
-		g.players[winnerIdx].SetRoundScore(loserTotal)
+		g.players[winnerIdx].SetRoundScore(g.players[winnerIdx].ScoreBreakdown.Total())
 		g.appendLog(winnerIdx, "round_win", "sevenbridge.log.goesOut", map[string]string{"name": playerName(g.players, winnerIdx), "penalty": strconv.Itoa(loserTotal)}, nil)
 	} else {
 		g.appendLog(-1, "draw", "sevenbridge.log.roundDraw", nil, nil)
@@ -936,6 +949,14 @@ func (g *SevenBridge) GetPlayerCnt() int { return len(g.players) }
 // GetPlayer プレイヤー取得
 func (g *SevenBridge) GetPlayer(i int) *SevenBridgePlayer {
 	return getPlayer(g.players, i)
+}
+
+// GetScoreBreakdown returns a player's latest round score breakdown.
+func (g *SevenBridge) GetScoreBreakdown(playerIdx int) SevenBridgeScoreBreakdown {
+	if playerIdx < 0 || playerIdx >= len(g.players) || g.players[playerIdx] == nil {
+		return SevenBridgeScoreBreakdown{}
+	}
+	return g.players[playerIdx].GetScoreBreakdown()
 }
 
 // GetConfig 設定取得

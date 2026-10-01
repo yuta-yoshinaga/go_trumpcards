@@ -28,6 +28,7 @@ const drawState: SevenBridgeResponse = {
       melds: [],
       roundScore: 0,
       cumulativeScore: 0,
+      scoreBreakdown: { ace: 0, number: 0, face: 0, seven: 0 },
     },
     {
       id: 1,
@@ -37,6 +38,7 @@ const drawState: SevenBridgeResponse = {
       melds: [],
       roundScore: 0,
       cumulativeScore: 10,
+      scoreBreakdown: { ace: 0, number: 0, face: 0, seven: 0 },
     },
   ],
   phase: 0,
@@ -62,6 +64,32 @@ describe('SevenBridgePage', () => {
     mockExec.mockResolvedValue(drawState);
     renderWithProviders(<SevenBridgePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.any(Object)));
+  });
+
+  it('shows server score breakdown after a round ends using the response values', async () => {
+    const endedState: SevenBridgeResponse = {
+      ...drawState,
+      phase: 2,
+      players: playState.players.map((player) => ({
+        ...player,
+        scoreBreakdown: player.isHuman
+          ? { ace: 1, number: 2, face: 3, seven: 50 }
+          : { ace: 0, number: 0, face: 0, seven: 0 },
+      })),
+    };
+    mockExec.mockResolvedValue(endedState);
+    renderWithProviders(<SevenBridgePage />);
+    await waitFor(() => expect(screen.getByText('セブン: −50')).toBeInTheDocument());
+    expect(screen.getByText('エース: −1')).toBeInTheDocument();
+    expect(screen.getByText('数字: −2')).toBeInTheDocument();
+    expect(screen.getByText('絵札: −3')).toBeInTheDocument();
+  });
+
+  it('hides score breakdown while a round is in progress', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<SevenBridgePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByText('ラウンド得点内訳')).not.toBeInTheDocument();
   });
 
   it('applies the shared gameTheme background instead of a hardcoded class', async () => {

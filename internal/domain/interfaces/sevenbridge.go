@@ -61,6 +61,8 @@ type SevenBridgeGame interface {
 	GetPlayerCnt() int
 	// GetPlayer 指定インデックスのプレイヤーを取得する
 	GetPlayer(i int) *domain.SevenBridgePlayer
+	// GetScoreBreakdown returns a player's latest round score breakdown.
+	GetScoreBreakdown(playerIdx int) domain.SevenBridgeScoreBreakdown
 	// GetRoundWinnerIdx 直近ラウンドの勝者
 	GetRoundWinnerIdx() int
 	// GetClaimedThisTurn 直前ターンで claim されたか

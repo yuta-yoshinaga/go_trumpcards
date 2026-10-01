@@ -28,13 +28,14 @@ type SevenBridgeWebConfig struct {
 
 // SevenBridgeWebOutputPlayer セブンブリッジ Web アウトプットプレイヤー
 type SevenBridgeWebOutputPlayer struct {
-	ID              int                         `json:"id"`
-	IsHuman         bool                        `json:"isHuman"`
-	CardCount       int                         `json:"cardCount"`
-	Cards           []*WebOutputCard            `json:"cards"`
-	Melds           []*SevenBridgeWebOutputMeld `json:"melds"`
-	RoundScore      int                         `json:"roundScore"`
-	CumulativeScore int                         `json:"cumulativeScore"`
+	ID              int                              `json:"id"`
+	IsHuman         bool                             `json:"isHuman"`
+	CardCount       int                              `json:"cardCount"`
+	Cards           []*WebOutputCard                 `json:"cards"`
+	Melds           []*SevenBridgeWebOutputMeld      `json:"melds"`
+	RoundScore      int                              `json:"roundScore"`
+	CumulativeScore int                              `json:"cumulativeScore"`
+	ScoreBreakdown  domain.SevenBridgeScoreBreakdown `json:"scoreBreakdown"`
 }
 
 // SevenBridgeWebOutputMeld メルドのアウトプット

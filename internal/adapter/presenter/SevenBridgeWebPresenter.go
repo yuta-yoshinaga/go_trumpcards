@@ -69,6 +69,7 @@ func (p *SevenBridgeWebPresenter) buildPlayersOutput(g interfaces.SevenBridgeGam
 			Melds:           melds,
 			RoundScore:      player.GetRoundScore(),
 			CumulativeScore: player.GetCumulativeScore(),
+			ScoreBreakdown:  g.GetScoreBreakdown(i),
 		}
 		out = append(out, pObj)
 	}

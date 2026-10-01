@@ -23,6 +23,13 @@
   "scoresPlayer": "プレイヤー",
   "scoresRound": "ラウンド",
   "scoresTotal": "累計",
+  "scoreBreakdown": {
+    "title": "ラウンド得点内訳",
+    "ace": "エース",
+    "number": "数字",
+    "face": "絵札",
+    "seven": "セブン"
+  },
   "target": "目標: {{points}}点",
   "drawStockButton": "山札から引く",
   "ponButton": "ポン",

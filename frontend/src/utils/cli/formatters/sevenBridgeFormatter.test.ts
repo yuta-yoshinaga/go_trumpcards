@@ -14,6 +14,7 @@ const baseState: SevenBridgeResponse = {
       melds: [{ cards: [card('DIAMOND', 7), card('DIAMOND', 8), card('DIAMOND', 9)] }],
       roundScore: 0,
       cumulativeScore: 10,
+      scoreBreakdown: { ace: 0, number: 0, face: 0, seven: 0 },
     },
     {
       id: 1,
@@ -23,6 +24,7 @@ const baseState: SevenBridgeResponse = {
       melds: [],
       roundScore: 0,
       cumulativeScore: 20,
+      scoreBreakdown: { ace: 0, number: 0, face: 0, seven: 0 },
     },
   ],
   phase: 1,
