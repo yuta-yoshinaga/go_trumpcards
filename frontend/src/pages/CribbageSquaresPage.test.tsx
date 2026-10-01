@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cribbagesquaresApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, CribbageSquaresResponse, CribbageSquaresScore } from '../types/card';
@@ -59,9 +60,10 @@ describe('cribbageBreakdownParts', () => {
 });
 
 describe('CribbageSquaresPage', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     localStorage.clear();
+    await i18n.changeLanguage('ja');
     mockExec.mockResolvedValue(makeState());
   });
 
@@ -360,8 +362,19 @@ describe('CribbageSquaresPage', () => {
     await waitFor(() => expect(screen.getByTestId('cell-1-2')).toBeEnabled());
 
     expect(screen.getByTestId('cell-1-2')).toHaveAttribute('aria-label', '空 2-3、行2(現在3点)・列3(現在7点)');
-    // **埋まっているマスはカード読み上げのまま。**
-    expect(screen.getByTestId('cell-0-0')).toHaveAttribute('aria-label', cardAlt(card('SPADE', 5)));
+    expect(screen.getByTestId('cell-0-0')).toHaveAttribute('aria-label', `${cardAlt(card('SPADE', 5))}、行1・列1`);
+  });
+
+  it('names a placed card and its one-based position in English', async () => {
+    await i18n.changeLanguage('en');
+    renderWithProviders(<CribbageSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('cell-0-0')).toBeInTheDocument());
+
+    expect(screen.getByTestId('cell-0-0')).toHaveAttribute(
+      'aria-label',
+      `${cardAlt(card('SPADE', 5))}, row 1, column 1`,
+    );
+    await i18n.changeLanguage('ja');
   });
 
   // サーバが内訳を省いたレスポンスでも、読み上げが壊れず 0 として出る。
