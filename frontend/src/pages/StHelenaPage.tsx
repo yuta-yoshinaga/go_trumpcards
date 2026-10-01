@@ -290,6 +290,13 @@ function StHelenaPageContent() {
       direction: t(idx < 4 ? 'destinationDirection.asc' : 'destinationDirection.desc'),
     }),
   );
+  const tableauDestinationLabels =
+    selectedCard === null
+      ? []
+      : state.tableau.flatMap((_, colIdx) =>
+          isTableauTarget(colIdx) ? [t('tableauDestination', { col: colIdx })] : [],
+        );
+  const legalDestinationLabels = [...foundationDestinationLabels, ...tableauDestinationLabels];
 
   return (
     <GamePageShell
@@ -317,9 +324,9 @@ function StHelenaPageContent() {
           <span className="sr-only" role="status" aria-live="polite" data-testid="cr-selection-status">
             {isPlaying && selectedCard !== null
               ? legalTargetCount > 0
-                ? t('selectionMoves', {
+                ? t('selectionMovesWithTargets', {
                     count: legalTargetCount,
-                    destinations: foundationDestinationLabels.join(t('listSeparator')),
+                    destinations: legalDestinationLabels.join(t('listSeparator')),
                   })
                 : t('selectionNoMoves')
               : ''}
