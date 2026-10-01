@@ -94,6 +94,12 @@ beforeEach(() => {
 });
 
 describe('WillOTheWispPage', () => {
+  it('includes the card name and zero-based tableau column in face-up card names', async () => {
+    renderWithProviders(<WillOTheWispPage />);
+    const cardButton = await screen.findByTestId('willothewisp-card-1-1');
+
+    expect(cardButton).toHaveAccessibleName('♥ 5、列1');
+  });
   it('keeps an empty tableau target focusable and explains that a source must be selected', async () => {
     mockSend.mockResolvedValue({ ...playingState, tableau: makeTableau([[], ...playingState.tableau.slice(1)]) });
     renderWithProviders(<WillOTheWispPage />);
