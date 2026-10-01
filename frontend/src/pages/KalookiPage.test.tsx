@@ -64,6 +64,7 @@ const drawState: KalookiResponse = {
   gameEndFlag: false,
   winnerIdx: -1,
   roundWinnerIdx: -1,
+  roundScoreHistory: [],
   config: { cpuDifficulty: 1, playerCount: 3, openingThreshold: 51 },
   message: '',
 };
@@ -393,6 +394,19 @@ describe('KalookiPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /Next round|次のラウンドへ/ })).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: /Next round|次のラウンドへ/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+
+  it('shows completed round penalty scores in a player-by-round table', async () => {
+    mockExec.mockResolvedValue({
+      ...roundEndState,
+      roundScoreHistory: [{ scores: [0, 24, 51] }],
+    });
+    renderWithProviders(<KalookiPage />);
+    await waitFor(() => expect(screen.getByRole('table')).toBeInTheDocument());
+    expect(screen.getAllByRole('row')).toHaveLength(2);
+    expect(screen.getAllByRole('columnheader')).toHaveLength(4);
+    expect(screen.getByRole('cell', { name: '24' })).toBeInTheDocument();
+    expect(screen.getByRole('cell', { name: '51' })).toBeInTheDocument();
   });
 
   it('keeps CPU hands hidden during the draw phase', async () => {

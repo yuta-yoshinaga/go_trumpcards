@@ -23,6 +23,8 @@
   "yourHand": "あなたの手札",
   "cards": "枚数",
   "scoreLabel": "累計",
+  "scoreHistoryTitle": "ラウンド別ペナルティ得点",
+  "roundLabel": "ラウンド",
   "openedBadge": "オープン済",
   "groupsBuilt": "組成済グループ",
   "drawStock": "山札から引く",
