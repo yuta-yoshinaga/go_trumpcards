@@ -474,7 +474,7 @@ describe('AccordionPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /3: ♠ 9 — 左3へマージ可/ })).toBeInTheDocument());
     const status = screen.getByTestId('ac-selection-status');
     expect(status).toHaveAttribute('role', 'status');
-    expect(status).toHaveTextContent('パイル3を選択中。マージ可能な手が1通り');
+    expect(status).toHaveTextContent('パイル3を選択中。統合先: パイル0（マージ可能な手が1通り）');
   });
 
   it('lists both merge offsets joined by the localized separator when both are legal', async () => {
@@ -494,7 +494,9 @@ describe('AccordionPage', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /3: ♠ 9 — 左1へマージ可、左3へマージ可/ })).toBeInTheDocument(),
     );
-    expect(screen.getByTestId('ac-selection-status')).toHaveTextContent('パイル3を選択中。マージ可能な手が2通り');
+    expect(screen.getByTestId('ac-selection-status')).toHaveTextContent(
+      'パイル3を選択中。統合先: パイル2、パイル0（マージ可能な手が2通り）',
+    );
   });
 
   it('announces when a selected pile has no legal merge', async () => {
