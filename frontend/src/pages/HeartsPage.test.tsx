@@ -113,6 +113,27 @@ describe('HeartsPage', () => {
     }
   });
 
+  it('announces one penalty point in English', async () => {
+    mockExec.mockResolvedValue(
+      makeHeartsState({
+        phase: 2,
+        trickPoints: 1,
+        leadPlayerIdx: 1,
+        currentTrick: [{ playerIdx: 1, card: { design: 'HEART', value: 5 } }],
+      }),
+    );
+    const previousLanguage = i18n.language;
+    try {
+      await i18n.changeLanguage('en');
+      renderWithProviders(<HeartsPage />);
+      expect(await screen.findByTestId('hearts-trick-result-live')).toHaveTextContent(
+        'CPU 1 won the trick, taking 1 penalty point, and will lead next.',
+      );
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('hides the static trick-end message during TrickEnd', async () => {
     mockExec.mockResolvedValue(makeHeartsState({ phase: 2, messageCode: 'hearts.trickEnd' }));
     renderWithProviders(<HeartsPage />);

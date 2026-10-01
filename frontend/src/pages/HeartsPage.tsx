@@ -465,6 +465,7 @@ function HeartsPageContent() {
               {isTrickEnd && (
                 <div className="text-ds-text-primary text-center font-bold mb-2">
                   {t('trickResult', {
+                    count: state.trickPoints,
                     name: state.players[state.leadPlayerIdx]
                       ? playerName(state.players[state.leadPlayerIdx].id, state.players[state.leadPlayerIdx].isHuman)
                       : '',
