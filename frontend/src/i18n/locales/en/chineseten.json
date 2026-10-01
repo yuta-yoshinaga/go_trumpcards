@@ -9,6 +9,7 @@
   "choosePrompt": "Choose which card to take",
   "opponentHand": "CPU hand: {{n}} cards",
   "opponentHandAriaLabel": "CPU hand, {{n}} cards face down",
+  "opponentHandRevealedAriaLabel": "CPU hand (revealed)",
   "pendingLine": "Played:",
   "pendingFlipLine": "Flipped:",
   "yourHand": "Your hand",
