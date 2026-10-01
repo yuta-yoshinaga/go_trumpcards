@@ -16,6 +16,7 @@
   "label.upCard": "Up-card",
   "label.yourHands": "Your hands",
   "label.hand": "Hand {{idx}}",
+  "label.activeHand": "Your turn",
   "label.score": "pts",
   "label.bet": "bet",
   "label.net": "Net",

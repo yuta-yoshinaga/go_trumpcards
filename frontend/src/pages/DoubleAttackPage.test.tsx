@@ -469,6 +469,37 @@ describe('DoubleAttackPage', () => {
     expect(screen.getByTestId('da-hand-1')).toBeInTheDocument();
   });
 
+  it('プレイ中は複数ハンドの操作対象だけをテキストで示し、結果では示さない', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: DoubleAttackPhase.PLAY,
+        hands: [hand(), hand({ score: 19 })],
+        activeHand: 1,
+      }),
+    );
+    renderWithProviders(<DoubleAttackPage />);
+    await waitFor(() => expect(screen.getByTestId('da-hand-1')).toBeInTheDocument());
+
+    expect(screen.getByTestId('da-hand-1')).toHaveTextContent('現在操作中');
+    expect(screen.getByTestId('da-hand-0')).not.toHaveTextContent('現在操作中');
+
+    cleanup();
+    mockApi.mockResolvedValue(withState({ phase: DoubleAttackPhase.PLAY, hands: [hand()] }));
+    renderWithProviders(<DoubleAttackPage />);
+    await waitFor(() => expect(screen.getByTestId('da-hand-0')).toBeInTheDocument());
+    expect(screen.getByTestId('da-hand-0')).not.toHaveTextContent('現在操作中');
+
+    cleanup();
+    mockApi.mockResolvedValue(
+      withState({ phase: DoubleAttackPhase.RESULT, hands: [hand(), hand({ score: 19 })], activeHand: 1 }),
+    );
+    cleanup();
+    renderWithProviders(<DoubleAttackPage />);
+    await waitFor(() => expect(screen.getByTestId('da-result')).toBeInTheDocument());
+    expect(screen.getByTestId('da-hand-1')).toHaveTextContent('手札2');
+    expect(screen.getByTestId('da-hand-1')).not.toHaveTextContent('現在操作中');
+  });
+
   it('決着では収支と次へを出す', async () => {
     mockApi.mockResolvedValue(
       withState({
