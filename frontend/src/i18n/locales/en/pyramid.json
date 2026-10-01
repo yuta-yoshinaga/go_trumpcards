@@ -49,6 +49,7 @@
     "drawFromStock": "No immediate matches — try drawing from the stock"
   },
   "a11y": {
+    "position": "(row {{row}}, column {{col}})",
     "blocked": "(blocked)",
     "selected": "(selected)",
     "pairCandidate": "(pairs to 13)",

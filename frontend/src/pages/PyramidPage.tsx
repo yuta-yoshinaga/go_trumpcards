@@ -313,7 +313,7 @@ function PyramidPageContent() {
                               handleSelectCard({ zone: 'pyramid', row: rowIdx, col: colIdx }, pc.card.value);
                             }}
                             disabled={!isPlaying || loading || !exposed}
-                            aria-label={`${cardAlt(pc.card)}${statusSuffix}`}
+                            aria-label={`${cardAlt(pc.card)} ${t('a11y.position', { row: rowIdx, col: colIdx })}${statusSuffix}`}
                             aria-pressed={cellSelected}
                             data-pair-candidate={isPairCandidate ? 'true' : undefined}
                             data-king-removable={isExposedKing ? 'true' : undefined}
