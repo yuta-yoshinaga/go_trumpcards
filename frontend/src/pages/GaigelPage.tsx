@@ -242,9 +242,9 @@ function GaigelPageContent() {
               data-testid={`gaigel-player-${p.id}`}
               className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
             >
-              {playerName(p.id, p.isHuman)}{' '}
+              {playerName(p.id, p.isHuman)}
               {p.id === state.dealerIdx && (
-                <span className="text-ds-accent" data-testid="gaigel-dealer-badge">
+                <span className="ml-1 text-ds-accent" data-testid="gaigel-dealer-badge">
                   [{t('dealerBadge')}]
                 </span>
               )}
