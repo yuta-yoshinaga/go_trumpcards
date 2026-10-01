@@ -74388,6 +74388,12 @@ components:
                 type: integer
               roundBet:
                 type: integer
+              roundPayout:
+                type: integer
+                description: Chips settlement paid this player in the round just settled (the whole pot to the winner, 0 otherwise).
+              netChange:
+                type: integer
+                description: roundPayout minus what this player staked in the round.
               folded:
                 type: boolean
               out:
