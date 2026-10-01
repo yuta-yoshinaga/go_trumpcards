@@ -164,6 +164,9 @@ func TestBouillotte_Showdown_BrelanBeatsHighCard(t *testing.T) {
 	assert.Equal(t, 0, g.GetWinnerIdx())
 	assert.Equal(t, domain.BouillotteResultWin, g.GetResult())
 	assert.Equal(t, before+100, g.GetPlayer(0).GetChips())
+	assert.Equal(t, 100, g.GetRoundPayout(0))
+	assert.Equal(t, 0, g.GetRoundPayout(1))
+	assert.Equal(t, 90, g.GetRoundNetChange(0))
 	assert.Equal(t, domain.BouillottePhaseResult, g.GetPhase())
 }
 
@@ -179,6 +182,8 @@ func TestBouillotte_Showdown_HumanLoses(t *testing.T) {
 
 	assert.Equal(t, 1, g.GetWinnerIdx())
 	assert.Equal(t, domain.BouillotteResultLose, g.GetResult())
+	assert.Equal(t, 50, g.GetRoundPayout(1))
+	assert.Equal(t, 0, g.GetRoundPayout(0))
 }
 
 func TestBouillotte_Showdown_TieGoesToEarliestSeat(t *testing.T) {
@@ -221,6 +226,8 @@ func TestBouillotte_HumanFold_ResultNone(t *testing.T) {
 
 	assert.Equal(t, 1, g.GetWinnerIdx())
 	assert.Equal(t, domain.BouillotteResultNone, g.GetResult())
+	assert.Equal(t, 0, g.GetRoundPayout(0))
+	assert.Equal(t, -g.GetPlayer(0).GetRoundBet(), g.GetRoundNetChange(0))
 }
 
 func TestBouillotte_PlayerRaise_FoldsAroundToCleanWin(t *testing.T) {

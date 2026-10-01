@@ -37,6 +37,10 @@ type BouillotteGame interface {
 	GetCurrentPlayerIdx() int
 	// GetPot 現在のポットを取得する
 	GetPot() int
+	// GetRoundPayout 直近ラウンドで指定プレイヤーに払い戻された額を取得する
+	GetRoundPayout(i int) int
+	// GetRoundNetChange 直近ラウンドの指定プレイヤーの差引を取得する
+	GetRoundNetChange(i int) int
 	// GetCurrentBet 現在の必要総拠出額を取得する
 	GetCurrentBet() int
 	// GetRaiseCount このラウンドのレイズ回数を取得する

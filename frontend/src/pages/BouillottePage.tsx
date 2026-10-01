@@ -142,10 +142,12 @@ function BouillottePageContent() {
       : raiseBlock === 'chips'
         ? t('raiseNoChips', { cost: raiseNeeded })
         : t('raiseCount', { count: state.raiseCount, max: state.maxRaises });
-  const humanIdx = state.players.findIndex((p) => p.isHuman);
 
   // Pot odds and chip costs facing the human at the Call/Raise/Fold decision.
   const humanRoundBet = humanPlayer?.roundBet ?? 0;
+  const humanPayout = humanPlayer?.roundPayout ?? 0;
+  const humanNet = humanPlayer?.netChange ?? 0;
+  const humanIdx = state.players.findIndex((p) => p.isHuman);
   const potOdds = computeBouillottePotOdds(state.pot, state.currentBet, humanRoundBet);
 
   // Which of the human's cards share the retourne's rank, and any combo it completes.
@@ -311,6 +313,13 @@ function BouillottePageContent() {
                   {t('roundResult.winner', {
                     name: playerLabel(state.winnerIdx, state.winnerIdx === humanIdx),
                     pot: state.pot,
+                  })}
+                </div>
+                <div data-testid="bouillotte-human-round-result">
+                  {t('roundResult.personal', {
+                    bet: humanRoundBet,
+                    payout: humanPayout,
+                    net: humanNet > 0 ? `+${humanNet}` : String(humanNet),
                   })}
                 </div>
               </div>

@@ -49,7 +49,8 @@
   "nextRound": "次のラウンド",
   "roundResult": {
     "title": "ラウンド結果",
-    "winner": "{{name}} がポット {{pot}} を獲得しました。"
+    "winner": "{{name}} がポット {{pot}} を獲得しました。",
+    "personal": "あなたの賭け: {{bet}} · 払戻: {{payout}} · 差引: {{net}}"
   },
   "matchWinner": "{{name}} がマッチに勝利しました！",
   "hint": {

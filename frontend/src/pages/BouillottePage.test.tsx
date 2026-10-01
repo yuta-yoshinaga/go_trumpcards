@@ -25,6 +25,8 @@ const resultState = makeBouillotteState({
       isHuman: true,
       chips: 230,
       roundBet: 40,
+      roundPayout: 100,
+      netChange: 60,
       folded: false,
       out: false,
       cardCount: 3,
@@ -41,6 +43,8 @@ const resultState = makeBouillotteState({
       isHuman: false,
       chips: 170,
       roundBet: 40,
+      roundPayout: 0,
+      netChange: -40,
       folded: false,
       out: false,
       cardCount: 3,
@@ -57,6 +61,8 @@ const resultState = makeBouillotteState({
       isHuman: false,
       chips: 190,
       roundBet: 10,
+      roundPayout: 0,
+      netChange: -10,
       folded: true,
       out: false,
       cardCount: 3,
@@ -68,6 +74,8 @@ const resultState = makeBouillotteState({
       isHuman: false,
       chips: 190,
       roundBet: 10,
+      roundPayout: 0,
+      netChange: -10,
       folded: true,
       out: false,
       cardCount: 3,
@@ -104,6 +112,29 @@ describe('BouillottePage', () => {
       await waitFor(() => expect(screen.getByText(text)).toBeInTheDocument());
       unmount();
     }
+  });
+
+  it('shows the human round bet, payout, and net result', async () => {
+    mockExec.mockResolvedValueOnce(resultState);
+    renderWithProviders(<BouillottePage />);
+    await waitFor(() => expect(screen.getByTestId('bouillotte-human-round-result')).toBeInTheDocument());
+    expect(screen.getByText('あなたの賭け: 40 · 払戻: 100 · 差引: +60')).toBeInTheDocument();
+  });
+
+  it('explains that a folded human receives no payout', async () => {
+    mockExec.mockResolvedValueOnce(
+      makeBouillotteState({
+        phase: 1,
+        winnerIdx: 1,
+        players: makeBouillotteState().players.map((p) =>
+          p.isHuman
+            ? { ...p, roundBet: 10, roundPayout: 0, netChange: -10, folded: true }
+            : { ...p, roundBet: 10, isWinner: p.id === 1 },
+        ),
+      }),
+    );
+    renderWithProviders(<BouillottePage />);
+    await waitFor(() => expect(screen.getByText('あなたの賭け: 10 · 払戻: 0 · 差引: -10')).toBeInTheDocument());
   });
 
   it('renders skeleton when no state', () => {
@@ -221,6 +252,8 @@ describe('BouillottePage', () => {
             isHuman: true,
             chips: 190,
             roundBet: 10,
+            roundPayout: 0,
+            netChange: -10,
             folded: false,
             out: false,
             cardCount: 3,
