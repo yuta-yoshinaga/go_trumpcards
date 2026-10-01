@@ -9,6 +9,7 @@
   "label.yourHand": "あなたの手札",
   "label.handCardAria": "{{card}}（手牌{{position}}枚目）",
   "label.handCount": "手札 {{count}} 枚",
+  "label.currentTurn": "手番中",
   "label.score": "得点 {{score}}",
   "label.melds": "場",
   "label.noMelds": "まだ出していません",
