@@ -1,5 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { FiftyOneResponse } from '../types/card';
@@ -127,7 +128,21 @@ describe('FiftyOnePage', () => {
   it('explains exchange choices and shows the updated score after exchange', async () => {
     const updatedState: FiftyOneResponse = {
       ...baseState,
-      players: baseState.players.map((player) => (player.isHuman ? { ...player, score: 28 } : player)),
+      players: baseState.players.map((player) =>
+        player.isHuman
+          ? {
+              ...player,
+              score: 28,
+              cards: [
+                { design: 'HEART', value: 13 },
+                { design: 'HEART', value: 10 },
+                { design: 'SPADE', value: 1 },
+                { design: 'DIAMOND', value: 3 },
+                { design: 'CLOVER', value: 2 },
+              ] as never[],
+            }
+          : player,
+      ),
     };
     mockExec.mockImplementation((command: string) => Promise.resolve(command === 'reset' ? baseState : updatedState));
 
@@ -142,6 +157,8 @@ describe('FiftyOnePage', () => {
     fireEvent.click(screen.getByTestId('exchange-all-button'));
     await waitFor(() => expect(screen.getByText('あなた — スコア: 28')).toBeInTheDocument());
     expect(screen.getByTestId('suit-score-badges')).toBeInTheDocument();
+    expect(screen.getByTestId('suit-badge-HEART')).toHaveAccessibleName('♥、20/51、最高得点');
+    expect(screen.getByTestId('suit-badge-SPADE')).toHaveAccessibleName('♠、11/51');
   });
 
   it('exchange all button calls exchangeall', async () => {
@@ -255,12 +272,54 @@ describe('FiftyOnePage', () => {
     const spade = screen.getByTestId('suit-badge-SPADE');
     expect(spade).toHaveTextContent('21/51');
     expect(spade.className).toContain('bg-ds-accent');
+    expect(spade).toHaveAccessibleName('♠、21/51、最高得点');
     const heart = screen.getByTestId('suit-badge-HEART');
     expect(heart).toHaveTextContent('5/51');
     expect(heart.className).not.toContain('bg-ds-accent');
+    expect(heart).toHaveAccessibleName('♥、5/51');
 
     // i18n キー名が生で画面に出ていないこと (i18n が解決している証拠)
     expect(screen.queryByText(/suitBadge/)).not.toBeInTheDocument();
+  });
+
+  it('announces every suit tied for the highest score', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      players: [
+        {
+          ...baseState.players[0],
+          cards: [
+            { design: 'SPADE', value: 7 },
+            { design: 'CLOVER', value: 7 },
+            { design: 'HEART', value: 2 },
+            { design: 'DIAMOND', value: 3 },
+          ],
+        },
+        ...baseState.players.slice(1),
+      ],
+    });
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(screen.getByTestId('suit-score-badges')).toBeInTheDocument());
+    expect(screen.getByTestId('suit-badge-SPADE')).toHaveAccessibleName('♠、7/51、最高得点');
+    expect(screen.getByTestId('suit-badge-CLOVER')).toHaveAccessibleName('♣、7/51、最高得点');
+    expect(screen.getByTestId('suit-badge-HEART')).toHaveAccessibleName('♥、2/51');
+  });
+
+  it('uses English punctuation in suit badge accessible names', async () => {
+    const previousLanguage = i18n.language;
+    try {
+      await i18n.changeLanguage('en');
+      mockExec.mockResolvedValue(baseState);
+      const { FiftyOnePage } = await import('./FiftyOnePage');
+      renderWithProviders(<FiftyOnePage />);
+      await waitFor(() => expect(screen.getByTestId('suit-score-badges')).toBeInTheDocument());
+      const ariaLabel = screen.getByTestId('suit-badge-SPADE').getAttribute('aria-label');
+      expect(ariaLabel).toBe('♠, 21/51, highest score');
+      expect(ariaLabel).not.toContain('、');
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('renders suit score badges with custom hand and verifies score/51 format', async () => {
