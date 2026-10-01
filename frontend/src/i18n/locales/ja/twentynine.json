@@ -49,6 +49,13 @@
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",
   "target": "目標: {{points}}ゲーム点",
+  "strengthReference": {
+    "title": "カードの強さと点数",
+    "trump": "切り札",
+    "plain": "通常札",
+    "order": "強さ順: J > 9 > A > 10 > K > Q > 8 > 7",
+    "points": "カード点: J: 3点、9: 2点、A: 1点、10: 1点、K・Q・8・7: 0点"
+  },
   "bidPrompt": "入札してください（上回る入札のみ可）:",
   "bidHighest": "現在の最高ビッド: {{bid}}（{{player}}）",
   "bidNone": "まだ入札なし",

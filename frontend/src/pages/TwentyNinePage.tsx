@@ -255,6 +255,25 @@ function TwentyNinePageContent() {
               <span>{t('target', { points: state.config.targetPoints })}</span>
             </div>
 
+            <details className="mb-3 text-sm">
+              <summary className="cursor-pointer select-none text-ds-text-primary hover:text-ds-accent">
+                {t('strengthReference.title')}
+              </summary>
+              <div className="mt-2 rounded-lg bg-ds-surface p-3 text-ds-text-primary">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <div className="mb-1 font-semibold">{t('strengthReference.trump')}</div>
+                    <div>{t('strengthReference.order')}</div>
+                  </div>
+                  <div>
+                    <div className="mb-1 font-semibold">{t('strengthReference.plain')}</div>
+                    <div>{t('strengthReference.order')}</div>
+                  </div>
+                </div>
+                <div className="mt-2 text-ds-text-muted">{t('strengthReference.points')}</div>
+              </div>
+            </details>
+
             {showTrumpBanner && (
               <div
                 role="status"
