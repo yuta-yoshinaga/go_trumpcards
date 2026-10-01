@@ -37158,6 +37158,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Card'
+        trickHistory:
+          type: array
+          description: Completed tricks in the current deal, in play order.
+          items:
+            type: object
+            properties:
+              winnerIdx:
+                type: integer
+                description: Seat that won the trick (0-based).
+              points:
+                type: integer
+                description: Card points won in the trick.
         trickLeaderIdx:
           type: integer
         trickNumber:

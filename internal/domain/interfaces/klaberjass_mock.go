@@ -50,8 +50,11 @@ func (m *MockKlaberjassGame) GetMakerIdx() int { return m.Called().Int(0) }
 func (m *MockKlaberjassGame) GetTrick() []*domain.Card {
 	return m.Called().Get(0).([]*domain.Card)
 }
-func (m *MockKlaberjassGame) GetTrickLeaderIdx() int         { return m.Called().Int(0) }
-func (m *MockKlaberjassGame) GetTrickNumber() int            { return m.Called().Int(0) }
+func (m *MockKlaberjassGame) GetTrickLeaderIdx() int { return m.Called().Int(0) }
+func (m *MockKlaberjassGame) GetTrickNumber() int    { return m.Called().Int(0) }
+func (m *MockKlaberjassGame) GetTrickHistory() []*domain.KlaberjassTrickHistoryEntry {
+	return m.Called().Get(0).([]*domain.KlaberjassTrickHistoryEntry)
+}
 func (m *MockKlaberjassGame) GetHandPoints(idx int) int      { return m.Called(idx).Int(0) }
 func (m *MockKlaberjassGame) GetCardPoints(idx int) int      { return m.Called(idx).Int(0) }
 func (m *MockKlaberjassGame) GetSequencePoints(idx int) int  { return m.Called(idx).Int(0) }

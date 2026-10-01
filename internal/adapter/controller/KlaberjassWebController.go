@@ -34,6 +34,12 @@ type KlaberjassWebOutputSequence struct {
 	Points   int `json:"points"`
 }
 
+// KlaberjassWebOutputTrick は終了したトリックの獲得者と点数。
+type KlaberjassWebOutputTrick struct {
+	WinnerIdx int `json:"winnerIdx"`
+	Points    int `json:"points"`
+}
+
 // KlaberjassWebOutputPlayer クラバーヤス Webアウトプットプレイヤー
 type KlaberjassWebOutputPlayer struct {
 	ID        int  `json:"id"`
@@ -59,16 +65,17 @@ type KlaberjassWebOutput struct {
 	Players []*KlaberjassWebOutputPlayer `json:"players"`
 	Phase   int                          `json:"phase"`
 	// DealNumber は何ディール目か。
-	DealNumber       int              `json:"dealNumber"`
-	CurrentPlayerIdx int              `json:"currentPlayerIdx"`
-	BidPlayerIdx     int              `json:"bidPlayerIdx"`
-	DealerIdx        int              `json:"dealerIdx"`
-	TrumpSuit        int              `json:"trumpSuit"`
-	TurnUpCard       *WebOutputCard   `json:"turnUpCard"`
-	MakerIdx         int              `json:"makerIdx"`
-	Trick            []*WebOutputCard `json:"trick"`
-	TrickLeaderIdx   int              `json:"trickLeaderIdx"`
-	TrickNumber      int              `json:"trickNumber"`
+	DealNumber       int                         `json:"dealNumber"`
+	CurrentPlayerIdx int                         `json:"currentPlayerIdx"`
+	BidPlayerIdx     int                         `json:"bidPlayerIdx"`
+	DealerIdx        int                         `json:"dealerIdx"`
+	TrumpSuit        int                         `json:"trumpSuit"`
+	TurnUpCard       *WebOutputCard              `json:"turnUpCard"`
+	MakerIdx         int                         `json:"makerIdx"`
+	Trick            []*WebOutputCard            `json:"trick"`
+	TrickHistory     []*KlaberjassWebOutputTrick `json:"trickHistory"`
+	TrickLeaderIdx   int                         `json:"trickLeaderIdx"`
+	TrickNumber      int                         `json:"trickNumber"`
 	// ValidPlays は人間が出せる手札インデックス。追随・切札・上乗せが強制なので必須。
 	ValidPlays     []int `json:"validPlays"`
 	SequenceWinner int   `json:"sequenceWinner"`
@@ -124,6 +131,7 @@ func newKlaberjassDefaultOutput(msg string) *KlaberjassWebOutput {
 	return &KlaberjassWebOutput{
 		Players:         make([]*KlaberjassWebOutputPlayer, 0),
 		Trick:           make([]*WebOutputCard, 0),
+		TrickHistory:    make([]*KlaberjassWebOutputTrick, 0),
 		ValidPlays:      make([]int, 0),
 		MakerIdx:        -1,
 		SequenceWinner:  -1,

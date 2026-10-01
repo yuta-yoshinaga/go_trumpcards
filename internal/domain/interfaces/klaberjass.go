@@ -57,6 +57,8 @@ type KlaberjassGame interface {
 	GetTrickLeaderIdx() int
 	// GetTrickNumber 済んだトリック数を取得する
 	GetTrickNumber() int
+	// GetTrickHistory 現在のディールで確定したトリック履歴を返す
+	GetTrickHistory() []*domain.KlaberjassTrickHistoryEntry
 	// GetHandPoints このディールで取った点を取得する
 	GetHandPoints(idx int) int
 	GetCardPoints(idx int) int

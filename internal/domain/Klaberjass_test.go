@@ -1083,6 +1083,70 @@ func TestKlaberjassRoundTripsThroughJSON(t *testing.T) {
 	}
 }
 
+func TestKlaberjassTrickHistory(t *testing.T) {
+	k := NewDefaultKlaberjass()
+	k.trumpSuit = CardDesignSpade
+	k.trickLeader = 0
+	k.trick = []*Card{kjCard(CardDesignHeart, 7), kjCard(CardDesignHeart, 8)}
+	k.resolveTrick()
+	k.trick = []*Card{kjCard(CardDesignClover, 7), kjCard(CardDesignClover, 14)}
+	k.trickLeader = 1
+	k.resolveTrick()
+	history := k.GetTrickHistory()
+	if len(history) != 2 {
+		t.Fatalf("history length = %d, want 2", len(history))
+	}
+	if history[0].WinnerIdx != 1 || history[0].Points != JassFamilyCardPoints(kjCard(CardDesignHeart, 7), k.trumpSuit)+JassFamilyCardPoints(kjCard(CardDesignHeart, 8), k.trumpSuit) {
+		t.Errorf("first trick = %+v", history[0])
+	}
+	if history[1].WinnerIdx != 1 || history[1].Points != JassFamilyCardPoints(kjCard(CardDesignClover, 7), k.trumpSuit)+JassFamilyCardPoints(kjCard(CardDesignClover, 14), k.trumpSuit) {
+		t.Errorf("second trick = %+v", history[1])
+	}
+	data, err := json.Marshal(k)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var restored Klaberjass
+	if err := json.Unmarshal(data, &restored); err != nil {
+		t.Fatal(err)
+	}
+	if got := restored.GetTrickHistory(); len(got) != 2 || *got[0] != *history[0] || *got[1] != *history[1] {
+		t.Fatalf("round-trip history = %+v, want %+v", got, history)
+	}
+	k.phase = KlaberjassPhaseHandEnd
+	if err := k.NextDeal(); err != nil {
+		t.Fatal(err)
+	}
+	if got := k.GetTrickHistory(); len(got) != 0 {
+		t.Errorf("new deal history = %+v, want empty", got)
+	}
+}
+
+func TestKlaberjassOldSnapshotHasEmptyTrickHistory(t *testing.T) {
+	k := NewDefaultKlaberjass()
+	k.Reset()
+	data, err := json.Marshal(k)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var snapshot map[string]json.RawMessage
+	if err := json.Unmarshal(data, &snapshot); err != nil {
+		t.Fatal(err)
+	}
+	delete(snapshot, "th")
+	data, err = json.Marshal(snapshot)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var restored Klaberjass
+	if err := json.Unmarshal(data, &restored); err != nil {
+		t.Fatal(err)
+	}
+	if len(restored.GetTrickHistory()) != 0 {
+		t.Fatalf("old snapshot history = %+v", restored.GetTrickHistory())
+	}
+}
+
 // **壊れた状態を弾く。**KV から戻る値なので、範囲外のまま受け入れると詰む。
 func TestKlaberjassRejectsBadJSON(t *testing.T) {
 	for _, tc := range []struct {
