@@ -1,6 +1,8 @@
 {
   "autoComplete": "オートコンプリート",
+  "autoCompleteCompleted": "オートコンプリートが完了しました",
   "autoCompleteNotReady": "すべての山が組札に移動可能になると有効になります",
+  "autoCompleteStarted": "オートコンプリートを開始しました",
   "direction": {
     "asc": "昇順",
     "desc": "降順"

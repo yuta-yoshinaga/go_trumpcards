@@ -1,6 +1,8 @@
 {
   "autoComplete": "Auto Complete",
+  "autoCompleteCompleted": "Auto-complete finished",
   "autoCompleteNotReady": "Available when all tops can reach the foundations",
+  "autoCompleteStarted": "Auto-complete started",
   "direction": {
     "asc": "Ascending",
     "desc": "Descending"
