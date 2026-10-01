@@ -62,6 +62,20 @@ function GoofspielPageContent() {
   const [tieRule, setTieRule] = useState(0);
   const [revealAnnouncement, setRevealAnnouncement] = useState('');
   const announcedRevealKey = useRef<string | null>(null);
+  const revealedBidValues =
+    state?.players.flatMap((player) => (player.revealedBid ? [player.revealedBid.value] : [])) ?? [];
+  const highestBidValue = revealedBidValues.length > 0 ? Math.max(...revealedBidValues) : null;
+  const highestBidCount =
+    highestBidValue === null ? 0 : revealedBidValues.filter((value) => value === highestBidValue).length;
+  const sortedBidValues = [...revealedBidValues].sort((a, b) => b - a);
+  const bidMargin =
+    state?.phase === GoofspielPhase.REVEAL &&
+    !state.gameEndFlag &&
+    state.lastWinnerIdx >= 0 &&
+    highestBidCount === 1 &&
+    sortedBidValues.length > 1
+      ? sortedBidValues[0] - sortedBidValues[1]
+      : null;
 
   const revealKey =
     state?.phase === GoofspielPhase.REVEAL && !state.gameEndFlag
@@ -246,11 +260,20 @@ function GoofspielPageContent() {
             {/* **残り札は全員分を公開。** 使った札は場に出るので隠せていません。 */}
             <div className="flex flex-col gap-2 mb-4" data-tutorial="gs-seats">
               {state.players.map((p) => (
-                <div key={p.id} className="rounded bg-black/30 px-3 py-2" data-testid={`gs-seat-${p.id.toString()}`}>
+                <div
+                  key={p.id}
+                  className={`rounded bg-black/30 px-3 py-2${p.revealedBid && highestBidValue === p.revealedBid.value ? ' border-2 border-ds-accent' : ''}`}
+                  data-testid={`gs-seat-${p.id.toString()}`}
+                >
                   <div className="text-sm text-ds-text-muted">
                     <span className="text-ds-text-primary">{seatName(p.id)}</span>
                     {p.revealedBid ? (
-                      <span className="ml-1 text-ds-accent">{t('header.revealed')}</span>
+                      <>
+                        <span className="ml-1 text-ds-accent">{t('header.revealed')}</span>
+                        {highestBidValue === p.revealedBid.value && (
+                          <span className="ml-1 text-ds-accent font-semibold">{t('status.highestBid')}</span>
+                        )}
+                      </>
                     ) : (
                       p.hasBid && <span className="ml-1 text-ds-warning">{t('header.bidDone')}</span>
                     )}
@@ -308,6 +331,11 @@ function GoofspielPageContent() {
                       name: seatName(state.lastWinnerIdx),
                       n: String(state.lastGained),
                     })}
+              </div>
+            )}
+            {bidMargin !== null && (
+              <div className="mt-2 text-center text-ds-accent" data-testid="gs-bid-margin">
+                {t('status.bidMargin', { n: String(bidMargin) })}
               </div>
             )}
 
