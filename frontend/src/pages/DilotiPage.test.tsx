@@ -117,6 +117,26 @@ describe('DilotiPage', () => {
     expect(await screen.findByTestId('diloti-move-options')).toBeInTheDocument();
   });
 
+  it('highlights 0-based table indices referenced by focused take and declaration options', async () => {
+    renderWithProviders(<DilotiPage />);
+    await pickHand(0);
+    const take = await screen.findByTestId('diloti-take-2-3');
+    fireEvent.focus(take);
+    expect(screen.getByTestId('diloti-table-card-2')).toHaveClass('ring-2', 'ring-ds-warning');
+    expect(screen.getByTestId('diloti-table-card-3')).toHaveClass('ring-2', 'ring-ds-warning');
+    expect(screen.getByTestId('diloti-table-card-1')).not.toHaveClass('ring-2');
+    fireEvent.blur(take);
+    expect(screen.getByTestId('diloti-table-card-2')).not.toHaveClass('ring-2');
+
+    await pickHand(1);
+    const declaration = await screen.findByTestId('diloti-declare-8-0');
+    fireEvent.focus(declaration);
+    expect(screen.getByTestId('diloti-table-card-0')).toHaveClass('ring-2', 'ring-ds-warning');
+    expect(declaration).toHaveAttribute('aria-describedby', 'diloti-focus-help');
+    fireEvent.blur(declaration);
+    expect(screen.getByTestId('diloti-table-card-0')).not.toHaveClass('ring-2');
+  });
+
   it('sends the chosen capture with the card played', async () => {
     renderWithProviders(<DilotiPage />);
     await pickHand(0);
