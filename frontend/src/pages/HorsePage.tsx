@@ -116,6 +116,7 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
   const [betAmount, setBetAmount] = useState(20);
   const [drawSelection, setDrawSelection] = useState<number[]>([]);
   const previousDiscipline = useRef<string | null>(null);
+  const previousHandNumber = useRef<number | null>(null);
   const [disciplineChanged, setDisciplineChanged] = useState(false);
   const [disciplineAnnouncement, setDisciplineAnnouncement] = useState('');
 
@@ -123,15 +124,27 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
   const { loading, error, state, exec: callApi, retry } = useGameApi(api.exec);
   useEffect(() => {
     if (!state) return;
-    if (previousDiscipline.current !== null && previousDiscipline.current !== state.disciplineName) {
+    const isNewGame = previousHandNumber.current !== null && state.handNumber < previousHandNumber.current;
+    if (isNewGame) {
+      previousDiscipline.current = null;
+      setDisciplineChanged(false);
+      setDisciplineAnnouncement('');
+    }
+    if (previousDiscipline.current === null) {
+      previousDiscipline.current = state.disciplineName;
+    } else if (previousDiscipline.current !== state.disciplineName) {
       setDisciplineChanged(true);
       if (gameKey === 'eightgame') {
         const name = t(`discipline.${state.disciplineName}`, { defaultValue: state.disciplineName });
         const rules = t(`rules.${state.disciplineName}`);
         setDisciplineAnnouncement(t('disciplineChangeAnnouncement', { name, rules }));
       }
+    } else if (previousHandNumber.current !== null && state.handNumber > previousHandNumber.current) {
+      setDisciplineChanged(false);
+      setDisciplineAnnouncement('');
     }
     previousDiscipline.current = state.disciplineName;
+    previousHandNumber.current = state.handNumber;
   }, [gameKey, state, t]);
   const { cardWidth } = useCardDimensions();
   const {
@@ -249,7 +262,7 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
 
             {gameKey === 'eightgame' && (
               <p
-                className={`mx-auto max-w-3xl rounded-md bg-ds-surface px-3 py-2 text-center text-sm text-ds-text-muted ${disciplineChanged ? 'border-2 border-ds-accent text-ds-text-primary' : ''}`}
+                className={`mx-auto max-w-3xl rounded-md bg-ds-surface px-3 py-2 text-center text-sm ${disciplineChanged ? 'border-2 border-ds-accent text-ds-text-primary' : 'text-ds-text-muted'}`}
               >
                 {t(`rules.${state.disciplineName}`)}
               </p>

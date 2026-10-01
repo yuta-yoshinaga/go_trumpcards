@@ -89,6 +89,89 @@ describe('HorsePage', () => {
     expect(context).toHaveTextContent('2');
   });
 
+  it('clears the discipline highlight and announcement on the following unchanged hand', async () => {
+    const initial = makeHorseState({ variant: 1, phase: 1 });
+    mockEightExec
+      .mockResolvedValueOnce(initial)
+      .mockResolvedValueOnce(
+        makeHorseState({
+          variant: 1,
+          phase: 1,
+          discipline: 5,
+          disciplineLetter: 'N',
+          disciplineName: 'nlHoldem',
+          disciplinePosition: 6,
+          handNumber: 2,
+        }),
+      )
+      .mockResolvedValueOnce(
+        makeHorseState({
+          variant: 1,
+          phase: 1,
+          discipline: 5,
+          disciplineLetter: 'N',
+          disciplineName: 'nlHoldem',
+          disciplinePosition: 6,
+          handNumber: 3,
+        }),
+      );
+    renderWithProviders(
+      <TutorialProvider config={{ gameName: 'eightgame', steps: [] }}>
+        <HorsePageContent gameKey="eightgame" />
+      </TutorialProvider>,
+    );
+
+    const discipline = await screen.findByTestId('ho-discipline');
+    expect(screen.getByRole('status').textContent).toBe('');
+    fireEvent.click(await screen.findByTestId('ho-next-hand'));
+    await waitFor(() => expect(discipline).toHaveAttribute('data-discipline-changed', 'true'));
+    expect(screen.getByRole('status')).toHaveTextContent('種目が切り替わりました。ノーリミット・ホールデム。');
+
+    fireEvent.click(await screen.findByTestId('ho-next-hand'));
+    await waitFor(() => expect(discipline).not.toHaveAttribute('data-discipline-changed', 'true'));
+    expect(screen.getByRole('status').textContent).toBe('');
+  });
+
+  it('clears the discipline marker when a new game rolls the hand number back', async () => {
+    mockEightExec
+      .mockResolvedValueOnce(makeHorseState({ variant: 1, phase: 1, handNumber: 7 }))
+      .mockResolvedValueOnce(
+        makeHorseState({ variant: 1, phase: 1, discipline: 5, disciplineName: 'nlHoldem', handNumber: 8 }),
+      )
+      .mockResolvedValueOnce(
+        makeHorseState({
+          variant: 1,
+          phase: 2,
+          gameEndFlag: true,
+          discipline: 5,
+          disciplineName: 'nlHoldem',
+          handNumber: 8,
+        }),
+      )
+      .mockResolvedValueOnce(makeHorseState({ variant: 1, phase: 0, handNumber: 1 }));
+    renderWithProviders(
+      <TutorialProvider config={{ gameName: 'eightgame', steps: [] }}>
+        <HorsePageContent gameKey="eightgame" />
+      </TutorialProvider>,
+    );
+    const discipline = await screen.findByTestId('ho-discipline');
+    fireEvent.click(await screen.findByTestId('ho-next-hand'));
+    await waitFor(() => expect(discipline).toHaveAttribute('data-discipline-changed', 'true'));
+    // Advance to the completed-game view, then start a fresh game.
+    fireEvent.click(await screen.findByTestId('ho-next-hand'));
+    await waitFor(() => expect(screen.getByTestId('ho-result')).toBeInTheDocument());
+    expect(discipline).toHaveAttribute('data-discipline-changed', 'true');
+    fireEvent.click(await screen.findByRole('button', { name: '新しいゲーム' }));
+    await waitFor(() => expect(discipline).not.toHaveAttribute('data-discipline-changed', 'true'));
+    expect(screen.getByRole('status').textContent).toBe('');
+  });
+
+  it('does not render the announcement region in H.O.R.S.E. mode', async () => {
+    renderWithProviders(<HorsePage />);
+    await screen.findByTestId('ho-discipline');
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
   it('shows the discipline position for both rotations', async () => {
     mockExec.mockResolvedValue(makeHorseState({ disciplinePosition: 3, disciplineTotal: 8 }));
     const { unmount } = renderWithProviders(<HorsePage />);
