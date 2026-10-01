@@ -314,6 +314,7 @@ function TriPeaksPageContent() {
               {peakRemaining.map((n, i) => (
                 <span key={`peak-${i.toString()}`} className="flex items-center">
                   {i > 0 && <span className="text-game-text-muted mx-0.5">/</span>}
+                  <span className="sr-only">{t(['leftPeak', 'middlePeak', 'rightPeak'][i])}</span>
                   <span
                     title={n === 0 ? t('peakCleared') : undefined}
                     className={`font-bold ${n === 0 ? 'text-ds-success' : ''}`}

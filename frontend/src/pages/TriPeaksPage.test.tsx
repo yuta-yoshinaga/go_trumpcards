@@ -421,7 +421,10 @@ describe('TriPeaksPage', () => {
     renderWithProviders(<TriPeaksPage />);
     const indicator = await screen.findByTestId('peak-remaining');
     // makeTestLayout: left peak 4 cards, middle 1, right 1.
-    expect(indicator.textContent).toMatch(/4\/1\/1/);
+    expect(Array.from(indicator.querySelectorAll('.font-bold'), (node) => node.textContent)).toEqual(['4', '1', '1']);
+    expect(indicator).toHaveTextContent('左ピーク');
+    expect(indicator).toHaveTextContent('中央ピーク');
+    expect(indicator).toHaveTextContent('右ピーク');
   });
 
   it('shows a check mark for a peak whose remaining count is zero', async () => {
@@ -431,6 +434,7 @@ describe('TriPeaksPage', () => {
     renderWithProviders(<TriPeaksPage />);
     const indicator = await screen.findByTestId('peak-remaining');
     expect(indicator).toHaveTextContent('✓');
+    expect(indicator).toHaveTextContent('右ピーク');
   });
 
   it('hides the peak indicator after the game ends', async () => {
