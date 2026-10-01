@@ -222,7 +222,7 @@ function TerracePageContent() {
                         }
                       }}
                       disabled={!isPlaying || loading || isTerraceSourceSelected || (!isTop && !selectedSource)}
-                      aria-label={cardAlt(card)}
+                      aria-label={t('tableauCardAriaLabel', { card: cardAlt(card), pile: pileIdx })}
                       aria-pressed={isTop ? isSourceSelected('tableau', pileIdx) : undefined}
                       draggable={isTop && isPlaying && !loading}
                       onDragStart={dnd.handleDragStart(pileZone)}

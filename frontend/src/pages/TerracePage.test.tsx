@@ -120,6 +120,18 @@ describe('TerracePage', () => {
     }
   });
 
+  it('includes the zero-based tableau pile number in every card label', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([[card('HEART', 8), card('CLOVER', 6)], [card('SPADE', 7)]]),
+    });
+    renderWithProviders(<TerracePage />);
+
+    expect(await screen.findByRole('button', { name: '♥ 8、山0' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♣ 6、山0' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 7、山1' })).toBeInTheDocument();
+  });
+
   // Nothing reaches a foundation until the rank is fixed, so the board says so.
   it('announces that the base rank is still open', async () => {
     mockExec.mockResolvedValue(awaitingBaseState);
@@ -182,12 +194,12 @@ describe('TerracePage', () => {
     fireEvent.click(await screen.findByTestId('terrace-pile'));
 
     mockExec.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: '♥ 8' }));
-    fireEvent.click(screen.getByRole('button', { name: '♠ 7' }));
+    fireEvent.click(screen.getByRole('button', { name: '♥ 8、山0' }));
+    fireEvent.click(screen.getByRole('button', { name: '♠ 7、山1' }));
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
-    expect(screen.getByRole('button', { name: '♥ 8' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: '♠ 7' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '♥ 8、山0' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '♠ 7、山1' })).toBeDisabled();
   });
 
   it('disables a buried tableau card until a source is selected', async () => {
@@ -197,15 +209,15 @@ describe('TerracePage', () => {
     });
     renderWithProviders(<TerracePage />);
 
-    expect(await screen.findByRole('button', { name: '♥ 8' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: '♣ 6' })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: '♥ 8、山0' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '♣ 6、山0' })).toBeEnabled();
   });
 
   it('does not dispatch a move when dragging the terrace onto a tableau pile', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<TerracePage />);
     const terrace = await screen.findByTestId('terrace-pile');
-    const target = screen.getByRole('button', { name: '♠ 7' }).closest('[role="presentation"]') as HTMLElement;
+    const target = screen.getByRole('button', { name: '♠ 7、山1' }).closest('[role="presentation"]') as HTMLElement;
 
     mockExec.mockClear();
     const dataTransfer = buildDataTransfer();
@@ -221,7 +233,7 @@ describe('TerracePage', () => {
     mockExec.mockResolvedValue({ ...playingState, waste: [card('DIAMOND', 4)] });
     renderWithProviders(<TerracePage />);
     const waste = await screen.findByRole('button', { name: '♦ 4' });
-    const target = screen.getByRole('button', { name: '♠ 7' }).closest('[role="presentation"]') as HTMLElement;
+    const target = screen.getByRole('button', { name: '♠ 7、山1' }).closest('[role="presentation"]') as HTMLElement;
 
     mockExec.mockClear();
     const dataTransfer = buildDataTransfer();
@@ -254,8 +266,8 @@ describe('TerracePage', () => {
     renderWithProviders(<TerracePage />);
     fireEvent.click(await screen.findByRole('button', { name: '♦ 4' }));
 
-    expect(screen.getByRole('button', { name: '♥ 8' })).toBeEnabled();
-    expect(screen.getByRole('button', { name: '♠ 7' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: '♥ 8、山0' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: '♠ 7、山1' })).toBeEnabled();
   });
 
   it('shows an empty terrace slot once it runs out', async () => {
@@ -275,12 +287,12 @@ describe('TerracePage', () => {
   it('moves one card between piles', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<TerracePage />);
-    const red8 = await screen.findByRole('button', { name: '♥ 8' });
+    const red8 = await screen.findByRole('button', { name: '♥ 8、山0' });
     fireEvent.click(red8);
     await waitFor(() => expect(red8).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
 
-    fireEvent.click(screen.getByRole('button', { name: '♠ 7' }));
+    fireEvent.click(screen.getByRole('button', { name: '♠ 7、山1' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'tableau', col: 1 }),
     );
