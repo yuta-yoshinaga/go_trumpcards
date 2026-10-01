@@ -73,6 +73,20 @@ beforeEach(() => {
 });
 
 describe('RookPage', () => {
+  it('exposes nest exchange hand-card selection with aria-pressed', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, declarerIdx: 0 }));
+    renderWithProviders(<RookPage />);
+
+    const handCard = await screen.findByTestId('hand-card-0');
+    expect(handCard).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(handCard);
+    expect(handCard).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(handCard);
+    expect(handCard).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<RookPage />);
     await waitFor(() =>
