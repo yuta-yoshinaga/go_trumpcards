@@ -378,10 +378,7 @@ function MemoryPageContent() {
                   {t('scoreLine', { name: playerName(p.id, p.isHuman), count: p.pairCount })}
                 </span>
               ))}
-            </div>
-
-            <div className="my-1 px-2 py-1 text-ds-text-primary text-sm tabular-nums lg:shrink-0">
-              <span className="inline-block rounded bg-ds-surface px-2 py-1">
+              <span className="ml-3 inline-block rounded bg-ds-surface px-2 py-1 text-ds-text-primary tabular-nums">
                 {t('remainingPairs', {
                   remaining: state.board.filter((card) => !card.taken).length / 2,
                   total: state.board.length / 2,
