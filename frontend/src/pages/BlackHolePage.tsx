@@ -332,6 +332,7 @@ function BlackHolePageContent() {
 
         <ActionLogSection
           isEndPhase={isEnd}
+          availableDuringPlay
           actionLog={actionLog}
           showActionLog={showActionLog}
           hideActionLog={hideActionLog}

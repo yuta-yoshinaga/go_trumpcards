@@ -58,6 +58,11 @@ describe('BlackHolePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('shows the action log button during play', async () => {
+    renderWithProviders(<BlackHolePage />);
+    expect(await screen.findByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
+  });
+
   // #5681: 勝利条件は52枚すべてを吸い込むこと。17個の扇を掘る長いゲームなのに、
   // あと何枚で終わるかがどこにも出ていなかった。
   it('shows how many of the 52 cards have been swallowed', async () => {
