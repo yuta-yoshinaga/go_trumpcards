@@ -350,6 +350,7 @@ function KlondikePageContent() {
                       type="button"
                       onClick={handleDraw}
                       disabled={!isPlaying || loading}
+                      aria-label={t('redeal')}
                       style={{ width: kl.cw, height: kl.ch }}
                       className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                     >

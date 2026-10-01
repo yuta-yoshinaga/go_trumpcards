@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, klondikeApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -137,9 +137,27 @@ describe('KlondikePage', () => {
     mockExec.mockResolvedValue(playingEmptyStockState);
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
-    // Empty stock shows "引く" button
-    const drawButtons = screen.getAllByRole('button', { name: '引く' });
-    expect(drawButtons.length).toBeGreaterThanOrEqual(1);
+    const stockLabel = screen.getByText('山札 (0)');
+    expect(
+      within(stockLabel.parentElement as HTMLElement).getByRole('button', { name: 'ウェイストを山札に戻して配り直す' }),
+    ).toBeInTheDocument();
+  });
+
+  it('distinguishes drawing from redealing in English', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(playingEmptyStockState);
+      renderWithProviders(<KlondikePage />);
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Redeal the waste back into the stock' })).toBeInTheDocument(),
+      );
+
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(<KlondikePage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Draw' })).toBeInTheDocument());
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('renders foundation piles with suit symbols', async () => {
