@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { calculationApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { CalculationResponse, Card, CardDesign } from '../types/card';
@@ -64,10 +65,21 @@ describe('CalculationPage', () => {
   it('labels the stock button with its top card and empty waste piles explicitly', async () => {
     renderWithProviders(<CalculationPage />);
     const stock = await screen.findByTestId('calc-stock-button');
-    expect(stock).toHaveAttribute('aria-label', '山札のトップ: ♠ 7');
+    expect(stock).toHaveAttribute('aria-label', '山札のトップ: ♠ 7、残り48枚');
     // Empty waste piles now carry an explicit name (previously undefined).
     expect(screen.getByTestId('calc-waste-button-0')).toHaveAttribute('aria-label', 'ウェイスト0: 空');
     expect(screen.getByTestId('calc-waste-button-3')).toHaveAttribute('aria-label', 'ウェイスト3: 空');
+  });
+
+  it('labels the stock button with its remaining count in English', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<CalculationPage />);
+      const stock = await screen.findByTestId('calc-stock-button');
+      expect(stock).toHaveAttribute('aria-label', 'Stock top: ♠ 7, 48 cards remaining');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('labels a non-empty waste pile with its top ranks, not the empty text', async () => {
