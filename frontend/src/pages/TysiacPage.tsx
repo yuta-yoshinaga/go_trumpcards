@@ -283,8 +283,20 @@ function TysiacPageContent() {
                             {playerName(p.id, p.isHuman)}: {t('score', { score: p.score })}
                           </span>
                           {p.isDeclarer && (
-                            <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
+                            <span
+                              className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}
+                              data-testid={`tysiac-declarer-${p.id.toString()}`}
+                            >
                               {t('declarerBadge')}
+                            </span>
+                          )}
+                          {p.id === state.dealerIdx && (
+                            <span
+                              className="px-1.5 py-0.5 rounded text-xs bg-ds-surface-elevated text-ds-text-primary"
+                              data-testid={`tysiac-dealer-${p.id.toString()}`}
+                            >
+                              <span aria-hidden="true">◆ </span>
+                              {t('dealerBadge')}
                             </span>
                           )}
                         </div>

@@ -44,6 +44,7 @@
   "roleDeclarer": "Declarer",
   "rolePlayer": "Player",
   "declarerBadge": "Declarer",
+  "dealerBadge": "Dealer",
   "score": "Score: {{score}}",
   "playerScore": "{{name}}: {{score}} pts",
   "playButton": "Play",
