@@ -311,6 +311,7 @@ function ScoponePageContent() {
                       <button
                         key={i}
                         type="button"
+                        aria-pressed={tableIndices.includes(i)}
                         onClick={() => isHumanTurn && toggleTable(i)}
                         disabled={!isHumanTurn}
                         className={`rounded transition-all ${
@@ -346,6 +347,7 @@ function ScoponePageContent() {
                   <button
                     key={i}
                     type="button"
+                    aria-pressed={handIndex === i}
                     onClick={() => isHumanTurn && setHandIndex(handIndex === i ? null : i)}
                     disabled={!isHumanTurn}
                     className={`rounded transition-all ${
