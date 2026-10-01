@@ -119,7 +119,7 @@ describe('RamschPage', () => {
       ...baseState,
       phase: RamschPhase.ROUND_END,
       players: [
-        player(0, { roundScore: 0, cumulativeScore: -78 }),
+        player(0, { roundScore: 12, cumulativeScore: 12 }),
         player(1, { roundScore: -78, cumulativeScore: -78 }),
         player(2, { roundScore: 0, cumulativeScore: 0 }),
       ],
@@ -127,6 +127,8 @@ describe('RamschPage', () => {
     renderWithProviders(<RamschPage />);
     await waitFor(() => expect(screen.getByTestId('ramsch-round-score-1')).toHaveTextContent('-78'));
     expect(screen.getByTestId('ramsch-cumulative-change-1')).toHaveTextContent('-78');
+    expect(screen.getByTestId('ramsch-cumulative-change-0')).toHaveTextContent('+12');
+    expect(screen.getByTestId('ramsch-cumulative-change-2')).toHaveTextContent(/^0$/);
 
     mockExec.mockResolvedValue({ ...baseState, phase: RamschPhase.PLAY });
     fireEvent.click(screen.getByRole('button', { name: '次のラウンド' }));
