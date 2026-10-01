@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { nainjauneApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { CardDesign, NainJaunePlayer, NainJauneResponse } from '../types/card';
@@ -163,6 +164,58 @@ describe('NainJaunePage', () => {
       );
       renderWithProviders(<NainJaunePage />);
       await waitFor(() => expect(screen.getAllByText(text).length).toBeGreaterThan(0));
+    }
+  });
+
+  it('shows final chip standings in descending order and shares rank for ties', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: NainJaunePhase.GAME_END,
+        gameEndFlag: true,
+        players: [
+          seat(0, true, { chips: 30 }),
+          seat(1, false, { chips: 50 }),
+          seat(2, false, { chips: 50 }),
+          seat(3, false, { chips: -5 }),
+        ],
+      }),
+    );
+    renderWithProviders(<NainJaunePage />);
+
+    const rows = await screen.findByTestId('nainjaune-final-standings');
+    expect(rows.children).toHaveLength(4);
+    expect(rows.children[0]).toHaveTextContent('1位');
+    expect(rows.children[0]).toHaveTextContent('CPU1');
+    expect(rows.children[0]).toHaveTextContent('50');
+    expect(rows.children[1]).toHaveTextContent('1位');
+    expect(rows.children[1]).toHaveTextContent('CPU2');
+    expect(rows.children[2]).toHaveTextContent('3位');
+    expect(rows.children[2]).toHaveTextContent('あなた');
+    expect(rows.children[2]).toHaveTextContent('30');
+    expect(rows.children[3]).toHaveTextContent('4位');
+    expect(rows.children[3]).toHaveTextContent('-5');
+  });
+
+  it('localizes final chip standings in English', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(
+        makeState({
+          phase: NainJaunePhase.GAME_END,
+          gameEndFlag: true,
+          players: [seat(0, true, { chips: 25 }), seat(1, false, { chips: 40 }), seat(2, false, { chips: 10 })],
+        }),
+      );
+      renderWithProviders(<NainJaunePage />);
+
+      expect(await screen.findByRole('heading', { name: 'Final chip standings' })).toBeInTheDocument();
+      const standings = screen.getByTestId('nainjaune-final-standings');
+      expect(standings.children[0]).toHaveTextContent('#1: CPU1 — 40 chips');
+      expect(standings.children[1]).toHaveTextContent('#2: You — 25 chips');
+      expect(standings.children[2]).toHaveTextContent('#3: CPU2 — 10 chips');
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
     }
   });
 
