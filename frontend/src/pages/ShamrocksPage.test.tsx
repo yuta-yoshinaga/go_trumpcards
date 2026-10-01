@@ -33,6 +33,23 @@ beforeEach(() => {
 });
 
 describe('ShamrocksPage', () => {
+  it('records each clear once, shows the average moves, and can reset the session stats', async () => {
+    localStorage.clear();
+    mockExec.mockResolvedValue(makeState({ phase: 1, moveCount: 12 }));
+    const { unmount } = renderWithProviders(<ShamrocksPage />);
+
+    expect(await screen.findByText('クリア回数: 1')).toBeInTheDocument();
+    expect(screen.getByText('平均手数: 12')).toBeInTheDocument();
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ phase: 1, moveCount: 12 }));
+    renderWithProviders(<ShamrocksPage />);
+    expect(await screen.findByText('クリア回数: 1')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '統計をリセット' }));
+    expect(screen.getByText('クリア回数: 0')).toBeInTheDocument();
+    expect(screen.getByText('平均手数: 0')).toBeInTheDocument();
+  });
+
   it('announces each empty foundation by position and empty state', async () => {
     renderWithProviders(<ShamrocksPage />);
 
