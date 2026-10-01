@@ -51,5 +51,7 @@
     "resetButton": "新しいゲームを始めるボタンです。"
   },
   "phaseAnnounce": "フェーズ: {{phase}}",
-  "phaseAnnouncePenalty": "フェーズ: {{phase}}。{{name}} が残りペナルティ {{count}} 枚を支払い中"
+  "phaseAnnouncePenalty": "フェーズ: {{phase}}。{{name}} が残りペナルティ {{count}} 枚を支払い中",
+  "pileAnnounceCount": "場の山は {{count}} 枚",
+  "pileAnnounceCollected": "場の山を獲得しました"
 }

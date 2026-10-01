@@ -51,5 +51,8 @@
     "resetButton": "Start a new game."
   },
   "phaseAnnounce": "Phase: {{phase}}",
-  "phaseAnnouncePenalty": "Phase: {{phase}}. {{name}} is paying {{count}} more cards"
+  "phaseAnnouncePenalty": "Phase: {{phase}}. {{name}} is paying {{count}} more cards",
+  "pileAnnounceCount_one": "Central pile: {{count}} card",
+  "pileAnnounceCount_other": "Central pile: {{count}} cards",
+  "pileAnnounceCollected": "Central pile collected"
 }
