@@ -432,12 +432,21 @@ function OmiPageContent() {
               >
                 {humanPlayer.cards.map((card, idx) => {
                   const isLegal = legalPlayIndices?.includes(idx) ?? false;
+                  const cannotFollow = isHumanTurn && !isLegal;
                   return (
                     <button
                       type="button"
                       key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
-                      aria-label={cardAlt(card)}
+                      onClick={() => {
+                        if (!cannotFollow) toggleCard(idx);
+                      }}
+                      aria-label={
+                        isHumanTurn
+                          ? t(cannotFollow ? 'cardCannotPlay' : 'cardCanPlay', { card: cardAlt(card) })
+                          : cardAlt(card)
+                      }
+                      aria-disabled={cannotFollow || undefined}
+                      aria-describedby={cannotFollow ? `omi-card-follow-reason-${idx}` : undefined}
                       aria-pressed={selectedCardIndices.includes(idx)}
                       data-legal={isLegal ? 'true' : undefined}
                       className={`relative transition-transform ${focusRingCard}`}
@@ -447,11 +456,17 @@ function OmiPageContent() {
                         borderRadius: 8,
                         ...selectedCardStyle(selectedCardIndices.includes(idx)),
                         ...(isLegal ? { outline: '2px solid var(--color-ds-success)', outlineOffset: '1px' } : {}),
+                        ...(cannotFollow ? { opacity: 0.5, cursor: 'not-allowed' } : {}),
                         boxSizing: 'border-box',
                         ...(isMobile ? { minWidth: solitaireMinColWidth, flexShrink: 0 } : {}),
                       }}
                     >
                       <AnimatedCard card={card} width={cardWidth} />
+                      {cannotFollow && (
+                        <span id={`omi-card-follow-reason-${idx}`} className="sr-only">
+                          {t('cardMustFollowLeadSuit')}
+                        </span>
+                      )}
                     </button>
                   );
                 })}
