@@ -85,6 +85,11 @@ func (_m *MockSomersetGame) GetFoundation() [domain.SomersetFoundationCnt][]*dom
 	return ret.Get(0).([domain.SomersetFoundationCnt][]*domain.Card)
 }
 
+func (_m *MockSomersetGame) GetTotalCardCount() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 func (_m *MockSomersetGame) AllFaceUp() bool {
 	ret := _m.Called()
 	return ret.Bool(0)

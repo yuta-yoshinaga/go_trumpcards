@@ -205,9 +205,7 @@ function SomersetPageContent() {
   const isGameClear = state.phase === SomersetPhase.GAME_CLEAR;
   const isGameOver = state.phase === SomersetPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
-  // How many of the 52 cards reached a foundation — only needed on game over, so skip the
-  // reduce during normal (frequently re-rendered) play.
-  const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
+  const foundationCount = state.foundation.reduce((sum, pile) => sum + pile.length, 0);
   // Auto-complete becomes useful once a foundation has built past its ace, so
   // pulse the button only then (mirrors Crescent / Spiderette).
   const autoCompleteReady = state.foundation.some((pile) => pile.length > 1);
@@ -372,6 +370,9 @@ function SomersetPageContent() {
               </div>
 
               <div className="flex flex-col items-center gap-1 sm:gap-2 mb-3" data-tutorial="somerset-foundation">
+                <div className="text-ds-text-muted text-xs">
+                  {t('foundationProgress', { count: foundationCount, total: state.totalCardCount })}
+                </div>
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: SomersetMoveZone = { zone: 'foundation', col: idx };
                   return (
@@ -398,6 +399,8 @@ function SomersetPageContent() {
                             aria-label={t('foundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
                               count: pile.length,
+                              placed: foundationCount,
+                              total: state.totalCardCount,
                             })}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
                           >
@@ -415,7 +418,11 @@ function SomersetPageContent() {
                             disabled={!isPlaying || loading}
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
+                            aria-label={t('emptyFoundationAriaLabel', {
+                              suit: FOUNDATION_SUITS[idx],
+                              placed: foundationCount,
+                              total: state.totalCardCount,
+                            })}
                             style={{ width: dims.cw, height: dims.ch }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                           >

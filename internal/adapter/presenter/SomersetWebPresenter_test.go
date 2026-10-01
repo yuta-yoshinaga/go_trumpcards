@@ -17,6 +17,7 @@ import (
 func setupSomersetWebMockDefaults(bg *interfaces.MockSomersetGame) {
 	bg.On("GetPhase").Return(domain.SomersetPhasePlaying).Maybe()
 	bg.On("GetMoveCount").Return(0).Maybe()
+	bg.On("GetTotalCardCount").Return(52).Maybe()
 	bg.On("CanUndo").Return(false).Maybe()
 	bg.On("IsStalemate").Return(false).Maybe()
 	bg.On("UndoToEscape").Return(0).Maybe()
@@ -67,6 +68,7 @@ func TestSomersetWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 0, result.MoveCount)
 		assert.Len(t, result.Tableau, domain.SomersetTableauCnt)
 		assert.Len(t, result.Foundation, domain.SomersetFoundationCnt)
+		assert.Equal(t, 52, result.TotalCardCount)
 		assert.Equal(t, "somerset.playing", result.MessageCode)
 	})
 

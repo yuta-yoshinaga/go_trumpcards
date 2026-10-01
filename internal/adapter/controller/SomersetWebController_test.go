@@ -15,9 +15,10 @@ import (
 
 func mustSomersetOutputJSON(msg string) string {
 	out := &controller.SomersetWebOutput{
-		Tableau:       [][]*controller.SomersetWebOutputTableauCard{},
-		Foundation:    [][]*controller.WebOutputCard{},
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Tableau:        [][]*controller.SomersetWebOutputTableauCard{},
+		Foundation:     [][]*controller.WebOutputCard{},
+		TotalCardCount: 0,
+		WebOutputBase:  controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {
@@ -27,7 +28,7 @@ func mustSomersetOutputJSON(msg string) string {
 }
 
 func TestSomersetWebController_Method(t *testing.T) {
-	mockOutput := `{"tableau":[],"foundation":[],"phase":0,"moveCount":0,"message":""}`
+	mockOutput := `{"tableau":[],"foundation":[],"totalCardCount":0,"phase":0,"moveCount":0,"message":""}`
 	expectedBody := mockOutput
 
 	biMock := new(usecase.MockSomersetInteractor)
