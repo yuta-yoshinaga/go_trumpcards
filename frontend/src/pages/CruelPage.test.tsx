@@ -88,8 +88,20 @@ describe('CruelPage', () => {
 
   it('includes the zero-based tableau column in card button names', async () => {
     renderWithProviders(<CruelPage />);
-    const card = await screen.findByRole('button', { name: '♠ 2、列0' });
-    expect(card).toHaveAttribute('aria-label', '♠ 2、列0');
+    await screen.findByRole('button', { name: '♠ 2、列0' });
+  });
+
+  it('uses an empty aria-label for a tableau card without a card value', async () => {
+    const stateWithNullCard: CruelResponse = {
+      ...playingState,
+      tableau: playingState.tableau.map((column, index) =>
+        index === 0 ? [...column.slice(0, -1), { card: null, faceUp: true }] : column,
+      ),
+    };
+    mockExec.mockResolvedValue(stateWithNullCard);
+    renderWithProviders(<CruelPage />);
+    const unnamedButton = await screen.findByRole('button', { name: '' });
+    expect(unnamedButton).toHaveAttribute('aria-label', '');
   });
 
   it('renders heading', async () => {
