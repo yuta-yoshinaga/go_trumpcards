@@ -117,6 +117,17 @@ describe('BelotePage', () => {
     );
   });
 
+  it('explains card points and round bonuses beside the score table', async () => {
+    renderWithProviders(<BelotePage />);
+    const explanation = await screen.findByTestId('belote-scoring-explanation');
+    expect(explanation).toHaveTextContent('カード点合計152');
+    expect(explanation).toHaveTextContent('切り札はJ=20、9=14');
+    expect(explanation).toHaveTextContent('最終トリックは+10点');
+    expect(explanation).toHaveTextContent('切り札のKとQでベロート／レベロート+20点');
+    expect(screen.getByTestId('belote-target-score')).toBeInTheDocument();
+    expect(screen.getByRole('table')).toHaveTextContent('0');
+  });
+
   it('shows the configured target score beside the team scores', async () => {
     const state = makeState({ config: { ...initialState.config, targetScore: 750 } });
     mockExec.mockResolvedValue(state);
