@@ -157,6 +157,24 @@ describe('WarPage', () => {
     expect(document.body.textContent).not.toContain('{{');
   });
 
+  it('announces the round limit once when the warning starts', async () => {
+    mockExec.mockResolvedValueOnce({ ...baseState, roundsPlayed: 450 });
+    renderWithProviders(<WarPage />);
+    const announcement = await screen.findByTestId('war-round-limit-announcement');
+    await waitFor(() =>
+      expect(announcement).toHaveTextContent('上限ラウンドに近づいています。現在450ラウンド、上限500ラウンドです。'),
+    );
+    expect(announcement).toHaveAttribute('role', 'status');
+    expect(announcement).toHaveClass('sr-only');
+
+    mockExec.mockResolvedValueOnce({ ...baseState, roundsPlayed: 451 });
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() =>
+      expect(screen.getByText('ラウンド: 451 / 500（上限で保有枚数の多い方が勝ち）')).toBeInTheDocument(),
+    );
+    expect(announcement).toHaveTextContent('上限ラウンドに近づいています。現在450ラウンド、上限500ラウンドです。');
+  });
+
   it('does not warn one round before the 90 percent threshold', async () => {
     mockExec.mockResolvedValueOnce({
       ...baseState,

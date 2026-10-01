@@ -130,6 +130,27 @@ function WarPageContent() {
   const [autoPlaySpeed, setAutoPlaySpeed] = useState<AutoPlaySpeed>(loadAutoPlaySpeed);
   const [autoPlaying, setAutoPlaying] = useState(false);
   const [speedAnnouncement, setSpeedAnnouncement] = useState('');
+  const [roundLimitAnnouncement, setRoundLimitAnnouncement] = useState('');
+  const roundLimitWasWarningRef = useRef(false);
+  const roundLimitWarning =
+    !!state && state.config.maxRounds > 0 && state.roundsPlayed * 10 >= state.config.maxRounds * 9;
+
+  useEffect(() => {
+    if (!roundLimitWarning || !state) {
+      roundLimitWasWarningRef.current = false;
+      setRoundLimitAnnouncement('');
+      return;
+    }
+    if (!roundLimitWasWarningRef.current) {
+      roundLimitWasWarningRef.current = true;
+      setRoundLimitAnnouncement(
+        t('label.roundLimitWarningAnnouncement', {
+          played: state.roundsPlayed,
+          max: state.config.maxRounds,
+        }),
+      );
+    }
+  }, [roundLimitWarning, state, t]);
 
   const handleStep = useCallback(() => execApi('step'), [execApi]);
   // Autoplay is driven client-side as a timed sequence of `step` calls (see the
@@ -255,8 +276,6 @@ function WarPageContent() {
   // Mirrors WarCuiPresenter.go's expression exactly, guard included: integer
   // arithmetic so the two surfaces flip on the same round, and maxRounds > 0 so
   // a zero-valued config cannot make 0 >= 0 warn on round zero.
-  const roundLimitWarning = state.config.maxRounds > 0 && state.roundsPlayed * 10 >= state.config.maxRounds * 9;
-
   const phaseName = isGameEnd
     ? t('phase.end')
     : state.phase === WarPhase.WAR_BURY
@@ -426,6 +445,7 @@ function WarPageContent() {
               messageParams={state.messageParams}
             />
             <LiveAnnouncement message={revealedCardsAnnouncement} testId="war-card-announcement" />
+            <LiveAnnouncement message={roundLimitAnnouncement} testId="war-round-limit-announcement" />
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
           </div>
 
