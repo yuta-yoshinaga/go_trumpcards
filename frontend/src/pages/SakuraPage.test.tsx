@@ -128,6 +128,23 @@ describe('SakuraPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, fieldIndex: 1 }));
   });
 
+  it('exposes which hand card is selected for a field pick', async () => {
+    mockExec.mockResolvedValue(makeSakuraState({ captureOptions: { 0: [0, 1] }, choiceOptions: { 0: [0, 1] } }));
+    renderWithProviders(<SakuraPage />);
+    const firstCard = await screen.findByTestId('hand-card-0');
+    const secondCard = screen.getByTestId('hand-card-1');
+
+    expect(firstCard).toHaveAttribute('aria-pressed', 'false');
+    expect(secondCard).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(firstCard);
+    expect(firstCard).toHaveAttribute('aria-pressed', 'true');
+    expect(secondCard).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(firstCard);
+    expect(firstCard).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('announces each field card name, position, and whether it is a choice', async () => {
     mockExec.mockResolvedValue(
       makeSakuraState({
