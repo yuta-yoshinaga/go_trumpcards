@@ -28,6 +28,8 @@
     "unbid": "未入札",
     "pass": "パス"
   },
+  "dealerBadge": "ディーラー",
+  "forcedBidNotice": "全員がパスした場合、ディーラーはパスできず、1以上をビッドする必要があります。",
   "bidStrength": {
     "range": "手札の推定獲得点: {{min}}〜{{max}}点（切り札次第の目安）",
     "best": "最有力の切り札: {{symbol}} {{suit}}（{{points}}点分を保持）",

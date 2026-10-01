@@ -285,8 +285,18 @@ function CinchPageContent() {
                       <div key={p.id} className="py-0.5">
                         {playerName(p.id, p.isHuman)}:{' '}
                         {p.bid < 0 ? t('bidStatus.unbid') : p.bid === 0 ? t('bidStatus.pass') : p.bid}
+                        {p.id === state.dealerIdx && (
+                          <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
+                            {t('dealerBadge')}
+                          </span>
+                        )}
                       </div>
                     ))}
+                    {state.dealerIdx === humanIdx && (
+                      <div className="mt-1 text-ds-text-primary" data-testid="cinch-dealer-bid-notice">
+                        {t('forcedBidNotice')}
+                      </div>
+                    )}
                   </div>
                 )}
 
