@@ -86,6 +86,28 @@ describe('PopeJoanPage', () => {
     expect(screen.getByText('ディール終了')).toBeInTheDocument();
     expect(screen.getByText('CPU1: チップ-15')).toBeInTheDocument();
     expect(screen.queryByRole('img', { name: /CPU1 の手札/ })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('popejoan-final-standings')).not.toBeInTheDocument();
+  });
+
+  it('shows final chip standings with shared ranks for ties only after the game ends', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: PopeJoanPhase.GAME_END,
+        players: [
+          seat(0, true, { chips: 12 }),
+          seat(1, false, { chips: 20 }),
+          seat(2, false, { chips: 20 }),
+          seat(3, false, { chips: -3 }),
+        ],
+      }),
+    );
+    renderWithProviders(<PopeJoanPage />);
+
+    const standings = await screen.findByTestId('popejoan-final-standings');
+    expect(standings).toHaveTextContent('1位 CPU1: チップ20');
+    expect(standings).toHaveTextContent('1位 CPU2: チップ20');
+    expect(standings).toHaveTextContent('3位 あなた: チップ12');
+    expect(standings).toHaveTextContent('4位 CPU3: チップ-3');
   });
 
   it('shows both rules permanently', async () => {
