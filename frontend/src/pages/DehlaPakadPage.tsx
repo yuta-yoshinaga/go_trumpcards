@@ -224,6 +224,36 @@ function DehlaPakadPageContent() {
               )}
             </div>
 
+            {state.handHistory.length > 0 && (
+              <section className="mt-4" data-testid="dehlapakad-hand-history">
+                <h2 className="text-ds-text-primary text-lg mb-2">{t('handHistory.title')}</h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-ds-text-primary tabular-nums">
+                    <thead>
+                      <tr className="border-b border-ds-border text-left text-ds-text-muted">
+                        <th className="p-2">{t('handHistory.hand')}</th>
+                        <th className="p-2">{t('handHistory.winner')}</th>
+                        <th className="p-2">{t('handHistory.tens')}</th>
+                        <th className="p-2">{t('handHistory.kot')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {state.handHistory.map((hand, index) => (
+                        <tr key={`${index}-${hand.dealerIdx}`} className="border-b border-ds-border-subtle">
+                          <td className="p-2">{t('handHistory.handNumber', { n: index + 1 })}</td>
+                          <td className="p-2">{t('team', { n: hand.winnerTeam })}</td>
+                          <td className="p-2">
+                            {t('handHistory.tensResult', { a: hand.teamTens[0], b: hand.teamTens[1] })}
+                          </td>
+                          <td className="p-2">{t(hand.kot ? 'handHistory.kotWon' : 'handHistory.noKot')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            )}
+
             <div className={lgTwoColGrid}>
               <div data-tutorial="dehlapakad-centre">
                 <TrickDisplay
