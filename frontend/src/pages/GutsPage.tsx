@@ -236,16 +236,25 @@ function GutsPageContent() {
             {/* Players */}
             <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="guts-players">
               <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
-              {state.players.map((p) => (
-                <div
-                  key={p.id}
-                  className={`text-sm py-0.5 ${p.isWinner ? 'text-ds-success' : 'text-ds-text-muted'} ${p.isHuman ? 'font-semibold' : ''}`}
-                >
-                  {playerLabel(p.id, p.isHuman)} — {t('chips', { amount: p.chips })} ·{' '}
-                  {t('roundBet', { amount: p.roundBet })} · [{playerBadge(p)}]
-                  {p.handName ? ` · ${handName(p.handName)}` : ''}
-                </div>
-              ))}
+              <ul className="list-none p-0 m-0" data-testid="guts-player-list">
+                {state.players.map((p) => (
+                  <li
+                    key={p.id}
+                    className={`text-sm py-0.5 ${p.isWinner ? 'text-ds-success' : 'text-ds-text-muted'} ${p.isHuman ? 'font-semibold' : ''}`}
+                    aria-label={t(p.handName ? 'playerSummaryWithHand' : 'playerSummary', {
+                      name: playerLabel(p.id, p.isHuman),
+                      chips: p.chips,
+                      bet: p.roundBet,
+                      status: playerBadge(p),
+                      hand: p.handName ? handName(p.handName) : '',
+                    })}
+                  >
+                    {playerLabel(p.id, p.isHuman)} — {t('chips', { amount: p.chips })} ·{' '}
+                    {t('roundBet', { amount: p.roundBet })} · [{playerBadge(p)}]
+                    {p.handName ? ` · ${handName(p.handName)}` : ''}
+                  </li>
+                ))}
+              </ul>
             </div>
 
             {/* Revealed hands at result */}
