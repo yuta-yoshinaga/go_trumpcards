@@ -415,7 +415,7 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
 
             {/* Round results */}
             {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
-            {isShowdown && state.sidePots.length > 1 && (
+            {isShowdown && state.sidePots.length > 0 && (
               <div className="mt-3 space-y-1 text-center text-sm text-ds-text-primary">
                 {state.sidePots.map((sidePot, index) => (
                   <p key={index === 0 ? 'main-pot' : `side-pot-${index}`}>
@@ -426,6 +426,8 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
                         .map((playerIdx) => findPlayerName(state.players, playerIdx))
                         .join(t('listSeparator')),
                     })}
+                    {sidePot.winners.length > 0 &&
+                      `（${t('awarded')}: ${sidePot.winners.map((winner) => `${findPlayerName(state.players, winner.playerIdx)} ${winner.amount}`).join(t('listSeparator'))}）`}
                   </p>
                 ))}
               </div>

@@ -345,24 +345,39 @@ describe('FollowTheQueenPage', () => {
     mockExec.mockResolvedValue({
       ...showdownState,
       sidePots: [
-        { amount: 300, eligiblePlayers: [0, 1, 2] },
-        { amount: 100, eligiblePlayers: [0, 2] },
-        { amount: 50, eligiblePlayers: [2] },
+        {
+          amount: 300,
+          eligiblePlayers: [0, 1, 2],
+          winners: [
+            { playerIdx: 0, amount: 150 },
+            { playerIdx: 1, amount: 150 },
+          ],
+        },
+        { amount: 100, eligiblePlayers: [0, 2], winners: [{ playerIdx: 2, amount: 100 }] },
+        { amount: 50, eligiblePlayers: [2], winners: [{ playerIdx: 2, amount: 50 }] },
       ],
     });
     renderWithProviders(<FollowTheQueenPage />);
     await waitFor(() =>
-      expect(screen.getByText('メインポット: 300チップ（対象: あなた、CPU 1、CPU 2）')).toBeInTheDocument(),
+      expect(
+        screen.getByText('メインポット: 300チップ（対象: あなた、CPU 1、CPU 2）（獲得: あなた 150、CPU 1 150）'),
+      ).toBeInTheDocument(),
     );
-    expect(screen.getByText('サイドポット1: 100チップ（対象: あなた、CPU 2）')).toBeInTheDocument();
-    expect(screen.getByText('サイドポット2: 50チップ（対象: CPU 2）')).toBeInTheDocument();
+    expect(screen.getByText('サイドポット1: 100チップ（対象: あなた、CPU 2）（獲得: CPU 2 100）')).toBeInTheDocument();
+    expect(screen.getByText('サイドポット2: 50チップ（対象: CPU 2）（獲得: CPU 2 50）')).toBeInTheDocument();
   });
 
-  it('does not show pot details when showdown has a single pot entry', async () => {
-    mockExec.mockResolvedValue({ ...showdownState, sidePots: [{ amount: 150, eligiblePlayers: [0, 1] }] });
+  it('shows the sole winner when showdown has a single pot entry', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      sidePots: [{ amount: 150, eligiblePlayers: [0, 1], winners: [{ playerIdx: 0, amount: 150 }] }],
+    });
     renderWithProviders(<FollowTheQueenPage />);
-    await waitFor(() => expect(screen.getByText('ショーダウン')).toBeInTheDocument());
-    expect(screen.queryByText(/メインポット|サイドポット/)).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        screen.getByText('メインポット: 150チップ（対象: あなた、CPU 1）（獲得: あなた 150）'),
+      ).toBeInTheDocument(),
+    );
   });
 
   it('does not show round results when not in showdown', async () => {

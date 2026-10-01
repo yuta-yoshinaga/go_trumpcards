@@ -94,5 +94,6 @@
   "bringIn": "ブリングイン",
   "mainPot": "メインポット: {{amount}}チップ（対象: {{eligiblePlayers}}）",
   "sidePot": "サイドポット{{index}}: {{amount}}チップ（対象: {{eligiblePlayers}}）",
+  "awarded": "獲得",
   "listSeparator": "、"
 }

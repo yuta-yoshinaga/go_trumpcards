@@ -53771,6 +53771,10 @@ components:
             - wildRank
             - humanHandRank
           properties:
+            sidePots:
+              type: array
+              items:
+                $ref: '#/components/schemas/FollowTheQueenSidePot'
             wildRank:
               type: integer
               description: Rank currently wild for every player (1=A, 11=J, 12=Q, 13=K); 0 while no face-up Queen has set one
@@ -53783,6 +53787,28 @@ components:
               minimum: -1
               maximum: 10
               example: 3
+
+    FollowTheQueenSidePot:
+      type: object
+      required: [amount, eligiblePlayers, winners]
+      properties:
+        amount:
+          type: integer
+        eligiblePlayers:
+          type: array
+          items:
+            type: integer
+        winners:
+          type: array
+          description: Per-pot awards; empty until showdown or at end.
+          items:
+            type: object
+            required: [playerIdx, amount]
+            properties:
+              playerIdx:
+                type: integer
+              amount:
+                type: integer
     SevenCardStudResponse:
       type: object
       required:

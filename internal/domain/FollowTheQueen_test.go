@@ -511,6 +511,13 @@ func TestFollowTheQueen_CommunityCardShowdown(t *testing.T) {
 	s.SetCommunityCard(cc)
 
 	s.resolveShowdown()
+	for i, pot := range s.sidePots {
+		total := 0
+		for _, award := range s.potAwards[i] {
+			total += award.Amount
+		}
+		assert.Equal(t, pot.Amount, total)
+	}
 
 	// Verify community card was NOT permanently added to any player's holeCards
 	for i, p := range s.players {

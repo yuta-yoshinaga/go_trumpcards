@@ -503,3 +503,14 @@ func TestFollowTheQueenWebPresenter_Output_WildRank(t *testing.T) {
 	s2, _ := makeFollowTheQueenForPresenter()
 	assert.Equal(t, 0, decode(s2).WildRank)
 }
+
+func TestFollowTheQueenWebPresenter_Output_PotAwards(t *testing.T) {
+	s, _ := makeFollowTheQueenForPresenter()
+	s.SetPhase(domain.FollowTheQueenPhaseShowdown)
+	s.SetSidePots([]domain.SidePot{{Amount: 25, EligiblePlayers: []int{0, 1}}})
+	s.SetPotAwards([][]domain.PotAward{{{PlayerIdx: 1, Amount: 25}}})
+	var out controller.FollowTheQueenWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.FollowTheQueenWebPresenter).Output(s, nil)), &out))
+	require.Len(t, out.SidePots, 1)
+	assert.Equal(t, []*controller.FollowTheQueenWebOutputPotAward{{PlayerIdx: 1, Amount: 25}}, out.SidePots[0].Winners)
+}

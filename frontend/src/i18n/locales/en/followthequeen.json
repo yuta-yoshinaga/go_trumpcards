@@ -94,5 +94,6 @@
   "bringIn": "Bring-in",
   "mainPot": "Main pot: {{amount}} chips (eligible: {{eligiblePlayers}})",
   "sidePot": "Side pot {{index}}: {{amount}} chips (eligible: {{eligiblePlayers}})",
+  "awarded": "awarded",
   "listSeparator": ", "
 }
