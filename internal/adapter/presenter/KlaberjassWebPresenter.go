@@ -24,6 +24,12 @@ func (p *KlaberjassWebPresenter) Output(g interfaces.KlaberjassGame, lastErr err
 	resObj.MakerIdx = g.GetMakerIdx()
 	resObj.TrickLeaderIdx = g.GetTrickLeaderIdx()
 	resObj.TrickNumber = g.GetTrickNumber()
+	resObj.TrickHistory = make([]*controller.KlaberjassWebOutputTrick, 0, resObj.TrickNumber)
+	for _, entry := range g.GetTrickHistory() {
+		if entry != nil {
+			resObj.TrickHistory = append(resObj.TrickHistory, &controller.KlaberjassWebOutputTrick{WinnerIdx: entry.WinnerIdx, Points: entry.Points})
+		}
+	}
 	resObj.SequenceWinner = g.GetSequenceWinner()
 	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.LastTrickBonus = domain.KlaberjassLastTrickBonus
