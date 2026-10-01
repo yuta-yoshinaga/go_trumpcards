@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { Fragment, useMemo } from 'react';
 import type { trexApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
@@ -221,30 +221,53 @@ function TrexPageContent() {
               <div className="flex gap-1 justify-center flex-wrap">
                 {(human?.cards ?? []).map((card, i) => {
                   const canPlay = isHumanTurn && !choosing && playable.has(i);
+                  const unavailableReason = choosing
+                    ? t('handDisabled.contract')
+                    : !isHumanTurn
+                      ? t('handDisabled.turn')
+                      : t('handDisabled.illegal');
                   const penalty = trexCardPenalty(card, state.contract);
+                  const describedBy = [
+                    !canPlay ? `trex-hand-disabled-${i.toString()}` : undefined,
+                    penalty !== 0 ? `trex-hand-penalty-${i.toString()}` : undefined,
+                  ]
+                    .filter(Boolean)
+                    .join(' ');
                   return (
-                    <button
-                      key={`hand-${i.toString()}`}
-                      type="button"
-                      data-hint-action="play"
-                      data-testid={penalty !== 0 ? 'trex-hand-penalty-card' : undefined}
-                      title={penalty !== 0 ? t('penaltyCardWithPoints', { points: penalty }) : undefined}
-                      // Kept focusable while it cannot act so the reason is
-                      // announced rather than the control leaving the tab order.
-                      aria-disabled={!canPlay}
-                      onClick={() => canPlay && game.handlePlay(i)}
-                      className={[
-                        'rounded transition-transform',
-                        canPlay ? 'hover:-translate-y-2' : 'opacity-60',
-                        frontendHintEnabled && state.hint?.cardIndex === i
-                          ? 'ring-2 ring-ds-warning'
-                          : penalty !== 0
-                            ? 'ring-2 ring-ds-error'
-                            : '',
-                      ].join(' ')}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} draggable={false} />
-                    </button>
+                    <Fragment key={`hand-${i.toString()}`}>
+                      <button
+                        type="button"
+                        data-hint-action="play"
+                        data-testid={penalty !== 0 ? 'trex-hand-penalty-card' : undefined}
+                        title={penalty !== 0 ? t('penaltyCardWithPoints', { points: penalty }) : undefined}
+                        // Kept focusable while it cannot act so the reason is
+                        // announced rather than the control leaving the tab order.
+                        aria-disabled={!canPlay}
+                        aria-describedby={describedBy || undefined}
+                        onClick={() => canPlay && game.handlePlay(i)}
+                        className={[
+                          'rounded transition-transform',
+                          canPlay ? 'hover:-translate-y-2' : 'opacity-60',
+                          frontendHintEnabled && state.hint?.cardIndex === i
+                            ? 'ring-2 ring-ds-warning'
+                            : penalty !== 0
+                              ? 'ring-2 ring-ds-error'
+                              : '',
+                        ].join(' ')}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} draggable={false} />
+                      </button>
+                      {!canPlay && (
+                        <span id={`trex-hand-disabled-${i.toString()}`} className="sr-only">
+                          {unavailableReason}
+                        </span>
+                      )}
+                      {penalty !== 0 && (
+                        <span id={`trex-hand-penalty-${i.toString()}`} className="sr-only">
+                          {t('penaltyCardWithPoints', { points: penalty })}
+                        </span>
+                      )}
+                    </Fragment>
                   );
                 })}
               </div>
