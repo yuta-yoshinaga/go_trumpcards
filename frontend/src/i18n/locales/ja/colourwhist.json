@@ -9,6 +9,7 @@
   "label": {
     "you": "あなた",
     "score": "得点",
+    "scoreHistory": "ラウンド別得点",
     "round": "ラウンド",
     "contract": "契約",
     "trump": "切り札",

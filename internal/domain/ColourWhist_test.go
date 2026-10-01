@@ -3,6 +3,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"math/rand"
 	"testing"
 
@@ -57,6 +58,25 @@ func TestColourWhistDealsThirteenEach(t *testing.T) {
 	}
 	assert.Equal(t, 1, g.GetRoundNumber())
 	assert.False(t, g.IsTroelForced())
+}
+
+func TestColourWhistPlayerRoundScoresSurviveRoundReset(t *testing.T) {
+	t.Parallel()
+	p := NewColourWhistPlayer(true)
+	p.AddRoundScore(7)
+	p.ResetRound()
+	assert.Equal(t, []int{7}, p.GetRoundScores())
+	assert.Equal(t, 7, p.GetScore())
+
+	data, err := json.Marshal(p)
+	require.NoError(t, err)
+	var restored ColourWhistPlayer
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Equal(t, []int{7}, restored.GetRoundScores())
+	assert.Equal(t, 7, restored.GetScore())
+
+	p.ResetGame()
+	assert.Empty(t, p.GetRoundScores())
 }
 
 // **Troel が出た配りは競りを飛ばす。** そのときフェーズは Bid になりません。
