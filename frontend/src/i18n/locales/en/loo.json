@@ -34,6 +34,7 @@
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",
   "players": "Players",
+  "dealerBadge": "Dealer",
   "you": "You",
   "cpu": "CPU {{id}}",
   "chips": "Chips: {{chips}}",
