@@ -80,6 +80,19 @@ describe('FlowerGardenPage', () => {
     expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
   });
 
+  it('announces move count changes but stays silent on the initial render', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({ ...playingState, moveCount: 4 });
+    renderWithProviders(<FlowerGardenPage />);
+    const liveRegion = await screen.findByTestId('fg-move-count-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByRole('button', { name: '♥ 5、列0・位置1' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ 6、列1・位置0' }));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('手数: 4'));
+  });
+
   it('labels tableau cards with their zero-based column and position', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<FlowerGardenPage />);
