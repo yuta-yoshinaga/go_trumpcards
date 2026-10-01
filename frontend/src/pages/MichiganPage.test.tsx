@@ -65,6 +65,28 @@ beforeEach(() => {
 });
 
 describe('MichiganPage', () => {
+  it('announces a new sequence and the current suit and high value in a live region', async () => {
+    mockExec.mockResolvedValueOnce(
+      makeMichiganState({
+        phase: 1,
+        isHumanTurn: true,
+        needNewSequence: true,
+        seqSuit: 0,
+      }),
+    );
+    const { unmount } = renderWithProviders(<MichiganPage />);
+    const liveRegion = await screen.findByTestId('michigan-sequence-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toHaveTextContent('新しいシーケンスを始めてください。');
+    expect(liveRegion).toHaveClass('sr-only');
+    unmount();
+
+    mockExec.mockResolvedValueOnce(playState);
+    renderWithProviders(<MichiganPage />);
+    expect(await screen.findByTestId('michigan-sequence-live')).toHaveTextContent('シーケンス: ハート 3 まで');
+  });
+
   it('shows each boodle collected and its chip amount in the round result', async () => {
     mockExec.mockResolvedValue(
       makeMichiganState({
