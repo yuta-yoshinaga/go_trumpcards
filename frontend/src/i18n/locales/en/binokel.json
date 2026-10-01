@@ -39,6 +39,7 @@
   "dabbCardsLabel": "Revealed Dabb",
   "dabbWaiting": "{{name}} is arranging the Dabb...",
   "discardDabb": "Discard 3 cards ({{count}}/3)",
+  "dabbSelectionCount": "Selected {{count}} / 3 cards",
   "discardSelected": "Discard 3 Selected Cards",
   "bidStatus": {
     "passed": "Passed",
