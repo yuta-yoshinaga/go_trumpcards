@@ -58,6 +58,43 @@ describe('SimpleSimonPage', () => {
     expect(screen.getByTestId('column-label-9')).toHaveTextContent('列10');
   });
 
+  it('shows each column card count, including empty columns, and updates counts after a move', async () => {
+    const initial = makeState({
+      columns: (() => {
+        const columns: Card[][] = Array.from({ length: 10 }, () => []);
+        columns[0] = [card('SPADE', 9), card('SPADE', 8)];
+        columns[1] = [card('SPADE', 10)];
+        return columns;
+      })(),
+    });
+    const afterMove = makeState({
+      moveCount: 1,
+      columns: (() => {
+        const columns: Card[][] = Array.from({ length: 10 }, () => []);
+        columns[0] = [card('SPADE', 9), card('SPADE', 8), card('SPADE', 10)];
+        return columns;
+      })(),
+    });
+    mockExec.mockResolvedValueOnce(initial).mockResolvedValueOnce(afterMove);
+    renderWithProviders(<SimpleSimonPage />);
+
+    const source = await screen.findByTestId('card-1-0');
+    expect(screen.getByTestId('column-label-0')).toHaveTextContent('列1');
+    expect(screen.getByTestId('column-label-0')).toHaveTextContent('2枚');
+    expect(screen.getByTestId('column-label-1')).toHaveTextContent('列2');
+    expect(screen.getByTestId('column-label-1')).toHaveTextContent('1枚');
+    expect(screen.getByTestId('column-label-2')).toHaveTextContent('列3');
+    expect(screen.getByTestId('column-label-2')).toHaveTextContent('0枚');
+
+    fireEvent.click(source);
+    fireEvent.click(screen.getByTestId('card-0-0'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('column-label-0')).toHaveTextContent('3枚');
+      expect(screen.getByTestId('column-label-1')).toHaveTextContent('0枚');
+    });
+  });
+
   it('marks the selected source and destination columns in their numbered headings', async () => {
     renderWithProviders(<SimpleSimonPage />);
     fireEvent.click(await screen.findByTestId('card-1-0'));
