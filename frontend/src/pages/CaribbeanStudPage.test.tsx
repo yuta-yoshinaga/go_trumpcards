@@ -234,8 +234,17 @@ describe('CaribbeanStudPage', () => {
     mockApi.mockResolvedValue(endPhaseWithJackpot);
     renderWithProviders(<CaribbeanStudPage />);
     await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
-    expect(screen.getByText(/ジャックポット: 1000/)).toBeInTheDocument();
+    expect(screen.getByText('ジャックポット: 賭け 10 / 払い戻し 1000')).toBeInTheDocument();
     expect(screen.getByText(/合計: 2000/)).toBeInTheDocument();
+  });
+
+  it('shows each wager and payout, including zero payouts and unbet items', async () => {
+    mockApi.mockResolvedValue(endPhaseDealerWins);
+    renderWithProviders(<CaribbeanStudPage />);
+    const breakdown = await screen.findByTestId('payout-breakdown');
+    expect(breakdown).toHaveTextContent('アンテ: 賭け 100 / 払い戻し 0');
+    expect(breakdown).toHaveTextContent('プレイ: 賭け 200 / 払い戻し 0');
+    expect(breakdown).toHaveTextContent('ジャックポット: 賭け 0 / 払い戻し 0');
   });
 
   it('can change ante and jackpot amounts', async () => {
