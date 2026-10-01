@@ -126,6 +126,31 @@ describe('BostonPage', () => {
     expect(ladder).toHaveTextContent('ミゼールはトリック宣言の間に挟まります');
   });
 
+  it('shows declaring side progress beside a trick contract and uses misere wording for misere', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        highBid: { player: 0, level: 1, name: 'five', suit: 3 },
+        declarerTricks: 2,
+      }),
+    );
+    const { unmount } = renderWithProviders(<BostonPage />);
+    await waitFor(() =>
+      expect(screen.getByTestId('boston-contract-progress')).toHaveTextContent('宣言側: 2 / 5トリック'),
+    );
+    unmount();
+
+    mockExec.mockResolvedValue(
+      makeState({
+        highBid: { player: 0, level: 3, name: 'littleMisere', suit: 0 },
+        declarerTricks: 1,
+      }),
+    );
+    renderWithProviders(<BostonPage />);
+    await waitFor(() =>
+      expect(screen.getByTestId('boston-contract-progress')).toHaveTextContent('宣言側: 1トリック獲得（目標: 0）'),
+    );
+  });
+
   // **ピッコリッシモはちょうど1トリック。**勝利条件が第3の型であることを書く。
   it('spells out what each kind of bid asks for', async () => {
     renderWithProviders(<BostonPage />);

@@ -162,6 +162,16 @@ function BostonPageContent() {
   const isHumanBid = isBid && state.bidPlayerIdx === 0 && !isGameEnd;
   const isHumanCallPartner = isCallPartner && state.declarerIdx === 0 && !isGameEnd;
   const isHumanPlay = isPlay && state.currentPlayerIdx === 0 && !isGameEnd;
+  const highBidOption = state.highBid
+    ? state.bidOptions.find((option) => option.level === state.highBid?.level)
+    : undefined;
+  const contractProgress = highBidOption
+    ? highBidOption.kind === KIND_MISERE
+      ? t('misereProgress', { tricks: state.declarerTricks })
+      : highBidOption.kind === KIND_TRICKS
+        ? t('trickProgress', { tricks: state.declarerTricks, target: highBidOption.tricks })
+        : t('piccolissimoProgress', { tricks: state.declarerTricks })
+    : null;
 
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
   const suitGlyph = (suit: number): string => SUIT_GLYPHS[suit] ?? t('noTrump');
@@ -218,6 +228,11 @@ function BostonPageContent() {
               {state.highBid && (
                 <span className="mr-4" data-testid="boston-contract">
                   {t('contract')}: {bidLabel(state.highBid.name)} {suitGlyph(state.trumpSuit)}
+                  {isPlay && contractProgress && (
+                    <span className="ml-2 text-ds-text-muted" data-testid="boston-contract-progress">
+                      {contractProgress}
+                    </span>
+                  )}
                 </span>
               )}
             </div>
