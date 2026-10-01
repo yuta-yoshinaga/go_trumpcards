@@ -21,6 +21,7 @@ func (p *WhiteheadWebPresenter) Output(k interfaces.WhiteheadGame, lastErr error
 	resObj.DrawCount = k.GetDrawCount()
 	resObj.Score = k.GetScore()
 	resObj.ScoringMode = int(k.GetScoringMode())
+	resObj.TotalCardCount = k.GetTotalCardCount()
 
 	// ウェイスト
 	waste := k.GetWaste()

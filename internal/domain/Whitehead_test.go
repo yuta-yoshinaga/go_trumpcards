@@ -43,6 +43,7 @@ func TestNewWhitehead(t *testing.T) {
 	k := newTestWhitehead()
 	assert.NotNil(t, k)
 	assert.Equal(t, domain.WhiteheadPhase(0), k.GetPhase())
+	assert.Equal(t, 52, k.GetTotalCardCount())
 }
 
 func TestWhitehead_Reset(t *testing.T) {
