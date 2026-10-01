@@ -11,6 +11,7 @@
   "board": "盤（取られなかった区画は次のディールへ持ち越し）",
   "listSeparator": "、",
   "poolUpdate": "{{pool}}: {{chips}}チップ",
+  "yourTurnAnnouncement": "あなたの番です",
   "pool.ace": "A",
   "pool.king": "K",
   "pool.queen": "Q",
