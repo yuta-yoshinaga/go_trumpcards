@@ -142,19 +142,35 @@ describe('FortressPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '♠ K、列0・位置0' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: '♠ 5、列0・位置1' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '♠ 6、列1・位置0' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '空のタブロー列 3' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空のタブロー列 2' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '♠ 組札 1枚、最上位の札 ♠ A' })).toBeInTheDocument();
+  });
+
+  it('uses the same 0-based number for a tableau card and its column when empty', async () => {
+    mockExec.mockResolvedValueOnce(playingState);
+    const { unmount } = renderWithProviders(<FortressPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ K、列0・位置0' })).toBeInTheDocument());
+
+    const stateWithEmptyFirstColumn: FortressResponse = {
+      ...playingState,
+      tableau: makeTableau([[], playingState.tableau[1] ?? []]),
+    };
+    mockExec.mockResolvedValue(stateWithEmptyFirstColumn);
+    unmount();
+    renderWithProviders(<FortressPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '空のタブロー列 0' })).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: '空のタブロー列 1' })).not.toBeInTheDocument();
   });
 
   it('gives each empty tableau column a distinct column-numbered aria-label', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<FortressPage />);
-    // Columns 3 and 10 (1-based) are empty and each reads distinctly, unlike the
+    // Columns 2 and 9 (0-based) are empty and each reads distinctly, unlike the
     // previous shared "empty" text.
-    await waitFor(() => expect(screen.getByRole('button', { name: '空のタブロー列 3' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '空のタブロー列 10' })).toBeInTheDocument();
-    // The two filled columns (1, 2) are not rendered as empty-column buttons.
-    expect(screen.queryByRole('button', { name: '空のタブロー列 1' })).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: '空のタブロー列 2' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '空のタブロー列 9' })).toBeInTheDocument();
+    // The two filled columns (0, 1) are not rendered as empty-column buttons.
+    expect(screen.queryByRole('button', { name: '空のタブロー列 0' })).not.toBeInTheDocument();
   });
 
   it('renders giveup button when playing', async () => {
@@ -249,7 +265,7 @@ describe('FortressPage', () => {
   it('keeps an empty tableau target focusable and explains that a source must be selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<FortressPage />);
-    const btn = await screen.findByRole('button', { name: '空のタブロー列 3' });
+    const btn = await screen.findByRole('button', { name: '空のタブロー列 2' });
     expect(btn).not.toBeDisabled();
     expect(btn).toHaveAttribute('aria-disabled', 'true');
     const describedBy = btn.getAttribute('aria-describedby');
