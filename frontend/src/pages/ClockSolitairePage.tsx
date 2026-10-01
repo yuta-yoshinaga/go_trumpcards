@@ -355,17 +355,23 @@ function ClockSolitairePageContent() {
                   const cx = radius + cardWidth / 2 + 8 + pos.x * radius;
                   const cy = radius + cardHeight / 2 + 8 + pos.y * radius;
                   const isFlightTarget = targetIdx === i;
+                  const pileLabel = t('pileAriaLabel', {
+                    position: t('hourPilePosition', { hour: CLOCK_LABELS[i] }),
+                    count: faceUpCount,
+                    status: t(isComplete ? 'pileComplete' : 'pileIncomplete'),
+                  });
 
                   return (
-                    <div
+                    <fieldset
                       key={i}
-                      className="absolute flex flex-col items-center"
+                      className="absolute flex flex-col items-center border-0 p-0 m-0 min-w-0"
                       style={{
                         left: cx - cardWidth / 2,
                         top: cy - cardHeight / 2,
                         width: cardWidth,
                       }}
                     >
+                      <legend className="sr-only">{pileLabel}</legend>
                       <span className="mb-0.5 text-xs font-bold text-ds-text-muted">{CLOCK_LABELS[i]}</span>
                       {pile && pile.length > 0 ? (
                         <div
@@ -397,21 +403,28 @@ function ClockSolitairePageContent() {
                           style={{ width: cardWidth, height: cardHeight }}
                         />
                       )}
-                    </div>
+                    </fieldset>
                   );
                 });
               })()}
 
               {/* Center pile (K) */}
-              <div
+              <fieldset
                 data-tutorial="clock-center"
-                className="absolute flex flex-col items-center"
+                className="absolute flex flex-col items-center border-0 p-0 m-0 min-w-0"
                 style={{
                   left: radius + 8,
                   top: radius + 8,
                   width: cardWidth,
                 }}
               >
+                <legend className="sr-only">
+                  {t('pileAriaLabel', {
+                    position: t('centerPilePosition'),
+                    count: state.faceUpCount[12],
+                    status: t(state.faceUpCount[12] >= 4 ? 'pileComplete' : 'pileIncomplete'),
+                  })}
+                </legend>
                 <span className="mb-0.5 text-xs font-bold text-ds-warning">K</span>
                 {(() => {
                   const centerPile = state.piles[12];
@@ -451,7 +464,7 @@ function ClockSolitairePageContent() {
                     />
                   );
                 })()}
-              </div>
+              </fieldset>
             </div>
 
             {/* Current card */}

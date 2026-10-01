@@ -16,6 +16,11 @@
   },
   "placementHint": "{{hour}}時の山へ",
   "placementKing": "中央（K）の山へ",
+  "pileAriaLabel": "{{position}}、表向き{{count}}枚、{{status}}",
+  "pileComplete": "完成",
+  "pileIncomplete": "未完成",
+  "hourPilePosition": "{{hour}}時の山",
+  "centerPilePosition": "中央のKの山",
   "playing": "プレイ中",
   "settings": {
     "speed": "演出速度",

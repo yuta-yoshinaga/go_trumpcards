@@ -449,6 +449,22 @@ describe('ClockSolitairePage', () => {
 
 // #5523: 「あと何山で揃うか」は CLI ターミナルを開いたときだけ見える計算だった。
 describe('ClockSolitairePage progress', () => {
+  it('names each clock pile and the centre pile with position and progress', async () => {
+    const fuc = Array(13).fill(0);
+    fuc[0] = 4;
+    fuc[11] = 2;
+    fuc[12] = 3;
+    mockExec.mockResolvedValue({ ...playingState, faceUpCount: fuc });
+    renderWithProviders(<ClockSolitairePage />);
+
+    const completedPile = await screen.findByText('1時の山、表向き4枚、完成');
+    const incompletePile = screen.getByText('12時の山、表向き2枚、未完成');
+    const centerPile = screen.getByText('中央のKの山、表向き3枚、未完成');
+    expect(completedPile.closest('fieldset')).toBeInTheDocument();
+    expect(incompletePile.closest('fieldset')).toBeInTheDocument();
+    expect(centerPile.closest('fieldset')).toBeInTheDocument();
+  });
+
   it('shows how many piles are finished in the header', async () => {
     mockExec.mockResolvedValue(playingState); // 1枚だけ表なので完成 0
     renderWithProviders(<ClockSolitairePage />);
