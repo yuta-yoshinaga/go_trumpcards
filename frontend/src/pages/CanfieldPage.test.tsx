@@ -394,6 +394,75 @@ describe('CanfieldPage', () => {
     );
   });
 
+  it('selects a tableau card and moves it to a chosen column while retaining existing column actions', async () => {
+    const selectedState = {
+      ...playingState,
+      tableau: [
+        [{ card: card('SPADE', 7) }, { card: card('DIAMOND', 2) }],
+        playingState.tableau[1],
+        ...playingState.tableau.slice(2),
+      ],
+    };
+    mockExec.mockResolvedValueOnce(selectedState).mockResolvedValueOnce({ ...selectedState, moveCount: 1 });
+    renderWithProviders(<CanfieldPage />);
+    const source = (await screen.findByAltText('♦ 2')).closest('button') as HTMLButtonElement;
+    fireEvent.click(source);
+    expect(source).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('♦ 2を選択中。移動先を選んでください')).toBeInTheDocument();
+
+    expect(screen.getByText('捨→1')).toBeInTheDocument();
+    expect(screen.getByText('予→1')).toBeInTheDocument();
+    expect(screen.getAllByText('→組').length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByTestId('cf-selected-move-to-tableau-1'));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 0, cardIndex: 1 },
+        { zone: 'tableau', col: 1 },
+      ),
+    );
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'false'));
+  });
+
+  it('moves a selected top tableau card to the foundation', async () => {
+    renderWithProviders(<CanfieldPage />);
+    const source = (await screen.findAllByAltText('♠ 7'))[0].closest('button') as HTMLButtonElement;
+    fireEvent.click(source);
+    mockExec.mockResolvedValue({ ...playingState, moveCount: 1 });
+    fireEvent.click(await screen.findByTestId('cf-selected-move-to-foundation'));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0, cardIndex: 0 }, { zone: 'foundation' }),
+    );
+  });
+
+  it('clears tableau selection on Escape', async () => {
+    renderWithProviders(<CanfieldPage />);
+    const source = (await screen.findAllByAltText('♠ 7')).at(-1)?.closest('button') as HTMLButtonElement;
+    fireEvent.click(source);
+    expect(source).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.keyDown(source, { key: 'Escape' });
+    expect(source).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('keeps the tableau selection after an invalid move response', async () => {
+    renderWithProviders(<CanfieldPage />);
+    const source = (await screen.findAllByAltText('♠ 7')).at(-1)?.closest('button') as HTMLButtonElement;
+    fireEvent.click(source);
+    mockExec.mockResolvedValue({ ...playingState, message: 'invalid move', messageCode: '' });
+    const targetActions = screen.queryByTestId('cf-col-actions-1');
+    if (targetActions) (targetActions as HTMLDetailsElement).open = true;
+    fireEvent.click(screen.getByTestId('cf-selected-move-to-tableau-1'));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 0, cardIndex: 0 },
+        { zone: 'tableau', col: 1 },
+      ),
+    );
+    expect(screen.getByAltText('♠ 7').closest('button') as HTMLButtonElement).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('♠ 7を選択中。移動先を選んでください')).toBeInTheDocument();
+  });
+
   describe('drag and drop', () => {
     function buildDataTransfer() {
       const store: Record<string, string> = {};
