@@ -82054,6 +82054,20 @@ components:
           minimum: 1
           maximum: 50
 
+    BatakScoreBreakdown:
+      type: object
+      description: Per-player score components for the most recently scored round.
+      properties:
+        declarerBidPoints:
+          type: integer
+          description: Points awarded to the declarer for meeting the bid.
+        declarerBidPenalty:
+          type: integer
+          description: Positive penalty subtracted when the declarer misses the bid.
+        defenderTricks:
+          type: integer
+          description: Tricks earned by a non-declarer.
+
     BatakResponse:
       type: object
       description: |
@@ -82084,6 +82098,8 @@ components:
                 description: Cumulative score
               trickCount:
                 type: integer
+              scoreBreakdown:
+                $ref: '#/components/schemas/BatakScoreBreakdown'
         phase:
           type: integer
           description: "0 = Bid, 1 = Play, 2 = TrickEnd, 3 = RoundEnd, 4 = GameEnd"
