@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { chinesetenApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -92,8 +92,9 @@ describe('ChineseTenPage', () => {
       }),
     );
     renderWithProviders(<ChineseTenPage />);
-    await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
-    expect(screen.getByAltText('♠ Q')).toBeInTheDocument();
+    const revealedHand = await screen.findByRole('group', { name: 'CPU の手札（公開）' });
+    expect(within(revealedHand).getByRole('img', { name: '♥ 7' })).toBeInTheDocument();
+    expect(within(revealedHand).getByRole('img', { name: '♠ Q' })).toBeInTheDocument();
   });
 
   it('shows both seats captures but never the opponent hand', async () => {
@@ -104,6 +105,8 @@ describe('ChineseTenPage', () => {
     expect(screen.getByText('CPU の取り札 (20)')).toBeInTheDocument();
     expect(screen.getByText('CPU の手札 3 枚')).toBeInTheDocument();
     expect(document.querySelectorAll('img[src="/images/z01.png"]')).toHaveLength(3);
+    const hiddenHand = screen.getByRole('img', { name: 'CPU の手札 3 枚（裏向き）' });
+    expect(within(hiddenHand).queryByRole('img', { name: '♥ 7' })).not.toBeInTheDocument();
   });
 
   it('shows each layout card position from zero and includes it in the accessible name', async () => {
