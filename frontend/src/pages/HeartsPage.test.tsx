@@ -72,12 +72,66 @@ describe('HeartsPage', () => {
   });
 
   it('announces the trick winner as the next leader without duplicating the status message', async () => {
-    mockExec.mockResolvedValue(makeHeartsState({ phase: 2, leadPlayerIdx: 1 }));
+    mockExec.mockResolvedValue(
+      makeHeartsState({
+        phase: 2,
+        trickPoints: 14,
+        leadPlayerIdx: 1,
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'HEART', value: 5 } },
+          { playerIdx: 1, card: { design: 'SPADE', value: 12 } },
+        ],
+      }),
+    );
     renderWithProviders(<HeartsPage />);
     expect(await screen.findByTestId('hearts-trick-result-live')).toHaveTextContent(
-      'CPU 1がトリックを獲得し、次のリードを担当します。',
+      'CPU 1がトリックを獲得し、ペナルティ点は14点で、次のリードを担当します。',
     );
-    expect(screen.getAllByText('CPU 1がトリックを獲得し、次のリードを担当します。')).toHaveLength(1);
+    expect(screen.getAllByText('CPU 1がトリックを獲得し、ペナルティ点は14点で、次のリードを担当します。')).toHaveLength(
+      1,
+    );
+  });
+
+  it('announces zero penalty points for a trick without penalty cards in English', async () => {
+    mockExec.mockResolvedValue(
+      makeHeartsState({
+        phase: 2,
+        trickPoints: 0,
+        leadPlayerIdx: 1,
+        currentTrick: [{ playerIdx: 1, card: { design: 'CLOVER', value: 5 } }],
+      }),
+    );
+    const previousLanguage = i18n.language;
+    try {
+      await i18n.changeLanguage('en');
+      renderWithProviders(<HeartsPage />);
+      expect(await screen.findByTestId('hearts-trick-result-live')).toHaveTextContent(
+        'CPU 1 won the trick, taking 0 penalty points, and will lead next.',
+      );
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
+  it('announces one penalty point in English', async () => {
+    mockExec.mockResolvedValue(
+      makeHeartsState({
+        phase: 2,
+        trickPoints: 1,
+        leadPlayerIdx: 1,
+        currentTrick: [{ playerIdx: 1, card: { design: 'HEART', value: 5 } }],
+      }),
+    );
+    const previousLanguage = i18n.language;
+    try {
+      await i18n.changeLanguage('en');
+      renderWithProviders(<HeartsPage />);
+      expect(await screen.findByTestId('hearts-trick-result-live')).toHaveTextContent(
+        'CPU 1 won the trick, taking 1 penalty point, and will lead next.',
+      );
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('hides the static trick-end message during TrickEnd', async () => {
