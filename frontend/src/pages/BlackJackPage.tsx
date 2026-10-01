@@ -217,10 +217,9 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
       const previous = previousStateRef.current;
       if (res.phase === BjPhase.END && previous?.phase !== BjPhase.END) {
         const dealerFinalScore = res.dealer.score ?? 0;
+        const dealerScoreAnnouncement = t('dealerFinalScore', { score: dealerFinalScore });
         setEndAnnouncement(
-          dealerFinalScore > 21
-            ? `${t('dealerFinalScore', { score: dealerFinalScore })} ${t('dealerBust')}`
-            : t('dealerFinalScore', { score: dealerFinalScore }),
+          dealerFinalScore > 21 ? `${dealerScoreAnnouncement} ${t('dealerBust')}` : dealerScoreAnnouncement,
         );
       } else if (res.phase !== BjPhase.END) {
         setEndAnnouncement('');
