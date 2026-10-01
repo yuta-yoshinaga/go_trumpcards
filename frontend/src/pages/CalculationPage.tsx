@@ -496,7 +496,7 @@ function CalculationPageContent() {
                     onClick={handleSelectStock}
                     disabled={!isPlaying || loading}
                     aria-pressed={sourceIsStock}
-                    aria-label={t('stockTopAria', { card: cardAlt(state.stockTop) })}
+                    aria-label={t('stockTopAria', { card: cardAlt(state.stockTop), count: state.stockCount })}
                     data-testid="calc-stock-button"
                     className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${sourceIsStock ? 'ring-2 ring-ds-warning' : ''} ${hintStock ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
                   >
