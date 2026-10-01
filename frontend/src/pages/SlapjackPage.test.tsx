@@ -124,6 +124,44 @@ describe('SlapjackPage', () => {
     expect(screen.getByRole('button', { name: /再試行/i })).toBeInTheDocument();
   });
 
+  it('announces pending CPU flips without a countdown and clears the visible status when complete', async () => {
+    const pendingState = {
+      ...baseState,
+      pendingKind: SlapjackPendingKind.STEP,
+      pendingDeadlineMs: Date.now() + 1500,
+    };
+    mockExec.mockResolvedValueOnce(pendingState);
+    renderWithProviders(<SlapjackPage />);
+
+    const liveRegion = await screen.findByTestId('cpu-pending-announcement');
+    await waitFor(() => expect(liveRegion).toHaveTextContent('CPUのめくりを待っています'));
+    expect(liveRegion.textContent).not.toMatch(/\d/);
+    const status = screen.getByTestId('cpu-pending-status');
+    expect(status).toHaveTextContent(/CPUのめくり実行待ち（残り約\d+秒）/);
+    expect(screen.getByRole('progressbar', { name: 'CPUの予約アクション実行までの進捗' })).toBeInTheDocument();
+
+    mockExec.mockResolvedValue(baseState);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('tick'));
+    await waitFor(() => expect(liveRegion).toBeEmptyDOMElement());
+    expect(screen.queryByTestId('cpu-pending-status')).not.toBeInTheDocument();
+    expect(screen.queryByRole('progressbar', { name: 'CPUの予約アクション実行までの進捗' })).not.toBeInTheDocument();
+  });
+
+  it('announces pending CPU slaps with the slap-specific message', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      pendingKind: SlapjackPendingKind.SLAP,
+      pendingDeadlineMs: Date.now() + 1500,
+    });
+    renderWithProviders(<SlapjackPage />);
+
+    const liveRegion = await screen.findByTestId('cpu-pending-announcement');
+    await waitFor(() => expect(liveRegion).toHaveTextContent('CPUのスラップを待っています'));
+    expect(liveRegion.textContent).not.toMatch(/\d/);
+    expect(screen.getByTestId('cpu-pending-status')).toHaveTextContent(/CPUのスラップ実行待ち（残り約\d+秒）/);
+    expect(screen.getByRole('progressbar', { name: 'CPUの予約アクション実行までの進捗' })).toBeInTheDocument();
+  });
+
   it('renders stock counts after state loads', async () => {
     renderWithProviders(<SlapjackPage />);
     await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());

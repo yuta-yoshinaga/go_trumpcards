@@ -27,6 +27,13 @@
   "slapjack": {
     "slap": "スラップ！",
     "jackOnTop": "Jだ！叩け！",
+    "pending": {
+      "stepStart": "CPUのめくりを待っています",
+      "slapStart": "CPUのスラップを待っています",
+      "step": "CPUのめくり実行待ち（残り約{{count}}秒）",
+      "slap": "CPUのスラップ実行待ち（残り約{{count}}秒）",
+      "progress": "CPUの予約アクション実行までの進捗"
+    },
     "slapAvailableAnnounce": "スラップ可能です",
     "slapUnavailableAnnounce": "スラップ不可になりました",
     "burst": {
