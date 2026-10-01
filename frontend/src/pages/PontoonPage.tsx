@@ -136,7 +136,16 @@ function PontoonPageContent() {
         <div
           className="flex gap-1 justify-center"
           role="img"
-          aria-label={hide ? label : t('seatAriaLabel', { name: label, total: hand.total })}
+          aria-label={
+            hide
+              ? label
+              : rankKey
+                ? t('rankedHandAriaLabel', {
+                    name: t('seatAriaLabel', { name: label, total: hand.total }),
+                    rank: t(rankKey),
+                  })
+                : t('seatAriaLabel', { name: label, total: hand.total })
+          }
         >
           {hand.cards.map((card, i) =>
             hide || !card ? (
