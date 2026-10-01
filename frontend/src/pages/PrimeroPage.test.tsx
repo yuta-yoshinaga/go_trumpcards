@@ -26,6 +26,8 @@ const resultState = makePrimeroState({
       isHuman: true,
       chips: 230,
       roundBet: 40,
+      roundPayout: 137,
+      netChange: 97,
       folded: false,
       out: false,
       cardCount: 4,
@@ -43,6 +45,8 @@ const resultState = makePrimeroState({
       isHuman: false,
       chips: 170,
       roundBet: 40,
+      roundPayout: 0,
+      netChange: -40,
       folded: false,
       out: false,
       cardCount: 4,
@@ -60,6 +64,8 @@ const resultState = makePrimeroState({
       isHuman: false,
       chips: 190,
       roundBet: 10,
+      roundPayout: 0,
+      netChange: -10,
       folded: true,
       out: false,
       cardCount: 4,
@@ -71,6 +77,8 @@ const resultState = makePrimeroState({
       isHuman: false,
       chips: 190,
       roundBet: 10,
+      roundPayout: 0,
+      netChange: -10,
       folded: true,
       out: false,
       cardCount: 4,
@@ -252,6 +260,56 @@ describe('PrimeroPage', () => {
     renderWithProviders(<PrimeroPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: 'コール' })).not.toBeInTheDocument();
+  });
+
+  it('shows the human round bet, actual payout, and net result', async () => {
+    mockExec.mockResolvedValue(resultState);
+    renderWithProviders(<PrimeroPage />);
+    const result = await screen.findByTestId('primero-round-settlement');
+    expect(result).toHaveTextContent('自分の賭け額: 40');
+    expect(result).toHaveTextContent('払戻額: 137');
+    expect(result).toHaveTextContent('差引: +97');
+  });
+
+  it('shows no payout and a loss equal to the bet for a folded human', async () => {
+    mockExec.mockResolvedValue(
+      makePrimeroState({
+        phase: 1,
+        winnerIdx: 1,
+        players: [
+          {
+            ...makePrimeroState().players[0],
+            isHuman: true,
+            roundBet: 25,
+            roundPayout: 0,
+            netChange: -25,
+            folded: true,
+          },
+          { ...makePrimeroState().players[1], isWinner: true, roundBet: 25, roundPayout: 100, netChange: 75 },
+          ...makePrimeroState().players.slice(2),
+        ],
+      }),
+    );
+    renderWithProviders(<PrimeroPage />);
+    const result = await screen.findByTestId('primero-round-settlement');
+    expect(result).toHaveTextContent('自分の賭け額: 25');
+    expect(result).toHaveTextContent('払戻額: 0');
+    expect(result).toHaveTextContent('差引: -25');
+  });
+
+  it('shows the settlement labels in English', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(resultState);
+      renderWithProviders(<PrimeroPage />);
+      const result = await screen.findByTestId('primero-round-settlement');
+      expect(result).toHaveTextContent('Your bet: 40');
+      expect(result).toHaveTextContent('Payout: 137');
+      expect(result).toHaveTextContent('Net: +97');
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('renders the game-end message', async () => {

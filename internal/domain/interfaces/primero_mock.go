@@ -130,6 +130,12 @@ func (_m *MockPrimeroGame) GetResult() domain.PrimeroResult {
 	return ret.Get(0).(domain.PrimeroResult)
 }
 
+// GetRoundPayout モック
+func (_m *MockPrimeroGame) GetRoundPayout(i int) int { return _m.Called(i).Get(0).(int) }
+
+// GetRoundNetChange モック
+func (_m *MockPrimeroGame) GetRoundNetChange(i int) int { return _m.Called(i).Get(0).(int) }
+
 // GetPlayerCnt モック
 func (_m *MockPrimeroGame) GetPlayerCnt() int {
 	ret := _m.Called()
