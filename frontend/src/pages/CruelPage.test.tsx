@@ -86,6 +86,12 @@ describe('CruelPage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
+  it('includes the zero-based tableau column in card button names', async () => {
+    renderWithProviders(<CruelPage />);
+    const card = await screen.findByRole('button', { name: '♠ 2、列0' });
+    expect(card).toHaveAttribute('aria-label', '♠ 2、列0');
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<CruelPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -269,7 +275,7 @@ describe('CruelPage', () => {
 
     // Column 0 is fourColumn('SPADE', 2) → its top card is ♠5. Selecting it should
     // mark only foundation pile 0 (♠) as the suit target, leaving ♣/♥/♦ unmarked.
-    fireEvent.click(screen.getByRole('button', { name: '♠ 5' }));
+    fireEvent.click(screen.getByRole('button', { name: '♠ 5、列0' }));
 
     await waitFor(() => expect(screen.getByTestId('cruel-foundation-0')).toHaveAttribute('data-suit-target', 'true'));
     expect(screen.getByTestId('cruel-foundation-1')).not.toHaveAttribute('data-suit-target');
@@ -285,7 +291,7 @@ describe('CruelPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
     // Column 3 is fourColumn('DIAMOND', 2) → top card ♦5 maps to foundation pile 3 (♦).
-    fireEvent.click(screen.getByRole('button', { name: '♦ 5' }));
+    fireEvent.click(screen.getByRole('button', { name: '♦ 5、列3' }));
 
     await waitFor(() => expect(screen.getByTestId('cruel-foundation-3')).toHaveAttribute('data-suit-target', 'true'));
     expect(screen.getByTestId('cruel-foundation-0')).not.toHaveAttribute('data-suit-target');
