@@ -23,6 +23,7 @@
   "result": {
     "title": "Final Scores",
     "winner": "Winner: {{name}}",
+    "tie": "The game is a draw.",
     "score": "{{name}}: {{score}}"
   },
   "round": "Round {{n}} / {{total}}",
