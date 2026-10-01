@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { russianpokerApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -92,6 +92,7 @@ function RussianPokerPageContent() {
   const [anteAmount, setAnteAmount] = useState(100);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const [exchangeSelectionAnnouncement, setExchangeSelectionAnnouncement] = useState('');
+  const previousSelectedIndices = useRef(selectedIndices);
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(russianpokerApi.exec);
@@ -132,6 +133,25 @@ function RussianPokerPageContent() {
   const isForceQualifyPhase = state?.phase === RussianPokerPhase.FORCE_QUALIFY;
   const isEndPhase = state?.phase === RussianPokerPhase.END;
 
+  useEffect(() => {
+    const previous = previousSelectedIndices.current;
+    previousSelectedIndices.current = selectedIndices;
+    if (previous.length === selectedIndices.length && previous.every((index, i) => index === selectedIndices[i])) {
+      return;
+    }
+    if (!isActionPhase || selectedIndices.length === 0 || !state) {
+      setExchangeSelectionAnnouncement('');
+      return;
+    }
+    setExchangeSelectionAnnouncement(
+      t('exchangeSelectionAnnouncement', {
+        count: selectedIndices.length,
+        ante: state.anteBet,
+        fee: state.anteBet * selectedIndices.length,
+      }),
+    );
+  }, [selectedIndices, isActionPhase, state, t]);
+
   const isExchangeSelecting = isActionPhase && selectedIndices.length > 0;
 
   // Ante validation: mandatory (>= 10), in 10-chip increments, and within the balance.
@@ -144,17 +164,8 @@ function RussianPokerPageContent() {
         ? selectedIndices.filter((i) => i !== idx)
         : [...selectedIndices, idx].sort((a, b) => a - b);
       setSelectedIndices(next);
-      if (isActionPhase && state) {
-        setExchangeSelectionAnnouncement(
-          t('exchangeSelectionAnnouncement', {
-            count: next.length,
-            ante: state.anteBet,
-            fee: state.anteBet * next.length,
-          }),
-        );
-      }
     },
-    [selectedIndices, isActionPhase, state, t],
+    [selectedIndices],
   );
 
   const clearSelection = useCallback(() => setSelectedIndices([]), []);

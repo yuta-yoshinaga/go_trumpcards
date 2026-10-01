@@ -148,8 +148,20 @@ describe('RussianPokerPage', () => {
     expect(announcement).toHaveTextContent('手数料: 1枚あたりアンテ × 100 = 100');
 
     fireEvent.click(screen.getByTestId('player-card-0'));
-    expect(announcement).toHaveTextContent('選択中: 0枚');
-    expect(announcement).toHaveTextContent('手数料: 1枚あたりアンテ × 100 = 0');
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
+  it('clears the exchange announcement when the selection is cleared with Escape', async () => {
+    renderWithProviders(<RussianPokerPage />);
+    await screen.findByTestId('russian-exchange-fee-line');
+
+    const announcement = screen.getByTestId('exchange-selection-announcement');
+    fireEvent.click(screen.getByTestId('player-card-0'));
+    fireEvent.click(screen.getByTestId('player-card-1'));
+    expect(announcement).toHaveTextContent('選択中: 2枚');
+
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    expect(announcement).toBeEmptyDOMElement();
   });
 
   it('does not announce unrelated updates outside exchange selection', async () => {
