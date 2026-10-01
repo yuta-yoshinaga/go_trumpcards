@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { buraApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardBack } from '../components/CardImage';
+import { CardBack, CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -172,8 +172,6 @@ function BuraPageContent() {
               ))}
             </div>
 
-            {/* Opponent hands: backs only. The server withholds the cards, so
-                there is nothing here to reveal even by mistake. */}
             <div className="flex justify-center gap-4 mb-4">
               {opponents.map((o) => (
                 <div key={`opp-${o.id.toString()}`} className="text-center">
@@ -183,9 +181,18 @@ function BuraPageContent() {
                     role="img"
                     aria-label={t('opponentHandAriaLabel', { n: o.cardCount })}
                   >
-                    {Array.from({ length: o.cardCount }, (_, i) => (
-                      <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                    ))}
+                    {ended && o.cards.length > 0
+                      ? o.cards.map((card, i) => (
+                          <CardImage
+                            key={`opp-${o.id.toString()}-c${i.toString()}`}
+                            card={card}
+                            ariaLabel={cardAlt(card)}
+                            width={cardWidth}
+                          />
+                        ))
+                      : Array.from({ length: o.cardCount }, (_, i) => (
+                          <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                        ))}
                   </div>
                 </div>
               ))}
