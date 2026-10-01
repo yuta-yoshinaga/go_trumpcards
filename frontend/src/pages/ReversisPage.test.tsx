@@ -75,6 +75,32 @@ describe('ReversisPage', () => {
     expect(cards[0]).toHaveAccessibleName(/出せない/);
     expect(cards[1]).toHaveAccessibleName(/出せる/);
     expect(cards[2]).toHaveAccessibleName(/出せない/);
+    expect(cards[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[1]).not.toHaveAttribute('aria-disabled', 'true');
+    expect(cards[2]).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('does not send a play request for an unplayable card', async () => {
+    mockExec.mockResolvedValue(makeState({ validPlays: [1] }));
+    renderWithProviders(<ReversisPage />);
+    const cards = await screen.findAllByRole('button', { name: /を出す/ });
+    await waitFor(() => expect(cards[0]).toBeEnabled());
+    mockExec.mockClear();
+
+    fireEvent.click(cards[0]);
+
+    await waitFor(() => expect(mockExec).not.toHaveBeenCalledWith('play', 0));
+    expect(mockExec).toHaveBeenCalledTimes(0);
+  });
+
+  it('keeps hand cards disabled outside the human play turn', async () => {
+    for (const overrides of [{ currentPlayerIdx: 1 }, { phase: 1 }]) {
+      mockExec.mockResolvedValue(makeState(overrides));
+      const { unmount } = renderWithProviders(<ReversisPage />);
+      const cards = await screen.findAllByRole('button', { name: /を出す/ });
+      expect(cards[0]).toBeDisabled();
+      unmount();
+    }
   });
   it('resets on mount', async () => {
     renderWithProviders(<ReversisPage />);
