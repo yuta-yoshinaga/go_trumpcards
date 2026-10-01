@@ -346,7 +346,12 @@ describe('FiveCardStudPage', () => {
     renderWithProviders(<FiveCardStudPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
-    expect(screen.queryByText(/必要ポットオッズ/)).not.toBeInTheDocument();
+    expect(
+      screen
+        .getAllByRole('status')
+        .map((element) => element.textContent)
+        .join(' '),
+    ).toContain('コールに必要な額: 40、必要ポットオッズ: 57.1%');
   });
 
   it("caps the displayed call amount at the human player's remaining chips", async () => {
@@ -355,7 +360,14 @@ describe('FiveCardStudPage', () => {
       players: [humanPlayer({ chips: 15 }), ...secondStreetWithBetState.players.slice(1)],
     });
     renderWithProviders(<FiveCardStudPage />);
-    await waitFor(() => expect(screen.getByText('コールに必要な額: 15')).toHaveAttribute('role', 'status'));
+    await waitFor(() =>
+      expect(
+        screen
+          .getAllByRole('status')
+          .map((element) => element.textContent)
+          .join(' '),
+      ).toContain('コールに必要な額: 15、必要ポットオッズ: 33.3%'),
+    );
   });
 
   it('shows Soko pot odds based on the call amount and resulting pot', async () => {

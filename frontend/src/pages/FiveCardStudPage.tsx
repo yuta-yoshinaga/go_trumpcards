@@ -608,7 +608,7 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
                   {hasOutstandingBet ? (
                     <>
                       {t('betting.callAmount', { amount: callAmount })}
-                      {gameKey === 'soko' && callPotOdds !== null && t('callPotOdds', { percent: callPotOdds })}
+                      {callPotOdds !== null && t('callPotOdds', { percent: callPotOdds })}
                     </>
                   ) : (
                     t('betting.checkAvailable')
