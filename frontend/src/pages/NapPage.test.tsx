@@ -65,6 +65,25 @@ beforeEach(() => {
 });
 
 describe('NapPage', () => {
+  it('shows each bid, pass, and a not-yet-bid seat after the auction', async () => {
+    mockExec.mockResolvedValue(
+      makeNapState({
+        phase: 1,
+        declarerIdx: 1,
+        contract: 3,
+        bids: [3, 0, 0, 5],
+        bidDone: [true, true, false, true],
+        isHumanBidTurn: false,
+      }),
+    );
+    renderWithProviders(<NapPage />);
+    const results = await screen.findByTestId('nap-bid-results');
+    expect(results).toHaveTextContent('あなた: スリー');
+    expect(results).toHaveTextContent('CPU 1: パス');
+    expect(results).toHaveTextContent('CPU 2: 未入札');
+    expect(results).toHaveTextContent('CPU 3: ナップ');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<NapPage />);

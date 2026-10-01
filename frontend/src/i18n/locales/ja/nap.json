@@ -35,6 +35,8 @@
   "declarerProgress": "宣言者（{{name}}）: {{won}} / {{needed}} トリック（残り{{remaining}}トリック）",
   "contractUnreachable": "達成不可",
   "bidLabel": "入札",
+  "bidsAfter": "各プレイヤーの入札",
+  "bidNotDone": "未入札",
   "playButton": "出す",
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",

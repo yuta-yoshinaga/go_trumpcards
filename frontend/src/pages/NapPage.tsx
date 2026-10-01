@@ -161,6 +161,7 @@ function NapPageContent() {
     return { made, chips: made ? payout.make : payout.fail };
   })();
   const isGameEnd = state.phase === NapPhase.GAME_END || state.gameEndFlag;
+  const showBidsAfterAuction = !isBidPhase;
 
   const canPlay = isPlayPhase && isHumanTurn;
   const trumpSymbol = state.trumpSuit === 0 ? t('noTrump') : suitSymbolAt(state.trumpSuit, '');
@@ -312,6 +313,31 @@ function NapPageContent() {
                 </div>
 
                 {/* Players: cards / tricks */}
+                {showBidsAfterAuction && (
+                  <div
+                    className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    data-testid="nap-bid-results"
+                  >
+                    <div className="mb-1 text-ds-text-primary">{t('bidsAfter')}</div>
+                    {state.players.map((p) => {
+                      const bid = state.bids[p.id] ?? 0;
+                      const bidText = !state.bidDone[p.id]
+                        ? t('bidNotDone')
+                        : t(
+                            bid === NapContract.PASS
+                              ? 'bid.pass'
+                              : CONTRACT_KEYS[bid]
+                                ? `bid.${CONTRACT_KEYS[bid]}`
+                                : 'bid.pass',
+                          );
+                      return (
+                        <div key={p.id}>
+                          {playerName(p.id, p.isHuman)}: {bidText}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
                 {isMobile ? (
                   <details className="mb-2 p-2 rounded bg-black/30">
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
