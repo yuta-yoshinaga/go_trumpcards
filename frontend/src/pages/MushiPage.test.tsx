@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mushiApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -96,7 +96,9 @@ describe('MushiPage', () => {
     expect(screen.getByText('CPU の取り札 (20 pt)')).toBeInTheDocument();
     // The opponent's HAND is drawn from its count, not its (absent) cards.
     expect(screen.getByText('CPU の手札 2 枚')).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: 'CPU の手札 2 枚（裏向き）' }).querySelectorAll('img')).toHaveLength(2);
+    const hand = screen.getByRole('img', { name: 'CPU の手札 2 枚（裏向き）' });
+    expect(hand.querySelectorAll('img')).toHaveLength(2);
+    expect(within(hand).queryByRole('img', { name: cardAlt(card(1, 1, 3)) })).not.toBeInTheDocument();
   });
 
   it('reveals the opponent hand after the game ends', async () => {
@@ -111,10 +113,11 @@ describe('MushiPage', () => {
     renderWithProviders(<MushiPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
 
-    const hand = screen.getByRole('img', { name: 'CPU の手札 2 枚（表向き）' });
+    const hand = screen.getByRole('group', { name: 'CPU の手札 2 枚（表向き）' });
     expect(hand.querySelectorAll('img[alt]')).toHaveLength(2);
     expect(hand.querySelector('img[alt="カードの裏面"]')).not.toBeInTheDocument();
     expect(hand.querySelectorAll(`img[alt="${cardAlt(revealed[0])}"]`)).toHaveLength(1);
+    expect(within(hand).getByRole('img', { name: cardAlt(revealed[0]) })).toBeInTheDocument();
   });
 
   it('groups captured cards by month and shows each non-empty month count', async () => {

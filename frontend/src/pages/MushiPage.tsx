@@ -148,32 +148,39 @@ function MushiPageContent() {
 
             {/* Opponent hand: backs only. The server withholds the cards. */}
             <div className="flex justify-center gap-4 mb-3">
-              {opponents.map((o) => (
-                <div key={`opp-${o.id.toString()}`} className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">{t('opponentHand', { n: o.cardCount })}</div>
-                  <div
-                    className="flex gap-1 justify-center"
-                    role="img"
-                    aria-label={t(
-                      ended && o.cards.length > 0 ? 'opponentHandRevealedAriaLabel' : 'opponentHandAriaLabel',
-                      { n: o.cardCount },
-                    )}
-                  >
-                    {ended && o.cards.length > 0
-                      ? o.cards.map((card, i) => (
+              {opponents.map((o) => {
+                const revealed = ended && o.cards.length > 0;
+                return (
+                  <div key={`opp-${o.id.toString()}`} className="text-center">
+                    <div className="text-game-text-muted text-xs mb-1">{t('opponentHand', { n: o.cardCount })}</div>
+                    {revealed ? (
+                      <fieldset
+                        className="m-0 flex gap-1 justify-center border-0 p-0"
+                        aria-label={t('opponentHandRevealedAriaLabel', { n: o.cardCount })}
+                      >
+                        {o.cards.map((card, i) => (
                           <CardImage
                             key={`opp-${o.id.toString()}-c${i.toString()}`}
                             card={card}
                             width={cardWidth}
                             ariaLabel={cardAlt(card)}
                           />
-                        ))
-                      : Array.from({ length: o.cardCount }, (_, i) => (
+                        ))}
+                      </fieldset>
+                    ) : (
+                      <div
+                        className="flex gap-1 justify-center"
+                        role="img"
+                        aria-label={t('opponentHandAriaLabel', { n: o.cardCount })}
+                      >
+                        {Array.from({ length: o.cardCount }, (_, i) => (
                           <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
                         ))}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="text-center mb-4" data-tutorial="mushi-field">
