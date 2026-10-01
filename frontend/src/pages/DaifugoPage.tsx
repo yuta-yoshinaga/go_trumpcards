@@ -327,10 +327,15 @@ function DaifugoPageContent() {
               </div>
             </div>
 
+            <div role="status" aria-live="polite" className="sr-only" data-testid="daifugo-pending-announcement">
+              {pendingBanner ?? ''}
+            </div>
+
             {pendingBanner && (
               <div
                 className={`${badgeWarningColors} rounded-[10px] text-center py-2 px-4 text-sm font-bold my-2`}
                 data-tutorial="df-special-actions"
+                data-testid="daifugo-pending-banner"
               >
                 {pendingBanner}
                 {pendingAction === 'queenBomber' && isHumanTurn && (
