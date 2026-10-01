@@ -241,6 +241,12 @@ function CucumberPageContent() {
                   <span>{t('header.cards', { n: String(p.cardCount) })}</span>
                   {' / '}
                   <span className="text-ds-accent">{t('header.penalty', { n: String(p.penalty) })}</span>
+                  {' / '}
+                  <span className={p.penalty >= state.config.targetScore ? 'text-ds-warning' : ''}>
+                    {p.penalty >= state.config.targetScore
+                      ? t('header.targetReached')
+                      : t('header.targetRemaining', { count: state.config.targetScore - p.penalty })}
+                  </span>
                 </div>
               ))}
             </div>

@@ -13,6 +13,8 @@
     "lead": "リード（どの札でも出せます）",
     "cards": "手札{{n}}枚",
     "penalty": "失点{{n}}点",
+    "targetRemaining": "目標まで残り{{count}}点",
+    "targetReached": "目標到達",
     "lastTrick": "[最終トリックで{{n}}点]",
     "you": "あなた",
     "cpu": "CPU{{idx}}"

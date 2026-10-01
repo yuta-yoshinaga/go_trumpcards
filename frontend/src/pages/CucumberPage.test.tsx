@@ -157,6 +157,19 @@ describe('CucumberPage', () => {
     expect(s0).toHaveTextContent('失点12点');
   });
 
+  it('shows penalty points remaining to the target and marks reached seats', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [seat(0, { penalty: 12 }), seat(1, { penalty: 30 }), seat(2, { penalty: 35 }), seat(3)],
+      }),
+    );
+    renderWithProviders(<CucumberPage />);
+
+    expect(await screen.findByTestId('cu-seat-0')).toHaveTextContent('目標まで残り18点');
+    expect(screen.getByTestId('cu-seat-1')).toHaveTextContent('目標到達');
+    expect(screen.getByTestId('cu-seat-2')).toHaveTextContent('目標到達');
+  });
+
   // **CPU 同士の手番中、誰が考えているのかが画面のどこにも無かった。**
   // GamePageShell は「自分の番かどうか」しか示さない。
   it('marks the seat whose turn it is', async () => {
