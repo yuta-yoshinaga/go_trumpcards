@@ -40,26 +40,27 @@ type NapWebOutputPlayer struct {
 
 // NapWebOutput ナップのWebアウトプット
 type NapWebOutput struct {
-	Players          []*NapWebOutputPlayer    `json:"players"`
-	Phase            int                      `json:"phase"`
-	RoundNumber      int                      `json:"roundNumber"`
-	TrickNumber      int                      `json:"trickNumber"`
-	CurrentPlayerIdx int                      `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                      `json:"leadPlayerIdx"`
-	DealerIdx        int                      `json:"dealerIdx"`
-	DeclarerIdx      int                      `json:"declarerIdx"`
-	Contract         int                      `json:"contract"`
-	TrumpSuit        int                      `json:"trumpSuit"`
-	Bids             [domain.NapPlayerCnt]int `json:"bids"`
-	CurrentTrick     []*WebOutputTrickCard    `json:"currentTrick"`
-	PlayerScores     [domain.NapPlayerCnt]int `json:"playerScores"`
-	RoundTricks      [domain.NapPlayerCnt]int `json:"roundTricks"`
-	PlayableIndices  []int                    `json:"playableIndices"`
-	GameEndFlag      bool                     `json:"gameEndFlag"`
-	WinnerPlayer     int                      `json:"winnerPlayer"`
-	IsHumanTurn      bool                     `json:"isHumanTurn"`
-	IsHumanBidTurn   bool                     `json:"isHumanBidTurn"`
-	Hint             *WebOutputCardHint       `json:"hint,omitempty"`
+	Players          []*NapWebOutputPlayer     `json:"players"`
+	Phase            int                       `json:"phase"`
+	RoundNumber      int                       `json:"roundNumber"`
+	TrickNumber      int                       `json:"trickNumber"`
+	CurrentPlayerIdx int                       `json:"currentPlayerIdx"`
+	LeadPlayerIdx    int                       `json:"leadPlayerIdx"`
+	DealerIdx        int                       `json:"dealerIdx"`
+	DeclarerIdx      int                       `json:"declarerIdx"`
+	Contract         int                       `json:"contract"`
+	TrumpSuit        int                       `json:"trumpSuit"`
+	Bids             [domain.NapPlayerCnt]int  `json:"bids"`
+	BidDone          [domain.NapPlayerCnt]bool `json:"bidDone"`
+	CurrentTrick     []*WebOutputTrickCard     `json:"currentTrick"`
+	PlayerScores     [domain.NapPlayerCnt]int  `json:"playerScores"`
+	RoundTricks      [domain.NapPlayerCnt]int  `json:"roundTricks"`
+	PlayableIndices  []int                     `json:"playableIndices"`
+	GameEndFlag      bool                      `json:"gameEndFlag"`
+	WinnerPlayer     int                       `json:"winnerPlayer"`
+	IsHumanTurn      bool                      `json:"isHumanTurn"`
+	IsHumanBidTurn   bool                      `json:"isHumanBidTurn"`
+	Hint             *WebOutputCardHint        `json:"hint,omitempty"`
 	WebOutputBase
 	Config NapWebOutputConfig `json:"config"`
 }
