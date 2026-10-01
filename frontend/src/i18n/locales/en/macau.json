@@ -30,6 +30,7 @@
   "scoresTotalOfLimit": "Total / target",
   "scoreProgress": "{{score}}/{{limit}}",
   "playButton": "Play",
+  "cardNotPlayable": "This card cannot be played now.",
   "drawButton": "Draw",
   "emptyStockDrawHelp": "The stock is empty. Discards will be recycled; if none can be recycled, you will pass.",
   "takePenaltyButton": "Take {{count}}",

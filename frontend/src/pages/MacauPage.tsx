@@ -398,6 +398,9 @@ function MacauPageContent() {
           <GameFooter className={`${gameTheme.macau.footer} px-4 py-2.5`}>
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="macau-player-hand">
+                <span id="macau-card-not-playable" className="sr-only">
+                  {t('cardNotPlayable')}
+                </span>
                 {humanPlayer.cards.map((card, idx) => {
                   // **CUI は出せる札を全部並べているのに、Web は都度クリックして
                   // エラーで確かめるしかなかった (#4805)。**マジックカード (2/7/8/J) や
@@ -407,15 +410,20 @@ function MacauPageContent() {
                   // playableIndices が真実で、空 = 1 枚も出せない (引くしかない)。
                   // 長さで判定すると、この「引くしかない」局面で全札が光る。
                   const playable = !isHumanTurn || state.playableIndices.includes(idx);
+                  const ariaDisabled = isHumanTurn && !playable;
                   return (
                     <button
                       type="button"
                       key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
+                      onClick={() => {
+                        if (playable) toggleCard(idx);
+                      }}
                       aria-label={cardAlt(card)}
                       aria-pressed={selectedCardIndices.includes(idx)}
+                      aria-disabled={ariaDisabled || undefined}
+                      aria-describedby={ariaDisabled ? 'macau-card-not-playable' : undefined}
                       data-playable={playable ? 'true' : undefined}
-                      className={`transition-transform ${focusRingCard} ${playable ? 'rounded-lg ring-2 ring-ds-success' : 'opacity-50'}`}
+                      className={`transition-transform ${focusRingCard} ${playable ? 'rounded-lg ring-2 ring-ds-success' : 'opacity-50'}${ariaDisabled ? ' aria-disabled:opacity-40 aria-disabled:cursor-not-allowed' : ''}`}
                       style={{
                         background: 'none',
                         padding: 0,
