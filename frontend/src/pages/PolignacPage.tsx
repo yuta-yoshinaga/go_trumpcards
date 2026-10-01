@@ -152,6 +152,8 @@ function PolignacPageContent() {
 
   // 出せる札に緑の枠を足すだけで、押せなくはしない（サーバが必ず検証する）。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
+  const takenJackSuits = new Set(state.players.flatMap((player) => player.takenJackSuits ?? []));
+  const unclaimedJackSuits = isRoundEnd || isGameEnd ? [] : [1, 2, 3, 4].filter((suit) => !takenJackSuits.has(suit));
 
   const resultBanner = (() => {
     if (!isGameEnd) return null;
@@ -257,6 +259,26 @@ function PolignacPageContent() {
                 </div>
               ))}
             </div>
+            {!isRoundEnd && !isGameEnd && unclaimedJackSuits.length > 0 && (
+              <div className="mb-4 text-center text-sm text-ds-text-muted" data-testid="pg-unclaimed-jacks">
+                <span>{t('jacks.unclaimedLabel')}:</span>{' '}
+                {unclaimedJackSuits.map((suit) => (
+                  <span
+                    key={`unclaimed-jack-${suit}`}
+                    className={suit === SPADE_DESIGN ? 'ml-2 font-bold text-ds-error' : 'ml-2'}
+                  >
+                    <span aria-hidden="true">
+                      {suit === SPADE_DESIGN ? t('jacks.spade') : t('jacks.other', { suit: suitSymbolAt(suit, '') })}
+                    </span>
+                    <span className="sr-only">
+                      {suit === SPADE_DESIGN
+                        ? t('jacks.spadeAria')
+                        : t('jacks.otherAria', { suitName: t(`jacks.suitName.${SUIT_ARIA_KEYS[suit]}`) })}
+                    </span>
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div data-tutorial="polignac-trick">
               <TrickDisplay

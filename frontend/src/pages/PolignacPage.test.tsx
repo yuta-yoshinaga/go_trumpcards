@@ -226,6 +226,31 @@ describe('PolignacPage jack breakdown', () => {
     expect(jacks).toHaveTextContent('ハートのジャック（1失点）');
   });
 
+  it('shows jacks not yet taken during a round and updates when one is taken', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeState({ players: [seat(0, { takenJackSuits: [1] }), seat(1), seat(2), seat(3)] }))
+      .mockResolvedValueOnce(makeState({ players: [seat(0, { takenJackSuits: [1, 2] }), seat(1), seat(2), seat(3)] }));
+    renderWithProviders(<PolignacPage />);
+
+    const remaining = await screen.findByTestId('pg-unclaimed-jacks');
+    expect(remaining).toHaveTextContent('♣J');
+    expect(remaining).toHaveTextContent('♥J');
+    expect(remaining).toHaveTextContent('♦J');
+    expect(remaining).not.toHaveTextContent('♠J');
+
+    fireEvent.click(screen.getAllByRole('button', { name: /を出す/ })[0]);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+    await waitFor(() => expect(screen.getByTestId('pg-unclaimed-jacks')).not.toHaveTextContent('♣J'));
+  });
+
+  it('does not show an unclaimed jack after the round ends', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2, players: [seat(0), seat(1), seat(2), seat(3)] }));
+    renderWithProviders(<PolignacPage />);
+
+    expect(await screen.findByTestId('pg-seat-0')).toBeInTheDocument();
+    expect(screen.queryByTestId('pg-unclaimed-jacks')).not.toBeInTheDocument();
+  });
+
   it('shows nothing for a seat that took no jack', async () => {
     mockExec.mockResolvedValue(makeState({ players: [seat(0, { takenJackSuits: [] }), seat(1), seat(2), seat(3)] }));
     renderWithProviders(<PolignacPage />);
