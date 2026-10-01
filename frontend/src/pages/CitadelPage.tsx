@@ -209,7 +209,16 @@ function CitadelPageContent() {
   const selectedCard =
     selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
       ? state.tableau[selectedSource.col]?.[selectedSource.cardIndex]?.card
-      : undefined;
+      : selectedSource?.zone === 'foundation' && selectedSource.col !== undefined
+        ? state.foundation[selectedSource.col]?.at(-1)
+        : undefined;
+  const selectedCardName = selectedCard ? cardAlt(selectedCard) : '';
+  const selectionSource =
+    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined
+      ? t('selectionTableauSource', { col: selectedSource.col })
+      : selectedSource?.zone === 'foundation' && selectedSource.col !== undefined
+        ? t('selectionFoundationSource', { suit: FOUNDATION_SUITS[selectedSource.col] })
+        : '';
   const selectedTargets = citadelLegalTargets(state.tableau, state.foundation, selectedCard);
   const legalTargetCount = selectedTargets.tableau.size + selectedTargets.foundation.size;
   /** Ring for a legal destination: softer while it is only a hover preview. */
@@ -333,8 +342,8 @@ function CitadelPageContent() {
           <span className="sr-only" role="status" aria-live="polite" data-testid="bc-selection-status">
             {isPlaying && selectedSource !== null
               ? legalTargetCount > 0
-                ? t('selectionMoves', { count: legalTargetCount })
-                : t('selectionNoMoves')
+                ? t('selectionMoves', { card: selectedCardName, source: selectionSource, count: legalTargetCount })
+                : t('selectionNoMoves', { card: selectedCardName, source: selectionSource })
               : ''}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
