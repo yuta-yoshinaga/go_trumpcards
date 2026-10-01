@@ -425,6 +425,11 @@ function UltimateTexasHoldemPageContent() {
             {t('madeHand', { hand: t(HAND_RANK_KEYS[state.playerHandRank] ?? 'handRank.0') })}
           </p>
         )}
+        <div className="sr-only" role="status" aria-live="polite" data-testid="uth-made-hand-announcement">
+          {(isFlopPhase || isRiverPhase) &&
+            state.playerHand.length + state.community.length >= 5 &&
+            t('madeHand', { hand: t(HAND_RANK_KEYS[state.playerHandRank] ?? 'handRank.0') })}
+        </div>
         {isPreFlopPhase &&
           (() => {
             const strength = utHoldemPreflopStrength(state.playerHand);

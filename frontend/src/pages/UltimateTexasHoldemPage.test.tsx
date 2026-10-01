@@ -542,4 +542,19 @@ describe('UltimateTexasHoldemPage keyboard shortcuts', () => {
     await waitFor(() => expect(screen.getByTestId('uth-preflop-eval')).toBeInTheDocument());
     expect(screen.queryByTestId('uth-made-hand')).not.toBeInTheDocument();
   });
+
+  it('announces the made hand in a persistent live region only when one is available', async () => {
+    mockApi
+      .mockResolvedValueOnce({ ...preFlopState, playerHandRank: 8 })
+      .mockResolvedValueOnce({ ...flopState, playerHandRank: 4 });
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /プレイ 4×/ })).toBeInTheDocument());
+    const liveRegion = screen.getByTestId('uth-made-hand-announcement');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByRole('button', { name: 'チェック' }));
+    await waitFor(() => expect(screen.getByTestId('uth-made-hand-announcement')).toHaveTextContent('ストレート'));
+  });
 });
