@@ -29,6 +29,15 @@
     "b": "チームB"
   },
   "teamScore": "{{team}}: {{score}} / 目標 {{target}}点",
+  "scoringReference": {
+    "title": "カード点早見表",
+    "ace": "A: 11点",
+    "three": "3: 10点",
+    "king": "K: 4点",
+    "queen": "Q: 3点",
+    "jack": "J: 2点",
+    "lastTrick": "最終トリック: +10点"
+  },
   "playButton": "出す",
   "declareMarriage": "結婚宣言 {{suit}}",
   "marriageAria": "{{suit}}のマリッジを宣言（{{points}}点）",

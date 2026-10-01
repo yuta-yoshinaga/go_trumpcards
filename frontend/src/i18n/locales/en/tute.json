@@ -29,6 +29,15 @@
     "b": "Team B"
   },
   "teamScore": "{{team}}: {{score}} / target {{target}} pts",
+  "scoringReference": {
+    "title": "Card scoring reference",
+    "ace": "A: 11 points",
+    "three": "3: 10 points",
+    "king": "K: 4 points",
+    "queen": "Q: 3 points",
+    "jack": "J: 2 points",
+    "lastTrick": "Last trick: +10 points"
+  },
   "playButton": "Play",
   "declareMarriage": "Marriage {{suit}}",
   "marriageAria": "Declare {{suit}} marriage ({{points}} points)",
