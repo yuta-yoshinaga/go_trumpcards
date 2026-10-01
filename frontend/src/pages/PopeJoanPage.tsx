@@ -125,6 +125,17 @@ function PopeJoanPageContent() {
   const playing = state.phase === PopeJoanPhase.PLAY;
   const human = state.players.find((p) => p.isHuman);
   const opponents = state.players.filter((p) => !p.isHuman);
+  const finalStandings = ended
+    ? [...state.players]
+        .sort((a, b) => b.chips - a.chips)
+        .map((player, index, players) => ({
+          player,
+          rank:
+            index > 0 && player.chips === players[index - 1]?.chips
+              ? players.findIndex((candidate) => candidate.chips === player.chips) + 1
+              : index + 1,
+        }))
+    : [];
   const isHumanTurn = !ended && playing && state.currentPlayerIdx === 0;
 
   const phaseName = ended ? t('phase.end') : dealOver ? t('phase.dealEnd') : t('phase.play');
@@ -226,6 +237,23 @@ function PopeJoanPageContent() {
                   </div>
                 ))}
               </div>
+            )}
+
+            {ended && (
+              <section className="text-center mb-3" data-testid="popejoan-final-standings">
+                <h2 className="text-sm font-medium mb-1">{t('finalStandings')}</h2>
+                <ol className="inline-flex flex-col text-sm">
+                  {finalStandings.map(({ player, rank }) => (
+                    <li key={`standing-${player.id.toString()}`}>
+                      {t('finalStanding', {
+                        rank,
+                        name: player.isHuman ? t('you') : `CPU${player.id.toString()}`,
+                        chips: player.chips,
+                      })}
+                    </li>
+                  ))}
+                </ol>
+              </section>
             )}
 
             <div className="flex justify-center gap-4 mb-3 flex-wrap">
