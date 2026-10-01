@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { horseApi as HorseApi } from '../api/gameApi';
 import { eightGameApi, horseApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
@@ -115,9 +115,24 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
   const [handsPerDiscipline, setHandsPerDiscipline] = useState(2);
   const [betAmount, setBetAmount] = useState(20);
   const [drawSelection, setDrawSelection] = useState<number[]>([]);
+  const previousDiscipline = useRef<string | null>(null);
+  const [disciplineChanged, setDisciplineChanged] = useState(false);
+  const [disciplineAnnouncement, setDisciplineAnnouncement] = useState('');
 
   const api = gameKey === 'eightgame' ? eightGameApi : horseApi;
   const { loading, error, state, exec: callApi, retry } = useGameApi(api.exec);
+  useEffect(() => {
+    if (!state) return;
+    if (previousDiscipline.current !== null && previousDiscipline.current !== state.disciplineName) {
+      setDisciplineChanged(true);
+      if (gameKey === 'eightgame') {
+        const name = t(`discipline.${state.disciplineName}`, { defaultValue: state.disciplineName });
+        const rules = t(`rules.${state.disciplineName}`);
+        setDisciplineAnnouncement(t('disciplineChangeAnnouncement', { name, rules }));
+      }
+    }
+    previousDiscipline.current = state.disciplineName;
+  }, [gameKey, state, t]);
   const { cardWidth } = useCardDimensions();
   const {
     hint: frontendHint,
@@ -204,6 +219,7 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
               className="text-center text-sm text-ds-text-muted"
               data-testid="ho-discipline"
               data-tutorial="ho-discipline"
+              data-discipline-changed={gameKey === 'eightgame' && disciplineChanged ? 'true' : undefined}
               // **手番かどうかを DOM に出す。** 出さないと E2E は「押しても
               // 何も起きない」を待つことになり、配り次第で落ちる。
               data-human-turn={isHumanTurn || undefined}
@@ -211,7 +227,11 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
               <span className="mr-2 text-lg text-ds-text-primary" data-testid="ho-letter">
                 {state.disciplineLetter}
               </span>
-              <span className="mr-3 text-ds-text-primary">{disciplineName}</span>
+              <span
+                className={`mr-3 text-lg font-semibold text-ds-text-primary ${gameKey === 'eightgame' && disciplineChanged ? 'rounded-md bg-ds-surface px-2 py-1 ring-2 ring-ds-accent' : ''}`}
+              >
+                {disciplineName}
+              </span>
               <span className="mr-3">
                 {t('disciplineOrder', { position: state.disciplinePosition, total: state.disciplineTotal })}
               </span>
@@ -228,9 +248,16 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
             </div>
 
             {gameKey === 'eightgame' && (
-              <p className="mx-auto max-w-3xl rounded-md bg-ds-surface px-3 py-2 text-center text-sm text-ds-text-muted">
+              <p
+                className={`mx-auto max-w-3xl rounded-md bg-ds-surface px-3 py-2 text-center text-sm text-ds-text-muted ${disciplineChanged ? 'border-2 border-ds-accent text-ds-text-primary' : ''}`}
+              >
                 {t(`rules.${state.disciplineName}`)}
               </p>
+            )}
+            {gameKey === 'eightgame' && (
+              <div role="status" aria-live="polite" className="sr-only">
+                {disciplineAnnouncement}
+              </div>
             )}
 
             {state.communityCards.length > 0 && (
