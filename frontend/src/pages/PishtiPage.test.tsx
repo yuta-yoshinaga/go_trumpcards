@@ -204,6 +204,42 @@ describe('PishtiPage', () => {
     await waitFor(() => expect(announcement).toHaveTextContent('場札更新。トップは場札なし、0枚。場札が取られました'));
   });
 
+  it('announces a changed provisional score but not the initial scores', async () => {
+    mockExec.mockResolvedValueOnce(playState).mockResolvedValueOnce(
+      makeState({
+        players: [
+          makePlayer({ id: 0, isHuman: true, provisionalScore: 3 }),
+          makePlayer({ id: 1 }),
+          makePlayer({ id: 2 }),
+          makePlayer({ id: 3 }),
+        ],
+      }),
+    );
+    renderWithProviders(<PishtiPage />);
+    const announcement = await screen.findByTestId('pishti-score-announcement');
+    expect(announcement).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    await waitFor(() => expect(announcement).toHaveTextContent('あなたの暫定得点は3点です'));
+  });
+
+  it('does not announce scores when settings reset the game', async () => {
+    mockExec
+      .mockResolvedValueOnce(
+        makeState({
+          players: [makePlayer({ id: 0, isHuman: true, provisionalScore: 12 }), ...playState.players.slice(1)],
+        }),
+      )
+      .mockResolvedValueOnce(playState);
+    renderWithProviders(<PishtiPage />);
+    const announcement = await screen.findByTestId('pishti-score-announcement');
+    expect(announcement).toBeEmptyDOMElement();
+
+    fireEvent.change(screen.getByLabelText('CPU難易度'), { target: { value: '2' } });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2, playerCnt: 4 } }));
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
   it('does not announce a capture when reset replaces a six-card pile with four cards', async () => {
     mockExec.mockResolvedValue(makeState({ pile: Array.from({ length: 6 }, () => card('HEART', 2)), pileCount: 6 }));
     renderWithProviders(<PishtiPage />);

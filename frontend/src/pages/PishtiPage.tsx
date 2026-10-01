@@ -104,12 +104,14 @@ function PishtiPageContent() {
   const handleDifficultyChange = (value: string) => {
     const level = Number(value);
     setCpuDifficulty(level);
+    skipNextScoreAnnouncementRef.current = true;
     exec('reset', { config: { cpuDifficulty: level, playerCnt } });
   };
 
   const handlePlayerCountChange = (value: string) => {
     const count = Number(value);
     setPlayerCnt(count);
+    skipNextScoreAnnouncementRef.current = true;
     exec('reset', { config: { cpuDifficulty, playerCnt: count } });
   };
 
@@ -143,6 +145,8 @@ function PishtiPageContent() {
   // per-player (not aggregate) so two CPU +10s in one response can't fake a +20 Jack.
   const [pistiCelebration, setPistiCelebration] = useState<{ key: number; jack: boolean } | null>(null);
   const [pileAnnouncement, setPileAnnouncement] = useState('');
+  const [scoreAnnouncement, setScoreAnnouncement] = useState('');
+  const skipNextScoreAnnouncementRef = useRef(false);
   const prevPileRef = useRef<{ count: number; top: Card | null } | null>(null);
   useEffect(() => {
     if (!state) return;
@@ -163,6 +167,33 @@ function PishtiPageContent() {
         }),
       );
     }
+  }, [state, t]);
+  const prevProvisionalScoresRef = useRef<number[] | null>(null);
+  useEffect(() => {
+    if (!state) return;
+    const current = state.players.map((player) => player.provisionalScore);
+    const previous = prevProvisionalScoresRef.current;
+    prevProvisionalScoresRef.current = current;
+    if (previous === null) return;
+    if (skipNextScoreAnnouncementRef.current) {
+      skipNextScoreAnnouncementRef.current = false;
+      return;
+    }
+    const changed = state.players
+      .map((player, index) => ({ player, index }))
+      .filter(({ index }) => previous[index] !== current[index]);
+    if (changed.length === 0) return;
+    setScoreAnnouncement(
+      changed
+        .map(({ player }) =>
+          t('provisionalScoreUpdate', {
+            name: player.isHuman ? t('you') : t('cpu', { id: player.id }),
+            score: player.provisionalScore,
+            count: player.provisionalScore,
+          }),
+        )
+        .join(t('listSeparator')),
+    );
   }, [state, t]);
   const prevBonusesRef = useRef<number[] | null>(null);
   useEffect(() => {
@@ -226,6 +257,7 @@ function PishtiPageContent() {
 
   const handleManualReset = () => {
     hideActionLog();
+    skipNextScoreAnnouncementRef.current = true;
     exec('reset', { config: { cpuDifficulty, playerCnt } });
   };
 
@@ -328,6 +360,9 @@ function PishtiPageContent() {
               <div aria-live="polite" aria-atomic="true" data-testid="pishti-pile-announcement" className="sr-only">
                 {pileAnnouncement}
               </div>
+              <div aria-live="polite" aria-atomic="true" data-testid="pishti-score-announcement" className="sr-only">
+                {scoreAnnouncement}
+              </div>
               {pistiCelebration && (
                 <div
                   key={pistiCelebration.key}
@@ -412,7 +447,15 @@ function PishtiPageContent() {
                 </span>
               )}
               {isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={() => exec('next')} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnSuccess}
+                  onClick={() => {
+                    skipNextScoreAnnouncementRef.current = true;
+                    exec('next');
+                  }}
+                  disabled={loading}
+                >
                   {t('nextGame')}
                 </button>
               )}
