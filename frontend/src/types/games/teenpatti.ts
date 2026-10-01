@@ -100,6 +100,8 @@ export interface TeenPattiResponse extends BaseGameResponse {
   pot: number;
   /** Current stake a Blind player must match to bet. */
   stake: number;
+  /** Server-calculated amount the human player must pay to call. */
+  humanCallCost: number;
   phase: TeenPattiPhaseValue;
   roundNumber: number;
   dealerIdx: number;

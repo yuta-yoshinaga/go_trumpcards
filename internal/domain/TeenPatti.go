@@ -190,6 +190,9 @@ func (g *TeenPatti) callCost(playerIdx int) int {
 	return g.stake
 }
 
+// GetCallCost returns the amount the specified player must pay to call the current stake.
+func (g *TeenPatti) GetCallCost(playerIdx int) int { return g.callCost(playerIdx) }
+
 // --- Actions ---
 
 // PlayerSee 人間プレイヤーが手札を見て Seen に昇格する (Blind 時のみ)。手番は消費しない。

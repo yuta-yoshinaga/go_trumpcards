@@ -163,7 +163,7 @@ function TeenPattiPageContent() {
   const isGameEnd = state.phase === TeenPattiPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = state.isHumanTurn;
   const isHumanBetTurn = isBettingPhase && isHumanTurn;
-  const humanCallCost = humanPlayer?.seen ? state.stake * 2 : state.stake;
+  const humanCallCost = state.humanCallCost;
   // The human is being asked to accept/decline a pending Side Show.
   const isHumanSideShowTarget = isSideShowPhase && state.sideShowTarget === humanIdx;
 
