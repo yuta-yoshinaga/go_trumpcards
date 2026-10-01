@@ -114,6 +114,25 @@ describe('RamschPage', () => {
     expect(screen.queryByTestId('ramsch-loser-0')).not.toBeInTheDocument();
   });
 
+  it('shows each round score and cumulative change only after the round ends', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      phase: RamschPhase.ROUND_END,
+      players: [
+        player(0, { roundScore: 0, cumulativeScore: -78 }),
+        player(1, { roundScore: -78, cumulativeScore: -78 }),
+        player(2, { roundScore: 0, cumulativeScore: 0 }),
+      ],
+    });
+    renderWithProviders(<RamschPage />);
+    await waitFor(() => expect(screen.getByTestId('ramsch-round-score-1')).toHaveTextContent('-78'));
+    expect(screen.getByTestId('ramsch-cumulative-change-1')).toHaveTextContent('-78');
+
+    mockExec.mockResolvedValue({ ...baseState, phase: RamschPhase.PLAY });
+    fireEvent.click(screen.getByRole('button', { name: '次のラウンド' }));
+    await waitFor(() => expect(screen.queryByTestId('ramsch-round-score-1')).not.toBeInTheDocument());
+  });
+
   // Durchmarsch は別の印。敗者の印を出すと、総取りした人が負けたように読める。
   it('marks a Durchmarsch instead of a loser', async () => {
     mockExec.mockResolvedValue({
