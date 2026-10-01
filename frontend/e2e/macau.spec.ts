@@ -22,7 +22,8 @@ test.describe('Macau E2E', () => {
     const suitSpade = page.getByRole('button', { name: '♠ スペード' });
     const endResetButton = page.getByRole('button', { name: '次のゲーム' });
     const takePenaltyButton = page.getByRole('button', { name: /^\d+枚引き受ける$/ });
-    const handCards = page.locator('button[aria-pressed]:has(img)');
+    // Unplayable cards are aria-disabled (#9511); Playwright waits forever on those, so pick a playable one.
+    const handCards = page.locator('button[aria-pressed]:has(img):not([aria-disabled="true"])');
 
     const MAX_TURNS = 100;
     let interactions = 0;
