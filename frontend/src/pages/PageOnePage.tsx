@@ -322,9 +322,9 @@ function PageOnePageContent() {
                         {state.roundHistory.map((round) => (
                           <tr key={round.roundNumber}>
                             <th scope="row">{round.roundNumber}</th>
-                            {state.players.map((p) => (
+                            {state.players.map((p, playerIndex) => (
                               <td className="text-center" key={p.id}>
-                                {round.scores[p.id] ?? 0}
+                                {round.scores[playerIndex] ?? 0}
                               </td>
                             ))}
                           </tr>

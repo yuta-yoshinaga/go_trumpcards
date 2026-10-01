@@ -456,6 +456,15 @@ func TestPageOne_RoundHistory(t *testing.T) {
 	assert.Empty(t, g.GetRoundHistory())
 }
 
+func TestPageOne_UnmarshalJSON_LegacyWithoutRoundHistory(t *testing.T) {
+	data := []byte(`{"tc":null,"pl":[],"cf":{},"ps":0,"ci":0,"dp":[],"wp":[],"ge":false,"wi":-1,"rn":1,"al":[]}`)
+	g := domain.NewPageOne(nil, nil, domain.DefaultPageOneConfig())
+	require.NoError(t, json.Unmarshal(data, g))
+	history := g.GetRoundHistory()
+	require.NotNil(t, history)
+	assert.Empty(t, history)
+}
+
 func TestPageOne_ScoreRound_NoOpIfNotRoundEnd(t *testing.T) {
 	g := newTestPageOne()
 	g.Reset()

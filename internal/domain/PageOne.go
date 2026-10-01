@@ -99,7 +99,6 @@ func (g *PageOne) Reset() {
 	g.currentPlayerIdx = 0
 	g.actionLog = nil
 	g.recentPenalties = nil
-	g.roundHistory = nil
 	g.roundHistory = make([]PageOneRoundScore, 0)
 
 	for _, p := range g.players {
@@ -720,6 +719,9 @@ func (g *PageOne) UnmarshalJSON(data []byte) error {
 	g.winnerIdx = j.WinnerIdx
 	g.roundNumber = j.RoundNumber
 	g.roundHistory = j.RoundHistory
+	if g.roundHistory == nil {
+		g.roundHistory = make([]PageOneRoundScore, 0)
+	}
 	g.actionLog = j.ActionLog
 	if g.actionLog == nil {
 		g.actionLog = make([]*ActionLogEntry, 0)

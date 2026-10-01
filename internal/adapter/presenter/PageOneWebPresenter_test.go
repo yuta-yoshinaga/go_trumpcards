@@ -152,6 +152,22 @@ func TestPageOneWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestPageOneWebPresenter_OutputIncludesRoundHistory(t *testing.T) {
+	m := setupPageOneWebMock()
+	history := []domain.PageOneRoundScore{
+		{RoundNumber: 1, Scores: []int{0, 5, 10, 15}},
+		{RoundNumber: 2, Scores: []int{3, 0, 8, 12}},
+	}
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundHistory")
+	m.On("GetRoundHistory").Return(history)
+
+	var out struct {
+		RoundHistory []domain.PageOneRoundScore `json:"roundHistory"`
+	}
+	assert.NoError(t, json.Unmarshal([]byte((&presenter.PageOneWebPresenter{}).Output(m, nil)), &out))
+	assert.Equal(t, history, out.RoundHistory)
+}
+
 func TestPageOneWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.PageOneWebPresenter)
 	m := new(interfaces.MockPageOneGame)
