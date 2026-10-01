@@ -543,6 +543,13 @@ describe('UltimateTexasHoldemPage keyboard shortcuts', () => {
     expect(screen.queryByTestId('uth-made-hand')).not.toBeInTheDocument();
   });
 
+  it('uses the high-card fallback for an unknown hand rank', async () => {
+    mockApi.mockResolvedValue({ ...flopState, playerHandRank: 10 });
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByTestId('uth-made-hand')).toHaveTextContent('現在の役: ハイカード'));
+    expect(screen.getByTestId('uth-made-hand-announcement')).toHaveTextContent('現在の役: ハイカード');
+  });
+
   it('announces the made hand in a persistent live region only when one is available', async () => {
     mockApi
       .mockResolvedValueOnce({ ...preFlopState, playerHandRank: 8 })
