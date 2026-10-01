@@ -12,6 +12,7 @@
   "hint": "ヒント",
   "autoComplete": "自動完成",
   "autoCompleteNotReady": "全カードが表向きになるとクリックできます",
+  "autoCompleteReady": "オートコンプリートを実行できます",
   "undo": "元に戻す",
   "empty": "空",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",

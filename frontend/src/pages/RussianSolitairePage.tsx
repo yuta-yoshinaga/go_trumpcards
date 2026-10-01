@@ -100,6 +100,7 @@ export const RussianSolitairePage = withTutorial(RussianSolitairePageContent, 'r
 /** Inner content of the Russian Solitaire page. */
 function RussianSolitairePageContent() {
   const selectSourceHintId = useId();
+  const autoCompleteStatusId = useId();
   const {
     t,
     tc,
@@ -217,8 +218,9 @@ function RussianSolitairePageContent() {
   }, [setState]);
 
   const handleAutoComplete = useCallback(() => {
+    if (loading || !state || !isTableauAllFaceUp(state.tableau)) return;
     void apiExec('autocomplete');
-  }, [apiExec]);
+  }, [apiExec, loading, state]);
 
   const handleUndo = useCallback(() => {
     void apiExec('undo');
@@ -591,14 +593,17 @@ function RussianSolitairePageContent() {
                   </button>
                   <button
                     type="button"
-                    className={`${btnSuccess}${autoCompleteReady && !loading ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
+                    className={`${btnSuccess}${autoCompleteReady && !loading ? ' animate-pulse ring-2 ring-ds-success' : ''}${!autoCompleteReady || loading ? ' aria-disabled:opacity-70 aria-disabled:cursor-not-allowed aria-disabled:saturate-50' : ''}`}
                     onClick={handleAutoComplete}
-                    disabled={loading || !autoCompleteReady}
+                    aria-disabled={loading || !autoCompleteReady || undefined}
+                    aria-describedby={autoCompleteStatusId}
                     data-testid="autocomplete-button"
-                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
                   >
                     {t('autoComplete')}
                   </button>
+                  <span id={autoCompleteStatusId} className="text-ds-text-muted text-xs self-center">
+                    {autoCompleteReady ? t('autoCompleteReady') : t('autoCompleteNotReady')}
+                  </span>
                   <button
                     type="button"
                     className={btnOutline}
