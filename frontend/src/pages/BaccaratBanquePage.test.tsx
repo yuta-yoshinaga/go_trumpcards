@@ -139,6 +139,20 @@ describe('BaccaratBanquePage', () => {
     expect(screen.getByTestId('banque-net')).toHaveTextContent('0');
   });
 
+  it('falls back to the right tableau name when a settled seat is missing from players', async () => {
+    mockExec.mockResolvedValue({
+      ...resultState,
+      lastResult: {
+        bankerTotal: 6,
+        sides: [{ seatIdx: 9, outcome: 'bankerWin', bet: 40, delta: 40 }],
+        bankerDelta: 40,
+        bankerNatural: false,
+      },
+    });
+    renderWithProviders(<BaccaratBanquePage />);
+    expect(await screen.findByTestId('banque-side-9')).toHaveTextContent('右のタブロー');
+  });
+
   it('offers the next coup and retiring once settled, and sends each', async () => {
     mockExec.mockResolvedValue(resultState);
     renderWithProviders(<BaccaratBanquePage />);
