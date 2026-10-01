@@ -180,6 +180,7 @@ function ScartoPageContent() {
               points: p.cardPoints,
               diff: formatSigned(p.cardPoints - average),
               scaled: formatSigned((p.cardPoints - average) * players.length),
+              outcome: t(OUTCOME_KEYS[p.cardPoints > average ? 1 : p.cardPoints < average ? 2 : 0]),
             })}
           </div>
         ))}
