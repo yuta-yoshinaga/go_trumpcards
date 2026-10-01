@@ -334,8 +334,10 @@ describe('PiquetPage', () => {
     // 共有の PlayerHandSection と同じ扱い: aria-disabled で**フォーカスは残す**。
     // HTML の disabled にすると、読み上げ利用者から札そのものが消える。
     expect(playable[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(playable[0]).toHaveAccessibleName(/♠.*出せない札/);
     expect(playable[0]).not.toBeDisabled();
     expect(playable[1]).not.toHaveAttribute('aria-disabled');
+    expect(playable[1]).toHaveAccessibleName(/♥.*出せる札/);
 
     mockExec.mockClear();
     fireEvent.click(playable[0] as HTMLElement);
