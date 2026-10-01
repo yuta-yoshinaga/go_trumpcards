@@ -46479,6 +46479,18 @@ components:
           example: 0
         roundNumber:
           type: integer
+        roundHistory:
+          type: array
+          description: Scores recorded at the end of each round, ordered by player index.
+          items:
+            type: object
+            properties:
+              roundNumber:
+                type: integer
+              scores:
+                type: array
+                items:
+                  type: integer
         currentPlayerIdx:
           type: integer
         discardTop:

@@ -37,6 +37,12 @@ type PageOnePenalty struct {
 	CardCount int `json:"cardCount"`
 }
 
+// PageOneRoundScore records each player's points at the end of a round.
+type PageOneRoundScore struct {
+	RoundNumber int   `json:"roundNumber"`
+	Scores      []int `json:"scores"`
+}
+
 func (g *PageOne) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
@@ -54,17 +60,19 @@ type PageOne struct {
 	winnerIdx        int
 	roundNumber      int
 	recentPenalties  []PageOnePenalty
+	roundHistory     []PageOneRoundScore
 	actionLogBase
 }
 
 // NewPageOne コンストラクタ
 func NewPageOne(trumpCards *TrumpCards, players []*PageOnePlayer, config PageOneConfig) *PageOne {
 	return &PageOne{
-		trumpCards:  trumpCards,
-		players:     players,
-		config:      config,
-		winnerIdx:   -1,
-		roundNumber: 0,
+		trumpCards:   trumpCards,
+		players:      players,
+		config:       config,
+		winnerIdx:    -1,
+		roundNumber:  0,
+		roundHistory: make([]PageOneRoundScore, 0),
 	}
 }
 
@@ -91,6 +99,8 @@ func (g *PageOne) Reset() {
 	g.currentPlayerIdx = 0
 	g.actionLog = nil
 	g.recentPenalties = nil
+	g.roundHistory = nil
+	g.roundHistory = make([]PageOneRoundScore, 0)
 
 	for _, p := range g.players {
 		p.roundScore = 0
@@ -342,6 +352,11 @@ func (g *PageOne) ScoreRound() {
 	g.appendLog(winnerIdx, "round_win", "pageone.log.roundWin", map[string]string{"name": playerName(g.players, winnerIdx), "round": strconv.Itoa(g.roundNumber), "points": strconv.Itoa(totalScore)}, nil)
 
 	g.players[winnerIdx].CommitRoundScore()
+	scores := make([]int, len(g.players))
+	for i, player := range g.players {
+		scores[i] = player.GetRoundScore()
+	}
+	g.roundHistory = append(g.roundHistory, PageOneRoundScore{RoundNumber: g.roundNumber, Scores: scores})
 
 	g.checkGameEnd()
 }
@@ -415,6 +430,9 @@ func (g *PageOne) GetValidPlayIndices(playerIdx int) []int {
 
 // GetRecentPenalties 直前ターンで発生したペナルティ一覧を取得する
 func (g *PageOne) GetRecentPenalties() []PageOnePenalty { return g.recentPenalties }
+
+// GetRoundHistory returns the scored rounds in this game.
+func (g *PageOne) GetRoundHistory() []PageOneRoundScore { return g.roundHistory }
 
 // --- Private methods ---
 
@@ -632,17 +650,18 @@ func pageOneCardScore(card *Card) int {
 // 次の人間の操作（PlayerPlay, PlayerDraw 等）で常に初期化されるため、
 // 永続化 JSON には含めない。
 type pageOneJSON struct {
-	TrumpCards       *TrumpCards       `json:"tc"`
-	Players          []*PageOnePlayer  `json:"pl"`
-	Config           PageOneConfig     `json:"cf"`
-	Phase            PageOnePhase      `json:"ps"`
-	CurrentPlayerIdx int               `json:"ci"`
-	DiscardPile      []*Card           `json:"dp"`
-	DrawPile         []*Card           `json:"wp"`
-	GameEndFlag      bool              `json:"ge"`
-	WinnerIdx        int               `json:"wi"`
-	RoundNumber      int               `json:"rn"`
-	ActionLog        []*ActionLogEntry `json:"al"`
+	TrumpCards       *TrumpCards         `json:"tc"`
+	Players          []*PageOnePlayer    `json:"pl"`
+	Config           PageOneConfig       `json:"cf"`
+	Phase            PageOnePhase        `json:"ps"`
+	CurrentPlayerIdx int                 `json:"ci"`
+	DiscardPile      []*Card             `json:"dp"`
+	DrawPile         []*Card             `json:"wp"`
+	GameEndFlag      bool                `json:"ge"`
+	WinnerIdx        int                 `json:"wi"`
+	RoundNumber      int                 `json:"rn"`
+	RoundHistory     []PageOneRoundScore `json:"rh"`
+	ActionLog        []*ActionLogEntry   `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -658,6 +677,7 @@ func (g *PageOne) MarshalJSON() ([]byte, error) {
 		GameEndFlag:      g.gameEndFlag,
 		WinnerIdx:        g.winnerIdx,
 		RoundNumber:      g.roundNumber,
+		RoundHistory:     g.roundHistory,
 		ActionLog:        g.actionLog,
 	})
 }
@@ -699,6 +719,7 @@ func (g *PageOne) UnmarshalJSON(data []byte) error {
 	g.gameEndFlag = j.GameEndFlag
 	g.winnerIdx = j.WinnerIdx
 	g.roundNumber = j.RoundNumber
+	g.roundHistory = j.RoundHistory
 	g.actionLog = j.ActionLog
 	if g.actionLog == nil {
 		g.actionLog = make([]*ActionLogEntry, 0)

@@ -412,6 +412,50 @@ func TestPageOne_ScoreRound(t *testing.T) {
 	assert.Equal(t, 16, g.GetPlayer(0).GetCumulativeScore())
 }
 
+func TestPageOne_RoundHistory(t *testing.T) {
+	g := newTestPageOne()
+	g.Reset()
+
+	setRound := func(round, winner, value int) {
+		for i := 0; i < g.GetPlayerCnt(); i++ {
+			g.GetPlayer(i).Reset()
+		}
+		for i := 0; i < g.GetPlayerCnt(); i++ {
+			if i != winner {
+				g.GetPlayer(i).AddCard(domain.NewCard(domain.CardDesignSpade, value+i, false))
+			}
+		}
+		g.SetRoundNumber(round)
+		g.SetPhase(domain.PageOnePhaseRoundEnd)
+		g.ScoreRound()
+	}
+
+	setRound(1, 0, 2)
+	firstScores := make([]int, g.GetPlayerCnt())
+	for i := range firstScores {
+		firstScores[i] = g.GetPlayer(i).GetRoundScore()
+	}
+	setRound(2, 1, 3)
+
+	history := g.GetRoundHistory()
+	require.Len(t, history, 2)
+	assert.Equal(t, 1, history[0].RoundNumber)
+	assert.Equal(t, 2, history[1].RoundNumber)
+	assert.Equal(t, firstScores, history[0].Scores)
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		assert.Equal(t, g.GetPlayer(i).GetRoundScore(), history[1].Scores[i])
+	}
+
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	restored := domain.NewPageOne(nil, nil, domain.DefaultPageOneConfig())
+	require.NoError(t, json.Unmarshal(data, restored))
+	assert.Equal(t, history, restored.GetRoundHistory())
+
+	g.Reset()
+	assert.Empty(t, g.GetRoundHistory())
+}
+
 func TestPageOne_ScoreRound_NoOpIfNotRoundEnd(t *testing.T) {
 	g := newTestPageOne()
 	g.Reset()

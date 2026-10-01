@@ -52,3 +52,7 @@ func (m *MockPageOneGame) GetRecentPenalties() []domain.PageOnePenalty {
 	}
 	return nil
 }
+
+func (m *MockPageOneGame) GetRoundHistory() []domain.PageOneRoundScore {
+	return m.Called().Get(0).([]domain.PageOneRoundScore)
+}

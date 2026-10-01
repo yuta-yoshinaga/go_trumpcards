@@ -15,6 +15,7 @@ import (
 func setupPageOneWebMock() *interfaces.MockPageOneGame {
 	m := new(interfaces.MockPageOneGame)
 	m.On("GetRoundNumber").Return(1)
+	m.On("GetRoundHistory").Return([]domain.PageOneRoundScore(nil))
 	m.On("GetDrawPileCount").Return(30)
 	m.On("GetDiscardTop").Return((*domain.Card)(nil))
 	m.On("GetGameEndFlag").Return(false)
