@@ -266,6 +266,34 @@ describe('OasisPokerPage', () => {
     expect(mockApi).not.toHaveBeenCalledWith('bet', 1000, 500);
   });
 
+  it('sets each bet to its minimum or remaining-chip maximum', async () => {
+    mockApi.mockResolvedValue({ ...betPhaseState, chips: 1000 });
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+
+    const anteInput = screen.getByLabelText('アンテ');
+    const jackpotInput = screen.getByLabelText('ジャックポット');
+    const anteMin = screen.getByRole('button', { name: 'アンテ 最小額' });
+    const anteMax = screen.getByRole('button', { name: 'アンテ 最大額' });
+    const jackpotMin = screen.getByRole('button', { name: 'ジャックポット 最小額' });
+    const jackpotMax = screen.getByRole('button', { name: 'ジャックポット 最大額' });
+
+    fireEvent.click(anteMax);
+    expect(anteInput).toHaveValue('1000');
+    expect(jackpotInput).toHaveAttribute('max', '0');
+    fireEvent.click(jackpotMax);
+    expect(jackpotInput).toHaveValue('0');
+
+    fireEvent.click(anteMin);
+    expect(anteInput).toHaveValue('10');
+    expect(jackpotInput).toHaveAttribute('max', '990');
+    fireEvent.click(jackpotMax);
+    expect(jackpotInput).toHaveValue('990');
+
+    fireEvent.click(jackpotMin);
+    expect(jackpotInput).toHaveValue('0');
+  });
+
   // **CUI は交換すべき札をインデックスで列挙しているのに、Web は「交換すべき」
   // としか言っていなかった (#4711)。**5枚を個別にクリックする UI があるのに、
   // どれを選ぶかの案内が無い。
