@@ -75,3 +75,7 @@ func (m *MockHandAndFootGame) GetActionLog() []*domain.ActionLogEntry {
 	return m.Called().Get(0).([]*domain.ActionLogEntry)
 }
 func (m *MockHandAndFootGame) GetDrewFromDiscard() bool { return m.Called().Bool(0) }
+func (m *MockHandAndFootGame) GetScoreBreakdown(team int) domain.HandAndFootScoreBreakdown {
+	v, _ := m.Called(team).Get(0).(domain.HandAndFootScoreBreakdown)
+	return v
+}
