@@ -193,6 +193,51 @@ describe('OmiPage', () => {
     expect(legalCard).not.toHaveAttribute('aria-describedby');
   });
 
+  it('does not select an illegal card with the number-key shortcut', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      currentTrick: [{ playerIdx: 3, card: { design: 'HEART', value: 2 } }],
+    });
+    renderWithProviders(<OmiPage />);
+
+    const blockedCard = await screen.findByRole('button', { name: '♠ A: 出せないカード' });
+    fireEvent.keyDown(document, { key: '1' });
+    expect(blockedCard).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('uses only the card name in aria-label when it is not the human turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<OmiPage />);
+
+    const card = await screen.findByAltText('♠ A');
+    expect(card.closest('button')).toHaveAttribute('aria-label', '♠ A');
+  });
+
+  it('clears the selected card across the trick-end and next-trick transition', async () => {
+    const nextTrickState: OmiResponse = {
+      ...playPhaseState,
+      currentTrick: [{ playerIdx: 3, card: { design: 'SPADE', value: 12 } }],
+      trickNumber: 2,
+    };
+    mockExec
+      .mockResolvedValueOnce(playPhaseState)
+      .mockResolvedValueOnce(trickEndState)
+      .mockResolvedValueOnce(nextTrickState);
+    renderWithProviders(<OmiPage />);
+
+    const heartButton = await screen.findByRole('button', { name: '♥ J: 出せるカード' });
+    // ♥ J is selected before the trick advances; ♠ A becomes the only legal suit card afterward.
+    fireEvent.click(heartButton);
+    expect(heartButton).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '次のトリック' }));
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '♠ A: 出せるカード' })).toHaveAttribute('aria-pressed', 'false'),
+    );
+  });
+
   it('does not explain an illegal card when void in the lead suit', async () => {
     mockExec.mockResolvedValue({
       ...playPhaseState,
@@ -245,6 +290,8 @@ describe('OmiPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
     await waitFor(() => expect(liveRegion).toHaveTextContent('あなた: ♠ A'));
 
+    // The mocked trick leads ♠ and the hand still holds ♠ A, so ♥ J is aria-disabled now; click
+    // the legal card again. The mock, not the card, decides what the second response contains.
     fireEvent.click(screen.getByRole('button', { name: '♠ A: 出せるカード' }));
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
     await waitFor(() => expect(liveRegion).toHaveTextContent('CPU 1: ♥ 5'));
@@ -252,6 +299,8 @@ describe('OmiPage', () => {
   });
 
   it('announces a new trick in full when the previous trick is taken in the same response', async () => {
+    // A completed trick comes back as TRICK_END (phase 2), where no card is playable, so the next
+    // trick is reached through 次のトリック rather than another play.
     const completedTrickState: OmiResponse = {
       ...playPhaseState,
       phase: 2,

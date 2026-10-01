@@ -182,10 +182,27 @@ function OmiPageContent() {
   const isPlayPhaseForKbd = state?.phase === OmiPhase.PLAY;
   const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
   const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+  const humanPlayerForKbd = state?.players.find((p) => p.isHuman);
+  const legalPlayIndicesForKbd =
+    isHumanTurnForKbd && humanPlayerForKbd
+      ? omiLegalPlayIndices(humanPlayerForKbd.cards, state?.currentTrick[0]?.card, state?.trumpSuit ?? 0)
+      : undefined;
+  const toggleLegalCard = useCallback(
+    (index: number) => {
+      if (legalPlayIndicesForKbd?.includes(index)) toggleCard(index);
+    },
+    [legalPlayIndicesForKbd, toggleCard],
+  );
+
+  useEffect(() => {
+    if (state && selectedCardIndices.some((index) => !legalPlayIndicesForKbd?.includes(index))) {
+      clearSelection();
+    }
+  }, [state, selectedCardIndices, legalPlayIndicesForKbd, clearSelection]);
 
   useCardKeyboardNav({
     cardCount: humanCardCountForKbd,
-    onToggle: toggleCard,
+    onToggle: toggleLegalCard,
     onConfirm: handlePlay,
     onClear: clearSelection,
     enabled: !!isHumanTurnForKbd && !loading,
@@ -217,10 +234,7 @@ function OmiPageContent() {
   const isHumanCallTrump = isCallTrumpPhase && state.bidPlayerIdx === humanIdx;
 
   // Legal play highlighting: follow suit if possible, any card if void
-  const legalPlayIndices =
-    isHumanTurn && humanPlayer
-      ? omiLegalPlayIndices(humanPlayer.cards, state.currentTrick[0]?.card, state.trumpSuit)
-      : undefined;
+  const legalPlayIndices = legalPlayIndicesForKbd;
 
   const suitName = (suit: number) => (SUIT_NAMES[suit] ? t(SUIT_NAMES[suit]) : '');
 
