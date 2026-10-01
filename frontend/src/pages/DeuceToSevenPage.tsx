@@ -158,6 +158,11 @@ function DeuceToSevenPageContent() {
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isBettingPhase && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
+  const callAmount = state?.lastBet != null && humanPlayer ? state.lastBet - humanPlayer.currentBet : undefined;
+  const potOddsPercentage =
+    canAct && hasOutstandingBet && callAmount != null && callAmount > 0 && state?.pot != null && state.pot >= 0
+      ? (callAmount / (state.pot + callAmount)) * 100
+      : undefined;
   const minRaise = state?.minRaise ?? 10;
   const cardCount = humanPlayer?.cards?.length ?? 0;
   const cpuPlayers = useMemo(() => state?.players?.filter((p) => !p.isHuman) ?? [], [state?.players]);
@@ -384,6 +389,11 @@ function DeuceToSevenPageContent() {
                   maxBetAmount={state?.maxBetAmount}
                   potSize={state?.pot}
                   hasOutstandingBet={hasOutstandingBet}
+                  callAmountLabel={
+                    potOddsPercentage != null && callAmount != null
+                      ? ` ${t('callPotOdds', { amount: callAmount, percentage: potOddsPercentage.toFixed(1) })}`
+                      : undefined
+                  }
                   loading={loading}
                   onCall={() => execAction('call', undefined, undefined, undefined, getElapsed())}
                   onRaise={() => execAction('raise', undefined, betAmount, undefined, getElapsed())}

@@ -190,6 +190,31 @@ describe('DeuceToSevenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check', undefined, undefined, undefined, 0));
   });
 
+  it('shows the call amount and pot odds when facing a bet', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: DeuceToSevenPhase.BET,
+        pot: 100,
+        lastBet: 30,
+        players: [humanPlayer({ currentBet: 10 }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+      }),
+    );
+    renderWithProviders(<DeuceToSevenPage />);
+
+    expect(await screen.findByText('(20 · ポットオッズ 16.7%)')).toBeInTheDocument();
+  });
+
+  it.each([
+    ['no outstanding bet', { phase: DeuceToSevenPhase.DEAL, pot: 100, lastBet: 0 }],
+    ['missing pot', { phase: DeuceToSevenPhase.BET, pot: undefined, lastBet: 30 }],
+  ])('does not show pot odds for %s', async (_label, overrides) => {
+    mockExec.mockResolvedValue(baseState(overrides as Partial<DeuceToSevenResponse>));
+    renderWithProviders(<DeuceToSevenPage />);
+
+    await waitFor(() => expect(screen.getByText('ポット:')).toBeInTheDocument());
+    expect(screen.queryByText(/ポットオッズ/)).not.toBeInTheDocument();
+  });
+
   it.each([
     ['Fixed', 0],
     ['Pot Limit', 1],
