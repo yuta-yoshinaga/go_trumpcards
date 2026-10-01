@@ -380,52 +380,59 @@ function BarbuPageContent() {
             />
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            {/* Deal × player score matrix (completed deals only) */}
-            {(isDealEnd || isGameEnd) && state.dealHistory.length > 0 && (
-              <div className="overflow-x-auto" data-testid="bb-score-matrix">
-                <table className="w-full text-xs text-ds-text-muted border-collapse">
-                  <caption className="mb-1 text-xs text-ds-text-muted">{t('history.caption')}</caption>
-                  <thead>
-                    <tr>
-                      <th scope="col" className="px-2 py-1 text-center">
-                        {t('history.deal')}
-                      </th>
-                      <th scope="col" className="px-2 py-1 text-left">
-                        {t('history.contract')}
-                      </th>
-                      {state.players.map((p) => (
-                        <th key={p.id} scope="col" className="px-2 py-1 text-center">
-                          {p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id })}
+            {/* Completed deal score history, available throughout the game. */}
+            {state.dealHistory.length > 0 && (
+              <details className="mb-2" data-testid="bb-deal-history" open={isDealEnd || isGameEnd ? true : undefined}>
+                <summary className="min-h-[44px] cursor-pointer py-2 text-sm text-ds-text-muted">
+                  {t('history.toggle')}
+                </summary>
+                <div className="overflow-x-auto" data-testid="bb-score-matrix">
+                  <table className="w-full text-xs text-ds-text-muted border-collapse">
+                    <caption className="mb-1 text-xs text-ds-text-muted">{t('history.caption')}</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col" className="px-2 py-1 text-center">
+                          {t('history.deal')}
                         </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {state.dealHistory.map((d, i) => (
-                      <tr key={i} className="border-t border-white/10">
-                        <td className="px-2 py-1 text-center">{i + 1}</td>
-                        <td className="px-2 py-1 whitespace-nowrap text-ds-text-primary">
-                          {t(`contract.${d.contract}`)}
-                          {d.contract === CONTRACT_TRUMPS && d.trumpSuit >= 1 && ` (${suitSymbolAt(d.trumpSuit, '')})`}
-                        </td>
-                        {state.players.map((p) => {
-                          const gained = d.gained[p.id] ?? 0;
-                          return (
-                            <td
-                              key={p.id}
-                              className={`px-2 py-1 text-center ${
-                                gained > 0 ? 'text-ds-success' : gained < 0 ? 'text-ds-error' : ''
-                              }`}
-                            >
-                              {gained > 0 ? `+${gained}` : gained}
-                            </td>
-                          );
-                        })}
+                        <th scope="col" className="px-2 py-1 text-left">
+                          {t('history.contract')}
+                        </th>
+                        {state.players.map((p) => (
+                          <th key={p.id} scope="col" className="px-2 py-1 text-center">
+                            {p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id })}
+                          </th>
+                        ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {state.dealHistory.map((d, i) => (
+                        <tr key={i} className="border-t border-white/10">
+                          <td className="px-2 py-1 text-center">{i + 1}</td>
+                          <td className="px-2 py-1 whitespace-nowrap text-ds-text-primary">
+                            {t(`contract.${d.contract}`)}
+                            {d.contract === CONTRACT_TRUMPS &&
+                              d.trumpSuit >= 1 &&
+                              ` (${suitSymbolAt(d.trumpSuit, '')})`}
+                          </td>
+                          {state.players.map((p) => {
+                            const gained = d.gained[p.id] ?? 0;
+                            return (
+                              <td
+                                key={p.id}
+                                className={`px-2 py-1 text-center ${
+                                  gained > 0 ? 'text-ds-success' : gained < 0 ? 'text-ds-error' : ''
+                                }`}
+                              >
+                                {gained > 0 ? `+${gained}` : gained}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </details>
             )}
           </div>
 

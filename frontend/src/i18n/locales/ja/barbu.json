@@ -73,6 +73,7 @@
   },
   "history": {
     "caption": "ディール別スコア (完了分)",
+    "toggle": "ディール履歴",
     "deal": "#",
     "contract": "コントラクト"
   },
