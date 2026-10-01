@@ -465,7 +465,11 @@ function MrsMopPageContent() {
             <div data-testid="mrsMop-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t('tableau')} {hint.fromCol} [{hint.cardIndex}] → {t('tableau')} {hint.toCol}
+                  {t('hintMove', {
+                    fromCol: hint.fromCol,
+                    cardIndex: hint.cardIndex,
+                    toCol: hint.toCol,
+                  })}
                 </div>
               )}
             </div>

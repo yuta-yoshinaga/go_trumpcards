@@ -484,7 +484,7 @@ describe('MrsMopPage', () => {
     mockExec.mockResolvedValue({ ...playingState, hint: { fromCol: 0, cardIndex: 0, toCol: 3 } });
     fireEvent.keyDown(document, { key: 'h' });
     // **同じ要素**の中身が変わる (別の要素が現れるのではない)。
-    await waitFor(() => expect(region).toHaveTextContent(/ヒントがあります/));
+    await waitFor(() => expect(region).toHaveTextContent('ヒントがあります: 列0 [0] → 列3'));
   });
 
   it('keyboard shortcuts are disabled when game is over', async () => {
@@ -526,7 +526,7 @@ describe('MrsMopPage', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
-    await waitFor(() => expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('ヒントがあります: 列0 [0] → 列3')).toBeInTheDocument());
   });
 
   it('displays message with messageCode', async () => {
