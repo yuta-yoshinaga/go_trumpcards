@@ -1,6 +1,12 @@
 {
   "title": "Free Bet Blackjack",
   "betGuide": "Choose your ante",
+  "betSummary": {
+    "balance": "Current balance: {{amount}}",
+    "ante": "Ante: {{amount}}",
+    "remaining": "Balance after ante: {{amount}}",
+    "freeBets": "Free double and split additions are paid by the house"
+  },
   "playGuide": "Hit or stand, and take a free double or free split when one is offered",
   "freeNotice": "The house pays the raise on a free double or free split — you never lose it",
   "dealer22Notice": "The dealer busted with 22, so every remaining hand pushes",

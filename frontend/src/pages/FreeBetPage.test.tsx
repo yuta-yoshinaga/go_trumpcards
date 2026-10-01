@@ -156,6 +156,20 @@ describe('FreeBetPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '配る' })).toBeInTheDocument());
   });
 
+  it('賭けフェーズで残高・選択中のアンティ・差し引き後の残高を表示し、入力に追従する', async () => {
+    mockApi.mockResolvedValue(withState({ chips: 240 }));
+    renderWithProviders(<FreeBetPage />);
+    const summary = await screen.findByTestId('fb-bet-summary');
+    expect(summary).toHaveTextContent('現在の残高: 240');
+    expect(summary).toHaveTextContent('アンティ: 50');
+    expect(summary).toHaveTextContent('賭け後の残高: 190');
+
+    fireEvent.change(screen.getByLabelText('アンティ'), { target: { value: '80' } });
+    expect(summary).toHaveTextContent('アンティ: 80');
+    expect(summary).toHaveTextContent('賭け後の残高: 160');
+    expect(summary).toHaveTextContent('無料ダブル・無料スプリットの追加分はハウス負担です');
+  });
+
   it('配るはアンティを送る', async () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<FreeBetPage />);
