@@ -317,6 +317,7 @@ function BigTwoPageContent() {
                     type="button"
                     onClick={() => isHumanTurn && toggleCardSelection(index)}
                     disabled={!isHumanTurn}
+                    aria-pressed={selectedIndices.includes(index)}
                     className={`rounded transition-all ${
                       selectedIndices.includes(index) ? 'ring-2 ring-ds-info -translate-y-2' : ''
                     } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
