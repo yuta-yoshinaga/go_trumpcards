@@ -12,6 +12,7 @@
     "tableau": "タブロー",
     "waste": "ウェイスト",
     "stock": "ストック",
+    "stockDrawAria": "ストックを引く、残り{{count}}枚",
     "foundation": "組札",
     "foundationN": "組札{{n}}（{{size}}/{{max}}枚）",
     "remaining": "残り",

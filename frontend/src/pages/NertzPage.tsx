@@ -627,6 +627,7 @@ function NertzPageContent() {
                   <div className="text-xs uppercase tracking-wide text-ds-text-muted">{t('labels.stock')}</div>
                   <button
                     type="button"
+                    aria-label={t('labels.stockDrawAria', { count: human.stockSize })}
                     onClick={handleDrawStock}
                     disabled={!isHumanTurn || loading}
                     className={`${btnSecondary} min-w-[3rem]`}
