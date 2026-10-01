@@ -378,6 +378,17 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(screen.getByText(/スコア 19/)).toBeInTheDocument());
   });
 
+  it('announces the dealer final score and bust reason when the round ends', async () => {
+    mockExec.mockResolvedValue({
+      ...endPhaseState,
+      dealer: { ...endPhaseState.dealer, score: 23 },
+    });
+    renderWithProviders(<BlackJackPage />);
+    const announcement = await screen.findByTestId('bj-end-announcement');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toHaveTextContent('ディーラーの最終スコアは23です。 ディーラーはバストしました。');
+  });
+
   it('shows card back when dealer score is zero', async () => {
     mockExec.mockResolvedValue(actionPhaseState);
     renderWithProviders(<BlackJackPage />);
