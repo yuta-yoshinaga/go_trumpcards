@@ -115,10 +115,7 @@ func (m *MockCourtPieceGame) IsLastRoundCourt() bool {
 }
 
 func (m *MockCourtPieceGame) GetScoreBreakdown() [domain.CourtPieceTeamCnt]domain.CourtPieceScoreBreakdown {
-	if v, ok := m.Called().Get(0).([domain.CourtPieceTeamCnt]domain.CourtPieceScoreBreakdown); ok {
-		return v
-	}
-	return [domain.CourtPieceTeamCnt]domain.CourtPieceScoreBreakdown{}
+	return m.Called().Get(0).([domain.CourtPieceTeamCnt]domain.CourtPieceScoreBreakdown)
 }
 
 func (m *MockCourtPieceGame) IsRoundEndCourt() bool {
