@@ -18,6 +18,7 @@
   "move": "重ねる",
   "movable": "移動可能",
   "notMovable": "移動不可",
+  "topCardStatus": "{{card}}、列{{col}}、{{state}}",
   "redeal": "集めて配り直す",
   "giveup": "ギブアップ",
   "hint": "ヒント",
