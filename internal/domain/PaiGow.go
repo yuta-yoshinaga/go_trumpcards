@@ -271,8 +271,7 @@ func (pg *PaiGow) resolve() {
 	} else if highCmp < 0 {
 		pg.highHandResult = GameResultLose
 	} else {
-		// タイはディーラーの勝ち
-		pg.highHandResult = GameResultLose
+		pg.highHandResult = GameResultDraw
 	}
 
 	// ローハンド比較
@@ -282,8 +281,7 @@ func (pg *PaiGow) resolve() {
 	} else if lowCmp < 0 {
 		pg.lowHandResult = GameResultLose
 	} else {
-		// タイはディーラーの勝ち
-		pg.lowHandResult = GameResultLose
+		pg.lowHandResult = GameResultDraw
 	}
 
 	// 総合結果判定
@@ -293,7 +291,7 @@ func (pg *PaiGow) resolve() {
 		pg.commission = pg.bet * PaiGowCommissionRate / 100
 		pg.payout = pg.bet*2 - pg.commission
 		pg.chips.AddChips(pg.payout)
-	} else if pg.highHandResult == GameResultLose && pg.lowHandResult == GameResultLose {
+	} else if pg.highHandResult != GameResultWin && pg.lowHandResult != GameResultWin {
 		// 両方負け: ベット没収
 		pg.result = GameResultLose
 		pg.payout = 0

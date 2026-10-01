@@ -302,8 +302,10 @@ func TestPaiGow_TieGoesToDealer_FullGame(t *testing.T) {
 	})
 	err := pg.SetHands(1, 2) // low=K,J; high=A,9,7,4,2
 	require.NoError(t, err)
-	// Tie on both → dealer wins
+	// Tie on both → dealer wins the overall result, while both hand results show a tie.
 	assert.Equal(t, domain.GameResultLose, pg.GetResult())
+	assert.Equal(t, domain.GameResultDraw, pg.GetHighHandResult())
+	assert.Equal(t, domain.GameResultDraw, pg.GetLowHandResult())
 	assert.Equal(t, 0, pg.GetPayout())
 }
 

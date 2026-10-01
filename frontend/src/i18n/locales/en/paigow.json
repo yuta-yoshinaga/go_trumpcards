@@ -30,6 +30,11 @@
     "dealerWins": "Dealer wins!",
     "push": "Push!"
   },
+  "handResult": {
+    "win": "Win",
+    "lose": "Lose",
+    "draw": "Tie"
+  },
   "highHandRank": {
     "0": "High Card",
     "1": "One Pair",

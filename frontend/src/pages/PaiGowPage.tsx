@@ -58,6 +58,12 @@ const LOW_HAND_RANK_KEYS: Record<number, string> = {
   1: 'lowHandRank.1',
 };
 
+const HAND_RESULT_KEYS: Record<number, string> = {
+  [-1]: 'handResult.lose',
+  0: 'handResult.draw',
+  1: 'handResult.win',
+};
+
 /** Pai Gow Poker tutorial step definitions. */
 const PG_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -291,7 +297,8 @@ function PaiGowPageContent() {
                 {state.playerHighHand.length > 0 && (
                   <div className="mb-4">
                     <div className="text-ds-warning font-bold text-center mb-1">
-                      <span aria-hidden="true">🟡</span> {t('label.highHand')}
+                      <span aria-hidden="true">🟡</span> {t('label.highHand')}{' '}
+                      <span className="text-sm">({t(HAND_RESULT_KEYS[state.highHandResult])})</span>
                       {state.playerHighRank >= 0 && (
                         <span className="ml-2 text-sm">({t(HIGH_HAND_RANK_KEYS[state.playerHighRank])})</span>
                       )}
@@ -306,7 +313,8 @@ function PaiGowPageContent() {
                 {state.playerLowHand.length > 0 && (
                   <div className="mb-4">
                     <div className="text-ds-warning font-bold text-center mb-1">
-                      <span aria-hidden="true">🟡</span> {t('label.lowHand')}
+                      <span aria-hidden="true">🟡</span> {t('label.lowHand')}{' '}
+                      <span className="text-sm">({t(HAND_RESULT_KEYS[state.lowHandResult])})</span>
                       {state.playerLowRank >= 0 && (
                         <span className="ml-2 text-sm">({t(LOW_HAND_RANK_KEYS[state.playerLowRank])})</span>
                       )}
@@ -323,7 +331,8 @@ function PaiGowPageContent() {
                 {state.dealerHighHand.length > 0 && (
                   <div className="mb-4">
                     <div className="text-ds-error font-bold text-center mb-1">
-                      <span aria-hidden="true">🔴</span> {t('label.highHand')}
+                      <span aria-hidden="true">🔴</span> {t('label.highHand')}{' '}
+                      <span className="text-sm">({t(HAND_RESULT_KEYS[-state.highHandResult])})</span>
                       {state.dealerHighRank >= 0 && (
                         <span className="ml-2 text-sm">({t(HIGH_HAND_RANK_KEYS[state.dealerHighRank])})</span>
                       )}
@@ -338,7 +347,8 @@ function PaiGowPageContent() {
                 {state.dealerLowHand.length > 0 && (
                   <div className="mb-4">
                     <div className="text-ds-error font-bold text-center mb-1">
-                      <span aria-hidden="true">🔴</span> {t('label.lowHand')}
+                      <span aria-hidden="true">🔴</span> {t('label.lowHand')}{' '}
+                      <span className="text-sm">({t(HAND_RESULT_KEYS[-state.lowHandResult])})</span>
                       {state.dealerLowRank >= 0 && (
                         <span className="ml-2 text-sm">({t(LOW_HAND_RANK_KEYS[state.dealerLowRank])})</span>
                       )}
