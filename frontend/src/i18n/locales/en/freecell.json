@@ -13,6 +13,7 @@
   "autoCompleteNotReady": "Available once every card can go straight to the foundations",
   "undo": "Undo",
   "moveCount": "Moves",
+  "timer": "Time",
   "empty": "Empty",
   "hintAvailable": "Hint",
   "doubleClickHint": "Double-click or double-tap a card to send it to the foundation",

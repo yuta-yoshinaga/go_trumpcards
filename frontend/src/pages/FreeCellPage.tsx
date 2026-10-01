@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { FreeCellMoveZone, freecellApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -182,6 +182,7 @@ function FreeCellPageContent() {
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
+    setTimerVersion((version) => version + 1);
     handleReset();
   }, [handleReset, hideActionLog]);
 
@@ -203,6 +204,35 @@ function FreeCellPageContent() {
   });
 
   const [hoveredStack, setHoveredStack] = useState<{ col: number; cardIdx: number } | null>(null);
+
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [timerVersion, setTimerVersion] = useState(0);
+  const startedAtRef = useRef<number | null>(null);
+  const observedTimerVersionRef = useRef(0);
+  const timerRunning = state?.phase === FreeCellPhase.PLAYING;
+  useEffect(() => {
+    if (observedTimerVersionRef.current !== timerVersion) {
+      observedTimerVersionRef.current = timerVersion;
+      startedAtRef.current = Date.now();
+      setElapsedSeconds(0);
+    }
+    if (timerRunning) {
+      startedAtRef.current ??= Date.now();
+      const interval = window.setInterval(() => {
+        const startedAt = startedAtRef.current;
+        if (startedAt !== null) setElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000));
+      }, 1000);
+      return () => window.clearInterval(interval);
+    }
+    if (startedAtRef.current !== null) {
+      setElapsedSeconds(Math.floor((Date.now() - startedAtRef.current) / 1000));
+    }
+  }, [timerRunning, timerVersion]);
+
+  const formatElapsedTime = (seconds: number) =>
+    `${Math.floor(seconds / 60)
+      .toString()
+      .padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
 
   if (!state) return <GameSkeleton gameKey="freecell" layout={{ kind: 'tableau', topRow: 8, tableau: 8 }} />;
 
@@ -260,6 +290,9 @@ function FreeCellPageContent() {
         <>
           <span>
             {t('moveCount')}: {state.moveCount}
+          </span>
+          <span data-testid="freecell-timer">
+            {t('timer')}: {formatElapsedTime(elapsedSeconds)}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
