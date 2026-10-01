@@ -520,7 +520,13 @@ function BakersGamePageContent() {
                                       // ホバーできる人にしか届かない。draggable も落として
                                       // いるのに、動かせない理由が読み上げに出ない (#5820)。
                                       aria-label={
-                                        exceedsSupermove ? `${cardAlt(card)} — ${limitTooltip}` : cardAlt(card)
+                                        exceedsSupermove
+                                          ? `${t('tableauCardAriaLabel', { card: cardAlt(card), col: colIdx, pos: cardIdx })} — ${limitTooltip}`
+                                          : t('tableauCardAriaLabel', {
+                                              card: cardAlt(card),
+                                              col: colIdx,
+                                              pos: cardIdx,
+                                            })
                                       }
                                       aria-pressed={isSourceSelected('tableau', colIdx, undefined, cardIdx)}
                                       draggable={isPlaying && !loading && !exceedsSupermove}
