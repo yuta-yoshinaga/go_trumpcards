@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cassinoApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -66,6 +66,34 @@ describe('CassinoPage', () => {
     expect(screen.getByTestId('hand-card-1')).toBeInTheDocument();
     expect(screen.getByTestId('hand-card-2')).toBeInTheDocument();
     expect(screen.getByTestId('hand-card-0')).toHaveAccessibleName('♠ 3');
+  });
+
+  it('shows the server-provided round breakdown only when the round ends', async () => {
+    const detail = {
+      cards: { 0: 17, 1: 9, 2: 8, 3: 7 },
+      spades: { 0: 6, 1: 3, 2: 2, 3: 2 },
+      aces: { 0: 2, 1: 1, 2: 0, 3: 1 },
+      sweeps: { 0: 1, 1: 0, 2: 2, 3: 0 },
+      hasBigCasino: 2,
+      hasLittleCasino: 0,
+      gained: { 0: 8, 1: 3, 2: 12, 3: 0 },
+    };
+    const { unmount } = renderWithProviders(<CassinoPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('cs-score-breakdown')).not.toBeInTheDocument();
+
+    unmount();
+    mockExec.mockResolvedValue(makeState({ phase: 'roundEnd', lastRoundDetail: detail }));
+    renderWithProviders(<CassinoPage />);
+    const breakdown = await screen.findByTestId('cs-score-breakdown');
+    expect(within(breakdown).getByTestId('cs-breakdown-player-0')).toHaveTextContent('17');
+    expect(within(breakdown).getByTestId('cs-breakdown-player-0')).toHaveTextContent('6');
+    expect(within(breakdown).getByTestId('cs-breakdown-player-0')).toHaveTextContent('2');
+    expect(within(breakdown).getByTestId('cs-breakdown-player-0')).toHaveTextContent('1');
+    expect(within(breakdown).getByTestId('cs-breakdown-player-0')).toHaveTextContent('所持');
+    expect(within(breakdown).getByTestId('cs-breakdown-player-0')).toHaveTextContent('8');
+    expect(within(breakdown).getByTestId('cs-breakdown-player-2')).toHaveTextContent('12');
+    expect(within(breakdown).getByTestId('cs-breakdown-player-2')).toHaveTextContent('所持');
   });
 
   it('exposes pressed state for selectable hand, table, and build cards', async () => {
