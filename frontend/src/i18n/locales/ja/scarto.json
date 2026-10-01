@@ -41,7 +41,7 @@
   "playButton": "出す",
   "nextTrick": "次のトリック",
   "nextRound": "次のディール",
-  "outcomeNone": "平均どおり",
+  "outcomeNone": "平均と同点",
   "outcomeWin": "平均より上",
   "outcomeLoss": "平均より下",
   "roundResult": {
@@ -50,7 +50,7 @@
     "outcome": "あなたの結果: {{outcome}}",
     "playerLine": "{{name}}: {{delta}}（累計 {{score}}）",
     "average": "全体平均: {{avg}}点",
-    "earnedLine": "{{name}}: 獲得 {{points}}点（平均差 {{diff}} → 変動 {{scaled}}）",
+    "earnedLine": "{{name}}: 獲得 {{points}}点（{{outcome}}、平均差 {{diff}} → 変動 {{scaled}}）",
     "formula": "変動 = 平均差 × プレイヤー数（{{n}}人）"
   },
   "hintAvailable": "ヒント",
