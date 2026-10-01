@@ -205,7 +205,35 @@ describe('DeuceToSevenPage', () => {
   });
 
   it.each([
-    ['no outstanding bet', { phase: DeuceToSevenPhase.DEAL, pot: 100, lastBet: 0 }],
+    ['CPU turn', { currentTurn: 1 }],
+    ['human folded', { players: [humanPlayer({ folded: true }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)] }],
+    ['human all-in', { players: [humanPlayer({ allIn: true }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)] }],
+  ])('does not show pot odds when the human cannot act (%s)', async (_label, overrides) => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: DeuceToSevenPhase.BET,
+        pot: 100,
+        lastBet: 30,
+        players: [humanPlayer({ currentBet: 10 }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+        ...overrides,
+      }),
+    );
+    renderWithProviders(<DeuceToSevenPage />);
+
+    await waitFor(() => expect(screen.getByText('ポット:')).toBeInTheDocument());
+    expect(screen.queryByText(/ポットオッズ/)).not.toBeInTheDocument();
+  });
+
+  it.each([
+    [
+      'no outstanding bet during betting',
+      {
+        phase: DeuceToSevenPhase.BET,
+        pot: 100,
+        lastBet: 20,
+        players: [humanPlayer({ currentBet: 20 }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+      },
+    ],
     ['missing pot', { phase: DeuceToSevenPhase.BET, pot: undefined, lastBet: 30 }],
   ])('does not show pot odds for %s', async (_label, overrides) => {
     mockExec.mockResolvedValue(baseState(overrides as Partial<DeuceToSevenResponse>));

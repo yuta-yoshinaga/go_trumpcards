@@ -160,7 +160,7 @@ function DeuceToSevenPageContent() {
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
   const callAmount = state?.lastBet != null && humanPlayer ? state.lastBet - humanPlayer.currentBet : undefined;
   const potOddsPercentage =
-    canAct && hasOutstandingBet && callAmount != null && callAmount > 0 && state?.pot != null && state.pot >= 0
+    canAct && hasOutstandingBet && callAmount != null && state?.pot != null && state.pot >= 0
       ? (callAmount / (state.pot + callAmount)) * 100
       : undefined;
   const minRaise = state?.minRaise ?? 10;
