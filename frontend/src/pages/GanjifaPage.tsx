@@ -297,6 +297,7 @@ function GanjifaPageContent() {
 
             <ActionLogSection
               isEndPhase={isGameEnd}
+              availableDuringPlay
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
