@@ -71,6 +71,17 @@
     "round": "ラウンド",
     "team": "チーム"
   },
+  "scoreBreakdown": {
+    "cardPoints": "カード点",
+    "naturalCanastaBonus": "ナチュラルカナスタ",
+    "mixedCanastaBonus": "ミックスカナスタ",
+    "escaleraBonus": "エスカレラ",
+    "boliviaBonus": "ボリビア",
+    "red3Bonus": "赤3ボーナス",
+    "red3Penalty": "赤3ペナルティ",
+    "goOutBonus": "上がりボーナス",
+    "handPenalty": "手札ペナルティ"
+  },
   "selectMeld": "メルドするカードを選択してください",
   "selectPair": "ペアを選択してください（トップカードと同ランクの2枚）",
   "sequence": "シーケンス",
