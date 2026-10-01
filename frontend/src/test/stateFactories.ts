@@ -11,6 +11,7 @@ import type {
   BouillotteResponse,
   CalabresellaResponse,
   CallBreakResponse,
+  CasinoHoldemResponse,
   CegoResponse,
   CinchResponse,
   CirullaResponse,
@@ -5864,6 +5865,31 @@ export function makeRummy500State(overrides?: Partial<Rummy500Response>): Rummy5
     roundEnderIdx: -1,
     message: '',
     config: { cpuDifficulty: 1, pointLimit: 500 },
+    ...overrides,
+  };
+}
+
+/** Creates a default Casino Hold'em state. */
+export function makeCasinoHoldemState(overrides?: Partial<CasinoHoldemResponse>): CasinoHoldemResponse {
+  return {
+    playerHand: [],
+    dealerHand: [],
+    community: [],
+    phase: 1,
+    chips: 1000,
+    anteBet: 0,
+    bonusBet: 0,
+    callBet: 0,
+    result: 0,
+    dealerQualify: false,
+    antePayout: 0,
+    callPayout: 0,
+    bonusPayout: 0,
+    totalPayout: 0,
+    netChange: 0,
+    playerHandRank: 0,
+    dealerHandRank: 0,
+    message: '',
     ...overrides,
   };
 }

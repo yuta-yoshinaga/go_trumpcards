@@ -32,6 +32,7 @@ function makeState(overrides: Partial<CasinoHoldemResponse> = {}): CasinoHoldemR
     dealerHandRank: 0,
     message: '',
     ...overrides,
+    netChange: overrides.netChange ?? 0,
   };
 }
 

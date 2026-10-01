@@ -321,6 +321,17 @@ function CasinoHoldemPageContent() {
                 <div className="font-bold mt-1">
                   {t('payout.total')}: {state.totalPayout}
                 </div>
+                <div
+                  className={`font-bold ${state.netChange > 0 ? 'text-ds-success' : state.netChange < 0 ? 'text-ds-error' : 'text-ds-text-muted'}`}
+                  data-testid="net-change"
+                >
+                  {t('payout.netChange')}:{' '}
+                  {state.netChange > 0
+                    ? `+${state.netChange}`
+                    : state.netChange < 0
+                      ? state.netChange
+                      : t('payout.noNetChange')}
+                </div>
               </div>
             )}
 

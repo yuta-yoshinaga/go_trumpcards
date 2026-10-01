@@ -25,6 +25,8 @@ export interface CasinoHoldemResponse extends BaseGameResponse {
   callPayout: number;
   bonusPayout: number;
   totalPayout: number;
+  /** Net chip change for this round (payouts minus all wagers). */
+  netChange: number;
   playerHandRank: number;
   dealerHandRank: number;
 }

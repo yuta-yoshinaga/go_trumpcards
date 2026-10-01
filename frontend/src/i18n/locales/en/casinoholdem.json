@@ -37,7 +37,9 @@
     "ante": "Ante",
     "call": "Call",
     "bonus": "AA Bonus",
-    "total": "Total"
+    "total": "Total",
+    "netChange": "Net change",
+    "noNetChange": "No net change"
   },
   "handRank": {
     "0": "High Card",
