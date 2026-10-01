@@ -25,6 +25,8 @@
   "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",
   "autoComplete": "Auto-complete",
+  "autoCompleteStarted": "Auto-complete started",
+  "autoCompleteCompleted": "Auto-complete completed",
   "autoCompleteNotReady": "Available once a card can reach a foundation",
   "undo": "Undo",
   "stalemate": "No moves left",
