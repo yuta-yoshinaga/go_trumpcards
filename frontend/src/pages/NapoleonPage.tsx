@@ -213,6 +213,8 @@ function NapoleonPageContent() {
   const isGameEnd = state.phase === NapoleonPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
+  const minLegalBid = Math.max(napoleonConfig.minBid, state.highestBid + 1);
+  const isBidValueLegal = bidValue >= minLegalBid && bidValue <= 17;
   const isHumanNapoleon = isTrumpDeclaration && state.players[state.napoleonIdx]?.isHuman === true;
   const isHumanExchange = isKittyExchange && state.players[state.napoleonIdx]?.isHuman === true;
   // Napoleon-side face-card progress toward the bid (target). The adjutant's
@@ -676,14 +678,22 @@ function NapoleonPageContent() {
                 <>
                   <input
                     type="number"
-                    min={napoleonConfig.minBid}
+                    min={minLegalBid}
                     max={17}
                     value={bidValue}
                     onChange={(e) => setBidValue(Number(e.target.value))}
                     className="w-16 px-2 py-1 rounded bg-white/20 text-ds-text-primary text-center"
                     aria-label={t('bidInputLabel')}
                   />
-                  <button type="button" className={btnPrimary} onClick={() => handleBid(bidValue)} disabled={loading}>
+                  <button
+                    type="button"
+                    className={`${btnPrimary}${!isBidValueLegal ? ' opacity-50 cursor-not-allowed active:scale-100 hover:shadow-none' : ''}`}
+                    onClick={() => {
+                      if (isBidValueLegal) handleBid(bidValue);
+                    }}
+                    disabled={loading}
+                    aria-disabled={!isBidValueLegal || undefined}
+                  >
                     {t('bidButton')}
                   </button>
                   <button type="button" className={btnPrimary} onClick={handlePass} disabled={loading}>

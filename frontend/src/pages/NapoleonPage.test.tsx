@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, napoleonApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { NapoleonResponse } from '../types/card';
 import { NapoleonPhase } from '../types/phases';
@@ -258,6 +259,27 @@ describe('NapoleonPage', () => {
       expect(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9' })).toBeInTheDocument();
       expect(screen.getByLabelText('ビッド数入力')).toBeInTheDocument();
     });
+  });
+
+  it('sets the bid input minimum above the current highest bid', async () => {
+    mockExec.mockResolvedValue({ ...bidPhaseState, highestBid: 15 });
+    renderWithProviders(<NapoleonPage />);
+    await waitFor(() => expect(screen.getByLabelText('ビッド数入力')).toHaveAttribute('min', '16'));
+  });
+
+  it('keeps pass available and blocks bidding when no higher bid is possible', async () => {
+    mockExec.mockResolvedValue({ ...bidPhaseState, highestBid: 17 });
+    renderWithProviders(<NapoleonPage />);
+    await waitFor(() => expect(screen.getByLabelText('ビッド数入力')).toHaveAttribute('min', '18'));
+    const bidButton = screen.getByRole('button', { name: 'ビッド' });
+    expect(bidButton).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', { name: 'パス' })).not.toHaveAttribute('aria-disabled', 'true');
+    mockExec.mockClear();
+    fireEvent.click(bidButton);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('bid', expect.anything());
+    fireEvent.click(screen.getByRole('button', { name: 'パス' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', 0));
   });
 
   it('shows bid phase instruction when human bid turn', async () => {
