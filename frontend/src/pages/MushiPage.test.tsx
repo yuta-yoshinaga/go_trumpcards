@@ -4,6 +4,7 @@ import { mushiApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { MushiCard, MushiPlayer, MushiResponse } from '../types/card';
+import { cardAlt } from '../utils/cardAlt';
 import { MushiPage } from './MushiPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -95,6 +96,25 @@ describe('MushiPage', () => {
     expect(screen.getByText('CPU の取り札 (20 pt)')).toBeInTheDocument();
     // The opponent's HAND is drawn from its count, not its (absent) cards.
     expect(screen.getByText('CPU の手札 2 枚')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'CPU の手札 2 枚（裏向き）' }).querySelectorAll('img')).toHaveLength(2);
+  });
+
+  it('reveals the opponent hand after the game ends', async () => {
+    const revealed = [card(1, 1, 3), card(11, 4, 0, true)];
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 4,
+        gameEndFlag: true,
+        players: [human(), cpu({ cards: revealed, hidden: false })],
+      }),
+    );
+    renderWithProviders(<MushiPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const hand = screen.getByRole('img', { name: 'CPU の手札 2 枚（表向き）' });
+    expect(hand.querySelectorAll('img[alt]')).toHaveLength(2);
+    expect(hand.querySelector('img[alt="カードの裏面"]')).not.toBeInTheDocument();
+    expect(hand.querySelectorAll(`img[alt="${cardAlt(revealed[0])}"]`)).toHaveLength(1);
   });
 
   it('groups captured cards by month and shows each non-empty month count', async () => {

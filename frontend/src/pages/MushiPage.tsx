@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { mushiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardBack } from '../components/CardImage';
+import { CardBack, CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -26,6 +26,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { MushiCard, MushiResponse } from '../types/card';
 import { MushiPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { MUSHI_HELP, parseMushiCommand } from '../utils/cli/commands/mushiCommands';
 import { formatMushiState } from '../utils/cli/formatters/mushiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -153,11 +154,23 @@ function MushiPageContent() {
                   <div
                     className="flex gap-1 justify-center"
                     role="img"
-                    aria-label={t('opponentHandAriaLabel', { n: o.cardCount })}
+                    aria-label={t(
+                      ended && o.cards.length > 0 ? 'opponentHandRevealedAriaLabel' : 'opponentHandAriaLabel',
+                      { n: o.cardCount },
+                    )}
                   >
-                    {Array.from({ length: o.cardCount }, (_, i) => (
-                      <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                    ))}
+                    {ended && o.cards.length > 0
+                      ? o.cards.map((card, i) => (
+                          <CardImage
+                            key={`opp-${o.id.toString()}-c${i.toString()}`}
+                            card={card}
+                            width={cardWidth}
+                            ariaLabel={cardAlt(card)}
+                          />
+                        ))
+                      : Array.from({ length: o.cardCount }, (_, i) => (
+                          <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                        ))}
                   </div>
                 </div>
               ))}
