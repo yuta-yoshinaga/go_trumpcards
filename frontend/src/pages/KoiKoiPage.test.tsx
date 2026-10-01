@@ -115,6 +115,19 @@ describe('KoiKoiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
   });
 
+  it('exposes the selected hand card with aria-pressed', async () => {
+    mockExec.mockResolvedValue(makeKoiKoiState({ captureOptions: { 0: [0, 1] } }));
+    renderWithProviders(<KoiKoiPage />);
+    const first = await screen.findByTestId('hand-card-0');
+    const second = screen.getByTestId('hand-card-1');
+
+    expect(first).toHaveAttribute('aria-pressed', 'false');
+    expect(second).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(first);
+    await waitFor(() => expect(first).toHaveAttribute('aria-pressed', 'true'));
+    expect(second).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('requires a field pick for a two-way match, then plays with fieldIndex', async () => {
     mockExec.mockResolvedValue(makeKoiKoiState({ captureOptions: { 0: [0, 1] } }));
     renderWithProviders(<KoiKoiPage />);
