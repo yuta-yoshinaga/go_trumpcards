@@ -79,6 +79,27 @@ describe('AcesUpPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/手数: 3/));
   });
 
+  it('announces changed progress counters and keeps the last announcement on unchanged rerenders', async () => {
+    const updatedState = { ...playingState, moveCount: 4, discardCount: 5 };
+    mockExec
+      .mockResolvedValueOnce(playingState)
+      .mockResolvedValueOnce(updatedState)
+      .mockResolvedValueOnce(updatedState);
+    renderWithProviders(<AcesUpPage />);
+
+    const liveRegion = await screen.findByTestId('acesup-progress-live');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    const callsBeforeActions = mockExec.mock.calls.length;
+    fireEvent.click(screen.getAllByRole('button', { name: '配る' }).at(-1)!);
+    await waitFor(() => expect(liveRegion).toHaveTextContent('手数: 4、除去済み: 5'));
+
+    fireEvent.click(screen.getAllByRole('button', { name: '配る' }).at(-1)!);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(callsBeforeActions + 2));
+    expect(liveRegion).toHaveTextContent('手数: 4、除去済み: 5');
+  });
+
   it('renders the four columns', async () => {
     renderWithProviders(<AcesUpPage />);
     await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { acesupApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -118,6 +118,21 @@ function AcesUpPageContent() {
     isRemovingAll,
   } = useAcesUpGame();
   const { cardHeight, cardWidth, isMobile } = useCardDimensions();
+  const previousProgress = useRef<{ moveCount: number; discardCount: number } | null>(null);
+  const [progressAnnouncement, setProgressAnnouncement] = useState('');
+
+  useEffect(() => {
+    if (!state) return;
+    const currentProgress = { moveCount: state.moveCount, discardCount: state.discardCount };
+    const previous = previousProgress.current;
+    previousProgress.current = currentProgress;
+    if (
+      previous &&
+      (previous.moveCount !== currentProgress.moveCount || previous.discardCount !== currentProgress.discardCount)
+    ) {
+      setProgressAnnouncement(t('progressUpdate', currentProgress));
+    }
+  }, [state, t]);
 
   // The batch loop bypasses useGameApi's `loading` flag (it calls the API
   // directly), so combine both to gate every interactive control while a batch
@@ -214,6 +229,9 @@ function AcesUpPageContent() {
         </>
       }
     >
+      <div data-testid="acesup-progress-live" className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {progressAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
