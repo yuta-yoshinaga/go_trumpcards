@@ -331,6 +331,16 @@ describe('KarnoffelPage', () => {
     expect(trick).toHaveTextContent('席2: CPU 2');
     expect(trick).toHaveTextContent('席3: CPU 3');
     expect(trick).toHaveTextContent('席0: あなた');
-    expect(screen.getByRole('img', { name: '席2: CPU 2、♥ 7' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '席2: CPU 2、♥ 7、悪魔（リード）' })).toBeInTheDocument();
+  });
+
+  it('shows effective title badges and includes them in trick card accessible names', async () => {
+    mockExec.mockResolvedValue(makeState({ trick: [card('HEART', 11), card('SPADE', 8)] }));
+    renderWithProviders(<KarnoffelPage />);
+
+    const trick = await screen.findByTestId('karnoffel-trick');
+    expect(trick.querySelector('[data-testid="karnoffel-trick-rank-0"]')).toHaveTextContent('カルニッフェル');
+    expect(trick.querySelector('[data-testid="karnoffel-trick-rank-1"]')).toBeNull();
+    expect(screen.getByRole('img', { name: '席0: あなた、♥ J、カルニッフェル' })).toBeInTheDocument();
   });
 });

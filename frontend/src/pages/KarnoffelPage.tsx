@@ -253,12 +253,28 @@ function KarnoffelPageContent() {
                   const seatIdx = (state.trickLeaderIdx + i) % state.players.length;
                   const isHuman = state.players.some((p) => p.id === seatIdx && p.isHuman);
                   const name = t('seatPlayer', { idx: seatIdx, name: playerLabel(seatIdx, isHuman) });
+                  const baseRankKey = karnoffelRankKey(c, state.chosenSuit);
+                  const rankKey = baseRankKey === 'devil' ? (i === 0 ? 'devilLead' : 'devilFollow') : baseRankKey;
+                  const accessibleName = rankKey
+                    ? `${name}${t('listSeparator')}${cardAlt(c)}${t('listSeparator')}${t(`rankBadge.${rankKey}`)}`
+                    : `${name}${t('listSeparator')}${cardAlt(c)}`;
                   return (
                     <div key={`trick-${c.design}-${c.value}-${i}`} className="flex flex-col items-center">
                       <span className="mb-1 text-ds-text-muted text-xs" aria-hidden="true">
                         {name}
                       </span>
-                      <CardImage card={c} width={cardWidth} ariaLabel={`${name}${t('listSeparator')}${cardAlt(c)}`} />
+                      <span className="relative inline-block">
+                        <CardImage card={c} width={cardWidth} ariaLabel={accessibleName} />
+                        {rankKey && (
+                          <span
+                            aria-hidden="true"
+                            data-testid={`karnoffel-trick-rank-${i}`}
+                            className={`absolute left-0 right-0 bottom-0 rounded-b px-0.5 text-[9px] font-bold text-center truncate ${badgeWarningColors}`}
+                          >
+                            {t(`rankBadge.${rankKey}`)}
+                          </span>
+                        )}
+                      </span>
                     </div>
                   );
                 })}
