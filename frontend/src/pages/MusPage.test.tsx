@@ -67,8 +67,8 @@ describe('MusPage pending stake announcement', () => {
     expect(live).toHaveAttribute('role', 'status');
     expect(live).toHaveAttribute('aria-live', 'polite');
     expect(live).toHaveTextContent('保留中の賭け: 3');
-    expect(live).toHaveTextContent('賭けを保持するチーム: チーム0');
-    expect(live).toHaveTextContent('直近に賭けたチーム: チーム1');
+    expect(live).toHaveTextContent('応答するチーム: チーム0 (あなたのチーム)');
+    expect(live).toHaveTextContent('賭けたチーム: チーム1');
     expect(live.textContent).not.toContain('{{');
   });
 
@@ -79,19 +79,26 @@ describe('MusPage pending stake announcement', () => {
 
     const live = await screen.findByTestId('mus-pending-stake');
     expect(live).toHaveTextContent('Pending bet: 3');
-    expect(live).toHaveTextContent('Bet held by: Team 0');
-    expect(live).toHaveTextContent('Most recent bet by: Team 1');
+    expect(live).toHaveTextContent('To respond: Team 0 (Your team)');
+    expect(live).toHaveTextContent('Bet by: Team 1');
     await i18n.changeLanguage('ja');
   });
 
-  it('omits team labels when the pending bet has no associated teams', async () => {
-    mockExec.mockResolvedValue(makeMusState({ ...respondState, betTeam: -1, lastBettorTeam: -1 }));
+  it('marks the teams that match humanTeam as yours', async () => {
+    mockExec.mockResolvedValue(
+      makeMusState({
+        ...respondState,
+        betTeam: 0,
+        lastBettorTeam: 1,
+        humanTeam: 1,
+      }),
+    );
     renderWithProviders(<MusPage />);
 
     const live = await screen.findByTestId('mus-pending-stake');
-    expect(live).toHaveTextContent('保留中の賭け: 3');
-    expect(live).not.toHaveTextContent('賭けを保持するチーム');
-    expect(live).not.toHaveTextContent('直近に賭けたチーム');
+    expect(live).toHaveTextContent('応答するチーム: チーム0');
+    expect(live).not.toHaveTextContent('応答するチーム: チーム0 (あなたのチーム)');
+    expect(live).toHaveTextContent('賭けたチーム: チーム1 (あなたのチーム)');
   });
 
   it('keeps the live region mounted and empty while no bet is pending', async () => {
@@ -106,7 +113,7 @@ describe('MusPage pending stake announcement', () => {
   });
 
   it('spells out an ordago instead of showing its -1 sentinel', async () => {
-    mockExec.mockResolvedValue(makeMusState({ phase: 2, pendingStake: -1 }));
+    mockExec.mockResolvedValue(makeMusState({ phase: 2, pendingStake: -1, betTeam: 0, lastBettorTeam: 1 }));
     renderWithProviders(<MusPage />);
 
     const live = await screen.findByTestId('mus-pending-stake');

@@ -239,18 +239,14 @@ function MusPageContent() {
                     <span>
                       {t('pendingStake', { amount: state.pendingStake === -1 ? t('ordagoLabel') : state.pendingStake })}
                     </span>
-                    {state.betTeam >= 0 && (
-                      <span className="block">
-                        {t('betTeamLabel', { team: state.betTeam })}
-                        {state.betTeam === state.humanTeam ? ` (${t('yourTeam')})` : ''}
-                      </span>
-                    )}
-                    {state.lastBettorTeam >= 0 && (
-                      <span className="block">
-                        {t('lastBettorTeamLabel', { team: state.lastBettorTeam })}
-                        {state.lastBettorTeam === state.humanTeam ? ` (${t('yourTeam')})` : ''}
-                      </span>
-                    )}
+                    <span className="block">
+                      {t('betTeamLabel', { team: state.betTeam })}
+                      {state.betTeam === state.humanTeam ? ` (${t('yourTeam')})` : ''}
+                    </span>
+                    <span className="block">
+                      {t('lastBettorTeamLabel', { team: state.lastBettorTeam })}
+                      {state.lastBettorTeam === state.humanTeam ? ` (${t('yourTeam')})` : ''}
+                    </span>
                   </>
                 )}
               </div>
