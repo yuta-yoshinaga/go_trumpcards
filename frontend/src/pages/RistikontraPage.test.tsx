@@ -488,10 +488,8 @@ describe('RistikontraPage', () => {
     expect(screen.getByTestId('hand-card-0').className).not.toContain('ring-ds-');
   });
 
-  // 途中経過は**チームの獲得枚数**。クローン元は席ごとの近似スコア
-  // (確定ボーナス + 最多捕獲 +3) を出していたが、このゲームには
-  // ボーナスもカード点も無いので、枚数がそのまま結果になる。
-  it('shows the team total during play, not the seat total', async () => {
+  // 途中経過はチームの獲得枚数合計であることを説明する。
+  it('explains the provisional team capture total', async () => {
     mockExec.mockResolvedValue(
       makeState({
         players: [
@@ -508,6 +506,10 @@ describe('RistikontraPage', () => {
     expect(screen.getByTestId('ristikontra-provisional-2')).toHaveTextContent('9');
     expect(screen.getByTestId('ristikontra-provisional-1')).toHaveTextContent('4');
     expect(screen.getByTestId('ristikontra-provisional-3')).toHaveTextContent('4');
+    expect(screen.getByTestId('ristikontra-provisional-note')).toHaveTextContent(
+      '暫定スコアは、各チームの獲得枚数の合計です。',
+    );
+    expect(screen.getByTestId('ristikontra-provisional-note')).not.toHaveTextContent(/Pişti|カード点/);
   });
 
   it('marks the leading team, and neither team when they are level', async () => {
