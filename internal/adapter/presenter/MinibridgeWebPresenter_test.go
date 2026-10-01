@@ -47,6 +47,13 @@ func TestMinibridgeWebPresenterOutput(t *testing.T) {
 	assert.Equal(t, float64(domain.MinibridgeHandSize), human["cardCount"], "13 枚配る")
 }
 
+func TestMinibridgeWebPresenterOutputsRoundDelta(t *testing.T) {
+	g := newMinibridgeForWeb(t)
+	g.SetRoundDeltaForTest([domain.MinibridgeTeamCnt]int{110, 0})
+	m := decodeMinibridge(t, new(MinibridgeWebPresenter).Output(g, nil))
+	assert.Equal(t, []any{float64(110), float64(0)}, m["roundDelta"])
+}
+
 // **HCP は 4 席ぶんワイヤに載り、合計は必ず 40。** これが唯一の公開情報。
 func TestMinibridgeWebPresenterCarriesEverySeatsHcp(t *testing.T) {
 	p := new(MinibridgeWebPresenter)

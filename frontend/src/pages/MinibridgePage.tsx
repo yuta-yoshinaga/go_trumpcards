@@ -300,6 +300,14 @@ function MinibridgePageContent() {
             {roundResult && (
               <div className="text-center my-3 text-ds-text-primary" role="status" data-testid="mb-round-result">
                 {roundResult}
+                {state.roundDelta.map((delta, team) => (
+                  <div key={team}>
+                    {t('roundResult.delta', {
+                      team: String(team),
+                      delta: `${delta >= 0 ? '+' : '−'}${Math.abs(delta)}`,
+                    })}
+                  </div>
+                ))}
               </div>
             )}
 

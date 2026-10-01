@@ -32,7 +32,8 @@
   "currentTrick": "現在のトリック",
   "roundResult": {
     "made": "契約成立: {{need}}トリック必要で {{took}} 取りました。",
-    "down": "契約失敗: {{need}}トリック必要で {{took}} しか取れませんでした。"
+    "down": "契約失敗: {{need}}トリック必要で {{took}} しか取れませんでした。",
+    "delta": "今回のラウンド: チーム{{team}} {{delta}}点"
   },
   "actions": {
     "level": "レベル",
