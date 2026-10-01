@@ -16,6 +16,7 @@
   "stockEmpty": "山札と捨て札から引ける札が無いため、押すとパスになります",
   "stockEmptyAria": "山札と捨て札から引ける札がありません。押すとパスになります",
   "discardTop": "捨て札",
+  "discardPileCount": "捨て札: {{count}}枚",
   "penalty": "ペナルティ: {{count}}枚 — 7を重ねるか引く",
   "cards": "{{count}}枚",
   "playButton": "出す",

@@ -16,6 +16,8 @@
   "stockEmpty": "No card can be drawn; this passes your turn",
   "stockEmptyAria": "No card can be drawn; this passes your turn",
   "discardTop": "Discard",
+  "discardPileCount": "Discard pile: {{count}} cards",
+  "discardPileCount_one": "Discard pile: {{count}} card",
   "penalty": "Penalty: {{count}} — stack a 7 or draw",
   "cards": "{{count}} cards",
   "playButton": "Play",
