@@ -21,10 +21,15 @@ func newCourtPieceForWebTest() *domain.CourtPiece {
 }
 
 type cpWebOutPartial struct {
-	Phase       int               `json:"phase"`
-	TrumpSuit   int               `json:"trumpSuit"`
-	CallerIdx   int               `json:"callerIdx"`
-	TeamScores  []int             `json:"teamScores"`
+	Phase          int   `json:"phase"`
+	TrumpSuit      int   `json:"trumpSuit"`
+	CallerIdx      int   `json:"callerIdx"`
+	TeamScores     []int `json:"teamScores"`
+	ScoreBreakdown []struct {
+		Sar        int `json:"sar"`
+		CourtBonus int `json:"courtBonus"`
+		Total      int `json:"total"`
+	} `json:"scoreBreakdown"`
 	Message     string            `json:"message,omitempty"`
 	MessageCode string            `json:"messageCode,omitempty"`
 	Players     []json.RawMessage `json:"players"`
@@ -43,6 +48,7 @@ func TestCourtPieceWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, int(domain.CourtPiecePhaseTrumpDeclaration), got.Phase)
 		assert.Equal(t, "courtpiece.trumpPhase", got.MessageCode)
 		assert.Equal(t, []int{0, 0}, got.TeamScores)
+		assert.Equal(t, 2, len(got.ScoreBreakdown))
 		assert.False(t, got.GameEndFlag)
 	})
 
@@ -137,6 +143,20 @@ func TestCourtPieceWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "courtpiece.gameEndCpuWin", got.MessageCode)
 		assert.Equal(t, 1, got.WinnerTeam)
 	})
+}
+
+func TestCourtPieceWebPresenter_ScoreBreakdown(t *testing.T) {
+	cp := newCourtPieceForWebTest()
+	cp.SetPhase(domain.CourtPiecePhaseRoundEnd)
+	for i := 0; i < 13; i++ {
+		cp.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 2, false)})
+	}
+	cp.ScoreRound()
+	var got cpWebOutPartial
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.CourtPieceWebPresenter).Output(cp, nil)), &got))
+	assert.Equal(t, 1, got.ScoreBreakdown[0].Sar)
+	assert.Equal(t, 1, got.ScoreBreakdown[0].CourtBonus)
+	assert.Equal(t, 2, got.ScoreBreakdown[0].Total)
 }
 
 func TestCourtPieceWebPresenter_HintOutput(t *testing.T) {
