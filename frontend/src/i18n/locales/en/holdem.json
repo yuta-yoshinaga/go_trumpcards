@@ -20,6 +20,7 @@
     "minimumRaise": "Minimum raise: {{amount}}"
   },
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
+  "blindLevelChanged": "Blind level increased: SB {{smallBlind}}, BB {{bigBlind}}",
   "bettingLimit": {
     "label": "Limit",
     "fixed": "Fixed",
