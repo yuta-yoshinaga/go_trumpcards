@@ -330,6 +330,11 @@ function FortyAndEightPageContent() {
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: FortyAndEightMoveZone = { zone: 'foundation', col: idx };
                   const isEligible = eligibleFoundations.has(idx);
+                  const topCard = pile[pile.length - 1];
+                  const remaining = 13 - pile.length;
+                  const progress = topCard
+                    ? `${t('foundationTopRank', { top: cardAlt(topCard) })} · ${remaining === 0 ? t('foundationComplete') : t('foundationRemaining', { count: remaining })}`
+                    : '';
                   // 1 スートに組札が 2 つあり、どちらに落ちるかは domain の
                   // findFoundation が決める。リングの色だけだと、見えない
                   // プレイヤーには手掛かりが残らない (#5600)。
@@ -356,16 +361,17 @@ function FortyAndEightPageContent() {
                               // them 1/2 so the duplicate-suit piles read distinctly.
                               pile: (idx % 2) + 1,
                               count: pile.length,
-                            })}${eligibleSuffix}`}
+                            })}${t('foundationAriaProgress', { progress })}${eligibleSuffix}`}
                             data-eligible-foundation={isEligible ? 'true' : undefined}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isEligible ? 'ring-2 ring-ds-info' : ''}`}
                           >
                             <AnimatedCard
-                              card={pile[pile.length - 1]}
+                              card={topCard}
                               width={f8.cw}
                               draggable={false}
                               dealDelay={isAutoCompleting ? idx * 0.15 : 0}
                             />
+                            <span className="block text-xs text-ds-text-primary">{progress}</span>
                           </button>
                         ) : (
                           <button
