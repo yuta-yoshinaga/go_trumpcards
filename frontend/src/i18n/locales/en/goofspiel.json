@@ -34,7 +34,9 @@
     "bid": "{{n}} points are at stake. Choose a card to bid face down.",
     "waiting": "You have bid. Waiting for everyone else.",
     "roundEnd": "{{name}} takes {{n}} points.",
-    "tie": "A tie. Nobody takes this prize."
+    "tie": "A tie. Nobody takes this prize.",
+    "highestBid": "[Highest bid]",
+    "bidMargin": "Lead over next bid: {{n}}"
   },
   "result": {
     "you": "You win! You took the most with {{n}} points.",
