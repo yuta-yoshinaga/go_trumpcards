@@ -19,6 +19,8 @@
   "hint": "Hint",
   "autoComplete": "Auto Complete",
   "autoCompleteNotReady": "Available when stock and waste are empty",
+  "autoCompleteStarted": "Auto-complete started",
+  "autoCompleteFinished": "Auto-complete finished",
   "undo": "Undo",
   "stalemate": "Stalemate",
   "playing": "Move cards to build foundations",

@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { FortyThievesMoveZone } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -89,6 +89,8 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 
 /** Inner content of the Forty Thieves page, wrapped by TutorialProvider. */
 function FortyThievesPageContent() {
+  const autoCompleteWasRunning = useRef(false);
+  const [autoCompleteAnnouncement, setAutoCompleteAnnouncement] = useState('');
   const selectSourceHintId = useId();
   const {
     t,
@@ -126,6 +128,14 @@ function FortyThievesPageContent() {
     handleFoundationShortcut,
     isAutoCompleting,
   } = useFortyThievesGame();
+  useEffect(() => {
+    if (isAutoCompleting && !autoCompleteWasRunning.current) {
+      setAutoCompleteAnnouncement(t('autoCompleteStarted'));
+    } else if (!isAutoCompleting && autoCompleteWasRunning.current) {
+      setAutoCompleteAnnouncement(t('autoCompleteFinished'));
+    }
+    autoCompleteWasRunning.current = isAutoCompleting;
+  }, [isAutoCompleting, t]);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('fortythieves');
@@ -503,6 +513,9 @@ function FortyThievesPageContent() {
 
             {/* Hint display */}
             <div data-tutorial="ft-hint-display" data-testid="ft-hint-display">
+              <div className="sr-only" role="status" aria-live="polite" data-testid="ft-autocomplete-announcement">
+                {autoCompleteAnnouncement}
+              </div>
               {hint && (
                 <div className="text-ds-warning text-sm mb-2">
                   {/* 引くヒントは列を持たない (#5525)。移動の体裁に落とすと
