@@ -104,6 +104,14 @@ function NainJaunePageContent() {
   const playing = state.phase === NainJaunePhase.PLAY;
   const human = state.players.find((p) => p.isHuman);
   const opponents = state.players.filter((p) => !p.isHuman);
+  const finalStandings = ended
+    ? [...state.players]
+        .sort((a, b) => b.chips - a.chips || a.id - b.id)
+        .map((player, _index, players) => ({
+          player,
+          rank: players.findIndex((candidate) => candidate.chips === player.chips) + 1,
+        }))
+    : [];
   const isHumanTurn = !ended && playing && state.currentPlayerIdx === 0;
 
   const phaseName = ended ? t('phase.end') : dealOver ? t('phase.dealEnd') : t('phase.play');
@@ -182,6 +190,25 @@ function NainJaunePageContent() {
                   </div>
                 ))}
               </div>
+            )}
+
+            {ended && (
+              <section className="mb-4 text-center" aria-labelledby="nainjaune-final-standings-title">
+                <h2 id="nainjaune-final-standings-title" className="text-sm font-semibold mb-2">
+                  {t('finalStandings')}
+                </h2>
+                <ol className="mx-auto max-w-md space-y-1 tabular-nums" data-testid="nainjaune-final-standings">
+                  {finalStandings.map(({ player, rank }) => (
+                    <li key={player.id} className="rounded px-3 py-1 ring-1 ring-ds-border text-sm">
+                      {t('finalStandingRow', {
+                        rank: t('rankLabel', { rank }),
+                        name: player.isHuman ? t('you') : `CPU${player.id.toString()}`,
+                        chips: player.chips,
+                      })}
+                    </li>
+                  ))}
+                </ol>
+              </section>
             )}
 
             <div className="flex justify-center gap-4 mb-3 flex-wrap">
