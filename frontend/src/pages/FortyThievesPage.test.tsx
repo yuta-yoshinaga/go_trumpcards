@@ -246,6 +246,20 @@ describe('FortyThievesPage', () => {
     expect(screen.getByTestId('autocomplete-button')).toBeDisabled();
   });
 
+  it('keeps a separate auto-complete status region mounted and announces its start', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0, waste: [] });
+    renderWithProviders(<FortyThievesPage />);
+    const region = await screen.findByTestId('ft-autocomplete-announcement');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveClass('sr-only');
+    vi.useFakeTimers();
+    fireEvent.click(screen.getByTestId('autocomplete-button'));
+    expect(region).toHaveTextContent('自動完成を開始しました');
+    expect(screen.getByTestId('ft-hint-announcement')).toBeInTheDocument();
+    vi.useRealTimers();
+  });
+
   it('clicking give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {
     renderWithProviders(<FortyThievesPage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());

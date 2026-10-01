@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { FortyThievesMoveZone } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -89,6 +89,9 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 
 /** Inner content of the Forty Thieves page, wrapped by TutorialProvider. */
 function FortyThievesPageContent() {
+  const autoCompleteWasRunning = useRef(false);
+  const lastAutoCompleteMoveCount = useRef<number | null>(null);
+  const [autoCompleteAnnouncement, setAutoCompleteAnnouncement] = useState('');
   const selectSourceHintId = useId();
   const {
     t,
@@ -126,6 +129,26 @@ function FortyThievesPageContent() {
     handleFoundationShortcut,
     isAutoCompleting,
   } = useFortyThievesGame();
+  const currentMoveCount = state?.moveCount;
+
+  useEffect(() => {
+    if (isAutoCompleting && !autoCompleteWasRunning.current) {
+      autoCompleteWasRunning.current = true;
+      lastAutoCompleteMoveCount.current = currentMoveCount ?? null;
+      setAutoCompleteAnnouncement(t('autoCompleteStarted'));
+      return;
+    }
+    if (isAutoCompleting && currentMoveCount !== undefined && lastAutoCompleteMoveCount.current !== currentMoveCount) {
+      lastAutoCompleteMoveCount.current = currentMoveCount;
+      setAutoCompleteAnnouncement(t('autoCompleteProgress', { moveCount: currentMoveCount }));
+      return;
+    }
+    if (!isAutoCompleting && autoCompleteWasRunning.current) {
+      autoCompleteWasRunning.current = false;
+      lastAutoCompleteMoveCount.current = null;
+      setAutoCompleteAnnouncement(t('autoCompleteFinished'));
+    }
+  }, [isAutoCompleting, currentMoveCount, t]);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('fortythieves');
@@ -503,6 +526,9 @@ function FortyThievesPageContent() {
 
             {/* Hint display */}
             <div data-tutorial="ft-hint-display" data-testid="ft-hint-display">
+              <div className="sr-only" role="status" aria-live="polite" data-testid="ft-autocomplete-announcement">
+                {autoCompleteAnnouncement}
+              </div>
               {hint && (
                 <div className="text-ds-warning text-sm mb-2">
                   {/* 引くヒントは列を持たない (#5525)。移動の体裁に落とすと
