@@ -164,6 +164,23 @@ describe('SlyFoxPage', () => {
     );
   });
 
+  it('clears the source announcement after a move so the same source can be announced again', async () => {
+    renderWithProviders(<SlyFoxPage />);
+    const liveRegion = await screen.findByTestId('slyfox-selection-live');
+
+    fireEvent.click(screen.getByTestId('co-tableau-0'));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('操作元'));
+
+    fireEvent.click(screen.getByTestId('co-foundation-0'));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', idx: 0 }, { zone: 'foundation' }),
+    );
+    await waitFor(() => expect(liveRegion).toBeEmptyDOMElement());
+
+    fireEvent.click(screen.getByTestId('co-tableau-0'));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('操作元'));
+  });
+
   // **周を配り切るまでリザーブは選べない。**選べてしまうと、組札を押した瞬間に
   // サーバが拒む。
   it('locks the reserve until the round is dealt out', async () => {

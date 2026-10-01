@@ -137,11 +137,13 @@ function SlyFoxPageContent() {
   const handleManualReset = useCallback(() => {
     void runApi('reset');
     setSource(null);
+    setSourceAnnouncement('');
   }, [runApi]);
 
   const handleGiveUp = useCallback(() => {
     void runApi('giveup');
     setSource(null);
+    setSourceAnnouncement('');
   }, [runApi]);
 
   // Give-up is irreversible, so route both the button and the `g` key through
@@ -167,11 +169,13 @@ function SlyFoxPageContent() {
   const handleUndo = useCallback(() => {
     void runApi('undo');
     setSource(null);
+    setSourceAnnouncement('');
   }, [runApi]);
 
   const handleAutoComplete = useCallback(() => {
     void runApi('autocomplete');
     setSource(null);
+    setSourceAnnouncement('');
   }, [runApi]);
 
   const clickFoundation = useCallback(
@@ -181,10 +185,12 @@ function SlyFoxPageContent() {
       if (source.kind === 'dealing') {
         void runApi('deal', undefined, { zone: 'foundation', idx: fIdx });
         setSource(null);
+        setSourceAnnouncement('');
         return;
       }
       void runApi('move', { zone: 'tableau', idx: source.idx }, { zone: 'foundation' });
       setSource(null);
+      setSourceAnnouncement('');
     },
     [runApi, source],
   );
@@ -199,6 +205,7 @@ function SlyFoxPageContent() {
       if (source?.kind === 'dealing') {
         void runApi('deal', undefined, { zone: 'tableau', idx });
         setSource(null);
+        setSourceAnnouncement('');
         return;
       }
       if (source?.kind === 'tableau' && source.idx === idx) {
