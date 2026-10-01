@@ -425,7 +425,19 @@ function SpadesPageContent() {
                               >
                                 {p.bags}
                               </td>
-                              <td className="text-center">{p.roundScore}</td>
+                              <td className="text-center">
+                                {p.roundScore}
+                                {(isRoundEnd || isGameEnd) && (
+                                  <div className="text-xs" data-testid={`sp-score-breakdown-${p.id}`}>
+                                    {t('scoreBreakdown', {
+                                      bid: p.scoreBreakdown.bidScore,
+                                      overtricks: p.scoreBreakdown.overtrickScore,
+                                      nil: p.scoreBreakdown.nilScore,
+                                      penalty: p.scoreBreakdown.bagPenalty,
+                                    })}
+                                  </div>
+                                )}
+                              </td>
                               <td className="text-center">{p.cumulativeScore}</td>
                             </tr>
                           ))}
@@ -463,7 +475,19 @@ function SpadesPageContent() {
                               >
                                 {p.bags}
                               </td>
-                              <td className="text-center">{p.roundScore}</td>
+                              <td className="text-center">
+                                {p.roundScore}
+                                {(isRoundEnd || isGameEnd) && (
+                                  <div className="text-xs" data-testid={`sp-score-breakdown-${p.id}`}>
+                                    {t('scoreBreakdown', {
+                                      bid: p.scoreBreakdown.bidScore,
+                                      overtricks: p.scoreBreakdown.overtrickScore,
+                                      nil: p.scoreBreakdown.nilScore,
+                                      penalty: p.scoreBreakdown.bagPenalty,
+                                    })}
+                                  </div>
+                                )}
+                              </td>
                               <td className="text-center">{p.cumulativeScore}</td>
                             </tr>
                           ))}

@@ -41,6 +41,7 @@
   "scoresBags": "Bags",
   "scoresRound": "Round",
   "scoresTotal": "Total",
+  "scoreBreakdown": "Bid {{bid}} + overtricks {{overtricks}} + nil {{nil}} − bag penalty {{penalty}}",
   "bidButton": "Bid",
   "nilButton": "Nil",
   "playButton": "Play",

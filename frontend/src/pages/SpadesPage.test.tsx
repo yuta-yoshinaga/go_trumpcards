@@ -90,6 +90,25 @@ describe('SpadesPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
+  it('shows server supplied score breakdowns in the round result table', async () => {
+    mockExec.mockResolvedValue(
+      makeSpadesState({
+        phase: 3,
+        players: makeSpadesState().players.map((p, i) =>
+          i === 0
+            ? { ...p, roundScore: 32, scoreBreakdown: { bidScore: 30, overtrickScore: 2, nilScore: 0, bagPenalty: 0 } }
+            : p,
+        ),
+      }),
+    );
+    renderWithProviders(<SpadesPage />);
+
+    expect(await screen.findByTestId('sp-score-breakdown-0')).toHaveTextContent(
+      'ビッド 30 + オーバートリック 2 + ニル 0 − バッグペナルティ 0',
+    );
+    expect(screen.getByTestId('sp-score-breakdown-0').parentElement).toHaveTextContent('32');
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<SpadesPage />);
     await waitFor(() =>

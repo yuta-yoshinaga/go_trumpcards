@@ -41,6 +41,7 @@
   "scoresBags": "バッグ",
   "scoresRound": "ラウンド",
   "scoresTotal": "累計",
+  "scoreBreakdown": "ビッド {{bid}} + オーバートリック {{overtricks}} + ニル {{nil}} − バッグペナルティ {{penalty}}",
   "bidButton": "ビッド",
   "nilButton": "ニル",
   "playButton": "出す",

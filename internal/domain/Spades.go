@@ -104,6 +104,7 @@ func (s *Spades) Reset() {
 	for _, p := range s.players {
 		p.bid = -1
 		p.roundScore = 0
+		p.scoreBreakdown = SpadesScoreBreakdown{}
 		p.cumulativeScore = 0
 		p.bags = 0
 		p.tricksTaken = nil
@@ -295,33 +296,36 @@ func (s *Spades) ScoreRound() {
 		p := s.players[i]
 		tricks := p.GetTrickCount()
 		bid := p.GetBid()
+		p.scoreBreakdown = SpadesScoreBreakdown{}
 
 		if bid == 0 {
 			// ニルビッド
 			if tricks == 0 {
-				p.roundScore = s.config.NilBonus
+				p.scoreBreakdown.NilScore = s.config.NilBonus
 				s.appendLog(i, "nil_success", "spades.log.nilSuccess", map[string]string{"name": playerName(s.players, i), "bonus": strconv.Itoa(s.config.NilBonus)}, nil)
 			} else {
-				p.roundScore = -s.config.NilBonus
+				p.scoreBreakdown.NilScore = -s.config.NilBonus
 				s.appendLog(i, "nil_fail", "spades.log.nilFail", map[string]string{"name": playerName(s.players, i), "penalty": strconv.Itoa(s.config.NilBonus), "tricks": strconv.Itoa(tricks)}, nil)
 			}
 		} else if tricks >= bid {
 			// ビッド成功
 			overtricks := tricks - bid
-			p.roundScore = bid*10 + overtricks
+			p.scoreBreakdown.BidScore = bid * 10
+			p.scoreBreakdown.OvertrickScore = overtricks
 			p.bags += overtricks
 
 			// バッグペナルティ判定
 			if s.config.BagPenaltyThreshold > 0 && p.bags >= s.config.BagPenaltyThreshold {
 				penalty := (p.bags / s.config.BagPenaltyThreshold) * 100
-				p.roundScore -= penalty
+				p.scoreBreakdown.BagPenalty = penalty
 				p.bags %= s.config.BagPenaltyThreshold
 				s.appendLog(i, "bag_penalty", "spades.log.bagPenalty", map[string]string{"name": playerName(s.players, i), "penalty": strconv.Itoa(penalty)}, nil)
 			}
 		} else {
 			// ビッド失敗
-			p.roundScore = -bid * 10
+			p.scoreBreakdown.BidScore = -bid * 10
 		}
+		p.roundScore = p.scoreBreakdown.Total()
 
 		s.appendLog(i, "round_score", "spades.log.roundScore", map[string]string{"name": playerName(s.players, i), "bid": strconv.Itoa(bid), "tricks": strconv.Itoa(tricks), "round": strconv.Itoa(p.roundScore), "bags": strconv.Itoa(p.bags)}, nil)
 	}
