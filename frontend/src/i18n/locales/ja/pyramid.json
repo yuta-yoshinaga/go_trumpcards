@@ -48,6 +48,7 @@
     "drawFromStock": "すぐにマッチするカードがありません — 山札から引いてみましょう"
   },
   "a11y": {
+    "position": "（{{row}}行{{col}}列）",
     "blocked": "（ブロック中）",
     "selected": "（選択中）",
     "pairCandidate": "（合計13の相手）",
