@@ -76,15 +76,23 @@ const TO_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders a row of life icons for a player. */
-function Lives({ lives, out }: { lives: number; out: boolean }) {
+function Lives({
+  lives,
+  out,
+  t,
+}: {
+  lives: number;
+  out: boolean;
+  t: (key: string, options?: Record<string, unknown>) => string;
+}) {
   if (out)
     return (
-      <span role="img" aria-label="out">
+      <span role="img" aria-label={t('label.out')}>
         💀
       </span>
     );
   return (
-    <span role="img" aria-label={`lives-${lives}`}>
+    <span role="img" aria-label={t('label.livesAria', { count: lives })}>
       {'❤'.repeat(Math.max(0, lives)) || '·'}
     </span>
   );
@@ -265,7 +273,7 @@ function ThirtyOnePageContent() {
                 .map((p) => (
                   <div key={p.id} className={p.isEliminated ? 'text-center opacity-40' : 'text-center'}>
                     <div className="text-xs text-ds-text-muted mb-1">
-                      {tc('player.cpu', { id: p.id })} — <Lives lives={p.lives} out={p.isEliminated} />
+                      {tc('player.cpu', { id: p.id })} — <Lives lives={p.lives} out={p.isEliminated} t={t} />
                       {state.knockerIdx === p.id && <span className="ml-1 text-ds-warning">{t('label.knocked')}</span>}
                     </div>
                     <div className="text-[10px] text-ds-text-muted mb-1">
@@ -321,7 +329,7 @@ function ThirtyOnePageContent() {
             {/* Human hand */}
             <div className="text-center" data-tutorial="to-player-hand">
               <div className="text-xs text-ds-text-muted mb-1">
-                {tc('player.you')} — <Lives lives={human.lives} out={human.isEliminated} /> · {t('label.score')}:{' '}
+                {tc('player.you')} — <Lives lives={human.lives} out={human.isEliminated} t={t} /> · {t('label.score')}:{' '}
                 {human.score}
               </div>
               <SuitScoreBadges cards={human.cards} ariaLabel={t('label.suitScores')} />
