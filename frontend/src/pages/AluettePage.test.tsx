@@ -157,6 +157,8 @@ describe('AluettePage', () => {
     // 3 も 2 も含まれるため、チーム名とセットで照合する。
     expect(tally).toHaveTextContent('チーム0 3');
     expect(tally).toHaveTextContent('チーム1 2');
+    expect(tally).toHaveTextContent('チーム0：メーヌ獲得まで残り0トリック');
+    expect(tally).toHaveTextContent('チーム1：メーヌ獲得まで残り1トリック');
     expect(screen.getByTestId('aluette-meine-winner')).toHaveTextContent('チーム0');
   });
 
