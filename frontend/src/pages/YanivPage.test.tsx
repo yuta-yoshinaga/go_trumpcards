@@ -70,6 +70,19 @@ describe('YanivPage', () => {
     expect(rows[1]).toHaveTextContent('23015');
   });
 
+  it('indexes round penalties by player position', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [player(3, true, []), player(2, false, []), player(1, false, []), player(0, false, [])],
+        roundScoreHistory: [[11, 22, 33, 44]],
+      }),
+    );
+    renderWithProviders(<YanivPage />);
+    await screen.findByRole('heading', { name: 'ラウンド別の失点' });
+    const row = screen.getByRole('table').querySelector('tbody tr');
+    expect(row).toHaveTextContent('111223344');
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<YanivPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

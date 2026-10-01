@@ -407,9 +407,9 @@ function YanivPageContent() {
                         <th scope="row" className="p-1">
                           {roundIndex + 1}
                         </th>
-                        {state.players.map((p) => (
+                        {state.players.map((p, playerIndex) => (
                           <td key={p.id} className="p-1">
-                            {scores[p.id] ?? 0}
+                            {scores[playerIndex] ?? 0}
                           </td>
                         ))}
                       </tr>

@@ -91,6 +91,7 @@ func (g *Yaniv) Reset() {
 	g.gameEndFlag = false
 	g.winnerIdx = -1
 	g.roundNumber = 1
+	g.roundScoreHistory = make([][]int, 0)
 	g.actionLog = nil
 
 	for _, p := range g.players {
@@ -120,7 +121,6 @@ func (g *Yaniv) startRound() {
 	g.asafWinnerIdx = -1
 	g.isAsaf = false
 	g.roundScores = make([]int, len(g.players))
-	g.roundScoreHistory = make([][]int, 0)
 
 	for _, p := range g.players {
 		p.Reset()
@@ -501,7 +501,7 @@ func (g *Yaniv) resolveYaniv(callerIdx int) {
 func (g *Yaniv) endRoundNoContest() {
 	g.callerIdx = -1
 	g.roundScores = make([]int, len(g.players))
-	g.roundScoreHistory = append(g.roundScoreHistory, append([]int(nil), g.roundScores...))
+	g.roundScoreHistory = append(g.roundScoreHistory, g.roundScores)
 	g.appendLog(-1, "round_end", "yaniv.log.roundEnd", nil, nil)
 	g.finishRound()
 }
