@@ -1,6 +1,7 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { catchtenApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CatchTenResponse } from '../types/card';
 import { CatchTenPage } from './CatchTenPage';
@@ -71,6 +72,28 @@ describe('CatchTenPage', () => {
   it('shows the configured target score alongside team scores', async () => {
     renderWithProviders(<CatchTenPage />);
     expect(await screen.findByText(/チームスコア · 目標: 41/)).toBeInTheDocument();
+  });
+
+  it('includes the player name in each trick card accessible label', async () => {
+    mockExec.mockResolvedValue(makeState({ currentTrick: [{ playerIdx: 1, card: card('SPADE', 1) }] }));
+    renderWithProviders(<CatchTenPage />);
+
+    const trickCards = await screen.findByTestId('trick-display-cards');
+    await waitFor(() => expect(trickCards.querySelector('img')).toHaveAttribute('alt', 'CPU 1が出した♠ A'));
+  });
+
+  it('localizes the trick card accessible label in English', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(makeState({ currentTrick: [{ playerIdx: 1, card: card('SPADE', 1) }] }));
+      renderWithProviders(<CatchTenPage />);
+
+      const trickCards = await screen.findByTestId('trick-display-cards');
+      await waitFor(() => expect(trickCards.querySelector('img')).toHaveAttribute('alt', '♠ A played by CPU 1'));
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('shows the configured target score in the mobile team-score summary', async () => {

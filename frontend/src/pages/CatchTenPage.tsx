@@ -333,6 +333,9 @@ function CatchTenPageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  cardAriaLabelFor={(player, card) =>
+                    t('trickCardByPlayer', { card: cardAlt(card), name: playerName(player.id, player.isHuman) })
+                  }
                   dataTutorial="ct-trick-display"
                 />
               </div>
