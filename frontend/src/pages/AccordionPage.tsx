@@ -424,7 +424,13 @@ function AccordionPageContent() {
               ? (() => {
                   const count = accordionLegalOffsets(state.piles, selectedIdx).length;
                   return count > 0
-                    ? t('selectionMoves', { idx: selectedIdx, count })
+                    ? t('selectionMoves', {
+                        idx: selectedIdx,
+                        count,
+                        targets: accordionLegalOffsets(state.piles, selectedIdx)
+                          .map((offset) => t('mergeTargetColumn', { col: selectedIdx - offset }))
+                          .join(t('listSeparator')),
+                      })
                     : t('selectionNoMoves', { idx: selectedIdx });
                 })()
               : ''}
