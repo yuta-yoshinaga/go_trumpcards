@@ -204,21 +204,16 @@ function CitadelPageContent() {
   const legalTargets = citadelLegalTargets(state.tableau, state.foundation, previewedCard);
   // **読み上げは選択中の札について数える。** legalTargets は preview.source
   // (ホバーまたは**フォーカス**で動く) の札のもので、キーボードで札を辿ると
-  // 選択とずれる。「選択中のカードを置ける場所」と言いながら別の札の数を
-  // 読み上げることになるので、ここだけ選択元から数え直す。
+  // 選択とずれる。ここだけ選択元から数え直す。
   const selectedCard =
     selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
       ? state.tableau[selectedSource.col]?.[selectedSource.cardIndex]?.card
-      : selectedSource?.zone === 'foundation' && selectedSource.col !== undefined
-        ? state.foundation[selectedSource.col]?.at(-1)
-        : undefined;
+      : undefined;
   const selectedCardName = selectedCard ? cardAlt(selectedCard) : '';
   const selectionSource =
     selectedSource?.zone === 'tableau' && selectedSource.col !== undefined
       ? t('selectionTableauSource', { col: selectedSource.col })
-      : selectedSource?.zone === 'foundation' && selectedSource.col !== undefined
-        ? t('selectionFoundationSource', { suit: FOUNDATION_SUITS[selectedSource.col] })
-        : '';
+      : '';
   const selectedTargets = citadelLegalTargets(state.tableau, state.foundation, selectedCard);
   const legalTargetCount = selectedTargets.tableau.size + selectedTargets.foundation.size;
   /** Ring for a legal destination: softer while it is only a hover preview. */

@@ -25,7 +25,6 @@
   "hintAvailable": "Hint available",
   "noHint": "No hint available",
   "selectionTableauSource": "column {{col}}",
-  "selectionFoundationSource": "the {{suit}} foundation",
   "selectionMoves_one": "{{card}} selected from {{source}} has {{count}} legal destination",
   "selectionMoves_other": "{{card}} selected from {{source}} has {{count}} legal destinations",
   "selectionNoMoves": "{{card}} selected from {{source}} has no legal destination",

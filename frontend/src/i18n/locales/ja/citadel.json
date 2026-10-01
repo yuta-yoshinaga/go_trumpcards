@@ -25,9 +25,8 @@
   "hintAvailable": "ヒントがあります",
   "noHint": "ヒントはありません",
   "selectionTableauSource": "列{{col}}",
-  "selectionFoundationSource": "{{suit}}の組札",
-  "selectionMoves": "{{card}}、{{source}}から選択中のカードを置ける場所が{{count}}箇所あります",
-  "selectionNoMoves": "{{card}}、{{source}}から選択中のカードを置ける場所はありません",
+  "selectionMoves": "{{card}}を{{source}}から選択しました。置ける場所が{{count}}箇所あります",
+  "selectionNoMoves": "{{card}}を{{source}}から選択しました。置ける場所はありません",
   "tutorial": {
     "foundation": "中央の4つの組札には開始時に4枚のAが置かれます。同じスートでA→Kの順に積み上げます。",
     "tableau": "4枚のAの後、カードは1枚ずつ配られます。組札に置けるカードは即座に送り、残りを8列へ順に配るため、列の枚数は不揃いです。各列の右端が移動できます。",
