@@ -49,6 +49,7 @@
   "passButton": "Pass",
   "dealerMustBid": "The dealer cannot pass when everyone has passed. Declare a bid from 2 to 4.",
   "playButton": "Play",
+  "invalidPlayReason": "Follow the lead suit or play a trump card.",
   "nextTrick": "Next trick",
   "nextRound": "Next round",
   "bidPhase": "Declare your bid (0=pass, 2-4)",
