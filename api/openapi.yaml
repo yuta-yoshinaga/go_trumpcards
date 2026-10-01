@@ -79182,6 +79182,10 @@ components:
                 type: integer
               roundBet:
                 type: integer
+              roundPayout:
+                type: integer
+              netChange:
+                type: integer
               folded:
                 type: boolean
               out:

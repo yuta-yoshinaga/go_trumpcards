@@ -158,6 +158,7 @@ func TestPrimero_Showdown_FluxusBeatsNumerus(t *testing.T) {
 	g.GetPlayer(2).SetFolded(true)
 	g.GetPlayer(3).SetFolded(true)
 	g.SetPot(100)
+	g.GetPlayer(0).SetRoundBet(20)
 	before := g.GetPlayer(0).GetChips()
 
 	g.ResolveForTest()
@@ -165,6 +166,10 @@ func TestPrimero_Showdown_FluxusBeatsNumerus(t *testing.T) {
 	assert.Equal(t, 0, g.GetWinnerIdx())
 	assert.Equal(t, domain.PrimeroResultWin, g.GetResult())
 	assert.Equal(t, before+100, g.GetPlayer(0).GetChips())
+	assert.Equal(t, 100, g.GetRoundPayout(0), "payout is the actual pot, including carryover")
+	assert.Equal(t, 80, g.GetRoundNetChange(0))
+	assert.Equal(t, 0, g.GetRoundPayout(1))
+	assert.Equal(t, -g.GetPlayer(1).GetRoundBet(), g.GetRoundNetChange(1))
 	assert.Equal(t, domain.PrimeroPhaseResult, g.GetPhase())
 }
 
@@ -212,7 +217,8 @@ func TestPrimero_CleanWin_SoleActive(t *testing.T) {
 
 func TestPrimero_HumanFold_ResultNone(t *testing.T) {
 	g := primeroShowdownGame(t)
-	g.GetPlayer(0).SetFolded(true) // human folded
+	g.GetPlayer(0).SetFolded(true) // human folded after paying only the ante
+	g.GetPlayer(0).SetRoundBet(g.GetAnte())
 	primeroSetHand(g.GetPlayer(1), primeroFluxus(domain.CardDesignHeart)...)
 	g.GetPlayer(2).SetFolded(true)
 	g.GetPlayer(3).SetFolded(true)
@@ -222,6 +228,8 @@ func TestPrimero_HumanFold_ResultNone(t *testing.T) {
 
 	assert.Equal(t, 1, g.GetWinnerIdx())
 	assert.Equal(t, domain.PrimeroResultNone, g.GetResult())
+	assert.Equal(t, 0, g.GetRoundPayout(0))
+	assert.Equal(t, -g.GetAnte(), g.GetRoundNetChange(0))
 }
 
 func TestPrimero_PlayerRaise_FoldsAroundToCleanWin(t *testing.T) {

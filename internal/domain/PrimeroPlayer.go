@@ -12,9 +12,10 @@ const PrimeroHandSize = 4
 type PrimeroPlayer struct {
 	*GamePlayer
 	ChipHolder
-	folded   bool // このラウンドで降りた (フォールド) か
-	out      bool // チップ不足でゲームから脱落したか
-	roundBet int  // このラウンドで支払った累計額 (アンティ + コール/レイズ)
+	folded      bool // このラウンドで降りた (フォールド) か
+	out         bool // チップ不足でゲームから脱落したか
+	roundBet    int  // このラウンドで支払った累計額 (アンティ + コール/レイズ)
+	roundPayout int  // このラウンドに払い戻された額
 }
 
 // NewPrimeroPlayer はコンストラクタ。初期チップを付与する。
@@ -45,6 +46,12 @@ func (p *PrimeroPlayer) SetRoundBet(v int) { p.roundBet = v }
 // AddRoundBet このラウンドの累計支払い額に加算。
 func (p *PrimeroPlayer) AddRoundBet(v int) { p.roundBet += v }
 
+// GetRoundPayout このラウンドに払い戻された額を取得。
+func (p *PrimeroPlayer) GetRoundPayout() int { return p.roundPayout }
+
+// SetRoundPayout このラウンドに払い戻された額を設定。
+func (p *PrimeroPlayer) SetRoundPayout(v int) { p.roundPayout = v }
+
 // ClearHand 手札をクリアする (ディール準備・テスト用)。
 func (p *PrimeroPlayer) ClearHand() { p.Reset() }
 
@@ -52,26 +59,29 @@ func (p *PrimeroPlayer) ClearHand() { p.Reset() }
 func (p *PrimeroPlayer) ResetForRound() {
 	p.folded = false
 	p.roundBet = 0
+	p.roundPayout = 0
 	p.Reset()
 }
 
 // primeroPlayerJSON is the JSON wire format for PrimeroPlayer.
 type primeroPlayerJSON struct {
-	GamePlayer *GamePlayer `json:"gp"`
-	Chips      int         `json:"ch"`
-	Folded     bool        `json:"fd"`
-	Out        bool        `json:"ot"`
-	RoundBet   int         `json:"rb"`
+	GamePlayer  *GamePlayer `json:"gp"`
+	Chips       int         `json:"ch"`
+	Folded      bool        `json:"fd"`
+	Out         bool        `json:"ot"`
+	RoundBet    int         `json:"rb"`
+	RoundPayout int         `json:"rp"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (p *PrimeroPlayer) MarshalJSON() ([]byte, error) {
 	return json.Marshal(primeroPlayerJSON{
-		GamePlayer: p.GamePlayer,
-		Chips:      p.GetChips(),
-		Folded:     p.folded,
-		Out:        p.out,
-		RoundBet:   p.roundBet,
+		GamePlayer:  p.GamePlayer,
+		Chips:       p.GetChips(),
+		Folded:      p.folded,
+		Out:         p.out,
+		RoundBet:    p.roundBet,
+		RoundPayout: p.roundPayout,
 	})
 }
 
@@ -93,5 +103,6 @@ func (p *PrimeroPlayer) UnmarshalJSON(data []byte) error {
 	p.folded = j.Folded
 	p.out = j.Out
 	p.roundBet = j.RoundBet
+	p.roundPayout = j.RoundPayout
 	return nil
 }
