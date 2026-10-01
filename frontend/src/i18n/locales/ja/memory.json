@@ -30,6 +30,7 @@
   "visitedMark": "一度めくったカード",
   "knownMatchMark": "ここで同じカードを見ています",
   "scoreLine": "{{name}}: {{count}}",
+  "remainingPairs": "残り {{remaining}} / {{total}} ペア",
   "capturedPairs": "獲得ペア",
   "noCapturedPairs": "なし",
   "nextButton": "次へ",

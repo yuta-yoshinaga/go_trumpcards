@@ -113,6 +113,20 @@ describe('MemoryPage', () => {
     expect(screen.getByText(/CPU 3: 0/)).toBeInTheDocument();
   });
 
+  it('shows remaining and total pairs from the server board when config differs', async () => {
+    const boardState: MemoryResponse = {
+      ...flip1State,
+      board: Array.from({ length: 8 }, (_, index) => ({
+        card: null,
+        faceUp: false,
+        taken: index < 2,
+      })),
+    };
+    mockExec.mockResolvedValue(boardState);
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText('残り 3 / 4 ペア')).toBeInTheDocument());
+  });
+
   it('score section has role="status" for accessibility', async () => {
     const { container } = renderWithProviders(<MemoryPage />);
     await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());

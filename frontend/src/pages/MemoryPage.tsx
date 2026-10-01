@@ -380,6 +380,15 @@ function MemoryPageContent() {
               ))}
             </div>
 
+            <div className="my-1 px-2 py-1 text-ds-text-primary text-sm tabular-nums lg:shrink-0">
+              <span className="inline-block rounded bg-ds-surface px-2 py-1">
+                {t('remainingPairs', {
+                  remaining: state.board.filter((card) => !card.taken).length / 2,
+                  total: state.board.length / 2,
+                })}
+              </span>
+            </div>
+
             {/* Captured pairs – mini cards per player. Collapsible on mobile so
                 the board grid keeps its full height (#3028). */}
             <details
