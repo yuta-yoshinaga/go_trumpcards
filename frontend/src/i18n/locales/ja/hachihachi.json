@@ -23,6 +23,7 @@
   "result": {
     "title": "最終得点",
     "winner": "勝者: {{name}}",
+    "tie": "引き分けです。",
     "score": "{{name}}: {{score}}"
   },
   "round": "ラウンド {{n}} / {{total}}",
