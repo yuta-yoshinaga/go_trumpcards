@@ -3379,6 +3379,7 @@ const baseTeenPattiState: TeenPattiResponse = {
   ],
   pot: 4,
   stake: 1,
+  humanCallCost: 1,
   phase: 0,
   roundNumber: 1,
   dealerIdx: 3,

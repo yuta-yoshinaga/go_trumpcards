@@ -123,6 +123,12 @@ func (_m *MockTeenPattiGame) GetStake() int {
 	return ret.Get(0).(int)
 }
 
+// GetCallCost モック
+func (_m *MockTeenPattiGame) GetCallCost(playerIdx int) int {
+	ret := _m.Called(playerIdx)
+	return ret.Int(0)
+}
+
 // GetRoundWinnerIdx モック
 func (_m *MockTeenPattiGame) GetRoundWinnerIdx() int {
 	ret := _m.Called()

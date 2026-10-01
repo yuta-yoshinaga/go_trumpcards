@@ -61,6 +61,23 @@ describe('TeenPattiPage', () => {
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
   });
 
+  it('shows the required call amount for the human Blind or Seen status', async () => {
+    const blind = renderWithProviders(<TeenPattiPage />);
+    expect(await screen.findByText('ブラインドの必要額: 1')).toBeInTheDocument();
+    blind.unmount();
+
+    mockExec.mockResolvedValue(
+      makeTeenPattiState({
+        players: makeTeenPattiState().players.map((player) => (player.isHuman ? { ...player, seen: true } : player)),
+        stake: 3,
+        humanCallCost: 73,
+      }),
+    );
+    renderWithProviders(<TeenPattiPage />);
+    expect(await screen.findByText('シーンの必要額（ブラインドの2倍）: 73')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ベット (73)' })).toBeInTheDocument();
+  });
+
   it('dispatches see when the See button is clicked', async () => {
     renderWithProviders(<TeenPattiPage />);
     const btn = await screen.findByRole('button', { name: '手札を見る' });

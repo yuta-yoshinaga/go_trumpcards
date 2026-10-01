@@ -32,6 +32,10 @@
     "folded": "Folded",
     "out": "Out"
   },
+  "callCost": {
+    "blind": "Blind call amount: {{amount}}",
+    "seen": "Seen call amount (2× Blind): {{amount}}"
+  },
   "hand": {
     "trail": "Trail (three of a kind)",
     "puresequence": "Pure Sequence (straight flush)",

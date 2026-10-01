@@ -71030,6 +71030,9 @@ components:
         stake:
           type: integer
           description: Current per-action stake (a Blind player pays this, a Seen player pays double)
+        humanCallCost:
+          type: integer
+          description: Amount the human player must pay to call the current stake
         currentPlayerIdx:
           type: integer
           description: Index of the player whose turn it is
