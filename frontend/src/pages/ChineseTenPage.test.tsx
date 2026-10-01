@@ -82,6 +82,20 @@ describe('ChineseTenPage', () => {
     expect(screen.getByText(/A〜9は合計10で取る/)).toBeInTheDocument();
   });
 
+  it('reveals the opponent hand after the game ends', async () => {
+    const opponentHand = [card('HEART', 7), card('SPADE', 12)];
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        phase: 2,
+        gameEndFlag: true,
+        players: [human(), cpu({ cards: opponentHand, hidden: false })],
+      }),
+    );
+    renderWithProviders(<ChineseTenPage />);
+    await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
+    expect(screen.getByAltText('♠ Q')).toBeInTheDocument();
+  });
+
   it('shows both seats captures but never the opponent hand', async () => {
     renderWithProviders(<ChineseTenPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
@@ -89,6 +103,7 @@ describe('ChineseTenPage', () => {
     expect(screen.getByText('あなたの取り札 (5)')).toBeInTheDocument();
     expect(screen.getByText('CPU の取り札 (20)')).toBeInTheDocument();
     expect(screen.getByText('CPU の手札 3 枚')).toBeInTheDocument();
+    expect(document.querySelectorAll('img[src="/images/z01.png"]')).toHaveLength(3);
   });
 
   it('shows each layout card position from zero and includes it in the accessible name', async () => {

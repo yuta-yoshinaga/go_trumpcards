@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { chinesetenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
-import { CardBack } from '../components/CardImage';
+import { CardBack, CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -172,7 +172,7 @@ function ChineseTenPageContent() {
               ))}
             </div>
 
-            {/* Opponent hand: backs only. The server withholds the cards. */}
+            {/* Opponent cards are revealed by the server only after the game ends. */}
             <div className="flex justify-center gap-4 mb-3">
               {opponents.map((o) => (
                 <div key={`opp-${o.id.toString()}`} className="text-center">
@@ -182,9 +182,13 @@ function ChineseTenPageContent() {
                     role="img"
                     aria-label={t('opponentHandAriaLabel', { n: o.cardCount })}
                   >
-                    {Array.from({ length: o.cardCount }, (_, i) => (
-                      <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                    ))}
+                    {ended && o.cards.length > 0
+                      ? o.cards.map((card, i) => (
+                          <CardImage key={`opp-${o.id.toString()}-c${i.toString()}`} card={card} width={cardWidth} />
+                        ))
+                      : Array.from({ length: o.cardCount }, (_, i) => (
+                          <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                        ))}
                   </div>
                 </div>
               ))}
