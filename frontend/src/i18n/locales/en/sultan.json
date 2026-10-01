@@ -24,6 +24,8 @@
   "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",
   "autoComplete": "Auto Complete",
+  "autoCompleteStarted": "Auto-complete started",
+  "autoCompleteCompleted": "Auto-complete completed",
   "autoCompleteNotReady": "Available when stock and waste are empty",
   "undo": "Undo",
   "stalemate": "Stalemate",
