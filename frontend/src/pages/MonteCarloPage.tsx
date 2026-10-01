@@ -107,16 +107,22 @@ function MonteCarloPageContent() {
 
   const [selected, setSelected] = useState<CellPos | null>(null);
   const [pairRemoved, setPairRemoved] = useState(false);
+  const [pairAnnouncement, setPairAnnouncement] = useState('');
   const pairToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Clear the success toast timer on unmount to avoid setting state after teardown.
   useEffect(() => () => clearTimeout(pairToastTimer.current ?? undefined), []);
 
   const flashPairRemoved = useCallback(() => {
+    setPairAnnouncement(t('pairRemoved'));
     setPairRemoved(true);
     clearTimeout(pairToastTimer.current ?? undefined);
-    pairToastTimer.current = setTimeout(() => setPairRemoved(false), 1000);
-  }, []);
+    // Clearing the announcement too lets the next removal re-announce the same text.
+    pairToastTimer.current = setTimeout(() => {
+      setPairRemoved(false);
+      setPairAnnouncement('');
+    }, 1000);
+  }, [t]);
 
   const isPlaying = state?.phase === MonteCarloPhase.PLAYING;
   const isGameClear = state?.phase === MonteCarloPhase.GAME_CLEAR;
@@ -214,6 +220,9 @@ function MonteCarloPageContent() {
         )
       }
     >
+      <div role="status" aria-live="polite" data-testid="mc-pair-announcement" className="sr-only">
+        {pairAnnouncement}
+      </div>
       {!state ? (
         <>
           <GameSkeleton
@@ -334,12 +343,7 @@ function MonteCarloPageContent() {
             </div>
 
             {pairRemoved && (
-              <div
-                role="status"
-                aria-live="polite"
-                data-testid="mc-pair-toast"
-                className="mb-2 text-center text-ds-success text-sm font-medium"
-              >
+              <div data-testid="mc-pair-toast" className="mb-2 text-center text-ds-success text-sm font-medium">
                 {t('pairRemoved')}
               </div>
             )}
