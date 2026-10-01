@@ -35,6 +35,8 @@
   "team": "Team {{n}}",
   "teamShort": "T{{n}}",
   "score": "{{score}} pts",
+  "scoreUpdated": "{{team}} score: {{score}} pts",
+  "listSeparator": ", ",
   "stake": "Stake: {{stake}}",
   "stakePending": "Stake: {{stake}} (proposed {{pending}})",
   "declarePhase": "Declare — pick a Schlag rank and a critical (trump) suit.",
