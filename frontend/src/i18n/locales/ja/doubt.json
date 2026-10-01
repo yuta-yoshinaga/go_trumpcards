@@ -22,6 +22,7 @@
     "wasLying": "ウソでした！",
     "wasTruth": "本当でした！",
     "loserTook": "{{name}}が{{count}}枚引き取りました",
+    "announcement": "{{outcome}} {{name}}が{{count}}枚引き取りました",
     "discarded": "{{count}}枚がゲームから除外されました"
   },
   "yourCards": "あなた ({{count}}枚)",
