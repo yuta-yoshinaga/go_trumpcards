@@ -22,7 +22,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useDestinationPreview } from '../hooks/useDestinationPreview';
-import { useGameApi } from '../hooks/useGameApi';
+import { isRejectedAction, useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
@@ -85,7 +85,38 @@ function BristolPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('bristol');
-  const { state, loading, error, exec: execApi, retry } = useGameApi(bristolApi.exec);
+  const [operationAnnouncement, setOperationAnnouncement] = useState('');
+  const announceSuccessfulOperation = useCallback(
+    (res: BristolResponse, args: Parameters<typeof bristolApi.exec>) => {
+      if (isRejectedAction(res)) return;
+      if (args[0] === 'draw') {
+        setOperationAnnouncement(t('announcement.draw'));
+      } else if (args[0] === 'move' && args[1] && args[2]) {
+        const location = (zone: BristolMoveZone) =>
+          t(
+            zone.zone === 'tableau'
+              ? 'announcement.tableau'
+              : zone.zone === 'foundation'
+                ? 'announcement.foundation'
+                : 'announcement.fan',
+            {
+              num: (zone.col ?? 0) + (zone.zone === 'tableau' ? 1 : 0),
+            },
+          );
+        setOperationAnnouncement(t('announcement.move', { source: location(args[1]), target: location(args[2]) }));
+      }
+    },
+    [t],
+  );
+  const {
+    state,
+    loading,
+    error,
+    exec: execApi,
+    retry,
+  } = useGameApi(bristolApi.exec, {
+    onSuccess: announceSuccessfulOperation,
+  });
   const { cardWidth, cardHeight } = useCardDimensions();
   const {
     hint: frontendHint,
@@ -266,6 +297,9 @@ function BristolPageContent() {
             data-testid="br-move-count-live"
           >
             {t('moveCount')}: {state.moveCount}
+          </span>
+          <span className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="br-operation-live">
+            {operationAnnouncement}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
