@@ -25,6 +25,8 @@
     "discardTopAria": "Discard pile: {{card}}",
     "discardEmpty": "Discard pile is empty",
     "lives": "Lives",
+    "livesAria_one": "{{count}} life remaining",
+    "livesAria_other": "{{count}} lives remaining",
     "score": "Best Suit",
     "round": "Round",
     "knocked": "Knocked!",

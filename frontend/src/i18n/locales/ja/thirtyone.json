@@ -25,6 +25,7 @@
     "discardTopAria": "捨て札: {{card}}",
     "discardEmpty": "捨て札は空です",
     "lives": "ライフ",
+    "livesAria": "残り{{count}}ライフ",
     "score": "最高スート",
     "round": "ラウンド",
     "knocked": "ノック!",
