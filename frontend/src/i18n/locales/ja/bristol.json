@@ -18,6 +18,13 @@
   "fanAria": "ファン {{num}}: {{card}}（{{count}}枚）",
   "fanAriaEmpty": "ファン {{num}}: 空",
   "moveCount": "手数",
+  "announcement": {
+    "draw": "山札から配りました",
+    "move": "{{source}}から{{target}}に移動しました",
+    "tableau": "場札 {{num}}",
+    "fan": "ファン {{num}}",
+    "foundation": "組札 {{num}}"
+  },
   "draw": "配る",
   "giveup": "ギブアップ",
   "hint": "ヒント",
