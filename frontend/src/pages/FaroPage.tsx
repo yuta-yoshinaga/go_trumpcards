@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { faroApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -25,6 +25,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { FaroResponse } from '../types/card';
 import { FaroPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { FARO_HELP, parseFaroCommand } from '../utils/cli/commands/faroCommands';
 import { formatFaroState } from '../utils/cli/formatters/faroFormatter';
@@ -100,6 +101,23 @@ function FaroPageContent() {
   const [chipAmount, setChipAmount] = useState<number>(CHIP_AMOUNTS[0]);
   const [copper, setCopper] = useState(false);
   const [callOrder, setCallOrder] = useState<number[]>([]);
+  const [dealResultAnnouncement, setDealResultAnnouncement] = useState('');
+  const announcedTurns = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!state) return;
+    const previousTurns = announcedTurns.current;
+    announcedTurns.current = state.turnsPlayed;
+    if (previousTurns !== null && state.turnsPlayed > previousTurns && state.losingCard && state.winningCard) {
+      setDealResultAnnouncement(
+        t('dealResultAnnouncement', {
+          losing: cardAlt(state.losingCard),
+          winning: cardAlt(state.winningCard),
+          split: t(state.split ? 'split' : 'noSplit'),
+        }),
+      );
+    }
+  }, [state, t]);
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
@@ -158,14 +176,19 @@ function FaroPageContent() {
   const betFor = (rank: number) => state.bets.find((b) => b.rank === rank);
 
   const handleReset = () => {
+    setDealResultAnnouncement('');
     hideActionLog();
     setCallOrder([]);
     exec('reset');
   };
 
-  const handleDeal = () => exec('deal');
+  const handleDeal = () => {
+    setDealResultAnnouncement('');
+    return exec('deal');
+  };
 
   const handleNext = () => {
+    setDealResultAnnouncement('');
     setCallOrder([]);
     exec('next');
   };
@@ -202,6 +225,9 @@ function FaroPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div className="sr-only" aria-live="polite" aria-atomic="true" data-testid="faro-deal-result-live">
+        {dealResultAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
