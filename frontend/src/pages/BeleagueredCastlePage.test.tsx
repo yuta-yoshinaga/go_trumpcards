@@ -540,3 +540,28 @@ describe('BeleagueredCastlePage selection status announcement', () => {
     await waitFor(() => expect(status).toHaveTextContent('選択中のカードを置ける場所はありません'));
   });
 });
+
+describe('BeleagueredCastlePage move count announcement', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+    localStorage.clear();
+  });
+
+  it('announces only move count changes and starts empty', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({ ...playingState, moveCount: 4 });
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.getByText(/包囲された城/)).toBeInTheDocument());
+
+    const status = screen.getByTestId('bc-move-count-status');
+    expect(status).toBeInTheDocument();
+    expect(status).toBeEmptyDOMElement();
+    expect(status).toHaveAttribute('role', 'status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+
+    fireEvent.click(screen.getByRole('button', { name: /^♠ 5/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^♥ 6/ }));
+
+    await waitFor(() => expect(status).toHaveTextContent('手数: 4'));
+  });
+});
