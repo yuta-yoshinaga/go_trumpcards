@@ -14,6 +14,7 @@
   "placeable": "置ける",
   "baseRank": "ベースランク",
   "moveCount": "手数",
+  "moveAnnouncement": "{{source}}から{{destination}}へ移動しました。手数: {{moveCount}}",
   "draw": "引く",
   "giveup": "ギブアップ",
   "hint": "ヒント",
