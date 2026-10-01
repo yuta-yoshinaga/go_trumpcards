@@ -16,6 +16,7 @@
   "round": "Round {{n}}",
   "trick": "Trick {{n}}",
   "cards": "{{count}} cards",
+  "dealerBadge": "Dealer",
   "teamScores": "Team Scores",
   "team": "Team {{n}}",
   "teamYou": "Team {{n}} (You)",
