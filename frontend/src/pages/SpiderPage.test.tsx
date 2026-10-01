@@ -455,6 +455,19 @@ describe('SpiderPage', () => {
     await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'true'));
   });
 
+  it('includes the zero-based column and top-down position in face-up tableau card names', async () => {
+    renderWithProviders(<SpiderPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    const firstColumnCard = screen.getByAltText('♠ K').closest('button');
+    const secondColumnCard = screen.getByAltText('♥ 5').closest('button');
+    expect(firstColumnCard).toHaveAttribute('aria-label', '♠ K（列0・上から1枚目）');
+    expect(secondColumnCard).toHaveAttribute('aria-label', '♥ 5（列1・上から2枚目）');
+    expect(firstColumnCard).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(firstColumnCard!);
+    await waitFor(() => expect(firstColumnCard).toHaveAttribute('aria-pressed', 'true'));
+  });
+
   it('empty tableau targets stay focusable and explain source selection before a move', async () => {
     renderWithProviders(<SpiderPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
