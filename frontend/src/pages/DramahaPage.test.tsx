@@ -1169,9 +1169,17 @@ describe('DramahaPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'アドオン' })).toBeInTheDocument());
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue(preFlopState);
+    mockExec.mockResolvedValue({
+      ...preFlopState,
+      players: preFlopState.players.map((player) => (player.isHuman ? { ...player, chips: 2500 } : player)),
+    });
     fireEvent.click(screen.getByRole('button', { name: 'アドオン' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('addon'));
+    await waitFor(() =>
+      expect(screen.getByTestId('rebuy-announcement')).toHaveTextContent(
+        'アドオンを選択しました。更新後のチップ数: 2500',
+      ),
+    );
   });
 
   it('calls skipaddon command when addon skip button is clicked', async () => {
