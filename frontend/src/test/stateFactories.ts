@@ -13,6 +13,7 @@ import type {
   CallBreakResponse,
   CasinoHoldemResponse,
   CegoResponse,
+  ChinchonResponse,
   CinchResponse,
   CirullaResponse,
   CoincheResponse,
@@ -96,6 +97,28 @@ import type {
   WattenResponse,
   ZwanzigerrufenResponse,
 } from '../types/card';
+
+/** Creates a Chinchón response with round score history defaults. */
+export function makeChinchonState(overrides: Partial<ChinchonResponse> = {}): ChinchonResponse {
+  return {
+    players: [],
+    phase: 0,
+    roundNumber: 1,
+    roundScoreHistory: [],
+    currentPlayerIdx: 0,
+    discardTop: null,
+    drawPileCount: 0,
+    gameEndFlag: false,
+    winnerIdx: -1,
+    knockerIdx: -1,
+    wonByChinchon: false,
+    knockerMelds: [],
+    layoffableIndices: [],
+    message: '',
+    config: { playerCount: 2, knockThreshold: 5, eliminationLimit: 100 },
+    ...overrides,
+  };
+}
 
 /** Creates a default Egyptian Ratscrew state. */
 export function makeEgyptianRatscrewState(overrides?: Partial<EgyptianRatscrewResponse>): EgyptianRatscrewResponse {

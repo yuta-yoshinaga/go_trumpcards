@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, chinchonApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -43,6 +43,7 @@ const drawPhaseState: ChinchonResponse = {
   ],
   phase: 0,
   roundNumber: 1,
+  roundScoreHistory: [],
   currentPlayerIdx: 0,
   discardTop: { design: 'HEART', value: 7 },
   drawPileCount: 30,
@@ -99,6 +100,24 @@ beforeEach(() => {
 });
 
 describe('ChinchonPage', () => {
+  it('renders server round score history by round and player', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      roundScoreHistory: [
+        [4, 7],
+        [0, 12],
+      ],
+    });
+    renderWithProviders(<ChinchonPage />);
+
+    const history = await screen.findByTestId('chinchon-score-history');
+    expect(history).toHaveTextContent('得点履歴');
+    expect(history).toHaveTextContent('4');
+    expect(history).toHaveTextContent('7');
+    expect(history).toHaveTextContent('12');
+    expect(within(history).getAllByRole('row')).toHaveLength(3);
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<ChinchonPage />);

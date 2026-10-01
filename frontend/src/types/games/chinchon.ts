@@ -32,6 +32,7 @@ export interface ChinchonResponse extends BaseGameResponse {
   players: ChinchonPlayerData[];
   phase: number;
   roundNumber: number;
+  roundScoreHistory: number[][];
   currentPlayerIdx: number;
   discardTop: Card | null;
   drawPileCount: number;
