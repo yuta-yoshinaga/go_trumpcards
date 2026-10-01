@@ -26,6 +26,7 @@
   "nextRankAria": "次に置くべきカード {{rank}}",
   "foundationCompleteAria": "完成",
   "acceptsTooltip": "置けるのは {{rank}}",
+  "crossCardAria": "十字 {{col}}: {{card}}。{{accepts}}",
   "acceptsAny": "どのカードでも置けます",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
