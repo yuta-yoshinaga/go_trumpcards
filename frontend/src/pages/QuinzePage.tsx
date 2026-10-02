@@ -196,8 +196,15 @@ function QuinzePageContent() {
                 if (seatIdx === state.bankerIdx || !seat.hand) return null;
                 const onTurn = isPlayerTurn && seatIdx === state.activeSeat;
                 return (
-                  <div key={`seat-${seatIdx.toString()}`} className="text-center">
-                    <div className="text-game-text-muted text-xs mb-1">{seat.name}</div>
+                  <fieldset
+                    key={`seat-${seatIdx.toString()}`}
+                    className="border-0 p-0 m-0 min-w-0 text-center"
+                    aria-current={onTurn ? 'true' : undefined}
+                  >
+                    <legend className="text-game-text-muted text-xs mb-1">
+                      {seat.name}
+                      {onTurn && <span className="sr-only">: {t('phase.playerTurn')}</span>}
+                    </legend>
                     <div className={onTurn ? 'ring-2 ring-ds-warning rounded p-1' : 'p-1'}>
                       {renderHand(
                         seat.hand,
@@ -227,7 +234,7 @@ function QuinzePageContent() {
                         )}
                       </div>
                     </div>
-                  </div>
+                  </fieldset>
                 );
               })}
             </div>
