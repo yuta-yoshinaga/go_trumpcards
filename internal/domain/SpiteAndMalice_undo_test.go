@@ -3,6 +3,7 @@
 package domain_test
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"testing"
 
@@ -72,6 +73,65 @@ func TestSpiteAndMaliceUndoHistoryBoundAndGameOver(t *testing.T) {
 	err = g.Undo()
 	require.ErrorIs(t, err, domain.ErrInvalidPlay)
 	assert.Equal(t, "spiteandmalice.errNothingToUndo", err.(*domain.DomainError).MessageCode())
+}
+
+func TestSpiteAndMaliceRejectsNilUndoHistoryEntry(t *testing.T) {
+	g := domain.NewDefaultSpiteAndMalice()
+	err := json.Unmarshal([]byte(`{"hi":[null]}`), g)
+	require.Error(t, err)
+}
+
+func TestSpiteAndMaliceUndoMalformedSnapshotLeavesBoardUnchanged(t *testing.T) {
+	g := domain.NewDefaultSpiteAndMalice()
+	g.Reset()
+	require.NoError(t, g.Discard(0, 0))
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var state map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &state))
+	var history []map[string]string
+	require.NoError(t, json.Unmarshal(state["hi"], &history))
+	history[len(history)-1]["st"] = base64.StdEncoding.EncodeToString([]byte("{"))
+	state["hi"], err = json.Marshal(history)
+	require.NoError(t, err)
+	data, err = json.Marshal(state)
+	require.NoError(t, err)
+	corrupt := domain.NewDefaultSpiteAndMalice()
+	require.NoError(t, json.Unmarshal(data, corrupt))
+	currentBefore := corrupt.GetCurrent()
+	phaseBefore := corrupt.GetPhase()
+	handBefore := corrupt.GetPlayer(domain.SpiteAndMaliceHumanIdx).HandSize()
+	actionLogBefore := corrupt.GetActionLog()
+
+	require.Error(t, corrupt.Undo())
+	assert.Equal(t, currentBefore, corrupt.GetCurrent())
+	assert.Equal(t, phaseBefore, corrupt.GetPhase())
+	assert.Equal(t, handBefore, corrupt.GetPlayer(domain.SpiteAndMaliceHumanIdx).HandSize())
+	assert.Equal(t, actionLogBefore, corrupt.GetActionLog())
+}
+
+func TestSpiteAndMaliceUndoRemovesExactlyOneHistoryEntry(t *testing.T) {
+	g := domain.NewDefaultSpiteAndMalice()
+	g.Reset()
+	for i := 0; i < 2; i++ {
+		g.SetCurrent(domain.SpiteAndMaliceHumanIdx)
+		g.SetPlayerHand(domain.SpiteAndMaliceHumanIdx, []*domain.Card{domain.NewCard(domain.CardDesignHeart, 2+i, true)})
+		require.NoError(t, g.Discard(0, 0))
+	}
+	before, err := json.Marshal(g)
+	require.NoError(t, err)
+	var beforeState struct {
+		History []json.RawMessage `json:"hi"`
+	}
+	require.NoError(t, json.Unmarshal(before, &beforeState))
+	require.NoError(t, g.Undo())
+	after, err := json.Marshal(g)
+	require.NoError(t, err)
+	var afterState struct {
+		History []json.RawMessage `json:"hi"`
+	}
+	require.NoError(t, json.Unmarshal(after, &afterState))
+	assert.Len(t, afterState.History, len(beforeState.History)-1)
 }
 
 func TestSpiteAndMaliceAutoCompleteIsOneUndoableHumanAction(t *testing.T) {

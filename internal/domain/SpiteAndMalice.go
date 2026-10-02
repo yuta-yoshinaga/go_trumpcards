@@ -739,13 +739,12 @@ func (s *SpiteAndMalice) takeSnapshot() {
 	if s.current != SpiteAndMaliceHumanIdx || s.phase != SpiteAndMalicePhasePlaying {
 		return
 	}
-	if s.coalescingSnapshots {
-		if s.coalescedSnapshotTaken {
-			return
-		}
+	if s.coalescingSnapshots && s.coalescedSnapshotTaken {
+		return
 	}
 	b, err := json.Marshal(s.boardJSON())
 	if err != nil {
+		// Continue the operation without recording a snapshot.
 		return
 	}
 	if s.coalescingSnapshots {
@@ -766,9 +765,21 @@ func (s *SpiteAndMalice) Undo() error {
 	}
 	history := s.history
 	snap := history[len(history)-1]
-	if err := json.Unmarshal(snap.State, s); err != nil {
+	restored := &SpiteAndMalice{}
+	if err := json.Unmarshal(snap.State, restored); err != nil {
 		return err
 	}
+	s.trumpCards = restored.trumpCards
+	s.stock = restored.stock
+	s.completed = restored.completed
+	s.foundations = restored.foundations
+	s.players = restored.players
+	s.current = restored.current
+	s.phase = restored.phase
+	s.moveCount = restored.moveCount
+	s.winner = restored.winner
+	s.actionLog = restored.actionLog
+	s.config = restored.config
 	s.history = history[:len(history)-1]
 	return nil
 }
@@ -796,6 +807,11 @@ func (s *SpiteAndMalice) UnmarshalJSON(data []byte) error {
 	}
 	if len(j.History) > MaxUndoHistory {
 		return fmt.Errorf("spiteandmalice: undo history exceeds maximum allowed size")
+	}
+	for i, snapshot := range j.History {
+		if snapshot == nil {
+			return fmt.Errorf("spiteandmalice: undo history entry %d is invalid", i)
+		}
 	}
 	for i := range SpiteAndMaliceFoundationCnt {
 		if len(j.Foundations[i]) > spiteAndMaliceMaxSliceLen {

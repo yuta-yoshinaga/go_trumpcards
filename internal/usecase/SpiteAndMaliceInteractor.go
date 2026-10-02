@@ -12,6 +12,7 @@ type SpiteAndMaliceInteractorIF interface {
 	Snapshot() ([]byte, error)
 	// Reset ゲーム初期化
 	Reset() string
+	// Undo reverts the latest human action.
 	Undo() string
 	// PlayFromHand 手札からファウンデーションに出す
 	PlayFromHand(handIdx, foundationIdx int) string

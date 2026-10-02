@@ -470,7 +470,7 @@ function SpiteAndMalicePageContent() {
                 <div className="flex flex-col items-center">
                   <button
                     type="button"
-                    className={btnPrimary}
+                    className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
                     onClick={handleUndo}
                     aria-disabled={!state.canUndo || loading}
                     aria-describedby="sam-undo-hint"
