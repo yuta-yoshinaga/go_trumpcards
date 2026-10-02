@@ -4,6 +4,8 @@
   "dealer": "Dealer",
   "dealerUpcard": "Upcard only",
   "hiddenCard": "Hidden card",
+  "bestCardIncluded": "{{card}}, included in the best hand",
+  "bestCardExcluded": "{{card}}, not included in the best hand",
   "label": {
     "chips": "Chips",
     "ante": "Ante",
