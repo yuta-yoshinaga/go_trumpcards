@@ -18,6 +18,7 @@
   "move": "Stack",
   "movable": "Movable",
   "notMovable": "Not movable",
+  "topCardStatus": "{{card}}, column {{col}}, {{state}}",
   "redeal": "Gather & redeal",
   "giveup": "Give Up",
   "hint": "Hint",

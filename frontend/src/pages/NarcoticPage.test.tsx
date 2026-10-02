@@ -115,12 +115,16 @@ describe('NarcoticPage', () => {
     });
     renderWithProviders(<NarcoticPage />);
     await waitFor(() => expect(screen.getByTestId('narcotic-movable-1')).toHaveTextContent('移動可能'));
+    expect(screen.getByRole('button', { name: /♠ 9.*列1.*移動可能/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /♠ 5.*列0.*移動不可/ })).toBeInTheDocument();
     expect(screen.getByTestId('narcotic-movable-0')).toHaveTextContent('移動不可');
     expect(screen.getByTestId('narcotic-movable-2')).toHaveTextContent('移動不可');
     expect(screen.getByTestId('narcotic-movable-3')).toHaveTextContent('移動不可');
 
     fireEvent.click(screen.getByRole('button', { name: '山札をめくる（残り44枚）' }));
     await waitFor(() => expect(screen.getByTestId('narcotic-movable-0')).toHaveTextContent('移動可能'));
+    expect(screen.getByRole('button', { name: /♠ 5.*列0.*移動可能/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /♠ 9.*列1.*移動不可/ })).toBeInTheDocument();
     expect(screen.getByTestId('narcotic-movable-1')).toHaveTextContent('移動不可');
   });
 
