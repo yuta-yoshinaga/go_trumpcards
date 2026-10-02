@@ -111,7 +111,11 @@ function MaoPageContent() {
       const hand = response.players.find((player) => player.isHuman)?.cards ?? [];
       const previousHand = previousHumanHandRef.current;
       previousHumanHandRef.current = hand;
-      if (args[0] !== 'draw' || !previousHand) return;
+      if (args[0] !== 'draw') {
+        setDrawAnnouncement('');
+        return;
+      }
+      if (!previousHand) return;
 
       const remaining = new Map<string, number>();
       for (const card of previousHand) {

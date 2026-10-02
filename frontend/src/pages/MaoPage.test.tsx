@@ -143,6 +143,29 @@ describe('MaoPage', () => {
     expect(live).toHaveAttribute('aria-live', 'polite');
   });
 
+  it('clears a draw announcement after a successful play response', async () => {
+    const drawnCard = { design: 'DIAMOND', value: 12 } as const;
+    mockExec
+      .mockResolvedValueOnce(playPhaseState)
+      .mockResolvedValueOnce({
+        ...playPhaseState,
+        players: playPhaseState.players.map((player) =>
+          player.isHuman ? { ...player, cards: [...(player.cards ?? []), drawnCard] } : player,
+        ),
+      })
+      .mockResolvedValueOnce(playPhaseState);
+    renderWithProviders(<MaoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '引く' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '引く' }));
+    const live = await screen.findByTestId('mao-draw-announcement');
+    await waitFor(() => expect(live).toHaveTextContent('♦ Q'));
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('play', 0));
+    await waitFor(() => expect(live).toBeEmptyDOMElement());
+  });
+
   it('does not announce a draw response when the human hand did not grow', async () => {
     mockExec.mockResolvedValue({
       ...playPhaseState,
