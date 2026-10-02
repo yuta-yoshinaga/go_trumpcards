@@ -104,6 +104,37 @@ export const MaoPage = withTutorial(MaoPageContent, 'mao', MAO_TUTORIAL_STEPS);
 function MaoPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('mao');
+  const [drawAnnouncement, setDrawAnnouncement] = useState('');
+  const previousHumanHandRef = useRef<Card[] | null>(null);
+  const handleApiSuccess = useCallback(
+    (response: MaoResponse, args: Parameters<typeof maoApi.exec>) => {
+      const hand = response.players.find((player) => player.isHuman)?.cards ?? [];
+      const previousHand = previousHumanHandRef.current;
+      previousHumanHandRef.current = hand;
+      if (args[0] !== 'draw') {
+        setDrawAnnouncement('');
+        return;
+      }
+      if (!previousHand) return;
+
+      const remaining = new Map<string, number>();
+      for (const card of previousHand) {
+        const key = `${card.design}:${card.value}`;
+        remaining.set(key, (remaining.get(key) ?? 0) + 1);
+      }
+      const added = hand.filter((card) => {
+        const key = `${card.design}:${card.value}`;
+        const count = remaining.get(key) ?? 0;
+        if (count === 0) return true;
+        remaining.set(key, count - 1);
+        return false;
+      });
+      if (added.length > 0) {
+        setDrawAnnouncement(t('drawnCardsAnnouncement', { cards: added.map(cardAlt).join(t('listSeparator')) }));
+      }
+    },
+    [t],
+  );
   const {
     state,
     loading,
@@ -122,7 +153,7 @@ function MaoPageContent() {
     handleSkipDeclare,
     handleNextRound,
     handleDeclareWord,
-  } = useMaoGame();
+  } = useMaoGame(handleApiSuccess);
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const chosenSuitKey = state ? SUIT_BUTTONS.find(({ suit }) => suit === state.chosenSuit)?.key : undefined;
@@ -175,6 +206,11 @@ function MaoPageContent() {
     handleDeclareWord(trimmed);
     setWordInput('');
   }, [handleDeclareWord, wordInput, state]);
+
+  const submitDraw = useCallback(() => {
+    setDrawAnnouncement('');
+    handleDraw();
+  }, [handleDraw]);
 
   // When the say-word response lands (a new state object), record the attempt
   // together with the outcome the server reported for it.
@@ -492,6 +528,7 @@ function MaoPageContent() {
                 }
               />
               <LiveAnnouncement message={state.rulePenalty ? t('rulePenalty') : ''} />
+              <LiveAnnouncement message={drawAnnouncement} testId="mao-draw-announcement" />
               {sayWordHistory.length > 0 && (
                 <details className="rounded bg-black/20 px-2 py-1" data-testid="mao-sayword-history">
                   <summary className="cursor-pointer select-none text-ds-text-muted">
@@ -533,7 +570,7 @@ function MaoPageContent() {
                   <button
                     type="button"
                     className={`${hasPenalty ? btnDanger : btnPrimary} relative`}
-                    onClick={handleDraw}
+                    onClick={submitDraw}
                     disabled={loading}
                   >
                     {hasPenalty ? t('takePenaltyButton', { count: state.penaltyDrawCount }) : t('drawButton')}
