@@ -108,6 +108,27 @@ describe('SpeedPage', () => {
     await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
   });
 
+  it('announces newly playable hand cards after a CPU response only when the set changes', async () => {
+    const cpuMoved: SpeedResponse = {
+      ...playState,
+      centerPiles: [
+        { design: 'DIAMOND', value: 3 },
+        { design: 'SPADE', value: 9 },
+      ],
+      cpuActions: [{ cardIndex: 0, pileIndex: 0, card: { design: 'HEART', value: 4 } }],
+    };
+    mockExec.mockResolvedValueOnce(playState).mockResolvedValue(cpuMoved);
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' }));
+    await waitFor(() =>
+      expect(screen.getByTestId('speed-playable-change-announcement')).toHaveTextContent('新たに出せるカード: ♦ 2'),
+    );
+    fireEvent.click(screen.getByRole('button', { name: '♥ 8 (今すぐ出せる)' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(3));
+    expect(screen.getByTestId('speed-playable-change-announcement')).toBeEmptyDOMElement();
+  });
+
   it('shows stuck phase flip button', async () => {
     mockExec.mockResolvedValue(stuckState);
     renderWithProviders(<SpeedPage />);
