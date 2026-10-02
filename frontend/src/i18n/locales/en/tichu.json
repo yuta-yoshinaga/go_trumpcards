@@ -31,6 +31,11 @@
   },
   "comboPreview": "Selected combo",
   "invalidCombo": "Invalid combination (cannot be played as is)",
+  "comparison": {
+    "beats": "Beats the table combination",
+    "cannotBeat": "Cannot beat the table combination",
+    "incomparable": "Cannot be compared with the table combination"
+  },
   "dogLeadNote": "passes lead to partner when played",
   "combo": {
     "single": "Single",
