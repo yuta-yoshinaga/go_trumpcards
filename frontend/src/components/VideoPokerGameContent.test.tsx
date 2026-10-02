@@ -146,14 +146,17 @@ describe('VideoPokerGameContent', () => {
       hand: [card('SPADE', 2), ...drawPhaseState.hand.slice(1)],
     };
     mockExec.mockResolvedValue(wildHand);
-    await i18n.changeLanguage('en');
-    renderContent('deuceswild');
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const firstCard = screen.getAllByRole('button').find((button) => button.getAttribute('aria-pressed') !== null);
-    expect(firstCard).toBeDefined();
-    if (!firstCard) throw new Error('Expected the first card button');
-    expect(firstCard).toHaveAccessibleName(/♠ 2, Card 1, Hold card 1, WILD, selected by auto-hold/);
-    await i18n.changeLanguage('ja');
+    try {
+      await i18n.changeLanguage('en');
+      renderContent('deuceswild');
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      const firstCard = screen.getAllByRole('button').find((button) => button.getAttribute('aria-pressed') !== null);
+      expect(firstCard).toBeDefined();
+      if (!firstCard) throw new Error('Expected the first card button');
+      expect(firstCard).toHaveAccessibleName(/♠ 2, Card 1, Hold card 1, WILD, selected by auto-hold/);
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('calls reset on mount and renders bet phase', async () => {
