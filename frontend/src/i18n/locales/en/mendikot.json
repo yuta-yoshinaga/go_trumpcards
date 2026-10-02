@@ -23,6 +23,7 @@
     "cpu": "CPU{{idx}}"
   },
   "currentTrick": "Current trick",
+  "trickCardByPlayer": "{{card}} played by {{name}}",
   "handEnd": {
     "tens": "Team {{team}} took more tens (+1).",
     "tricks": "The tens split two apiece, so team {{team}} wins on tricks (+1).",
