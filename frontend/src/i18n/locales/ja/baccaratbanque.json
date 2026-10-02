@@ -24,6 +24,7 @@
   "outcome.punterWin": "子の勝ち",
   "outcome.tie": "引き分け",
   "result.title": "決着（バンカー {{total}}）",
+  "result.sideLine": "{{role}}: {{outcome}}（賭け金: {{bet}}、増減: {{delta}}）",
   "result.bankerDelta": "バンカーの増減: {{n}}",
   "button.draw": "引く",
   "button.stand": "引かない",
