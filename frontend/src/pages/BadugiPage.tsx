@@ -343,7 +343,16 @@ function BadugiPageContent() {
                     </span>
                   )}
                 </div>
-                {canExchange && <div className="text-game-text-highlight text-xs mb-1">{t('exchangeInstruction')}</div>}
+                {canExchange && (
+                  <div className="text-game-text-highlight text-xs mb-1">
+                    {t('exchangeInstruction')}
+                    {hintEnabled && subsetIndices && (
+                      <span data-testid="bg-current-hand-rank" className="ml-2 font-bold text-ds-accent">
+                        {t('currentBestRank', { rank: badugiHandName(subsetIndices.size, t) })}
+                      </span>
+                    )}
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {(humanPlayer.cards ?? []).map((card, i) => {
                     const isSelected = selected.includes(i);

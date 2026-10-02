@@ -407,6 +407,61 @@ describe('BadugiPage', () => {
     }
   });
 
+  it('shows the current best hand rank during exchange, updates after exchange, and follows the hint setting', async () => {
+    localStorage.setItem('hint_enabled_badugi', 'true');
+    const initial = baseState({
+      phase: BadugiPhase.DRAW,
+      drawIndex: 1,
+      currentTurn: 0,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 2 },
+            { design: 'DIAMOND', value: 3 },
+            { design: 'SPADE', value: 5 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+    });
+    mockExec.mockResolvedValueOnce(initial).mockResolvedValueOnce(
+      baseState({
+        phase: BadugiPhase.DRAW,
+        drawIndex: 2,
+        currentTurn: 0,
+        players: [
+          humanPlayer({
+            cards: [
+              { design: 'SPADE', value: 1 },
+              { design: 'HEART', value: 2 },
+              { design: 'DIAMOND', value: 3 },
+              { design: 'CLOVER', value: 4 },
+            ],
+          }),
+          cpuPlayer(1),
+          cpuPlayer(2),
+          cpuPlayer(3),
+        ],
+      }),
+    );
+    renderWithProviders(<BadugiPage />);
+
+    expect(await screen.findByTestId('bg-current-hand-rank')).toHaveTextContent('3カード');
+    fireEvent.click(screen.getByRole('button', { name: '交換' }));
+    await waitFor(() => expect(screen.getByTestId('bg-current-hand-rank')).toHaveTextContent('バドゥーギ'));
+  });
+
+  it('hides the current hand rank when hints are disabled', async () => {
+    localStorage.removeItem('hint_enabled_badugi');
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.DRAW, currentTurn: 0 }));
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+    expect(screen.queryByTestId('bg-current-hand-rank')).not.toBeInTheDocument();
+  });
+
   it('dims duplicate-suit cards in the draw phase and omits data-badugi-subset on them', async () => {
     // The lift/dim assist follows the hint setting, which defaults to off.
     localStorage.setItem('hint_enabled_badugi', 'true');
