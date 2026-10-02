@@ -339,6 +339,47 @@ func TestCribbage_PlayerGo_Success(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestCribbagePegScoreEventsIncludeGoAndLastCard(t *testing.T) {
+	t.Run("go", func(t *testing.T) {
+		g := newTestCribbage()
+		setupPeggingPhase(g)
+		g.pegCount = 25
+		g.lastPegPlayer = 1
+		g.players[0].Reset()
+		g.players[0].AddCard(cCard(CardDesignSpade, 10))
+		g.players[1].Reset()
+		g.players[1].AddCard(cCard(CardDesignHeart, 10))
+		g.pegScoreEvents = nil
+		require.NoError(t, g.doGo(0))
+		assert.Equal(t, []CribbagePeggingScoreEvent{{PlayerIdx: 1, Detail: CribbagePeggingScoreDetail{Go: 1, Total: 1}}}, g.GetPegScoreEvents())
+	})
+	t.Run("last card", func(t *testing.T) {
+		g := newTestCribbage()
+		setupPeggingPhase(g)
+		g.players[0].Reset()
+		g.players[1].Reset()
+		g.pegCount = 20
+		g.lastPegPlayer = 1
+		g.advancePegging()
+		assert.Equal(t, []CribbagePeggingScoreEvent{{PlayerIdx: 1, Detail: CribbagePeggingScoreDetail{LastCard: 1, Total: 1}}}, g.GetPegScoreEvents())
+	})
+}
+
+func TestCribbagePegScoreEventsIncludeCpuScoreAfterHumanAction(t *testing.T) {
+	g := newTestCribbageWithDifficulty(CribbageCpuDifficultyEasy)
+	setupPeggingPhase(g)
+	g.players[0].Reset()
+	g.players[0].AddCard(cCard(CardDesignSpade, 10))
+	g.players[1].Reset()
+	g.players[1].AddCard(cCard(CardDesignHeart, 5))
+	require.NoError(t, g.PlayerPeg(0))
+	g.CpuPlay()
+	assert.Equal(t, []CribbagePeggingScoreEvent{
+		{PlayerIdx: 1, Detail: CribbagePeggingScoreDetail{Fifteen: 2, Total: 2}},
+		{PlayerIdx: 1, Detail: CribbagePeggingScoreDetail{LastCard: 1, Total: 1}},
+	}, g.GetPegScoreEvents())
+}
+
 func TestCribbage_PlayerGo_CanStillPlay(t *testing.T) {
 	g := newTestCribbage()
 	setupPeggingPhase(g)

@@ -44,6 +44,20 @@ type CribbageWebOutputScoreDetail struct {
 	Total    int `json:"total"`
 }
 
+// CribbageWebOutputPegScoreEvent describes one pegging score.
+type CribbageWebOutputPegScoreEvent struct {
+	PlayerIdx    int `json:"playerIdx"`
+	Fifteen      int `json:"fifteen"`
+	ThirtyOne    int `json:"thirtyOne"`
+	Pair         int `json:"pair"`
+	ThreeOfAKind int `json:"threeOfAKind"`
+	FourOfAKind  int `json:"fourOfAKind"`
+	Run          int `json:"run"`
+	Go           int `json:"go"`
+	LastCard     int `json:"lastCard"`
+	Total        int `json:"total"`
+}
+
 // CribbageWebOutput クリベッジWebアウトプット
 type CribbageWebOutput struct {
 	Players          []*CribbageWebOutputPlayer       `json:"players"`
@@ -56,6 +70,7 @@ type CribbageWebOutput struct {
 	PegCount         int                              `json:"pegCount"`
 	PegPlayedCards   []*WebOutputCard                 `json:"pegPlayedCards"`
 	PegPlayedBy      []int                            `json:"pegPlayedBy"`
+	PegScoreEvents   []CribbageWebOutputPegScoreEvent `json:"pegScoreEvents"`
 	ShowPhaseStep    int                              `json:"showPhaseStep"`
 	HandScoreDetails [3]*CribbageWebOutputScoreDetail `json:"handScoreDetails"`
 	GameEndFlag      bool                             `json:"gameEndFlag"`
@@ -98,6 +113,7 @@ func newCribbageDefaultOutput(msg string) *CribbageWebOutput {
 		PegPlayedBy:    make([]int, 0),
 		Crib:           make([]*WebOutputCard, 0),
 		PegPlayedCards: make([]*WebOutputCard, 0),
+		PegScoreEvents: make([]CribbageWebOutputPegScoreEvent, 0),
 		WinnerIdx:      -1,
 		WebOutputBase:  WebOutputBase{Message: msg},
 	}

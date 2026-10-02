@@ -418,6 +418,13 @@ func TestCribbageScorePegging(t *testing.T) {
 	}
 }
 
+func TestCribbageScorePeggingDetailIncludesReasonsAndTotal(t *testing.T) {
+	played := []*Card{cCard(1, 5), cCard(2, 5)}
+	detail := CribbageScorePeggingDetail(played, 15)
+	assert.Equal(t, CribbagePeggingScoreDetail{Fifteen: 2, Pair: 2, Total: 4}, detail)
+	assert.Equal(t, detail.Total, CribbageScorePegging(played, 15))
+}
+
 // ---- sortInts ----
 
 func TestSortInts(t *testing.T) {
