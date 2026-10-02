@@ -127,6 +127,7 @@ const initState: PineappleResponse = {
   discardDone: [],
   initialDealCount: 3,
   liveBestHand: '',
+  discardCandidates: [],
 };
 
 /** PRE_FLOP (phase 1): human's turn, no outstanding bet */
@@ -489,10 +490,11 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
-      discardPreviews: [
-        { cardIdx: 0, handRank: 1, recommended: false },
-        { cardIdx: 1, handRank: 1, recommended: false },
-        { cardIdx: 2, handRank: 1, recommended: true },
+      discardCandidates: [
+        { discardIdx: 0, handRankKey: 'onePair', strengthCards: [{ design: 'SPADE', value: 1 }], isBest: false },
+        { discardIdx: 1, handRankKey: 'onePair', strengthCards: [{ design: 'HEART', value: 13 }], isBest: false },
+        { discardIdx: 2, handRankKey: 'onePair', strengthCards: [{ design: 'DIAMOND', value: 5 }], isBest: false },
+        { discardIdx: 3, handRankKey: 'onePair', strengthCards: [{ design: 'CLOVER', value: 8 }], isBest: false },
       ],
     };
     mockIrishExec.mockResolvedValue(irishDiscardState);
@@ -506,6 +508,8 @@ describe('PineapplePage', () => {
     const preview = await screen.findByTestId('irishpoker-discard-preview');
     // Kept ♠A ♥A + board makes one pair.
     expect(preview).toHaveTextContent('ワンペア');
+    expect(preview).toHaveTextContent('比較札');
+    expect(screen.getByTestId('irishpoker-discard-preview-announce')).toHaveTextContent('強さ比較に使った札');
   });
 
   it('labels and announces the two Irish Poker cards as the playable hand after discard', async () => {
@@ -588,10 +592,11 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
-      discardPreviews: [
-        { cardIdx: 0, handRank: 1, recommended: true },
-        { cardIdx: 1, handRank: 1, recommended: true },
-        { cardIdx: 2, handRank: 1, recommended: true },
+      discardCandidates: [
+        { discardIdx: 0, handRankKey: 'onePair', strengthCards: [{ design: 'SPADE', value: 1 }], isBest: false },
+        { discardIdx: 1, handRankKey: 'onePair', strengthCards: [{ design: 'HEART', value: 13 }], isBest: false },
+        { discardIdx: 2, handRankKey: 'onePair', strengthCards: [{ design: 'DIAMOND', value: 5 }], isBest: false },
+        { discardIdx: 3, handRankKey: 'onePair', strengthCards: [{ design: 'CLOVER', value: 8 }], isBest: false },
       ],
     };
     mockIrishExec.mockResolvedValue(irishDiscardState);
@@ -669,10 +674,11 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
-      discardPreviews: [
-        { cardIdx: 0, handRank: 1, recommended: false },
-        { cardIdx: 1, handRank: 1, recommended: false },
-        { cardIdx: 2, handRank: 1, recommended: true },
+      discardCandidates: [
+        { discardIdx: 0, handRankKey: 'onePair', strengthCards: [{ design: 'SPADE', value: 1 }], isBest: false },
+        { discardIdx: 1, handRankKey: 'onePair', strengthCards: [{ design: 'HEART', value: 13 }], isBest: false },
+        { discardIdx: 2, handRankKey: 'onePair', strengthCards: [{ design: 'DIAMOND', value: 5 }], isBest: false },
+        { discardIdx: 3, handRankKey: 'onePair', strengthCards: [{ design: 'SPADE', value: 1 }], isBest: true },
       ],
     };
     mockIrishExec.mockResolvedValue(irishDiscardState);
@@ -687,6 +693,11 @@ describe('PineapplePage', () => {
     expect(labels).toHaveLength(3); // one per remaining card, excluding the chosen one
     // Every kept pair (Aces or eights) makes at least one pair with the board.
     for (const label of labels) expect(label).toHaveTextContent('ワンペア');
+    // Same category, different pair rank: discarding ♣8 keeps AA and is uniquely strongest.
+    expect(
+      labels.find((label) => label.parentElement?.querySelector('button img')?.getAttribute('alt') === '♣ 8'),
+    ).toHaveTextContent('比較札:');
+    expect(await screen.findAllByTestId('irishpoker-discard-recommended')).toHaveLength(1);
     // The full two-card kept preview is not shown yet (only one card selected).
     expect(screen.queryByTestId('irishpoker-discard-preview')).not.toBeInTheDocument();
   });
@@ -714,10 +725,11 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
-      discardPreviews: [
-        { cardIdx: 0, handRank: 1, recommended: false },
-        { cardIdx: 1, handRank: 1, recommended: false },
-        { cardIdx: 2, handRank: 3, recommended: true },
+      discardCandidates: [
+        { discardIdx: 0, handRankKey: 'onePair', strengthCards: [{ design: 'SPADE', value: 1 }], isBest: false },
+        { discardIdx: 1, handRankKey: 'onePair', strengthCards: [{ design: 'HEART', value: 13 }], isBest: false },
+        { discardIdx: 2, handRankKey: 'onePair', strengthCards: [{ design: 'DIAMOND', value: 5 }], isBest: false },
+        { discardIdx: 3, handRankKey: 'onePair', strengthCards: [{ design: 'SPADE', value: 1 }], isBest: true },
       ],
     };
     mockIrishExec.mockResolvedValue(irishDiscardState);
@@ -795,6 +807,9 @@ describe('PineapplePage', () => {
         { design: 'HEART', value: 9 },
       ],
       discardDone: [false, true, true, true],
+      discardCandidates: [
+        { discardIdx: 3, handRankKey: 'onePair', strengthCards: [{ design: 'SPADE', value: 1 }], isBest: true },
+      ],
     };
     mockIrishExec.mockResolvedValue(irishRiverState);
     renderWithProviders(<PineapplePage variant="irishpoker" />);
@@ -1191,10 +1206,11 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
-      discardPreviews: [
-        { cardIdx: 0, handRank: 1, recommended: false },
-        { cardIdx: 1, handRank: 1, recommended: false },
-        { cardIdx: 2, handRank: 3, recommended: true },
+      discardCandidates: [
+        { discardIdx: 0, handRankKey: 'onePair', strengthCards: [{ design: 'SPADE', value: 1 }], isBest: false },
+        { discardIdx: 1, handRankKey: 'twoPair', strengthCards: [{ design: 'HEART', value: 13 }], isBest: true },
+        { discardIdx: 2, handRankKey: 'onePair', strengthCards: [{ design: 'DIAMOND', value: 5 }], isBest: false },
+        { discardIdx: 3, handRankKey: 'onePair', strengthCards: [{ design: 'CLOVER', value: 8 }], isBest: false },
       ],
     };
     mockIrishExec.mockResolvedValue(st);
@@ -1215,9 +1231,9 @@ describe('PineapplePage', () => {
         {
           ...discardState.players[0],
           cards: [
-            { design: 'SPADE', value: 1 },
-            { design: 'HEART', value: 1 },
             { design: 'DIAMOND', value: 5 },
+            { design: 'SPADE', value: 8 },
+            { design: 'HEART', value: 8 },
             { design: 'CLOVER', value: 8 },
           ],
         },
@@ -1231,16 +1247,72 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
+      discardCandidates: [
+        { discardIdx: 0, handRankKey: 'onePair', strengthCards: [{ design: 'SPADE', value: 1 }], isBest: false },
+        { discardIdx: 1, handRankKey: 'onePair', strengthCards: [{ design: 'HEART', value: 13 }], isBest: false },
+        { discardIdx: 2, handRankKey: 'onePair', strengthCards: [{ design: 'DIAMOND', value: 5 }], isBest: false },
+        { discardIdx: 3, handRankKey: 'onePair', strengthCards: [{ design: 'CLOVER', value: 8 }], isBest: false },
+      ],
     };
     mockIrishExec.mockResolvedValue(st);
     renderWithProviders(<PineapplePage variant="irishpoker" />);
     await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
-    // Throwing ♦5 leaves three candidates that all evaluate to one pair. The
-    // evaluator carries no kicker, so it cannot tell keeping AA from keeping 88 --
-    // badging all three would assert a preference the data does not support.
+    // Throwing ♦5 leaves three equivalent candidates: each keeps two eights and
+    // the board's eight, so all have exactly the same trips and kickers.
     fireEvent.click(screen.getByAltText('♦ 5').closest('button') as HTMLButtonElement);
     await screen.findAllByTestId('irishpoker-discard-candidate');
     expect(screen.queryAllByTestId('irishpoker-discard-recommended')).toHaveLength(0);
+  });
+
+  it('compares Irish candidates by kickers within the same hand category', async () => {
+    const st: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 4,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'DIAMOND', value: 5 },
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 13 },
+            { design: 'CLOVER', value: 12 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 8 },
+        { design: 'HEART', value: 8 },
+        { design: 'DIAMOND', value: 10 },
+      ],
+      discardDone: [false, true, true, true],
+      discardCandidates: [
+        { discardIdx: 0, handRankKey: 'onePair', strengthCards: [{ design: 'SPADE', value: 1 }], isBest: false },
+        { discardIdx: 1, handRankKey: 'onePair', strengthCards: [{ design: 'HEART', value: 13 }], isBest: false },
+        { discardIdx: 2, handRankKey: 'onePair', strengthCards: [{ design: 'DIAMOND', value: 5 }], isBest: false },
+        { discardIdx: 3, handRankKey: 'onePair', strengthCards: [{ design: 'SPADE', value: 1 }], isBest: true },
+      ],
+    };
+    mockIrishExec.mockResolvedValue(st);
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♦ 5').closest('button') as HTMLButtonElement);
+
+    const candidates = await screen.findAllByTestId('irishpoker-discard-candidate');
+    expect(candidates).toHaveLength(3);
+    expect(candidates.every((candidate) => candidate.textContent?.includes('ワンペア'))).toBe(true);
+    const winner = candidates.find((candidate) => candidate.textContent?.includes('♠ A'));
+    expect(winner).toBeDefined();
+    if (!winner) throw new Error('Expected a kicker comparison containing the ace');
+    expect(winner).toHaveTextContent('♠ A');
+    expect(winner.closest('div')?.querySelector('button')).toHaveAttribute(
+      'aria-describedby',
+      expect.stringContaining(winner.id),
+    );
+    const recommendation = await screen.findAllByTestId('irishpoker-discard-recommended');
+    expect(recommendation).toHaveLength(1);
+    expect(recommendation[0].parentElement?.querySelector('button img')).toHaveAttribute('alt', '♣ Q');
   });
   it('announces the chosen Crazy Pineapple discard candidate and recommendation status to a screen reader', async () => {
     const crazyDiscardState: PineappleResponse = {

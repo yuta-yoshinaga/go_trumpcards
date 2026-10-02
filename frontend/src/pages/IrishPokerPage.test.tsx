@@ -104,6 +104,7 @@ const initState: PineappleResponse = {
   discardDone: [],
   initialDealCount: 4,
   liveBestHand: '',
+  discardCandidates: [],
 };
 
 const discardState: PineappleResponse = {
