@@ -63,6 +63,14 @@ func TestSpiteAndMaliceCuiController_CpuStep(t *testing.T) {
 	assert.Equal(t, "cpu_out", c.Exec("cpu"))
 }
 
+func TestSpiteAndMaliceCuiController_Undo(t *testing.T) {
+	si := newMockSpiteAndMaliceInteractor()
+	c := NewSpiteAndMaliceCuiController(si)
+	si.On("Undo").Return("undo_out")
+	assert.Equal(t, "undo_out", c.Exec("u"))
+	assert.Equal(t, "undo_out", c.Exec("undo"))
+}
+
 func TestSpiteAndMaliceCuiController_Hint(t *testing.T) {
 	si := newMockSpiteAndMaliceInteractor()
 	c := NewSpiteAndMaliceCuiController(si)

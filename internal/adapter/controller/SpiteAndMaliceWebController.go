@@ -51,6 +51,7 @@ type SpiteAndMaliceWebOutput struct {
 	GoalSize        int                                                     `json:"goalSize"`
 	CpuDifficulty   int                                                     `json:"cpuDifficulty"`
 	CanAutoComplete bool                                                    `json:"canAutoComplete"`
+	CanUndo         bool                                                    `json:"canUndo"`
 	Hint            *SpiteAndMaliceWebHint                                  `json:"hint,omitempty"`
 	WebOutputBase
 }
@@ -82,6 +83,8 @@ func spiteAndMaliceDispatch(bc *baseController, w http.ResponseWriter, si usecas
 		bc.writePresenterResponse(w, si.CpuStep())
 	case "ac", "autocomplete":
 		bc.writePresenterResponse(w, si.AutoComplete())
+	case "u", "undo":
+		bc.writePresenterResponse(w, si.Undo())
 	default:
 		return dispatchResetHintAndLog(param.Command, bc, w, si.Reset, si.Hint, si.ActionLog)
 	}

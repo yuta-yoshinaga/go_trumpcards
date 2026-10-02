@@ -5,7 +5,16 @@ import type { SpiteAndMaliceMoveZone, SpiteAndMaliceResponse } from '../../types
 import { gameExec } from '../gameExec';
 
 /** Command verbs accepted by the Spite & Malice /spiteandmalice/exec endpoint. */
-export type SpiteAndMaliceCommand = 'reset' | 'move' | 'discard' | 'cpu' | 'autocomplete' | 'hint' | 'log';
+export type SpiteAndMaliceCommand =
+  | 'reset'
+  | 'move'
+  | 'discard'
+  | 'cpu'
+  | 'autocomplete'
+  | 'u'
+  | 'undo'
+  | 'hint'
+  | 'log';
 
 /** API client for the Spite & Malice /spiteandmalice/exec endpoint. */
 export const spiteAndMaliceApi = {

@@ -1,10 +1,12 @@
 {
+  "errNothingToUndo": "There is nothing to undo",
   "helpTitle": "Spite and Malice",
   "helpPlayHand": "  ph <h> <f>          play hand[h] to foundation <f> (f: 0..3)",
   "helpPlayGoal": "  pg <f>              play goal pile top to foundation <f>",
   "helpPlaySide": "  ps <s> <f>          play side[s] top to foundation <f> (s: 0..3)",
   "helpDiscard": "  d <h> <s>           discard hand[h] to side[s] (ends turn)",
   "helpCpu": "  cpu                 advance CPU's turn by one step",
+  "helpUndo": "  u / undo            undo the previous human action",
   "helpHint": "  h, hint             show a hint",
   "promptHandIdx": "Hand index:",
   "promptSideIdx": "Side pile index (0..3):",

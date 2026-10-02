@@ -15,6 +15,8 @@ func (_m *MockSpiteAndMaliceInteractor) Reset() string {
 	return _m.Called().Get(0).(string)
 }
 
+func (_m *MockSpiteAndMaliceInteractor) Undo() string { return _m.Called().Get(0).(string) }
+
 func (_m *MockSpiteAndMaliceInteractor) PlayFromHand(handIdx, foundationIdx int) string {
 	return _m.Called(handIdx, foundationIdx).Get(0).(string)
 }

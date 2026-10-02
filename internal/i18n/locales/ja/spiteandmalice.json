@@ -1,10 +1,12 @@
 {
+  "errNothingToUndo": "取り消せる操作がありません",
   "helpTitle": "Spite and Malice (スパイト・アンド・マリス)",
   "helpPlayHand": "  ph <h> <f>          手札<h>番目を組札<f>に出す (f: 0..3)",
   "helpPlayGoal": "  pg <f>              ゴールパイルのトップを組札<f>に出す",
   "helpPlaySide": "  ps <s> <f>          サイド<s>のトップを組札<f>に出す (s: 0..3)",
   "helpDiscard": "  d <h> <s>           手札<h>をサイド<s>にディスカード (ターン終了)",
   "helpCpu": "  cpu                 CPUのターンを1ステップ進める",
+  "helpUndo": "  u / undo            直前の操作を取り消す",
   "helpHint": "  h, hint             ヒントを表示",
   "promptHandIdx": "手札のインデックスを入力してください:",
   "promptSideIdx": "サイドパイルのインデックス (0..3) を入力してください:",

@@ -36,6 +36,7 @@ func TestSpiteAndMaliceWebController_Method(t *testing.T) {
 	m.On("Hint").Return(mockOut)
 	m.On("ActionLog").Return(mockOut)
 	m.On("CpuStep").Return(mockOut)
+	m.On("Undo").Return(mockOut)
 	m.On("PlayFromHand", 0, 1).Return(mockOut)
 	m.On("PlayFromGoal", 2).Return(mockOut)
 	m.On("PlayFromSide", 1, 3).Return(mockOut)
@@ -67,6 +68,13 @@ func TestSpiteAndMaliceWebController_Method(t *testing.T) {
 
 	t.Run("cpu", func(t *testing.T) {
 		in := decode(`{"command":"cpu","sessionId":"s1"}`)
+		recorded := execRequest(t, ctrl.Exec, &in)
+		recorded.CodeIs(http.StatusOK)
+		recorded.BodyIs(expected)
+	})
+
+	t.Run("undo", func(t *testing.T) {
+		in := decode(`{"command":"u","sessionId":"s1"}`)
 		recorded := execRequest(t, ctrl.Exec, &in)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(expected)

@@ -3774,6 +3774,7 @@
     "spiderette.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
     "spiderette.stalemateWithEscape": "手詰まりです。{{count}}手戻ると別の手が打てます。",
     "spiteandmalice.hintAvailable": "ヒントがあります",
+    "spiteandmalice.errNothingToUndo": "取り消せる操作がありません",
     "spiteandmalice.lose": "あなたの負けです",
     "spiteandmalice.noHint": "ヒントはありません",
     "spiteandmalice.playing": "プレイ中",

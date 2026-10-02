@@ -31,6 +31,7 @@ func (p *SpiteAndMaliceWebPresenter) Output(g interfaces.SpiteAndMaliceGame, las
 
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
+		resObj.MessageCode, resObj.MessageParams = domain.ErrorMessageCode(lastErr)
 	} else {
 		switch g.GetPhase() {
 		case domain.SpiteAndMalicePhasePlaying:
@@ -85,6 +86,7 @@ func (p *SpiteAndMaliceWebPresenter) buildBase(g interfaces.SpiteAndMaliceGame) 
 	resObj.GoalSize = cfg.GoalSize
 	resObj.CpuDifficulty = int(cfg.CpuDifficulty)
 	resObj.CanAutoComplete = g.CanAutoComplete()
+	resObj.CanUndo = g.CanUndo()
 
 	foundations := g.GetFoundations()
 	for i := range domain.SpiteAndMaliceFoundationCnt {

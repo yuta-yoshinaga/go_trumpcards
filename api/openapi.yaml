@@ -18654,6 +18654,7 @@ paths:
         | `move`    | `m`     | Play a card to a foundation (requires `from` and `to`) |
         | `discard` | `d`     | Discard from hand to side pile (ends turn) |
         | `cpu`     | —       | Advance the CPU's turn by one step |
+        | `undo`    | `u`     | Undo the previous human action |
         | `hint`    | `h`     | Return the recommended next move |
         | `log`     | `l`     | View action log |
 
@@ -18675,7 +18676,7 @@ paths:
               properties:
                 command:
                   type: string
-                  enum: [reset, r, move, m, discard, d, cpu, hint, h, log, l]
+                  enum: [reset, r, move, m, discard, d, cpu, undo, u, hint, h, log, l]
                 sessionId:
                   type: string
                 from:
@@ -64227,6 +64228,9 @@ components:
             $ref: '#/components/schemas/ActionLogEntry'
         canAutoComplete:
           type: boolean
+        canUndo:
+          type: boolean
+          description: Whether a previous human action can be undone.
         phase:
           type: integer
           description: "0=Playing, 1=GameOver"

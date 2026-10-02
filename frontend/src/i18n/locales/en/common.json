@@ -3774,6 +3774,7 @@
     "spiderette.stalemate": "No moves can lead to a win. Please undo or give up.",
     "spiderette.stalemateWithEscape": "Stalemate. Undo {{count}} moves to find another play.",
     "spiteandmalice.hintAvailable": "Hint available",
+    "spiteandmalice.errNothingToUndo": "There is nothing to undo",
     "spiteandmalice.lose": "You lose",
     "spiteandmalice.noHint": "No hint available",
     "spiteandmalice.playing": "Playing",
