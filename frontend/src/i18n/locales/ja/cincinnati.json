@@ -3,6 +3,7 @@
   "betGuide": "チェック・ベット・コール・レイズ・フォールドから選んでください",
   "fiveCardNotice": "手札は5枚。場を1枚も使わずに役が完成することがあります",
   "label.chips": "チップ",
+  "label.netChange": "増減",
   "label.bet": "賭け",
   "label.pot": "ポット",
   "label.hand": "ハンド",

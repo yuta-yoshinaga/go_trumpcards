@@ -61213,6 +61213,9 @@ components:
                 type: boolean
               chips:
                 type: integer
+              netChange:
+                type: integer
+                description: Net chip change since the hand began, including the ante.
               bet:
                 type: integer
               cards:

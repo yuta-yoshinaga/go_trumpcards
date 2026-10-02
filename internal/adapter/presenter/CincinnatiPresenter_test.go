@@ -291,10 +291,11 @@ func TestCincinnatiWebPresenter_ShowsEveryHandAtShowdown(t *testing.T) {
 
 	var got struct {
 		Seats []struct {
-			Cards    []json.RawMessage `json:"cards"`
-			BestHand []json.RawMessage `json:"bestHand"`
-			HandRank int               `json:"handRank"`
-			Folded   bool              `json:"folded"`
+			Cards     []json.RawMessage `json:"cards"`
+			BestHand  []json.RawMessage `json:"bestHand"`
+			HandRank  int               `json:"handRank"`
+			Folded    bool              `json:"folded"`
+			NetChange int               `json:"netChange"`
 		} `json:"seats"`
 		Community     []json.RawMessage `json:"community"`
 		RevealedCount int               `json:"revealedCount"`
@@ -307,6 +308,7 @@ func TestCincinnatiWebPresenter_ShowsEveryHandAtShowdown(t *testing.T) {
 	assert.Equal(t, domain.CincinnatiCommunityCards, got.RevealedCount)
 	assert.Zero(t, got.Pot, "決着後にポットが残っている")
 	for i, s := range got.Seats {
+		assert.Equal(t, g.GetPlayers()[i].GetHandNetChange(), s.NetChange)
 		assert.Len(t, s.Cards, domain.CincinnatiHoleCards, "席 %d の手札が開いていない", i)
 		if !s.Folded {
 			assert.Len(t, s.BestHand, domain.CincinnatiHandSize, "席 %d の最良 5 枚が載っていない", i)
