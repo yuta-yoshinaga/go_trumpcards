@@ -140,7 +140,7 @@ describe('MonteCarloPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('remove', 0, 0, 0, 1));
     expect(screen.queryByTestId('mc-pair-toast')).not.toBeInTheDocument();
     await act(async () => resolveRemove(playingState));
-    expect(screen.getByTestId('mc-pair-toast')).toBeInTheDocument();
+    expect(screen.getByTestId('mc-pair-toast')).toHaveAttribute('aria-hidden', 'true');
     expect(announcement).toHaveTextContent('ペアを除去しました！');
   });
 

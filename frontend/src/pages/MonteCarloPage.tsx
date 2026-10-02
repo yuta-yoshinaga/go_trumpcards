@@ -343,7 +343,11 @@ function MonteCarloPageContent() {
             </div>
 
             {pairRemoved && (
-              <div data-testid="mc-pair-toast" className="mb-2 text-center text-ds-success text-sm font-medium">
+              <div
+                data-testid="mc-pair-toast"
+                aria-hidden="true"
+                className="mb-2 text-center text-ds-success text-sm font-medium"
+              >
                 {t('pairRemoved')}
               </div>
             )}
