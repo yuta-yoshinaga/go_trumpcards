@@ -23,6 +23,7 @@ func setupSpiteAndMaliceWebMockDefaults(g *interfaces.MockSpiteAndMaliceGame) {
 	g.On("GetCompletedSize").Return(0).Maybe()
 	g.On("GetConfig").Return(domain.DefaultSpiteAndMaliceConfig()).Maybe()
 	g.On("CanAutoComplete").Return(false).Maybe()
+	g.On("CanUndo").Return(false).Maybe()
 	var foundations [domain.SpiteAndMaliceFoundationCnt][]*domain.Card
 	foundations[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
 	g.On("GetFoundations").Return(foundations).Maybe()
@@ -62,6 +63,7 @@ func TestSpiteAndMaliceWebPresenter_Output(t *testing.T) {
 		raw := new(SpiteAndMaliceWebPresenter).Output(g, nil)
 		out := decodeSpiteAndMaliceWebOutput(t, raw)
 		assert.Equal(t, "spiteandmalice.playing", out.MessageCode)
+		assert.False(t, out.CanUndo)
 		assert.Equal(t, domain.SpiteAndMaliceGoalSizeDefault, out.GoalSize)
 		assert.Len(t, out.Players[0].Hand, 1)
 	})
@@ -84,6 +86,7 @@ func TestSpiteAndMaliceWebPresenter_Output(t *testing.T) {
 		g.On("GetCompletedSize").Return(0).Maybe()
 		g.On("GetConfig").Return(domain.DefaultSpiteAndMaliceConfig()).Maybe()
 		g.On("CanAutoComplete").Return(false).Maybe()
+		g.On("CanUndo").Return(false).Maybe()
 		var foundations [domain.SpiteAndMaliceFoundationCnt][]*domain.Card
 		g.On("GetFoundations").Return(foundations).Maybe()
 		for i := range domain.SpiteAndMaliceFoundationCnt {
@@ -108,6 +111,7 @@ func TestSpiteAndMaliceWebPresenter_Output(t *testing.T) {
 		g.On("GetCompletedSize").Return(0).Maybe()
 		g.On("GetConfig").Return(domain.DefaultSpiteAndMaliceConfig()).Maybe()
 		g.On("CanAutoComplete").Return(false).Maybe()
+		g.On("CanUndo").Return(false).Maybe()
 		var foundations [domain.SpiteAndMaliceFoundationCnt][]*domain.Card
 		g.On("GetFoundations").Return(foundations).Maybe()
 		for i := range domain.SpiteAndMaliceFoundationCnt {
@@ -135,6 +139,7 @@ func TestSpiteAndMaliceWebPresenter_Output(t *testing.T) {
 			g.On("GetCompletedSize").Return(0).Maybe()
 			g.On("GetConfig").Return(domain.DefaultSpiteAndMaliceConfig()).Maybe()
 			g.On("CanAutoComplete").Return(false).Maybe()
+			g.On("CanUndo").Return(false).Maybe()
 			var foundations [domain.SpiteAndMaliceFoundationCnt][]*domain.Card
 			g.On("GetFoundations").Return(foundations).Maybe()
 			for i := range domain.SpiteAndMaliceFoundationCnt {
@@ -172,6 +177,7 @@ func TestSpiteAndMaliceWebPresenter_Output(t *testing.T) {
 		g.On("GetCompletedSize").Return(0).Maybe()
 		g.On("GetConfig").Return(domain.DefaultSpiteAndMaliceConfig()).Maybe()
 		g.On("CanAutoComplete").Return(false).Maybe()
+		g.On("CanUndo").Return(false).Maybe()
 		var foundations [domain.SpiteAndMaliceFoundationCnt][]*domain.Card
 		g.On("GetFoundations").Return(foundations).Maybe()
 		for i := range domain.SpiteAndMaliceFoundationCnt {
@@ -184,6 +190,14 @@ func TestSpiteAndMaliceWebPresenter_Output(t *testing.T) {
 		out := decodeSpiteAndMaliceWebOutput(t, raw)
 		assert.Nil(t, out.Players[0].Hand)
 	})
+}
+
+func TestSpiteAndMaliceWebPresenter_ForwardsErrorMessageCode(t *testing.T) {
+	g := new(interfaces.MockSpiteAndMaliceGame)
+	setupSpiteAndMaliceOutputMock(g)
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "spiteandmalice.errNothingToUndo", nil)
+	out := decodeSpiteAndMaliceWebOutput(t, new(SpiteAndMaliceWebPresenter).Output(g, err))
+	assert.Equal(t, "spiteandmalice.errNothingToUndo", out.MessageCode)
 }
 
 // **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の

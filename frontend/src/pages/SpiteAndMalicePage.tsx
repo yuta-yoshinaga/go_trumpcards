@@ -230,6 +230,12 @@ function SpiteAndMalicePageContent() {
     void apiCall('autocomplete');
   }, [apiCall]);
 
+  const handleUndo = useCallback(() => {
+    if (!state?.canUndo || loading) return;
+    setSelection(null);
+    void apiCall('undo');
+  }, [apiCall, loading, state?.canUndo]);
+
   const isHumanTurn = state ? state.current === 0 : false;
   const isGameOver = state ? state.phase === SpiteAndMalicePhase.GAME_OVER : false;
 
@@ -462,6 +468,19 @@ function SpiteAndMalicePageContent() {
 
               {!isGameOver && isHumanTurn && (
                 <div className="flex flex-col items-center">
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleUndo}
+                    aria-disabled={!state.canUndo || loading}
+                    aria-describedby="sam-undo-hint"
+                    data-testid="sam-undo-btn"
+                  >
+                    {t('undo')}
+                  </button>
+                  <p id="sam-undo-hint" className="mt-1 text-xs text-ds-text-muted">
+                    {state.canUndo ? t('undoAvailableHint') : t('undoUnavailableHint')}
+                  </p>
                   <button
                     type="button"
                     className={btnPrimary}

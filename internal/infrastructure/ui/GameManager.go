@@ -1770,6 +1770,7 @@ var gameRegistry = []GameRegistryEntry{
 				"spiteandmalice.helpPlaySide",
 				"spiteandmalice.helpDiscard",
 				"spiteandmalice.helpCpu",
+				"spiteandmalice.helpUndo",
 				"spiteandmalice.helpHint", "spiteandmalice.helpAutoPlay",
 			},
 			ExtraCommandLines: []string{"  l                        action log"},

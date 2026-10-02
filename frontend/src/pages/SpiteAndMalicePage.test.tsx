@@ -42,11 +42,31 @@ const baseState: SpiteAndMaliceResponse = {
   goalSize: 20,
   cpuDifficulty: 1,
   canAutoComplete: false,
+  canUndo: false,
   message: '',
   messageCode: 'spiteandmalice.playing',
 };
 
 const cpuTurnState: SpiteAndMaliceResponse = { ...baseState, current: 1 };
+
+it('undoes when history exists and does not send a command without history', async () => {
+  mockExec.mockResolvedValueOnce({ ...baseState, canUndo: false });
+  renderWithProviders(<SpiteAndMalicePage />);
+  await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  const undo = screen.getByTestId('sam-undo-btn');
+  expect(undo).toHaveAttribute('aria-disabled', 'true');
+  fireEvent.click(undo);
+  expect(mockExec).toHaveBeenCalledTimes(1);
+});
+
+it('sends undo when the server reports available history', async () => {
+  mockExec.mockResolvedValue({ ...baseState, canUndo: true });
+  renderWithProviders(<SpiteAndMalicePage />);
+  const undo = await screen.findByTestId('sam-undo-btn');
+  expect(undo).toHaveAttribute('aria-disabled', 'false');
+  fireEvent.click(undo);
+  await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+});
 
 const winState: SpiteAndMaliceResponse = {
   ...baseState,

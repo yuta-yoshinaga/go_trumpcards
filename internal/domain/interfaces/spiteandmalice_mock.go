@@ -13,6 +13,9 @@ type MockSpiteAndMaliceGame struct {
 	mock.Mock
 }
 
+func (_m *MockSpiteAndMaliceGame) CanUndo() bool { return _m.Called().Bool(0) }
+func (_m *MockSpiteAndMaliceGame) Undo() error   { return _m.Called().Error(0) }
+
 func (_m *MockSpiteAndMaliceGame) Reset() {
 	_m.Called()
 }

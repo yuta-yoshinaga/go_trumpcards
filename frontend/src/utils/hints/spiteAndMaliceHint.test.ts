@@ -18,6 +18,7 @@ const baseState: SpiteAndMaliceResponse = {
   goalSize: 20,
   cpuDifficulty: 1,
   canAutoComplete: false,
+  canUndo: false,
   message: '',
 };
 
