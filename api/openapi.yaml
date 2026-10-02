@@ -75104,6 +75104,12 @@ components:
         declarerIdx:
           type: integer
           description: "Seat that won the contract. -1 before it is settled."
+        declarerTargetPoints:
+          type: integer
+          description: "Card points the declarer needs to make the contract."
+        totalCardPoints:
+          type: integer
+          description: "Total card points in the deck."
         contract:
           type: integer
           description: "Contract being played."

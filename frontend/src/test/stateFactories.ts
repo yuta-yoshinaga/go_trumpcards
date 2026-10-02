@@ -2381,6 +2381,8 @@ const baseCegoState: CegoResponse = {
   highestBid: 1,
   highestBidder: 0,
   declarerIdx: 0,
+  declarerTargetPoints: 54,
+  totalCardPoints: 106,
   contract: 1,
   contractType: 1,
   blindCount: 10,
