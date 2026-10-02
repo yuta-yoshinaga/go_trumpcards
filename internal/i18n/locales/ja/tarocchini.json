@@ -32,6 +32,7 @@
   "round": "ラウンド: {{round}}  トリック: {{trick}}",
   "roundEndTrickEntry": "{{name}} {{tricks}}",
   "roundEndTricks": "各プレイヤーのトリック数: {{list}}",
+  "roundEndBreakdown": "{{team}}: トリック {{tricks}} / 最終トリック +{{lastTrickBonus}} / スカルト +{{scartoBonus}} / 計 {{total}}",
   "teamName": "チーム{{n}}",
   "roundEndLastTrick": "最終トリックボーナス: {{team}} に +{{bonus}}",
   "roundEndScarto": "スカルト加点: {{team}}（ディーラー側）に +{{count}}",

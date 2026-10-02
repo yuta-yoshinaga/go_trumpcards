@@ -30,7 +30,7 @@ import { GUANDAN_HELP, parseGuandanCommand } from '../utils/cli/commands/guandan
 import { formatGuandanState } from '../utils/cli/formatters/guandanFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
-import { guandanEvaluate, guandanIsBomb } from '../utils/guandanCombo';
+import { guandanBeats, guandanEvaluate, guandanIsBomb } from '../utils/guandanCombo';
 
 /**
  * Level assumed before the first response lands. Nothing is selected then, so
@@ -366,6 +366,13 @@ function GuandanPageContent() {
                       <span className="font-medium text-ds-accent">
                         {comboLabel(selectedCombo.kind)} ({selectedCombo.size})
                       </span>
+                      {state.lastCombo && (
+                        <span className="ml-1 font-medium" data-testid="guandan-combo-result">
+                          {t(
+                            guandanBeats(selectedCombo, state.lastCombo) ? 'comboBeatsTable' : 'comboDoesNotBeatTable',
+                          )}
+                        </span>
+                      )}
                       {guandanIsBomb(selectedCombo.kind) && (
                         <span className="ml-1 font-bold text-ds-success" data-testid="guandan-combo-bomb">
                           {t('comboBeatsAll')}

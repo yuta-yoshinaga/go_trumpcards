@@ -148,6 +148,7 @@ function GleekPageContent() {
   const isTrickEnd = state.phase === GleekPhase.TRICK_END;
   const isRoundEnd = state.phase === GleekPhase.ROUND_END;
   const isGameEnd = state.phase === GleekPhase.GAME_END || state.gameEndFlag;
+  const breakdownLabels = t('roundResult.stages', { returnObjects: true }) as string[];
 
   const canBid = state.phase === GleekPhase.BID && state.isHumanBidTurn;
   const biddingSeatIdx = state.phase === GleekPhase.BID ? state.currentBidderIdx : -1;
@@ -316,6 +317,12 @@ function GleekPageContent() {
                     </div>
                     {state.players.map((p, idx) => {
                       const delta = state.roundDelta[idx];
+                      const breakdown = [
+                        state.roundBreakdown.bid[idx],
+                        state.roundBreakdown.ruff[idx],
+                        state.roundBreakdown.meld[idx],
+                        state.roundBreakdown.trick[idx],
+                      ];
                       return (
                         <div
                           key={p.id}
@@ -326,6 +333,13 @@ function GleekPageContent() {
                             name: playerName(p.id, p.isHuman),
                             delta: formatSignedDelta(delta),
                           })}
+                          <div data-testid={`gleek-round-breakdown-${p.id.toString()}`}>
+                            {t('roundResult.breakdown', {
+                              stages: breakdownLabels
+                                .map((label, stageIdx) => `${label}: ${formatSignedDelta(breakdown[stageIdx])}`)
+                                .join(t('listSeparator')),
+                            })}
+                          </div>
                         </div>
                       );
                     })}

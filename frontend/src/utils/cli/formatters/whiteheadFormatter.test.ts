@@ -19,6 +19,7 @@ function makeState(overrides?: Partial<WhiteheadResponse>): WhiteheadResponse {
     stockCount: 24,
     waste: [{ design: 'DIAMOND', value: 7 }],
     foundation: [[], [], [], []],
+    totalCardCount: 52,
     phase: 1,
     moveCount: 5,
     drawCount: 3,

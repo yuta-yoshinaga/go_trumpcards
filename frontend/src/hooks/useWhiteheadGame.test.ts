@@ -31,6 +31,7 @@ const defaultState: WhiteheadResponse = {
   stockCount: 20,
   waste: [{ design: 'CLOVER', value: 3 }],
   foundation: [[], [], [], []],
+  totalCardCount: 52,
   phase: 0,
   moveCount: 0,
   drawCount: 1,

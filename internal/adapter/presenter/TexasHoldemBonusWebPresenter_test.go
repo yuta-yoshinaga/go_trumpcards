@@ -32,6 +32,8 @@ func setupTexasHoldemBonusWebMockDefaults(m *interfaces.MockTexasHoldemBonusGame
 	m.On("GetTotalPayout").Return(0).Maybe()
 	m.On("GetPlayerHandRank").Return(0).Maybe()
 	m.On("GetDealerHandRank").Return(0).Maybe()
+	m.On("GetPlayerBest").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetDealerBest").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 }
 
@@ -93,6 +95,8 @@ func TestTexasHoldemBonusWebPresenter_Output_PreFlop_DealerMasked(t *testing.T) 
 	m.On("GetBonusPayout").Return(0).Maybe()
 	m.On("GetTotalPayout").Return(0).Maybe()
 	m.On("GetPlayerHandRank").Return(0).Maybe()
+	m.On("GetPlayerBest").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetDealerBest").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetDealerHandRank").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
@@ -125,6 +129,8 @@ func TestTexasHoldemBonusWebPresenter_Output_PlayerWins(t *testing.T) {
 	m.On("GetBonusPayout").Return(0).Maybe()
 	m.On("GetTotalPayout").Return(600).Maybe()
 	m.On("GetPlayerHandRank").Return(1).Maybe()
+	m.On("GetPlayerBest").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetDealerBest").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetDealerHandRank").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
@@ -154,6 +160,8 @@ func TestTexasHoldemBonusWebPresenter_Output_DealerWins(t *testing.T) {
 	m.On("GetBonusPayout").Return(0).Maybe()
 	m.On("GetTotalPayout").Return(0).Maybe()
 	m.On("GetPlayerHandRank").Return(0).Maybe()
+	m.On("GetPlayerBest").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetDealerBest").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetDealerHandRank").Return(1).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
@@ -183,6 +191,8 @@ func TestTexasHoldemBonusWebPresenter_Output_Fold(t *testing.T) {
 	m.On("GetBonusPayout").Return(0).Maybe()
 	m.On("GetTotalPayout").Return(0).Maybe()
 	m.On("GetPlayerHandRank").Return(0).Maybe()
+	m.On("GetPlayerBest").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetDealerBest").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetDealerHandRank").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
@@ -212,6 +222,8 @@ func TestTexasHoldemBonusWebPresenter_Output_Push(t *testing.T) {
 	m.On("GetBonusPayout").Return(0).Maybe()
 	m.On("GetTotalPayout").Return(300).Maybe()
 	m.On("GetPlayerHandRank").Return(1).Maybe()
+	m.On("GetPlayerBest").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetDealerBest").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetDealerHandRank").Return(1).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
@@ -247,6 +259,13 @@ func TestTexasHoldemBonusWebPresenter_Output_EndPhase_DealerVisible(t *testing.T
 	m.On("GetBonusPayout").Return(0).Maybe()
 	m.On("GetTotalPayout").Return(600).Maybe()
 	m.On("GetPlayerHandRank").Return(1).Maybe()
+	m.On("GetPlayerBest").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 1, false),
+		domain.NewCard(domain.CardDesignSpade, 13, false),
+	}).Maybe()
+	m.On("GetDealerBest").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, 7, false),
+	}).Maybe()
 	m.On("GetDealerHandRank").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
@@ -254,6 +273,8 @@ func TestTexasHoldemBonusWebPresenter_Output_EndPhase_DealerVisible(t *testing.T
 	assert.Len(t, result.DealerHand, 2)
 	assert.NotEqual(t, "", result.DealerHand[0].Design)
 	assert.NotEqual(t, 0, result.DealerHand[0].Value)
+	assert.Len(t, result.PlayerBest, 2)
+	assert.Len(t, result.DealerBest, 1)
 }
 
 func TestTexasHoldemBonusWebPresenter_ActionLogOutput(t *testing.T) {

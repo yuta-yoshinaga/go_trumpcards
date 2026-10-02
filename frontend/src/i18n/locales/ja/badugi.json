@@ -13,6 +13,7 @@
   "drawBadge": "ドロー {{n}}/3",
   "preDrawLabel": "プリドロー",
   "exchangeInstruction": "交換したいカードをクリックして選択し、「交換」または「スタンド」を押してください。",
+  "currentBestRank": "現在の最善ランク: {{rank}}",
   "exchangeLabel": "交換",
   "standLabel": "スタンド (交換なし)",
   "completeBadugiBanner": "✨ バドゥーギ完成！スタンドパット推奨",

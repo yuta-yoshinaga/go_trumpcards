@@ -53,7 +53,7 @@ test.describe('Courchevel E2E', () => {
     let roundEnded = false;
     for (let round = 0; round < 20; round++) {
       const checkButton = page.getByRole('button', { name: 'チェック', exact: true });
-      const callButton = page.getByRole('button', { name: 'コール', exact: true });
+      const callButton = page.getByRole('button', { name: /^コール(?:\s|$)/ });
 
       // どれか 1 つが操作可能になるまで待つ (順に probe すると 1 周 6 秒かかり、
       // 再レイズする CPU がいると 90 秒のテスト上限を越える。#2443)

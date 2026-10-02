@@ -23,6 +23,7 @@
     "cpu": "CPU{{idx}}"
   },
   "currentTrick": "現在のトリック",
+  "trickCardByPlayer": "{{name}}が出した{{card}}",
   "handEnd": {
     "tens": "チーム{{team}} が 10 の枚数で勝ちました（+1）。",
     "tricks": "10 が2枚ずつだったので、トリックの多いチーム{{team}} の勝ちです（+1）。",

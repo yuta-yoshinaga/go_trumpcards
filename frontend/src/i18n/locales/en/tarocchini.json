@@ -37,6 +37,8 @@
   "nextRound": "Next Round",
   "roundResult": {
     "title": "Round Result",
+    "breakdownTitle": "Round score breakdown",
+    "breakdown": "Team {{team}}: tricks {{tricks}} / last trick +{{lastTrickBonus}} / scarto +{{scartoBonus}} / total {{total}}",
     "tricks": "{{name}} tricks: {{count}}",
     "lastTrick": "Last-trick bonus: +{{bonus}} to Team {{team}}",
     "scarto": "Scarto: +{{count}} to Team {{team}} (the dealer side)"

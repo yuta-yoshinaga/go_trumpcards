@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Card } from '../types/card';
-import { rankLabel, redDogRank, reddogWinningRanks } from './reddogWinningRanks';
+import { rankLabel, redDogRank, reddogWinningCardOdds, reddogWinningRanks } from './reddogWinningRanks';
 
 const c = (value: number): Card => ({ design: 'SPADE', value });
 
@@ -28,6 +28,21 @@ describe('reddogWinningRanks', () => {
 
   it('is unaffected by input order', () => {
     expect(reddogWinningRanks([c(10), c(3)])).toEqual([4, 5, 6, 7, 8, 9]);
+  });
+});
+
+describe('reddogWinningCardOdds', () => {
+  it('counts remaining cards for the winning ranks from the 50-card undealt deck', () => {
+    expect(reddogWinningCardOdds([c(5), c(10)])).toEqual({ winningCards: 16, remainingCards: 50, probability: 0.32 });
+  });
+
+  it('counts the pair matching rank as the winning condition', () => {
+    expect(reddogWinningCardOdds([c(7), c(7)])).toEqual({ winningCards: 2, remainingCards: 50, probability: 0.04 });
+  });
+
+  it('returns null when there is no winning rank', () => {
+    expect(reddogWinningCardOdds([c(7), c(8)])).toBeNull();
+    expect(reddogWinningCardOdds([])).toBeNull();
   });
 });
 

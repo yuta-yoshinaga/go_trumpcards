@@ -88,6 +88,27 @@ describe('ChipBetInput', () => {
     expect(input).toHaveAttribute('aria-describedby', 'bet-help');
   });
 
+  it('keeps an aria-disabled input focusable and ignores edits', () => {
+    const onChange = vi.fn();
+    render(
+      <ChipBetInput
+        id="bet"
+        label="Bet"
+        value={50}
+        onChange={onChange}
+        max={500}
+        ariaDisabled
+        describedBy="bet-help"
+      />,
+    );
+    const input = screen.getByLabelText('Bet');
+    expect(input).toHaveAttribute('aria-disabled', 'true');
+    expect(input).toHaveAttribute('aria-describedby', 'bet-help');
+    expect(input).not.toBeDisabled();
+    fireEvent.change(input, { target: { value: '60' } });
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('clamps to min when max is omitted (no-limit mode with autoClamp=true)', () => {
     const onChange = vi.fn();
     render(<ChipBetInput id="bet" label="Bet" value={20} onChange={onChange} />);
@@ -157,6 +178,30 @@ describe('ChipBetInput', () => {
       expect(onChange).toHaveBeenLastCalledWith(60);
       fireEvent.click(screen.getByRole('button', { name: 'Bet −10' }));
       expect(onChange).toHaveBeenLastCalledWith(40);
+    });
+
+    it('does not change the value when aria-disabled', () => {
+      const onChange = vi.fn();
+      render(
+        <ChipBetInput
+          id="bet"
+          label="Bet"
+          value={50}
+          onChange={onChange}
+          min={10}
+          max={500}
+          step={10}
+          ariaDisabled
+          showSteppers
+        />,
+      );
+      const minus = screen.getByRole('button', { name: 'Bet −10' });
+      const plus = screen.getByRole('button', { name: 'Bet +10' });
+      expect(minus).toHaveAttribute('aria-disabled', 'true');
+      expect(plus).toHaveAttribute('aria-disabled', 'true');
+      fireEvent.click(minus);
+      fireEvent.click(plus);
+      expect(onChange).not.toHaveBeenCalled();
     });
 
     it('disables the minus button at min and the plus button at max', () => {

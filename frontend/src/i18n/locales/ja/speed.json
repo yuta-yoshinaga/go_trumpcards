@@ -7,6 +7,8 @@
   },
   "yourHand": "手札",
   "playable": "今すぐ出せる",
+  "playableCardsChanged": "新たに出せるカード: {{cards}}",
+  "listSeparator": "、",
   "cpuHand": "CPU手札",
   "playedCardCount": "手札は{{count}}枚です",
   "cpuAction": "CPU: {{card}} を {{pile}}番の台札へ",

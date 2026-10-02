@@ -235,6 +235,12 @@ function MendikotPageContent() {
                 cardWidth={cardWidth}
                 label={t('currentTrick')}
                 lastTrickWinner={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
+                cardAriaLabelFor={(player, card) =>
+                  t('trickCardByPlayer', {
+                    card: cardAlt(card),
+                    name: player.isHuman ? t('header.you') : t('header.cpu', { idx: String(player.id) }),
+                  })
+                }
               />
             </div>
 

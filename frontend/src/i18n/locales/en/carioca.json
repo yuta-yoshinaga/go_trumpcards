@@ -21,6 +21,11 @@
   "stockLabel": "Stock",
   "discardLabel": "Discard",
   "yourHand": "Your hand",
+  "sort": {
+    "label": "Sort hand",
+    "rank": "Rank",
+    "suit": "Suit"
+  },
   "cards": "cards",
   "scoreLabel": "Total",
   "slotsBuilt": "Slots staged",

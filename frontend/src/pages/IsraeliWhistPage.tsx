@@ -34,7 +34,14 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 const TRICKS_PER_ROUND = 13;
 
 /** The four suits, in the order the auction buttons are offered. */
-const SUITS: readonly number[] = [1, 2, 3, 4];
+type Suit = 1 | 2 | 3 | 4;
+const SUITS: readonly Suit[] = [1, 2, 3, 4];
+const SUIT_TRANSLATION_KEYS: Readonly<Record<Suit, string>> = {
+  1: 'common.suit.spade',
+  2: 'common.suit.club',
+  3: 'common.suit.heart',
+  4: 'common.suit.diamond',
+};
 
 /** The auction opens at five. */
 const AUCTION_MIN = 5;
@@ -371,6 +378,10 @@ function IsraeliWhistPageContent() {
                         onClick={() => handleAuction(bid, suit)}
                         disabled={loading || barred}
                         aria-disabled={barred}
+                        aria-label={t('actions.auction', {
+                          n: String(bid),
+                          suit: tc(SUIT_TRANSLATION_KEYS[suit]),
+                        })}
                         data-testid={`iw-auction-${suit.toString()}-btn`}
                       >
                         {t('actions.auction', { n: String(bid), suit: suitSymbolAt(suit, '?') })}

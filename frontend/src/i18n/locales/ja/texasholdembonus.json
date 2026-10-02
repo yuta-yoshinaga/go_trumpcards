@@ -97,5 +97,7 @@
     "pairOrBetter": "ペア以上 — レイズ推奨",
     "weakHand": "弱い手札"
   },
-  "hiddenCard": "非公開のカード"
+  "hiddenCard": "非公開のカード",
+  "playerBestCardUsedAria": "プレイヤーの最善の5枚に含まれるカード: {{card}}",
+  "dealerBestCardUsedAria": "ディーラーの最善の5枚に含まれるカード: {{card}}"
 }

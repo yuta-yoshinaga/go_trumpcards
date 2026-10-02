@@ -36245,6 +36245,9 @@ components:
                 description: |
                   Penalty total. Public for every seat: 101 knocks a player out,
                   so how close each one is drives every decision.
+              roundScore:
+                type: integer
+                description: Score change for the most recently completed round; the winner can be negative (for example, −10 for a clean go-out).
               eliminated:
                 type: boolean
               hasMelded:
@@ -41247,6 +41250,7 @@ components:
         - players
         - phase
         - currentTurn
+        - lastPlayIdx
         - tableCards
         - tableCombo
         - kittyCards
@@ -41277,6 +41281,9 @@ components:
           enum: [bid, play, end]
         currentTurn:
           type: integer
+        lastPlayIdx:
+          type: integer
+          description: Seat index of the last player who played cards, or -1 when the table is clear
         tableCards:
           type: array
           items:
@@ -44066,6 +44073,9 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        totalCardCount:
+          type: integer
+          description: Total number of cards in the game's deck
         phase:
           type: integer
           description: "Game phase: 0 = Playing, 1 = GameClear, 2 = GameOver"
@@ -44984,10 +44994,6 @@ components:
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
           items:
             $ref: '#/components/schemas/ActionLogEntry'
-        validPlayIndices:
-          type: array
-          items:
-            type: integer
         players:
           type: array
           description: Array of player objects
@@ -45053,6 +45059,11 @@ components:
                 type: integer
               card:
                 $ref: '#/components/schemas/Card'
+        validPlayIndices:
+          type: array
+          description: Hand card indices the current player can legally play
+          items:
+            type: integer
         spadesBroken:
           type: boolean
           description: Whether spades have been broken (played as a non-lead card)
@@ -48656,6 +48667,10 @@ components:
       type: object
       description: Current state of the Biriba game
       properties:
+        minMeld: {type: integer, description: Minimum points required for the human's initial meld}
+        drewFromDiscard: {type: boolean, description: Whether the human took the discard pile this turn}
+        drawnCard: {allOf: [{$ref: '#/components/schemas/Card'}], nullable: true, description: Discard top taken this turn}
+        drawnCardIndex: {type: integer, description: Human hand index of the exact discard top card, or -1}
         players:
           type: array
           items:
@@ -48865,6 +48880,9 @@ components:
           maxItems: 2
         gameEndFlag:
           type: boolean
+        contractMade:
+          type: boolean
+          description: Domain-calculated contract result, present only after a round has been scored.
         winnerTeam:
           type: integer
         leadPlayerIdx:
@@ -51547,6 +51565,8 @@ components:
         - playerHand
         - dealerHand
         - community
+        - playerBest
+        - dealerBest
         - phase
         - chips
         - anteBet
@@ -51582,6 +51602,16 @@ components:
         community:
           type: array
           description: Community cards (length grows from 0 to 5 as the streets advance)
+          items:
+            $ref: '#/components/schemas/Card'
+        playerBest:
+          type: array
+          description: Player's best five cards, populated at showdown.
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerBest:
+          type: array
+          description: Dealer's best five cards, populated at showdown.
           items:
             $ref: '#/components/schemas/Card'
         phase:
@@ -51928,6 +51958,11 @@ components:
                 type: integer
               card:
                 $ref: '#/components/schemas/Card'
+        validPlayIndices:
+          type: array
+          description: Hand card indices the current player can legally play
+          items:
+            type: integer
         trumpCard:
           nullable: true
           description: The card determining the trump suit (null if no trump)
@@ -52105,6 +52140,11 @@ components:
                 type: integer
               card:
                 $ref: '#/components/schemas/Card'
+        validPlayIndices:
+          type: array
+          description: Hand indices the human may play on their play turn; empty otherwise.
+          items:
+            type: integer
         trumpSuit:
           type: integer
           description: "Trump suit for the deal (1=Spade, 2=Clover, 3=Heart, 4=Diamond)"
@@ -52527,18 +52567,29 @@ components:
         discardPreviews:
           type: array
           description: >-
-            The server's own evaluation of each discard candidate, from the
-            same evaluator the CPU uses. Present only during the discard
-            phase; the client renders `recommended` rather than re-deriving it.
+            The server's own evaluation of discard choices. Four-card Irish
+            Poker choices include the original pair indexes, best five cards,
+            and dense strength order. Present only during the discard phase.
           items:
             type: object
             properties:
               cardIdx:
                 type: integer
+                description: Single-card discard index for three-card Pineapple.
+              discardIdx0:
+                type: integer
+              discardIdx1:
+                type: integer
               handRank:
                 type: integer
               recommended:
                 type: boolean
+              strengthCards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              strengthOrder:
+                type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -53829,12 +53880,15 @@ components:
         page cannot derive `wildRank` on its own - it never sees the face-down
         cards the deal walked past - so the server sends it.
       allOf:
-        - $ref: '#/components/schemas/SevenCardStudResponse'
         - type: object
           required:
             - wildRank
             - humanHandRank
           properties:
+            sidePots:
+              type: array
+              items:
+                $ref: '#/components/schemas/FollowTheQueenSidePot'
             wildRank:
               type: integer
               description: Rank currently wild for every player (1=A, 11=J, 12=Q, 13=K); 0 while no face-up Queen has set one
@@ -53847,6 +53901,29 @@ components:
               minimum: -1
               maximum: 10
               example: 3
+        - $ref: '#/components/schemas/SevenCardStudResponse'
+
+    FollowTheQueenSidePot:
+      type: object
+      required: [amount, eligiblePlayers, winners]
+      properties:
+        amount:
+          type: integer
+        eligiblePlayers:
+          type: array
+          items:
+            type: integer
+        winners:
+          type: array
+          description: Players who won each pot at showdown and the amount received. Empty array outside showdown.
+          items:
+            type: object
+            required: [playerIdx, amount]
+            properties:
+              playerIdx:
+                type: integer
+              amount:
+                type: integer
     SevenCardStudResponse:
       type: object
       required:
@@ -55731,6 +55808,11 @@ components:
               capturedCount:
                 type: integer
                 description: Number of cards this player has captured so far
+              capturedCards:
+                type: array
+                description: Cards this player has captured so far
+                items:
+                  $ref: '#/components/schemas/Card'
               basraCount:
                 type: integer
                 description: Number of Basra bonuses this player has scored
@@ -55859,6 +55941,11 @@ components:
                 type: integer
               cards:
                 type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              capturedCards:
+                type: array
+                description: Cards this player has captured so far
                 items:
                   $ref: '#/components/schemas/Card'
               capturedCount:
@@ -60012,6 +60099,9 @@ components:
                   $ref: '#/components/schemas/Card'
               wonAmount:
                 type: integer
+              netChange:
+                type: integer
+                description: Net chip change since the hand began, including buy-in payments. Set at showdown only.
         street:
           type: integer
           description: How many face-up cards have been dealt (1..4).
@@ -61927,6 +62017,11 @@ components:
               score:
                 type: integer
                 description: Running score. Negative values are normal - scoring is zero-sum.
+              roundScores:
+                type: array
+                description: Score changes for completed rounds, in round order.
+                items:
+                  type: integer
               isDeclarerSide:
                 type: boolean
                 description: Sides are set by the contract, not by seat.
@@ -65163,6 +65258,7 @@ components:
         - currentTrick
         - playerScores
         - roundDelta
+        - roundBreakdown
         - discardCount
         - ruffWinnerIdx
         - melds
@@ -65235,6 +65331,27 @@ components:
           items:
             type: integer
           description: Score delta for each player in the round.
+        roundBreakdown:
+          type: object
+          description: Per-seat score changes by auction (including turn-up bonus), ruff, meld, and trick settlement.
+          required: [bid, ruff, meld, trick]
+          properties:
+            bid:
+              type: array
+              items:
+                type: integer
+            ruff:
+              type: array
+              items:
+                type: integer
+            meld:
+              type: array
+              items:
+                type: integer
+            trick:
+              type: array
+              items:
+                type: integer
         discardCount:
           type: integer
           description: How many cards the buyer must throw (seven).
@@ -66210,6 +66327,14 @@ components:
           description: Kitty cards (visible to the declarer during the KittyExchange phase).
           items:
             $ref: '#/components/schemas/Card'
+        discardedCards:
+          type: array
+          description: The declarer's discarded cards, revealed only after the round ends.
+          items:
+            $ref: '#/components/schemas/Card'
+        discardedCardCount:
+          type: integer
+          description: Number of face-down discarded cards during play; zero before the kitty exchange.
         gameEndFlag:
           type: boolean
         winnerTeam:
@@ -67219,6 +67344,12 @@ components:
                 type: integer
               card:
                 $ref: '#/components/schemas/Card'
+              points:
+                type: integer
+                description: Sheepshead card points (A=11, 10=10, K=4, Q=3, J=2, others=0)
+              isTrump:
+                type: boolean
+                description: Whether the card is trump (all diamonds, queens, and jacks)
         blindCount:
           type: integer
           description: Number of cards currently in the blind (2 before pick, 0 after bury)
@@ -68069,6 +68200,9 @@ components:
                   $ref: '#/components/schemas/Card'
               trickCount:
                 type: integer
+              team:
+                type: integer
+                description: Team index assigned by the server (0 = Team A seats 0&2, 1 = Team B seats 1&3)
               teamGamePoints:
                 type: integer
                 description: Cumulative game points of this player's team
@@ -68260,6 +68394,9 @@ components:
                 type: integer
               card:
                 $ref: '#/components/schemas/Card'
+        currentTrickPoints:
+          type: integer
+          description: Sum of card points currently in the trick, using the current trump suit
         teamScores:
           type: array
           items:
@@ -75024,6 +75161,12 @@ components:
         declarerIdx:
           type: integer
           description: "Seat that won the contract. -1 before it is settled."
+        declarerTargetPoints:
+          type: integer
+          description: "Card points the declarer needs to make the contract."
+        totalCardPoints:
+          type: integer
+          description: "Total card points in the deck."
         contract:
           type: integer
           description: "Contract being played."
@@ -76692,6 +76835,8 @@ components:
             suit:
               type: integer
             value:
+              type: integer
+            order:
               type: integer
         highestBidder:
           type: integer
@@ -78986,6 +79131,11 @@ components:
           type: array
           items:
             type: integer
+        playerScoreDeltas:
+          type: array
+          description: Score changes from the most recent deal, per player.
+          items:
+            type: integer
         lastTrickWinner:
           type: integer
         outcome:
@@ -80928,6 +81078,9 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        totalCardCount:
+          type: integer
+          description: Total number of cards in the game's deck.
         moveCount:
           type: integer
         canUndo:
@@ -81289,6 +81442,19 @@ components:
           type: array
           items:
             type: integer
+        roundBreakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              tricks:
+                type: integer
+              lastTrickBonus:
+                type: integer
+              scartoBonus:
+                type: integer
+              total:
+                type: integer
         lastTrickWinner:
           type: integer
         playableIndices:

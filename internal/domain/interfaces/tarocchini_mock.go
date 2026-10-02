@@ -158,6 +158,12 @@ func (_m *MockTarocchiniGame) GetRoundTricks() [domain.TarocchiniPlayerCnt]int {
 	return args.Get(0).([domain.TarocchiniPlayerCnt]int)
 }
 
+// GetRoundBreakdown モック
+func (_m *MockTarocchiniGame) GetRoundBreakdown() [2]domain.TarocchiniTeamRoundBreakdown {
+	args := _m.Called()
+	return args.Get(0).([2]domain.TarocchiniTeamRoundBreakdown)
+}
+
 // GetWinnerTeam モック
 func (_m *MockTarocchiniGame) GetWinnerTeam() int {
 	args := _m.Called()

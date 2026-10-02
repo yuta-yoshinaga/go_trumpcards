@@ -9,6 +9,7 @@
   "playersTitle": "プレイヤー",
   "handLabel": "あなたの手札",
   "passNotice": "あなたの番です — 次の人に渡すカードを1枚選んでください。",
+  "passResult": "{{passed}}を渡し、{{received}}を受け取りました。",
   "grabNotice": "フォーオブアカインド成立！ スプーンを取りましょう！",
   "grabWindowOpened": "スプーンを取れます。",
   "grabWindowClosed": "スプーンを取れません。",

@@ -2,6 +2,7 @@
   "captureAnnounce": "{{player}} captured cards",
   "captureButton": "Capture",
   "captured": "Captured: {{count}}",
+  "capturedCards": "Captured cards",
   "cards": "{{count}} cards",
   "cpu": "CPU {{id}}",
   "deal": "Deal {{n}}",

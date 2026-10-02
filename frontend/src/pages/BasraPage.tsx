@@ -236,6 +236,13 @@ function BasraPageContent() {
                         <AnimatedCardBack key={i} width={cardWidth * 0.45} />
                       ))}
                     </div>
+                    <div className="mt-1 flex flex-wrap justify-center gap-0.5" data-testid={`basra-captured-${p.id}`}>
+                      {p.capturedCards.map((c, i) => (
+                        <span key={`${c.design}-${c.value}-${i}`} role="img" aria-label={cardAlt(c)}>
+                          <AnimatedCard card={c} width={cardWidth * 0.35} />
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 ))}
             </div>
@@ -344,6 +351,17 @@ function BasraPageContent() {
                     </span>
                   </>
                 )}
+              </div>
+              <div
+                className="mt-1 flex flex-wrap justify-center gap-0.5"
+                data-testid="basra-captured-0"
+                data-captured-count={human?.capturedCount}
+              >
+                {human?.capturedCards.map((c, i) => (
+                  <span key={`${c.design}-${c.value}-${i}`} role="img" aria-label={cardAlt(c)}>
+                    <AnimatedCard card={c} width={cardWidth * 0.35} />
+                  </span>
+                ))}
               </div>
               <div className="flex flex-wrap justify-center gap-2">
                 {human?.cards.map((c, i) => (

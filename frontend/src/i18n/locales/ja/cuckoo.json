@@ -4,6 +4,7 @@
   "round": "ラウンド {{n}}",
   "dealer": "親",
   "stock": "山札: {{count}}枚",
+  "emptyStockDealerKeeps": "山札が空の場合、親が山札と交換しようとしても手札を保持します。",
   "playersTitle": "プレイヤー",
   "lives": "ライフ",
   "livesCount": "ライフ {{count}}",

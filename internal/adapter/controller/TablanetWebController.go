@@ -42,6 +42,7 @@ type TablanetWebOutputPlayer struct {
 	IsHuman       bool             `json:"isHuman"`
 	CardCount     int              `json:"cardCount"`
 	Cards         []*WebOutputCard `json:"cards"`
+	CapturedCards []*WebOutputCard `json:"capturedCards"`
 	CapturedCount int              `json:"capturedCount"`
 	TablaCount    int              `json:"tablaCount"`
 	Score         int              `json:"score"`

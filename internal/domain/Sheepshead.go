@@ -690,6 +690,9 @@ func sheepsheadIsTrump(card *Card) bool {
 	return card.GetDesign() == CardDesignDiamond || card.GetValue() == 11 || card.GetValue() == 12
 }
 
+// SheepsheadIsTrump reports whether a card is a Sheepshead trump.
+func SheepsheadIsTrump(card *Card) bool { return sheepsheadIsTrump(card) }
+
 // sheepsheadSuitID トリック上のスート ID を返す。切り札は共通の ID
 // (sheepsheadTrumpSuit) を持ち、フェイル札はスート定数をそのまま返す。
 func sheepsheadSuitID(card *Card) int {
@@ -774,6 +777,9 @@ func sheepsheadCardPoints(value int) int {
 		return 0
 	}
 }
+
+// SheepsheadCardPoints returns the card points for a Sheepshead card value.
+func SheepsheadCardPoints(value int) int { return sheepsheadCardPoints(value) }
 
 // sheepsheadTrickPoints 取得トリック群の合計カードポイント。
 func sheepsheadTrickPoints(tricks [][]*Card) int {

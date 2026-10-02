@@ -37,6 +37,7 @@ func (p *SomersetWebPresenter) Output(bc interfaces.SomersetGame, lastErr error)
 	// ファンデーション
 	foundation := bc.GetFoundation()
 	resObj.Foundation = make([][]*controller.WebOutputCard, domain.SomersetFoundationCnt)
+	resObj.TotalCardCount = bc.GetTotalCardCount()
 	for i := range domain.SomersetFoundationCnt {
 		pile := foundation[i]
 		resObj.Foundation[i] = make([]*controller.WebOutputCard, len(pile))

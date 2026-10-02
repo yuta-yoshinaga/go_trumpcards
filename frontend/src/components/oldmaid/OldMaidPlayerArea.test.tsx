@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Card, OldMaidPlayerData } from '../../types/card';
+import { cardAlt } from '../../utils/cardAlt';
 import { OldMaidPlayerArea } from './OldMaidPlayerArea';
 
 function makeCard(design: Card['design'], value: number): Card {
@@ -141,6 +142,20 @@ describe('OldMaidPlayerArea keyboard reordering', () => {
     expect(container).toHaveAttribute('tabindex', '0');
   });
 
+  it('uses the same zero-based position in move targets and keyboard move announcements', () => {
+    render(<OldMaidPlayerArea {...defaultProps} player={makeHumanPlayer(threeCards)} onReorder={vi.fn()} />);
+    const buttons = cardButtons();
+    fireEvent.click(buttons[0]);
+    expect(buttons[2]).toHaveAccessibleName(`${cardAlt(threeCards[0])} をここ（位置2）に移動`);
+
+    const container = screen.getByTestId('human-card-container');
+    fireEvent.keyDown(container, { key: 'ArrowRight' });
+    fireEvent.keyDown(container, { key: 'ArrowRight', shiftKey: true });
+    expect(screen.getByTestId('reorder-announcement')).toHaveTextContent(
+      `${cardAlt(threeCards[0])}を位置1に移動しました`,
+    );
+  });
+
   it('does not add keyboard handler when onReorder is not provided', () => {
     render(<OldMaidPlayerArea {...defaultProps} player={makeHumanPlayer(threeCards)} />);
     expect(screen.queryByTestId('human-card-container')).toBeNull();
@@ -225,6 +240,38 @@ describe('OldMaidPlayerArea keyboard reordering', () => {
     fireEvent.keyDown(container, { key: 'ArrowRight' }); // focus -> 0
     fireEvent.keyDown(container, { key: 'ArrowRight', shiftKey: true }); // swap 0<->1, focus -> 1
     expect(onReorder).toHaveBeenCalledWith([1, 0, 2]);
+    expect(screen.getByTestId('reorder-announcement')).toHaveTextContent(
+      `${cardAlt(threeCards[0])}を位置1に移動しました`,
+    );
+  });
+
+  it('re-announces the same card moving to the same position twice', () => {
+    render(<OldMaidPlayerArea {...defaultProps} player={makeHumanPlayer(threeCards)} onReorder={vi.fn()} />);
+    const container = screen.getByTestId('human-card-container');
+    fireEvent.keyDown(container, { key: 'ArrowRight' });
+    fireEvent.keyDown(container, { key: 'ArrowRight', shiftKey: true });
+    const status = screen.getByTestId('reorder-announcement');
+    const firstNonce = status.getAttribute('data-announcement-nonce');
+    expect(status).toHaveTextContent(`${cardAlt(threeCards[0])}を位置1に移動しました`);
+
+    fireEvent.keyDown(container, { key: 'Escape' });
+    fireEvent.keyDown(container, { key: 'ArrowRight' });
+    fireEvent.keyDown(container, { key: 'ArrowRight', shiftKey: true });
+    expect(screen.getByTestId('reorder-announcement')).toHaveTextContent(
+      `${cardAlt(threeCards[0])}を位置1に移動しました`,
+    );
+    expect(screen.getByTestId('reorder-announcement')).not.toHaveAttribute('data-announcement-nonce', firstNonce);
+  });
+
+  it('does not announce focus movement or a reorder that cannot move a card', () => {
+    render(<OldMaidPlayerArea {...defaultProps} player={makeHumanPlayer(threeCards)} onReorder={vi.fn()} />);
+    const container = screen.getByTestId('human-card-container');
+    const status = screen.getByTestId('reorder-announcement');
+
+    fireEvent.keyDown(container, { key: 'ArrowRight' });
+    expect(status).toBeEmptyDOMElement();
+    fireEvent.keyDown(container, { key: 'ArrowLeft', shiftKey: true });
+    expect(status).toBeEmptyDOMElement();
   });
 
   it('Shift+ArrowLeft swaps focused card with left neighbor', () => {
@@ -236,6 +283,9 @@ describe('OldMaidPlayerArea keyboard reordering', () => {
     fireEvent.keyDown(container, { key: 'ArrowRight' }); // -> 1
     fireEvent.keyDown(container, { key: 'ArrowLeft', shiftKey: true }); // swap 1<->0, focus -> 0
     expect(onReorder).toHaveBeenCalledWith([1, 0, 2]);
+    expect(screen.getByTestId('reorder-announcement')).toHaveTextContent(
+      `${cardAlt(threeCards[1])}を位置0に移動しました`,
+    );
   });
 
   it('Shift+ArrowRight does nothing when focus is on last card', () => {

@@ -37,6 +37,7 @@ func setupOmbreWebMock() *interfaces.MockOmbreGame {
 	m.On("GetOutcome").Return(domain.OmbreOutcomeNone)
 	m.On("GetResult").Return(domain.OmbreResultNone)
 	m.On("GetPlayerScores").Return([domain.OmbrePlayerCnt]int{0, 0, 0})
+	m.On("GetPlayerScoreDeltas").Return([domain.OmbrePlayerCnt]int{0, 0, 0})
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetPlayableIndices", 0).Return([]int{0})
 	m.On("IsHumanTurn").Return(true)

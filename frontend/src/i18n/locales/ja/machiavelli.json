@@ -24,6 +24,10 @@
   "cards": "{{count}}枚",
   "cumulativeScore": "累計: {{score}}",
   "deadwoodShort": "デッドウッド {{score}}",
+  "handOrder": {
+    "rankSuit": "ランク・スート順に並べる",
+    "deal": "配られた順に戻す"
+  },
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",
   "scoresRound": "ラウンド",

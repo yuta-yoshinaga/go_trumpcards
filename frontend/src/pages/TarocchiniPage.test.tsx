@@ -115,6 +115,10 @@ describe('TarocchiniPage', () => {
         lastTrickWinner: 1, // 席1 = チーム1
         dealerIdx: 0, // 席0 = チーム0
         scartoCount: 2,
+        roundBreakdown: [
+          { tricks: 8, lastTrickBonus: 0, scartoBonus: 2, total: 10 },
+          { tricks: 5, lastTrickBonus: 2, scartoBonus: 0, total: 7 },
+        ],
       }),
     );
     renderWithProviders(<TarocchiniPage />);
@@ -125,6 +129,12 @@ describe('TarocchiniPage', () => {
     const scarto = screen.getByTestId('tarocchini-scarto-bonus');
     expect(scarto).toHaveTextContent('チーム0');
     expect(scarto).toHaveTextContent('+2');
+    expect(screen.getByTestId('tarocchini-team-round-breakdown-0')).toHaveTextContent(
+      'チーム0: トリック 8 / 最終トリック +0 / スカルト +2 / 計 10',
+    );
+    expect(screen.getByTestId('tarocchini-team-round-breakdown-1')).toHaveTextContent(
+      'チーム1: トリック 5 / 最終トリック +2 / スカルト +0 / 計 7',
+    );
   });
 
   it('omits the breakdown lines that do not apply', async () => {

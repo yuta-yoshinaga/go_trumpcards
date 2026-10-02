@@ -72,26 +72,28 @@ type MightyWebOutputHint struct {
 
 // MightyWebOutput マイティWebアウトプット
 type MightyWebOutput struct {
-	Players           []*MightyWebOutputPlayer    `json:"players"`
-	Phase             int                         `json:"phase"`
-	RoundNumber       int                         `json:"roundNumber"`
-	TrickNumber       int                         `json:"trickNumber"`
-	CurrentPlayerIdx  int                         `json:"currentPlayerIdx"`
-	BidPlayerIdx      int                         `json:"bidPlayerIdx"`
-	CurrentTrick      []*MightyWebOutputTrickCard `json:"currentTrick"`
-	TrumpSuit         int                         `json:"trumpSuit"`
-	PartnerCard       *WebOutputCard              `json:"partnerCard,omitempty"`
-	DeclarerIdx       int                         `json:"declarerIdx"`
-	PartnerIdx        int                         `json:"partnerIdx"`
-	PartnerRevealed   bool                        `json:"partnerRevealed"`
-	HighestBid        int                         `json:"highestBid"`
-	HighestBidder     int                         `json:"highestBidder"`
-	WinningBidNoTrump bool                        `json:"winningBidNoTrump"`
-	Kitty             []*WebOutputCard            `json:"kitty,omitempty"`
-	GameEndFlag       bool                        `json:"gameEndFlag"`
-	WinnerTeam        int                         `json:"winnerTeam"`
-	LeadPlayerIdx     int                         `json:"leadPlayerIdx"`
-	Hint              *MightyWebOutputHint        `json:"hint,omitempty"`
+	Players            []*MightyWebOutputPlayer    `json:"players"`
+	Phase              int                         `json:"phase"`
+	RoundNumber        int                         `json:"roundNumber"`
+	TrickNumber        int                         `json:"trickNumber"`
+	CurrentPlayerIdx   int                         `json:"currentPlayerIdx"`
+	BidPlayerIdx       int                         `json:"bidPlayerIdx"`
+	CurrentTrick       []*MightyWebOutputTrickCard `json:"currentTrick"`
+	TrumpSuit          int                         `json:"trumpSuit"`
+	PartnerCard        *WebOutputCard              `json:"partnerCard,omitempty"`
+	DeclarerIdx        int                         `json:"declarerIdx"`
+	PartnerIdx         int                         `json:"partnerIdx"`
+	PartnerRevealed    bool                        `json:"partnerRevealed"`
+	HighestBid         int                         `json:"highestBid"`
+	HighestBidder      int                         `json:"highestBidder"`
+	WinningBidNoTrump  bool                        `json:"winningBidNoTrump"`
+	Kitty              []*WebOutputCard            `json:"kitty,omitempty"`
+	DiscardedCards     []*WebOutputCard            `json:"discardedCards,omitempty"`
+	DiscardedCardCount int                         `json:"discardedCardCount"`
+	GameEndFlag        bool                        `json:"gameEndFlag"`
+	WinnerTeam         int                         `json:"winnerTeam"`
+	LeadPlayerIdx      int                         `json:"leadPlayerIdx"`
+	Hint               *MightyWebOutputHint        `json:"hint,omitempty"`
 	WebOutputBase
 	Config MightyWebOutputConfig `json:"config"`
 }

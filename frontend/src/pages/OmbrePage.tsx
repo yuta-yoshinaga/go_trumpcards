@@ -332,6 +332,20 @@ function OmbrePageContent() {
                         {t('roundResult.ombre', { name: playerName(state.ombreIdx, state.ombreIdx === humanIdx) })}
                       </div>
                     )}
+                    <div className="mt-2">
+                      <div className="text-ds-text-primary">{t('roundResult.scoreChanges')}</div>
+                      {state.players.map((p) => {
+                        const delta = state.playerScoreDeltas[p.id];
+                        return (
+                          <div key={p.id}>
+                            {t('roundResult.scoreChange', {
+                              name: playerName(p.id, p.isHuman),
+                              delta: `${delta > 0 ? '+' : ''}${delta}`,
+                            })}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>

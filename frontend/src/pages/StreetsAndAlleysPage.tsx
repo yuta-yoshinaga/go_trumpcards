@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { StreetsAndAlleysMoveZone, streetsAndAlleysApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -92,7 +92,16 @@ function StreetsAndAlleysPageContent() {
     cancelGiveUp,
   } = useGamePageSetup('streetsandalleys');
   const game = useStreetsAndAlleysGame();
+  const previousMoveCount = useRef(game.state?.moveCount);
+  const [announcedMoveCount, setAnnouncedMoveCount] = useState<number | null>(null);
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
+  useEffect(() => {
+    if (!state) return;
+    if (previousMoveCount.current !== undefined && previousMoveCount.current !== state.moveCount) {
+      setAnnouncedMoveCount(state.moveCount);
+    }
+    previousMoveCount.current = state.moveCount;
+  }, [state]);
   const selectSourceHintId = useId();
 
   const {
@@ -334,6 +343,9 @@ function StreetsAndAlleysPageContent() {
           : t(selectedTargetCount === 0 ? 'noLegalDestinations' : 'legalDestinationCount', {
               count: selectedTargetCount,
             })}
+      </div>
+      <div role="status" aria-live="polite" className="sr-only" data-testid="sa-move-count-announcement">
+        {announcedMoveCount === null ? '' : t('moveCountAnnouncement', { count: announcedMoveCount })}
       </div>
 
       {cliEnabled ? (

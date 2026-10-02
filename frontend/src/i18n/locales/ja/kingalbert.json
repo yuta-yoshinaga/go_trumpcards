@@ -8,6 +8,7 @@
   "tableau": "場札",
   "reserve": "リザーブ",
   "moveCount": "手数",
+  "moveCountAnnouncement": "手数: {{count}}",
   "giveup": "ギブアップ",
   "empty": "空",
   "emptyReserveSlot": "空のリザーブ枠 {{idx}}",

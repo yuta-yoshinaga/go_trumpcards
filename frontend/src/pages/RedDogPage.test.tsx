@@ -182,6 +182,18 @@ describe('RedDogPage', () => {
     }
     // Text summary mirrors the ghost chips for at-a-glance / non-visual reading.
     expect(screen.getByTestId('reddog-winners-text')).toHaveTextContent('6、7、8、9');
+    expect(screen.getByTestId('reddog-winning-odds')).toHaveTextContent('当たり札: 16枚 / 50枚 (32%)');
+  });
+
+  it('does not show winning odds when no ranks can win', async () => {
+    mockApi.mockResolvedValue({
+      ...spreadState,
+      initialCards: [card('SPADE', 7), card('HEART', 8)],
+    });
+    renderWithProviders(<RedDogPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('reddog-winning-odds')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('reddog-winners-text')).not.toBeInTheDocument();
   });
 
   it('marks the hit ghost chip in end phase', async () => {

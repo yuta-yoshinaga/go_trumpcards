@@ -38,7 +38,6 @@ import { valueName } from '../utils/cardUtils';
 import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
 import { omahaLivePreviewKey } from '../utils/livePokerPreview';
-import { omahaBestFive } from '../utils/omahaBestFive';
 import { lowCardIndexSets } from '../utils/omahaLowCards';
 import { findPlayerName } from '../utils/playerUtils';
 
@@ -209,14 +208,15 @@ function OmahaHiLoPageContent() {
     cli: { parseCommand: parseOmahaCommand, formatResponse: formatOmahaState, helpText: OMAHA_HELP },
   });
 
-  // At showdown, highlight the human's winning Hi 5 cards under the must-use-2 rule.
+  // Highlight the human's server-evaluated Hi 5 cards under the must-use-2 rule.
   const showdownBest5 = useMemo(() => {
     const empty = { holeSet: new Set<number>(), boardSet: new Set<number>() };
-    if (!isShowdown || !humanPlayer || humanPlayer.folded) return empty;
-    const best = omahaBestFive(humanPlayer.cards ?? [], state?.communityCards ?? []);
-    if (!best) return empty;
-    return { holeSet: new Set(best.holeIdx), boardSet: new Set(best.boardIdx) };
-  }, [isShowdown, humanPlayer, state?.communityCards]);
+    if (!humanPlayer || humanPlayer.folded) return empty;
+    return {
+      holeSet: new Set(humanPlayer.liveBestHandHoleIndices ?? []),
+      boardSet: new Set(humanPlayer.liveBestHandBoardIndices ?? []),
+    };
+  }, [humanPlayer]);
 
   // Preview the hand the player currently holds under the must-use-exactly-2
   // rule. Big O deals five hole cards — ten pairings to weigh by eye — so the

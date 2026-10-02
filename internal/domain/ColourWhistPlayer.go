@@ -14,7 +14,8 @@ import (
 type ColourWhistPlayer struct {
 	*GamePlayer
 	TrickHolder
-	score int
+	score       int
+	roundScores []int
 }
 
 // NewColourWhistPlayer はコンストラクタ。
@@ -27,6 +28,15 @@ func (p *ColourWhistPlayer) GetScore() int { return p.score }
 
 // AddScore は得点を加える。**負にもなります。**
 func (p *ColourWhistPlayer) AddScore(n int) { p.score += n }
+
+// AddRoundScore records this round's score and adds it to the running total.
+func (p *ColourWhistPlayer) AddRoundScore(n int) {
+	p.roundScores = append(p.roundScores, n)
+	p.AddScore(n)
+}
+
+// GetRoundScores returns a copy of the scores recorded for completed rounds.
+func (p *ColourWhistPlayer) GetRoundScores() []int { return append([]int(nil), p.roundScores...) }
 
 // SetScore は得点を設定する (主にテスト/復元用)。
 func (p *ColourWhistPlayer) SetScore(n int) { p.score = n }
@@ -51,6 +61,7 @@ func (p *ColourWhistPlayer) ResetRound() {
 func (p *ColourWhistPlayer) ResetGame() {
 	p.ResetRound()
 	p.score = 0
+	p.roundScores = nil
 }
 
 // colourWhistPlayerJSON is the JSON wire format for ColourWhistPlayer.
@@ -58,6 +69,7 @@ type colourWhistPlayerJSON struct {
 	GamePlayer  *GamePlayer  `json:"gp"`
 	TrickHolder *TrickHolder `json:"th"`
 	Score       int          `json:"sc"`
+	RoundScores []int        `json:"rs,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -66,6 +78,7 @@ func (p *ColourWhistPlayer) MarshalJSON() ([]byte, error) {
 		GamePlayer:  p.GamePlayer,
 		TrickHolder: &p.TrickHolder,
 		Score:       p.score,
+		RoundScores: p.roundScores,
 	})
 }
 
@@ -83,5 +96,6 @@ func (p *ColourWhistPlayer) UnmarshalJSON(data []byte) error {
 		p.TrickHolder = *j.TrickHolder
 	}
 	p.score = j.Score
+	p.roundScores = j.RoundScores
 	return nil
 }

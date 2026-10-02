@@ -325,13 +325,15 @@ describe('FrenchTarotPage', () => {
     mockExec.mockResolvedValue(chienPhaseState);
     renderWithProviders(<FrenchTarotPage />);
     // The King card exposes the king-specific reason on its tooltip.
-    const kingBtn = await screen.findByRole('button', { name: 'R ♠' });
+    const kingBtn = await screen.findByRole('button', { name: 'R ♠ (キング（ロワ）はシアンに埋められません。)' });
     expect(kingBtn).toHaveAttribute('title', 'キング（ロワ）はシアンに埋められません。');
     // The Excuse exposes a different, excuse-specific reason.
-    const excuseBtn = screen.getByRole('button', { name: 'Excuse ★' });
+    const excuseBtn = screen.getByRole('button', { name: 'Excuse ★ (エクスキューズはシアンに埋められません。)' });
     expect(excuseBtn).toHaveAttribute('title', 'エクスキューズはシアンに埋められません。');
     // The two reasons differ.
     expect(kingBtn.getAttribute('title')).not.toBe(excuseBtn.getAttribute('title'));
+    expect(kingBtn).toHaveAttribute('aria-disabled', 'true');
+    expect(excuseBtn).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('shows no un-buriable tooltip on a freely buriable low card during the écart', async () => {
@@ -339,6 +341,7 @@ describe('FrenchTarotPage', () => {
     renderWithProviders(<FrenchTarotPage />);
     const lowCard = await screen.findByRole('button', { name: '2 ♥' });
     expect(lowCard).not.toHaveAttribute('title');
+    expect(lowCard).not.toHaveAttribute('aria-disabled');
   });
 
   it('selecting a card then playing dispatches play', async () => {

@@ -84,6 +84,8 @@ type BaseballResult struct {
 	// UsedWild は 3 や 9 を役に使ったか。
 	UsedWild  bool
 	WonAmount int
+	// NetChange はアンティ前の開始チップからの純増減。買い増しを含む。
+	NetChange int
 }
 
 // BaseballPoker はベースボールポーカーの卓。
@@ -492,6 +494,9 @@ func (g *BaseballPoker) finishHand() {
 		if i >= 0 && i < len(g.results) {
 			g.results[i].WonAmount = amount
 		}
+	}
+	for i, p := range g.players {
+		g.results[i].NetChange = p.GetChips() - g.startingChips[i]
 	}
 	g.pot = 0
 

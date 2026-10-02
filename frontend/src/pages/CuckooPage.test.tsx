@@ -162,6 +162,22 @@ describe('CuckooPage', () => {
     expect(screen.getByText(/山札: 47枚/)).toBeInTheDocument();
   });
 
+  it('explains the dealer keeps their hand when the stock is empty', async () => {
+    mockExec.mockResolvedValue(makeState({ stockCount: 0, dealerIdx: 0 }));
+    renderWithProviders(<CuckooPage />);
+    expect(
+      await screen.findByText('山札が空の場合、親が山札と交換しようとしても手札を保持します。'),
+    ).toBeInTheDocument();
+  });
+
+  it('does not explain empty-stock behavior while cards remain', async () => {
+    renderWithProviders(<CuckooPage />);
+    await screen.findByText(/山札: 47枚/);
+    expect(
+      screen.queryByText('山札が空の場合、親が山札と交換しようとしても手札を保持します。'),
+    ).not.toBeInTheDocument();
+  });
+
   it('renders the players list with lives, exposing the remaining count to screen readers', async () => {
     renderWithProviders(<CuckooPage />);
     await waitFor(() => expect(screen.getByText(/プレイヤー/)).toBeInTheDocument());

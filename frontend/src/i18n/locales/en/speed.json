@@ -7,6 +7,8 @@
   },
   "yourHand": "Your Hand",
   "playable": "playable now",
+  "playableCardsChanged": "Newly playable cards: {{cards}}",
+  "listSeparator": ", ",
   "cpuHand": "CPU Hand",
   "playedCardCount": "You have {{count}} cards in your hand",
   "cpuAction": "CPU: {{card}} to pile {{pile}}",

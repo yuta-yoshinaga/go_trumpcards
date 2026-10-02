@@ -42,9 +42,13 @@ type PineappleWebOutput struct {
 
 // PineappleWebDiscardPreview is the server's evaluation of one discard candidate.
 type PineappleWebDiscardPreview struct {
-	CardIdx     int  `json:"cardIdx"`
-	HandRank    int  `json:"handRank"`
-	Recommended bool `json:"recommended"`
+	CardIdx       int              `json:"cardIdx,omitempty"`
+	DiscardIdx0   int              `json:"discardIdx0"`
+	DiscardIdx1   int              `json:"discardIdx1"`
+	HandRank      int              `json:"handRank"`
+	Recommended   bool             `json:"recommended"`
+	StrengthCards []*WebOutputCard `json:"strengthCards,omitempty"`
+	StrengthOrder int              `json:"strengthOrder"`
 }
 
 // ToConfig builds a PineappleConfig from the web input.

@@ -33,6 +33,8 @@ func setupNinetyNineWebMock() *interfaces.MockNinetyNineGame {
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.NinetyNinePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("IsHumanTurn").Return(true)
+	m.On("GetValidPlayIndices", 0).Return([]int{0}).Maybe()
 	m.On("GetBidPlayerIdx").Return(0)
 	m.On("GetDealerIdx").Return(0)
 	m.On("GetTrumpSuit").Return(domain.CardDesignHeart)
@@ -75,6 +77,7 @@ func TestNinetyNineWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 9, resObj.HandSize)
 		assert.Equal(t, domain.CardDesignHeart, resObj.TrumpSuit)
 		assert.Equal(t, -1, resObj.WinnerIdx)
+		assert.Equal(t, []int{0}, resObj.ValidPlayIndices)
 	})
 
 	t.Run("error message", func(t *testing.T) {

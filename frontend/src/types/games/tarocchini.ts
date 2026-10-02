@@ -54,6 +54,8 @@ export interface TarocchiniResponse extends BaseGameResponse {
   teamScores: number[];
   /** Tricks captured per seat this round — [p0, p1, p2, p3]. */
   roundTricks: number[];
+  /** Per team score components for this round. */
+  roundBreakdown: { tricks: number; lastTrickBonus: number; scartoBonus: number; total: number }[];
   /** Seat that took the previous trick, or -1 before the first is resolved. */
   lastTrickWinner: number;
   /** Indices in the human's hand that are legal to play (non-empty on a human Play turn). */

@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { flowerGardenApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, FlowerGardenResponse, FlowerGardenTableauCard } from '../types/card';
@@ -78,6 +79,36 @@ describe('FlowerGardenPage', () => {
     renderWithProviders(<FlowerGardenPage />);
     await waitFor(() => expect(screen.getByText(/フラワーガーデン/)).toBeInTheDocument());
     expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
+  });
+
+  it('announces move count changes but stays silent on the initial render', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({ ...playingState, moveCount: 4 });
+    renderWithProviders(<FlowerGardenPage />);
+    const liveRegion = await screen.findByTestId('fg-move-count-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByRole('button', { name: '♥ 5、列0・位置1' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ 6、列1・位置0' }));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('手数: 4'));
+  });
+
+  it('renders the announced move count in the current language', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({ ...playingState, moveCount: 4 });
+    renderWithProviders(<FlowerGardenPage />);
+    const liveRegion = await screen.findByTestId('fg-move-count-live');
+
+    fireEvent.click(screen.getByRole('button', { name: '♥ 5、列0・位置1' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ 6、列1・位置0' }));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('手数: 4'));
+
+    try {
+      await i18n.changeLanguage('en');
+      await waitFor(() => expect(liveRegion).toHaveTextContent('Moves: 4'));
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('labels tableau cards with their zero-based column and position', async () => {
