@@ -32,6 +32,7 @@ func TestJulepeCuiPresenterOutput(t *testing.T) {
 	assert.Contains(t, out, fixedPart("julepe.potLine"))
 	assert.Contains(t, out, fixedPart("julepe.trumpLine"))
 	assert.Contains(t, out, fixedPart("julepe.riskLine"))
+	assert.Contains(t, out, "直前のトリック\n")
 	// 配り直後は参加可否を促す。
 	assert.Contains(t, out, i18n.T("julepe.promptDecide"))
 	assert.NotContains(t, out, i18n.T("julepe.promptPlay"))

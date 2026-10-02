@@ -8,6 +8,8 @@
   "header": "Round: {{round}}/{{rounds}}  Trick: {{trick}}/{{tricks}}  ({{players}} players)",
   "potLine": "Pot: {{pot}} chips (shared out by tricks taken)",
   "trumpLine": "Trump: {{card}}",
+  "lastTrick": "Previous trick",
+  "lastTrickWinner": "Previous trick winner: {{name}}",
   "riskLine": "Enter and take fewer than {{required}} trick(s) and you pay an extra {{penalty}} into the pot, and your ante doubles next round.",
   "playerLine": "{{name}}: {{chips}} chips [{{status}}], {{tricks}} taken, {{cards}} in hand",
   "statusIn": "in",

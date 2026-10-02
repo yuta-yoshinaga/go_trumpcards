@@ -750,3 +750,18 @@ func TestJulepe_BeastOnAPartialHaul(t *testing.T) {
 	assert.True(t, beast[1], "1 トリックでも規定 2 に届かなければ beast")
 	assert.True(t, beast[2])
 }
+
+func TestJulepeLastTrickPersistsInSnapshotAndResets(t *testing.T) {
+	g := newTestJulepe(t)
+	g.lastTrick = []*TrickCard{{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 7, false)}}
+	g.lastTrickWinner = 2
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	restored := NewDefaultJulepe()
+	require.NoError(t, json.Unmarshal(data, restored))
+	assert.Equal(t, g.GetLastTrick(), restored.GetLastTrick())
+	assert.Equal(t, 2, restored.GetLastTrickWinner())
+	restored.Reset()
+	assert.Empty(t, restored.GetLastTrick())
+	assert.Equal(t, -1, restored.GetLastTrickWinner())
+}

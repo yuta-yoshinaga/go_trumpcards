@@ -93,6 +93,15 @@ func (p *JulepeCuiPresenter) Output(r interfaces.JulepeGame, lastErr error) stri
 			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(r.GetPlayer(idx), idx) },
 		)
+		sb.WriteString(i18n.T("julepe.lastTrick") + "\n")
+		cuiTrickBlock(sb, r.GetLastTrick(),
+			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
+			func(idx int) string { return cuiPlayerName(r.GetPlayer(idx), idx) },
+		)
+		if winner := r.GetLastTrickWinner(); winner >= 0 {
+			sb.WriteString(i18n.Tf("julepe.lastTrickWinner", "name", cuiPlayerName(r.GetPlayer(winner), winner)) + "\n")
+		}
 
 		cuiErrorBlock(sb, lastErr)
 

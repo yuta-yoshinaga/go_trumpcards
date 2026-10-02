@@ -73,6 +73,11 @@ func (m *MockJulepeGame) GetCurrentTrick() []*domain.TrickCard {
 	return args.Get(0).([]*domain.TrickCard)
 }
 
+func (m *MockJulepeGame) GetLastTrick() []*domain.TrickCard {
+	return m.Called().Get(0).([]*domain.TrickCard)
+}
+func (m *MockJulepeGame) GetLastTrickWinner() int { return m.Called().Int(0) }
+
 func (m *MockJulepeGame) GetValidPlayIndices(playerIdx int) []int {
 	args := m.Called(playerIdx)
 	if args.Get(0) == nil {

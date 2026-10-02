@@ -18,11 +18,13 @@ func intPtrJulepe(v int) *int { return &v }
 
 func mustJulepeOutputJSON(msg string) string {
 	out := &controller.JulepeWebOutput{
-		Players:       []*controller.JulepeWebOutputPlayer{},
-		CurrentTrick:  []*controller.WebOutputTrickCard{},
-		ValidPlays:    []int{},
-		WinnerIdx:     -1,
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Players:         []*controller.JulepeWebOutputPlayer{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
+		LastTrick:       []*controller.WebOutputTrickCard{},
+		LastTrickWinner: -1,
+		ValidPlays:      []int{},
+		WinnerIdx:       -1,
+		WebOutputBase:   controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

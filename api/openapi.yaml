@@ -63157,6 +63157,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RamsTrickCard'
+        lastTrick:
+          type: array
+          description: Cards in the most recently completed trick; empty before the first trick.
+          items:
+            $ref: '#/components/schemas/RamsTrickCard'
+        lastTrickWinner:
+          type: integer
+          description: Seat that won the most recently completed trick, or -1 before the first trick.
         validPlays:
           type: array
           description: Hand indices you may legally play. Following suit is compulsory.

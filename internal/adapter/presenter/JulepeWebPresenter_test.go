@@ -38,6 +38,8 @@ func TestJulepeWebPresenterOutput(t *testing.T) {
 	assert.Equal(t, float64(domain.JulepeAnte*domain.JulepePlayerCntDefault), m["pot"])
 	require.NotNil(t, m["upCard"], "切り札を決めた 1 枚が出る")
 	assert.Equal(t, float64(r.GetTrumpSuit()), m["trumpSuit"])
+	assert.Empty(t, m["lastTrick"])
+	assert.Equal(t, float64(-1), m["lastTrickWinner"])
 
 	players := m["players"].([]any)
 	require.Len(t, players, domain.JulepePlayerCntDefault)

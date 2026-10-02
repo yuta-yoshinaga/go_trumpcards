@@ -48,6 +48,8 @@ func (p *JulepeWebPresenter) buildBase(r interfaces.JulepeGame) *controller.Jule
 	resObj.GameEndFlag = r.GetGameEndFlag()
 	resObj.WinnerIdx = r.GetWinnerIdx()
 	resObj.CurrentTrick = trickCardsToOutput(r.GetCurrentTrick())
+	resObj.LastTrick = trickCardsToOutput(r.GetLastTrick())
+	resObj.LastTrickWinner = r.GetLastTrickWinner()
 	resObj.Players = p.buildPlayersOutput(r)
 	resObj.Config = controller.JulepeWebOutputConfig{
 		PlayerCnt: r.GetConfig().PlayerCnt,

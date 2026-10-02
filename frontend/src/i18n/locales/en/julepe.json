@@ -25,6 +25,8 @@
     "undecided": "Choose whether to play or drop out. Undecided: {{count}}."
   },
   "currentTrick": "Current trick",
+  "lastTrick": "Previous trick",
+  "lastTrickWinner": "Winner: {{name}}",
   "actions": {
     "playIn": "Play this round",
     "passOut": "Drop out",
