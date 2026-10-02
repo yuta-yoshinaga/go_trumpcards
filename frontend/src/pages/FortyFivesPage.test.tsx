@@ -17,6 +17,8 @@ const bidPhaseState = makeFortyFivesState();
 // A human play turn with playable cards (so the play control is shown).
 const playPhaseState = makeFortyFivesState({
   phase: 1,
+  bids: [20, 0, 15, 0],
+  bidDone: [true, true, true, true],
   declarerIdx: 0,
   contract: 20,
   trumpSuit: 3,
@@ -196,11 +198,30 @@ describe('FortyFivesPage', () => {
     expect(screen.queryByTestId('bid-0')).not.toBeInTheDocument();
   });
 
-  it('does not render bid history outside the bid phase', async () => {
+  it('keeps the completed bid history visible during play', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<FortyFivesPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    expect(screen.queryByTestId('ff-bid-history')).not.toBeInTheDocument();
+    const history = await screen.findByTestId('ff-bid-history');
+    expect(history).toHaveTextContent('あなた=20');
+    expect(history).toHaveTextContent('CPU 1=パス');
+    expect(history).toHaveTextContent('CPU 2=15');
+    expect(history).not.toHaveTextContent('未入札');
+  });
+
+  it('shows the next round bid state instead of the previous round bids', async () => {
+    mockExec.mockResolvedValue(
+      makeFortyFivesState({
+        phase: 0,
+        roundNumber: 2,
+        bids: [0, 15, 0, 0],
+        bidDone: [true, true, false, false],
+      }),
+    );
+    renderWithProviders(<FortyFivesPage />);
+    const history = await screen.findByTestId('ff-bid-history');
+    expect(history).toHaveTextContent('あなた=パス');
+    expect(history).toHaveTextContent('CPU 1=15');
+    expect(history).toHaveTextContent('CPU 2=未入札');
   });
 
   it('does not show the play button on a CPU turn', async () => {
