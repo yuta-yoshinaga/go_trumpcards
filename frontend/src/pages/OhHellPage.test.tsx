@@ -183,6 +183,67 @@ describe('OhHellPage', () => {
     expect(illegal).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('selects legal cards by keyboard and ignores illegal cards', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      currentTrick: [{ playerIdx: 1, card: { design: 'SPADE', value: 4 } }],
+      validPlayIndices: [0],
+    });
+    renderWithProviders(<OhHellPage />);
+
+    const playable = await screen.findByRole('button', { name: /♠ A.*プレイ可能/ });
+    const illegal = screen.getByRole('button', { name: /♥ J.*リードスート/ });
+    fireEvent.keyDown(document, { key: '1' });
+    fireEvent.keyDown(document, { key: '2' });
+
+    expect(playable).toHaveAttribute('aria-pressed', 'true');
+    expect(illegal).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('ignores taps on illegal cards in the mobile hand and does not submit them', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      mockExec.mockResolvedValue({
+        ...playPhaseState,
+        currentTrick: [{ playerIdx: 1, card: { design: 'SPADE', value: 4 } }],
+        validPlayIndices: [0],
+      });
+      renderWithProviders(<OhHellPage />);
+      const illegal = await screen.findByRole('button', { name: /♥ J.*リードスート/ });
+      fireEvent.click(illegal);
+
+      expect(illegal).toHaveAttribute('aria-pressed', 'false');
+      const playButton = screen.getByRole('button', { name: '出す' });
+      expect(playButton).toBeDisabled();
+      fireEvent.click(playButton);
+      await flushPendingDispatch();
+      expect(mockExec).not.toHaveBeenCalledWith('play', undefined, 1);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
+
+  it('does not show play legality on the mobile hand during a CPU turn', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      mockExec.mockResolvedValue({ ...playPhaseState, currentPlayerIdx: 1, validPlayIndices: [0] });
+      renderWithProviders(<OhHellPage />);
+
+      const ace = await screen.findByRole('button', { name: '♠ A' });
+      const jack = screen.getByRole('button', { name: '♥ J' });
+      for (const card of [ace, jack]) {
+        expect(card).not.toHaveAttribute('aria-disabled', 'true');
+        expect(card).not.toHaveAttribute('data-legal');
+        expect(card).not.toHaveTextContent('プレイ可能');
+        expect(card).not.toHaveTextContent('リードスート');
+      }
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
+
   it('shows the bid-progress chip in the header during play', async () => {
     renderWithProviders(<OhHellPage />);
     // Human bid 2, won 0, 5 cards left \u2192 still achievable \u2192 neutral info colors.

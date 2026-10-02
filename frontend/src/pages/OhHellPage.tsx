@@ -536,40 +536,39 @@ function OhHellPageContent() {
                 />
               ) : (
                 <div className="flex flex-wrap gap-1 mb-2" data-tutorial="oh-player-hand">
-                  {humanPlayer.cards.map((card, idx) => (
-                    <button
-                      type="button"
-                      key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => {
-                        if (!isHumanTurn || state.validPlayIndices.includes(idx)) toggleCard(idx);
-                      }}
-                      aria-label={`${cardAlt(card)}${isHumanTurn ? ` (${state.validPlayIndices.includes(idx) ? t('legalCardStatus') : t('illegalCardStatus')})` : ''}`}
-                      aria-disabled={(isHumanTurn && !state.validPlayIndices.includes(idx)) || undefined}
-                      aria-describedby={
-                        isHumanTurn && !state.validPlayIndices.includes(idx)
-                          ? 'ohhell-illegal-card-description'
-                          : undefined
-                      }
-                      aria-pressed={selectedCardIndices.includes(idx)}
-                      // プレイヒントの [N] もテキストだけだった。TwoTenJack と
-                      // 同じく、該当する札を光らせる。
-                      className={`transition-transform ${focusRingCard}${
-                        isHumanTurn && state.validPlayIndices.includes(idx) ? ' rounded-lg ring-2 ring-ds-success' : ''
-                      }${isHumanTurn && !state.validPlayIndices.includes(idx) ? ' opacity-50 cursor-not-allowed' : ''}${
-                        isHumanTurn && hint?.cardIndex === idx ? ' rounded-lg ring-2 ring-ds-warning' : ''
-                      }`}
-                      data-hint-suggested={isHumanTurn && hint?.cardIndex === idx ? 'true' : undefined}
-                      style={{
-                        background: 'none',
-                        padding: 0,
-                        borderRadius: 8,
-                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} />
-                    </button>
-                  ))}
+                  {humanPlayer.cards.map((card, idx) => {
+                    const legal = !isHumanTurn || state.validPlayIndices.includes(idx);
+                    return (
+                      <button
+                        type="button"
+                        key={`${card.design}-${card.value}-${idx}`}
+                        onClick={() => {
+                          if (legal) toggleCard(idx);
+                        }}
+                        aria-label={`${cardAlt(card)}${isHumanTurn ? ` (${legal ? t('legalCardStatus') : t('illegalCardStatus')})` : ''}`}
+                        aria-disabled={!legal || undefined}
+                        aria-describedby={!legal ? 'ohhell-illegal-card-description' : undefined}
+                        aria-pressed={selectedCardIndices.includes(idx)}
+                        // プレイヒントの [N] もテキストだけだった。TwoTenJack と
+                        // 同じく、該当する札を光らせる。
+                        className={`transition-transform ${focusRingCard}${
+                          isHumanTurn && legal ? ' rounded-lg ring-2 ring-ds-success' : ''
+                        }${isHumanTurn && !legal ? ' opacity-50 cursor-not-allowed' : ''}${
+                          isHumanTurn && hint?.cardIndex === idx ? ' rounded-lg ring-2 ring-ds-warning' : ''
+                        }`}
+                        data-hint-suggested={isHumanTurn && hint?.cardIndex === idx ? 'true' : undefined}
+                        style={{
+                          background: 'none',
+                          padding: 0,
+                          borderRadius: 8,
+                          ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} />
+                      </button>
+                    );
+                  })}
                 </div>
               ))}
 
