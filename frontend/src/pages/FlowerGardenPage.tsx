@@ -102,7 +102,7 @@ function FlowerGardenPageContent() {
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
   const moveCount = state?.moveCount;
   const previousMoveCount = useRef<number | null>(null);
-  const [moveCountAnnouncement, setMoveCountAnnouncement] = useState('');
+  const [announcedMoveCount, setAnnouncedMoveCount] = useState<number | null>(null);
 
   useEffect(() => {
     if (previousMoveCount.current === null) {
@@ -111,9 +111,9 @@ function FlowerGardenPageContent() {
     }
     if (moveCount !== undefined && moveCount !== previousMoveCount.current) {
       previousMoveCount.current = moveCount;
-      setMoveCountAnnouncement(t('moveCountAnnouncement', { count: moveCount }));
+      setAnnouncedMoveCount(moveCount);
     }
-  }, [moveCount, t]);
+  }, [moveCount]);
 
   const {
     hint: frontendHint,
@@ -372,7 +372,7 @@ function FlowerGardenPageContent() {
       }
     >
       <div data-testid="fg-move-count-live" className="sr-only" role="status" aria-live="polite">
-        {moveCountAnnouncement}
+        {announcedMoveCount === null ? '' : t('moveCountAnnouncement', { count: announcedMoveCount })}
       </div>
       <span id={selectSourceHintId} className="sr-only">
         {tc('label.selectSourceFirst')}
