@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { followTheQueenApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { FollowTheQueenResponse } from '../types/card';
@@ -378,6 +379,28 @@ describe('FollowTheQueenPage', () => {
         screen.getByText('メインポット: 150チップ（対象: あなた、CPU 1）（獲得: あなた 150）'),
       ).toBeInTheDocument(),
     );
+  });
+
+  it('uses English award wording without Japanese full-width parentheses', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [humanPlayer(), cpuPlayer(1), cpuPlayer(2)],
+      sidePots: [{ amount: 150, eligiblePlayers: [0, 1], winners: [{ playerIdx: 0, amount: 150 }] }],
+    });
+    const { unmount } = renderWithProviders(<FollowTheQueenPage />);
+    try {
+      const pot = await screen.findByText(
+        (_, element) => element?.tagName === 'P' && !!element.textContent?.includes('Main pot'),
+      );
+      expect(pot.textContent).toContain('Awarded:');
+      expect(pot.textContent).not.toContain('（');
+      expect(pot.textContent).not.toContain('）');
+    } finally {
+      unmount();
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('does not show round results when not in showdown', async () => {

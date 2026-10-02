@@ -278,6 +278,33 @@ func TestFollowTheQueen_JSON(t *testing.T) {
 	assert.Equal(t, s.GetBringInPlayerIdx(), restored.GetBringInPlayerIdx())
 }
 
+func TestFollowTheQueen_JSON_OldSnapshotDefaultsPotAwardsToEmpty(t *testing.T) {
+	s := newTestFollowTheQueen()
+	data, err := json.Marshal(s)
+	require.NoError(t, err)
+	var fields map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &fields))
+	delete(fields, "pa")
+	data, err = json.Marshal(fields)
+	require.NoError(t, err)
+
+	var restored FollowTheQueen
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.NotNil(t, restored.potAwards)
+	assert.Empty(t, restored.potAwards)
+}
+
+func TestFollowTheQueen_JSON_PotAwardsRoundTrip(t *testing.T) {
+	s := newTestFollowTheQueen()
+	s.potAwards = [][]PotAward{{{PlayerIdx: 1, Amount: 75}, {PlayerIdx: 2, Amount: 25}}}
+	data, err := json.Marshal(s)
+	require.NoError(t, err)
+
+	var restored FollowTheQueen
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Equal(t, s.potAwards, restored.potAwards)
+}
+
 func TestFollowTheQueen_JSON_MaxSlice(t *testing.T) {
 	// Test that oversized arrays are rejected
 	badJSON := `{"pl":[` + func() string {

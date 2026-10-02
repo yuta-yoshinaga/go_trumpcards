@@ -85,6 +85,7 @@ func (p *FollowTheQueenWebPresenter) buildOutput(s interfaces.FollowTheQueenGame
 func (p *FollowTheQueenWebPresenter) buildSidePotsOutput(s interfaces.FollowTheQueenGame) []*controller.FollowTheQueenWebOutputSidePot {
 	out := make([]*controller.FollowTheQueenWebOutputSidePot, 0)
 	showAwards := s.GetPhase() == domain.FollowTheQueenPhaseEnd || s.GetPhase() == domain.FollowTheQueenPhaseShowdown
+	// Pot awards are populated only by resolveShowdown and cleared by reset; keep them hidden outside showdown phases defensively.
 	awards := s.GetPotAwards()
 	for i, sp := range s.GetSidePots() {
 		winners := make([]*controller.FollowTheQueenWebOutputPotAward, 0)

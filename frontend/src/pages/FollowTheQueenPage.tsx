@@ -427,7 +427,11 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
                         .join(t('listSeparator')),
                     })}
                     {sidePot.winners.length > 0 &&
-                      `（${t('awarded')}: ${sidePot.winners.map((winner) => `${findPlayerName(state.players, winner.playerIdx)} ${winner.amount}`).join(t('listSeparator'))}）`}
+                      t('awarded', {
+                        winners: sidePot.winners
+                          .map((winner) => `${findPlayerName(state.players, winner.playerIdx)} ${winner.amount}`)
+                          .join(t('listSeparator')),
+                      })}
                   </p>
                 ))}
               </div>
