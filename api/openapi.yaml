@@ -36228,7 +36228,7 @@ components:
                   so how close each one is drives every decision.
               roundScore:
                 type: integer
-                description: Penalty delta from the most recently completed round.
+                description: Score change for the most recently completed round; the winner can be negative (for example, −10 for a clean go-out).
               eliminated:
                 type: boolean
               hasMelded:

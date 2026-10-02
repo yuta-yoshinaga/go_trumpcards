@@ -251,7 +251,7 @@ type Loba struct {
 	roundNo    int
 
 	scores []int
-	// roundScores は直近ラウンドの累計失点の増減。
+	// roundScores は直近ラウンドの得点増減 (上がった人は負になりうる)。
 	roundScores []int
 	// eliminated[i] は 101 点に達して脱落したか。
 	eliminated []bool
