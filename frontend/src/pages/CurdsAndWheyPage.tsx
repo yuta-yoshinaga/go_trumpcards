@@ -115,8 +115,9 @@ function CurdsAndWheyPageContent() {
 
   useEffect(() => {
     if (!isEnd || !state || recordedEnd.current) return;
-    recordResult({ won: state.phase === CurdsAndWheyPhase.GAME_CLEAR, moves: state.moveCount });
+    // 1ゲームは最初に終わった結果だけを記録する。undo 後の再終了は数えず、reset で再開する。
     recordedEnd.current = true;
+    recordResult({ won: state.phase === CurdsAndWheyPhase.GAME_CLEAR, moves: state.moveCount });
   }, [isEnd, recordResult, state]);
 
   useActionKeyboardNav({

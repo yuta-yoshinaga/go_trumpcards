@@ -23,6 +23,14 @@ describe('Curds and Whey stats', () => {
     expect(curdsAndWheyWinRate({ plays: 2, wins: 1, fewestMoves: 42 })).toBe(50);
   });
 
+  it('does not update fewest moves for a zero-move win', () => {
+    expect(applyCurdsAndWheyResult(emptyCurdsAndWheyStats(), { won: true, moves: 0 })).toEqual({
+      plays: 1,
+      wins: 1,
+      fewestMoves: null,
+    });
+  });
+
   it('persists recorded results and returns an empty record for invalid storage', () => {
     const { result } = renderHook(() => useCurdsAndWheyStats());
     act(() => result.current.recordResult({ won: true, moves: 35 }));

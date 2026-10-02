@@ -58,6 +58,30 @@ describe('CurdsAndWheyPage', () => {
     expect(mockExec.mock.calls.filter(([command]) => command === 'g')).toHaveLength(1);
   });
 
+  it('records only the first result when undoing game over and then clearing', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeState())
+      .mockResolvedValueOnce(makeState({ phase: 2, moveCount: 5, canUndo: true }))
+      .mockResolvedValueOnce(makeState({ moveCount: 4, canUndo: true }))
+      .mockResolvedValueOnce(makeState({ phase: 1, moveCount: 6 }));
+    renderWithProviders(<CurdsAndWheyPage />);
+    fireEvent.click(await screen.findByTestId('giveup-button'));
+    fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('ゲームオーバー'));
+
+    fireEvent.click(await screen.findByTestId('undo-button'));
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('プレイ中'));
+    fireEvent.click(screen.getByTestId('card-1-0'));
+    fireEvent.click(screen.getByTestId('card-0-0'));
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('ゲームクリア'));
+
+    expect(JSON.parse(localStorage.getItem(CURDS_AND_WHEY_STATS_KEY) ?? '{}')).toEqual({
+      plays: 1,
+      wins: 0,
+      fewestMoves: null,
+    });
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<CurdsAndWheyPage />);
