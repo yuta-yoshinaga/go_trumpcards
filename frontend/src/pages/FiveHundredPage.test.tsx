@@ -94,6 +94,21 @@ describe('FiveHundredPage', () => {
     fireEvent.change(screen.getByLabelText('トリック数を選択 (6-10):'), { target: { value: '8' } });
     expect(screen.getByTestId('fh-bid-nt')).toHaveAttribute('aria-disabled', 'false');
   });
+  it('blocks a no-trump bid that does not beat the highest bid', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        highestBid: { kind: FiveHundredContract.SUIT, tricks: 7, suit: 1, value: 140, order: 140 },
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+
+    const noTrumpBid = await screen.findByTestId('fh-bid-nt');
+    expect(noTrumpBid).toHaveAttribute('aria-disabled', 'true');
+    expect(noTrumpBid).toHaveAttribute('aria-describedby', 'fh-underbid-reason');
+    fireEvent.click(noTrumpBid);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('bid', { bidKind: 2, bidTricks: 6 });
+  });
   it('announces each CPU hand name and remaining card count while hiding decorative backs', async () => {
     mockExec.mockResolvedValue(
       makeState({
