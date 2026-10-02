@@ -12,6 +12,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TongitsOnDealCelebration } from '../components/TongitsOnDealCelebration';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -219,6 +220,17 @@ function TongitsPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div data-testid="tongits-round-score-announcement">
+        <RoundScoreAnnouncement
+          active={isRoundEnd || isGameEnd}
+          entries={state.players.map((p) => ({
+            name: playerName(p.id, p.isHuman),
+            roundScore: p.roundScore,
+            cumulativeScore: p.cumulativeScore,
+          }))}
+          separator={t('listSeparator')}
+        />
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
