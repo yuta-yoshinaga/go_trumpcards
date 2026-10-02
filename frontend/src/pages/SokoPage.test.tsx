@@ -124,6 +124,13 @@ describe('SokoPage', () => {
     // the Five Card Stud page — that is the point of sharing it.
     expect(screen.getByTestId('five-card-stud-kbd-shortcuts')).toBeInTheDocument();
   });
+
+  it('does not show call pot odds when a check is available', async () => {
+    renderWithProviders(<SokoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument());
+    expect(screen.getByText('チェック可能')).toBeInTheDocument();
+    expect(screen.queryByText(/必要ポットオッズ/)).not.toBeInTheDocument();
+  });
 });
 
 // **独自の役順位を常時参照できること** (#5737)。チュートリアルの
