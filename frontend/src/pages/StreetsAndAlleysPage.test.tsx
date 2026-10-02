@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { streetsAndAlleysApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, StreetsAndAlleysResponse, StreetsAndAlleysTableauCard } from '../types/card';
@@ -265,6 +266,13 @@ describe('StreetsAndAlleysPage', () => {
     fireEvent.click(await screen.findByRole('button', { name: /^♠ 5/ }));
     fireEvent.click(screen.getByRole('button', { name: /^♥ 6/ }));
     await waitFor(() => expect(announcement).toHaveTextContent('手数: 4'));
+
+    try {
+      await i18n.changeLanguage('en');
+      await waitFor(() => expect(announcement).toHaveTextContent('Moves: 4'));
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('renders 4 foundation suits', async () => {

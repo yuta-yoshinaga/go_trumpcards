@@ -93,15 +93,15 @@ function StreetsAndAlleysPageContent() {
   } = useGamePageSetup('streetsandalleys');
   const game = useStreetsAndAlleysGame();
   const previousMoveCount = useRef(game.state?.moveCount);
-  const [moveCountAnnouncement, setMoveCountAnnouncement] = useState('');
+  const [announcedMoveCount, setAnnouncedMoveCount] = useState<number | null>(null);
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
   useEffect(() => {
     if (!state) return;
     if (previousMoveCount.current !== undefined && previousMoveCount.current !== state.moveCount) {
-      setMoveCountAnnouncement(t('moveCountAnnouncement', { count: state.moveCount }));
+      setAnnouncedMoveCount(state.moveCount);
     }
     previousMoveCount.current = state.moveCount;
-  }, [state, t]);
+  }, [state]);
   const selectSourceHintId = useId();
 
   const {
@@ -345,7 +345,7 @@ function StreetsAndAlleysPageContent() {
             })}
       </div>
       <div role="status" aria-live="polite" className="sr-only" data-testid="sa-move-count-announcement">
-        {moveCountAnnouncement}
+        {announcedMoveCount === null ? '' : t('moveCountAnnouncement', { count: announcedMoveCount })}
       </div>
 
       {cliEnabled ? (
