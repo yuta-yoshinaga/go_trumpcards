@@ -3,6 +3,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -251,6 +252,41 @@ func TestIronCross_NetChangeUsesHandStartBalance(t *testing.T) {
 		assert.Equal(t, g.GetPlayers()[i].GetChips()-beforeNext[i], result.NetChange,
 			"席 %d の比較基準が次のハンド開始時に更新されていない", i)
 	}
+}
+
+func TestIronCross_UnmarshalHandStartChips(t *testing.T) {
+	t.Run("legacy save snapshots current balances", func(t *testing.T) {
+		g := newIronCrossForTest(t)
+		data, err := json.Marshal(g)
+		require.NoError(t, err)
+		var fields map[string]json.RawMessage
+		require.NoError(t, json.Unmarshal(data, &fields))
+		delete(fields, "hs")
+		data, err = json.Marshal(fields)
+		require.NoError(t, err)
+
+		var restored IronCross
+		require.NoError(t, json.Unmarshal(data, &restored))
+		want := make([]int, len(restored.players))
+		for i, p := range restored.players {
+			want[i] = p.GetChips()
+		}
+		assert.Equal(t, want, restored.handStartChips)
+	})
+
+	t.Run("rejects balances for the wrong number of seats", func(t *testing.T) {
+		g := newIronCrossForTest(t)
+		data, err := json.Marshal(g)
+		require.NoError(t, err)
+		var fields map[string]json.RawMessage
+		require.NoError(t, json.Unmarshal(data, &fields))
+		fields["hs"] = json.RawMessage(`[1]`)
+		data, err = json.Marshal(fields)
+		require.NoError(t, err)
+
+		var restored IronCross
+		assert.ErrorContains(t, json.Unmarshal(data, &restored), "hand-start chip balances")
+	})
 }
 
 func TestIronCross_ChooseLineValidation(t *testing.T) {
