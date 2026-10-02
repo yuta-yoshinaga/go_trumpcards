@@ -78,6 +78,7 @@ import type {
   SheepsheadResponse,
   ShelemResponse,
   SoloWhistResponse,
+  SomersetResponse,
   SpadesResponse,
   SpoilFiveResponse,
   SuecaResponse,
@@ -440,6 +441,21 @@ const baseSpadesState: SpadesResponse = {
  */
 export function makeSpadesState(overrides?: Partial<SpadesResponse>): SpadesResponse {
   return { ...baseSpadesState, ...overrides };
+}
+
+/** Creates a default Somerset state. */
+export function makeSomersetState(overrides?: Partial<SomersetResponse>): SomersetResponse {
+  return {
+    tableau: Array.from({ length: 10 }, () => []),
+    foundation: [[], [], [], []],
+    totalCardCount: 52,
+    phase: 0,
+    moveCount: 0,
+    canUndo: false,
+    isStalemate: false,
+    message: '',
+    ...overrides,
+  };
 }
 
 /** Base Call Break player data used by {@link makeCallBreakState}. */

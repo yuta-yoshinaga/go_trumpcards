@@ -49,6 +49,7 @@ func TestSomerset_Reset(t *testing.T) {
 
 	assert.Equal(t, domain.SomersetPhasePlaying, f.GetPhase())
 	assert.Equal(t, 0, f.GetMoveCount())
+	assert.Equal(t, 52, f.GetTotalCardCount())
 
 	// Somerset deals the WHOLE deck to the tableau. Beleaguered Castle, which
 	// this was cloned from, pulls the four Aces onto the foundations first --

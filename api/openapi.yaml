@@ -80923,6 +80923,9 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        totalCardCount:
+          type: integer
+          description: Total number of cards in the game's deck.
         moveCount:
           type: integer
         canUndo:

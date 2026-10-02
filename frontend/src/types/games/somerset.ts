@@ -21,6 +21,7 @@ export interface SomersetHint {
 export interface SomersetResponse extends BaseGameResponse {
   tableau: SomersetTableauCard[][];
   foundation: Card[][];
+  totalCardCount: number;
   phase: number;
   moveCount: number;
   canUndo: boolean;
