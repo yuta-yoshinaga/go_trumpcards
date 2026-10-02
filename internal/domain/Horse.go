@@ -792,6 +792,44 @@ func (g *Horse) GetSeatCards(seat int) []*Card {
 	return up
 }
 
+// GetSeatHandName はショーダウンで確定した役名を返す。未確定・フォールド時は空文字。
+func (g *Horse) GetSeatHandName(seat int) string {
+	if g.table == nil || seat < 0 || seat >= len(g.seats) || g.GetSeatFolded(seat) {
+		return ""
+	}
+	ti := g.horseTableIdx(seat)
+	if ti < 0 {
+		return ""
+	}
+	switch t := g.table.(type) {
+	case *Holdem:
+		for _, r := range t.GetRoundResults() {
+			if r.PlayerIdx == ti {
+				return r.HandName
+			}
+		}
+	case *Omaha:
+		for _, r := range t.GetRoundResults() {
+			if r.PlayerIdx == ti {
+				return r.HandName
+			}
+		}
+	case *SevenCardStud:
+		for _, r := range t.GetRoundResults() {
+			if r.PlayerIdx == ti {
+				return r.HandName
+			}
+		}
+	case *DeuceToSeven:
+		for _, r := range t.GetRoundResults() {
+			if r.PlayerIdx == ti {
+				return r.HandName
+			}
+		}
+	}
+	return ""
+}
+
 // GetCommunityCards はいまの種目の共有札を返す。スタッド系には無いので空。
 func (g *Horse) GetCommunityCards() []*Card {
 	switch t := g.table.(type) {

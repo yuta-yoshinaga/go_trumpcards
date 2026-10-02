@@ -23,6 +23,7 @@ export interface HorseSeat {
   /** Whether this seat has committed all available chips. */
   allIn: boolean;
   cards: Card[];
+  handName?: string;
 }
 
 /** The five disciplines, in the order they rotate. */

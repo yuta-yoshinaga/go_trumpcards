@@ -332,6 +332,19 @@ describe('HorsePage', () => {
     );
   });
 
+  it('shows confirmed showdown hands and omits hands that were not revealed', async () => {
+    mockExec.mockResolvedValue(
+      makeHorseState({
+        phase: 1,
+        seats: makeHorseState().seats.map((seat, i) => ({ ...seat, handName: i === 0 ? 'One Pair' : '' })),
+      }),
+    );
+    renderWithProviders(<HorsePage />);
+    const result = await screen.findByTestId('ho-result');
+    expect(result).toHaveTextContent('役: ワンペア');
+    expect(result.querySelectorAll('span')).toHaveLength(1);
+  });
+
   // **PLO ラウンドでポット超過額がボタン操作前に分かる (#6622)。**
   // maxBetAmount が設定されている場合、Maxプリセットが表示され、超過入力で警告が出る。
   it('handles maxBetAmount in pot-limit rounds and keeps negative controls', async () => {

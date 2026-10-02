@@ -36,13 +36,14 @@ func (p *HorseWebPresenter) buildBase(g interfaces.HorseGame) *controller.HorseW
 	resObj.Seats = make([]*controller.HorseWebOutputSeat, 0, g.GetSeatCount())
 	for i := 0; i < g.GetSeatCount(); i++ {
 		resObj.Seats = append(resObj.Seats, &controller.HorseWebOutputSeat{
-			ID:      i,
-			Name:    g.GetSeatName(i),
-			IsHuman: g.GetSeatIsHuman(i),
-			Chips:   g.GetSeatLiveChips(i),
-			Folded:  g.GetSeatFolded(i),
-			AllIn:   g.GetSeatAllIn(i),
-			Cards:   cardsToOutputOrEmpty(g.GetSeatCards(i)),
+			ID:       i,
+			Name:     g.GetSeatName(i),
+			IsHuman:  g.GetSeatIsHuman(i),
+			Chips:    g.GetSeatLiveChips(i),
+			Folded:   g.GetSeatFolded(i),
+			AllIn:    g.GetSeatAllIn(i),
+			Cards:    cardsToOutputOrEmpty(g.GetSeatCards(i)),
+			HandName: g.GetSeatHandName(i),
 		})
 	}
 	resObj.Phase = int(g.GetPhase())

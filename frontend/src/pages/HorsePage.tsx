@@ -308,18 +308,28 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
               ))}
             </div>
 
-            {isGameEnd && (
+            {(isGameEnd || isHandEnd) && (
               <div className="my-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="ho-result">
-                <div className="mb-1 text-ds-text-primary">{t('result.title')}</div>
-                <div className="text-ds-success mb-1">
-                  {t('result.winner', {
-                    name: state.seats[state.winnerSeat]?.isHuman
-                      ? t('you')
-                      : (state.seats[state.winnerSeat]?.name ?? ''),
-                  })}
-                </div>
+                <div className="mb-1 text-ds-text-primary">{isGameEnd ? t('result.title') : t('phase.handEnd')}</div>
+                {isGameEnd && (
+                  <div className="text-ds-success mb-1">
+                    {t('result.winner', {
+                      name: state.seats[state.winnerSeat]?.isHuman
+                        ? t('you')
+                        : (state.seats[state.winnerSeat]?.name ?? ''),
+                    })}
+                  </div>
+                )}
                 {state.seats.map((s) => (
-                  <div key={s.id}>{t('result.chips', { name: s.isHuman ? t('you') : s.name, chips: s.chips })}</div>
+                  <div key={s.id}>
+                    {t('result.chips', { name: s.isHuman ? t('you') : s.name, chips: s.chips })}
+                    {s.handName && (
+                      <span>
+                        {' '}
+                        · {t('result.hand', { hand: t(`result.hands.${s.handName}`, { defaultValue: s.handName }) })}
+                      </span>
+                    )}
+                  </div>
                 ))}
               </div>
             )}

@@ -178,6 +178,16 @@ func (_m *MockHorseGame) GetSeatCards(seat int) []*domain.Card {
 	return ret.Get(0).([]*domain.Card)
 }
 
+// GetSeatHandName モック
+func (_m *MockHorseGame) GetSeatHandName(seat int) string {
+	for _, call := range _m.ExpectedCalls {
+		if call.Method == "GetSeatHandName" {
+			return _m.Called(seat).String(0)
+		}
+	}
+	return ""
+}
+
 // GetCommunityCards モック
 func (_m *MockHorseGame) GetCommunityCards() []*domain.Card {
 	ret := _m.Called()
