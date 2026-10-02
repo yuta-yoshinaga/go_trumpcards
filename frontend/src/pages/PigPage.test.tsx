@@ -101,7 +101,7 @@ describe('PigPage', () => {
     const list = await screen.findByRole('list');
     expect(list).toHaveClass('list-none');
     expect(list.querySelectorAll(':scope > li')).toHaveLength(4);
-    expect(screen.getByRole('heading', { name: 'あなた' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'あなた', level: 2 })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'CPU1' })).toBeInTheDocument();
   });
 

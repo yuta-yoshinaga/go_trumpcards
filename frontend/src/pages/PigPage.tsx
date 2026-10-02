@@ -207,7 +207,7 @@ function PigPageContent() {
                   className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
                   data-testid={`pig-seat-${p.id.toString()}`}
                 >
-                  <h3 className="inline text-ds-text-primary">{seatName(p.id)}</h3>
+                  <h2 className="m-0 inline text-ds-text-primary">{seatName(p.id)}</h2>
                   {state.phase === PigPhase.SIGNAL && p.id === state.signallerIdx && (
                     <span className="ml-1 text-ds-warning">{t('header.signalling')}</span>
                   )}
