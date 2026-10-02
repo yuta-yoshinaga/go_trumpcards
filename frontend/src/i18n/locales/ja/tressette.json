@@ -34,6 +34,7 @@
   "scores": "スコア",
   "scoresTeam": "チーム",
   "scoresPoints": "得点",
+  "pointsRemaining": "（残り{{count}}点）",
   "scoresThirds": "今ラウンド(サーズ)",
   "thirdsTooltip": "ラウンド得点まであと{{n}}サーズ",
   "thirdsAria": "今ラウンド {{filled}}/3 サーズ",

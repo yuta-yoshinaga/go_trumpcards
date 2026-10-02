@@ -372,7 +372,16 @@ function TressettePageContent() {
                       {teamLabels.map((label, idx) => (
                         <tr key={label} className={humanPlayer && humanPlayer.teamId === idx ? 'text-ds-accent' : ''}>
                           <td>{t('teamLabel', { team: label })}</td>
-                          <td className="text-center">{state.teamScores[idx] ?? 0}</td>
+                          <td className="text-center">
+                            {state.teamScores[idx] ?? 0}
+                            {state.config.targetPoints - (state.teamScores[idx] ?? 0) > 0 && (
+                              <span className="ml-1">
+                                {t('pointsRemaining', {
+                                  count: state.config.targetPoints - (state.teamScores[idx] ?? 0),
+                                })}
+                              </span>
+                            )}
+                          </td>
                           <td className="text-center">
                             <span
                               className="inline-flex gap-0.5 align-middle"

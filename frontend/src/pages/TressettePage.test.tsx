@@ -95,6 +95,15 @@ describe('TressettePage', () => {
     expect(screen.getByTestId('tr-target').textContent).not.toContain('{{');
   });
 
+  it('shows positive points remaining beside each team score', async () => {
+    mockExec.mockResolvedValue(makeTressetteState({ teamScores: [8, 22] }));
+    renderWithProviders(<TressettePage />);
+
+    expect(await screen.findByText('（残り13点）')).toBeInTheDocument();
+    expect(screen.getByText('チームB').closest('tr')).toHaveTextContent('22');
+    expect(screen.getByText('チームB').closest('tr')).not.toHaveTextContent('残り');
+  });
+
   it('renders play phase with human cards', async () => {
     renderWithProviders(<TressettePage />);
     await waitFor(() => {
