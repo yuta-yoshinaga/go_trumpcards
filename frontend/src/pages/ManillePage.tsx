@@ -275,8 +275,16 @@ function ManillePageContent() {
               <div data-tutorial="manille-info">
                 {/* Team match scores */}
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                  <div>{t('teamScore', { team: t('team.a'), score: state.teamScores[0] ?? 0 })}</div>
-                  <div>{t('teamScore', { team: t('team.b'), score: state.teamScores[1] ?? 0 })}</div>
+                  {[0, 1].map((team) => {
+                    const score = state.teamScores[team] ?? 0;
+                    const remaining = state.config.targetPoints - score;
+                    return (
+                      <div key={team} data-testid={`manille-team-score-${team}`}>
+                        {t('teamScore', { team: team === 0 ? t('team.a') : t('team.b'), score })}
+                        {remaining > 0 && <span>{t('remainingPoints', { count: remaining })}</span>}
+                      </div>
+                    );
+                  })}
                   <div className="mt-1">
                     {t('yourTeam')}: {humanTeam === 0 ? t('team.a') : t('team.b')}
                   </div>
