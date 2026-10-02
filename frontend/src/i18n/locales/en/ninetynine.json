@@ -94,5 +94,7 @@
   },
   "hintRequested": "Hint available",
   "noHint": "No hint available",
-  "trickWinnerBadge": "WIN"
+  "trickWinnerBadge": "WIN",
+  "legalPlay": "Playable",
+  "followSuitRequired": "Must follow the led suit"
 }

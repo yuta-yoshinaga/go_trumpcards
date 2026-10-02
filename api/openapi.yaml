@@ -52105,6 +52105,11 @@ components:
                 type: integer
               card:
                 $ref: '#/components/schemas/Card'
+        validPlayIndices:
+          type: array
+          description: Hand indices the human may play on their play turn; empty otherwise.
+          items:
+            type: integer
         trumpSuit:
           type: integer
           description: "Trump suit for the deal (1=Spade, 2=Clover, 3=Heart, 4=Diamond)"

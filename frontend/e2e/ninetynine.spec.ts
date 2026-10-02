@@ -45,9 +45,10 @@ test.describe('Ninety-Nine (ナインティナイン) E2E', () => {
       // Play phase: select a card and play.
       if (playVisible) {
         interactions++;
-        const cardCount = await handCards.count();
+        const playableCards = page.locator('button[aria-pressed][data-legal="true"]:has(img)');
+        const cardCount = await playableCards.count();
         if (cardCount > 0) {
-          await handCards.first().click();
+          await playableCards.first().click();
         }
         if ((await playButton.isVisible()) && (await playButton.isEnabled())) {
           await playButton.click();
