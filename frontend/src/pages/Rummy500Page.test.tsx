@@ -353,6 +353,31 @@ describe('Rummy500Page', () => {
     expect(screen.getByRole('button', { name: /^捨てる$/ })).toBeInTheDocument();
   });
 
+  it('previews points only for a valid selected meld and follows card selection', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<Rummy500Page />);
+    await screen.findByRole('button', { name: /メルドする/ });
+    const cards = document.querySelectorAll('[data-tutorial="r5-player-hand"] button');
+    expect(screen.queryByTestId('r5-meld-score-preview')).not.toBeInTheDocument();
+    fireEvent.click(cards[0] as HTMLButtonElement);
+    fireEvent.click(cards[1] as HTMLButtonElement);
+    expect(screen.queryByTestId('r5-meld-score-preview')).not.toBeInTheDocument();
+    fireEvent.click(cards[2] as HTMLButtonElement);
+    expect(screen.getByTestId('r5-meld-score-preview')).toHaveTextContent('21');
+    fireEvent.click(cards[2] as HTMLButtonElement);
+    expect(screen.queryByTestId('r5-meld-score-preview')).not.toBeInTheDocument();
+  });
+
+  it('does not show a score preview for an invalid meld selection', async () => {
+    mockExec.mockResolvedValue(playPhaseInvalidHandState);
+    renderWithProviders(<Rummy500Page />);
+    await screen.findByRole('button', { name: /メルドする/ });
+    const invalidCards = document.querySelectorAll('[data-tutorial="r5-player-hand"] button');
+    for (const card of invalidCards) fireEvent.click(card);
+    expect(screen.getByTestId('r5-invalid-meld')).toBeInTheDocument();
+    expect(screen.queryByTestId('r5-meld-score-preview')).not.toBeInTheDocument();
+  });
+
   it('selects a lay-off target by clicking a laid meld', async () => {
     const withMeld: Rummy500Response = {
       ...playPhaseState,
