@@ -220,7 +220,10 @@ function ScopaPageContent() {
               <div className="sr-only" role="status" aria-live="polite" data-testid="sc-take-candidate-live">
                 {takeCandidateAnnounce}
               </div>
-              <div className="text-center text-xs text-ds-text-muted mb-2">{t('label.tableCards')}</div>
+              <div className="flex justify-center items-center gap-3 text-xs text-ds-text-muted mb-2">
+                <span>{t('label.tableCards')}</span>
+                <span data-testid="sc-remaining-deck">{t('label.remainingDeck', { count: state.remainingDeck })}</span>
+              </div>
               <div className="flex justify-center gap-2 min-h-[60px] flex-wrap">
                 {state.tableCards.length === 0 ? (
                   <span className="text-ds-text-muted text-sm self-center">{t('label.tableEmpty')}</span>
