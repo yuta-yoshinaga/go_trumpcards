@@ -308,6 +308,22 @@ describe('IndianPokerPage', () => {
     await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
   });
 
+  it('marks all non-folded winners cards and excludes folded result rows', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [humanPlayer({ card: { design: 'HEART', value: 7 } }), cpuPlayer(1), cpuPlayer(2, { folded: true })],
+      roundResults: [
+        { playerIdx: 0, card: { design: 'HEART', value: 7 }, cardRank: 10, wonAmount: 100 },
+        { playerIdx: 1, card: { design: 'SPADE', value: 10 }, cardRank: 10, wonAmount: 100 },
+        { playerIdx: 2, card: { design: 'DIAMOND', value: 10 }, cardRank: 10, wonAmount: 100 },
+      ],
+    });
+    renderWithProviders(<IndianPokerPage />);
+    await waitFor(() => expect(screen.getAllByRole('img', { name: '勝者のカード' })).toHaveLength(2));
+    expect(screen.getByAltText('あなたのカード: ♥ 7')).toBeInTheDocument();
+    expect(screen.getByAltText('CPU 1のカード: ♠ 10')).toBeInTheDocument();
+  });
+
   it('does not show round results when not in showdown', async () => {
     mockExec.mockResolvedValue(bettingState);
     renderWithProviders(<IndianPokerPage />);
