@@ -36,6 +36,8 @@ type TehonbikiWebOutput struct {
 	GameEndFlag    bool                    `json:"gameEndFlag"`
 	PayoutNum      int                     `json:"payoutNum"`
 	PayoutDen      int                     `json:"payoutDen"`
+	MinBet         int                     `json:"minBet"`
+	MaxBet         int                     `json:"maxBet"`
 	Config         *TehonbikiWebOutCfg     `json:"config,omitempty"`
 	WebOutputBase
 }

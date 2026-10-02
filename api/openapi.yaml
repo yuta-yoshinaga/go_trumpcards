@@ -72364,6 +72364,12 @@ components:
           type: integer
         payoutDen:
           type: integer
+        minBet:
+          type: integer
+          description: Minimum legal wager amount.
+        maxBet:
+          type: integer
+          description: Maximum legal wager before applying the player's chip balance.
         config:
           type: object
           nullable: true
