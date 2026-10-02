@@ -79,6 +79,7 @@ export function OldMaidPlayerArea({
   const { cardWidth } = useCardDimensions();
   const [focusedCardIdx, setFocusedCardIdx] = useState<number | null>(null);
   const [selectedForMove, setSelectedForMove] = useState<number | null>(null);
+  const [reorderAnnouncement, setReorderAnnouncement] = useState('');
   const cardCount = player.cards?.length ?? 0;
 
   useEffect(() => {
@@ -111,13 +112,15 @@ export function OldMaidPlayerArea({
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!onReorder || !player.cards || player.cards.length === 0) return;
-    const max = player.cards.length - 1;
+    const cards = player.cards;
+    const max = cards.length - 1;
 
     const swapAndReorder = (index1: number, index2: number) => {
-      // biome-ignore lint/style/noNonNullAssertion: guard on line 52 ensures player.cards is non-null
-      const indices = Array.from(player.cards!.keys());
+      const indices = Array.from(cards.keys());
+      const movedCard = cards[index1];
       [indices[index1], indices[index2]] = [indices[index2], indices[index1]];
       onReorder(indices);
+      setReorderAnnouncement(t('reorder.moved', { card: cardAlt(movedCard), position: index2 }));
       setFocusedCardIdx(index2);
     };
 
@@ -174,6 +177,9 @@ export function OldMaidPlayerArea({
           readers to miss announcements that land between mounts. */}
       <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10">
         <CpuActionBubble message={bubble?.message} triggerKey={bubble?.triggerKey} />
+      </div>
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="reorder-announcement">
+        {reorderAnnouncement}
       </div>
       <div className="text-ds-text-primary font-bold mb-1 text-sm">
         {playerName(player.id, player.isHuman)}

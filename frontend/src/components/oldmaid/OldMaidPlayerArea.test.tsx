@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Card, OldMaidPlayerData } from '../../types/card';
+import { cardAlt } from '../../utils/cardAlt';
 import { OldMaidPlayerArea } from './OldMaidPlayerArea';
 
 function makeCard(design: Card['design'], value: number): Card {
@@ -225,6 +226,20 @@ describe('OldMaidPlayerArea keyboard reordering', () => {
     fireEvent.keyDown(container, { key: 'ArrowRight' }); // focus -> 0
     fireEvent.keyDown(container, { key: 'ArrowRight', shiftKey: true }); // swap 0<->1, focus -> 1
     expect(onReorder).toHaveBeenCalledWith([1, 0, 2]);
+    expect(screen.getByTestId('reorder-announcement')).toHaveTextContent(
+      `${cardAlt(threeCards[0])}を位置1に移動しました`,
+    );
+  });
+
+  it('does not announce focus movement or a reorder that cannot move a card', () => {
+    render(<OldMaidPlayerArea {...defaultProps} player={makeHumanPlayer(threeCards)} onReorder={vi.fn()} />);
+    const container = screen.getByTestId('human-card-container');
+    const status = screen.getByTestId('reorder-announcement');
+
+    fireEvent.keyDown(container, { key: 'ArrowRight' });
+    expect(status).toBeEmptyDOMElement();
+    fireEvent.keyDown(container, { key: 'ArrowLeft', shiftKey: true });
+    expect(status).toBeEmptyDOMElement();
   });
 
   it('Shift+ArrowLeft swaps focused card with left neighbor', () => {
@@ -236,6 +251,9 @@ describe('OldMaidPlayerArea keyboard reordering', () => {
     fireEvent.keyDown(container, { key: 'ArrowRight' }); // -> 1
     fireEvent.keyDown(container, { key: 'ArrowLeft', shiftKey: true }); // swap 1<->0, focus -> 0
     expect(onReorder).toHaveBeenCalledWith([1, 0, 2]);
+    expect(screen.getByTestId('reorder-announcement')).toHaveTextContent(
+      `${cardAlt(threeCards[1])}を位置0に移動しました`,
+    );
   });
 
   it('Shift+ArrowRight does nothing when focus is on last card', () => {
