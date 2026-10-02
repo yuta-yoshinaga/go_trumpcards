@@ -160,6 +160,9 @@ func (p *TarocchiniCuiPresenter) writeRoundEndResult(b *strings.Builder, g inter
 			"tricks", strconv.Itoa(player.GetTrickCount())))
 	}
 	b.WriteString(i18n.Tf("tarocchini.roundEndTricks", "list", strings.Join(entries, ", ")) + "\n")
+	for team, breakdown := range g.GetRoundBreakdown() {
+		b.WriteString(i18n.Tf("tarocchini.roundEndBreakdown", "team", i18n.Tf("tarocchini.teamName", "n", strconv.Itoa(team)), "tricks", strconv.Itoa(breakdown.Tricks), "lastTrickBonus", strconv.Itoa(breakdown.LastTrickBonus), "scartoBonus", strconv.Itoa(breakdown.ScartoBonus), "total", strconv.Itoa(breakdown.Total)) + "\n")
+	}
 
 	// 得点はトリック数だけではない (settleRound は最終トリック +2 とスカルト加点も
 	// 足す)。内訳を出さないと teamScores の増分と突き合わせて検算できない。

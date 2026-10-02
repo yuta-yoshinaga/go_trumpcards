@@ -81367,6 +81367,19 @@ components:
           type: array
           items:
             type: integer
+        roundBreakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              tricks:
+                type: integer
+              lastTrickBonus:
+                type: integer
+              scartoBonus:
+                type: integer
+              total:
+                type: integer
         lastTrickWinner:
           type: integer
         playableIndices:

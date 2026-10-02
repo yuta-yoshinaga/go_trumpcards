@@ -32,6 +32,7 @@
   "round": "Round: {{round}}  Trick: {{trick}}",
   "roundEndTrickEntry": "{{name}} {{tricks}}",
   "roundEndTricks": "Tricks per player: {{list}}",
+  "roundEndBreakdown": "{{team}}: tricks {{tricks}} / last trick +{{lastTrickBonus}} / scarto +{{scartoBonus}} / total {{total}}",
   "teamName": "Team {{n}}",
   "roundEndLastTrick": "Last-trick bonus: +{{bonus}} to {{team}}",
   "roundEndScarto": "Scarto: +{{count}} to {{team}} (the dealer side)",
