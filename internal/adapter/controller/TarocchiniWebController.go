@@ -40,24 +40,25 @@ type TarocchiniWebOutputPlayer struct {
 
 // TarocchiniWebOutput タロッキーニのWebアウトプット
 type TarocchiniWebOutput struct {
-	Players          []*TarocchiniWebOutputPlayer    `json:"players"`
-	Phase            int                             `json:"phase"`
-	RoundNumber      int                             `json:"roundNumber"`
-	TrickNumber      int                             `json:"trickNumber"`
-	CurrentPlayerIdx int                             `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                             `json:"leadPlayerIdx"`
-	DealerIdx        int                             `json:"dealerIdx"`
-	ScartoCount      int                             `json:"scartoCount"`
-	CurrentTrick     []*WebOutputTrickCard           `json:"currentTrick"`
-	TeamScores       [2]int                          `json:"teamScores"`
-	RoundTricks      [domain.TarocchiniPlayerCnt]int `json:"roundTricks"`
-	LastTrickWinner  int                             `json:"lastTrickWinner"`
-	PlayableIndices  []int                           `json:"playableIndices"`
-	GameEndFlag      bool                            `json:"gameEndFlag"`
-	WinnerTeam       int                             `json:"winnerTeam"`
-	IsHumanTurn      bool                            `json:"isHumanTurn"`
-	IsHumanScarto    bool                            `json:"isHumanScarto"`
-	Hint             *WebOutputCardHint              `json:"hint,omitempty"`
+	Players          []*TarocchiniWebOutputPlayer           `json:"players"`
+	Phase            int                                    `json:"phase"`
+	RoundNumber      int                                    `json:"roundNumber"`
+	TrickNumber      int                                    `json:"trickNumber"`
+	CurrentPlayerIdx int                                    `json:"currentPlayerIdx"`
+	LeadPlayerIdx    int                                    `json:"leadPlayerIdx"`
+	DealerIdx        int                                    `json:"dealerIdx"`
+	ScartoCount      int                                    `json:"scartoCount"`
+	CurrentTrick     []*WebOutputTrickCard                  `json:"currentTrick"`
+	TeamScores       [2]int                                 `json:"teamScores"`
+	RoundTricks      [domain.TarocchiniPlayerCnt]int        `json:"roundTricks"`
+	RoundBreakdown   [2]domain.TarocchiniTeamRoundBreakdown `json:"roundBreakdown"`
+	LastTrickWinner  int                                    `json:"lastTrickWinner"`
+	PlayableIndices  []int                                  `json:"playableIndices"`
+	GameEndFlag      bool                                   `json:"gameEndFlag"`
+	WinnerTeam       int                                    `json:"winnerTeam"`
+	IsHumanTurn      bool                                   `json:"isHumanTurn"`
+	IsHumanScarto    bool                                   `json:"isHumanScarto"`
+	Hint             *WebOutputCardHint                     `json:"hint,omitempty"`
 	WebOutputBase
 	Config TarocchiniWebOutputConfig `json:"config"`
 }

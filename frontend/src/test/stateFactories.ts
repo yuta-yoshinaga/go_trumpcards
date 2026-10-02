@@ -3692,6 +3692,10 @@ const baseTarocchiniState: TarocchiniResponse = {
   currentTrick: [],
   teamScores: [0, 0],
   roundTricks: [0, 0, 0, 0],
+  roundBreakdown: [
+    { tricks: 0, lastTrickBonus: 0, scartoBonus: 0, total: 0 },
+    { tricks: 0, lastTrickBonus: 0, scartoBonus: 0, total: 0 },
+  ],
   lastTrickWinner: -1,
   playableIndices: [0, 1, 2],
   gameEndFlag: false,
