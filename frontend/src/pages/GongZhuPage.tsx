@@ -35,7 +35,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { GONGZHU_HELP, parseGongZhuCommand } from '../utils/cli/commands/gongzhuCommands';
 import { formatGongZhuState } from '../utils/cli/formatters/gongzhuFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Gong Zhu tutorial step definitions. */
@@ -162,6 +162,14 @@ function GongZhuPageContent() {
 
   const phaseNames = usePhaseNames('gongzhu', GONGZHU_PHASE_KEYS);
 
+  const trickAnnouncement =
+    state?.phase === GongZhuPhase.TRICK_END
+      ? t('trickResult', {
+          winner: findPlayerName(state.players, state.leadPlayerIdx),
+          cards: state.currentTrick.map(({ card }) => cardAlt(card)).join(t('listSeparator')),
+        })
+      : '';
+
   const handleManualReset = useCallback(() => {
     hideActionLog();
     void exec('reset', undefined, undefined, {
@@ -238,6 +246,15 @@ function GongZhuPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div
+        data-testid="gongzhu-trick-announcement"
+        className="sr-only"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {trickAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
