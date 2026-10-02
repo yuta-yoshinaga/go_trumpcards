@@ -4,6 +4,7 @@
   "round": "Round {{n}}",
   "dealer": "Dealer",
   "stock": "Stock: {{count}}",
+  "emptyStockDealerKeeps": "When the stock is empty, the dealer keeps their hand if they try to swap with it.",
   "playersTitle": "Players",
   "lives": "Lives",
   "livesCount": "Lives {{count}}",

@@ -67,7 +67,9 @@
   "roundResult": {
     "title": "Deal Result",
     "outcome": "Outcome: {{outcome}}",
-    "ombre": "Ombre: {{name}}"
+    "ombre": "Ombre: {{name}}",
+    "scoreChanges": "Score changes this deal",
+    "scoreChange": "{{name}}: {{delta}}"
   },
   "requestHint": "Show hint",
   "hintMessage": "Suggested: {{cards}} — {{reason}}",

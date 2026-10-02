@@ -228,6 +228,29 @@ func TestLaughAndLieDown_SettlementPaysTheLastInAndThenTheOverShort(t *testing.T
 	}
 }
 
+func TestLaughAndLieDown_GetRunningScore(t *testing.T) {
+	l := NewDefaultLaughAndLieDown()
+	l.dealerIdx = 2
+	l.won = make([][]*Card, LaughAndLieDownPlayerCnt)
+	for i := range l.won {
+		l.won[i] = make([]*Card, 0)
+	}
+	l.won[2] = make([]*Card, 10) // parent: -3 + 1
+	l.won[1] = make([]*Card, 6)  // child: -2 - 1 (integer truncation)
+	l.won[3] = make([]*Card, 11) // child: -2 + 1
+	assert.Equal(t, -2, l.GetRunningScore(2))
+	assert.Equal(t, -3, l.GetRunningScore(1))
+	assert.Equal(t, -1, l.GetRunningScore(3))
+	assert.Zero(t, l.GetRunningScore(-1))
+	assert.Zero(t, l.GetRunningScore(LaughAndLieDownPlayerCnt))
+
+	l.lastInIdx = 2
+	l.settle()
+	l.gameEndFlag = true
+	assert.Equal(t, l.GetScore(2), l.GetRunningScore(2), "ended score includes last-in bonus")
+	assert.Equal(t, 3, l.GetRunningScore(2))
+}
+
 func TestLaughAndLieDown_CpuPrefersTheThreeCardTake(t *testing.T) {
 	// 取得枚数がそのまま精算になるので、3 枚取れるときに 1 枚で済ませる理由が無い。
 	l := NewDefaultLaughAndLieDown()

@@ -90,7 +90,14 @@ export const PishtiPage = withTutorial(PishtiPageContent, 'pishti', PISHTI_TUTOR
 function PishtiPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('pishti');
-  const { state, loading, error, exec, retry } = useGameApi(pishtiApi.exec);
+  const prevProvisionalScoresRef = useRef<number[] | null>(null);
+  const { state, loading, error, exec, retry } = useGameApi(pishtiApi.exec, {
+    onSuccess: (response, args) => {
+      if (args[0] === 'reset' || args[0] === 'next') {
+        prevProvisionalScoresRef.current = response.players.map((player) => player.provisionalScore);
+      }
+    },
+  });
 
   const [cpuDifficulty, setCpuDifficulty] = useState(1);
   const [playerCnt, setPlayerCnt] = useState(4);
@@ -143,6 +150,7 @@ function PishtiPageContent() {
   // per-player (not aggregate) so two CPU +10s in one response can't fake a +20 Jack.
   const [pistiCelebration, setPistiCelebration] = useState<{ key: number; jack: boolean } | null>(null);
   const [pileAnnouncement, setPileAnnouncement] = useState('');
+  const [scoreAnnouncement, setScoreAnnouncement] = useState('');
   const prevPileRef = useRef<{ count: number; top: Card | null } | null>(null);
   useEffect(() => {
     if (!state) return;
@@ -163,6 +171,28 @@ function PishtiPageContent() {
         }),
       );
     }
+  }, [state, t]);
+  useEffect(() => {
+    if (!state) return;
+    const current = state.players.map((player) => player.provisionalScore);
+    const previous = prevProvisionalScoresRef.current;
+    prevProvisionalScoresRef.current = current;
+    if (previous === null) return;
+    const changed = state.players
+      .map((player, index) => ({ player, index }))
+      .filter(({ index }) => previous[index] !== current[index]);
+    if (changed.length === 0) return;
+    setScoreAnnouncement(
+      changed
+        .map(({ player }) =>
+          t('provisionalScoreUpdate', {
+            name: player.isHuman ? t('you') : t('cpu', { id: player.id }),
+            score: player.provisionalScore,
+            count: player.provisionalScore,
+          }),
+        )
+        .join(t('listSeparator')),
+    );
   }, [state, t]);
   const prevBonusesRef = useRef<number[] | null>(null);
   useEffect(() => {
@@ -328,6 +358,9 @@ function PishtiPageContent() {
               <div aria-live="polite" aria-atomic="true" data-testid="pishti-pile-announcement" className="sr-only">
                 {pileAnnouncement}
               </div>
+              <div aria-live="polite" aria-atomic="true" data-testid="pishti-score-announcement" className="sr-only">
+                {scoreAnnouncement}
+              </div>
               {pistiCelebration && (
                 <div
                   key={pistiCelebration.key}
@@ -412,7 +445,14 @@ function PishtiPageContent() {
                 </span>
               )}
               {isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={() => exec('next')} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnSuccess}
+                  onClick={() => {
+                    exec('next');
+                  }}
+                  disabled={loading}
+                >
                   {t('nextGame')}
                 </button>
               )}

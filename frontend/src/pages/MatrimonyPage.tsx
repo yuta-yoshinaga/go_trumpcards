@@ -385,6 +385,12 @@ function MatrimonyPageContent() {
               </div>
             </div>
 
+            <p className="text-ds-text-muted text-xs tabular-nums text-center" data-testid="redeals-remaining">
+              {state.redealCount >= state.maxRedeals
+                ? t('redealsExhausted')
+                : t('redealsRemaining', { count: state.maxRedeals - state.redealCount })}
+            </p>
+
             <div
               className="grid gap-1 sm:gap-2 justify-center"
               style={{ gridTemplateColumns: `repeat(${SLOTS_PER_ROW}, minmax(0, 1fr))` }}
@@ -466,7 +472,7 @@ function MatrimonyPageContent() {
                     disabled={
                       loading ||
                       isAutoCompleting ||
-                      (state.stockCount === 0 && (state.waste.length === 0 || state.redealCount >= 3))
+                      (state.stockCount === 0 && (state.waste.length === 0 || state.redealCount >= state.maxRedeals))
                     }
                   >
                     {t('draw')}

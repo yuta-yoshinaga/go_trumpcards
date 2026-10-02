@@ -255,7 +255,11 @@ function OichoKabuPageContent() {
                   value={betAmount}
                   onChange={setBetAmount}
                   max={state.chips}
+                  describedBy="oichokabu-bet-max"
                 />
+                <span id="oichokabu-bet-max" className="sr-only">
+                  {t('maxBetDescription', { amount: state.chips })}
+                </span>
                 {canRebet && lastBetAmount !== null && lastBetAmount !== betAmount && (
                   <button
                     type="button"

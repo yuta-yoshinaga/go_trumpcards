@@ -22,6 +22,7 @@ func setupWhiteheadWebMockDefaults(kg *interfaces.MockWhiteheadGame) {
 	kg.On("CanUndo").Return(false).Maybe()
 	kg.On("GetScore").Return(-52).Maybe()
 	kg.On("GetScoringMode").Return(domain.WhiteheadScoringNone).Maybe()
+	kg.On("GetTotalCardCount").Return(52).Maybe()
 	kg.On("IsStalemate").Return(false).Maybe()
 	kg.On("UndoToEscape").Return(0).Maybe()
 
@@ -67,6 +68,7 @@ func TestWhiteheadWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 0, result.Phase)
 		assert.Equal(t, 0, result.MoveCount)
 		assert.Equal(t, 24, result.StockCount)
+		assert.Equal(t, 52, result.TotalCardCount)
 		assert.Empty(t, result.Waste)
 		assert.Len(t, result.Tableau, domain.WhiteheadTableauCnt)
 		assert.Len(t, result.Foundation, domain.WhiteheadFoundationCnt)
@@ -224,6 +226,7 @@ func TestWhiteheadWebPresenter_HintOutput(t *testing.T) {
 		kg.On("IsStalemate").Return(false)
 		kg.On("GetScore").Return(-52)
 		kg.On("GetScoringMode").Return(domain.WhiteheadScoringNone)
+		kg.On("GetTotalCardCount").Return(52)
 		kg.On("UndoToEscape").Return(0)
 
 		p := new(WhiteheadWebPresenter)
@@ -247,6 +250,7 @@ func TestWhiteheadWebPresenter_HintOutput(t *testing.T) {
 		kg.On("IsStalemate").Return(false)
 		kg.On("GetScore").Return(-52)
 		kg.On("GetScoringMode").Return(domain.WhiteheadScoringNone)
+		kg.On("GetTotalCardCount").Return(52)
 		kg.On("UndoToEscape").Return(0)
 
 		p := new(WhiteheadWebPresenter)

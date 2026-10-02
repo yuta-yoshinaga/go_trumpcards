@@ -37,6 +37,8 @@ type WhiteheadGame interface {
 	GetTableau() [domain.WhiteheadTableauCnt][]*domain.WhiteheadTableauCard
 	// GetFoundation ファンデーションを取得する
 	GetFoundation() [domain.WhiteheadFoundationCnt][]*domain.Card
+	// GetTotalCardCount returns the total number of cards in the deck.
+	GetTotalCardCount() int
 	// AllFaceUp 全カードが表向きかを返す
 	AllFaceUp() bool
 	// CanAutoComplete いまオートコンプリートが実行できるかを返す

@@ -8,8 +8,10 @@ import { useGameApi } from './useGameApi';
  * No local rule state: which pools a hand claims, which same-rank set wins the
  * pochen, and whether a card continues the run are all decided by the server.
  */
-export function usePochGame() {
-  const { state, loading, error, exec: rawExec, retry } = useGameApi(pochApi.exec);
+export function usePochGame(options?: {
+  onSuccess?: (response: Awaited<ReturnType<typeof pochApi.exec>>, args: Parameters<typeof pochApi.exec>) => void;
+}) {
+  const { state, loading, error, exec: rawExec, retry } = useGameApi(pochApi.exec, options);
 
   const runApi = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 

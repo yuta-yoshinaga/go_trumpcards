@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, whiteheadApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, WhiteheadResponse, WhiteheadTableauCard } from '../types/card';
@@ -45,6 +46,7 @@ const playingState: WhiteheadResponse = {
   stockCount: 20,
   waste: [card('CLOVER', 3)],
   foundation: [[], [], [], []],
+  totalCardCount: 52,
   phase: 0,
   moveCount: 5,
   drawCount: 1,
@@ -120,10 +122,60 @@ describe('WhiteheadPage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
+  it('shows overall foundation progress in Japanese and foundation accessible names', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [
+        [card('SPADE', 1), card('SPADE', 2), card('SPADE', 3)],
+        [card('CLOVER', 1), card('CLOVER', 2), card('CLOVER', 3)],
+        [card('HEART', 1), card('HEART', 2), card('HEART', 3), card('HEART', 4)],
+        [],
+      ],
+    });
+    renderWithProviders(<WhiteheadPage />);
+    expect(await screen.findByText('組札 10 / 52 枚')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 組札 3枚（全体 10 / 52 枚）' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札 (♦)（全体 10 / 52 枚）' })).toBeInTheDocument();
+  });
+
+  it('announces overall foundation progress in English', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [
+        [card('SPADE', 1), card('SPADE', 2), card('SPADE', 3)],
+        [card('CLOVER', 1), card('CLOVER', 2), card('CLOVER', 3)],
+        [card('HEART', 1), card('HEART', 2), card('HEART', 3), card('HEART', 4)],
+        [],
+      ],
+    });
+    renderWithProviders(<WhiteheadPage />);
+    expect(
+      await screen.findByRole('button', { name: '♠ foundation 3 cards (overall 10 / 52 cards)' }),
+    ).toBeInTheDocument();
+    await i18n.changeLanguage('ja');
+  });
+
+  it('uses the English empty foundation label without a plural count', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<WhiteheadPage />);
+    expect(
+      await screen.findByRole('button', { name: 'Empty foundation (♦) (overall 0 / 52 cards)' }),
+    ).toBeInTheDocument();
+    await i18n.changeLanguage('ja');
+  });
+
   it('shows foundation progress when the game is over', async () => {
     mockExec.mockResolvedValue({ ...gameOverState, foundation: withFoundationState.foundation });
     renderWithProviders(<WhiteheadPage />);
     expect(await screen.findByTestId('whitehead-gameover-summary')).toHaveTextContent('組札 3/52 枚 (6%)');
+  });
+
+  it('shows zero percent when no cards are in the foundations', async () => {
+    mockExec.mockResolvedValue({ ...gameOverState, totalCardCount: 52 });
+    renderWithProviders(<WhiteheadPage />);
+    expect(await screen.findByTestId('whitehead-gameover-summary')).toHaveTextContent('組札 0/52 枚 (0%)');
   });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
@@ -195,7 +247,7 @@ describe('WhiteheadPage', () => {
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
     for (const suit of ['♠', '♣', '♥', '♦']) {
-      expect(screen.getByRole('button', { name: `空の組札 (${suit})` })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: `空の組札 (${suit})（全体 0 / 52 枚）` })).toBeInTheDocument();
     }
   });
 
@@ -205,10 +257,10 @@ describe('WhiteheadPage', () => {
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
     // Pile 0: 1 card (♠ A), pile 2: 2 cards (♥ A, ♥ 2), piles 1 and 3 empty
-    expect(screen.getByRole('button', { name: '♠ 組札 1枚' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♥ 組札 2枚' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '空の組札 (♣)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '空の組札 (♦)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 組札 1枚（全体 3 / 52 枚）' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 組札 2枚（全体 3 / 52 枚）' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札 (♣)（全体 3 / 52 枚）' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札 (♦)（全体 3 / 52 枚）' })).toBeInTheDocument();
   });
 
   it('tableau face-up card button has aria-label with card name', async () => {

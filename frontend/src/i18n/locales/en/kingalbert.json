@@ -8,6 +8,7 @@
   "tableau": "Tableau",
   "reserve": "Reserve",
   "moveCount": "Moves",
+  "moveCountAnnouncement": "Moves: {{count}}",
   "giveup": "Give Up",
   "empty": "Empty",
   "emptyReserveSlot": "Empty reserve slot {{idx}}",

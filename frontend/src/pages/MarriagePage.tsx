@@ -203,6 +203,23 @@ function MarriagePageContent() {
     );
 
   const humanPlayer = state.players.find((p) => p.isHuman);
+  const previewHandCards = humanPlayer?.cards.filter((_, index) => index !== selectedCardIndices[0]) ?? [];
+  const handMeldLabels = new Map<number, { label: string; number: number }>();
+  if (declarePreview && selectedCardIndices.length === 1) {
+    // declarePreview is evaluated on the hand without the selected finish card;
+    // meld.cardIndices index that reduced hand, so map them back to hand indices.
+    const finishIndex = selectedCardIndices[0];
+    const remainingHandIndices =
+      humanPlayer?.cards.map((_, index) => index).filter((index) => index !== finishIndex) ?? [];
+    declarePreview.melds.forEach((meld, meldIndex) => {
+      const label = t(meld.pureSequence ? 'declarePreview.pureSequenceMeld' : 'declarePreview.meld', {
+        meld: meldIndex + 1,
+      });
+      meld.cardIndices.forEach((index) => {
+        handMeldLabels.set(remainingHandIndices[index], { label, number: meldIndex + 1 });
+      });
+    });
+  }
   const isDrawPhase = state.phase === MarriagePhase.DRAW;
   const isDiscardPhase = state.phase === MarriagePhase.DISCARD;
   const isRoundEnd = state.phase === MarriagePhase.ROUND_END;
@@ -443,7 +460,7 @@ function MarriagePageContent() {
                     type="button"
                     key={`${card.design}-${card.value}-${idx}`}
                     onClick={() => toggleCard(idx)}
-                    aria-label={`${cardAlt(card)}${isWildCard(card) ? ` ${t('wildAria')}` : ''}`}
+                    aria-label={`${cardAlt(card)}${isWildCard(card) ? ` ${t('wildAria')}` : ''}${handMeldLabels.has(idx) ? ` ${t('declarePreview.cardBelongsTo', { meld: handMeldLabels.get(idx)?.label })}` : ''}`}
                     aria-pressed={selectedCardIndices.includes(idx)}
                     className={`relative transition-transform ${focusRingCard} ${
                       isWildCard(card) ? 'ring-2 ring-ds-info' : ''
@@ -458,6 +475,14 @@ function MarriagePageContent() {
                   >
                     <AnimatedCard card={card} width={cardWidth} />
                     {wildBadge(card)}
+                    {handMeldLabels.has(idx) && (
+                      <span
+                        aria-hidden="true"
+                        className="absolute bottom-0.5 left-0.5 rounded bg-ds-accent px-1 text-[9px] font-bold text-ds-text-on-accent"
+                      >
+                        {handMeldLabels.get(idx)?.number}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -501,7 +526,25 @@ function MarriagePageContent() {
                 }`}
               >
                 {declarePreview.valid ? (
-                  <span data-testid="marriage-declare-preview-valid">{t('declarePreview.valid')}</span>
+                  <div data-testid="marriage-declare-preview-valid">
+                    <div>{t('declarePreview.valid')}</div>
+                    <ul className="mt-1 space-y-1">
+                      {declarePreview.melds.map((meld, index) => (
+                        <li key={index} data-testid="marriage-declare-meld">
+                          {t(meld.pureSequence ? 'declarePreview.pureSequenceMeld' : 'declarePreview.meld', {
+                            meld: index + 1,
+                          })}
+                          :{' '}
+                          {meld.cardIndices
+                            .map((cardIndex) => cardAlt(previewHandCards[cardIndex]))
+                            .join(t('listSeparator'))}
+                          {meld.cardIndices.some((cardIndex) =>
+                            marriageIsWild(previewHandCards[cardIndex], state.wildRank),
+                          ) && ` ${t('declarePreview.usesWild')}`}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 ) : (
                   <div data-testid="marriage-declare-preview-invalid">
                     <div className="font-semibold">{t('declarePreview.title')}</div>

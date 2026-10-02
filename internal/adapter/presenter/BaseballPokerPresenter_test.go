@@ -316,9 +316,10 @@ func TestBaseballPokerWebPresenter_ShowsEveryHandAtShowdown(t *testing.T) {
 
 	var got struct {
 		Seats []struct {
-			Cards    []json.RawMessage `json:"cards"`
-			BestHand []json.RawMessage `json:"bestHand"`
-			Folded   bool              `json:"folded"`
+			Cards     []json.RawMessage `json:"cards"`
+			BestHand  []json.RawMessage `json:"bestHand"`
+			Folded    bool              `json:"folded"`
+			NetChange int               `json:"netChange"`
 		} `json:"seats"`
 		Pot        int `json:"pot"`
 		WinnerSeat int `json:"winnerSeat"`
@@ -335,6 +336,11 @@ func TestBaseballPokerWebPresenter_ShowsEveryHandAtShowdown(t *testing.T) {
 		}
 	}
 	assert.Equal(t, g.WinnerSeat(), got.WinnerSeat)
+	for i, seat := range got.Seats {
+		assert.Equal(t, g.GetResults()[i].NetChange, seat.NetChange)
+		assert.Equal(t, g.GetPlayers()[i].GetChips()-g.GetConfig().InitialChips, seat.NetChange,
+			"席 %d の純増減は開始チップとの差分 (買い増し込み)", i)
+	}
 }
 
 // **ワイルドとイベントの値はサーバが載せる。** ページに 3 と 9 を書き写させると、

@@ -254,7 +254,7 @@ function WhiteheadPageContent() {
   const isGameClear = state.phase === WhiteheadPhase.GAME_CLEAR;
   const isGameOver = state.phase === WhiteheadPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
-  const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
+  const foundationCount = state.foundation.reduce((sum, pile) => sum + pile.length, 0);
   const isVegas = state.scoringMode === WhiteheadScoringMode.VEGAS;
   const currentStat = getStat(state.drawCount, state.scoringMode);
 
@@ -415,65 +415,76 @@ function WhiteheadPageContent() {
               <div className="w-2 sm:w-4" />
 
               {/* Foundation piles */}
-              <div className="flex gap-1 sm:gap-2" data-tutorial="kl-foundation">
-                {state.foundation.map((pile, idx) => {
-                  const foundationZone: WhiteheadMoveZone = { zone: 'foundation', col: idx };
-                  return (
-                    <div
-                      key={`f-${idx.toString()}`}
-                      className={`text-center rounded ${isHintTo('foundation', idx) ? HINT_TO_RING : ''}`}
-                    >
-                      <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
-                      <DropZone
-                        isDropTarget={dnd.isDropTarget(foundationZone)}
-                        onDragOver={dnd.handleDragOver(foundationZone)}
-                        onDrop={dnd.handleDrop(foundationZone)}
-                        onDragLeave={dnd.handleDragLeave}
+              <div className="flex flex-col items-center gap-1" data-tutorial="kl-foundation">
+                <div className="text-game-text-muted text-xs">
+                  {t('foundationProgress', { count: foundationCount, total: state.totalCardCount })}
+                </div>
+                <div className="flex gap-1 sm:gap-2">
+                  {state.foundation.map((pile, idx) => {
+                    const foundationZone: WhiteheadMoveZone = { zone: 'foundation', col: idx };
+                    return (
+                      <div
+                        key={`f-${idx.toString()}`}
+                        className={`text-center rounded ${isHintTo('foundation', idx) ? HINT_TO_RING : ''}`}
                       >
-                        {pile.length > 0 ? (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (!selectedSource) return;
-                              handleSelectTarget(foundationZone);
-                            }}
-                            disabled={!isPlaying || loading || isAutoCompleting}
-                            aria-disabled={!selectedSource || undefined}
-                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('foundationAriaLabel', {
-                              suit: FOUNDATION_SUITS[idx],
-                              count: pile.length,
-                            })}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
-                          >
-                            <AnimatedCard
-                              card={pile[pile.length - 1]}
-                              width={kl.cw}
-                              draggable={false}
-                              dealDelay={isAutoCompleting ? idx * 0.15 : 0}
-                            />
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (!selectedSource) return;
-                              handleSelectTarget(foundationZone);
-                            }}
-                            disabled={!isPlaying || loading}
-                            aria-disabled={!selectedSource || undefined}
-                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
-                            style={{ width: kl.cw, height: kl.ch }}
-                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                          >
-                            A
-                          </button>
-                        )}
-                      </DropZone>
-                    </div>
-                  );
-                })}
+                        <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
+                        <DropZone
+                          isDropTarget={dnd.isDropTarget(foundationZone)}
+                          onDragOver={dnd.handleDragOver(foundationZone)}
+                          onDrop={dnd.handleDrop(foundationZone)}
+                          onDragLeave={dnd.handleDragLeave}
+                        >
+                          {pile.length > 0 ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (!selectedSource) return;
+                                handleSelectTarget(foundationZone);
+                              }}
+                              disabled={!isPlaying || loading || isAutoCompleting}
+                              aria-disabled={!selectedSource || undefined}
+                              aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                              aria-label={t('foundationAriaLabel', {
+                                suit: FOUNDATION_SUITS[idx],
+                                count: pile.length,
+                                placed: foundationCount,
+                                total: state.totalCardCount,
+                              })}
+                              className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+                            >
+                              <AnimatedCard
+                                card={pile[pile.length - 1]}
+                                width={kl.cw}
+                                draggable={false}
+                                dealDelay={isAutoCompleting ? idx * 0.15 : 0}
+                              />
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (!selectedSource) return;
+                                handleSelectTarget(foundationZone);
+                              }}
+                              disabled={!isPlaying || loading}
+                              aria-disabled={!selectedSource || undefined}
+                              aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                              aria-label={t('emptyFoundationAriaLabel', {
+                                suit: FOUNDATION_SUITS[idx],
+                                placed: foundationCount,
+                                total: state.totalCardCount,
+                              })}
+                              style={{ width: kl.cw, height: kl.ch }}
+                              className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                            >
+                              A
+                            </button>
+                          )}
+                        </DropZone>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
@@ -616,7 +627,8 @@ function WhiteheadPageContent() {
               <p data-testid="whitehead-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
                 {t('gameOverSummary', {
                   count: foundationCount,
-                  percent: Math.round((foundationCount / 52) * 100),
+                  total: state.totalCardCount,
+                  percent: Math.round((foundationCount / state.totalCardCount) * 100),
                 })}
               </p>
             )}

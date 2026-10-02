@@ -65,5 +65,6 @@
   },
   "undo": "元に戻す",
   "waste": "捨て札",
+  "wasteCardAriaLabel": "捨て札 {{card}}",
   "wasteCount": "{{count}}枚"
 }

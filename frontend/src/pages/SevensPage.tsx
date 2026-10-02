@@ -30,6 +30,8 @@ import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { SevensResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
+import { valueName } from '../utils/cardUtils';
 import { parseSevensCommand, SEVENS_HELP } from '../utils/cli/commands/sevensCommands';
 import { formatSevensState } from '../utils/cli/formatters/sevensFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
@@ -65,6 +67,7 @@ function SevensPageContent() {
     useGamePageSetup('sevens');
   const {
     state,
+    placedJoker,
     loading,
     error,
     exec,
@@ -389,6 +392,21 @@ function SevensPageContent() {
                 jokerSelecting={jokerCardIdx !== null}
                 onJokerPlace={handleJokerPlace}
               />
+            </div>
+            <div
+              className="sr-only"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              data-testid="joker-placement-live"
+            >
+              {placedJoker
+                ? t('jokerPlacedAnnouncement', {
+                    card: cardAlt({ design: 'JOKER', value: 0 }),
+                    suit: suitSymbolAt(placedJoker.suit),
+                    value: valueName(placedJoker.value),
+                  })
+                : ''}
             </div>
 
             {state.humanAction && (

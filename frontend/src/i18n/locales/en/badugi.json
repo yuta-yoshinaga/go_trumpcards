@@ -13,6 +13,7 @@
   "drawBadge": "Draw {{n}}/3",
   "preDrawLabel": "Pre-draw",
   "exchangeInstruction": "Click the cards you want to exchange, then press Exchange or Stand.",
+  "currentBestRank": "Current best rank: {{rank}}",
   "exchangeLabel": "Exchange",
   "standLabel": "Stand pat",
   "completeBadugiBanner": "✨ Badugi complete — stand pat recommended",

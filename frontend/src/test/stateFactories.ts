@@ -18,6 +18,7 @@ import type {
   CinchResponse,
   CirullaResponse,
   CoincheResponse,
+  ColourWhistResponse,
   CometResponse,
   ContinentalRummyResponse,
   CostlyColoursResponse,
@@ -46,11 +47,13 @@ import type {
   KnockoutWhistResponse,
   KoenigrufenResponse,
   KoiKoiResponse,
+  LaughAndLieDownResponse,
   LooResponse,
   MadrassoResponse,
   ManilleResponse,
   MariasResponse,
   MarjapussiResponse,
+  MatrimonyResponse,
   MichiganResponse,
   MinchiateResponse,
   MinibridgeResponse,
@@ -60,6 +63,7 @@ import type {
   OmbreResponse,
   PiedmonteseTarotResponse,
   PigResponse,
+  PinochleResponse,
   PreferenceResponse,
   PrimeroResponse,
   QuadrilleResponse,
@@ -76,6 +80,7 @@ import type {
   SheepsheadResponse,
   ShelemResponse,
   SoloWhistResponse,
+  SomersetResponse,
   SpadesResponse,
   SpoilFiveResponse,
   SuecaResponse,
@@ -99,6 +104,34 @@ import type {
   WattenResponse,
   ZwanzigerrufenResponse,
 } from '../types/card';
+
+/** Creates a default Pinochle state with an unresolved contract result. */
+export function makePinochleState(overrides: Partial<PinochleResponse> = {}): PinochleResponse {
+  return {
+    players: [],
+    phase: 0,
+    roundNumber: 1,
+    trickNumber: 0,
+    currentPlayerIdx: 0,
+    bidPlayerIdx: 0,
+    dealerIdx: 0,
+    trumpSuit: 0,
+    highestBid: 0,
+    highestBidder: -1,
+    currentTrick: [],
+    lastTrick: [],
+    lastTrickWinner: -1,
+    teamScores: [0, 0],
+    gameEndFlag: false,
+    winnerTeam: -1,
+    leadPlayerIdx: -1,
+    playerMelds: [[], [], [], []],
+    meldTable: [],
+    message: '',
+    config: { cpuDifficulty: 1, pointLimit: 1500 },
+    ...overrides,
+  };
+}
 
 /** Creates a Chinchón response with round score history defaults. */
 export function makeChinchonState(overrides: Partial<ChinchonResponse> = {}): ChinchonResponse {
@@ -143,6 +176,24 @@ export function makeAndarBaharState(overrides?: Partial<AndarBaharResponse>): An
     sidePayout: 0,
     history: [],
     roundHistory: [],
+    message: '',
+    ...overrides,
+  };
+}
+
+/** Creates a default Matrimony state. */
+export function makeMatrimonyState(overrides?: Partial<MatrimonyResponse>): MatrimonyResponse {
+  return {
+    tableau: Array.from({ length: 16 }, () => null),
+    foundation: Array.from({ length: 4 }, () => []),
+    stockCount: 88,
+    redealCount: 0,
+    maxRedeals: 3,
+    waste: [],
+    phase: 0,
+    moveCount: 0,
+    canUndo: false,
+    isStalemate: false,
     message: '',
     ...overrides,
   };
@@ -420,6 +471,21 @@ const baseSpadesState: SpadesResponse = {
  */
 export function makeSpadesState(overrides?: Partial<SpadesResponse>): SpadesResponse {
   return { ...baseSpadesState, ...overrides };
+}
+
+/** Creates a default Somerset state. */
+export function makeSomersetState(overrides?: Partial<SomersetResponse>): SomersetResponse {
+  return {
+    tableau: Array.from({ length: 10 }, () => []),
+    foundation: [[], [], [], []],
+    totalCardCount: 52,
+    phase: 0,
+    moveCount: 0,
+    canUndo: false,
+    isStalemate: false,
+    message: '',
+    ...overrides,
+  };
 }
 
 /** Base Call Break player data used by {@link makeCallBreakState}. */
@@ -1147,11 +1213,12 @@ const baseSuecaState: SuecaResponse = {
         { design: 'SPADE' as const, value: 1 },
       ],
       trickCount: 0,
+      team: 0,
       teamGamePoints: 0,
     },
-    { id: 1, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamGamePoints: 0 },
-    { id: 2, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamGamePoints: 0 },
-    { id: 3, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamGamePoints: 0 },
+    { id: 1, isHuman: false, cardCount: 10, cards: [], trickCount: 0, team: 1, teamGamePoints: 0 },
+    { id: 2, isHuman: false, cardCount: 10, cards: [], trickCount: 0, team: 0, teamGamePoints: 0 },
+    { id: 3, isHuman: false, cardCount: 10, cards: [], trickCount: 0, team: 1, teamGamePoints: 0 },
   ],
   phase: 0,
   roundNumber: 1,
@@ -1212,6 +1279,7 @@ const baseKlaverjasState: KlaverjasResponse = {
   dealerIdx: 3,
   trumpSuit: 4,
   currentTrick: [],
+  currentTrickPoints: 0,
   lastTrickTeam: -1,
   lastTrickPoints: 0,
   lastTrickBonus: 0,
@@ -1647,6 +1715,7 @@ const baseOmbreState: OmbreResponse = {
   trumpSuit: 1,
   currentTrick: [],
   playerScores: [0, 0, 0],
+  playerScoreDeltas: [0, 0, 0],
   lastTrickWinner: -1,
   outcome: 0,
   result: 0,
@@ -1870,6 +1939,7 @@ const baseGleekState: GleekResponse = {
   currentTrick: [],
   playerScores: [0, 0, 0],
   roundDelta: [0, 0, 0],
+  roundBreakdown: { bid: [0, 0, 0], ruff: [0, 0, 0], meld: [0, 0, 0], trick: [0, 0, 0] },
   discardCount: 7,
   ruffWinnerIdx: 0,
   melds: [],
@@ -2315,6 +2385,8 @@ const baseCegoState: CegoResponse = {
   highestBid: 1,
   highestBidder: 0,
   declarerIdx: 0,
+  declarerTargetPoints: 54,
+  totalCardPoints: 106,
   contract: 1,
   contractType: 1,
   blindCount: 10,
@@ -2529,12 +2601,13 @@ const baseBasraState: BasraResponse = {
         { design: 'CLOVER' as const, value: 3 },
       ],
       capturedCount: 0,
+      capturedCards: [],
       basraCount: 0,
       score: 0,
     },
-    { id: 1, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, basraCount: 0, score: 0 },
-    { id: 2, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, basraCount: 0, score: 0 },
-    { id: 3, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, basraCount: 0, score: 0 },
+    { id: 1, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, capturedCards: [], basraCount: 0, score: 0 },
+    { id: 2, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, capturedCards: [], basraCount: 0, score: 0 },
+    { id: 3, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, capturedCards: [], basraCount: 0, score: 0 },
   ],
   phase: 0,
   roundNumber: 1,
@@ -2810,12 +2883,13 @@ const baseTablanetState: TablanetResponse = {
         { design: 'CLOVER' as const, value: 3 },
       ],
       capturedCount: 0,
+      capturedCards: [],
       tablaCount: 0,
       score: 0,
     },
-    { id: 1, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, tablaCount: 0, score: 0 },
-    { id: 2, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, tablaCount: 0, score: 0 },
-    { id: 3, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, tablaCount: 0, score: 0 },
+    { id: 1, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, capturedCards: [], tablaCount: 0, score: 0 },
+    { id: 2, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, capturedCards: [], tablaCount: 0, score: 0 },
+    { id: 3, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, capturedCards: [], tablaCount: 0, score: 0 },
   ],
   phase: 0,
   roundNumber: 1,
@@ -3620,6 +3694,10 @@ const baseTarocchiniState: TarocchiniResponse = {
   currentTrick: [],
   teamScores: [0, 0],
   roundTricks: [0, 0, 0, 0],
+  roundBreakdown: [
+    { tricks: 0, lastTrickBonus: 0, scartoBonus: 0, total: 0 },
+    { tricks: 0, lastTrickBonus: 0, scartoBonus: 0, total: 0 },
+  ],
   lastTrickWinner: -1,
   playableIndices: [0, 1, 2],
   gameEndFlag: false,
@@ -6021,6 +6099,75 @@ export function makeCasinoHoldemState(overrides?: Partial<CasinoHoldemResponse>)
     netChange: 0,
     playerHandRank: 0,
     dealerHandRank: 0,
+    message: '',
+    ...overrides,
+  };
+}
+
+/** Creates a default Colour Whist state. */
+export function makeColourWhistState(overrides?: Partial<ColourWhistResponse>): ColourWhistResponse {
+  return {
+    players: Array.from({ length: 4 }, (_, id) => ({
+      id,
+      isHuman: id === 0,
+      cardCount: 0,
+      cards: [],
+      trickCount: 0,
+      score: 0,
+      roundScores: [],
+      isDeclarerSide: false,
+      hasPassed: false,
+    })),
+    phase: 0,
+    validPlays: [],
+    dealerIdx: 0,
+    contract: 0,
+    declarerIdx: -1,
+    partnerIdx: -1,
+    calledCard: null,
+    trumpSuit: -1,
+    troelForced: false,
+    currentTurn: 0,
+    isHumanTurn: true,
+    currentTrick: [],
+    lastTrick: [],
+    lastTrickWinner: -1,
+    trickCount: 0,
+    declarerTricks: 0,
+    roundNumber: 1,
+    gameEndFlag: false,
+    winnerIdx: -1,
+    config: { rounds: 8 },
+    message: '',
+    ...overrides,
+  };
+}
+
+/** Creates a default Laugh and Lie Down state with running scores for every seat. */
+export function makeLaughAndLieDownState(overrides?: Partial<LaughAndLieDownResponse>): LaughAndLieDownResponse {
+  const player = (id: number, isHuman: boolean) => ({
+    id,
+    isHuman,
+    cardCount: 0,
+    cards: [],
+    wonCount: 8,
+    laidDown: false,
+    score: 0,
+    runningScore: 0,
+    hidden: !isHuman,
+  });
+  return {
+    players: [player(0, true), player(1, false), player(2, false), player(3, false), player(4, false)],
+    layout: [],
+    phase: 0,
+    currentPlayerIdx: 0,
+    validIndices: [],
+    threeTakeIndices: [],
+    dealerIdx: 0,
+    lastInIdx: -1,
+    lastInBonus: 5,
+    pot: 11,
+    gameEndFlag: false,
     message: '',
     ...overrides,
   };

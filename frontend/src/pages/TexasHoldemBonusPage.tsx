@@ -26,12 +26,14 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { outcomeFromTexasHoldemBonusResult, useTexasHoldemBonusStats } from '../hooks/useTexasHoldemBonusStats';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { highlightCardStyle, placeholderCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { TexasHoldemBonusResponse } from '../types/card';
 import { isMaskedCard } from '../types/card';
 import { TexasHoldemBonusPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseTexasholdembonusCommand, TEXASHOLDEMBONUS_HELP } from '../utils/cli/commands/texasholdembonusCommands';
 import { formatTexasholdembonusState } from '../utils/cli/formatters/texasholdembonusFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
@@ -137,6 +139,8 @@ function TexasHoldemBonusPageContent() {
   const isTurnPhase = state?.phase === TexasHoldemBonusPhase.TURN;
   const isPostFlopPhase = isFlopPhase || isTurnPhase;
   const isEndPhase = state?.phase === TexasHoldemBonusPhase.END;
+  const playerBestSet = new Set((state?.playerBest ?? []).map(({ design, value }) => `${design}:${value}`));
+  const dealerBestSet = new Set((state?.dealerBest ?? []).map(({ design, value }) => `${design}:${value}`));
   const { tally, recordRound, clearHistory } = useTexasHoldemBonusStats();
   const recordedRef = useRef(false);
   const net = state ? state.totalPayout - (state.anteBet + state.bonusBet + state.totalPlayBet) : 0;
@@ -334,9 +338,43 @@ function TexasHoldemBonusPageContent() {
                   <span aria-hidden="true">🃏</span> {t('board')}
                 </div>
                 <div className="flex justify-center gap-2 flex-wrap">
-                  {state.community.map((card, i) => (
-                    <AnimatedCard key={`c-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
-                  ))}
+                  {state.community.map((card, i) => {
+                    const key = `${card.design}:${card.value}`;
+                    const inPlayerBest = isEndPhase && playerBestSet.has(key);
+                    const inDealerBest = isEndPhase && dealerBestSet.has(key);
+                    const inBest = inPlayerBest || inDealerBest;
+                    return (
+                      <div
+                        key={`c-${card.design}-${card.value}-${i}`}
+                        className={
+                          inBest
+                            ? `-translate-y-1 ring-2 ${inDealerBest && !inPlayerBest ? 'ring-ds-error' : 'ring-ds-warning'}`
+                            : ''
+                        }
+                        data-best5={inBest || undefined}
+                        data-player-best5={inPlayerBest || undefined}
+                        data-dealer-best5={inDealerBest || undefined}
+                      >
+                        <AnimatedCard
+                          card={card}
+                          width={cardWidth}
+                          style={
+                            inDealerBest && !inPlayerBest
+                              ? { ...placeholderCardStyle, border: '3px solid var(--color-ds-error)' }
+                              : inBest
+                                ? highlightCardStyle()
+                                : placeholderCardStyle
+                          }
+                        />
+                        {inPlayerBest && (
+                          <span className="sr-only">{t('playerBestCardUsedAria', { card: cardAlt(card) })}</span>
+                        )}
+                        {inDealerBest && (
+                          <span className="sr-only">{t('dealerBestCardUsedAria', { card: cardAlt(card) })}</span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -358,7 +396,31 @@ function TexasHoldemBonusPageContent() {
                         <AnimatedCardBack width={cardWidth} />
                       </span>
                     ) : (
-                      <AnimatedCard key={`d-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
+                      <div
+                        key={`d-${card.design}-${card.value}-${i}`}
+                        className={
+                          isEndPhase && dealerBestSet.has(`${card.design}:${card.value}`)
+                            ? '-translate-y-1 ring-2 ring-ds-error'
+                            : ''
+                        }
+                        data-best5={(isEndPhase && dealerBestSet.has(`${card.design}:${card.value}`)) || undefined}
+                        data-dealer-best5={
+                          (isEndPhase && dealerBestSet.has(`${card.design}:${card.value}`)) || undefined
+                        }
+                      >
+                        <AnimatedCard
+                          card={card}
+                          width={cardWidth}
+                          style={
+                            isEndPhase && dealerBestSet.has(`${card.design}:${card.value}`)
+                              ? { ...placeholderCardStyle, border: '3px solid var(--color-ds-error)' }
+                              : placeholderCardStyle
+                          }
+                        />
+                        {isEndPhase && dealerBestSet.has(`${card.design}:${card.value}`) && (
+                          <span className="sr-only">{t('dealerBestCardUsedAria', { card: cardAlt(card) })}</span>
+                        )}
+                      </div>
                     ),
                   )}
                 </div>
@@ -374,9 +436,26 @@ function TexasHoldemBonusPageContent() {
                   )}
                 </div>
                 <div className="flex justify-center gap-2 flex-wrap">
-                  {state.playerHand.map((card, i) => (
-                    <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
-                  ))}
+                  {state.playerHand.map((card, i) => {
+                    const inBest = isEndPhase && playerBestSet.has(`${card.design}:${card.value}`);
+                    return (
+                      <div
+                        key={`p-${card.design}-${card.value}-${i}`}
+                        className={inBest ? '-translate-y-1 ring-2 ring-ds-warning' : ''}
+                        data-best5={inBest || undefined}
+                        data-player-best5={inBest || undefined}
+                      >
+                        <AnimatedCard
+                          card={card}
+                          width={cardWidth}
+                          style={inBest ? highlightCardStyle() : placeholderCardStyle}
+                        />
+                        {inBest && (
+                          <span className="sr-only">{t('playerBestCardUsedAria', { card: cardAlt(card) })}</span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

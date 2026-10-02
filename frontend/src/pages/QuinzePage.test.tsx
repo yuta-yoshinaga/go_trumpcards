@@ -77,6 +77,29 @@ describe('QuinzePage', () => {
     expect(screen.getByText(/目標: 15/)).toBeInTheDocument();
   });
 
+  it('announces the active player seat as the current turn', async () => {
+    mockExec.mockResolvedValue(makeState({ activeSeat: 2 }));
+    renderWithProviders(<QuinzePage />);
+
+    const currentSeat = await screen.findByRole('group', { name: /CPU2.*あなたの手番/ });
+    expect(screen.getAllByRole('group', { name: /あなたの手番/ })).toHaveLength(1);
+    expect(currentSeat).toHaveAttribute('aria-current', 'true');
+    expect(screen.getByRole('group', { name: 'あなた' })).not.toHaveAttribute('aria-current');
+  });
+
+  it.each([
+    ['betting', bettingState],
+    ['banker turn', makeState({ phase: 3, isHumanBanker: true, bankerIdx: 0 })],
+    ['round end', makeState({ phase: 4 })],
+  ])('does not mark a player seat current during %s', async (_phase, state) => {
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<QuinzePage />);
+
+    await screen.findByTestId('phase-indicator');
+    expect(screen.queryAllByRole('group', { name: /あなたの手番/ })).toHaveLength(0);
+    expect(screen.getAllByRole('group').every((seat) => !seat.hasAttribute('aria-current'))).toBe(true);
+  });
+
   // The server withholds a hidden hand's cards; the page renders backs from
   // `hidden` rather than deciding for itself what may be seen.
   it('renders a hand the server marked hidden as backs', async () => {

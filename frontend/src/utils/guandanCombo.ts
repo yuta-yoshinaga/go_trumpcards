@@ -221,3 +221,22 @@ export function guandanEvaluate(cards: readonly Card[], level: number): GuandanC
 export function guandanIsBomb(kind: number): boolean {
   return kind === GUANDAN_COMBO.Bomb || kind === GUANDAN_COMBO.StraightFlush || kind === GUANDAN_COMBO.JokerBomb;
 }
+
+/** Whether a combo beats the combo currently on the table, matching GuandanBeats. */
+export function guandanBeats(combo: GuandanComboEval, previous: GuandanComboEval): boolean {
+  const bombTier = (kind: number): number => {
+    if (kind === GUANDAN_COMBO.JokerBomb) return 3;
+    if (kind === GUANDAN_COMBO.StraightFlush) return 2;
+    if (kind === GUANDAN_COMBO.Bomb) return 1;
+    return 0;
+  };
+  const currentTier = bombTier(combo.kind);
+  const previousTier = bombTier(previous.kind);
+  if (currentTier !== previousTier) return currentTier > previousTier;
+  if (currentTier > 0) {
+    if (combo.size !== previous.size) return combo.size > previous.size;
+    return combo.rank > previous.rank;
+  }
+  if (combo.kind !== previous.kind || combo.size !== previous.size) return false;
+  return combo.rank > previous.rank;
+}

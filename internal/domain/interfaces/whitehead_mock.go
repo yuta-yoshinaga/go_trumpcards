@@ -118,6 +118,11 @@ func (_m *MockWhiteheadGame) GetFoundation() [domain.WhiteheadFoundationCnt][]*d
 	return ret.Get(0).([domain.WhiteheadFoundationCnt][]*domain.Card)
 }
 
+func (_m *MockWhiteheadGame) GetTotalCardCount() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 func (_m *MockWhiteheadGame) AllFaceUp() bool {
 	ret := _m.Called()
 	return ret.Bool(0)

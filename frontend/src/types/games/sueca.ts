@@ -13,6 +13,8 @@ export interface SuecaPlayer {
   cardCount: number;
   cards: Card[];
   trickCount: number;
+  /** Team index assigned by the server (0 = Team A, 1 = Team B). */
+  team: number;
   /** Cumulative game points of the team this player belongs to. */
   teamGamePoints: number;
 }

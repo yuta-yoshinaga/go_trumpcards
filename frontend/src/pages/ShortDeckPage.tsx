@@ -348,6 +348,15 @@ function ShortDeckPageContent() {
                   showCards={isShowdown}
                   faceDownCount={2}
                   showHandName={isShowdown}
+                  usedHoleIdx={
+                    isShowdown && !p.folded
+                      ? p.cards.flatMap((card, idx) =>
+                          p.bestHand.some((best) => best.design === card.design && best.value === card.value)
+                            ? [idx]
+                            : [],
+                        )
+                      : undefined
+                  }
                   extraInfo={
                     p.totalHands > 0 ? (
                       <HudStats namespace="shortdeck" vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} />

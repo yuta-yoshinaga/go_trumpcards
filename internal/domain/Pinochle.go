@@ -132,27 +132,29 @@ type PinochleHint struct {
 
 // Pinochle ピノクルゲームクラス
 type Pinochle struct {
-	trumpCards       *TrumpCards
-	players          []*PinochlePlayer
-	config           PinochleConfig
-	phase            PinochlePhase
-	roundNumber      int
-	trickNumber      int
-	currentPlayerIdx int
-	currentTrick     []*TrickCard
-	lastTrick        []*TrickCard
-	lastTrickWinner  int // -1 = none
-	dealerIdx        int
-	trumpSuit        int // 切り札スート (CardDesignSpade等)
-	highestBid       int // 現在の最高ビッド
-	highestBidder    int // 最高ビッダーのインデックス
-	bidPlayerIdx     int // 現在のビッド手番
-	teamScores       [PinochleTeamCnt]int
-	leadPlayerIdx    int
-	gameEndFlag      bool
-	winnerTeam       int // 勝利チーム (-1 = 未確定)
-	playerMelds      [PinochlePlayerCnt][]*PinochleMeld
-	actionLog        []*ActionLogEntry
+	trumpCards        *TrumpCards
+	players           []*PinochlePlayer
+	config            PinochleConfig
+	phase             PinochlePhase
+	roundNumber       int
+	trickNumber       int
+	currentPlayerIdx  int
+	currentTrick      []*TrickCard
+	lastTrick         []*TrickCard
+	lastTrickWinner   int // -1 = none
+	dealerIdx         int
+	trumpSuit         int // 切り札スート (CardDesignSpade等)
+	highestBid        int // 現在の最高ビッド
+	highestBidder     int // 最高ビッダーのインデックス
+	bidPlayerIdx      int // 現在のビッド手番
+	teamScores        [PinochleTeamCnt]int
+	lastContractMade  bool
+	hasContractResult bool
+	leadPlayerIdx     int
+	gameEndFlag       bool
+	winnerTeam        int // 勝利チーム (-1 = 未確定)
+	playerMelds       [PinochlePlayerCnt][]*PinochleMeld
+	actionLog         []*ActionLogEntry
 }
 
 // NewPinochle コンストラクタ
@@ -190,6 +192,8 @@ func (p *Pinochle) Reset() {
 	p.trickNumber = 0
 	p.dealerIdx = 0
 	p.teamScores = [PinochleTeamCnt]int{}
+	p.lastContractMade = false
+	p.hasContractResult = false
 	p.actionLog = nil
 	p.trumpSuit = 0
 	p.highestBid = 0
@@ -216,6 +220,8 @@ func (p *Pinochle) NextRound() {
 	p.trumpSuit = 0
 	p.highestBid = 0
 	p.highestBidder = -1
+	p.lastContractMade = false
+	p.hasContractResult = false
 	p.playerMelds = [PinochlePlayerCnt][]*PinochleMeld{}
 
 	for _, pl := range p.players {
@@ -277,6 +283,11 @@ func (p *Pinochle) GetHighestBid() int { return p.highestBid }
 
 // GetHighestBidder 最高ビッダーインデックスを取得
 func (p *Pinochle) GetHighestBidder() int { return p.highestBidder }
+
+// GetLastContractMade returns the last round's contract result and whether it is known.
+func (p *Pinochle) GetLastContractMade() (made bool, ok bool) {
+	return p.lastContractMade, p.hasContractResult
+}
 
 // GetBidPlayerIdx ビッド手番インデックスを取得
 func (p *Pinochle) GetBidPlayerIdx() int { return p.bidPlayerIdx }
@@ -1199,8 +1210,12 @@ func (p *Pinochle) scoreRound() {
 	// ビッドチームの得点計算
 	bidderTotal := teamTrickPoints[bidderTeam] + teamMeldPoints[bidderTeam]
 	if bidderTotal >= p.highestBid {
+		p.lastContractMade = true
+		p.hasContractResult = true
 		p.teamScores[bidderTeam] += bidderTotal
 	} else {
+		p.lastContractMade = false
+		p.hasContractResult = true
 		// ビッド失敗: ビッド額を失う
 		p.teamScores[bidderTeam] -= p.highestBid
 	}
@@ -1305,53 +1320,57 @@ func (p *Pinochle) hintPlay() *PinochleHint {
 
 // pinochleJSON is the JSON wire format for Pinochle.
 type pinochleJSON struct {
-	TrumpCards       *TrumpCards                        `json:"tc"`
-	Players          []*PinochlePlayer                  `json:"ps"`
-	Config           PinochleConfig                     `json:"cf"`
-	Phase            PinochlePhase                      `json:"ph"`
-	RoundNumber      int                                `json:"rn"`
-	TrickNumber      int                                `json:"tn"`
-	CurrentPlayerIdx int                                `json:"ci"`
-	CurrentTrick     []*TrickCard                       `json:"ct"`
-	LastTrick        []*TrickCard                       `json:"lt"`
-	LastTrickWinner  int                                `json:"lw"`
-	DealerIdx        int                                `json:"di"`
-	TrumpSuit        int                                `json:"ts"`
-	HighestBid       int                                `json:"hb"`
-	HighestBidder    int                                `json:"hd"`
-	BidPlayerIdx     int                                `json:"bi"`
-	TeamScores       [PinochleTeamCnt]int               `json:"sc"`
-	LeadPlayerIdx    int                                `json:"li"`
-	GameEndFlag      bool                               `json:"ge"`
-	WinnerTeam       int                                `json:"wt"`
-	PlayerMelds      [PinochlePlayerCnt][]*PinochleMeld `json:"pm"`
-	ActionLog        []*ActionLogEntry                  `json:"al"`
+	TrumpCards        *TrumpCards                        `json:"tc"`
+	Players           []*PinochlePlayer                  `json:"ps"`
+	Config            PinochleConfig                     `json:"cf"`
+	Phase             PinochlePhase                      `json:"ph"`
+	RoundNumber       int                                `json:"rn"`
+	TrickNumber       int                                `json:"tn"`
+	CurrentPlayerIdx  int                                `json:"ci"`
+	CurrentTrick      []*TrickCard                       `json:"ct"`
+	LastTrick         []*TrickCard                       `json:"lt"`
+	LastTrickWinner   int                                `json:"lw"`
+	DealerIdx         int                                `json:"di"`
+	TrumpSuit         int                                `json:"ts"`
+	HighestBid        int                                `json:"hb"`
+	HighestBidder     int                                `json:"hd"`
+	BidPlayerIdx      int                                `json:"bi"`
+	TeamScores        [PinochleTeamCnt]int               `json:"sc"`
+	LeadPlayerIdx     int                                `json:"li"`
+	GameEndFlag       bool                               `json:"ge"`
+	WinnerTeam        int                                `json:"wt"`
+	LastContractMade  bool                               `json:"cm,omitempty"`
+	HasContractResult bool                               `json:"hc,omitempty"`
+	PlayerMelds       [PinochlePlayerCnt][]*PinochleMeld `json:"pm"`
+	ActionLog         []*ActionLogEntry                  `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (p *Pinochle) MarshalJSON() ([]byte, error) {
 	return json.Marshal(pinochleJSON{
-		TrumpCards:       p.trumpCards,
-		Players:          p.players,
-		Config:           p.config,
-		Phase:            p.phase,
-		RoundNumber:      p.roundNumber,
-		TrickNumber:      p.trickNumber,
-		CurrentPlayerIdx: p.currentPlayerIdx,
-		CurrentTrick:     p.currentTrick,
-		LastTrick:        p.lastTrick,
-		LastTrickWinner:  p.lastTrickWinner,
-		DealerIdx:        p.dealerIdx,
-		TrumpSuit:        p.trumpSuit,
-		HighestBid:       p.highestBid,
-		HighestBidder:    p.highestBidder,
-		BidPlayerIdx:     p.bidPlayerIdx,
-		TeamScores:       p.teamScores,
-		LeadPlayerIdx:    p.leadPlayerIdx,
-		GameEndFlag:      p.gameEndFlag,
-		WinnerTeam:       p.winnerTeam,
-		PlayerMelds:      p.playerMelds,
-		ActionLog:        p.actionLog,
+		TrumpCards:        p.trumpCards,
+		Players:           p.players,
+		Config:            p.config,
+		Phase:             p.phase,
+		RoundNumber:       p.roundNumber,
+		TrickNumber:       p.trickNumber,
+		CurrentPlayerIdx:  p.currentPlayerIdx,
+		CurrentTrick:      p.currentTrick,
+		LastTrick:         p.lastTrick,
+		LastTrickWinner:   p.lastTrickWinner,
+		DealerIdx:         p.dealerIdx,
+		TrumpSuit:         p.trumpSuit,
+		HighestBid:        p.highestBid,
+		HighestBidder:     p.highestBidder,
+		BidPlayerIdx:      p.bidPlayerIdx,
+		TeamScores:        p.teamScores,
+		LeadPlayerIdx:     p.leadPlayerIdx,
+		GameEndFlag:       p.gameEndFlag,
+		WinnerTeam:        p.winnerTeam,
+		LastContractMade:  p.lastContractMade,
+		HasContractResult: p.hasContractResult,
+		PlayerMelds:       p.playerMelds,
+		ActionLog:         p.actionLog,
 	})
 }
 
@@ -1392,6 +1411,8 @@ func (p *Pinochle) UnmarshalJSON(data []byte) error {
 	p.leadPlayerIdx = j.LeadPlayerIdx
 	p.gameEndFlag = j.GameEndFlag
 	p.winnerTeam = j.WinnerTeam
+	p.lastContractMade = j.LastContractMade
+	p.hasContractResult = j.HasContractResult
 	p.playerMelds = j.PlayerMelds
 	p.actionLog = j.ActionLog
 	return nil

@@ -211,6 +211,13 @@ describe('ChinesePokerPage', () => {
     expect(screen.getByTestId('set-hands-button')).toBeDisabled();
   });
 
+  it('shows the confirmed bet during hand arrangement using the settlement bet value', async () => {
+    mockExec.mockResolvedValue(setHandsState);
+    renderWithProviders(<ChinesePokerPage />);
+    await waitFor(() => expect(screen.getByTestId('cp-current-bet')).toBeInTheDocument());
+    expect(screen.getByTestId('cp-current-bet')).toHaveTextContent('現在のベット: 100');
+  });
+
   it('renders end phase with results', async () => {
     mockExec.mockResolvedValue(endPhaseState);
     renderWithProviders(<ChinesePokerPage />);

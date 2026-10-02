@@ -43,6 +43,7 @@
   "bidNone": "No bids yet",
   "bidNotYet": "no bid yet",
   "bidHistoryTitle": "Bids so far",
+  "listSeparator": ", ",
   "bidDisabledReason": "Must exceed the current highest bid of {{currentBid}}",
   "bid": {
     "pass": "Pass",

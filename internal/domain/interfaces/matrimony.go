@@ -19,6 +19,7 @@ type MatrimonyGame interface {
 	GetMoveCount() int
 	GetStockCount() int
 	GetRedealCount() int
+	GetMaxRedeals() int
 	GetWaste() []*domain.Card
 	GetTableau() [domain.MatrimonyTableauCnt]*domain.Card
 	GetFoundation() [domain.MatrimonyFoundationCnt][]*domain.Card

@@ -9,6 +9,7 @@
   "emptyFoundationAriaLabel": "Empty foundation {{idx}} ({{suit}})",
   "emptyWaivedAriaLabel": "Nothing is waived",
   "foundation": "Foundation",
+  "foundationProgress": "Foundation total: {{count}}/104 cards ({{percent}}%)",
   "foundationAriaLabel": "{{suit}} foundation {{idx}}, {{count}} cards",
   "frontendHint": {
     "tableau": "Tableau column {{col}}",

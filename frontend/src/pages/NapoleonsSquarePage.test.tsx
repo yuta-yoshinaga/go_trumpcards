@@ -125,6 +125,22 @@ describe('NapoleonsSquarePage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
+  it('highlights only legal tableau destinations and clears candidates when selection is canceled', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<NapoleonsSquarePage />);
+    const source = await screen.findByRole('button', { name: /列0・上から2枚目/ });
+    const emptyColumn = screen.getByRole('button', { name: '空のタブロー列 2' });
+    const incompatibleColumn = screen.getByRole('button', { name: /列1・上から1枚目/ });
+
+    fireEvent.click(source);
+    expect(emptyColumn).toHaveClass('ring-ds-success');
+    expect(incompatibleColumn.closest('[role="presentation"]')).not.toHaveClass('ring-ds-success');
+    expect(screen.getByRole('button', { name: /♠ 組札0/ })).not.toHaveClass('ring-ds-success');
+
+    fireEvent.click(source);
+    expect(emptyColumn).not.toHaveClass('ring-ds-success');
+  });
+
   it('labels all twelve tableau columns with their 0-based index', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<NapoleonsSquarePage />);

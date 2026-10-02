@@ -23,6 +23,9 @@
   "tricks": "{{count}}トリック",
   "chips": "{{count}}チップ",
   "currentTrick": "現在のトリック",
+  "trickCardDetail": "{{points}}点 · {{trump}}",
+  "trump": "切り札",
+  "notTrump": "切り札ではない",
   "trickResult": {
     "winner": "獲得者: {{player}}",
     "nextLead": "次のリード: {{player}}"

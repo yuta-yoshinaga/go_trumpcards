@@ -32,7 +32,7 @@ import { parseReddogCommand, REDDOG_HELP } from '../utils/cli/commands/reddogCom
 import { formatReddogState } from '../utils/cli/formatters/reddogFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { canRedDogRaise } from '../utils/reddogBet';
-import { rankLabel, redDogRank, reddogWinningRanks } from '../utils/reddogWinningRanks';
+import { rankLabel, redDogRank, reddogWinningCardOdds, reddogWinningRanks } from '../utils/reddogWinningRanks';
 
 const RD_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -92,6 +92,8 @@ function RedDogPageContent() {
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 
   if (!state) return <GameSkeleton gameKey="reddog" layout={{ kind: 'casino-table', sections: [3] }} />;
+
+  const winningOdds = isSpreadDecision ? reddogWinningCardOdds(state.initialCards) : null;
 
   const handleBet = () => execApi('bet', betAmount);
   const handleRaise = () => execApi('raise', Math.min(raiseAmount, state.ante, state.chips));
@@ -194,6 +196,15 @@ function RedDogPageContent() {
                       <div className="text-ds-text-muted text-center text-xs mt-1" data-testid="reddog-winners-text">
                         {t('label.winners')}:{' '}
                         {reddogWinningRanks(state.initialCards).map(rankLabel).join(t('listSeparator'))}
+                      </div>
+                    )}
+                    {winningOdds && (
+                      <div className="text-ds-text-muted text-center text-xs mt-1" data-testid="reddog-winning-odds">
+                        {t('label.winningOdds', {
+                          ...winningOdds,
+                          percent: Math.round(winningOdds.probability * 100),
+                          count: winningOdds.winningCards,
+                        })}
                       </div>
                     )}
                   </>

@@ -47,14 +47,15 @@ type WhiteheadWebOutputHint struct {
 
 // WhiteheadWebOutput ホワイトヘッドWebアウトプット
 type WhiteheadWebOutput struct {
-	Tableau     [][]*WhiteheadWebOutputTableauCard `json:"tableau"`
-	StockCount  int                                `json:"stockCount"`
-	Waste       []*WebOutputCard                   `json:"waste"`
-	Foundation  [][]*WebOutputCard                 `json:"foundation"`
-	DrawCount   int                                `json:"drawCount"`
-	Score       int                                `json:"score"`
-	ScoringMode int                                `json:"scoringMode"`
-	Hint        *WhiteheadWebOutputHint            `json:"hint,omitempty"`
+	Tableau        [][]*WhiteheadWebOutputTableauCard `json:"tableau"`
+	StockCount     int                                `json:"stockCount"`
+	Waste          []*WebOutputCard                   `json:"waste"`
+	Foundation     [][]*WebOutputCard                 `json:"foundation"`
+	TotalCardCount int                                `json:"totalCardCount"`
+	DrawCount      int                                `json:"drawCount"`
+	Score          int                                `json:"score"`
+	ScoringMode    int                                `json:"scoringMode"`
+	Hint           *WhiteheadWebOutputHint            `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -70,10 +71,11 @@ var NewWhiteheadWebController, NewWhiteheadWebControllerWithProvider = webContro
 
 func newWhiteheadDefaultOutput(msg string) *WhiteheadWebOutput {
 	return &WhiteheadWebOutput{
-		Tableau:       make([][]*WhiteheadWebOutputTableauCard, 0),
-		Waste:         make([]*WebOutputCard, 0),
-		Foundation:    make([][]*WebOutputCard, 0),
-		WebOutputBase: WebOutputBase{Message: msg},
+		Tableau:        make([][]*WhiteheadWebOutputTableauCard, 0),
+		Waste:          make([]*WebOutputCard, 0),
+		Foundation:     make([][]*WebOutputCard, 0),
+		TotalCardCount: domain.CardCnt,
+		WebOutputBase:  WebOutputBase{Message: msg},
 	}
 }
 

@@ -86,6 +86,7 @@ func (p *BasraWebPresenter) buildBase(g interfaces.BasraGame) *controller.BasraW
 			IsHuman:       player.GetIsHuman(),
 			CardCount:     player.GetCardsSize(),
 			Cards:         playerCardsToOutput(player, player.GetIsHuman()),
+			CapturedCards: cardsToOutputOrEmpty(player.GetCapturedCards()),
 			CapturedCount: player.CapturedCount(),
 			BasraCount:    player.GetBasraCount(),
 			Score:         player.GetScore(),

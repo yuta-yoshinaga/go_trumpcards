@@ -82,6 +82,24 @@ describe('GapsPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/手数: 5/));
   });
 
+  it('includes zero-based row and column in card names, preserving locked status', async () => {
+    renderWithProviders(<GapsPage />);
+    expect(
+      await screen.findByRole('button', { name: '♠ 2、行0・列0、ロック済み (次のリディール後も残ります)' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: '♠ 2、行0・列0、ロック済み (次のリディール後も残ります)' }),
+    ).toHaveAttribute('data-testid', 'gaps-locked-0-0');
+  });
+
+  it('includes zero-based coordinates in unlocked card names', async () => {
+    const grid = makeGrid();
+    grid[0][0] = card('SPADE', 5);
+    mockedRun.mockResolvedValue({ ...playingState, grid });
+    renderWithProviders(<GapsPage />);
+    expect(await screen.findByRole('button', { name: '♠ 5、行0・列0' })).toBeInTheDocument();
+  });
+
   it('reflects the server-provided gap needs (needed / anySuit / blocked) in each cell aria-label and ghost preview', async () => {
     const grid: (Card | null)[][] = [
       Array(13).fill(null),

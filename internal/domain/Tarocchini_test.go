@@ -3,6 +3,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -300,6 +301,12 @@ func TestTarocchini_FullRoundAccountsForEveryTrick(t *testing.T) {
 		tricks += n
 	}
 	assert.Equal(t, TarocchiniTrickCount, tricks, "every trick must land with someone")
+	breakdown := g.GetRoundBreakdown()
+	assert.Equal(t, TarocchiniTrickCount, breakdown[0].Tricks+breakdown[1].Tricks)
+	assert.Equal(t, TarocchiniLastTrickBonus, breakdown[0].LastTrickBonus+breakdown[1].LastTrickBonus)
+	assert.Equal(t, TarocchiniSurplus, breakdown[0].ScartoBonus+breakdown[1].ScartoBonus)
+	assert.Equal(t, TarocchiniTrickCount+TarocchiniSurplus+TarocchiniLastTrickBonus, breakdown[0].Total+breakdown[1].Total)
+	assert.Equal(t, g.GetTeamScores(), [2]int{breakdown[0].Total, breakdown[1].Total})
 	for i := 0; i < TarocchiniPlayerCnt; i++ {
 		assert.Zero(t, g.GetPlayer(i).GetCardsSize(), "seat %d should be out of cards", i)
 	}
@@ -439,10 +446,27 @@ func TestTarocchini_JSONRoundTripPreservesState(t *testing.T) {
 	assert.Equal(t, src.GetPhase(), got.GetPhase())
 	assert.Equal(t, src.GetDealerIdx(), got.GetDealerIdx())
 	assert.Equal(t, src.GetTeamScores(), got.GetTeamScores())
+	assert.Equal(t, src.GetRoundBreakdown(), got.GetRoundBreakdown())
 	assert.Equal(t, TarocchiniPlayerCnt, got.GetPlayerCnt())
 	for i := 0; i < TarocchiniPlayerCnt; i++ {
 		assert.Equal(t, src.GetPlayer(i).GetCardsSize(), got.GetPlayer(i).GetCardsSize())
 	}
+}
+
+func TestTarocchini_UnmarshalLegacySnapshotDefaultsRoundBreakdown(t *testing.T) {
+	src := NewDefaultTarocchini()
+	src.SetRand(rand.New(rand.NewSource(9)))
+	src.Reset()
+	data, err := src.MarshalJSON()
+	require.NoError(t, err)
+	var fields map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &fields))
+	delete(fields, "rb")
+	legacy, err := json.Marshal(fields)
+	require.NoError(t, err)
+	var got Tarocchini
+	require.NoError(t, got.UnmarshalJSON(legacy))
+	assert.Equal(t, [tarocchiniTeamCnt]TarocchiniTeamRoundBreakdown{}, got.GetRoundBreakdown())
 }
 
 // 切り札 (5) とマット (6) を含む局面が復元できること。52 枚デッキ用の 1..4 を

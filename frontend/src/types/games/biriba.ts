@@ -35,6 +35,12 @@ export interface BiribaPlayerData {
 
 /** Full Biriba game state returned from the API. */
 export interface BiribaResponse extends BaseGameResponse {
+  /** Minimum points required for the human's initial meld. */
+  minMeld: number;
+  drewFromDiscard: boolean;
+  drawnCard: Card | null;
+  /** Human hand index of the exact card taken from the discard pile, or -1. */
+  drawnCardIndex: number;
   /**
    * The hint the domain computed for the human's turn, when there is one.
    *

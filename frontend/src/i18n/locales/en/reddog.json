@@ -9,7 +9,9 @@
     "spread": "Spread",
     "initial": "Initial",
     "third": "Third",
-    "winners": "Winning ranks"
+    "winners": "Winning ranks",
+    "winningOdds_one": "Winning cards: {{winningCards}} of {{remainingCards}} ({{percent}}%)",
+    "winningOdds_other": "Winning cards: {{winningCards}} of {{remainingCards}} ({{percent}}%)"
   },
   "button": {
     "bet": "Bet",

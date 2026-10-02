@@ -43,6 +43,7 @@
   "bidNone": "まだ入札なし",
   "bidNotYet": "未入札",
   "bidHistoryTitle": "入札状況",
+  "listSeparator": "、",
   "bidDisabledReason": "現在の最高ビッド {{currentBid}} を超える必要があります",
   "bid": {
     "pass": "パス",

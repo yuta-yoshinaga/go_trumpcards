@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { somersetApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { SOMERSET_STATS_KEY } from '../hooks/useSomersetStats';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, SomersetResponse, SomersetTableauCard } from '../types/card';
@@ -46,6 +47,7 @@ const playingState: SomersetResponse = {
     [],
   ]),
   foundation: [[card('SPADE', 1)], [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
+  totalCardCount: 52,
   phase: 0,
   moveCount: 3,
   canUndo: false,
@@ -107,7 +109,51 @@ describe('SomersetPage', () => {
   it('renders 4 foundation suits', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<SomersetPage />);
-    await waitFor(() => expect(screen.getAllByLabelText(/組札 1枚/).length).toBe(4));
+    await waitFor(() => expect(screen.getAllByLabelText(/全体 4 \/ 52 枚/).length).toBe(4));
+  });
+
+  it('separates a foundation pile count from overall progress in accessible names', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [
+        [card('SPADE', 1), card('SPADE', 2), card('SPADE', 3)],
+        [card('CLOVER', 1), card('CLOVER', 2), card('CLOVER', 3)],
+        [card('HEART', 1), card('HEART', 2), card('HEART', 3), card('HEART', 4)],
+        [],
+      ],
+    });
+    renderWithProviders(<SomersetPage />);
+    expect(await screen.findByText('組札 10 / 52 枚')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 組札 3枚（全体 10 / 52 枚）' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札 (♦)（全体 10 / 52 枚）' })).toBeInTheDocument();
+  });
+
+  it('uses local and overall counts in English foundation names', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [
+        [card('SPADE', 1), card('SPADE', 2), card('SPADE', 3)],
+        [card('CLOVER', 1), card('CLOVER', 2), card('CLOVER', 3)],
+        [card('HEART', 1), card('HEART', 2), card('HEART', 3), card('HEART', 4)],
+        [],
+      ],
+    });
+    renderWithProviders(<SomersetPage />);
+    expect(
+      await screen.findByRole('button', { name: '♠ foundation 3 cards (overall 10 / 52 cards)' }),
+    ).toBeInTheDocument();
+    await i18n.changeLanguage('ja');
+  });
+
+  it('renders the English empty foundation accessible name as translated text', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue({ ...playingState, foundation: [[], [], [], []] });
+    renderWithProviders(<SomersetPage />);
+    expect(
+      await screen.findByRole('button', { name: 'Empty foundation (♠) (overall 0 / 52 cards)' }),
+    ).toBeInTheDocument();
+    await i18n.changeLanguage('ja');
   });
 
   it('labels all ten tableau columns with their 0-based index (matching hint text)', async () => {
@@ -160,7 +206,7 @@ describe('SomersetPage', () => {
     expect(screen.getByRole('button', { name: '♠ 5、列0・位置1' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '♥ 6、列1・位置0' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '空のタブロー列 2' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♠ 組札 1枚' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 組札 1枚（全体 4 / 52 枚）' })).toBeInTheDocument();
   });
 
   it('renders giveup button when playing', async () => {
@@ -226,6 +272,14 @@ describe('SomersetPage', () => {
 
   it('shows the foundation progress summary on game over', async () => {
     mockExec.mockResolvedValue(gameOverState); // 4 aces on foundations → 4/52 (8%)
+    renderWithProviders(<SomersetPage />);
+    const summary = await screen.findByTestId('somerset-gameover-summary');
+    expect(summary).toHaveTextContent('4/52');
+    expect(summary).toHaveTextContent('8%');
+  });
+
+  it('uses the server total to calculate game-over progress', async () => {
+    mockExec.mockResolvedValue({ ...gameOverState, totalCardCount: 52 });
     renderWithProviders(<SomersetPage />);
     const summary = await screen.findByTestId('somerset-gameover-summary');
     expect(summary).toHaveTextContent('4/52');
@@ -320,7 +374,7 @@ describe('SomersetPage', () => {
 
       await waitFor(() =>
         expect(
-          screen.getByRole('button', { name: '空の組札 (♠)' }).closest('[data-legal-target="true"]'),
+          screen.getByRole('button', { name: '空の組札 (♠)（全体 0 / 52 枚）' }).closest('[data-legal-target="true"]'),
         ).not.toBeNull(),
       );
       // 組札 4 つ + 空き列 9 つ。組札側が 0 なら 9 で止まる。

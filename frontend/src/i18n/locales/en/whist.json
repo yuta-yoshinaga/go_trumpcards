@@ -16,6 +16,7 @@
   "round": "Round {{n}}",
   "trick": "Trick {{n}}",
   "trumpSuit": "Trump Suit",
+  "trumpCardDescription": "Trump",
   "tricks": "{{count}} tricks won",
   "cards": "{{count}} cards",
   "cumulativeScore": "Total: {{score}}",

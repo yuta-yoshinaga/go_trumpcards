@@ -92,6 +92,15 @@ describe('GrandfathersClockPage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/文字盤\d+ \(\d+時\)/).length).toBe(12));
   });
 
+  it('announces the target rank of an empty clock face', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: faces.map((face, i) => (i === 0 ? { ...face, cards: [] } : face)),
+    });
+    renderWithProviders(<GrandfathersClockPage />);
+    expect(await screen.findByRole('img', { name: '空の文字盤0 (1時)、目標1' })).toBeInTheDocument();
+  });
+
   it('keeps a clock face target focusable and explains the missing source', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<GrandfathersClockPage />);

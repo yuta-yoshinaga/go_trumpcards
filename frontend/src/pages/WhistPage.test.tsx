@@ -59,6 +59,14 @@ beforeEach(() => {
 });
 
 describe('WhistPage', () => {
+  it('announces trump beside its card name while preserving other card names', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpSuit: 1 }));
+    renderWithProviders(<WhistPage />);
+
+    expect(await screen.findByRole('button', { name: '♠ A (切り札)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 5' })).toBeInTheDocument();
+  });
+
   it('shows the configured target score alongside the team scores', async () => {
     mockExec.mockResolvedValue(makeState({ teamScores: [12, 8], config: { cpuDifficulty: 1, pointLimit: 37 } }));
     renderWithProviders(<WhistPage />);

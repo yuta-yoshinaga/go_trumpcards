@@ -5,6 +5,7 @@ package controller
 import (
 	"net/http"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -38,9 +39,10 @@ type SomersetWebOutputHint struct {
 
 // SomersetWebOutput Somerset Web アウトプット
 type SomersetWebOutput struct {
-	Tableau    [][]*SomersetWebOutputTableauCard `json:"tableau"`
-	Foundation [][]*WebOutputCard                `json:"foundation"`
-	Hint       *SomersetWebOutputHint            `json:"hint,omitempty"`
+	Tableau        [][]*SomersetWebOutputTableauCard `json:"tableau"`
+	Foundation     [][]*WebOutputCard                `json:"foundation"`
+	TotalCardCount int                               `json:"totalCardCount"`
+	Hint           *SomersetWebOutputHint            `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -56,9 +58,10 @@ var NewSomersetWebController, NewSomersetWebControllerWithProvider = webControll
 
 func newSomersetDefaultOutput(msg string) *SomersetWebOutput {
 	return &SomersetWebOutput{
-		Tableau:       make([][]*SomersetWebOutputTableauCard, 0),
-		Foundation:    make([][]*WebOutputCard, 0),
-		WebOutputBase: WebOutputBase{Message: msg},
+		Tableau:        make([][]*SomersetWebOutputTableauCard, 0),
+		Foundation:     make([][]*WebOutputCard, 0),
+		TotalCardCount: domain.CardCnt,
+		WebOutputBase:  WebOutputBase{Message: msg},
 	}
 }
 

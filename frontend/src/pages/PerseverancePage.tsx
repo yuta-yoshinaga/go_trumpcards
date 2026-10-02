@@ -26,7 +26,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { usePerseveranceGame } from '../hooks/usePerseveranceGame';
-import { usePerseveranceStats } from '../hooks/usePerseveranceStats';
+import { perseveranceClearRate, usePerseveranceStats } from '../hooks/usePerseveranceStats';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -510,7 +510,9 @@ function PerseverancePageContent() {
               className="my-3 rounded-lg bg-ds-surface p-3 text-sm text-ds-text-primary"
             >
               <h2 className="font-semibold">{t('stats.title')}</h2>
+              <p>{t('stats.starts', { count: stats.starts })}</p>
               <p>{t('stats.games', { count: stats.games })}</p>
+              <p>{t('stats.clearRate', { rate: perseveranceClearRate(stats) })}</p>
               <p>{t('stats.moves', { count: stats.moves })}</p>
               <p>{t('stats.redeals', { count: stats.redeals })}</p>
               <button type="button" className={btnWarning} onClick={clearStats}>

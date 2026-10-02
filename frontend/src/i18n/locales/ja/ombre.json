@@ -67,7 +67,9 @@
   "roundResult": {
     "title": "ディール結果",
     "outcome": "結果: {{outcome}}",
-    "ombre": "オンブル: {{name}}"
+    "ombre": "オンブル: {{name}}",
+    "scoreChanges": "今回の増減",
+    "scoreChange": "{{name}}: {{delta}}"
   },
   "requestHint": "ヒントを表示",
   "hintMessage": "おすすめ: {{cards}} — {{reason}}",

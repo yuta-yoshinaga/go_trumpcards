@@ -20,6 +20,8 @@
   "stalemate": "No more moves",
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",
+  "remainingCards_one": "Remaining cards: {{count}}",
+  "remainingCards_other": "Remaining cards: {{count}}",
   "noHint": "No hints available",
   "hintAvailable": "Hint available",
   "hintType": {

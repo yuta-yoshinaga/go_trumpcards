@@ -21,6 +21,7 @@ func setupMatrimonyWebMockDefaults(g *mockMatrimonyGame) {
 	g.On("UndoToEscape").Return(0).Maybe()
 	g.On("GetStockCount").Return(88).Maybe()
 	g.On("GetRedealCount").Return(0).Maybe()
+	g.On("GetMaxRedeals").Return(domain.MatrimonyMaxRedeals).Maybe()
 	g.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 9, true)}).Maybe()
 
 	var tableau [domain.MatrimonyTableauCnt]*domain.Card
@@ -58,6 +59,7 @@ func TestMatrimonyWebPresenter_Output(t *testing.T) {
 		result := parseMatrimonyOutput(t, new(MatrimonyWebPresenter).Output(g, nil))
 		assert.Equal(t, 0, result.Phase)
 		assert.Equal(t, 88, result.StockCount)
+		assert.Equal(t, domain.MatrimonyMaxRedeals, result.MaxRedeals)
 		// 1 枠 1 枚なので Tableau はカードの配列（山の配列ではない）。
 		assert.Len(t, result.Tableau, domain.MatrimonyTableauCnt)
 		assert.Len(t, result.Tableau, domain.MatrimonyTableauCnt)

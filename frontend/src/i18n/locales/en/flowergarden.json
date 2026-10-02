@@ -24,6 +24,7 @@
   },
   "landscapeBanner": "Landscape mode recommended",
   "moveCount": "Moves",
+  "moveCountAnnouncement": "Moves: {{count}}",
   "noHint": "No hint available",
   "phase": {
     "playing": "Playing",

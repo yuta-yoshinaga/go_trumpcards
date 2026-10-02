@@ -22,15 +22,16 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeErrorColors, badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
-import { btnDanger, btnOutline, btnPrimary, focusRingWhite } from '../styles/buttonStyles';
+import { btnDanger, btnOutline, btnPrimary, btnSecondary, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card, CariocaContractSlot, CariocaResponse } from '../types/card';
+import type { CariocaContractSlot, CariocaResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { canLayoffCariocaMeld, describeCariocaSlotShortfall, evaluateCariocaContractSlot } from '../utils/cariocaUtils';
 import { CARIOCA_HELP, parseCariocaCommand } from '../utils/cli/commands/cariocaCommands';
 import { formatCariocaState } from '../utils/cli/formatters/cariocaFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { type HandSortMode, sortedHandForDisplay } from '../utils/handDisplaySort';
 
 /** Phase identifiers for Carioca. */
 const CA_PHASE = {
@@ -47,6 +48,11 @@ const CA_PHASE_KEYS: Readonly<Record<number, string>> = {
   [CA_PHASE.GAME_END]: 'gameEnd',
 };
 
+type CariocaSortMode = HandSortMode;
+const CA_SORT_MODES: ReadonlyArray<{ mode: CariocaSortMode; labelKey: string }> = [
+  { mode: 'rank', labelKey: 'sort.rank' },
+  { mode: 'suit', labelKey: 'sort.suit' },
+];
 /** Carioca tutorial step definitions. */
 const CA_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -115,6 +121,7 @@ function CariocaPageContent() {
 
   // Selected card indices in the human's hand (multi-select).
   const [selectedCards, setSelectedCards] = useState<number[]>([]);
+  const [sortMode, setSortMode] = useState<CariocaSortMode>('original');
   // Slots being assembled for the contract meld (one card-set per slot).
   const [contractSlots, setContractSlots] = useState<number[][]>([]);
   // Layoff target: { playerIdx, meldIdx }.
@@ -483,8 +490,22 @@ function CariocaPageContent() {
                     </span>
                   )}
                 </div>
+                <fieldset className="mb-2 flex flex-wrap gap-1 border-0 p-0 m-0 min-w-0">
+                  <legend className="sr-only">{t('sort.label')}</legend>
+                  {CA_SORT_MODES.map(({ mode, labelKey }) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => setSortMode(mode)}
+                      className={sortMode === mode ? `${btnPrimary} min-w-[64px]` : `${btnSecondary} min-w-[64px]`}
+                      aria-pressed={sortMode === mode}
+                    >
+                      {t(labelKey)}
+                    </button>
+                  ))}
+                </fieldset>
                 <div className="flex flex-wrap gap-1">
-                  {humanPlayer.cards.map((c: Card, idx: number) => {
+                  {sortedHandForDisplay(humanPlayer.cards, sortMode).map(({ card: c, index: idx }) => {
                     const isSelected = selectedCards.includes(idx);
                     const isInSlot = contractSlots.some((slot) => slot.includes(idx));
                     return (

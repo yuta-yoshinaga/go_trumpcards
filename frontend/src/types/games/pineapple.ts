@@ -1,6 +1,7 @@
 // Type declarations for pineapple. Split out of card.ts (issue #4366);
 // card.ts re-exports this file, so existing imports keep working.
 
+import type { Card } from '../common';
 import type { HoldemResponse } from './holdem';
 
 /** Pineapple Poker response extending Hold'em with discard phase fields. */
@@ -19,9 +20,16 @@ export interface PineappleResponse extends HoldemResponse {
   discardPreviews?: PineappleDiscardPreview[];
 }
 
-/** Server-evaluated Crazy Pineapple discard candidate. */
+/** Server-evaluated discard option for Irish Poker or Crazy Pineapple. */
 export interface PineappleDiscardPreview {
-  cardIdx: number;
+  /** Original four-card hand indices (Irish Poker). */
+  discardIdx0?: number;
+  discardIdx1?: number;
+  /** Original hand index (Crazy Pineapple). */
+  cardIdx?: number;
   handRank: number;
-  recommended: boolean;
+  recommended?: boolean;
+  strengthCards?: Card[];
+  /** Relative strength among all Irish Poker pairs; larger is stronger. */
+  strengthOrder?: number;
 }

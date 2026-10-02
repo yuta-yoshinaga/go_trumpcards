@@ -12,6 +12,7 @@ const human: LaughAndLieDownPlayer = {
   wonCount: 6,
   laidDown: false,
   score: 0,
+  runningScore: 0,
   hidden: false,
 };
 
@@ -23,6 +24,7 @@ const cpu: LaughAndLieDownPlayer = {
   wonCount: 10,
   laidDown: false,
   score: 0,
+  runningScore: 0,
   hidden: true,
 };
 

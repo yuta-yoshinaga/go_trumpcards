@@ -200,10 +200,19 @@ type Tarocchini struct {
 	scarto           []*Card // ディーラーが捨てた 2 枚 (そのチームの獲得札に計上)
 	lastTrickWinner  int
 	teamScores       [tarocchiniTeamCnt]int
+	roundBreakdown   [tarocchiniTeamCnt]TarocchiniTeamRoundBreakdown
 	roundTricks      [TarocchiniPlayerCnt]int
 	gameEndFlag      bool
 	winnerTeam       int // -1 = 未確定 (同点)
 	actionLogBase
+}
+
+// TarocchiniTeamRoundBreakdown 得点ラウンドごとのチーム別内訳。
+type TarocchiniTeamRoundBreakdown struct {
+	Tricks         int `json:"tricks"`
+	LastTrickBonus int `json:"lastTrickBonus"`
+	ScartoBonus    int `json:"scartoBonus"`
+	Total          int `json:"total"`
 }
 
 // tarocchiniTeamCnt チーム数。
@@ -268,6 +277,7 @@ func (g *Tarocchini) startRound() {
 	g.lastTrickWinner = -1
 	g.scarto = nil
 	g.roundTricks = [TarocchiniPlayerCnt]int{}
+	g.roundBreakdown = [tarocchiniTeamCnt]TarocchiniTeamRoundBreakdown{}
 	for _, p := range g.players {
 		p.ResetRound()
 	}
@@ -669,14 +679,19 @@ func (g *Tarocchini) NextTrick() {
 func (g *Tarocchini) settleRound() {
 	g.phase = TarocchiniPhaseRoundEnd
 	for seat, n := range g.roundTricks {
-		g.teamScores[TarocchiniTeamOf(seat)] += n
+		g.roundBreakdown[TarocchiniTeamOf(seat)].Tricks += n
 	}
 	if g.lastTrickWinner >= 0 {
-		g.teamScores[TarocchiniTeamOf(g.lastTrickWinner)] += TarocchiniLastTrickBonus
+		g.roundBreakdown[TarocchiniTeamOf(g.lastTrickWinner)].LastTrickBonus = TarocchiniLastTrickBonus
 	}
 	// スカルトの 2 枚はディーラー側のチームの獲得札として 1 点扱い。
 	if len(g.scarto) > 0 {
-		g.teamScores[TarocchiniTeamOf(g.dealerIdx)] += len(g.scarto)
+		g.roundBreakdown[TarocchiniTeamOf(g.dealerIdx)].ScartoBonus = len(g.scarto)
+	}
+	for team := range g.roundBreakdown {
+		breakdown := &g.roundBreakdown[team]
+		breakdown.Total = breakdown.Tricks + breakdown.LastTrickBonus + breakdown.ScartoBonus
+		g.teamScores[team] += breakdown.Total
 	}
 	g.appendLog(-1, "settle", "tarocchini.log.roundEnd", map[string]string{"round": fmt.Sprintf("%d", g.roundNumber)}, nil)
 }
@@ -735,6 +750,11 @@ func (g *Tarocchini) GetTeamScores() [tarocchiniTeamCnt]int { return g.teamScore
 // GetRoundTricks 現ラウンドの席別獲得トリック数。
 func (g *Tarocchini) GetRoundTricks() [TarocchiniPlayerCnt]int { return g.roundTricks }
 
+// GetRoundBreakdown 現ラウンドのチーム別得点内訳。
+func (g *Tarocchini) GetRoundBreakdown() [tarocchiniTeamCnt]TarocchiniTeamRoundBreakdown {
+	return g.roundBreakdown
+}
+
 // GetGameEndFlag ゲーム終了フラグ。
 func (g *Tarocchini) GetGameEndFlag() bool { return g.gameEndFlag }
 
@@ -771,22 +791,23 @@ func (g *Tarocchini) GetActionLog() []*ActionLogEntry { return g.actionLog }
 // deck / rng は載せない —— 配り終えた後の deck は残り札を持たず、rng は
 // 復元後に張り直せばよい。
 type tarocchiniJSON struct {
-	Players          []*TarocchiniPlayer      `json:"pl"`
-	Config           TarocchiniConfig         `json:"cfg"`
-	Phase            TarocchiniPhase          `json:"ph"`
-	RoundNumber      int                      `json:"rn"`
-	TrickNumber      int                      `json:"tn"`
-	CurrentPlayerIdx int                      `json:"cpi"`
-	CurrentTrick     []*TrickCard             `json:"ct"`
-	LeadPlayerIdx    int                      `json:"lpi"`
-	DealerIdx        int                      `json:"di"`
-	Scarto           []*Card                  `json:"sc"`
-	LastTrickWinner  int                      `json:"ltw"`
-	TeamScores       [tarocchiniTeamCnt]int   `json:"ts"`
-	RoundTricks      [TarocchiniPlayerCnt]int `json:"rt"`
-	GameEndFlag      bool                     `json:"gef"`
-	WinnerTeam       int                      `json:"wt"`
-	ActionLog        []*ActionLogEntry        `json:"al"`
+	Players          []*TarocchiniPlayer                             `json:"pl"`
+	Config           TarocchiniConfig                                `json:"cfg"`
+	Phase            TarocchiniPhase                                 `json:"ph"`
+	RoundNumber      int                                             `json:"rn"`
+	TrickNumber      int                                             `json:"tn"`
+	CurrentPlayerIdx int                                             `json:"cpi"`
+	CurrentTrick     []*TrickCard                                    `json:"ct"`
+	LeadPlayerIdx    int                                             `json:"lpi"`
+	DealerIdx        int                                             `json:"di"`
+	Scarto           []*Card                                         `json:"sc"`
+	LastTrickWinner  int                                             `json:"ltw"`
+	TeamScores       [tarocchiniTeamCnt]int                          `json:"ts"`
+	RoundTricks      [TarocchiniPlayerCnt]int                        `json:"rt"`
+	RoundBreakdown   [tarocchiniTeamCnt]TarocchiniTeamRoundBreakdown `json:"rb"`
+	GameEndFlag      bool                                            `json:"gef"`
+	WinnerTeam       int                                             `json:"wt"`
+	ActionLog        []*ActionLogEntry                               `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -805,6 +826,7 @@ func (g *Tarocchini) MarshalJSON() ([]byte, error) {
 		LastTrickWinner:  g.lastTrickWinner,
 		TeamScores:       g.teamScores,
 		RoundTricks:      g.roundTricks,
+		RoundBreakdown:   g.roundBreakdown,
 		GameEndFlag:      g.gameEndFlag,
 		WinnerTeam:       g.winnerTeam,
 		ActionLog:        g.actionLog,
@@ -880,6 +902,7 @@ func (g *Tarocchini) UnmarshalJSON(data []byte) error {
 	g.lastTrickWinner = j.LastTrickWinner
 	g.teamScores = j.TeamScores
 	g.roundTricks = j.RoundTricks
+	g.roundBreakdown = j.RoundBreakdown
 	g.gameEndFlag = j.GameEndFlag
 	g.winnerTeam = j.WinnerTeam
 	g.actionLog = j.ActionLog

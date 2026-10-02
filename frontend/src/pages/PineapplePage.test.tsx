@@ -490,9 +490,48 @@ describe('PineapplePage', () => {
       ],
       discardDone: [false, true, true, true],
       discardPreviews: [
-        { cardIdx: 0, handRank: 1, recommended: false },
-        { cardIdx: 1, handRank: 1, recommended: false },
-        { cardIdx: 2, handRank: 1, recommended: true },
+        {
+          discardIdx0: 0,
+          discardIdx1: 1,
+          handRank: 1,
+          strengthCards: [{ design: 'HEART', value: 13 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 2,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
       ],
     };
     mockIrishExec.mockResolvedValue(irishDiscardState);
@@ -506,6 +545,8 @@ describe('PineapplePage', () => {
     const preview = await screen.findByTestId('irishpoker-discard-preview');
     // Kept ♠A ♥A + board makes one pair.
     expect(preview).toHaveTextContent('ワンペア');
+    expect(preview).toHaveTextContent('比較札');
+    expect(screen.getByTestId('irishpoker-discard-preview-announce')).toHaveTextContent('強さ比較に使った札');
   });
 
   it('labels and announces the two Irish Poker cards as the playable hand after discard', async () => {
@@ -589,9 +630,48 @@ describe('PineapplePage', () => {
       ],
       discardDone: [false, true, true, true],
       discardPreviews: [
-        { cardIdx: 0, handRank: 1, recommended: true },
-        { cardIdx: 1, handRank: 1, recommended: true },
-        { cardIdx: 2, handRank: 1, recommended: true },
+        {
+          discardIdx0: 0,
+          discardIdx1: 1,
+          handRank: 1,
+          strengthCards: [{ design: 'HEART', value: 13 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 2,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
       ],
     };
     mockIrishExec.mockResolvedValue(irishDiscardState);
@@ -670,9 +750,48 @@ describe('PineapplePage', () => {
       ],
       discardDone: [false, true, true, true],
       discardPreviews: [
-        { cardIdx: 0, handRank: 1, recommended: false },
-        { cardIdx: 1, handRank: 1, recommended: false },
-        { cardIdx: 2, handRank: 1, recommended: true },
+        {
+          discardIdx0: 0,
+          discardIdx1: 1,
+          handRank: 1,
+          strengthCards: [{ design: 'HEART', value: 13 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'SPADE', value: 1 }],
+          strengthOrder: 2,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'SPADE', value: 1 }],
+          strengthOrder: 2,
+        },
+        {
+          discardIdx0: 2,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'SPADE', value: 1 }],
+          strengthOrder: 2,
+        },
       ],
     };
     mockIrishExec.mockResolvedValue(irishDiscardState);
@@ -687,8 +806,17 @@ describe('PineapplePage', () => {
     expect(labels).toHaveLength(3); // one per remaining card, excluding the chosen one
     // Every kept pair (Aces or eights) makes at least one pair with the board.
     for (const label of labels) expect(label).toHaveTextContent('ワンペア');
+    // Same category, different pair rank: discarding ♣8 keeps AA and is uniquely strongest.
+    expect(
+      labels.find((label) => label.parentElement?.querySelector('button img')?.getAttribute('alt') === '♣ 8'),
+    ).toHaveTextContent('比較札:');
+    expect(await screen.findAllByTestId('irishpoker-discard-recommended')).toHaveLength(1);
+    // The preview is attached to original hand index 3 (♣8), the actual card button.
+    const secondDiscard = screen.getByAltText('♣ 8').closest('button') as HTMLButtonElement;
+    fireEvent.click(secondDiscard);
+    expect(secondDiscard).toHaveAttribute('aria-pressed', 'true');
     // The full two-card kept preview is not shown yet (only one card selected).
-    expect(screen.queryByTestId('irishpoker-discard-preview')).not.toBeInTheDocument();
+    expect(await screen.findByTestId('irishpoker-discard-preview')).toHaveTextContent('比較札:');
   });
 
   it('switches from staged candidates to the kept preview at the second Irish Poker discard', async () => {
@@ -715,9 +843,48 @@ describe('PineapplePage', () => {
       ],
       discardDone: [false, true, true, true],
       discardPreviews: [
-        { cardIdx: 0, handRank: 1, recommended: false },
-        { cardIdx: 1, handRank: 1, recommended: false },
-        { cardIdx: 2, handRank: 3, recommended: true },
+        {
+          discardIdx0: 0,
+          discardIdx1: 1,
+          handRank: 1,
+          strengthCards: [{ design: 'HEART', value: 13 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'SPADE', value: 1 }],
+          strengthOrder: 2,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'SPADE', value: 1 }],
+          strengthOrder: 2,
+        },
+        {
+          discardIdx0: 2,
+          discardIdx1: 3,
+          handRank: 2,
+          strengthCards: [{ design: 'HEART', value: 13 }],
+          strengthOrder: 2,
+        },
       ],
     };
     mockIrishExec.mockResolvedValue(irishDiscardState);
@@ -729,7 +896,9 @@ describe('PineapplePage', () => {
 
     // Selecting the second discard hands off to the full kept-cards preview.
     fireEvent.click(screen.getByAltText('♣ 8').closest('button') as HTMLButtonElement);
-    expect(await screen.findByTestId('irishpoker-discard-preview')).toBeInTheDocument();
+    const preview = await screen.findByTestId('irishpoker-discard-preview');
+    expect(preview).toHaveTextContent('ツーペア');
+    expect(preview).toHaveTextContent('♥ K');
     expect(screen.queryAllByTestId('irishpoker-discard-candidate')).toHaveLength(0);
 
     // Deselecting one card returns to the staged, per-candidate previews.
@@ -795,6 +964,32 @@ describe('PineapplePage', () => {
         { design: 'HEART', value: 9 },
       ],
       discardDone: [false, true, true, true],
+      discardPreviews: [
+        { discardIdx0: 0, discardIdx1: 1, handRank: 1, strengthCards: [], strengthOrder: 1 },
+        { discardIdx0: 0, discardIdx1: 2, handRank: 1, strengthCards: [], strengthOrder: 1 },
+        {
+          discardIdx0: 0,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'SPADE', value: 1 }],
+          strengthOrder: 2,
+        },
+        { discardIdx0: 1, discardIdx1: 2, handRank: 1, strengthCards: [], strengthOrder: 1 },
+        {
+          discardIdx0: 1,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'SPADE', value: 1 }],
+          strengthOrder: 2,
+        },
+        {
+          discardIdx0: 2,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'SPADE', value: 1 }],
+          strengthOrder: 2,
+        },
+      ],
     };
     mockIrishExec.mockResolvedValue(irishRiverState);
     renderWithProviders(<PineapplePage variant="irishpoker" />);
@@ -998,6 +1193,29 @@ describe('PineapplePage', () => {
     expect(labels[2].previousElementSibling).not.toHaveClass('ring-ds-info');
   });
 
+  it('shows server discard previews during Crazy Pineapple flop betting', async () => {
+    mockCrazyExec.mockResolvedValue({
+      ...preFlopState,
+      phase: PineapplePhase.FLOP,
+      isDiscardPhase: false,
+      players: [humanPlayer(), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardPreviews: [
+        { cardIdx: 0, handRank: 1, recommended: false },
+        { cardIdx: 1, handRank: 1, recommended: false },
+        { cardIdx: 2, handRank: 3, recommended: true },
+      ],
+    });
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getAllByTestId('cp-discard-candidate')).toHaveLength(3));
+    expect(screen.getAllByTestId('cp-discard-recommended')).toHaveLength(1);
+    expect(screen.getAllByTestId('cp-discard-candidate')[2]).toHaveTextContent('スリーカード');
+  });
+
   it('shows no Crazy Pineapple recommended badge when the board is too small', async () => {
     const crazyNoBoardState: PineappleResponse = {
       ...discardState,
@@ -1192,9 +1410,48 @@ describe('PineapplePage', () => {
       ],
       discardDone: [false, true, true, true],
       discardPreviews: [
-        { cardIdx: 0, handRank: 1, recommended: false },
-        { cardIdx: 1, handRank: 1, recommended: false },
-        { cardIdx: 2, handRank: 3, recommended: true },
+        {
+          discardIdx0: 0,
+          discardIdx1: 1,
+          handRank: 2,
+          strengthCards: [{ design: 'HEART', value: 13 }],
+          strengthOrder: 2,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 2,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
       ],
     };
     mockIrishExec.mockResolvedValue(st);
@@ -1215,9 +1472,9 @@ describe('PineapplePage', () => {
         {
           ...discardState.players[0],
           cards: [
-            { design: 'SPADE', value: 1 },
-            { design: 'HEART', value: 1 },
             { design: 'DIAMOND', value: 5 },
+            { design: 'SPADE', value: 8 },
+            { design: 'HEART', value: 8 },
             { design: 'CLOVER', value: 8 },
           ],
         },
@@ -1231,16 +1488,148 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
+      discardPreviews: [
+        {
+          discardIdx0: 0,
+          discardIdx1: 1,
+          handRank: 1,
+          strengthCards: [{ design: 'HEART', value: 13 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 2,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
+      ],
     };
     mockIrishExec.mockResolvedValue(st);
     renderWithProviders(<PineapplePage variant="irishpoker" />);
     await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
-    // Throwing ♦5 leaves three candidates that all evaluate to one pair. The
-    // evaluator carries no kicker, so it cannot tell keeping AA from keeping 88 --
-    // badging all three would assert a preference the data does not support.
+    // Throwing ♦5 leaves three equivalent candidates: each keeps two eights and
+    // the board's eight, so all have exactly the same trips and kickers.
     fireEvent.click(screen.getByAltText('♦ 5').closest('button') as HTMLButtonElement);
     await screen.findAllByTestId('irishpoker-discard-candidate');
     expect(screen.queryAllByTestId('irishpoker-discard-recommended')).toHaveLength(0);
+  });
+
+  it('compares Irish candidates by kickers within the same hand category', async () => {
+    const st: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 4,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'DIAMOND', value: 5 },
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 13 },
+            { design: 'CLOVER', value: 12 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 8 },
+        { design: 'HEART', value: 8 },
+        { design: 'DIAMOND', value: 10 },
+      ],
+      discardDone: [false, true, true, true],
+      discardPreviews: [
+        {
+          discardIdx0: 0,
+          discardIdx1: 1,
+          handRank: 1,
+          strengthCards: [{ design: 'HEART', value: 13 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'SPADE', value: 1 }],
+          strengthOrder: 2,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'SPADE', value: 1 }],
+          strengthOrder: 2,
+        },
+        {
+          discardIdx0: 2,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'SPADE', value: 1 }],
+          strengthOrder: 2,
+        },
+      ],
+    };
+    mockIrishExec.mockResolvedValue(st);
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♦ 5').closest('button') as HTMLButtonElement);
+
+    const candidates = await screen.findAllByTestId('irishpoker-discard-candidate');
+    expect(candidates).toHaveLength(3);
+    expect(candidates.every((candidate) => candidate.textContent?.includes('ワンペア'))).toBe(true);
+    const winner = candidates.find((candidate) => candidate.textContent?.includes('♠ A'));
+    expect(winner).toBeDefined();
+    if (!winner) throw new Error('Expected a kicker comparison containing the ace');
+    expect(winner).toHaveTextContent('♠ A');
+    expect(winner.closest('div')?.querySelector('button')).toHaveAttribute(
+      'aria-describedby',
+      expect.stringContaining(winner.id),
+    );
+    const recommendation = await screen.findAllByTestId('irishpoker-discard-recommended');
+    expect(recommendation).toHaveLength(1);
+    expect(recommendation[0].parentElement?.querySelector('button img')).toHaveAttribute('alt', '♣ Q');
   });
   it('announces the chosen Crazy Pineapple discard candidate and recommendation status to a screen reader', async () => {
     const crazyDiscardState: PineappleResponse = {

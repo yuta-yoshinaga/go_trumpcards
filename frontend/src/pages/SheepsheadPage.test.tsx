@@ -22,8 +22,8 @@ const trickEndState = makeSheepsheadState({
   livePickerPoints: 23,
   liveDefenderPoints: 97,
   currentTrick: [
-    { playerIdx: 0, card: { design: 'SPADE', value: 1 } },
-    { playerIdx: 1, card: { design: 'SPADE', value: 13 } },
+    { playerIdx: 0, card: { design: 'SPADE', value: 1 }, points: 11, isTrump: false },
+    { playerIdx: 1, card: { design: 'SPADE', value: 13 }, points: 4, isTrump: false },
   ],
 });
 const roundEndState = makeSheepsheadState({
@@ -67,6 +67,14 @@ describe('SheepsheadPage', () => {
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
       expect(screen.getByAltText('♦ K')).toBeInTheDocument();
     });
+  });
+
+  it('shows each trick card point value and trump status after the trick ends', async () => {
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<SheepsheadPage />);
+    const trickCards = await screen.findByTestId('trick-display-cards');
+    expect(trickCards).toHaveTextContent('11点 · 切り札ではない');
+    expect(trickCards).toHaveTextContent('4点 · 切り札ではない');
   });
 
   it('announces a newly completed trick winner and leaves the text unchanged without a new trick', async () => {

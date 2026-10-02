@@ -18,6 +18,8 @@
   "undo": "Undo",
   "autoComplete": "Auto Complete",
   "selectTarget": "Choose a destination",
+  "selectionPrompt": "{{source}} selected as the source. {{target}}",
+  "selectionCleared": "Source selection cleared",
   "deselect": "Cancel",
   "empty": "Empty",
   "nextRankBadge": "Next:{{rank}}",

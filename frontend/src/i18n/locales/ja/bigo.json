@@ -14,6 +14,7 @@
   "mandatoryRule": "ルール: 手札から2枚 + 場札から3枚",
   "mandatoryRuleAria": "Big Oのルール: 手札ちょうど2枚と場札ちょうど3枚を使います",
   "cardUsed": "使用",
+  "cardUsedAria": "最善役に使用するカード: {{card}}",
   "cardUnused": "未使用",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "rebuy": {
