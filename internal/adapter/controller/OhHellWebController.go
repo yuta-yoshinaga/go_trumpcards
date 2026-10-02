@@ -58,6 +58,7 @@ type OhHellWebOutput struct {
 	TrumpSuit        int                      `json:"trumpSuit"`
 	RestrictedBid    int                      `json:"restrictedBid"`
 	CurrentTrick     []*WebOutputTrickCard    `json:"currentTrick"`
+	ValidPlayIndices []int                    `json:"validPlayIndices"`
 	GameEndFlag      bool                     `json:"gameEndFlag"`
 	WinnerIdx        int                      `json:"winnerIdx"`
 	LeadPlayerIdx    int                      `json:"leadPlayerIdx"`
@@ -100,12 +101,13 @@ var NewOhHellWebController, NewOhHellWebControllerWithProvider = webControllerPa
 
 func newOhHellDefaultOutput(msg string) *OhHellWebOutput {
 	return &OhHellWebOutput{
-		Players:       make([]*OhHellWebOutputPlayer, 0),
-		CurrentTrick:  make([]*WebOutputTrickCard, 0),
-		WinnerIdx:     -1,
-		TrumpSuit:     -1,
-		RestrictedBid: -1,
-		WebOutputBase: WebOutputBase{Message: msg},
+		Players:          make([]*OhHellWebOutputPlayer, 0),
+		CurrentTrick:     make([]*WebOutputTrickCard, 0),
+		ValidPlayIndices: make([]int, 0),
+		WinnerIdx:        -1,
+		TrumpSuit:        -1,
+		RestrictedBid:    -1,
+		WebOutputBase:    WebOutputBase{Message: msg},
 	}
 }
 

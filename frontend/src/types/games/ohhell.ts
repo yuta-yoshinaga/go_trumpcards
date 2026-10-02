@@ -48,6 +48,7 @@ export interface OhHellResponse extends BaseGameResponse {
   bidPlayerIdx: number;
   dealerIdx: number;
   currentTrick: OhHellTrickCard[];
+  validPlayIndices: number[];
   trumpCard: Card | null;
   trumpSuit: number;
   restrictedBid: number;
