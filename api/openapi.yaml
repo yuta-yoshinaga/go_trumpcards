@@ -55928,6 +55928,11 @@ components:
                 type: array
                 items:
                   $ref: '#/components/schemas/Card'
+              capturedCards:
+                type: array
+                description: Cards this player has captured so far
+                items:
+                  $ref: '#/components/schemas/Card'
               capturedCount:
                 type: integer
                 description: Number of cards this player has captured so far

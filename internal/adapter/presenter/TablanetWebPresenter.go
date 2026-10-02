@@ -86,6 +86,7 @@ func (p *TablanetWebPresenter) buildBase(g interfaces.TablanetGame) *controller.
 			IsHuman:       player.GetIsHuman(),
 			CardCount:     player.GetCardsSize(),
 			Cards:         playerCardsToOutput(player, player.GetIsHuman()),
+			CapturedCards: cardsToOutputOrEmpty(player.GetCapturedCards()),
 			CapturedCount: player.CapturedCount(),
 			TablaCount:    player.GetTablaCount(),
 			Score:         player.GetScore(),
