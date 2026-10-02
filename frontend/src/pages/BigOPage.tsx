@@ -27,12 +27,13 @@ import { useCommunityCardAnnouncement } from '../hooks/useCommunityCardAnnouncem
 import { useCommunityPokerGame } from '../hooks/useCommunityPokerGame';
 import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
-import { placeholderCardStyle } from '../styles/cardStyles';
+import { highlightCardStyle, placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { OmahaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
 import { omahaLivePreviewKey } from '../utils/livePokerPreview';
@@ -159,15 +160,15 @@ function BigOPageContent() {
   });
   const communityCardsAnnouncement = useCommunityCardAnnouncement(state?.communityCards ?? [], t);
 
-  // At showdown, highlight the human's winning 5 cards under Big O's
-  // must-use-exactly-2-hole (of 5) + 3-board rule.
-  const showdownBest5 = useMemo(() => {
-    const empty = { holeSet: new Set<number>(), boardSet: new Set<number>() };
-    if (!isShowdown || !humanPlayer || humanPlayer.folded) return empty;
-    const best = omahaBestFive(humanPlayer.cards ?? [], state?.communityCards ?? []);
-    if (!best) return empty;
-    return { holeSet: new Set(best.holeIdx), boardSet: new Set(best.boardIdx) };
-  }, [isShowdown, humanPlayer, state?.communityCards]);
+  // The server evaluates the human's best five cards under Big O's
+  // must-use-exactly-2-hole + 3-board rule and returns their positions.
+  const liveBest5 = useMemo(() => {
+    if (!humanPlayer || humanPlayer.folded) return { holeSet: new Set<number>(), boardSet: new Set<number>() };
+    return {
+      holeSet: new Set(humanPlayer.liveBestHandHoleIndices ?? []),
+      boardSet: new Set(humanPlayer.liveBestHandBoardIndices ?? []),
+    };
+  }, [humanPlayer]);
 
   // Preview the hand the player currently holds under the must-use-exactly-2
   // rule. Big O deals five hole cards — ten pairings to weigh by eye — so the
@@ -235,8 +236,8 @@ function BigOPageContent() {
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
                       ? state.communityCards.map((card, idx) => {
-                          const inBest = showdownBest5.boardSet.has(idx);
-                          const dim = showdownBest5.boardSet.size > 0 && !inBest;
+                          const inBest = liveBest5.boardSet.has(idx);
+                          const dim = liveBest5.boardSet.size > 0 && !inBest;
                           return (
                             <div
                               key={`${card.design}-${card.value}`}
@@ -245,7 +246,12 @@ function BigOPageContent() {
                               } ${dim ? 'opacity-50' : ''}`}
                               data-best5-board={inBest || undefined}
                             >
-                              <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                              <AnimatedCard
+                                card={card}
+                                width={cardWidth}
+                                style={inBest ? highlightCardStyle() : placeholderCardStyle}
+                              />
+                              {inBest && <span className="sr-only">{t('cardUsedAria', { card: cardAlt(card) })}</span>}
                             </div>
                           );
                         })
@@ -386,8 +392,8 @@ function BigOPageContent() {
                 >
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card, idx) => {
-                        const inBest = showdownBest5.holeSet.has(idx);
-                        const showUsage = showdownBest5.holeSet.size > 0;
+                        const inBest = liveBest5.holeSet.has(idx);
+                        const showUsage = liveBest5.holeSet.size > 0;
                         const dim = showUsage && !inBest;
                         return (
                           <div key={`${card.design}-${card.value}`} className="flex shrink-0 flex-col items-center">
@@ -397,8 +403,13 @@ function BigOPageContent() {
                               } ${dim ? 'opacity-50' : ''}`}
                               data-best5-hole={inBest || undefined}
                             >
-                              <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                              <AnimatedCard
+                                card={card}
+                                width={cardWidth}
+                                style={inBest ? highlightCardStyle() : placeholderCardStyle}
+                              />
                             </div>
+                            {inBest && <span className="sr-only">{t('cardUsedAria', { card: cardAlt(card) })}</span>}
                             {showUsage && (
                               <span
                                 className={`mt-0.5 text-[10px] font-semibold ${inBest ? 'text-ds-success' : 'text-ds-text-muted'}`}

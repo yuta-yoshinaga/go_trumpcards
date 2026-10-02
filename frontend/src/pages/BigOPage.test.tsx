@@ -176,7 +176,13 @@ const flopState: OmahaResponse = {
 /** SHOWDOWN (phase 5) */
 const showdownState: OmahaResponse = {
   players: [
-    humanPlayer({ handName: '\u30ef\u30f3\u30da\u30a2', currentBet: 0, chips: 950 }),
+    humanPlayer({
+      handName: '\u30ef\u30f3\u30da\u30a2',
+      currentBet: 0,
+      chips: 950,
+      liveBestHandHoleIndices: [0, 1],
+      liveBestHandBoardIndices: [0, 1, 2],
+    }),
     cpuPlayer(1, {
       handName: '\u30c4\u30fc\u30da\u30a2',
       folded: false,
@@ -1594,6 +1600,21 @@ describe('BigOPage', () => {
       fireEvent.click(screen.getByText(label));
       expect((screen.getByLabelText(label) as HTMLInputElement).checked).toBe(!before);
     });
+  });
+
+  it('highlights the server-selected hole cards during play', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue({
+      ...flopState,
+      players: flopState.players.map((player) =>
+        player.isHuman ? { ...player, liveBestHandHoleIndices: [1, 3], liveBestHandBoardIndices: [0, 1, 2] } : player,
+      ),
+    });
+    renderWithProviders(<BigOPage />);
+    await waitFor(() => expect(screen.getAllByTestId('bigo-hole-used')).toHaveLength(2));
+    expect(screen.getAllByTestId('bigo-hole-unused')).toHaveLength(2);
+    expect(screen.getAllByText(/最善役に使用するカード/)).toHaveLength(5);
   });
 
   it('previews the current best hand during play', async () => {
