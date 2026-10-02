@@ -51,6 +51,9 @@
     "pickerLost": "ピッカー側の負け",
     "chipChanges": "チップ増減"
   },
+  "roundProgress": {
+    "pickerPoints": "ピッカー側の獲得点: {{points}} / 勝利に必要な点数: {{target}}"
+  },
   "passCount": "パス: {{count}}人",
   "hintAvailable": "ヒント",
   "hint": {

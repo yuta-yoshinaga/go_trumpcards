@@ -42,6 +42,9 @@ type SchafkopfPhase int
 
 // Schafkopf のフェーズ定数
 const (
+	// SchafkopfPickerTargetPoints はピッカー組がラウンドに勝つための最低得点。
+	SchafkopfPickerTargetPoints = 61
+
 	// SchafkopfPhasePick 契約の宣言 (引き受けるか降りるか) フェーズ
 	SchafkopfPhasePick SchafkopfPhase = 0
 	// SchafkopfPhaseCall 宣言者が相棒となる呼びカード (フェイル A) を指定するフェーズ
@@ -477,7 +480,7 @@ func (g *Schafkopf) ScoreRound() {
 
 	pickerPts := g.pickerTeamPoints()
 	defenderPts := SchafkopfTotalPoints - pickerPts
-	pickerWon := pickerPts >= 61
+	pickerWon := pickerPts >= SchafkopfPickerTargetPoints
 	loserPts := defenderPts
 	if !pickerWon {
 		loserPts = pickerPts
@@ -1004,8 +1007,13 @@ func (g *Schafkopf) IsPartnerRevealed() bool { return g.partnerRevealed }
 // GetPassCount 現ピックフェーズのパス人数取得
 func (g *Schafkopf) GetPassCount() int { return g.passCount }
 
-// GetRoundPickerPoints 直近ラウンドのピッカー組得点取得
-func (g *Schafkopf) GetRoundPickerPoints() int { return g.roundPickerPts }
+// GetRoundPickerPoints 進行中は確定済みトリックのピッカー組得点、終了後は直近ラウンドの得点を返す。
+func (g *Schafkopf) GetRoundPickerPoints() int {
+	if g.phase == SchafkopfPhasePlay || g.phase == SchafkopfPhaseTrickEnd {
+		return g.pickerTeamPoints()
+	}
+	return g.roundPickerPts
+}
 
 // GetRoundMultiplier 直近ラウンドの倍率取得
 func (g *Schafkopf) GetRoundMultiplier() int { return g.roundMultiplier }

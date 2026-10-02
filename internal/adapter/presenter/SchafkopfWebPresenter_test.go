@@ -83,6 +83,7 @@ func TestSchafkopfWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, -1, resObj.PickerIdx)
 		assert.Equal(t, -1, resObj.PartnerIdx)
 		assert.Equal(t, "schafkopf.pickPhase", resObj.MessageCode)
+		assert.Equal(t, domain.SchafkopfPickerTargetPoints, resObj.PickerTargetPoints)
 		// human cards visible, CPU hidden
 		assert.Len(t, resObj.Players[0].Cards, 1)
 		assert.Len(t, resObj.Players[1].Cards, 0)

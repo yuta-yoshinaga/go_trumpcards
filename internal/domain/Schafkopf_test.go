@@ -543,6 +543,38 @@ func TestSchafkopf_ScoreRoundPickerWinsAndChipsZeroSum(t *testing.T) {
 	}
 }
 
+func TestSchafkopf_GetRoundPickerPoints(t *testing.T) {
+	for _, phase := range []SchafkopfPhase{SchafkopfPhasePlay, SchafkopfPhaseTrickEnd} {
+		t.Run(map[SchafkopfPhase]string{SchafkopfPhasePlay: "play", SchafkopfPhaseTrickEnd: "trick end"}[phase], func(t *testing.T) {
+			g := newSKGame(false)
+			g.SetPickerIdx(0)
+			g.SetPartnerIdx(1)
+			g.SetPhase(phase)
+			g.GetPlayer(0).AddTrick([]*Card{skCard(CardDesignClover, 1), skCard(CardDesignSpade, 1)})
+			g.GetPlayer(1).AddTrick([]*Card{skCard(CardDesignHeart, 1), skCard(CardDesignDiamond, 1)})
+			g.GetPlayer(0).AddTrick([]*Card{skCard(CardDesignClover, 10), skCard(CardDesignSpade, 10)})
+			if got := g.GetRoundPickerPoints(); got != 64 {
+				t.Errorf("GetRoundPickerPoints() = %d, want confirmed trick points 64", got)
+			}
+		})
+	}
+	t.Run("round end", func(t *testing.T) {
+		g := newSKGame(false)
+		g.SetPickerIdx(0)
+		g.SetPartnerIdx(1)
+		g.SetPhase(SchafkopfPhaseRoundEnd)
+		g.GetPlayer(0).AddTrick([]*Card{skCard(CardDesignClover, 1), skCard(CardDesignSpade, 1)})
+		g.GetPlayer(1).AddTrick([]*Card{skCard(CardDesignHeart, 1), skCard(CardDesignDiamond, 1)})
+		g.GetPlayer(0).AddTrick([]*Card{skCard(CardDesignClover, 10), skCard(CardDesignSpade, 10)})
+		g.GetPlayer(0).AddTrick([]*Card{skCard(CardDesignHeart, 10), skCard(CardDesignClover, 13)})
+		g.GetPlayer(2).AddTrick([]*Card{skCard(CardDesignSpade, 13)})
+		g.ScoreRound()
+		if got := g.GetRoundPickerPoints(); got != 78 {
+			t.Errorf("GetRoundPickerPoints() = %d, want settled round points 78", got)
+		}
+	})
+}
+
 func TestSchafkopf_SettleChipsRecordsPerSeatDelta(t *testing.T) {
 	tests := []struct {
 		name      string

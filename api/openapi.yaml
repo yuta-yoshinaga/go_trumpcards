@@ -67621,6 +67621,9 @@ components:
         roundPickerPoints:
           type: integer
           description: Card points taken by the declaring side this round
+        pickerTargetPoints:
+          type: integer
+          description: Card points the declaring side needs to win the round
         roundMultiplier:
           type: integer
           description: "Chip stake multiplier for this round: 1=normal, 2=Schneider, 3=Schwarz"

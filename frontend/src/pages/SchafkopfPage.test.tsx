@@ -75,6 +75,13 @@ describe('SchafkopfPage', () => {
     });
   });
 
+  it('shows the picker team points and winning threshold during play', async () => {
+    mockExec.mockResolvedValue(makeSchafkopfState({ roundPickerPoints: 35, pickerTargetPoints: 47 }));
+    renderWithProviders(<SchafkopfPage />);
+    expect(await screen.findByTestId('schafkopf-round-points')).toHaveTextContent('35');
+    expect(screen.getByTestId('schafkopf-round-points')).toHaveTextContent('47');
+  });
+
   it('selecting a card then playing dispatches play', async () => {
     renderWithProviders(<SchafkopfPage />);
     const card = await screen.findByAltText('♠ A');

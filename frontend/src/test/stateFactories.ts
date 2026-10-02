@@ -952,6 +952,7 @@ const baseSchafkopfState: SchafkopfResponse = {
   callableSuits: [],
   playableIndices: [0, 1],
   roundPickerPoints: 0,
+  pickerTargetPoints: 61,
   roundMultiplier: 1,
   roundPickerWon: false,
   gameEndFlag: false,
