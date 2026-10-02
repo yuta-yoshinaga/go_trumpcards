@@ -80,6 +80,10 @@ describe('MichiganPage', () => {
     expect(liveRegion).toHaveAttribute('aria-live', 'polite');
     expect(liveRegion).toHaveTextContent('新しいシーケンスを始めてください。');
     expect(liveRegion).toHaveClass('sr-only');
+    const visibleSequence = screen
+      .getAllByText('新しいシーケンスを始めてください。', { exact: true })
+      .find((element) => !element.classList.contains('sr-only'));
+    expect(visibleSequence).toHaveAttribute('aria-hidden', 'true');
     unmount();
 
     mockExec.mockResolvedValueOnce(playState);

@@ -303,7 +303,9 @@ function MichiganPageContent() {
             >
               {isPlayPhase ? sequenceAnnouncement : ''}
             </div>
-            <div className="mb-2 text-center text-ds-text-muted text-sm">{sequenceAnnouncement}</div>
+            <div className="mb-2 text-center text-ds-text-muted text-sm" aria-hidden="true">
+              {sequenceAnnouncement}
+            </div>
 
             {/* Players */}
             <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="michigan-players">
