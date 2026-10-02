@@ -533,6 +533,9 @@ func madrassoPoints(value int) int {
 	}
 }
 
+// MadrassoCardPoints returns the points awarded for a single card.
+func MadrassoCardPoints(value int) int { return madrassoPoints(value) }
+
 // GetTrumpSuit は配りで決まった切り札スートを返す (-1=未確定)。
 func (g *Madrasso) GetTrumpSuit() int { return g.trumpSuit }
 

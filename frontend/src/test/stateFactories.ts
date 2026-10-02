@@ -777,8 +777,8 @@ const baseTrappolaState: TrappolaResponse = {
       isHuman: true,
       cardCount: 9,
       cards: [
-        { design: 'SPADE' as const, value: 1 },
-        { design: 'DIAMOND' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1, points: 11 },
+        { design: 'DIAMOND' as const, value: 13, points: 4 },
       ],
       trickCount: 0,
       teamId: 0,
@@ -822,8 +822,8 @@ const baseMadrassoState: MadrassoResponse = {
       isHuman: true,
       cardCount: 10,
       cards: [
-        { design: 'SPADE' as const, value: 1 },
-        { design: 'DIAMOND' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1, points: 11 },
+        { design: 'DIAMOND' as const, value: 13, points: 4 },
       ],
       trickCount: 0,
       teamId: 0,

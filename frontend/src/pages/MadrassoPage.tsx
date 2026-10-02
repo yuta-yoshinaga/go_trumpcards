@@ -32,7 +32,6 @@ import type { TutorialStep } from '../types/tutorial';
 import { MADRASSO_HELP, parseMadrassoCommand } from '../utils/cli/commands/madrassoCommands';
 import { formatMadrassoState } from '../utils/cli/formatters/madrassoFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { madrassoTrickPoints } from '../utils/madrassoTrickPoints';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -185,7 +184,7 @@ function MadrassoPageContent() {
   const trumpSymbol = SUIT_GLYPHS[state.trumpSuit] ?? t('noTrump');
 
   const teamLabels = ['A', 'B'];
-  const currentTrickPoints = madrassoTrickPoints(state.currentTrick);
+  const currentTrickPoints = state.currentTrick.reduce((sum, play) => sum + play.card.points, 0);
   const trickWinnerTeam = isTrickEnd ? state.players[state.lastTrickWinner]?.teamId : undefined;
 
   return (
@@ -252,6 +251,7 @@ function MadrassoPageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="tr-trick-display"
+                  cardDetailFor={(card) => t('cardPoints', { points: card.points })}
                 />
                 <div className="mb-2 text-center text-sm text-ds-text-primary" data-testid="madrasso-trick-points">
                   {trickWinnerTeam === undefined
@@ -284,6 +284,7 @@ function MadrassoPageContent() {
                             : t('previousTrick')
                         }
                         winnerIdx={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
+                        cardDetailFor={(card) => t('cardPoints', { points: card.points })}
                       />
                     ) : (
                       <div className="text-ds-text-muted text-sm">{t('previousTrickEmpty')}</div>
@@ -425,6 +426,7 @@ function MadrassoPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="tr"
+                cardStatusFor={(idx) => t('cardPoints', { points: humanPlayer.cards[idx].points })}
                 validIndices={isHumanTurn ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}
               />

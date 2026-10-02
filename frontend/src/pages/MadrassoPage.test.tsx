@@ -16,8 +16,8 @@ const playPhaseState = makeMadrassoState();
 const trickEndState = makeMadrassoState({
   phase: 1,
   currentTrick: [
-    { playerIdx: 0, card: { design: 'SPADE', value: 3 } },
-    { playerIdx: 1, card: { design: 'SPADE', value: 1 } },
+    { playerIdx: 0, card: { design: 'SPADE', value: 3, points: 10 } },
+    { playerIdx: 1, card: { design: 'SPADE', value: 1, points: 11 } },
   ],
 });
 const roundEndState = makeMadrassoState({ phase: 2 });
@@ -65,6 +65,7 @@ describe('MadrassoPage', () => {
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
       expect(screen.getByAltText('♦ K')).toBeInTheDocument();
     });
+    expect(screen.getByRole('button', { name: '♠ A (11点)' })).toBeInTheDocument();
   });
 
   it('selecting a card then playing dispatches play', async () => {
@@ -88,8 +89,8 @@ describe('MadrassoPage', () => {
     mockExec.mockResolvedValue(
       makeMadrassoState({
         currentTrick: [
-          { playerIdx: 0, card: { design: 'SPADE', value: 3 } },
-          { playerIdx: 1, card: { design: 'SPADE', value: 1 } },
+          { playerIdx: 0, card: { design: 'SPADE', value: 3, points: 10 } },
+          { playerIdx: 1, card: { design: 'SPADE', value: 1, points: 11 } },
         ],
       }),
     );
@@ -101,8 +102,8 @@ describe('MadrassoPage', () => {
       makeMadrassoState({
         phase: 1,
         currentTrick: [
-          { playerIdx: 0, card: { design: 'SPADE', value: 3 } },
-          { playerIdx: 1, card: { design: 'SPADE', value: 1 } },
+          { playerIdx: 0, card: { design: 'SPADE', value: 3, points: 10 } },
+          { playerIdx: 1, card: { design: 'SPADE', value: 1, points: 11 } },
         ],
         lastTrickWinner: 1,
         teamRoundPoints: [0, 21],
@@ -163,10 +164,10 @@ describe('MadrassoPage', () => {
       makeMadrassoState({
         trickNumber: 2,
         lastTrick: [
-          { playerIdx: 1, card: { design: 'SPADE', value: 3 } },
-          { playerIdx: 2, card: { design: 'SPADE', value: 1 } },
-          { playerIdx: 3, card: { design: 'SPADE', value: 5 } },
-          { playerIdx: 0, card: { design: 'SPADE', value: 7 } },
+          { playerIdx: 1, card: { design: 'SPADE', value: 3, points: 10 } },
+          { playerIdx: 2, card: { design: 'SPADE', value: 1, points: 11 } },
+          { playerIdx: 3, card: { design: 'SPADE', value: 5, points: 0 } },
+          { playerIdx: 0, card: { design: 'SPADE', value: 7, points: 0 } },
         ],
         lastTrickWinner: 2,
       }),

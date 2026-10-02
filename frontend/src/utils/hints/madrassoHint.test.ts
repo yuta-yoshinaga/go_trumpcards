@@ -3,7 +3,11 @@ import type { Card, MadrassoResponse } from '../../types/card';
 import { MadrassoPhase } from '../../types/phases';
 import { getMadrassoHint } from './madrassoHint';
 
-const card = (design: Card['design'], value: number): Card => ({ design, value });
+const card = (design: Card['design'], value: number): Card & { points: number } => ({
+  design,
+  value,
+  points: ({ 1: 11, 3: 10, 11: 2, 12: 3, 13: 4 } as Record<number, number>)[value] ?? 0,
+});
 
 function makeState(overrides: Partial<MadrassoResponse> = {}): MadrassoResponse {
   return {

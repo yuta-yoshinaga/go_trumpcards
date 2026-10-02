@@ -155,6 +155,15 @@ func TestMadrassoRankOrderFollowsThePoints(t *testing.T) {
 	assert.Equal(t, 0, domain.MadrassoPointsForTest(2))
 }
 
+func TestMadrassoCardPoints(t *testing.T) {
+	for _, tc := range []struct{ rank, want int }{
+		{1, 11}, {3, 10}, {13, 4}, {12, 3}, {11, 2},
+		{2, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}, {9, 0}, {10, 0},
+	} {
+		assert.Equal(t, tc.want, domain.MadrassoCardPoints(tc.rank), "rank %d", tc.rank)
+	}
+}
+
 // TestMadrassoTrumpBeatsAnyPlainCard は、配りで決まった切り札が平札に勝つことを見る。
 //
 // クローン元のトレセッテに切り札は無いので、この経路は完全に新規。
