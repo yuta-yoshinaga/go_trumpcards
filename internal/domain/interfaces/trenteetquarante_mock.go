@@ -124,6 +124,13 @@ func (_m *MockTrenteEtQuaranteGame) GetChips() int {
 	return ret.Get(0).(int)
 }
 
+func (_m *MockTrenteEtQuaranteGame) GetStartingChips() int { return 0 }
+func (_m *MockTrenteEtQuaranteGame) GetNet() int           { return 0 }
+func (_m *MockTrenteEtQuaranteGame) GetWins() int          { return 0 }
+func (_m *MockTrenteEtQuaranteGame) GetLosses() int        { return 0 }
+func (_m *MockTrenteEtQuaranteGame) GetDraws() int         { return 0 }
+func (_m *MockTrenteEtQuaranteGame) GetRefaits() int       { return 0 }
+
 // GetRoundNumber モック
 func (_m *MockTrenteEtQuaranteGame) GetRoundNumber() int {
 	ret := _m.Called()

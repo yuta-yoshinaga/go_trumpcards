@@ -55,9 +55,20 @@ type TrenteEtQuaranteWebOutput struct {
 	Payout        int                            `json:"payout"`
 	RemainingDeck int                            `json:"remainingDeck"`
 	GameEndFlag   bool                           `json:"gameEndFlag"`
+	Session       TrenteEtQuaranteSessionOutput  `json:"session"`
 	Hint          *TrenteEtQuaranteWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 	Config TrenteEtQuaranteWebConfigOutput `json:"config"`
+}
+
+// TrenteEtQuaranteSessionOutput contains server-persisted session results.
+type TrenteEtQuaranteSessionOutput struct {
+	StartingChips int `json:"startingChips"`
+	Net           int `json:"net"`
+	Wins          int `json:"wins"`
+	Losses        int `json:"losses"`
+	Draws         int `json:"draws"`
+	Refaits       int `json:"refaits"`
 }
 
 // TrenteEtQuaranteWebConfigOutput は設定アウトプット。

@@ -116,21 +116,26 @@ type TrenteEtQuaranteHint struct {
 
 // trenteEtQuaranteState はゲーム進行状態。
 type trenteEtQuaranteState struct {
-	phase        TrenteEtQuarantePhase
-	currentBet   TrenteEtQuaranteBet
-	stake        int
-	noirRow      []*Card
-	rougeRow     []*Card
-	noirTotal    int
-	rougeTotal   int
-	winningRow   int  // TrenteEtQuaranteRowNone/Noir/Rouge
-	firstCardRed bool // 最初に配られた札 (Noir 列 1 枚目) が赤か
-	refait       bool // 31 での同点 (胴元が半額)
-	result       TrenteEtQuaranteResult
-	payout       int // このラウンドでチップに戻された総額 (負け=0, プッシュ=stake, 勝ち=stake*2, Refait=stake/2)
-	roundNumber  int
-	gameEndFlag  bool
-	scored       bool // ラウンド結果を確定済みか (二重確定防止)
+	startingChips int
+	wins          int
+	losses        int
+	draws         int
+	refaits       int
+	phase         TrenteEtQuarantePhase
+	currentBet    TrenteEtQuaranteBet
+	stake         int
+	noirRow       []*Card
+	rougeRow      []*Card
+	noirTotal     int
+	rougeTotal    int
+	winningRow    int  // TrenteEtQuaranteRowNone/Noir/Rouge
+	firstCardRed  bool // 最初に配られた札 (Noir 列 1 枚目) が赤か
+	refait        bool // 31 での同点 (胴元が半額)
+	result        TrenteEtQuaranteResult
+	payout        int // このラウンドでチップに戻された総額 (負け=0, プッシュ=stake, 勝ち=stake*2, Refait=stake/2)
+	roundNumber   int
+	gameEndFlag   bool
+	scored        bool // ラウンド結果を確定済みか (二重確定防止)
 	actionLogBase
 }
 
@@ -154,6 +159,9 @@ func NewTrenteEtQuarante(trumpCards *TrumpCards, player *TrenteEtQuarantePlayer,
 			winningRow:    TrenteEtQuaranteRowNone,
 			actionLogBase: actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 		},
+	}
+	if player != nil {
+		g.state.startingChips = player.GetChips()
 	}
 	return g
 }
@@ -191,6 +199,7 @@ func (g *TrenteEtQuarante) Reset() {
 	g.trumpCards = newTrenteEtQuaranteShoe()
 	g.trumpCards.Shuffle()
 	g.state = trenteEtQuaranteState{
+		startingChips: g.player.GetChips(),
 		phase:         TrenteEtQuarantePhaseBet,
 		currentBet:    g.config.DefaultBet,
 		winningRow:    TrenteEtQuaranteRowNone,
@@ -299,6 +308,7 @@ func (g *TrenteEtQuarante) resolve() {
 		g.state.payout = g.state.stake / 2
 		g.player.AddChips(g.state.payout)
 		g.player.RecordRound(false)
+		g.state.refaits++
 		g.appendLog(-1, "refait", "trenteetquarante.log.refait", map[string]string{"refund": strconv.Itoa(g.state.payout)}, nil)
 	case g.state.winningRow == TrenteEtQuaranteRowNone:
 		// プッシュ: ステーク全額返却。
@@ -306,6 +316,7 @@ func (g *TrenteEtQuarante) resolve() {
 		g.state.payout = g.state.stake
 		g.player.AddChips(g.state.payout)
 		g.player.RecordRound(false)
+		g.state.draws++
 		g.appendLog(-1, "push", "trenteetquarante.log.push", nil, nil)
 	default:
 		won := trenteEtQuaranteBetWins(g.state.currentBet, g.state.winningRow, g.state.firstCardRed)
@@ -313,9 +324,11 @@ func (g *TrenteEtQuarante) resolve() {
 			g.state.result = TrenteEtQuaranteResultWin
 			g.state.payout = g.state.stake * 2
 			g.player.AddChips(g.state.payout)
+			g.state.wins++
 		} else {
 			g.state.result = TrenteEtQuaranteResultLose
 			g.state.payout = 0
+			g.state.losses++
 		}
 		g.player.RecordRound(won)
 		g.addTrenteEtQuaranteResultLog(g.state.winningRow, g.state.currentBet, g.state.result, g.state.payout)
@@ -507,6 +520,24 @@ func (g *TrenteEtQuarante) GetChips() int {
 	return g.player.GetChips()
 }
 
+// GetStartingChips returns the chip stack when the current session began.
+func (g *TrenteEtQuarante) GetStartingChips() int { return g.state.startingChips }
+
+// GetNet returns the chip change since the current session began.
+func (g *TrenteEtQuarante) GetNet() int { return g.GetChips() - g.state.startingChips }
+
+// GetWins returns resolved winning rounds in the current session.
+func (g *TrenteEtQuarante) GetWins() int { return g.state.wins }
+
+// GetLosses returns resolved losing rounds in the current session, excluding Refait.
+func (g *TrenteEtQuarante) GetLosses() int { return g.state.losses }
+
+// GetDraws returns resolved push rounds in the current session.
+func (g *TrenteEtQuarante) GetDraws() int { return g.state.draws }
+
+// GetRefaits returns Refait rounds in the current session.
+func (g *TrenteEtQuarante) GetRefaits() int { return g.state.refaits }
+
 // SetChips は保有チップ数を設定する (テスト用)。
 func (g *TrenteEtQuarante) SetChips(chips int) {
 	if g.player != nil {
@@ -541,31 +572,38 @@ func (g *TrenteEtQuarante) GetActionLog() []*ActionLogEntry { return g.state.act
 
 // trenteEtQuaranteJSON is the JSON wire format for TrenteEtQuarante.
 type trenteEtQuaranteJSON struct {
-	TrumpCards   *TrumpCards             `json:"tc"`
-	Player       *TrenteEtQuarantePlayer `json:"pl"`
-	Config       TrenteEtQuaranteConfig  `json:"cf"`
-	Phase        TrenteEtQuarantePhase   `json:"ph"`
-	CurrentBet   TrenteEtQuaranteBet     `json:"cb"`
-	Stake        int                     `json:"st"`
-	NoirRow      []*Card                 `json:"nr"`
-	RougeRow     []*Card                 `json:"rr"`
-	NoirTotal    int                     `json:"nt"`
-	RougeTotal   int                     `json:"rt"`
-	WinningRow   int                     `json:"wr"`
-	FirstCardRed bool                    `json:"fc"`
-	Refait       bool                    `json:"rf"`
-	Result       TrenteEtQuaranteResult  `json:"re"`
-	Payout       int                     `json:"po"`
-	RoundNumber  int                     `json:"rn"`
-	GameEndFlag  bool                    `json:"ge"`
-	Scored       bool                    `json:"sc"`
-	ActionLog    []*ActionLogEntry       `json:"al"`
+	StartingChips *int                    `json:"stc,omitempty"`
+	Wins          int                     `json:"wi,omitempty"`
+	Losses        int                     `json:"lo,omitempty"`
+	Draws         int                     `json:"dr,omitempty"`
+	Refaits       int                     `json:"rfct,omitempty"`
+	TrumpCards    *TrumpCards             `json:"tc"`
+	Player        *TrenteEtQuarantePlayer `json:"pl"`
+	Config        TrenteEtQuaranteConfig  `json:"cf"`
+	Phase         TrenteEtQuarantePhase   `json:"ph"`
+	CurrentBet    TrenteEtQuaranteBet     `json:"cb"`
+	Stake         int                     `json:"st"`
+	NoirRow       []*Card                 `json:"nr"`
+	RougeRow      []*Card                 `json:"rr"`
+	NoirTotal     int                     `json:"nt"`
+	RougeTotal    int                     `json:"rt"`
+	WinningRow    int                     `json:"wr"`
+	FirstCardRed  bool                    `json:"fc"`
+	Refait        bool                    `json:"rf"`
+	Result        TrenteEtQuaranteResult  `json:"re"`
+	Payout        int                     `json:"po"`
+	RoundNumber   int                     `json:"rn"`
+	GameEndFlag   bool                    `json:"ge"`
+	Scored        bool                    `json:"sc"`
+	ActionLog     []*ActionLogEntry       `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (g *TrenteEtQuarante) MarshalJSON() ([]byte, error) {
 	return json.Marshal(trenteEtQuaranteJSON{
-		TrumpCards:   g.trumpCards,
+		TrumpCards:    g.trumpCards,
+		StartingChips: &g.state.startingChips,
+		Wins:          g.state.wins, Losses: g.state.losses, Draws: g.state.draws, Refaits: g.state.refaits,
 		Player:       g.player,
 		Config:       g.config,
 		Phase:        g.state.phase,
@@ -625,7 +663,7 @@ func (g *TrenteEtQuarante) UnmarshalJSON(data []byte) error {
 	if j.Stake < 0 || j.Stake > TrenteEtQuaranteMaxBet {
 		return fmt.Errorf("trenteetquarante: stake out of range")
 	}
-	if j.NoirTotal < 0 || j.RougeTotal < 0 || j.Payout < 0 || j.RoundNumber < 0 {
+	if j.NoirTotal < 0 || j.RougeTotal < 0 || j.Payout < 0 || j.RoundNumber < 0 || (j.StartingChips != nil && *j.StartingChips < 0) || j.Wins < 0 || j.Losses < 0 || j.Draws < 0 || j.Refaits < 0 {
 		return fmt.Errorf("trenteetquarante: negative numeric state")
 	}
 	if j.WinningRow < TrenteEtQuaranteRowNone || j.WinningRow > TrenteEtQuaranteRowRouge {
@@ -651,6 +689,7 @@ func (g *TrenteEtQuarante) UnmarshalJSON(data []byte) error {
 	}
 	g.config = j.Config
 	g.state = trenteEtQuaranteState{
+		wins: j.Wins, losses: j.Losses, draws: j.Draws, refaits: j.Refaits,
 		phase:         j.Phase,
 		currentBet:    j.CurrentBet,
 		stake:         j.Stake,
@@ -667,6 +706,11 @@ func (g *TrenteEtQuarante) UnmarshalJSON(data []byte) error {
 		gameEndFlag:   j.GameEndFlag,
 		scored:        j.Scored,
 		actionLogBase: actionLogBase{actionLog: j.ActionLog},
+	}
+	if j.StartingChips == nil {
+		g.state.startingChips = g.player.GetChips()
+	} else {
+		g.state.startingChips = *j.StartingChips
 	}
 	if g.state.noirRow == nil {
 		g.state.noirRow = make([]*Card, 0)
