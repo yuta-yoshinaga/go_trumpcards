@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tarneebApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, TarneebResponse } from '../types/card';
 import { TarneebPhase } from '../types/phases';
@@ -65,6 +66,23 @@ beforeEach(() => {
 });
 
 describe('TarneebPage', () => {
+  it('shows the declared trump symbol and translated suit name in Japanese and English', async () => {
+    const previousLanguage = i18n.language;
+    mockExec.mockResolvedValue(makeState({ phase: TarneebPhase.PLAY, trumpSuit: 1 }));
+    try {
+      await i18n.changeLanguage('ja');
+      const { unmount } = renderWithProviders(<TarneebPage />);
+      expect(await screen.findByText('♠ スペード', { exact: false })).toBeInTheDocument();
+      unmount();
+
+      await i18n.changeLanguage('en');
+      renderWithProviders(<TarneebPage />);
+      expect(await screen.findByText('♠ Spade', { exact: false })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<TarneebPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, expect.any(Object)));

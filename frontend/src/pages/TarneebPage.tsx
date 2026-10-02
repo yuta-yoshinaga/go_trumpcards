@@ -271,7 +271,13 @@ function TarneebPageContent() {
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
               <span className="mr-4">
-                {t('trump')}: {TRUMP_LABELS[state.trumpSuit] ?? t('trumpUndeclared')}
+                {t('trump')}:{' '}
+                {TRUMP_LABELS[state.trumpSuit]
+                  ? t('trumpDeclared', {
+                      symbol: TRUMP_LABELS[state.trumpSuit],
+                      suit: t(`suitName.${SUIT_KEYS[state.trumpSuit]}`),
+                    })
+                  : t('trumpUndeclared')}
               </span>
               {state.highestBid > 0 && (
                 <span className="mr-4">

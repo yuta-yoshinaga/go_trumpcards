@@ -20,6 +20,7 @@
   "trick": "トリック {{n}}",
   "trump": "トランプ",
   "trumpUndeclared": "未宣言",
+  "trumpDeclared": "{{symbol}} {{suit}}",
   "suitName": {
     "spade": "スペード",
     "club": "クラブ",
