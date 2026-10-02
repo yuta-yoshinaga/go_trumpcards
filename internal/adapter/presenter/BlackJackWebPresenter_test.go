@@ -228,6 +228,31 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 	})
 }
 
+func TestBlackJackWebPresenter_IncludesZeroNetChangeForPush(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(900)
+	dealer.SetChips(900)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	bj.Reset()
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
+	bj.SetPhase(domain.BJPhaseAction)
+	_ = bj.PlayerStand()
+
+	output := new(presenter.BlackJackWebPresenter).Output(bj, nil)
+	assert.Contains(t, output, `"netChange":0`)
+	var result controller.BlackJackWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(output), &result))
+	assert.NotNil(t, result.Hands[0].NetChange)
+	assert.Equal(t, 0, *result.Hands[0].NetChange)
+}
+
 func TestBlackJackWebPresenterSpanish21ExplainsPlayer21(t *testing.T) {
 	bj := domain.NewSpanish21BlackJack()
 	bj.Reset()
