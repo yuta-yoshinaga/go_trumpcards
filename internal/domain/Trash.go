@@ -107,13 +107,16 @@ func (t *Trash) Draw() error {
 	if t.pending != nil {
 		return errors.New("pending card must be resolved first")
 	}
+	var before []byte
 	if !t.players[t.current].IsCpu {
+		prev := t.undoState
 		t.undoState = nil
-		before, err := json.Marshal(t)
+		var err error
+		before, err = json.Marshal(t)
+		t.undoState = prev
 		if err != nil {
 			return err
 		}
-		t.undoState = before
 	}
 	if len(t.stock) == 0 {
 		t.refillStock()
@@ -126,6 +129,9 @@ func (t *Trash) Draw() error {
 	t.moveCount++
 	t.appendLog("draw", "trash.log.draw", map[string]string{"player": strconv.Itoa(t.current)}, []*Card{t.pending})
 	t.resolveChain()
+	if before != nil {
+		t.undoState = before
+	}
 	return nil
 }
 
@@ -349,7 +355,9 @@ func (t *Trash) IsCpuPlayer(idx int) bool {
 func (t *Trash) GetWinner() int { return t.winner }
 
 // CanUndo reports whether a complete human action can be restored now.
-func (t *Trash) CanUndo() bool { return len(t.undoState) > 0 && !t.IsCpuTurn() }
+func (t *Trash) CanUndo() bool {
+	return len(t.undoState) > 0 && !t.IsCpuTurn() && t.phase != TrashPhaseGameOver
+}
 
 // Undo restores the state before the most recent human draw, including CPU replies.
 func (t *Trash) Undo() error {
