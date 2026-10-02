@@ -203,14 +203,10 @@ function covering(n: number, melds: Meld[]): number[][] {
   return cov;
 }
 
-/**
- * Whether `cards` (21 cards) form a valid declaration: every card melded, with
- * at least three pure sequences. Mirrors
- * `MarriageValidateDeclaration`.
- */
-export function marriageValidateDeclaration(cards: readonly Card[], wildRank: number): boolean {
+/** Returns the melds that form a valid declaration, or null if none do. */
+function validDeclarationMelds(cards: readonly Card[], wildRank: number): Meld[] | null {
   const n = cards.length;
-  if (n !== MARRIAGE_HAND_SIZE) return false;
+  if (n !== MARRIAGE_HAND_SIZE) return null;
   const melds = generateMelds(cards, wildRank);
   const cov = covering(n, melds);
   const decided = new Array<boolean>(n).fill(false);
@@ -225,7 +221,8 @@ export function marriageValidateDeclaration(cards: readonly Card[], wildRank: nu
     for (const ci of idx) decided[ci] = v;
   };
 
-  const dfs = (seq: number, pure: number): boolean => {
+  const chosen: Meld[] = [];
+  const dfs = (pure: number): boolean => {
     iter++;
     if (iter > SEARCH_CAP) return false;
     const i = firstUndecided();
@@ -234,18 +231,22 @@ export function marriageValidateDeclaration(cards: readonly Card[], wildRank: nu
       const m = melds[mi];
       if (!allUndecided(m.idx)) continue;
       setDecided(m.idx, true);
-      let si = 0;
-      let pi = 0;
-      if (m.seq) {
-        si = 1;
-        if (m.pure) pi = 1;
-      }
-      if (dfs(seq + si, pure + pi)) return true;
+      chosen.push(m);
+      if (dfs(pure + (m.seq && m.pure ? 1 : 0))) return true;
+      chosen.pop();
       setDecided(m.idx, false);
     }
     return false;
   };
-  return dfs(0, 0);
+  return dfs(0) ? chosen : null;
+}
+
+/**
+ * Whether `cards` (21 cards) form a valid declaration: every card melded, with
+ * at least three pure sequences. Mirrors `MarriageValidateDeclaration`.
+ */
+export function marriageValidateDeclaration(cards: readonly Card[], wildRank: number): boolean {
+  return validDeclarationMelds(cards, wildRank) !== null;
 }
 
 /** Whether `cards` contain a pure sequence (no wild, same-suit run of 3+). */
@@ -332,6 +333,8 @@ export interface MarriageDeclarePreview {
   unmeldedPoints: number;
   /** Penalty the player would take on this declaration (0 if valid, else 80). */
   penalty: number;
+  /** Meld assignments in a valid declaration, using indices into the supplied hand. */
+  melds: { cardIndices: number[]; pureSequence: boolean }[];
 }
 
 /**
@@ -340,7 +343,8 @@ export interface MarriageDeclarePreview {
  * (missing pure sequence, unmelded card count / points, projected penalty).
  */
 export function evaluateMarriageDeclare(cards: readonly Card[], wildRank: number): MarriageDeclarePreview {
-  const valid = marriageValidateDeclaration(cards, wildRank);
+  const declaration = validDeclarationMelds(cards, wildRank);
+  const valid = declaration !== null;
   const hasPureSequence = marriageHasPureSequence(cards, wildRank);
   const split = minDeadwoodSplit(cards, wildRank);
   return {
@@ -349,5 +353,6 @@ export function evaluateMarriageDeclare(cards: readonly Card[], wildRank: number
     unmeldedCount: cards.length - split.melded.size,
     unmeldedPoints: split.points,
     penalty: valid ? 0 : MARRIAGE_DEADWOOD_CAP,
+    melds: (declaration ?? []).map((meld) => ({ cardIndices: meld.idx, pureSequence: meld.seq && meld.pure })),
   };
 }

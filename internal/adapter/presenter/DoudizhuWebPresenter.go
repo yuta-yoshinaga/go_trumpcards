@@ -19,6 +19,7 @@ func (p *DoudizhuWebPresenter) Output(dg interfaces.DoudizhuGame, lastErr error)
 
 	resObj.Phase = doudizhuPhaseName(dg.GetPhase())
 	resObj.CurrentTurn = dg.GetCurrentTurn()
+	resObj.LastPlayIdx = dg.GetLastPlayIdx()
 	resObj.LandlordIdx = dg.GetLandlordIdx()
 	resObj.BaseBid = dg.GetBaseBid()
 	resObj.HighestBid = dg.GetHighestBid()

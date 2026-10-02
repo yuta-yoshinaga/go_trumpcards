@@ -142,7 +142,7 @@ export function BettingControls({
             aria-keyshortcuts="c"
           >
             {t('action.call')}
-            {callAmountLabel && <span aria-hidden="true">{callAmountLabel}</span>}
+            {callAmountLabel && <span> {callAmountLabel.trim()}</span>}
             {kbd('C')}
           </button>
           <button

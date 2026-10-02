@@ -73,6 +73,7 @@ const HAND_RANK_KEYS: Record<number, string> = {
   8: 'handRank.8',
   9: 'handRank.9',
 };
+const MIN_BET = 10;
 
 /** Renders the Let It Ride game page with betting, decision, and result display. */
 export const LetItRidePage = withTutorial(LetItRidePageContent, 'letitride', LIR_TUTORIAL_STEPS);
@@ -118,15 +119,18 @@ function LetItRidePageContent() {
   const isSecondDecision = state?.phase === LetItRidePhase.SECOND_DECISION;
   const isDecisionPhase = isFirstDecision || isSecondDecision;
   const isEndPhase = state?.phase === LetItRidePhase.END;
+  const maxBet = state ? Math.floor(state.chips / 3) : Number.POSITIVE_INFINITY;
+  const canPlaceBet = maxBet >= MIN_BET;
+  const displayedBetAmount = Math.max(MIN_BET, Math.min(betAmount, maxBet));
 
   const actionBindings = useMemo(
     () => [
-      { key: 'b', action: () => execApi('bet', betAmount), enabled: isBetPhase, label: 'bet' },
+      { key: 'b', action: () => execApi('bet', displayedBetAmount), enabled: isBetPhase && canPlaceBet, label: 'bet' },
       { key: 'p', action: () => requestPullConfirm(() => execApi('pull')), enabled: isDecisionPhase, label: 'pull' },
       { key: 'l', action: () => execApi('letitride'), enabled: isDecisionPhase, label: 'letitride' },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, label: 'reset' },
     ],
-    [execApi, betAmount, isBetPhase, isDecisionPhase, isEndPhase, requestPullConfirm],
+    [execApi, displayedBetAmount, isBetPhase, canPlaceBet, isDecisionPhase, isEndPhase, requestPullConfirm],
   );
 
   useActionKeyboardNav({
@@ -139,7 +143,8 @@ function LetItRidePageContent() {
   if (!state) return <GameSkeleton gameKey="letitride" layout={{ kind: 'casino-table', sections: [3, 2] }} />;
 
   const handleBet = () => {
-    execApi('bet', betAmount);
+    if (!canPlaceBet) return;
+    execApi('bet', displayedBetAmount);
   };
 
   const handlePull = () => {
@@ -364,18 +369,32 @@ function LetItRidePageContent() {
                 <ChipBetInput
                   id="letitride-bet-amount"
                   label={t('label.bet')}
-                  value={betAmount}
+                  value={displayedBetAmount}
                   onChange={setBetAmount}
-                  min={10}
+                  min={MIN_BET}
                   step={10}
-                  max={Math.floor(state.chips / 3)}
+                  max={maxBet}
                 />
-                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+                <div className="text-center text-ds-text-muted text-xs">
+                  {t('outcomePreview.maxBet', { amount: maxBet })}
+                </div>
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handleBet}
+                  disabled={loading || !canPlaceBet}
+                  aria-disabled={!canPlaceBet}
+                >
                   {t('button.bet')}
                 </button>
+                {!canPlaceBet && (
+                  <div role="status" className="text-center text-ds-text-muted text-xs">
+                    {t('insufficientChips', { amount: MIN_BET })}
+                  </div>
+                )}
                 <div className="text-center text-ds-text-muted text-xs" data-testid="bet-outcome-preview">
-                  <div>{t('outcomePreview.betAmount', { amount: betAmount })}</div>
-                  <div>{t('outcomePreview.betRisk', { amount: betAmount * 3 })}</div>
+                  <div>{t('outcomePreview.betAmount', { amount: displayedBetAmount })}</div>
+                  <div>{t('outcomePreview.betRisk', { amount: displayedBetAmount * 3 })}</div>
                 </div>
                 <div
                   className="rounded-lg bg-ds-surface px-3 py-2 text-center text-ds-text-muted text-xs"
