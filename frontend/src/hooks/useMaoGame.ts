@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { maoApi } from '../api/gameApi';
-import type { MaoConfig } from '../types/card';
+import type { MaoConfig, MaoResponse } from '../types/card';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
@@ -22,13 +22,17 @@ export const CPU_DIFFICULTY_OPTIONS = [
 export const POINT_LIMIT_OPTIONS = [100, 200, 300, 500] as const;
 
 /** Hook that manages Mao game state and player actions, including the hidden-rule "say word" action. */
-export function useMaoGame() {
+export function useMaoGame(onSuccessCallback?: (response: MaoResponse, args: Parameters<typeof maoApi.exec>) => void) {
   const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
   const { config: maoConfig, handleConfigChange } = useGameConfig<MaoConfig>(DEFAULT_MAO_CONFIG);
 
-  const onSuccess = useCallback(() => {
-    clearSelection();
-  }, [clearSelection]);
+  const onSuccess = useCallback(
+    (response: MaoResponse, args: Parameters<typeof maoApi.exec>) => {
+      clearSelection();
+      onSuccessCallback?.(response, args);
+    },
+    [clearSelection, onSuccessCallback],
+  );
   const { state, loading, error, exec: rawExec, retry } = useGameApi(maoApi.exec, { onSuccess });
 
   const exec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);

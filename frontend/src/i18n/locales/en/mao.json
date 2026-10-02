@@ -28,6 +28,8 @@
   "scoresTotal": "Total",
   "playButton": "Play",
   "drawButton": "Draw",
+  "listSeparator": ", ",
+  "drawnCardsAnnouncement": "Drawn cards: {{cards}}",
   "takePenaltyButton": "Take {{count}}",
   "declareButton": "Mao!",
   "skipDeclareButton": "Don't declare",
