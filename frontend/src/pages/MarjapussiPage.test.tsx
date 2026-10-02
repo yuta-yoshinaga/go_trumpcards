@@ -47,6 +47,45 @@ beforeEach(() => {
 });
 
 describe('MarjapussiPage', () => {
+  it('announces the matching follow restriction on illegal cards only', async () => {
+    mockExec.mockResolvedValue(
+      makeMarjapussiState({
+        trumpSuit: 3,
+        currentTrick: [{ playerIdx: 1, card: { design: 'HEART', value: 10 } }],
+        playableIndices: [0, 1],
+      }),
+    );
+    const firstRender = renderWithProviders(<MarjapussiPage />);
+    const restrictedBySuit = await screen.findByAltText('♠ A');
+    expect(restrictedBySuit.closest('button')).toHaveAttribute('aria-disabled', 'true');
+    expect(restrictedBySuit.closest('button')).toHaveAccessibleName(/♠ A.*リードスートに従ってください/);
+    expect(screen.getByRole('button', { name: '♥ Q' })).not.toHaveAttribute('aria-disabled');
+    firstRender.unmount();
+
+    mockExec.mockResolvedValue(
+      makeMarjapussiState({
+        trumpSuit: 1,
+        currentTrick: [{ playerIdx: 1, card: { design: 'HEART', value: 10 } }],
+        players: [
+          {
+            ...makeMarjapussiState().players[0],
+            cards: [
+              { design: 'SPADE', value: 1 },
+              { design: 'CLOVER', value: 9 },
+            ],
+          },
+          ...makeMarjapussiState().players.slice(1),
+        ],
+        playableIndices: [0],
+      }),
+    );
+    const { unmount } = renderWithProviders(<MarjapussiPage />);
+    const discard = await screen.findByAltText('♣ 9');
+    expect(discard.closest('button')).toHaveAttribute('aria-disabled', 'true');
+    expect(discard.closest('button')).toHaveAccessibleName(/♣ 9.*切り札を出してください/);
+    unmount();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<MarjapussiPage />);
