@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { beleagueredCastleApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BeleagueredCastleResponse, BeleagueredCastleTableauCard, Card, CardDesign } from '../types/card';
@@ -579,5 +580,22 @@ describe('BeleagueredCastlePage move count announcement', () => {
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
     await waitFor(() => expect(status).toHaveTextContent('手数: 2'));
+  });
+
+  it('translates an existing move count announcement when the language changes', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({ ...playingState, moveCount: 4 });
+    renderWithProviders(<BeleagueredCastlePage />);
+
+    const status = await screen.findByTestId('bc-move-count-status');
+    fireEvent.click(screen.getByRole('button', { name: /^♠ 5/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^♥ 6/ }));
+    await waitFor(() => expect(status).toHaveTextContent('手数: 4'));
+
+    try {
+      await i18n.changeLanguage('en');
+      await waitFor(() => expect(status).toHaveTextContent('Moves: 4'));
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 });
