@@ -2930,6 +2930,7 @@ const baseTrenteEtQuaranteState: TrenteEtQuaranteResponse = {
   phase: 0, // TrenteEtQuarantePhase.BET
   roundNumber: 0,
   chips: 1000,
+  session: { startingChips: 1000, net: 0, wins: 0, losses: 0, draws: 0, refaits: 0 },
   currentBet: 0, // Noir
   stake: 0,
   noirRow: [],

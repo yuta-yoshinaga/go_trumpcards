@@ -172,6 +172,22 @@ function TrenteEtQuarantePageContent() {
               messageParams={state.messageParams}
             />
 
+            <section className="mb-3 rounded-lg bg-ds-surface p-3 text-sm" data-testid="teq-session-stats">
+              <h2 className="mb-2 font-semibold">{t('session.title')}</h2>
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-1">
+                <dt>{t('session.net')}</dt>
+                <dd>{state.session.net > 0 ? `+${state.session.net}` : state.session.net}</dd>
+                <dt>{t('session.wins')}</dt>
+                <dd>{state.session.wins}</dd>
+                <dt>{t('session.losses')}</dt>
+                <dd>{state.session.losses}</dd>
+                <dt>{t('session.draws')}</dt>
+                <dd>{state.session.draws}</dd>
+                <dt>{t('session.refaits')}</dt>
+                <dd>{state.session.refaits}</dd>
+              </dl>
+            </section>
+
             <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mb-2 cursor-pointer min-h-[44px]">
               <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
               {tc('hint.toggle', { ns: 'tutorial' })}

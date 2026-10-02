@@ -56154,6 +56154,25 @@ components:
         remainingDeck:
           type: integer
           description: Number of cards remaining in the shoe
+        session:
+          type: object
+          description: Session totals persisted with the game snapshot
+          required: [startingChips, net, wins, losses, draws, refaits]
+          properties:
+            startingChips:
+              type: integer
+            net:
+              type: integer
+              description: Current chips minus starting chips
+            wins:
+              type: integer
+            losses:
+              type: integer
+              description: Losing rounds excluding Refait
+            draws:
+              type: integer
+            refaits:
+              type: integer
         gameEndFlag:
           type: boolean
           description: True once the round has resolved

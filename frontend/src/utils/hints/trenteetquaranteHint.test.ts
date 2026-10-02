@@ -8,6 +8,7 @@ function state(overrides: Partial<TrenteEtQuaranteResponse> = {}): TrenteEtQuara
     phase: TrenteEtQuarantePhase.BET,
     roundNumber: 0,
     chips: 1000,
+    session: { startingChips: 1000, net: 0, wins: 0, losses: 0, draws: 0, refaits: 0 },
     stake: 0,
     currentBet: TrenteEtQuaranteBetType.ROUGE,
     noirRow: [],
