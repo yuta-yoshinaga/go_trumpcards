@@ -18,21 +18,18 @@ export interface PineappleResponse extends HoldemResponse {
    */
   liveBestHand: string;
   discardPreviews?: PineappleDiscardPreview[];
-  /** Server-evaluated Irish Poker candidates for the final discard choice. */
-  discardCandidates: PineappleDiscardCandidate[];
 }
 
-/** Evaluated hand remaining after an Irish Poker discard choice. */
-export interface PineappleDiscardCandidate {
-  discardIdx: number;
-  handRankKey: string;
-  strengthCards: Card[];
-  isBest: boolean;
-}
-
-/** Server-evaluated Crazy Pineapple discard candidate. */
+/** Server-evaluated discard option for Irish Poker or Crazy Pineapple. */
 export interface PineappleDiscardPreview {
-  cardIdx: number;
+  /** Original four-card hand indices (Irish Poker). */
+  discardIdx0?: number;
+  discardIdx1?: number;
+  /** Original hand index (Crazy Pineapple). */
+  cardIdx?: number;
   handRank: number;
-  recommended: boolean;
+  recommended?: boolean;
+  strengthCards?: Card[];
+  /** Relative strength among all Irish Poker pairs; larger is stronger. */
+  strengthOrder?: number;
 }

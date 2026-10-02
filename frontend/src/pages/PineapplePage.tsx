@@ -49,7 +49,7 @@ import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { holdemBestFive } from '../utils/holdemBestFive';
 import { findPlayerName } from '../utils/playerUtils';
-import { pokerHandKey } from '../utils/pokerSquaresUtils';
+import { type PokerHandRank, pokerHandKey } from '../utils/pokerSquaresUtils';
 
 /** Pineapple Poker tutorial step definitions. */
 const PN_TUTORIAL_STEPS: TutorialStep[] = [
@@ -274,18 +274,27 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   const discardPreview = useMemo(() => {
     if (variant !== 'irishpoker' || !isDiscardPhase || selectedDiscards.length !== discardCount) return null;
     const kept = (humanPlayer?.cards ?? []).filter((_, i) => !selectedDiscards.includes(i));
-    const candidate = state?.discardCandidates?.find((item) => item.discardIdx === selectedDiscards[1]);
+    const [discardIdx0, discardIdx1] = selectedDiscards;
+    const candidate = state?.discardPreviews?.find(
+      (item) =>
+        (item.discardIdx0 === discardIdx0 && item.discardIdx1 === discardIdx1) ||
+        (item.discardIdx0 === discardIdx1 && item.discardIdx1 === discardIdx0),
+    );
     return candidate
-      ? { kept, handKey: candidate.handRankKey, strengthCards: candidate.strengthCards }
+      ? {
+          kept,
+          handKey: pokerHandKey(candidate.handRank as PokerHandRank),
+          strengthCards: candidate.strengthCards ?? [],
+        }
       : { kept, handKey: null, strengthCards: [] };
-  }, [variant, isDiscardPhase, selectedDiscards, discardCount, humanPlayer, state?.discardCandidates]);
+  }, [variant, isDiscardPhase, selectedDiscards, discardCount, humanPlayer, state?.discardPreviews]);
   const candidatePreviews = useMemo(() => {
     if (variant === 'irishpoker' || !isDiscardPhase) return null;
     return (
       state?.discardPreviews?.map((preview) => ({
-        handKey: pokerHandKey(preview.handRank as import('../utils/pokerSquaresUtils').PokerHandRank),
+        handKey: pokerHandKey(preview.handRank as PokerHandRank),
         rank: preview.handRank,
-        recommended: preview.recommended,
+        recommended: preview.recommended ?? false,
       })) ?? null
     );
   }, [variant, isDiscardPhase, state?.discardPreviews]);
@@ -299,12 +308,19 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   }, [candidatePreviews]);
   const irishCandidatePreviews = useMemo(() => {
     if (variant !== 'irishpoker' || !isDiscardPhase || selectedDiscards.length !== discardCount - 1) return null;
-    return (state?.discardCandidates ?? []).filter((candidate) => !selectedDiscards.includes(candidate.discardIdx));
-  }, [variant, isDiscardPhase, selectedDiscards, discardCount, state?.discardCandidates]);
+    const firstDiscard = selectedDiscards[0];
+    return (state?.discardPreviews ?? [])
+      .filter((candidate) => candidate.discardIdx0 === firstDiscard || candidate.discardIdx1 === firstDiscard)
+      .map((candidate) => ({
+        ...candidate,
+        discardIdx: candidate.discardIdx0 === firstDiscard ? candidate.discardIdx1 : candidate.discardIdx0,
+      }));
+  }, [variant, isDiscardPhase, selectedDiscards, discardCount, state?.discardPreviews]);
   const irishRecommendedDiscard = useMemo<number | null>(() => {
-    if (!irishCandidatePreviews) return null;
-    const best = irishCandidatePreviews.filter((candidate) => candidate.isBest);
-    return best.length === 1 ? best[0].discardIdx : null;
+    if (!irishCandidatePreviews?.length) return null;
+    const maxOrder = Math.max(...irishCandidatePreviews.map((candidate) => candidate.strengthOrder ?? -Infinity));
+    const best = irishCandidatePreviews.filter((candidate) => candidate.strengthOrder === maxOrder);
+    return best.length === 1 ? (best[0].discardIdx ?? null) : null;
   }, [irishCandidatePreviews]);
   const cpSelectedPreview = useMemo(() => {
     if (variant === 'irishpoker' || !isDiscardPhase) return null;
@@ -643,7 +659,9 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                         const isRecommendedDiscard = recommendedDiscards.has(idx);
                         const irishCandidate =
                           irishCandidatePreviews?.find((candidate) => candidate.discardIdx === idx) ?? null;
-                        const irishCandKey = irishCandidate?.handRankKey ?? null;
+                        const irishCandKey = irishCandidate
+                          ? pokerHandKey(irishCandidate.handRank as PokerHandRank)
+                          : null;
                         const isIrishRecommended = irishRecommendedDiscard === idx;
                         return (
                           <div key={`${card.design}-${card.value}`} className="flex flex-col items-center">
@@ -692,7 +710,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                               >
                                 {t('discard.candidateWithStrength', {
                                   hand: t(`hand.${irishCandKey}`),
-                                  strength: irishCandidate?.strengthCards.map(cardAlt).join(t('listSeparator')),
+                                  strength: irishCandidate?.strengthCards?.map(cardAlt).join(t('listSeparator')) ?? '',
                                 })}
                               </span>
                             )}

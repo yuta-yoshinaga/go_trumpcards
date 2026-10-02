@@ -127,7 +127,6 @@ const initState: PineappleResponse = {
   discardDone: [],
   initialDealCount: 3,
   liveBestHand: '',
-  discardCandidates: [],
 };
 
 /** PRE_FLOP (phase 1): human's turn, no outstanding bet */
@@ -490,11 +489,49 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
-      discardCandidates: [
-        { discardIdx: 0, handRankKey: 'onePair', strengthCards: [{ design: 'SPADE', value: 1 }], isBest: false },
-        { discardIdx: 1, handRankKey: 'onePair', strengthCards: [{ design: 'HEART', value: 13 }], isBest: false },
-        { discardIdx: 2, handRankKey: 'onePair', strengthCards: [{ design: 'DIAMOND', value: 5 }], isBest: false },
-        { discardIdx: 3, handRankKey: 'onePair', strengthCards: [{ design: 'CLOVER', value: 8 }], isBest: false },
+      discardPreviews: [
+        {
+          discardIdx0: 0,
+          discardIdx1: 1,
+          handRank: 1,
+          strengthCards: [{ design: 'HEART', value: 13 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 2,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
       ],
     };
     mockIrishExec.mockResolvedValue(irishDiscardState);
@@ -592,11 +629,49 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
-      discardCandidates: [
-        { discardIdx: 0, handRankKey: 'onePair', strengthCards: [{ design: 'SPADE', value: 1 }], isBest: false },
-        { discardIdx: 1, handRankKey: 'onePair', strengthCards: [{ design: 'HEART', value: 13 }], isBest: false },
-        { discardIdx: 2, handRankKey: 'onePair', strengthCards: [{ design: 'DIAMOND', value: 5 }], isBest: false },
-        { discardIdx: 3, handRankKey: 'onePair', strengthCards: [{ design: 'CLOVER', value: 8 }], isBest: false },
+      discardPreviews: [
+        {
+          discardIdx0: 0,
+          discardIdx1: 1,
+          handRank: 1,
+          strengthCards: [{ design: 'HEART', value: 13 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 2,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
       ],
     };
     mockIrishExec.mockResolvedValue(irishDiscardState);
@@ -674,11 +749,49 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
-      discardCandidates: [
-        { discardIdx: 0, handRankKey: 'onePair', strengthCards: [{ design: 'SPADE', value: 1 }], isBest: false },
-        { discardIdx: 1, handRankKey: 'onePair', strengthCards: [{ design: 'HEART', value: 13 }], isBest: false },
-        { discardIdx: 2, handRankKey: 'onePair', strengthCards: [{ design: 'DIAMOND', value: 5 }], isBest: false },
-        { discardIdx: 3, handRankKey: 'onePair', strengthCards: [{ design: 'SPADE', value: 1 }], isBest: true },
+      discardPreviews: [
+        {
+          discardIdx0: 0,
+          discardIdx1: 1,
+          handRank: 1,
+          strengthCards: [{ design: 'HEART', value: 13 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'SPADE', value: 1 }],
+          strengthOrder: 2,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'SPADE', value: 1 }],
+          strengthOrder: 2,
+        },
+        {
+          discardIdx0: 2,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'SPADE', value: 1 }],
+          strengthOrder: 2,
+        },
       ],
     };
     mockIrishExec.mockResolvedValue(irishDiscardState);
@@ -698,8 +811,12 @@ describe('PineapplePage', () => {
       labels.find((label) => label.parentElement?.querySelector('button img')?.getAttribute('alt') === '♣ 8'),
     ).toHaveTextContent('比較札:');
     expect(await screen.findAllByTestId('irishpoker-discard-recommended')).toHaveLength(1);
+    // The preview is attached to original hand index 3 (♣8), the actual card button.
+    const secondDiscard = screen.getByAltText('♣ 8').closest('button') as HTMLButtonElement;
+    fireEvent.click(secondDiscard);
+    expect(secondDiscard).toHaveAttribute('aria-pressed', 'true');
     // The full two-card kept preview is not shown yet (only one card selected).
-    expect(screen.queryByTestId('irishpoker-discard-preview')).not.toBeInTheDocument();
+    expect(await screen.findByTestId('irishpoker-discard-preview')).toHaveTextContent('比較札:');
   });
 
   it('switches from staged candidates to the kept preview at the second Irish Poker discard', async () => {
@@ -725,11 +842,49 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
-      discardCandidates: [
-        { discardIdx: 0, handRankKey: 'onePair', strengthCards: [{ design: 'SPADE', value: 1 }], isBest: false },
-        { discardIdx: 1, handRankKey: 'onePair', strengthCards: [{ design: 'HEART', value: 13 }], isBest: false },
-        { discardIdx: 2, handRankKey: 'onePair', strengthCards: [{ design: 'DIAMOND', value: 5 }], isBest: false },
-        { discardIdx: 3, handRankKey: 'onePair', strengthCards: [{ design: 'SPADE', value: 1 }], isBest: true },
+      discardPreviews: [
+        {
+          discardIdx0: 0,
+          discardIdx1: 1,
+          handRank: 1,
+          strengthCards: [{ design: 'HEART', value: 13 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'SPADE', value: 1 }],
+          strengthOrder: 2,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'SPADE', value: 1 }],
+          strengthOrder: 2,
+        },
+        {
+          discardIdx0: 2,
+          discardIdx1: 3,
+          handRank: 2,
+          strengthCards: [{ design: 'HEART', value: 13 }],
+          strengthOrder: 2,
+        },
       ],
     };
     mockIrishExec.mockResolvedValue(irishDiscardState);
@@ -741,7 +896,9 @@ describe('PineapplePage', () => {
 
     // Selecting the second discard hands off to the full kept-cards preview.
     fireEvent.click(screen.getByAltText('♣ 8').closest('button') as HTMLButtonElement);
-    expect(await screen.findByTestId('irishpoker-discard-preview')).toBeInTheDocument();
+    const preview = await screen.findByTestId('irishpoker-discard-preview');
+    expect(preview).toHaveTextContent('ツーペア');
+    expect(preview).toHaveTextContent('♥ K');
     expect(screen.queryAllByTestId('irishpoker-discard-candidate')).toHaveLength(0);
 
     // Deselecting one card returns to the staged, per-candidate previews.
@@ -807,8 +964,31 @@ describe('PineapplePage', () => {
         { design: 'HEART', value: 9 },
       ],
       discardDone: [false, true, true, true],
-      discardCandidates: [
-        { discardIdx: 3, handRankKey: 'onePair', strengthCards: [{ design: 'SPADE', value: 1 }], isBest: true },
+      discardPreviews: [
+        { discardIdx0: 0, discardIdx1: 1, handRank: 1, strengthCards: [], strengthOrder: 1 },
+        { discardIdx0: 0, discardIdx1: 2, handRank: 1, strengthCards: [], strengthOrder: 1 },
+        {
+          discardIdx0: 0,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'SPADE', value: 1 }],
+          strengthOrder: 2,
+        },
+        { discardIdx0: 1, discardIdx1: 2, handRank: 1, strengthCards: [], strengthOrder: 1 },
+        {
+          discardIdx0: 1,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'SPADE', value: 1 }],
+          strengthOrder: 2,
+        },
+        {
+          discardIdx0: 2,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'SPADE', value: 1 }],
+          strengthOrder: 2,
+        },
       ],
     };
     mockIrishExec.mockResolvedValue(irishRiverState);
@@ -1206,11 +1386,49 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
-      discardCandidates: [
-        { discardIdx: 0, handRankKey: 'onePair', strengthCards: [{ design: 'SPADE', value: 1 }], isBest: false },
-        { discardIdx: 1, handRankKey: 'twoPair', strengthCards: [{ design: 'HEART', value: 13 }], isBest: true },
-        { discardIdx: 2, handRankKey: 'onePair', strengthCards: [{ design: 'DIAMOND', value: 5 }], isBest: false },
-        { discardIdx: 3, handRankKey: 'onePair', strengthCards: [{ design: 'CLOVER', value: 8 }], isBest: false },
+      discardPreviews: [
+        {
+          discardIdx0: 0,
+          discardIdx1: 1,
+          handRank: 2,
+          strengthCards: [{ design: 'HEART', value: 13 }],
+          strengthOrder: 2,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 2,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
       ],
     };
     mockIrishExec.mockResolvedValue(st);
@@ -1247,11 +1465,49 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
-      discardCandidates: [
-        { discardIdx: 0, handRankKey: 'onePair', strengthCards: [{ design: 'SPADE', value: 1 }], isBest: false },
-        { discardIdx: 1, handRankKey: 'onePair', strengthCards: [{ design: 'HEART', value: 13 }], isBest: false },
-        { discardIdx: 2, handRankKey: 'onePair', strengthCards: [{ design: 'DIAMOND', value: 5 }], isBest: false },
-        { discardIdx: 3, handRankKey: 'onePair', strengthCards: [{ design: 'CLOVER', value: 8 }], isBest: false },
+      discardPreviews: [
+        {
+          discardIdx0: 0,
+          discardIdx1: 1,
+          handRank: 1,
+          strengthCards: [{ design: 'HEART', value: 13 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 2,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'CLOVER', value: 8 }],
+          strengthOrder: 1,
+        },
       ],
     };
     mockIrishExec.mockResolvedValue(st);
@@ -1287,11 +1543,49 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 10 },
       ],
       discardDone: [false, true, true, true],
-      discardCandidates: [
-        { discardIdx: 0, handRankKey: 'onePair', strengthCards: [{ design: 'SPADE', value: 1 }], isBest: false },
-        { discardIdx: 1, handRankKey: 'onePair', strengthCards: [{ design: 'HEART', value: 13 }], isBest: false },
-        { discardIdx: 2, handRankKey: 'onePair', strengthCards: [{ design: 'DIAMOND', value: 5 }], isBest: false },
-        { discardIdx: 3, handRankKey: 'onePair', strengthCards: [{ design: 'SPADE', value: 1 }], isBest: true },
+      discardPreviews: [
+        {
+          discardIdx0: 0,
+          discardIdx1: 1,
+          handRank: 1,
+          strengthCards: [{ design: 'HEART', value: 13 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 0,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'SPADE', value: 1 }],
+          strengthOrder: 2,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 2,
+          handRank: 1,
+          strengthCards: [{ design: 'DIAMOND', value: 5 }],
+          strengthOrder: 1,
+        },
+        {
+          discardIdx0: 1,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'SPADE', value: 1 }],
+          strengthOrder: 2,
+        },
+        {
+          discardIdx0: 2,
+          discardIdx1: 3,
+          handRank: 1,
+          strengthCards: [{ design: 'SPADE', value: 1 }],
+          strengthOrder: 2,
+        },
       ],
     };
     mockIrishExec.mockResolvedValue(st);
