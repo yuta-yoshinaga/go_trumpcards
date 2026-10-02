@@ -63,19 +63,20 @@ const threeThirteenMaxTurns = 5000
 
 // ThreeThirteen スリー・サーティーンのゲームクラス。
 type ThreeThirteen struct {
-	trumpCards       *TrumpCards
-	players          []*ThreeThirteenPlayer
-	config           ThreeThirteenConfig
-	phase            ThreeThirteenPhase
-	round            int
-	currentPlayerIdx int
-	knockerIdx       int // ノックしたプレイヤー。-1 はまだ誰もノックしていない
-	finalTurnsLeft   int // ノック後に残っている最終手番の回数
-	discardPile      []*Card
-	drawPile         []*Card
-	gameEndFlag      bool
-	winnerIdx        int
-	turnCount        int
+	trumpCards        *TrumpCards
+	players           []*ThreeThirteenPlayer
+	config            ThreeThirteenConfig
+	phase             ThreeThirteenPhase
+	round             int
+	currentPlayerIdx  int
+	knockerIdx        int // ノックしたプレイヤー。-1 はまだ誰もノックしていない
+	finalTurnsLeft    int // ノック後に残っている最終手番の回数
+	discardPile       []*Card
+	drawPile          []*Card
+	gameEndFlag       bool
+	winnerIdx         int
+	turnCount         int
+	roundScoreHistory [][]int
 	actionLogBase
 }
 
@@ -128,6 +129,7 @@ func (g *ThreeThirteen) Reset() {
 	g.knockerIdx = -1
 	g.finalTurnsLeft = 0
 	g.turnCount = 0
+	g.roundScoreHistory = nil
 	g.actionLog = nil
 	g.discardPile = nil
 	g.drawPile = nil
@@ -468,6 +470,11 @@ func (g *ThreeThirteen) finishRound() {
 		g.players[i].SetRoundScore(score)
 		g.players[i].CommitRoundScore()
 	}
+	row := make([]int, len(g.players))
+	for i := range g.players {
+		row[i] = g.players[i].GetRoundScore()
+	}
+	g.roundScoreHistory = append(g.roundScoreHistory, row)
 	if g.knockerIdx >= 0 {
 		g.appendLog(g.knockerIdx, "round_end", "threethirteen.log.roundEndKnocked", map[string]string{"round": strconv.Itoa(g.round), "name": playerName(g.players, g.knockerIdx)}, nil)
 	} else {
@@ -510,6 +517,15 @@ func (g *ThreeThirteen) SetPhase(p ThreeThirteenPhase) { g.phase = p }
 
 // GetRound 現在のラウンド番号（1..11）
 func (g *ThreeThirteen) GetRound() int { return g.round }
+
+// GetRoundScoreHistory returns completed round scores indexed by round then player.
+func (g *ThreeThirteen) GetRoundScoreHistory() [][]int {
+	history := make([][]int, len(g.roundScoreHistory))
+	for i, row := range g.roundScoreHistory {
+		history[i] = append([]int(nil), row...)
+	}
+	return history
+}
 
 // SetRound ラウンド設定（テスト用）
 func (g *ThreeThirteen) SetRound(r int) { g.round = r }
@@ -880,39 +896,41 @@ func threeThirteenBestDiscardValue(cards []*Card, wildRank int) int {
 
 // threeThirteenJSON は ThreeThirteen の JSON 表現
 type threeThirteenJSON struct {
-	TrumpCards       *TrumpCards            `json:"tc"`
-	Players          []*ThreeThirteenPlayer `json:"pl"`
-	Config           ThreeThirteenConfig    `json:"cf"`
-	Phase            ThreeThirteenPhase     `json:"ps"`
-	Round            int                    `json:"rd"`
-	CurrentPlayerIdx int                    `json:"ci"`
-	KnockerIdx       int                    `json:"kn"`
-	FinalTurnsLeft   int                    `json:"ft"`
-	DiscardPile      []*Card                `json:"dp"`
-	DrawPile         []*Card                `json:"wp"`
-	GameEndFlag      bool                   `json:"ge"`
-	WinnerIdx        int                    `json:"wi"`
-	TurnCount        int                    `json:"tn"`
-	ActionLog        []*ActionLogEntry      `json:"al"`
+	TrumpCards        *TrumpCards            `json:"tc"`
+	Players           []*ThreeThirteenPlayer `json:"pl"`
+	Config            ThreeThirteenConfig    `json:"cf"`
+	Phase             ThreeThirteenPhase     `json:"ps"`
+	Round             int                    `json:"rd"`
+	CurrentPlayerIdx  int                    `json:"ci"`
+	KnockerIdx        int                    `json:"kn"`
+	FinalTurnsLeft    int                    `json:"ft"`
+	DiscardPile       []*Card                `json:"dp"`
+	DrawPile          []*Card                `json:"wp"`
+	GameEndFlag       bool                   `json:"ge"`
+	WinnerIdx         int                    `json:"wi"`
+	TurnCount         int                    `json:"tn"`
+	ActionLog         []*ActionLogEntry      `json:"al"`
+	RoundScoreHistory [][]int                `json:"rsh,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (g *ThreeThirteen) MarshalJSON() ([]byte, error) {
 	return json.Marshal(threeThirteenJSON{
-		TrumpCards:       g.trumpCards,
-		Players:          g.players,
-		Config:           g.config,
-		Phase:            g.phase,
-		Round:            g.round,
-		CurrentPlayerIdx: g.currentPlayerIdx,
-		KnockerIdx:       g.knockerIdx,
-		FinalTurnsLeft:   g.finalTurnsLeft,
-		DiscardPile:      g.discardPile,
-		DrawPile:         g.drawPile,
-		GameEndFlag:      g.gameEndFlag,
-		WinnerIdx:        g.winnerIdx,
-		TurnCount:        g.turnCount,
-		ActionLog:        g.actionLog,
+		TrumpCards:        g.trumpCards,
+		Players:           g.players,
+		Config:            g.config,
+		Phase:             g.phase,
+		Round:             g.round,
+		CurrentPlayerIdx:  g.currentPlayerIdx,
+		KnockerIdx:        g.knockerIdx,
+		FinalTurnsLeft:    g.finalTurnsLeft,
+		DiscardPile:       g.discardPile,
+		DrawPile:          g.drawPile,
+		GameEndFlag:       g.gameEndFlag,
+		WinnerIdx:         g.winnerIdx,
+		TurnCount:         g.turnCount,
+		ActionLog:         g.actionLog,
+		RoundScoreHistory: g.roundScoreHistory,
 	})
 }
 
@@ -977,6 +995,7 @@ func (g *ThreeThirteen) UnmarshalJSON(data []byte) error {
 	g.gameEndFlag = j.GameEndFlag
 	g.winnerIdx = j.WinnerIdx
 	g.turnCount = j.TurnCount
+	g.roundScoreHistory = j.RoundScoreHistory
 	g.actionLog = j.ActionLog
 	if g.actionLog == nil {
 		g.actionLog = make([]*ActionLogEntry, 0)

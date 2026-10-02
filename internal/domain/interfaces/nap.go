@@ -59,6 +59,8 @@ type NapGame interface {
 	GetContract() domain.NapBid
 	// GetBids 各プレイヤーの入札を取得する
 	GetBids() [domain.NapPlayerCnt]domain.NapBid
+	// GetBidDone 各プレイヤーが入札を完了したか取得する (未入札とパスの区別用)
+	GetBidDone() [domain.NapPlayerCnt]bool
 	// GetTrumpSuit 切り札スートを取得する (0=なし)
 	GetTrumpSuit() int
 	// GetPlayerScores プレイヤー別累積点を取得する

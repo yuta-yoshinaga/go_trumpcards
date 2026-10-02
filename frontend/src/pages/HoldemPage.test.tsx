@@ -240,6 +240,40 @@ describe('HoldemPage', () => {
     );
   });
 
+  it('announces a tournament blind level change once with the new blinds', async () => {
+    // blindLevelHands is the fixed interval setting; only the blind amounts change when the level rises.
+    mockExec.mockResolvedValueOnce({
+      ...preFlopState,
+      tournamentMode: true,
+      blindLevelHands: 10,
+      smallBlind: 5,
+      bigBlind: 10,
+    });
+    mockExec.mockResolvedValueOnce({
+      ...preFlopState,
+      tournamentMode: true,
+      blindLevelHands: 10,
+      smallBlind: 10,
+      bigBlind: 20,
+    });
+    renderWithProviders(<HoldemPage />);
+    const announcement = await screen.findByTestId('blind-level-announcement');
+    expect(announcement).toBeEmptyDOMElement();
+    fireEvent.click(await screen.findByRole('button', { name: 'チェック' }));
+    await waitFor(() => expect(announcement).toHaveTextContent('ブラインドレベルが上がりました: SB 10、BB 20'));
+  });
+
+  it('does not announce initial tournament blinds or non-tournament level changes', async () => {
+    mockExec.mockResolvedValueOnce({ ...preFlopState, tournamentMode: true, smallBlind: 5, bigBlind: 10 });
+    mockExec.mockResolvedValueOnce({ ...preFlopState, tournamentMode: true, smallBlind: 5, bigBlind: 10 });
+    renderWithProviders(<HoldemPage />);
+    const announcement = await screen.findByTestId('blind-level-announcement');
+    expect(announcement).toBeEmptyDOMElement();
+    fireEvent.click(await screen.findByRole('button', { name: 'チェック' }));
+    await flushPendingDispatch();
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<HoldemPage />);

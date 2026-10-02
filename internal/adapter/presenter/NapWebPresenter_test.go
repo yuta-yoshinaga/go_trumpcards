@@ -29,6 +29,7 @@ func setupNapWebMock() *interfaces.MockNapGame {
 	m.On("GetContract").Return(domain.NapBidThree)
 	m.On("GetTrumpSuit").Return(domain.CardDesignSpade)
 	m.On("GetBids").Return([domain.NapPlayerCnt]domain.NapBid{domain.NapBidThree, domain.NapBidPass, domain.NapBidPass, domain.NapBidPass})
+	m.On("GetBidDone").Return([domain.NapPlayerCnt]bool{true, true, false, false})
 	m.On("GetPlayerScores").Return([domain.NapPlayerCnt]int{0, 0, 0, 0})
 	m.On("GetRoundTricks").Return([domain.NapPlayerCnt]int{0, 0, 0, 0})
 	m.On("GetWinnerPlayer").Return(-1)
@@ -77,6 +78,8 @@ func TestNapWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, domain.CardDesignSpade, resObj.TrumpSuit)
 		assert.Equal(t, int(domain.NapBidThree), resObj.Contract)
 		assert.Equal(t, int(domain.NapBidThree), resObj.Bids[0])
+		assert.Equal(t, [domain.NapPlayerCnt]bool{true, true, false, false}, resObj.BidDone)
+		assert.Contains(t, result, `"bidDone":[true,true,false,false]`)
 	})
 
 	t.Run("config values", func(t *testing.T) {

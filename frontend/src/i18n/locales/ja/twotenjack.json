@@ -20,6 +20,7 @@
   "trumpUndeclared": "切り札未宣言",
   "cards": "{{count}}枚",
   "cumulativeScore": "累計: {{score}}",
+  "cumulativeTeamScore": "{{team}} 累計点: {{score}}",
   "tricks": "トリック: {{count}}",
   "capturedPoints": "獲得点: {{count}}",
   "currentTrick": "現在のトリック",

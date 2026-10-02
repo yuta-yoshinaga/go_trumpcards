@@ -38,6 +38,14 @@ func (p *HandAndFootWebPresenter) Output(g interfaces.HandAndFootGame, lastErr e
 
 	resObj.Players = p.buildPlayersOutput(g)
 	resObj.Teams = p.buildTeamsOutput(g)
+	resObj.ScoreBreakdown = make([]*controller.HandAndFootWebOutputScoreBreakdown, 0, domain.HandAndFootTeamCnt)
+	for team := 0; team < domain.HandAndFootTeamCnt; team++ {
+		bd := g.GetScoreBreakdown(team)
+		resObj.ScoreBreakdown = append(resObj.ScoreBreakdown, &controller.HandAndFootWebOutputScoreBreakdown{
+			Team: team, MeldCards: bd.MeldCards, RedCanasta: bd.RedCanasta, BlackCanasta: bd.BlackCanasta,
+			RedThrees: bd.RedThrees, GoingOut: bd.GoingOut, HandPenalty: bd.HandPenalty, FootPenalty: bd.FootPenalty,
+		})
+	}
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
 
 	return marshalOrError(resObj)

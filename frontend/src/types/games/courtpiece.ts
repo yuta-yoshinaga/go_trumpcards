@@ -43,6 +43,12 @@ export interface CourtPieceHint {
   reason: string;
 }
 
+/** Server-calculated points for one team in the most recently completed round. */
+export interface CourtPieceScoreBreakdown {
+  sar: number;
+  courtBonus: number;
+}
+
 /** Server response for the Court Piece (Rang) game (4 players, 2 teams, called trump). */
 export interface CourtPieceResponse extends BaseGameResponse {
   players: CourtPiecePlayer[];
@@ -57,6 +63,8 @@ export interface CourtPieceResponse extends BaseGameResponse {
   currentTrick: CourtPieceTrickCard[];
   /** Cumulative game-point (Sar) scores per team — [teamA, teamB]. */
   teamScores: number[];
+  /** Last round's points per team, in team A / team B order. */
+  scoreBreakdown: CourtPieceScoreBreakdown[];
   /** Consecutive round wins by the {@link lastWinnerTeam} (drives the Court bonus). */
   consecutiveWins: number;
   /** Team that won the previous round (or -1 before any round resolves). */

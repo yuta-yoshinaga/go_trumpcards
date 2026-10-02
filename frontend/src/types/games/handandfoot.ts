@@ -38,12 +38,25 @@ export interface HandAndFootPlayerData {
   cumulativeScore: number;
 }
 
+/** Server-calculated score components for one team after a round settles. */
+export interface HandAndFootScoreBreakdown {
+  team: number;
+  meldCards: number;
+  redCanasta: number;
+  blackCanasta: number;
+  redThrees: number;
+  goingOut: number;
+  handPenalty: number;
+  footPenalty: number;
+}
+
 /** Full Hand and Foot game state returned from the API. */
 export interface HandAndFootResponse extends BaseGameResponse {
   /** Server-calculated minimum for the human player’s initial meld. */
   minMeld: number;
   players: HandAndFootPlayerData[];
   teams: HandAndFootTeamData[];
+  scoreBreakdown: HandAndFootScoreBreakdown[];
   phase: number;
   roundNumber: number;
   currentPlayerIdx: number;

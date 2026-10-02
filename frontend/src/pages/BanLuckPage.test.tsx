@@ -256,6 +256,53 @@ describe('BanLuckPage', () => {
     expect(screen.getByRole('button', { name: '次のラウンドへ' })).toBeInTheDocument();
   });
 
+  it('ラウンド結果では子に親との点数比較と勝敗を表示し、親自身には表示しない', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: BanLuckPhase.ROUND_END,
+        bankerSeat: 2,
+        seats: [
+          seat({ name: 'YOU', cards: [card(10), card(9)], score: 19, outcome: BAN_LUCK_OUTCOME.win }),
+          seat({
+            name: 'CPU1',
+            isHuman: false,
+            cards: [card(10), card(10), card(5)],
+            score: 25,
+            rank: BAN_LUCK_RANK.bust,
+            busted: true,
+            outcome: BAN_LUCK_OUTCOME.lose,
+          }),
+          seat({ name: 'BANKER', isHuman: false, isBanker: true, cards: [card(10), card(8)], score: 18 }),
+        ],
+      }),
+    );
+    renderWithProviders(<BanLuckPage />);
+
+    expect(await screen.findByTestId('bl-comparison-0')).toHaveTextContent('親BANKERとの比較');
+    expect(screen.getByTestId('bl-comparison-0')).toHaveTextContent('19点');
+    expect(screen.getByTestId('bl-comparison-0')).toHaveTextContent('18点');
+    expect(screen.getByTestId('bl-comparison-0')).toHaveTextContent('勝ち');
+    expect(screen.getByTestId('bl-result-1')).toHaveTextContent('バスト');
+    expect(screen.getByTestId('bl-comparison-1')).toHaveTextContent('負け');
+    expect(screen.queryByTestId('bl-comparison-2')).not.toBeInTheDocument();
+  });
+
+  it('引き分けも親との点数比較に明示する', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: BanLuckPhase.ROUND_END,
+        seats: [
+          seat({ name: 'YOU', cards: [card(10), card(7)], score: 17, outcome: BAN_LUCK_OUTCOME.push }),
+          seat({ name: 'CPU1', isHuman: false, isBanker: true, cards: [card(10), card(7)], score: 17 }),
+        ],
+      }),
+    );
+    renderWithProviders(<BanLuckPage />);
+
+    expect(await screen.findByTestId('bl-comparison-0')).toHaveTextContent('引き分け');
+    expect(screen.getByTestId('bl-comparison-0')).toHaveTextContent('17点');
+  });
+
   it('通常役の結果に特別な倍率を表示しない', async () => {
     mockApi.mockResolvedValue(
       withState({

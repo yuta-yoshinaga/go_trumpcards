@@ -214,6 +214,8 @@ func TestThreeThirteen_RoundScoringAfterKnock(t *testing.T) {
 		g.CpuPlay()
 	}
 	assert.Equal(t, ThreeThirteenPhaseRoundEnd, g.GetPhase())
+	assert.Len(t, g.GetRoundScoreHistory(), 1)
+	assert.Equal(t, []int{g.GetPlayer(0).GetRoundScore(), g.GetPlayer(1).GetRoundScore()}, g.GetRoundScoreHistory()[0])
 	assert.Equal(t, 0, g.GetPlayer(0).GetCumulativeScore(), "knocker melds fully → 0")
 	assert.Greater(t, g.GetPlayer(1).GetCumulativeScore(), 0)
 }

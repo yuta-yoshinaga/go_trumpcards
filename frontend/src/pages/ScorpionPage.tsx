@@ -496,7 +496,9 @@ function ScorpionPageContent() {
                                   }}
                                   disabled={!isPlaying}
                                   aria-label={
-                                    tc.card ? `${cardAlt(tc.card)}${isSelected ? ` ${t('cardSelected')}` : ''}` : ''
+                                    tc.card
+                                      ? `${t('cardPositionAriaLabel', { card: cardAlt(tc.card), col: colIdx, pos: cardIdx })}${isSelected ? ` ${t('cardSelected')}` : ''}`
+                                      : ''
                                   }
                                 >
                                   {tc.card && <AnimatedCard card={tc.card} width={sc.cw} />}

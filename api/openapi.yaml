@@ -47033,6 +47033,13 @@ components:
         round:
           type: integer
           description: Current round number (1 to 11)
+        roundScoreHistory:
+          type: array
+          description: Completed round scores, indexed by round then player.
+          items:
+            type: array
+            items:
+              type: integer
         maxRound:
           type: integer
           description: Maximum number of rounds in the game
@@ -48322,6 +48329,28 @@ components:
                 type: array
                 items:
                   $ref: '#/components/schemas/Card'
+        scoreBreakdown:
+          type: array
+          description: Per-team breakdown of the last settled round score; penalties are positive values subtracted from the total.
+          items:
+            type: object
+            properties:
+              team:
+                type: integer
+              meldCards:
+                type: integer
+              redCanasta:
+                type: integer
+              blackCanasta:
+                type: integer
+              redThrees:
+                type: integer
+              goingOut:
+                type: integer
+              handPenalty:
+                type: integer
+              footPenalty:
+                type: integer
         phase:
           type: integer
           description: "Game phase: 0 = Draw, 1 = Meld, 2 = Discard, 3 = RoundEnd, 4 = GameEnd"
@@ -59304,6 +59333,11 @@ components:
           description: Running totals, indexed by team.
           items:
             type: integer
+        roundDelta:
+          type: array
+          description: Score change in the latest deal, indexed by team.
+          items:
+            type: integer
         currentPlayerIdx:
           type: integer
         leadPlayerIdx:
@@ -62214,6 +62248,19 @@ components:
           description: Winning column per round. Always an array, never null.
           items:
             type: integer
+        roundHistory:
+          type: array
+          description: Bet, payout, and chips after each settled round, newest first.
+          items:
+            type: object
+            required: [bet, payout, chips]
+            properties:
+              bet:
+                type: integer
+              payout:
+                type: integer
+              chips:
+                type: integer
         message:
           type: string
         messageCode:
@@ -64432,6 +64479,7 @@ components:
         - gameEndFlag
         - winnerIdx
         - roundWinnerIdx
+        - roundScoreHistory
         - config
         - message
       properties:
@@ -64464,6 +64512,18 @@ components:
           type: integer
         roundWinnerIdx:
           type: integer
+        roundScoreHistory:
+          type: array
+          description: Completed round penalty scores, with each scores array indexed by player.
+          items:
+            type: object
+            required:
+              - scores
+            properties:
+              scores:
+                type: array
+                items:
+                  type: integer
         config:
           type: object
           properties:
@@ -69148,7 +69208,12 @@ components:
           type: array
           items:
             type: integer
-          description: Bid placed by each player in seat order (0=Pass, 2=Two, 3=Three, 4=Four, 5=Nap; -1=not yet bid)
+          description: Bid placed by each player in seat order (0=Pass, 2=Two, 3=Three, 4=Four, 5=Nap; use bidDone to distinguish Pass from not yet bid)
+        bidDone:
+          type: array
+          items:
+            type: boolean
+          description: Whether each player has completed bidding, in seat order
         currentTrick:
           type: array
           items:
@@ -69972,6 +70037,21 @@ components:
           items:
             type: integer
           description: Cumulative match points — index 0 is teamA (seats 0&2), index 1 is teamB (seats 1&3)
+        scoreBreakdown:
+          type: array
+          description: "Scoring components for the most recently scored round, indexed by team."
+          items:
+            type: object
+            properties:
+              sar:
+                type: integer
+                description: Base point awarded for winning the round.
+              courtBonus:
+                type: integer
+                description: Extra point for a repeat win or a clean sweep.
+              total:
+                type: integer
+                description: Sum of the scoring components.
         playableIndices:
           type: array
           items:
@@ -70466,6 +70546,18 @@ components:
           items:
             type: integer
           description: Cumulative game points per player (index = player seat)
+        scoreBreakdown:
+          type: array
+          description: Per-player points awarded in the latest round.
+          items:
+            type: object
+            properties:
+              declarerContract:
+                type: integer
+                description: Points awarded to the declarer for making the contract.
+              defendingContract:
+                type: integer
+                description: Points awarded to defenders when the declarer fails.
         roundTricks:
           type: array
           items:
@@ -75367,6 +75459,18 @@ components:
               type: integer
             total:
               type: integer
+        roundScoreHistory:
+          type: array
+          description: Completed round score gains by seat, retained for the current game.
+          items:
+            type: object
+            properties:
+              roundNumber:
+                type: integer
+              scores:
+                type: array
+                items:
+                  type: integer
         gameEndFlag:
           type: boolean
         winnerIdx:

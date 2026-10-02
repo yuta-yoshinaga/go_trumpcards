@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { spoilFiveApi } from '../api/gameApi';
+import { actionLogApi, spoilFiveApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeSpoilFiveState } from '../test/stateFactories';
 import { SpoilFivePhase } from '../types/phases';
@@ -71,6 +71,17 @@ describe('SpoilFivePage', () => {
       expect(screen.getByAltText('♥ Q')).toBeInTheDocument();
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
     });
+  });
+
+  it('opens the action log during play', async () => {
+    vi.mocked(actionLogApi.spoilfive).mockResolvedValueOnce({
+      entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'play', detail: '♥ Q' }],
+    });
+    renderWithProviders(<SpoilFivePage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: '棋譜を見る' }));
+    await waitFor(() => expect(actionLogApi.spoilfive).toHaveBeenCalledTimes(1));
+    expect(await screen.findByText('棋譜')).toBeInTheDocument();
   });
 
   it('selecting a card then playing dispatches play', async () => {

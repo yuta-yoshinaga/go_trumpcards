@@ -77,6 +77,31 @@ describe('BalootPage', () => {
     expect(await screen.findByTestId('bl-mode')).toHaveTextContent(/モード未定/);
   });
 
+  it('labels cumulative and current-round team points and follows updated response values', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeState({ scores: [12, 8], roundPoints: [3, 5] }))
+      .mockResolvedValueOnce(playing({ scores: [12, 8], roundPoints: [21, 17] }));
+    renderWithProviders(<BalootPage />);
+
+    expect(await screen.findByTestId('bl-cumulative-score')).toHaveTextContent('累計得点: あなたのチーム 12 － 相手 8');
+    expect(screen.getByTestId('bl-round-points')).toHaveTextContent('今回のラウンド: あなたのチーム 3 － 相手 5');
+
+    fireEvent.click(screen.getByTestId('bl-sun-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('bl-cumulative-score')).toHaveTextContent('累計得点: あなたのチーム 12 － 相手 8');
+      expect(screen.getByTestId('bl-round-points')).toHaveTextContent('今回のラウンド: あなたのチーム 21 － 相手 17');
+    });
+  });
+
+  it('uses zero when either score array omits a team value', async () => {
+    mockExec.mockResolvedValue(makeState({ scores: [], roundPoints: [] } as Partial<BalootResponse>));
+    renderWithProviders(<BalootPage />);
+
+    expect(await screen.findByTestId('bl-cumulative-score')).toHaveTextContent('累計得点: あなたのチーム 0 － 相手 0');
+    expect(screen.getByTestId('bl-round-points')).toHaveTextContent('今回のラウンド: あなたのチーム 0 － 相手 0');
+  });
+
   // **序列はモードで入れ替わる。** 有効な方だけを出し、他方は出さない。
   it('prints the Sun order under Sun', async () => {
     mockExec.mockResolvedValue(playing({ mode: 1 } as Partial<BalootResponse>));

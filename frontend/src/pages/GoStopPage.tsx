@@ -275,6 +275,7 @@ function GoStopPageContent() {
                     <button
                       key={i}
                       type="button"
+                      aria-pressed={handIndex === i}
                       onClick={() => onHandClick(i)}
                       disabled={!isPlayPhase || !isHumanTurn}
                       className={`rounded transition-all ${

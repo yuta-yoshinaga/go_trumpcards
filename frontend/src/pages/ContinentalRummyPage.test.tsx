@@ -27,6 +27,36 @@ beforeEach(() => {
 });
 
 describe('ContinentalRummyPage', () => {
+  it('shows completed round score gains in a round by player table', async () => {
+    mockExec.mockResolvedValue(
+      makeContinentalRummyState({
+        roundScoreHistory: [
+          { roundNumber: 1, scores: [0, 54, 0, 0] },
+          { roundNumber: 2, scores: [42, 0, 0, 0] },
+        ],
+      }),
+    );
+    renderWithProviders(<ContinentalRummyPage />);
+    const history = await screen.findByTestId('cont-score-history');
+    expect(history).toHaveTextContent('得点履歴');
+    expect(history.querySelectorAll('thead th')).toHaveLength(5);
+    expect(history.querySelectorAll('tbody tr')).toHaveLength(2);
+    expect(Array.from(history.querySelectorAll('tbody tr')[0].children).map((cell) => cell.textContent)).toEqual([
+      '1',
+      '0',
+      '54',
+      '0',
+      '0',
+    ]);
+    expect(Array.from(history.querySelectorAll('tbody tr')[1].children).map((cell) => cell.textContent)).toEqual([
+      '2',
+      '42',
+      '0',
+      '0',
+      '0',
+    ]);
+  });
+
   it('sends selected difficulty and rounds when resetting', async () => {
     mockExec.mockResolvedValue(makeContinentalRummyState({ gameEndFlag: true, phase: 'gameEnd' }));
     renderWithProviders(<ContinentalRummyPage />);

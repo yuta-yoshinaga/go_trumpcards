@@ -65,6 +65,8 @@ type PreferenceGame interface {
 	GetTrumpSuit() int
 	// GetPlayerScores プレイヤー別累積点を取得する
 	GetPlayerScores() [domain.PreferencePlayerCnt]int
+	// GetScoreBreakdown 直近ラウンドのプレイヤー別得点内訳を取得する。
+	GetScoreBreakdown() [domain.PreferencePlayerCnt]domain.PreferenceScoreBreakdown
 	// GetRoundTricks 現ラウンドのプレイヤー別獲得トリック数を取得する
 	GetRoundTricks() [domain.PreferencePlayerCnt]int
 	// GetWinnerPlayer 勝利プレイヤーを取得する (-1=未確定)

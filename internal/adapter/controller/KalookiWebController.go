@@ -32,6 +32,11 @@ type KalookiWebOutputMeld struct {
 	Cards []*WebOutputCard `json:"cards"`
 }
 
+// KalookiWebOutputRoundScore stores one completed round's penalties by player.
+type KalookiWebOutputRoundScore struct {
+	Scores []int `json:"scores"`
+}
+
 // KalookiWebOutputPlayer プレイヤーのアウトプット
 type KalookiWebOutputPlayer struct {
 	ID              int                     `json:"id"`
@@ -46,15 +51,16 @@ type KalookiWebOutputPlayer struct {
 
 // KalookiWebOutput カルーキ Web アウトプット
 type KalookiWebOutput struct {
-	Players          []*KalookiWebOutputPlayer `json:"players"`
-	Phase            int                       `json:"phase"`
-	OpeningThreshold int                       `json:"openingThreshold"`
-	CurrentPlayerIdx int                       `json:"currentPlayerIdx"`
-	DiscardTop       *WebOutputCard            `json:"discardTop"`
-	DrawPileCount    int                       `json:"drawPileCount"`
-	GameEndFlag      bool                      `json:"gameEndFlag"`
-	WinnerIdx        int                       `json:"winnerIdx"`
-	RoundWinnerIdx   int                       `json:"roundWinnerIdx"`
+	Players           []*KalookiWebOutputPlayer     `json:"players"`
+	Phase             int                           `json:"phase"`
+	OpeningThreshold  int                           `json:"openingThreshold"`
+	CurrentPlayerIdx  int                           `json:"currentPlayerIdx"`
+	DiscardTop        *WebOutputCard                `json:"discardTop"`
+	DrawPileCount     int                           `json:"drawPileCount"`
+	GameEndFlag       bool                          `json:"gameEndFlag"`
+	WinnerIdx         int                           `json:"winnerIdx"`
+	RoundWinnerIdx    int                           `json:"roundWinnerIdx"`
+	RoundScoreHistory []*KalookiWebOutputRoundScore `json:"roundScoreHistory"`
 	WebOutputBase
 	Config KalookiWebOutputConfig `json:"config"`
 }
@@ -95,10 +101,11 @@ var NewKalookiWebController, NewKalookiWebControllerWithProvider = webController
 
 func newKalookiDefaultOutput(msg string) *KalookiWebOutput {
 	return &KalookiWebOutput{
-		Players:        make([]*KalookiWebOutputPlayer, 0),
-		WinnerIdx:      -1,
-		RoundWinnerIdx: -1,
-		WebOutputBase:  WebOutputBase{Message: msg},
+		Players:           make([]*KalookiWebOutputPlayer, 0),
+		RoundScoreHistory: make([]*KalookiWebOutputRoundScore, 0),
+		WinnerIdx:         -1,
+		RoundWinnerIdx:    -1,
+		WebOutputBase:     WebOutputBase{Message: msg},
 	}
 }
 

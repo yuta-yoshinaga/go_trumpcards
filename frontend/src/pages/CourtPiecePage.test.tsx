@@ -346,10 +346,34 @@ describe('CourtPiecePage', () => {
   });
 
   it('renders round end with the next round button and the round result', async () => {
-    mockExec.mockResolvedValue(roundEndState);
+    mockExec.mockResolvedValue({
+      ...roundEndState,
+      scoreBreakdown: [
+        { sar: 2, courtBonus: 1 },
+        { sar: 0, courtBonus: -2 },
+      ],
+    });
     renderWithProviders(<CourtPiecePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
     expect(screen.getByText('ラウンド結果（獲得トリック）')).toBeInTheDocument();
+    const breakdown = screen.getByTestId('cp-score-breakdown');
+    expect(breakdown).toHaveTextContent('Sar: +2');
+    expect(breakdown).toHaveTextContent('Courtボーナス: +1');
+    expect(breakdown).toHaveTextContent('Sar: 0');
+    expect(breakdown).toHaveTextContent('Courtボーナス: −2');
+  });
+
+  it('does not show score breakdown during play', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      scoreBreakdown: [
+        { sar: 1, courtBonus: 2 },
+        { sar: 0, courtBonus: 0 },
+      ],
+    });
+    renderWithProviders(<CourtPiecePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('cp-score-breakdown')).not.toBeInTheDocument();
   });
 
   it('renders the game end message', async () => {

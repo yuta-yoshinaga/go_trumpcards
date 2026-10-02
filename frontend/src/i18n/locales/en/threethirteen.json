@@ -28,6 +28,7 @@
   "scores": "Scores",
   "scoresPlayer": "Player",
   "scoresRound": "Round",
+  "scoresHistoryRound": "Round {{round}}",
   "scoresDeadwood": "Deadwood",
   "scoresTotal": "Total",
   "drawStockButton": "Draw Stock",

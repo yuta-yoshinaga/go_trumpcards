@@ -17,7 +17,7 @@
   "hintAvailable": "Hint",
   "doubleClickHint": "Double-click or double-tap a card to send it to the foundation",
   "foundationAriaLabel": "{{suit}} Foundation ({{cardCount}} cards)",
-  "emptyFoundationAriaLabel": "{{suit}} Foundation (empty)",
+  "emptyFoundationAriaLabel": "{{suit}} Foundation (empty, starts at {{rank}})",
   "emptyCellAriaLabel": "Free Cell {{idx}} (empty)",
   "supermoveLimitTooltip": "Only {{limit}} card(s) can be moved at once",
   "supermoveLimitLabel": "Max bulk move: {{limit}} cards",

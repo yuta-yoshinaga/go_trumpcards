@@ -57,6 +57,16 @@ type CourtPieceHint struct {
 	Reason    string // ヒント理由キー
 }
 
+// CourtPieceScoreBreakdown records the scoring components for one team in the last round.
+// CourtBonus is the extra point for a repeat win or a clean sweep; values are non-negative.
+type CourtPieceScoreBreakdown struct {
+	Sar        int `json:"sar"`
+	CourtBonus int `json:"courtBonus"`
+}
+
+// Total returns the number of match points represented by the breakdown.
+func (b CourtPieceScoreBreakdown) Total() int { return b.Sar + b.CourtBonus }
+
 // CourtPiece Court Piece ゲームクラス
 type CourtPiece struct {
 	trumpCards       *TrumpCards
@@ -74,6 +84,7 @@ type CourtPiece struct {
 	lastWinnerTeam   int // 直前ラウンドの勝利チーム (-1 = なし)
 	consecutiveWins  int // 同一チームの連続ラウンド勝利数
 	lastRoundCourt   bool
+	scoreBreakdown   [CourtPieceTeamCnt]CourtPieceScoreBreakdown
 	gameEndFlag      bool
 	winnerTeam       int
 	actionLogBase
@@ -117,12 +128,12 @@ func (c *CourtPiece) Reset() {
 	c.lastWinnerTeam = -1
 	c.consecutiveWins = 0
 	c.lastRoundCourt = false
+	c.scoreBreakdown = [CourtPieceTeamCnt]CourtPieceScoreBreakdown{}
 	c.actionLog = nil
 
 	for _, p := range c.players {
 		p.ResetRound()
 	}
-
 	c.startRound()
 }
 
@@ -147,6 +158,7 @@ func (c *CourtPiece) NextRound() {
 
 // startRound デッキを切り、呼び手に 5 枚だけ配ってトランプ宣言フェーズを開始する。
 func (c *CourtPiece) startRound() {
+	c.scoreBreakdown = [CourtPieceTeamCnt]CourtPieceScoreBreakdown{}
 	c.trumpSuit = CourtPieceTrumpUndeclared
 	c.trumpCards.Shuffle()
 
@@ -358,9 +370,13 @@ func (c *CourtPiece) ScoreRound() {
 	teamTricks, winningTeam, isCourt, consecutive := c.pendingRoundResult()
 	c.consecutiveWins = consecutive
 	delta := 1
+	breakdown := CourtPieceScoreBreakdown{Sar: 1}
 	if isCourt {
 		delta = 2
+		breakdown.CourtBonus = 1
 	}
+	c.scoreBreakdown = [CourtPieceTeamCnt]CourtPieceScoreBreakdown{}
+	c.scoreBreakdown[winningTeam] = breakdown
 	c.teamScores[winningTeam] += delta
 	c.lastWinnerTeam = winningTeam
 	c.lastRoundCourt = isCourt
@@ -482,6 +498,11 @@ func (c *CourtPiece) GetTeamScore(team int) int {
 		return 0
 	}
 	return c.teamScores[team]
+}
+
+// GetScoreBreakdown returns the scoring components by team for the most recently scored round.
+func (c *CourtPiece) GetScoreBreakdown() [CourtPieceTeamCnt]CourtPieceScoreBreakdown {
+	return c.scoreBreakdown
 }
 
 // SetTeamScore チームスコア設定 (テスト用)
@@ -946,24 +967,25 @@ func (c *CourtPiece) filterAbove(p *CourtPiecePlayer, valid []int, threshold int
 
 // courtPieceJSON is the JSON wire format for CourtPiece.
 type courtPieceJSON struct {
-	TrumpCards       *TrumpCards            `json:"tc"`
-	Players          []*CourtPiecePlayer    `json:"ps"`
-	Config           CourtPieceConfig       `json:"cf"`
-	Phase            CourtPiecePhase        `json:"ph"`
-	RoundNumber      int                    `json:"rn"`
-	TrickNumber      int                    `json:"tn"`
-	CurrentPlayerIdx int                    `json:"ci"`
-	CurrentTrick     []*TrickCard           `json:"ct"`
-	TrumpSuit        int                    `json:"ts"`
-	CallerIdx        int                    `json:"ka"`
-	LeadPlayerIdx    int                    `json:"li"`
-	TeamScores       [CourtPieceTeamCnt]int `json:"sc"`
-	LastWinnerTeam   int                    `json:"lw"`
-	ConsecutiveWins  int                    `json:"cw"`
-	LastRoundCourt   bool                   `json:"lc"`
-	GameEndFlag      bool                   `json:"ge"`
-	WinnerTeam       int                    `json:"wt"`
-	ActionLog        []*ActionLogEntry      `json:"al"`
+	TrumpCards       *TrumpCards                                 `json:"tc"`
+	Players          []*CourtPiecePlayer                         `json:"ps"`
+	Config           CourtPieceConfig                            `json:"cf"`
+	Phase            CourtPiecePhase                             `json:"ph"`
+	RoundNumber      int                                         `json:"rn"`
+	TrickNumber      int                                         `json:"tn"`
+	CurrentPlayerIdx int                                         `json:"ci"`
+	CurrentTrick     []*TrickCard                                `json:"ct"`
+	TrumpSuit        int                                         `json:"ts"`
+	CallerIdx        int                                         `json:"ka"`
+	LeadPlayerIdx    int                                         `json:"li"`
+	TeamScores       [CourtPieceTeamCnt]int                      `json:"sc"`
+	LastWinnerTeam   int                                         `json:"lw"`
+	ConsecutiveWins  int                                         `json:"cw"`
+	LastRoundCourt   bool                                        `json:"lc"`
+	ScoreBreakdown   [CourtPieceTeamCnt]CourtPieceScoreBreakdown `json:"sb,omitempty"`
+	GameEndFlag      bool                                        `json:"ge"`
+	WinnerTeam       int                                         `json:"wt"`
+	ActionLog        []*ActionLogEntry                           `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -984,6 +1006,7 @@ func (c *CourtPiece) MarshalJSON() ([]byte, error) {
 		LastWinnerTeam:   c.lastWinnerTeam,
 		ConsecutiveWins:  c.consecutiveWins,
 		LastRoundCourt:   c.lastRoundCourt,
+		ScoreBreakdown:   c.scoreBreakdown,
 		GameEndFlag:      c.gameEndFlag,
 		WinnerTeam:       c.winnerTeam,
 		ActionLog:        c.actionLog,
@@ -1065,6 +1088,7 @@ func (c *CourtPiece) UnmarshalJSON(data []byte) error {
 	c.lastWinnerTeam = j.LastWinnerTeam
 	c.consecutiveWins = j.ConsecutiveWins
 	c.lastRoundCourt = j.LastRoundCourt
+	c.scoreBreakdown = j.ScoreBreakdown
 	c.gameEndFlag = j.GameEndFlag
 	c.winnerTeam = j.WinnerTeam
 	c.actionLog = j.ActionLog

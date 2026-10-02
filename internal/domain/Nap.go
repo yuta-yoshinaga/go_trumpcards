@@ -696,6 +696,9 @@ func (g *Nap) SetContract(b NapBid) { g.contract = b }
 // GetBids 各プレイヤーの入札を取得
 func (g *Nap) GetBids() [NapPlayerCnt]NapBid { return g.bids }
 
+// GetBidDone 各プレイヤーが入札を完了したか取得する (未入札とパスの区別用)。
+func (g *Nap) GetBidDone() [NapPlayerCnt]bool { return g.bidDone }
+
 // GetTrumpSuit 切り札スート取得 (0=なし)
 func (g *Nap) GetTrumpSuit() int { return g.trumpSuit }
 

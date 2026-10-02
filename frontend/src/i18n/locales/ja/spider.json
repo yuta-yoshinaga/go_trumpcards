@@ -8,6 +8,7 @@
   "stock": "山札",
   "completed": "完成",
   "tableau": "場札",
+  "cardPosAria": "{{card}}（列{{col}}・上から{{pos}}枚目）",
   "moveCount": "手数",
   "deal": "配る",
   "giveup": "ギブアップ",

@@ -184,6 +184,12 @@ function BotifarraPageContent() {
               yours: humanTeamValue(state.scores),
               theirs: opponentTeamValue(state.scores),
             })}
+            {state.config && (
+              <>
+                {' · '}
+                {t('label.target')}: {state.config.targetScore}
+              </>
+            )}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>

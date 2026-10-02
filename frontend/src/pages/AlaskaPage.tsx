@@ -513,7 +513,11 @@ function AlaskaPageContent() {
                                       // 示していたが、読み上げには枚数が乗っていな
                                       // かった (#5534)。末尾の1枚だけのときは言わない
                                       // -- 「1枚まとめて」は情報にならない。
-                                      aria-label={`${tc.card ? cardAlt(tc.card) : ''}${
+                                      aria-label={`${t('tableauCardAriaLabel', {
+                                        card: tc.card ? cardAlt(tc.card) : '',
+                                        col: colIdx,
+                                        pos: cardIdx + 1,
+                                      })}${
                                         col.length - cardIdx > 1
                                           ? ` ${t('blockMoveLabel', { n: col.length - cardIdx })}`
                                           : ''

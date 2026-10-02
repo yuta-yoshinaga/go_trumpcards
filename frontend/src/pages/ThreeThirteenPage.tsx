@@ -387,6 +387,11 @@ function ThreeThirteenPageContent() {
                         <th scope="col" className="text-left">
                           {t('scoresPlayer')}
                         </th>
+                        {state.roundScoreHistory.map((_, idx) => (
+                          <th scope="col" key={`history-${idx}`}>
+                            {t('scoresHistoryRound', { round: idx + 1 })}
+                          </th>
+                        ))}
                         <th scope="col">{t('scoresRound')}</th>
                         {(isRoundEnd || isGameEnd) && <th scope="col">{t('scoresDeadwood')}</th>}
                         <th scope="col">{t('scoresTotal')}</th>
@@ -396,6 +401,11 @@ function ThreeThirteenPageContent() {
                       {state.players.map((p) => (
                         <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
                           <td>{playerName(p.id, p.isHuman)}</td>
+                          {state.roundScoreHistory.map((scores, idx) => (
+                            <td className="text-center" key={`history-${idx}`}>
+                              {scores[p.id] ?? 0}
+                            </td>
+                          ))}
                           <td className="text-center">{p.roundScore}</td>
                           {(isRoundEnd || isGameEnd) && <td className="text-center">{p.deadwood}</td>}
                           <td className="text-center">{p.cumulativeScore}</td>

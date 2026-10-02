@@ -1,6 +1,7 @@
 import type {
   AluetteResponse,
   AnacondaResponse,
+  AndarBaharResponse,
   BaccaratBanqueResponse,
   BasraResponse,
   BatakResponse,
@@ -52,6 +53,7 @@ import type {
   MarjapussiResponse,
   MichiganResponse,
   MinchiateResponse,
+  MinibridgeResponse,
   MississippiStudResponse,
   MusResponse,
   NapResponse,
@@ -97,6 +99,32 @@ import type {
   WattenResponse,
   ZwanzigerrufenResponse,
 } from '../types/card';
+
+/** Creates a default Andar Bahar state. */
+export function makeAndarBaharState(overrides?: Partial<AndarBaharResponse>): AndarBaharResponse {
+  return {
+    andarCards: [],
+    baharCards: [],
+    firstColumn: 0,
+    dealtCount: 0,
+    phase: 1,
+    chips: 1000,
+    betAmount: 0,
+    betTarget: 0,
+    sideAmount: 0,
+    sideBand: -1,
+    sideBandProbabilities: [],
+    winner: -1,
+    result: 0,
+    payout: 0,
+    mainPayout: 0,
+    sidePayout: 0,
+    history: [],
+    roundHistory: [],
+    message: '',
+    ...overrides,
+  };
+}
 
 /** Creates a default Egyptian Ratscrew state. */
 export function makeEgyptianRatscrewState(overrides?: Partial<EgyptianRatscrewResponse>): EgyptianRatscrewResponse {
@@ -3176,6 +3204,10 @@ const baseCourtPieceState: CourtPieceResponse = {
   trumpSuit: 0,
   currentTrick: [],
   teamScores: [0, 0],
+  scoreBreakdown: [
+    { sar: 0, courtBonus: 0 },
+    { sar: 0, courtBonus: 0 },
+  ],
   consecutiveWins: 0,
   lastWinnerTeam: -1,
   lastRoundCourt: false,
@@ -3658,6 +3690,11 @@ const basePreferenceState: PreferenceResponse = {
   bidDone: [false, false, false],
   currentTrick: [],
   playerScores: [0, 0, 0],
+  scoreBreakdown: [
+    { declarerContract: 0, defendingContract: 0 },
+    { declarerContract: 0, defendingContract: 0 },
+    { declarerContract: 0, defendingContract: 0 },
+  ],
   roundTricks: [0, 0, 0],
   playableIndices: [],
   gameEndFlag: false,
@@ -3768,6 +3805,7 @@ const baseNapState: NapResponse = {
   contract: 0,
   trumpSuit: 0,
   bids: [0, 0, 0, 0],
+  bidDone: [false, false, false, false],
   currentTrick: [],
   playerScores: [0, 0, 0, 0],
   roundTricks: [0, 0, 0, 0],
@@ -5581,6 +5619,7 @@ const baseContinentalRummyState: ContinentalRummyResponse = {
     [12, 13, 14],
   ],
   canGoOutOnDeal: false,
+  roundScoreHistory: [],
   hintDiscardIdx: 15,
   hintReason: 'go_out',
   config: { cpuDifficulty: 1, totalRounds: 3 },
@@ -5942,6 +5981,45 @@ export function makeLaughAndLieDownState(overrides?: Partial<LaughAndLieDownResp
     lastInBonus: 5,
     pot: 11,
     gameEndFlag: false,
+    message: '',
+    ...overrides,
+  };
+}
+
+/** Creates a default Minibridge state. */
+export function makeMinibridgeState(overrides?: Partial<MinibridgeResponse>): MinibridgeResponse {
+  return {
+    players: Array.from({ length: 4 }, (_, id) => ({
+      id,
+      isHuman: id === 0,
+      cardCount: 0,
+      cards: [],
+      hcp: 10,
+      team: id % 2,
+      trickCount: 0,
+    })),
+    phase: 0,
+    roundNumber: 1,
+    trickNumber: 0,
+    contractLevel: 0,
+    contractSuit: 0,
+    requiredTricks: 0,
+    declarerIdx: 0,
+    dummyIdx: 2,
+    dummyHand: [],
+    lastMade: false,
+    lastTricks: 0,
+    teamScores: [0, 0],
+    roundDelta: [0, 0],
+    currentPlayerIdx: 0,
+    leadPlayerIdx: 0,
+    dealerIdx: 0,
+    currentTrick: [],
+    validPlays: [],
+    gameEndFlag: false,
+    winnerTeam: -1,
+    declarerByDealerTie: false,
+    config: { rounds: 4 },
     message: '',
     ...overrides,
   };

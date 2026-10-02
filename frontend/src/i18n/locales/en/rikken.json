@@ -1,5 +1,7 @@
 {
   "title": "Rikken",
+  "currentBid": "Current highest contract: {{contract}} ({{name}})",
+  "currentBidNone": "Current highest contract: none",
   "bidGuide": "Bid a stronger contract, or drop out",
   "callGuide": "Choose the trump suit",
   "playGuide": "Only legal cards can be chosen",

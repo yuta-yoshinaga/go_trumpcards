@@ -139,6 +139,7 @@ describe('DragonTigerPage', () => {
     expect(screen.getByTestId('bet-odds')).toHaveTextContent('ドラゴン 1:1');
     expect(screen.getByTestId('bet-odds')).toHaveTextContent('タイガー 1:1');
     expect(screen.getByTestId('bet-odds')).toHaveTextContent('タイ 8:1');
+    expect(screen.queryByTestId('payout-breakdown')).not.toBeInTheDocument();
   });
 
   it('dispatches a Dragon bet on button click', async () => {
@@ -198,6 +199,7 @@ describe('DragonTigerPage', () => {
     renderWithProviders(<DragonTigerPage />);
     const breakdown = await screen.findByTestId('payout-breakdown');
     expect(breakdown).toHaveTextContent('ドラゴンの勝ち');
+    expect(screen.getByTestId('payout-bet-amount')).toHaveTextContent('ベット額: 100');
     expect(breakdown).toHaveTextContent('配当倍率: ドラゴン 1:1');
     const diff = screen.getByTestId('payout-diff');
     expect(diff).toHaveTextContent('+100');
