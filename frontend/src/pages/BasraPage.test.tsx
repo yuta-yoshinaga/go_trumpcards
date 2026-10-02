@@ -72,7 +72,8 @@ describe('BasraPage', () => {
       makeBasraState({
         players: [
           { ...playPhaseState.players[0], capturedCount: 1, capturedCards: [card] },
-          ...playPhaseState.players.slice(1),
+          { ...playPhaseState.players[1], capturedCount: 1, capturedCards: [card] },
+          ...playPhaseState.players.slice(2),
         ],
       }),
     );
@@ -81,6 +82,7 @@ describe('BasraPage', () => {
     expect(captured.querySelector('[aria-label="♥ 5"]')).toBeInTheDocument();
     expect(captured).toHaveAttribute('data-captured-count', '1');
     expect(captured.querySelectorAll('[aria-label]')).toHaveLength(1);
+    expect(screen.getByTestId('basra-captured-1').querySelector('[aria-label="♥ 5"]')).toBeInTheDocument();
   });
 
   it('labels hand cards and exposes their selection state', async () => {
