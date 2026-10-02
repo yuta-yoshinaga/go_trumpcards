@@ -50,6 +50,7 @@ import type {
   ManilleResponse,
   MariasResponse,
   MarjapussiResponse,
+  MatrimonyResponse,
   MichiganResponse,
   MinchiateResponse,
   MinibridgeResponse,
@@ -120,6 +121,24 @@ export function makeAndarBaharState(overrides?: Partial<AndarBaharResponse>): An
     sidePayout: 0,
     history: [],
     roundHistory: [],
+    message: '',
+    ...overrides,
+  };
+}
+
+/** Creates a default Matrimony state. */
+export function makeMatrimonyState(overrides?: Partial<MatrimonyResponse>): MatrimonyResponse {
+  return {
+    tableau: Array.from({ length: 16 }, () => null),
+    foundation: Array.from({ length: 4 }, () => []),
+    stockCount: 88,
+    redealCount: 0,
+    maxRedeals: 3,
+    waste: [],
+    phase: 0,
+    moveCount: 0,
+    canUndo: false,
+    isStalemate: false,
     message: '',
     ...overrides,
   };

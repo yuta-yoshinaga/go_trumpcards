@@ -37,6 +37,7 @@ func (p *MatrimonyWebPresenter) Output(c interfaces.MatrimonyGame, lastErr error
 
 	resObj.StockCount = c.GetStockCount()
 	resObj.RedealCount = c.GetRedealCount()
+	resObj.MaxRedeals = c.GetMaxRedeals()
 	waste := c.GetWaste()
 	resObj.Waste = make([]*controller.WebOutputCard, len(waste))
 	for i, card := range waste {
@@ -85,6 +86,7 @@ func (p *MatrimonyWebPresenter) HintOutput(c interfaces.MatrimonyGame) string {
 	hint := c.GetHint()
 	resObj := new(controller.MatrimonyWebOutput)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, c, int(c.GetPhase()))
+	resObj.MaxRedeals = c.GetMaxRedeals()
 	resObj.Tableau = make([]*controller.WebOutputCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
 	resObj.Waste = make([]*controller.WebOutputCard, 0)

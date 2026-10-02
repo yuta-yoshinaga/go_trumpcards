@@ -1,21 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { makeMatrimonyState } from '../../../test/stateFactories';
 import type { MatrimonyResponse } from '../../../types/games/matrimony';
 import { formatMatrimonyState } from './matrimonyFormatter';
 
 function makeState(overrides?: Partial<MatrimonyResponse>): MatrimonyResponse {
-  return {
-    tableau: Array.from({ length: 16 }, () => null),
-    foundation: Array.from({ length: 4 }, () => []),
-    stockCount: 88,
-    redealCount: 0,
-    waste: [],
-    phase: 0,
-    moveCount: 0,
-    canUndo: false,
-    isStalemate: false,
-    message: '',
-    ...overrides,
-  };
+  return makeMatrimonyState(overrides);
 }
 
 describe('formatMatrimonyState', () => {

@@ -30,6 +30,8 @@ export interface MatrimonyResponse extends BaseGameResponse {
   foundation: Card[][];
   stockCount: number;
   redealCount: number;
+  /** Maximum number of times the waste may be collected. */
+  maxRedeals: number;
   waste: Card[];
   phase: number;
   moveCount: number;
