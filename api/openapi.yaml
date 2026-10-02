@@ -44066,6 +44066,9 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        totalCardCount:
+          type: integer
+          description: Total number of cards in the game's deck
         phase:
           type: integer
           description: "Game phase: 0 = Playing, 1 = GameClear, 2 = GameOver"

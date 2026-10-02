@@ -24,6 +24,7 @@ export interface WhiteheadResponse extends BaseGameResponse {
   stockCount: number;
   waste: Card[];
   foundation: Card[][];
+  totalCardCount: number;
   phase: number;
   moveCount: number;
   drawCount: number;

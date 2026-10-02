@@ -17,10 +17,11 @@ import (
 
 func mustWhiteheadOutputJSON(msg string) string {
 	out := &controller.WhiteheadWebOutput{
-		Tableau:       [][]*controller.WhiteheadWebOutputTableauCard{},
-		Waste:         []*controller.WebOutputCard{},
-		Foundation:    [][]*controller.WebOutputCard{},
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Tableau:        [][]*controller.WhiteheadWebOutputTableauCard{},
+		Waste:          []*controller.WebOutputCard{},
+		Foundation:     [][]*controller.WebOutputCard{},
+		TotalCardCount: domain.CardCnt,
+		WebOutputBase:  controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {
