@@ -141,6 +141,8 @@ func TestKing_DealHistorySurvivesSerialization(t *testing.T) {
 	require.NoError(t, err)
 	var state map[string]any
 	require.NoError(t, json.Unmarshal(data, &state))
+	state["ph"] = domain.KingPhaseDealEnd
+	state["cc"] = float64(domain.KingContractKingTrump)
 	state["dh"] = []any{map[string]any{"co": float64(domain.KingContractKingTrump), "ts": float64(domain.CardDesignHeart), "di": float64(2), "gn": map[string]any{"0": float64(5), "1": float64(0), "2": float64(-5), "3": float64(0)}}}
 	data, err = json.Marshal(state)
 	require.NoError(t, err)
@@ -150,7 +152,94 @@ func TestKing_DealHistorySurvivesSerialization(t *testing.T) {
 	assert.Equal(t, domain.KingContractKingTrump, restored.GetDealHistory()[0].Contract)
 	assert.Equal(t, domain.CardDesignHeart, restored.GetDealHistory()[0].TrumpSuit)
 	assert.Equal(t, 5, restored.GetDealHistory()[0].Gained[0])
+}
 
+func TestKing_DealHistoryRecordedAndReset(t *testing.T) {
+	g := newTestKing()
+	cfg := g.GetConfig()
+	cfg.CpuDifficulty = domain.KingDifficultyEasy
+	g.SetConfig(cfg)
+	g.Reset()
+	guard := 0
+	for len(g.GetDealHistory()) == 0 && guard < 5000 {
+		guard++
+		switch g.GetPhase() {
+		case domain.KingPhaseSelectContract:
+			if g.GetPlayer(g.GetDealerIdx()).GetIsHuman() {
+				used := g.GetUsedContracts()
+				contract := 0
+				for contract < domain.KingContractCnt && used[contract] {
+					contract++
+				}
+				trump := -1
+				if contract == domain.KingContractKingTrump {
+					trump = domain.CardDesignSpade
+				}
+				require.NoError(t, g.SelectContract(contract, trump))
+			} else {
+				g.CpuPlay()
+			}
+		case domain.KingPhasePlay:
+			if g.IsHumanTurn() {
+				valid := g.GetPlayableIndices(g.GetCurrentTurn())
+				require.NotEmpty(t, valid)
+				require.NoError(t, g.PlayerPlay(valid[0]))
+			} else {
+				g.CpuPlay()
+			}
+		}
+	}
+	require.Less(t, guard, 5000)
+	require.Len(t, g.GetDealHistory(), 1)
+	assert.Equal(t, g.GetLastDealDetail(), g.GetDealHistory()[0])
+	g.Reset()
+	assert.Empty(t, g.GetDealHistory())
+}
+
+func TestKing_UnmarshalValidatesDealHistory(t *testing.T) {
+	g := domain.NewDefaultKing()
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var base map[string]any
+	require.NoError(t, json.Unmarshal(data, &base))
+	validDetail := map[string]any{"co": float64(0), "ts": float64(-1), "di": float64(0), "gn": map[string]any{"0": float64(0), "1": float64(0), "2": float64(0), "3": float64(0)}}
+	tests := []struct {
+		name   string
+		mutate func(map[string]any)
+	}{
+		{name: "contract below range", mutate: func(state map[string]any) {
+			state["dh"] = []any{map[string]any{"co": float64(-1), "ts": float64(-1), "di": float64(0), "gn": validDetail["gn"]}}
+		}},
+		{name: "contract above range", mutate: func(state map[string]any) {
+			state["dh"] = []any{map[string]any{"co": float64(domain.KingContractCnt), "ts": float64(-1), "di": float64(0), "gn": validDetail["gn"]}}
+		}},
+		{name: "missing gained seat", mutate: func(state map[string]any) {
+			state["dh"] = []any{map[string]any{"co": float64(0), "ts": float64(-1), "di": float64(0), "gn": map[string]any{"0": float64(0), "1": float64(0), "2": float64(0)}}}
+		}},
+		{name: "history exceeds active deal count", mutate: func(state map[string]any) { state["dh"] = []any{validDetail} }},
+		{name: "deal end permits current completed deal", mutate: func(state map[string]any) {
+			state["ph"] = domain.KingPhaseDealEnd
+			state["cc"] = float64(0)
+			state["dh"] = []any{validDetail}
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			state := make(map[string]any, len(base))
+			for key, value := range base {
+				state[key] = value
+			}
+			tt.mutate(state)
+			encoded, err := json.Marshal(state)
+			require.NoError(t, err)
+			var restored domain.King
+			if tt.name == "deal end permits current completed deal" {
+				assert.NoError(t, json.Unmarshal(encoded, &restored))
+			} else {
+				assert.Error(t, json.Unmarshal(encoded, &restored))
+			}
+		})
+	}
 }
 
 func TestKing_UnmarshalRejectsNilDealHistoryEntry(t *testing.T) {
@@ -475,17 +564,8 @@ func TestKing_FullGame_CpuDriven(t *testing.T) {
 	for contract := range expectedContracts {
 		expectedContracts[contract] = contract
 	}
-	if domain.KingTotalDeals == domain.KingContractCnt {
-		assert.ElementsMatch(t, expectedContracts, contracts, "each contract should appear exactly once")
-	} else {
-		seen := make(map[int]bool, domain.KingContractCnt)
-		for _, contract := range contracts {
-			seen[contract] = true
-		}
-		for _, contract := range expectedContracts {
-			assert.True(t, seen[contract], "contract %d should be used", contract)
-		}
-	}
+	assert.Equal(t, domain.KingContractCnt, domain.KingTotalDeals)
+	assert.ElementsMatch(t, expectedContracts, contracts, "each contract should appear exactly once")
 }
 
 func TestKing_PlayerPlay_Errors(t *testing.T) {

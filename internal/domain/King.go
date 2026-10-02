@@ -651,7 +651,7 @@ func (g *King) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if len(j.Players) > kingMaxSliceLen || len(j.CurrentTrick) > kingMaxSliceLen ||
-		len(j.LastTrick) > kingMaxSliceLen || len(j.ActionLog) > kingMaxSliceLen || len(j.DealHistory) > KingTotalDeals {
+		len(j.LastTrick) > kingMaxSliceLen || len(j.ActionLog) > kingMaxSliceLen {
 		return fmt.Errorf("king: input array exceeds maximum allowed size")
 	}
 	if len(j.Players) != KingPlayerCnt {
@@ -665,6 +665,14 @@ func (g *King) UnmarshalJSON(data []byte) error {
 	for _, detail := range j.DealHistory {
 		if detail == nil {
 			return fmt.Errorf("king: nil deal history entry in state")
+		}
+		if detail.Contract < 0 || detail.Contract >= KingContractCnt {
+			return fmt.Errorf("king: invalid deal history contract %d", detail.Contract)
+		}
+		for playerIdx := 0; playerIdx < KingPlayerCnt; playerIdx++ {
+			if _, ok := detail.Gained[playerIdx]; !ok {
+				return fmt.Errorf("king: deal history gained is missing player %d", playerIdx)
+			}
 		}
 	}
 	// トリックカードは PlayerIdx が範囲内で、Card が非 nil でなければならない。
@@ -691,6 +699,13 @@ func (g *King) UnmarshalJSON(data []byte) error {
 	// dealNumber の範囲。
 	if j.DealNumber < 0 || j.DealNumber > KingTotalDeals {
 		return fmt.Errorf("king: invalid deal number %d", j.DealNumber)
+	}
+	completedDeals := j.DealNumber
+	if j.Phase == KingPhaseDealEnd || j.Phase == KingPhaseGameEnd {
+		completedDeals++
+	}
+	if len(j.DealHistory) > completedDeals || len(j.DealHistory) > KingTotalDeals {
+		return fmt.Errorf("king: deal history exceeds completed deal count")
 	}
 	// インデックスの範囲 (常に [0, PlayerCnt))。
 	if !kingInRange(j.DealerIdx) || !kingInRange(j.CurrentPlayer) || !kingInRange(j.LeadPlayer) {

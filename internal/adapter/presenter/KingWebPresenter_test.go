@@ -41,6 +41,8 @@ func TestKingWebPresenter_DealHistory(t *testing.T) {
 	require.NoError(t, err)
 	var state map[string]any
 	require.NoError(t, json.Unmarshal(data, &state))
+	state["ph"] = domain.KingPhaseDealEnd
+	state["cc"] = float64(domain.KingContractKingTrump)
 	state["dh"] = []any{map[string]any{
 		"co": float64(domain.KingContractKingTrump), "ts": float64(domain.CardDesignHeart),
 		"di": float64(2), "gn": map[string]any{"0": float64(5), "1": float64(0), "2": float64(-5), "3": float64(0)},
