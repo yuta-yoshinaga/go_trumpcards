@@ -128,7 +128,7 @@ func (ci *CalabresellaInteractor) NextTrick() string {
 	return ci.tp.Output(ci.Game, nil)
 }
 
-// NextRound ラウンドをスコアリングして次のラウンドへ進む
+// NextRound 次のラウンドへ進む
 func (ci *CalabresellaInteractor) NextRound() string {
 	ci.Game.ScoreRound()
 	return advanceRound(ci.Game, ci.tp, ci.advance)

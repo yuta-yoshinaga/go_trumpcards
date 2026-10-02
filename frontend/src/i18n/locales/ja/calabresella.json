@@ -62,7 +62,10 @@
   },
   "roundResult": {
     "title": "ラウンド結果",
-    "thirds": "{{name}} 取得（1/3単位）: {{thirds}}"
+    "thirds": "{{name}} 取得（1/3単位）: {{thirds}}",
+    "soloistWon": "ソリストの契約達成",
+    "soloistLost": "ソリストの契約未達",
+    "settlement": "{{name}} 今回の精算: {{change}}点"
   },
   "hintAvailable": "ヒント",
   "hint": {

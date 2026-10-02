@@ -1662,6 +1662,8 @@ const baseCalabresellaState: CalabresellaResponse = {
   currentTrick: [],
   playerScores: [0, 0, 0],
   roundThirds: [0, 0, 0],
+  roundScoreChanges: [0, 0, 0],
+  soloistWon: false,
   lastTrickWinner: -1,
   playableIndices: [0, 1, 2],
   gameEndFlag: false,
