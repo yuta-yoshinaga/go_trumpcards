@@ -360,6 +360,7 @@ function SchnapsenPageContent() {
 
           <ActionLogSection
             isEndPhase={isGameEnd}
+            availableDuringPlay
             actionLog={actionLog}
             showActionLog={showActionLog}
             hideActionLog={hideActionLog}
