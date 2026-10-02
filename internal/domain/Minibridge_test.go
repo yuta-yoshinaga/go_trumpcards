@@ -317,14 +317,60 @@ func TestMinibridge_ScoringCountsBothSeatsOfTheDeclaringSide(t *testing.T) {
 	assert.Equal(t, 7, m.GetLastTricks())
 }
 
+func TestMinibridge_RoundDeltaMatchesTeamScoreChange(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		took int
+		want [MinibridgeTeamCnt]int
+	}{
+		{"made", 8, [MinibridgeTeamCnt]int{110, 0}},
+		{"down", 7, [MinibridgeTeamCnt]int{0, 50}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			m := newTestMinibridge(t)
+			m.SetTeamScore(0, 25)
+			m.SetTeamScore(1, 40)
+			before := [MinibridgeTeamCnt]int{m.GetTeamScore(0), m.GetTeamScore(1)}
+			m.SetContractForTest(0, 2, CardDesignHeart)
+			m.SetPhaseForTest(MinibridgePhasePlay)
+			m.GiveTricksForTest(0, tc.took)
+			m.FinishRoundForTest()
+			after := [MinibridgeTeamCnt]int{m.GetTeamScore(0), m.GetTeamScore(1)}
+			assert.Equal(t, tc.want, m.GetRoundDelta())
+			assert.Equal(t, [MinibridgeTeamCnt]int{after[0] - before[0], after[1] - before[1]}, m.GetRoundDelta())
+		})
+	}
+}
+
+func TestMinibridge_RoundDeltaSnapshotCompatibility(t *testing.T) {
+	m := newTestMinibridge(t)
+	m.roundDelta = [MinibridgeTeamCnt]int{110, 0}
+	data, err := json.Marshal(m)
+	require.NoError(t, err)
+	var restored Minibridge
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Equal(t, m.GetRoundDelta(), restored.GetRoundDelta())
+
+	var legacy map[string]any
+	require.NoError(t, json.Unmarshal(data, &legacy))
+	delete(legacy, "rd")
+	legacyData, err := json.Marshal(legacy)
+	require.NoError(t, err)
+	var oldSnapshot Minibridge
+	require.NoError(t, json.Unmarshal(legacyData, &oldSnapshot))
+	assert.Equal(t, [MinibridgeTeamCnt]int{}, oldSnapshot.GetRoundDelta())
+}
+
 func TestMinibridge_NextRoundRotatesTheDealer(t *testing.T) {
 	m := newTestMinibridge(t)
+	m.roundDelta = [MinibridgeTeamCnt]int{25, 0}
 	before := m.GetDealerIdx()
 	m.SetPhaseForTest(MinibridgePhaseRoundEnd)
 	m.NextRound()
 	assert.Equal(t, (before+1)%MinibridgePlayerCnt, m.GetDealerIdx())
 	assert.Equal(t, MinibridgePhaseContract, m.GetPhase())
 	assert.Equal(t, 2, m.GetRoundNumber())
+	assert.Equal(t, [MinibridgeTeamCnt]int{}, m.GetRoundDelta())
 
 	m.FinishGameForTest()
 	after := m.GetDealerIdx()

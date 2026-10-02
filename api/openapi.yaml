@@ -59320,6 +59320,11 @@ components:
           description: Running totals, indexed by team.
           items:
             type: integer
+        roundDelta:
+          type: array
+          description: Score change in the latest deal, indexed by team.
+          items:
+            type: integer
         currentPlayerIdx:
           type: integer
         leadPlayerIdx:

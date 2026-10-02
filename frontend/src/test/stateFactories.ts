@@ -52,6 +52,7 @@ import type {
   MarjapussiResponse,
   MichiganResponse,
   MinchiateResponse,
+  MinibridgeResponse,
   MississippiStudResponse,
   MusResponse,
   NapResponse,
@@ -5944,6 +5945,45 @@ export function makeCasinoHoldemState(overrides?: Partial<CasinoHoldemResponse>)
     netChange: 0,
     playerHandRank: 0,
     dealerHandRank: 0,
+    message: '',
+    ...overrides,
+  };
+}
+
+/** Creates a default Minibridge state. */
+export function makeMinibridgeState(overrides?: Partial<MinibridgeResponse>): MinibridgeResponse {
+  return {
+    players: Array.from({ length: 4 }, (_, id) => ({
+      id,
+      isHuman: id === 0,
+      cardCount: 0,
+      cards: [],
+      hcp: 10,
+      team: id % 2,
+      trickCount: 0,
+    })),
+    phase: 0,
+    roundNumber: 1,
+    trickNumber: 0,
+    contractLevel: 0,
+    contractSuit: 0,
+    requiredTricks: 0,
+    declarerIdx: 0,
+    dummyIdx: 2,
+    dummyHand: [],
+    lastMade: false,
+    lastTricks: 0,
+    teamScores: [0, 0],
+    roundDelta: [0, 0],
+    currentPlayerIdx: 0,
+    leadPlayerIdx: 0,
+    dealerIdx: 0,
+    currentTrick: [],
+    validPlays: [],
+    gameEndFlag: false,
+    winnerTeam: -1,
+    declarerByDealerTie: false,
+    config: { rounds: 4 },
     message: '',
     ...overrides,
   };

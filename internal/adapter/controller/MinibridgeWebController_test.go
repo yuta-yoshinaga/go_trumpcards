@@ -23,6 +23,7 @@ func mustMinibridgeOutputJSON(msg string) string {
 		ValidPlays:    []int{},
 		DummyHand:     []*controller.WebOutputCard{},
 		TeamScores:    []int{},
+		RoundDelta:    []int{},
 		DeclarerIdx:   -1,
 		DummyIdx:      -1,
 		WinnerTeam:    -1,

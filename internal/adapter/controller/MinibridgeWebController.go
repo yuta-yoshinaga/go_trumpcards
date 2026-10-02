@@ -65,6 +65,7 @@ type MinibridgeWebOutput struct {
 	LastMade         bool                  `json:"lastMade"`
 	LastTricks       int                   `json:"lastTricks"`
 	TeamScores       []int                 `json:"teamScores"`
+	RoundDelta       []int                 `json:"roundDelta"`
 	CurrentPlayerIdx int                   `json:"currentPlayerIdx"`
 	LeadPlayerIdx    int                   `json:"leadPlayerIdx"`
 	DealerIdx        int                   `json:"dealerIdx"`
@@ -120,6 +121,7 @@ func newMinibridgeDefaultOutput(msg string) *MinibridgeWebOutput {
 		ValidPlays:    make([]int, 0),
 		DummyHand:     make([]*WebOutputCard, 0),
 		TeamScores:    make([]int, 0),
+		RoundDelta:    make([]int, 0),
 		DeclarerIdx:   -1,
 		DummyIdx:      -1,
 		WinnerTeam:    -1,
