@@ -180,6 +180,30 @@ describe('ChipBetInput', () => {
       expect(onChange).toHaveBeenLastCalledWith(40);
     });
 
+    it('does not change the value when aria-disabled', () => {
+      const onChange = vi.fn();
+      render(
+        <ChipBetInput
+          id="bet"
+          label="Bet"
+          value={50}
+          onChange={onChange}
+          min={10}
+          max={500}
+          step={10}
+          ariaDisabled
+          showSteppers
+        />,
+      );
+      const minus = screen.getByRole('button', { name: 'Bet −10' });
+      const plus = screen.getByRole('button', { name: 'Bet +10' });
+      expect(minus).toHaveAttribute('aria-disabled', 'true');
+      expect(plus).toHaveAttribute('aria-disabled', 'true');
+      fireEvent.click(minus);
+      fireEvent.click(plus);
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
     it('disables the minus button at min and the plus button at max', () => {
       const { rerender } = render(
         <ChipBetInput id="bet" label="Bet" value={10} onChange={() => {}} min={10} max={100} step={10} showSteppers />,

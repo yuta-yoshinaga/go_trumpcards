@@ -67,7 +67,10 @@ export function ChipBetInput({
   // The error semantic is carried entirely by the coloured border.
   const errorClasses = invalid ? 'bg-ds-surface border-ds-error text-ds-text-primary' : '';
   const upperBound = max ?? Number.POSITIVE_INFINITY;
-  const stepBy = (delta: number) => onChange(Math.max(min, Math.min(value + delta, upperBound)));
+  const stepBy = (delta: number) => {
+    if (ariaDisabled) return;
+    onChange(Math.max(min, Math.min(value + delta, upperBound)));
+  };
   const stepperClass =
     'min-h-[44px] min-w-[44px] rounded bg-ds-surface-elevated px-3 font-bold text-ds-text-primary text-lg disabled:opacity-40 disabled:cursor-not-allowed';
   return (
@@ -82,6 +85,7 @@ export function ChipBetInput({
           className={stepperClass}
           onClick={() => stepBy(-step)}
           disabled={disabled || value <= min}
+          aria-disabled={ariaDisabled || undefined}
         >
           −
         </button>
@@ -99,13 +103,11 @@ export function ChipBetInput({
         value={value}
         aria-invalid={invalid || undefined}
         aria-describedby={describedBy}
-        onWheel={(e) => e.currentTarget.blur()}
-        disabled={disabled}
-        aria-disabled={ariaDisabled || undefined}
         onChange={(e) => {
           if (ariaDisabled) return;
           const raw = e.target.value;
           const cleaned = raw.replace(/[^0-9]/g, '');
+          // User typed only non-digit chars: reject (mirrors prior type=number rejection of NaN input).
           if (raw !== '' && cleaned === '') return;
           const parsed = cleaned === '' ? 0 : Number(cleaned);
           if (!autoClamp) {
@@ -115,6 +117,9 @@ export function ChipBetInput({
           const upper = max ?? Number.POSITIVE_INFINITY;
           onChange(Math.max(min, Math.min(parsed, upper)));
         }}
+        onWheel={(e) => e.currentTarget.blur()}
+        disabled={disabled}
+        aria-disabled={ariaDisabled || undefined}
         className={`${widthClass} px-3 py-2 rounded text-base min-h-[44px] ${ariaDisabled ? 'opacity-40 cursor-not-allowed' : ''} ${errorClasses}`}
       />
       {showSteppers && (
@@ -124,6 +129,7 @@ export function ChipBetInput({
           className={stepperClass}
           onClick={() => stepBy(step)}
           disabled={disabled || (max != null && value >= max)}
+          aria-disabled={ariaDisabled || undefined}
         >
           ＋
         </button>

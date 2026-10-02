@@ -291,7 +291,7 @@ function KingoPageContent() {
                         if (canBet) handleBet(betAmount);
                       }}
                       disabled={loading}
-                      className={`${btnSuccess} ${!canBet ? 'aria-disabled:opacity-40 aria-disabled:cursor-not-allowed' : ''}`}
+                      className={`${btnSuccess} aria-disabled:opacity-40 aria-disabled:cursor-not-allowed`}
                     >
                       {t('button.bet')}
                     </button>
