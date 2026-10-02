@@ -854,7 +854,7 @@ type minchiateJSON struct {
 	LastTrickWinner  int                                           `json:"ltw"`
 	TeamScores       [minchiateTeamCnt]int                         `json:"ts"`
 	RoundTricks      [MinchiatePlayerCnt]int                       `json:"rt"`
-	RoundBreakdown   [minchiateTeamCnt]MinchiateTeamRoundBreakdown `json:"rb,omitempty"`
+	RoundBreakdown   [minchiateTeamCnt]MinchiateTeamRoundBreakdown `json:"rb"`
 	GameEndFlag      bool                                          `json:"gef"`
 	WinnerTeam       int                                           `json:"wt"`
 	ActionLog        []*ActionLogEntry                             `json:"al"`

@@ -287,9 +287,6 @@ function MinchiatePageContent() {
                         })}
                       </div>
                     ))}
-                    {/* **トリック数を足しても teamScores の増分と合わない。**精算には
-                        最終トリックボーナスとスカルト枚数分が乗っているのに、どちらの
-                        画面にも出ていなかった (#6512)。検算できないのは内訳が足りないから。 */}
                     <div className="mt-2 mb-1 text-ds-text-primary">{t('roundResult.breakdownTitle')}</div>
                     {state.roundBreakdown.map((breakdown, team) => (
                       <div key={team} data-testid={`mc-round-breakdown-${team}`}>
@@ -302,6 +299,9 @@ function MinchiatePageContent() {
                         })}
                       </div>
                     ))}
+                    {/* **トリック数を足しても teamScores の増分と合わない。**精算には
+                        最終トリックボーナスとスカルト枚数分が乗っているのに、どちらの
+                        画面にも出ていなかった (#6512)。検算できないのは内訳が足りないから。 */}
                     {state.lastTrickWinner >= 0 && (
                       <div data-testid="mc-last-trick-bonus">
                         {t('roundResult.lastTrick', {
