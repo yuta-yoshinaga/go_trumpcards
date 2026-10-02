@@ -20,6 +20,7 @@ function makeState(overrides: Partial<PageOneResponse> = {}): PageOneResponse {
     players: [basePlayer, { ...basePlayer, id: 1, isHuman: false, cards: [], cardCount: 3 }],
     phase: 0,
     roundNumber: 1,
+    roundHistory: [],
     currentPlayerIdx: 0,
     discardTop: { design: 'SPADE', value: 7 },
     drawPileCount: 30,

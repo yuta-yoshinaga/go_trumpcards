@@ -25,6 +25,7 @@
   "scoresPlayer": "プレイヤー",
   "scoresRound": "ラウンド",
   "scoresTotal": "累計",
+  "historyRound": "ラウンド",
   "target": "目標: {{points}}点",
   "playButton": "出す",
   "drawButton": "引く",
