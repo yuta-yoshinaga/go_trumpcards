@@ -9,6 +9,7 @@
   "label.you": "You",
   "label.cpu": "CPU{{idx}}",
   "label.round": "Coup",
+  "roundHistory": { "title": "Chip changes by round", "round": "Round {{n}}" },
   "label.banker": "Banker",
   "label.stake": "Bank",
   "label.totalBet": "Bet total",

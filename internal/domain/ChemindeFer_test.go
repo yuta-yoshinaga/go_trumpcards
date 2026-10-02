@@ -3,6 +3,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"math/rand"
 	"testing"
 
@@ -218,6 +219,10 @@ func TestChemindeFer_RoundIsVoidWhenNobodyCovers(t *testing.T) {
 	assert.Equal(t, ChemindeFerResultNone, g.GetResult())
 	assert.NotEqual(t, banker, g.GetBankerIdx(), "乗り手が居なければバンクは隣へ渡る")
 	assert.Empty(t, g.GetBankerHand(), "配られていない")
+	history := g.GetRoundNetHistory()
+	require.Len(t, history, 1)
+	assert.Equal(t, 1, history[0].RoundNumber)
+	assert.Equal(t, make([]int, ChemindeFerSeatCnt), history[0].Deltas)
 }
 
 // --- 引きの規則 ---
@@ -801,6 +806,11 @@ func TestChemindeFer_LastNetSplitsTheSettlementPerSeat(t *testing.T) {
 			const seat = 1 // SetupCoupForTest が賭けさせる席。
 			assert.Equal(t, tc.wantPunter, g.GetLastNet(seat), "賭けた席の純増減")
 			assert.Equal(t, tc.wantBank, g.GetLastNet(bankerIdx), "親の純増減")
+			history := g.GetRoundNetHistory()
+			require.Len(t, history, 1)
+			assert.Equal(t, 1, history[0].RoundNumber)
+			assert.Equal(t, tc.wantPunter, history[0].Deltas[seat])
+			assert.Equal(t, tc.wantBank, history[0].Deltas[bankerIdx])
 			for i := range ChemindeFerSeatCnt {
 				if i == seat || i == bankerIdx {
 					continue
@@ -825,7 +835,40 @@ func TestChemindeFer_LastNetClearsOnTheNextRound(t *testing.T) {
 	// 公開の NextRound は全員 CPU の卓だと次のクーを最後まで走らせて
 	// 新しい損益を入れてしまうので、ラウンド開始そのものを見る。
 	g.startRound()
+	assert.Len(t, g.GetRoundNetHistory(), 1, "次ラウンド開始後も履歴を保持")
 	for i := range ChemindeFerSeatCnt {
 		assert.Zero(t, g.GetLastNet(i), "席 %d", i)
 	}
+	g.reset()
+	assert.Empty(t, g.GetRoundNetHistory(), "新しいゲームでは履歴を初期化")
+}
+
+func TestChemindeFer_RoundNetHistoryIsBounded(t *testing.T) {
+	g := NewDefaultChemindeFer()
+	for i := 1; i <= ChemindeFerMaxRoundHistory+1; i++ {
+		g.appendRoundNetHistory(ChemindeFerRoundNet{RoundNumber: i, Deltas: make([]int, ChemindeFerSeatCnt)})
+	}
+	history := g.GetRoundNetHistory()
+	require.Len(t, history, ChemindeFerMaxRoundHistory)
+	assert.Equal(t, 2, history[0].RoundNumber)
+	assert.Equal(t, ChemindeFerMaxRoundHistory+1, history[len(history)-1].RoundNumber)
+}
+
+func TestChemindeFer_UnmarshalRejectsOversizedRoundHistory(t *testing.T) {
+	g := NewDefaultChemindeFer()
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var snapshot map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &snapshot))
+	history := make([]ChemindeFerRoundNet, ChemindeFerMaxRoundHistory+1)
+	for i := range history {
+		history[i] = ChemindeFerRoundNet{RoundNumber: 1, Deltas: make([]int, ChemindeFerSeatCnt)}
+	}
+	historyJSON, err := json.Marshal(history)
+	require.NoError(t, err)
+	snapshot["rnh"] = historyJSON
+	data, err = json.Marshal(snapshot)
+	require.NoError(t, err)
+	var restored ChemindeFer
+	assert.ErrorContains(t, json.Unmarshal(data, &restored), "round history too long")
 }

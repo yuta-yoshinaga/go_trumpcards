@@ -61890,6 +61890,19 @@ components:
                 type: boolean
               isRepresentative:
                 type: boolean
+        roundNetHistory:
+          type: array
+          description: Chip net change for each seat in every completed round, retained across rounds and cleared by reset.
+          items:
+            type: object
+            properties:
+              roundNumber:
+                type: integer
+              deltas:
+                type: array
+                description: Signed chip changes indexed by seat ID.
+                items:
+                  type: integer
         phase:
           type: integer
           description: "0=Stake, 1=Bet, 2=PunterDraw, 3=BankerDraw, 4=RoundEnd"

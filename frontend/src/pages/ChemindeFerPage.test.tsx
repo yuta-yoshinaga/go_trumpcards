@@ -66,6 +66,7 @@ const base: ChemindeFerResponse = {
   punterDrew: false,
   result: 0,
   roundNumber: 1,
+  roundNetHistory: [],
   remainingCards: 312,
   isHumanTurn: true,
   gameEndFlag: false,
@@ -212,6 +213,23 @@ describe('ChemindeFerPage', () => {
     const net = await screen.findByTestId('cdf-net');
     expect(net).toHaveTextContent('+200');
     expect(net.className).toContain('text-ds-success');
+  });
+
+  it('完了した各ラウンドのプレイヤー別チップ増減を表示する', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: ChemindeFerPhase.ROUND_END,
+        result: 2,
+        isHumanTurn: false,
+        roundNetHistory: [{ roundNumber: 1, deltas: [100, -100, 0, 0, 0, 0] }],
+      }),
+    );
+    renderWithProviders(<ChemindeFerPage />);
+    const history = await screen.findByTestId('cdf-round-history');
+    expect(history).toHaveTextContent('ラウンド別チップ増減');
+    expect(history).toHaveTextContent('ラウンド 1');
+    expect(history).toHaveTextContent('あなた: +100');
+    expect(history).toHaveTextContent('CPU1: -100');
   });
 
   it('負けた回は赤で、賭けていない回は増減なしと出す', async () => {

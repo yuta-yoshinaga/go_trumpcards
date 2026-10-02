@@ -22,6 +22,10 @@ func (cp *ChemindeFerWebPresenter) Output(c interfaces.ChemindeFerGame, lastErr 
 	resObj := new(controller.ChemindeFerWebOutput)
 
 	resObj.Players = chemindeFerPlayersToOutput(c)
+	resObj.RoundNetHistory = make([]controller.ChemindeFerRoundNet, 0)
+	for _, entry := range c.GetRoundNetHistory() {
+		resObj.RoundNetHistory = append(resObj.RoundNetHistory, controller.ChemindeFerRoundNet{RoundNumber: entry.RoundNumber, Deltas: entry.Deltas})
+	}
 	resObj.Phase = int(c.GetPhase())
 	resObj.BankerIdx = c.GetBankerIdx()
 	resObj.BetTurn = c.GetBetTurn()

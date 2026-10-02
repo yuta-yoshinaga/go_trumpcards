@@ -13,6 +13,9 @@ import (
 // chemindeFerMaxSliceLen はデシリアライズ時のスライス長上限。
 const chemindeFerMaxSliceLen = 1000
 
+// ChemindeFerMaxRoundHistory は KV セッションサイズを抑えるラウンド履歴の上限。
+const ChemindeFerMaxRoundHistory = 50
+
 // エラー値。
 var (
 	errChemindeFerWrongPhase   = errors.New("chemindefer: action not allowed in this phase")
@@ -62,11 +65,18 @@ type ChemindeFer struct {
 	//
 	// **卓の結果と自分の損益は別の情報。** banker/punter/tie だけでは、自分の
 	// 賭けが勝ったのか負けたのかはチップの数字を前後で見比べるしかない (#5774)。
-	lastNet     []int
-	roundNumber int
-	gameEndFlag bool
-	actionLog   []*ActionLogEntry
-	turnNumber  int
+	lastNet         []int
+	roundNetHistory []ChemindeFerRoundNet
+	roundNumber     int
+	gameEndFlag     bool
+	actionLog       []*ActionLogEntry
+	turnNumber      int
+}
+
+// ChemindeFerRoundNet はラウンド終了時の席ごとのチップ純増減。
+type ChemindeFerRoundNet struct {
+	RoundNumber int   `json:"roundNumber"`
+	Deltas      []int `json:"deltas"`
 }
 
 // NewChemindeFer は指定のシュー・席・設定で卓を構築する。
@@ -129,6 +139,7 @@ func (g *ChemindeFer) reset() {
 	g.gameEndFlag = false
 	g.actionLog = nil
 	g.turnNumber = 0
+	g.roundNetHistory = nil
 	g.appendLog(-1, "start", "chemindefer.log.start", nil, nil)
 	g.startRound()
 }
@@ -364,6 +375,8 @@ func (g *ChemindeFer) voidRound() {
 	g.betOrder = nil
 	g.betPos = -1
 	g.result = ChemindeFerResultNone
+	g.lastNet = make([]int, len(g.players))
+	g.appendRoundNetHistory(ChemindeFerRoundNet{RoundNumber: g.roundNumber, Deltas: make([]int, len(g.players))})
 	g.phase = ChemindeFerPhaseRoundEnd
 	g.passBank()
 }
@@ -615,6 +628,7 @@ func (g *ChemindeFer) settle() {
 			p.AddChips(bet) // 引き分け: 賭け金を返す
 		}
 	}
+	g.appendRoundNetHistory(ChemindeFerRoundNet{RoundNumber: g.roundNumber, Deltas: append([]int(nil), g.lastNet...)})
 	resultCode := "chemindefer.log.resultBanker"
 	switch g.result {
 	case ChemindeFerResultPunter:
@@ -626,6 +640,23 @@ func (g *ChemindeFer) settle() {
 	if g.result == ChemindeFerResultPunter {
 		g.passBank()
 	}
+}
+
+// appendRoundNetHistory は古い履歴を捨てて上限内に保つ。
+func (g *ChemindeFer) appendRoundNetHistory(entry ChemindeFerRoundNet) {
+	g.roundNetHistory = append(g.roundNetHistory, entry)
+	if len(g.roundNetHistory) > ChemindeFerMaxRoundHistory {
+		g.roundNetHistory = g.roundNetHistory[len(g.roundNetHistory)-ChemindeFerMaxRoundHistory:]
+	}
+}
+
+// GetRoundNetHistory は完了した各ラウンドの席ごとの純増減を返す。
+func (g *ChemindeFer) GetRoundNetHistory() []ChemindeFerRoundNet {
+	out := make([]ChemindeFerRoundNet, len(g.roundNetHistory))
+	for i, entry := range g.roundNetHistory {
+		out[i] = ChemindeFerRoundNet{RoundNumber: entry.RoundNumber, Deltas: append([]int(nil), entry.Deltas...)}
+	}
+	return out
 }
 
 // GetLastNet は直前の決済での席の純増減を返す。ラウンド中は 0。
@@ -918,47 +949,49 @@ func (g *ChemindeFer) GetTotalChips() int {
 
 // chemindeFerJSON is the JSON wire format for ChemindeFer.
 type chemindeFerJSON struct {
-	Shoe        *TrumpCards          `json:"sh"`
-	Players     []*ChemindeFerPlayer `json:"pl"`
-	Config      ChemindeFerConfig    `json:"cf"`
-	Phase       int                  `json:"ph"`
-	BankerIdx   int                  `json:"bi"`
-	BetOrder    []int                `json:"bo"`
-	BetPos      int                  `json:"bp"`
-	Stake       int                  `json:"st"`
-	RepresIdx   int                  `json:"ri"`
-	BankerHand  []*Card              `json:"bh"`
-	PunterHand  []*Card              `json:"pn"`
-	PunterDrew  bool                 `json:"pd"`
-	Result      int                  `json:"rs"`
-	LastNet     []int                `json:"ln"`
-	RoundNumber int                  `json:"rn"`
-	GameEndFlag bool                 `json:"ge"`
-	ActionLog   []*ActionLogEntry    `json:"al"`
-	TurnNumber  int                  `json:"tn"`
+	Shoe            *TrumpCards           `json:"sh"`
+	Players         []*ChemindeFerPlayer  `json:"pl"`
+	Config          ChemindeFerConfig     `json:"cf"`
+	Phase           int                   `json:"ph"`
+	BankerIdx       int                   `json:"bi"`
+	BetOrder        []int                 `json:"bo"`
+	BetPos          int                   `json:"bp"`
+	Stake           int                   `json:"st"`
+	RepresIdx       int                   `json:"ri"`
+	BankerHand      []*Card               `json:"bh"`
+	PunterHand      []*Card               `json:"pn"`
+	PunterDrew      bool                  `json:"pd"`
+	Result          int                   `json:"rs"`
+	LastNet         []int                 `json:"ln"`
+	RoundNetHistory []ChemindeFerRoundNet `json:"rnh,omitempty"`
+	RoundNumber     int                   `json:"rn"`
+	GameEndFlag     bool                  `json:"ge"`
+	ActionLog       []*ActionLogEntry     `json:"al"`
+	TurnNumber      int                   `json:"tn"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (g *ChemindeFer) MarshalJSON() ([]byte, error) {
 	return json.Marshal(chemindeFerJSON{
-		Shoe:        g.shoe,
-		Players:     g.players,
-		Config:      g.config,
-		Phase:       int(g.phase),
-		BankerIdx:   g.bankerIdx,
-		BetOrder:    g.betOrder,
-		BetPos:      g.betPos,
-		Stake:       g.stake,
-		RepresIdx:   g.represIdx,
-		BankerHand:  g.bankerHand,
-		PunterHand:  g.punterHand,
-		PunterDrew:  g.punterDrew,
-		Result:      int(g.result),
-		LastNet:     g.lastNet,
-		RoundNumber: g.roundNumber,
-		GameEndFlag: g.gameEndFlag,
-		ActionLog:   g.actionLog,
-		TurnNumber:  g.turnNumber,
+		Shoe:            g.shoe,
+		Players:         g.players,
+		Config:          g.config,
+		Phase:           int(g.phase),
+		BankerIdx:       g.bankerIdx,
+		BetOrder:        g.betOrder,
+		BetPos:          g.betPos,
+		Stake:           g.stake,
+		RepresIdx:       g.represIdx,
+		BankerHand:      g.bankerHand,
+		PunterHand:      g.punterHand,
+		PunterDrew:      g.punterDrew,
+		Result:          int(g.result),
+		LastNet:         g.lastNet,
+		RoundNetHistory: g.roundNetHistory,
+		RoundNumber:     g.roundNumber,
+		GameEndFlag:     g.gameEndFlag,
+		ActionLog:       g.actionLog,
+		TurnNumber:      g.turnNumber,
 	})
 }
 
@@ -1001,6 +1034,7 @@ func (g *ChemindeFer) UnmarshalJSON(data []byte) error {
 	g.punterDrew = j.PunterDrew
 	g.result = ChemindeFerResult(j.Result)
 	g.lastNet = j.LastNet
+	g.roundNetHistory = j.RoundNetHistory
 	if len(g.lastNet) != len(g.players) {
 		// **長さが席数と合わない保存は損益を席に貼り違える。** 0 で埋め直す。
 		g.lastNet = make([]int, len(g.players))
@@ -1057,6 +1091,9 @@ func chemindeFerValidateScalars(j *chemindeFerJSON) error {
 	}
 	if len(j.ActionLog) > chemindeFerMaxSliceLen {
 		return fmt.Errorf("chemindefer: action log too long: %d", len(j.ActionLog))
+	}
+	if len(j.RoundNetHistory) > ChemindeFerMaxRoundHistory {
+		return fmt.Errorf("chemindefer: round history too long: %d", len(j.RoundNetHistory))
 	}
 	return nil
 }

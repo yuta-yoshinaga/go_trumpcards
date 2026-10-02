@@ -75,6 +75,8 @@ type ChemindeFerGame interface {
 	GetResult() domain.ChemindeFerResult
 	// GetLastNet 直前の決済での席の純増減 (ラウンド中は 0)
 	GetLastNet(i int) int
+	// GetRoundNetHistory 完了した各ラウンドの席ごとの純増減
+	GetRoundNetHistory() []domain.ChemindeFerRoundNet
 
 	// GetRoundNumber ラウンド数
 	GetRoundNumber() int
