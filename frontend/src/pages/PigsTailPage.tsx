@@ -139,8 +139,8 @@ function PigsTailPageContent() {
       if (state.lastPenalty) {
         setPenaltyFlash(Date.now());
       }
-      prevDrawSigRef.current = sig;
     }
+    prevDrawSigRef.current = sig;
   }, [state]);
   useEffect(() => {
     if (penaltyFlash === 0) return;

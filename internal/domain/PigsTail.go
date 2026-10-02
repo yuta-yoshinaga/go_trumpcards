@@ -13,6 +13,8 @@ const PigsTailPlayerCnt = 4
 // pigsTailShuffleCount シャッフル回数
 const pigsTailShuffleCount = 10
 
+const pigsTailCenterHistoryMax = 6
+
 // PigsTailCpuAction CPUの1ターン分の行動記録
 type PigsTailCpuAction struct {
 	DrawPlayerIdx int   // 引いたプレイヤーインデックス
@@ -171,13 +173,13 @@ func (pt *PigsTail) GetCenterTopCard() *Card {
 	return pt.center[len(pt.center)-1]
 }
 
-// GetCenterHistory 直近6枚の場札トップを古い順に取得する
+// GetCenterHistory 直近pigsTailCenterHistoryMax枚の場札トップを古い順に取得する
 func (pt *PigsTail) GetCenterHistory() []*Card { return pt.centerHistory }
 
 func (pt *PigsTail) appendCenterHistory(card *Card) {
 	pt.centerHistory = append(pt.centerHistory, card)
-	if len(pt.centerHistory) > 6 {
-		pt.centerHistory = pt.centerHistory[len(pt.centerHistory)-6:]
+	if len(pt.centerHistory) > pigsTailCenterHistoryMax {
+		pt.centerHistory = pt.centerHistory[len(pt.centerHistory)-pigsTailCenterHistoryMax:]
 	}
 }
 
@@ -187,8 +189,6 @@ func (pt *PigsTail) drawAndPlace(playerIdx int) (*Card, bool) {
 	if card == nil {
 		return nil, false
 	}
-	pt.appendCenterHistory(card)
-
 	// スートマッチ判定: 場札のトップと同じスートならペナルティ
 	topCard := pt.GetCenterTopCard()
 	penalty := topCard != nil && card.GetDesign() == topCard.GetDesign()
@@ -202,9 +202,11 @@ func (pt *PigsTail) drawAndPlace(playerIdx int) (*Card, bool) {
 		pt.appendLog(playerIdx, "penalty", "pigtail.log.penalty",
 			map[string]string{"card": cardShortStr(card), "count": strconv.Itoa(len(pt.center))}, []*Card{card})
 		pt.center = make([]*Card, 0)
+		pt.centerHistory = make([]*Card, 0)
 	} else {
 		// 場札にカードを追加
 		pt.center = append(pt.center, card)
+		pt.appendCenterHistory(card)
 		pt.appendLog(playerIdx, "draw", "pigtail.log.draw",
 			map[string]string{"card": cardShortStr(card)}, []*Card{card})
 	}
@@ -410,7 +412,7 @@ func (pt *PigsTail) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.Players) > pigsTailMaxSliceLen || len(j.Center) > pigsTailMaxSliceLen || len(j.CenterHistory) > 6 ||
+	if len(j.Players) > pigsTailMaxSliceLen || len(j.Center) > pigsTailMaxSliceLen || len(j.CenterHistory) > pigsTailCenterHistoryMax ||
 		len(j.CpuActions) > pigsTailMaxSliceLen || len(j.ActionLog) > pigsTailMaxSliceLen {
 		return fmt.Errorf("pigsTail: input array exceeds maximum allowed size")
 	}

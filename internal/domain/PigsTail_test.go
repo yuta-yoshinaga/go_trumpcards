@@ -56,6 +56,37 @@ func TestPigsTail_CenterHistoryKeepsLatestSixDraws(t *testing.T) {
 	assert.Equal(t, 8, pt.GetCenterHistory()[5].GetValue())
 }
 
+func TestPigsTail_DrawAndPlaceCenterHistory(t *testing.T) {
+	t.Run("penalty clears history", func(t *testing.T) {
+		pt, players := newTestPigsTail()
+		pt.center = []*Card{NewCard(CardDesignSpade, 1, false)}
+		pt.centerHistory = []*Card{NewCard(CardDesignHeart, 2, false)}
+		pt.trumpCards = &TrumpCards{deck: []*Card{NewCard(CardDesignSpade, 3, false)}, deckCnt: 1}
+
+		_, penalty := pt.drawAndPlace(0)
+
+		assert.True(t, penalty)
+		assert.Empty(t, pt.GetCenterHistory())
+		assert.Equal(t, 2, players[0].GetCardsSize())
+	})
+
+	t.Run("safe draw appends new center top", func(t *testing.T) {
+		pt, _ := newTestPigsTail()
+		previousTop := NewCard(CardDesignHeart, 2, false)
+		newTop := NewCard(CardDesignDiamond, 3, false)
+		pt.center = []*Card{NewCard(CardDesignSpade, 1, false)}
+		pt.centerHistory = []*Card{previousTop}
+		pt.trumpCards = &TrumpCards{deck: []*Card{newTop}, deckCnt: 1}
+
+		_, penalty := pt.drawAndPlace(0)
+
+		assert.False(t, penalty)
+		require.Len(t, pt.GetCenterHistory(), 2)
+		assert.Same(t, previousTop, pt.GetCenterHistory()[0])
+		assert.Same(t, newTop, pt.GetCenterHistory()[1])
+	})
+}
+
 func TestPigsTail_Reset_ClearsPlayerHands(t *testing.T) {
 	pt, players := newTestPigsTail()
 	players[0].AddCard(NewCard(CardDesignSpade, 1, false))
