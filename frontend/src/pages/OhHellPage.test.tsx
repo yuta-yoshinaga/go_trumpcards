@@ -69,6 +69,7 @@ const playPhaseState: OhHellResponse = {
   bidPlayerIdx: 0,
   dealerIdx: 3,
   currentTrick: [],
+  validPlayIndices: [0, 1],
   trumpCard: { design: 'HEART', value: 7 },
   trumpSuit: 3,
   restrictedBid: -1,
@@ -163,6 +164,23 @@ describe('OhHellPage', () => {
       expect(screen.getByAltText('\u2660 A')).toBeInTheDocument();
       expect(screen.getByAltText('\u2665 J')).toBeInTheDocument();
     });
+  });
+
+  it('marks only legal follow-suit cards and ignores selection of illegal cards', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      currentTrick: [{ playerIdx: 1, card: { design: 'SPADE', value: 4 } }],
+      validPlayIndices: [0],
+    });
+    renderWithProviders(<OhHellPage />);
+    const playable = await screen.findByRole('button', { name: /♠ A.*プレイ可能/ });
+    const illegal = screen.getByRole('button', { name: /♥ J.*リードスート/ });
+    expect(playable).not.toHaveAttribute('aria-disabled', 'true');
+    expect(playable.className).toContain('ring-ds-success');
+    expect(illegal).toHaveAttribute('aria-disabled', 'true');
+    expect(illegal).toHaveAttribute('aria-describedby', 'ohhell-illegal-card-description');
+    fireEvent.click(illegal);
+    expect(illegal).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('shows the bid-progress chip in the header during play', async () => {

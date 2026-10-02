@@ -44984,10 +44984,6 @@ components:
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
           items:
             $ref: '#/components/schemas/ActionLogEntry'
-        validPlayIndices:
-          type: array
-          items:
-            type: integer
         players:
           type: array
           description: Array of player objects
@@ -45053,6 +45049,11 @@ components:
                 type: integer
               card:
                 $ref: '#/components/schemas/Card'
+        validPlayIndices:
+          type: array
+          description: Hand card indices the current player can legally play
+          items:
+            type: integer
         spadesBroken:
           type: boolean
           description: Whether spades have been broken (played as a non-lead card)
@@ -51928,6 +51929,11 @@ components:
                 type: integer
               card:
                 $ref: '#/components/schemas/Card'
+        validPlayIndices:
+          type: array
+          description: Hand card indices the current player can legally play
+          items:
+            type: integer
         trumpCard:
           nullable: true
           description: The card determining the trump suit (null if no trump)
