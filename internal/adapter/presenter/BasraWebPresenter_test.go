@@ -29,6 +29,7 @@ func TestBasraWebPresenter_Output(t *testing.T) {
 	assert.Contains(t, decoded, "tableCards")
 	assert.Contains(t, decoded, "playableIndices")
 	assert.Contains(t, decoded, "captureOptions")
+	assert.Contains(t, players[0].(map[string]any), "capturedCards")
 }
 
 func TestBasraWebPresenter_Error(t *testing.T) {
