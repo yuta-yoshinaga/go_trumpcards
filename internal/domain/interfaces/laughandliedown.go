@@ -37,6 +37,8 @@ type LaughAndLieDownGame interface {
 	IsLaidDown(idx int) bool
 	// GetScore 収支を取得する
 	GetScore(idx int) int
+	// GetRunningScore 暫定収支を取得する
+	GetRunningScore(idx int) int
 	// GetDealerIdx 親の添字を取得する
 	GetDealerIdx() int
 	// GetLastInIdx 最後まで手札が残っていた人の添字を取得する (-1: 該当なし)

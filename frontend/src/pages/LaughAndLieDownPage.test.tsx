@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { laughandliedownApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -26,6 +26,7 @@ function human(overrides?: Partial<LaughAndLieDownPlayer>): LaughAndLieDownPlaye
     wonCount: 4,
     laidDown: false,
     score: 0,
+    runningScore: 0,
     hidden: false,
     ...overrides,
   };
@@ -40,6 +41,7 @@ function cpu(id: number, overrides?: Partial<LaughAndLieDownPlayer>): LaughAndLi
     wonCount: 2,
     laidDown: false,
     score: 0,
+    runningScore: 0,
     hidden: true,
     ...overrides,
   };
@@ -265,6 +267,40 @@ describe('LaughAndLieDownPage', () => {
       renderWithProviders(<LaughAndLieDownPage />);
       await waitFor(() => expect(screen.getAllByText(text).length).toBeGreaterThan(0));
     }
+  });
+
+  it('shows running scores during play and final scores after the game ends', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: LaughAndLieDownPhase.PLAY,
+        players: [
+          human({ score: -20, runningScore: -2 }),
+          cpu(1, { score: 10, runningScore: 1 }),
+          cpu(2, { score: 30, runningScore: 3 }),
+          cpu(3),
+          cpu(4),
+        ],
+      }),
+    );
+    renderWithProviders(<LaughAndLieDownPage />);
+    await waitFor(() => expect(document.body.textContent).toContain('暫定収支 -2'));
+    const renderedText = document.body.textContent ?? '';
+    expect(renderedText).toContain('暫定収支 1');
+    expect(renderedText).toContain('暫定収支 3');
+    expect(renderedText.match(/暫定収支 0/g)).toHaveLength(2);
+    expect(renderedText).not.toContain('収支 -20');
+
+    cleanup();
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: LaughAndLieDownPhase.GAME_END,
+        gameEndFlag: true,
+        players: [human({ score: -2, runningScore: -2 }), cpu(1, { score: 1, runningScore: 1 })],
+      }),
+    );
+    renderWithProviders(<LaughAndLieDownPage />);
+    await waitFor(() => expect(document.body.textContent).toContain('収支 -2'));
+    expect(document.body.textContent).not.toContain('暫定収支');
   });
 
   // #5576: 訳文 (`lastIn`) もサーバのデータ (`lastInIdx`) も既にあったのに、

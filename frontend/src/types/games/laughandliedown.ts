@@ -18,8 +18,10 @@ export interface LaughAndLieDownPlayer {
   wonCount: number;
   /** Could not capture, so their whole hand went to the table. */
   laidDown: boolean;
-  /** Net chips. Zero until the game ends. */
+  /** Final net chips, set at the end of the game. */
   score: number;
+  /** Current net chips without the last-in bonus. */
+  runningScore: number;
   /** Whether this seat's HAND is withheld. */
   hidden: boolean;
 }

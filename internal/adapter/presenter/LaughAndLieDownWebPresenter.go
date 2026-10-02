@@ -87,14 +87,15 @@ func (p *LaughAndLieDownWebPresenter) buildPlayersOutput(c interfaces.LaughAndLi
 			}
 		}
 		out = append(out, &controller.LaughAndLieDownWebOutputPlayer{
-			ID:        i,
-			IsHuman:   player.GetIsHuman(),
-			CardCount: player.GetCardsSize(),
-			Cards:     cards,
-			WonCount:  c.GetWonCount(i),
-			LaidDown:  c.IsLaidDown(i),
-			Score:     c.GetScore(i),
-			Hidden:    !reveal,
+			ID:           i,
+			IsHuman:      player.GetIsHuman(),
+			CardCount:    player.GetCardsSize(),
+			Cards:        cards,
+			WonCount:     c.GetWonCount(i),
+			LaidDown:     c.IsLaidDown(i),
+			Score:        c.GetScore(i),
+			RunningScore: c.GetRunningScore(i),
+			Hidden:       !reveal,
 		})
 	}
 	return out

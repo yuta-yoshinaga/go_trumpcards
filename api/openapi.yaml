@@ -35812,6 +35812,16 @@ components:
           type: array
           items:
             type: object
+            required:
+              - id
+              - isHuman
+              - cardCount
+              - cards
+              - wonCount
+              - laidDown
+              - score
+              - runningScore
+              - hidden
             properties:
               id:
                 type: integer
@@ -35835,7 +35845,10 @@ components:
                 description: Could not capture, so their whole hand went to the table.
               score:
                 type: integer
-                description: Net chips. Zero until the game ends.
+                description: Final net chips after the game ends.
+              runningScore:
+                type: integer
+                description: Current net chips without the last-in bonus; equals score after the game ends.
               hidden:
                 type: boolean
                 description: Whether this seat's HAND is withheld.
