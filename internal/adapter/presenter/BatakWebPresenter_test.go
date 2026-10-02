@@ -46,6 +46,9 @@ func setupBatakWebMockWithPlayers() (*interfaces.MockBatakGame, []*domain.BatakP
 	m.On("GetPlayer", 1).Return(players[1])
 	m.On("GetPlayer", 2).Return(players[2])
 	m.On("GetPlayer", 3).Return(players[3])
+	for i := 0; i < 4; i++ {
+		m.On("GetScoreBreakdown", i).Return(domain.BatakScoreBreakdown{})
+	}
 	m.On("GetValidPlayIndices", 0).Return([]int{})
 	return m, players
 }
@@ -72,6 +75,7 @@ func TestBatakWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 0, resObj.MinLegalBid)
 		assert.Equal(t, "batak.playPhase.lead", resObj.MessageCode)
 		assert.Equal(t, domain.BatakDefaultMaxRounds, resObj.Config.MaxRounds)
+		assert.Equal(t, domain.BatakScoreBreakdown{}, resObj.Players[0].ScoreBreakdown)
 	})
 
 	t.Run("error in last action", func(t *testing.T) {
