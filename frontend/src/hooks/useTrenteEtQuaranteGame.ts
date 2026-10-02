@@ -29,9 +29,7 @@ export function useTrenteEtQuaranteGame() {
   const { config, handleConfigChange } = useGameConfig(DEFAULT_TRENTE_ET_QUARANTE_CONFIG);
 
   const { state, loading, error, exec: execApi, retry } = useGameApi(trenteetquaranteApi.exec);
-  const reset = useCallback(() => {
-    void execApi('reset', undefined, undefined, config);
-  }, [execApi, config]);
+  const reset = useCallback(() => void execApi('reset', undefined, undefined, config), [execApi, config]);
 
   const isBetPhase = state?.phase === TrenteEtQuarantePhase.BET;
   const isResultPhase = state?.phase === TrenteEtQuarantePhase.RESULT;

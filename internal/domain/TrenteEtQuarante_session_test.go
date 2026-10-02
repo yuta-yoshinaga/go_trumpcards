@@ -30,12 +30,29 @@ func TestTrenteEtQuaranteSessionStatsAreRecordedBySettlement(t *testing.T) {
 	require.Equal(t, 1000, g.GetStartingChips())
 	require.Equal(t, g.GetChips()-g.GetStartingChips(), g.GetNet())
 	require.Equal(t, -50, g.GetNet())
+	require.Equal(t, 4, g.GetRoundNumber())
+
+	g.NextRound()
+	require.Equal(t, 1, g.GetWins())
+	require.Equal(t, 1, g.GetLosses())
+	require.Equal(t, 1, g.GetDraws())
+	require.Equal(t, 1, g.GetRefaits())
+	require.Equal(t, -50, g.GetNet())
+	require.Equal(t, 4, g.GetRoundNumber())
+
+	settle(31, 39, TrenteEtQuaranteBetNoir) // next round win
+	require.Equal(t, 2, g.GetWins())
+	require.Equal(t, 1, g.GetLosses())
+	require.Equal(t, 1, g.GetDraws())
+	require.Equal(t, 1, g.GetRefaits())
+	require.Equal(t, 50, g.GetNet())
+	require.Equal(t, 5, g.GetRoundNumber())
 	data, err := json.Marshal(g)
 	require.NoError(t, err)
 	var restored TrenteEtQuarante
 	require.NoError(t, json.Unmarshal(data, &restored))
 	require.Equal(t, 1, restored.GetRefaits())
-	require.Equal(t, -50, restored.GetNet())
+	require.Equal(t, 50, restored.GetNet())
 
 	g.Reset()
 	require.Equal(t, 0, g.GetWins())

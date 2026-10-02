@@ -124,12 +124,41 @@ func (_m *MockTrenteEtQuaranteGame) GetChips() int {
 	return ret.Get(0).(int)
 }
 
-func (_m *MockTrenteEtQuaranteGame) GetStartingChips() int { return 0 }
-func (_m *MockTrenteEtQuaranteGame) GetNet() int           { return 0 }
-func (_m *MockTrenteEtQuaranteGame) GetWins() int          { return 0 }
-func (_m *MockTrenteEtQuaranteGame) GetLosses() int        { return 0 }
-func (_m *MockTrenteEtQuaranteGame) GetDraws() int         { return 0 }
-func (_m *MockTrenteEtQuaranteGame) GetRefaits() int       { return 0 }
+// GetStartingChips モック
+func (_m *MockTrenteEtQuaranteGame) GetStartingChips() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
+// GetNet モック
+func (_m *MockTrenteEtQuaranteGame) GetNet() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
+// GetWins モック
+func (_m *MockTrenteEtQuaranteGame) GetWins() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
+// GetLosses モック
+func (_m *MockTrenteEtQuaranteGame) GetLosses() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
+// GetDraws モック
+func (_m *MockTrenteEtQuaranteGame) GetDraws() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
+// GetRefaits モック
+func (_m *MockTrenteEtQuaranteGame) GetRefaits() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
 
 // GetRoundNumber モック
 func (_m *MockTrenteEtQuaranteGame) GetRoundNumber() int {

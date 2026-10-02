@@ -212,7 +212,14 @@ func (g *TrenteEtQuarante) Reset() {
 func (g *TrenteEtQuarante) NextRound() {
 	round := g.state.roundNumber
 	log := g.state.actionLog
+	startingChips := g.state.startingChips
+	wins, losses, draws, refaits := g.state.wins, g.state.losses, g.state.draws, g.state.refaits
 	g.state = trenteEtQuaranteState{
+		startingChips: startingChips,
+		wins:          wins,
+		losses:        losses,
+		draws:         draws,
+		refaits:       refaits,
 		phase:         TrenteEtQuarantePhaseBet,
 		currentBet:    g.config.DefaultBet,
 		winningRow:    TrenteEtQuaranteRowNone,
@@ -663,7 +670,9 @@ func (g *TrenteEtQuarante) UnmarshalJSON(data []byte) error {
 	if j.Stake < 0 || j.Stake > TrenteEtQuaranteMaxBet {
 		return fmt.Errorf("trenteetquarante: stake out of range")
 	}
-	if j.NoirTotal < 0 || j.RougeTotal < 0 || j.Payout < 0 || j.RoundNumber < 0 || (j.StartingChips != nil && *j.StartingChips < 0) || j.Wins < 0 || j.Losses < 0 || j.Draws < 0 || j.Refaits < 0 {
+	if j.NoirTotal < 0 || j.RougeTotal < 0 || j.Payout < 0 || j.RoundNumber < 0 ||
+		(j.StartingChips != nil && *j.StartingChips < 0) || j.Wins < 0 || j.Losses < 0 ||
+		j.Draws < 0 || j.Refaits < 0 {
 		return fmt.Errorf("trenteetquarante: negative numeric state")
 	}
 	if j.WinningRow < TrenteEtQuaranteRowNone || j.WinningRow > TrenteEtQuaranteRowRouge {

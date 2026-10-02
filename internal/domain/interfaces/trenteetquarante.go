@@ -48,11 +48,17 @@ type TrenteEtQuaranteGame interface {
 	GetPayout() int
 	// GetChips 保有チップ数を取得する
 	GetChips() int
+	// GetStartingChips セッション開始時のチップ数を取得する
 	GetStartingChips() int
+	// GetNet セッション開始時からのチップ増減を取得する
 	GetNet() int
+	// GetWins セッション中の勝利数を取得する
 	GetWins() int
+	// GetLosses セッション中の敗北数を取得する
 	GetLosses() int
+	// GetDraws セッション中の引き分け数を取得する
 	GetDraws() int
+	// GetRefaits セッション中の Refait 数を取得する
 	GetRefaits() int
 	// GetRoundNumber 解決したラウンド数を取得する
 	GetRoundNumber() int
