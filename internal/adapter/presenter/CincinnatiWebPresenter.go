@@ -65,15 +65,16 @@ func cincinnatiSeatsToOutput(c interfaces.CincinnatiGame) []*controller.Cincinna
 			continue
 		}
 		seat := &controller.CincinnatiWebOutputSeat{
-			Name:     p.GetName(),
-			IsHuman:  p.GetIsHuman(),
-			Chips:    p.GetChips(),
-			Bet:      p.GetCurrentBet(),
-			Cards:    make([]*controller.WebOutputCard, 0),
-			BestHand: make([]*controller.WebOutputCard, 0),
-			Folded:   p.GetFolded(),
-			AllIn:    p.GetAllIn(),
-			IsTurn:   i == c.GetTurnSeat() && c.GetPhase() == domain.CincinnatiPhaseBetting,
+			Name:      p.GetName(),
+			IsHuman:   p.GetIsHuman(),
+			Chips:     p.GetChips(),
+			NetChange: p.GetHandNetChange(),
+			Bet:       p.GetCurrentBet(),
+			Cards:     make([]*controller.WebOutputCard, 0),
+			BestHand:  make([]*controller.WebOutputCard, 0),
+			Folded:    p.GetFolded(),
+			AllIn:     p.GetAllIn(),
+			IsTurn:    i == c.GetTurnSeat() && c.GetPhase() == domain.CincinnatiPhaseBetting,
 		}
 		if p.GetIsHuman() || showdown {
 			seat.Cards = cardsToOutputOrEmpty(p.GetCards())

@@ -210,6 +210,30 @@ func TestCincinnati_ChipsAreConserved(t *testing.T) {
 	}
 }
 
+func TestCincinnati_HandNetChangeIncludesAnteAndFoldedSeats(t *testing.T) {
+	t.Parallel()
+	g := newCincinnatiForTest(t)
+	start := make([]int, len(g.GetPlayers()))
+	for i, p := range g.GetPlayers() {
+		start[i] = p.GetHandStartChips()
+		assert.Equal(t, p.GetChips()+g.GetConfig().Ante, p.GetHandStartChips(), "seat %d baseline must precede ante", i)
+	}
+	cinPlayOutHand(t, g)
+	total, winnerPositive, foldedNegative := 0, false, false
+	for i, p := range g.GetPlayers() {
+		change := p.GetHandNetChange()
+		assert.Equal(t, p.GetChips()-start[i], change)
+		total += change
+		winnerPositive = winnerPositive || change > 0
+		if p.GetFolded() {
+			foldedNegative = foldedNegative || change < 0
+		}
+	}
+	assert.Zero(t, total, "without rake, table net change must sum to zero")
+	assert.True(t, winnerPositive)
+	assert.True(t, foldedNegative)
+}
+
 // --- 入力の検証 ---
 
 func TestCincinnati_ActionValidation(t *testing.T) {

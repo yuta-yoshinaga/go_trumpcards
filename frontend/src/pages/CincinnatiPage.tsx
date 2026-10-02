@@ -198,6 +198,13 @@ function CincinnatiPageContent() {
                     {seat.allIn && ` · ${t('label.allIn')}`}
                     {' · '}
                     {t('label.chips')} {seat.chips}
+                    {(isShowdown || gameOver) && (
+                      <span data-testid={`cin-net-change-${i}`}>
+                        {' · '}
+                        {t('label.netChange')}{' '}
+                        {seat.netChange > 0 ? `+${seat.netChange}` : seat.netChange < 0 ? `${seat.netChange}` : '±0'}
+                      </span>
+                    )}
                     {seat.bet > 0 && ` · ${t('label.bet')} ${seat.bet}`}
                     {seat.wonAmount > 0 && (
                       <span data-testid={`cin-won-${i}`}> · {t('label.won', { amount: seat.wonAmount })}</span>

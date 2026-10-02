@@ -36,6 +36,7 @@ const seat = (over: Partial<CincinnatiResponse['seats'][number]> = {}) =>
     name: 'YOU',
     isHuman: true,
     chips: 1000,
+    netChange: 0,
     bet: 0,
     cards: hand(),
     folded: false,
@@ -84,6 +85,24 @@ beforeEach(() => {
 });
 
 describe('CincinnatiPage', () => {
+  it('ショーダウンで各席の符号付きチップ増減を表示する', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: CincinnatiPhase.SHOWDOWN,
+        isHumanTurn: false,
+        seats: [
+          seat({ netChange: 45 }),
+          seat({ name: 'CPU1', isHuman: false, cards: [], isTurn: false, netChange: -45 }),
+          seat({ name: 'CPU2', isHuman: false, cards: [], isTurn: false, netChange: 0 }),
+        ],
+      }),
+    );
+    renderWithProviders(<CincinnatiPage />);
+    await waitFor(() => expect(screen.getByTestId('cin-net-change-0')).toHaveTextContent('+45'));
+    expect(screen.getByTestId('cin-net-change-1')).toHaveTextContent('-45');
+    expect(screen.getByTestId('cin-net-change-2')).toHaveTextContent('±0');
+  });
+
   it('マウント時に reset を呼ぶ', async () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<CincinnatiPage />);

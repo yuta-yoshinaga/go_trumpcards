@@ -38,6 +38,7 @@ type CincinnatiWebOutputSeat struct {
 	HandRank  int              `json:"handRank"`
 	BestHand  []*WebOutputCard `json:"bestHand"`
 	WonAmount int              `json:"wonAmount"`
+	NetChange int              `json:"netChange"`
 }
 
 // CincinnatiWebOutput シンシナティWebアウトプット

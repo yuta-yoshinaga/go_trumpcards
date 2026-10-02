@@ -148,6 +148,7 @@ func (g *Cincinnati) startHand() {
 
 	for _, p := range g.players {
 		p.ResetForHand()
+		p.SetHandStartChips(p.GetChips())
 	}
 	// **アンティは全員から。** 参加費が無いと降り続けるのが最適になる。
 	for _, p := range g.players {
