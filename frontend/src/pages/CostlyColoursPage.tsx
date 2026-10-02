@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { costlycoloursApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
@@ -28,7 +29,7 @@ import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { CostlyColoursResponse } from '../types/card';
+import type { CostlyColoursRecentPlay, CostlyColoursResponse } from '../types/card';
 import { CostlyColoursPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -36,7 +37,7 @@ import { COSTLYCOLOURS_HELP, parseCostlyColoursCommand } from '../utils/cli/comm
 import { formatCostlyColoursState } from '../utils/cli/formatters/costlycoloursFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Costly Colours tutorial step definitions. */
@@ -80,6 +81,29 @@ const COSTLYCOLOURS_PHASE_KEYS: Readonly<Record<string, string>> = {
   [CostlyColoursPhase.SHOW]: 'show',
   [CostlyColoursPhase.GAME_END]: 'gameEnd',
 };
+
+const COSTLYCOLOURS_MILESTONES = [15, 25, 31];
+
+function describeCostlyColoursPlay(
+  play: CostlyColoursRecentPlay,
+  players: CostlyColoursResponse['players'],
+  t: TFunction<'costlycolours'>,
+) {
+  const milestone = COSTLYCOLOURS_MILESTONES.includes(play.total) ? t(`announcement.milestone.${play.total}`) : '';
+  return t('announcement.play', {
+    name: findPlayerName(players, play.seat),
+    card: cardAlt(play.card),
+    total: play.total,
+    pointsText:
+      play.points > 0
+        ? t('announcement.points', {
+            count: play.points,
+            points: play.points,
+            milestonePart: milestone ? t('announcement.milestonePart', { milestone }) : '',
+          })
+        : '',
+  });
+}
 
 /**
  * Renders the Costly Colours page: the Shropshire ancestor of Cribbage, where
@@ -143,25 +167,7 @@ function CostlyColoursPageContent() {
     if (key === announcedPlays.current) return;
     announcedPlays.current = key;
     setPlayAnnouncement(
-      state.recentPlays
-        .map((play) => {
-          const player = state.players.find((p) => p.id === play.seat);
-          const milestone = [15, 25, 31].includes(play.total) ? t(`announcement.milestone.${play.total}`) : '';
-          return t('announcement.play', {
-            name: playerName(play.seat, player?.isHuman ?? play.seat === 0),
-            card: cardAlt(play.card),
-            total: play.total,
-            pointsText:
-              play.points > 0
-                ? t('announcement.points', {
-                    count: play.points,
-                    points: play.points,
-                    milestonePart: milestone ? t('announcement.milestonePart', { milestone }) : '',
-                  })
-                : '',
-          });
-        })
-        .join(t('listSeparator')),
+      state.recentPlays.map((play) => describeCostlyColoursPlay(play, state.players, t)).join(t('listSeparator')),
     );
   }, [state, t]);
 
@@ -273,6 +279,15 @@ function CostlyColoursPageContent() {
                 <div className="text-ds-text-primary" data-testid="costlycolours-total">
                   {t('total', { n: state.total })}
                 </div>
+                {state.recentPlays.length > 0 && (
+                  <ol className="mt-2 space-y-1" data-testid="costlycolours-recent-plays">
+                    {state.recentPlays.map((play, index) => (
+                      <li key={index} className="text-ds-text-muted text-sm">
+                        {describeCostlyColoursPlay(play, state.players, t)}
+                      </li>
+                    ))}
+                  </ol>
+                )}
               </div>
 
               <div data-tutorial="costlycolours-scores">
@@ -379,8 +394,8 @@ function CostlyColoursPageContent() {
                 </div>
               )}
             </div>
-            <div data-testid="costlycolours-play-live" role="status" aria-live="polite">
-              {playAnnouncement && <span className="sr-only">{playAnnouncement}</span>}
+            <div className="sr-only" data-testid="costlycolours-play-live" role="status" aria-live="polite">
+              {playAnnouncement && <span>{playAnnouncement}</span>}
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
