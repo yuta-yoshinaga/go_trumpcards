@@ -845,7 +845,8 @@ type PineappleDiscardPreview struct {
 // 判定は CPU の捨て方 (cpuDiscard) と同じ bestRankWithBoard を通す。別実装に
 // すると、CPU 自身が選ばない捨て方を人間に勧めることになる。
 func (p *Pineapple) GetHumanDiscardPreviews() []PineappleDiscardPreview {
-	if p.phase != PineapplePhaseDiscard {
+	showsPreviews := p.phase == PineapplePhaseDiscard || (p.discardAfterFlopBetting && p.phase == PineapplePhaseFlop)
+	if !showsPreviews {
 		return nil
 	}
 	var human *PineapplePlayer
