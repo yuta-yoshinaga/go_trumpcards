@@ -47404,19 +47404,6 @@ components:
                 type: integer
               cumulativeScore:
                 type: integer
-              melds:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    cards:
-                      type: array
-                      items:
-                        $ref: '#/components/schemas/Card'
-              deadwood:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Card'
         phase:
           type: integer
           description: "Game phase: 0 = Draw, 1 = Discard, 2 = RoundEnd, 3 = GameEnd"

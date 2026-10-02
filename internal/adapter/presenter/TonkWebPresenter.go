@@ -96,19 +96,6 @@ func (p *TonkWebPresenter) buildPlayersOutput(g interfaces.TonkGame) []*controll
 			Cards:           playerCardsToOutput(player, showCards),
 			RoundScore:      player.GetRoundScore(),
 			CumulativeScore: player.GetCumulativeScore(),
-			Melds:           make([]*controller.TonkWebOutputMeld, 0),
-			Deadwood:        make([]*controller.WebOutputCard, 0),
-		}
-		if phase == domain.TonkPhaseRoundEnd || phase == domain.TonkPhaseGameEnd {
-			hand := make([]*domain.Card, 0, player.GetCardsSize())
-			for cardIdx := 0; cardIdx < player.GetCardsSize(); cardIdx++ {
-				hand = append(hand, player.GetCard(cardIdx))
-			}
-			melds, deadwood := domain.FindBestMelds(hand)
-			pObj.Melds = meldsToOutput(melds)
-			for _, card := range deadwood {
-				pObj.Deadwood = append(pObj.Deadwood, cardToOutput(card))
-			}
 		}
 		out = append(out, pObj)
 	}

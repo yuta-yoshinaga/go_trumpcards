@@ -41,8 +41,8 @@
     "points": "{{points}}点 即勝利",
     "winner": "{{name}} の勝利"
   },
-  "knockerMelds": "ノッカーのメルド",
-  "knockerDeadwood": "ノッカーのデッドウッド",
+  "knockerMelds": "{{name}}（ノッカー）のメルド",
+  "knockerDeadwood": "{{name}}のデッドウッド",
   "result": {
     "humanWin": "あなたの勝利！",
     "cpuWin": "CPU {{cpuId}} の勝利！",
@@ -68,8 +68,6 @@
     "knockable": "ノック可能",
     "notKnockable": "ノック不可（{{threshold}}点以下が必要）"
   },
-  "opponentMelds": "相手のメルド",
-  "opponentDeadwood": "相手のデッドウッド",
-  "playerMelds": "メルド",
-  "playerDeadwood": "デッドウッド"
+  "opponentMelds": "{{name}}のメルド",
+  "opponentDeadwood": "{{name}}のデッドウッド"
 }
