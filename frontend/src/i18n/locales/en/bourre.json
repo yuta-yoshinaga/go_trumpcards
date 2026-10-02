@@ -39,7 +39,12 @@
   },
   "result": {
     "youWin": "You win!",
-    "youLose": "{{name}} wins"
+    "youLose": "{{name}} wins",
+    "paid": "Paid {{amount}}",
+    "won": "Won pot {{amount}}",
+    "potCarried": "{{amount}} chips carried into the next hand",
+    "potAwarded": "The pot is shown on its winner's result row",
+    "bourrePayment": "Paid {{amount}} chips as the bourré penalty"
   },
   "tutorial": {
     "intro": "Bourré is a Louisiana classic blending poker betting with trick-taking. Everyone antes into the pot, and the dealer's last card sets the trump suit.",
