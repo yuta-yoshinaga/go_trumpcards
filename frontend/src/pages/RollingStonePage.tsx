@@ -215,16 +215,16 @@ function RollingStonePageContent() {
             </div>
 
             {/* **手札の枚数がそのまま順位。** 得点表示は無い。 */}
-            <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="rs-seats">
+            <ul className="flex flex-wrap justify-center gap-2 mb-4 list-none p-0" data-tutorial="rs-seats">
               {state.players.map((p) => (
-                <div
+                <li
                   key={p.id}
                   className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
                   data-testid={`rs-seat-${p.id.toString()}`}
                 >
-                  <span className="text-ds-text-primary">
+                  <h2 className="m-0 inline font-normal text-ds-text-primary">
                     {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                  </span>
+                  </h2>
                   {p.finishedAt > 0 && (
                     <span className="ml-1 text-ds-accent">{t('header.finished', { rank: String(p.finishedAt) })}</span>
                   )}
@@ -235,9 +235,9 @@ function RollingStonePageContent() {
                   <span className="text-ds-accent">{t('header.cards', { n: String(p.cardCount) })}</span>
                   {' / '}
                   {t('header.pickups', { n: String(p.pickups) })}
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
 
             <div data-tutorial="rs-trick">
               <TrickDisplay
