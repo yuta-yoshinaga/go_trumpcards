@@ -1,5 +1,6 @@
 {
   "title": "グリーク",
+  "listSeparator": "、",
   "phase": {
     "bid": "競り",
     "discard": "捨て札",
@@ -66,7 +67,9 @@
   "roundResult": {
     "title": "ディール結果",
     "par": "この配りの点: {{total}}  基準点: {{par}}（各席は自分の札点との差を受け取ります）",
-    "delta": "{{name}}: {{delta}}"
+    "delta": "{{name}}: {{delta}}",
+    "stages": ["競り", "ラフ", "メルド", "トリック精算"],
+    "breakdown": "内訳: {{stages}}"
   },
   "hintAvailable": "ヒント",
   "hint": {

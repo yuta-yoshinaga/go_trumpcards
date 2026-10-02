@@ -97,6 +97,7 @@ type GleekGame interface {
 	GetPlayerScores() [domain.GleekPlayerCnt]int
 	// GetRoundDelta ラウンド開始時点からの各プレイヤーの累積点差分を取得する
 	GetRoundDelta() []int
+	GetRoundBreakdown() domain.GleekRoundBreakdown
 	// GetResult 人間視点のマッチ結果を取得する
 	GetResult() domain.GleekResult
 	// GetWinnerPlayer 勝利プレイヤーを取得する (-1=未確定)

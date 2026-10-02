@@ -307,6 +307,12 @@ describe('GleekPage', () => {
       makeGleekState({
         ...roundEndState,
         roundDelta: [15, -10, -5],
+        roundBreakdown: {
+          bid: [10, -7, -3],
+          ruff: [4, 2, -6],
+          meld: [3, -5, 2],
+          trick: [-2, 0, 2],
+        },
       }),
     );
     renderWithProviders(<GleekPage />);
@@ -323,6 +329,12 @@ describe('GleekPage', () => {
     const delta2 = screen.getByTestId('gleek-round-delta-2');
     expect(delta2).toHaveTextContent('-5');
     expect(delta2.className).toContain('text-ds-error');
+    expect(screen.getByTestId('gleek-round-breakdown-0')).toHaveTextContent(
+      '競り: +10、ラフ: +4、メルド: +3、トリック精算: -2',
+    );
+    expect(screen.getByTestId('gleek-round-breakdown-1')).toHaveTextContent(
+      '競り: -7、ラフ: +2、メルド: -5、トリック精算: ±0',
+    );
   });
 
   it('renders ±0 for seats with zero round delta', async () => {

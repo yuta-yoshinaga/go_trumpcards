@@ -48,6 +48,88 @@ func TestGleek_ResetDeal(t *testing.T) {
 	assert.Equal(t, g.GetTurnUp().GetDesign(), g.GetTrumpSuit())
 }
 
+func TestGleek_RoundBreakdownMatchesSettlementAndResets(t *testing.T) {
+	g := newTestGleek()
+	startScores := g.GetPlayerScores()
+	startBreakdown := g.GetRoundBreakdown()
+	for g.GetPhase() != domain.GleekPhaseRoundEnd {
+		switch g.GetPhase() {
+		case domain.GleekPhaseBid:
+			if g.IsHumanBidTurn() {
+				require.NoError(t, g.PlayerBid(0))
+			} else {
+				g.CpuBid()
+			}
+		case domain.GleekPhaseDiscard:
+			if g.IsHumanDiscardTurn() {
+				require.NoError(t, g.PlayerDiscard(g.GetDiscardHint()))
+			} else {
+				g.CpuDiscard()
+			}
+		case domain.GleekPhasePlay:
+			if g.IsHumanTurn() {
+				indices := g.GetPlayableIndices(0)
+				require.NotEmpty(t, indices)
+				require.NoError(t, g.PlayerPlay(indices[0]))
+			} else {
+				g.CpuPlay()
+			}
+		case domain.GleekPhaseTrickEnd:
+			g.ResolveTrick()
+			if g.GetPhase() == domain.GleekPhaseTrickEnd {
+				g.NextTrick()
+			}
+		default:
+			t.Fatalf("unexpected phase %v", g.GetPhase())
+		}
+	}
+	g.ScoreRound()
+
+	bd := g.GetRoundBreakdown()
+	scores := g.GetPlayerScores()
+	for seat := 0; seat < domain.GleekPlayerCnt; seat++ {
+		delta := scores[seat] - startScores[seat] + startBreakdown.Bid[seat] + startBreakdown.Ruff[seat] + startBreakdown.Meld[seat] + startBreakdown.Trick[seat]
+		assert.Equal(t, delta, bd.Bid[seat]+bd.Ruff[seat]+bd.Meld[seat]+bd.Trick[seat])
+	}
+
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var restored domain.Gleek
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Equal(t, bd, restored.GetRoundBreakdown())
+
+	g.NextRound()
+	reset := g.GetRoundBreakdown()
+	if g.GetTurnUp().GetValue() == 4 {
+		for seat := 0; seat < domain.GleekPlayerCnt; seat++ {
+			want := -domain.GleekTiddyTurnUpBonus
+			if seat == g.GetDealerIdx() {
+				want = domain.GleekTiddyTurnUpBonus * (domain.GleekPlayerCnt - 1)
+			}
+			assert.Equal(t, want, reset.Bid[seat])
+		}
+		assert.Equal(t, [domain.GleekPlayerCnt]int{}, reset.Ruff)
+		assert.Equal(t, [domain.GleekPlayerCnt]int{}, reset.Meld)
+		assert.Equal(t, [domain.GleekPlayerCnt]int{}, reset.Trick)
+	} else {
+		assert.Equal(t, domain.GleekRoundBreakdown{}, reset)
+	}
+}
+
+func TestGleek_TiddyTurnUpIsRecordedAsBidBreakdown(t *testing.T) {
+	g := newTestGleek()
+	g.SetTurnUpForTest(gleekCard(domain.CardDesignSpade, 4))
+	before := g.GetPlayerScores()
+	beforeBreakdown := g.GetRoundBreakdown()
+	g.PayTiddyForTest()
+	bd := g.GetRoundBreakdown()
+	for seat := 0; seat < domain.GleekPlayerCnt; seat++ {
+		change := g.GetPlayerScores()[seat] - before[seat]
+		assert.Equal(t, change, bd.Bid[seat]-beforeBreakdown.Bid[seat])
+	}
+	assert.Equal(t, domain.GleekTiddyTurnUpBonus*(domain.GleekPlayerCnt-1), bd.Bid[g.GetDealerIdx()]-beforeBreakdown.Bid[g.GetDealerIdx()])
+}
+
 func TestGleek_ActionLogUsesDetailCode(t *testing.T) {
 	g := newTestGleek()
 	for _, entry := range g.GetActionLog() {

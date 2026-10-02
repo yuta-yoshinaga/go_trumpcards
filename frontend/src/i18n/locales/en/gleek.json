@@ -1,5 +1,6 @@
 {
   "title": "Gleek",
+  "listSeparator": ", ",
   "phase": {
     "bid": "Bidding",
     "discard": "Discard",
@@ -66,7 +67,9 @@
   "roundResult": {
     "title": "Deal result",
     "par": "Points in this deal: {{total}}  par: {{par}} (each seat is settled against the difference)",
-    "delta": "{{name}}: {{delta}}"
+    "delta": "{{name}}: {{delta}}",
+    "stages": ["Auction", "Ruff", "Meld", "Trick settlement"],
+    "breakdown": "Breakdown: {{stages}}"
   },
   "hintAvailable": "Hint",
   "hint": {
