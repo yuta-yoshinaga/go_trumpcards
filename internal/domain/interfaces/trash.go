@@ -13,6 +13,10 @@ type TrashGame interface {
 	PlaceWild(pos int) error
 	// CpuStep CPUのターンを1ステップ進める
 	CpuStep() error
+	// Undo restores the state before the latest human action.
+	Undo() error
+	// CanUndo reports whether a complete action can be restored.
+	CanUndo() bool
 	// IsCpuTurn 現在のターンがCPUか
 	IsCpuTurn() bool
 	// IsCpuPlayer プレイヤーがCPUか

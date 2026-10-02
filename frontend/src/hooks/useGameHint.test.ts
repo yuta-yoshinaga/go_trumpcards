@@ -858,6 +858,7 @@ describe('useGameHint', () => {
       suggestedWildSlot: -1,
       moveCount: 0,
       winner: -1,
+      canUndo: false,
       message: '',
     };
     const { result } = renderHook(() => useGameHint('trash', state));

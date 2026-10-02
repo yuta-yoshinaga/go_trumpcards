@@ -68,6 +68,7 @@ func buildTrashMock(o trashMockOpts) *interfaces.MockTrashGame {
 	tg.On("SuggestWildSlot").Return(suggestedWildSlot).Maybe()
 	tg.On("GetMoveCount").Return(o.moveCount).Maybe()
 	tg.On("GetWinner").Return(winner).Maybe()
+	tg.On("CanUndo").Return(false).Maybe()
 	tg.On("IsCpuTurn").Return(o.isCpuTurn).Maybe()
 	tg.On("IsCpuPlayer", 0).Return(false).Maybe()
 	tg.On("IsCpuPlayer", 1).Return(true).Maybe()
@@ -146,6 +147,15 @@ func TestTrashWebPresenter_Output(t *testing.T) {
 		p := new(TrashWebPresenter)
 		result := parseTrashOutput(t, p.Output(tg, errors.New("bad move")))
 		assert.Equal(t, "bad move", result.Message)
+	})
+
+	t.Run("with coded error", func(t *testing.T) {
+		tg := buildTrashMock(trashMockOpts{})
+		p := new(TrashWebPresenter)
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "trash.errUndoUnavailable", nil)
+		result := parseTrashOutput(t, p.Output(tg, err))
+		assert.Equal(t, "trash.errUndoUnavailable", result.MessageCode)
+		assert.Empty(t, result.Message)
 	})
 
 	t.Run("face-up card surfaces", func(t *testing.T) {

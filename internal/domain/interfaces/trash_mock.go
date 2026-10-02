@@ -32,6 +32,9 @@ func (_m *MockTrashGame) CpuStep() error {
 	return ret.Error(0)
 }
 
+func (_m *MockTrashGame) Undo() error   { ret := _m.Called(); return ret.Error(0) }
+func (_m *MockTrashGame) CanUndo() bool { ret := _m.Called(); return ret.Bool(0) }
+
 func (_m *MockTrashGame) IsCpuTurn() bool {
 	ret := _m.Called()
 	return ret.Bool(0)

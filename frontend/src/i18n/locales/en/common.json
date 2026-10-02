@@ -2223,6 +2223,7 @@
     "easthaven.errInvalidToColumn": "The destination column number is invalid.",
     "easthaven.errNoCardsInStock": "There are no cards in the stock.",
     "easthaven.errNoUndoHistory": "There is no move to undo.",
+    "trash.errUndoUnavailable": "There is no move to undo.",
     "easthaven.errNotAllCardsFaceUp": "All cards must be face up.",
     "easthaven.errSameColumn": "The source and destination must be different columns.",
     "easthaven.errTableauColumnEmpty": "The tableau column is empty.",

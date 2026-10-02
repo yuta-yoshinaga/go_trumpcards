@@ -81632,6 +81632,8 @@ components:
         winner:
           type: integer
           description: -1 until the game ends; 0 for the human, 1 for the CPU
+        canUndo:
+          type: boolean
         message:
           type: string
         messageCode:
