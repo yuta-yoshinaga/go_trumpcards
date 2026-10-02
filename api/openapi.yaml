@@ -52538,18 +52538,29 @@ components:
         discardPreviews:
           type: array
           description: >-
-            The server's own evaluation of each discard candidate, from the
-            same evaluator the CPU uses. Present only during the discard
-            phase; the client renders `recommended` rather than re-deriving it.
+            The server's own evaluation of discard choices. Four-card Irish
+            Poker choices include the original pair indexes, best five cards,
+            and dense strength order. Present only during the discard phase.
           items:
             type: object
             properties:
               cardIdx:
                 type: integer
+                description: Single-card discard index for three-card Pineapple.
+              discardIdx0:
+                type: integer
+              discardIdx1:
+                type: integer
               handRank:
                 type: integer
               recommended:
                 type: boolean
+              strengthCards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              strengthOrder:
+                type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
