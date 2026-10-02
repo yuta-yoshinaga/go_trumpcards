@@ -172,6 +172,16 @@ describe('RollingStonePage', () => {
     expect(screen.getByTestId('rs-seat-3')).toBeInTheDocument();
   });
 
+  it('structures seat summaries as a list with a heading for each seat', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<RollingStonePage />);
+    const list = await screen.findByRole('list');
+    expect(list).toHaveClass('list-none');
+    expect(list.querySelectorAll(':scope > li')).toHaveLength(4);
+    expect(screen.getByRole('heading', { name: 'あなた', level: 2 })).toBeInTheDocument();
+    expect(screen.getAllByRole('heading', { name: /CPU/, level: 2 })).toHaveLength(3);
+  });
+
   // **引き取った席と上がった席は盤面に痕跡が残らない。**
   it('marks the last pickup and finishers', async () => {
     const { unmount } = renderWithProviders(<RollingStonePage />);
