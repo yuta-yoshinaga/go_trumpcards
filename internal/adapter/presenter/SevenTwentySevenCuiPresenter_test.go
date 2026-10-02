@@ -50,6 +50,68 @@ func TestSevenTwentySevenCuiPresenter_Output_MarksABustedSide(t *testing.T) {
 	assert.Contains(t, out, i18n.Tf("seventwentyseven.yourScore", "score", "- / 19"))
 }
 
+func TestSevenTwentySevenCuiPresenter_Output_NamesMatchWinner(t *testing.T) {
+	s27NoColor(t)
+	orig := i18n.Lang()
+	defer i18n.SetLang(orig)
+
+	for _, tc := range []struct {
+		lang string
+		want string
+	}{
+		{lang: "ja", want: "ゲーム終了: CPU 1 の勝ち"},
+		{lang: "en", want: "Game over: CPU 1 won"},
+	} {
+		t.Run(tc.lang+" CPU winner", func(t *testing.T) {
+			i18n.SetLang(tc.lang)
+			p := new(presenter.SevenTwentySevenCuiPresenter)
+			g := newS27EndedWithWinner(t, 1)
+			out := p.Output(g, nil)
+			assert.Contains(t, out, tc.want)
+			assert.NotContains(t, out, "Player 1")
+		})
+	}
+}
+
+func TestSevenTwentySevenCuiPresenter_Output_NamesHumanMatchWinner(t *testing.T) {
+	s27NoColor(t)
+	orig := i18n.Lang()
+	defer i18n.SetLang(orig)
+
+	for _, tc := range []struct{ lang, want string }{
+		{lang: "ja", want: "ゲーム終了: あなた の勝ち"},
+		{lang: "en", want: "Game over: You won"},
+	} {
+		t.Run(tc.lang, func(t *testing.T) {
+			i18n.SetLang(tc.lang)
+			p := new(presenter.SevenTwentySevenCuiPresenter)
+			g := newS27EndedWithWinner(t, 0)
+			out := p.Output(g, nil)
+			assert.Contains(t, out, tc.want)
+		})
+	}
+}
+
+func newS27EndedWithWinner(t *testing.T, winner int) *domain.SevenTwentySeven {
+	t.Helper()
+	g := domain.NewDefaultSevenTwentySeven()
+	cfg := g.GetConfig()
+	cfg.TargetRounds = 1
+	g.SetConfig(cfg)
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		g.GetPlayer(i).SetChips(1)
+	}
+	g.GetPlayer(winner).SetChips(1000)
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		g.SetHandForTest(i, []*domain.Card{s27Card(domain.CardDesignSpade, 10), s27Card(domain.CardDesignHeart, 10), s27Card(domain.CardDesignClover, 10)})
+	}
+	g.StandEveryoneForTest()
+	g.SettleForTest()
+	require.True(t, g.GetGameEndFlag())
+	require.Equal(t, winner, g.GetMatchWinnerIdx())
+	return g
+}
+
 func TestSevenTwentySevenCuiPresenter_Output_ShowsDrawRoundOnlyDuringDraw(t *testing.T) {
 	s27NoColor(t)
 	p := new(presenter.SevenTwentySevenCuiPresenter)

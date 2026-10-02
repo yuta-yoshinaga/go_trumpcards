@@ -21,7 +21,7 @@
   "promptDraw": "c で1枚引く / s で止まる",
   "promptResult": "n で次のラウンドへ",
   "promptHelp": "help でコマンド一覧",
-  "gameEnd": "ゲーム終了: Player {{player}} の勝ち",
+  "gameEnd": "ゲーム終了: {{name}} の勝ち",
   "takeCard": "引く",
   "stand": "止まる",
   "result.carry": "全員が両側とも超えました。ポット {{pot}} は次のラウンドへ持ち越し（{{count}} 回目）",

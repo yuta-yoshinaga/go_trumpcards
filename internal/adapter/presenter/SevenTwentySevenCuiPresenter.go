@@ -87,7 +87,8 @@ func (p *SevenTwentySevenCuiPresenter) Output(g interfaces.SevenTwentySevenGame,
 		cuiErrorBlock(b, lastErr)
 
 		if g.GetGameEndFlag() {
-			banner := i18n.Tf("seventwentyseven.gameEnd", "player", strconv.Itoa(g.GetMatchWinnerIdx()))
+			winnerIdx := g.GetMatchWinnerIdx()
+			banner := i18n.Tf("seventwentyseven.gameEnd", "name", cuiPlayerName(g.GetPlayer(winnerIdx), winnerIdx))
 			b.WriteString(color.Green(banner) + "\n")
 			return
 		}
