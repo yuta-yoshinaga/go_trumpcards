@@ -257,7 +257,11 @@ describe('TongitsPage', () => {
         true,
       ]),
     );
-    await waitFor(() => expect(liveRegion).toHaveTextContent('+1'));
+    await waitFor(() => {
+      expect(liveRegion).toHaveTextContent('+1');
+      expect(liveRegion).toHaveTextContent('+2');
+      expect(liveRegion).toHaveTextContent('+3');
+    });
     expect(liveRegion).toHaveTextContent('+1');
     expect(liveRegion).toHaveTextContent('+2');
     expect(announcement.querySelector('[aria-live="polite"]')).toBe(liveRegion);

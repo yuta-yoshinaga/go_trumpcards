@@ -223,7 +223,7 @@ function TongitsPageContent() {
       <div data-testid="tongits-round-score-announcement">
         <RoundScoreAnnouncement
           active={isRoundEnd || isGameEnd}
-          entries={(state?.players ?? []).map((p) => ({
+          entries={state.players.map((p) => ({
             name: playerName(p.id, p.isHuman),
             roundScore: p.roundScore,
             cumulativeScore: p.cumulativeScore,
