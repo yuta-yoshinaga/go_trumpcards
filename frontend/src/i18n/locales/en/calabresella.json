@@ -62,7 +62,10 @@
   },
   "roundResult": {
     "title": "Round Result",
-    "thirds": "{{name}} thirds captured: {{thirds}}"
+    "thirds": "{{name}} thirds captured: {{thirds}}",
+    "soloistWon": "The Soloist made the contract.",
+    "soloistLost": "The Soloist failed the contract.",
+    "settlement": "{{name}} score change this round: {{change}} pts"
   },
   "hintAvailable": "Hint",
   "hint": {

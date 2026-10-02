@@ -55395,6 +55395,14 @@ components:
           items:
             type: integer
           description: Thirds-of-a-point captured by each of the 3 players in the current round
+        roundScoreChanges:
+          type: array
+          items:
+            type: integer
+          description: Net score transfer from the most recently scored round per player
+        soloistWon:
+          type: boolean
+          description: Whether the Soloist met the winning thirds threshold in the most recently scored round
         lastTrickWinner:
           type: integer
           description: Index of the player who won the most recent trick (-1 if none)
