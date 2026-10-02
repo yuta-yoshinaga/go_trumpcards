@@ -276,9 +276,16 @@ function SuecaPageContent() {
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
                     <div className="mt-1">
                       {state.players.map((p) => (
-                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('tricks', { count: p.trickCount })}
+                        <div
+                          key={p.id}
+                          className="text-ds-text-muted text-sm py-0.5"
+                          data-testid={`sueca-player-${p.id}`}
+                        >
+                          {t('playerTeam', {
+                            player: playerName(p.id, p.isHuman),
+                            team: p.team === 0 ? t('team.a') : t('team.b'),
+                          })}
+                          : {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
                         </div>
                       ))}
                     </div>
@@ -286,9 +293,16 @@ function SuecaPageContent() {
                 ) : (
                   <div className="mb-2 p-2 rounded bg-black/30">
                     {state.players.map((p) => (
-                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('tricks', { count: p.trickCount })}
+                      <div
+                        key={p.id}
+                        className="text-ds-text-muted text-sm py-0.5"
+                        data-testid={`sueca-player-${p.id}`}
+                      >
+                        {t('playerTeam', {
+                          player: playerName(p.id, p.isHuman),
+                          team: p.team === 0 ? t('team.a') : t('team.b'),
+                        })}
+                        : {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
                       </div>
                     ))}
                   </div>
