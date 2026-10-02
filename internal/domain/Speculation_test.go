@@ -310,6 +310,22 @@ func TestSpeculation_ResetCollectsTheStakeFromEverySeat(t *testing.T) {
 	}
 }
 
+func TestSpeculation_RoundChipChangesIncludeStakeAndSettlement(t *testing.T) {
+	cfg := NewDefaultSpeculationConfig()
+	cfg.Players = 3
+	g := NewSpeculation(cfg)
+	assert.Equal(t, []int{-10, -10, -10}, g.GetRoundChipChanges(), "参加料はラウンド開始後の減少")
+	g.players[0].AddChips(20)
+	g.players[1].SubtractChips(10)
+	assert.Equal(t, []int{10, -20, -10}, g.GetRoundChipChanges())
+
+	encoded, err := json.Marshal(g)
+	require.NoError(t, err)
+	var restored Speculation
+	require.NoError(t, json.Unmarshal(encoded, &restored))
+	assert.Equal(t, []int{10, -20, -10}, restored.GetRoundChipChanges())
+}
+
 func TestSpeculation_ABrokeSeatPaysWhatItHasAndStays(t *testing.T) {
 	// **席を弾かない。** 座席番号がずれるとラウンドを跨いだ集計が崩れる。
 	cfg := NewDefaultSpeculationConfig()

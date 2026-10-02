@@ -68,10 +68,11 @@ type Speculation struct {
 	// bestSeat は現在の最高切り札を持つ座席。誰も持っていなければ -1。
 	bestSeat int
 
-	roundNo     int
-	winnerSeat  int
-	gameEndFlag bool
-	lastTrade   *SpeculationTrade
+	roundNo         int
+	winnerSeat      int
+	gameEndFlag     bool
+	lastTrade       *SpeculationTrade
+	roundStartChips []int
 	actionLogBase
 }
 
@@ -140,7 +141,9 @@ func (g *Speculation) Reset() {
 
 	// 参加料を集める。**払えない席は 0 まで出す** —— 途中で払えなくなった
 	// プレイヤーを弾くと座席番号がずれ、ラウンドを跨いだ集計が崩れる。
-	for _, p := range g.players {
+	g.roundStartChips = make([]int, len(g.players))
+	for i, p := range g.players {
+		g.roundStartChips[i] = p.GetChips()
 		stake := g.config.Stake
 		if p.GetChips() < stake {
 			stake = p.GetChips()
@@ -531,6 +534,17 @@ func (g *Speculation) GetGameEndFlag() bool { return g.gameEndFlag }
 
 // GetLastTrade returns the most recent completed purchase in this round.
 func (g *Speculation) GetLastTrade() *SpeculationTrade { return g.lastTrade }
+
+// GetRoundChipChanges returns each seat's net chip change since this round began.
+func (g *Speculation) GetRoundChipChanges() []int {
+	changes := make([]int, len(g.players))
+	for i, p := range g.players {
+		if i < len(g.roundStartChips) {
+			changes[i] = p.GetChips() - g.roundStartChips[i]
+		}
+	}
+	return changes
+}
 
 // --- Test helpers ---
 

@@ -45,6 +45,7 @@ type specBoard struct {
 	winnerSeat  int
 	gameEnd     bool
 	lastTrade   *domain.SpeculationTrade
+	chipChanges []int
 	cfg         domain.SpeculationConfig
 	log         []*domain.ActionLogEntry
 }
@@ -75,6 +76,7 @@ func specDefaultBoard() specBoard {
 		winnerSeat:  -1,
 		gameEnd:     false,
 		cfg:         cfg,
+		chipChanges: []int{0, 0, 0, 0},
 	}
 }
 
@@ -104,6 +106,7 @@ func (b specBoard) mock() *interfaces.MockSpeculationGame {
 	m.On("GetWinnerSeat").Return(b.winnerSeat).Maybe()
 	m.On("GetGameEndFlag").Return(b.gameEnd).Maybe()
 	m.On("GetLastTrade").Return(b.lastTrade).Maybe()
+	m.On("GetRoundChipChanges").Return(b.chipChanges).Maybe()
 	m.On("GetActionLog").Return(b.log).Maybe()
 	return m
 }
@@ -513,6 +516,7 @@ func specWebOutput(t *testing.T, b specBoard, lastErr error) (string, *controlle
 
 func TestSpeculationWebPresenter_Output_EveryFieldIsPopulated(t *testing.T) {
 	b := specDefaultBoard()
+	b.chipChanges = []int{10, -5, 0, -5}
 	b.phase = domain.SpeculationPhaseAuction
 	b.seats[2].best = specCard(domain.CardDesignClover, 12)
 	b.bestSeat = 2
@@ -548,6 +552,7 @@ func TestSpeculationWebPresenter_Output_EveryFieldIsPopulated(t *testing.T) {
 		[]string{out.Seats[0].Name, out.Seats[1].Name, out.Seats[2].Name, out.Seats[3].Name})
 	assert.Equal(t, []int{190, 175, 220, 60},
 		[]int{out.Seats[0].Chips, out.Seats[1].Chips, out.Seats[2].Chips, out.Seats[3].Chips})
+	assert.Equal(t, []int{10, -5, 0, -5}, []int{out.Seats[0].ChipChange, out.Seats[1].ChipChange, out.Seats[2].ChipChange, out.Seats[3].ChipChange})
 	assert.Equal(t, []int{2, 1, 0, 1},
 		[]int{out.Seats[0].HiddenCount, out.Seats[1].HiddenCount, out.Seats[2].HiddenCount, out.Seats[3].HiddenCount})
 

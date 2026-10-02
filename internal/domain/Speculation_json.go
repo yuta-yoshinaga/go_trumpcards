@@ -21,22 +21,23 @@ type speculationPlayerJSON struct {
 
 // speculationJSON は Speculation の wire format。
 type speculationJSON struct {
-	Deck        *TrumpCards             `json:"dk"`
-	Players     []speculationPlayerJSON `json:"pl"`
-	Config      SpeculationConfig       `json:"cf"`
-	Phase       SpeculationPhase        `json:"ph"`
-	TrumpSuit   int                     `json:"ts"`
-	TrumpCard   *Card                   `json:"tc"`
-	Pot         int                     `json:"pt"`
-	TurnSeat    int                     `json:"tn"`
-	OfferFrom   int                     `json:"of"`
-	OfferTo     int                     `json:"ot"`
-	OfferAmount int                     `json:"oa"`
-	BestSeat    int                     `json:"bs"`
-	RoundNo     int                     `json:"rn"`
-	WinnerSeat  int                     `json:"ws"`
-	GameEndFlag bool                    `json:"ge"`
-	ActionLog   []*ActionLogEntry       `json:"al"`
+	Deck            *TrumpCards             `json:"dk"`
+	Players         []speculationPlayerJSON `json:"pl"`
+	Config          SpeculationConfig       `json:"cf"`
+	Phase           SpeculationPhase        `json:"ph"`
+	TrumpSuit       int                     `json:"ts"`
+	TrumpCard       *Card                   `json:"tc"`
+	Pot             int                     `json:"pt"`
+	TurnSeat        int                     `json:"tn"`
+	OfferFrom       int                     `json:"of"`
+	OfferTo         int                     `json:"ot"`
+	OfferAmount     int                     `json:"oa"`
+	BestSeat        int                     `json:"bs"`
+	RoundNo         int                     `json:"rn"`
+	WinnerSeat      int                     `json:"ws"`
+	GameEndFlag     bool                    `json:"ge"`
+	ActionLog       []*ActionLogEntry       `json:"al"`
+	RoundStartChips []int                   `json:"rsc,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -51,22 +52,23 @@ func (g *Speculation) MarshalJSON() ([]byte, error) {
 		}
 	}
 	return json.Marshal(speculationJSON{
-		Deck:        g.deck,
-		Players:     players,
-		Config:      g.config,
-		Phase:       g.phase,
-		TrumpSuit:   g.trumpSuit,
-		TrumpCard:   g.trumpCard,
-		Pot:         g.pot,
-		TurnSeat:    g.turnSeat,
-		OfferFrom:   g.offerFrom,
-		OfferTo:     g.offerTo,
-		OfferAmount: g.offerAmount,
-		BestSeat:    g.bestSeat,
-		RoundNo:     g.roundNo,
-		WinnerSeat:  g.winnerSeat,
-		GameEndFlag: g.gameEndFlag,
-		ActionLog:   g.actionLog,
+		Deck:            g.deck,
+		Players:         players,
+		Config:          g.config,
+		Phase:           g.phase,
+		TrumpSuit:       g.trumpSuit,
+		TrumpCard:       g.trumpCard,
+		Pot:             g.pot,
+		TurnSeat:        g.turnSeat,
+		OfferFrom:       g.offerFrom,
+		OfferTo:         g.offerTo,
+		OfferAmount:     g.offerAmount,
+		BestSeat:        g.bestSeat,
+		RoundNo:         g.roundNo,
+		WinnerSeat:      g.winnerSeat,
+		GameEndFlag:     g.gameEndFlag,
+		ActionLog:       g.actionLog,
+		RoundStartChips: g.roundStartChips,
 	})
 }
 
@@ -79,7 +81,7 @@ func (g *Speculation) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.Players) > speculationMaxSliceLen || len(j.ActionLog) > speculationMaxSliceLen {
+	if len(j.Players) > speculationMaxSliceLen || len(j.ActionLog) > speculationMaxSliceLen || len(j.RoundStartChips) > speculationMaxSliceLen {
 		return fmt.Errorf("speculation: input array exceeds maximum allowed size")
 	}
 	for _, p := range j.Players {
@@ -130,6 +132,13 @@ func (g *Speculation) UnmarshalJSON(data []byte) error {
 	g.winnerSeat = speculationClampSeat(j.WinnerSeat, len(g.players), -1)
 	g.gameEndFlag = j.GameEndFlag
 	g.actionLog = j.ActionLog
+	g.roundStartChips = j.RoundStartChips
+	if len(g.roundStartChips) != len(g.players) {
+		g.roundStartChips = make([]int, len(g.players))
+		for i, p := range g.players {
+			g.roundStartChips[i] = p.GetChips()
+		}
+	}
 	return nil
 }
 
