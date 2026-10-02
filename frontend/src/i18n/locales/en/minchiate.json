@@ -38,7 +38,9 @@
     "title": "Round Result",
     "tricks": "{{name}} tricks: {{count}}",
     "lastTrick": "Last trick: +{{points}} to team {{team}}",
-    "scarto": "Scarto: +{{points}} to team {{team}}"
+    "scarto": "Scarto: +{{points}} to team {{team}}",
+    "breakdownTitle": "Team round score breakdown",
+    "teamBreakdown": "Team {{team}}: tricks {{tricks}} pts / last trick +{{lastTrickBonus}} / scarto +{{scartoBonus}} / round total {{total}} pts"
   },
   "hintAvailable": "Hint",
   "hint": {
