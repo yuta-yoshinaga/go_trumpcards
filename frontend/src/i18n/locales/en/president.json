@@ -41,6 +41,8 @@
   },
   "actionPlayed": "{{name}} played: {{cards}}",
   "actionPassed": "{{name}} passed",
+  "actionFieldFlushed": "The field was cleared. {{name}} leads next",
+  "listSeparator": ", ",
   "label": {
     "actionLog": "Action history"
   },

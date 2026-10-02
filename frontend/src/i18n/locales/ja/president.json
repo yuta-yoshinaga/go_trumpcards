@@ -41,6 +41,8 @@
   },
   "actionPlayed": "{{name}}が出しました: {{cards}}",
   "actionPassed": "{{name}}がパスしました",
+  "actionFieldFlushed": "場が流れました。{{name}}が次にリードします",
+  "listSeparator": "、",
   "label": {
     "actionLog": "行動履歴"
   },
