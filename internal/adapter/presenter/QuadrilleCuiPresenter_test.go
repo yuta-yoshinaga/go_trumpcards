@@ -56,6 +56,8 @@ func setupQuadrilleCuiMockWithPlayers() (*interfaces.MockQuadrilleGame, []*domai
 	m.On("GetPlayer", 0).Return(players[0])
 	m.On("GetPlayer", 1).Return(players[1])
 	m.On("GetPlayer", 2).Return(players[2])
+	m.On("GetBids").Return([domain.QuadrillePlayerCnt]domain.QuadrilleBid{}).Maybe()
+	m.On("GetBidActed").Return([domain.QuadrillePlayerCnt]bool{}).Maybe()
 	return m, players
 }
 
@@ -81,6 +83,35 @@ func TestQuadrilleCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.NotEmpty(t, result)
 		assert.Contains(t, result, "ビッド") // translated bid prompt/help
+	})
+
+	t.Run("bid phase lists each seat declaration", func(t *testing.T) {
+		m := setupQuadrilleCuiMock()
+		players := makeQuadrillePlayers()
+		players = append(players, domain.NewQuadrillePlayer(false))
+		m.On("GetPlayerCnt").Return(4)
+		for i, player := range players {
+			m.On("GetPlayer", i).Return(player)
+		}
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.QuadrillePhaseBid)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBids")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBidActed")
+		m.On("GetBids").Return([domain.QuadrillePlayerCnt]domain.QuadrilleBid{domain.QuadrilleBidNone, domain.QuadrilleBidEntrar, domain.QuadrilleBidSolo, domain.QuadrilleBidNone})
+		m.On("GetBidActed").Return([domain.QuadrillePlayerCnt]bool{true, true, true, false})
+
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "あなた: パス")
+		assert.Contains(t, out, "CPU 1: エントラール")
+		assert.Contains(t, out, "CPU 2: ソロ")
+		assert.Contains(t, out, "CPU 3: 未宣言")
+	})
+
+	t.Run("non-bid phases do not list declarations", func(t *testing.T) {
+		m, _ := setupQuadrilleCuiMockWithPlayers()
+		out := p.Output(m, nil)
+		assert.NotContains(t, out, "未宣言")
+		assert.NotContains(t, out, "エントラール")
 	})
 
 	t.Run("trick end prompt", func(t *testing.T) {

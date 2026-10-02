@@ -10,6 +10,8 @@
   "roleQuadrille": "Quadrille",
   "roleCoalition": "Coalition",
   "bidNone": "-",
+  "bidNotDeclared": "Not declared",
+  "auctionSeat": "{{name}}: {{bid}}",
   "bidPass": "pass",
   "bidEntrar": "entrar",
   "bidSolo": "solo",
