@@ -32,17 +32,13 @@ import type { BurracoResponse, Card } from '../types/card';
 import { BurracoPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { burracoMeldSelectionStatus } from '../utils/burracoMeld';
-import {
-  type BurracoSortMode,
-  loadBurracoSortMode,
-  saveBurracoSortMode,
-  sortedBurracoHand,
-} from '../utils/burracoSort';
+import { type BurracoSortMode, loadBurracoSortMode, saveBurracoSortMode } from '../utils/burracoSort';
 import { canastaDrawDiscardProblem } from '../utils/canastaDrawDiscard';
 import { cardAlt } from '../utils/cardAlt';
 import { BURRACO_HELP, parseBurracoCommand } from '../utils/cli/commands/burracoCommands';
 import { formatBurracoState } from '../utils/cli/formatters/burracoFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { sortedHandForDisplay } from '../utils/handDisplaySort';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -532,7 +528,7 @@ function BurracoPageContent() {
             )}
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ca-player-hand">
-                {sortedBurracoHand(humanPlayer.cards, sortMode).map(({ card, index: idx }) => (
+                {sortedHandForDisplay(humanPlayer.cards, sortMode).map(({ card, index: idx }) => (
                   <button
                     type="button"
                     key={`${card.design}-${card.value}-${idx}`}
