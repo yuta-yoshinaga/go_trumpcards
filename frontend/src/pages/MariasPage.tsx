@@ -293,25 +293,30 @@ function MariasPageContent() {
                       <div className="mb-1 text-ds-text-primary">
                         {t(isRoundEnd || isGameEnd ? 'roundResult.title' : 'roundResult.progressTitle')}
                       </div>
-                      {state.players.map((p) => (
-                        <div key={p.id}>
-                          <div>
-                            {t('roundResult.cardPoints', {
-                              name: playerName(p.id, p.isHuman),
-                              points: state.roundCardPoints[p.id] ?? 0,
-                            })}
-                          </div>
-                          {(state.roundMarriage[p.id] ?? 0) > 0 && (
+                      {state.players.map((p) => {
+                        const cardPoints = state.roundCardPoints[p.id] ?? 0;
+                        const marriage = state.roundMarriage[p.id] ?? 0;
+
+                        return (
+                          <div key={p.id}>
                             <div>
-                              {t('roundResult.marriage', {
+                              {t('roundResult.cardPoints', {
                                 name: playerName(p.id, p.isHuman),
-                                points: state.roundMarriage[p.id] ?? 0,
+                                points: cardPoints,
                               })}
-                              <span className="ml-1">({marriageDetails(p.id)})</span>
                             </div>
-                          )}
-                        </div>
-                      ))}
+                            {marriage > 0 && (
+                              <div>
+                                {t('roundResult.marriage', {
+                                  name: playerName(p.id, p.isHuman),
+                                  points: marriage,
+                                })}
+                                <span className="ml-1">({marriageDetails(p.id)})</span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                       {/* Soloist-vs-Defenders total comparison. Each side total is
                           cardPoints + marriage; the Soloist wins the round only when
                           their total strictly exceeds the two Defenders' combined total

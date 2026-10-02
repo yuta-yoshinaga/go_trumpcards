@@ -226,6 +226,18 @@ describe('MariasPage', () => {
     expect(screen.getByText('ディフェンダー合計: 45点')).not.toHaveClass('text-ds-warning');
   });
 
+  it('shows zero progress when a round has no points yet', async () => {
+    mockExec.mockResolvedValue(makeMariasState({ roundCardPoints: [], roundMarriage: [] }));
+    renderWithProviders(<MariasPage />);
+    const liveProgress = await screen.findByTestId('marias-round-progress-live');
+    expect(liveProgress).toHaveTextContent('あなた カード点: 0');
+    expect(liveProgress).toHaveTextContent('CPU 1 カード点: 0');
+    expect(liveProgress).toHaveTextContent('CPU 2 カード点: 0');
+    const sideTotals = screen.getByTestId('marias-side-totals');
+    expect(sideTotals).toHaveTextContent('ソリスト: 0点');
+    expect(sideTotals).toHaveTextContent('ディフェンダー合計: 0点');
+  });
+
   it('keeps the round result available inside the live region at game end', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<MariasPage />);
