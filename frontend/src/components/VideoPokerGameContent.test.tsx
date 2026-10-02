@@ -147,13 +147,16 @@ describe('VideoPokerGameContent', () => {
     };
     mockExec.mockResolvedValue(wildHand);
     await i18n.changeLanguage('en');
-    renderContent('deuceswild');
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const firstCard = screen.getAllByRole('button').find((button) => button.getAttribute('aria-pressed') !== null);
-    expect(firstCard).toBeDefined();
-    if (!firstCard) throw new Error('Expected the first card button');
-    expect(firstCard).toHaveAccessibleName(/♠ 2, Card 1, Hold card 1, WILD, selected by auto-hold/);
-    await i18n.changeLanguage('ja');
+    try {
+      renderContent('deuceswild');
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      const firstCard = screen.getAllByRole('button').find((button) => button.getAttribute('aria-pressed') !== null);
+      expect(firstCard).toBeDefined();
+      if (!firstCard) throw new Error('Expected the first card button');
+      expect(firstCard).toHaveAccessibleName(/♠ 2, Card 1, Hold card 1, WILD, selected by auto-hold/);
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('calls reset on mount and renders bet phase', async () => {
@@ -231,8 +234,11 @@ describe('VideoPokerGameContent', () => {
     expect(netChange).toHaveTextContent('純増減: -1');
 
     await i18n.changeLanguage('en');
-    expect(netChange).toHaveTextContent('Net change: -1');
-    await i18n.changeLanguage('ja');
+    try {
+      expect(netChange).toHaveTextContent('Net change: -1');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('marks a break-even result as positive zero', async () => {
