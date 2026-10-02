@@ -6,11 +6,25 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
+
+func removeThreeCardMockCall(calls []*mock.Call, method string) []*mock.Call {
+	result := make([]*mock.Call, 0, len(calls))
+	found := false
+	for _, call := range calls {
+		if !found && call.Method == method {
+			found = true
+			continue
+		}
+		result = append(result, call)
+	}
+	return result
+}
 
 func setupThreeCardWebMockDefaults(m *interfaces.MockThreeCardGame) {
 	m.On("GetChips").Return(1000).Maybe()
@@ -54,6 +68,41 @@ func TestThreeCardWebPresenter_Output_BetPhase(t *testing.T) {
 	assert.Empty(t, result.PlayerHand)
 	assert.Empty(t, result.DealerHand)
 	assert.Empty(t, result.Message)
+}
+
+func TestThreeCardWebPresenter_Output_HidesDealerHandDuringActionPhase(t *testing.T) {
+	p := new(ThreeCardWebPresenter)
+	m := new(interfaces.MockThreeCardGame)
+	setupThreeCardWebMockDefaults(m)
+	m.ExpectedCalls = removeThreeCardMockCall(m.ExpectedCalls, "GetPhase")
+	m.ExpectedCalls = removeThreeCardMockCall(m.ExpectedCalls, "GetDealerHand")
+	m.On("GetPhase").Return(domain.ThreeCardPhaseAction).Maybe()
+	m.On("GetDealerHand").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+		domain.NewCard(domain.CardDesignHeart, 6, false),
+		domain.NewCard(domain.CardDesignDiamond, 7, false),
+	}).Maybe()
+
+	result := parseThreeCardOutput(t, p.Output(m, nil))
+	assert.Empty(t, result.DealerHand)
+}
+
+func TestThreeCardWebPresenter_Output_ShowsDealerHandAfterActionPhase(t *testing.T) {
+	p := new(ThreeCardWebPresenter)
+	m := new(interfaces.MockThreeCardGame)
+	setupThreeCardWebMockDefaults(m)
+	m.ExpectedCalls = removeThreeCardMockCall(m.ExpectedCalls, "GetPhase")
+	m.ExpectedCalls = removeThreeCardMockCall(m.ExpectedCalls, "GetDealerHand")
+	m.On("GetPhase").Return(domain.ThreeCardPhaseEnd).Maybe()
+	hand := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+		domain.NewCard(domain.CardDesignHeart, 6, false),
+		domain.NewCard(domain.CardDesignDiamond, 7, false),
+	}
+	m.On("GetDealerHand").Return(hand).Maybe()
+
+	result := parseThreeCardOutput(t, p.Output(m, nil))
+	assert.Len(t, result.DealerHand, 3)
 }
 
 func TestThreeCardWebPresenter_HintOutput(t *testing.T) {

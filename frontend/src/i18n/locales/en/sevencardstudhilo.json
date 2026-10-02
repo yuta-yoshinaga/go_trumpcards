@@ -82,6 +82,7 @@
     "straightFlush": "Straight Flush",
     "royalFlush": "Royal Flush"
   },
+  "listSeparator": ", ",
   "hiLo": {
     "title": "Hi / Lo split",
     "hi": "Hi",

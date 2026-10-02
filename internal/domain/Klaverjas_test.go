@@ -110,6 +110,11 @@ func TestKlaverjas_CardPoints(t *testing.T) {
 	if g.cardPoints(klavCard(CardDesignClover, 1)) != 11 {
 		t.Error("plain ace points wrong")
 	}
+	if KlaverjasCardPoints(klavCard(CardDesignDiamond, 11), CardDesignDiamond) != 20 ||
+		KlaverjasCardPoints(klavCard(CardDesignDiamond, 9), CardDesignDiamond) != 14 ||
+		KlaverjasCardPoints(klavCard(CardDesignClover, 1), CardDesignDiamond) != 11 {
+		t.Error("exported Klaverjas card points wrong")
+	}
 }
 
 func TestKlaverjas_TrickWinnerTrumpBeatsLead(t *testing.T) {

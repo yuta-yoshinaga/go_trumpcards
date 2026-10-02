@@ -45,6 +45,36 @@ beforeEach(() => {
 });
 
 describe('KlaverjasPage', () => {
+  it('shows current trick card points using trump and plain suit values', async () => {
+    mockExec.mockResolvedValue(
+      makeKlaverjasState({
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'DIAMOND', value: 11 } },
+          { playerIdx: 1, card: { design: 'HEART', value: 1 } },
+          { playerIdx: 2, card: { design: 'HEART', value: 11 } },
+        ],
+        currentTrickPoints: 33,
+      }),
+    );
+    renderWithProviders(<KlaverjasPage />);
+
+    expect(await screen.findByTestId('klaverjas-current-trick-points')).toHaveTextContent('場のカード点合計: 33点');
+  });
+
+  it('shows the resolved trick result instead of a current trick total', async () => {
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<KlaverjasPage />);
+
+    expect(await screen.findByTestId('klaverjas-trick-winner')).toHaveTextContent('このトリック');
+    expect(screen.queryByTestId('klaverjas-current-trick-points')).not.toBeInTheDocument();
+  });
+  it('does not show a current trick total when the trick is empty', async () => {
+    mockExec.mockResolvedValue(makeKlaverjasState({ currentTrick: [], currentTrickPoints: 0 }));
+    renderWithProviders(<KlaverjasPage />);
+
+    expect(await screen.findByText('チームA: 0点 / 目標 1501点')).toBeInTheDocument();
+    expect(screen.queryByTestId('klaverjas-current-trick-points')).not.toBeInTheDocument();
+  });
   it('shows each team score against the configured match target', async () => {
     mockExec.mockResolvedValue(makeKlaverjasState({ teamScores: [420, 300] }));
     renderWithProviders(<KlaverjasPage />);

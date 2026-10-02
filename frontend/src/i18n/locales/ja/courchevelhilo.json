@@ -6,6 +6,16 @@
     "winner": "{{name}} (+{{amount}})",
     "hiTakesAll": "ロー該当者なし — ハイが総取り"
   },
+  "potAwards": {
+    "mainPot": "メインポット",
+    "sidePot": "サイドポット{{n}}",
+    "eligible": "対象",
+    "winners": "勝者",
+    "eligibleLine": "{{pot}} {{amount}}: 対象 [{{players}}]",
+    "winnerLine": "{{pot}} {{amount}}: 対象 [{{eligible}}] → 勝者 ハイ: {{hiWinners}}{{loSection}}",
+    "loSection": " (ロー: {{loWinners}})"
+  },
+  "listSeparator": "、",
   "scoop": {
     "badge": "🏆 スクープ! {{name}} がハイ・ロー総取り (+{{total}})",
     "youBadge": "🏆 スクープ達成! ハイ・ローを総取り (+{{total}})"
