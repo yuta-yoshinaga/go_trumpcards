@@ -6,6 +6,13 @@
     "winner": "{{name}} (+{{amount}})",
     "hiTakesAll": "No qualifying low — Hi scoops the pot"
   },
+  "potAwards": {
+    "mainPot": "Main pot",
+    "sidePot": "Side pot {{n}}",
+    "eligible": "Eligible",
+    "winners": "Winners"
+  },
+  "listSeparator": ", ",
   "scoop": {
     "badge": "🏆 Scoop! {{name}} takes both Hi & Lo (+{{total}})",
     "youBadge": "🏆 Scoop! You take both Hi & Lo (+{{total}})"

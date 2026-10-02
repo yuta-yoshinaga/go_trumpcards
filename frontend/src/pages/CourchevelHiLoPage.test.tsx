@@ -1838,4 +1838,39 @@ describe('CourchevelHiLoPage', () => {
     const panel = await screen.findByTestId('courchevelhilo-kbd-shortcuts');
     expect(panel).toBeInTheDocument();
   });
+
+  it('shows each contested pot amount and its eligible players while betting', async () => {
+    mockExec.mockResolvedValue({
+      ...preFlopState,
+      sidePots: [
+        { amount: 120, eligiblePlayers: [0, 1, 2] },
+        { amount: 80, eligiblePlayers: [1, 2] },
+        { amount: 40, eligiblePlayers: [2] },
+      ],
+    });
+    renderWithProviders(<CourchevelHiLoPage />);
+
+    expect(await screen.findByText('メインポット 120: 対象 [あなた、CPU 1、CPU 2]')).toBeInTheDocument();
+    expect(screen.getByText('サイドポット1 80: 対象 [CPU 1、CPU 2]')).toBeInTheDocument();
+    expect(screen.getByText('サイドポット2 40: 対象 [CPU 2]')).toBeInTheDocument();
+  });
+
+  it('shows Hi and Lo payouts separately for every showdown pot', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      potAwards: [
+        { amount: 120, eligible: [0, 1, 2], hiWinners: [0], hiPayouts: [60], loWinners: [1], loPayouts: [60] },
+        { amount: 80, eligible: [1, 2], hiWinners: [2], hiPayouts: [80], loWinners: [], loPayouts: [] },
+      ],
+    });
+    renderWithProviders(<CourchevelHiLoPage />);
+
+    expect(await screen.findByTestId('courchevelhilo-pot-awards')).toBeInTheDocument();
+    const pots = await screen.findAllByTestId('courchevelhilo-pot-award');
+    expect(pots).toHaveLength(2);
+    expect(pots[0]).toHaveTextContent(
+      'メインポット 120: 対象 [あなた、CPU 1、CPU 2] → 勝者 ハイ: あなた +60 (ロー: CPU 1 +60)',
+    );
+    expect(pots[1]).toHaveTextContent('サイドポット1 80: 対象 [CPU 1、CPU 2] → 勝者 ハイ: CPU 2 +80');
+  });
 });

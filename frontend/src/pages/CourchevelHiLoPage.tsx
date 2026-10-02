@@ -196,6 +196,20 @@ function CourchevelHiLoPageContent() {
           <span data-tutorial="bohl-pot-display">
             {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
           </span>
+          {(state?.sidePots?.length ?? 0) > 1 && (
+            <div className="text-xs">
+              {state?.sidePots?.map((pot, index) => (
+                <div key={`side-pot-${index}`}>
+                  {t(index === 0 ? 'potAwards.mainPot' : 'potAwards.sidePot', { n: index, amount: pot.amount })}{' '}
+                  {pot.amount}: {t('potAwards.eligible')} [
+                  {pot.eligiblePlayers
+                    .map((playerIdx) => findPlayerName(state.players, playerIdx))
+                    .join(t('listSeparator'))}
+                  ]
+                </div>
+              ))}
+            </div>
+          )}
           <span>
             SB/BB:{' '}
             <strong>
@@ -342,6 +356,27 @@ function CourchevelHiLoPageContent() {
 
             {/* Round results */}
             {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
+            {isShowdown && (state?.potAwards?.length ?? 0) > 1 && (
+              <div className="mb-3 text-sm" data-testid="courchevelhilo-pot-awards">
+                {state?.potAwards?.map((award, index) => {
+                  const names = (ids: number[], payouts: number[]) =>
+                    ids
+                      .map((id, i) => `${findPlayerName(state?.players ?? [], id)} +${payouts[i]}`)
+                      .join(t('listSeparator'));
+                  const eligible = award.eligible
+                    .map((id) => findPlayerName(state?.players ?? [], id))
+                    .join(t('listSeparator'));
+                  return (
+                    <p key={`${index}-${award.amount}`} data-testid="courchevelhilo-pot-award">
+                      {index === 0 ? t('potAwards.mainPot') : t('potAwards.sidePot', { n: index })} {award.amount}:{' '}
+                      {t('potAwards.eligible')} [{eligible}] → {t('potAwards.winners')} {t('hiLo.hi')}:{' '}
+                      {names(award.hiWinners, award.hiPayouts)}
+                      {award.loWinners.length > 0 && ` (${t('hiLo.lo')}: ${names(award.loWinners, award.loPayouts)})`}
+                    </p>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Hi/Lo split breakdown: green Hi badges + blue Lo badges (Lo omitted when nobody qualifies) */}
             {isShowdown &&
