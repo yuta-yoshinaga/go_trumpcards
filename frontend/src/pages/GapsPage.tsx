@@ -336,7 +336,12 @@ function GapsPageContent() {
                       onClick={() =>
                         selectedSource ? handleSelectTarget(zone) : !isLocked && handleSelectSource(zone)
                       }
-                      aria-label={isLocked ? `${cardAlt(cell)} ${t('lockedAria')}` : cardAlt(cell)}
+                      aria-label={t(isLocked ? 'lockedCardAria' : 'cardAria', {
+                        card: cardAlt(cell),
+                        row: rIdx,
+                        col: cIdx,
+                        locked: t('lockedAria'),
+                      })}
                       disabled={!isPlaying || loading}
                       aria-pressed={isSameZone(selectedSource, zone)}
                       data-testid={

@@ -24,6 +24,8 @@
   "gapAriaNeeded": "空き（{{card}} を置けます）",
   "gapAriaAnySuit": "空き（任意のスートの {{value}} を置けます）",
   "gapAriaBlocked": "空き（K の後ろのため使用不可）",
+  "cardAria": "{{card}}、行{{row}}・列{{col}}",
+  "lockedCardAria": "{{card}}、行{{row}}・列{{col}}、{{locked}}",
   "lockedAria": "ロック済み (次のリディール後も残ります)",
   "lockedTooltip": "ロック済み (次のリディール後も残ります)",
   "playing": "プレイ中",
