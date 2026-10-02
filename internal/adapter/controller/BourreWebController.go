@@ -53,11 +53,12 @@ type BourreWebTrickCard struct {
 
 // BourreWebResult ブーレのハンド結果
 type BourreWebResult struct {
-	PlayerIdx int  `json:"playerIdx"`
-	Tricks    int  `json:"tricks"`
-	WonAmount int  `json:"wonAmount"`
-	Bourreed  bool `json:"bourreed"`
-	Folded    bool `json:"folded"`
+	PlayerIdx  int  `json:"playerIdx"`
+	Tricks     int  `json:"tricks"`
+	WonAmount  int  `json:"wonAmount"`
+	PaidAmount int  `json:"paidAmount"`
+	Bourreed   bool `json:"bourreed"`
+	Folded     bool `json:"folded"`
 }
 
 // BourreWebOutput ブーレWebアウトプット

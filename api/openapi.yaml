@@ -67182,6 +67182,8 @@ components:
                 type: integer
               wonAmount:
                 type: integer
+              paidAmount:
+                type: integer
               bourreed:
                 type: boolean
               folded:

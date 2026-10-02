@@ -69,6 +69,30 @@ func TestBourreWebPresenter_Error(t *testing.T) {
 	assert.Equal(t, "boom", resp.Message)
 }
 
+func TestBourreWebPresenter_ResultsIncludePaidAmount(t *testing.T) {
+	bg := newBourreAllCpu()
+	bg.Reset()
+	data, err := json.Marshal(bg)
+	require.NoError(t, err)
+	var snapshot map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &snapshot))
+	snapshot["lr"], err = json.Marshal([]*domain.BourreHandResult{
+		{PlayerIdx: 0, Tricks: 0, PaidAmount: 15, Bourreed: true},
+		{PlayerIdx: 1, Tricks: 5, WonAmount: 25},
+	})
+	require.NoError(t, err)
+	data, err = json.Marshal(snapshot)
+	require.NoError(t, err)
+	var restored domain.Bourre
+	require.NoError(t, json.Unmarshal(data, &restored))
+
+	var output controller.BourreWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.BourreWebPresenter).Output(&restored, nil)), &output))
+	require.Len(t, output.Results, 2)
+	assert.Equal(t, 15, output.Results[0].PaidAmount)
+	assert.Equal(t, 0, output.Results[1].PaidAmount)
+}
+
 func TestBourreWebPresenter_ActionLog(t *testing.T) {
 	bg := newBourreAllCpu()
 	bg.Reset()
