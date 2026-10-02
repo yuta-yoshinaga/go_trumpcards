@@ -39,6 +39,8 @@ type ConquianGame interface {
 	IsHumanTurn() bool
 	// GetRoundNumber 現在のラウンド番号を取得する
 	GetRoundNumber() int
+	// GetRoundHistory round-number order round outcomes; -1 denotes a draw.
+	GetRoundHistory() []int
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
 	GetCurrentPlayerIdx() int
 	// GetDiscardTop 捨て札の一番上のカードを取得する

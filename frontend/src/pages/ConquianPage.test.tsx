@@ -32,6 +32,7 @@ const drawPhaseState: ConquianResponse = {
   layoffTargets: [],
   phase: 0,
   roundNumber: 1,
+  roundHistory: [],
   currentPlayerIdx: 0,
   discardTop: { design: 'HEART', value: 7 },
   drawPileCount: 28,
@@ -378,6 +379,31 @@ describe('ConquianPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
   });
 
+  it('keeps round winners and draws in history across rounds, then clears it on reset', async () => {
+    mockExec.mockResolvedValue({ ...roundEndState, roundHistory: [-1] });
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(screen.getByTestId('conquian-round-history')).toHaveTextContent('ラウンド 1'));
+    expect(screen.getByTestId('conquian-round-history')).toHaveTextContent('このラウンドは山札切れによる引き分けです');
+
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      roundNumber: 2,
+      phase: 2,
+      roundWinnerIdx: 1,
+      roundHistory: [-1, 1],
+    });
+    fireEvent.click(screen.getByRole('button', { name: '次のラウンド' }));
+    await waitFor(() =>
+      expect(screen.getByTestId('conquian-round-history')).toHaveTextContent('CPU 1 がこのラウンドを制しました'),
+    );
+    expect(screen.getByTestId('conquian-round-history')).toHaveTextContent('ラウンド 1');
+
+    mockExec.mockResolvedValue({ ...drawPhaseState, roundNumber: 1, roundHistory: [] });
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(screen.queryByTestId('conquian-round-history')).not.toBeInTheDocument());
+  });
+
   it('does not show draw buttons when not human turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<ConquianPage />);
@@ -636,6 +662,23 @@ describe('ConquianPage round winner', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
 
     expect(screen.queryByTestId('conquian-round-winner')).not.toBeInTheDocument();
+  });
+
+  it('renders server round history with winner and draw entries', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, roundHistory: [1, -1] });
+    renderWithProviders(<ConquianPage />);
+    const history = await screen.findByTestId('conquian-round-history');
+    expect(history).toHaveTextContent('ラウンド 1');
+    expect(history).toHaveTextContent('CPU 1');
+    expect(history).toHaveTextContent('ラウンド 2');
+    expect(history).toHaveTextContent('引き分け');
+  });
+
+  it('hides round history when the server history is empty', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, roundHistory: [] });
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('conquian-round-history')).not.toBeInTheDocument();
   });
 
   it('renders the discard pile when discardTop is present', async () => {

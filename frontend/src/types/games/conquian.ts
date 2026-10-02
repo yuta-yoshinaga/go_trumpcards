@@ -35,6 +35,8 @@ export interface ConquianResponse extends BaseGameResponse {
   layoffTargets: number[][];
   phase: number;
   roundNumber: number;
+  /** Round winners indexed by round number; -1 denotes a draw. */
+  roundHistory: number[];
   currentPlayerIdx: number;
   discardTop: Card | null;
   drawPileCount: number;

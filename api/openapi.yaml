@@ -47222,6 +47222,11 @@ components:
         roundNumber:
           type: integer
           description: Current round number
+        roundHistory:
+          type: array
+          description: Round winners in round-number order (-1 denotes a draw)
+          items:
+            type: integer
         currentPlayerIdx:
           type: integer
           description: Index of the player whose turn it is

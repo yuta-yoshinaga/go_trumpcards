@@ -19,6 +19,7 @@ import (
 func mustConquianOutputJSON(msg string) string {
 	out := &controller.ConquianWebOutput{
 		Players:       []*controller.ConquianWebOutputPlayer{},
+		RoundHistory:  []int{},
 		WinnerIdx:     -1,
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
