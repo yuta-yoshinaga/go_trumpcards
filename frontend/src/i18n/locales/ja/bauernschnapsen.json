@@ -18,6 +18,7 @@
   "trick": "トリック {{n}}",
   "cards": "{{count}}枚",
   "teamScores": "チームスコア",
+  "targetScore": "目標スコア: {{score}}点",
   "playerList": "プレイヤー一覧",
   "listSeparator": "、",
   "team": "チーム{{n}}",

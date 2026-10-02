@@ -98,10 +98,17 @@ describe('BauernschnapsenPage', () => {
   it('renders the team score table and the settled contract during play', async () => {
     renderWithProviders(<BauernschnapsenPage />);
     await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
+    expect(screen.getByText('目標スコア: 24点')).toBeInTheDocument();
     expect(screen.getByTestId('bauernschnapsen-contract')).toHaveTextContent('契約: 通常');
     // **山札もめくり札もこのゲームには無い。** クローン元の遺物が残っていないこと。
     expect(screen.queryByText(/山札/)).not.toBeInTheDocument();
     expect(screen.queryByText('めくり札')).not.toBeInTheDocument();
+  });
+
+  it('shows the target score from the latest game state', async () => {
+    mockExec.mockResolvedValueOnce(makeState({ config: { cpuDifficulty: 1, targetScore: 51 } }));
+    renderWithProviders(<BauernschnapsenPage />);
+    expect(await screen.findByText('目標スコア: 51点')).toBeInTheDocument();
   });
 
   it('lists every player with their team, hand size, and trick count', async () => {

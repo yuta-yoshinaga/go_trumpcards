@@ -18,6 +18,7 @@
   "trick": "Trick {{n}}",
   "cards": "{{count}} cards",
   "teamScores": "Team Scores",
+  "targetScore": "Target score: {{score}}",
   "playerList": "Players",
   "listSeparator": ", ",
   "team": "Team {{n}}",
