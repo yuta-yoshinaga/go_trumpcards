@@ -70559,7 +70559,17 @@ components:
           type: array
           items:
             type: integer
-          description: Tricks taken so far this deal — index 0 is the human, index 1 is the CPU
+          description: Total points scored in the current deal, indexed by player
+        dealTrickPoints:
+          type: array
+          items:
+            type: integer
+          description: Points scored by winning tricks in the current deal, indexed by player
+        dealKingBonus:
+          type: array
+          items:
+            type: integer
+          description: Points scored from trump King bonuses in the current deal, indexed by player
         matchScore:
           type: array
           items:

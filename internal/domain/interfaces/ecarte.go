@@ -61,6 +61,10 @@ type EcarteGame interface {
 	IsRefusalByDealer() bool
 	// GetDealPoints プレイヤーの当ディール得点を取得する
 	GetDealPoints(i int) int
+	// GetDealTrickPoints トリックによる当ディール得点を取得する
+	GetDealTrickPoints(i int) int
+	// GetDealKingBonus キングボーナスによる当ディール得点を取得する
+	GetDealKingBonus(i int) int
 	// GetMatchScore プレイヤーの試合累積得点を取得する
 	GetMatchScore(i int) int
 	// GetWinnerIdx 勝者プレイヤーインデックスを取得する (-1: 未確定)

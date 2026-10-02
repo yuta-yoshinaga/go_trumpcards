@@ -3365,6 +3365,8 @@ const baseEcarteState: EcarteResponse = {
     { id: 1, isHuman: false, cardCount: 5, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
   ],
   dealPoints: [0, 0],
+  dealTrickPoints: [0, 0],
+  dealKingBonus: [0, 0],
   matchScore: [0, 0],
   phase: 0,
   negStep: 0,

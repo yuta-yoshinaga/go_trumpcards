@@ -297,6 +297,8 @@ function EcartePageContent() {
                         {t('roundResult.line', {
                           name: p.isHuman ? t('you') : t('cpu', { id: p.id }),
                           points: state.dealPoints[p.id] ?? 0,
+                          tricks: state.dealTrickPoints[p.id] ?? 0,
+                          kingBonus: state.dealKingBonus[p.id] ?? 0,
                         })}
                       </div>
                     ))}

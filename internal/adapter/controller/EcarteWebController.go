@@ -46,6 +46,8 @@ type EcarteWebOutputHint struct {
 type EcarteWebOutput struct {
 	Players          []*EcarteWebOutputPlayer `json:"players"`
 	DealPoints       []int                    `json:"dealPoints"`
+	DealTrickPoints  []int                    `json:"dealTrickPoints"`
+	DealKingBonus    []int                    `json:"dealKingBonus"`
 	MatchScore       []int                    `json:"matchScore"`
 	Phase            int                      `json:"phase"`
 	NegStep          int                      `json:"negStep"`
@@ -96,13 +98,15 @@ var NewEcarteWebController, NewEcarteWebControllerWithProvider = webControllerPa
 
 func newEcarteDefaultOutput(msg string) *EcarteWebOutput {
 	return &EcarteWebOutput{
-		Players:       make([]*EcarteWebOutputPlayer, 0),
-		DealPoints:    make([]int, 0),
-		MatchScore:    make([]int, 0),
-		CurrentTrick:  make([]*WebOutputTrickCard, 0),
-		ValidPlays:    make([]int, 0),
-		WinnerIdx:     -1,
-		WebOutputBase: WebOutputBase{Message: msg},
+		Players:         make([]*EcarteWebOutputPlayer, 0),
+		DealPoints:      make([]int, 0),
+		DealTrickPoints: make([]int, 0),
+		DealKingBonus:   make([]int, 0),
+		MatchScore:      make([]int, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
+		ValidPlays:      make([]int, 0),
+		WinnerIdx:       -1,
+		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }
 
