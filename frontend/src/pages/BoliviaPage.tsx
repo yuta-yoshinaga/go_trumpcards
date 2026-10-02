@@ -440,6 +440,49 @@ function BoliviaPageContent() {
                           <td className="text-center">{p.cumulativeScore}</td>
                         </tr>
                       ))}
+                      {(isRoundEnd || isGameEnd) &&
+                        state.players
+                          .filter((p, i, players) => players.findIndex((candidate) => candidate.team === p.team) === i)
+                          .map((p) => (
+                            <tr key={`breakdown-${p.team}`} data-testid={`bo-score-breakdown-${p.team}`}>
+                              <td colSpan={4} className="py-1 pl-2">
+                                <div className="mb-1 font-semibold">
+                                  {t('teamLabel', { n: p.team })}
+                                  {state.players.some((member) => member.team === p.team && member.isHuman) &&
+                                    ` (${t('yourTeam')})`}
+                                </div>
+                                <div className="grid grid-cols-2 gap-x-2 text-xs sm:grid-cols-3">
+                                  {(
+                                    [
+                                      'cardPoints',
+                                      'naturalCanastaBonus',
+                                      'mixedCanastaBonus',
+                                      'escaleraBonus',
+                                      'boliviaBonus',
+                                      'red3Bonus',
+                                      'red3Penalty',
+                                      'goOutBonus',
+                                      'handPenalty',
+                                    ] as const
+                                  ).map((key) => {
+                                    const value = p.scoreBreakdown[key];
+                                    return (
+                                      <span key={key} className="flex justify-between gap-2">
+                                        <span>{t(`scoreBreakdown.${key}`)}</span>
+                                        <span>
+                                          {key === 'red3Penalty' || key === 'handPenalty'
+                                            ? value === 0
+                                              ? 0
+                                              : `−${value}`
+                                            : value}
+                                        </span>
+                                      </span>
+                                    );
+                                  })}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
                     </tbody>
                   </table>
                 </div>
