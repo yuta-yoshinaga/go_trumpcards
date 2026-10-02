@@ -224,6 +224,17 @@ describe('VideoPokerGameContent', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
   });
 
+  it('translates the Deuces Wild net change label in Japanese and English', async () => {
+    mockExec.mockResolvedValue({ ...resultPhaseLose, variantName: 'deuceswild' });
+    renderContent('deuceswild');
+    const netChange = await screen.findByTestId('vp-net-change');
+    expect(netChange).toHaveTextContent('純増減: -1');
+
+    await i18n.changeLanguage('en');
+    expect(netChange).toHaveTextContent('Net change: -1');
+    await i18n.changeLanguage('ja');
+  });
+
   it('marks a break-even result as positive zero', async () => {
     mockExec.mockResolvedValue({ ...resultPhaseWin, betAmount: 5, payout: 5 });
     renderContent();
