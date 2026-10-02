@@ -191,12 +191,14 @@ describe('GolfPage', () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<GolfPage />);
     await waitFor(() => expect(screen.getByText('ゲームクリア')).toBeInTheDocument());
+    expect(screen.getByTestId('golf-result-remaining')).toHaveTextContent('残りカード数: 0枚');
   });
 
   it('renders game over state', async () => {
     mockExec.mockResolvedValue(gameOverState);
     renderWithProviders(<GolfPage />);
     await waitFor(() => expect(screen.getAllByText('ゲームオーバー').length).toBeGreaterThanOrEqual(1));
+    expect(screen.getByTestId('golf-result-remaining')).toHaveTextContent('残りカード数: 35枚');
   });
 
   it('hides action buttons when game is over', async () => {
