@@ -38,7 +38,9 @@
     "title": "ラウンド結果",
     "tricks": "{{name}} トリック: {{count}}",
     "lastTrick": "最終トリック: チーム{{team}} に +{{points}}点",
-    "scarto": "スカルト: チーム{{team}} に +{{points}}点"
+    "scarto": "スカルト: チーム{{team}} に +{{points}}点",
+    "breakdownTitle": "チーム別ラウンド得点内訳",
+    "teamBreakdown": "チーム{{team}}: トリック {{tricks}} 点 / 最終トリック +{{lastTrickBonus}} / スカルト +{{scartoBonus}} / ラウンド計 {{total}} 点"
   },
   "hintAvailable": "ヒント",
   "hint": {

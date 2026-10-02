@@ -40,24 +40,25 @@ type MinchiateWebOutputPlayer struct {
 
 // MinchiateWebOutput ミンキアーテのWebアウトプット
 type MinchiateWebOutput struct {
-	Players          []*MinchiateWebOutputPlayer    `json:"players"`
-	Phase            int                            `json:"phase"`
-	RoundNumber      int                            `json:"roundNumber"`
-	TrickNumber      int                            `json:"trickNumber"`
-	CurrentPlayerIdx int                            `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                            `json:"leadPlayerIdx"`
-	DealerIdx        int                            `json:"dealerIdx"`
-	ScartoCount      int                            `json:"scartoCount"`
-	CurrentTrick     []*WebOutputTrickCard          `json:"currentTrick"`
-	TeamScores       [2]int                         `json:"teamScores"`
-	RoundTricks      [domain.MinchiatePlayerCnt]int `json:"roundTricks"`
-	LastTrickWinner  int                            `json:"lastTrickWinner"`
-	PlayableIndices  []int                          `json:"playableIndices"`
-	GameEndFlag      bool                           `json:"gameEndFlag"`
-	WinnerTeam       int                            `json:"winnerTeam"`
-	IsHumanTurn      bool                           `json:"isHumanTurn"`
-	IsHumanScarto    bool                           `json:"isHumanScarto"`
-	Hint             *WebOutputCardHint             `json:"hint,omitempty"`
+	Players          []*MinchiateWebOutputPlayer           `json:"players"`
+	Phase            int                                   `json:"phase"`
+	RoundNumber      int                                   `json:"roundNumber"`
+	TrickNumber      int                                   `json:"trickNumber"`
+	CurrentPlayerIdx int                                   `json:"currentPlayerIdx"`
+	LeadPlayerIdx    int                                   `json:"leadPlayerIdx"`
+	DealerIdx        int                                   `json:"dealerIdx"`
+	ScartoCount      int                                   `json:"scartoCount"`
+	CurrentTrick     []*WebOutputTrickCard                 `json:"currentTrick"`
+	TeamScores       [2]int                                `json:"teamScores"`
+	RoundTricks      [domain.MinchiatePlayerCnt]int        `json:"roundTricks"`
+	RoundBreakdown   [2]domain.MinchiateTeamRoundBreakdown `json:"roundBreakdown"`
+	LastTrickWinner  int                                   `json:"lastTrickWinner"`
+	PlayableIndices  []int                                 `json:"playableIndices"`
+	GameEndFlag      bool                                  `json:"gameEndFlag"`
+	WinnerTeam       int                                   `json:"winnerTeam"`
+	IsHumanTurn      bool                                  `json:"isHumanTurn"`
+	IsHumanScarto    bool                                  `json:"isHumanScarto"`
+	Hint             *WebOutputCardHint                    `json:"hint,omitempty"`
 	WebOutputBase
 	Config MinchiateWebOutputConfig `json:"config"`
 }

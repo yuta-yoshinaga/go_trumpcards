@@ -37,6 +37,7 @@ func setupMinchiateWebMock() *interfaces.MockMinchiateGame {
 	m.On("GetScartoSize").Return(domain.MinchiateSurplus)
 	m.On("GetTeamScores").Return([2]int{0, 0})
 	m.On("GetRoundTricks").Return([domain.MinchiatePlayerCnt]int{})
+	m.On("GetRoundBreakdown").Return([2]domain.MinchiateTeamRoundBreakdown{{Tricks: 2, Total: 2}, {ScartoBonus: 1, Total: 1}})
 	m.On("GetLastTrickWinner").Return(-1)
 	m.On("GetWinnerTeam").Return(-1)
 	m.On("GetPlayableIndices", 0).Return([]int{0})
@@ -75,6 +76,8 @@ func TestMinchiateWebPresenter_Output(t *testing.T) {
 		assert.Len(t, res.Players[1].Cards, 0, "CPU hands stay hidden")
 		assert.Equal(t, []int{0}, res.PlayableIndices)
 		assert.Equal(t, domain.MinchiateSurplus, res.ScartoCount)
+		assert.Equal(t, 2, res.RoundBreakdown[0].Tricks)
+		assert.Equal(t, 1, res.RoundBreakdown[1].ScartoBonus)
 		assert.True(t, res.Players[0].IsDealer)
 	})
 

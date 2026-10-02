@@ -29,6 +29,10 @@ const roundEndState = makeMinchiateState({
   isHumanTurn: false,
   playableIndices: [],
   roundTricks: [5, 4, 3, 3],
+  roundBreakdown: [
+    { tricks: 8, lastTrickBonus: 0, scartoBonus: 13, total: 21 },
+    { tricks: 5, lastTrickBonus: 3, scartoBonus: 0, total: 8 },
+  ],
 });
 
 beforeEach(() => {
@@ -93,6 +97,25 @@ describe('MinchiatePage', () => {
     const scores = await screen.findByTestId('minchiate-team-scores');
     expect(scores).toHaveTextContent('7');
     expect(scores).toHaveTextContent('4');
+  });
+
+  it('shows the server-provided team round score breakdown', async () => {
+    mockExec.mockResolvedValue(
+      makeMinchiateState({
+        phase: 3,
+        roundBreakdown: [
+          { tricks: 8, lastTrickBonus: 0, scartoBonus: 13, total: 21 },
+          { tricks: 5, lastTrickBonus: 3, scartoBonus: 0, total: 8 },
+        ],
+      }),
+    );
+    renderWithProviders(<MinchiatePage />);
+    expect(await screen.findByTestId('mc-round-breakdown-0')).toHaveTextContent(
+      'チーム0: トリック 8 点 / 最終トリック +0 / スカルト +13 / ラウンド計 21 点',
+    );
+    expect(screen.getByTestId('mc-round-breakdown-1')).toHaveTextContent(
+      'チーム1: トリック 5 点 / 最終トリック +3 / スカルト +0 / ラウンド計 8 点',
+    );
   });
 
   it('plays the selected card', async () => {
