@@ -134,6 +134,7 @@ export function TrickDisplay({
           const badge = cardBadgeFor?.(trickCard.card);
           const cardLabel = cardAriaLabelFor?.(displayPlayer, trickCard.card) ?? cardAlt(trickCard.card);
           const cardDetail = cardDetailFor?.(trickCard.card, trickCard);
+          const accessibleLabel = badge ? `${cardLabel} (${badge.title})` : cardAriaLabelFor ? cardLabel : undefined;
           return (
             <div
               key={`trick-${trickCard.playerIdx}`}
@@ -146,11 +147,7 @@ export function TrickDisplay({
                 card={trickCard.card}
                 width={cardWidth}
                 wrapperClassName={wrapperClass || undefined}
-                ariaLabel={
-                  badge || cardDetail || cardAriaLabelFor
-                    ? [cardLabel, badge?.title, cardDetail].filter(Boolean).join(' · ')
-                    : undefined
-                }
+                ariaLabel={cardDetail ? `${accessibleLabel ?? cardLabel} · ${cardDetail}` : accessibleLabel}
               />
               {badge && <CardRoleBadge idx={trickCard.playerIdx} glyph={badge.glyph} title={badge.title} />}
               {isWinner && (
