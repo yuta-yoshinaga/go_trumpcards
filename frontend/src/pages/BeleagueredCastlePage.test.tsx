@@ -564,4 +564,20 @@ describe('BeleagueredCastlePage move count announcement', () => {
 
     await waitFor(() => expect(status).toHaveTextContent('手数: 4'));
   });
+
+  it('announces a move count decrease after undo', async () => {
+    mockExec
+      .mockResolvedValueOnce({ ...playingState, canUndo: true })
+      .mockResolvedValueOnce({ ...playingState, moveCount: 2, canUndo: false });
+    renderWithProviders(<BeleagueredCastlePage />);
+
+    const status = await screen.findByTestId('bc-move-count-status');
+    expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
+    expect(status).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByRole('button', { name: '元に戻す' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+    await waitFor(() => expect(status).toHaveTextContent('手数: 2'));
+  });
 });
