@@ -22,6 +22,7 @@
   "roundScore": "Round: {{score}}",
   "laidMelds": "Laid melds",
   "meldScore": "Score: {{score}}",
+  "meldScorePreview": "Selected meld score: {{score}}",
   "drawStockButton": "Draw from stock",
   "meldButton": "Meld",
   "invalidMeld": "Not a valid set or run",
