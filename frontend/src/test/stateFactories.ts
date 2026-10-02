@@ -3203,6 +3203,10 @@ const baseCourtPieceState: CourtPieceResponse = {
   trumpSuit: 0,
   currentTrick: [],
   teamScores: [0, 0],
+  scoreBreakdown: [
+    { sar: 0, courtBonus: 0 },
+    { sar: 0, courtBonus: 0 },
+  ],
   consecutiveWins: 0,
   lastWinnerTeam: -1,
   lastRoundCourt: false,

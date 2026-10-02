@@ -70024,6 +70024,21 @@ components:
           items:
             type: integer
           description: Cumulative match points — index 0 is teamA (seats 0&2), index 1 is teamB (seats 1&3)
+        scoreBreakdown:
+          type: array
+          description: "Scoring components for the most recently scored round, indexed by team."
+          items:
+            type: object
+            properties:
+              sar:
+                type: integer
+                description: Base point awarded for winning the round.
+              courtBonus:
+                type: integer
+                description: Extra point for a repeat win or a clean sweep.
+              total:
+                type: integer
+                description: Sum of the scoring components.
         playableIndices:
           type: array
           items:

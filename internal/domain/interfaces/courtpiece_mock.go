@@ -114,6 +114,10 @@ func (m *MockCourtPieceGame) IsLastRoundCourt() bool {
 	return args.Bool(0)
 }
 
+func (m *MockCourtPieceGame) GetScoreBreakdown() [domain.CourtPieceTeamCnt]domain.CourtPieceScoreBreakdown {
+	return m.Called().Get(0).([domain.CourtPieceTeamCnt]domain.CourtPieceScoreBreakdown)
+}
+
 func (m *MockCourtPieceGame) IsRoundEndCourt() bool {
 	args := m.Called()
 	return args.Bool(0)
