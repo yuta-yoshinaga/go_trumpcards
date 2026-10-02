@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, mightyApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -901,6 +901,31 @@ describe('MightyPage', () => {
       expect(screen.getByAltText('♦ 7')).toBeInTheDocument();
       expect(screen.getByAltText('♣ 3')).toBeInTheDocument();
     });
+  });
+
+  it('shows three face-down discarded cards during play and reveals them after the round', async () => {
+    mockCall.mockResolvedValue({ ...playPhaseState, discardedCardCount: 3 });
+    const { unmount } = renderWithProviders(<MightyPage />);
+    const playDiscardedCards = await screen.findByTestId('mighty-discarded-cards');
+    expect(within(playDiscardedCards).getByText('伏せた捨て札')).toBeInTheDocument();
+    expect(within(playDiscardedCards).getAllByAltText('カード裏面')).toHaveLength(3);
+
+    mockCall.mockResolvedValue({
+      ...roundEndState,
+      discardedCardCount: 3,
+      discardedCards: [
+        { design: 'SPADE', value: 2 },
+        { design: 'HEART', value: 3 },
+        { design: 'DIAMOND', value: 4 },
+      ],
+    });
+    unmount();
+    renderWithProviders(<MightyPage />);
+    const roundEndDiscardedCards = await screen.findByTestId('mighty-discarded-cards');
+    expect(within(roundEndDiscardedCards).getByAltText('♠ 2')).toBeInTheDocument();
+    expect(within(roundEndDiscardedCards).getByAltText('♥ 3')).toBeInTheDocument();
+    expect(within(roundEndDiscardedCards).getByAltText('♦ 4')).toBeInTheDocument();
+    expect(within(roundEndDiscardedCards).queryByAltText('カード裏面')).not.toBeInTheDocument();
   });
 
   it('round and trick info displayed', async () => {
