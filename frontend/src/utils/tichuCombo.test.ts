@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Card } from '../types/card';
-import { classifyTichuCombo } from './tichuCombo';
+import { classifyTichuCombo, compareTichuCombos } from './tichuCombo';
 
 /** A normal suited card. */
 const c = (design: Card['design'], value: number): Card => ({ design, value });
@@ -9,6 +9,8 @@ const MAHJONG = c('JOKER', 1);
 const DOG = c('JOKER', 2);
 const PHOENIX = c('JOKER', 3);
 const DRAGON = c('JOKER', 4);
+const mixedStraight = (values: number[]): Card[] =>
+  values.map((value, index) => c((['SPADE', 'HEART', 'CLOVER', 'DIAMOND'] as const)[index % 4], value));
 
 describe('classifyTichuCombo', () => {
   it('returns invalid for an empty selection', () => {
@@ -130,5 +132,57 @@ describe('classifyTichuCombo', () => {
     // 10-J-Q-K-A must be consecutive (Ace = 14).
     const cards = [c('SPADE', 10), c('HEART', 11), c('CLOVER', 12), c('DIAMOND', 13), c('SPADE', 1)];
     expect(classifyTichuCombo(cards)).toEqual({ type: 'straight', length: 5 });
+  });
+});
+
+describe('compareTichuCombos', () => {
+  it('matches the domain TichuCanBeat single comparison cases', () => {
+    expect(compareTichuCombos([c('SPADE', 9)], [c('SPADE', 7)])).toBe('beats');
+    expect(compareTichuCombos([c('SPADE', 7)], [c('SPADE', 9)])).toBe('cannotBeat');
+    expect(compareTichuCombos([DRAGON], [c('SPADE', 1)])).toBe('beats');
+    expect(compareTichuCombos([PHOENIX], [c('SPADE', 9)])).toBe('beats');
+    expect(compareTichuCombos([PHOENIX], [DRAGON])).toBe('cannotBeat');
+    expect(compareTichuCombos([PHOENIX], [c('SPADE', 13)])).toBe('beats');
+    expect(compareTichuCombos([c('SPADE', 1)], [PHOENIX])).toBe('unknown');
+  });
+
+  it('compares bombs and straight flushes as the domain does', () => {
+    const pair = [c('SPADE', 13), c('HEART', 13)];
+    const bomb = [c('SPADE', 3), c('HEART', 3), c('CLOVER', 3), c('DIAMOND', 3)];
+    const straightFlush = [3, 4, 5, 6, 7].map((value) => c('SPADE', value));
+    expect(compareTichuCombos(bomb, pair)).toBe('beats');
+    expect(compareTichuCombos(pair, bomb)).toBe('cannotBeat');
+    expect(compareTichuCombos(straightFlush, bomb)).toBe('beats');
+    expect(compareTichuCombos(bomb, straightFlush)).toBe('cannotBeat');
+  });
+
+  it('matches the domain type and length mismatch cases', () => {
+    expect(compareTichuCombos([c('SPADE', 1)], [c('SPADE', 13), c('HEART', 13)])).toBe('incomparable');
+    const straight5 = mixedStraight([3, 4, 5, 6, 7]);
+    const straight6 = mixedStraight([3, 4, 5, 6, 7, 8]);
+    expect(compareTichuCombos(straight6, straight5)).toBe('incomparable');
+  });
+
+  it('uses the completed top rank of a phoenix straight', () => {
+    const natural = mixedStraight([2, 3, 4, 5, 6]);
+    const phoenixExtends = [3, 4, 5, 6].map((value) => c('HEART', value)).concat(PHOENIX);
+    const phoenixFillsGap = [3, 4, 6, 7].map((value) => c('CLOVER', value)).concat(PHOENIX);
+    expect(compareTichuCombos(phoenixExtends, natural)).toBe('beats');
+    const natural7 = mixedStraight([3, 4, 5, 6, 7]);
+    expect(compareTichuCombos(phoenixFillsGap, natural7)).toBe('cannotBeat');
+  });
+
+  it('keeps the Dog outside comparisons', () => {
+    expect(compareTichuCombos([DOG], [c('SPADE', 1)])).toBe('incomparable');
+  });
+
+  it('compares same-type plays, leaves unlike plays incomparable, and applies bomb ranking', () => {
+    expect(compareTichuCombos([c('SPADE', 10)], [c('HEART', 9)])).toBe('beats');
+    expect(compareTichuCombos([c('SPADE', 7), c('HEART', 7)], [c('SPADE', 6)])).toBe('incomparable');
+    expect(compareTichuCombos([c('SPADE', 7), c('HEART', 7)], [c('SPADE', 6), c('HEART', 6)])).toBe('beats');
+    expect(compareTichuCombos([c('SPADE', 8), c('HEART', 8), c('CLOVER', 8), c('DIAMOND', 8)], [c('SPADE', 1)])).toBe(
+      'beats',
+    );
+    expect(compareTichuCombos([DOG], [c('SPADE', 1)])).toBe('incomparable');
   });
 });
