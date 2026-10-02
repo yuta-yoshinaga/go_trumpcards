@@ -41250,6 +41250,7 @@ components:
         - players
         - phase
         - currentTurn
+        - lastPlayIdx
         - tableCards
         - tableCombo
         - kittyCards
@@ -41280,6 +41281,9 @@ components:
           enum: [bid, play, end]
         currentTurn:
           type: integer
+        lastPlayIdx:
+          type: integer
+          description: Seat index of the last player who played cards, or -1 when the table is clear
         tableCards:
           type: array
           items:

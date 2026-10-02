@@ -43,6 +43,7 @@ func TestDoudizhuWebPresenter_Output_PlayPhase(t *testing.T) {
 	dg.SetLandlordIdx(0)
 	dg.SetBaseBid(2)
 	dg.SetCurrentTurn(0)
+	dg.SetLastPlayIdx(2)
 	dg.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
 	dg.SetTableCombo(&domain.DoudizhuCombo{Type: domain.DoudizhuComboSingle, Rank: 10, Length: 1, Cards: []*domain.Card{domain.NewCard(domain.CardDesignHeart, 10, false)}})
 
@@ -56,6 +57,7 @@ func TestDoudizhuWebPresenter_Output_PlayPhase(t *testing.T) {
 	assert.Equal(t, 2, resp.BaseBid)
 	assert.Equal(t, "single", resp.TableCombo)
 	assert.Len(t, resp.TableCards, 1)
+	assert.Equal(t, 2, resp.LastPlayIdx)
 }
 
 func TestDoudizhuWebPresenter_Output_Error(t *testing.T) {

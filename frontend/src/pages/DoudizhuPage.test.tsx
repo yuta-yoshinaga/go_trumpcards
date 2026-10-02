@@ -23,6 +23,7 @@ const defaultState: DoudizhuResponse = {
   currentTurn: 0,
   tableCards: [],
   tableCombo: '',
+  lastPlayIdx: -1,
   kittyCards: [],
   landlordIdx: 0,
   baseBid: 1,
@@ -42,6 +43,25 @@ beforeEach(() => {
 });
 
 describe('DoudizhuPage', () => {
+  it('shows the last player to play only while cards remain on the table', async () => {
+    mockExec.mockResolvedValue({
+      ...defaultState,
+      tableCards: [{ design: 'CLOVER', value: 13 }],
+      tableCombo: 'single',
+      lastPlayIdx: 2,
+    });
+    const view = renderWithProviders(<DoudizhuPage />);
+
+    expect(await screen.findByText('最後に出したプレイヤー: CPU 2')).toBeInTheDocument();
+
+    view.unmount();
+    mockExec.mockResolvedValue({ ...defaultState, lastPlayIdx: 2 });
+    renderWithProviders(<DoudizhuPage />);
+    await screen.findByText('場: ---');
+    expect(screen.queryByText('最後に出したプレイヤー: CPU 2')).not.toBeInTheDocument();
+    expect(screen.getByText('場: ---')).toBeInTheDocument();
+  });
+
   it('disables bid controls while the bid request is pending', async () => {
     const bidState: DoudizhuResponse = {
       ...defaultState,

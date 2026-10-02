@@ -30,6 +30,8 @@ export interface DoudizhuResponse extends BaseGameResponse {
   players: DoudizhuPlayerData[];
   phase: string;
   currentTurn: number;
+  /** Seat index of the last player who played cards, or -1 when the table is clear. */
+  lastPlayIdx: number;
   tableCards: Card[];
   tableCombo: string;
   kittyCards: Card[];

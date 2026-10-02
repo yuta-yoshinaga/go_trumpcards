@@ -51,6 +51,7 @@ type DoudizhuWebOutput struct {
 	Players     []*DoudizhuWebOutputPlayer    `json:"players"`
 	Phase       string                        `json:"phase"`
 	CurrentTurn int                           `json:"currentTurn"`
+	LastPlayIdx int                           `json:"lastPlayIdx"`
 	TableCards  []*WebOutputCard              `json:"tableCards"`
 	TableCombo  string                        `json:"tableCombo"`
 	KittyCards  []*WebOutputCard              `json:"kittyCards"`
