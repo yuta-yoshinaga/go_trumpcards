@@ -443,7 +443,7 @@ describe('SevenCardStudPage', () => {
       players: [humanPlayer({ chips: 0 }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
     });
     renderWithProviders(<SevenCardStudPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール/ })).toBeInTheDocument());
     expect(screen.queryByText(/必要ポットオッズ/)).not.toBeInTheDocument();
   });
 

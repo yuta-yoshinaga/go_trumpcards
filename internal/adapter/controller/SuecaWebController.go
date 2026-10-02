@@ -32,6 +32,7 @@ type SuecaWebOutputPlayer struct {
 	CardCount      int              `json:"cardCount"`
 	Cards          []*WebOutputCard `json:"cards"`
 	TrickCount     int              `json:"trickCount"`
+	Team           int              `json:"team"`
 	TeamGamePoints int              `json:"teamGamePoints"`
 }
 

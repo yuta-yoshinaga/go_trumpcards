@@ -16,12 +16,13 @@ import (
 
 func mustOhHellOutputJSON(msg string) string {
 	out := &controller.OhHellWebOutput{
-		Players:       []*controller.OhHellWebOutputPlayer{},
-		CurrentTrick:  []*controller.WebOutputTrickCard{},
-		WinnerIdx:     -1,
-		TrumpSuit:     -1,
-		RestrictedBid: -1,
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Players:          []*controller.OhHellWebOutputPlayer{},
+		ValidPlayIndices: []int{},
+		CurrentTrick:     []*controller.WebOutputTrickCard{},
+		WinnerIdx:        -1,
+		TrumpSuit:        -1,
+		RestrictedBid:    -1,
+		WebOutputBase:    controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

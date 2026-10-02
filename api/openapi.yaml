@@ -44994,10 +44994,6 @@ components:
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
           items:
             $ref: '#/components/schemas/ActionLogEntry'
-        validPlayIndices:
-          type: array
-          items:
-            type: integer
         players:
           type: array
           description: Array of player objects
@@ -45063,6 +45059,11 @@ components:
                 type: integer
               card:
                 $ref: '#/components/schemas/Card'
+        validPlayIndices:
+          type: array
+          description: Hand card indices the current player can legally play
+          items:
+            type: integer
         spadesBroken:
           type: boolean
           description: Whether spades have been broken (played as a non-lead card)
@@ -51953,6 +51954,11 @@ components:
                 type: integer
               card:
                 $ref: '#/components/schemas/Card'
+        validPlayIndices:
+          type: array
+          description: Hand card indices the current player can legally play
+          items:
+            type: integer
         trumpCard:
           nullable: true
           description: The card determining the trump suit (null if no trump)
@@ -68154,6 +68160,9 @@ components:
                   $ref: '#/components/schemas/Card'
               trickCount:
                 type: integer
+              team:
+                type: integer
+                description: Team index assigned by the server (0 = Team A seats 0&2, 1 = Team B seats 1&3)
               teamGamePoints:
                 type: integer
                 description: Cumulative game points of this player's team
@@ -75112,6 +75121,12 @@ components:
         declarerIdx:
           type: integer
           description: "Seat that won the contract. -1 before it is settled."
+        declarerTargetPoints:
+          type: integer
+          description: "Card points the declarer needs to make the contract."
+        totalCardPoints:
+          type: integer
+          description: "Total card points in the deck."
         contract:
           type: integer
           description: "Contract being played."
@@ -76780,6 +76795,8 @@ components:
             suit:
               type: integer
             value:
+              type: integer
+            order:
               type: integer
         highestBidder:
           type: integer

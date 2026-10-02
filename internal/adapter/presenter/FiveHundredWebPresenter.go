@@ -98,6 +98,7 @@ func bidToOutput(b *domain.FiveHundredBid) *controller.FiveHundredWebOutputBid {
 		Tricks: b.Tricks,
 		Suit:   b.Suit,
 		Value:  b.Value(),
+		Order:  b.Order(),
 	}
 }
 
