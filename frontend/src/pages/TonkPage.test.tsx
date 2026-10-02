@@ -361,6 +361,39 @@ describe('TonkPage', () => {
     expect(screen.getByTestId('tonk-undercut-result')).toHaveTextContent('UNDERCUT!');
   });
 
+  it.each([
+    { knockerIdx: 0, knocker: 'あなた', opponent: 'CPU 1' },
+    { knockerIdx: 1, knocker: 'CPU 1', opponent: 'あなた' },
+  ])(
+    'labels round-end melds and deadwoods with the right names (knockerIdx=$knockerIdx)',
+    async ({ knockerIdx, knocker, opponent }) => {
+      mockExec.mockResolvedValue(
+        makeState({
+          phase: TonkPhase.ROUND_END,
+          knockerIdx,
+          knockerMelds: [{ cards: [card('SPADE', 7), card('HEART', 7), card('DIAMOND', 7)] }],
+          knockerDeadwood: [card('CLOVER', 2)],
+          opponentMelds: [{ cards: [card('SPADE', 3), card('HEART', 4), card('DIAMOND', 5)] }],
+          opponentDeadwood: [card('CLOVER', 6)],
+        }),
+      );
+      renderWithProviders(<TonkPage />);
+      expect(await screen.findByTestId('tonk-knocker-deadwood')).toHaveTextContent(`${knocker}のデッドウッド`);
+      expect(screen.getByText(`${knocker}（ノッカー）のメルド`)).toBeInTheDocument();
+      expect(screen.getByTestId('tonk-opponent-melds')).toHaveTextContent(`${opponent}のメルド`);
+      expect(screen.getByTestId('tonk-opponent-deadwood')).toHaveTextContent(`${opponent}のデッドウッド`);
+    },
+  );
+
+  it('does not show player-labeled melds or deadwoods when the round is a draw', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: TonkPhase.ROUND_END, knockerIdx: -1 }));
+    renderWithProviders(<TonkPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('tonk-knocker-deadwood')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('tonk-opponent-melds')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('tonk-opponent-deadwood')).not.toBeInTheDocument();
+  });
+
   // FindBestMelds returns an empty slice when the whole hand is melds, so reverting the
   // condition would hide only 0-point deadwood panels at round end.
   it('shows zero-point deadwoods when both hands are fully melded at round end', async () => {
