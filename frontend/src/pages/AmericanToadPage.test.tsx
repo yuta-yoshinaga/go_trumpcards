@@ -91,7 +91,7 @@ describe('AmericanToadPage', () => {
     renderWithProviders(<AmericanToadPage />);
 
     expect(await screen.findByText('2枚')).toBeInTheDocument();
-    const wasteCard = screen.getByRole('button', { name: '♠ 3' });
+    const wasteCard = screen.getByRole('button', { name: '捨て札 ♠ 3' });
     expect(wasteCard).toHaveAccessibleDescription('2枚');
   });
 
@@ -177,7 +177,7 @@ describe('AmericanToadPage', () => {
     const open = await screen.findByRole('button', { name: '空のタブロー列 2 (捨て札から埋められます)' });
     expect(screen.getAllByText('捨て札から補充').length).toBeGreaterThan(0);
     // The reserve is empty here, so this target is aria-disabled only until a source is selected.
-    fireEvent.click(screen.getByRole('button', { name: '♥ 8' }));
+    fireEvent.click(screen.getByRole('button', { name: '捨て札 ♥ 8' }));
     await waitFor(() => expect(open).toBeEnabled());
 
     mockExec.mockClear();
