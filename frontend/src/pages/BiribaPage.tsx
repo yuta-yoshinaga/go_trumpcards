@@ -31,12 +31,13 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BiribaResponse, Card } from '../types/card';
 import { BiribaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { type BiribaSortMode, loadBiribaSortMode, saveBiribaSortMode, sortedBiribaHand } from '../utils/biribaSort';
+import { type BiribaSortMode, loadBiribaSortMode, saveBiribaSortMode } from '../utils/biribaSort';
 import { canastaDrawDiscardProblem } from '../utils/canastaDrawDiscard';
 import { cardAlt } from '../utils/cardAlt';
 import { BIRIBA_HELP, parseBiribaCommand } from '../utils/cli/commands/biribaCommands';
 import { formatBiribaState } from '../utils/cli/formatters/biribaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { sortedHandForDisplay } from '../utils/handDisplaySort';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -500,7 +501,7 @@ function BiribaPageContent() {
             )}
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ca-player-hand">
-                {sortedBiribaHand(humanPlayer.cards, sortMode).map(({ card, index: idx }) => (
+                {sortedHandForDisplay(humanPlayer.cards, sortMode).map(({ card, index: idx }) => (
                   <button
                     type="button"
                     key={`${card.design}-${card.value}-${idx}`}
