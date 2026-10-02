@@ -81,6 +81,10 @@ type QuadrilleGame interface {
 	GetTrumpSuit() int
 	// GetCurrentBidderIdx 現在のビッド手番インデックスを取得する
 	GetCurrentBidderIdx() int
+	// GetBids returns each seat's declaration.
+	GetBids() [domain.QuadrillePlayerCnt]domain.QuadrilleBid
+	// GetBidActed returns whether each seat has declared in this auction.
+	GetBidActed() [domain.QuadrillePlayerCnt]bool
 	// GetPlayerScores プレイヤー別累積点を取得する
 	GetPlayerScores() [domain.QuadrillePlayerCnt]int
 	// GetOutcome 直近ディールの結果を取得する

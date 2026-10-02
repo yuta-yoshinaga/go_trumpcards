@@ -25,6 +25,8 @@ func setupQuadrilleWebMock() *interfaces.MockQuadrilleGame {
 	m.On("GetPhase").Return(domain.QuadrillePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetCurrentBidderIdx").Return(1)
+	m.On("GetBids").Return([domain.QuadrillePlayerCnt]domain.QuadrilleBid{})
+	m.On("GetBidActed").Return([domain.QuadrillePlayerCnt]bool{})
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetDealerIdx").Return(0)
 	m.On("GetForehandIdx").Return(1)

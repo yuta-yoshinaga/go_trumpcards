@@ -150,6 +150,8 @@ func TestQuadrille_Bidding_EveryonePasses_DealerForced(t *testing.T) {
 		}
 	}
 	// Auction resolved -> dealer forced to be Quadrille with a chosen trump.
+	assert.Equal(t, [domain.QuadrillePlayerCnt]domain.QuadrilleBid{}, g.GetBids())
+	assert.Equal(t, [domain.QuadrillePlayerCnt]bool{true, true, true, true}, g.GetBidActed())
 	assert.Equal(t, g.GetDealerIdx(), g.GetQuadrilleIdx())
 	assert.GreaterOrEqual(t, int(g.GetWinningBid()), int(domain.QuadrilleBidEntrar))
 	assert.True(t, g.GetTrumpSuit() >= domain.CardDesignSpade && g.GetTrumpSuit() <= domain.CardDesignDiamond)

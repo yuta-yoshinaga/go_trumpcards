@@ -75,6 +75,7 @@ const QUADRILLE_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 /** Bid labels indexed by bid value (0=pass/none, 1=entrar, 2=solo). */
 const BID_KEYS = ['bidNone', 'bidEntrar', 'bidSolo'] as const;
+const BID_DECLARATION_KEYS = ['bidPass', 'bidEntrar', 'bidSolo'] as const;
 
 /** Trump-suit i18n keys indexed by suit code (1=♠ 2=♣ 3=♥ 4=♦); index 0 = none. */
 const SUIT_KEYS = ['suitNone', 'suitSpade', 'suitClub', 'suitHeart', 'suitDiamond'] as const;
@@ -285,6 +286,25 @@ function QuadrillePageContent() {
               </span>
               <span>{t('trump', { suit: trumpLabel })}</span>
             </div>
+            {isBidPhase && (
+              <section data-testid="quadrille-auction" className="mx-auto mb-3 max-w-2xl rounded-lg bg-ds-surface p-3">
+                <h2 className="mb-2 text-center text-sm font-medium">{t('auctionStatus')}</h2>
+                <ol className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {state.players.map((player, idx) => (
+                    <li
+                      key={player.id}
+                      className={`rounded-md px-2 py-1 text-center text-sm ${idx === state.currentBidderIdx ? 'bg-ds-surface-elevated text-ds-text-primary' : 'text-ds-text-muted'}`}
+                    >
+                      <span className="block">{playerName(idx, player.isHuman)}</span>
+                      <span>
+                        {state.bidActed[idx] ? t(BID_DECLARATION_KEYS[state.bids[idx]] ?? 'bidNone') : t('notDeclared')}
+                      </span>
+                      {idx === state.currentBidderIdx && <span className="ml-1">{t('currentBidder')}</span>}
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            )}
 
             <div className={lgTwoColGrid}>
               {/* Left: play area */}

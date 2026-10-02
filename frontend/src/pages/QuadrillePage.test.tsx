@@ -112,6 +112,28 @@ describe('QuadrillePage', () => {
     expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument();
   });
 
+  it('shows each seat declaration and current bidder only during the auction', async () => {
+    mockExec.mockResolvedValue(
+      makeQuadrilleState({
+        phase: QuadrillePhase.BID,
+        currentBidderIdx: 1,
+        bids: [0, 1, 2, 0],
+        bidActed: [true, true, true, false],
+        isHumanBidTurn: true,
+        winningBid: 0,
+        quadrilleIdx: -1,
+        trumpSuit: -1,
+      }),
+    );
+    renderWithProviders(<QuadrillePage />);
+    const auction = await screen.findByTestId('quadrille-auction');
+    expect(within(auction).getByText('未宣言')).toBeInTheDocument();
+    expect(within(auction).getByText('パス')).toBeInTheDocument();
+    expect(within(auction).getByText('エントラール')).toBeInTheDocument();
+    expect(within(auction).getByText('ソロ')).toBeInTheDocument();
+    expect(within(auction).getByText('入札中')).toBeInTheDocument();
+  });
+
   it('shows an undecided trump during bidding even if an old suit is present', async () => {
     mockExec.mockResolvedValue(
       makeQuadrilleState({
