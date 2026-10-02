@@ -42,6 +42,7 @@ func (p *SjavsWebPresenter) buildBase(c interfaces.SjavsGame) *controller.SjavsW
 
 	resObj.TeamPoints = []int{c.GetTeamPoints(0), c.GetTeamPoints(1)}
 	resObj.Remaining = []int{c.GetRemaining(0), c.GetRemaining(1)}
+	resObj.RubberPoints = c.GetRubberPoints()
 	resObj.Crosses = []int{c.GetCrosses(0), c.GetCrosses(1)}
 
 	trick := c.GetTrick()

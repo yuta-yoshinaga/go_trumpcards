@@ -80,6 +80,8 @@ func (_m *MockSjavsGame) GetTeamPoints(team int) int { return _m.Called(team).In
 
 func (_m *MockSjavsGame) GetRemaining(team int) int { return _m.Called(team).Int(0) }
 
+func (_m *MockSjavsGame) GetRubberPoints() int { return _m.Called().Int(0) }
+
 func (_m *MockSjavsGame) GetCrosses(team int) int { return _m.Called(team).Int(0) }
 
 func (_m *MockSjavsGame) GetCarryOver() int { return _m.Called().Int(0) }

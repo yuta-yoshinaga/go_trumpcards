@@ -36005,6 +36005,9 @@ components:
             Zero or below wins.
           items:
             type: integer
+        rubberPoints:
+          type: integer
+          description: Starting score for each rubber.
         crosses:
           type: array
           description: |

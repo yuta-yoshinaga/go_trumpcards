@@ -47,6 +47,7 @@ function makeState(overrides?: Partial<SjavsResponse>): SjavsResponse {
     trumpIndices: [],
     teamPoints: [0, 0],
     remaining: [24, 24],
+    rubberPoints: 24,
     crosses: [0, 0],
     carryOver: 0,
     gameEndFlag: false,
@@ -92,6 +93,7 @@ describe('SjavsPage', () => {
       makeState({
         phase: SjavsPhase.HAND_END,
         teamPoints: [8, 4],
+        remaining: [20, 24],
         handResult: {
           declarerTeam: 0,
           declarerPoints: 60,
@@ -105,6 +107,11 @@ describe('SjavsPage', () => {
     renderWithProviders(<SjavsPage />);
     await waitFor(() => expect(screen.getByText('今ハンド: チーム0 8 / チーム1 4（合計120）')).toBeInTheDocument());
     expect(screen.getByTestId('sjavs-hand-result')).toHaveTextContent('チーム0');
+    expect(
+      screen
+        .getAllByRole('status')
+        .some((status) => status.textContent?.includes('ラウンド終了。チーム0: +4 (合計 4)、チーム1: +0 (合計 0)')),
+    ).toBe(true);
   });
 
   it('shows the trump as undecided while bidding and the count once it is fixed', async () => {
@@ -219,6 +226,9 @@ describe('SjavsPage', () => {
     );
     renderWithProviders(<SjavsPage />);
     await waitFor(() => expect(screen.getByTestId('sjavs-hand-result')).toHaveTextContent(/60-60/));
+    expect(
+      screen.getAllByRole('status').some((status) => status.textContent?.includes('ラウンド終了。チーム0: +0')),
+    ).toBe(true);
     expect(screen.getByRole('button', { name: '次のハンドへ' })).toBeInTheDocument();
   });
 
