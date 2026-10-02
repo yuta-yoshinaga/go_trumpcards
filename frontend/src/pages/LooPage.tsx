@@ -246,7 +246,18 @@ function LooPageContent() {
                             ▼{' '}
                           </span>
                         )}
-                        {playerName(p.id, p.isHuman)}: {t('chips', { chips: p.chips })}
+                        {playerName(p.id, p.isHuman)}
+                        {p.id === state.dealerIdx && (
+                          <span
+                            className="ml-1 rounded px-1.5 py-0.5 text-xs bg-ds-accent/30 text-ds-accent"
+                            role="img"
+                            aria-label={t('dealerBadge')}
+                            data-testid={`loo-dealer-${p.id}`}
+                          >
+                            {t('dealerBadge')}
+                          </span>
+                        )}
+                        : {t('chips', { chips: p.chips })}
                       </span>
                       <span
                         className={`px-1.5 py-0.5 rounded text-xs ${

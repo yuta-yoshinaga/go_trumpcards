@@ -98,6 +98,16 @@ describe('LooPage', () => {
     expect(passing).toHaveAttribute('aria-label', expect.stringContaining('降り'));
   });
 
+  it('marks the dealer in the player list with an accessible label', async () => {
+    mockExec.mockResolvedValue(makeLooState({ dealerIdx: 2 }));
+    renderWithProviders(<LooPage />);
+
+    const dealer = await screen.findByTestId('loo-dealer-2');
+    expect(dealer).toHaveTextContent('ディーラー');
+    expect(dealer).toHaveAttribute('aria-label', 'ディーラー');
+    expect(screen.queryByTestId('loo-dealer-1')).not.toBeInTheDocument();
+  });
+
   // #5693: ルーの罰金 (looed = ポット全額) には下限が無いので、チップ残高は
   // 実際に赤字になる。色だけに頼らず、記号と aria-label でも警告する。
   it('warns when a chip balance has gone negative', async () => {
