@@ -154,6 +154,38 @@ describe('LetItRidePage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 200));
   });
 
+  it('disables betting when chips cannot cover the minimum three-part bet', async () => {
+    mockApi.mockResolvedValue({ ...betPhaseState, chips: 20 });
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+
+    const betButton = screen.getByRole('button', { name: 'ベット' });
+    expect(betButton).toHaveAttribute('aria-disabled', 'true');
+    expect(betButton).toBeDisabled();
+    expect(screen.getByText('チップが足りないため最小ベット 10 を置けません')).toBeInTheDocument();
+    expect((screen.getByLabelText('ベット') as HTMLInputElement).value).toBe('10');
+
+    mockApi.mockClear();
+    fireEvent.click(betButton);
+    fireEvent.keyDown(document, { key: 'b' });
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalled();
+  });
+
+  it('allows the minimum bet when chips are exactly sufficient', async () => {
+    mockApi.mockResolvedValue({ ...betPhaseState, chips: 30 });
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    const input = screen.getByLabelText('ベット') as HTMLInputElement;
+    expect(input).toHaveAttribute('max', '10');
+    expect(input.value).toBe('10');
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeEnabled();
+
+    mockApi.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 10));
+  });
+
   it('applies min=10 and step=10 guardrails to the bet input', async () => {
     mockApi.mockResolvedValue(betPhaseState);
     renderWithProviders(<LetItRidePage />);
