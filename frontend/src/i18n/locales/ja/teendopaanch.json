@@ -20,6 +20,7 @@
     "exchangePair": "{{giver}}→{{taker}} {{n}}枚"
   },
   "currentTrick": "現在のトリック",
+  "trickCardByPlayer": "{{name}}が出した{{card}}",
   "actions": {
     "trump": "切り札 {{suit}}",
     "chooseTrump": "切り札にするスートを選んでください。",
