@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { pochApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
@@ -44,7 +44,20 @@ export const PochPage = withTutorial(PochPageContent, 'poch', PC_TUTORIAL_STEPS)
 function PochPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('poch');
-  const game = usePochGame();
+  const [turnAnnouncement, setTurnAnnouncement] = useState('');
+  const onSuccess = useCallback(
+    (response: PochResponse, [command]: Parameters<typeof pochApi.exec>) => {
+      if (
+        command !== 'reset' &&
+        (response.phase === PochPhase.POCHEN || response.phase === PochPhase.STOPS) &&
+        response.currentPlayerIdx === 0
+      ) {
+        setTurnAnnouncement(t('yourTurnAnnouncement'));
+      }
+    },
+    [t],
+  );
+  const game = usePochGame({ onSuccess });
   const { state, loading, error, retry } = game;
   const difficultyOptions = useMemo(
     () => [
@@ -58,12 +71,8 @@ function PochPageContent() {
   const [handIdx, setHandIdx] = useState<number | null>(null);
   const previousPools = useRef<PochResponse['pools'] | null>(null);
   const [poolAnnouncement, setPoolAnnouncement] = useState('');
-  const humanActionPending = useRef(false);
-  const [turnAnnouncement, setTurnAnnouncement] = useState('');
-
   const execHumanAction = (...args: Parameters<typeof game.exec>) => {
     if (args[0] === 'reset') return game.exec(...args);
-    humanActionPending.current = true;
     setTurnAnnouncement('');
     return game.exec(...args);
   };
@@ -76,11 +85,6 @@ function PochPageContent() {
 
   useEffect(() => {
     if (!state) return;
-    const humanCanAct = state.phase === PochPhase.POCHEN || state.phase === PochPhase.STOPS;
-    if (humanActionPending.current && humanCanAct && state.currentPlayerIdx === 0) {
-      setTurnAnnouncement(t('yourTurnAnnouncement'));
-    }
-    humanActionPending.current = false;
     if (previousPools.current === null) {
       previousPools.current = state.pools;
       return;

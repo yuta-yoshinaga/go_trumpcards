@@ -152,6 +152,21 @@ describe('PochPage', () => {
     expect(screen.getByTestId('poch-pool-live')).toBeEmptyDOMElement();
   });
 
+  it('does not announce the human turn when an action rejects and a reset succeeds', async () => {
+    renderWithProviders(<PochPage />);
+    await screen.findAllByTestId('poch-pool');
+
+    mockExec.mockRejectedValueOnce(new Error('request failed'));
+    fireEvent.click(screen.getByRole('button', { name: '賭ける' }));
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+
+    mockExec.mockResolvedValueOnce(makeState({ currentPlayerIdx: 0 }));
+    fireEvent.change(screen.getByLabelText('CPU難易度'), { target: { value: '2' } });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 2 }));
+    await waitFor(() => expect(screen.getAllByTestId('poch-pool')[0]).toBeInTheDocument());
+    expect(screen.getByTestId('poch-pool-live').textContent).not.toContain('あなたの番です');
+  });
+
   it('announces the human turn after human actions, clears repeats while pending, and skips game end', async () => {
     mockExec.mockResolvedValueOnce(makeState());
     renderWithProviders(<PochPage />);
