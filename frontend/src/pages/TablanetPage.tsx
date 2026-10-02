@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { tablanetApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -246,6 +247,12 @@ function TablanetPageContent() {
                         <AnimatedCardBack key={i} width={cardWidth * 0.45} />
                       ))}
                     </div>
+                    <div className="mt-2 text-xs text-ds-text-muted">{t('capturedCards')}</div>
+                    <div className="flex flex-wrap justify-center gap-0.5" data-testid={`tablanet-captured-${p.id}`}>
+                      {p.capturedCards.map((card, i) => (
+                        <CardImage key={`${card.design}-${card.value}-${i}`} card={card} width={cardWidth * 0.28} />
+                      ))}
+                    </div>
                   </div>
                 ))}
             </div>
@@ -338,6 +345,12 @@ function TablanetPageContent() {
                     </span>
                   </>
                 )}
+              </div>
+              <div className="mt-2 text-xs text-ds-text-muted">{t('capturedCards')}</div>
+              <div className="flex flex-wrap justify-center gap-0.5" data-testid="tablanet-captured-0">
+                {human?.capturedCards.map((card, i) => (
+                  <CardImage key={`${card.design}-${card.value}-${i}`} card={card} width={cardWidth * 0.35} />
+                ))}
               </div>
               <div className="flex flex-wrap justify-center gap-2">
                 {human?.cards.map((c, i) => (

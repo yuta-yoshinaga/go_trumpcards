@@ -2,6 +2,7 @@
   "captureAnnounce": "{{player}} が場札を捕獲しました",
   "captureButton": "捕獲",
   "captured": "捕獲: {{count}}",
+  "capturedCards": "捕獲札",
   "cards": "{{count}}枚",
   "cpu": "CPU {{id}}",
   "deal": "配布 {{n}}",
