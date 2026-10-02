@@ -304,6 +304,12 @@ function IronCrossPageContent() {
                     {seat.wonAmount > 0 && (
                       <span data-testid={`ic-won-${i}`}> · {t('label.won', { amount: seat.wonAmount })}</span>
                     )}
+                    {showResults && (
+                      <span data-testid={`ic-net-change-${i}`}>
+                        {' · '}
+                        {t('label.netChange', { amount: `${seat.netChange > 0 ? '+' : ''}${seat.netChange}` })}
+                      </span>
+                    )}
                   </span>
                   {showResults && !seat.folded && (
                     <>

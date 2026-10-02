@@ -45,6 +45,7 @@ const seat = (over: Partial<IronCrossResponse['seats'][number]> = {}) =>
     handRank: 0,
     bestHand: [],
     wonAmount: 0,
+    netChange: 0,
     ...over,
   }) as IronCrossResponse['seats'][number];
 
@@ -89,6 +90,29 @@ beforeEach(() => {
 });
 
 describe('IronCrossPage', () => {
+  it('shows each seat net change at showdown separately from gross winnings', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: IronCrossPhase.SHOWDOWN,
+        isHumanTurn: false,
+        seats: [
+          seat({ chips: 1040, wonAmount: 100, netChange: 40 }),
+          seat({
+            name: 'CPU1',
+            isHuman: false,
+            cards: [],
+            chips: 960,
+            wonAmount: 0,
+            netChange: -40,
+          }),
+        ],
+      }),
+    );
+    renderWithProviders(<IronCrossPage />);
+    expect(await screen.findByTestId('ic-won-0')).toHaveTextContent('獲得 100');
+    expect(screen.getByTestId('ic-net-change-0')).toHaveTextContent('純増減 +40');
+    expect(screen.getByTestId('ic-net-change-1')).toHaveTextContent('純増減 -40');
+  });
   it('does not show a hand name for a seat that folded before the showdown', async () => {
     mockApi.mockResolvedValue(
       withState({
