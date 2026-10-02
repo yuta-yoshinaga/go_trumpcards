@@ -79,6 +79,7 @@ type Trappola struct {
 	trickNumber      int
 	currentPlayerIdx int
 	currentTrick     []*TrickCard
+	lastTrickThirds  int
 	leadPlayerIdx    int
 	teamScores       [TrappolaTeamCnt]int // 累積点 (整数点)
 	teamRoundThirds  [TrappolaTeamCnt]int // 現ラウンドで獲得した 1/3点 の合計
@@ -139,6 +140,7 @@ func (g *Trappola) NextRound() {
 func (g *Trappola) startRound() {
 	g.trickNumber = 1
 	g.currentTrick = nil
+	g.lastTrickThirds = 0
 	g.teamRoundThirds = [TrappolaTeamCnt]int{}
 
 	for _, p := range g.players {
@@ -296,11 +298,11 @@ func (g *Trappola) ResolveTrick() {
 
 	winnerIdx := g.trickWinner()
 	trickCards := make([]*Card, len(g.currentTrick))
-	thirds := 0
 	for i, tc := range g.currentTrick {
 		trickCards[i] = tc.Card
-		thirds += trappolaThirds(tc.Card.GetValue())
 	}
+	thirds := trappolaTrickThirds(g.currentTrick)
+	g.lastTrickThirds = thirds
 	g.players[winnerIdx].AddTrick(trickCards)
 
 	team := TrappolaTeamOf(winnerIdx)
@@ -387,8 +389,17 @@ func (g *Trappola) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 // GetCurrentTrick 現在のトリック取得
 func (g *Trappola) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
+// GetCurrentTrickThirds returns the points (in thirds) on cards currently in the trick.
+func (g *Trappola) GetCurrentTrickThirds() int { return trappolaTrickThirds(g.currentTrick) }
+
+// GetLastTrickThirds returns the resolved trick's card points in thirds, excluding
+// the final-trick bonus. It is a display value; the bonus is awarded separately.
+func (g *Trappola) GetLastTrickThirds() int { return g.lastTrickThirds }
+
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *Trappola) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
+func (g *Trappola) SetCurrentTrick(trick []*TrickCard) {
+	g.currentTrick = trick
+}
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *Trappola) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
@@ -558,6 +569,17 @@ func trappolaThirds(value int) int {
 	}
 }
 
+// trappolaTrickThirds sums the card points in a trick, in thirds.
+func trappolaTrickThirds(trick []*TrickCard) int {
+	thirds := 0
+	for _, tc := range trick {
+		if tc != nil && tc.Card != nil {
+			thirds += trappolaThirds(tc.Card.GetValue())
+		}
+	}
+	return thirds
+}
+
 // --- Hint ---
 
 // GetHint 人間プレイヤーの手番における推奨プレイを返す。
@@ -692,6 +714,7 @@ type trappolaJSON struct {
 	TrickNumber      int                  `json:"tn"`
 	CurrentPlayerIdx int                  `json:"ci"`
 	CurrentTrick     []*TrickCard         `json:"ct"`
+	LastTrickThirds  int                  `json:"lT"`
 	LeadPlayerIdx    int                  `json:"li"`
 	TeamScores       [TrappolaTeamCnt]int `json:"ts"`
 	TeamRoundThirds  [TrappolaTeamCnt]int `json:"tr"`
@@ -711,6 +734,7 @@ func (g *Trappola) MarshalJSON() ([]byte, error) {
 		TrickNumber:      g.trickNumber,
 		CurrentPlayerIdx: g.currentPlayerIdx,
 		CurrentTrick:     g.currentTrick,
+		LastTrickThirds:  g.lastTrickThirds,
 		LeadPlayerIdx:    g.leadPlayerIdx,
 		TeamScores:       g.teamScores,
 		TeamRoundThirds:  g.teamRoundThirds,
@@ -753,6 +777,7 @@ func (g *Trappola) UnmarshalJSON(data []byte) error {
 	g.trickNumber = j.TrickNumber
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
+	g.lastTrickThirds = j.LastTrickThirds
 	if g.currentTrick == nil {
 		g.currentTrick = make([]*TrickCard, 0)
 	}

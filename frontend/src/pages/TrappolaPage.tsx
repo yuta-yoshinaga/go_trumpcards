@@ -236,6 +236,16 @@ function TrappolaPageContent() {
                   label={t('currentTrick')}
                   dataTutorial="tr-trick-display"
                 />
+                <div className="mt-2 text-center text-sm text-ds-text-primary">
+                  {isTrickEnd || isRoundEnd || isGameEnd
+                    ? state.lastTrick.length > 0 && state.lastTrickWinner >= 0
+                      ? t('resolvedTrickPoints', {
+                          team: teamLabels[state.lastTrickWinner % 2],
+                          thirds: state.lastTrickThirds,
+                        })
+                      : t('currentTrickPoints', { thirds: state.currentTrickThirds })
+                    : t('currentTrickPoints', { thirds: state.currentTrickThirds })}
+                </div>
 
                 {/* Previous trick reviewer: lets the player recount the just-completed trick */}
                 <details className="mb-2 p-2 rounded bg-black/30" data-testid="tr-previous-trick">
