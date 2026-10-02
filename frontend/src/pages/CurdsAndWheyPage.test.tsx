@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { curdsandwheyApi } from '../api/gameApi';
+import { CURDS_AND_WHEY_STATS_KEY } from '../hooks/useCurdsAndWheyStats';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CurdsAndWheyResponse } from '../types/card';
@@ -33,11 +34,30 @@ function makeState(overrides: Partial<CurdsAndWheyResponse> = {}): CurdsAndWheyR
 }
 
 beforeEach(() => {
+  localStorage.clear();
   mockExec.mockReset();
   mockExec.mockResolvedValue(makeState());
 });
 
 describe('CurdsAndWheyPage', () => {
+  it.each([
+    ['clear', 1, true, '勝率 100%・最少 12手'],
+    ['game over', 2, false, '勝率 0%・最少手数 —'],
+  ])('records a %s once and displays the persisted stats', async (_name, phase, won, summary) => {
+    mockExec.mockResolvedValueOnce(makeState()).mockResolvedValue(makeState({ phase, moveCount: 12 }));
+    renderWithProviders(<CurdsAndWheyPage />);
+    await screen.findByTestId('giveup-button');
+    fireEvent.click(screen.getByTestId('giveup-button'));
+    fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+    await waitFor(() => expect(screen.getByTestId('cw-stats')).toHaveTextContent(summary as string));
+    expect(JSON.parse(localStorage.getItem(CURDS_AND_WHEY_STATS_KEY) ?? '{}')).toEqual({
+      plays: 1,
+      wins: won ? 1 : 0,
+      fewestMoves: won ? 12 : null,
+    });
+    expect(mockExec.mock.calls.filter(([command]) => command === 'g')).toHaveLength(1);
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<CurdsAndWheyPage />);

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { curdsandwheyApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -14,6 +14,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { curdsAndWheyWinRate, useCurdsAndWheyStats } from '../hooks/useCurdsAndWheyStats';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -80,6 +81,8 @@ function CurdsAndWheyPageContent() {
     cancelGiveUp,
   } = useGamePageSetup('curdsandwhey');
   const { state, loading, error, exec, retry } = useGameApi(curdsandwheyApi.exec);
+  const { stats, recordResult } = useCurdsAndWheyStats();
+  const recordedEnd = useRef(false);
 
   const handleHint = useCallback(() => {
     exec('hint');
@@ -109,6 +112,12 @@ function CurdsAndWheyPageContent() {
   const isClear = state?.phase === CurdsAndWheyPhase.GAME_CLEAR;
   const isEnd = isClear || state?.phase === CurdsAndWheyPhase.GAME_OVER;
   const canAct = !!state && !isEnd;
+
+  useEffect(() => {
+    if (!isEnd || !state || recordedEnd.current) return;
+    recordResult({ won: state.phase === CurdsAndWheyPhase.GAME_CLEAR, moves: state.moveCount });
+    recordedEnd.current = true;
+  }, [isEnd, recordResult, state]);
 
   useActionKeyboardNav({
     bindings: actionBindings,
@@ -149,6 +158,7 @@ function CurdsAndWheyPageContent() {
   const handleReset = () => {
     hideActionLog();
     setSelected(null);
+    recordedEnd.current = false;
     exec('reset');
   };
 
@@ -275,6 +285,13 @@ function CurdsAndWheyPageContent() {
       <div className="flex-1 overflow-y-auto pt-3 px-2 lg:px-6">
         <div className="text-ds-text-muted text-xs mb-1">
           {t('completedSuits', { count: state.completedSuits })} · {t('moveCount', { count: state.moveCount })}
+        </div>
+        <div className="text-ds-text-muted text-xs mb-1" data-testid="cw-stats">
+          {t('statsSummary', {
+            winRate: t('winRate', { rate: curdsAndWheyWinRate(stats) }),
+            fewestMoves:
+              stats.fewestMoves === null ? t('fewestMovesNone') : t('fewestMoves', { moves: stats.fewestMoves }),
+          })}
         </div>
         <div className="grid grid-cols-5 sm:grid-cols-10 gap-1 items-start" data-tutorial="cw-columns">
           {state.columns.map((column, i) => renderColumn(column, i))}
