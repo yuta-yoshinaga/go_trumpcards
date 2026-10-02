@@ -92,6 +92,8 @@ type SjavsWebOutput struct {
 	TeamPoints []int `json:"teamPoints"`
 	// Remaining は 24 からの残り。0 以下でラバー勝ち。
 	Remaining []int `json:"remaining"`
+	// RubberPoints is the starting score for each rubber.
+	RubberPoints int `json:"rubberPoints"`
 	// Crosses はラバー勝利数。1 ハンドごとに動くものではない。
 	Crosses []int `json:"crosses"`
 	// CarryOver は 60-60 で持ち越された上乗せ点。

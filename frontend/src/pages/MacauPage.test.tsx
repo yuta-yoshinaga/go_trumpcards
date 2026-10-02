@@ -121,6 +121,7 @@ describe('MacauPage', () => {
   });
 
   it('calls play when play button clicked', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, playableIndices: [0] });
     renderWithProviders(<MacauPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
     fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
@@ -341,6 +342,23 @@ describe('MacauPage', () => {
     await waitFor(() => expect(document.querySelectorAll('[data-playable="true"]')).toHaveLength(1));
   });
 
+  it('keeps unplayable cards focusable but prevents selecting them on the human turn', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, playableIndices: [1] });
+    renderWithProviders(<MacauPage />);
+
+    const playable = (await screen.findByAltText('♥ J')).closest('button') as HTMLButtonElement;
+    const unplayable = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+    expect(playable).not.toHaveAttribute('aria-disabled');
+    expect(unplayable).toHaveAttribute('aria-disabled', 'true');
+    expect(unplayable).toHaveAttribute('aria-describedby', 'macau-card-not-playable');
+    expect(unplayable).not.toBeDisabled();
+
+    fireEvent.click(unplayable);
+    expect(unplayable).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(playable);
+    expect(playable).toHaveAttribute('aria-pressed', 'true');
+  });
+
   // **「引くしかない」局面で全札が光ってはいけない。**手番中の空配列は
   // 「制限なし」ではなく「1 枚も出せない」(レビュー指摘 #5065)。
   it('rings nothing when it is the human turn and no card is legal', async () => {
@@ -351,12 +369,40 @@ describe('MacauPage', () => {
     expect(document.querySelectorAll('[data-playable="true"]')).toHaveLength(0);
   });
 
+  it('prevents selecting every card when none is playable and leaves draw available', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, playableIndices: [] });
+    renderWithProviders(<MacauPage />);
+
+    const ace = (await screen.findByAltText('♠ A')).closest('button') as HTMLButtonElement;
+    const jack = screen.getByAltText('♥ J').closest('button') as HTMLButtonElement;
+    expect(ace).toHaveAttribute('aria-disabled', 'true');
+    expect(jack).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(ace);
+    expect(ace).toHaveAttribute('aria-pressed', 'false');
+
+    const draw = screen.getByRole('button', { name: '引く' });
+    expect(draw).not.toBeDisabled();
+    mockExec.mockClear();
+    fireEvent.click(draw);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+  });
+
   it('rings every card while it is not the human turn', async () => {
     mockExec.mockResolvedValue({ ...playPhaseState, currentPlayerIdx: 1, playableIndices: [] });
     renderWithProviders(<MacauPage />);
 
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(document.querySelectorAll('[data-playable="true"]').length).toBeGreaterThan(1);
+  });
+
+  it('keeps CPU turn hand cards selectable as before', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, currentPlayerIdx: 1, playableIndices: [] });
+    renderWithProviders(<MacauPage />);
+
+    const ace = (await screen.findByAltText('♠ A')).closest('button') as HTMLButtonElement;
+    expect(ace).not.toHaveAttribute('aria-disabled');
+    fireEvent.click(ace);
+    expect(ace).toHaveAttribute('aria-pressed', 'true');
   });
   // 上限に届いた席が出た時点で決着し、最高点が勝つ。累計だけでは自分がどれだけ
   // 近いのか分からなかった。既定 (200) と違う上限でも反映されることまで見る。

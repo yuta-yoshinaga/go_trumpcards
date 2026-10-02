@@ -206,6 +206,9 @@ func (bc *Somerset) GetFoundation() [SomersetFoundationCnt][]*Card {
 	return bc.foundation
 }
 
+// GetTotalCardCount returns the number of cards in this game's deck.
+func (bc *Somerset) GetTotalCardCount() int { return bc.trumpCards.GetTotalCount() }
+
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (bc *Somerset) GetGameEndFlag() bool { return bc.phase != SomersetPhasePlaying }
 

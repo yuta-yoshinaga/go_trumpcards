@@ -87,5 +87,6 @@
     "choose_longest_suit": "手札に一番多いスート"
   },
   "winnerBadge": "(勝者)",
-  "limitProgress": "上限: {{limit}}点 / 最多得点: {{name}} {{score}}点"
+  "limitProgress": "上限: {{limit}}点 / 最多得点: {{name}} {{score}}点",
+  "remainingPoints": "残り {{score}} 点"
 }

@@ -51,6 +51,10 @@ type BiribaWebOutputMeld struct {
 
 // BiribaWebOutput ビリバWebアウトプット
 type BiribaWebOutput struct {
+	MinMeld          int                      `json:"minMeld"`
+	DrewFromDiscard  bool                     `json:"drewFromDiscard"`
+	DrawnCard        *WebOutputCard           `json:"drawnCard"`
+	DrawnCardIndex   int                      `json:"drawnCardIndex"`
 	Players          []*BiribaWebOutputPlayer `json:"players"`
 	Phase            int                      `json:"phase"`
 	RoundNumber      int                      `json:"roundNumber"`

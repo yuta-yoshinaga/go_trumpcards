@@ -352,6 +352,7 @@ function HachiHachiPageContent() {
                 {winnerName && (
                   <div className="text-ds-success mb-1">{t('result.winner', { name: seatName(winnerName) })}</div>
                 )}
+                {!winnerName && <div className="mb-1">{t('result.tie')}</div>}
                 {state.players.map((p) => (
                   <div key={p.id}>{t('result.score', { name: seatName(p), score: p.score })}</div>
                 ))}

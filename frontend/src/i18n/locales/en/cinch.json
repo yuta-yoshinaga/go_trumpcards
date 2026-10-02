@@ -28,6 +28,8 @@
     "unbid": "Not bid",
     "pass": "Pass"
   },
+  "dealerBadge": "Dealer",
+  "forcedBidNotice": "If everyone else passes, the dealer cannot pass and must bid at least 1.",
   "bidStrength": {
     "range": "Estimated points held: {{min}}-{{max}} pts (rough guide, depends on trump)",
     "best": "Strongest trump: {{symbol}} {{suit}} (holding {{points}} pts)",

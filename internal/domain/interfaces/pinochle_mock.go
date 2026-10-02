@@ -134,6 +134,11 @@ func (m *MockPinochleGame) GetHighestBidder() int {
 	return args.Int(0)
 }
 
+func (m *MockPinochleGame) GetLastContractMade() (bool, bool) {
+	args := m.Called()
+	return args.Bool(0), args.Bool(1)
+}
+
 func (m *MockPinochleGame) GetTeamScore(team int) int {
 	args := m.Called(team)
 	return args.Int(0)

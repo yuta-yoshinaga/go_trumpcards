@@ -240,6 +240,40 @@ describe('HoldemPage', () => {
     );
   });
 
+  it('announces a tournament blind level change once with the new blinds', async () => {
+    // blindLevelHands is the fixed interval setting; only the blind amounts change when the level rises.
+    mockExec.mockResolvedValueOnce({
+      ...preFlopState,
+      tournamentMode: true,
+      blindLevelHands: 10,
+      smallBlind: 5,
+      bigBlind: 10,
+    });
+    mockExec.mockResolvedValueOnce({
+      ...preFlopState,
+      tournamentMode: true,
+      blindLevelHands: 10,
+      smallBlind: 10,
+      bigBlind: 20,
+    });
+    renderWithProviders(<HoldemPage />);
+    const announcement = await screen.findByTestId('blind-level-announcement');
+    expect(announcement).toBeEmptyDOMElement();
+    fireEvent.click(await screen.findByRole('button', { name: 'チェック' }));
+    await waitFor(() => expect(announcement).toHaveTextContent('ブラインドレベルが上がりました: SB 10、BB 20'));
+  });
+
+  it('does not announce initial tournament blinds or non-tournament level changes', async () => {
+    mockExec.mockResolvedValueOnce({ ...preFlopState, tournamentMode: true, smallBlind: 5, bigBlind: 10 });
+    mockExec.mockResolvedValueOnce({ ...preFlopState, tournamentMode: true, smallBlind: 5, bigBlind: 10 });
+    renderWithProviders(<HoldemPage />);
+    const announcement = await screen.findByTestId('blind-level-announcement');
+    expect(announcement).toBeEmptyDOMElement();
+    fireEvent.click(await screen.findByRole('button', { name: 'チェック' }));
+    await flushPendingDispatch();
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<HoldemPage />);
@@ -677,7 +711,7 @@ describe('HoldemPage', () => {
   it('shows call/raise buttons when canAct and has outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<HoldemPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
@@ -797,11 +831,11 @@ describe('HoldemPage', () => {
   it('calls call command when has outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<HoldemPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', undefined, undefined, 0));
   });
 
@@ -1352,7 +1386,7 @@ describe('HoldemPage', () => {
     it('pressing c triggers call when canAct and hasOutstandingBet', async () => {
       mockExec.mockResolvedValue(preFlopWithBetState);
       renderWithProviders(<HoldemPage />);
-      await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
       mockExec.mockClear();
       mockExec.mockResolvedValue(preFlopWithBetState);
@@ -1467,7 +1501,7 @@ describe('HoldemPage', () => {
     it('pressing k is ignored when hasOutstandingBet', async () => {
       mockExec.mockResolvedValue(preFlopWithBetState);
       renderWithProviders(<HoldemPage />);
-      await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
       mockExec.mockClear();
 

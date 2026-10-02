@@ -3,6 +3,7 @@
   "betGuide": "Check, bet, call, raise or fold",
   "fiveCardNotice": "Five hole cards — a hand can be complete without touching the board",
   "label.chips": "Chips",
+  "label.netChange": "Net change",
   "label.bet": "Bet",
   "label.pot": "Pot",
   "label.hand": "Hand",

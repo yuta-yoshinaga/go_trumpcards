@@ -320,6 +320,14 @@ function RikkenPageContent() {
 
             {isBidPhase && state.isHumanTurn && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="rk-bid">
+                <p data-testid="rikken-current-bid" className="text-ds-text-primary text-sm font-medium">
+                  {state.contract === RikkenContract.NONE
+                    ? t('currentBidNone')
+                    : t('currentBid', {
+                        contract: contractLabel,
+                        name: findPlayerName(state.players, state.declarerIdx),
+                      })}
+                </p>
                 <p className="text-ds-text-muted text-sm">{t('bidGuide')}</p>
                 <div className="flex justify-center gap-2 flex-wrap">
                   {RIKKEN_CONTRACTS.map((c) => (

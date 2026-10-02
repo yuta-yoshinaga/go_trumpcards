@@ -94,6 +94,8 @@ export interface KingResponse extends BaseGameResponse {
   roundWinners: number[];
   /** Scoring detail for the most recently completed deal, or null. */
   lastDealDetail?: KingDealDetail | null;
+  /** Scoring details for every completed deal in this match. */
+  dealHistory: KingDealDetail[];
   /** Whether it is currently the human's turn to act. */
   isHumanTurn: boolean;
   hint?: KingHint | null;

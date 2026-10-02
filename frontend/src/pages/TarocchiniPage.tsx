@@ -281,8 +281,12 @@ function TarocchiniPageContent() {
                         })}
                       </div>
                     ))}
-                    {/* 得点はトリック数だけではない (最終トリック +2 とスカルト加点)。
-                        内訳が無いと teamScores の増分と突き合わせて検算できない。 */}
+                    <div className="mb-1 text-ds-text-primary">{t('roundResult.breakdownTitle')}</div>
+                    {state.roundBreakdown.map((breakdown, team) => (
+                      <div key={`round-breakdown-${team}`} data-testid={`tarocchini-team-round-breakdown-${team}`}>
+                        {t('roundResult.breakdown', { team, ...breakdown })}
+                      </div>
+                    ))}
                     {lastTrickTeam !== null && (
                       <div data-testid="tarocchini-last-trick-bonus">
                         {t('roundResult.lastTrick', {

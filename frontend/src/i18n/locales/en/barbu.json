@@ -73,6 +73,7 @@
   },
   "history": {
     "caption": "Score by deal (completed)",
+    "toggle": "Deal history",
     "deal": "#",
     "contract": "Contract"
   },

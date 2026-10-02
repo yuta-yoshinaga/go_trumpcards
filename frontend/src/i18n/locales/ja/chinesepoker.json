@@ -3,6 +3,7 @@
   "label": {
     "chips": "チップ",
     "bet": "ベット",
+    "currentBet": "現在のベット",
     "player": "プレイヤー",
     "dealer": "ディーラー",
     "front": "フロント (3枚)",

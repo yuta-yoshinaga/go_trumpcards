@@ -78,6 +78,48 @@ describe('BristolPage', () => {
     await waitFor(() => expect(liveRegion).toHaveTextContent('手数: 1'));
   });
 
+  it('announces successful draws and moves, but not rejected moves', async () => {
+    mockExec.mockImplementation(async (command) =>
+      command === 'move'
+        ? { ...playingState, moveCount: 1 }
+        : command === 'draw'
+          ? { ...playingState, moveCount: 1 }
+          : playingState,
+    );
+    renderWithProviders(<BristolPage />);
+    const liveRegion = await screen.findByTestId('br-operation-live');
+    fireEvent.click(screen.getByRole('button', { name: '山札' }));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('山札から配りました'));
+    expect(liveRegion).toHaveTextContent('山札から配りました');
+
+    fireEvent.click(screen.getByRole('button', { name: '山札' }));
+    await waitFor(() => expect(liveRegion).toBeEmptyDOMElement());
+    await waitFor(() => expect(liveRegion).toHaveTextContent('山札から配りました'));
+
+    screen.getByRole('button', { name: /降順ビルド列 1/ }).click();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /降順ビルド列 1/ })).toHaveAttribute('aria-pressed', 'true'),
+    );
+    screen.getByRole('button', { name: /降順ビルド列 2/ }).click();
+    await waitFor(() => expect(liveRegion).toHaveTextContent('場札 1から場札 2に移動しました'));
+    expect(mockExec).toHaveBeenCalledTimes(4); // reset, two draws, move
+  });
+
+  it('does not announce a rejected move', async () => {
+    mockExec.mockImplementation(async (command) =>
+      command === 'move' ? { ...playingState, message: 'invalid move', messageCode: '' } : playingState,
+    );
+    renderWithProviders(<BristolPage />);
+    const liveRegion = await screen.findByTestId('br-operation-live');
+    screen.getByRole('button', { name: /降順ビルド列 1/ }).click();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /降順ビルド列 1/ })).toHaveAttribute('aria-pressed', 'true'),
+    );
+    screen.getByRole('button', { name: /降順ビルド列 2/ }).click();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.anything(), expect.anything()));
+    expect(liveRegion).toBeEmptyDOMElement();
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<BristolPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -284,6 +326,7 @@ describe('BristolPage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(document.body, { key: 'd' });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+    await waitFor(() => expect(screen.getByTestId('br-operation-live')).toHaveTextContent('山札から配りました'));
     mockExec.mockClear();
     fireEvent.keyDown(document.body, { key: 'h' });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
@@ -377,6 +420,9 @@ describe('BristolPage', () => {
 
       await waitFor(() =>
         expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'foundation', col: 0 }),
+      );
+      await waitFor(() =>
+        expect(screen.getByTestId('br-operation-live')).toHaveTextContent('場札 1から組札 0に移動しました'),
       );
     });
 

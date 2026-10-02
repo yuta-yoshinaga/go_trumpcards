@@ -51,6 +51,10 @@ type PrimeroGame interface {
 	GetMatchWinnerIdx() int
 	// GetResult 人間から見たラウンド結果を取得する
 	GetResult() domain.PrimeroResult
+	// GetRoundPayout 指定プレイヤーのこのラウンドの払戻額を取得する
+	GetRoundPayout(i int) int
+	// GetRoundNetChange 指定プレイヤーのこのラウンドの純損益を取得する
+	GetRoundNetChange(i int) int
 	// GetPlayerCnt プレイヤー数を取得する
 	GetPlayerCnt() int
 	// GetPlayer 指定インデックスのプレイヤーを取得する

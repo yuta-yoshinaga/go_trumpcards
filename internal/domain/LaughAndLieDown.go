@@ -382,19 +382,23 @@ func (l *LaughAndLieDown) finish(lastIn int) {
 // 過不足を 2 枚 1 で清算する。
 func (l *LaughAndLieDown) settle() {
 	for i := range l.players {
-		ante := LaughAndLieDownAnte
-		if i == l.dealerIdx {
-			ante = LaughAndLieDownDealerAnte
-		}
-		score := -ante
+		score := l.scoreBeforeLastInBonus(i)
 		if i == l.lastInIdx {
 			score += LaughAndLieDownLastInBonus
 		}
-		// 「8 枚に対して 2 枚ごとに 1」。奇数枚の端数は切り捨てる (原典どおり
-		// ポットに端数が残ることがある)。
-		score += (len(l.won[i]) - LaughAndLieDownHandSize) / 2
 		l.scores[i] = score
 	}
+}
+
+// scoreBeforeLastInBonus は掛け金と取得枚数による収支を計算する。
+func (l *LaughAndLieDown) scoreBeforeLastInBonus(idx int) int {
+	ante := LaughAndLieDownAnte
+	if idx == l.dealerIdx {
+		ante = LaughAndLieDownDealerAnte
+	}
+	// 「8 枚に対して 2 枚ごとに 1」。奇数枚の端数は切り捨てる (原典どおり
+	// ポットに端数が残ることがある)。
+	return -ante + (len(l.won[idx])-LaughAndLieDownHandSize)/2
 }
 
 // ---- CPU ----
@@ -469,6 +473,17 @@ func (l *LaughAndLieDown) IsLaidDown(idx int) bool {
 // GetScore は idx の収支を返す。
 func (l *LaughAndLieDown) GetScore(idx int) int {
 	return elemAt(l.scores, idx)
+}
+
+// GetRunningScore は last-in ボーナスを除いた暫定収支を返す。
+func (l *LaughAndLieDown) GetRunningScore(idx int) int {
+	if idx < 0 || idx >= len(l.won) {
+		return 0
+	}
+	if l.gameEndFlag {
+		return l.GetScore(idx)
+	}
+	return l.scoreBeforeLastInBonus(idx)
 }
 
 // GetDealerIdx は親の添字を返す。

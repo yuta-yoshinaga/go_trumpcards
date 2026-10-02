@@ -51,6 +51,7 @@ const baseState: HandAndFootResponse = {
     },
     { team: 1, melds: [], red3Count: 0, red3s: [] },
   ],
+  scoreBreakdown: [],
   phase: 1,
   roundNumber: 2,
   currentPlayerIdx: 0,

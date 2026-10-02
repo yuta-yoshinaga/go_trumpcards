@@ -253,6 +253,11 @@ function BaseballPokerPageContent() {
                     {seat.wonAmount > 0 && (
                       <span data-testid={`bb-won-${i}`}> · {t('label.won', { amount: seat.wonAmount })}</span>
                     )}
+                    {isShowdown && (
+                      <span className="ml-2 text-ds-text-primary text-xs" data-testid={`bb-net-change-${i}`}>
+                        {t('label.netChange', { amount: seat.netChange > 0 ? `+${seat.netChange}` : seat.netChange })}
+                      </span>
+                    )}
                   </span>
                   {/* **他人の表札も出す。** スタッドの読み合いはここが材料。 */}
                   {!seat.isHuman && (

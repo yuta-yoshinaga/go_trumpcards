@@ -24,6 +24,10 @@
   "cards": "{{count}} cards",
   "cumulativeScore": "Total: {{score}}",
   "deadwoodShort": "Deadwood {{score}}",
+  "handOrder": {
+    "rankSuit": "Sort by rank and suit",
+    "deal": "Restore deal order"
+  },
   "scores": "Scores",
   "scoresPlayer": "Player",
   "scoresRound": "Round",

@@ -61,7 +61,12 @@
   },
   "score": {
     "cumulative": "累積",
-    "round": "ラウンド"
+    "round": "ラウンド",
+    "meldCards": "メルド札",
+    "canastaBonus": "カナスタボーナス",
+    "red3Bonus": "赤3ボーナス",
+    "goOutBonus": "上がりボーナス",
+    "handPenalty": "手札減点"
   },
   "tutorial": {
     "drawArea": "山札と捨て札エリアです。ここからカードを引きます。",

@@ -61,9 +61,13 @@ func (p *EcarteWebPresenter) buildBase(b interfaces.EcarteGame) *controller.Ecar
 
 	cnt := b.GetPlayerCnt()
 	resObj.DealPoints = make([]int, cnt)
+	resObj.DealTrickPoints = make([]int, cnt)
+	resObj.DealKingBonus = make([]int, cnt)
 	resObj.MatchScore = make([]int, cnt)
 	for i := 0; i < cnt; i++ {
 		resObj.DealPoints[i] = b.GetDealPoints(i)
+		resObj.DealTrickPoints[i] = b.GetDealTrickPoints(i)
+		resObj.DealKingBonus[i] = b.GetDealKingBonus(i)
 		resObj.MatchScore[i] = b.GetMatchScore(i)
 	}
 

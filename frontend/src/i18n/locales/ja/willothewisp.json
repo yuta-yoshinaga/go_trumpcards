@@ -17,6 +17,7 @@
   "undo": "元に戻す",
   "empty": "空",
   "emptyColumnTarget": "列{{column}}は移動先として選択できます",
+  "tableauCardColumn": "{{card}}、列{{column}}",
   "score": "スコア",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}} スコア: {{score}}",
   "gameOver": "ゲームオーバー",

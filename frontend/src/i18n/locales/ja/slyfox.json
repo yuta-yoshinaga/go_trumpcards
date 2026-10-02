@@ -18,6 +18,8 @@
   "undo": "元に戻す",
   "autoComplete": "オートコンプリート",
   "selectTarget": "移動先を選択してください",
+  "selectionPrompt": "{{source}}を操作元に選択しました。{{target}}",
+  "selectionCleared": "操作元の選択を解除しました",
   "deselect": "キャンセル",
   "empty": "空",
   "nextRankBadge": "次:{{rank}}",

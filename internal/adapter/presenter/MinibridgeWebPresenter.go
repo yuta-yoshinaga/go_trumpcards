@@ -48,6 +48,8 @@ func (p *MinibridgeWebPresenter) buildBase(s interfaces.MinibridgeGame) *control
 	resObj.LastMade = s.GetLastMade()
 	resObj.LastTricks = s.GetLastTricks()
 	resObj.TeamScores = minibridgeTeamScores(s)
+	delta := s.GetRoundDelta()
+	resObj.RoundDelta = []int{delta[0], delta[1]}
 	resObj.CurrentPlayerIdx = s.GetCurrentPlayerIdx()
 	resObj.LeadPlayerIdx = s.GetLeadPlayerIdx()
 	resObj.DealerIdx = s.GetDealerIdx()

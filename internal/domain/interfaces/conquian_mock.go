@@ -39,8 +39,12 @@ func (m *MockConquianGame) GetGameEndFlag() bool                { return m.Calle
 func (m *MockConquianGame) GetPhase() domain.ConquianPhase {
 	return m.Called().Get(0).(domain.ConquianPhase)
 }
-func (m *MockConquianGame) IsHumanTurn() bool        { return m.Called().Bool(0) }
-func (m *MockConquianGame) GetRoundNumber() int      { return m.Called().Int(0) }
+func (m *MockConquianGame) IsHumanTurn() bool   { return m.Called().Bool(0) }
+func (m *MockConquianGame) GetRoundNumber() int { return m.Called().Int(0) }
+func (m *MockConquianGame) GetRoundHistory() []int {
+	out, _ := m.Called().Get(0).([]int)
+	return out
+}
 func (m *MockConquianGame) GetCurrentPlayerIdx() int { return m.Called().Int(0) }
 func (m *MockConquianGame) GetDiscardTop() *domain.Card {
 	return m.Called().Get(0).(*domain.Card)

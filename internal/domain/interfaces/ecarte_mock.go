@@ -144,6 +144,10 @@ func (m *MockEcarteGame) GetDealPoints(i int) int {
 	return args.Int(0)
 }
 
+func (m *MockEcarteGame) GetDealTrickPoints(i int) int { args := m.Called(i); return args.Int(0) }
+
+func (m *MockEcarteGame) GetDealKingBonus(i int) int { args := m.Called(i); return args.Int(0) }
+
 func (m *MockEcarteGame) GetMatchScore(i int) int {
 	args := m.Called(i)
 	return args.Int(0)

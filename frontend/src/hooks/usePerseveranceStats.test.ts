@@ -4,6 +4,7 @@ import {
   applyPerseveranceStatsAction,
   emptyPerseveranceStats,
   PERSEVERANCE_STATS_KEY,
+  perseveranceClearRate,
   readPerseveranceStats,
   usePerseveranceStats,
 } from './usePerseveranceStats';
@@ -11,25 +12,43 @@ import {
 beforeEach(() => localStorage.clear());
 
 describe('Perseverance stats reducer', () => {
+  it('counts each playing game once and calculates a clear rate', () => {
+    const started = applyPerseveranceStatsAction(emptyPerseveranceStats(), { type: 'playing' }).stats;
+    expect(applyPerseveranceStatsAction(started, { type: 'playing' }).stats).toEqual(started);
+    const cleared = applyPerseveranceStatsAction(started, {
+      type: 'clear',
+      moveCount: 23,
+      redealsLeft: 2,
+    }).stats;
+    expect(cleared).toMatchObject({ starts: 1, games: 1 });
+    expect(perseveranceClearRate(cleared)).toBe(100);
+    expect(perseveranceClearRate(emptyPerseveranceStats())).toBe(0);
+    const next = applyPerseveranceStatsAction(cleared, { type: 'playing' }).stats;
+    expect(next.starts).toBe(2);
+    expect(perseveranceClearRate(next)).toBe(50);
+  });
+
   it('records a clear once and accumulates moves and remaining redeals', () => {
     const first = applyPerseveranceStatsAction(emptyPerseveranceStats(), {
       type: 'clear',
       moveCount: 23,
       redealsLeft: 2,
     }).stats;
-    expect(first).toEqual({ games: 1, moves: 23, redeals: 2, clearRecorded: true });
+    expect(first).toEqual({ starts: 1, games: 1, moves: 23, redeals: 2, clearRecorded: true, gameStarted: false });
     expect(applyPerseveranceStatsAction(first, { type: 'clear', moveCount: 23, redealsLeft: 2 }).stats).toEqual(first);
   });
 
   it('allows a new clear after play starts and retains the clear guard when stats are cleared', () => {
-    const cleared = { games: 1, moves: 23, redeals: 2, clearRecorded: true };
+    const cleared = { starts: 1, games: 1, moves: 23, redeals: 2, clearRecorded: true, gameStarted: false };
     const playing = applyPerseveranceStatsAction(cleared, { type: 'playing' }).stats;
     expect(playing.clearRecorded).toBe(false);
     expect(applyPerseveranceStatsAction(playing, { type: 'clear', moveCount: 4, redealsLeft: 1 }).stats).toEqual({
       games: 2,
+      starts: 2,
       moves: 27,
       redeals: 3,
       clearRecorded: true,
+      gameStarted: false,
     });
     expect(applyPerseveranceStatsAction(cleared, { type: 'reset' }).stats).toEqual({
       ...emptyPerseveranceStats(),
@@ -42,13 +61,37 @@ describe('usePerseveranceStats', () => {
   it('rehydrates, records a clear, and persists aggregated statistics', () => {
     localStorage.setItem(
       PERSEVERANCE_STATS_KEY,
-      JSON.stringify({ games: 1, moves: 10, redeals: 1, clearRecorded: false }),
+      JSON.stringify({ starts: 1, games: 1, moves: 10, redeals: 1, clearRecorded: false, gameStarted: true }),
     );
     const { result } = renderHook(() => usePerseveranceStats());
     expect(result.current.stats.games).toBe(1);
     act(() => result.current.recordClear(15, 2));
-    expect(result.current.stats).toEqual({ games: 2, moves: 25, redeals: 3, clearRecorded: true });
+    expect(result.current.stats).toEqual({
+      starts: 1,
+      games: 2,
+      moves: 25,
+      redeals: 3,
+      clearRecorded: true,
+      gameStarted: false,
+    });
     expect(readPerseveranceStats()).toEqual(result.current.stats);
+  });
+
+  it('migrates persisted stats without start tracking while preserving existing totals', () => {
+    localStorage.setItem(
+      PERSEVERANCE_STATS_KEY,
+      JSON.stringify({ games: 1, moves: 10, redeals: 1, clearRecorded: false }),
+    );
+    expect(readPerseveranceStats()).toEqual({
+      starts: 1,
+      games: 1,
+      moves: 10,
+      redeals: 1,
+      clearRecorded: false,
+      gameStarted: false,
+    });
+    const { result } = renderHook(() => usePerseveranceStats());
+    expect(result.current.stats).toMatchObject({ games: 1, starts: 1, moves: 10, redeals: 1, gameStarted: false });
   });
 
   it('returns empty stats for malformed persisted values', () => {
@@ -62,5 +105,16 @@ describe('usePerseveranceStats', () => {
     act(() => result.current.clearStats());
     act(() => result.current.recordClear(8, 1));
     expect(result.current.stats).toEqual({ ...emptyPerseveranceStats(), clearRecorded: true });
+  });
+
+  it('persists one start despite repeated playing notifications and clears the start total', () => {
+    const { result } = renderHook(() => usePerseveranceStats());
+    act(() => {
+      result.current.markPlaying();
+      result.current.markPlaying();
+    });
+    expect(result.current.stats.starts).toBe(1);
+    act(() => result.current.clearStats());
+    expect(result.current.stats.starts).toBe(0);
   });
 });

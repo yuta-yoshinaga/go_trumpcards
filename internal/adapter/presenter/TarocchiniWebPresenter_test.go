@@ -37,6 +37,8 @@ func setupTarocchiniWebMock() *interfaces.MockTarocchiniGame {
 	m.On("GetScartoSize").Return(domain.TarocchiniSurplus)
 	m.On("GetTeamScores").Return([2]int{0, 0})
 	m.On("GetRoundTricks").Return([domain.TarocchiniPlayerCnt]int{})
+	m.On("GetRoundBreakdown").Return([2]domain.TarocchiniTeamRoundBreakdown{})
+
 	m.On("GetLastTrickWinner").Return(-1)
 	m.On("GetWinnerTeam").Return(-1)
 	m.On("GetPlayableIndices", 0).Return([]int{0})
@@ -64,6 +66,8 @@ func TestTarocchiniWebPresenter_Output(t *testing.T) {
 
 	t.Run("initial state play phase lead", func(t *testing.T) {
 		m, players := setupTarocchiniWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundBreakdown")
+		m.On("GetRoundBreakdown").Return([2]domain.TarocchiniTeamRoundBreakdown{{Tricks: 3, Total: 3}, {ScartoBonus: 2, Total: 2}})
 		players[0].AddCard(domain.NewCard(1, 14, false))
 		players[1].AddCard(domain.NewCard(2, 6, false))
 
@@ -76,6 +80,7 @@ func TestTarocchiniWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, []int{0}, res.PlayableIndices)
 		assert.Equal(t, domain.TarocchiniSurplus, res.ScartoCount)
 		assert.True(t, res.Players[0].IsDealer)
+		assert.Equal(t, [2]domain.TarocchiniTeamRoundBreakdown{{Tricks: 3, Total: 3}, {ScartoBonus: 2, Total: 2}}, res.RoundBreakdown)
 	})
 
 	// 対面同士が組む。席のチーム番号がそのまま出ていないと、味方のトリックを

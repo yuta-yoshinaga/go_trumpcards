@@ -46,11 +46,12 @@ func (p *BourreWebPresenter) Output(bg interfaces.BourreGame, lastErr error) str
 	resObj.Results = make([]*controller.BourreWebResult, 0)
 	for _, r := range bg.GetLastResults() {
 		resObj.Results = append(resObj.Results, &controller.BourreWebResult{
-			PlayerIdx: r.PlayerIdx,
-			Tricks:    r.Tricks,
-			WonAmount: r.WonAmount,
-			Bourreed:  r.Bourreed,
-			Folded:    r.Folded,
+			PlayerIdx:  r.PlayerIdx,
+			Tricks:     r.Tricks,
+			WonAmount:  r.WonAmount,
+			PaidAmount: r.PaidAmount,
+			Bourreed:   r.Bourreed,
+			Folded:     r.Folded,
 		})
 	}
 

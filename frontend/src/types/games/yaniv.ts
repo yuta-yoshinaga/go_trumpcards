@@ -34,6 +34,7 @@ export interface YanivResponse extends BaseGameResponse {
   asafWinnerIdx: number;
   isAsaf: boolean;
   roundScores: number[];
+  roundScoreHistory: number[][];
   config: YanivConfig;
 }
 

@@ -479,7 +479,9 @@ function CruelPageContent() {
                                   }
                                 }}
                                 disabled={!isPlaying || !isLast}
-                                aria-label={tc.card ? cardAlt(tc.card) : ''}
+                                aria-label={
+                                  tc.card ? t('tableauCardAriaLabel', { card: cardAlt(tc.card), col: colIdx }) : ''
+                                }
                               >
                                 {tc.card && <AnimatedCard card={tc.card} width={cr.cw} />}
                               </button>

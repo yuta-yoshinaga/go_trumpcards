@@ -149,6 +149,25 @@ function CuarentaPageContent() {
   // Pop + chime the human's caída / ronda / limpia bonus the instant it lands —
   // these Cuarenta-specific scores were buried as static text in the log (#2693).
   const [bonusCelebrationKey, setBonusCelebrationKey] = useState(0);
+  const [teamUpdateAnnouncement, setTeamUpdateAnnouncement] = useState('');
+  const prevTeamTotalsRef = useRef<{ scores: number[]; captured: number[] } | null>(null);
+  const teamCapturedTotals = state?.teamScores.map((_, team) =>
+    state.players.reduce((sum, player) => (player.team === team ? sum + player.capturedCount : sum), 0),
+  );
+  useEffect(() => {
+    if (!state || !teamCapturedTotals) return;
+    const current = { scores: state.teamScores, captured: teamCapturedTotals };
+    const previous = prevTeamTotalsRef.current;
+    prevTeamTotalsRef.current = current;
+    if (!previous) return;
+    const changedTeams = current.scores.flatMap((score, team) => {
+      const captured = current.captured[team] ?? 0;
+      if (score <= (previous.scores[team] ?? score) && captured <= (previous.captured[team] ?? captured)) return [];
+      return [t('teamUpdateAnnouncement', { name: t('team', { name: team === 0 ? 'A' : 'B' }), score, captured })];
+    });
+    if (changedTeams.length > 0) setTeamUpdateAnnouncement(changedTeams.join(t('listSeparator')));
+  }, [state, teamCapturedTotals, t]);
+
   const prevHumanActionRef = useRef<string | null>(null);
   const humanAction = state?.humanAction ?? null;
   const humanBonus = !!humanAction && (humanAction.isCaida || humanAction.rondaBonus > 0 || humanAction.isLimpia);
@@ -271,6 +290,15 @@ function CuarentaPageContent() {
               .filter(Boolean)
               .join('')
           : ''}
+      </div>
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+        data-testid="cuarenta-team-update-announce"
+      >
+        {teamUpdateAnnouncement}
       </div>
       <div role="status" aria-live="polite" aria-atomic="true" data-testid="cuarenta-capture-preview">
         {capturePreview && (

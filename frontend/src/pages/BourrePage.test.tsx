@@ -67,6 +67,23 @@ beforeEach(() => {
 });
 
 describe('BourrePage', () => {
+  it('explains each payment, the winner, and the carried pot at round end', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'roundEnd',
+        carryPot: 25,
+        results: [
+          { playerIdx: 0, tricks: 3, wonAmount: 25, paidAmount: 0, bourreed: false, folded: false },
+          { playerIdx: 1, tricks: 0, wonAmount: 0, paidAmount: 25, bourreed: true, folded: false },
+        ],
+      }),
+    );
+    renderWithProviders(<BourrePage />);
+    expect(await screen.findByText(/ポット獲得 25/)).toBeInTheDocument();
+    expect(screen.getByText(/ブーレ罰金として 25 チップを支払い/)).toBeInTheDocument();
+    expect(screen.getByText(/ポット 25 チップを次のハンドへ持ち越し/)).toBeInTheDocument();
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<BourrePage />);
@@ -190,7 +207,7 @@ describe('BourrePage', () => {
         phase: 'roundEnd',
         gameEndFlag: true,
         winnerIdx: 2,
-        results: [{ playerIdx: 2, tricks: 3, wonAmount: 0, bourreed: false, folded: false }],
+        results: [{ playerIdx: 2, tricks: 3, wonAmount: 0, paidAmount: 0, bourreed: false, folded: false }],
       }),
     );
     renderWithProviders(<BourrePage />);
@@ -320,8 +337,8 @@ describe('BourrePage', () => {
       makeState({
         phase: 'roundEnd',
         results: [
-          { playerIdx: 0, tricks: 3, wonAmount: 25, bourreed: false, folded: false },
-          { playerIdx: 1, tricks: 0, wonAmount: 0, bourreed: true, folded: false },
+          { playerIdx: 0, tricks: 3, wonAmount: 25, paidAmount: 0, bourreed: false, folded: false },
+          { playerIdx: 1, tricks: 0, wonAmount: 0, paidAmount: 0, bourreed: true, folded: false },
         ],
       }),
     );
@@ -338,7 +355,7 @@ describe('BourrePage', () => {
         phase: 'gameEnd',
         gameEndFlag: true,
         winnerIdx: 0,
-        results: [{ playerIdx: 0, tricks: 5, wonAmount: 50, bourreed: false, folded: false }],
+        results: [{ playerIdx: 0, tricks: 5, wonAmount: 50, paidAmount: 0, bourreed: false, folded: false }],
       }),
     );
     renderWithProviders(<BourrePage />);
@@ -431,8 +448,8 @@ describe('BourrePage', () => {
       makeState({
         phase: 'roundEnd',
         results: [
-          { playerIdx: 0, tricks: 0, wonAmount: 0, bourreed: true, folded: false },
-          { playerIdx: 1, tricks: 3, wonAmount: 25, bourreed: false, folded: false },
+          { playerIdx: 0, tricks: 0, wonAmount: 0, paidAmount: 0, bourreed: true, folded: false },
+          { playerIdx: 1, tricks: 3, wonAmount: 25, paidAmount: 0, bourreed: false, folded: false },
         ],
       }),
     );
@@ -449,7 +466,7 @@ describe('BourrePage', () => {
         phase: 'gameEnd',
         gameEndFlag: true,
         winnerIdx: 1,
-        results: [{ playerIdx: 1, tricks: 5, wonAmount: 50, bourreed: false, folded: false }],
+        results: [{ playerIdx: 1, tricks: 5, wonAmount: 50, paidAmount: 0, bourreed: false, folded: false }],
       }),
     );
     renderWithProviders(<BourrePage />);
@@ -478,7 +495,7 @@ describe('BourrePage', () => {
         phase: 'gameEnd',
         gameEndFlag: true,
         winnerIdx: 0,
-        results: [{ playerIdx: 0, tricks: 5, wonAmount: 50, bourreed: false, folded: false }],
+        results: [{ playerIdx: 0, tricks: 5, wonAmount: 50, paidAmount: 0, bourreed: false, folded: false }],
       }),
     );
     renderWithProviders(<BourrePage />);

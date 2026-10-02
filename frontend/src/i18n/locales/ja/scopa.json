@@ -14,6 +14,7 @@
   },
   "label": {
     "tableCards": "場札",
+    "remainingDeck": "残り山札: {{count}}枚",
     "tableEmpty": "場札なし",
     "selected": "選択中",
     "takeCandidate": "取り札候補",

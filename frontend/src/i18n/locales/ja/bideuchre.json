@@ -9,6 +9,8 @@
   "trumpUndecided": "未定",
   "contract": "契約",
   "contractTricks": "{{n}}トリック",
+  "declarerTrickProgress": "{{team}}: 契約 {{target}}トリック中 {{won}}トリック獲得",
+  "defenderTrickProgress": "{{team}}（守備側）: {{won}}トリック獲得",
   "playersTitle": "プレイヤー",
   "hiddenHand": "非公開 {{count}}枚",
   "yourHand": "あなたの手札",

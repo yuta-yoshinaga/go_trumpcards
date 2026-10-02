@@ -23,6 +23,7 @@ const baseState: BisleyResponse = {
   tableau: Array.from({ length: 13 }, () => []),
   aceFoundations: [[], [], [], []],
   kingFoundations: [[], [], [], []],
+  foundationSize: 13,
   phase: 0,
   moveCount: 0,
   canUndo: false,

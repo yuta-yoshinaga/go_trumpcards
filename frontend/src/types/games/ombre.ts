@@ -71,6 +71,8 @@ export interface OmbreResponse extends BaseGameResponse {
   currentTrick: OmbreTrickCard[];
   /** Cumulative match scores per player — [p0, p1, p2]. */
   playerScores: number[];
+  /** Score changes from the most recent deal, per player. */
+  playerScoreDeltas: number[];
   /** Seat index of the last trick winner, or -1. */
   lastTrickWinner: number;
   /** Deal outcome (0=None, 1=Sacar, 2=Puesta, 3=Codille). */

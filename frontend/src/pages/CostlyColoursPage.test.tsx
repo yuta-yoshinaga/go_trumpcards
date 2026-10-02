@@ -104,6 +104,10 @@ describe('CostlyColoursPage', () => {
     expect(live).toHaveAttribute('aria-live', 'polite');
     expect(live).toHaveTextContent('あなた: ♠ 7、累計 31、2 点獲得（31 到達）');
     expect(live).toHaveTextContent('CPU 1: ♥ 4、累計 9');
+    expect(live).toHaveClass('sr-only');
+    const recent = screen.getByTestId('costlycolours-recent-plays');
+    expect(recent).toHaveTextContent('あなた: ♠ 7、累計 31、2 点獲得（31 到達）');
+    expect(recent).toHaveTextContent('CPU 1: ♥ 4、累計 9');
     expect(screen.getByTestId('costlycolours-hint-live')).toBeInTheDocument();
   });
 

@@ -254,6 +254,30 @@ func TestEcarte_JSONRoundTrip(t *testing.T) {
 	assert.Equal(t, e.GetPhase(), e2.GetPhase())
 	assert.Equal(t, e.GetTrumpSuit(), e2.GetTrumpSuit())
 	assert.Equal(t, e.GetStockRemaining(), e2.GetStockRemaining())
+	for i := range 2 {
+		assert.Equal(t, e.GetDealPoints(i), e2.GetDealTrickPoints(i)+e2.GetDealKingBonus(i))
+	}
+}
+
+func TestEcarte_DealPointBreakdownSumsToTotal(t *testing.T) {
+	e := newTestEcarte(false)
+	e.Reset()
+	guard := 0
+	for !e.GetGameEndFlag() && guard < 300000 {
+		guard++
+		switch e.GetPhase() {
+		case domain.EcartePhaseExchange:
+			e.CpuExchange()
+		case domain.EcartePhasePlay:
+			e.CpuPlay()
+		case domain.EcartePhaseRoundEnd:
+			for i := range 2 {
+				assert.Equal(t, e.GetDealPoints(i), e.GetDealTrickPoints(i)+e.GetDealKingBonus(i))
+			}
+			e.NextRound()
+		}
+	}
+	require.Less(t, guard, 300000)
 }
 
 func TestEcarte_UnmarshalRejectsInvalid(t *testing.T) {
@@ -269,6 +293,25 @@ func TestEcarte_UnmarshalRejectsInvalid(t *testing.T) {
 	assert.Error(t, bad2.UnmarshalJSON([]byte(`{"ps":[null]}`)))
 	var bad3 domain.Ecarte
 	assert.Error(t, bad3.UnmarshalJSON([]byte(`not json`)))
+}
+
+func TestEcarte_UnmarshalOldSnapshotDefaultsBreakdownToZero(t *testing.T) {
+	e := newTestEcarte(true)
+	e.Reset()
+	data, err := json.Marshal(e)
+	require.NoError(t, err)
+	var fields map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &fields))
+	delete(fields, "dtp")
+	delete(fields, "dkb")
+	oldSnapshot, err := json.Marshal(fields)
+	require.NoError(t, err)
+	var restored domain.Ecarte
+	require.NoError(t, json.Unmarshal(oldSnapshot, &restored))
+	for i := range 2 {
+		assert.Zero(t, restored.GetDealTrickPoints(i))
+		assert.Zero(t, restored.GetDealKingBonus(i))
+	}
 }
 
 func TestEcarte_ExchangeWrongPhaseErrors(t *testing.T) {

@@ -28,6 +28,8 @@
   "scoresTotal": "累計",
   "playButton": "出す",
   "drawButton": "引く",
+  "listSeparator": "、",
+  "drawnCardsAnnouncement": "引いたカード: {{cards}}",
   "takePenaltyButton": "{{count}}枚引き受ける",
   "declareButton": "マオ！",
   "skipDeclareButton": "宣言しない",

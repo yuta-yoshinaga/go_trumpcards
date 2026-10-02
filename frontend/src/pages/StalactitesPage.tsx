@@ -34,6 +34,7 @@ import type { Card, StalactitesResponse } from '../types/card';
 import { StalactitesPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { valueName } from '../utils/cardUtils';
 import { parseStalactitesCommand, STALACTITES_HELP } from '../utils/cli/commands/stalactitesCommands';
 import { formatStalactitesState } from '../utils/cli/formatters/stalactitesFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -440,11 +441,14 @@ function StalactitesPageContent() {
                             disabled={!isPlaying || loading}
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
+                            aria-label={t('emptyFoundationAriaLabel', {
+                              suit: FOUNDATION_SUITS[idx],
+                              rank: valueName(state.baseRank),
+                            })}
                             style={{ width: cardWidth, height: cardHeight }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                           >
-                            A
+                            {valueName(state.baseRank)}
                           </button>
                         )}
                       </DropZone>

@@ -689,6 +689,10 @@ describe('DoubtPage', () => {
       expect(screen.getByText('ダウト結果')).toBeInTheDocument();
       expect(screen.getByText('ウソでした！')).toBeInTheDocument();
       expect(screen.getByAltText('♠ 5')).toBeInTheDocument();
+      const announcement = screen.getByTestId('doubt-result-announcement');
+      expect(announcement).toHaveAttribute('aria-live', 'polite');
+      expect(announcement).toHaveClass('sr-only');
+      expect(announcement).toHaveTextContent('ウソでした！ CPU 1が3枚引き取りました');
     });
   });
 
@@ -725,7 +729,9 @@ describe('DoubtPage', () => {
     };
     mockExec.mockResolvedValue(s);
     renderWithProviders(<DoubtPage />);
-    await waitFor(() => expect(screen.getByText(/CPU 1が2枚引き取りました/)).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText(/CPU 1が2枚引き取りました/, { selector: '.text-game-text-muted' })).toBeInTheDocument(),
+    );
   });
 
   it('uses loserIdx directly as name when player not found', async () => {
@@ -743,7 +749,9 @@ describe('DoubtPage', () => {
     };
     mockExec.mockResolvedValue(s);
     renderWithProviders(<DoubtPage />);
-    await waitFor(() => expect(screen.getByText(/99が1枚引き取りました/)).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText(/99が1枚引き取りました/, { selector: '.text-game-text-muted' })).toBeInTheDocument(),
+    );
   });
 
   it('shows discarded count when discardedCount > 0', async () => {

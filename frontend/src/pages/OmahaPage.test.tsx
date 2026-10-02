@@ -166,6 +166,9 @@ const preFlopWithBetState: OmahaResponse = {
 const flopState: OmahaResponse = {
   ...preFlopState,
   phase: 2,
+  players: preFlopState.players.map((player) =>
+    player.isHuman ? { ...player, liveBestHandHoleIndices: [2, 3], liveBestHandBoardIndices: [0, 1, 2] } : player,
+  ),
   communityCards: [
     { design: 'SPADE', value: 10 },
     { design: 'HEART', value: 5 },
@@ -176,7 +179,13 @@ const flopState: OmahaResponse = {
 /** SHOWDOWN (phase 5) */
 const showdownState: OmahaResponse = {
   players: [
-    humanPlayer({ handName: '\u30ef\u30f3\u30da\u30a2', currentBet: 0, chips: 950 }),
+    humanPlayer({
+      handName: '\u30ef\u30f3\u30da\u30a2',
+      currentBet: 0,
+      chips: 950,
+      liveBestHandHoleIndices: [0, 1],
+      liveBestHandBoardIndices: [0, 1, 2],
+    }),
     cpuPlayer(1, {
       handName: '\u30c4\u30fc\u30da\u30a2',
       folded: false,
@@ -334,6 +343,19 @@ describe('OmahaPage', () => {
     const badge = await screen.findByTestId('omaha-live-besthand');
     expect(badge).toHaveTextContent('現在の役');
     expect(screen.getByTestId('omaha-live-besthand-name')).toHaveTextContent('ツーペア');
+    expect(screen.getByTestId('omaha-live-besthand-hole-2')).toBeInTheDocument();
+    expect(screen.getByTestId('omaha-live-besthand-board-0')).toBeInTheDocument();
+  });
+
+  it('highlights the live best hand post-flop without dimming or labeling other cards', async () => {
+    mockExec.mockResolvedValue(flopState);
+    const { container } = renderWithProviders(<OmahaPage />);
+    await screen.findByTestId('omaha-live-besthand');
+    expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(2);
+    expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(3);
+    expect(container.querySelectorAll('.opacity-50')).toHaveLength(0);
+    expect(screen.queryByTestId('omaha-hole-unused')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('omaha-hole-used')).not.toBeInTheDocument();
   });
 
   it('updates the live best-hand preview as more board cards appear (full house on turn)', async () => {
@@ -433,6 +455,7 @@ describe('OmahaPage', () => {
     // Omaha must-use-2 rule → exactly 2 hole and 3 board cards highlighted.
     expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(2);
     expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(3);
+    expect(container.querySelectorAll('.opacity-50').length).toBeGreaterThan(0);
   });
 
   it('does not show CPU hand name badge when CPU is folded in showdown', async () => {
@@ -735,7 +758,7 @@ describe('OmahaPage', () => {
   it('shows call/raise buttons when canAct and has outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<OmahaPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
@@ -838,11 +861,11 @@ describe('OmahaPage', () => {
   it('calls call command when has outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<OmahaPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', undefined, undefined, 0));
   });
 
@@ -1335,7 +1358,7 @@ describe('OmahaPage', () => {
     it('pressing c triggers call when canAct and hasOutstandingBet', async () => {
       mockExec.mockResolvedValue(preFlopWithBetState);
       renderWithProviders(<OmahaPage />);
-      await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
       mockExec.mockClear();
       mockExec.mockResolvedValue(preFlopWithBetState);
@@ -1450,7 +1473,7 @@ describe('OmahaPage', () => {
     it('pressing k is ignored when hasOutstandingBet', async () => {
       mockExec.mockResolvedValue(preFlopWithBetState);
       renderWithProviders(<OmahaPage />);
-      await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
       mockExec.mockClear();
 

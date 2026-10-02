@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { germansoloApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -124,6 +124,10 @@ function GermanSoloPageContent() {
   // choosing a contract sets `pendingBid` and advances to stage 2, where a trump
   // suit is picked and the declaration is confirmed. `null` = stage 1.
   const [pendingBid, setPendingBid] = useState<number | null>(null);
+  const bidOriginCodeRef = useRef<number | null>(null);
+  const bidButtonsRef = useRef(new Map<number, HTMLButtonElement>());
+  const trumpFirstRef = useRef<HTMLButtonElement | null>(null);
+  const previousPendingBidRef = useRef<number | null>(null);
   // Trump suit chosen for a pending declaration (null until picked).
   const [selectedTrump, setSelectedTrump] = useState<number | null>(null);
 
@@ -153,6 +157,13 @@ function GermanSoloPageContent() {
   } = useGameHint('germansolo', state);
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('germansolo', GERMAN_SOLO_PHASE_KEYS);
+
+  useEffect(() => {
+    if (pendingBid !== null) trumpFirstRef.current?.focus();
+    else if (previousPendingBidRef.current !== null && bidOriginCodeRef.current !== null)
+      bidButtonsRef.current.get(bidOriginCodeRef.current)?.focus();
+    previousPendingBidRef.current = pendingBid;
+  }, [pendingBid]);
 
   if (!state)
     return <GameSkeleton gameKey="germansolo" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 8 }} />;
@@ -194,6 +205,7 @@ function GermanSoloPageContent() {
       handleBid(0);
       return;
     }
+    bidOriginCodeRef.current = bid;
     setPendingBid(bid);
     setSelectedTrump(null);
   };
@@ -513,6 +525,10 @@ function GermanSoloPageContent() {
                       className={btnPrimary}
                       onClick={() => chooseBid(bid)}
                       disabled={loading}
+                      ref={(button) => {
+                        if (button) bidButtonsRef.current.set(bid, button);
+                        else bidButtonsRef.current.delete(bid);
+                      }}
                     >
                       {t(BID_KEYS[bid] ?? 'bidNone')}
                     </button>
@@ -539,6 +555,7 @@ function GermanSoloPageContent() {
                       disabled={loading}
                       aria-label={t(SUIT_KEYS[c.code])}
                       aria-pressed={selectedTrump === c.code}
+                      ref={c.code === TRUMP_CHOICES[0].code ? trumpFirstRef : undefined}
                     >
                       {c.symbol}
                     </button>

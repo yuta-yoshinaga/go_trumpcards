@@ -95,6 +95,11 @@ func (_m *MockBisleyGame) GetKingFoundations() [domain.BisleyFoundationCnt][]*do
 	return ret.Get(0).([domain.BisleyFoundationCnt][]*domain.Card)
 }
 
+func (_m *MockBisleyGame) GetFoundationSize() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 func (_m *MockBisleyGame) AllFaceUp() bool {
 	ret := _m.Called()
 	return ret.Bool(0)

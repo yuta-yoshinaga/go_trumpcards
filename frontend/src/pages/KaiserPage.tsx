@@ -137,6 +137,9 @@ function KaiserPageContent() {
   const isPlay = state.phase === KaiserPhase.PLAY;
   const isHandEnd = state.phase === KaiserPhase.HAND_END;
   const isGameEnd = state.phase === KaiserPhase.GAME_END || state.gameEndFlag;
+  const declarerTeam = state.declarerIdx >= 0 ? state.declarerIdx % 2 : -1;
+  const declarerPoints = declarerTeam >= 0 ? state.teamHandPoints[declarerTeam] : 0;
+  const contractMade = state.highBid !== null && declarerPoints >= state.highBid.value;
   // 人間は席 0 = チーム 0。勝敗はチームで判定する。
   const humanWon = isGameEnd && state.winnerTeam === 0;
   const isHumanBid = isBid && state.bidPlayerIdx === 0 && !isGameEnd;
@@ -269,6 +272,20 @@ function KaiserPageContent() {
               <div className="mb-1 text-ds-text-primary">{t('scoreTitle')}</div>
               <div>{t('gameScores', { t0: state.teamScores[0], t1: state.teamScores[1] })}</div>
               <div>{t('handPoints', { t0: state.teamHandPoints[0], t1: state.teamHandPoints[1] })}</div>
+              {isPlay && state.highBid && declarerTeam >= 0 && (
+                <div
+                  className={`mt-1 font-semibold ${contractMade ? 'text-ds-success' : 'text-ds-warning'}`}
+                  data-testid="kaiser-contract-progress"
+                >
+                  {contractMade
+                    ? t('contractProgressMade', { got: declarerPoints, contract: state.highBid.value })
+                    : t('contractProgressNeed', {
+                        got: declarerPoints,
+                        contract: state.highBid.value,
+                        remaining: state.highBid.value - declarerPoints,
+                      })}
+                </div>
+              )}
             </div>
 
             {/* Players */}

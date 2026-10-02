@@ -27,17 +27,18 @@ type CanastaWebConfig struct {
 
 // CanastaWebOutputPlayer カナスタWebアウトプットプレイヤー
 type CanastaWebOutputPlayer struct {
-	ID              int                     `json:"id"`
-	IsHuman         bool                    `json:"isHuman"`
-	CardCount       int                     `json:"cardCount"`
-	Cards           []*WebOutputCard        `json:"cards"`
-	Melds           []*CanastaWebOutputMeld `json:"melds"`
-	Red3Count       int                     `json:"red3Count"`
-	Red3s           []*WebOutputCard        `json:"red3s"`
-	RoundScore      int                     `json:"roundScore"`
-	CumulativeScore int                     `json:"cumulativeScore"`
-	HasCanasta      bool                    `json:"hasCanasta"`
-	HasInitMeld     bool                    `json:"hasInitMeld"`
+	ID              int                          `json:"id"`
+	IsHuman         bool                         `json:"isHuman"`
+	CardCount       int                          `json:"cardCount"`
+	Cards           []*WebOutputCard             `json:"cards"`
+	Melds           []*CanastaWebOutputMeld      `json:"melds"`
+	Red3Count       int                          `json:"red3Count"`
+	Red3s           []*WebOutputCard             `json:"red3s"`
+	RoundScore      int                          `json:"roundScore"`
+	ScoreBreakdown  domain.CanastaScoreBreakdown `json:"scoreBreakdown"`
+	CumulativeScore int                          `json:"cumulativeScore"`
+	HasCanasta      bool                         `json:"hasCanasta"`
+	HasInitMeld     bool                         `json:"hasInitMeld"`
 }
 
 // CanastaWebOutputMeld メルドのアウトプット

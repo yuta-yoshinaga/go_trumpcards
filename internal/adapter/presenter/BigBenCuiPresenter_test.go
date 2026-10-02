@@ -216,6 +216,29 @@ func TestBigBenCuiPresenter_ShowsTheStockCount(t *testing.T) {
 	assert.Contains(t, new(BigBenCuiPresenter).Output(g, nil), i18n.Tf("bigben.stockLine", "count", "37"))
 }
 
+func TestBigBenCuiPresenter_ShowsCompletedFaceCount(t *testing.T) {
+	origLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(origLang) })
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	t.Cleanup(func() { color.SetNoColor(origNoColor) })
+
+	for _, lang := range []string{"ja", "en"} {
+		t.Run(lang, func(t *testing.T) {
+			i18n.SetLang(lang)
+			g := new(interfaces.MockBigBenGame)
+			setupBigBenCuiMockDefaults(g)
+			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsFoundationComplete")
+			for i := range domain.BigBenFoundationCnt {
+				g.On("IsFoundationComplete", i).Return(i == 2 || i == 7)
+			}
+
+			assert.Contains(t, new(BigBenCuiPresenter).Output(g, nil),
+				i18n.Tf("bigben.completedFaces", "count", "2", "total", strconv.Itoa(domain.BigBenFoundationCnt)))
+		})
+	}
+}
+
 // **12 面すべてが時計の並びで出る (#6601)。** 添字 0..11 が 9,10,11,12,1..8。
 // 期待値は i18n から組み立てず、ドメインの対応表そのものと突き合わせる。
 func TestBigBenCuiPresenter_LabelsFacesByClockHour(t *testing.T) {

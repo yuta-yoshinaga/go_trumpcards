@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { diplomatApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -85,6 +85,15 @@ function DiplomatPageContent() {
   } = useGamePageSetup('diplomat');
   const game = useDiplomatGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
+  const wasAutoCompleting = useRef(isAutoCompleting);
+  const [autoCompleteAnnouncement, setAutoCompleteAnnouncement] = useState('');
+
+  useEffect(() => {
+    if (wasAutoCompleting.current !== isAutoCompleting) {
+      wasAutoCompleting.current = isAutoCompleting;
+      setAutoCompleteAnnouncement(isAutoCompleting ? 'autoCompleteStarted' : 'autoCompleteCompleted');
+    }
+  }, [isAutoCompleting]);
 
   const {
     hint: frontendHint,
@@ -457,6 +466,9 @@ function DiplomatPageContent() {
                   {formatHintZone(t, hint.toZone, hint.toIdx)}
                 </div>
               )}
+            </div>
+            <div data-testid="diplomat-autocomplete-live" className="sr-only" role="status" aria-live="polite">
+              {autoCompleteAnnouncement ? t(autoCompleteAnnouncement) : ''}
             </div>
             <div className="flex justify-center">
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />

@@ -87,5 +87,6 @@
     "choose_longest_suit": "your longest suit"
   },
   "winnerBadge": "(winner)",
-  "limitProgress": "Limit: {{limit}} / highest: {{name}} {{score}}"
+  "limitProgress": "Limit: {{limit}} / highest: {{name}} {{score}}",
+  "remainingPoints": "{{score}} points remaining"
 }

@@ -35,6 +35,7 @@ const playerTurnState: TrashResponse = {
   suggestedWildSlot: -1,
   moveCount: 0,
   winner: -1,
+  canUndo: false,
   message: '',
   messageCode: 'trash.playerTurn',
 };
@@ -176,6 +177,15 @@ describe('TrashPage', () => {
     expect(stock).not.toBeDisabled();
     fireEvent.click(stock as HTMLElement);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+  });
+
+  it('enables undo when available and dispatches undo', async () => {
+    mockExec.mockResolvedValue({ ...playerTurnState, canUndo: true });
+    renderWithProviders(<TrashPage />);
+    const undo = await screen.findByRole('button', { name: 'アンドゥ' });
+    expect(undo).toBeEnabled();
+    fireEvent.click(undo);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
   });
 
   it('disables the stock button during CPU turn and await-wild phase', async () => {

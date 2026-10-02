@@ -199,6 +199,10 @@ function TrashPageContent() {
     void apiCall('draw');
   }, [apiCall]);
 
+  const handleUndo = useCallback(() => {
+    void apiCall('undo');
+  }, [apiCall]);
+
   const handleSlotClick = useCallback(
     (slotIdx: number) => {
       if (!state) return;
@@ -383,6 +387,16 @@ function TrashPageContent() {
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
             <GameFooter>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!loading && state.canUndo) handleUndo();
+                }}
+                aria-disabled={loading || !state.canUndo}
+                className={`${focusRingWhite} min-h-[44px] px-3 rounded-md text-ds-text-primary aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+              >
+                {t('button.undo')}
+              </button>
               <label className="flex items-center gap-1 text-ds-text-primary text-xs min-h-[44px]">
                 <input
                   type="checkbox"

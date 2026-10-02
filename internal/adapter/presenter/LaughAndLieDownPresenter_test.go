@@ -44,6 +44,7 @@ func lldStub(valid []int, canThree bool, gameEnd bool, score int) *interfaces.Mo
 	g.On("GetWonCount", mock.Anything).Return(8)
 	g.On("IsLaidDown", mock.Anything).Return(false)
 	g.On("GetScore", mock.Anything).Return(score)
+	g.On("GetRunningScore", mock.Anything).Return(score - 1)
 	g.On("GetDealerIdx").Return(0)
 	g.On("GetLastInIdx").Return(-1)
 	g.On("GetConfig").Return(domain.DefaultLaughAndLieDownConfig())
@@ -83,6 +84,8 @@ func TestLaughAndLieDownWebPresenter_HidesTheCpuHandButNeverItsWonCount(t *testi
 	assert.Empty(t, cpu["cards"], "the opponent's hand must not reach the browser")
 	assert.Equal(t, float64(g.GetPlayer(1).GetCardsSize()), cpu["cardCount"], "but its size is public")
 	assert.NotNil(t, cpu["wonCount"], "and so is what it has captured")
+	assert.Equal(t, float64(g.GetRunningScore(0)), human["runningScore"])
+	assert.Equal(t, float64(g.GetRunningScore(1)), cpu["runningScore"])
 }
 
 func TestLaughAndLieDownWebPresenter_SendsTheWholeFaceUpTable(t *testing.T) {

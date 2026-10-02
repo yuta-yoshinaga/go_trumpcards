@@ -90,6 +90,17 @@ describe('TwentyNinePage', () => {
     expect(screen.getByTestId('bid-28')).toBeInTheDocument();
   });
 
+  it('shows the trump and plain card strength and point reference when expanded', async () => {
+    renderWithProviders(<TwentyNinePage />);
+    const summary = await screen.findByText('カードの強さと点数');
+    fireEvent.click(summary);
+
+    expect(screen.getByText('切り札')).toBeInTheDocument();
+    expect(screen.getByText('通常札')).toBeInTheDocument();
+    expect(screen.getAllByText('強さ順: J > 9 > A > 10 > K > Q > 8 > 7')).toHaveLength(2);
+    expect(screen.getByText('カード点: J: 3点、9: 2点、A: 1点、10: 1点、K・Q・8・7: 0点')).toBeInTheDocument();
+  });
+
   it('shows "no bids yet" when no one has bid during the bid phase', async () => {
     renderWithProviders(<TwentyNinePage />);
     const readout = await screen.findByTestId('tn29-highest-bid');

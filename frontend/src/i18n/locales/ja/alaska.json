@@ -45,6 +45,7 @@
   "faceDownRule": "裏向きのカードは移動できません（表向きのカードのみ操作可能）",
   "dismissRule": "ルール説明を閉じる",
   "faceDownCardLabel": "列{{col}}、上から{{pos}}枚目、裏向き",
+  "tableauCardAriaLabel": "{{card}}、列{{col}}、上から{{pos}}枚目",
   "blockMoveLabel": "{{n}}枚まとめて移動",
   "landscapeBanner": "横画面での表示を推奨します"
 }

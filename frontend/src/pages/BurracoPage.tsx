@@ -32,17 +32,13 @@ import type { BurracoResponse, Card } from '../types/card';
 import { BurracoPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { burracoMeldSelectionStatus } from '../utils/burracoMeld';
-import {
-  type BurracoSortMode,
-  loadBurracoSortMode,
-  saveBurracoSortMode,
-  sortedBurracoHand,
-} from '../utils/burracoSort';
+import { type BurracoSortMode, loadBurracoSortMode, saveBurracoSortMode } from '../utils/burracoSort';
 import { canastaDrawDiscardProblem } from '../utils/canastaDrawDiscard';
 import { cardAlt } from '../utils/cardAlt';
 import { BURRACO_HELP, parseBurracoCommand } from '../utils/cli/commands/burracoCommands';
 import { formatBurracoState } from '../utils/cli/formatters/burracoFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { sortedHandForDisplay } from '../utils/handDisplaySort';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -190,6 +186,7 @@ function BurracoPageContent() {
   }, []);
 
   const [pozzettoBanner, setPozzettoBanner] = useState<string | null>(null);
+  const [scoreAnnouncement, setScoreAnnouncement] = useState('');
   const [pulsingScoreIds, setPulsingScoreIds] = useState<Set<number>>(new Set());
   const prevPozzettoRef = useRef<boolean[]>([]);
   const prevScoresRef = useRef<number[]>([]);
@@ -212,6 +209,7 @@ function BurracoPageContent() {
     const changedScoreIds = state.players
       .filter((p, i) => prevScores[i] !== undefined && prevScores[i] !== p.roundScore)
       .map((p) => p.id);
+    const changedScores = state.players.filter((p, i) => prevScores[i] !== undefined && prevScores[i] !== p.roundScore);
     prevPozzettoRef.current = state.players.map((p) => p.tookPozzetto);
     prevScoresRef.current = state.players.map((p) => p.roundScore);
 
@@ -223,10 +221,15 @@ function BurracoPageContent() {
     }
     if (changedScoreIds.length > 0) {
       setPulsingScoreIds(new Set(changedScoreIds));
+      setScoreAnnouncement(
+        changedScores
+          .map((p) => t('score.update', { player: playerName(p.id, p.isHuman), score: p.roundScore }))
+          .join(t('listSeparator')),
+      );
       clearTimeout(pulseTimerRef.current ?? undefined);
       pulseTimerRef.current = setTimeout(() => setPulsingScoreIds(new Set()), 1000);
     }
-  }, [state, tc, playSound]);
+  }, [state, tc, playSound, t]);
 
   const kbdConfirmAction = useCallback(() => {
     if (isDiscardPhase) handleDiscard();
@@ -264,6 +267,9 @@ function BurracoPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div role="status" aria-live="polite" className="sr-only" data-testid="bu-score-announcement">
+        {scoreAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -522,7 +528,7 @@ function BurracoPageContent() {
             )}
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ca-player-hand">
-                {sortedBurracoHand(humanPlayer.cards, sortMode).map(({ card, index: idx }) => (
+                {sortedHandForDisplay(humanPlayer.cards, sortMode).map(({ card, index: idx }) => (
                   <button
                     type="button"
                     key={`${card.design}-${card.value}-${idx}`}

@@ -35,6 +35,13 @@ describe('SutdaPage', () => {
     expect(screen.getByTestId('sutda-pot')).toHaveTextContent('ポット 30');
   });
 
+  it('does not show a previous-hand result on the first hand without a saved result', async () => {
+    mockExec.mockResolvedValue(makeSutdaState({ handNumber: 1, lastResult: null }));
+    renderWithProviders(<SutdaPage />);
+    await screen.findByText('ハンド 1');
+    expect(screen.queryByTestId('sutda-result')).not.toBeInTheDocument();
+  });
+
   it('pairs each seat’s remaining chips with its current contribution', async () => {
     renderWithProviders(<SutdaPage />);
     expect(await screen.findByTestId('sutda-chips-0')).toHaveTextContent('990');
@@ -154,6 +161,42 @@ describe('SutdaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nexthand'));
   });
 
+  it('keeps the previous hand number, winners, shares, and winning hands visible during the next hand', async () => {
+    const result = {
+      winners: [0, 1],
+      shares: [26, 25],
+      pot: 51,
+      handNames: ['ali', 'ali', 'kkeut5'],
+      folded: [false, false, false],
+    };
+    mockExec
+      .mockResolvedValueOnce(
+        makeSutdaState({
+          phase: 'showdown',
+          isShowdown: true,
+          isHumanTurn: false,
+          lastResult: result,
+        }),
+      )
+      .mockResolvedValueOnce(
+        makeSutdaState({
+          phase: 'bet',
+          handNumber: 3,
+          lastResult: result,
+        }),
+      );
+    renderWithProviders(<SutdaPage />);
+    fireEvent.click(await screen.findByTestId('sutda-next-hand'));
+    await waitFor(() => expect(screen.getByText('ハンド 3')).toBeInTheDocument());
+    const resultPanel = await screen.findByTestId('sutda-result');
+    expect(resultPanel).toHaveTextContent('ハンド 2');
+    expect(resultPanel).toHaveTextContent('あなた（26）');
+    expect(resultPanel).toHaveTextContent('CPU 1（25）');
+    expect(resultPanel).toHaveTextContent('あなた（26）: アリ（1+2）');
+    expect(resultPanel).toHaveTextContent('CPU 1（25）: アリ（1+2）');
+    expect(resultPanel).toHaveTextContent('合計 51');
+  });
+
   it('shows the winner name without an amount when saved shares are missing', async () => {
     mockExec.mockResolvedValue(
       makeSutdaState({
@@ -173,6 +216,49 @@ describe('SutdaPage', () => {
     const result = await screen.findByTestId('sutda-result');
     expect(result).toHaveTextContent('あなた');
     expect(result).not.toHaveTextContent('（0）');
+  });
+
+  it('keeps the old winner display when the saved hand name is empty', async () => {
+    mockExec.mockResolvedValue(
+      makeSutdaState({
+        phase: 'showdown',
+        isShowdown: true,
+        isHumanTurn: false,
+        lastResult: {
+          winners: [0],
+          shares: [26],
+          pot: 26,
+          handNames: ['', 'mangtong', 'kkeut5'],
+          folded: [false, false, false],
+        },
+      }),
+    );
+    renderWithProviders(<SutdaPage />);
+    const result = await screen.findByTestId('sutda-result');
+    expect(result).toHaveTextContent('あなた（26）');
+    expect(result).not.toHaveTextContent('あなた（26）:');
+  });
+
+  it('shows only the winner name when both the hand name and saved share are missing', async () => {
+    mockExec.mockResolvedValue(
+      makeSutdaState({
+        phase: 'showdown',
+        isShowdown: true,
+        isHumanTurn: false,
+        lastResult: {
+          winners: [0],
+          shares: [],
+          pot: 26,
+          handNames: ['', 'mangtong', 'kkeut5'],
+          folded: [false, false, false],
+        },
+      }),
+    );
+    renderWithProviders(<SutdaPage />);
+    const result = await screen.findByTestId('sutda-result');
+    expect(result).toHaveTextContent('あなた');
+    expect(result).not.toHaveTextContent('あなた:');
+    expect(result).not.toHaveTextContent('あなた（');
   });
 
   it('shows each split-pot share and gives the odd chip to the first winner', async () => {
@@ -233,7 +319,7 @@ describe('SutdaPage', () => {
     );
     renderWithProviders(<SutdaPage />);
     const result = await screen.findByTestId('sutda-result');
-    expect(result).toHaveTextContent('あなた（26）、CPU 1（25）');
+    expect(result).toHaveTextContent('あなた（26）: アリ（1+2）、CPU 1（25）: アリ（1+2）');
     expect(result).toHaveTextContent('合計 51');
     expect(screen.getByTestId('sutda-chips-0')).toHaveTextContent('1026');
     expect(screen.getByTestId('sutda-chips-1')).toHaveTextContent('1025');

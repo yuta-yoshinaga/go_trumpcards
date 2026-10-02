@@ -119,6 +119,35 @@ describe('KnockoutWhistPage', () => {
     expect(preview).toHaveTextContent('次ラウンド: 手札6枚 / 切り札選択: あなた');
   });
 
+  it('announces the round result and next-round preview through a permanent live region', async () => {
+    mockExec.mockResolvedValue(
+      makeKnockoutWhistState({
+        phase: 2,
+        roundWinnerIdx: 0,
+        roundSurvived: [1],
+        roundEliminated: [2],
+      }),
+    );
+    renderWithProviders(<KnockoutWhistPage />);
+
+    const announcement = await screen.findByTestId('kw-round-result-live');
+    expect(announcement).toHaveAttribute('role', 'status');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toHaveClass('sr-only');
+    expect(announcement).toHaveTextContent('ラウンド勝者: あなた');
+    expect(announcement).toHaveTextContent('CPU 1 はDogboneを消費して生き残りました');
+    expect(announcement).toHaveTextContent('CPU 2 は0トリックで脱落しました');
+    expect(announcement).toHaveTextContent('次ラウンド: 手札6枚 / 切り札選択: あなた');
+  });
+
+  it('keeps the round-result live region mounted and empty during play', async () => {
+    renderWithProviders(<KnockoutWhistPage />);
+
+    const announcement = await screen.findByTestId('kw-round-result-live');
+    expect(announcement).toHaveAttribute('role', 'status');
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
   it('flags the final round when the next hand size bottoms out at 1', async () => {
     mockExec.mockResolvedValue(makeKnockoutWhistState({ phase: 2, roundWinnerIdx: 1, handSize: 2 }));
     renderWithProviders(<KnockoutWhistPage />);

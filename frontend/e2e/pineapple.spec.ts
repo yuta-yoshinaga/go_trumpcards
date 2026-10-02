@@ -17,7 +17,7 @@ test.describe('Pineapple Poker E2E', () => {
 
     // Look for betting or discard controls
     const checkButton = page.getByRole('button', { name: 'チェック', exact: true });
-    const callButton = page.getByRole('button', { name: 'コール', exact: true });
+    const callButton = page.getByRole('button', { name: /^コール(?:\s|$)/ });
     const foldButton = page.getByRole('button', { name: 'フォールド' });
     const discardControls = page.getByTestId('discard-controls');
 

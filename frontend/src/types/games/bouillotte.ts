@@ -19,6 +19,10 @@ export interface BouillottePlayer {
   chips: number;
   /** Chips this player has wagered into the pot this round. */
   roundBet: number;
+  /** Chips returned from the pot in the most recently completed round. */
+  roundPayout: number;
+  /** Net result for the most recently completed round. */
+  netChange: number;
   /** Whether the player has folded out of the current round. */
   folded: boolean;
   /** Whether the player has been eliminated (busted) from the match. */

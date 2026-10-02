@@ -36,5 +36,9 @@
   "tutorial.carryOver": "Chips on a box nobody claims carry into the next deal. The dwarf takes five a deal, so left alone it grows fast.",
   "tutorial.points": "When someone goes out you pay the POINTS left in your hand, not the number of cards: ace 1, pip cards face value, and J/Q/K ten each.",
   "awardLineYou": "You take {{box}} ({{chips}})",
-  "dealResultYou": "You go out"
+  "dealResultYou": "You go out",
+  "finalStandings": "Final chip standings",
+  "rankLabel": "#{{rank}}",
+  "you": "You",
+  "finalStandingRow": "{{rank}}: {{name}} — {{chips}} chips"
 }

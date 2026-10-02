@@ -5,7 +5,7 @@ test.describe('Niu Niu E2E', () => {
   test('bets, settles, and starts the next round', async ({ page }) => {
     await navigateTo(page, '/niuniu');
 
-    await expect(page.getByText(/チップ/)).toBeVisible();
+    await expect(page.getByText(/^チップ: \d+$/)).toBeVisible();
     // No hand exists before the deal, and the deal settles the round in the
     // same call -- so there is no mid-round state to observe here.
     const bet = page.getByRole('button', { name: '100', exact: true });

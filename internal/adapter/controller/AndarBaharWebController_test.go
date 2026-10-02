@@ -20,6 +20,7 @@ func mustAndarBaharOutputJSON(msg string) string {
 		AndarCards:            make([]*controller.WebOutputCard, 0),
 		BaharCards:            make([]*controller.WebOutputCard, 0),
 		History:               make([]int, 0),
+		RoundHistory:          make([]domain.AndarBaharRoundHistoryEntry, 0),
 		SideBandProbabilities: make([]float64, 0),
 		Winner:                -1,
 		WebOutputBase:         controller.WebOutputBase{Message: msg},
@@ -37,7 +38,7 @@ func TestAndarBaharWebController_DefaultOutputHasArrays(t *testing.T) {
 	if err := json.Unmarshal([]byte(mustAndarBaharOutputJSON("bye.")), &raw); err != nil {
 		t.Fatalf("unmarshal: %v", err)
 	}
-	for _, key := range []string{"andarCards", "baharCards", "history"} {
+	for _, key := range []string{"andarCards", "baharCards", "history", "roundHistory"} {
 		if got := string(raw[key]); got != "[]" {
 			t.Errorf("%s = %s, want []", key, got)
 		}
@@ -47,7 +48,7 @@ func TestAndarBaharWebController_DefaultOutputHasArrays(t *testing.T) {
 func TestAndarBaharWebController_Method(t *testing.T) {
 	mockOutput := `{"andarCards":[],"baharCards":[],"firstColumn":0,"dealtCount":0,` +
 		`"phase":1,"chips":1000,"betAmount":0,"betTarget":0,"sideAmount":0,"sideBand":-1,` +
-		`"winner":-1,"result":0,"payout":0,"history":[],"message":""}`
+		`"winner":-1,"result":0,"payout":0,"history":[],"roundHistory":[],"message":""}`
 
 	abMock := new(usecase.MockAndarBaharInteractor)
 	abMock.On("Reset").Return(mockOutput)

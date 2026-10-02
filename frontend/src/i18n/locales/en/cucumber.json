@@ -13,6 +13,9 @@
     "lead": "You lead (any card is legal)",
     "cards": "{{n}} cards",
     "penalty": "{{n}} penalty",
+    "targetRemaining_one": "{{count}} penalty point until target",
+    "targetRemaining_other": "{{count}} penalty points until target",
+    "targetReached": "Target reached",
     "lastTrick": "[took the last trick for {{n}}]",
     "you": "You",
     "cpu": "CPU{{idx}}"

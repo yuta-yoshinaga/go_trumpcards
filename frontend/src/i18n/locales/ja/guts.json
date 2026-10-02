@@ -20,6 +20,8 @@
   "roundBet": "賭け: {{amount}}",
   "handLabel": "あなたの手札",
   "playersTitle": "プレイヤー",
+  "playerSummary": "{{name}}。チップ: {{chips}}。賭け: {{bet}}。{{status}}",
+  "playerSummaryWithHand": "{{name}}。チップ: {{chips}}。賭け: {{bet}}。{{status}}。{{hand}}",
   "declareNotice": "あなたの番です — イン（残る）かアウト（降りる）を選んでください。",
   "declareMoney": {
     "chips": "残高: {{amount}}",

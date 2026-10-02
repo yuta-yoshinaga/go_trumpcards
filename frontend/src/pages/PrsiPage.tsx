@@ -214,14 +214,15 @@ function PrsiPageContent() {
               <div>
                 {/* Discard pile top + clickable stock pile */}
                 <div className="my-3 flex items-start gap-4 flex-wrap">
-                  {state.discardTop && (
-                    <div className="p-3 rounded bg-black/40 flex items-center gap-3" data-tutorial="prsi-discard-pile">
-                      <AnimatedCard card={state.discardTop} width={cardWidth} />
-                      <div className="text-ds-text-muted text-sm">
-                        <div>{t('discardTop')}</div>
+                  <div className="p-3 rounded bg-black/40 flex items-center gap-3" data-tutorial="prsi-discard-pile">
+                    {state.discardTop && <AnimatedCard card={state.discardTop} width={cardWidth} />}
+                    <div className="text-ds-text-muted text-sm">
+                      {state.discardTop && <div>{t('discardTop')}</div>}
+                      <div data-testid="prsi-discard-count">
+                        {t('discardPileCount', { count: state.discardPileCount })}
                       </div>
                     </div>
-                  )}
+                  </div>
 
                   {/* Stock pile: a face-down stack the human can click to draw. */}
                   <div className="p-3 rounded bg-black/40 flex flex-col items-center gap-1">

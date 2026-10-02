@@ -126,6 +126,20 @@ describe('PresidentPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', []));
   });
 
+  it('shows when a pass clears the field and who leads next', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        humanAction: { playerIdx: 0, playedCards: null, fieldFlushed: true, leadPlayerIdx: 2 },
+      } as Partial<PresidentResponse>),
+    );
+    renderWithProviders(<PresidentPage />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId('pr-action-log')).toHaveTextContent(/場が流れました。CPU 2が次にリードします/),
+    );
+    expect(screen.getByTestId('pr-action-log')).toHaveTextContent('あなたがパスしました');
+  });
+
   it('shows revolution banner when active', async () => {
     mockExec.mockResolvedValue(makeState({ revolutionActive: true }));
     renderWithProviders(<PresidentPage />);
@@ -432,6 +446,24 @@ describe('PresidentPage action history', () => {
     renderWithProviders(<PresidentPage />);
     await waitFor(() => expect(log()).toHaveTextContent('CPU 1'));
     expect(log()).toHaveTextContent('あなた');
+  });
+
+  it('joins multiple cards and labels the human as the next leader after a field flush', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        humanAction: {
+          playerIdx: 0,
+          playedCards: [card('SPADE', 3), card('HEART', 3)],
+          fieldFlushed: true,
+          leadPlayerIdx: 0,
+        },
+        cpuActions: undefined,
+      }),
+    );
+    renderWithProviders(<PresidentPage />);
+
+    await waitFor(() => expect(log()).toHaveTextContent('あなたが出しました: SPADE 3、HEART 3'));
+    expect(log()).toHaveTextContent('あなたが次にリードします');
   });
 
   // **何も起きていないうちは出さない。**空の枠は場所を取るだけ。

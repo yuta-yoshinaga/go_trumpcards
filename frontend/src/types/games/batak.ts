@@ -21,6 +21,12 @@ export interface BatakPlayerData {
   /** Cumulative score (raw integer score). */
   cumulativeScore: number;
   trickCount: number;
+  /** Score components returned by the server for the most recently scored round. */
+  scoreBreakdown: {
+    declarerBidPoints: number;
+    declarerBidPenalty: number;
+    defenderTricks: number;
+  };
 }
 
 /** A card played in a Batak trick. */

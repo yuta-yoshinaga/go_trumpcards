@@ -11,6 +11,7 @@
   "board": "Board (unclaimed pools carry over to the next deal)",
   "listSeparator": ", ",
   "poolUpdate": "{{pool}}: {{chips}} chips",
+  "yourTurnAnnouncement": "Your turn",
   "pool.ace": "Ace",
   "pool.king": "King",
   "pool.queen": "Queen",

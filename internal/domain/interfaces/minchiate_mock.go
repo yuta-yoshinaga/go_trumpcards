@@ -158,6 +158,12 @@ func (_m *MockMinchiateGame) GetRoundTricks() [domain.MinchiatePlayerCnt]int {
 	return args.Get(0).([domain.MinchiatePlayerCnt]int)
 }
 
+// GetRoundBreakdown モック
+func (_m *MockMinchiateGame) GetRoundBreakdown() [2]domain.MinchiateTeamRoundBreakdown {
+	args := _m.Called()
+	return args.Get(0).([2]domain.MinchiateTeamRoundBreakdown)
+}
+
 // GetWinnerTeam モック
 func (_m *MockMinchiateGame) GetWinnerTeam() int {
 	args := _m.Called()

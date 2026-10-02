@@ -23,6 +23,9 @@
   "tricks": "{{count}} tricks",
   "chips": "{{count}} chips",
   "currentTrick": "Current Trick",
+  "trickCardDetail": "{{points}} points · {{trump}}",
+  "trump": "trump",
+  "notTrump": "not trump",
   "trickResult": {
     "winner": "Trick winner: {{player}}",
     "nextLead": "Next lead: {{player}}"

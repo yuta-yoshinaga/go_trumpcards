@@ -21,6 +21,8 @@
     "asaf": "{{name}}'s Yaniv was Asaf. +30 penalty."
   },
   "label": {
+    "roundHistory": "Penalty by round",
+    "round": "Round",
     "stock": "Stock",
     "discardPile": "Discard",
     "score": "Penalty",

@@ -97,3 +97,9 @@ func TestBatakPlayer_UnmarshalJSON_Empty(t *testing.T) {
 	// empty JSON should produce defaulted player (not panic on subsequent calls)
 	assert.False(t, p.GetIsHuman())
 }
+
+func TestBatakPlayer_UnmarshalJSON_LegacySnapshotWithoutScoreBreakdown(t *testing.T) {
+	var p domain.BatakPlayer
+	require.NoError(t, json.Unmarshal([]byte(`{"bd":5}`), &p))
+	assert.Equal(t, domain.BatakScoreBreakdown{}, p.GetScoreBreakdown())
+}

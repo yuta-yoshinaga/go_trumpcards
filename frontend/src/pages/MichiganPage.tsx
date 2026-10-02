@@ -154,6 +154,10 @@ function MichiganPageContent() {
   const canPlay = (i: number) => isPlayPhase && isHumanTurn && state.playableIndices.includes(i);
   const nextPlayable = michiganNextPlayable(state);
   const showPlayHints = isPlayPhase && isHumanTurn && !isGameEnd;
+  const sequenceAnnouncement =
+    state.needNewSequence || state.seqSuit === 0
+      ? t('sequence.new')
+      : t('sequence.active', { suit: state.seqSuitName, value: state.seqHighValue });
 
   const betSum = bets.reduce((a, b) => a + b, 0);
   const betRemaining = state.betBudget - betSum;
@@ -290,10 +294,17 @@ function MichiganPageContent() {
             </div>
 
             {/* Current sequence */}
-            <div className="mb-2 text-center text-ds-text-muted text-sm">
-              {state.needNewSequence || state.seqSuit === 0
-                ? t('sequence.new')
-                : t('sequence.active', { suit: state.seqSuitName, value: state.seqHighValue })}
+            <div
+              data-testid="michigan-sequence-live"
+              className="sr-only"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {isPlayPhase ? sequenceAnnouncement : ''}
+            </div>
+            <div className="mb-2 text-center text-ds-text-muted text-sm" aria-hidden="true">
+              {sequenceAnnouncement}
             </div>
 
             {/* Players */}

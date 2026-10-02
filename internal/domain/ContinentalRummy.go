@@ -85,11 +85,18 @@ type ContinentalRummy struct {
 	recycles int
 	// turnsThisRound は席ごとに、このラウンドで捨てた回数。
 	// **棋譜から数えないこと** ── 棋譜はラウンドをまたいで残る。
-	turnsThisRound []int
-	lastResult     *ContinentalRummyRoundResult
-	gameEndFlag    bool
-	winnerIdx      int
-	config         ContinentalRummyConfig
+	turnsThisRound    []int
+	lastResult        *ContinentalRummyRoundResult
+	roundScoreHistory []ContinentalRummyRoundScore
+	gameEndFlag       bool
+	winnerIdx         int
+	config            ContinentalRummyConfig
+}
+
+// ContinentalRummyRoundScore は 1 ラウンドで各席が得た加算点。
+type ContinentalRummyRoundScore struct {
+	RoundNumber int   `json:"roundNumber"`
+	Scores      []int `json:"scores"`
 }
 
 // appendLog records a Continental Rummy action with a locale-independent detail code.
@@ -123,6 +130,7 @@ func (c *ContinentalRummy) Reset() {
 	c.gameEndFlag = false
 	c.winnerIdx = -1
 	c.lastResult = nil
+	c.roundScoreHistory = nil
 	c.actionLog = nil
 	c.startRound()
 }
@@ -374,6 +382,11 @@ func (c *ContinentalRummy) finishRound(winner int) {
 		c.appendLog(-1, "washout", "continentalrummy.log.washout", nil, nil)
 	}
 	c.lastResult = res
+	roundScores := make([]int, len(c.players))
+	if winner >= 0 {
+		roundScores[winner] = res.Total
+	}
+	c.roundScoreHistory = append(c.roundScoreHistory, ContinentalRummyRoundScore{RoundNumber: c.roundNumber, Scores: roundScores})
 	if c.roundNumber >= c.config.TotalRounds {
 		c.endGame()
 	}
@@ -470,6 +483,15 @@ func (c *ContinentalRummy) GetConfig() ContinentalRummyConfig           { return
 func (c *ContinentalRummy) SetConfig(cfg ContinentalRummyConfig)        { c.config = cfg }
 func (c *ContinentalRummy) GetLastResult() *ContinentalRummyRoundResult { return c.lastResult }
 
+// GetRoundScoreHistory はラウンドごとの各席の加算点履歴を返す。
+func (c *ContinentalRummy) GetRoundScoreHistory() []ContinentalRummyRoundScore {
+	out := make([]ContinentalRummyRoundScore, len(c.roundScoreHistory))
+	for i, entry := range c.roundScoreHistory {
+		out[i] = ContinentalRummyRoundScore{RoundNumber: entry.RoundNumber, Scores: append([]int(nil), entry.Scores...)}
+	}
+	return out
+}
+
 // GetPlayer は i 番目の席を返す。範囲外なら nil。
 func (c *ContinentalRummy) GetPlayer(i int) *ContinentalRummyPlayer {
 	if i < 0 || i >= len(c.players) {
@@ -558,23 +580,24 @@ func FindContinentalRummyDiscardGroups(hand []*Card) (int, [][]int, bool) {
 //
 // **非公開フィールドしか無い型は MarshalJSON が無いと `{}` になる。**
 type continentalRummyJSON struct {
-	Hands       [][]*Card                    `json:"h"`
-	Melds       [][][]*Card                  `json:"m"`
-	Scores      []int                        `json:"s"`
-	Stock       []*Card                      `json:"st"`
-	Discard     []*Card                      `json:"d"`
-	Phase       string                       `json:"p"`
-	CurrentIdx  int                          `json:"ci"`
-	DealerIdx   int                          `json:"di"`
-	RoundNumber int                          `json:"rn"`
-	Drew        []bool                       `json:"dr"`
-	Recycles    int                          `json:"rc"`
-	Turns       []int                        `json:"tu"`
-	LastResult  *ContinentalRummyRoundResult `json:"lr"`
-	GameEndFlag bool                         `json:"ge"`
-	WinnerIdx   int                          `json:"wi"`
-	Config      ContinentalRummyConfig       `json:"c"`
-	ActionLog   []*ActionLogEntry            `json:"al"`
+	Hands             [][]*Card                    `json:"h"`
+	Melds             [][][]*Card                  `json:"m"`
+	Scores            []int                        `json:"s"`
+	Stock             []*Card                      `json:"st"`
+	Discard           []*Card                      `json:"d"`
+	Phase             string                       `json:"p"`
+	CurrentIdx        int                          `json:"ci"`
+	DealerIdx         int                          `json:"di"`
+	RoundNumber       int                          `json:"rn"`
+	Drew              []bool                       `json:"dr"`
+	Recycles          int                          `json:"rc"`
+	Turns             []int                        `json:"tu"`
+	LastResult        *ContinentalRummyRoundResult `json:"lr"`
+	GameEndFlag       bool                         `json:"ge"`
+	WinnerIdx         int                          `json:"wi"`
+	Config            ContinentalRummyConfig       `json:"c"`
+	ActionLog         []*ActionLogEntry            `json:"al"`
+	RoundScoreHistory []ContinentalRummyRoundScore `json:"rsh"`
 }
 
 // MarshalJSON は盤面を JSON にする。
@@ -584,6 +607,7 @@ func (c *ContinentalRummy) MarshalJSON() ([]byte, error) {
 		CurrentIdx: c.currentIdx, DealerIdx: c.dealerIdx, RoundNumber: c.roundNumber,
 		Drew: c.drewThisRound, Recycles: c.recycles, Turns: c.turnsThisRound, LastResult: c.lastResult, GameEndFlag: c.gameEndFlag,
 		WinnerIdx: c.winnerIdx, Config: c.config, ActionLog: c.GetActionLog(),
+		RoundScoreHistory: c.GetRoundScoreHistory(),
 	}
 	for _, p := range c.players {
 		j.Hands = append(j.Hands, p.GetHand())
@@ -623,5 +647,6 @@ func (c *ContinentalRummy) UnmarshalJSON(data []byte) error {
 	}
 	c.gameEndFlag, c.winnerIdx, c.config = j.GameEndFlag, j.WinnerIdx, j.Config
 	c.actionLog = j.ActionLog
+	c.roundScoreHistory = j.RoundScoreHistory
 	return nil
 }

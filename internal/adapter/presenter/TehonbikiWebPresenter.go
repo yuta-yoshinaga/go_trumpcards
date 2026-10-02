@@ -12,7 +12,7 @@ import (
 type TehonbikiWebPresenter struct{}
 
 func (*TehonbikiWebPresenter) Output(c interfaces.TehonbikiGame, e error) string {
-	o := &controller.TehonbikiWebOutput{Phase: int(c.GetPhase()), Numbers: c.GetNumbers(), BetType: c.GetBetType(), Bet: c.GetBet(), Result: int(c.GetResult()), Payout: c.GetPayout(), Chips: c.GetChips(), RoundNumber: c.GetRoundNumber(), RemainingCards: c.GetRemainingCards(), GameEndFlag: c.GetGameEndFlag()}
+	o := &controller.TehonbikiWebOutput{Phase: int(c.GetPhase()), Numbers: c.GetNumbers(), BetType: c.GetBetType(), Bet: c.GetBet(), Result: int(c.GetResult()), Payout: c.GetPayout(), Chips: c.GetChips(), RoundNumber: c.GetRoundNumber(), RemainingCards: c.GetRemainingCards(), GameEndFlag: c.GetGameEndFlag(), MinBet: domain.TehonbikiMinBet, MaxBet: domain.TehonbikiMaxBet}
 	if c.GetPhase() == domain.TehonbikiPhaseResult || c.GetGameEndFlag() {
 		n := c.GetParentCard()
 		o.ParentCard = &n

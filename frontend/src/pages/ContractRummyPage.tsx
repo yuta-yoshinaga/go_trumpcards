@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { contractrummyApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -293,6 +293,34 @@ function ContractRummyPageContent() {
     });
   }, [state, humanPlayer, contractSlots]);
 
+  const previousSlotEvaluations = useRef<typeof slotEvaluations | null>(null);
+  const [slotProgressAnnouncement, setSlotProgressAnnouncement] = useState('');
+  useEffect(() => {
+    const previous = previousSlotEvaluations.current;
+    previousSlotEvaluations.current = slotEvaluations;
+    if (!previous || previous.length === 0) return;
+    const changed = slotEvaluations.flatMap((evaluation, slotIdx) => {
+      const old = previous[slotIdx];
+      if (
+        old &&
+        old.placed === evaluation.placed &&
+        old.required === evaluation.required &&
+        old.satisfied === evaluation.satisfied
+      ) {
+        return [];
+      }
+      return [
+        t('slotProgressAnnouncement', {
+          n: slotIdx + 1,
+          placed: evaluation.placed,
+          required: evaluation.required,
+          status: t(evaluation.satisfied ? 'slotAchieved' : 'slotNotAchieved'),
+        }),
+      ];
+    });
+    setSlotProgressAnnouncement(changed.join(t('listSeparator')));
+  }, [slotEvaluations, t]);
+
   // humanPlayer gates slotEvaluations population, so checking it here keeps the
   // intent obvious; the length>0 guard prevents `[].every(...)` from vacuously
   // enabling submit on a contract with zero slots.
@@ -328,6 +356,15 @@ function ContractRummyPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          <div
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            className="sr-only"
+            data-testid="cr-slot-progress-live"
+          >
+            {slotProgressAnnouncement}
+          </div>
           {/* **CUI だけが難易度を変えられる状態だった** (`sd` コマンド)。設定は
               ドメインにもレスポンス型にもあるのに、Web からは触れなかった (#5588)。
               数値は CUI と同じ 0/1/2。 */}

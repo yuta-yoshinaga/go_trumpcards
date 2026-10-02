@@ -9,6 +9,7 @@
   "discard": "除去済み",
   "discardPile": "捨て札",
   "moveCount": "手数",
+  "progressUpdate": "手数: {{moveCount}}、除去済み: {{discardCount}}",
   "combo": "コンボ ×{{count}}",
   "draw": "配る",
   "remove": "除去",

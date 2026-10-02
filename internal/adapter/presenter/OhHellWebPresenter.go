@@ -84,6 +84,11 @@ func (p *OhHellWebPresenter) buildBase(o interfaces.OhHellGame) *controller.OhHe
 	}
 
 	resObj.CurrentTrick = trickCardsToOutput(o.GetCurrentTrick())
+	resObj.ValidPlayIndices = make([]int, 0)
+	currentPlayerIdx := o.GetCurrentPlayerIdx()
+	if currentPlayerIdx >= 0 && currentPlayerIdx < o.GetPlayerCnt() {
+		resObj.ValidPlayIndices = o.GetValidPlayIndices(currentPlayerIdx)
+	}
 	resObj.Players = p.buildPlayersOutput(o)
 	return resObj
 }

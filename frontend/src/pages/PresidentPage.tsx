@@ -190,10 +190,19 @@ function PresidentPageContent() {
   const describeAction = (action: PresidentAction): string => {
     const name = action.playerIdx === 0 ? tc('player.you') : tc('player.cpu', { id: action.playerIdx });
     if (!action.playedCards || action.playedCards.length === 0) return t('actionPassed', { name });
-    return t('actionPlayed', { name, cards: action.playedCards.map(cardLabel).join(', ') });
+    return t('actionPlayed', { name, cards: action.playedCards.map(cardLabel).join(t('listSeparator')) });
   };
-  const actionHistory = [...(state.humanAction ? [state.humanAction] : []), ...(state.cpuActions ?? [])].map(
-    describeAction,
+  const actionHistory = [...(state.humanAction ? [state.humanAction] : []), ...(state.cpuActions ?? [])].flatMap(
+    (action) => [
+      describeAction(action),
+      ...(action.fieldFlushed
+        ? [
+            t('actionFieldFlushed', {
+              name: action.leadPlayerIdx === 0 ? tc('player.you') : tc('player.cpu', { id: action.leadPlayerIdx }),
+            }),
+          ]
+        : []),
+    ],
   );
   const canPlay = isHumanTurn && selectedIndices.length > 0;
   const phaseName = isGameEnd ? t('phase.end') : t('phase.play');

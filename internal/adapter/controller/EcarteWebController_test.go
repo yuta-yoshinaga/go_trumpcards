@@ -19,13 +19,15 @@ import (
 
 func mustEcarteOutputJSON(msg string) string {
 	out := &controller.EcarteWebOutput{
-		Players:       []*controller.EcarteWebOutputPlayer{},
-		DealPoints:    []int{},
-		MatchScore:    []int{},
-		CurrentTrick:  []*controller.WebOutputTrickCard{},
-		ValidPlays:    []int{},
-		WinnerIdx:     -1,
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Players:         []*controller.EcarteWebOutputPlayer{},
+		DealPoints:      []int{},
+		DealTrickPoints: []int{},
+		DealKingBonus:   []int{},
+		MatchScore:      []int{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
+		ValidPlays:      []int{},
+		WinnerIdx:       -1,
+		WebOutputBase:   controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

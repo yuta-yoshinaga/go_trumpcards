@@ -12,6 +12,8 @@
   },
   "button": {
     "bet": "Bet",
+    "minimum": "Minimum",
+    "maximum": "Maximum",
     "exchange": "Exchange",
     "stand": "Stand",
     "play": "Call",

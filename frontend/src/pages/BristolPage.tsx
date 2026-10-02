@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { bristolApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -22,7 +22,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useDestinationPreview } from '../hooks/useDestinationPreview';
-import { useGameApi } from '../hooks/useGameApi';
+import { isRejectedAction, useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
@@ -85,7 +85,47 @@ function BristolPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('bristol');
-  const { state, loading, error, exec: execApi, retry } = useGameApi(bristolApi.exec);
+  const [operationAnnouncement, setOperationAnnouncement] = useState('');
+  // Clear first, then set after a beat, so the same sentence twice in a row is still
+  // announced. One pending timer at a time; it is dropped on unmount.
+  const announceTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const announce = useCallback((text: string) => {
+    clearTimeout(announceTimer.current);
+    setOperationAnnouncement('');
+    announceTimer.current = setTimeout(() => setOperationAnnouncement(text), 500);
+  }, []);
+  useEffect(() => () => clearTimeout(announceTimer.current), []);
+  const announceSuccessfulOperation = useCallback(
+    (res: BristolResponse, args: Parameters<typeof bristolApi.exec>) => {
+      if (isRejectedAction(res)) return;
+      if (args[0] === 'draw') {
+        const announcement = t('announcement.draw');
+        announce(announcement);
+      } else if (args[0] === 'move' && args[1] && args[2]) {
+        const locationKeys: Record<string, string> = {
+          tableau: 'announcement.tableau',
+          foundation: 'announcement.foundation',
+          fan: 'announcement.fan',
+        };
+        const location = (zone: BristolMoveZone) =>
+          t(locationKeys[zone.zone] ?? 'announcement.fan', {
+            num: (zone.col ?? 0) + (zone.zone === 'tableau' ? 1 : 0),
+          });
+        const announcement = t('announcement.move', { source: location(args[1]), target: location(args[2]) });
+        announce(announcement);
+      }
+    },
+    [announce, t],
+  );
+  const {
+    state,
+    loading,
+    error,
+    exec: execApi,
+    retry,
+  } = useGameApi(bristolApi.exec, {
+    onSuccess: announceSuccessfulOperation,
+  });
   const { cardWidth, cardHeight } = useCardDimensions();
   const {
     hint: frontendHint,
@@ -266,6 +306,9 @@ function BristolPageContent() {
             data-testid="br-move-count-live"
           >
             {t('moveCount')}: {state.moveCount}
+          </span>
+          <span className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="br-operation-live">
+            {operationAnnouncement}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>

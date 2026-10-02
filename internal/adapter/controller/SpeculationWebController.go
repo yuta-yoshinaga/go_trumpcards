@@ -28,8 +28,9 @@ type SpeculationWebOutCfg struct {
 // **伏せ札の中身は出さない。** 枚数だけを返す —— 中身を送ると、競りで
 // いくら出すべきかが盤面から丸見えになり、賭けが賭けでなくなる。
 type SpeculationWebOutputSeat struct {
-	Name  string `json:"name"`
-	Chips int    `json:"chips"`
+	Name       string `json:"name"`
+	Chips      int    `json:"chips"`
+	ChipChange int    `json:"chipChange"`
 	// HiddenCount はまだめくっていない伏せ札の枚数。
 	HiddenCount int `json:"hiddenCount"`
 	// Best はこの席が持つ最高切り札。持っていなければ null。

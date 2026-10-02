@@ -40,7 +40,8 @@
     "playAriaPlayable": "Playable card, play {{card}}",
     "playAriaUnplayable": "Unplayable card, play {{card}}",
     "playAriaWithPointsPlayable": "Playable card, play {{card}} (worth {{points}})",
-    "playAriaWithPointsUnplayable": "Unplayable card, play {{card}} (worth {{points}})"
+    "playAriaWithPointsUnplayable": "Unplayable card, play {{card}} (worth {{points}})",
+    "notPlayableReason": "This card cannot be played right now."
   },
   "dealerStuck": "You are the dealer. The dealer cannot pass.",
   "result": {

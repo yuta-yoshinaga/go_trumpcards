@@ -24,8 +24,10 @@
   "gameOverSummary": "Reached {{count}}/52 cards on the foundations ({{percent}}%)",
   "hintAvailable": "Hint available",
   "noHint": "No hint available",
-  "selectionMoves": "Selected card has {{count}} legal destination(s)",
-  "selectionNoMoves": "Selected card has no legal destination",
+  "selectionTableauSource": "column {{col}}",
+  "selectionMoves_one": "{{card}} selected from {{source}} has {{count}} legal destination",
+  "selectionMoves_other": "{{card}} selected from {{source}} has {{count}} legal destinations",
+  "selectionNoMoves": "{{card}} selected from {{source}} has no legal destination",
   "tutorial": {
     "foundation": "Four foundations sit between the wings, pre-seeded with the four Aces. Build each pile by suit from Ace to King.",
     "tableau": "After the four Aces, cards are dealt one at a time. Cards that fit a foundation go there immediately; only the rest fill eight columns in order, so column sizes vary. The rightmost card is playable.",

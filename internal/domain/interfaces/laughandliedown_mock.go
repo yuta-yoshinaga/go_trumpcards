@@ -61,6 +61,8 @@ func (_m *MockLaughAndLieDownGame) IsLaidDown(idx int) bool { return _m.Called(i
 
 func (_m *MockLaughAndLieDownGame) GetScore(idx int) int { return _m.Called(idx).Int(0) }
 
+func (_m *MockLaughAndLieDownGame) GetRunningScore(idx int) int { return _m.Called(idx).Int(0) }
+
 func (_m *MockLaughAndLieDownGame) GetDealerIdx() int { return _m.Called().Int(0) }
 
 func (_m *MockLaughAndLieDownGame) GetLastInIdx() int { return _m.Called().Int(0) }

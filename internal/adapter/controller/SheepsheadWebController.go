@@ -51,18 +51,26 @@ type SheepsheadWebOutputHint struct {
 	Reason      string `json:"reason"`
 }
 
+// SheepsheadWebOutputTrickCard is a trick card with Sheepshead rule details.
+type SheepsheadWebOutputTrickCard struct {
+	PlayerIdx int            `json:"playerIdx"`
+	Card      *WebOutputCard `json:"card"`
+	Points    int            `json:"points"`
+	IsTrump   bool           `json:"isTrump"`
+}
+
 // SheepsheadWebOutput シープスヘッドのWebアウトプット
 type SheepsheadWebOutput struct {
-	Players             []*SheepsheadWebOutputPlayer `json:"players"`
-	Phase               int                          `json:"phase"`
-	RoundNumber         int                          `json:"roundNumber"`
-	TrickNumber         int                          `json:"trickNumber"`
-	LastTrickWinner     int                          `json:"lastTrickWinner"`
-	CompletedTrickCount int                          `json:"completedTrickCount"`
-	CurrentPlayerIdx    int                          `json:"currentPlayerIdx"`
-	LeadPlayerIdx       int                          `json:"leadPlayerIdx"`
-	DealerIdx           int                          `json:"dealerIdx"`
-	CurrentTrick        []*WebOutputTrickCard        `json:"currentTrick"`
+	Players             []*SheepsheadWebOutputPlayer    `json:"players"`
+	Phase               int                             `json:"phase"`
+	RoundNumber         int                             `json:"roundNumber"`
+	TrickNumber         int                             `json:"trickNumber"`
+	LastTrickWinner     int                             `json:"lastTrickWinner"`
+	CompletedTrickCount int                             `json:"completedTrickCount"`
+	CurrentPlayerIdx    int                             `json:"currentPlayerIdx"`
+	LeadPlayerIdx       int                             `json:"leadPlayerIdx"`
+	DealerIdx           int                             `json:"dealerIdx"`
+	CurrentTrick        []*SheepsheadWebOutputTrickCard `json:"currentTrick"`
 	// BlindCount ブラインドの枚数 (ピックフェーズ中は枚数のみ公開)
 	BlindCount         int                      `json:"blindCount"`
 	Buried             []*WebOutputCard         `json:"buried"`
@@ -120,7 +128,7 @@ var NewSheepsheadWebController, NewSheepsheadWebControllerWithProvider = webCont
 func newSheepsheadDefaultOutput(msg string) *SheepsheadWebOutput {
 	return &SheepsheadWebOutput{
 		Players:         make([]*SheepsheadWebOutputPlayer, 0),
-		CurrentTrick:    make([]*WebOutputTrickCard, 0),
+		CurrentTrick:    make([]*SheepsheadWebOutputTrickCard, 0),
 		Buried:          make([]*WebOutputCard, 0),
 		CallableSuits:   make([]int, 0),
 		PlayableIndices: make([]int, 0),

@@ -104,6 +104,37 @@ describe('GermanWhistPage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
   });
 
+  it('shows a non-color marker on legal cards', async () => {
+    mockExec.mockResolvedValue(makeState({ validPlays: [0] }));
+    renderWithProviders(<GermanWhistPage />);
+    const cards = await screen.findAllByTestId('gw-hand-card');
+    expect(cards[0].querySelector('[data-testid="gw-playable-marker"]')).toBeInTheDocument();
+    expect(cards[1].querySelector('[data-testid="gw-playable-marker"]')).not.toBeInTheDocument();
+  });
+
+  it('does not show legal markers during the CPU turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1, validPlays: [0] }));
+    renderWithProviders(<GermanWhistPage />);
+    const cards = await screen.findAllByTestId('gw-hand-card');
+    expect(cards.every((card) => !card.querySelector('[data-testid="gw-playable-marker"]'))).toBe(true);
+  });
+
+  it('hides legal markers while a play request is in flight', async () => {
+    let resolvePlay!: (state: GermanWhistResponse) => void;
+    mockExec.mockImplementation((action) => {
+      if (action === 'play')
+        return new Promise((resolve) => {
+          resolvePlay = resolve;
+        });
+      return Promise.resolve(makeState({ validPlays: [0] }));
+    });
+    renderWithProviders(<GermanWhistPage />);
+    const cards = await screen.findAllByTestId('gw-hand-card');
+    fireEvent.click(cards[0]);
+    await waitFor(() => expect(cards[0].querySelector('[data-testid="gw-playable-marker"]')).not.toBeInTheDocument());
+    resolvePlay(makeState());
+  });
+
   it('gives up when the give-up button is pressed', async () => {
     renderWithProviders(<GermanWhistPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

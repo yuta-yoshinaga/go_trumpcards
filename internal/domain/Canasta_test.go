@@ -826,6 +826,41 @@ func TestCanastaPlayer_JSON_RoundTrip(t *testing.T) {
 	assert.Equal(t, p.GetRoundScore(), p2.GetRoundScore())
 }
 
+func TestCanastaScoreBreakdownMatchesRoundScore(t *testing.T) {
+	g := newTestCanasta()
+	player := g.GetPlayer(0)
+	natural := make([]*domain.Card, 7)
+	mixed := make([]*domain.Card, 7)
+	for i := 0; i < 7; i++ {
+		natural[i] = domain.NewCard(domain.CardDesignSpade, 5, false)
+		mixed[i] = domain.NewCard(domain.CardDesignHeart, 8, false)
+	}
+	mixed[6] = domain.NewCard(domain.CardDesignJoker, 1, false)
+	player.AddMeld(&domain.CanastaMeld{Cards: natural, IsNatural: true})
+	player.AddMeld(&domain.CanastaMeld{Cards: mixed, IsNatural: false})
+	player.AddRed3(domain.NewCard(domain.CardDesignHeart, 3, false))
+	player.AddRed3(domain.NewCard(domain.CardDesignDiamond, 3, false))
+	player.AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+
+	g.CanastaScoreRoundForTest(0, domain.CanastaGoingOutBonus)
+	breakdown := player.GetScoreBreakdown()
+	assert.Equal(t, 35+6*10+50, breakdown.MeldCards)
+	assert.Equal(t, domain.CanastaNaturalCanastaBonus+domain.CanastaMixedCanastaBonus, breakdown.CanastaBonus)
+	assert.Equal(t, 2*domain.CanastaRed3Bonus, breakdown.Red3Bonus)
+	assert.Equal(t, domain.CanastaGoingOutBonus, breakdown.GoOutBonus)
+	assert.Equal(t, 5, breakdown.HandPenalty)
+	assert.Equal(t, breakdown.MeldCards+breakdown.CanastaBonus+breakdown.Red3Bonus+breakdown.GoOutBonus-breakdown.HandPenalty, player.GetRoundScore())
+
+	data, err := json.Marshal(player)
+	require.NoError(t, err)
+	var restored domain.CanastaPlayer
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Equal(t, breakdown, restored.GetScoreBreakdown())
+	var oldSnapshot domain.CanastaPlayer
+	require.NoError(t, json.Unmarshal([]byte(`{"gp":{},"rh":{}}`), &oldSnapshot))
+	assert.Equal(t, domain.CanastaScoreBreakdown{}, oldSnapshot.GetScoreBreakdown())
+}
+
 // --- CanastaConfig ---
 
 func TestCanastaConfig_Default(t *testing.T) {

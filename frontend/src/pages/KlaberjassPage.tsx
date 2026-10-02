@@ -326,10 +326,23 @@ function KlaberjassPageContent() {
               ))}
             </div>
 
-            {/* Trick */}
+            <section className="mb-2 p-2 rounded bg-black/20 text-sm" data-testid="klaberjass-trick-history">
+              <h2 className="mb-1 text-ds-text-primary">{t('trickHistory')}</h2>
+              {state.trickHistory.map((entry, index) => (
+                <div key={`trick-history-${index}`} className="text-ds-text-muted">
+                  {t('trickHistoryEntry', {
+                    number: index + 1,
+                    name: playerLabel(entry.winnerIdx, entry.winnerIdx === 0),
+                    points: entry.points,
+                  })}
+                </div>
+              ))}
+            </section>
+
+            {/* Current trick */}
             {state.trick.length > 0 && (
               <div className="mb-2 flex items-center gap-2" data-testid="klaberjass-trick">
-                <span className="text-ds-text-muted text-sm">{t('trick')}</span>
+                <span className="text-ds-text-muted text-sm">{t('currentTrick')}</span>
                 {state.trick.map((c, i) => (
                   <CardImage key={`trick-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />
                 ))}

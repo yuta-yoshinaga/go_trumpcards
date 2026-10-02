@@ -85,6 +85,7 @@ type TeenPattiWebOutput struct {
 	Players            []*TeenPattiWebOutputPlayer `json:"players"`
 	Pot                int                         `json:"pot"`
 	Stake              int                         `json:"stake"`
+	HumanCallCost      int                         `json:"humanCallCost"`
 	Phase              int                         `json:"phase"`
 	RoundNumber        int                         `json:"roundNumber"`
 	DealerIdx          int                         `json:"dealerIdx"`

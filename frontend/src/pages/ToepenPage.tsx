@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { toepenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardBack } from '../components/CardImage';
+import { CardBack, CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -144,22 +144,41 @@ function ToepenPageContent() {
             </div>
 
             <div className="flex justify-center gap-4 mb-3">
-              {opponents.map((o) => (
-                <div key={`opp-${o.id.toString()}`} className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">
-                    {t('cpuHand', { n: o.id, count: o.cardCount })}
+              {opponents.map((o) => {
+                const revealed = ended && o.cards.length > 0;
+                return (
+                  <div key={`opp-${o.id.toString()}`} className="text-center">
+                    <div className="text-game-text-muted text-xs mb-1">
+                      {t('cpuHand', { n: o.id, count: o.cardCount })}
+                    </div>
+                    {revealed ? (
+                      <fieldset
+                        className="m-0 flex gap-1 justify-center border-0 p-0"
+                        aria-label={t('cpuHandRevealedAriaLabel', { n: o.id })}
+                      >
+                        {o.cards.map((card, i) => (
+                          <CardImage
+                            key={`opp-${o.id.toString()}-c${i.toString()}`}
+                            card={card}
+                            ariaLabel={cardAlt(card)}
+                            width={cardWidth}
+                          />
+                        ))}
+                      </fieldset>
+                    ) : (
+                      <div
+                        className="flex gap-1 justify-center"
+                        role="img"
+                        aria-label={t('cpuHandAriaLabel', { n: o.id, count: o.cardCount })}
+                      >
+                        {Array.from({ length: o.cardCount }, (_, i) => (
+                          <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <div
-                    className="flex gap-1 justify-center"
-                    role="img"
-                    aria-label={t('cpuHandAriaLabel', { n: o.id, count: o.cardCount })}
-                  >
-                    {Array.from({ length: o.cardCount }, (_, i) => (
-                      <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                    ))}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="text-center mb-4 min-h-24">

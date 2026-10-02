@@ -8,6 +8,8 @@ import { AnimatedCard } from './motion/AnimatedCard';
 export interface TrickDisplayCard {
   playerIdx: number;
   card: Card;
+  points?: number;
+  isTrump?: boolean;
 }
 
 /** Minimal player reference used for display-name resolution. */
@@ -55,6 +57,8 @@ export interface TrickDisplayProps {
   cardBadgeFor?: (card: Card) => { glyph: string; title: string } | null;
   /** Optional localized accessible name for each card, including its player. */
   cardAriaLabelFor?: (player: TrickDisplayPlayer, card: Card) => string;
+  /** Optional localized per-card detail, such as points and trump status. */
+  cardDetailFor?: (card: Card, trickCard: TrickDisplayCard) => string;
 }
 
 /**
@@ -83,6 +87,7 @@ export function TrickDisplay({
   wrap = false,
   cardBadgeFor,
   cardAriaLabelFor,
+  cardDetailFor,
 }: TrickDisplayProps) {
   const displayedTrick = currentTrick.length > 0 ? currentTrick : (lastTrick ?? []);
   const displayedWinnerIdx = currentTrick.length > 0 ? winnerIdx : (lastTrickWinner ?? winnerIdx);
@@ -128,6 +133,8 @@ export function TrickDisplay({
               : 'text-game-text-muted';
           const badge = cardBadgeFor?.(trickCard.card);
           const cardLabel = cardAriaLabelFor?.(displayPlayer, trickCard.card) ?? cardAlt(trickCard.card);
+          const cardDetail = cardDetailFor?.(trickCard.card, trickCard);
+          const accessibleLabel = badge ? `${cardLabel} (${badge.title})` : cardAriaLabelFor ? cardLabel : undefined;
           return (
             <div
               key={`trick-${trickCard.playerIdx}`}
@@ -140,7 +147,7 @@ export function TrickDisplay({
                 card={trickCard.card}
                 width={cardWidth}
                 wrapperClassName={wrapperClass || undefined}
-                ariaLabel={badge ? `${cardLabel} (${badge.title})` : cardAriaLabelFor ? cardLabel : undefined}
+                ariaLabel={cardDetail ? `${accessibleLabel ?? cardLabel} · ${cardDetail}` : accessibleLabel}
               />
               {badge && <CardRoleBadge idx={trickCard.playerIdx} glyph={badge.glyph} title={badge.title} />}
               {isWinner && (
@@ -154,6 +161,7 @@ export function TrickDisplay({
               <div className={`text-xs mt-1 ${labelClass}`}>
                 {playerName(player?.id ?? trickCard.playerIdx, player?.isHuman ?? false)}
               </div>
+              {cardDetail && <div className="text-ds-text-primary text-xs">{cardDetail}</div>}
             </div>
           );
         })}

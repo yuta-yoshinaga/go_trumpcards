@@ -20,11 +20,18 @@ export interface PageOneConfig {
   pointLimit: number;
 }
 
+/** Scores recorded at the end of a round. */
+export interface PageOneRoundScore {
+  roundNumber: number;
+  scores: number[];
+}
+
 /** Full Page One game state returned from the API. */
 export interface PageOneResponse extends BaseGameResponse {
   players: PageOnePlayerData[];
   phase: number;
   roundNumber: number;
+  roundHistory: PageOneRoundScore[];
   currentPlayerIdx: number;
   discardTop: Card | null;
   drawPileCount: number;

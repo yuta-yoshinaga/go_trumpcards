@@ -65,7 +65,8 @@
     "title": "Deal Result",
     "outcome": "Result: {{outcome}}",
     "declarer": "Declarer: {{name}}",
-    "captured": "Declarer-side points: {{points}} pts"
+    "captured": "Declarer-side points: {{points}} pts",
+    "required": "Points required to succeed: {{points}} pts"
   },
   "hintAvailable": "Hint",
   "hint": {

@@ -39,7 +39,12 @@
   },
   "result": {
     "youWin": "あなたの勝ち！",
-    "youLose": "{{name}} の勝ち"
+    "youLose": "{{name}} の勝ち",
+    "paid": "支払 {{amount}}",
+    "won": "ポット獲得 {{amount}}",
+    "potCarried": "ポット {{amount}} チップを次のハンドへ持ち越し",
+    "potAwarded": "ポットは獲得者の結果に表示されています",
+    "bourrePayment": "ブーレ罰金として {{amount}} チップを支払い"
   },
   "tutorial": {
     "intro": "ブーレはポーカーの賭けとトリックテイキングを融合したルイジアナの古典。全員がアンティをポットに入れ、ディーラーの最後の1枚が切り札スートを決めます。",

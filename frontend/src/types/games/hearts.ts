@@ -52,6 +52,7 @@ export interface HeartsResponse extends BaseGameResponse {
   trickNumber: number;
   currentPlayerIdx: number;
   currentTrick: HeartsTrickCard[];
+  trickPoints: number;
   heartsBroken: boolean;
   passDirection: number;
   gameEndFlag: boolean;

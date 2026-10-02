@@ -100,6 +100,30 @@ describe('GaigelPage', () => {
     expect(screen.getByText('山札: 28')).toBeInTheDocument();
   });
 
+  it('marks the dealer beside the matching human or CPU player', async () => {
+    const cpuDealerView = renderWithProviders(<GaigelPage />);
+    const cpuBadge = await screen.findByTestId('gaigel-dealer-badge');
+    expect(cpuBadge).toHaveTextContent('ディーラー');
+    expect(cpuBadge.parentElement).toHaveAttribute('data-testid', 'gaigel-player-3');
+    expect(screen.getAllByTestId('gaigel-dealer-badge')).toHaveLength(1);
+
+    cpuDealerView.unmount();
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 0 }));
+    renderWithProviders(<GaigelPage />);
+    const humanBadge = await screen.findByTestId('gaigel-dealer-badge');
+    expect(humanBadge.parentElement).toHaveAttribute('data-testid', 'gaigel-player-0');
+    expect(screen.getAllByTestId('gaigel-dealer-badge')).toHaveLength(1);
+
+    const i18n = (await import('../i18n')).default;
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      expect(await screen.findByTestId('gaigel-dealer-badge')).toHaveTextContent('[Dealer]');
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('labels score rows and relates each team score to its column header', async () => {
     mockExec.mockResolvedValue(makeState({ teamScores: [21, 34], roundPoints: [11, 17], roundMarriage: [20, 0] }));
     renderWithProviders(<GaigelPage />);

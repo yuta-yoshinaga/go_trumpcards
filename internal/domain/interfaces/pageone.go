@@ -53,4 +53,6 @@ type PageOneGame interface {
 	IsValidPlay(card *domain.Card) bool
 	// GetRecentPenalties 直前ターンで発生したペナルティ一覧を取得する
 	GetRecentPenalties() []domain.PageOnePenalty
+	// GetRoundHistory returns the scored rounds in this game.
+	GetRoundHistory() []domain.PageOneRoundScore
 }

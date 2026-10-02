@@ -34,6 +34,7 @@
     "passLimitWarning": "Almost out of passes — be careful"
   },
   "jokerSelectHint": "Select placement",
+  "jokerPlacedAnnouncement": "{{card}} placed at {{suit}} {{value}}",
   "keyHints": "Number keys: play the matching card",
   "mustPass": "No playable cards — please pass",
   "passCount": "Pass: {{used}}/{{max}}",

@@ -55,6 +55,8 @@ type MinibridgeGame interface {
 	GetLastMade() bool
 	// GetLastTricks 直前のディールで宣言側が取ったトリック数を取得する
 	GetLastTricks() int
+	// GetRoundDelta returns each team's score change in the latest deal.
+	GetRoundDelta() [domain.MinibridgeTeamCnt]int
 	// GetTeamScore チームの累計得点を取得する
 	GetTeamScore(team int) int
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する

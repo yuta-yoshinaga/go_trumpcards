@@ -149,8 +149,17 @@ describe('HokmPage', () => {
 
   it('offers all four trump suits to the hakem', async () => {
     renderWithProviders(<HokmPage />);
-    for (const suit of [1, 2, 3, 4]) {
-      expect(await screen.findByTestId(`hk-trump-${suit.toString()}-btn`)).toBeInTheDocument();
+    for (const [suit, name] of [
+      [1, 'スペード'],
+      [2, 'クラブ'],
+      [3, 'ハート'],
+      [4, 'ダイヤ'],
+    ] as const) {
+      const button = await screen.findByTestId(`hk-trump-${suit.toString()}-btn`);
+      expect(button).toBeInTheDocument();
+      expect(button).toHaveAccessibleName(
+        `切り札 ${suit === 1 ? '♠' : suit === 2 ? '♣' : suit === 3 ? '♥' : '♦'}（${name}）`,
+      );
     }
   });
 

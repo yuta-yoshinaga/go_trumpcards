@@ -37,6 +37,7 @@ type TrashWebOutput struct {
 	SuggestedWildSlot int                                   `json:"suggestedWildSlot"`
 	MoveCount         int                                   `json:"moveCount"`
 	Winner            int                                   `json:"winner"`
+	CanUndo           bool                                  `json:"canUndo"`
 	WebOutputBase
 }
 
@@ -67,6 +68,8 @@ func trashDispatch(bc *baseController, w http.ResponseWriter, ti usecase.TrashIn
 		bc.writePresenterResponse(w, ti.PlaceWild(*param.Position))
 	case "cpu":
 		bc.writePresenterResponse(w, ti.CpuStep())
+	case "undo":
+		bc.writePresenterResponse(w, ti.Undo())
 	default:
 		return dispatchResetHintAndLog(param.Command, bc, w, ti.Reset, ti.Hint, ti.ActionLog)
 	}

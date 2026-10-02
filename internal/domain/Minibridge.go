@@ -141,6 +141,7 @@ type Minibridge struct {
 	dealerIdx        int
 
 	teamScores [MinibridgeTeamCnt]int
+	roundDelta [MinibridgeTeamCnt]int
 	lastMade   bool
 	lastTricks int
 
@@ -197,6 +198,7 @@ func (m *Minibridge) Reset() {
 
 // startRound は 1 ディールを配って契約フェーズに入る。
 func (m *Minibridge) startRound() {
+	m.roundDelta = [MinibridgeTeamCnt]int{}
 	for _, p := range m.players {
 		p.ResetRound()
 	}
@@ -650,6 +652,7 @@ func (m *Minibridge) winsTrick(card *Card) bool {
 // finishRound はディールを精算する。
 func (m *Minibridge) finishRound() {
 	m.phase = MinibridgePhaseRoundEnd
+	beforeScores := m.teamScores
 	declTeam := m.players[m.declarerIdx].GetTeam()
 	took := 0
 	for _, p := range m.players {
@@ -674,6 +677,9 @@ func (m *Minibridge) finishRound() {
 		m.addLog(m.declarerIdx, "score", "minibridge.log.scoreFailed", map[string]string{
 			"need": strconv.Itoa(need), "took": strconv.Itoa(took), "points": strconv.Itoa(points),
 		}, nil)
+	}
+	for team := range MinibridgeTeamCnt {
+		m.roundDelta[team] = m.teamScores[team] - beforeScores[team]
 	}
 
 	if m.roundNumber >= m.config.Rounds {
@@ -860,6 +866,9 @@ func (m *Minibridge) GetLastMade() bool { return m.lastMade }
 // GetLastTricks は直前のディールで宣言側が取ったトリック数を返す。
 func (m *Minibridge) GetLastTricks() int { return m.lastTricks }
 
+// GetRoundDelta returns the score change for each team in the latest deal.
+func (m *Minibridge) GetRoundDelta() [MinibridgeTeamCnt]int { return m.roundDelta }
+
 // GetTeamScore はチームの累計得点を返す。
 func (m *Minibridge) GetTeamScore(team int) int {
 	if team < 0 || team >= MinibridgeTeamCnt {
@@ -912,6 +921,7 @@ type minibridgeJSON struct {
 	TeamScores          [MinibridgeTeamCnt]int `json:"ts"`
 	LastMade            bool                   `json:"lm"`
 	LastTricks          int                    `json:"lt"`
+	RoundDelta          [MinibridgeTeamCnt]int `json:"rd"`
 	GameEndFlag         bool                   `json:"ge"`
 	WinnerTeam          int                    `json:"wt"`
 	DeclarerByDealerTie bool                   `json:"dt"`
@@ -927,7 +937,7 @@ func (m *Minibridge) MarshalJSON() ([]byte, error) {
 		DeclarerIdx: m.declarerIdx, DummyIdx: m.dummyIdx,
 		CurrentTrick: m.currentTrick, CurrentPlayerIdx: m.currentPlayerIdx,
 		LeadPlayerIdx: m.leadPlayerIdx, DealerIdx: m.dealerIdx,
-		TeamScores: m.teamScores, LastMade: m.lastMade, LastTricks: m.lastTricks,
+		TeamScores: m.teamScores, LastMade: m.lastMade, LastTricks: m.lastTricks, RoundDelta: m.roundDelta,
 		GameEndFlag: m.gameEndFlag, WinnerTeam: m.winnerTeam, DeclarerByDealerTie: m.declarerByDealerTie,
 		ActionLog: m.actionLog,
 	})
@@ -1046,7 +1056,7 @@ func (m *Minibridge) UnmarshalJSON(data []byte) error {
 	m.declarerIdx, m.dummyIdx = j.DeclarerIdx, j.DummyIdx
 	m.currentTrick, m.currentPlayerIdx = j.CurrentTrick, j.CurrentPlayerIdx
 	m.leadPlayerIdx, m.dealerIdx = j.LeadPlayerIdx, j.DealerIdx
-	m.teamScores, m.lastMade, m.lastTricks = j.TeamScores, j.LastMade, j.LastTricks
+	m.teamScores, m.lastMade, m.lastTricks, m.roundDelta = j.TeamScores, j.LastMade, j.LastTricks, j.RoundDelta
 	m.gameEndFlag, m.winnerTeam, m.actionLog = j.GameEndFlag, j.WinnerTeam, j.ActionLog
 	m.declarerByDealerTie = j.DeclarerByDealerTie
 	return nil

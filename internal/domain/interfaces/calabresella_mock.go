@@ -194,6 +194,18 @@ func (_m *MockCalabresellaGame) GetRoundThirds() [domain.CalabresellaPlayerCnt]i
 	return ret.Get(0).([domain.CalabresellaPlayerCnt]int)
 }
 
+// GetRoundScoreChanges モック
+func (_m *MockCalabresellaGame) GetRoundScoreChanges() [domain.CalabresellaPlayerCnt]int {
+	ret := _m.Called()
+	return ret.Get(0).([domain.CalabresellaPlayerCnt]int)
+}
+
+// GetSoloistWon モック
+func (_m *MockCalabresellaGame) GetSoloistWon() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
 // GetWinnerPlayer モック
 func (_m *MockCalabresellaGame) GetWinnerPlayer() int {
 	ret := _m.Called()

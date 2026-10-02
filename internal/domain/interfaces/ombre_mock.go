@@ -188,6 +188,21 @@ func (_m *MockOmbreGame) GetPlayerScores() [domain.OmbrePlayerCnt]int {
 	return ret.Get(0).([domain.OmbrePlayerCnt]int)
 }
 
+// GetPlayerScoreDeltas モック
+func (_m *MockOmbreGame) GetPlayerScoreDeltas() [domain.OmbrePlayerCnt]int {
+	ret := _m.Called()
+	if len(ret) == 0 {
+		panic("no return value specified for GetPlayerScoreDeltas")
+	}
+	var r0 [domain.OmbrePlayerCnt]int
+	if rf, ok := ret.Get(0).(func() [domain.OmbrePlayerCnt]int); ok {
+		r0 = rf()
+	} else if ret.Get(0) != nil {
+		r0 = ret.Get(0).([domain.OmbrePlayerCnt]int)
+	}
+	return r0
+}
+
 // GetOutcome モック
 func (_m *MockOmbreGame) GetOutcome() domain.OmbreOutcome {
 	ret := _m.Called()

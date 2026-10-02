@@ -9,6 +9,7 @@
   "label.yourHand": "Your hand",
   "label.handCardAria": "{{card}} (hand position {{position}})",
   "label.handCount": "{{count}} cards",
+  "label.currentTurn": "Current turn",
   "label.score": "Score {{score}}",
   "label.melds": "Table",
   "label.noMelds": "Nothing laid yet",

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { buraApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardBack } from '../components/CardImage';
+import { CardBack, CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -172,23 +172,43 @@ function BuraPageContent() {
               ))}
             </div>
 
-            {/* Opponent hands: backs only. The server withholds the cards, so
-                there is nothing here to reveal even by mistake. */}
             <div className="flex justify-center gap-4 mb-4">
-              {opponents.map((o) => (
-                <div key={`opp-${o.id.toString()}`} className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">{t('opponentHand', { n: o.cardCount })}</div>
-                  <div
-                    className="flex gap-1 justify-center"
-                    role="img"
-                    aria-label={t('opponentHandAriaLabel', { n: o.cardCount })}
-                  >
-                    {Array.from({ length: o.cardCount }, (_, i) => (
+              {opponents.map((o) => {
+                const revealed = ended && o.cards.length > 0;
+                const handCards = revealed
+                  ? o.cards.map((card, i) => (
+                      <CardImage
+                        key={`opp-${o.id.toString()}-c${i.toString()}`}
+                        card={card}
+                        ariaLabel={cardAlt(card)}
+                        width={cardWidth}
+                      />
+                    ))
+                  : Array.from({ length: o.cardCount }, (_, i) => (
                       <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                    ))}
+                    ));
+                return (
+                  <div key={`opp-${o.id.toString()}`} className="text-center">
+                    <div className="text-game-text-muted text-xs mb-1">{t('opponentHand', { n: o.cardCount })}</div>
+                    {revealed ? (
+                      <fieldset
+                        className="m-0 flex gap-1 justify-center border-0 p-0"
+                        aria-label={t('opponentHandRevealedAriaLabel')}
+                      >
+                        {handCards}
+                      </fieldset>
+                    ) : (
+                      <div
+                        className="flex gap-1 justify-center"
+                        role="img"
+                        aria-label={t('opponentHandAriaLabel', { n: o.cardCount })}
+                      >
+                        {handCards}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="text-center mb-4 min-h-24" data-tutorial="bura-table">

@@ -43,6 +43,7 @@ func lbStub(phase domain.LobaPhase, gameEnd bool, winner int, melds []*domain.Lo
 	g.On("GetMelds").Return(melds)
 	g.On("HasMelded", mock.Anything).Return(false)
 	g.On("GetScore", mock.Anything).Return(12)
+	g.On("GetRoundScore", mock.Anything).Return(3)
 	g.On("IsEliminated", mock.Anything).Return(false)
 	g.On("GetRoundNumber").Return(1)
 	g.On("GetRoundWinner").Return(-1)
@@ -53,6 +54,8 @@ func lbStub(phase domain.LobaPhase, gameEnd bool, winner int, melds []*domain.Lo
 	for range domain.LobaPlayerCnt - 1 {
 		players = append(players, domain.NewLobaPlayer(false))
 	}
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, true))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 8, true))
 	g.On("GetPlayers").Return(players)
 	g.On("GetPlayer", mock.Anything).Return(domain.NewLobaPlayer(false))
 	g.On("GetActionLog").Return([]*domain.ActionLogEntry{})
@@ -62,7 +65,8 @@ func lbStub(phase domain.LobaPhase, gameEnd bool, winner int, melds []*domain.Lo
 
 func TestLobaWebPresenter_HidesTheCpuHandButNeverTheScore(t *testing.T) {
 	// 101 で脱落するので、誰があと何点なのかが最大の判断材料。
-	out := lbDecode(t, new(LobaWebPresenter).Output(lbTestGame(t), nil))
+	l := lbTestGame(t)
+	out := lbDecode(t, new(LobaWebPresenter).Output(l, nil))
 	players, ok := out["players"].([]any)
 	require.True(t, ok)
 	require.Len(t, players, domain.LobaPlayerCnt)
@@ -75,8 +79,18 @@ func TestLobaWebPresenter_HidesTheCpuHandButNeverTheScore(t *testing.T) {
 	assert.True(t, cpu["hidden"].(bool))
 	assert.Empty(t, cpu["cards"], "the opponent's hand must not reach the browser")
 	assert.Positive(t, cpu["cardCount"], "but its size is public")
-	assert.NotNil(t, cpu["score"], "and so is its score")
+	assert.Equal(t, float64(l.GetScore(1)), cpu["score"], "and so is its score")
 	assert.Equal(t, float64(domain.LobaKnockOut), out["knockOut"])
+}
+
+func TestLobaWebPresenter_IncludesRoundScore(t *testing.T) {
+	g := lbStub(domain.LobaPhaseAct, false, -1, nil)
+	out := lbDecode(t, new(LobaWebPresenter).Output(g, nil))
+	players, ok := out["players"].([]any)
+	require.True(t, ok)
+	cpu, ok := players[1].(map[string]any)
+	require.True(t, ok)
+	assert.Equal(t, float64(3), cpu["roundScore"])
 }
 
 func TestLobaWebPresenter_ShipsTheMeldsWithTheirKind(t *testing.T) {

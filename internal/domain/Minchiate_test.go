@@ -3,6 +3,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -755,4 +756,50 @@ func TestMinchiate_RoundEndInputsForTheBreakdown(t *testing.T) {
 	assert.Equal(t, MinchiateTeamOf(3), MinchiateTeamOf(1))
 	assert.Equal(t, MinchiateTeamOf(2), MinchiateTeamOf(0))
 	assert.NotEqual(t, MinchiateTeamOf(0), MinchiateTeamOf(1))
+}
+
+func TestMinchiate_SettleRoundRecordsTeamBreakdown(t *testing.T) {
+	g := NewDefaultMinchiate()
+	g.phase = MinchiatePhasePlay
+	g.teamScores = [2]int{10, 20}
+	g.roundTricks = [MinchiatePlayerCnt]int{2, 1, 3, 4}
+	g.lastTrickWinner = 1
+	g.dealerIdx = 2
+	g.scarto = make([]*Card, 5)
+	g.settleRound()
+
+	breakdown := g.GetRoundBreakdown()
+	assert.Equal(t, MinchiateTeamRoundBreakdown{Tricks: 5, ScartoBonus: 5, Total: 10}, breakdown[0])
+	assert.Equal(t, MinchiateTeamRoundBreakdown{Tricks: 5, LastTrickBonus: MinchiateLastTrickBonus, Total: 8}, breakdown[1])
+	assert.Equal(t, [2]int{20, 28}, g.GetTeamScores())
+}
+
+func TestMinchiate_RoundBreakdownJSONRoundTripAndLegacySnapshot(t *testing.T) {
+	g := NewDefaultMinchiate()
+	g.Reset()
+	g.phase = MinchiatePhasePlay
+	g.teamScores = [2]int{10, 20}
+	g.roundTricks = [MinchiatePlayerCnt]int{2, 1, 3, 4}
+	g.lastTrickWinner = 1
+	g.dealerIdx = 2
+	g.scarto = make([]*Card, 5)
+	g.settleRound()
+	expected := g.GetRoundBreakdown()
+
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+
+	var restored Minchiate
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Equal(t, expected, restored.GetRoundBreakdown())
+
+	var legacy map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &legacy))
+	delete(legacy, "rb")
+	legacyData, err := json.Marshal(legacy)
+	require.NoError(t, err)
+
+	var legacyRestored Minchiate
+	require.NoError(t, json.Unmarshal(legacyData, &legacyRestored))
+	assert.Equal(t, [2]MinchiateTeamRoundBreakdown{}, legacyRestored.GetRoundBreakdown())
 }

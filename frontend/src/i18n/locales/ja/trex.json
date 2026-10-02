@@ -28,6 +28,11 @@
   "opponentHand": "{{name}}: 手札{{n}}枚",
   "opponentHandAriaLabel": "{{name}} の手札 {{n}} 枚（裏向き）",
   "yourHand": "あなたの手札",
+  "handDisabled": {
+    "turn": "あなたの手番ではありません",
+    "contract": "契約を選んでいる間は手札を出せません",
+    "illegal": "この札は現在の合法手ではありません"
+  },
   "landscapeBanner": "横画面での表示を推奨します",
   "phase.choose": "契約選択",
   "phase.play": "進行中",

@@ -37,6 +37,12 @@ const TRICKS_PER_ROUND = 12;
 
 /** The four suits, in the order the trump buttons are offered. */
 const SUITS: readonly number[] = [1, 2, 3, 4];
+const SUIT_I18N_KEYS: Record<number, string> = {
+  1: 'common.suit.spade',
+  2: 'common.suit.club',
+  3: 'common.suit.heart',
+  4: 'common.suit.diamond',
+};
 
 /**
  * Bidding tops out at the whole round's card points (sync: `ShelemMaxBid` in
@@ -438,6 +444,7 @@ function ShelemPageContent() {
                     // **ちょうど4枚選ぶまで押させない。** サーバが必ず拒否する。
                     disabled={loading || picked.length !== state.discardCount}
                     aria-disabled={picked.length !== state.discardCount}
+                    aria-label={t('actions.discardAria', { suit: tc(SUIT_I18N_KEYS[suit]) })}
                     data-testid={`sh-discard-${suit.toString()}-btn`}
                   >
                     {t('actions.discard', { suit: suitSymbolAt(suit, '?') })}

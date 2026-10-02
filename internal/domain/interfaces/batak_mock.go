@@ -37,6 +37,11 @@ func (m *MockBatakGame) NextTrick() { m.Called() }
 
 func (m *MockBatakGame) ScoreRound() { m.Called() }
 
+func (m *MockBatakGame) GetScoreBreakdown(playerIdx int) domain.BatakScoreBreakdown {
+	args := m.Called(playerIdx)
+	return args.Get(0).(domain.BatakScoreBreakdown)
+}
+
 func (m *MockBatakGame) GetConfig() domain.BatakConfig {
 	args := m.Called()
 	return args.Get(0).(domain.BatakConfig)

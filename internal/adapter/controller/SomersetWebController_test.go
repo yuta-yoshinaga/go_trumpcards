@@ -10,14 +10,16 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	uc "github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
 func mustSomersetOutputJSON(msg string) string {
 	out := &controller.SomersetWebOutput{
-		Tableau:       [][]*controller.SomersetWebOutputTableauCard{},
-		Foundation:    [][]*controller.WebOutputCard{},
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Tableau:        [][]*controller.SomersetWebOutputTableauCard{},
+		Foundation:     [][]*controller.WebOutputCard{},
+		TotalCardCount: domain.NewDefaultSomerset().GetTotalCardCount(),
+		WebOutputBase:  controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {
@@ -27,7 +29,7 @@ func mustSomersetOutputJSON(msg string) string {
 }
 
 func TestSomersetWebController_Method(t *testing.T) {
-	mockOutput := `{"tableau":[],"foundation":[],"phase":0,"moveCount":0,"message":""}`
+	mockOutput := `{"tableau":[],"foundation":[],"totalCardCount":52,"phase":0,"moveCount":0,"message":""}`
 	expectedBody := mockOutput
 
 	biMock := new(usecase.MockSomersetInteractor)

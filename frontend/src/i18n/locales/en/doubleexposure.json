@@ -140,5 +140,11 @@
     "cards": "Double down is available only with two cards.",
     "chips": "You do not have enough chips for the additional bet.",
     "split": "Double down after a split is not allowed because DAS is disabled."
+  },
+  "handResult": {
+    "win": "Win",
+    "lose": "Loss",
+    "push": "Push",
+    "chips": "chips"
   }
 }

@@ -60,7 +60,8 @@ type HorseWebOutputSeat struct {
 	Folded  bool   `json:"folded"`
 	AllIn   bool   `json:"allIn"`
 	// Cards はその席から見えている札 (CPU は表向きのみ)。
-	Cards []*WebOutputCard `json:"cards"`
+	Cards    []*WebOutputCard `json:"cards"`
+	HandName string           `json:"handName,omitempty"`
 }
 
 // HorseWebOutputConfig は設定アウトプット。

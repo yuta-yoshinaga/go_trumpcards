@@ -33,7 +33,7 @@
   "teamYou": "チーム{{n}} (あなた)",
   "trumpSuit": "切り札: {{suit}}",
   "noTrump": "切り札未決定",
-  "dealer": "ディーラー",
+  "dealerBadge": "ディーラー",
   "maker": "メイカー: チーム{{team}}",
   "currentTrick": "現在のトリック",
   "previousTrick": "前のトリック",

@@ -29,6 +29,8 @@ type BisleyGame interface {
 	GetAceFoundations() [domain.BisleyFoundationCnt][]*domain.Card
 	// GetKingFoundations 降順基礎札を取得する
 	GetKingFoundations() [domain.BisleyFoundationCnt][]*domain.Card
+	// GetFoundationSize returns the number of cards in one suit (the combined ascending and descending foundations).
+	GetFoundationSize() int
 	// AllFaceUp 全カードが表向きかを返す
 	AllFaceUp() bool
 	// IsStalemate 手詰まり状態を取得する

@@ -563,4 +563,50 @@ describe('BoliviaPage', () => {
     renderWithProviders(<BoliviaPage />);
     expect(await screen.findByTestId('sa-discard-pile')).toBeInTheDocument();
   });
+
+  it('shows server score breakdown values only at round or game end', async () => {
+    const state = makeBoliviaState({
+      players: makeBoliviaState().players.map((player) =>
+        player.team === 0
+          ? {
+              ...player,
+              scoreBreakdown: {
+                cardPoints: 37,
+                naturalCanastaBonus: 500,
+                mixedCanastaBonus: 0,
+                escaleraBonus: 1500,
+                boliviaBonus: 2500,
+                red3Bonus: 300,
+                red3Penalty: 100,
+                goOutBonus: 100,
+                handPenalty: 65,
+              },
+            }
+          : player,
+      ),
+    });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<BoliviaPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('bo-score-breakdown-0')).not.toBeInTheDocument();
+
+    mockExec.mockResolvedValue(makeBoliviaState({ ...state, phase: 3 }));
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    const breakdown = await screen.findByTestId('bo-score-breakdown-0');
+    expect(breakdown).toHaveTextContent('チーム0');
+    expect(breakdown).toHaveTextContent('あなたのチーム');
+    expect(breakdown).toHaveTextContent('37');
+    expect(breakdown).toHaveTextContent('500');
+    expect(breakdown).toHaveTextContent('1500');
+    expect(breakdown).toHaveTextContent('2500');
+    expect(breakdown).toHaveTextContent('300');
+    expect(breakdown).toHaveTextContent('−100');
+    expect(breakdown).toHaveTextContent('−65');
+    expect(breakdown).toHaveTextContent('100');
+    expect(breakdown).toHaveTextContent('ミックスカナスタ0');
+    const opponentBreakdown = await screen.findByTestId('bo-score-breakdown-1');
+    expect(opponentBreakdown).toHaveTextContent('チーム1');
+    expect(opponentBreakdown).not.toHaveTextContent('あなたのチーム');
+    expect(opponentBreakdown).not.toHaveTextContent('−0');
+  });
 });

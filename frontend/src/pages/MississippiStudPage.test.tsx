@@ -141,6 +141,22 @@ describe('MississippiStudPage', () => {
     expect(screen.getByRole('button', { name: 'アンティ' })).toBeInTheDocument();
   });
 
+  it('announces changed chips but stays quiet when the balance is unchanged', async () => {
+    mockApi.mockResolvedValueOnce(antePhaseState);
+    renderWithProviders(<MississippiStudPage />);
+    const liveRegion = await screen.findByTestId('ms-chips-live');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    mockApi.mockResolvedValueOnce({ ...antePhaseState, chips: 900 });
+    fireEvent.click(await screen.findByRole('button', { name: 'アンティ' }));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('チップが 900 に変わりました'));
+
+    mockApi.mockResolvedValueOnce({ ...antePhaseState, chips: 900 });
+    fireEvent.click(await screen.findByRole('button', { name: 'アンティ' }));
+    expect(liveRegion).toHaveTextContent('チップが 900 に変わりました');
+  });
+
   it('shows payout reference panel in ante phase', async () => {
     mockApi.mockResolvedValue(antePhaseState);
     renderWithProviders(<MississippiStudPage />);

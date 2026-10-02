@@ -294,6 +294,33 @@ function LiteraturePageContent() {
               )}
             </div>
 
+            {state.claims.length > 0 && (
+              <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="literature-claim-history">
+                <div className="mb-1 text-ds-text-primary">{t('claimHistoryTitle')}</div>
+                <div className="mt-1">
+                  {state.claims.slice(-5).map((c, i) => (
+                    <div data-testid="literature-recent-claim" key={`claim-${c.player}-${c.halfSuit}-${i}`}>
+                      {claimLine(c)}
+                    </div>
+                  ))}
+                </div>
+                {state.claims.length > 5 && (
+                  <details>
+                    <summary className="cursor-pointer text-ds-text-primary">
+                      {t('claimHistoryMore', { count: state.claims.length - 5 })}
+                    </summary>
+                    <div className="mt-1">
+                      {state.claims.slice(0, -5).map((c, i) => (
+                        <div data-testid="literature-older-claim" key={`old-claim-${c.player}-${c.halfSuit}-${i}`}>
+                          {claimLine(c)}
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                )}
+              </div>
+            )}
+
             {/* Ask history — public information, and the raw material for deduction. */}
             {state.asks.length > 0 && (
               <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="literature-history">

@@ -18,6 +18,7 @@
   "label.folded": "降り",
   "label.allIn": "全ツッパ",
   "label.won": "獲得 {{amount}}",
+  "label.netChange": "純増減 {{amount}}",
   "label.bestHand": "最良の5枚",
   "label.handRank": "役",
   "label.unknownHandRank": "不明 ({{rank}})",

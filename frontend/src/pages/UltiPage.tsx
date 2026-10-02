@@ -275,8 +275,15 @@ function UltiPageContent() {
               <span className="mr-4">{t('contract', { contract: contractLabel })}</span>
               <span>{t('trump', { suit: trumpLabel })}</span>
             </div>
+            <div className="sr-only" role="status" aria-live="polite" data-testid="ulti-contract-progress-live">
+              {contractProgress}
+            </div>
             {contractProgress && (
-              <div className="text-ds-text-muted text-sm text-center mb-2" data-testid="ulti-contract-progress">
+              <div
+                className="text-ds-text-muted text-sm text-center mb-2"
+                data-testid="ulti-contract-progress"
+                aria-hidden="true"
+              >
                 {contractProgress}
               </div>
             )}

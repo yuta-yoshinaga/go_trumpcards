@@ -19,8 +19,8 @@ const resultState = makeBaccaratBanqueState({
   lastResult: {
     bankerTotal: 6,
     sides: [
-      { seatIdx: 1, outcome: 'bankerWin', bet: 50, delta: 50 },
-      { seatIdx: 2, outcome: 'punterWin', bet: 50, delta: -50 },
+      { seatIdx: 1, outcome: 'bankerWin', bet: 40, delta: 40 },
+      { seatIdx: 2, outcome: 'punterWin', bet: 75, delta: -75 },
     ],
     bankerDelta: 0,
     bankerNatural: false,
@@ -131,8 +131,26 @@ describe('BaccaratBanquePage', () => {
     mockExec.mockResolvedValue(resultState);
     renderWithProviders(<BaccaratBanquePage />);
     expect(await screen.findByTestId('banque-side-1')).toHaveTextContent('バンカーの勝ち');
+    expect(screen.getByTestId('banque-side-1')).toHaveTextContent('賭け金: 40');
+    expect(screen.getByTestId('banque-side-1')).toHaveTextContent('増減: 40');
     expect(screen.getByTestId('banque-side-2')).toHaveTextContent('子の勝ち');
+    expect(screen.getByTestId('banque-side-2')).toHaveTextContent('賭け金: 75');
+    expect(screen.getByTestId('banque-side-2')).toHaveTextContent('増減: -75');
     expect(screen.getByTestId('banque-net')).toHaveTextContent('0');
+  });
+
+  it('falls back to the right tableau name when a settled seat is missing from players', async () => {
+    mockExec.mockResolvedValue({
+      ...resultState,
+      lastResult: {
+        bankerTotal: 6,
+        sides: [{ seatIdx: 9, outcome: 'bankerWin', bet: 40, delta: 40 }],
+        bankerDelta: 40,
+        bankerNatural: false,
+      },
+    });
+    renderWithProviders(<BaccaratBanquePage />);
+    expect(await screen.findByTestId('banque-side-9')).toHaveTextContent('右のタブロー');
   });
 
   it('offers the next coup and retiring once settled, and sends each', async () => {

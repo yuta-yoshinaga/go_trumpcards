@@ -47,6 +47,7 @@
   },
   "jacks": {
     "label": "取ったJ",
+    "unclaimedLabel": "未獲得",
     "spade": "♠J",
     "other": "{{suit}}J",
     "spadeAria": "スペードのジャック（2失点）",

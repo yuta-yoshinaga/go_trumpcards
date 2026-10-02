@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { sixcardgolfApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -224,7 +225,16 @@ function SixCardGolfPageContent() {
                     key={`${player.id}-${sIdx}`}
                     slot={slot}
                     pos={sIdx}
-                    faceDownLabel={t('gridSlotFaceDownAria', { pos: sIdx + 1 })}
+                    name={
+                      slot.faceUp && slot.card
+                        ? t('gridSlotFaceUpAria', { card: cardAlt(slot.card), pos: sIdx })
+                        : t('gridSlotFaceDownAria', { pos: sIdx })
+                    }
+                    actionNames={{
+                      initial: t('gridSlotAction.initial'),
+                      swap: t('gridSlotAction.swap'),
+                      flip: t('gridSlotAction.flip'),
+                    }}
                     cardWidth={cardWidth}
                     isHumanGrid={player.isHuman}
                     hinted={hintEnabled && player.isHuman && hint?.targetPos === sIdx}
@@ -425,7 +435,8 @@ function SixCardGolfPageContent() {
 function GridSlotButton({
   slot,
   pos,
-  faceDownLabel,
+  name,
+  actionNames,
   cardWidth,
   isHumanGrid,
   hinted,
@@ -439,7 +450,8 @@ function GridSlotButton({
 }: {
   slot: SixCardGolfSlot;
   pos: number;
-  faceDownLabel: string;
+  name: string;
+  actionNames: { initial: string; swap: string; flip: string };
   cardWidth: number;
   isHumanGrid: boolean;
   hinted: boolean;
@@ -451,10 +463,18 @@ function GridSlotButton({
   onSwap: (pos: number) => void;
   onFlip: (pos: number) => void;
 }) {
+  const { t } = useTranslation('sixcardgolf');
   const clickable =
     isHumanGrid &&
     isHumanTurn &&
     ((phase === SCG_PHASE_SETUP && !slot.faceUp) || phase === SCG_PHASE_DRAW_PENDING || (canFlip && !slot.faceUp));
+  const actionAvailable = clickable && !loading;
+  const action =
+    phase === SCG_PHASE_SETUP
+      ? actionNames.initial
+      : phase === SCG_PHASE_DRAW_PENDING
+        ? actionNames.swap
+        : actionNames.flip;
 
   const handleClick = useCallback(() => {
     if (!clickable) return;
@@ -482,7 +502,7 @@ function GridSlotButton({
       style={{ width: cardWidth + 8 }}
       onClick={handleClick}
       disabled={loading || !clickable}
-      aria-label={slot.faceUp && slot.card ? cardAlt(slot.card) : faceDownLabel}
+      aria-label={actionAvailable ? t('gridSlotWithAction', { name, action }) : name}
     >
       {slot.faceUp && slot.card ? (
         <AnimatedCard card={slot.card} width={cardWidth} />

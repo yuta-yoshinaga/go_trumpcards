@@ -97,6 +97,13 @@ describe('SpiderettePage', () => {
     expect(firstEmptyColumn).not.toHaveAccessibleName(secondEmptyColumn.getAttribute('aria-label') ?? '');
   });
 
+  it('includes the zero-based column and position in face-up card names', async () => {
+    renderWithProviders(<SpiderettePage />);
+
+    expect(await screen.findByTestId('spdt-card-0-0')).toHaveAccessibleName('♠ K、列0・位置0');
+    expect(screen.getByTestId('spdt-card-1-1')).toHaveAccessibleName('♥ 5、列1・位置1');
+  });
+
   it('empty tableau targets stay focusable and explain source selection before a move', async () => {
     renderWithProviders(<SpiderettePage />);
 

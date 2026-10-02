@@ -16,6 +16,10 @@ func (p *ConquianWebPresenter) Output(g interfaces.ConquianGame, lastErr error) 
 	resObj := new(controller.ConquianWebOutput)
 	resObj.Phase = int(g.GetPhase())
 	resObj.RoundNumber = g.GetRoundNumber()
+	resObj.RoundHistory = g.GetRoundHistory()
+	if resObj.RoundHistory == nil {
+		resObj.RoundHistory = make([]int, 0)
+	}
 	resObj.CurrentPlayerIdx = g.GetCurrentPlayerIdx()
 	resObj.DrawPileCount = g.GetDrawPileCount()
 	resObj.GameEndFlag = g.GetGameEndFlag()

@@ -402,6 +402,54 @@ describe('AgnesPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(1));
   });
 
+  it('announces auto-complete start, move progress, and completion in its own live region', async () => {
+    const ready: AgnesResponse = {
+      ...playingState,
+      stockCount: 0,
+      tableau: [[up('SPADE', 6)]],
+      foundation: [[card('SPADE', 5)], [], [], []],
+    };
+    let resolveFirstMove!: (value: AgnesResponse) => void;
+    let resolveSecondMove!: (value: AgnesResponse) => void;
+    mockExec.mockResolvedValue(ready);
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(screen.getByTestId('ag-autocomplete-button')).toBeEnabled());
+    mockExec.mockClear();
+    mockExec
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveFirstMove = resolve;
+          }),
+      )
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveSecondMove = resolve;
+          }),
+      );
+    fireEvent.click(screen.getByTestId('ag-autocomplete-button'));
+    const status = screen.getByTestId('agnes-autocomplete-status');
+    await waitFor(() => expect(status).toHaveTextContent('オートコンプリートを開始しました'));
+    resolveFirstMove({
+      ...ready,
+      tableau: [[up('SPADE', 7)]],
+      foundation: [[card('SPADE', 5), card('SPADE', 6)], [], [], []],
+      moveCount: 1,
+    });
+    await waitFor(() => expect(status).toHaveTextContent('オートコンプリート進行中、手数1'));
+    resolveSecondMove({
+      ...ready,
+      tableau: [[]],
+      foundation: [[card('SPADE', 5), card('SPADE', 6), card('SPADE', 7)], [], [], []],
+      moveCount: 2,
+    });
+    await waitFor(() => expect(status).toHaveTextContent('オートコンプリートが完了しました'));
+    expect(status).toHaveAttribute('aria-live', 'polite');
+    expect(status).toHaveClass('sr-only');
+    expect(screen.getByTestId('agnes-drag-target-status')).toBeInTheDocument();
+  });
+
   it('keyboard: "a" triggers auto-complete when ready', async () => {
     const ready: AgnesResponse = {
       ...playingState,

@@ -56,6 +56,8 @@
   "roundResult": {
     "title": "ラウンド結果",
     "tricks": "{{name}} トリック: {{count}}",
+    "contractMade": "{{name}} の契約「{{contract}}」を達成",
+    "contractFailed": "{{name}} の契約「{{contract}}」に失敗",
     "potWon": "宣言者がポット {{chips}} 枚を獲得",
     "potCarried": "ポットが {{chips}} 枚に積み上がりました"
   },

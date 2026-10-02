@@ -21,3 +21,9 @@ func TestCegoScoreDealThreshold(t *testing.T) {
 	assert.True(t, cegoScoreDeal(54, 1).Won)
 	assert.Equal(t, 53, cegoScoreDeal(54, 1).Threshold)
 }
+
+func TestCegoPointTargets(t *testing.T) {
+	g := NewDefaultCego()
+	assert.Equal(t, 54, g.GetDeclarerTargetPoints())
+	assert.Equal(t, CegoTotalPoints, g.GetTotalCardPoints())
+}

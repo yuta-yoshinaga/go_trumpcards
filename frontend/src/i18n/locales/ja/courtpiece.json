@@ -59,7 +59,9 @@
     "title": "ラウンド結果（獲得トリック）",
     "teamA": "チームA: {{tricks}}トリック",
     "teamB": "チームB: {{tricks}}トリック",
-    "court": "Court（独占／連勝ボーナス）が成立しました！"
+    "court": "Court（独占／連勝ボーナス）が成立しました！",
+    "sar": "Sar",
+    "courtBonus": "Courtボーナス"
   },
   "hintAvailable": "ヒント",
   "hint": {

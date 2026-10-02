@@ -8,6 +8,8 @@
   "tableau": "場札",
   "stock": "山札",
   "waste": "捨て札",
+  "redealsRemaining": "配り直し残り: {{count}}回",
+  "redealsExhausted": "配り直し上限に達しました",
   "draw": "めくる",
   "moveCount": "手数",
   "giveup": "ギブアップ",

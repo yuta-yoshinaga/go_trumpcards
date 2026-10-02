@@ -189,6 +189,9 @@ func TestPreference_ScoreRoundMadeAndFailed(t *testing.T) {
 	if sc := g.GetPlayerScores(); sc[0] != 6 {
 		t.Errorf("declarer score = %d, want 6 on made Six", sc[0])
 	}
+	if bd := g.GetScoreBreakdown(); bd[0].Total() != 6 || bd[1].Total() != 0 || bd[2].Total() != 0 || bd[0].DeclarerContract != 6 {
+		t.Errorf("made contract breakdown = %+v, want declarer +6", bd)
+	}
 	// Failed: bid Seven, took 5 -> each defender +7.
 	g2 := newPrefGame(false)
 	g2.SetPhase(PreferencePhaseRoundEnd)
@@ -199,6 +202,15 @@ func TestPreference_ScoreRoundMadeAndFailed(t *testing.T) {
 	sc := g2.GetPlayerScores()
 	if sc[0] != 0 || sc[1] != 7 || sc[2] != 7 {
 		t.Errorf("scores = %v, want [0 7 7] on failed Seven", sc)
+	}
+	bd := g2.GetScoreBreakdown()
+	for i := range sc {
+		if bd[i].Total() != sc[i] {
+			t.Errorf("seat %d breakdown total = %d, round score = %d", i, bd[i].Total(), sc[i])
+		}
+	}
+	if bd[1].DefendingContract != 7 || bd[2].DefendingContract != 7 {
+		t.Errorf("failed contract breakdown = %+v, want defenders +7", bd)
 	}
 }
 

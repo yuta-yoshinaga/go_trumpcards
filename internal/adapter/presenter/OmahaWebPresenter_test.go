@@ -599,6 +599,92 @@ func TestOmahaWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestOmahaWebPresenter_LiveBestHandIndices(t *testing.T) {
+	setup := func(phase int) (*domain.Omaha, []*domain.OmahaPlayer) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.OmahaPlayer{
+			domain.NewOmahaPlayer(true, domain.HoldemStyleTAG),
+			domain.NewOmahaPlayer(false, domain.HoldemStyleLAP),
+			domain.NewOmahaPlayer(false, domain.HoldemStyleTAP),
+			domain.NewOmahaPlayer(false, domain.HoldemStyleGTO),
+		}
+		h := domain.NewOmaha(tc, players, domain.DefaultOmahaConfig())
+		h.SetPhase(phase)
+		return h, players
+	}
+	addKnownCards := func(h *domain.Omaha, players []*domain.OmahaPlayer) {
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		h.SetCommunityCards([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+			domain.NewCard(domain.CardDesignSpade, 6, false),
+			domain.NewCard(domain.CardDesignSpade, 7, false),
+		})
+	}
+	output := func(h *domain.Omaha) (string, *controller.HoldemWebOutput) {
+		result := (&presenter.OmahaWebPresenter{}).Output(h, nil)
+		var out controller.HoldemWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &out))
+		return result, &out
+	}
+
+	t.Run("flop indices identify the exact hole and board cards", func(t *testing.T) {
+		h, players := setup(domain.OmahaPhaseFlop)
+		addKnownCards(h, players)
+		_, out := output(h)
+		assert.Equal(t, []int{0, 1}, out.Players[0].LiveBestHandHoleIndices)
+		assert.Equal(t, []int{0, 1, 2}, out.Players[0].LiveBestHandBoardIndices)
+	})
+
+	t.Run("preflop indices are empty and omitted from JSON", func(t *testing.T) {
+		h, players := setup(domain.OmahaPhasePreFlop)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		result, out := output(h)
+		assert.Empty(t, out.Players[0].LiveBestHandHoleIndices)
+		assert.Empty(t, out.Players[0].LiveBestHandBoardIndices)
+		var raw struct {
+			Players []map[string]json.RawMessage `json:"players"`
+		}
+		assert.NoError(t, json.Unmarshal([]byte(result), &raw))
+		assert.NotContains(t, raw.Players[0], "liveBestHandHoleIndices")
+		assert.NotContains(t, raw.Players[0], "liveBestHandBoardIndices")
+	})
+
+	t.Run("folded human has no live indices", func(t *testing.T) {
+		h, players := setup(domain.OmahaPhaseFlop)
+		addKnownCards(h, players)
+		players[0].SetFolded(true)
+		_, out := output(h)
+		assert.Empty(t, out.Players[0].LiveBestHandHoleIndices)
+		assert.Empty(t, out.Players[0].LiveBestHandBoardIndices)
+	})
+
+	t.Run("end phase uses evaluated best hand", func(t *testing.T) {
+		h, players := setup(domain.OmahaPhaseEnd)
+		addKnownCards(h, players)
+		players[0].EvalBestHand(h.GetCommunityCards())
+		_, out := output(h)
+		assert.Equal(t, []int{0, 1}, out.Players[0].LiveBestHandHoleIndices)
+		assert.Equal(t, []int{0, 1, 2}, out.Players[0].LiveBestHandBoardIndices)
+	})
+
+	t.Run("CPU players never receive live indices", func(t *testing.T) {
+		h, players := setup(domain.OmahaPhaseFlop)
+		addKnownCards(h, players)
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		_, out := output(h)
+		assert.False(t, out.Players[1].IsHuman)
+		assert.Empty(t, out.Players[1].LiveBestHandHoleIndices)
+		assert.Empty(t, out.Players[1].LiveBestHandBoardIndices)
+	})
+}
+
 func TestOmahaWebPresenter_Output_RebuyAddonFields(t *testing.T) {
 	p := new(presenter.OmahaWebPresenter)
 

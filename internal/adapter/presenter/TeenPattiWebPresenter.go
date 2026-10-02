@@ -72,6 +72,13 @@ func (p *TeenPattiWebPresenter) buildBase(g interfaces.TeenPattiGame) *controlle
 	resObj := new(controller.TeenPattiWebOutput)
 	resObj.Pot = g.GetPot()
 	resObj.Stake = g.GetStake()
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		player := g.GetPlayer(i)
+		if player != nil && player.GetIsHuman() {
+			resObj.HumanCallCost = g.GetCallCost(i)
+			break
+		}
+	}
 
 	// **レイズ可能域はドメインが唯一の出どころ (#4729)。**フロントで
 	// chips/2 を組み立て直すと、Seen の扱いが割れて「入力できたのに弾かれる」

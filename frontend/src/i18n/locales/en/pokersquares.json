@@ -57,5 +57,9 @@
   "previewPartialPrefix": "~",
   "previewRowPartialAnnounce": "Row {{row}} is developing {{hand}}",
   "previewColPartialAnnounce": "Column {{col}} is developing {{hand}}",
+  "listSeparator": ", ",
+  "confirmedRowScore": "Row {{row}}: {{score}} points",
+  "confirmedColScore": "Column {{col}}: {{score}} points",
+  "confirmedScoreAnnounce": "{{lines}}. Total {{total}} points",
   "touchPlaceHint": "Tap again to confirm"
 }

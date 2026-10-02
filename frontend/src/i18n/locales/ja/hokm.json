@@ -30,6 +30,7 @@
   },
   "actions": {
     "trump": "切り札 {{suit}}",
+    "trumpAria": "切り札 {{symbol}}（{{suit}}）",
     "nextHand": "次のハンドへ",
     "reset": "リセット",
     "giveUp": "投了",

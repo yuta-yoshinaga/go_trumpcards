@@ -40,6 +40,7 @@ func TestBisley_Reset_DealsAcesUpAndFortyEightToTableau(t *testing.T) {
 	b := newTestBisley()
 
 	assert.Equal(t, BisleyPhasePlaying, b.GetPhase())
+	assert.Equal(t, CardValueMax, b.GetFoundationSize())
 	assert.Equal(t, 0, b.GetMoveCount())
 	assert.False(t, b.GetGameEndFlag())
 

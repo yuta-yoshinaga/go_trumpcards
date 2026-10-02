@@ -65,8 +65,11 @@
   "raiseButton": "レイズ（+{{n}} / あと {{left}} 回）",
   "foldButton": "フォールド",
   "nextHand": "次のハンド",
+  "previousHand": "直近の結果（ハンド {{n}}）",
   "showdownResult": "ショーダウン: {{names}} が合計 {{pot}} を獲得しました。",
   "winnerShare": "{{name}}（{{amount}}）",
+  "winnerShareHand": "{{name}}（{{amount}}）: {{hand}}",
+  "winnerHand": "{{name}}: {{hand}}",
   "listSeparator": "、",
   "winner": "{{name}} の勝ちです",
   "action": {

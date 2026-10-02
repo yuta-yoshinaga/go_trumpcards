@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mendikotApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, MendikotResponse } from '../types/card';
 import { MendikotPage } from './MendikotPage';
@@ -113,6 +114,40 @@ describe('MendikotPage', () => {
 
     expect(await screen.findByTestId('trick-winner-badge')).toHaveTextContent('WIN');
     expect(document.querySelector('[data-trick-winner="true"]')).not.toBeNull();
+  });
+
+  it('includes the localized card and player name in trick card accessible names', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        currentTrick: [
+          { playerIdx: 0, card: card('SPADE', 2) },
+          { playerIdx: 1, card: card('HEART', 10) },
+        ],
+      } as Partial<MendikotResponse>),
+    );
+    renderWithProviders(<MendikotPage />);
+
+    const cards = await screen.findByTestId('trick-display-cards');
+    expect(cards.querySelector('img')?.getAttribute('alt')).toBe('あなたが出した♠ 2');
+    expect(cards.querySelectorAll('img')[1]?.getAttribute('alt')).toBe('CPU1が出した♥ 10');
+  });
+
+  it('uses English player names in trick card accessible names', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue(
+      makeState({
+        currentTrick: [
+          { playerIdx: 0, card: card('SPADE', 2) },
+          { playerIdx: 1, card: card('HEART', 10) },
+        ],
+      } as Partial<MendikotResponse>),
+    );
+    renderWithProviders(<MendikotPage />);
+
+    const cards = await screen.findByTestId('trick-display-cards');
+    expect(cards.querySelector('img')?.getAttribute('alt')).toBe('♠ 2 played by You');
+    expect(cards.querySelectorAll('img')[1]?.getAttribute('alt')).toBe('♥ 10 played by CPU1');
+    await i18n.changeLanguage('ja');
   });
 
   it('clears the previous trick after the next card is played', async () => {

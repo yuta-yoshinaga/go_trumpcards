@@ -66,6 +66,7 @@ func TestSuecaWebPresenter_Output(t *testing.T) {
 		assert.Len(t, resObj.Players, 4)
 		assert.Equal(t, int(domain.SuecaPhasePlay), resObj.Phase)
 		assert.Equal(t, -1, resObj.WinnerTeam)
+		assert.Equal(t, []int{0, 1, 0, 1}, []int{resObj.Players[0].Team, resObj.Players[1].Team, resObj.Players[2].Team, resObj.Players[3].Team})
 		assert.Equal(t, "sueca.playPhase.lead", resObj.MessageCode)
 		// human cards visible, CPU hidden
 		assert.Len(t, resObj.Players[0].Cards, 1)

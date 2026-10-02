@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, prsiApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { PrsiResponse } from '../types/card';
 import { PrsiPage } from './PrsiPage';
@@ -292,11 +293,12 @@ describe('PrsiPage', () => {
     });
   });
 
-  it('does not show discard top when null', async () => {
-    mockExec.mockResolvedValue(noDiscardState);
+  it('shows the discard count even when the pile has no top card', async () => {
+    mockExec.mockResolvedValue({ ...noDiscardState, discardPileCount: 0 });
     renderWithProviders(<PrsiPage />);
     await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
-    expect(screen.queryByText('捨て札')).not.toBeInTheDocument();
+    expect(screen.getByTestId('prsi-discard-count')).toHaveTextContent('捨て札: 0枚');
+    expect(screen.queryByAltText('♥ 7')).not.toBeInTheDocument();
   });
 
   it('shows CPU player areas', async () => {
@@ -386,6 +388,23 @@ describe('PrsiPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 2 }));
+  });
+
+  it('shows the discard pile count next to its top card', async () => {
+    renderWithProviders(<PrsiPage />);
+    await waitFor(() => expect(screen.getByTestId('prsi-discard-count')).toHaveTextContent('捨て札: 3枚'));
+    expect(screen.getByAltText('♥ 7')).toBeInTheDocument();
+  });
+
+  it('shows a singular card count when one discard remains in English', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, discardPileCount: 1 });
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<PrsiPage />);
+      expect(await screen.findByTestId('prsi-discard-count')).toHaveTextContent('Discard pile: 1 card');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('draw pile info displayed', async () => {

@@ -35,6 +35,7 @@ const baseState: ConquianResponse = {
   layoffTargets: [],
   phase: 1,
   roundNumber: 2,
+  roundHistory: [0],
   currentPlayerIdx: 0,
   discardTop: { design: 'SPADE', value: 5 },
   drawPileCount: 28,

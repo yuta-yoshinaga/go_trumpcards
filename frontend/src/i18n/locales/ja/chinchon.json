@@ -27,6 +27,8 @@
   "scoresRound": "ラウンド",
   "scoresBreakdown": "内訳",
   "scoresTotal": "累計",
+  "scoreHistory": "得点履歴",
+  "scoreHistoryRound": "ラウンド",
   "listSeparator": "、",
   "scoreKnocker": "デッドウッド（ノック時）: {{breakdown}} = {{score}}点",
   "scoreAfterLayoff": "デッドウッド（レイオフ後）: {{breakdown}} = {{score}}点",

@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import i18n from 'i18next';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { briscolaApi } from '../api/gameApi';
+import { actionLogApi, briscolaApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BriscolaResponse, Card } from '../types/card';
@@ -63,6 +63,21 @@ describe('BriscolaPage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<BriscolaPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('opens the action log during active play and suspends card keyboard shortcuts', async () => {
+    vi.mocked(actionLogApi.briscola).mockResolvedValue({ entries: [] });
+    renderWithProviders(<BriscolaPage />);
+
+    const viewLogButton = await screen.findByRole('button', { name: '棋譜を見る' });
+    fireEvent.click(viewLogButton);
+    expect(await screen.findByRole('region', { name: '棋譜' })).toBeInTheDocument();
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: '1' });
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
   });
 
   it('renders header info (trick, stock, points)', async () => {

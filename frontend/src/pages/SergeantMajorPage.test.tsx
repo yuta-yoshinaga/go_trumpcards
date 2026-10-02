@@ -313,6 +313,30 @@ describe('SergeantMajorPage kitty markers', () => {
 });
 
 describe('SergeantMajorPage forfeit notice', () => {
+  it('shows each seat target, tricks, surplus, and next-round card exchange rule', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 3,
+        players: [
+          seat(0, { target: 8, trickCount: 6, surplus: -2 }),
+          seat(1, { target: 5, trickCount: 6, surplus: 1 }),
+          seat(2, { target: 3, trickCount: 4, surplus: 1 }),
+        ],
+      } as Partial<SergeantMajorResponse>),
+    );
+    renderWithProviders(<SergeantMajorPage />);
+
+    expect(await screen.findByTestId('sm-seat-0')).toHaveTextContent('ノルマ8 / 獲得6 / 過不足-2');
+    expect(screen.getByTestId('sm-seat-1')).toHaveTextContent('ノルマ5 / 獲得6 / 過不足+1');
+    expect(screen.getByTestId('sm-seat-2')).toHaveTextContent('ノルマ3 / 獲得4 / 過不足+1');
+    expect(screen.getByTestId('sm-round-surplus-0')).toBeInTheDocument();
+    expect(screen.getByTestId('sm-round-surplus-1')).toBeInTheDocument();
+    expect(screen.getByTestId('sm-round-surplus-2')).toBeInTheDocument();
+    expect(screen.getByTestId('sm-round-exchange-rule')).toHaveTextContent(
+      '不足したトリック数だけ最強札を渡し、超過した席から最弱札を受け取ります。',
+    );
+  });
+
   it('shows shortfall warning when human surplus is negative', async () => {
     mockExec.mockResolvedValue(
       makeState({

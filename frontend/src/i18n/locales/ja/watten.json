@@ -35,6 +35,8 @@
   "team": "チーム{{n}}",
   "teamShort": "T{{n}}",
   "score": "{{score}}点",
+  "scoreUpdated": "{{team}}の得点は{{score}}点",
+  "listSeparator": "、",
   "stake": "ステーク: {{stake}}点",
   "stakePending": "ステーク: {{stake}}点（提案 {{pending}}点）",
   "declarePhase": "宣言 — Schlag ランクと切り札スートを選んで宣言します。",

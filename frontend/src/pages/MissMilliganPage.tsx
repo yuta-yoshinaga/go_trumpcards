@@ -163,7 +163,8 @@ function MissMilliganPageContent() {
   const isGameClear = state.phase === MissMilliganPhase.GAME_CLEAR;
   const isGameOver = state.phase === MissMilliganPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
-  const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
+  const foundationCount = state.foundation.reduce((sum, pile) => sum + pile.length, 0);
+  const foundationPercent = Math.round((foundationCount / TOTAL_CARDS) * 100);
   const autoCompleteReady = state.foundation.some((pile) => pile.length > 0);
   const isHolding = state.waived.length > 0;
   const selectedCard =
@@ -466,6 +467,15 @@ function MissMilliganPageContent() {
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>
 
+            {isPlaying && (
+              <p
+                data-testid="mm-foundation-progress"
+                className="text-ds-text-muted text-sm text-center mt-1 tabular-nums"
+              >
+                {t('foundationProgress', { count: foundationCount, percent: foundationPercent })}
+              </p>
+            )}
+
             <GameMessageBox
               message={state.message}
               messageCode={state.messageCode}
@@ -476,7 +486,7 @@ function MissMilliganPageContent() {
               <p data-testid="mm-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
                 {t('gameOverSummary', {
                   count: foundationCount,
-                  percent: Math.round((foundationCount / TOTAL_CARDS) * 100),
+                  percent: foundationPercent,
                 })}
               </p>
             )}

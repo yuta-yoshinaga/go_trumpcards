@@ -66,6 +66,8 @@ export interface IronCrossSeat {
   /** The best five of the seven available cards. Set at showdown only. */
   bestHand: Card[];
   wonAmount: number;
+  /** Actual chip balance change from the start of this hand. Set at showdown only. */
+  netChange: number;
 }
 
 /** Iron Cross game settings. */

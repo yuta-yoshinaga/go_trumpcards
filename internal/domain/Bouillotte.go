@@ -120,6 +120,7 @@ type bouillotteState struct {
 	result          BouillotteResult
 	gameEndFlag     bool
 	scored          bool // ラウンド結果を確定済みか (二重確定防止)
+	roundPayout     []int
 	actionLogBase
 }
 
@@ -212,6 +213,7 @@ func (g *Bouillotte) NextRound() {
 func (g *Bouillotte) startRound() {
 	// ラウンド単位の状態をクリア。
 	g.state.winnerIdx = -1
+	g.state.roundPayout = make([]int, len(g.players))
 	g.state.result = BouillotteResultNone
 	g.state.retourne = nil
 	g.state.pot = 0
@@ -389,7 +391,9 @@ func (g *Bouillotte) resolveRound() {
 		winner = g.bestHand(active)
 	}
 	g.state.winnerIdx = winner
+	g.state.roundPayout = make([]int, len(g.players))
 	if winner >= 0 {
+		g.state.roundPayout[winner] = g.state.pot
 		g.players[winner].AddChips(g.state.pot)
 		g.appendLog(winner, "win", "bouillotte.log.win", map[string]string{"player": playerName(g.players, winner), "pot": strconv.Itoa(g.state.pot)}, nil)
 	}
@@ -722,6 +726,22 @@ func (g *Bouillotte) SetCurrentPlayerIdx(idx int) { g.state.currentPlayer = idx 
 // GetPot は現在のポットを返す。
 func (g *Bouillotte) GetPot() int { return g.state.pot }
 
+// GetRoundPayout は直近ラウンドで指定プレイヤーに実際に払い戻された額を返す。
+func (g *Bouillotte) GetRoundPayout(i int) int {
+	if i < 0 || i >= len(g.state.roundPayout) {
+		return 0
+	}
+	return g.state.roundPayout[i]
+}
+
+// GetRoundNetChange は直近ラウンドの払戻額から拠出額を引いた差引を返す。
+func (g *Bouillotte) GetRoundNetChange(i int) int {
+	if i < 0 || i >= len(g.players) {
+		return 0
+	}
+	return g.GetRoundPayout(i) - g.players[i].GetRoundBet()
+}
+
 // SetPot はポットを設定する (テスト用)。
 func (g *Bouillotte) SetPot(v int) { g.state.pot = v }
 
@@ -821,6 +841,7 @@ type bouillotteJSON struct {
 	Result          BouillotteResult    `json:"re"`
 	GameEndFlag     bool                `json:"ge"`
 	Scored          bool                `json:"sc"`
+	RoundPayout     []int               `json:"rp,omitempty"`
 	ActionLog       []*ActionLogEntry   `json:"al"`
 }
 
@@ -845,6 +866,7 @@ func (g *Bouillotte) MarshalJSON() ([]byte, error) {
 		Result:          g.state.result,
 		GameEndFlag:     g.state.gameEndFlag,
 		Scored:          g.state.scored,
+		RoundPayout:     g.state.roundPayout,
 		ActionLog:       g.state.actionLog,
 	})
 }
@@ -869,6 +891,9 @@ func (g *Bouillotte) UnmarshalJSON(data []byte) error {
 		return errBouillotteSnapshot
 	}
 	if len(j.ActionLog) > bouillotteMaxSliceLen {
+		return errBouillotteSnapshot
+	}
+	if j.RoundPayout != nil && len(j.RoundPayout) != n {
 		return errBouillotteSnapshot
 	}
 	if !bouillotteValidPhase(j.Phase) {
@@ -920,6 +945,7 @@ func (g *Bouillotte) UnmarshalJSON(data []byte) error {
 		result:          j.Result,
 		gameEndFlag:     j.GameEndFlag,
 		scored:          j.Scored,
+		roundPayout:     j.RoundPayout,
 		actionLogBase:   actionLogBase{actionLog: j.ActionLog},
 	}
 	if g.state.actionLog == nil {

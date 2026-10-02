@@ -41,6 +41,7 @@ const discardPhaseState: CribbageResponse = {
   pegCount: 0,
   pegPlayedCards: [],
   pegPlayedBy: [],
+  pegScoreEvents: [],
   showPhaseStep: 0,
   handScoreDetails: [null, null, null],
   gameEndFlag: false,
@@ -69,6 +70,7 @@ const peggingPhaseState: CribbageResponse = {
   pegCount: 0,
   pegPlayedCards: [],
   pegPlayedBy: [],
+  pegScoreEvents: [],
 };
 
 // Cut phase with the human as the non-dealer cutter (dealer=1 → cutter=0).
@@ -189,6 +191,78 @@ describe('CribbagePage', () => {
       expect(screen.getByAltText('\u2660 A')).toBeInTheDocument();
       expect(screen.getByAltText('\u2665 J')).toBeInTheDocument();
     });
+  });
+
+  it('shows pegging score reasons and announces scoring', async () => {
+    const scoredState: CribbageResponse = {
+      ...peggingPhaseState,
+      pegCount: 15,
+      pegPlayedCards: [{ design: 'HEART', value: 5 }],
+      pegPlayedBy: [0],
+      pegScoreEvents: [
+        {
+          playerIdx: 0,
+          fifteen: 2,
+          thirtyOne: 0,
+          pair: 0,
+          threeOfAKind: 0,
+          fourOfAKind: 0,
+          run: 0,
+          go: 0,
+          lastCard: 0,
+          total: 2,
+        },
+      ],
+    };
+    mockExec.mockResolvedValue(scoredState);
+    renderWithProviders(<CribbagePage />);
+    expect(await screen.findByTestId('cb-peg-score')).toHaveTextContent('あなたが15で2点獲得');
+    expect(screen.getByTestId('cb-peg-score-live')).toHaveTextContent('あなたが15で2点獲得');
+  });
+
+  it('announces Go and last card pegging points', async () => {
+    const scoredState: CribbageResponse = {
+      ...peggingPhaseState,
+      pegScoreEvents: [
+        {
+          playerIdx: 0,
+          fifteen: 0,
+          thirtyOne: 0,
+          pair: 0,
+          threeOfAKind: 0,
+          fourOfAKind: 0,
+          run: 0,
+          go: 1,
+          lastCard: 0,
+          total: 1,
+        },
+        {
+          playerIdx: 1,
+          fifteen: 0,
+          thirtyOne: 0,
+          pair: 0,
+          threeOfAKind: 0,
+          fourOfAKind: 0,
+          run: 0,
+          go: 0,
+          lastCard: 1,
+          total: 1,
+        },
+      ],
+    };
+    mockExec.mockResolvedValue(scoredState);
+    renderWithProviders(<CribbagePage />);
+    const announcements = await screen.findAllByTestId('cb-peg-score');
+    expect(announcements[0]).toHaveTextContent('あなたがGoで1点獲得');
+    expect(announcements[1]).toHaveTextContent('CPUが最終札で1点獲得');
+  });
+
+  it('does not show a pegging score notification when no points were awarded', async () => {
+    mockExec.mockResolvedValue(peggingPhaseState);
+    renderWithProviders(<CribbagePage />);
+    expect(await screen.findByTestId('cb-pegging-area')).toBeInTheDocument();
+    expect(screen.queryByTestId('cb-peg-score')).not.toBeInTheDocument();
+    expect(screen.getByTestId('cb-peg-score-live')).toBeEmptyDOMElement();
   });
 
   it('renders discard button when human discard turn', async () => {

@@ -27,6 +27,7 @@
     "bidCapped": "上限（{{max}}）が立っているのでもう上回れません。パスしてください。"
   },
   "currentTrick": "現在のトリック",
+  "trickCardByPlayer": "{{name}}が出した{{card}}",
   "handEnd": {
     "made": "契約 {{contract}} に対し {{took}} トリック：達成しました（+{{took}} 点）。",
     "euchred": "契約 {{contract}} に対し {{took}} トリック：落としました（相手に {{contract}} 点）。"

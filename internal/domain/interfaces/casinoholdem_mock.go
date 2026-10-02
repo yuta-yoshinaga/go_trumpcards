@@ -114,6 +114,11 @@ func (m *MockCasinoHoldemGame) GetTotalPayout() int {
 	return args.Int(0)
 }
 
+func (m *MockCasinoHoldemGame) GetNetChange() int {
+	args := m.Called()
+	return args.Int(0)
+}
+
 func (m *MockCasinoHoldemGame) GetPlayerHandRank() int {
 	args := m.Called()
 	return args.Int(0)

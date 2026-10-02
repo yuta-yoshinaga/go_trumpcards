@@ -266,6 +266,9 @@ function CuckooPageContent() {
                 {t('dealer')}: {playerLabel(state.dealerIdx, state.dealerIdx === 0)}
               </span>
               <span>{t('stock', { count: state.stockCount })}</span>
+              {state.stockCount === 0 && (
+                <span className="block text-sm text-ds-text-muted">{t('emptyStockDealerKeeps')}</span>
+              )}
             </div>
 
             {/* Players (lives / eliminated / current-turn) */}

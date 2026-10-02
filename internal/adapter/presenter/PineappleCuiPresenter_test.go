@@ -250,7 +250,7 @@ func TestPineappleCuiPresenter_Output(t *testing.T) {
 
 	// **ボードがある局面では完成役そのものを名指しできる (#4686)。**
 	t.Run("discard phase names the hand each discard would leave", func(t *testing.T) {
-		m, _ := setupPineappleCuiMockWithPlayers()
+		m, players := setupPineappleCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHumanDiscardPreviews")
 		m.On("GetPhase").Return(domain.PineapplePhaseDiscard)
@@ -259,10 +259,13 @@ func TestPineappleCuiPresenter_Output(t *testing.T) {
 			{CardIdx: 1, HandRank: domain.PokerHandOnePair},
 			{CardIdx: 2, HandRank: domain.PokerHandFlush, Recommended: true},
 		})
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 13, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "[0] これを捨てると: ワンペア")
-		assert.Contains(t, result, "[2] これを捨てると: フラッシュ")
+		assert.Contains(t, result, "[0]♠A を捨てると: ワンペア")
+		assert.Contains(t, result, "[2]♣5 を捨てると: フラッシュ ← おすすめ")
 	})
 
 	t.Run("discard phase marks only the recommended discard", func(t *testing.T) {
@@ -309,7 +312,7 @@ func TestPineappleCuiPresenter_Output(t *testing.T) {
 	// **4枚配り (Irish) は2枚まとめて捨てる。**Web は1枚目を選んだ後の3択しか
 	// 出せないが、CUI には選択途中が無いので6通りを最初から並べる (#4687)。
 	t.Run("four-card deal lists every discard pair", func(t *testing.T) {
-		m, _ := setupPineappleCuiMockWithPlayers()
+		m, players := setupPineappleCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetInitialDealCount")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHumanDiscardPairPreviews")
@@ -323,12 +326,16 @@ func TestPineappleCuiPresenter_Output(t *testing.T) {
 			{DiscardIdx0: 1, DiscardIdx1: 3, HandRank: domain.PokerHandOnePair},
 			{DiscardIdx0: 2, DiscardIdx1: 3, HandRank: domain.PokerHandOnePair},
 		})
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 13, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 9, false))
 
 		result := p.Output(m, nil)
 		// **6通り全部。**一部だけ出すと「載っていない組み合わせは弱い」と
 		// 読めてしまう。
 		assert.Equal(t, 6, strings.Count(result, "を捨てると:"))
-		assert.Contains(t, result, "[0] [3] を捨てると: ツーペア")
+		assert.Contains(t, result, "[0]♠A [3]♦9 を捨てると: ツーペア")
 		assert.Equal(t, 1, strings.Count(result, "おすすめ"))
 	})
 

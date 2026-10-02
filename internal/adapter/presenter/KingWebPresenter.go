@@ -50,6 +50,7 @@ func (kwp *KingWebPresenter) buildBase(kg interfaces.KingGame) *controller.KingW
 	resObj.UsedContracts = make([]bool, 0)
 	resObj.PlayableIndices = make([]int, 0)
 	resObj.RoundWinners = make([]int, 0)
+	resObj.DealHistory = make([]*controller.KingWebOutputDealDetail, 0)
 
 	resObj.Phase = kg.GetPhase()
 	resObj.DealNumber = kg.GetDealNumber()
@@ -94,6 +95,11 @@ func (kwp *KingWebPresenter) buildBase(kg interfaces.KingGame) *controller.KingW
 			DealerIdx: det.DealerIdx,
 			Gained:    det.Gained,
 		}
+	}
+	for _, det := range kg.GetDealHistory() {
+		resObj.DealHistory = append(resObj.DealHistory, &controller.KingWebOutputDealDetail{
+			Contract: det.Contract, TrumpSuit: det.TrumpSuit, DealerIdx: det.DealerIdx, Gained: det.Gained,
+		})
 	}
 	return resObj
 }

@@ -124,6 +124,39 @@ describe('KaiserPage', () => {
     expect(specials).toHaveTextContent('34枚');
   });
 
+  it('shows the declarer team contract progress during play and distinguishes a made contract', async () => {
+    mockExec.mockResolvedValue(makeState({ teamHandPoints: [5, 2] }));
+    const { unmount } = renderWithProviders(<KaiserPage />);
+    const progress = await screen.findByTestId('kaiser-contract-progress');
+    expect(progress).toHaveTextContent('宣言側: 5/8点');
+    expect(progress).toHaveTextContent('あと3点');
+    expect(progress).toHaveClass('text-ds-warning');
+    unmount();
+
+    vi.clearAllMocks();
+    mockExec.mockResolvedValue(makeState({ teamHandPoints: [8, 2] }));
+    renderWithProviders(<KaiserPage />);
+    const made = await screen.findByTestId('kaiser-contract-progress');
+    expect(made).toHaveTextContent('宣言側: 8/8点');
+    expect(made).toHaveTextContent('契約成立');
+    expect(made).toHaveClass('text-ds-success');
+  });
+
+  it('does not show contract progress outside play or before a contract is awarded', async () => {
+    for (const state of [
+      makeState({ phase: KaiserPhase.BID, highBid: null, declarerIdx: -1 }),
+      makeState({ phase: KaiserPhase.HAND_END }),
+      makeState({ phase: KaiserPhase.PLAY, highBid: null, declarerIdx: -1 }),
+    ]) {
+      mockExec.mockResolvedValue(state);
+      const { unmount } = renderWithProviders(<KaiserPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      expect(screen.queryByTestId('kaiser-contract-progress')).not.toBeInTheDocument();
+      unmount();
+      vi.clearAllMocks();
+    }
+  });
+
   it('plays exactly one card', async () => {
     renderWithProviders(<KaiserPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeInTheDocument());

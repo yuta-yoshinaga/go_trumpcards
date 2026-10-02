@@ -185,6 +185,39 @@ describe('KingPage', () => {
     expect(breakdown).toHaveTextContent('契約: キング（切り札）（切り札: ♥）');
   });
 
+  it('shows completed deal history during the next deal and includes King Trump suit', async () => {
+    mockExec.mockResolvedValue(
+      makeKingState({
+        dealNumber: 1,
+        players: playPhaseState.players.map((player, id) => ({ ...player, totalScore: id === 0 ? 5 : 0 })),
+        dealHistory: [{ contract: 6, trumpSuit: 3, dealerIdx: 0, gained: { 0: 5, 1: 0, 2: 0, 3: 0 } }],
+      }),
+    );
+    renderWithProviders(<KingPage />);
+    const history = await screen.findByTestId('king-deal-history');
+    expect(history).toHaveTextContent('ディール1 — キング（切り札）（切り札: ♥）');
+    expect(history).toHaveTextContent('あなた: 5点');
+    expect(history).toHaveTextContent('CPU 1: 0点');
+    expect(screen.getByText('あなた: 得点: 5')).toBeInTheDocument();
+  });
+
+  it('keeps every deal result visible after the game ends', async () => {
+    mockExec.mockResolvedValue(
+      makeKingState({
+        phase: 'gameEnd',
+        gameEndFlag: true,
+        dealHistory: [
+          { contract: 0, trumpSuit: -1, dealerIdx: 0, gained: { 0: -2, 1: 0, 2: 0, 3: 0 } },
+          { contract: 6, trumpSuit: 1, dealerIdx: 1, gained: { 0: 5, 1: 0, 2: 0, 3: 0 } },
+        ],
+      }),
+    );
+    renderWithProviders(<KingPage />);
+    expect(await screen.findByTestId('king-history-deal-1')).toHaveTextContent('ディール1 — ノートリック');
+    expect(screen.getByTestId('king-history-deal-2')).toHaveTextContent('切り札: ♠');
+    expect(screen.getAllByTestId(/^king-history-deal-/)).toHaveLength(2);
+  });
+
   it('renders the game end message', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<KingPage />);

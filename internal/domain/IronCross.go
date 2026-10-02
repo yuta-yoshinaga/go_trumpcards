@@ -68,6 +68,7 @@ type IronCrossResult struct {
 	Line      IronCrossLine
 	HandRank  int
 	WonAmount int
+	NetChange int
 }
 
 // IronCross はアイアンクロス (クリスクロス) の卓。
@@ -93,16 +94,17 @@ type IronCross struct {
 	// revealed は開いた枚数。
 	revealed int
 
-	pot         int
-	currentBet  int
-	raiseCount  int
-	turn        int
-	actedFlags  []bool
-	handNumber  int
-	results     []IronCrossResult
-	gameEndFlag bool
-	actionLog   []*ActionLogEntry
-	turnNumber  int
+	pot            int
+	currentBet     int
+	raiseCount     int
+	turn           int
+	actedFlags     []bool
+	handNumber     int
+	handStartChips []int
+	results        []IronCrossResult
+	gameEndFlag    bool
+	actionLog      []*ActionLogEntry
+	turnNumber     int
 }
 
 // NewIronCross は指定の山・席・設定で卓を構築する。
@@ -145,6 +147,10 @@ func (g *IronCross) startHand() {
 	g.currentBet = 0
 	g.raiseCount = 0
 	g.results = nil
+	g.handStartChips = make([]int, len(g.players))
+	for i, p := range g.players {
+		g.handStartChips[i] = p.GetChips()
+	}
 	g.actedFlags = make([]bool, len(g.players))
 
 	for _, p := range g.players {
@@ -395,6 +401,9 @@ func (g *IronCross) finishHand() {
 			g.players[w].AddChips(amount)
 			g.results[w].WonAmount = amount
 		}
+	}
+	for i, p := range g.players {
+		g.results[i].NetChange = p.GetChips() - g.handStartChips[i]
 	}
 	g.pot = 0
 	g.appendLogCode(-1, "showdown", "ironcross.log.showdown", map[string]string{"hand": strconv.Itoa(g.handNumber)}, nil)
@@ -676,22 +685,23 @@ func (g *IronCross) GetHint() *IronCrossHint {
 
 // ironCrossJSON is the JSON wire format for IronCross.
 type ironCrossJSON struct {
-	Deck        *TrumpCards        `json:"dk"`
-	Players     []*IronCrossPlayer `json:"pl"`
-	Config      IronCrossConfig    `json:"cf"`
-	Phase       int                `json:"ph"`
-	Cross       []*Card            `json:"cr"`
-	Revealed    int                `json:"rv"`
-	Pot         int                `json:"po"`
-	CurrentBet  int                `json:"cb"`
-	RaiseCount  int                `json:"rc"`
-	Turn        int                `json:"tu"`
-	ActedFlags  []bool             `json:"af"`
-	HandNumber  int                `json:"hn"`
-	Results     []IronCrossResult  `json:"rs"`
-	GameEndFlag bool               `json:"ge"`
-	ActionLog   []*ActionLogEntry  `json:"al"`
-	TurnNumber  int                `json:"tn"`
+	Deck           *TrumpCards        `json:"dk"`
+	Players        []*IronCrossPlayer `json:"pl"`
+	Config         IronCrossConfig    `json:"cf"`
+	Phase          int                `json:"ph"`
+	Cross          []*Card            `json:"cr"`
+	Revealed       int                `json:"rv"`
+	Pot            int                `json:"po"`
+	CurrentBet     int                `json:"cb"`
+	RaiseCount     int                `json:"rc"`
+	Turn           int                `json:"tu"`
+	ActedFlags     []bool             `json:"af"`
+	HandNumber     int                `json:"hn"`
+	Results        []IronCrossResult  `json:"rs"`
+	HandStartChips []int              `json:"hs"`
+	GameEndFlag    bool               `json:"ge"`
+	ActionLog      []*ActionLogEntry  `json:"al"`
+	TurnNumber     int                `json:"tn"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -701,7 +711,7 @@ func (g *IronCross) MarshalJSON() ([]byte, error) {
 		Phase: int(g.phase), Cross: g.cross, Revealed: g.revealed,
 		Pot: g.pot, CurrentBet: g.currentBet, RaiseCount: g.raiseCount,
 		Turn: g.turn, ActedFlags: g.actedFlags, HandNumber: g.handNumber,
-		Results: g.results, GameEndFlag: g.gameEndFlag,
+		Results: g.results, HandStartChips: g.handStartChips, GameEndFlag: g.gameEndFlag,
 		ActionLog: g.actionLog, TurnNumber: g.turnNumber,
 	})
 }
@@ -735,6 +745,13 @@ func (g *IronCross) UnmarshalJSON(data []byte) error {
 	g.actedFlags = j.ActedFlags
 	g.handNumber = j.HandNumber
 	g.results = j.Results
+	g.handStartChips = j.HandStartChips
+	if len(g.handStartChips) == 0 {
+		g.handStartChips = make([]int, len(g.players))
+		for i, p := range g.players {
+			g.handStartChips[i] = p.GetChips()
+		}
+	}
 	g.gameEndFlag = j.GameEndFlag
 	g.actionLog = j.ActionLog
 	g.turnNumber = j.TurnNumber
@@ -788,6 +805,9 @@ func ironCrossValidate(j *ironCrossJSON) error {
 	}
 	if len(j.ActedFlags) != 0 && len(j.ActedFlags) != seats {
 		return fmt.Errorf("ironcross: %d acted flags for %d seats", len(j.ActedFlags), seats)
+	}
+	if len(j.HandStartChips) != 0 && len(j.HandStartChips) != seats {
+		return fmt.Errorf("ironcross: %d hand-start chip balances for %d seats", len(j.HandStartChips), seats)
 	}
 	if len(j.Results) != 0 && len(j.Results) != seats {
 		return fmt.Errorf("ironcross: %d results for %d seats", len(j.Results), seats)

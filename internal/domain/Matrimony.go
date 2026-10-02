@@ -400,6 +400,9 @@ func (c *Matrimony) GetStockCount() int { return len(c.stock) }
 // GetRedealCount returns how many redeals have been used.
 func (c *Matrimony) GetRedealCount() int { return c.redealCount }
 
+// GetMaxRedeals returns the maximum number of times the waste may be collected.
+func (c *Matrimony) GetMaxRedeals() int { return MatrimonyMaxRedeals }
+
 // GetWaste 捨て札を取得
 func (c *Matrimony) GetWaste() []*Card { return c.waste }
 

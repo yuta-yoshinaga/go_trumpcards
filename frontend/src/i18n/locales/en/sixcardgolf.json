@@ -29,6 +29,11 @@
     "skipFlip": "Skip",
     "nextRound": "Next Round"
   },
+  "gridSlotAction": {
+    "initial": "initial reveal",
+    "swap": "swap",
+    "flip": "reveal"
+  },
   "phase": {
     "setup": "Flip 2 initial cards",
     "playerTurn": "Draw a card",
@@ -75,6 +80,8 @@
     "flipCard": "Flip a face-down card"
   },
   "gridSlotFaceDownAria": "Position {{pos}} (face down)",
+  "gridSlotFaceUpAria": "{{card}}, position {{pos}}",
+  "gridSlotWithAction": "{{name}} ({{action}})",
   "cliUsagePos": "Usage: {{cmd}} <pos>",
   "cliUnknown": "Unknown: {{cmd}}",
   "landscapeBanner": "Landscape mode recommended"

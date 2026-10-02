@@ -23,6 +23,8 @@
   "yourHand": "Your hand",
   "cards": "Cards",
   "scoreLabel": "Total",
+  "scoreHistoryTitle": "Penalty scores by round",
+  "roundLabel": "Round",
   "openedBadge": "Opened",
   "groupsBuilt": "Groups built",
   "drawStock": "Draw from stock",

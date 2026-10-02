@@ -28,6 +28,7 @@ import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { HASENPFEFFER_HELP, parseHasenpfefferCommand } from '../utils/cli/commands/hasenpfefferCommands';
 import { formatHasenpfefferState } from '../utils/cli/formatters/hasenpfefferFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** The four suits, in the order the trump buttons are offered. */
@@ -264,6 +265,9 @@ function HasenpfefferPageContent() {
                 players={state.players}
                 cardWidth={cardWidth}
                 label={t('currentTrick')}
+                cardAriaLabelFor={(player, card) =>
+                  t('trickCardByPlayer', { name: playerName(player.id, player.isHuman), card: cardAlt(card) })
+                }
               />
             </div>
 

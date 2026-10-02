@@ -51,6 +51,7 @@ func (p *GleekWebPresenter) buildBase(g interfaces.GleekGame) *controller.GleekW
 	resObj.WinnerPlayer = g.GetWinnerPlayer()
 	resObj.PlayerScores = g.GetPlayerScores()
 	resObj.RoundDelta = g.GetRoundDelta()
+	resObj.RoundBreakdown = g.GetRoundBreakdown()
 	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.IsHumanTurn = g.IsHumanTurn()
 	resObj.IsHumanBidTurn = g.IsHumanBidTurn()

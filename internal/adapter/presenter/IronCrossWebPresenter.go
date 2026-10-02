@@ -101,6 +101,7 @@ func ironCrossSeatsToOutput(c interfaces.IronCrossGame) []*controller.IronCrossW
 		}
 		if i < len(results) {
 			seat.WonAmount = results[i].WonAmount
+			seat.NetChange = results[i].NetChange
 		}
 		out = append(out, seat)
 	}

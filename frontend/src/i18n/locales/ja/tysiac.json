@@ -44,6 +44,7 @@
   "roleDeclarer": "デクレアラー",
   "rolePlayer": "プレイヤー",
   "declarerBadge": "デクレアラー",
+  "dealerBadge": "ディーラー",
   "score": "得点: {{score}}",
   "playerScore": "{{name}}: {{score}}点",
   "playButton": "出す",

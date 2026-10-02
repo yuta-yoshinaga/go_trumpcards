@@ -397,6 +397,38 @@ func TestBaseballPoker_ChipsAreConservedAndThePotEmpties(t *testing.T) {
 	}
 }
 
+func TestBaseballPoker_ShowdownNetChangeMatchesStartingChips(t *testing.T) {
+	g := newBaseballForTest(t)
+	starting := append([]int(nil), g.startingChips...)
+
+	// Fold one seat and give the human a fixed four-of-a-kind, so the winner,
+	// active loser, and folded loser are independent of the shuffled deal.
+	g.players[1].SetFolded(true)
+	g.players[3].SetFolded(true)
+	g.players[0].cards = []*Card{
+		NewCard(0, 1, false), NewCard(1, 1, false), NewCard(2, 1, false), NewCard(3, 1, false),
+		NewCard(0, 2, false), NewCard(1, 4, false), NewCard(2, 6, false),
+	}
+	g.players[0].faceUp = []bool{false, false, true, true, true, true, false}
+	g.players[2].cards = []*Card{
+		NewCard(0, 2, false), NewCard(1, 5, false), NewCard(2, 7, false), NewCard(3, 10, false),
+		NewCard(0, 11, false), NewCard(1, 12, false), NewCard(2, 13, false),
+	}
+	g.players[2].faceUp = []bool{false, false, true, true, true, true, false}
+
+	g.finishHand()
+	require.Equal(t, BaseballPhaseShowdown, g.GetPhase())
+	results := g.GetResults()
+	require.Len(t, results, len(g.players))
+	for i, result := range results {
+		assert.Equal(t, g.players[i].GetChips()-starting[i], result.NetChange, "席 %d", i)
+	}
+	assert.Positive(t, results[0].NetChange, "固定した勝者")
+	assert.Negative(t, results[2].NetChange, "ショーダウンの敗者")
+	assert.Negative(t, results[1].NetChange, "フォールド席")
+	assert.GreaterOrEqual(t, -results[1].NetChange, g.config.Ante, "フォールド席は少なくともアンティを失う")
+}
+
 // **山は尽きない。** 7 席だと 4 のボーナスで 53 枚要るので、設定で弾いている。
 func TestBaseballPoker_DeckNeverRunsOut(t *testing.T) {
 	for range 30 {

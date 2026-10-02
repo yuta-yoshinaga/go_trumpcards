@@ -8,6 +8,7 @@
   "stock": "Stock",
   "completed": "Completed",
   "tableau": "Tableau",
+  "cardPosAria": "{{card}} (column {{col}}, position {{pos}})",
   "moveCount": "Moves",
   "deal": "Deal",
   "giveup": "Give Up",

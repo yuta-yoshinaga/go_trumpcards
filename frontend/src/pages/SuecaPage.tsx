@@ -25,6 +25,7 @@ import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { SuecaResponse } from '../types/card';
+import type { SuecaPlayer } from '../types/games/sueca';
 import { SuecaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
@@ -157,6 +158,11 @@ function SuecaPageContent() {
   const selectedCardNames = selectedCardIndices.map((idx) => cardAlt(humanPlayer!.cards[idx]!));
   const humanTeam = humanIdx % 2;
   const trumpSymbol = suitSymbolAt(state.trumpSuit, '');
+  const playerTeamLabel = (p: SuecaPlayer) =>
+    t('playerTeam', {
+      player: playerName(p.id, p.isHuman),
+      team: p.team === 0 ? t('team.a') : t('team.b'),
+    });
   // Spoken trump: the suit name (not the ♠♣♥♦ glyph, which SRs read poorly).
   const trumpSuitName = SUIT_KEYS[state.trumpSuit] ? t(`suitName.${SUIT_KEYS[state.trumpSuit]}`) : trumpSymbol;
   const trumpAriaLabel = t('trump', { suit: trumpSuitName });
@@ -276,8 +282,12 @@ function SuecaPageContent() {
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
                     <div className="mt-1">
                       {state.players.map((p) => (
-                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                        <div
+                          key={p.id}
+                          className="text-ds-text-muted text-sm py-0.5"
+                          data-testid={`sueca-player-${p.id}`}
+                        >
+                          {playerTeamLabel(p)}: {t('cards', { count: p.cardCount })} |{' '}
                           {t('tricks', { count: p.trickCount })}
                         </div>
                       ))}
@@ -286,8 +296,12 @@ function SuecaPageContent() {
                 ) : (
                   <div className="mb-2 p-2 rounded bg-black/30">
                     {state.players.map((p) => (
-                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                      <div
+                        key={p.id}
+                        className="text-ds-text-muted text-sm py-0.5"
+                        data-testid={`sueca-player-${p.id}`}
+                      >
+                        {playerTeamLabel(p)}: {t('cards', { count: p.cardCount })} |{' '}
                         {t('tricks', { count: p.trickCount })}
                       </div>
                     ))}

@@ -208,13 +208,16 @@ export function VideoPokerGameContent({
       return;
     }
     const rowKey = videoPokerRowKey(state.handKey, state.handName);
+    const net = state.payout - state.betAmount;
+    const netText = `${net >= 0 ? '+' : ''}${net}`;
     const msg =
       state.payout > 0
         ? tNs('resultAnnounce.win', {
             handName: rowKey ? tNs(`payoutTable.name.${rowKey}`) : state.handName,
             payout: state.payout,
+            net: netText,
           })
-        : tNs('resultAnnounce.lose');
+        : tNs('resultAnnounce.lose', { net: netText });
     setResultAnnounce(msg);
     setResultNonce((n) => n + 1);
   }, [isResultPhase, state, tNs]);

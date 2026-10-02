@@ -41,7 +41,7 @@
   "playButton": "Play",
   "nextTrick": "Next trick",
   "nextRound": "Next deal",
-  "outcomeNone": "At the average",
+  "outcomeNone": "Tied with average",
   "outcomeWin": "Above average",
   "outcomeLoss": "Below average",
   "roundResult": {
@@ -50,7 +50,7 @@
     "outcome": "Your result: {{outcome}}",
     "playerLine": "{{name}}: {{delta}} (total {{score}})",
     "average": "Table average: {{avg}} pts",
-    "earnedLine": "{{name}}: earned {{points}} pts (vs avg {{diff}} → change {{scaled}})",
+    "earnedLine": "{{name}}: earned {{points}} pts ({{outcome}}, vs avg {{diff}} → change {{scaled}})",
     "formula": "Change = difference from the average × players ({{n}})"
   },
   "hintAvailable": "Hint",

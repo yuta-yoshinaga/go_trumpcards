@@ -50,6 +50,7 @@ function makeState(overrides?: Partial<KlaberjassResponse>): KlaberjassResponse 
     trick: [],
     trickLeaderIdx: 0,
     trickNumber: 0,
+    trickHistory: [],
     validPlays: [0, 1, 2],
     sequenceWinner: -1,
     lastTrickWinner: -1,
@@ -94,6 +95,24 @@ describe('KlaberjassPage', () => {
     expect(ladder).toHaveTextContent('A (11)');
     // シーケンスは点数順ではないという注意書きも出す。
     expect(ladder).toHaveTextContent(/7-8-9-10-J-Q-K-A/);
+  });
+
+  it('lists completed tricks separately from the current trick', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        trickHistory: [
+          { winnerIdx: 1, points: 24 },
+          { winnerIdx: 0, points: 17 },
+        ],
+        trick: [card('HEART', 10)],
+      }),
+    );
+    renderWithProviders(<KlaberjassPage />);
+    await waitFor(() => expect(screen.getByTestId('klaberjass-trick-history')).toBeInTheDocument());
+    expect(screen.getByTestId('klaberjass-trick-history')).toHaveTextContent('CPU 1が24点を獲得');
+    expect(screen.getByTestId('klaberjass-trick-history')).toHaveTextContent('あなたが17点を獲得');
+    expect(screen.getByTestId('klaberjass-trick')).toBeInTheDocument();
+    expect(screen.getByTestId('klaberjass-trick')).toHaveTextContent('進行中のトリック');
   });
 
   it('plays exactly one card', async () => {

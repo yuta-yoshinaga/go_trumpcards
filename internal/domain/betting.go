@@ -469,12 +469,31 @@ func FindPotWinnersRazz(players []BettingPlayer, eligible []int) []int {
 // WinnerFunc ポッ���勝者判定��数型
 type WinnerFunc func(players []BettingPlayer, eligible []int) []int
 
+// PotAward records the amount a player won from one pot.
+type PotAward struct {
+	PlayerIdx int `json:"playerIdx"`
+	Amount    int `json:"amount"`
+}
+
 // DistributePotsWithWinnerFunc サイドポットの勝者配分を計算しチップを付与 (勝者判定関数を指定)
 func DistributePotsWithWinnerFunc(players []BettingPlayer, sidePots []SidePot, winnerFunc WinnerFunc) map[int]int {
+	wonAmounts, _ := distributePotsWithAwards(players, sidePots, winnerFunc)
+	return wonAmounts
+}
+
+// DistributePotsWithAwards distributes pots and records each pot's awards.
+func DistributePotsWithAwards(players []BettingPlayer, sidePots []SidePot) (map[int]int, [][]PotAward) {
+	return distributePotsWithAwards(players, sidePots, FindPotWinners)
+}
+
+func distributePotsWithAwards(players []BettingPlayer, sidePots []SidePot, winnerFunc WinnerFunc) (map[int]int, [][]PotAward) {
 	wonAmounts := make(map[int]int)
+	potAwards := make([][]PotAward, 0, len(sidePots))
 	for _, sp := range sidePots {
 		winners := winnerFunc(players, sp.EligiblePlayers)
+		awards := make([]PotAward, 0, len(winners))
 		if len(winners) == 0 {
+			potAwards = append(potAwards, awards)
 			continue
 		}
 		share := sp.Amount / len(winners)
@@ -486,9 +505,11 @@ func DistributePotsWithWinnerFunc(players []BettingPlayer, sidePots []SidePot, w
 			}
 			players[wIdx].AddChips(won)
 			wonAmounts[wIdx] += won
+			awards = append(awards, PotAward{PlayerIdx: wIdx, Amount: won})
 		}
+		potAwards = append(potAwards, awards)
 	}
-	return wonAmounts
+	return wonAmounts, potAwards
 }
 
 // DistributePots サイドポットの勝者配分を計算しチップを付与

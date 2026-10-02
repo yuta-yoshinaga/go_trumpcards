@@ -51,6 +51,7 @@ const splitState = makeState({
   losingCard: card('SPADE', 5),
   winningCard: card('HEART', 5),
   split: true,
+  turnsPlayed: 1,
 });
 const callState = makeState({
   phase: 3,
@@ -198,6 +199,27 @@ describe('FaroPage', () => {
     mockExec.mockResolvedValue(splitState);
     renderWithProviders(<FaroPage />);
     await waitFor(() => expect(screen.getByText('スプリット（バンクが半分回収）')).toBeInTheDocument());
+  });
+
+  it('announces a newly dealt result with both cards and whether they split', async () => {
+    renderWithProviders(<FaroPage />);
+    await screen.findByTestId('deal-button');
+    expect(screen.getByTestId('faro-deal-result-live')).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValueOnce(turnState);
+    fireEvent.click(screen.getByTestId('deal-button'));
+    expect(await screen.findByTestId('faro-deal-result-live')).toHaveTextContent(
+      '負け札 ♠ 3、勝ち札 ♥ 7、スプリットなし',
+    );
+  });
+
+  it('announces when the dealt cards split', async () => {
+    mockExec.mockResolvedValue(bettingState);
+    renderWithProviders(<FaroPage />);
+    const dealButton = await screen.findByTestId('deal-button');
+    mockExec.mockResolvedValue(splitState);
+    fireEvent.click(dealButton);
+    expect(await screen.findByTestId('faro-deal-result-live')).toHaveTextContent('負け札 ♠ 5、勝ち札 ♥ 5、スプリット');
   });
 
   it('submits a call once all three ranks are ordered by tapping the card images', async () => {

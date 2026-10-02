@@ -454,28 +454,72 @@ function OasisPokerPageContent() {
             />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="oasis-bet-controls">
-                <ChipBetInput
-                  id="oasispoker-ante-amount"
-                  label={t('label.ante')}
-                  value={anteAmount}
-                  onChange={setAnteAmount}
-                  min={10}
-                  max={Math.max(0, state.chips - jackpotAmount)}
-                  step={10}
-                  disabled={loading}
-                  showSteppers
-                />
-                <ChipBetInput
-                  id="oasispoker-jackpot-amount"
-                  label={t('label.jackpot')}
-                  value={jackpotAmount}
-                  onChange={setJackpotAmount}
-                  min={0}
-                  max={Math.max(0, state.chips - anteAmount)}
-                  step={10}
-                  disabled={loading}
-                  showSteppers
-                />
+                <div className="flex flex-col items-center gap-1">
+                  <ChipBetInput
+                    id="oasispoker-ante-amount"
+                    label={t('label.ante')}
+                    value={anteAmount}
+                    onChange={setAnteAmount}
+                    min={10}
+                    max={Math.max(0, state.chips - jackpotAmount)}
+                    step={10}
+                    disabled={loading}
+                    showSteppers
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      className={btnSecondary}
+                      onClick={() => setAnteAmount(10)}
+                      disabled={loading}
+                      aria-label={`${t('label.ante')} ${t('button.minimum')}`}
+                    >
+                      {t('button.minimum')}
+                    </button>
+                    <button
+                      type="button"
+                      className={btnSecondary}
+                      onClick={() => setAnteAmount(Math.max(0, state.chips - jackpotAmount))}
+                      disabled={loading}
+                      aria-label={`${t('label.ante')} ${t('button.maximum')}`}
+                    >
+                      {t('button.maximum')}
+                    </button>
+                  </div>
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <ChipBetInput
+                    id="oasispoker-jackpot-amount"
+                    label={t('label.jackpot')}
+                    value={jackpotAmount}
+                    onChange={setJackpotAmount}
+                    min={0}
+                    max={Math.max(0, state.chips - anteAmount)}
+                    step={10}
+                    disabled={loading}
+                    showSteppers
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      className={btnSecondary}
+                      onClick={() => setJackpotAmount(0)}
+                      disabled={loading}
+                      aria-label={`${t('label.jackpot')} ${t('button.minimum')}`}
+                    >
+                      {t('button.minimum')}
+                    </button>
+                    <button
+                      type="button"
+                      className={btnSecondary}
+                      onClick={() => setJackpotAmount(Math.max(0, state.chips - anteAmount))}
+                      disabled={loading}
+                      aria-label={`${t('label.jackpot')} ${t('button.maximum')}`}
+                    >
+                      {t('button.maximum')}
+                    </button>
+                  </div>
+                </div>
                 <button
                   type="button"
                   className={btnPrimary}

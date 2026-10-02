@@ -21,6 +21,22 @@ func (owp *OmahaWebPresenter) Output(o interfaces.OmahaGame, lastErr error) stri
 func (owp *OmahaWebPresenter) buildOutput(o interfaces.OmahaGame, lastErr error) *controller.HoldemWebOutput {
 	resObj := buildCommunityCardBaseOutput(o)
 	resObj.Players = buildPokerPlayersOutput(o.GetPhase(), o.GetPlayerCnt(), func(i int) communityCardPresenterPlayer { return o.GetPlayer(i) }, domain.OmahaPhaseShowdown, domain.OmahaPhaseEnd, pokerHandName)
+	for i := 0; i < o.GetPlayerCnt(); i++ {
+		player := o.GetPlayer(i)
+		if player == nil || !player.GetIsHuman() || player.GetFolded() {
+			continue
+		}
+		best := player.GetBestHand()
+		if o.GetPhase() != domain.OmahaPhaseShowdown && o.GetPhase() != domain.OmahaPhaseEnd {
+			_, best = player.PeekBestHand(o.GetCommunityCards())
+		}
+		hole := make([]*domain.Card, player.GetCardsSize())
+		for idx := range hole {
+			hole[idx] = player.GetCard(idx)
+		}
+		resObj.Players[i].LiveBestHandHoleIndices, resObj.Players[i].LiveBestHandBoardIndices = liveBestHandIndices(hole, o.GetCommunityCards(), best)
+		break
+	}
 	resObj.IsHiLo = o.GetIsHiLo()
 	resObj.PotAwards = make([]*controller.HoldemWebOutputPotAward, 0, len(o.GetPotAwards()))
 	for _, a := range o.GetPotAwards() {

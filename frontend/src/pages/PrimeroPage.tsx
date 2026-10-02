@@ -296,6 +296,17 @@ function PrimeroPageContent() {
                     pot: state.pot,
                   })}
                 </div>
+                {humanPlayer && (
+                  <div data-testid="primero-round-settlement">
+                    <div>{t('roundResult.yourBet', { amount: humanPlayer.roundBet })}</div>
+                    <div>{t('roundResult.payout', { amount: humanPlayer.roundPayout })}</div>
+                    <div>
+                      {t('roundResult.net', {
+                        amount: humanPlayer.netChange > 0 ? `+${humanPlayer.netChange}` : String(humanPlayer.netChange),
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

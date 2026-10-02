@@ -360,6 +360,7 @@ function DoppelkopfPageContent() {
                 restrictedTooltip={t('playButton')}
                 trumpIndices={trumpIndices}
                 trumpTitle={t('trumpLegend.badgeTitle')}
+                trumpAccessibleLabel={t('trumpLegend.badgeTitle')}
               />
             )}
 

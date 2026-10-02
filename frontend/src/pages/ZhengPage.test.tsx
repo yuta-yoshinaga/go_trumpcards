@@ -87,6 +87,18 @@ describe('ZhengPage', () => {
     expect(await screen.findByTestId('pass-button')).toBeEnabled();
   });
 
+  it('shows the table combination type only while table cards are present', async () => {
+    mockExec.mockResolvedValue(followState());
+    const { unmount } = renderWithProviders(<ZhengPage />);
+    expect(await screen.findByTestId('zheng-table-play-type')).toHaveTextContent('シングル');
+
+    unmount();
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<ZhengPage />);
+    await screen.findByTestId('play-button');
+    expect(screen.queryByTestId('zheng-table-play-type')).not.toBeInTheDocument();
+  });
+
   it('selecting a card enables play and clicking plays it', async () => {
     renderWithProviders(<ZhengPage />);
     fireEvent.click(await screen.findByTestId('hand-card-0'));

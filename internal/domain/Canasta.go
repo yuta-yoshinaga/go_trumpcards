@@ -1200,40 +1200,48 @@ func (g *Canasta) scoreRound(goOutPlayerIdx int, goOutBonus int) {
 	for i := 0; i < CanastaPlayerCnt; i++ {
 		player := g.players[i]
 		score := 0
+		player.scoreBreakdown = CanastaScoreBreakdown{}
 
 		// メルドのカード点数
 		for _, m := range player.melds {
 			for _, c := range m.Cards {
-				score += CanastaFamilyCardValue(c)
+				value := CanastaFamilyCardValue(c)
+				score += value
+				player.scoreBreakdown.MeldCards += value
 			}
 			// カナスタボーナス
 			if m.IsCanasta() {
+				bonus := CanastaMixedCanastaBonus
 				if g.config.UseBiriba && m.IsNatural {
-					score += CanastaPureBiribaBonus
+					bonus = CanastaPureBiribaBonus
 				} else if m.IsNatural {
-					score += CanastaNaturalCanastaBonus
-				} else {
-					score += CanastaMixedCanastaBonus
+					bonus = CanastaNaturalCanastaBonus
 				}
+				player.scoreBreakdown.CanastaBonus += bonus
+				score += bonus
 			}
 		}
 
 		// 赤3ボーナス
 		red3Count := len(player.red3s)
 		if red3Count == 4 {
-			score += CanastaAllRed3Bonus
+			player.scoreBreakdown.Red3Bonus = CanastaAllRed3Bonus
 		} else {
-			score += red3Count * CanastaRed3Bonus
+			player.scoreBreakdown.Red3Bonus = red3Count * CanastaRed3Bonus
 		}
+		score += player.scoreBreakdown.Red3Bonus
 
 		// 上がりボーナス
 		if i == goOutPlayerIdx {
-			score += goOutBonus
+			player.scoreBreakdown.GoOutBonus = goOutBonus
+			score += player.scoreBreakdown.GoOutBonus
 		}
 
 		// 手札のカード点数を減算
 		for j := 0; j < player.GetCardsSize(); j++ {
-			score -= CanastaFamilyCardValue(player.GetCard(j))
+			penalty := CanastaFamilyCardValue(player.GetCard(j))
+			player.scoreBreakdown.HandPenalty += penalty
+			score -= penalty
 		}
 
 		player.SetRoundScore(score)
@@ -1592,6 +1600,9 @@ func (g *Canasta) SetConfig(cfg CanastaConfig) { g.config = cfg }
 
 // GetDrewFromDiscard 捨て札から引いたか取得
 func (g *Canasta) GetDrewFromDiscard() bool { return g.drewFromDiscard }
+
+// GetDrawnCard returns the discard-pile top card taken this turn, if any.
+func (g *Canasta) GetDrawnCard() *Card { return g.drawnCard }
 
 // --- Hint ---
 

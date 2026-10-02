@@ -80,6 +80,12 @@ describe('SetteEMezzoPage', () => {
     expect(screen.getByText(/目標: 7\.5/)).toBeInTheDocument();
   });
 
+  it('shows the action log during an active turn', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<SetteEMezzoPage />);
+    expect(await screen.findByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
+  });
+
   it('shows undealt cards from the current shuffled round', async () => {
     mockExec.mockResolvedValue(makeState({ drawPileCount: 27 }));
     renderWithProviders(<SetteEMezzoPage />);

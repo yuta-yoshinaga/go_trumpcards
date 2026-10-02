@@ -18,6 +18,10 @@ func (p *PageOneWebPresenter) Output(g interfaces.PageOneGame, lastErr error) st
 	resObj := new(controller.PageOneWebOutput)
 	resObj.Phase = int(g.GetPhase())
 	resObj.RoundNumber = g.GetRoundNumber()
+	resObj.RoundHistory = g.GetRoundHistory()
+	if resObj.RoundHistory == nil {
+		resObj.RoundHistory = make([]domain.PageOneRoundScore, 0)
+	}
 	resObj.CurrentPlayerIdx = g.GetCurrentPlayerIdx()
 	resObj.DrawPileCount = g.GetDrawPileCount()
 	resObj.GameEndFlag = g.GetGameEndFlag()

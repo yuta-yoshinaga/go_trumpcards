@@ -232,4 +232,38 @@ describe('TongitsPage', () => {
     renderWithProviders(<TongitsPage />);
     expect(await screen.findByTestId('tongits-round-result')).toHaveTextContent('勝者: 引き分け');
   });
+
+  it('announces round scores in the persistent live region at round end', async () => {
+    const roundEndState = state({
+      phase: TongitsPhase.ROUND_END,
+      players: state().players.map((player, index) => ({
+        ...player,
+        roundScore: index + 1,
+        cumulativeScore: 10 + index,
+      })),
+    });
+    mockExec.mockResolvedValueOnce(state()).mockResolvedValueOnce(roundEndState);
+    renderWithProviders(<TongitsPage />);
+
+    await screen.findByTestId('tongits-melds');
+    const announcement = screen.getByTestId('tongits-round-score-announcement');
+    const liveRegion = announcement.querySelector('[aria-live="polite"]');
+    expect(liveRegion).toBeInTheDocument();
+    expect(liveRegion).toBeEmptyDOMElement();
+    fireEvent.click(await screen.findByRole('button', { name: 'チャレンジ' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('challenge', undefined, undefined, undefined, undefined, undefined, [
+        true,
+        true,
+      ]),
+    );
+    await waitFor(() => {
+      expect(liveRegion).toHaveTextContent('+1');
+      expect(liveRegion).toHaveTextContent('+2');
+      expect(liveRegion).toHaveTextContent('+3');
+    });
+    expect(liveRegion).toHaveTextContent('+1');
+    expect(liveRegion).toHaveTextContent('+2');
+    expect(announcement.querySelector('[aria-live="polite"]')).toBe(liveRegion);
+  });
 });

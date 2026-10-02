@@ -9,7 +9,8 @@
     "spread": "スプレッド",
     "initial": "初手",
     "third": "3枚目",
-    "winners": "当たり"
+    "winners": "当たり",
+    "winningOdds": "当たり札: {{winningCards}}枚 / {{remainingCards}}枚 ({{percent}}%)"
   },
   "button": {
     "bet": "ベット",

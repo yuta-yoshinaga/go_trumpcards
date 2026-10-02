@@ -43,6 +43,8 @@ const betState = makeTrenteEtQuaranteState();
 
 const endState = makeTrenteEtQuaranteState({
   phase: TrenteEtQuarantePhase.RESULT,
+  roundNumber: 1,
+  chips: 1100,
   stake: 100,
   currentBet: TrenteEtQuaranteBetType.NOIR,
   noirRow: [card('SPADE', 10), card('CLOVER', 13), card('SPADE', 8)],
@@ -59,6 +61,7 @@ const endState = makeTrenteEtQuaranteState({
 
 const refaitState = makeTrenteEtQuaranteState({
   phase: TrenteEtQuarantePhase.RESULT,
+  roundNumber: 2,
   stake: 100,
   noirRow: [card('SPADE', 1)],
   rougeRow: [card('HEART', 1)],
@@ -100,6 +103,47 @@ describe('TrenteEtQuarantePage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<TrenteEtQuarantePage />);
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset', undefined, undefined, { defaultBet: 0 }));
+    expect(await screen.findByTestId('teq-session-stats')).toHaveTextContent('セッション収支');
+    expect(screen.getByTestId('teq-session-stats')).toHaveTextContent('差引収支');
+  });
+
+  it('renders server session totals and signed net, including reset totals', async () => {
+    mockApi.mockResolvedValueOnce(betState).mockResolvedValueOnce(
+      makeTrenteEtQuaranteState({
+        ...endState,
+        session: { startingChips: 1000, net: 100, wins: 1, losses: 2, draws: 3, refaits: 4 },
+      }),
+    );
+    renderWithProviders(<TrenteEtQuarantePage />);
+    await screen.findByTestId('teq-deal-button');
+    fireEvent.click(screen.getByTestId('teq-deal-button'));
+    await waitFor(() => expect(screen.getByTestId('teq-session-stats')).toHaveTextContent('勝ち1'));
+    expect(screen.getByTestId('teq-session-stats')).toHaveTextContent('差引収支+100');
+    expect(screen.getByTestId('teq-session-stats')).toHaveTextContent('負け2');
+    expect(screen.getByTestId('teq-session-stats')).toHaveTextContent('引き分け3');
+    expect(screen.getByTestId('teq-session-stats')).toHaveTextContent('31での引き分け（ルフェ）4');
+
+    mockApi.mockResolvedValueOnce(
+      makeTrenteEtQuaranteState({
+        chips: 1100,
+        session: { startingChips: 1100, net: 0, wins: 0, losses: 0, draws: 0, refaits: 0 },
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+    await waitFor(() => expect(screen.getByTestId('teq-session-stats')).toHaveTextContent('差引収支0'));
+    expect(screen.getByTestId('teq-session-stats')).toHaveTextContent('勝ち0');
+    expect(screen.getByTestId('teq-session-stats')).toHaveTextContent('31での引き分け（ルフェ）0');
+  });
+
+  it('renders a negative server net with its minus sign', async () => {
+    mockApi.mockResolvedValue(
+      makeTrenteEtQuaranteState({
+        session: { startingChips: 1000, net: -25, wins: 0, losses: 1, draws: 0, refaits: 0 },
+      }),
+    );
+    renderWithProviders(<TrenteEtQuarantePage />);
+    expect(await screen.findByTestId('teq-session-stats')).toHaveTextContent('差引収支-25');
   });
 
   it('renders the bet phase with the four bet buttons and a deal button', async () => {

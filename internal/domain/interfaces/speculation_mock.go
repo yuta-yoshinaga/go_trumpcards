@@ -77,6 +77,14 @@ func (m *MockSpeculationGame) GetLastTrade() *domain.SpeculationTrade {
 	return nil
 }
 
+func (m *MockSpeculationGame) GetRoundChipChanges() []int {
+	args := m.Called()
+	if v, ok := args.Get(0).([]int); ok {
+		return v
+	}
+	return nil
+}
+
 func (m *MockSpeculationGame) GetActionLog() []*domain.ActionLogEntry {
 	args := m.Called()
 	if v, ok := args.Get(0).([]*domain.ActionLogEntry); ok {

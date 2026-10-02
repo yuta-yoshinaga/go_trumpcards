@@ -13,6 +13,7 @@
   "faceLabel": "[{{idx}}] {{hour}} o'clock",
   "faceTarget": "-> {{rank}}",
   "faceComplete": "done",
+  "completedFaces": "Completed clock faces: {{count}}/{{total}}",
   "columnLabel": "Column {{col}}:",
   "hintFrom": "tableau column {{col}}",
   "hintToFoundation": "clock face {{idx}}",

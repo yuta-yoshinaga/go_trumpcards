@@ -81,3 +81,6 @@ func minibridgeHandOf(m *Minibridge, playerIdx int, cards ...*Card) {
 		p.AddCard(c)
 	}
 }
+
+// SetRoundDeltaForTest sets the latest deal delta for presenter tests.
+func (m *Minibridge) SetRoundDeltaForTest(delta [MinibridgeTeamCnt]int) { m.roundDelta = delta }

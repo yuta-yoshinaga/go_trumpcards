@@ -104,6 +104,8 @@ type Ecarte struct {
 	dealerIdx        int
 	leadPlayerIdx    int
 	dealPoints       []int
+	dealTrickPoints  []int
+	dealKingBonus    []int
 	matchScore       []int
 	refusalByDealer  bool
 	gameEndFlag      bool
@@ -114,12 +116,14 @@ type Ecarte struct {
 // NewEcarte コンストラクタ
 func NewEcarte(trumpCards *TrumpCards, players []*EcartePlayer, config EcarteConfig) *Ecarte {
 	return &Ecarte{
-		trumpCards: trumpCards,
-		players:    players,
-		config:     config,
-		winnerIdx:  -1,
-		dealPoints: make([]int, len(players)),
-		matchScore: make([]int, len(players)),
+		trumpCards:      trumpCards,
+		players:         players,
+		config:          config,
+		winnerIdx:       -1,
+		dealPoints:      make([]int, len(players)),
+		dealTrickPoints: make([]int, len(players)),
+		dealKingBonus:   make([]int, len(players)),
+		matchScore:      make([]int, len(players)),
 	}
 }
 
@@ -159,6 +163,8 @@ func (e *Ecarte) NextRound() {
 // startDeal 1 ディールを開始する。
 func (e *Ecarte) startDeal() {
 	e.dealPoints = make([]int, len(e.players))
+	e.dealTrickPoints = make([]int, len(e.players))
+	e.dealKingBonus = make([]int, len(e.players))
 	e.currentTrick = nil
 	e.trumpCard = nil
 	e.trumpSuit = 0
@@ -184,6 +190,7 @@ func (e *Ecarte) startDeal() {
 		// 表向きが切り札 King なら親に 1 点。
 		if e.trumpCard.GetValue() == 13 {
 			e.dealPoints[e.dealerIdx]++
+			e.dealKingBonus[e.dealerIdx]++
 			e.appendLog(e.dealerIdx, "king_turn", "ecarte.log.kingTurn", map[string]string{"name": playerName(e.players, e.dealerIdx)}, nil)
 		}
 	}
@@ -312,6 +319,7 @@ func (e *Ecarte) startPlay() {
 	for i, p := range e.players {
 		if e.handHasTrumpKing(p) {
 			e.dealPoints[i]++
+			e.dealKingBonus[i]++
 			e.appendLog(i, "king", "ecarte.log.king", map[string]string{"name": playerName(e.players, i)}, nil)
 		}
 	}
@@ -469,6 +477,7 @@ func (e *Ecarte) scoreDeal() {
 		pts++
 	}
 	e.dealPoints[winner] += pts
+	e.dealTrickPoints[winner] += pts
 
 	for i := range e.players {
 		e.matchScore[i] += e.dealPoints[i]
@@ -682,6 +691,22 @@ func (e *Ecarte) GetDealPoints(i int) int {
 		return 0
 	}
 	return e.dealPoints[i]
+}
+
+// GetDealTrickPoints プレイヤーの当ディールのトリック得点取得
+func (e *Ecarte) GetDealTrickPoints(i int) int {
+	if i < 0 || i >= len(e.dealTrickPoints) {
+		return 0
+	}
+	return e.dealTrickPoints[i]
+}
+
+// GetDealKingBonus プレイヤーの当ディールのキングボーナス取得
+func (e *Ecarte) GetDealKingBonus(i int) int {
+	if i < 0 || i >= len(e.dealKingBonus) {
+		return 0
+	}
+	return e.dealKingBonus[i]
 }
 
 // SetDealPoints プレイヤーの当ディール得点設定 (テスト用)
@@ -912,6 +937,8 @@ type ecarteJSON struct {
 	DealerIdx        int               `json:"di"`
 	LeadPlayerIdx    int               `json:"li"`
 	DealPoints       []int             `json:"dp"`
+	DealTrickPoints  []int             `json:"dtp,omitempty"`
+	DealKingBonus    []int             `json:"dkb,omitempty"`
 	MatchScore       []int             `json:"ms"`
 	RefusalByDealer  bool              `json:"rf"`
 	GameEndFlag      bool              `json:"ge"`
@@ -936,6 +963,8 @@ func (e *Ecarte) MarshalJSON() ([]byte, error) {
 		DealerIdx:        e.dealerIdx,
 		LeadPlayerIdx:    e.leadPlayerIdx,
 		DealPoints:       e.dealPoints,
+		DealTrickPoints:  e.dealTrickPoints,
+		DealKingBonus:    e.dealKingBonus,
 		MatchScore:       e.matchScore,
 		RefusalByDealer:  e.refusalByDealer,
 		GameEndFlag:      e.gameEndFlag,
@@ -1003,6 +1032,8 @@ func (e *Ecarte) UnmarshalJSON(data []byte) error {
 	e.dealerIdx = j.DealerIdx
 	e.leadPlayerIdx = j.LeadPlayerIdx
 	e.dealPoints = ecarteEnsureLen(j.DealPoints)
+	e.dealTrickPoints = ecarteEnsureLen(j.DealTrickPoints)
+	e.dealKingBonus = ecarteEnsureLen(j.DealKingBonus)
 	e.matchScore = ecarteEnsureLen(j.MatchScore)
 	e.refusalByDealer = j.RefusalByDealer
 	e.gameEndFlag = j.GameEndFlag

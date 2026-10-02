@@ -48,6 +48,7 @@ function makeState(overrides: Partial<MinibridgeResponse> = {}): MinibridgeRespo
     lastMade: false,
     lastTricks: 0,
     teamScores: [0, 0],
+    roundDelta: [0, 0],
     currentPlayerIdx: 0,
     leadPlayerIdx: 0,
     dealerIdx: 0,
@@ -81,6 +82,22 @@ beforeEach(() => {
 });
 
 describe('MinibridgePage', () => {
+  it('shows server-provided round deltas with signs', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        lastMade: true,
+        requiredTricks: 8,
+        lastTricks: 9,
+        teamScores: [110, 0],
+        roundDelta: [110, 0],
+      }),
+    );
+    renderWithProviders(<MinibridgePage />);
+    expect(await screen.findByTestId('mb-round-result')).toHaveTextContent('今回のラウンド: チーム0 +110点');
+    expect(screen.getByTestId('mb-round-result')).toHaveTextContent('今回のラウンド: チーム1 +0点');
+  });
+
   it('shows ? for an unknown settled contract denomination', async () => {
     mockExec.mockResolvedValue(playing({ contractSuit: 99 }));
     renderWithProviders(<MinibridgePage />);

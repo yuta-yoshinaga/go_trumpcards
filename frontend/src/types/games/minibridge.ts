@@ -76,6 +76,8 @@ export interface MinibridgeResponse extends BaseGameResponse {
   lastTricks: number;
   /** Running totals, indexed by team. */
   teamScores: number[];
+  /** Score change in the latest deal, indexed by team. */
+  roundDelta: number[];
   currentPlayerIdx: number;
   leadPlayerIdx: number;
   dealerIdx: number;

@@ -278,7 +278,11 @@ function NarcoticPageContent() {
                                     // まとまりなので、盤面全体のボタンに分けてある。
                                     onClick={() => handleMove(colIdx)}
                                     disabled={!isPlaying || busy || c.movable !== true}
-                                    aria-label={cardAlt(c.card)}
+                                    aria-label={t('topCardStatus', {
+                                      card: cardAlt(c.card),
+                                      col: colIdx,
+                                      state: t(c.movable === true ? 'movable' : 'notMovable'),
+                                    })}
                                     draggable={isPlaying && !busy && c.movable === true}
                                     onDragStart={dnd.handleDragStart(columnZone)}
                                     onDragEnd={dnd.handleDragEnd}

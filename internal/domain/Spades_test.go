@@ -40,6 +40,33 @@ func TestNewSpades(t *testing.T) {
 	assert.Equal(t, 0, s.GetRoundNumber())
 }
 
+func TestSpades_ScoreRoundBreakdownSumsToRoundScore(t *testing.T) {
+	cases := []struct {
+		bid, tricks, bags int
+		want              domain.SpadesScoreBreakdown
+	}{
+		{3, 5, 0, domain.SpadesScoreBreakdown{BidScore: 30, OvertrickScore: 2}},
+		{3, 2, 0, domain.SpadesScoreBreakdown{BidScore: -30}},
+		{0, 0, 0, domain.SpadesScoreBreakdown{NilScore: 100}},
+		{0, 1, 0, domain.SpadesScoreBreakdown{NilScore: -100}},
+		{2, 4, 9, domain.SpadesScoreBreakdown{BidScore: 20, OvertrickScore: 2, BagPenalty: 100}},
+	}
+	for _, tc := range cases {
+		s := newTestSpades()
+		s.Reset()
+		s.SetPhase(domain.SpadesPhaseRoundEnd)
+		p := s.GetPlayer(0)
+		p.SetBid(tc.bid)
+		for j := 0; j < tc.tricks; j++ {
+			p.AddTrick(nil)
+		}
+		p.SetBags(tc.bags)
+		s.ScoreRound()
+		assert.Equal(t, tc.want, p.GetScoreBreakdown())
+		assert.Equal(t, p.GetRoundScore(), p.GetScoreBreakdown().Total())
+	}
+}
+
 func TestNewDefaultSpades(t *testing.T) {
 	s := domain.NewDefaultSpades()
 	assert.NotNil(t, s)

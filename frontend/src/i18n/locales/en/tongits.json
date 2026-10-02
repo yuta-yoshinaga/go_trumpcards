@@ -42,6 +42,7 @@
   "roundEndReasonLine": "Round end reason: {{reason}}",
   "roundWinnerLine": "Round winner: {{name}}",
   "cpuName": "CPU {{id}}",
+  "listSeparator": ", ",
   "tongitsOnDeal": "Tongits on deal! Instant win",
   "tongitsOnDealBanner": {
     "title": "TONGITS!",

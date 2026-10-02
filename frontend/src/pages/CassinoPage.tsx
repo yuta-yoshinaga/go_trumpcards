@@ -209,6 +209,8 @@ function CassinoPageContent() {
   }
 
   const isGameEnd = state.gameEndFlag;
+  const isRoundEnd = state.phase === 'roundEnd' || isGameEnd;
+  const roundDetail = state.lastRoundDetail;
   const humanWon = isGameEnd && state.roundWinners.includes(0);
   const takeCandidateIndices =
     handIndex !== null && isHumanTurn
@@ -250,6 +252,51 @@ function CassinoPageContent() {
               <button type="button" onClick={retry} className="text-ds-error underline">
                 {error}
               </button>
+            )}
+
+            {isRoundEnd && roundDetail && (
+              <section
+                className="bg-black/25 rounded-lg p-3 text-sm text-ds-text-primary"
+                aria-label={t('breakdown.title')}
+                data-testid="cs-score-breakdown"
+              >
+                <h2 className="text-center font-semibold mb-2">{t('breakdown.title')}</h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="text-ds-text-muted">
+                        <th className="pr-3">{t('breakdown.player')}</th>
+                        <th className="px-2">{t('breakdown.cards')}</th>
+                        <th className="px-2">{t('breakdown.spades')}</th>
+                        <th className="px-2">{t('breakdown.aces')}</th>
+                        <th className="px-2">{t('breakdown.sweeps')}</th>
+                        <th className="px-2">{t('breakdown.bigCasino')}</th>
+                        <th className="px-2">{t('breakdown.littleCasino')}</th>
+                        <th className="pl-2">{t('breakdown.gained')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {state.players.map((player) => {
+                        const idx = player.id;
+                        return (
+                          <tr key={idx} data-testid={`cs-breakdown-player-${idx}`}>
+                            <th className="pr-3 font-medium">
+                              {player.isHuman ? tc('player.you') : tc('player.cpu', { id: idx })}
+                            </th>
+                            <td className="px-2">{roundDetail.cards[idx] ?? 0}</td>
+                            <td className="px-2">{roundDetail.spades[idx] ?? 0}</td>
+                            <td className="px-2">{roundDetail.aces[idx] ?? 0}</td>
+                            <td className="px-2">{roundDetail.sweeps[idx] ?? 0}</td>
+                            <td className="px-2">{roundDetail.hasBigCasino === idx ? t('breakdown.held') : '—'}</td>
+                            <td className="px-2">{roundDetail.hasLittleCasino === idx ? t('breakdown.held') : '—'}</td>
+                            <td className="pl-2">{roundDetail.gained[idx] ?? 0}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
             )}
 
             {/* CPU players */}

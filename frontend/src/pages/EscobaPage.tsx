@@ -345,6 +345,7 @@ function EscobaPageContent() {
                         type="button"
                         onClick={() => isHumanTurn && toggleTable(i)}
                         disabled={!isHumanTurn}
+                        aria-pressed={tableIndices.includes(i)}
                         className={`relative rounded transition-all ${
                           isMatchedCard
                             ? `ring-4 ring-offset-2 ring-offset-ds-surface ${matchColor.ring}`
@@ -391,6 +392,7 @@ function EscobaPageContent() {
                     type="button"
                     onClick={() => isHumanTurn && setHandIndex(handIndex === i ? null : i)}
                     disabled={!isHumanTurn}
+                    aria-pressed={handIndex === i}
                     className={`rounded transition-all ${
                       handIndex === i ? 'ring-2 ring-ds-info -translate-y-2' : ''
                     } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}

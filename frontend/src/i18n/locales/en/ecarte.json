@@ -58,7 +58,7 @@
   "target": "Target: {{points}} pts",
   "roundResult": {
     "title": "Deal Result (points won)",
-    "line": "{{name}}: {{points}} pts",
+    "line": "{{name}}: {{points}} pts (Tricks {{tricks}} pts / King bonus {{kingBonus}} pts)",
     "winnerAnnouncement": "{{name}} won this deal with {{points}} points"
   },
   "hintAvailable": "Hint",

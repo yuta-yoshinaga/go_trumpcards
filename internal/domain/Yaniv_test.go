@@ -326,6 +326,30 @@ func TestYaniv_NextRound(t *testing.T) {
 	assert.Equal(t, prev, g.GetRoundNumber())
 }
 
+func TestYaniv_RoundScoreHistoryPersistsUntilReset(t *testing.T) {
+	g := newTestYaniv()
+	setYanivHand(g.GetPlayer(0), NewCard(CardDesignSpade, 1, false), NewCard(CardDesignHeart, 2, false))
+	setYanivHand(g.GetPlayer(1), NewCard(CardDesignSpade, 10, false))
+	setYanivHand(g.GetPlayer(2), NewCard(CardDesignClover, 7, false))
+	setYanivHand(g.GetPlayer(3), NewCard(CardDesignDiamond, 9, false))
+	g.resolveYaniv(0)
+	roundOne := append([]int(nil), g.roundScores...)
+
+	g.NextRound()
+	setYanivHand(g.GetPlayer(0), NewCard(CardDesignSpade, 2, false))
+	setYanivHand(g.GetPlayer(1), NewCard(CardDesignHeart, 8, false))
+	setYanivHand(g.GetPlayer(2), NewCard(CardDesignClover, 6, false))
+	setYanivHand(g.GetPlayer(3), NewCard(CardDesignDiamond, 7, false))
+	g.resolveYaniv(0)
+	roundTwo := append([]int(nil), g.roundScores...)
+
+	assert.Equal(t, [][]int{roundOne, roundTwo}, g.GetRoundScoreHistory())
+	assert.Len(t, g.GetRoundScoreHistory(), 2)
+
+	g.Reset()
+	assert.Empty(t, g.GetRoundScoreHistory())
+}
+
 func TestYaniv_BestYanivDiscard(t *testing.T) {
 	// A run of three spades (4+5+6=15) beats any single and the pair of 8s (16?).
 	cards := []*Card{
@@ -389,6 +413,7 @@ func TestYaniv_CpuDiscardEmptyHandDoesNotPanic(t *testing.T) {
 
 func TestYaniv_JSONRoundTrip(t *testing.T) {
 	g := newTestYaniv()
+	g.roundScoreHistory = [][]int{{0, 4, 8, 2}, {3, 0, 1, 5}}
 	data, err := json.Marshal(g)
 	require.NoError(t, err)
 
@@ -398,6 +423,7 @@ func TestYaniv_JSONRoundTrip(t *testing.T) {
 	assert.Equal(t, g.GetRoundNumber(), restored.GetRoundNumber())
 	assert.Equal(t, g.GetDrawPileCount(), restored.GetDrawPileCount())
 	assert.Equal(t, len(g.GetPickupCards()), len(restored.GetPickupCards()))
+	assert.Equal(t, g.GetRoundScoreHistory(), restored.GetRoundScoreHistory())
 }
 
 func TestYaniv_UnmarshalRejectsOversize(t *testing.T) {
@@ -429,6 +455,8 @@ func TestYaniv_UnmarshalNilSliceDefaults(t *testing.T) {
 	assert.Equal(t, 0, g.GetDrawPileCount())
 	assert.Empty(t, g.GetPickupCards())
 	assert.Equal(t, YanivPlayerCnt, g.GetPlayerCnt())
+	assert.NotNil(t, g.GetRoundScoreHistory()) // old snapshots have no rsh key
+	assert.Empty(t, g.GetRoundScoreHistory())
 }
 
 func TestYaniv_ActionLogRecorded(t *testing.T) {

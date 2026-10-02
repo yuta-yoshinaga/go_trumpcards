@@ -1,5 +1,6 @@
 {
   "callAmount": "({{amount}})",
+  "callPotOdds": "Required pot odds: {{percent}}%",
   "phase": {
     "thirdStreet": "Third Street",
     "fourthStreet": "Fourth Street",
@@ -81,6 +82,7 @@
     "straightFlush": "Straight Flush",
     "royalFlush": "Royal Flush"
   },
+  "listSeparator": ", ",
   "hiLo": {
     "title": "Hi / Lo split",
     "hi": "Hi",

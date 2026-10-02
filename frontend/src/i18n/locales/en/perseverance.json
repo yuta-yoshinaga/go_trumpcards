@@ -50,7 +50,9 @@
   "redeal": "Gather & redeal",
   "stats": {
     "title": "Session results",
+    "starts": "Games started: {{count}}",
     "games": "Games cleared: {{count}}",
+    "clearRate": "Clear rate: {{rate}}%",
     "moves": "Total moves: {{count}}",
     "redeals": "Redeals remaining at clear: {{count}}",
     "clear": "Clear results"

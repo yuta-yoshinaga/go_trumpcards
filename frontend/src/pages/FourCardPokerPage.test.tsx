@@ -4,6 +4,7 @@ import { actionLogApi, fourcardpokerApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, FourCardPokerResponse } from '../types/card';
+import { cardAlt } from '../utils/cardAlt';
 import { FourCardPokerPage, fourCardBestIndices } from './FourCardPokerPage';
 
 vi.mock('../hooks/useGameHint');
@@ -336,8 +337,23 @@ describe('FourCardPokerPage', () => {
       // プレイヤー: 9,9,9,5 が役を作り、クラブ 2 は外れる。
       const marked = document.querySelectorAll('[data-fcp-best="true"]');
       expect(marked).toHaveLength(4);
+      expect(screen.getByRole('img', { name: /♠ 9.*最良の役に含まれる/ })).toBeInTheDocument();
+      expect(screen.getByRole('img', { name: /♣ 2.*最良の役に含まれない/ })).toBeInTheDocument();
       const dealerMarked = document.querySelectorAll('[data-fcp-dealer-best="true"]');
       expect(dealerMarked).toHaveLength(4);
+    });
+
+    it('uses plain card names when an end phase has no player best hand', async () => {
+      const stateWithEmptyPlayerBest = { ...endPhaseFold, playerBest: [] };
+      mockExec.mockResolvedValue(stateWithEmptyPlayerBest);
+      renderWithProviders(<FourCardPokerPage />);
+      await waitFor(() => expect(screen.getByText('フォールド')).toBeInTheDocument());
+
+      const playerCards = stateWithEmptyPlayerBest.playerHand.map((c) => cardAlt(c));
+      for (const alt of playerCards) {
+        expect(screen.getByRole('img', { name: alt })).toBeInTheDocument();
+      }
+      expect(screen.queryByRole('img', { name: /最良の役に含まれない/ })).not.toBeInTheDocument();
     });
 
     // **負のコントロール: 決着前は何も強調しない。**
@@ -357,6 +373,7 @@ describe('FourCardPokerPage', () => {
 
       expect(document.querySelectorAll('[data-fcp-best="true"]')).toHaveLength(0);
       expect(document.querySelectorAll('[data-fcp-dealer-best="true"]')).toHaveLength(0);
+      expect(screen.queryByRole('img', { name: /最良の役に含まれる|最良の役に含まれない/ })).not.toBeInTheDocument();
     });
   });
 

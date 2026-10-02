@@ -9,6 +9,7 @@
   "discard": "Removed",
   "discardPile": "Discards",
   "moveCount": "Moves",
+  "progressUpdate": "Moves: {{moveCount}}, removed: {{discardCount}}",
   "combo": "Combo ×{{count}}",
   "draw": "Deal",
   "remove": "Remove",

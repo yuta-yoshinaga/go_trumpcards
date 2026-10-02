@@ -26,7 +26,8 @@
     "play": "Play",
     "anteBonus": "Ante bonus",
     "lowBonus": "Low bonus",
-    "total": "Total"
+    "total": "Total payout",
+    "netChange": "Net change"
   },
   "betSlip": {
     "ante": "Ante",

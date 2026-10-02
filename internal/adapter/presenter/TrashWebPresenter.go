@@ -16,7 +16,12 @@ func (p *TrashWebPresenter) Output(t interfaces.TrashGame, lastErr error) string
 	resObj := p.buildBase(t)
 
 	if lastErr != nil {
-		resObj.Message = lastErr.Error()
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			resObj.MessageCode = code
+			resObj.MessageParams = params
+		} else {
+			resObj.Message = lastErr.Error()
+		}
 	} else {
 		switch t.GetPhase() {
 		case domain.TrashPhasePlayerTurn:
@@ -67,6 +72,7 @@ func (p *TrashWebPresenter) buildBase(t interfaces.TrashGame) *controller.TrashW
 	resObj.DiscardSize = t.GetDiscardSize()
 	resObj.MoveCount = t.GetMoveCount()
 	resObj.Winner = t.GetWinner()
+	resObj.CanUndo = t.CanUndo()
 	resObj.SuggestedWildSlot = t.SuggestWildSlot()
 
 	if top := t.GetDiscardTop(); top != nil {

@@ -250,6 +250,15 @@ function FreeBetPageContent() {
               {isBetPhase && !gameOver && (
                 <div className="flex flex-col items-center gap-2" data-tutorial="fb-bet">
                   <p className="text-ds-text-muted text-sm">{t('betGuide')}</p>
+                  <div
+                    data-testid="fb-bet-summary"
+                    className="rounded bg-ds-surface-elevated px-3 py-2 text-ds-text-primary text-sm tabular-nums"
+                  >
+                    <p>{t('betSummary.balance', { amount: state.chips })}</p>
+                    <p>{t('betSummary.ante', { amount: ante })}</p>
+                    <p>{t('betSummary.remaining', { amount: state.chips - ante })}</p>
+                    <p className="text-ds-text-muted">{t('betSummary.freeBets')}</p>
+                  </div>
                   <ChipBetInput
                     id="freebet-ante"
                     label={t('label.ante')}

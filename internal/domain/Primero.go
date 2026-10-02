@@ -400,6 +400,7 @@ func (g *Primero) resolveRound() {
 	g.state.winnerIdx = winner
 	if winner >= 0 {
 		g.players[winner].AddChips(g.state.pot)
+		g.players[winner].SetRoundPayout(g.state.pot)
 		g.appendLog(winner, "win", "primero.log.win", map[string]string{"name": playerName(g.players, winner), "pot": strconv.Itoa(g.state.pot)}, nil)
 	}
 	g.setHumanResult(winner)
@@ -749,6 +750,22 @@ func (g *Primero) GetMatchWinnerIdx() int { return g.state.matchWinnerIdx }
 
 // GetResult は人間から見たラウンド結果を返す。
 func (g *Primero) GetResult() PrimeroResult { return g.state.result }
+
+// GetRoundPayout は指定プレイヤーがこのラウンドに受け取った払戻額を返す。
+func (g *Primero) GetRoundPayout(i int) int {
+	if p := g.GetPlayer(i); p != nil {
+		return p.GetRoundPayout()
+	}
+	return 0
+}
+
+// GetRoundNetChange は指定プレイヤーのこのラウンドの純損益を返す。
+func (g *Primero) GetRoundNetChange(i int) int {
+	if p := g.GetPlayer(i); p != nil {
+		return p.GetRoundPayout() - p.GetRoundBet()
+	}
+	return 0
+}
 
 // GetPlayerCnt はプレイヤー数を返す。
 func (g *Primero) GetPlayerCnt() int { return len(g.players) }

@@ -312,6 +312,23 @@ describe('DiplomatPage', () => {
     await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
   });
 
+  it('announces auto-complete start and completion in its own persistent live region', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('SPADE', 1)], [], [], [], [], [], [], []],
+    });
+    renderWithProviders(<DiplomatPage />);
+    const button = await screen.findByTestId('autocomplete-button');
+    const liveRegion = screen.getByTestId('diplomat-autocomplete-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
+    fireEvent.click(button);
+    expect(liveRegion).toHaveTextContent('自動完成を開始しました');
+    await waitFor(() => expect(liveRegion).toHaveTextContent('自動完成が完了しました'), { timeout: 5000 });
+    expect(screen.getByTestId('cg-hint-live')).toBeInTheDocument();
+  });
+
   it('shows StalemateEscapeButton when the stalemate flag is set', async () => {
     mockExec.mockResolvedValue({ ...playingState, isStalemate: true, undoToEscape: 2, canUndo: true });
     renderWithProviders(<DiplomatPage />);

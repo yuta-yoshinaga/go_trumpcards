@@ -57,11 +57,13 @@ func (cp *SpeculationWebPresenter) Output(c interfaces.SpeculationGame, lastErr 
 // 出すべきかがネットワーク越しに丸見えになり、賭けが賭けでなくなる。
 func speculationSeatsToOutput(c interfaces.SpeculationGame) []*controller.SpeculationWebOutputSeat {
 	players := c.GetPlayers()
+	changes := c.GetRoundChipChanges()
 	seats := make([]*controller.SpeculationWebOutputSeat, len(players))
 	for i, p := range players {
 		s := &controller.SpeculationWebOutputSeat{
 			Name:        p.GetName(),
 			Chips:       p.GetChips(),
+			ChipChange:  changes[i],
 			HiddenCount: p.GetHiddenCount(),
 		}
 		if b := p.GetBest(); b != nil {

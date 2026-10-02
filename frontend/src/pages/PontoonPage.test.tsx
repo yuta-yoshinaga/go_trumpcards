@@ -222,6 +222,19 @@ describe('PontoonPage', () => {
     await waitFor(() => expect(screen.getAllByText('ポンツーン')).toHaveLength(2));
     expect(screen.getByText('ファイブカード・トリック')).toBeInTheDocument();
     expect(screen.getByText(/\+200/)).toBeInTheDocument();
+    expect(screen.getByLabelText('あなた の手 合計21、ポンツーン')).toBeInTheDocument();
+    expect(screen.getByLabelText('CPU2 の手 合計19、ファイブカード・トリック')).toBeInTheDocument();
+  });
+
+  it('does not expose a hidden hand total or rank in its accessible label', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        bankerHand: hand({ hidden: true, cards: [null, null], total: 21, rank: 3 }),
+      }),
+    );
+    renderWithProviders(<PontoonPage />);
+    await waitFor(() => expect(screen.getByLabelText('親の手は伏せられています')).toBeInTheDocument());
+    expect(screen.queryByLabelText(/親の手.*(?:合計|ポンツーン|ファイブカード|バースト)/)).not.toBeInTheDocument();
   });
 
   it('marks a losing payout as an error after the round', async () => {

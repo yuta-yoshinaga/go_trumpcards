@@ -385,6 +385,9 @@ function BelotePageContent() {
           <div className="text-ds-text-muted text-sm mt-1" data-testid="belote-target-score">
             {t('targetScore', { score: state.config.targetScore })}
           </div>
+          <p className="text-ds-text-muted text-xs mt-2" data-testid="belote-scoring-explanation">
+            {t('scoringExplanation', { dixDeDer: state.config.dixDeDer })}
+          </p>
         </div>
 
         <RoundScoreAnnouncement

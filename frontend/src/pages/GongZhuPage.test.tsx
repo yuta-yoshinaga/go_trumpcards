@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { gongzhuApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeGongZhuState } from '../test/stateFactories';
 import { GongZhuPage } from './GongZhuPage';
@@ -28,7 +29,11 @@ const trickEndState = makeGongZhuState({
   currentTrick: [
     { playerIdx: 0, card: { design: 'DIAMOND', value: 3 } },
     { playerIdx: 1, card: { design: 'HEART', value: 5 } },
+    { playerIdx: 2, card: { design: 'CLOVER', value: 9 } },
+    { playerIdx: 3, card: { design: 'SPADE', value: 12 } },
   ],
+  winnerIdx: -1,
+  leadPlayerIdx: 2,
 });
 const roundEndState = makeGongZhuState({ phase: 3 });
 const gameEndState = makeGongZhuState({ phase: 4, gameEndFlag: true, winnerIdx: 0, message: 'ゲーム終了！' });
@@ -224,6 +229,34 @@ describe('GongZhuPage', () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<GongZhuPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+  });
+
+  it('announces the trick winner and all cards, then clears the live region on the next update', async () => {
+    mockExec.mockResolvedValueOnce(trickEndState).mockResolvedValueOnce(playPhaseState);
+    renderWithProviders(<GongZhuPage />);
+
+    const announcement = await screen.findByTestId('gongzhu-trick-announcement');
+    expect(announcement).toHaveAttribute('role', 'status');
+    expect(announcement).toHaveTextContent('CPU 2がトリックに勝ち、♦ 3、♥ 5、♣ 9、♠ Qを獲得しました');
+
+    fireEvent.click(screen.getByRole('button', { name: '次のトリック' }));
+    await waitFor(() => expect(announcement).toBeEmptyDOMElement());
+    expect(announcement).toBeInTheDocument();
+  });
+
+  it('announces the trick result in English', async () => {
+    const previousLanguage = i18n.language;
+    try {
+      await i18n.changeLanguage('en');
+      mockExec.mockResolvedValue(trickEndState);
+      renderWithProviders(<GongZhuPage />);
+
+      expect(await screen.findByTestId('gongzhu-trick-announcement')).toHaveTextContent(
+        'CPU 2 won the trick and took ♦ 3, ♥ 5, ♣ 9, ♠ Q',
+      );
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('renders round end with next round button', async () => {

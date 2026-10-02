@@ -426,7 +426,16 @@ function CrazyEightsPageContent() {
                               )}
                             </td>
                             <td className="text-center">{p.roundScore}</td>
-                            <td className="text-center">{p.cumulativeScore}</td>
+                            <td className="text-center">
+                              {p.cumulativeScore}
+                              {state.config.pointLimit > 0 && (
+                                <div className="text-ds-text-muted text-xs">
+                                  {t('remainingPoints', {
+                                    score: Math.max(0, state.config.pointLimit - p.cumulativeScore),
+                                  })}
+                                </div>
+                              )}
+                            </td>
                           </tr>
                         );
                       })}

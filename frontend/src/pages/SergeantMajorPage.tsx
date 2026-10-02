@@ -251,6 +251,14 @@ function SergeantMajorPageContent() {
                   <span className="text-ds-accent">
                     {t('header.target', { target: String(p.target), took: String(p.trickCount) })}
                   </span>
+                  {isRoundEnd && !isGameEnd && (
+                    <>
+                      {' / '}
+                      <span className="text-ds-text-primary" data-testid={`sm-round-surplus-${p.id.toString()}`}>
+                        {t('roundEnd.seatSurplus', { n: String(p.surplus > 0 ? `+${p.surplus}` : p.surplus) })}
+                      </span>
+                    </>
+                  )}
                   {' / '}
                   {t('header.score', { n: String(p.score) })}
                 </div>
@@ -385,6 +393,11 @@ function SergeantMajorPageContent() {
                     ? t('roundEnd.forfeitWarn', { n: String(-human.surplus) })
                     : t('roundEnd.forfeitGain', { n: String(human.surplus) })}
                 </div>
+              )}
+              {isRoundEnd && !isGameEnd && (
+                <p className="w-full text-center mb-2 text-sm text-ds-text-muted" data-testid="sm-round-exchange-rule">
+                  {t('roundEnd.exchangeRule')}
+                </p>
               )}
               {isRoundEnd && !isGameEnd && (
                 <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>

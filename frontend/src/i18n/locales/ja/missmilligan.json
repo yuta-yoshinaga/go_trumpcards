@@ -9,6 +9,7 @@
   "emptyFoundationAriaLabel": "空の組札{{idx}} ({{suit}})",
   "emptyWaivedAriaLabel": "保持中の札はありません",
   "foundation": "組札",
+  "foundationProgress": "組札の合計: {{count}}/104枚（{{percent}}%）",
   "foundationAriaLabel": "{{suit}} 組札{{idx}} {{count}}枚",
   "frontendHint": {
     "tableau": "タブロー列{{col}}",

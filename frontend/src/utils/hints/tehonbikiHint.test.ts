@@ -15,6 +15,8 @@ const state = (over: Partial<TehonbikiResponse> = {}): TehonbikiResponse => ({
   gameEndFlag: false,
   payoutNum: 9,
   payoutDen: 2,
+  minBet: 10,
+  maxBet: 500,
   message: '',
   ...over,
 });

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { speedApi } from '../api/gameApi';
 import type { Card, SpeedConfig } from '../types/card';
 import { SpeedPhase } from '../types/phases';
+import { cardAlt } from '../utils/cardAlt';
+import { isSpeedPlayable } from '../utils/hints/speedHint';
 import { isAdjacentRank } from '../utils/speedUtils';
 import { useCardSelection } from './useCardSelection';
 import { isRejectedAction, useGameApi } from './useGameApi';
@@ -29,15 +31,47 @@ export function useSpeedGame() {
   const { config: speedConfig, handleConfigChange, handleToggle } = useGameConfig<SpeedConfig>(DEFAULT_SPEED_CONFIG);
   const [playedCardCount, setPlayedCardCount] = useState<number | null>(null);
   const [playAnnouncementNonce, setPlayAnnouncementNonce] = useState(0);
+  const [playableChangeCards, setPlayableChangeCards] = useState<string[]>([]);
+  const previousPlayableRef = useRef<Map<string, number>>(new Map());
 
   const onSuccess = useCallback(
     (res: Awaited<ReturnType<typeof speedApi.exec>>, args: Parameters<typeof speedApi.exec>) => {
       clearSelection();
       if (args[0] === 'reset') {
         setPlayedCardCount(null);
+        previousPlayableRef.current = new Map();
+        for (const card of res.players[0]?.cards ?? []) {
+          if (!isSpeedPlayable(card.value, res.centerPiles)) continue;
+          const key = `${card.design}:${card.value}`;
+          previousPlayableRef.current.set(key, (previousPlayableRef.current.get(key) ?? 0) + 1);
+        }
+        setPlayableChangeCards([]);
         return;
       }
-      if (args[0] !== 'play' || isRejectedAction(res)) return;
+      if (isRejectedAction(res)) return;
+      const hand = res.players[0]?.cards ?? [];
+      const playableCounts = new Map<string, number>();
+      const playableCards = new Map<string, Card[]>();
+      for (const card of hand) {
+        if (!isSpeedPlayable(card.value, res.centerPiles)) continue;
+        const key = `${card.design}:${card.value}`;
+        playableCounts.set(key, (playableCounts.get(key) ?? 0) + 1);
+        playableCards.set(key, [...(playableCards.get(key) ?? []), card]);
+      }
+      if (res.cpuActions?.length) {
+        const newlyPlayable: string[] = [];
+        for (const [key, count] of playableCounts) {
+          const increase = count - (previousPlayableRef.current.get(key) ?? 0);
+          const cards = playableCards.get(key) ?? [];
+          for (let i = 0; i < increase; i++) {
+            const card = cards[i];
+            if (card) newlyPlayable.push(cardAlt(card));
+          }
+        }
+        setPlayableChangeCards(newlyPlayable);
+      }
+      previousPlayableRef.current = playableCounts;
+      if (args[0] !== 'play') return;
       const count = res.players[0]?.cardCount;
       if (count !== undefined) {
         setPlayedCardCount(count);
@@ -111,6 +145,7 @@ export function useSpeedGame() {
     state,
     playedCardCount,
     playAnnouncementNonce,
+    playableChangeCards,
     loading,
     error,
     exec: gameExec,

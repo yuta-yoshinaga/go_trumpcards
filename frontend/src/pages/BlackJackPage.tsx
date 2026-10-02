@@ -52,6 +52,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { BLACKJACK_HELP, parseBlackjackCommand } from '../utils/cli/commands/blackjackCommands';
 import { formatBlackjackState } from '../utils/cli/formatters/blackjackFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedChips } from '../utils/formatSignedChips';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 
 const BJ_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -555,6 +556,23 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                           surrendered={hand.surrendered}
                         />
                       </h2>
+                      {phase === BjPhase.END && hand.result !== undefined && (
+                        <p className="text-sm text-ds-text-primary" data-testid={`hand-result-${handIndex}`}>
+                          {t(
+                            hand.result > 0
+                              ? 'handResult.win'
+                              : hand.result < 0
+                                ? 'handResult.lose'
+                                : 'handResult.push',
+                          )}{' '}
+                          {hand.netChange !== undefined && (
+                            <>
+                              {' '}
+                              · {formatSignedChips(hand.netChange)} {t('handResult.chips')}
+                            </>
+                          )}
+                        </p>
+                      )}
                       <p className="text-ds-text-primary mt-0 mb-0.5">
                         {t('score')} {hand.score} / {tc('betting.currentBet')} {hand.bet}
                       </p>

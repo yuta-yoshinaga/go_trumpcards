@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { beleagueredCastleApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BeleagueredCastleResponse, BeleagueredCastleTableauCard, Card, CardDesign } from '../types/card';
@@ -538,5 +539,63 @@ describe('BeleagueredCastlePage selection status announcement', () => {
     // ♣9 has no legal destinations on foundations or non-empty tableau columns
     fireEvent.click(screen.getByRole('button', { name: /^♣ 9/ }));
     await waitFor(() => expect(status).toHaveTextContent('選択中のカードを置ける場所はありません'));
+  });
+});
+
+describe('BeleagueredCastlePage move count announcement', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+    localStorage.clear();
+  });
+
+  it('announces only move count changes and starts empty', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({ ...playingState, moveCount: 4 });
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.getByText(/包囲された城/)).toBeInTheDocument());
+
+    const status = screen.getByTestId('bc-move-count-status');
+    expect(status).toBeInTheDocument();
+    expect(status).toBeEmptyDOMElement();
+    expect(status).toHaveAttribute('role', 'status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+
+    fireEvent.click(screen.getByRole('button', { name: /^♠ 5/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^♥ 6/ }));
+
+    await waitFor(() => expect(status).toHaveTextContent('手数: 4'));
+  });
+
+  it('announces a move count decrease after undo', async () => {
+    mockExec
+      .mockResolvedValueOnce({ ...playingState, canUndo: true })
+      .mockResolvedValueOnce({ ...playingState, moveCount: 2, canUndo: false });
+    renderWithProviders(<BeleagueredCastlePage />);
+
+    const status = await screen.findByTestId('bc-move-count-status');
+    expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
+    expect(status).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByRole('button', { name: '元に戻す' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+    await waitFor(() => expect(status).toHaveTextContent('手数: 2'));
+  });
+
+  it('translates an existing move count announcement when the language changes', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({ ...playingState, moveCount: 4 });
+    renderWithProviders(<BeleagueredCastlePage />);
+
+    const status = await screen.findByTestId('bc-move-count-status');
+    fireEvent.click(screen.getByRole('button', { name: /^♠ 5/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^♥ 6/ }));
+    await waitFor(() => expect(status).toHaveTextContent('手数: 4'));
+
+    try {
+      await i18n.changeLanguage('en');
+      await waitFor(() => expect(status).toHaveTextContent('Moves: 4'));
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 });

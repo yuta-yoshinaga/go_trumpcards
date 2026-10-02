@@ -15,6 +15,8 @@ const base: TehonbikiResponse = {
   gameEndFlag: false,
   payoutNum: 9,
   payoutDen: 5,
+  minBet: 10,
+  maxBet: 500,
   message: '',
 };
 

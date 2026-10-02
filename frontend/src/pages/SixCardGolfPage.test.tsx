@@ -110,12 +110,13 @@ describe('SixCardGolfPage', () => {
     renderWithProviders(<SixCardGolfPage />);
 
     await screen.findByRole('button', { name: '捨てる' });
-    const swapSlots = screen.getAllByRole('button', { name: '♠ 5' });
+    const swapSlots = screen.getAllByRole('button', { name: /♠ 5、位置[0-5]（交換）/ });
     fireEvent.click(screen.getByRole('button', { name: '捨てる' }));
 
     await waitFor(() => {
       for (const button of swapSlots) expect(button).toBeDisabled();
     });
+    expect(swapSlots[0]).toHaveAccessibleName('♠ 5、位置0');
     expect(screen.getByRole('button', { name: '捨てる' })).toBeDisabled();
 
     resolveAction(
@@ -143,9 +144,11 @@ describe('SixCardGolfPage', () => {
       }),
     );
     await waitFor(() =>
-      expect(screen.getAllByRole('button', { name: '♠ 5' }).some((button) => !button.hasAttribute('disabled'))).toBe(
-        true,
-      ),
+      expect(
+        screen
+          .getAllByRole('button', { name: /♠ 5、位置[0-5]（交換）/ })
+          .some((button) => !button.hasAttribute('disabled')),
+      ).toBe(true),
     );
   });
 
@@ -182,10 +185,48 @@ describe('SixCardGolfPage', () => {
       }),
     );
     renderWithProviders(<SixCardGolfPage />);
-    // Position 1 (0-based index 0 → 1-based), face down → localized ja label.
-    await waitFor(() => expect(screen.getAllByRole('button', { name: '位置1（裏向き）' }).length).toBeGreaterThan(0));
+    // Position 0 (the repository's 0-based position convention), face down.
+    await waitFor(() => expect(screen.getAllByRole('button', { name: '位置0（裏向き）' }).length).toBeGreaterThan(0));
     // A face-up slot still reads its card name.
-    expect(screen.getAllByRole('button', { name: '♠ 3' }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: /♠ 3、位置[1-5]/ }).length).toBeGreaterThan(0);
+  });
+
+  it('includes the 0-based position and current action in operable grid slot names', async () => {
+    const faceDownGrid = [
+      { card: null, faceUp: false } as unknown as SixCardGolfSlot,
+      slot(3),
+      slot(7),
+      slot(5),
+      slot(9),
+      slot(2),
+    ];
+    const players = [
+      { id: 0, isHuman: true, grid: faceDownGrid, roundScore: 0, cumulativeScore: 0, allFaceUp: false },
+      { id: 1, isHuman: false, grid: [...faceDownGrid], roundScore: 0, cumulativeScore: 0, allFaceUp: false },
+    ];
+
+    mockExec.mockResolvedValue(makeState({ phase: 0, players }));
+    let view = renderWithProviders(<SixCardGolfPage />);
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '位置0（裏向き）（初期公開）' })).toBeInTheDocument(),
+    );
+    expect(screen.getAllByRole('button', { name: /♠ 3、位置1$/ })).toHaveLength(2);
+
+    mockExec.mockResolvedValue(makeState({ phase: 2, drawnCard: card(8), players }));
+    view.unmount();
+    view = renderWithProviders(<SixCardGolfPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 3、位置1（交換）' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue(makeState({ phase: 1, canFlip: true, players }));
+    view.unmount();
+    renderWithProviders(<SixCardGolfPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '位置0（裏向き）（公開）' })).toBeInTheDocument());
+    expect(screen.getAllByRole('button', { name: '♠ 3、位置1' })).toHaveLength(2);
+
+    mockExec.mockResolvedValue(makeState({ phase: 3, players }));
+    view.unmount();
+    renderWithProviders(<SixCardGolfPage />);
+    await waitFor(() => expect(screen.getAllByRole('button', { name: /♠ 3、位置1$/ })).toHaveLength(4));
   });
 
   it('shows the human column breakdown during active play, marking uncertain columns', async () => {

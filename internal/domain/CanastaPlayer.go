@@ -35,11 +35,24 @@ func (m *CanastaMeld) GetRank() int {
 type CanastaPlayer struct {
 	*GamePlayer
 	RoundScoreHolder
-	melds        []*CanastaMeld // テーブル上のメルド
-	red3s        []*Card        // 場に出した赤3
-	hasInitMeld  bool           // 初回メルド済みフラグ
-	tookPozzetto bool           // ポゼット（予備手札）を獲得済みか (Burraco モードのみ)
+	melds          []*CanastaMeld // テーブル上のメルド
+	red3s          []*Card        // 場に出した赤3
+	hasInitMeld    bool           // 初回メルド済みフラグ
+	tookPozzetto   bool           // ポゼット（予備手札）を獲得済みか (Burraco モードのみ)
+	scoreBreakdown CanastaScoreBreakdown
 }
+
+// CanastaScoreBreakdown contains the components used to calculate a round score.
+type CanastaScoreBreakdown struct {
+	MeldCards    int `json:"meldCards"`
+	CanastaBonus int `json:"canastaBonus"`
+	Red3Bonus    int `json:"red3Bonus"`
+	GoOutBonus   int `json:"goOutBonus"`
+	HandPenalty  int `json:"handPenalty"`
+}
+
+// GetScoreBreakdown returns the score components from the most recently scored round.
+func (p *CanastaPlayer) GetScoreBreakdown() CanastaScoreBreakdown { return p.scoreBreakdown }
 
 // NewCanastaPlayer コンストラクタ
 func NewCanastaPlayer(isHuman bool) *CanastaPlayer {
@@ -52,6 +65,7 @@ func NewCanastaPlayer(isHuman bool) *CanastaPlayer {
 
 // ResetRound ラウンドをリセット（手札・スコア・メルド・赤3を初期化）
 func (p *CanastaPlayer) ResetRound() {
+	p.scoreBreakdown = CanastaScoreBreakdown{}
 	p.SetRoundScore(0)
 	p.Reset()
 	p.SetIsFinished(false)
@@ -113,12 +127,13 @@ func (p *CanastaPlayer) SetTookPozzetto(v bool) { p.tookPozzetto = v }
 
 // canastaPlayerJSON is the JSON wire format for CanastaPlayer.
 type canastaPlayerJSON struct {
-	GamePlayer       *GamePlayer       `json:"gp"`
-	RoundScoreHolder *RoundScoreHolder `json:"rh"`
-	Melds            []*CanastaMeld    `json:"ml"`
-	Red3s            []*Card           `json:"r3"`
-	HasInitMeld      bool              `json:"hi"`
-	TookPozzetto     bool              `json:"tp,omitempty"`
+	GamePlayer       *GamePlayer           `json:"gp"`
+	RoundScoreHolder *RoundScoreHolder     `json:"rh"`
+	Melds            []*CanastaMeld        `json:"ml"`
+	Red3s            []*Card               `json:"r3"`
+	HasInitMeld      bool                  `json:"hi"`
+	TookPozzetto     bool                  `json:"tp,omitempty"`
+	ScoreBreakdown   CanastaScoreBreakdown `json:"scoreBreakdown,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -130,6 +145,7 @@ func (p *CanastaPlayer) MarshalJSON() ([]byte, error) {
 		Red3s:            p.red3s,
 		HasInitMeld:      p.hasInitMeld,
 		TookPozzetto:     p.tookPozzetto,
+		ScoreBreakdown:   p.scoreBreakdown,
 	})
 }
 
@@ -157,5 +173,6 @@ func (p *CanastaPlayer) UnmarshalJSON(data []byte) error {
 	}
 	p.hasInitMeld = j.HasInitMeld
 	p.tookPozzetto = j.TookPozzetto
+	p.scoreBreakdown = j.ScoreBreakdown
 	return nil
 }

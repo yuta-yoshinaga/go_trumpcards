@@ -401,7 +401,7 @@ function CongressPageContent() {
                         type="button"
                         onClick={() => game.handleSelectSource(wasteZone)}
                         disabled={!isPlaying || loading}
-                        aria-label={cardAlt(wasteTop)}
+                        aria-label={t('wasteTopCardAriaLabel', { card: cardAlt(wasteTop) })}
                         aria-describedby="congress-waste-count"
                         aria-pressed={isSourceSelected('waste', undefined)}
                         draggable={isPlaying && !loading}

@@ -190,6 +190,54 @@ func TestHorseWebPresenter_Output(t *testing.T) {
 	assert.Empty(t, out.MessageCode)
 }
 
+func TestHorseWebPresenter_HandNameOmitsEmptyAndIncludesValue(t *testing.T) {
+	for _, handName := range []string{"One Pair", ""} {
+		t.Run(handName, func(t *testing.T) {
+			m := new(interfaces.MockHorseGame)
+			m.On("GetConfig").Return(domain.HorseConfig{Seats: 1, InitialChips: 1000, HandsPerDiscipline: 1})
+			m.On("GetSeatCount").Return(1)
+			m.On("GetSeatName", 0).Return("Player")
+			m.On("GetSeatIsHuman", 0).Return(true)
+			m.On("GetSeatLiveChips", 0).Return(1000)
+			m.On("GetSeatFolded", 0).Return(false)
+			m.On("GetSeatAllIn", 0).Return(false)
+			m.On("GetSeatCards", 0).Return([]*domain.Card(nil))
+			m.On("GetSeatHandName", 0).Return(handName)
+			m.On("GetPhase").Return(domain.HorsePhaseHand)
+			m.On("GetDiscipline").Return(domain.HorseHoldem)
+			m.On("GetVariant").Return(domain.HorseVariantHorse)
+			m.On("GetDisciplineLetter").Return("H")
+			m.On("GetRotation").Return(domain.HorseRotation(domain.HorseVariantHorse))
+			m.On("GetHandInDiscipline").Return(1)
+			m.On("GetHandNumber").Return(1)
+			m.On("GetCurrentTurn").Return(0)
+			m.On("GetHumanSeat").Return(0)
+			m.On("IsHumanTurn").Return(true)
+			m.On("GetCommunityCards").Return([]*domain.Card(nil))
+			m.On("GetPot").Return(0)
+			m.On("GetToCall").Return(0)
+			m.On("GetMinRaise").Return(0)
+			m.On("GetMaxBetAmount").Return(0)
+			m.On("GetTablePhase").Return(0)
+			m.On("IsDrawPhase").Return(false)
+			m.On("GetDrawIndex").Return(0)
+			m.On("GetGameEndFlag").Return(false)
+			var output struct {
+				Seats []map[string]json.RawMessage `json:"seats"`
+			}
+			require.NoError(t, json.Unmarshal([]byte((&presenter.HorseWebPresenter{}).Output(m, nil)), &output))
+			if handName == "" {
+				assert.NotContains(t, output.Seats[0], "handName")
+			} else {
+				var got string
+				require.NoError(t, json.Unmarshal(output.Seats[0]["handName"], &got))
+				assert.Equal(t, handName, got)
+			}
+			m.AssertExpectations(t)
+		})
+	}
+}
+
 func TestHorseWebPresenter_OutputError(t *testing.T) {
 	p := &presenter.HorseWebPresenter{}
 	var out struct {

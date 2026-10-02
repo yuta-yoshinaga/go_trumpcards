@@ -6,6 +6,7 @@
   "team": "Team {{name}}",
   "teamScore": "{{name}}: {{score}} / {{target}}",
   "teamCaptured": "Captured {{count}}",
+  "teamUpdateAnnouncement": "Team {{name}} now has {{score}} points and {{captured}} captured cards",
   "captured": "captured {{count}}",
   "table": "Table",
   "tableCount": "{{count}} cards",

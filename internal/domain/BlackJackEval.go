@@ -216,10 +216,17 @@ func (b *BlackJack) resolvePayouts() {
 	for i, hand := range b.playerHands {
 		if hand.IsSurrendered() {
 			// サレンダー: 半額返却済み（PlayerSurrender内で処理）
+			hand.SetResult(GameResultLose)
+			hand.SetNetChange(-(hand.GetBet() - hand.GetBet()/2))
 			continue
 		}
 		result := b.judgeHand(hand)
+		hand.SetResult(result)
+		// The net change is read from what the payout actually credited, so it can never
+		// disagree with the settlement rules (3:2 naturals, even-money variants, bonuses).
+		chipsBefore := b.player.GetChips()
 		bonus := b.payoutHandWithVariant(b.player, hand, hand.IsFromSplit(), result)
+		hand.SetNetChange(b.player.GetChips() - chipsBefore - hand.GetBet())
 		if bonus != nil {
 			b.appendLog(i, "bonus", bonus.NameKey, nil, nil)
 			b.bonusKeys = append(b.bonusKeys, bonus.NameKey)

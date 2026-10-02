@@ -318,9 +318,13 @@ function PanPageContent() {
                             {t('meldOwner', { name: playerName(p.id, p.isHuman) })}
                           </div>
                           {p.laidMelds.map((meld, meldIdx) => (
-                            <div
+                            <fieldset
                               key={`meld-${p.id}-${meldIdx}-${meld.cards.map((c) => `${c.design}${c.value}`).join('')}`}
-                              className="flex flex-wrap items-center gap-1 mb-1"
+                              className="border-0 p-0 m-0 min-w-0 flex flex-wrap items-center gap-1 mb-1"
+                              aria-label={t('a11y.meldGroup', {
+                                name: playerName(p.id, p.isHuman),
+                                cards: meld.cards.map(cardAlt).join(t('listSeparator')),
+                              })}
                             >
                               {meld.cards.map((card, idx) => (
                                 <AnimatedCard
@@ -350,13 +354,13 @@ function PanPageContent() {
                                   // 所有者と札そのものを言えば、並んでいても取り違えない。
                                   aria-label={t('a11y.layoffTo', {
                                     name: playerName(p.id, p.isHuman),
-                                    meld: meld.cards.map(cardAlt).join(' '),
+                                    meld: meld.cards.map(cardAlt).join(t('listSeparator')),
                                   })}
                                 >
                                   {t('layoffButton')}
                                 </button>
                               )}
-                            </div>
+                            </fieldset>
                           ))}
                         </div>
                       ))

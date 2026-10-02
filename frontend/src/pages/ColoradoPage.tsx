@@ -337,13 +337,17 @@ function ColoradoPageContent() {
             <div className="flex gap-3 flex-wrap items-start mb-5" data-tutorial="co-stock">
               <div className="flex flex-col items-center">
                 <div className="text-[11px] mb-0.5 text-ds-text-muted">
-                  {t('stock')} ({state.stockCount})
+                  {t('stock')}:{' '}
+                  <span id="co-stock-count" data-testid="co-stock-count">
+                    {t('stockCount', { count: state.stockCount })}
+                  </span>
                 </div>
                 <button
                   type="button"
                   onClick={handleDraw}
                   disabled={!isPlaying || loading || state.stockCount === 0}
                   aria-label={t('drawAria')}
+                  aria-describedby="co-stock-count"
                   data-testid="co-draw-button"
                   className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${hintStock ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
                 >

@@ -14,6 +14,7 @@
   "placeable": "Can place",
   "baseRank": "Base rank",
   "moveCount": "Moves",
+  "moveAnnouncement": "Moved from {{source}} to {{destination}}. Moves: {{moveCount}}",
   "draw": "Draw",
   "giveup": "Give up",
   "hint": "Hint",

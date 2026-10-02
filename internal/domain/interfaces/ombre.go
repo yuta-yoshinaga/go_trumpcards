@@ -69,6 +69,8 @@ type OmbreGame interface {
 	GetCurrentBidderIdx() int
 	// GetPlayerScores プレイヤー別累積点を取得する
 	GetPlayerScores() [domain.OmbrePlayerCnt]int
+	// GetPlayerScoreDeltas returns the score changes for the most recent deal.
+	GetPlayerScoreDeltas() [domain.OmbrePlayerCnt]int
 	// GetOutcome 直近ディールの結果を取得する
 	GetOutcome() domain.OmbreOutcome
 	// GetResult 人間視点のマッチ結果を取得する

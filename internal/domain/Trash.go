@@ -59,6 +59,7 @@ type Trash struct {
 	pending    *Card
 	moveCount  int
 	winner     int
+	undoState  []byte
 	actionLogBase
 }
 
@@ -79,6 +80,7 @@ func (t *Trash) Reset() {
 	t.moveCount = 0
 	t.winner = -1
 	t.pending = nil
+	t.undoState = nil
 	t.actionLog = nil
 	t.discard = nil
 	t.current = TrashHumanIdx
@@ -104,6 +106,14 @@ func (t *Trash) Draw() error {
 	}
 	if t.pending != nil {
 		return errors.New("pending card must be resolved first")
+	}
+	if !t.players[t.current].IsCpu {
+		t.undoState = nil
+		before, err := json.Marshal(t)
+		if err != nil {
+			return err
+		}
+		t.undoState = before
 	}
 	if len(t.stock) == 0 {
 		t.refillStock()
@@ -338,6 +348,22 @@ func (t *Trash) IsCpuPlayer(idx int) bool {
 // GetWinner 勝者インデックス (-1 なら未決着)
 func (t *Trash) GetWinner() int { return t.winner }
 
+// CanUndo reports whether a complete human action can be restored now.
+func (t *Trash) CanUndo() bool { return len(t.undoState) > 0 && !t.IsCpuTurn() }
+
+// Undo restores the state before the most recent human draw, including CPU replies.
+func (t *Trash) Undo() error {
+	if !t.CanUndo() {
+		return NewDomainErrorCode(ErrInvalidPlay, "trash.errUndoUnavailable", nil)
+	}
+	state := append([]byte(nil), t.undoState...)
+	if err := json.Unmarshal(state, t); err != nil {
+		return err
+	}
+	t.undoState = nil
+	return nil
+}
+
 // --- Private helpers ---
 
 // resolveChain pendingカードを順次解決する。連鎖中にAwaitWild/GameOver/EndTurnのいずれかに到達したら終了。
@@ -485,6 +511,7 @@ type trashJSON struct {
 	MoveCount  int                           `json:"mc"`
 	Winner     int                           `json:"wn"`
 	ActionLog  []*ActionLogEntry             `json:"al"`
+	UndoState  []byte                        `json:"us,omitempty"`
 }
 
 type trashPlayerJS struct {
@@ -515,6 +542,7 @@ func (t *Trash) MarshalJSON() ([]byte, error) {
 	j.MoveCount = t.moveCount
 	j.Winner = t.winner
 	j.ActionLog = t.actionLog
+	j.UndoState = t.undoState
 	return json.Marshal(j)
 }
 
@@ -564,6 +592,7 @@ func (t *Trash) UnmarshalJSON(data []byte) error {
 		t.winner = -1
 	}
 	t.actionLog = j.ActionLog
+	t.undoState = j.UndoState
 	if t.actionLog == nil {
 		t.actionLog = make([]*ActionLogEntry, 0)
 	}

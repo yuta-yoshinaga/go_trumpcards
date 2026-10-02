@@ -34,6 +34,8 @@
   "scores": "Scores",
   "scoresTeam": "Team",
   "scoresPoints": "Points",
+  "pointsRemaining_one": "({{count}} point remaining)",
+  "pointsRemaining_other": "({{count}} points remaining)",
   "scoresThirds": "This round (thirds)",
   "thirdsTooltip": "{{n}} more third(s) to score this round",
   "thirdsAria": "{{filled}} of 3 thirds this round",

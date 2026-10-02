@@ -235,6 +235,9 @@ function SimpleSimonPageContent() {
           data-testid={`column-label-${col}`}
         >
           <span className="text-xs font-semibold tabular-nums">{t('columnNumber', { col: col + 1 })}</span>
+          <span className="text-[10px] leading-tight text-ds-text-muted">
+            {t('columnCardCount', { count: column.length })}
+          </span>
           {columnLabel && <span className="text-[10px] leading-tight text-ds-text-muted">{columnLabel}</span>}
         </div>
         {column.length === 0 ? (

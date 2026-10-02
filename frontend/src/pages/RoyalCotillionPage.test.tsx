@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { royalcotillionApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -397,6 +397,29 @@ describe('RoyalCotillionPage', () => {
     });
     renderWithProviders(<RoyalCotillionPage />);
     await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
+  });
+
+  it('announces auto-complete start and completion in its own live region', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('SPADE', 1)], [], [], [], [], [], [], []],
+    });
+    renderWithProviders(<RoyalCotillionPage />);
+    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
+    const liveRegion = screen.getByTestId('autocomplete-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toHaveClass('sr-only');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByTestId('autocomplete-button'));
+    expect(liveRegion).toHaveTextContent('自動完成を開始しました');
+    expect(screen.getByTestId('cg-hint-live')).toBeInTheDocument();
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 3050));
+    });
+    expect(liveRegion).toHaveTextContent('自動完成の処理が終わりました');
   });
 
   it('shows StalemateEscapeButton when the stalemate flag is set', async () => {

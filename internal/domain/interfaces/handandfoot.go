@@ -67,4 +67,6 @@ type HandAndFootGame interface {
 	GetTeamRed3s(team int) []*domain.Card
 	// GetDrewFromDiscard 捨て札から引いたかを返す
 	GetDrewFromDiscard() bool
+	// GetScoreBreakdown returns the last settled score breakdown for a team.
+	GetScoreBreakdown(team int) domain.HandAndFootScoreBreakdown
 }

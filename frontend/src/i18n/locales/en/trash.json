@@ -8,6 +8,7 @@
   "button.draw": "Draw from stock",
   "button.cpu": "Advance CPU turn",
   "button.reset": "Reset",
+  "button.undo": "Undo",
   "message.playerTurn": "Click the stock to draw a card",
   "message.cpuTurn": "CPU is playing…",
   "message.awaitWild": "Tap a face-down slot to place the wild",

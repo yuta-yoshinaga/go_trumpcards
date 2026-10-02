@@ -45,6 +45,11 @@ const POKER_SQUARES_PHASE_KEYS: Readonly<Record<number, string>> = {
   [PokerSquaresPhase.COMPLETE]: 'complete',
 };
 
+/** Reports whether a Poker Squares row or column contains five cards. */
+function isLineComplete(board: PokerSquaresResponse['board'], kind: 'row' | 'col', idx: number): boolean {
+  return kind === 'row' ? board[idx].every((cell) => cell.card != null) : board.every((row) => row[idx].card != null);
+}
+
 /** Poker Squares tutorial step definitions. */
 const POKERSQUARES_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -91,7 +96,40 @@ function PokerSquaresPageContent() {
         Math.min(CARD_DIMENSIONS.desktop.cardWidth, Math.floor((windowWidth - PS_BOARD_CHROME_PX) / 5)),
       )
     : baseCardWidth;
-  const { state, loading, error, exec: execApi, retry } = useGameApi(pokersquaresApi.exec);
+  const [confirmedAnnouncement, setConfirmedAnnouncement] = useState('');
+  const previousStateRef = useRef<PokerSquaresResponse | null>(null);
+  const {
+    state,
+    loading,
+    error,
+    exec: execApi,
+    retry,
+  } = useGameApi(pokersquaresApi.exec, {
+    onSuccess: (result, args) => {
+      const previous = previousStateRef.current;
+      previousStateRef.current = result;
+      if (args[0] !== 'place' || !previous) {
+        setConfirmedAnnouncement('');
+        return;
+      }
+      const lines: string[] = [];
+      result.rowScores.forEach((score, row) => {
+        const completedNow = isLineComplete(result.board, 'row', row);
+        const wasComplete = isLineComplete(previous.board, 'row', row);
+        if (completedNow && !wasComplete) lines.push(t('confirmedRowScore', { row, score }));
+      });
+      result.colScores.forEach((score, col) => {
+        const completedNow = isLineComplete(result.board, 'col', col);
+        const wasComplete = isLineComplete(previous.board, 'col', col);
+        if (completedNow && !wasComplete) lines.push(t('confirmedColScore', { col, score }));
+      });
+      setConfirmedAnnouncement(
+        lines.length
+          ? t('confirmedScoreAnnounce', { lines: lines.join(t('listSeparator')), total: result.totalScore })
+          : '',
+      );
+    },
+  });
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -279,6 +317,9 @@ function PokerSquaresPageContent() {
         <>
           <div className="sr-only" role="status" aria-live="polite" data-testid="ps-preview-live">
             {previewAnnouncement}
+          </div>
+          <div className="sr-only" role="status" aria-live="polite" data-testid="ps-confirmed-live">
+            {confirmedAnnouncement}
           </div>
           <SettingsPanel
             title={t('settings.title')}

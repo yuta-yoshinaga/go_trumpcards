@@ -19,6 +19,8 @@
   "hint": "ヒント",
   "autoComplete": "自動完成",
   "autoCompleteNotReady": "山札とウェイストが空になるとクリックできます",
+  "autoCompleteStarted": "自動完成を開始しました",
+  "autoCompleteFinished": "自動完成が完了しました",
   "undo": "元に戻す",
   "stalemate": "手詰まりです",
   "playing": "カードを移動してください",

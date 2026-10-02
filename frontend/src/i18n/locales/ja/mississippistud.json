@@ -1,6 +1,7 @@
 {
   "title": "ミシシッピ・スタッド",
   "player": "プレイヤー",
+  "chipsChanged": "チップが {{chips}} に変わりました",
   "label": {
     "chips": "チップ",
     "ante": "アンティ",

@@ -14,6 +14,20 @@ type BiribaWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *BiribaWebPresenter) Output(g interfaces.BiribaGame, lastErr error) string {
 	resObj := new(controller.BiribaWebOutput)
+	resObj.MinMeld = g.GetMinimumMeldValue(0)
+	resObj.DrewFromDiscard = g.GetDrewFromDiscard()
+	resObj.DrawnCardIndex = -1
+	if drawn := g.GetDrawnCard(); drawn != nil {
+		resObj.DrawnCard = cardToOutput(drawn)
+		if player := g.GetPlayer(g.GetCurrentPlayerIdx()); player != nil {
+			for i := 0; i < player.GetCardsSize(); i++ {
+				if player.GetCard(i) == drawn {
+					resObj.DrawnCardIndex = i
+					break
+				}
+			}
+		}
+	}
 	resObj.Phase = int(g.GetPhase())
 	resObj.RoundNumber = g.GetRoundNumber()
 	resObj.CurrentPlayerIdx = g.GetCurrentPlayerIdx()

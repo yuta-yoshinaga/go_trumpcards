@@ -88,6 +88,15 @@ func (_m *MockBouillotteGame) GetPot() int {
 	return ret.Get(0).(int)
 }
 
+// GetRoundPayout モック
+func (_m *MockBouillotteGame) GetRoundPayout(i int) int { ret := _m.Called(i); return ret.Get(0).(int) }
+
+// GetRoundNetChange モック
+func (_m *MockBouillotteGame) GetRoundNetChange(i int) int {
+	ret := _m.Called(i)
+	return ret.Get(0).(int)
+}
+
 // GetCurrentBet モック
 func (_m *MockBouillotteGame) GetCurrentBet() int {
 	ret := _m.Called()

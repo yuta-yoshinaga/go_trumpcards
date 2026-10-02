@@ -312,7 +312,13 @@ function TwoTenJackPageContent() {
                     data-tutorial="tt-score-table"
                     open={isRoundEnd || isGameEnd || undefined}
                   >
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
+                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                      <span>{t('scores')}</span>
+                      <span className="ml-2 inline-flex flex-wrap gap-x-3 tabular-nums text-ds-text-primary">
+                        <span>{t('cumulativeTeamScore', { team: t('team0'), score: team0Total })}</span>
+                        <span>{t('cumulativeTeamScore', { team: t('team1'), score: team1Total })}</span>
+                      </span>
+                    </summary>
                     <div className="overflow-x-auto -mx-2 px-2">
                       <table className="w-full text-sm text-ds-text-muted min-w-[320px] mt-1">
                         <caption className="sr-only">{t('scoresCaption')}</caption>

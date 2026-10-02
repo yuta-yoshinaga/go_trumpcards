@@ -28,6 +28,10 @@
     "switch": "You may swap the second card between hand 1 and hand 2.",
     "action": "Acting on hand {{idx}}: Hit / Stand / Double Down"
   },
+  "betSummary": {
+    "total": "Total required for two hands: {{amount}} (your chips: {{chips}})",
+    "overBalance": "The total required exceeds your chips"
+  },
   "badge": {
     "bust": "BUST",
     "bj": "BJ",

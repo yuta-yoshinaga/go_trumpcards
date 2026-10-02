@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cariocaApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, CariocaResponse } from '../types/card';
+import { cardAlt } from '../utils/cardAlt';
 import { CariocaPage } from './CariocaPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -93,6 +94,40 @@ beforeEach(() => {
 });
 
 describe('CariocaPage', () => {
+  it('sorts the display while preserving selected card indices for actions', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<CariocaPage />);
+
+    const hand = await screen.findByText(/Your hand|あなたの手札/);
+    expect(hand.closest('section')).not.toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /Suit|スート順/ }));
+    expect(screen.getByRole('button', { name: /Suit|スート順/ })).toHaveAttribute('aria-pressed', 'true');
+    const handSection = hand.closest('section');
+    if (!handSection) throw new Error('hand section was not rendered');
+    const handCardNames = Array.from(handSection.querySelectorAll('img')).map((img) => img.getAttribute('alt'));
+    expect(handCardNames).toEqual(
+      [
+        card('SPADE', 2),
+        card('SPADE', 3),
+        card('SPADE', 4),
+        card('SPADE', 5),
+        card('SPADE', 6),
+        card('SPADE', 7),
+        card('SPADE', 13),
+        card('HEART', 5),
+        card('HEART', 13),
+        card('DIAMOND', 5),
+        card('CLOVER', 13),
+      ].map(cardAlt),
+    );
+    const sortedCard = screen.getByRole('button', { name: cardAlt(baseHand[0]) });
+    fireEvent.click(sortedCard);
+    expect(sortedCard).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(screen.getByRole('button', { name: /Discard card|カードを捨てる/ }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', { cardIndex: 0 }));
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<CariocaPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

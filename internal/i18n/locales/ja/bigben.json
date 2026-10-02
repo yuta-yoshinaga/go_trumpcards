@@ -13,6 +13,7 @@
   "faceLabel": "[{{idx}}] {{hour}}時",
   "faceTarget": "→{{rank}}",
   "faceComplete": "✔完成",
+  "completedFaces": "完成した文字盤: {{count}}/{{total}}",
   "columnLabel": "列{{col}}:",
   "hintFrom": "タブロー列{{col}}",
   "hintToFoundation": "文字盤{{idx}}",

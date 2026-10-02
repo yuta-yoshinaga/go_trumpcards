@@ -28,6 +28,7 @@ const baseState: ThreeThirteenResponse = {
   ],
   phase: 1,
   round: 2,
+  roundScoreHistory: [[12, 0]],
   maxRound: 11,
   wildRank: 4,
   dealCount: 4,

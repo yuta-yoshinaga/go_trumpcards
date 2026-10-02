@@ -16,6 +16,8 @@
   },
   "round": "Round {{n}}",
   "trick": "Trick {{n}}",
+  "listSeparator": ", ",
+  "trickResult": "{{winner}} won the trick and took {{cards}}",
   "exposed": "Exposed: {{cards}}",
   "exposedNone": "none",
   "card.spadeQueen": "Q♠",

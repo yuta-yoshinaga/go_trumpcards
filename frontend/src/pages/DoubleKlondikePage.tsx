@@ -22,6 +22,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card } from '../types/card';
 import { DoubleKlondikePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { doubleKlondikeCanPlaceOnFoundation, doubleKlondikeCanPlaceOnTableau } from '../utils/doubleKlondikeTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -361,6 +362,11 @@ function DoubleKlondikePageContent() {
                   onClick={canAct ? clickFoundation : undefined}
                   disabled={!canAct}
                   title={t('foundation')}
+                  aria-label={
+                    top
+                      ? t('foundationTopAriaLabel', { col: i, card: cardAlt(top) })
+                      : t('foundationAriaLabel', { col: i })
+                  }
                   data-testid={`foundation-${i}`}
                 >
                   {top ? (

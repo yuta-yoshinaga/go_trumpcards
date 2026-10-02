@@ -155,6 +155,8 @@ function StealingBundlesPageContent() {
   const human = state.players.find((p) => p.isHuman);
   const isGameEnd = state.phase === StealingBundlesPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = !isGameEnd && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const maxBundleSize = Math.max(0, ...state.players.map((player) => player.bundleSize));
+  const leadersCount = state.players.filter((player) => player.bundleSize === maxBundleSize).length;
 
   const seatName = (idx: number) => (idx === 0 ? t('header.you') : t('header.cpu', { idx: String(idx) }));
 
@@ -269,6 +271,14 @@ function StealingBundlesPageContent() {
                   <span>{t('header.cards', { n: String(p.cardCount) })}</span>
                   {' / '}
                   <span className="text-ds-accent">{t('header.bundle', { n: String(p.bundleSize) })}</span>
+                  {' / '}
+                  <span data-testid={`sb-bundle-gap-${p.id.toString()}`}>
+                    {p.bundleSize === maxBundleSize
+                      ? leadersCount > 1
+                        ? t('header.tiedLead')
+                        : t('header.lead')
+                      : t('header.bundleGap', { count: maxBundleSize - p.bundleSize })}
+                  </span>
                   {' / '}
                   <span>
                     {t('header.bundleTop')}:{' '}

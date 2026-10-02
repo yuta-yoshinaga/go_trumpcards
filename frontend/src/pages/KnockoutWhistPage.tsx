@@ -154,6 +154,26 @@ function KnockoutWhistPageContent() {
   // Show a spectator banner while the human is knocked out but the match continues among the CPUs.
   const showSpectatorBanner = isHumanEliminated && !isGameEnd;
   const trumpSymbol = suitSymbolAt(state.trumpSuit, '');
+  const roundResultAnnouncement =
+    (isRoundEnd || isGameEnd) && state.roundWinnerIdx >= 0
+      ? [
+          t('roundResult.winner', {
+            name: findPlayerName(state.players, state.roundWinnerIdx),
+          }),
+          ...state.roundSurvived.map((idx) => t('roundResult.survived', { name: findPlayerName(state.players, idx) })),
+          ...state.roundEliminated.map((idx) =>
+            t('roundResult.eliminated', { name: findPlayerName(state.players, idx) }),
+          ),
+          ...(isRoundEnd && !isGameEnd
+            ? [
+                t(nextHandSize === 1 ? 'roundResult.finalRoundPreview' : 'roundResult.nextRoundPreview', {
+                  count: nextHandSize,
+                  name: findPlayerName(state.players, state.roundWinnerIdx),
+                }),
+              ]
+            : []),
+        ].join(t('listSeparator'))
+      : '';
 
   const handleManualReset = () => {
     hideActionLog();
@@ -247,6 +267,10 @@ function KnockoutWhistPageContent() {
             ]}
           />
 
+          <div data-testid="kw-round-result-live" role="status" aria-live="polite" className="sr-only">
+            {roundResultAnnouncement}
+          </div>
+
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             {showSpectatorBanner && (
               <div
@@ -295,7 +319,7 @@ function KnockoutWhistPageContent() {
                     <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
                     <div>
                       {t('roundResult.winner', {
-                        name: playerName(state.roundWinnerIdx, state.players[state.roundWinnerIdx]?.isHuman ?? false),
+                        name: findPlayerName(state.players, state.roundWinnerIdx),
                       })}
                     </div>
                     {/* **そのラウンドで何が起きたかを一目で。**Dogbone 消費と脱落は
@@ -323,7 +347,7 @@ function KnockoutWhistPageContent() {
                       <div data-testid="kw-next-round-preview" className="mt-1 text-ds-text-primary">
                         {t(nextHandSize === 1 ? 'roundResult.finalRoundPreview' : 'roundResult.nextRoundPreview', {
                           count: nextHandSize,
-                          name: playerName(state.roundWinnerIdx, state.players[state.roundWinnerIdx]?.isHuman ?? false),
+                          name: findPlayerName(state.players, state.roundWinnerIdx),
                         })}
                       </div>
                     )}

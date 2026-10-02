@@ -67,6 +67,8 @@ export interface MightyResponse extends BaseGameResponse {
   highestBidder: number;
   winningBidNoTrump: boolean;
   kitty?: Card[];
+  discardedCards?: Card[];
+  discardedCardCount?: number;
   gameEndFlag: boolean;
   winnerTeam: number;
   leadPlayerIdx: number;

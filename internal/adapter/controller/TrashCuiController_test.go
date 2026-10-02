@@ -63,6 +63,14 @@ func TestTrashCuiControllerCpu(t *testing.T) {
 	assert.Equal(t, "cpu_output", c.Exec("cpu"))
 }
 
+func TestTrashCuiControllerUndo(t *testing.T) {
+	ti := newMockTrashInteractor()
+	c := NewTrashCuiController(ti)
+	ti.On("Undo").Return("undo_output")
+	assert.Equal(t, "undo_output", c.Exec("u"))
+	assert.Equal(t, "undo_output", c.Exec("undo"))
+}
+
 func TestTrashCuiControllerHint(t *testing.T) {
 	ti := newMockTrashInteractor()
 	c := NewTrashCuiController(ti)

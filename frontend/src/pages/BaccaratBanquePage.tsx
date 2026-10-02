@@ -237,8 +237,12 @@ function BaccaratBanquePageContent() {
                   >
                     {/* **席の呼び名はその席が持っている。** ここで seatIdx から
                         引き直すと、席の並びを変えた日に静かに左右が入れ替わる。 */}
-                    {t(`role.${state.players.find((p) => p.id === s.seatIdx)?.role ?? 'right'}`)}:{' '}
-                    {t(`outcome.${s.outcome}`)} ({s.delta})
+                    {t('result.sideLine', {
+                      role: t(`role.${state.players.find((p) => p.id === s.seatIdx)?.role ?? 'right'}`),
+                      outcome: t(`outcome.${s.outcome}`),
+                      bet: s.bet,
+                      delta: s.delta,
+                    })}
                   </div>
                 ))}
                 <div

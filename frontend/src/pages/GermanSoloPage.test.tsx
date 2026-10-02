@@ -178,6 +178,7 @@ describe('GermanSoloPage', () => {
     const bidStage2 = screen.getByRole('group', { name: 'フラーゲの切り札を選択' });
     expect(bidStage2).toBeInTheDocument();
     expect(within(bidStage2).getByRole('button', { name: 'スペード' })).toBeEnabled();
+    expect(within(bidStage2).getByRole('button', { name: 'スペード' })).toHaveFocus();
     expect(screen.getByTestId('germansolo-bid-confirm')).toBeDisabled();
 
     // Pick spades (♠) as trump → confirm enabled.
@@ -214,6 +215,7 @@ describe('GermanSoloPage', () => {
     // Back to stage 1; no bid dispatched.
     await screen.findByTestId('germansolo-bid-stage1');
     expect(screen.queryByTestId('germansolo-bid-stage2')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'フラーゲ' })).toHaveFocus();
     expect(mockExec).not.toHaveBeenCalled();
   });
 

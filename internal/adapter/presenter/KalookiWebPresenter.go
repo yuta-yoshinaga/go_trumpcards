@@ -21,6 +21,10 @@ func (p *KalookiWebPresenter) Output(g interfaces.KalookiGame, lastErr error) st
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerIdx = g.GetWinnerIdx()
 	resObj.RoundWinnerIdx = g.GetRoundWinnerIdx()
+	resObj.RoundScoreHistory = make([]*controller.KalookiWebOutputRoundScore, 0)
+	for _, scores := range g.GetRoundScoreHistory() {
+		resObj.RoundScoreHistory = append(resObj.RoundScoreHistory, &controller.KalookiWebOutputRoundScore{Scores: scores})
+	}
 
 	top := g.GetDiscardTop()
 	if top != nil {

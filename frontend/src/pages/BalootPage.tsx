@@ -187,7 +187,15 @@ function BalootPageContent() {
             </div>
 
             <div className="text-ds-text-primary text-center mb-2" data-testid="bl-score">
-              {t('header.score', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
+              <div data-testid="bl-cumulative-score">
+                {t('header.cumulativeScore', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
+              </div>
+              <div data-testid="bl-round-points">
+                {t('header.roundPoints', {
+                  t0: String(state.roundPoints[0] ?? 0),
+                  t1: String(state.roundPoints[1] ?? 0),
+                })}
+              </div>
             </div>
 
             {/* **有効な序列だけを出す。** モードで入れ替わるので、両方出すと

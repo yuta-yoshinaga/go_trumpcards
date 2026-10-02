@@ -70,6 +70,8 @@ const trickEndState = makeCalabresellaState({
 const roundEndState = makeCalabresellaState({
   phase: 4,
   roundThirds: [20, 8, 5],
+  roundScoreChanges: [2, -1, 0],
+  soloistWon: true,
 });
 const gameEndState = makeCalabresellaState({
   phase: 5,
@@ -278,6 +280,53 @@ describe('CalabresellaPage', () => {
     renderWithProviders(<CalabresellaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
     expect(screen.getByText('ラウンド結果')).toBeInTheDocument();
+    expect(screen.getByText('ソリストの契約達成')).toBeInTheDocument();
+    expect(screen.getByText('あなた 今回の精算: +2点')).toBeInTheDocument();
+    expect(screen.getByText('CPU 1 今回の精算: -1点')).toBeInTheDocument();
+    expect(screen.getByText('CPU 2 今回の精算: 0点')).toBeInTheDocument();
+  });
+
+  it('shows the round result on mobile and game end layouts', async () => {
+    const originalWidth = window.innerWidth;
+    try {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      mockExec.mockResolvedValue({
+        ...gameEndState,
+        soloistWon: true,
+        roundThirds: [20, 8, 5],
+        roundScoreChanges: [2, -1, 0],
+      });
+      renderWithProviders(<CalabresellaPage />);
+      expect(await screen.findByText('ソリストの契約達成')).toBeInTheDocument();
+      expect(screen.getByText('あなた 今回の精算: +2点')).toBeInTheDocument();
+      expect(screen.getByText('CPU 1 今回の精算: -1点')).toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('does not show a round result during play', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, soloistWon: true, roundScoreChanges: [2, -1, 0] });
+    renderWithProviders(<CalabresellaPage />);
+    await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
+    expect(screen.queryByText('ソリストの契約達成')).not.toBeInTheDocument();
+    expect(screen.queryByText(/今回の精算/)).not.toBeInTheDocument();
+  });
+
+  it('shows when the Soloist misses the contract', async () => {
+    mockExec.mockResolvedValue(
+      makeCalabresellaState({
+        phase: 4,
+        soloistWon: false,
+        roundScoreChanges: [-4, 2, 2],
+      }),
+    );
+    renderWithProviders(<CalabresellaPage />);
+    await waitFor(() => expect(screen.getByText('ソリストの契約未達')).toBeInTheDocument());
+    expect(screen.getByText('あなた 今回の精算: -4点')).toBeInTheDocument();
+    expect(screen.getByText('CPU 1 今回の精算: +2点')).toBeInTheDocument();
   });
 
   it('renders the game end message', async () => {

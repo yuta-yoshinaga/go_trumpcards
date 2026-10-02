@@ -17,6 +17,8 @@ export interface PresidentPlayerData {
 export interface PresidentAction {
   playerIdx: number;
   playedCards: Card[] | null; // null = pass
+  fieldFlushed?: boolean;
+  leadPlayerIdx?: number;
 }
 
 /** Card exchange action in President. */

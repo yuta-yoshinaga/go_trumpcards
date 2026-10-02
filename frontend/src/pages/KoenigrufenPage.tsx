@@ -81,6 +81,8 @@ const KOENIGRUFEN_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 /** Contract i18n keys indexed by contract/bid value (0=none, 1=Rufer). */
 const CONTRACT_KEYS = ['contractNone', 'contractRufer'] as const;
+/** Minimum declarer-side points for success: more than half of the 106 total points. */
+const KOENIGRUFEN_REQUIRED_POINTS = 54;
 
 /** Outcome i18n keys indexed by outcome value (0=none, 1=Win/made, 2=Loss/failed). */
 const OUTCOME_KEYS = ['outcomeNone', 'outcomeWin', 'outcomeLoss'] as const;
@@ -422,6 +424,11 @@ function KoenigrufenPageContent() {
                         <div>
                           {t('roundResult.captured', {
                             points: state.teamPoints,
+                          })}
+                        </div>
+                        <div>
+                          {t('roundResult.required', {
+                            points: KOENIGRUFEN_REQUIRED_POINTS,
                           })}
                         </div>
                       </>

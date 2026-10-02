@@ -42,6 +42,7 @@
   "roundEndReasonLine": "終了理由: {{reason}}",
   "roundWinnerLine": "勝者: {{name}}",
   "cpuName": "CPU {{id}}",
+  "listSeparator": "、",
   "tongitsOnDeal": "配牌Tongits成立！即勝利です",
   "tongitsOnDealBanner": {
     "title": "TONGITS!",

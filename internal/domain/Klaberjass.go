@@ -96,6 +96,12 @@ type KlaberjassSequence struct {
 	Points int
 }
 
+// KlaberjassTrickHistoryEntry は確定したトリックの勝者と点数。
+type KlaberjassTrickHistoryEntry struct {
+	WinnerIdx int `json:"winnerIdx"`
+	Points    int `json:"points"`
+}
+
 // Klaberjass はクラバーヤスのゲームクラス。
 type Klaberjass struct {
 	trumpCards *TrumpCards
@@ -120,8 +126,9 @@ type Klaberjass struct {
 	// trick は場に出ている札 (最大 2 枚)。
 	trick []*Card
 	// trickLeader はこのトリックのリード席。
-	trickLeader int
-	trickNumber int
+	trickLeader  int
+	trickNumber  int
+	trickHistory []*KlaberjassTrickHistoryEntry
 
 	// handPoints はこのディールで各席が取った点 (役・ベラ・最終トリック込み)。
 	handPoints      [KlaberjassPlayerCnt]int
@@ -251,6 +258,7 @@ func (k *Klaberjass) beginDeal() {
 	k.makerIdx = -1
 	k.trick = nil
 	k.trickNumber = 0
+	k.trickHistory = nil
 	k.trickLeader = -1
 	k.handPoints = [KlaberjassPlayerCnt]int{}
 	k.cardPoints = [KlaberjassPlayerCnt]int{}
@@ -794,6 +802,7 @@ func (k *Klaberjass) resolveTrick() {
 	}
 	k.handPoints[winner] += points
 	k.cardPoints[winner] += points
+	k.trickHistory = append(k.trickHistory, &KlaberjassTrickHistoryEntry{WinnerIdx: winner, Points: points})
 	k.lastTrickWinner = winner
 	k.trickNumber++
 	k.trick = nil
@@ -1058,6 +1067,9 @@ func (k *Klaberjass) GetTrickLeaderIdx() int { return k.trickLeader }
 // GetTrickNumber は済んだトリック数を返す。
 func (k *Klaberjass) GetTrickNumber() int { return k.trickNumber }
 
+// GetTrickHistory は現在のディールで確定したトリック履歴を返す。
+func (k *Klaberjass) GetTrickHistory() []*KlaberjassTrickHistoryEntry { return k.trickHistory }
+
 // GetHandPoints は idx がこのディールで取った点を返す。
 func (k *Klaberjass) GetHandPoints(idx int) int {
 	if idx < 0 || idx >= KlaberjassPlayerCnt {
@@ -1160,39 +1172,40 @@ func (k *Klaberjass) addLog(playerIdx int, actionType, detailCode string, detail
 
 // klaberjassJSON is the JSON wire format for Klaberjass.
 type klaberjassJSON struct {
-	Players         []*KlaberjassPlayer      `json:"pl"`
-	Config          KlaberjassConfig         `json:"cf"`
-	Phase           KlaberjassPhase          `json:"ph"`
-	DealerIdx       int                      `json:"di"`
-	CurrentIdx      int                      `json:"ci"`
-	BidIdx          int                      `json:"bi"`
-	BidPassCount    int                      `json:"bp"`
-	SchmeissBy      int                      `json:"sb"`
-	TrumpSuit       int                      `json:"ts"`
-	TurnUpCard      *Card                    `json:"tu"`
-	MakerIdx        int                      `json:"mi"`
-	Trick           []*Card                  `json:"tk"`
-	TrickLeader     int                      `json:"tl"`
-	TrickNumber     int                      `json:"tn"`
-	HandPoints      [KlaberjassPlayerCnt]int `json:"hp"`
-	CardPoints      [KlaberjassPlayerCnt]int `json:"cp"`
-	SequencePoints  [KlaberjassPlayerCnt]int `json:"sp"`
-	BelaPoints      [KlaberjassPlayerCnt]int `json:"blp"`
-	LastTrickPoints [KlaberjassPlayerCnt]int `json:"ltp"`
-	SequenceWinner  int                      `json:"sw"`
-	BelaHolder      int                      `json:"bh"`
-	BelaKingPlayed  bool                     `json:"bk"`
-	BelaQueenPlayed bool                     `json:"bq"`
-	BelaScored      bool                     `json:"bs"`
-	DixUsed         bool                     `json:"du"`
-	BeteFlag        bool                     `json:"bt"`
-	LastTrickWinner int                      `json:"lw"`
-	Scores          [KlaberjassPlayerCnt]int `json:"sc"`
-	DealNumber      int                      `json:"dn"`
-	GameEndFlag     bool                     `json:"ge"`
-	WinnerIdx       int                      `json:"wi"`
-	ActionLog       []*ActionLogEntry        `json:"al"`
-	Sequences       [][]*KlaberjassSequence  `json:"sq"`
+	Players         []*KlaberjassPlayer            `json:"pl"`
+	Config          KlaberjassConfig               `json:"cf"`
+	Phase           KlaberjassPhase                `json:"ph"`
+	DealerIdx       int                            `json:"di"`
+	CurrentIdx      int                            `json:"ci"`
+	BidIdx          int                            `json:"bi"`
+	BidPassCount    int                            `json:"bp"`
+	SchmeissBy      int                            `json:"sb"`
+	TrumpSuit       int                            `json:"ts"`
+	TurnUpCard      *Card                          `json:"tu"`
+	MakerIdx        int                            `json:"mi"`
+	Trick           []*Card                        `json:"tk"`
+	TrickLeader     int                            `json:"tl"`
+	TrickNumber     int                            `json:"tn"`
+	HandPoints      [KlaberjassPlayerCnt]int       `json:"hp"`
+	CardPoints      [KlaberjassPlayerCnt]int       `json:"cp"`
+	SequencePoints  [KlaberjassPlayerCnt]int       `json:"sp"`
+	BelaPoints      [KlaberjassPlayerCnt]int       `json:"blp"`
+	LastTrickPoints [KlaberjassPlayerCnt]int       `json:"ltp"`
+	SequenceWinner  int                            `json:"sw"`
+	BelaHolder      int                            `json:"bh"`
+	BelaKingPlayed  bool                           `json:"bk"`
+	BelaQueenPlayed bool                           `json:"bq"`
+	BelaScored      bool                           `json:"bs"`
+	DixUsed         bool                           `json:"du"`
+	BeteFlag        bool                           `json:"bt"`
+	LastTrickWinner int                            `json:"lw"`
+	Scores          [KlaberjassPlayerCnt]int       `json:"sc"`
+	DealNumber      int                            `json:"dn"`
+	GameEndFlag     bool                           `json:"ge"`
+	WinnerIdx       int                            `json:"wi"`
+	ActionLog       []*ActionLogEntry              `json:"al"`
+	Sequences       [][]*KlaberjassSequence        `json:"sq"`
+	TrickHistory    []*KlaberjassTrickHistoryEntry `json:"th,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -1212,7 +1225,7 @@ func (k *Klaberjass) MarshalJSON() ([]byte, error) {
 		BelaQueenPlayed: k.belaQueenPlayed, BelaScored: k.belaScored,
 		DixUsed: k.dixUsed, BeteFlag: k.beteFlag, LastTrickWinner: k.lastTrickWinner,
 		Scores: k.scores, DealNumber: k.dealNumber, GameEndFlag: k.gameEndFlag,
-		WinnerIdx: k.winnerIdx, ActionLog: k.actionLog, Sequences: seqs,
+		WinnerIdx: k.winnerIdx, ActionLog: k.actionLog, Sequences: seqs, TrickHistory: k.trickHistory,
 	})
 }
 
@@ -1281,6 +1294,7 @@ func (k *Klaberjass) UnmarshalJSON(data []byte) error {
 	k.gameEndFlag = j.GameEndFlag
 	k.winnerIdx = j.WinnerIdx
 	k.actionLog = j.ActionLog
+	k.trickHistory = j.TrickHistory
 	for i := range KlaberjassPlayerCnt {
 		if i < len(j.Sequences) {
 			k.sequences[i] = j.Sequences[i]

@@ -95,6 +95,7 @@ func (p *MinchiateWebPresenter) buildBase(g interfaces.MinchiateGame) *controlle
 	resObj.ScartoCount = g.GetScartoSize()
 	resObj.TeamScores = g.GetTeamScores()
 	resObj.RoundTricks = g.GetRoundTricks()
+	resObj.RoundBreakdown = g.GetRoundBreakdown()
 	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerTeam = g.GetWinnerTeam()

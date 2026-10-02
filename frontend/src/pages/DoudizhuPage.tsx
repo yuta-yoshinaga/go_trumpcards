@@ -29,6 +29,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { classifyDoudizhuCombo, doudizhuInvalidReason } from '../utils/doudizhuComboValidator';
+import { findPlayerName } from '../utils/playerUtils';
 import { resolveMessageCode } from '../utils/resolveMessageCode';
 
 type ApiArgs = {
@@ -282,6 +283,11 @@ function DoudizhuPageContent() {
                   <AnimatedCard key={`table-${c.design}-${c.value}`} card={c} width={cardWidth * 0.8} />
                 ))}
                 <span className="text-ds-text-primary text-xs ml-2">{state.tableCombo}</span>
+                {state.lastPlayIdx >= 0 && (
+                  <span className="text-ds-text-primary text-xs ml-2">
+                    {t('label.lastPlayedBy', { player: findPlayerName(state.players, state.lastPlayIdx) })}
+                  </span>
+                )}
               </>
             ) : (
               <span className="text-ds-text-muted text-sm">{t('label.table')}: ---</span>

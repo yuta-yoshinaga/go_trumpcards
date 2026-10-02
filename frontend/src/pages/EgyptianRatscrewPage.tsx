@@ -76,6 +76,7 @@ function EgyptianRatscrewPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('egyptianratscrew');
   const [stepAnnounce, setStepAnnounce] = useState('');
+  const [clockNow, setClockNow] = useState(() => Date.now());
   const {
     state,
     loading,
@@ -221,6 +222,14 @@ function EgyptianRatscrewPageContent() {
     return () => window.clearInterval(id);
   }, [isGameRunning, isCpuPending, execApi]);
 
+  const isChanceActive = (state?.chanceRemaining ?? 0) > 0;
+  useEffect(() => {
+    if (!isChanceActive) return;
+    setClockNow(Date.now());
+    const id = window.setInterval(() => setClockNow(Date.now()), 250);
+    return () => window.clearInterval(id);
+  }, [isChanceActive]);
+
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('egyptianratscrew');
   const cliConfig: CliGameConfig<EgyptianRatscrewResponse, EgyptianRatscrewArgs> = useMemo(
@@ -278,6 +287,7 @@ function EgyptianRatscrewPageContent() {
         ? t('phase.chance')
         : t('phase.play');
   const lastEvent = state.lastEventKind;
+  const chanceSeconds = Math.max(0, Math.ceil((state.pendingDeadlineMs - clockNow) / 1000));
 
   return (
     <GamePageShell
@@ -398,6 +408,7 @@ function EgyptianRatscrewPageContent() {
                       {t('chanceResponder', {
                         player: state.isHumanTurn ? tc('player.you') : tc('player.cpu', { id: state.currentTurnIdx }),
                       })}
+                      {chanceSeconds > 0 && <> — {t('chanceTimeRemaining', { seconds: chanceSeconds })}</>}
                     </div>
                   </div>
                 )}

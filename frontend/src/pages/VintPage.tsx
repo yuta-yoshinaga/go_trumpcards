@@ -148,6 +148,9 @@ function VintPageContent() {
   const humanWon = isGameEnd && state.winnerTeam === 0;
   const isHumanBid = isBid && state.bidPlayerIdx === 0 && !isGameEnd;
   const isHumanPlay = isPlay && state.currentPlayerIdx === 0 && !isGameEnd;
+  const declarer = state.declarerIdx >= 0 ? state.players[state.declarerIdx] : undefined;
+  const declarerTricks = declarer ? state.teamTricks[declarer.team] : undefined;
+  const contractTricks = state.highBid ? state.highBid.level + 6 : undefined;
 
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
   const denomLabel = (denom: number): string => t(`denom.${denom}`);
@@ -208,6 +211,15 @@ function VintPageContent() {
                 </span>
               )}
             </div>
+
+            {isPlay && declarerTricks !== undefined && contractTricks !== undefined && (
+              <div
+                className="text-center mb-2 text-sm font-semibold text-ds-warning"
+                data-testid="vint-contract-progress"
+              >
+                {t('progress.line', { won: declarerTricks, needed: contractTricks })}
+              </div>
+            )}
 
             {/* No dummy — the rule that separates this from bridge. */}
             <div className="mb-2 text-center text-ds-text-muted text-xs" data-testid="vint-no-dummy">

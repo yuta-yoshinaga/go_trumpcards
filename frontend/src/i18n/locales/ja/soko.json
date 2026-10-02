@@ -10,6 +10,7 @@
     "rebuy": "リバイ/アドオン"
   },
   "doorCards": "ドアカード",
+  "latestDoorCard": "{{card}}、最新",
   "holeCards": "ホールカード",
   "yourHand": "あなたの手札",
   "anteBringIn": "アンティ/ブリングイン",

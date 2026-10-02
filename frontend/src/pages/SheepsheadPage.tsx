@@ -293,6 +293,12 @@ function SheepsheadPageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="sh-trick-display"
+                  cardDetailFor={(_card, trickCard) => {
+                    return t('trickCardDetail', {
+                      points: trickCard.points,
+                      trump: t(trickCard.isTrump ? 'trump' : 'notTrump'),
+                    });
+                  }}
                 />
                 {isTrickEnd && state.leadPlayerIdx >= 0 && (
                   <div

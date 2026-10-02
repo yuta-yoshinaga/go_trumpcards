@@ -27,24 +27,26 @@ type HoldemWebInput struct {
 // LowQualifies が populated される。それ以外のゲームでは omitempty に
 // より JSON 出力に含まれない。
 type HoldemWebOutputPlayer struct {
-	ID            int              `json:"id"`
-	IsHuman       bool             `json:"isHuman"`
-	Cards         []*WebOutputCard `json:"cards"`
-	Chips         int              `json:"chips"`
-	CurrentBet    int              `json:"currentBet"`
-	Folded        bool             `json:"folded"`
-	AllIn         bool             `json:"allIn"`
-	HandRank      int              `json:"handRank"`
-	HandName      string           `json:"handName"`
-	BestHand      []*WebOutputCard `json:"bestHand"`
-	LowBestHand   []*WebOutputCard `json:"lowBestHand,omitempty"`
-	LowQualifies  bool             `json:"lowQualifies,omitempty"`
-	PlayStyleName string           `json:"playStyleName"`
-	TotalHands    int              `json:"totalHands"`
-	VPIP          int              `json:"vpip"`
-	PFR           int              `json:"pfr"`
-	ThreeBet      int              `json:"threeBet"`
-	AF            string           `json:"af"`
+	ID                       int              `json:"id"`
+	IsHuman                  bool             `json:"isHuman"`
+	Cards                    []*WebOutputCard `json:"cards"`
+	Chips                    int              `json:"chips"`
+	CurrentBet               int              `json:"currentBet"`
+	Folded                   bool             `json:"folded"`
+	AllIn                    bool             `json:"allIn"`
+	HandRank                 int              `json:"handRank"`
+	HandName                 string           `json:"handName"`
+	BestHand                 []*WebOutputCard `json:"bestHand"`
+	LiveBestHandHoleIndices  []int            `json:"liveBestHandHoleIndices,omitempty"`
+	LiveBestHandBoardIndices []int            `json:"liveBestHandBoardIndices,omitempty"`
+	LowBestHand              []*WebOutputCard `json:"lowBestHand,omitempty"`
+	LowQualifies             bool             `json:"lowQualifies,omitempty"`
+	PlayStyleName            string           `json:"playStyleName"`
+	TotalHands               int              `json:"totalHands"`
+	VPIP                     int              `json:"vpip"`
+	PFR                      int              `json:"pfr"`
+	ThreeBet                 int              `json:"threeBet"`
+	AF                       string           `json:"af"`
 }
 
 // HoldemWebOutputCpuAction テキサスホールデムCPU行動記録

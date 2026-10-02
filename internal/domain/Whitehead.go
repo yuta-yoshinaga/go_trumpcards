@@ -533,6 +533,9 @@ func (k *Whitehead) GetTableau() [WhiteheadTableauCnt][]*WhiteheadTableauCard { 
 // GetFoundation ファンデーション取得
 func (k *Whitehead) GetFoundation() [WhiteheadFoundationCnt][]*Card { return k.foundation }
 
+// GetTotalCardCount returns the number of cards in this game's deck.
+func (k *Whitehead) GetTotalCardCount() int { return k.trumpCards.GetTotalCount() }
+
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (k *Whitehead) GetGameEndFlag() bool { return k.phase != WhiteheadPhasePlaying }
 

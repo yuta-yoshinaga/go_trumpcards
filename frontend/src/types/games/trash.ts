@@ -28,6 +28,7 @@ export interface TrashResponse extends BaseGameResponse {
   suggestedWildSlot: number;
   moveCount: number;
   winner: number;
+  canUndo: boolean;
 }
 
 // --- Whist (ホイスト) ---

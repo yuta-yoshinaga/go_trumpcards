@@ -118,6 +118,19 @@ beforeEach(() => {
 });
 
 describe('EgyptianRatscrewPage', () => {
+  it('shows the chance deadline countdown and clears it when the chance ends', async () => {
+    mockExec
+      .mockResolvedValueOnce({ ...chanceState, isHumanTurn: true, pendingDeadlineMs: Date.now() + 2_000 })
+      .mockResolvedValueOnce(baseState);
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('er-chance-row')).toHaveTextContent('残り2秒'));
+    await new Promise((resolve) => setTimeout(resolve, 1_100));
+    expect(screen.getByTestId('er-chance-row')).toHaveTextContent('残り1秒');
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() => expect(screen.queryByTestId('er-chance-row')).not.toBeInTheDocument());
+    expect(screen.getByText('場に0枚')).toBeInTheDocument();
+  });
+
   it('renders the GameSkeleton while state is null and does not render raw Loading…', () => {
     // Keep exec pending so `state` stays null and the loading guard renders.
     mockExec.mockReturnValue(new Promise(() => {}));

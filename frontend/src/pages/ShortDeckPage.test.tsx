@@ -362,6 +362,28 @@ describe('ShortDeckPage', () => {
     expect(screen.getByAltText('♥ 8')).toBeInTheDocument();
   });
 
+  it('highlights only CPU hole cards included in the server-evaluated best hand at showdown', async () => {
+    const cpuHole = { design: 'SPADE' as const, value: 6 };
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [
+        showdownState.players[0],
+        cpuPlayer(1, {
+          handName: 'ツーペア',
+          cards: [cpuHole, { design: 'HEART', value: 8 }],
+          bestHand: [cpuHole, { design: 'HEART', value: 6 }],
+        }),
+        cpuPlayer(2, { folded: true, cards: [cpuHole], bestHand: [cpuHole] }),
+      ],
+    });
+    renderWithProviders(<ShortDeckPage />);
+
+    await waitFor(() => expect(screen.getByTestId('cpu-hole-used')).toBeInTheDocument());
+    expect(screen.getAllByTestId('cpu-hole-used')).toHaveLength(1);
+    expect(screen.getByTestId('cpu-hole-used')).toContainElement(screen.getByAltText('♠ 6'));
+    expect(screen.getByTestId('cpu-hole-used')).not.toContainElement(screen.getByAltText('♥ 8'));
+  });
+
   it('shows CardBack for CPU cards when not in showdown', async () => {
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<ShortDeckPage />);
@@ -485,7 +507,7 @@ describe('ShortDeckPage', () => {
   it('shows call/raise buttons when canAct and has outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<ShortDeckPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
@@ -588,11 +610,11 @@ describe('ShortDeckPage', () => {
   it('calls call command when has outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<ShortDeckPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', undefined, undefined, 0));
   });
 
@@ -931,7 +953,7 @@ describe('ShortDeckPage', () => {
     it('pressing c triggers call when canAct and hasOutstandingBet', async () => {
       mockExec.mockResolvedValue(preFlopWithBetState);
       renderWithProviders(<ShortDeckPage />);
-      await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
       mockExec.mockClear();
       mockExec.mockResolvedValue(preFlopWithBetState);

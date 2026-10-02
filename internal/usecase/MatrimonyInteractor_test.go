@@ -43,6 +43,7 @@ func (g *mockMatrimonyGame) GetPhase() domain.MatrimonyPhase {
 func (g *mockMatrimonyGame) GetMoveCount() int   { return g.Called().Int(0) }
 func (g *mockMatrimonyGame) GetStockCount() int  { return g.Called().Int(0) }
 func (g *mockMatrimonyGame) GetRedealCount() int { return g.Called().Int(0) }
+func (g *mockMatrimonyGame) GetMaxRedeals() int  { return g.Called().Int(0) }
 func (g *mockMatrimonyGame) GetWaste() []*domain.Card {
 	v := g.Called().Get(0)
 	if v == nil {
