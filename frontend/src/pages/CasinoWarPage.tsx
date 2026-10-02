@@ -86,23 +86,24 @@ function CasinoWarPageContent() {
   const isEndPhase = state?.phase === CasinoWarPhase.END;
 
   // Client-side win/loss history persisted in localStorage.
-  const { history, tally, recordOutcome, clearHistory } = useCasinoWarStats();
+  const { history, tally, cumulativeNetChange, recordOutcome, clearHistory } = useCasinoWarStats();
   // Record each finished round exactly once. The guard keys on the END-phase
   // episode: it flips true when the round resolves and resets whenever the phase
   // leaves END (a new round begins), so re-renders at END never double-count.
   const recordedRef = useRef(false);
   const phase = state?.phase;
   const result = state?.result;
+  const netChange = state?.netChange;
   useEffect(() => {
     if (phase === CasinoWarPhase.END) {
-      if (!recordedRef.current && result !== undefined) {
+      if (!recordedRef.current && result !== undefined && netChange !== undefined) {
         recordedRef.current = true;
-        recordOutcome(outcomeFromResult(result));
+        recordOutcome(outcomeFromResult(result), netChange);
       }
     } else {
       recordedRef.current = false;
     }
-  }, [phase, result, recordOutcome]);
+  }, [phase, result, netChange, recordOutcome]);
 
   const handleBet = useCallback(() => {
     setLastBetAmount(betAmount);
@@ -304,6 +305,10 @@ function CasinoWarPageContent() {
                   >
                     {t('trend.clear')}
                   </button>
+                </div>
+                <div className="mt-1 text-center text-sm text-ds-text-primary" data-testid="cw-cumulative-net-change">
+                  {t('trend.cumulativeNetChange')}: {cumulativeNetChange > 0 ? '+' : ''}
+                  {cumulativeNetChange}
                 </div>
               </div>
             )}
