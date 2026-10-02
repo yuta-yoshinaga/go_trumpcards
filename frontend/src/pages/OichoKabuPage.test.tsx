@@ -105,6 +105,19 @@ describe('OichoKabuPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /ベット/ })).toBeInTheDocument());
   });
 
+  it('describes the current maximum bet and updates it when the chip balance changes', async () => {
+    mockApi.mockResolvedValueOnce(winState).mockResolvedValueOnce({ ...betState, chips: 650 });
+    renderWithProviders(<OichoKabuPage />);
+    const reset = await screen.findByRole('button', { name: /次のゲーム/ });
+    fireEvent.click(reset);
+
+    const betInput = await screen.findByLabelText('賭け金');
+    const descriptionId = betInput.getAttribute('aria-describedby');
+    expect(descriptionId).toBe('oichokabu-bet-max');
+    expect(document.getElementById('oichokabu-bet-max')).toHaveTextContent('現在の最大ベット額は650チップです');
+    expect(betInput).toHaveAttribute('max', '650');
+  });
+
   it('triggers bet action with current amount', async () => {
     mockApi.mockResolvedValue(betState);
     renderWithProviders(<OichoKabuPage />);
