@@ -58,3 +58,66 @@ export function classifyTienLenCombo(cards: Card[]): TienLenCombo {
 export function isValidTienLenCombo(cards: Card[]): boolean {
   return cards.length > 0 && classifyTienLenCombo(cards) !== 'invalid';
 }
+
+/** Result categories from checking a valid Tien Len play against the table. */
+export type TienLenPlayability = 'ok' | 'typeMismatch' | 'countMismatch' | 'tooWeak';
+
+function suitStrength(design: Card['design']): number {
+  switch (design) {
+    case 'SPADE':
+      return 0;
+    case 'CLOVER':
+      return 1;
+    case 'DIAMOND':
+      return 2;
+    case 'HEART':
+      return 3;
+    default:
+      return 0;
+  }
+}
+
+function cardStrength(card: Card): number {
+  return valueStrength(card.value) * 4 + suitStrength(card.design);
+}
+
+function playStrength(cards: Card[], type: TienLenCombo): number {
+  if (type === 'single') return cardStrength(cards[0]);
+  if (type === 'fourOfAKind') return valueStrength(cards[0].value);
+  return Math.max(...cards.map(cardStrength));
+}
+
+function isBomb(type: TienLenCombo): boolean {
+  return type === 'threePairRun' || type === 'fourOfAKind';
+}
+
+/**
+ * Checks whether a valid selection can beat the current table play. The rules
+ * match `tienLenIsPlayable` in `internal/domain/TienLenEval.go`.
+ */
+export function tienLenPlayability(
+  cards: Card[],
+  tableCards: Card[],
+  tablePlayType: TienLenCombo | 'invalid',
+): TienLenPlayability {
+  const type = classifyTienLenCombo(cards);
+  if (type === 'invalid') return 'typeMismatch';
+  if (tableCards.length === 0) return 'ok';
+
+  if (isBomb(type)) {
+    if (tablePlayType === 'single' && tableCards.length === 1 && tableCards[0].value === 2) return 'ok';
+    if (tablePlayType === 'fourOfAKind') {
+      if (type !== 'fourOfAKind') return 'typeMismatch';
+      return playStrength(cards, type) > playStrength(tableCards, tablePlayType) ? 'ok' : 'tooWeak';
+    }
+    if (tablePlayType === 'threePairRun') {
+      if (type === 'fourOfAKind') return 'ok';
+      return playStrength(cards, type) > playStrength(tableCards, tablePlayType) ? 'ok' : 'tooWeak';
+    }
+    return 'typeMismatch';
+  }
+
+  if (type !== tablePlayType) return 'typeMismatch';
+  if (cards.length !== tableCards.length) return 'countMismatch';
+  return playStrength(cards, type) > playStrength(tableCards, tablePlayType) ? 'ok' : 'tooWeak';
+}

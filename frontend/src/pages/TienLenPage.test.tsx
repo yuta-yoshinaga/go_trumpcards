@@ -109,6 +109,44 @@ describe('TienLenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0]));
   });
 
+  it.each([
+    ['typeMismatch', '場の役と種類が違います', [card('SPADE', 5), card('HEART', 5)], 2, undefined, [0]],
+    [
+      'countMismatch',
+      '枚数が違います',
+      [card('SPADE', 3), card('HEART', 4), card('DIAMOND', 5)],
+      4,
+      [card('SPADE', 5), card('HEART', 6), card('DIAMOND', 7), card('CLOVER', 8)],
+      [0, 1, 2, 3],
+    ],
+    ['tooWeak', '場の役より弱いです', [card('SPADE', 4)], 1, undefined, [0]],
+  ])(
+    'explains %s and prevents sending an unplayable selection',
+    async (_reason, message, tableCards, tablePlayType, hand, indices) => {
+      const state = makeState({ tableCards, tablePlayType });
+      if (hand) state.players[0].cards = hand;
+      mockExec.mockResolvedValue(state);
+      renderWithProviders(<TienLenPage />);
+      for (const index of indices) fireEvent.click(await screen.findByTestId(`hand-card-${index}`));
+      const button = screen.getByTestId('play-button');
+      expect(screen.getByTestId('tl-unplayable-reason')).toHaveTextContent(message);
+      expect(button).toBeDisabled();
+      expect(button).toHaveAttribute('aria-disabled', 'true');
+      fireEvent.click(button);
+      expect(mockExec).toHaveBeenCalledTimes(1); // reset only
+    },
+  );
+
+  it('allows sending a stronger play that beats the table', async () => {
+    mockExec.mockResolvedValue(makeState({ tableCards: [card('SPADE', 4)], tablePlayType: 1 }));
+    renderWithProviders(<TienLenPage />);
+    fireEvent.click(await screen.findByTestId('hand-card-1')); // ♥5 beats ♠4
+    const button = screen.getByTestId('play-button');
+    expect(button).toBeEnabled();
+    fireEvent.click(button);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [1]));
+  });
+
   it('disables play and shows a reason for an invalid combination', async () => {
     renderWithProviders(<TienLenPage />);
     // Select ♠3 + ♥5 (two different ranks) → not a legal combo.

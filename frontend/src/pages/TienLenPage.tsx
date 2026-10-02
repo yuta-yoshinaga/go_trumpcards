@@ -33,7 +33,7 @@ import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import { classifyTienLenCombo } from '../utils/tienLenComboValidator';
+import { classifyTienLenCombo, type TienLenCombo, tienLenPlayability } from '../utils/tienLenComboValidator';
 
 // Values match the Go domain constants: 0=Normal, 1=Easy, 2=Hard
 // (see TienLenConfig.go / TienLenCuiController help text).
@@ -151,8 +151,12 @@ function TienLenPageContent() {
   const selectedCards = selectedIndices.map((i) => human.cards[i]).filter((c): c is NonNullable<typeof c> => c != null);
   const selectedCombo = classifyTienLenCombo(selectedCards);
   const hasValidCombo = selectedCards.length > 0 && selectedCombo !== 'invalid';
+  const playability =
+    hasValidCombo && state.tableCards.length > 0
+      ? tienLenPlayability(selectedCards, state.tableCards, TIENLEN_PLAY_TYPE_KEYS[state.tablePlayType] as TienLenCombo)
+      : 'ok';
   const isBomb = selectedCombo === 'threePairRun' || selectedCombo === 'fourOfAKind';
-  const canPlay = isHumanTurn && selectedIndices.length > 0 && hasValidCombo;
+  const canPlay = isHumanTurn && selectedIndices.length > 0 && hasValidCombo && playability === 'ok';
   const showInvalidCombo = isHumanTurn && selectedIndices.length > 0 && !hasValidCombo;
   const showComboType = isHumanTurn && selectedIndices.length > 0 && hasValidCombo;
   const phaseName = isGameEnd ? t('phase.end') : t('phase.play');
@@ -313,11 +317,21 @@ function TienLenPageContent() {
                 {t('invalidCombo')}
               </p>
             )}
+            {isHumanTurn && hasValidCombo && playability !== 'ok' && (
+              <p
+                role="status"
+                data-testid="tl-unplayable-reason"
+                className="mb-1 text-center font-medium text-ds-warning text-xs"
+              >
+                {t(`unplayable.${playability}`)}
+              </p>
+            )}
             <div className="flex gap-2 justify-center flex-wrap" data-tutorial="tl-play-pass">
               <button
                 type="button"
                 onClick={handlePlay}
                 disabled={loading || !canPlay}
+                aria-disabled={isHumanTurn && hasValidCombo && playability !== 'ok' ? 'true' : undefined}
                 className="px-4 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="play-button"
               >
