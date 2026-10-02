@@ -954,6 +954,9 @@ func TestPinochle_ScoreRound_BidSuccess(t *testing.T) {
 
 	g.phase = PinochlePhaseRoundEnd
 	g.scoreRound()
+	if made, ok := g.GetLastContractMade(); !ok || !made {
+		t.Fatalf("expected recorded successful contract, got made=%v ok=%v", made, ok)
+	}
 
 	// チーム0: trickPoints(15) + meldPoints(10) = 25 >= bid(20) → 25加算
 	if g.teamScores[0] != 25 {
@@ -987,6 +990,9 @@ func TestPinochle_ScoreRound_BidFailure(t *testing.T) {
 
 	g.phase = PinochlePhaseRoundEnd
 	g.scoreRound()
+	if made, ok := g.GetLastContractMade(); !ok || made {
+		t.Fatalf("expected recorded failed contract, got made=%v ok=%v", made, ok)
+	}
 
 	// チーム0: total 25 < bid 50 → -50
 	if g.teamScores[0] != -50 {
@@ -995,6 +1001,34 @@ func TestPinochle_ScoreRound_BidFailure(t *testing.T) {
 	// チーム1: 15点
 	if g.teamScores[1] != 15 {
 		t.Errorf("expected team 1 score 15, got %d", g.teamScores[1])
+	}
+}
+
+func TestPinochle_ContractResultSnapshotCompatibility(t *testing.T) {
+	g := newTestPinochle()
+	g.lastContractMade = true
+	g.hasContractResult = true
+	data, err := json.Marshal(g)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var restored Pinochle
+	if err := json.Unmarshal(data, &restored); err != nil {
+		t.Fatal(err)
+	}
+	if made, ok := restored.GetLastContractMade(); !ok || !made {
+		t.Fatalf("snapshot lost contract result: made=%v ok=%v", made, ok)
+	}
+	if err := json.Unmarshal([]byte(`{"ph":5}`), &restored); err != nil {
+		t.Fatal(err)
+	}
+	if made, ok := restored.GetLastContractMade(); ok || made {
+		t.Fatalf("old snapshot should have unresolved result: made=%v ok=%v", made, ok)
+	}
+	g.phase = PinochlePhaseRoundEnd
+	g.NextRound()
+	if made, ok := g.GetLastContractMade(); ok || made {
+		t.Fatalf("next round should clear the prior contract result: made=%v ok=%v", made, ok)
 	}
 }
 

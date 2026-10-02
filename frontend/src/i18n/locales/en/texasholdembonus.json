@@ -97,5 +97,7 @@
     "pairOrBetter": "Pair or better — raise recommended",
     "weakHand": "Weak hand"
   },
-  "hiddenCard": "Hidden card"
+  "hiddenCard": "Hidden card",
+  "playerBestCardUsedAria": "Card in the player's best five: {{card}}",
+  "dealerBestCardUsedAria": "Card in the dealer's best five: {{card}}"
 }

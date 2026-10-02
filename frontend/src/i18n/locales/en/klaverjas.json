@@ -19,6 +19,7 @@
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",
+  "currentTrickPoints": "Card points in this trick: {{points}}",
   "players": "Players",
   "you": "You",
   "cpu": "CPU {{id}}",

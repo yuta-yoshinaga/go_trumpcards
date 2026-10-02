@@ -80,6 +80,13 @@ func (p *NinetyNineWebPresenter) buildBase(o interfaces.NinetyNineGame) *control
 	}
 
 	resObj.CurrentTrick = trickCardsToOutput(o.GetCurrentTrick())
+	resObj.ValidPlayIndices = make([]int, 0)
+	if o.GetPhase() == domain.NinetyNinePhasePlay && o.IsHumanTurn() {
+		resObj.ValidPlayIndices = o.GetValidPlayIndices(o.GetCurrentPlayerIdx())
+		if resObj.ValidPlayIndices == nil {
+			resObj.ValidPlayIndices = make([]int, 0)
+		}
+	}
 	resObj.Players = p.buildPlayersOutput(o)
 	return resObj
 }

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { SevenCardStudPlayerData, SevenCardStudResult } from '../types/card';
+import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { findPlayerName } from '../utils/playerUtils';
 
@@ -24,7 +25,15 @@ export function StudHiLoSplit({ results, players }: StudHiLoSplitProps) {
   // the difference. Reading wonAmount as "the high" would double-count a scoop.
   const hiWinners = results.flatMap((r) => {
     const hi = r.wonAmount - (r.wonLow ?? 0);
-    return hi > 0 ? [{ name: findPlayerName(players, r.playerIdx), amount: hi }] : [];
+    return hi > 0
+      ? [
+          {
+            name: findPlayerName(players, r.playerIdx),
+            amount: hi,
+            cards: r.bestHand.map(cardAlt).join(t('listSeparator')),
+          },
+        ]
+      : [];
   });
   const loWinners = results.flatMap((r) =>
     r.wonLow
@@ -69,6 +78,7 @@ export function StudHiLoSplit({ results, players }: StudHiLoSplitProps) {
             className="inline-block rounded border border-ds-success bg-ds-surface px-2 py-0.5 text-ds-success"
           >
             {t('hiLo.hi')}: {t('hiLo.winner', { name: w.name, amount: w.amount })}
+            {w.cards && ` (${w.cards})`}
           </span>
         ))}
         {loWinners.map((w) => (

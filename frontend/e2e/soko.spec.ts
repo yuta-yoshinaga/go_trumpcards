@@ -20,7 +20,7 @@ test.describe('Soko E2E', () => {
     let roundEnded = false;
     for (let round = 0; round < 20; round++) {
       const checkButton = page.getByRole('button', { name: 'チェック', exact: true });
-      const callButton = page.getByRole('button', { name: 'コール', exact: true });
+      const callButton = page.getByRole('button', { name: /^コール(?:\s|$)/ });
       const anyControl = endResetButton.or(checkButton).or(callButton).first();
       await expect(anyControl).toBeVisible({ timeout: TIMEOUT_GAME_LOOP });
 

@@ -177,6 +177,31 @@ func TestMightyWebPresenter_Output(t *testing.T) {
 		assert.Len(t, resObj2.Kitty, 3)
 	})
 
+	t.Run("discarded cards stay hidden during play and are revealed at round end", func(t *testing.T) {
+		cards := []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 2, false),
+			domain.NewCard(domain.CardDesignHeart, 3, false),
+			domain.NewCard(domain.CardDesignDiamond, 4, false),
+		}
+		playing, _ := setupMightyWebMockWithPlayers()
+		playing.ExpectedCalls = removeMockCall(playing.ExpectedCalls, "GetKitty")
+		playing.On("GetKitty").Return(cards)
+		var playingOut controller.MightyWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(playing, nil)), &playingOut))
+		assert.Equal(t, 3, playingOut.DiscardedCardCount)
+		assert.Empty(t, playingOut.DiscardedCards)
+
+		ended, _ := setupMightyWebMockWithPlayers()
+		ended.ExpectedCalls = removeMockCall(ended.ExpectedCalls, "GetPhase")
+		ended.On("GetPhase").Return(domain.MightyPhaseRoundEnd)
+		ended.ExpectedCalls = removeMockCall(ended.ExpectedCalls, "GetKitty")
+		ended.On("GetKitty").Return(cards)
+		var endedOut controller.MightyWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(ended, nil)), &endedOut))
+		assert.Equal(t, 3, endedOut.DiscardedCardCount)
+		assert.Len(t, endedOut.DiscardedCards, 3)
+	})
+
 	t.Run("config values flow through", func(t *testing.T) {
 		m, _ := setupMightyWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetConfig")

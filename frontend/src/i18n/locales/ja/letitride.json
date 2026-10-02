@@ -16,6 +16,7 @@
   },
   "outcomePreview": {
     "betAmount": "各口のベット額: {{amount}}",
+    "maxBet": "上限額: {{amount}}",
     "betRisk": "ベット後のリスク合計: {{amount}}",
     "remainingBet": "残る各口のベット額: {{amount}}",
     "actionRisk": "操作後のリスク合計: {{amount}}"
@@ -59,6 +60,7 @@
     "title": "設定"
   },
   "betGuide": "ベット額を設定 — 3つの同額ベットが置かれます",
+  "insufficientChips": "チップが足りないため最小ベット {{amount}} を置けません",
   "betStructure": {
     "title": "なぜ3口に分かれるの？",
     "intro": "アンティは同額の3口（ベット1・2・3）に分けて置かれます。合計でベット額の3倍が引かれるため、1口の上限は手持ちチップの1/3までです。",

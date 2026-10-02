@@ -207,6 +207,9 @@ describe('evaluateMarriageDeclare', () => {
     expect(p.hasPureSequence).toBe(true);
     expect(p.unmeldedCount).toBe(0);
     expect(p.penalty).toBe(0);
+    expect(p.melds).toHaveLength(7);
+    expect(p.melds.filter((meld) => meld.pureSequence)).toHaveLength(3);
+    expect(new Set(p.melds.flatMap((meld) => meld.cardIndices))).toEqual(new Set(validHand.map((_, i) => i)));
   });
 
   it('flags a missing pure sequence with the full penalty', () => {

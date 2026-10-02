@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { teendopaanchApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, TeenDoPaanchResponse } from '../types/card';
@@ -120,6 +121,31 @@ describe('TeenDoPaanchPage', () => {
     renderWithProviders(<TeenDoPaanchPage />);
     expect(await screen.findByTestId('td-seat-1')).toHaveTextContent('切り札決定');
     expect(screen.getByTestId('td-seat-0')).not.toHaveTextContent('切り札決定');
+  });
+
+  it('includes each trick player in the accessible card name in Japanese and English', async () => {
+    mockExec.mockResolvedValue(
+      playing({
+        currentTrick: [
+          { playerIdx: 0, card: card('HEART', 1) },
+          { playerIdx: 1, card: card('SPADE', 9) },
+        ],
+      } as Partial<TeenDoPaanchResponse>),
+    );
+    const { unmount } = renderWithProviders(<TeenDoPaanchPage />);
+
+    expect(await screen.findByRole('img', { name: /あなたが出した/ })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /CPU\s*1が出した/ })).toBeInTheDocument();
+
+    unmount();
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<TeenDoPaanchPage />);
+      expect(await screen.findByRole('img', { name: /played by You/ })).toBeInTheDocument();
+      expect(screen.getByRole('img', { name: /played by CPU 1/ })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('offers all four trump suits to the 5-target seat', async () => {

@@ -518,7 +518,7 @@ func colourWhistRank(c *Card) int {
 func (g *ColourWhist) finishRound() {
 	made := g.contractMade()
 	for i := range g.players {
-		g.players[i].AddScore(g.roundScoreFor(i, made))
+		g.players[i].AddRoundScore(g.roundScoreFor(i, made))
 	}
 	if made {
 		g.addLog(g.declarerIdx, "result", "colourwhist.log.resultMade", map[string]string{"contractKey": ColourWhistContractKey(g.contract), "tricks": fmt.Sprintf("%d", g.declarerTricks)}, nil)

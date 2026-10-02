@@ -501,6 +501,45 @@ describe('BridgePage', () => {
     });
   });
 
+  it('lets a human declarer select and play a card from dummy', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, currentPlayerIdx: 2 });
+    renderWithProviders(<BridgePage />);
+
+    const dummyCard = await screen.findByRole('button', { name: '♦ 10' });
+    fireEvent.click(dummyCard);
+    expect(dummyCard).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+  });
+
+  it('uses dummy hand indices for keyboard card selection and confirmation', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, currentPlayerIdx: 2 });
+    renderWithProviders(<BridgePage />);
+
+    await screen.findByRole('button', { name: '♦ 10' });
+    fireEvent.keyDown(document, { key: '1' });
+    expect(screen.getByRole('button', { name: '♦ 10' })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.keyDown(document, { key: 'Enter' });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+  });
+
+  it('does not expose human card controls on dummy turn when CPU is declarer', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      players: playPhaseState.players.map((player) => ({ ...player, isHuman: player.id === 1 })),
+      declarerIdx: 0,
+      dummyIdx: 2,
+      currentPlayerIdx: 2,
+    });
+    renderWithProviders(<BridgePage />);
+
+    await waitFor(() => expect(screen.getByTestId('bridge-dummy-area')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: '♦ 10' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+  });
+
   // オープニングリード完了後に公開されたダミーの手札がある場合のみダミー領域を表示する。
   it('renders bridge-dummy-area when opening lead is done and dummy hand exists', async () => {
     mockExec.mockResolvedValue(playPhaseState);

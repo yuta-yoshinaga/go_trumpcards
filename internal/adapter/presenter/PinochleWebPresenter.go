@@ -51,6 +51,9 @@ func (p *PinochleWebPresenter) buildBase(g interfaces.PinochleGame, lastErr erro
 	resObj.HighestBidder = g.GetHighestBidder()
 	resObj.TeamScores = [2]int{g.GetTeamScore(0), g.GetTeamScore(1)}
 	resObj.GameEndFlag = g.GetGameEndFlag()
+	if made, ok := g.GetLastContractMade(); ok {
+		resObj.ContractMade = &made
+	}
 	resObj.WinnerTeam = g.GetWinnerTeam()
 	resObj.LeadPlayerIdx = g.GetLeadPlayerIdx()
 

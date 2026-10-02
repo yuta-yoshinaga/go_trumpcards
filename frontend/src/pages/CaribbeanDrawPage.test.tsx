@@ -173,7 +173,7 @@ describe('CaribbeanDrawPage', () => {
     await waitFor(() => expect(screen.getByTestId('cd-stand-pat-button')).toBeInTheDocument());
     // Call/fold belong to the *next* phase; offering them here would let the
     // player skip the draw the game exists for.
-    expect(screen.queryByRole('button', { name: 'コール' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^コール(?:\s|$)/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'フォールド' })).not.toBeInTheDocument();
   });
 
@@ -183,7 +183,7 @@ describe('CaribbeanDrawPage', () => {
     await waitFor(() => expect(screen.getByTestId('cd-stand-pat-button')).toBeInTheDocument());
 
     fireEvent.click(screen.getByTestId('cd-stand-pat-button'));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
   });
 
@@ -300,7 +300,7 @@ describe('CaribbeanDrawPage', () => {
     it('keeps the cards inert once the draw is over', async () => {
       mockApi.mockResolvedValue(actionPhaseState);
       renderWithProviders(<CaribbeanDrawPage />);
-      await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
       expect(screen.queryByTestId('cd-player-card-0')).not.toBeInTheDocument();
       expect(screen.queryByTestId('cd-draw-fee')).not.toBeInTheDocument();
     });
@@ -309,9 +309,9 @@ describe('CaribbeanDrawPage', () => {
   it('shows end phase with player wins', async () => {
     mockApi.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhasePlayerWins);
     renderWithProviders(<CaribbeanDrawPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(screen.getByText('勝利！')).toBeInTheDocument());
     expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument();
@@ -320,9 +320,9 @@ describe('CaribbeanDrawPage', () => {
   it('shows end phase with dealer wins', async () => {
     mockApi.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhaseDealerWins);
     renderWithProviders(<CaribbeanDrawPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(screen.getByText('ディーラー勝利！')).toBeInTheDocument());
   });
 
@@ -338,18 +338,18 @@ describe('CaribbeanDrawPage', () => {
   it('shows end phase with push', async () => {
     mockApi.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhasePush);
     renderWithProviders(<CaribbeanDrawPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(screen.getByText('引き分け！')).toBeInTheDocument());
   });
 
   it('shows end phase with dealer not qualified', async () => {
     mockApi.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhaseDealerNotQualified);
     renderWithProviders(<CaribbeanDrawPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(screen.getAllByText(/未クオリファイ/).length).toBeGreaterThanOrEqual(1));
   });
 
@@ -477,7 +477,7 @@ describe('CaribbeanDrawPage', () => {
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
     // The 4 masked dealer cards are each announced as "hidden card".
     expect(screen.getAllByRole('img', { name: '非公開のカード' })).toHaveLength(4);
@@ -494,7 +494,7 @@ describe('CaribbeanDrawPage', () => {
   it('renders hint toggle checkbox', async () => {
     mockApi.mockResolvedValue(actionPhaseState);
     renderWithProviders(<CaribbeanDrawPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('checkbox')).toBeInTheDocument();
   });
 

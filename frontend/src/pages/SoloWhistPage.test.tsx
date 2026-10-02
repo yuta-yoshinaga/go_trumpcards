@@ -172,6 +172,47 @@ describe('SoloWhistPage', () => {
     await waitFor(() => expect(screen.getByTestId('sw-highest-bid')).toHaveTextContent('まだ入札なし'));
   });
 
+  it('keeps a polite live region mounted for the highest bid and bidder', async () => {
+    mockExec.mockResolvedValue(makeSoloWhistState({ bids: [0, 0, 0, 0] }));
+    const firstRender = renderWithProviders(<SoloWhistPage />);
+    const liveRegion = await screen.findByTestId('solowhist-highest-bid-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toHaveTextContent('まだ入札なし');
+
+    firstRender.unmount();
+    mockExec.mockResolvedValue(makeSoloWhistState({ bids: [2, 0, 0, 0] }));
+    renderWithProviders(<SoloWhistPage />);
+    await waitFor(() =>
+      expect(screen.getByTestId('solowhist-highest-bid-live')).toHaveTextContent('現在の最高ビッド: ミゼール'),
+    );
+    expect(screen.getByTestId('solowhist-highest-bid-live')).toHaveTextContent('あなた');
+    expect(screen.getByTestId('solowhist-highest-bid-live')).toHaveClass('sr-only');
+  });
+
+  it('updates the highest-bid live region after a bid response without unmounting', async () => {
+    mockExec.mockResolvedValue(makeSoloWhistState({ bids: [0, 0, 0, 0] }));
+    renderWithProviders(<SoloWhistPage />);
+    const liveRegion = await screen.findByTestId('solowhist-highest-bid-live');
+    expect(liveRegion).toHaveTextContent('まだ入札なし');
+    expect(screen.getByTestId('sw-highest-bid')).toHaveAttribute('aria-hidden', 'true');
+
+    mockExec.mockResolvedValue(makeSoloWhistState({ bids: [2, 0, 0, 0] }));
+    fireEvent.click(screen.getByTestId('bid-1'));
+
+    await waitFor(() => expect(liveRegion).toHaveTextContent('現在の最高ビッド: ミゼール'));
+    expect(liveRegion).toHaveTextContent('あなた');
+  });
+
+  it('announces a numeric highest bid when it has no label key', async () => {
+    mockExec.mockResolvedValue(makeSoloWhistState({ bids: [4, 0, 0, 0] }));
+    renderWithProviders(<SoloWhistPage />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId('solowhist-highest-bid-live')).toHaveTextContent('現在の最高ビッド: 4'),
+    );
+  });
+
   it('exposes the declarer line as a polite live region', async () => {
     renderWithProviders(<SoloWhistPage />);
     const line = await screen.findByTestId('solowhist-declarer');

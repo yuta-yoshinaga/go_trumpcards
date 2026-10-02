@@ -20,6 +20,8 @@ type TexasHoldemBonusWebOutput struct {
 	PlayerHand     []*WebOutputCard `json:"playerHand"`
 	DealerHand     []*WebOutputCard `json:"dealerHand"`
 	Community      []*WebOutputCard `json:"community"`
+	PlayerBest     []*WebOutputCard `json:"playerBest"`
+	DealerBest     []*WebOutputCard `json:"dealerBest"`
 	Phase          int              `json:"phase"`
 	Chips          int              `json:"chips"`
 	AnteBet        int              `json:"anteBet"`
@@ -52,6 +54,8 @@ func newTexasHoldemBonusDefaultOutput(msg string) *TexasHoldemBonusWebOutput {
 		PlayerHand:    make([]*WebOutputCard, 0),
 		DealerHand:    make([]*WebOutputCard, 0),
 		Community:     make([]*WebOutputCard, 0),
+		PlayerBest:    make([]*WebOutputCard, 0),
+		DealerBest:    make([]*WebOutputCard, 0),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

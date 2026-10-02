@@ -34,6 +34,7 @@
   "you": "あなた",
   "cpu": "CPU {{id}}",
   "declarerBadge": "デクレアラー",
+  "successLine": "成功ライン: {{target}} / {{total}} 点",
   "blind": "場札（チェゴ）: {{count}}枚（伏せ札）",
   "bidPass": "パス",
   "bidPlay": "プレイ宣言",
@@ -67,7 +68,9 @@
     "title": "ディール結果",
     "outcome": "結果: {{outcome}}",
     "declarer": "デクレアラー: {{name}}",
-    "captured": "獲得点: {{points}} 点"
+    "captured": "獲得点: {{points}} 点",
+    "made": "成功ライン到達: 成功",
+    "failed": "成功ライン未到達: 失敗"
   },
   "hintAvailable": "ヒント",
   "hint": {

@@ -13,7 +13,7 @@ test.describe('2-7 Triple Draw E2E', () => {
 
     const endResetButton = page.getByRole('button', { name: '次のゲーム' });
     const checkButton = page.getByRole('button', { name: 'チェック', exact: true });
-    const callButton = page.getByRole('button', { name: 'コール', exact: true });
+    const callButton = page.getByRole('button', { name: /^コール(?:\s|$)/ });
     const foldButton = page.getByRole('button', { name: 'フォールド', exact: true });
     const standButton = page.getByRole('button', { name: /スタンド/ });
 

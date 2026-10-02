@@ -575,6 +575,18 @@ func TestNinetyNine_GetValidPlayIndices(t *testing.T) {
 	assert.Equal(t, []int{0}, valid) // only the heart
 }
 
+func TestNinetyNine_GetValidPlayIndicesWhenVoidInLeadSuit(t *testing.T) {
+	o := newTestNinetyNine()
+	setupPlay(o)
+	o.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},
+	})
+	o.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignClover, 8, false))
+	o.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignDiamond, 9, false))
+
+	assert.Equal(t, []int{0, 1}, o.GetValidPlayIndices(0))
+}
+
 func TestNinetyNine_ActionLogUsesDetailCode(t *testing.T) {
 	o := newTestNinetyNine()
 	o.Reset()
