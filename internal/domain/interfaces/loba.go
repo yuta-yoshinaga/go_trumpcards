@@ -45,6 +45,8 @@ type LobaGame interface {
 	HasMelded(idx int) bool
 	// GetScore 累計失点を取得する
 	GetScore(idx int) int
+	// GetRoundScore 直近ラウンドの失点増減を取得する
+	GetRoundScore(idx int) int
 	// IsEliminated 脱落しているかを取得する
 	IsEliminated(idx int) bool
 	// GetRoundNumber 完了したラウンド数を取得する

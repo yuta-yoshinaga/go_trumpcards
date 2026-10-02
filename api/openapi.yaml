@@ -36226,6 +36226,9 @@ components:
                 description: |
                   Penalty total. Public for every seat: 101 knocks a player out,
                   so how close each one is drives every decision.
+              roundScore:
+                type: integer
+                description: Penalty delta from the most recently completed round.
               eliminated:
                 type: boolean
               hasMelded:

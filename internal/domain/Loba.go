@@ -251,6 +251,8 @@ type Loba struct {
 	roundNo    int
 
 	scores []int
+	// roundScores は直近ラウンドの累計失点の増減。
+	roundScores []int
 	// eliminated[i] は 101 点に達して脱落したか。
 	eliminated []bool
 	// roundWinner は直近ラウンドで上がった人 (-1: なし)。
@@ -330,6 +332,7 @@ func (l *Loba) Reset() {
 
 // dealRound は 1 ラウンドを配る。
 func (l *Loba) dealRound() {
+	l.roundScores = make([]int, len(l.players))
 	l.melds = nil
 	l.hasMelded = make([]bool, len(l.players))
 	l.meldedBefore = make([]bool, len(l.players))
@@ -607,6 +610,7 @@ func (l *Loba) checkGoneOut(player int) {
 
 // finishRound はラウンドを精算する。
 func (l *Loba) finishRound(winner int) {
+	previousScores := append([]int(nil), l.scores...)
 	l.roundWinner = winner
 	// **一度も出さずに一気に上がると -10。**
 	l.roundClean = l.wentOutInOneGo(winner)
@@ -624,6 +628,10 @@ func (l *Loba) finishRound(winner int) {
 			pts += LobaCardPoints(p.GetCard(j))
 		}
 		l.scores[i] += pts
+	}
+	l.roundScores = make([]int, len(l.players))
+	for i := range l.players {
+		l.roundScores[i] = l.scores[i] - previousScores[i]
 	}
 	l.addLog(winner, "round_end", "loba.log.roundEnd", map[string]string{"round": strconv.Itoa(l.roundNo + 1)}, nil)
 
@@ -836,6 +844,11 @@ func (l *Loba) GetScore(idx int) int {
 	return elemAt(l.scores, idx)
 }
 
+// GetRoundScore は直近ラウンドの失点増減を返す。旧スナップショット等で値が無い場合は 0。
+func (l *Loba) GetRoundScore(idx int) int {
+	return elemAt(l.roundScores, idx)
+}
+
 // IsEliminated は idx が脱落しているかを返す。
 func (l *Loba) IsEliminated(idx int) bool {
 	if idx < 0 || idx >= len(l.eliminated) {
@@ -885,6 +898,7 @@ type lobaJSON struct {
 	Dealer       int               `json:"dl"`
 	RoundNo      int               `json:"rn"`
 	Scores       []int             `json:"sc"`
+	RoundScores  []int             `json:"rs,omitempty"`
 	Eliminated   []bool            `json:"el"`
 	RoundWinner  int               `json:"rw"`
 	RoundClean   bool              `json:"rc"`
@@ -899,7 +913,7 @@ func (l *Loba) MarshalJSON() ([]byte, error) {
 		Players: l.players, Config: l.config, Phase: l.phase, Stock: l.stock,
 		Discard: l.discard, Melds: l.melds, HasMelded: l.hasMelded,
 		MeldedBefore: l.meldedBefore, Current: l.currentIdx,
-		Dealer: l.dealerIdx, RoundNo: l.roundNo, Scores: l.scores, Eliminated: l.eliminated,
+		Dealer: l.dealerIdx, RoundNo: l.roundNo, Scores: l.scores, RoundScores: l.roundScores, Eliminated: l.eliminated,
 		RoundWinner: l.roundWinner, RoundClean: l.roundClean, GameEnd: l.gameEndFlag,
 		WinnerIdx: l.winnerIdx, ActionLog: l.actionLog,
 	})
@@ -947,6 +961,8 @@ func (l *Loba) UnmarshalJSON(data []byte) error {
 
 	l.scores = make([]int, len(l.players))
 	copy(l.scores, raw.Scores)
+	l.roundScores = make([]int, len(l.players))
+	copy(l.roundScores, raw.RoundScores)
 	l.eliminated = make([]bool, len(l.players))
 	copy(l.eliminated, raw.Eliminated)
 	l.hasMelded = make([]bool, len(l.players))
