@@ -19,6 +19,8 @@ export interface HighCardFlushResponse extends BaseGameResponse {
   flushBonusPayout: number;
   straightFlushPayout: number;
   totalPayout: number;
+  totalBet: number;
+  netChange: number;
   dealerQualified: boolean;
   playerFlushLen: number;
   dealerFlushLen: number;

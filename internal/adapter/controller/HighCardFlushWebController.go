@@ -33,6 +33,8 @@ type HighCardFlushWebOutput struct {
 	FlushBonusPayout       int              `json:"flushBonusPayout"`
 	StraightFlushPayout    int              `json:"straightFlushPayout"`
 	TotalPayout            int              `json:"totalPayout"`
+	TotalBet               int              `json:"totalBet"`
+	NetChange              int              `json:"netChange"`
 	DealerQualified        bool             `json:"dealerQualified"`
 	PlayerFlushLen         int              `json:"playerFlushLen"`
 	DealerFlushLen         int              `json:"dealerFlushLen"`

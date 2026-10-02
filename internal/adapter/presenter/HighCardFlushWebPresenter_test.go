@@ -28,6 +28,8 @@ func setupHighCardFlushWebMockDefaults(m *interfaces.MockHighCardFlushGame) {
 	m.On("GetFlushBonusPayout").Return(0).Maybe()
 	m.On("GetStraightFlushPayout").Return(0).Maybe()
 	m.On("GetTotalPayout").Return(0).Maybe()
+	m.On("GetTotalBet").Return(0).Maybe()
+	m.On("GetNetChange").Return(0).Maybe()
 	m.On("GetDealerQualified").Return(false).Maybe()
 	m.On("GetPlayerFlushLen").Return(0).Maybe()
 	m.On("GetDealerFlushLen").Return(0).Maybe()
@@ -54,6 +56,17 @@ func TestHighCardFlushWebPresenter_Output_BetPhase(t *testing.T) {
 	assert.Equal(t, 1000, result.Chips)
 	assert.Empty(t, result.PlayerHand)
 	assert.Empty(t, result.Message)
+}
+
+func TestHighCardFlushWebPresenter_Output_SettlementSummary(t *testing.T) {
+	hcf := domain.NewDefaultHighCardFlush()
+	hcf.SetAnteBet(100)
+	hcf.SetFlushBonusBet(50)
+	hcf.SetStraightFlushBet(30)
+	hcf.SetRaiseBet(50)
+	out := parseHighCardFlushOutput(t, new(HighCardFlushWebPresenter).Output(hcf, nil))
+	assert.Equal(t, 230, out.TotalBet)
+	assert.Equal(t, -230, out.NetChange)
 }
 
 func TestHighCardFlushWebPresenter_Output_Error(t *testing.T) {
@@ -83,6 +96,8 @@ func endStateMock(t *testing.T, result domain.GameResult, raise int, qualified b
 	m.On("GetFlushBonusPayout").Return(0).Maybe()
 	m.On("GetStraightFlushPayout").Return(0).Maybe()
 	m.On("GetTotalPayout").Return(0).Maybe()
+	m.On("GetTotalBet").Return(100 + raise).Maybe()
+	m.On("GetNetChange").Return(-100 - raise).Maybe()
 	m.On("GetDealerQualified").Return(qualified).Maybe()
 	m.On("GetPlayerFlushLen").Return(3).Maybe()
 	m.On("GetDealerFlushLen").Return(3).Maybe()
