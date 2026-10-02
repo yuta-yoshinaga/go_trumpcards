@@ -147,12 +147,12 @@ func TestMadrassoRankOrderFollowsThePoints(t *testing.T) {
 	// 点を持つ札 (A,3,K,Q,J) の中では、強い順と点の高い順が一致する。
 	scoring := []int{1, 3, 13, 12, 11}
 	for i := 1; i < len(scoring); i++ {
-		assert.Greater(t, domain.MadrassoPointsForTest(scoring[i-1]), domain.MadrassoPointsForTest(scoring[i]),
+		assert.Greater(t, domain.MadrassoCardPoints(scoring[i-1]), domain.MadrassoCardPoints(scoring[i]),
 			"%d は %d より点が高いこと", scoring[i-1], scoring[i])
 	}
 	// **2 は最弱かつ 0 点。** クローン元では A より強かった。
 	assert.Equal(t, 0, domain.MadrassoStrengthForTest(2))
-	assert.Equal(t, 0, domain.MadrassoPointsForTest(2))
+	assert.Equal(t, 0, domain.MadrassoCardPoints(2))
 }
 
 func TestMadrassoCardPoints(t *testing.T) {
