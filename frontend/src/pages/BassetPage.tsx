@@ -74,6 +74,17 @@ function BassetPageContent() {
             <span>{t('turns', { played: state.turnsPlayed, total: state.turnsTotal })}</span>
             <span>{t('remaining', { count: state.remaining })}</span>
           </div>
+          <section
+            aria-label={t('remainingByRank')}
+            className="mx-auto mb-4 max-w-xl rounded-lg bg-ds-surface p-3 text-center"
+          >
+            <h2 className="mb-2 text-sm font-semibold">{t('remainingByRank')}</h2>
+            <ul className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm tabular-nums">
+              {RANK_LABELS.map((label, index) => (
+                <li key={label}>{t('rankRemaining', { rank: label, count: state.remainingByRank[index + 1] })}</li>
+              ))}
+            </ul>
+          </section>
           <div className="mx-auto grid max-w-xl gap-4 rounded-lg bg-black/20 p-6 text-center">
             <p>
               {state.bet ? `${t('bet')}: ${state.bet.rank} / ${state.bet.amount} / ${state.bet.stage}` : t('noBet')}
