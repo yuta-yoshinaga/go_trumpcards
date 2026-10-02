@@ -68,6 +68,14 @@ describe('ScopaPage', () => {
     renderWithProviders(<ScopaPage />);
     await waitFor(() => expect(screen.getByTestId('table-card-0')).toBeInTheDocument());
     expect(screen.getByTestId('table-card-1')).toBeInTheDocument();
+    expect(screen.getByTestId('sc-remaining-deck')).toHaveTextContent('残り山札: 30枚');
+  });
+
+  it('shows an empty deck at round end', async () => {
+    mockExec.mockResolvedValue(makeState({ remainingDeck: 0, phase: 'roundEnd' }));
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('sc-round-end-banner')).toBeInTheDocument());
+    expect(screen.getByTestId('sc-remaining-deck')).toHaveTextContent('残り山札: 0枚');
   });
 
   it('renders the latest human and CPU actions using the CUI wording rules', async () => {
