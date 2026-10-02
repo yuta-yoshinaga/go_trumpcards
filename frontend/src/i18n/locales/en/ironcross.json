@@ -18,6 +18,7 @@
   "label.folded": "folded",
   "label.allIn": "all in",
   "label.won": "won {{amount}}",
+  "label.netChange": "net change {{amount}}",
   "label.bestHand": "Best five",
   "label.handRank": "Hand",
   "label.unknownHandRank": "Unknown ({{rank}})",

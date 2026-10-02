@@ -227,6 +227,32 @@ func TestIronCross_ChooseLineSettlesTheHand(t *testing.T) {
 	t.Fatalf("30 回配っても選択の場面に届かなかった")
 }
 
+func TestIronCross_NetChangeUsesHandStartBalance(t *testing.T) {
+	g := newIronCrossForTest(t)
+	start := make([]int, len(g.GetPlayers()))
+	for i, p := range g.GetPlayers() {
+		start[i] = p.GetChips() + g.config.Ante
+	}
+	require.True(t, icPlayToChoose(t, g))
+	require.NoError(t, g.ChooseLine(IronCrossLineVertical))
+	for i, result := range g.GetResults() {
+		assert.Equal(t, g.GetPlayers()[i].GetChips()-start[i], result.NetChange)
+	}
+	beforeNext := make([]int, len(g.GetPlayers()))
+	for i, p := range g.GetPlayers() {
+		beforeNext[i] = p.GetChips()
+	}
+	require.NoError(t, g.NextHand())
+	assert.Nil(t, g.GetResults(), "次のハンド開始時に前ハンドの結果が残っている")
+	assert.Equal(t, beforeNext, g.handStartChips, "次のハンドで開始残高が更新されていない")
+	require.True(t, icPlayToChoose(t, g))
+	require.NoError(t, g.ChooseLine(IronCrossLineVertical))
+	for i, result := range g.GetResults() {
+		assert.Equal(t, g.GetPlayers()[i].GetChips()-beforeNext[i], result.NetChange,
+			"席 %d の比較基準が次のハンド開始時に更新されていない", i)
+	}
+}
+
 func TestIronCross_ChooseLineValidation(t *testing.T) {
 	t.Parallel()
 	g := newIronCrossForTest(t)

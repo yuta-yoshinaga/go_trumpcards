@@ -61063,6 +61063,9 @@ components:
                   $ref: '#/components/schemas/Card'
               wonAmount:
                 type: integer
+              netChange:
+                type: integer
+                description: Actual chip balance change since this hand started. Set at showdown only.
         cross:
           type: array
           description: >-
