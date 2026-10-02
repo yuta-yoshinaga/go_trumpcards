@@ -68,6 +68,15 @@ describe('StudHiLoSplit', () => {
     expect(screen.getByTestId('studhilo-lo-badge')).toHaveTextContent('A');
   });
 
+  it('shows the high payout without card parentheses for an empty best hand', () => {
+    renderWithProviders(
+      <StudHiLoSplit results={[result({ playerIdx: 0, wonAmount: 201, bestHand: [] })]} players={players} />,
+    );
+    const badge = screen.getByTestId('studhilo-hi-badge');
+    expect(badge).toHaveTextContent('201');
+    expect(badge).not.toHaveTextContent('(');
+  });
+
   it('does not show high hand cards when there is no high winner', () => {
     renderWithProviders(
       <StudHiLoSplit

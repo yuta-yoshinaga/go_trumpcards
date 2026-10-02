@@ -30,7 +30,7 @@ export function StudHiLoSplit({ results, players }: StudHiLoSplitProps) {
           {
             name: findPlayerName(players, r.playerIdx),
             amount: hi,
-            cards: (r.bestHand ?? []).map(cardAlt).join(t('listSeparator')),
+            cards: r.bestHand.map(cardAlt).join(t('listSeparator')),
           },
         ]
       : [];
