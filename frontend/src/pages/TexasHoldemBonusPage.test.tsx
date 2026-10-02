@@ -20,6 +20,8 @@ const betPhaseState: TexasHoldemBonusResponse = {
   playerHand: [],
   dealerHand: [],
   community: [],
+  playerBest: [],
+  dealerBest: [],
   phase: 1,
   chips: 1000,
   anteBet: 0,
@@ -68,6 +70,8 @@ const endPlayerWins: TexasHoldemBonusResponse = {
   phase: 5,
   dealerHand: [card('HEART', 7), card('DIAMOND', 5)],
   community: [card('SPADE', 12), card('SPADE', 11), card('SPADE', 10), card('CLOVER', 2), card('HEART', 4)],
+  playerBest: [card('SPADE', 1), card('SPADE', 13), card('SPADE', 12), card('SPADE', 11), card('SPADE', 10)],
+  dealerBest: [card('HEART', 7), card('DIAMOND', 5), card('SPADE', 12), card('SPADE', 11), card('SPADE', 10)],
   result: 1,
   antePayout: 200 + 100 * 1000,
   playPayout: 400,
@@ -126,6 +130,15 @@ afterEach(() => {
 });
 
 describe('TexasHoldemBonusPage', () => {
+  it('highlights the best five cards across hole cards and the board with accessible labels', async () => {
+    mockApi.mockResolvedValue(endPlayerWins);
+    const { container } = renderWithProviders(<TexasHoldemBonusPage />);
+    await waitFor(() => expect(container.querySelectorAll('[data-best5]')).toHaveLength(7));
+    expect(container.querySelectorAll('[data-player-best5]')).toHaveLength(5);
+    expect(container.querySelectorAll('[data-dealer-best5]')).toHaveLength(5);
+    expect(screen.getAllByText('プレイヤーの最善の5枚に含まれるカード: ♠ A')).toHaveLength(1);
+    expect(screen.getAllByText('ディーラーの最善の5枚に含まれるカード: ♠ Q')).toHaveLength(1);
+  });
   it('renders bet phase on mount', async () => {
     mockApi.mockResolvedValue(betPhaseState);
     renderWithProviders(<TexasHoldemBonusPage />);
