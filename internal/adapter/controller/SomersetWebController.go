@@ -5,6 +5,7 @@ package controller
 import (
 	"net/http"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -59,7 +60,7 @@ func newSomersetDefaultOutput(msg string) *SomersetWebOutput {
 	return &SomersetWebOutput{
 		Tableau:        make([][]*SomersetWebOutputTableauCard, 0),
 		Foundation:     make([][]*WebOutputCard, 0),
-		TotalCardCount: 0,
+		TotalCardCount: domain.CardCnt,
 		WebOutputBase:  WebOutputBase{Message: msg},
 	}
 }

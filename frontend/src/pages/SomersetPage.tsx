@@ -470,7 +470,8 @@ function SomersetPageContent() {
               <p data-testid="somerset-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
                 {t('gameOverSummary', {
                   count: foundationCount,
-                  percent: Math.round((foundationCount / 52) * 100),
+                  total: state.totalCardCount,
+                  percent: Math.round((foundationCount / state.totalCardCount) * 100),
                 })}
               </p>
             )}

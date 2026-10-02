@@ -146,6 +146,16 @@ describe('SomersetPage', () => {
     await i18n.changeLanguage('ja');
   });
 
+  it('renders the English empty foundation accessible name as translated text', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue({ ...playingState, foundation: [[], [], [], []] });
+    renderWithProviders(<SomersetPage />);
+    expect(
+      await screen.findByRole('button', { name: 'Empty foundation (♠) (overall 0 / 52 cards)' }),
+    ).toBeInTheDocument();
+    await i18n.changeLanguage('ja');
+  });
+
   it('labels all ten tableau columns with their 0-based index (matching hint text)', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<SomersetPage />);
@@ -262,6 +272,14 @@ describe('SomersetPage', () => {
 
   it('shows the foundation progress summary on game over', async () => {
     mockExec.mockResolvedValue(gameOverState); // 4 aces on foundations → 4/52 (8%)
+    renderWithProviders(<SomersetPage />);
+    const summary = await screen.findByTestId('somerset-gameover-summary');
+    expect(summary).toHaveTextContent('4/52');
+    expect(summary).toHaveTextContent('8%');
+  });
+
+  it('uses the server total to calculate game-over progress', async () => {
+    mockExec.mockResolvedValue({ ...gameOverState, totalCardCount: 52 });
     renderWithProviders(<SomersetPage />);
     const summary = await screen.findByTestId('somerset-gameover-summary');
     expect(summary).toHaveTextContent('4/52');
