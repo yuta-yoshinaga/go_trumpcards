@@ -250,17 +250,18 @@ func TestTrappolaLegacySnapshotResolvesAllTrickCardPoints(t *testing.T) {
 	trapSetHand(g.GetPlayer(0), trapCard(domain.CardDesignSpade, 1))
 	trapSetHand(g.GetPlayer(1), trapCard(domain.CardDesignSpade, 12))
 
-	// Emulate a persisted snapshot from before the cT field existed.
+	// Emulate a persisted snapshot from before the lT field existed.
 	snapshot, err := json.Marshal(g)
 	require.NoError(t, err)
 	var legacy map[string]json.RawMessage
 	require.NoError(t, json.Unmarshal(snapshot, &legacy))
-	delete(legacy, "cT")
+	delete(legacy, "lT")
 	snapshot, err = json.Marshal(legacy)
 	require.NoError(t, err)
 	var restored domain.Trappola
 	require.NoError(t, json.Unmarshal(snapshot, &restored))
 	assert.Equal(t, 1, restored.GetCurrentTrickThirds())
+	assert.Zero(t, restored.GetLastTrickThirds())
 
 	require.NoError(t, restored.PlayerPlay(0))
 	restored.CpuPlay()

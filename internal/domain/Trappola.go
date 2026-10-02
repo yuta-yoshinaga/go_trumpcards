@@ -397,9 +397,7 @@ func (g *Trappola) GetCurrentTrickThirds() int { return trappolaTrickThirds(g.cu
 func (g *Trappola) GetLastTrickThirds() int { return g.lastTrickThirds }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (g *Trappola) SetCurrentTrick(trick []*TrickCard) {
-	g.currentTrick = trick
-}
+func (g *Trappola) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *Trappola) GetLeadPlayerIdx() int { return g.leadPlayerIdx }

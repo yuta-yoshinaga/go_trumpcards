@@ -237,13 +237,11 @@ function TrappolaPageContent() {
                   dataTutorial="tr-trick-display"
                 />
                 <div className="mt-2 text-center text-sm text-ds-text-primary">
-                  {isTrickEnd || isRoundEnd || isGameEnd
-                    ? state.lastTrick.length > 0 && state.lastTrickWinner >= 0
-                      ? t('resolvedTrickPoints', {
-                          team: teamLabels[state.lastTrickWinner % 2],
-                          thirds: state.lastTrickThirds,
-                        })
-                      : t('currentTrickPoints', { thirds: state.currentTrickThirds })
+                  {(isTrickEnd || isRoundEnd || isGameEnd) && state.lastTrick.length > 0 && state.lastTrickWinner >= 0
+                    ? t('resolvedTrickPoints', {
+                        team: teamLabels[state.lastTrickWinner % 2],
+                        thirds: state.lastTrickThirds,
+                      })
                     : t('currentTrickPoints', { thirds: state.currentTrickThirds })}
                 </div>
 
