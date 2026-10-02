@@ -55794,6 +55794,11 @@ components:
               capturedCount:
                 type: integer
                 description: Number of cards this player has captured so far
+              capturedCards:
+                type: array
+                description: Cards this player has captured so far
+                items:
+                  $ref: '#/components/schemas/Card'
               basraCount:
                 type: integer
                 description: Number of Basra bonuses this player has scored

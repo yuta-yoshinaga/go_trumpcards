@@ -32,10 +32,10 @@ const gameEndState = makeBasraState({
   gameEndFlag: true,
   winners: [0],
   players: [
-    { id: 0, isHuman: true, cardCount: 0, cards: [], capturedCount: 30, basraCount: 2, score: 27 },
-    { id: 1, isHuman: false, cardCount: 0, cards: [], capturedCount: 10, basraCount: 0, score: 5 },
-    { id: 2, isHuman: false, cardCount: 0, cards: [], capturedCount: 8, basraCount: 0, score: 4 },
-    { id: 3, isHuman: false, cardCount: 0, cards: [], capturedCount: 4, basraCount: 0, score: 1 },
+    { id: 0, isHuman: true, cardCount: 0, cards: [], capturedCount: 30, capturedCards: [], basraCount: 2, score: 27 },
+    { id: 1, isHuman: false, cardCount: 0, cards: [], capturedCount: 10, capturedCards: [], basraCount: 0, score: 5 },
+    { id: 2, isHuman: false, cardCount: 0, cards: [], capturedCount: 8, capturedCards: [], basraCount: 0, score: 4 },
+    { id: 3, isHuman: false, cardCount: 0, cards: [], capturedCount: 4, capturedCards: [], basraCount: 0, score: 1 },
   ],
   lastDealDetail: endDealDetail,
 });
@@ -64,6 +64,23 @@ describe('BasraPage', () => {
       expect(screen.getByTestId('hand-card-0')).toBeInTheDocument();
       expect(screen.getByTestId('table-card-0')).toBeInTheDocument();
     });
+  });
+
+  it('shows captured card faces alongside the captured count', async () => {
+    const card = { design: 'HEART' as const, value: 5 };
+    mockExec.mockResolvedValue(
+      makeBasraState({
+        players: [
+          { ...playPhaseState.players[0], capturedCount: 1, capturedCards: [card] },
+          ...playPhaseState.players.slice(1),
+        ],
+      }),
+    );
+    renderWithProviders(<BasraPage />);
+    const captured = await screen.findByTestId('basra-captured-0');
+    expect(captured.querySelector('[aria-label="♥ 5"]')).toBeInTheDocument();
+    expect(captured).toHaveAttribute('data-captured-count', '1');
+    expect(captured.querySelectorAll('[aria-label]')).toHaveLength(1);
   });
 
   it('labels hand cards and exposes their selection state', async () => {

@@ -14,6 +14,8 @@ export interface BasraPlayer {
   cards: Card[];
   /** Number of cards captured so far this game. */
   capturedCount: number;
+  /** Cards captured so far this game. */
+  capturedCards: Card[];
   /** Number of Basra sweeps (clearing the table with a single non-Jack card). */
   basraCount: number;
   /** Final score (populated at game end). */
