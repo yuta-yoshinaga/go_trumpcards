@@ -36,6 +36,7 @@ func (tp *ThreeCardRummyWebPresenter) Output(tc interfaces.ThreeCardRummyGame, l
 	resObj.AnteBonusPayout = tc.GetAnteBonusPayout()
 	resObj.LowBonusPayout = tc.GetLowBonusPayout()
 	resObj.TotalPayout = tc.GetTotalPayout()
+	resObj.NetChange = tc.GetNetChange()
 	resObj.DealerQualified = tc.GetDealerQualified()
 	resObj.PlayerScore = tc.GetPlayerScore()
 	resObj.DealerScore = tc.GetDealerScore()

@@ -257,6 +257,41 @@ func TestThreeCardRummy_WinningCreditsEveryPayoutToTheStack(t *testing.T) {
 	assert.Greater(t, want, 0)
 }
 
+func TestThreeCardRummy_GetNetChangeMatchesChipMovement(t *testing.T) {
+	tests := []struct {
+		name           string
+		player, dealer []*Card
+		lowBonus       int
+		fold           bool
+	}{
+		{"win", tcrHand(0, 13, 1, 13, 2, 13), tcrHand(0, 13, 1, 9, 2, 1), 0, false},
+		{"loss", tcrHand(0, 13, 1, 12, 2, 5), tcrHand(0, 2, 1, 3, 2, 5), 0, false},
+		{"fold", tcrHand(0, 13, 1, 12, 2, 5), tcrHand(0, 2, 1, 3, 2, 5), 0, true},
+		{"fold with low bonus", tcrHand(0, 1, 1, 1, 2, 3), tcrHand(0, 13, 1, 12, 2, 6), 10, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tc := NewDefaultThreeCardRummy()
+			chipsBeforeBet := tc.GetChips()
+			require.NoError(t, tc.Bet(10, tt.lowBonus))
+			tc.SetPlayerHand(tt.player)
+			tc.SetDealerHand(tt.dealer)
+			if tt.fold {
+				require.NoError(t, tc.Fold())
+			} else {
+				require.NoError(t, tc.Play())
+			}
+			assert.Equal(t, tc.GetNetChange(), tc.GetChips()-chipsBeforeBet,
+				"Bet 前の残高との差は純収支と一致する")
+			if tt.name == "fold with low bonus" {
+				assert.Equal(t, chipsBeforeBet-20+tc.GetLowBonusPayout(), tc.GetChips(),
+					"アンテと側注を引いた残高にローボーナスが戻る")
+				assert.Greater(t, tc.GetLowBonusPayout(), 0)
+			}
+		})
+	}
+}
+
 func TestThreeCardRummy_LosingForfeitsTheAnteAndPlayBets(t *testing.T) {
 	tc := newTcrAtAction(t, tcrHand(0, 13, 1, 12, 2, 5 /*=25*/), tcrHand(0, 2, 1, 3, 2, 5 /*=10*/), 10, 0)
 	tc.SetChips(10)

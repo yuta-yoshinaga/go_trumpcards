@@ -200,6 +200,9 @@ func (tc *ThreeCardRummy) Fold() error {
 
 	// ローボーナスはフォールドしても評価される
 	tc.evaluateLowBonus()
+	if tc.lowBonusPayout > 0 {
+		tc.chips.AddChips(tc.lowBonusPayout)
+	}
 
 	tc.gameEndFlag = true
 	tc.phase = ThreeCardRummyPhaseEnd
@@ -385,6 +388,11 @@ func (tc *ThreeCardRummy) GetLowBonusPayout() int { return tc.lowBonusPayout }
 // GetTotalPayout 合計配当
 func (tc *ThreeCardRummy) GetTotalPayout() int {
 	return tc.antePayout + tc.playPayout + tc.anteBonusPayout + tc.lowBonusPayout
+}
+
+// GetNetChange returns the round's payout minus every wager charged.
+func (tc *ThreeCardRummy) GetNetChange() int {
+	return tc.GetTotalPayout() - tc.anteBet - tc.playBet - tc.lowBonusBet
 }
 
 // GetDealerQualified ディーラークオリファイ
