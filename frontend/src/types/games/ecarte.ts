@@ -66,6 +66,10 @@ export interface EcarteResponse extends BaseGameResponse {
   players: EcartePlayer[];
   /** Points scored in the current deal, indexed by seat. */
   dealPoints: number[];
+  /** Points scored by tricks in the current deal, indexed by seat. */
+  dealTrickPoints: number[];
+  /** Trump King bonus points in the current deal, indexed by seat. */
+  dealKingBonus: number[];
   /** Cumulative match score, indexed by seat. */
   matchScore: number[];
   phase: EcartePhaseValue;

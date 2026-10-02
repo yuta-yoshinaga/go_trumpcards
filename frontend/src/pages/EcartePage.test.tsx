@@ -359,6 +359,20 @@ describe('EcartePage', () => {
     expect(await screen.findByTestId('ecarte-winner-live')).toHaveTextContent('CPU 1がこのディールで1点を獲得しました');
   });
 
+  it('shows deal points split into trick points and king bonus, including zero bonus', async () => {
+    mockExec.mockResolvedValue(
+      makeEcarteState({
+        phase: 2,
+        dealPoints: [1, 0],
+        dealTrickPoints: [1, 0],
+        dealKingBonus: [0, 0],
+      }),
+    );
+    renderWithProviders(<EcartePage />);
+    expect(await screen.findByText('あなた: 1点（トリック 1点 / キングボーナス 0点）')).toBeInTheDocument();
+    expect(screen.getByText('CPU 1: 0点（トリック 0点 / キングボーナス 0点）')).toBeInTheDocument();
+  });
+
   it('renders the game end message', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<EcartePage />);
