@@ -95,6 +95,7 @@ func (p *LobaWebPresenter) buildPlayersOutput(c interfaces.LobaGame) []*controll
 			CardCount:  player.GetCardsSize(),
 			Cards:      cards,
 			Score:      c.GetScore(i),
+			RoundScore: c.GetRoundScore(i),
 			Eliminated: c.IsEliminated(i),
 			HasMelded:  c.HasMelded(i),
 			Hidden:     !reveal,

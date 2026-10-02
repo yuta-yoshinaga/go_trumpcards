@@ -11,6 +11,7 @@ function seat(id: number, isHuman: boolean, overrides?: Partial<LobaPlayer>): Lo
     cardCount: 9,
     cards: isHuman ? [card('SPADE', 7), card('HEART', 7)] : [],
     score: 12,
+    roundScore: 0,
     eliminated: false,
     hasMelded: false,
     hidden: !isHuman,

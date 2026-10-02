@@ -245,6 +245,28 @@ func TestLoba_GoingOutInOneGoTakesTenOff(t *testing.T) {
 	assert.Equal(t, LobaPhaseRoundEnd, l.GetPhase())
 }
 
+func TestLoba_FinishRoundTracksScoreDeltaIncludingCleanBonus(t *testing.T) {
+	l := lbReady(t, 0)
+	for i := range l.GetPlayers() {
+		l.GetPlayer(i).Reset()
+		l.SetScoreForTest(i, 20+i*10)
+	}
+	l.GetPlayer(1).AddCard(lbCard(CardDesignSpade, 13))
+	l.GetPlayer(1).AddCard(lbCard(CardDesignHeart, 2))
+	before := make([]int, len(l.GetPlayers()))
+	for i := range before {
+		before[i] = l.GetScore(i)
+	}
+
+	l.finishRound(0)
+
+	for i := range before {
+		assert.Equal(t, l.GetScore(i)-before[i], l.GetRoundScore(i), "seat %d", i)
+	}
+	assert.Equal(t, -LobaGoOutCleanBonus, l.GetRoundScore(0))
+	assert.Equal(t, 12, l.GetRoundScore(1))
+}
+
 // TestLoba_ThreeMeldsInOneTurnIsStillClean は、9 枚を 3+3+3 で一気に出す
 // **最も普通の一気上がり**が -10 を取れることを確かめる。メルドの数で判定して
 // いると、この形が丸ごと弾かれる。
@@ -558,9 +580,18 @@ func TestLoba_SurvivesAKVRoundTrip(t *testing.T) {
 	assert.Equal(t, len(l.GetMelds()), len(restored.GetMelds()))
 	for i := range l.GetPlayers() {
 		assert.Equal(t, l.GetScore(i), restored.GetScore(i), "score %d", i)
+		assert.Equal(t, l.GetRoundScore(i), restored.GetRoundScore(i), "round score %d", i)
 		// これが落ちると脱落者が復活する。
 		assert.Equal(t, l.IsEliminated(i), restored.IsEliminated(i), "eliminated %d", i)
 		assert.Equal(t, l.HasMelded(i), restored.HasMelded(i), "hasMelded %d", i)
+	}
+}
+
+func TestLoba_OldSnapshotHasZeroRoundScores(t *testing.T) {
+	l := NewDefaultLoba()
+	require.NoError(t, json.Unmarshal([]byte(`{"pl":[{},{},{},{}],"cfg":{"cd":0},"ph":0}`), l))
+	for i := range l.GetPlayers() {
+		assert.Zero(t, l.GetRoundScore(i))
 	}
 }
 
