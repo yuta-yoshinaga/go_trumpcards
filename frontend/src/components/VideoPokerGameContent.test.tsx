@@ -230,6 +230,19 @@ describe('VideoPokerGameContent', () => {
     await waitFor(() => expect(screen.getByTestId('vp-net-change')).toHaveTextContent('+0'));
   });
 
+  it('translates Joker Poker net change and keeps its sign in Japanese and English', async () => {
+    mockExec.mockResolvedValue({ ...resultPhaseWin, variantName: 'jokerpoker' });
+    renderContent('jokerpoker');
+    await waitFor(() => expect(screen.getByTestId('vp-net-change')).toHaveTextContent('純増減: +4'));
+
+    try {
+      await i18n.changeLanguage('en');
+      expect(screen.getByTestId('vp-net-change')).toHaveTextContent('Net change: +4');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('auto-hold pre-selects the hint-recommended cards on entering draw phase', async () => {
     // drawPhaseState hand = [A♠, J♥, 5♣, 8♦, K♠]. With no pairs/draws, the
     // base hint engine recommends holding the high cards (J + K → idx 1, 4).
