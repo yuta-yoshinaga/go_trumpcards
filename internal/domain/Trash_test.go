@@ -596,3 +596,29 @@ func TestTrashHelperPredicates(t *testing.T) {
 	assert.Equal(t, 1, trashCardPosition(NewCard(CardDesignSpade, 1, false)))
 	assert.Equal(t, 10, trashCardPosition(NewCard(CardDesignSpade, 10, false)))
 }
+
+func TestTrashUndoUnavailableReturnsDomainErrorCode(t *testing.T) {
+	game := NewDefaultTrash()
+	err := game.Undo()
+	code, _ := ErrorMessageCode(err)
+	assert.Equal(t, "trash.errUndoUnavailable", code)
+}
+
+func TestTrashUndoRestoresHumanActionAfterCpuReply(t *testing.T) {
+	tr := NewDefaultTrash()
+	tr.Reset()
+	beforeSlots := tr.GetPlayerSlots(TrashHumanIdx)
+	tr.SetStock([]*Card{NewCard(CardDesignSpade, 11, false), NewCard(CardDesignSpade, 12, false)})
+	stockAfterSetup := tr.GetStockSize()
+	require.NoError(t, tr.Draw())
+	assert.False(t, tr.CanUndo(), "CPU response is required before undo is allowed")
+	require.NoError(t, tr.CpuStep())
+	assert.True(t, tr.CanUndo())
+	require.NoError(t, tr.Undo())
+	assert.Equal(t, TrashHumanIdx, tr.GetCurrent())
+	assert.Equal(t, 0, tr.GetMoveCount())
+	assert.Equal(t, stockAfterSetup, tr.GetStockSize())
+	assert.Equal(t, 0, tr.GetDiscardSize())
+	assert.Equal(t, beforeSlots, tr.GetPlayerSlots(TrashHumanIdx))
+	assert.False(t, tr.CanUndo())
+}

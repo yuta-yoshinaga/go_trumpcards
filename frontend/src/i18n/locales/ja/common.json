@@ -2223,6 +2223,7 @@
     "easthaven.errInvalidToColumn": "移動先の列番号が無効です。",
     "easthaven.errNoCardsInStock": "山札にカードがありません。",
     "easthaven.errNoUndoHistory": "元に戻せる手がありません。",
+    "trash.errUndoUnavailable": "元に戻せる手がありません。",
     "easthaven.errNotAllCardsFaceUp": "すべてのカードを表向きにしてください。",
     "easthaven.errSameColumn": "移動元と移動先は別の列にしてください。",
     "easthaven.errTableauColumnEmpty": "タブローの列が空です。",

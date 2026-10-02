@@ -18,6 +18,8 @@ type TrashInteractorIF interface {
 	PlaceWild(pos int) string
 	// CpuStep CPUのターンを1ステップ進める
 	CpuStep() string
+	// Undo restores the latest human action.
+	Undo() string
 	// Hint ヒント取得
 	Hint() string
 	// ActionLog 棋譜を出力する
@@ -55,6 +57,9 @@ func (ti *TrashInteractor) PlaceWild(pos int) string {
 func (ti *TrashInteractor) CpuStep() string {
 	return execAndPresent(ti.Game, ti.tp, ti.Game.CpuStep)
 }
+
+// Undo restores the game to before the latest human draw.
+func (ti *TrashInteractor) Undo() string { return execAndPresent(ti.Game, ti.tp, ti.Game.Undo) }
 
 // Hint ヒント取得
 func (ti *TrashInteractor) Hint() string {

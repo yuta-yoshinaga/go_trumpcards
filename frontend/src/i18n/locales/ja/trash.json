@@ -8,6 +8,7 @@
   "button.draw": "山札から引く",
   "button.cpu": "CPUターンを進める",
   "button.reset": "リセット",
+  "button.undo": "アンドゥ",
   "message.playerTurn": "山札をクリックして1枚引いてください",
   "message.cpuTurn": "CPUがプレイ中です…",
   "message.awaitWild": "ワイルドを置く位置をスロットから選んでください",
