@@ -79018,6 +79018,11 @@ components:
           type: array
           items:
             type: integer
+        playerScoreDeltas:
+          type: array
+          description: Score changes from the most recent deal, per player.
+          items:
+            type: integer
         lastTrickWinner:
           type: integer
         outcome:

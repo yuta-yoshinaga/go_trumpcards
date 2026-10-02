@@ -1683,6 +1683,7 @@ const baseOmbreState: OmbreResponse = {
   trumpSuit: 1,
   currentTrick: [],
   playerScores: [0, 0, 0],
+  playerScoreDeltas: [0, 0, 0],
   lastTrickWinner: -1,
   outcome: 0,
   result: 0,

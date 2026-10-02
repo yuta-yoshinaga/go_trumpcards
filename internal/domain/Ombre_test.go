@@ -295,6 +295,7 @@ func TestOmbre_Outcomes(t *testing.T) {
 			g.ScoreRound()
 			assert.Equal(t, c.outcome, g.GetOutcome())
 			assert.Equal(t, c.scores, g.GetPlayerScores())
+			assert.Equal(t, c.scores, g.GetPlayerScoreDeltas())
 
 			// ScoreRound is idempotent (scored flag).
 			g.ScoreRound()
@@ -307,6 +308,7 @@ func TestOmbre_ScoreRound_WrongPhaseNoop(t *testing.T) {
 	g := newTestOmbre()
 	g.SetOmbreIdx(0)
 	g.SetPhase(domain.OmbrePhasePlay)
+	assert.Equal(t, [domain.OmbrePlayerCnt]int{}, g.GetPlayerScoreDeltas())
 	g.ScoreRound()
 	assert.Equal(t, [domain.OmbrePlayerCnt]int{0, 0, 0}, g.GetPlayerScores())
 }
