@@ -551,6 +551,28 @@ function SirTommyPageContent() {
               })}
             </div>
 
+            {state.stockCount === 0 && (
+              <section
+                data-testid="calc-waste-card-viewer"
+                aria-label={t('wasteCardsViewer')}
+                className="mt-3 rounded-lg bg-ds-surface/70 p-3 text-ds-text-primary"
+              >
+                <h2 className="mb-2 text-sm font-semibold">{t('wasteCardsViewer')}</h2>
+                <div className="flex flex-wrap gap-3">
+                  {state.wastes.map((pile, idx) => (
+                    <div key={`waste-cards-${idx.toString()}`}>
+                      <h3 className="text-xs font-medium text-ds-text-muted">{t('wasteColumn', { idx })}</h3>
+                      <ol className="list-decimal pl-5 text-sm">
+                        {pile.map((card, cardIdx) => (
+                          <li key={`waste-card-${idx.toString()}-${cardIdx.toString()}`}>{cardAlt(card)}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
             <div data-tutorial="ca-controls" className="mt-4">
               <GameMessageBox
                 message={state.message}
