@@ -30,6 +30,22 @@ describe('TrickDisplay', () => {
     expect(screen.getAllByTestId('animated-card')).toHaveLength(2);
   });
 
+  it('passes server trick details through to the visible detail and card announcement', () => {
+    const detailTrick: TrickDisplayCard[] = [{ playerIdx: 0, card, points: 11, isTrump: false }];
+    render(
+      <TrickDisplay
+        currentTrick={detailTrick}
+        players={players}
+        cardWidth={40}
+        label="Current trick"
+        cardAriaLabelFor={(_, playedCard) => `${playedCard.value} of Spades`}
+        cardDetailFor={(_, trickCard) => `${trickCard.points} points · ${trickCard.isTrump ? 'trump' : 'not trump'}`}
+      />,
+    );
+    expect(screen.getByText('11 points · not trump')).toBeInTheDocument();
+    expect(screen.getByAltText('1 of Spades · 11 points · not trump')).toBeInTheDocument();
+  });
+
   it('resolves player display names from the players array', () => {
     render(<TrickDisplay currentTrick={trick} players={players} cardWidth={40} label="label" />);
     expect(screen.getByText('あなた')).toBeInTheDocument();

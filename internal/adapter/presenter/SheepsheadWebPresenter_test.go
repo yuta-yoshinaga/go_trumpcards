@@ -150,6 +150,36 @@ func TestSheepsheadWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "sheepshead.playPhase.follow", resObj.MessageCode)
 	})
 
+	t.Run("trick cards include Sheepshead points and trump rules", func(t *testing.T) {
+		m, _ := setupSheepsheadWebMockWithPlayers()
+		cards := []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 1, false),
+			domain.NewCard(domain.CardDesignHeart, 10, false),
+			domain.NewCard(domain.CardDesignClover, 13, false),
+			domain.NewCard(domain.CardDesignSpade, 12, false),
+			domain.NewCard(domain.CardDesignHeart, 11, false),
+			domain.NewCard(domain.CardDesignDiamond, 7, false),
+		}
+		trick := make([]*domain.TrickCard, 0, len(cards))
+		for i, card := range cards {
+			trick = append(trick, &domain.TrickCard{PlayerIdx: i, Card: card})
+		}
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
+		m.On("GetCurrentTrick").Return(trick)
+		var resObj controller.SheepsheadWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &resObj))
+		assert.Equal(t, []int{11, 10, 4, 3, 2, 0}, []int{
+			resObj.CurrentTrick[0].Points, resObj.CurrentTrick[1].Points,
+			resObj.CurrentTrick[2].Points, resObj.CurrentTrick[3].Points,
+			resObj.CurrentTrick[4].Points, resObj.CurrentTrick[5].Points,
+		})
+		assert.Equal(t, []bool{false, false, false, true, true, true}, []bool{
+			resObj.CurrentTrick[0].IsTrump, resObj.CurrentTrick[1].IsTrump,
+			resObj.CurrentTrick[2].IsTrump, resObj.CurrentTrick[3].IsTrump,
+			resObj.CurrentTrick[4].IsTrump, resObj.CurrentTrick[5].IsTrump,
+		})
+	})
+
 	t.Run("trick end message code", func(t *testing.T) {
 		m, _ := setupSheepsheadWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
