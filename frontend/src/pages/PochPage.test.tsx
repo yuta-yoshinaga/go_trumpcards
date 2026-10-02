@@ -152,6 +152,48 @@ describe('PochPage', () => {
     expect(screen.getByTestId('poch-pool-live')).toBeEmptyDOMElement();
   });
 
+  it('does not announce the human turn when an action rejects and a reset succeeds', async () => {
+    renderWithProviders(<PochPage />);
+    await screen.findAllByTestId('poch-pool');
+
+    mockExec.mockRejectedValueOnce(new Error('request failed'));
+    fireEvent.click(screen.getByRole('button', { name: '賭ける' }));
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+
+    mockExec.mockResolvedValueOnce(makeState({ currentPlayerIdx: 0 }));
+    fireEvent.change(screen.getByLabelText('CPU難易度'), { target: { value: '2' } });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 2 }));
+    await waitFor(() => expect(screen.getAllByTestId('poch-pool')[0]).toBeInTheDocument());
+    expect(screen.getByTestId('poch-pool-live').textContent).not.toContain('あなたの番です');
+  });
+
+  it('announces the human turn after human actions, clears repeats while pending, and skips game end', async () => {
+    mockExec.mockResolvedValueOnce(makeState());
+    renderWithProviders(<PochPage />);
+    await screen.findAllByTestId('poch-pool');
+    expect(screen.getByTestId('poch-pool-live')).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValueOnce(makeState({ currentPlayerIdx: 0 }));
+    fireEvent.click(screen.getByRole('button', { name: '賭ける' }));
+    await waitFor(() => expect(screen.getByTestId('poch-pool-live')).toHaveTextContent('あなたの番です'));
+
+    let resolveAction!: (state: PochResponse) => void;
+    mockExec.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveAction = resolve;
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: '賭ける' }));
+    expect(screen.getByTestId('poch-pool-live').textContent).not.toContain('あなたの番です');
+    resolveAction(makeState({ currentPlayerIdx: 0 }));
+    await waitFor(() => expect(screen.getByTestId('poch-pool-live')).toHaveTextContent('あなたの番です'));
+
+    mockExec.mockResolvedValueOnce(makeState({ phase: PochPhase.GAME_END, gameEndFlag: true }));
+    fireEvent.click(screen.getByRole('button', { name: '賭ける' }));
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('終了'));
+    expect(screen.getByTestId('poch-pool-live').textContent).not.toContain('あなたの番です');
+  });
+
   // 第 1 段階は自動で解決するので、結果を出さないと何が起きたのか読めない。
   it('reports what stage one paid out', async () => {
     renderWithProviders(<PochPage />);
