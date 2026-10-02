@@ -76725,6 +76725,8 @@ components:
               type: integer
             value:
               type: integer
+            order:
+              type: integer
         highestBidder:
           type: integer
         jokerLeadSuit:
