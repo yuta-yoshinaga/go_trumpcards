@@ -135,6 +135,53 @@ func TestKing_ResetDeal(t *testing.T) {
 	assert.Equal(t, 52, total)
 }
 
+func TestKing_DealHistorySurvivesSerialization(t *testing.T) {
+	g := domain.NewDefaultKing()
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var state map[string]any
+	require.NoError(t, json.Unmarshal(data, &state))
+	state["dh"] = []any{map[string]any{"co": float64(domain.KingContractKingTrump), "ts": float64(domain.CardDesignHeart), "di": float64(2), "gn": map[string]any{"0": float64(5), "1": float64(0), "2": float64(-5), "3": float64(0)}}}
+	data, err = json.Marshal(state)
+	require.NoError(t, err)
+	var restored domain.King
+	require.NoError(t, json.Unmarshal(data, &restored))
+	require.Len(t, restored.GetDealHistory(), 1)
+	assert.Equal(t, domain.KingContractKingTrump, restored.GetDealHistory()[0].Contract)
+	assert.Equal(t, domain.CardDesignHeart, restored.GetDealHistory()[0].TrumpSuit)
+	assert.Equal(t, 5, restored.GetDealHistory()[0].Gained[0])
+
+}
+
+func TestKing_UnmarshalRejectsNilDealHistoryEntry(t *testing.T) {
+	g := domain.NewDefaultKing()
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var state map[string]any
+	require.NoError(t, json.Unmarshal(data, &state))
+	state["dh"] = []any{nil}
+	data, err = json.Marshal(state)
+	require.NoError(t, err)
+
+	var restored domain.King
+	assert.ErrorContains(t, json.Unmarshal(data, &restored), "nil deal history entry")
+}
+
+func TestKing_UnmarshalLegacySnapshotHasEmptyDealHistory(t *testing.T) {
+	g := domain.NewDefaultKing()
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var state map[string]any
+	require.NoError(t, json.Unmarshal(data, &state))
+	delete(state, "dh")
+	data, err = json.Marshal(state)
+	require.NoError(t, err)
+
+	var restored domain.King
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Empty(t, restored.GetDealHistory())
+}
+
 func TestKing_SelectContract_Errors(t *testing.T) {
 	g := newTestKing()
 	g.SetDealerIdx(0) // human
@@ -419,10 +466,25 @@ func TestKing_FullGame_CpuDriven(t *testing.T) {
 	assert.Less(t, guard, 20000, "game should terminate")
 	assert.Equal(t, domain.KingPhaseGameEnd, g.GetPhase())
 	assert.NotEmpty(t, g.GetRoundWinners())
-	// 7 contracts each used exactly once by the end of the last deal.
-	used := g.GetUsedContracts()
-	for c := 0; c < domain.KingContractCnt; c++ {
-		assert.True(t, used[c], "contract %d used", c)
+	require.Len(t, g.GetDealHistory(), domain.KingTotalDeals)
+	contracts := make([]int, 0, len(g.GetDealHistory()))
+	for _, deal := range g.GetDealHistory() {
+		contracts = append(contracts, deal.Contract)
+	}
+	expectedContracts := make([]int, domain.KingContractCnt)
+	for contract := range expectedContracts {
+		expectedContracts[contract] = contract
+	}
+	if domain.KingTotalDeals == domain.KingContractCnt {
+		assert.ElementsMatch(t, expectedContracts, contracts, "each contract should appear exactly once")
+	} else {
+		seen := make(map[int]bool, domain.KingContractCnt)
+		for _, contract := range contracts {
+			seen[contract] = true
+		}
+		for _, contract := range expectedContracts {
+			assert.True(t, seen[contract], "contract %d should be used", contract)
+		}
 	}
 }
 

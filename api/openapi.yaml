@@ -56236,6 +56236,22 @@ components:
               type: object
               additionalProperties:
                 type: integer
+        dealHistory:
+          type: array
+          description: Scoring details for every completed deal in this match
+          items:
+            type: object
+            properties:
+              contract:
+                type: integer
+              trumpSuit:
+                type: integer
+              dealerIdx:
+                type: integer
+              gained:
+                type: object
+                additionalProperties:
+                  type: integer
         isHumanTurn:
           type: boolean
         hint:

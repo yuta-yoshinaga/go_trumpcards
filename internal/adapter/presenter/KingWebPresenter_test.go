@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -32,6 +33,29 @@ func TestKingWebPresenter_Output(t *testing.T) {
 	assert.Len(t, players, domain.KingPlayerCnt)
 	assert.Contains(t, decoded, "usedContracts")
 	assert.Contains(t, decoded, "currentTrick")
+}
+
+func TestKingWebPresenter_DealHistory(t *testing.T) {
+	g := domain.NewDefaultKing()
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var state map[string]any
+	require.NoError(t, json.Unmarshal(data, &state))
+	state["dh"] = []any{map[string]any{
+		"co": float64(domain.KingContractKingTrump), "ts": float64(domain.CardDesignHeart),
+		"di": float64(2), "gn": map[string]any{"0": float64(5), "1": float64(0), "2": float64(-5), "3": float64(0)},
+	}}
+	data, err = json.Marshal(state)
+	require.NoError(t, err)
+	require.NoError(t, json.Unmarshal(data, g))
+
+	var out controller.KingWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.KingWebPresenter).Output(g, nil)), &out))
+	require.Len(t, out.DealHistory, 1)
+	assert.Equal(t, domain.KingContractKingTrump, out.DealHistory[0].Contract)
+	assert.Equal(t, domain.CardDesignHeart, out.DealHistory[0].TrumpSuit)
+	assert.Equal(t, 2, out.DealHistory[0].DealerIdx)
+	assert.Equal(t, -5, out.DealHistory[0].Gained[2])
 }
 
 func TestKingWebPresenter_Error(t *testing.T) {

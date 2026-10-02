@@ -116,6 +116,7 @@ type King struct {
 	lastTrickWinner int          // 直前トリックの勝者 (-1 = なし)
 	gameEndFlag     bool
 	lastDealDetail  *KingDealDetail
+	dealHistory     []*KingDealDetail
 	actionLogBase
 }
 
@@ -159,6 +160,7 @@ func (g *King) Reset() {
 	g.gameEndFlag = false
 	g.usedContracts = [KingContractCnt]bool{}
 	g.lastDealDetail = nil
+	g.dealHistory = make([]*KingDealDetail, 0, KingTotalDeals)
 	g.actionLog = make([]*ActionLogEntry, 0)
 	g.startDeal()
 }
@@ -397,6 +399,7 @@ func (g *King) cardBeats(candidate, current *Card, leadSuit int) bool {
 func (g *King) finishDeal() {
 	detail := g.scoreDeal()
 	g.lastDealDetail = detail
+	g.dealHistory = append(g.dealHistory, detail)
 	for i, p := range g.players {
 		p.AddScore(detail.Gained[i])
 	}
@@ -557,6 +560,9 @@ func (g *King) GetUsedContracts() [KingContractCnt]bool { return g.usedContracts
 // GetLastDealDetail は直前ディールの得点内訳を返す (nil の場合もある)。
 func (g *King) GetLastDealDetail() *KingDealDetail { return g.lastDealDetail }
 
+// GetDealHistory は完了した全ディールの得点内訳を返す。
+func (g *King) GetDealHistory() []*KingDealDetail { return g.dealHistory }
+
 // GetConfig はローカルルール設定を返す。
 func (g *King) GetConfig() KingConfig { return g.config }
 
@@ -600,6 +606,7 @@ type kingJSON struct {
 	LastTrickWinner int                   `json:"lw"`
 	GameEndFlag     bool                  `json:"ge"`
 	LastDealDetail  *KingDealDetail       `json:"ld"`
+	DealHistory     []*KingDealDetail     `json:"dh"`
 	ActionLog       []*ActionLogEntry     `json:"al"`
 }
 
@@ -626,6 +633,7 @@ func (g *King) MarshalJSON() ([]byte, error) {
 		LastTrickWinner: g.lastTrickWinner,
 		GameEndFlag:     g.gameEndFlag,
 		LastDealDetail:  g.lastDealDetail,
+		DealHistory:     g.dealHistory,
 		ActionLog:       g.actionLog,
 	})
 }
@@ -643,7 +651,7 @@ func (g *King) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if len(j.Players) > kingMaxSliceLen || len(j.CurrentTrick) > kingMaxSliceLen ||
-		len(j.LastTrick) > kingMaxSliceLen || len(j.ActionLog) > kingMaxSliceLen {
+		len(j.LastTrick) > kingMaxSliceLen || len(j.ActionLog) > kingMaxSliceLen || len(j.DealHistory) > KingTotalDeals {
 		return fmt.Errorf("king: input array exceeds maximum allowed size")
 	}
 	if len(j.Players) != KingPlayerCnt {
@@ -652,6 +660,11 @@ func (g *King) UnmarshalJSON(data []byte) error {
 	for _, p := range j.Players {
 		if p == nil {
 			return fmt.Errorf("king: nil player in state")
+		}
+	}
+	for _, detail := range j.DealHistory {
+		if detail == nil {
+			return fmt.Errorf("king: nil deal history entry in state")
 		}
 	}
 	// トリックカードは PlayerIdx が範囲内で、Card が非 nil でなければならない。
@@ -718,6 +731,10 @@ func (g *King) UnmarshalJSON(data []byte) error {
 	g.lastTrickWinner = j.LastTrickWinner
 	g.gameEndFlag = j.GameEndFlag
 	g.lastDealDetail = j.LastDealDetail
+	g.dealHistory = j.DealHistory
+	if g.dealHistory == nil {
+		g.dealHistory = make([]*KingDealDetail, 0)
+	}
 	if j.ActionLog == nil {
 		g.actionLog = make([]*ActionLogEntry, 0)
 	} else {

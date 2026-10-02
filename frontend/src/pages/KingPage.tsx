@@ -213,6 +213,40 @@ function KingPageContent() {
               <span>{t('dealer', { name: playerName(state.dealerIdx, state.dealerIdx === humanIdx) })}</span>
             </div>
 
+            {state.dealHistory.length > 0 && (
+              <section
+                className="my-3 p-2 rounded bg-ds-surface text-ds-text-muted text-sm"
+                data-testid="king-deal-history"
+              >
+                <h2 className="mb-1 text-ds-text-primary">{t('dealResult.historyTitle')}</h2>
+                {state.dealHistory.map((detail, index) => (
+                  <div
+                    key={`${index}-${detail.contract}`}
+                    className="mb-2"
+                    data-testid={`king-history-deal-${index + 1}`}
+                  >
+                    <div className="text-ds-text-primary font-semibold">
+                      {detail.contract === KING_TRUMP_CONTRACT && detail.trumpSuit >= 1
+                        ? t('dealResult.historyTrump', {
+                            n: index + 1,
+                            name: t(`contracts.${detail.contract}`),
+                            suit: suitSymbolAt(detail.trumpSuit, '-'),
+                          })
+                        : t('dealResult.historyDeal', { n: index + 1, name: t(`contracts.${detail.contract}`) })}
+                    </div>
+                    {state.players.map((p) => (
+                      <div key={p.id}>
+                        {t('dealResult.gained', {
+                          name: playerName(p.id, p.isHuman),
+                          points: detail.gained[p.id],
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </section>
+            )}
+
             <div className={lgTwoColGrid}>
               {/* Left: play area */}
               <div>
