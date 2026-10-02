@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { spoonsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -11,6 +11,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -119,7 +120,36 @@ export const SpoonsPage = withTutorial(SpoonsPageContent, 'spoons', SPOONS_TUTOR
 function SpoonsPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('spoons');
-  const { state, loading, error, exec, retry } = useGameApi(spoonsApi.exec);
+  const previousHumanHandRef = useRef<SpoonsResponse['players'][number]['hand']>([]);
+  const pendingPassIndexRef = useRef<number | null>(null);
+  const [passAnnouncement, setPassAnnouncement] = useState('');
+  const { state, loading, error, exec, retry } = useGameApi(spoonsApi.exec, {
+    onSuccess: (response, args) => {
+      const previousHand = previousHumanHandRef.current;
+      const human = response.players.find((player) => player.isHuman);
+      if (args[0] === 'pass' && pendingPassIndexRef.current !== null && human) {
+        const passedCard = previousHand[pendingPassIndexRef.current];
+        const sameCard = (left: (typeof previousHand)[number], right: (typeof previousHand)[number]) =>
+          left.design === right.design &&
+          left.value === right.value &&
+          left.label === right.label &&
+          left.glyph === right.glyph;
+        const unmatchedNewHand = [...human.hand];
+        const removedCards = previousHand.filter((oldCard) => {
+          const index = unmatchedNewHand.findIndex((newCard) => sameCard(oldCard, newCard));
+          if (index < 0) return true;
+          unmatchedNewHand.splice(index, 1);
+          return false;
+        });
+        const passedCardWasRemoved = !!passedCard && removedCards.some((card) => sameCard(card, passedCard));
+        if (passedCardWasRemoved && unmatchedNewHand.length > 0) {
+          setPassAnnouncement(t('passResult', { passed: cardAlt(passedCard), received: cardAlt(unmatchedNewHand[0]) }));
+        }
+      }
+      pendingPassIndexRef.current = null;
+      previousHumanHandRef.current = human?.hand ?? [];
+    },
+  });
 
   const [cpuDifficulty, setCpuDifficulty] = useState(1);
 
@@ -186,6 +216,14 @@ function SpoonsPageContent() {
   const { gameOver: kbdGameOver, grabOpen: kbdGrabOpen } = spoonsGrabState(state);
   const kbdCanPass = state?.phase === SpoonsPhase.PASS && !!state?.isHumanTurn && !kbdGrabOpen && !kbdGameOver;
   const humanHandSize = state?.players.find((p) => p.isHuman)?.hand.length ?? 0;
+  const handlePass = useCallback(
+    (cardIndex: number) => {
+      pendingPassIndexRef.current = cardIndex;
+      setPassAnnouncement('');
+      return exec('pass', { cardIndex });
+    },
+    [exec],
+  );
   const actionBindings = useMemo(() => {
     // g で取る。Space は**フォーカスされているボタンを既定で発火させる**うえ
     // ページをスクロールするので、取得ボタンにフォーカスが乗っているだけで
@@ -196,12 +234,12 @@ function SpoonsPageContent() {
     for (let i = 0; i < humanHandSize; i++) {
       bindings.push({
         key: String(i + 1),
-        action: () => exec('pass', { cardIndex: i }),
+        action: () => handlePass(i),
         enabled: kbdCanPass && !loading,
       });
     }
     return bindings;
-  }, [exec, kbdGrabOpen, kbdCanPass, humanHandSize, loading]);
+  }, [exec, handlePass, kbdGrabOpen, kbdCanPass, humanHandSize, loading]);
   useActionKeyboardNav({ bindings: actionBindings, enabled: !loading });
 
   if (!state)
@@ -375,6 +413,8 @@ function SpoonsPageContent() {
                 })}
             </div>
 
+            <LiveAnnouncement message={passAnnouncement} testId="spoons-pass-live" />
+
             {/* Keep this live region mounted so the grabber is announced when the
                 time-limited grab window opens, and remains available in results. */}
             <div
@@ -434,7 +474,7 @@ function SpoonsPageContent() {
                         <button
                           type="button"
                           key={`pass-${c.design}-${c.value}-${i}`}
-                          onClick={() => exec('pass', { cardIndex: i })}
+                          onClick={() => handlePass(i)}
                           disabled={loading}
                           className="p-0 bg-transparent border-0 cursor-pointer disabled:cursor-not-allowed"
                           aria-label={t('passCardAria', { card: cardAlt(c) })}
