@@ -20,6 +20,7 @@
   "label.wild": "ワイルド",
   "label.usedWild": "ワイルド使用",
   "label.won": "獲得 {{amount}}",
+  "label.netChange": "ハンド収支 {{amount}}（買い増しを含む）",
   "label.bestHand": "最良の5枚",
   "label.winner": "勝者",
   "label.loser": "敗者",

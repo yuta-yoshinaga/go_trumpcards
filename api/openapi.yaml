@@ -60089,6 +60089,9 @@ components:
                   $ref: '#/components/schemas/Card'
               wonAmount:
                 type: integer
+              netChange:
+                type: integer
+                description: Net chip change since the hand began, including buy-in payments. Set at showdown only.
         street:
           type: integer
           description: How many face-up cards have been dealt (1..4).
