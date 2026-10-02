@@ -176,7 +176,13 @@ const flopState: OmahaResponse = {
 /** SHOWDOWN (phase 5) */
 const showdownState: OmahaResponse = {
   players: [
-    humanPlayer({ handName: '\u30ef\u30f3\u30da\u30a2', currentBet: 0, chips: 950 }),
+    humanPlayer({
+      handName: '\u30ef\u30f3\u30da\u30a2',
+      currentBet: 0,
+      chips: 950,
+      liveBestHandHoleIndices: [0, 1],
+      liveBestHandBoardIndices: [0, 1, 2],
+    }),
     cpuPlayer(1, {
       handName: '\u30c4\u30fc\u30da\u30a2',
       folded: false,
@@ -429,6 +435,20 @@ describe('OmahaHiLoPage', () => {
     await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
     expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(2);
     expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(3);
+  });
+
+  it('highlights the server-selected Hi cards during play', async () => {
+    mockExec.mockResolvedValue({
+      ...flopState,
+      players: [
+        humanPlayer({ liveBestHandHoleIndices: [1, 3], liveBestHandBoardIndices: [0, 2] }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+      ],
+    });
+    const { container } = renderWithProviders(<OmahaHiLoPage />);
+    await waitFor(() => expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(2));
+    expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(2);
   });
 
   it('does not highlight a Hi best-5 when the human folded', async () => {
