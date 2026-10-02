@@ -45,6 +45,10 @@
   "score": "Score: {{score}}",
   "playerScore": "{{name}}: {{score}} pts",
   "playButton": "Play",
+  "restrictionReason": {
+    "followLeadSuit": "You must follow the lead suit",
+    "playTrump": "You must play a trump"
+  },
   "nextTrick": "Next Trick",
   "nextRound": "Next Round",
   "playPhase": {
