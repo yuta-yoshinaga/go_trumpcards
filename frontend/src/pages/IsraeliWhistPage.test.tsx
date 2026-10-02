@@ -110,6 +110,22 @@ describe('IsraeliWhistPage', () => {
     expect(screen.getByTestId('iw-pass-btn')).toBeInTheDocument();
   });
 
+  it('includes the translated suit name in each auction button accessible name', async () => {
+    renderWithProviders(<IsraeliWhistPage />);
+    const suits = [
+      [1, 'スペード', '♠'],
+      [2, 'クラブ', '♣'],
+      [3, 'ハート', '♥'],
+      [4, 'ダイヤ', '♦'],
+    ] as const;
+
+    for (const [suit, name, symbol] of suits) {
+      const button = await screen.findByTestId(`iw-auction-${suit.toString()}-btn`);
+      expect(button).toHaveAccessibleName(new RegExp(name));
+      expect(button).toHaveTextContent(symbol);
+    }
+  });
+
   // **入札は数とスートの両方を送る。** 位置がずれると別の入札になる。
   it.each([1, 2, 3, 4])('sends an auction bid in suit %s', async (suit) => {
     renderWithProviders(<IsraeliWhistPage />);
