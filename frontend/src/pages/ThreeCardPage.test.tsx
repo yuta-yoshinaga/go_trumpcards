@@ -175,7 +175,7 @@ describe('ThreeCardPage', () => {
     });
     renderWithProviders(<ThreeCardPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ' })).toBeInTheDocument());
-    expect(screen.getAllByRole('img')).toHaveLength(3);
+    expect(screen.queryByText('ディーラー')).not.toBeInTheDocument();
   });
 
   it('shows the ante and play-required amounts during action phase', async () => {
