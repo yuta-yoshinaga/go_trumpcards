@@ -360,6 +360,9 @@ describe('CegoPage', () => {
     renderWithProviders(<CegoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のディール' })).toBeInTheDocument());
     expect(screen.getByTestId('cego-result')).toBeInTheDocument();
+    expect(screen.getByTestId('cego-result')).toHaveTextContent('成功ライン到達: 成功');
+    expect(screen.getByTestId('cego-result')).toHaveTextContent('成功ライン: 54 / 106 点');
+    expect(screen.getByTestId('cego-success-line')).toHaveTextContent('成功ライン: 54 / 106 点');
   });
 
   it('renders the game end message', async () => {

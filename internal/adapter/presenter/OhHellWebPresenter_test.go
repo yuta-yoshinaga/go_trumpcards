@@ -31,6 +31,7 @@ func setupOhHellWebMock() *interfaces.MockOhHellGame {
 	m.On("GetHandSize").Return(10)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
+	m.On("GetValidPlayIndices", 0).Return([]int{0})
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.OhHellPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -84,6 +85,18 @@ func TestOhHellWebPresenter_Output(t *testing.T) {
 		assert.NotNil(t, resObj.TrumpCard)
 		assert.Equal(t, -1, resObj.RestrictedBid)
 		assert.Equal(t, -1, resObj.WinnerIdx)
+		assert.Equal(t, []int{0}, resObj.ValidPlayIndices)
+	})
+
+	t.Run("no valid indices before a player is selected", func(t *testing.T) {
+		m, _ := setupOhHellWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetCurrentPlayerIdx").Return(-1)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+
+		var resObj controller.OhHellWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &resObj))
+		assert.Empty(t, resObj.ValidPlayIndices)
 	})
 
 	t.Run("error message", func(t *testing.T) {
