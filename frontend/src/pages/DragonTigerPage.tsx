@@ -287,6 +287,7 @@ function DragonTigerPageContent() {
             {isEndPhase && (
               <div className="text-ds-text-primary text-center text-sm mb-2 space-y-1" data-testid="payout-breakdown">
                 <div data-testid="payout-result">{t(`result.${resultKey}`)}</div>
+                <div data-testid="payout-bet-amount">{t('payout.betAmount', { amount: state.betAmount })}</div>
                 <div>
                   <span className="inline-block rounded-full bg-ds-surface-elevated px-2 py-0.5 text-xs font-medium">
                     {t('payout.oddsBadge', { type: betTypeName, odds })}

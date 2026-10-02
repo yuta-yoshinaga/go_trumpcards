@@ -36,6 +36,7 @@
     "tieRefund": "タイ (ベット額の半分を返還)"
   },
   "payout": {
+    "betAmount": "ベット額: {{amount}}",
     "total": "払戻し",
     "dragon": "ドラゴン",
     "tiger": "タイガー",
