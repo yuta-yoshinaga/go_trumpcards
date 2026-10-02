@@ -50,6 +50,8 @@
   "scoresRound": "Round",
   "scoresTotal": "Total",
   "playButton": "Play",
+  "legalCardStatus": "Playable",
+  "illegalCardStatus": "Cannot play because you must follow the lead suit",
   "nextTrick": "Next Trick",
   "nextRound": "Next Round",
   "bidPhase": "Place your bid (0-{{max}})",

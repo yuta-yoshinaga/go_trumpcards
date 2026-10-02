@@ -70,6 +70,10 @@ export interface CegoResponse extends BaseGameResponse {
   highestBidder: number;
   /** Seat index of the declarer, or -1 until decided. */
   declarerIdx: number;
+  /** Card points the declarer needs to make the contract. */
+  declarerTargetPoints: number;
+  /** Total card points in the deck. */
+  totalCardPoints: number;
   /** The winning bid (0=None, 1=Play). */
   contract: number;
   /** The chosen contract type (0=None, 1=Cego, 2=Handspiel). */
