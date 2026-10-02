@@ -240,7 +240,9 @@ function RamschPageContent() {
                     <th className="text-left">{t('player')}</th>
                     <th className="text-right">{t('tricks')}</th>
                     <th className="text-right">{t('cardPoints')}</th>
+                    {isRoundEnd && <th className="text-right">{t('roundScore')}</th>}
                     <th className="text-right">{t('total')}</th>
+                    {isRoundEnd && <th className="text-right">{t('cumulativeChange')}</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -267,7 +269,17 @@ function RamschPageContent() {
                       </td>
                       <td className="text-right">{p.trickCount}</td>
                       <td className="text-right">{p.cardPoints}</td>
+                      {isRoundEnd && (
+                        <td className="text-right" data-testid={`ramsch-round-score-${p.id}`}>
+                          {p.roundScore}
+                        </td>
+                      )}
                       <td className="text-right">{p.cumulativeScore}</td>
+                      {isRoundEnd && (
+                        <td className="text-right" data-testid={`ramsch-cumulative-change-${p.id}`}>
+                          {p.roundScore > 0 ? `+${p.roundScore}` : p.roundScore}
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

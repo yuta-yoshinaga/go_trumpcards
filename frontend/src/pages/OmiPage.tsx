@@ -182,10 +182,27 @@ function OmiPageContent() {
   const isPlayPhaseForKbd = state?.phase === OmiPhase.PLAY;
   const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
   const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+  const humanPlayerForKbd = state?.players.find((p) => p.isHuman);
+  const legalPlayIndicesForKbd =
+    isHumanTurnForKbd && humanPlayerForKbd
+      ? omiLegalPlayIndices(humanPlayerForKbd.cards, state?.currentTrick[0]?.card, state?.trumpSuit ?? 0)
+      : undefined;
+  const toggleLegalCard = useCallback(
+    (index: number) => {
+      if (legalPlayIndicesForKbd?.includes(index)) toggleCard(index);
+    },
+    [legalPlayIndicesForKbd, toggleCard],
+  );
+
+  useEffect(() => {
+    if (state && selectedCardIndices.some((index) => !legalPlayIndicesForKbd?.includes(index))) {
+      clearSelection();
+    }
+  }, [state, selectedCardIndices, legalPlayIndicesForKbd, clearSelection]);
 
   useCardKeyboardNav({
     cardCount: humanCardCountForKbd,
-    onToggle: toggleCard,
+    onToggle: toggleLegalCard,
     onConfirm: handlePlay,
     onClear: clearSelection,
     enabled: !!isHumanTurnForKbd && !loading,
@@ -217,10 +234,7 @@ function OmiPageContent() {
   const isHumanCallTrump = isCallTrumpPhase && state.bidPlayerIdx === humanIdx;
 
   // Legal play highlighting: follow suit if possible, any card if void
-  const legalPlayIndices =
-    isHumanTurn && humanPlayer
-      ? omiLegalPlayIndices(humanPlayer.cards, state.currentTrick[0]?.card, state.trumpSuit)
-      : undefined;
+  const legalPlayIndices = legalPlayIndicesForKbd;
 
   const suitName = (suit: number) => (SUIT_NAMES[suit] ? t(SUIT_NAMES[suit]) : '');
 
@@ -432,12 +446,21 @@ function OmiPageContent() {
               >
                 {humanPlayer.cards.map((card, idx) => {
                   const isLegal = legalPlayIndices?.includes(idx) ?? false;
+                  const cannotFollow = isHumanTurn && !isLegal;
                   return (
                     <button
                       type="button"
                       key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
-                      aria-label={cardAlt(card)}
+                      onClick={() => {
+                        if (!cannotFollow) toggleCard(idx);
+                      }}
+                      aria-label={
+                        isHumanTurn
+                          ? t(cannotFollow ? 'cardCannotPlay' : 'cardCanPlay', { card: cardAlt(card) })
+                          : cardAlt(card)
+                      }
+                      aria-disabled={cannotFollow || undefined}
+                      aria-describedby={cannotFollow ? `omi-card-follow-reason-${idx}` : undefined}
                       aria-pressed={selectedCardIndices.includes(idx)}
                       data-legal={isLegal ? 'true' : undefined}
                       className={`relative transition-transform ${focusRingCard}`}
@@ -447,11 +470,17 @@ function OmiPageContent() {
                         borderRadius: 8,
                         ...selectedCardStyle(selectedCardIndices.includes(idx)),
                         ...(isLegal ? { outline: '2px solid var(--color-ds-success)', outlineOffset: '1px' } : {}),
+                        ...(cannotFollow ? { opacity: 0.5, cursor: 'not-allowed' } : {}),
                         boxSizing: 'border-box',
                         ...(isMobile ? { minWidth: solitaireMinColWidth, flexShrink: 0 } : {}),
                       }}
                     >
                       <AnimatedCard card={card} width={cardWidth} />
+                      {cannotFollow && (
+                        <span id={`omi-card-follow-reason-${idx}`} className="sr-only">
+                          {t('cardMustFollowLeadSuit')}
+                        </span>
+                      )}
                     </button>
                   );
                 })}

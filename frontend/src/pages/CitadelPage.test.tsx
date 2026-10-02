@@ -459,7 +459,10 @@ describe('CitadelPage selection status announcement', () => {
 
     // ♠2 can go to ♠ foundation (top ♠1) and tableau cols 1 (♥3) and 2 (♦3) -> 3 legal destinations
     fireEvent.click(screen.getByRole('button', { name: '♠ 2' }));
-    await waitFor(() => expect(status).toHaveTextContent('選択中のカードを置ける場所が3箇所あります'));
+    await waitFor(() => expect(status).toHaveTextContent('♠ 2を列0から選択しました。置ける場所が3箇所あります'));
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ 2' }));
+    await waitFor(() => expect(status).toBeEmptyDOMElement());
   });
 
   it('announces no legal moves when selecting a card with zero destinations', async () => {
@@ -473,6 +476,24 @@ describe('CitadelPage selection status announcement', () => {
 
     // ♣9 has no legal destinations on foundations or non-empty tableau columns
     fireEvent.click(screen.getByRole('button', { name: '♣ 9' }));
-    await waitFor(() => expect(status).toHaveTextContent('選択中のカードを置ける場所はありません'));
+    await waitFor(() => expect(status).toHaveTextContent('♣ 9を列3から選択しました。置ける場所はありません'));
+  });
+
+  it('announces the selected card and 0-based source column in English', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(mixedBoardState);
+      renderWithProviders(<CitadelPage />);
+      await waitFor(() => expect(screen.getByText(/Citadel/)).toBeInTheDocument());
+
+      fireEvent.click(screen.getByRole('button', { name: '♠ 2' }));
+      await waitFor(() =>
+        expect(screen.getByTestId('bc-selection-status')).toHaveTextContent(
+          '♠ 2 selected from column 0 has 3 legal destinations',
+        ),
+      );
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 });

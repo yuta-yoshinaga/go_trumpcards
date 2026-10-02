@@ -90,6 +90,7 @@ func (p *BoliviaWebPresenter) buildPlayersOutput(g interfaces.BoliviaGame) []*co
 			Red3Count:       len(player.GetRed3s()),
 			Red3s:           red3s,
 			RoundScore:      player.GetRoundScore(),
+			ScoreBreakdown:  player.GetScoreBreakdown(),
 			CumulativeScore: player.GetCumulativeScore(),
 			HasCanasta:      player.HasCanasta(),
 			HasEscalera:     player.HasEscalera(),

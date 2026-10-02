@@ -79,10 +79,50 @@ func (m *BoliviaMeld) SuitDesign() int {
 type BoliviaPlayer struct {
 	*GamePlayer
 	RoundScoreHolder
-	team        int            // 所属チーム (0 = 席0・2, 1 = 席1・3)
-	melds       []*BoliviaMeld // このプレイヤーが出したメルド
-	red3s       []*Card        // 場に出した赤3
-	hasInitMeld bool           // 初回メルド済みフラグ
+	team           int            // 所属チーム (0 = 席0・2, 1 = 席1・3)
+	melds          []*BoliviaMeld // このプレイヤーが出したメルド
+	red3s          []*Card        // 場に出した赤3
+	hasInitMeld    bool           // 初回メルド済みフラグ
+	scoreBreakdown *BoliviaScoreBreakdown
+}
+
+// BoliviaScoreBreakdown records the points added to or subtracted from a team's round score.
+// Penalty fields are stored as positive values and are subtracted by Total.
+type BoliviaScoreBreakdown struct {
+	CardPoints          int `json:"cardPoints"`
+	NaturalCanastaBonus int `json:"naturalCanastaBonus"`
+	MixedCanastaBonus   int `json:"mixedCanastaBonus"`
+	EscaleraBonus       int `json:"escaleraBonus"`
+	BoliviaBonus        int `json:"boliviaBonus"`
+	Red3Bonus           int `json:"red3Bonus"`
+	Red3Penalty         int `json:"red3Penalty"`
+	GoOutBonus          int `json:"goOutBonus"`
+	HandPenalty         int `json:"handPenalty"`
+}
+
+func (b *BoliviaScoreBreakdown) add(o BoliviaScoreBreakdown) {
+	b.CardPoints += o.CardPoints
+	b.NaturalCanastaBonus += o.NaturalCanastaBonus
+	b.MixedCanastaBonus += o.MixedCanastaBonus
+	b.EscaleraBonus += o.EscaleraBonus
+	b.BoliviaBonus += o.BoliviaBonus
+	b.Red3Bonus += o.Red3Bonus
+	b.Red3Penalty += o.Red3Penalty
+	b.GoOutBonus += o.GoOutBonus
+	b.HandPenalty += o.HandPenalty
+}
+
+// Total returns the net round points represented by the breakdown.
+func (b BoliviaScoreBreakdown) Total() int {
+	return b.CardPoints + b.NaturalCanastaBonus + b.MixedCanastaBonus + b.EscaleraBonus + b.BoliviaBonus + b.Red3Bonus + b.GoOutBonus - b.Red3Penalty - b.HandPenalty
+}
+
+// GetScoreBreakdown returns this player's team's last round score breakdown.
+func (p *BoliviaPlayer) GetScoreBreakdown() BoliviaScoreBreakdown {
+	if p.scoreBreakdown == nil {
+		return BoliviaScoreBreakdown{}
+	}
+	return *p.scoreBreakdown
 }
 
 // NewBoliviaPlayer コンストラクタ
@@ -98,6 +138,7 @@ func NewBoliviaPlayer(isHuman bool, team int) *BoliviaPlayer {
 // ResetRound ラウンドをリセット（手札・スコア・メルド・赤3を初期化）
 func (p *BoliviaPlayer) ResetRound() {
 	p.SetRoundScore(0)
+	p.scoreBreakdown = nil
 	p.Reset()
 	p.SetIsFinished(false)
 	p.melds = make([]*BoliviaMeld, 0)
@@ -186,12 +227,13 @@ func (p *BoliviaPlayer) HasBolivia() bool {
 
 // boliviaPlayerJSON is the JSON wire format for BoliviaPlayer.
 type boliviaPlayerJSON struct {
-	GamePlayer       *GamePlayer       `json:"gp"`
-	RoundScoreHolder *RoundScoreHolder `json:"rh"`
-	Team             int               `json:"tm"`
-	Melds            []*BoliviaMeld    `json:"ml"`
-	Red3s            []*Card           `json:"r3"`
-	HasInitMeld      bool              `json:"hi"`
+	GamePlayer       *GamePlayer            `json:"gp"`
+	RoundScoreHolder *RoundScoreHolder      `json:"rh"`
+	Team             int                    `json:"tm"`
+	Melds            []*BoliviaMeld         `json:"ml"`
+	Red3s            []*Card                `json:"r3"`
+	HasInitMeld      bool                   `json:"hi"`
+	ScoreBreakdown   *BoliviaScoreBreakdown `json:"sb,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -203,6 +245,7 @@ func (p *BoliviaPlayer) MarshalJSON() ([]byte, error) {
 		Melds:            p.melds,
 		Red3s:            p.red3s,
 		HasInitMeld:      p.hasInitMeld,
+		ScoreBreakdown:   p.scoreBreakdown,
 	})
 }
 
@@ -222,6 +265,7 @@ func (p *BoliviaPlayer) UnmarshalJSON(data []byte) error {
 		p.RoundScoreHolder = *j.RoundScoreHolder
 	}
 	p.team = j.Team
+	p.scoreBreakdown = j.ScoreBreakdown
 	// nil メルドは除外する (残すと CompletedMeldCount / HasCanasta / スコア計算で
 	// nil ポインタ参照によりパニックする)。Kind は既知値へクランプする。
 	p.melds = make([]*BoliviaMeld, 0, len(j.Melds))

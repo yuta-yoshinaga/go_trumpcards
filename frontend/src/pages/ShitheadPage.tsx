@@ -237,23 +237,28 @@ function ShitheadPageContent() {
             {/* 直前の行動フィード。捨て札の一番上が変わるのを見るだけでは、CPU の手が
                 場札を焼却したのかスキップが出たのかが分からなかった。CUI の
                 formatShitheadAction と同じ burned/skipped/source を読む。 */}
-            {recentActions.length > 0 && (
-              <div className="bg-black/30 text-ds-text-primary p-2 rounded text-sm" data-testid="sh-action-feed">
-                <div className="text-ds-text-muted text-xs mb-1">{t('feed.header')}</div>
-                {recentActions.map((a, i) => (
-                  <div key={`feed-${i.toString()}-${a.playerIdx.toString()}`} data-testid={`sh-action-${i.toString()}`}>
-                    {a.pickup
-                      ? t('feed.pickup', { name: seatName(a.playerIdx) })
-                      : t('feed.play', {
-                          name: seatName(a.playerIdx),
-                          cards: a.playedCards.map((c) => cardAlt(c)).join(', '),
-                        })}
-                    {a.burned && <span className="ml-1 text-ds-warning">{t('feed.burned')}</span>}
-                    {a.skipped && <span className="ml-1 text-ds-warning">{t('feed.skipped')}</span>}
-                  </div>
-                ))}
-              </div>
-            )}
+            <div role="status" aria-live="polite" aria-atomic="true" data-testid="sh-action-feed">
+              {recentActions.length > 0 && (
+                <div className="bg-black/30 text-ds-text-primary p-2 rounded text-sm">
+                  <div className="text-ds-text-muted text-xs mb-1">{t('feed.header')}</div>
+                  {recentActions.map((a, i) => (
+                    <div
+                      key={`feed-${i.toString()}-${a.playerIdx.toString()}`}
+                      data-testid={`sh-action-${i.toString()}`}
+                    >
+                      {a.pickup
+                        ? t('feed.pickup', { name: seatName(a.playerIdx) })
+                        : t('feed.play', {
+                            name: seatName(a.playerIdx),
+                            cards: a.playedCards.map((c) => cardAlt(c)).join(', '),
+                          })}
+                      {a.burned && <span className="ml-1 text-ds-warning">{t('feed.burned')}</span>}
+                      {a.skipped && <span className="ml-1 text-ds-warning">{t('feed.skipped')}</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Human player area */}
             {humanPlayer && (

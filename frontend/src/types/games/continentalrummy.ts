@@ -58,6 +58,12 @@ export interface ContinentalRummyResult {
   total: number;
 }
 
+/** Score gained by each seat in one completed round. */
+export interface ContinentalRummyRoundScore {
+  roundNumber: number;
+  scores: number[];
+}
+
 /** Continental Rummy game settings. */
 export interface ContinentalRummyConfig {
   cpuDifficulty: number;
@@ -84,6 +90,8 @@ export interface ContinentalRummyResponse extends BaseGameResponse {
    */
   layouts: number[][];
   lastResult?: ContinentalRummyResult;
+  /** Completed round gains, retained by the server for the whole game. */
+  roundScoreHistory: ContinentalRummyRoundScore[];
   gameEndFlag: boolean;
   winnerIdx: number;
   isHumanTurn: boolean;

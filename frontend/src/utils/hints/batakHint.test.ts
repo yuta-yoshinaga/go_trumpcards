@@ -17,6 +17,7 @@ function makeState(overrides: Partial<BatakResponse> = {}): BatakResponse {
         roundScore: 0,
         cumulativeScore: 0,
         trickCount: 0,
+        scoreBreakdown: { declarerBidPoints: 0, declarerBidPenalty: 0, defenderTricks: 0 },
       },
       {
         id: 1,
@@ -27,6 +28,7 @@ function makeState(overrides: Partial<BatakResponse> = {}): BatakResponse {
         roundScore: 0,
         cumulativeScore: 0,
         trickCount: 0,
+        scoreBreakdown: { declarerBidPoints: 0, declarerBidPenalty: 0, defenderTricks: 0 },
       },
       {
         id: 2,
@@ -37,6 +39,7 @@ function makeState(overrides: Partial<BatakResponse> = {}): BatakResponse {
         roundScore: 0,
         cumulativeScore: 0,
         trickCount: 0,
+        scoreBreakdown: { declarerBidPoints: 0, declarerBidPenalty: 0, defenderTricks: 0 },
       },
       {
         id: 3,
@@ -47,6 +50,7 @@ function makeState(overrides: Partial<BatakResponse> = {}): BatakResponse {
         roundScore: 0,
         cumulativeScore: 0,
         trickCount: 0,
+        scoreBreakdown: { declarerBidPoints: 0, declarerBidPenalty: 0, defenderTricks: 0 },
       },
     ],
     phase: BatakPhase.BID,

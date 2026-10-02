@@ -144,6 +144,13 @@ func (_m *MockContinentalRummyGame) GetLastResult() *domain.ContinentalRummyRoun
 	return r
 }
 
+// GetRoundScoreHistory モック
+func (_m *MockContinentalRummyGame) GetRoundScoreHistory() []domain.ContinentalRummyRoundScore {
+	ret := _m.Called()
+	r, _ := ret.Get(0).([]domain.ContinentalRummyRoundScore)
+	return r
+}
+
 // GetWinnerIdx モック
 func (_m *MockContinentalRummyGame) GetWinnerIdx() int {
 	ret := _m.Called()

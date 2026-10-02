@@ -26,14 +26,15 @@ type BatakWebConfig struct {
 //
 // RoundScore / CumulativeScore は素の整数スコア。
 type BatakWebOutputPlayer struct {
-	ID              int              `json:"id"`
-	IsHuman         bool             `json:"isHuman"`
-	CardCount       int              `json:"cardCount"`
-	Cards           []*WebOutputCard `json:"cards"`
-	Bid             int              `json:"bid"`
-	RoundScore      int              `json:"roundScore"`
-	CumulativeScore int              `json:"cumulativeScore"`
-	TrickCount      int              `json:"trickCount"`
+	ID              int                        `json:"id"`
+	IsHuman         bool                       `json:"isHuman"`
+	CardCount       int                        `json:"cardCount"`
+	Cards           []*WebOutputCard           `json:"cards"`
+	Bid             int                        `json:"bid"`
+	RoundScore      int                        `json:"roundScore"`
+	CumulativeScore int                        `json:"cumulativeScore"`
+	TrickCount      int                        `json:"trickCount"`
+	ScoreBreakdown  domain.BatakScoreBreakdown `json:"scoreBreakdown"`
 }
 
 // BatakWebOutputHint ヒント出力

@@ -5,6 +5,7 @@ package controller
 import (
 	"net/http"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -39,6 +40,7 @@ type BisleyWebOutput struct {
 	Tableau         [][]*BisleyWebOutputTableauCard `json:"tableau"`
 	AceFoundations  [][]*WebOutputCard              `json:"aceFoundations"`
 	KingFoundations [][]*WebOutputCard              `json:"kingFoundations"`
+	FoundationSize  int                             `json:"foundationSize"`
 	Hint            *BisleyWebOutputHint            `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
@@ -58,6 +60,7 @@ func newBisleyDefaultOutput(msg string) *BisleyWebOutput {
 		Tableau:         make([][]*BisleyWebOutputTableauCard, 0),
 		AceFoundations:  make([][]*WebOutputCard, 0),
 		KingFoundations: make([][]*WebOutputCard, 0),
+		FoundationSize:  domain.CardValueMax,
 		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }

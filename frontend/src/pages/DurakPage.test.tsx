@@ -325,6 +325,34 @@ describe('DurakPage', () => {
     expect(screen.getByTestId('dk-pair-0')).toHaveAttribute('aria-label', '未防御の攻撃: ♣ 7');
   });
 
+  it('exposes the selected defense target and updates it when selection moves or clears', async () => {
+    mockExec.mockResolvedValue({
+      ...defendPhaseState,
+      tablePairs: [
+        { attack: { design: 'CLOVER', value: 7 }, defense: null },
+        { attack: { design: 'SPADE', value: 8 }, defense: null },
+      ],
+    });
+    renderWithProviders(<DurakPage />);
+
+    const firstAttack = await screen.findByTestId('dk-pair-0');
+    const secondAttack = screen.getByTestId('dk-pair-1');
+    expect(firstAttack).toHaveAttribute('aria-pressed', 'false');
+    expect(secondAttack).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(firstAttack);
+    expect(firstAttack).toHaveAttribute('aria-pressed', 'true');
+    expect(secondAttack).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(secondAttack);
+    expect(firstAttack).toHaveAttribute('aria-pressed', 'false');
+    expect(secondAttack).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(secondAttack);
+    expect(firstAttack).toHaveAttribute('aria-pressed', 'false');
+    expect(secondAttack).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('does not pulse an undefended attack when the human is not the defender', async () => {
     // baseState: human is attacker (defenderIdx=1), so undefended attacks should NOT pulse.
     mockExec.mockResolvedValue({

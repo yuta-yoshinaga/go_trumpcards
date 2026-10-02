@@ -12,6 +12,7 @@
   "foundationAriaLabel": "{{suit}} foundation {{count}} cards, top card {{topCard}}",
   "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
   "emptyColumnAriaLabel": "Empty tableau column {{col}}",
+  "cardAriaLabel": "{{card}}, column {{col}}, position {{pos}}",
   "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",
   "autoComplete": "Auto Complete",

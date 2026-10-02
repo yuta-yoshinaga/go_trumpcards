@@ -14,6 +14,7 @@ import type {
   CallBreakResponse,
   CasinoHoldemResponse,
   CegoResponse,
+  ChinchonResponse,
   CinchResponse,
   CirullaResponse,
   CoincheResponse,
@@ -52,6 +53,7 @@ import type {
   MarjapussiResponse,
   MichiganResponse,
   MinchiateResponse,
+  MinibridgeResponse,
   MississippiStudResponse,
   MusResponse,
   NapResponse,
@@ -97,6 +99,28 @@ import type {
   WattenResponse,
   ZwanzigerrufenResponse,
 } from '../types/card';
+
+/** Creates a Chinchón response with round score history defaults. */
+export function makeChinchonState(overrides: Partial<ChinchonResponse> = {}): ChinchonResponse {
+  return {
+    players: [],
+    phase: 0,
+    roundNumber: 1,
+    roundScoreHistory: [],
+    currentPlayerIdx: 0,
+    discardTop: null,
+    drawPileCount: 0,
+    gameEndFlag: false,
+    winnerIdx: -1,
+    knockerIdx: -1,
+    wonByChinchon: false,
+    knockerMelds: [],
+    layoffableIndices: [],
+    message: '',
+    config: { playerCount: 2, knockThreshold: 5, eliminationLimit: 100 },
+    ...overrides,
+  };
+}
 
 /** Creates a default Andar Bahar state. */
 export function makeAndarBaharState(overrides?: Partial<AndarBaharResponse>): AndarBaharResponse {
@@ -491,6 +515,7 @@ const batakPlayers: BatakResponse['players'] = [
     roundScore: 0,
     cumulativeScore: 0,
     trickCount: 0,
+    scoreBreakdown: { declarerBidPoints: 0, declarerBidPenalty: 0, defenderTricks: 0 },
   },
   {
     id: 1,
@@ -501,6 +526,7 @@ const batakPlayers: BatakResponse['players'] = [
     roundScore: 0,
     cumulativeScore: 4,
     trickCount: 1,
+    scoreBreakdown: { declarerBidPoints: 0, declarerBidPenalty: 0, defenderTricks: 0 },
   },
   {
     id: 2,
@@ -511,6 +537,7 @@ const batakPlayers: BatakResponse['players'] = [
     roundScore: 0,
     cumulativeScore: 3,
     trickCount: 2,
+    scoreBreakdown: { declarerBidPoints: 0, declarerBidPenalty: 0, defenderTricks: 0 },
   },
   {
     id: 3,
@@ -521,6 +548,7 @@ const batakPlayers: BatakResponse['players'] = [
     roundScore: 0,
     cumulativeScore: -5,
     trickCount: 5,
+    scoreBreakdown: { declarerBidPoints: 0, declarerBidPenalty: 0, defenderTricks: 0 },
   },
 ];
 
@@ -3202,6 +3230,10 @@ const baseCourtPieceState: CourtPieceResponse = {
   trumpSuit: 0,
   currentTrick: [],
   teamScores: [0, 0],
+  scoreBreakdown: [
+    { sar: 0, courtBonus: 0 },
+    { sar: 0, courtBonus: 0 },
+  ],
   consecutiveWins: 0,
   lastWinnerTeam: -1,
   lastRoundCourt: false,
@@ -4378,6 +4410,17 @@ const baseBoliviaPlayers: BoliviaPlayerData[] = [
     red3Count: 0,
     red3s: [],
     roundScore: 0,
+    scoreBreakdown: {
+      cardPoints: 0,
+      naturalCanastaBonus: 0,
+      mixedCanastaBonus: 0,
+      escaleraBonus: 0,
+      boliviaBonus: 0,
+      red3Bonus: 0,
+      red3Penalty: 0,
+      goOutBonus: 0,
+      handPenalty: 0,
+    },
     cumulativeScore: 0,
     hasCanasta: false,
     hasEscalera: false,
@@ -4394,6 +4437,17 @@ const baseBoliviaPlayers: BoliviaPlayerData[] = [
     red3Count: 0,
     red3s: [],
     roundScore: 0,
+    scoreBreakdown: {
+      cardPoints: 0,
+      naturalCanastaBonus: 0,
+      mixedCanastaBonus: 0,
+      escaleraBonus: 0,
+      boliviaBonus: 0,
+      red3Bonus: 0,
+      red3Penalty: 0,
+      goOutBonus: 0,
+      handPenalty: 0,
+    },
     cumulativeScore: 0,
     hasCanasta: false,
     hasEscalera: false,
@@ -4410,6 +4464,17 @@ const baseBoliviaPlayers: BoliviaPlayerData[] = [
     red3Count: 0,
     red3s: [],
     roundScore: 0,
+    scoreBreakdown: {
+      cardPoints: 0,
+      naturalCanastaBonus: 0,
+      mixedCanastaBonus: 0,
+      escaleraBonus: 0,
+      boliviaBonus: 0,
+      red3Bonus: 0,
+      red3Penalty: 0,
+      goOutBonus: 0,
+      handPenalty: 0,
+    },
     cumulativeScore: 0,
     hasCanasta: false,
     hasEscalera: false,
@@ -4426,6 +4491,17 @@ const baseBoliviaPlayers: BoliviaPlayerData[] = [
     red3Count: 0,
     red3s: [],
     roundScore: 0,
+    scoreBreakdown: {
+      cardPoints: 0,
+      naturalCanastaBonus: 0,
+      mixedCanastaBonus: 0,
+      escaleraBonus: 0,
+      boliviaBonus: 0,
+      red3Bonus: 0,
+      red3Penalty: 0,
+      goOutBonus: 0,
+      handPenalty: 0,
+    },
     cumulativeScore: 0,
     hasCanasta: false,
     hasEscalera: false,
@@ -5613,6 +5689,7 @@ const baseContinentalRummyState: ContinentalRummyResponse = {
     [12, 13, 14],
   ],
   canGoOutOnDeal: false,
+  roundScoreHistory: [],
   hintDiscardIdx: 15,
   hintReason: 'go_out',
   config: { cpuDifficulty: 1, totalRounds: 3 },
@@ -5944,6 +6021,45 @@ export function makeCasinoHoldemState(overrides?: Partial<CasinoHoldemResponse>)
     netChange: 0,
     playerHandRank: 0,
     dealerHandRank: 0,
+    message: '',
+    ...overrides,
+  };
+}
+
+/** Creates a default Minibridge state. */
+export function makeMinibridgeState(overrides?: Partial<MinibridgeResponse>): MinibridgeResponse {
+  return {
+    players: Array.from({ length: 4 }, (_, id) => ({
+      id,
+      isHuman: id === 0,
+      cardCount: 0,
+      cards: [],
+      hcp: 10,
+      team: id % 2,
+      trickCount: 0,
+    })),
+    phase: 0,
+    roundNumber: 1,
+    trickNumber: 0,
+    contractLevel: 0,
+    contractSuit: 0,
+    requiredTricks: 0,
+    declarerIdx: 0,
+    dummyIdx: 2,
+    dummyHand: [],
+    lastMade: false,
+    lastTricks: 0,
+    teamScores: [0, 0],
+    roundDelta: [0, 0],
+    currentPlayerIdx: 0,
+    leadPlayerIdx: 0,
+    dealerIdx: 0,
+    currentTrick: [],
+    validPlays: [],
+    gameEndFlag: false,
+    winnerTeam: -1,
+    declarerByDealerTie: false,
+    config: { rounds: 4 },
     message: '',
     ...overrides,
   };

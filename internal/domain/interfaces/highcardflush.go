@@ -46,6 +46,10 @@ type HighCardFlushGame interface {
 	GetStraightFlushPayout() int
 	// GetTotalPayout 合計配当を取得する
 	GetTotalPayout() int
+	// GetTotalBet 合計ベットを取得する
+	GetTotalBet() int
+	// GetNetChange 精算によるチップ増減を取得する
+	GetNetChange() int
 	// GetDealerQualified ディーラークオリファイを取得する
 	GetDealerQualified() bool
 	// GetPlayerFlushLen プレイヤーの最長フラッシュ長を取得する

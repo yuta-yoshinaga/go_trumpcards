@@ -32,7 +32,8 @@
   "currentTrick": "Current trick",
   "roundResult": {
     "made": "Contract made: {{took}} of the {{need}} tricks needed.",
-    "down": "Contract down: only {{took}} of the {{need}} tricks needed."
+    "down": "Contract down: only {{took}} of the {{need}} tricks needed.",
+    "delta": "This round: Team {{team}} {{delta}} points"
   },
   "actions": {
     "level": "Level",

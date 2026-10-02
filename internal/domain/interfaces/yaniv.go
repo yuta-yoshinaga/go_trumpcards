@@ -57,4 +57,6 @@ type YanivGame interface {
 	GetIsAsaf() bool
 	// GetRoundScores 直近ラウンドで各プレイヤーが加算された失点を取得する
 	GetRoundScores() []int
+	// GetRoundScoreHistory returns the penalty points added to each player per completed round.
+	GetRoundScoreHistory() [][]int
 }

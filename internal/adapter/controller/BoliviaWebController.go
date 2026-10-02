@@ -27,17 +27,18 @@ type BoliviaWebConfig struct {
 
 // BoliviaWebOutputPlayer ボリビアWebアウトプットプレイヤー
 type BoliviaWebOutputPlayer struct {
-	ID              int                     `json:"id"`
-	Team            int                     `json:"team"`
-	IsHuman         bool                    `json:"isHuman"`
-	CardCount       int                     `json:"cardCount"`
-	Cards           []*WebOutputCard        `json:"cards"`
-	Melds           []*BoliviaWebOutputMeld `json:"melds"`
-	Red3Count       int                     `json:"red3Count"`
-	Red3s           []*WebOutputCard        `json:"red3s"`
-	RoundScore      int                     `json:"roundScore"`
-	CumulativeScore int                     `json:"cumulativeScore"`
-	HasCanasta      bool                    `json:"hasCanasta"`
+	ID              int                          `json:"id"`
+	Team            int                          `json:"team"`
+	IsHuman         bool                         `json:"isHuman"`
+	CardCount       int                          `json:"cardCount"`
+	Cards           []*WebOutputCard             `json:"cards"`
+	Melds           []*BoliviaWebOutputMeld      `json:"melds"`
+	Red3Count       int                          `json:"red3Count"`
+	Red3s           []*WebOutputCard             `json:"red3s"`
+	RoundScore      int                          `json:"roundScore"`
+	ScoreBreakdown  domain.BoliviaScoreBreakdown `json:"scoreBreakdown"`
+	CumulativeScore int                          `json:"cumulativeScore"`
+	HasCanasta      bool                         `json:"hasCanasta"`
 	// HasEscalera は完成したエスカレラを持っているか。**上がりに要るのはこちら。**
 	HasEscalera bool `json:"hasEscalera"`
 	// HasBolivia は完成したボリビア (ワイルド 7 枚) を持っているか。点が重いだけ。

@@ -385,7 +385,11 @@ function SpiderettePageContent() {
                                         ((!selectedSource || selectedSource.col === colIdx) &&
                                           !spideretteCanSelectSource(col, cardIdx))
                                       }
-                                      aria-label={cardAlt(tc.card)}
+                                      aria-label={t('tableauCardAriaLabel', {
+                                        card: cardAlt(tc.card),
+                                        col: colIdx,
+                                        pos: cardIdx,
+                                      })}
                                       aria-pressed={isSourceSelected(colIdx, cardIdx)}
                                       draggable={isPlaying && !loading}
                                       onDragStart={dnd.handleDragStart(cardZone)}

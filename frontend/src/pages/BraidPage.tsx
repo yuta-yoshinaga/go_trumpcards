@@ -553,6 +553,7 @@ function BraidPageContent() {
 
             <ActionLogSection
               isEndPhase={isEnded}
+              availableDuringPlay
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}

@@ -58,17 +58,18 @@ const kalookiMaxTurns = 2000
 
 // Kalooki カルーキのゲームクラス。
 type Kalooki struct {
-	trumpCards       *TrumpCards
-	players          []*KalookiPlayer
-	config           KalookiConfig
-	phase            KalookiPhase
-	currentPlayerIdx int
-	discardPile      []*Card
-	drawPile         []*Card
-	gameEndFlag      bool
-	winnerIdx        int
-	roundWinnerIdx   int // 上がったプレイヤー。-1 は山切れ流局
-	turnCount        int // 暴走防止用ターンカウンタ
+	trumpCards        *TrumpCards
+	players           []*KalookiPlayer
+	config            KalookiConfig
+	phase             KalookiPhase
+	currentPlayerIdx  int
+	discardPile       []*Card
+	drawPile          []*Card
+	gameEndFlag       bool
+	winnerIdx         int
+	roundWinnerIdx    int // 上がったプレイヤー。-1 は山切れ流局
+	roundScoreHistory [][]int
+	turnCount         int // 暴走防止用ターンカウンタ
 	actionLogBase
 }
 
@@ -110,6 +111,7 @@ func (g *Kalooki) Reset() {
 	g.gameEndFlag = false
 	g.winnerIdx = -1
 	g.roundWinnerIdx = -1
+	g.roundScoreHistory = nil
 	g.discardPile = nil
 	g.drawPile = nil
 	g.currentPlayerIdx = 0
@@ -593,6 +595,11 @@ func (g *Kalooki) finishRound(winnerIdx int) {
 		g.players[i].SetRoundScore(penalty)
 		g.players[i].CommitRoundScore()
 	}
+	roundScores := make([]int, len(g.players))
+	for i := range g.players {
+		roundScores[i] = g.players[i].GetRoundScore()
+	}
+	g.roundScoreHistory = append(g.roundScoreHistory, roundScores)
 
 	if winnerIdx >= 0 {
 		g.appendLog(winnerIdx, "round_win", "kalooki.log.roundWin", map[string]string{"player": playerName(g.players, winnerIdx)}, nil)
@@ -686,6 +693,15 @@ func (g *Kalooki) SetConfig(c KalookiConfig) { g.config = c }
 
 // GetRoundWinnerIdx 直近ラウンドの勝者
 func (g *Kalooki) GetRoundWinnerIdx() int { return g.roundWinnerIdx }
+
+// GetRoundScoreHistory returns round penalty scores by round and player index.
+func (g *Kalooki) GetRoundScoreHistory() [][]int {
+	history := make([][]int, len(g.roundScoreHistory))
+	for i, scores := range g.roundScoreHistory {
+		history[i] = append([]int(nil), scores...)
+	}
+	return history
+}
 
 // GetOpeningThreshold オープニング要件のしきい値
 func (g *Kalooki) GetOpeningThreshold() int { return g.config.OpeningThreshold }
@@ -968,35 +984,37 @@ func mapKalookiSelectionMasked(p *KalookiPlayer, selection []*Card, used []bool)
 
 // kalookiJSON は Kalooki の JSON 表現
 type kalookiJSON struct {
-	TrumpCards       *TrumpCards       `json:"tc"`
-	Players          []*KalookiPlayer  `json:"pl"`
-	Config           KalookiConfig     `json:"cf"`
-	Phase            KalookiPhase      `json:"ps"`
-	CurrentPlayerIdx int               `json:"ci"`
-	DiscardPile      []*Card           `json:"dp"`
-	DrawPile         []*Card           `json:"wp"`
-	GameEndFlag      bool              `json:"ge"`
-	WinnerIdx        int               `json:"wi"`
-	RoundWinnerIdx   int               `json:"rw"`
-	TurnCount        int               `json:"tn"`
-	ActionLog        []*ActionLogEntry `json:"al"`
+	TrumpCards        *TrumpCards       `json:"tc"`
+	Players           []*KalookiPlayer  `json:"pl"`
+	Config            KalookiConfig     `json:"cf"`
+	Phase             KalookiPhase      `json:"ps"`
+	CurrentPlayerIdx  int               `json:"ci"`
+	DiscardPile       []*Card           `json:"dp"`
+	DrawPile          []*Card           `json:"wp"`
+	GameEndFlag       bool              `json:"ge"`
+	WinnerIdx         int               `json:"wi"`
+	RoundWinnerIdx    int               `json:"rw"`
+	RoundScoreHistory [][]int           `json:"rsh,omitempty"`
+	TurnCount         int               `json:"tn"`
+	ActionLog         []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (g *Kalooki) MarshalJSON() ([]byte, error) {
 	return json.Marshal(kalookiJSON{
-		TrumpCards:       g.trumpCards,
-		Players:          g.players,
-		Config:           g.config,
-		Phase:            g.phase,
-		CurrentPlayerIdx: g.currentPlayerIdx,
-		DiscardPile:      g.discardPile,
-		DrawPile:         g.drawPile,
-		GameEndFlag:      g.gameEndFlag,
-		WinnerIdx:        g.winnerIdx,
-		RoundWinnerIdx:   g.roundWinnerIdx,
-		TurnCount:        g.turnCount,
-		ActionLog:        g.actionLog,
+		TrumpCards:        g.trumpCards,
+		Players:           g.players,
+		Config:            g.config,
+		Phase:             g.phase,
+		CurrentPlayerIdx:  g.currentPlayerIdx,
+		DiscardPile:       g.discardPile,
+		DrawPile:          g.drawPile,
+		GameEndFlag:       g.gameEndFlag,
+		WinnerIdx:         g.winnerIdx,
+		RoundWinnerIdx:    g.roundWinnerIdx,
+		RoundScoreHistory: g.roundScoreHistory,
+		TurnCount:         g.turnCount,
+		ActionLog:         g.actionLog,
 	})
 }
 
@@ -1052,6 +1070,7 @@ func (g *Kalooki) UnmarshalJSON(data []byte) error {
 	g.gameEndFlag = j.GameEndFlag
 	g.winnerIdx = j.WinnerIdx
 	g.roundWinnerIdx = j.RoundWinnerIdx
+	g.roundScoreHistory = j.RoundScoreHistory
 	g.turnCount = j.TurnCount
 	g.actionLog = j.ActionLog
 	if g.actionLog == nil {

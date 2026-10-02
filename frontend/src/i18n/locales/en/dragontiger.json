@@ -36,6 +36,7 @@
     "tieRefund": "Tie (half bet refunded)"
   },
   "payout": {
+    "betAmount": "Bet amount: {{amount}}",
     "total": "Payout",
     "dragon": "Dragon",
     "tiger": "Tiger",

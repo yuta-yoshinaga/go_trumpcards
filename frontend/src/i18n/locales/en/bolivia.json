@@ -71,6 +71,17 @@
     "round": "Round",
     "team": "Team"
   },
+  "scoreBreakdown": {
+    "cardPoints": "Card points",
+    "naturalCanastaBonus": "Natural canasta",
+    "mixedCanastaBonus": "Mixed canasta",
+    "escaleraBonus": "Escalera",
+    "boliviaBonus": "Bolivia",
+    "red3Bonus": "Red 3 bonus",
+    "red3Penalty": "Red 3 penalty",
+    "goOutBonus": "Going out",
+    "handPenalty": "Cards in hand"
+  },
   "selectMeld": "Select cards to meld",
   "selectPair": "Select a pair (2 natural cards matching the top discard)",
   "sequence": "Sequence",
@@ -84,6 +95,7 @@
   },
   "skipMeldButton": "Skip",
   "teamLabel": "Team {{n}}",
+  "yourTeam": "your team",
   "teamScoreSelf": "{{team}} (your team): {{score}}",
   "teamScoreOpponent": "{{team}} (opponent): {{score}}",
   "teamScores": "{{a}} / {{b}}",

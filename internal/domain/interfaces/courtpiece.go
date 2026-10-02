@@ -61,6 +61,8 @@ type CourtPieceGame interface {
 	GetLastWinnerTeam() int
 	// IsLastRoundCourt 直前ラウンドが Court ボーナスだったかを返す
 	IsLastRoundCourt() bool
+	// GetScoreBreakdown returns the components of the most recently scored round, indexed by team.
+	GetScoreBreakdown() [domain.CourtPieceTeamCnt]domain.CourtPieceScoreBreakdown
 	// IsRoundEndCourt いま終わったラウンドが Court (+2) かを返す (集計前でも読める)
 	IsRoundEndCourt() bool
 	// GetTeamScore チームスコアを取得する

@@ -60,6 +60,11 @@ beforeEach(() => {
 });
 
 describe('SchnapsenPage', () => {
+  it('shows the action log button during play', async () => {
+    renderWithProviders(<SchnapsenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument());
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<SchnapsenPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

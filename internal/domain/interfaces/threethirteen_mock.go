@@ -28,12 +28,13 @@ func (m *MockThreeThirteenGame) GetGameEndFlag() bool                     { retu
 func (m *MockThreeThirteenGame) GetPhase() domain.ThreeThirteenPhase {
 	return m.Called().Get(0).(domain.ThreeThirteenPhase)
 }
-func (m *MockThreeThirteenGame) IsHumanTurn() bool        { return m.Called().Bool(0) }
-func (m *MockThreeThirteenGame) GetRound() int            { return m.Called().Int(0) }
-func (m *MockThreeThirteenGame) WildRank() int            { return m.Called().Int(0) }
-func (m *MockThreeThirteenGame) GetDealCount() int        { return m.Called().Int(0) }
-func (m *MockThreeThirteenGame) GetCurrentPlayerIdx() int { return m.Called().Int(0) }
-func (m *MockThreeThirteenGame) GetKnockerIdx() int       { return m.Called().Int(0) }
+func (m *MockThreeThirteenGame) IsHumanTurn() bool             { return m.Called().Bool(0) }
+func (m *MockThreeThirteenGame) GetRound() int                 { return m.Called().Int(0) }
+func (m *MockThreeThirteenGame) GetRoundScoreHistory() [][]int { return m.Called().Get(0).([][]int) }
+func (m *MockThreeThirteenGame) WildRank() int                 { return m.Called().Int(0) }
+func (m *MockThreeThirteenGame) GetDealCount() int             { return m.Called().Int(0) }
+func (m *MockThreeThirteenGame) GetCurrentPlayerIdx() int      { return m.Called().Int(0) }
+func (m *MockThreeThirteenGame) GetKnockerIdx() int            { return m.Called().Int(0) }
 func (m *MockThreeThirteenGame) GetDiscardTop() *domain.Card {
 	return m.Called().Get(0).(*domain.Card)
 }

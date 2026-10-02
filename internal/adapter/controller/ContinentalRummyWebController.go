@@ -57,22 +57,29 @@ type ContinentalRummyWebOutputResult struct {
 	Total int `json:"total"`
 }
 
+// ContinentalRummyWebOutputRoundScore はラウンド別の各席の加算点。
+type ContinentalRummyWebOutputRoundScore struct {
+	RoundNumber int   `json:"roundNumber"`
+	Scores      []int `json:"scores"`
+}
+
 // ContinentalRummyWebOutput はコンチネンタル・ラミーの Web アウトプット。
 type ContinentalRummyWebOutput struct {
 	Players []*ContinentalRummyWebOutputPlayer `json:"players"`
 	// Phase は "draw" | "discard" | "roundEnd" | "gameEnd"。
-	Phase            string                           `json:"phase"`
-	RoundNumber      int                              `json:"roundNumber"`
-	TotalRounds      int                              `json:"totalRounds"`
-	CurrentPlayerIdx int                              `json:"currentPlayerIdx"`
-	DealerIdx        int                              `json:"dealerIdx"`
-	StockCount       int                              `json:"stockCount"`
-	DiscardTop       *WebOutputCard                   `json:"discardTop,omitempty"`
-	Layouts          [][]int                          `json:"layouts"`
-	LastResult       *ContinentalRummyWebOutputResult `json:"lastResult,omitempty"`
-	GameEndFlag      bool                             `json:"gameEndFlag"`
-	WinnerIdx        int                              `json:"winnerIdx"`
-	IsHumanTurn      bool                             `json:"isHumanTurn"`
+	Phase             string                                `json:"phase"`
+	RoundNumber       int                                   `json:"roundNumber"`
+	TotalRounds       int                                   `json:"totalRounds"`
+	CurrentPlayerIdx  int                                   `json:"currentPlayerIdx"`
+	DealerIdx         int                                   `json:"dealerIdx"`
+	StockCount        int                                   `json:"stockCount"`
+	DiscardTop        *WebOutputCard                        `json:"discardTop,omitempty"`
+	Layouts           [][]int                               `json:"layouts"`
+	LastResult        *ContinentalRummyWebOutputResult      `json:"lastResult,omitempty"`
+	RoundScoreHistory []ContinentalRummyWebOutputRoundScore `json:"roundScoreHistory"`
+	GameEndFlag       bool                                  `json:"gameEndFlag"`
+	WinnerIdx         int                                   `json:"winnerIdx"`
+	IsHumanTurn       bool                                  `json:"isHumanTurn"`
 	// GoOutIdx は「これを捨てれば上がれる」1 枚。上がれないなら -1。
 	//
 	// **上がれるかはページ側で解き直さない。** 15 枚の分割問題なので、規則が

@@ -113,6 +113,10 @@ func (m *MockHighCardFlushGame) GetTotalPayout() int {
 	return args.Int(0)
 }
 
+func (m *MockHighCardFlushGame) GetTotalBet() int { return m.Called().Int(0) }
+
+func (m *MockHighCardFlushGame) GetNetChange() int { return m.Called().Int(0) }
+
 func (m *MockHighCardFlushGame) GetDealerQualified() bool {
 	args := m.Called()
 	return args.Bool(0)

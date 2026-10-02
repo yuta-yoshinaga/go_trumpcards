@@ -1,11 +1,8 @@
 import { expect, type Page, test } from '@playwright/test';
 import { navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION } from './helpers';
 
-// **合法な札だけを選ぶ。** カードは意図的に disabled にしていない
-// （サーバが必ず検証するし、個別に無効化すると「先頭の札を押す」が動く的に
-// なる）。その代わり、フォロー義務を満たさない札を押すとサーバが拒否して
-// 盤面が動かないので、緑の枠が付いた札を掴む。
-const legalCard = (page: Page) => page.locator('button.ring-ds-success');
+// **合法な札だけを選ぶ。** aria-disabled の札はクリック対象から外す。
+const legalCard = (page: Page) => page.locator('button.ring-ds-success:not([aria-disabled="true"])');
 
 test.describe('Reversis E2E', () => {
   test('navigates to reversis and renders initial game state', async ({ page }) => {

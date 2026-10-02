@@ -18,6 +18,8 @@ function makeState(overrides: Partial<HighCardFlushResponse> = {}): HighCardFlus
     flushBonusPayout: 0,
     straightFlushPayout: 0,
     totalPayout: 0,
+    totalBet: 0,
+    netChange: 0,
     dealerQualified: false,
     playerFlushLen: 0,
     dealerFlushLen: 0,

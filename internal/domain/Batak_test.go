@@ -377,6 +377,10 @@ func TestBatak_ScoreRound_Asymmetry(t *testing.T) {
 		assert.Equal(t, 5, cb.GetPlayer(1).GetRoundScore(), "親はオーバートリックでも +bid のみ")
 		assert.Equal(t, 2, cb.GetPlayer(2).GetRoundScore())
 		assert.Equal(t, 2, cb.GetPlayer(3).GetRoundScore())
+		for i := 0; i < cb.GetPlayerCnt(); i++ {
+			assert.Equal(t, cb.GetPlayer(i).GetRoundScore(), cb.GetScoreBreakdown(i).Total())
+		}
+		assert.Equal(t, domain.BatakScoreBreakdown{DeclarerBidPoints: 5}, cb.GetScoreBreakdown(1))
 	})
 
 	t.Run("親が宣言未達の卓", func(t *testing.T) {
@@ -412,6 +416,11 @@ func TestBatak_ScoreRound_Asymmetry(t *testing.T) {
 		assert.Equal(t, 3, cb.GetPlayer(1).GetRoundScore(), "子はトリック数がそのまま加点")
 		assert.Equal(t, -7, cb.GetPlayer(2).GetRoundScore(), "親は未達で -bid")
 		assert.Equal(t, 1, cb.GetPlayer(3).GetRoundScore(), "子はトリック数がそのまま加点")
+		for i := 0; i < cb.GetPlayerCnt(); i++ {
+			assert.Equal(t, cb.GetPlayer(i).GetRoundScore(), cb.GetScoreBreakdown(i).Total())
+		}
+		assert.Equal(t, domain.BatakScoreBreakdown{DeclarerBidPenalty: 7}, cb.GetScoreBreakdown(2))
+		assert.Equal(t, domain.BatakScoreBreakdown{DefenderTricks: 4}, cb.GetScoreBreakdown(0))
 	})
 }
 

@@ -292,7 +292,11 @@ function CribbageSquaresPageContent() {
                                 data-cross-hover={inCross ? 'true' : undefined}
                                 aria-label={
                                   cell.card
-                                    ? cardAlt(cell.card)
+                                    ? t('label.placedCell', {
+                                        card: cardAlt(cell.card),
+                                        rowNo: rowIdx + 1,
+                                        colNo: colIdx + 1,
+                                      })
                                     : // **どの行・列に効くかは色でしか出ていなかった。**空きマスは
                                       // 影響する 2 つの役の現在点を読み上げにも載せる。
                                       //

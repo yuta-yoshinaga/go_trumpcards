@@ -87,6 +87,7 @@ func (p *BatakWebPresenter) buildPlayersOutput(cb interfaces.BatakGame) []*contr
 			RoundScore:      player.GetRoundScore(),
 			CumulativeScore: player.GetCumulativeScore(),
 			TrickCount:      player.GetTrickCount(),
+			ScoreBreakdown:  cb.GetScoreBreakdown(i),
 		}
 		out = append(out, pObj)
 	}

@@ -107,15 +107,16 @@ func hasChinchon(cards []*Card) bool {
 
 // Chinchon チンチョンゲームクラス
 type Chinchon struct {
-	players          []*ChinchonPlayer
-	config           ChinchonConfig
-	phase            ChinchonPhase
-	currentPlayerIdx int
-	discardPile      []*Card
-	drawPile         []*Card
-	gameEndFlag      bool
-	winnerIdx        int // マッチ勝者 (-1 = 未確定)
-	roundNumber      int
+	players           []*ChinchonPlayer
+	config            ChinchonConfig
+	phase             ChinchonPhase
+	currentPlayerIdx  int
+	discardPile       []*Card
+	drawPile          []*Card
+	gameEndFlag       bool
+	winnerIdx         int // マッチ勝者 (-1 = 未確定)
+	roundNumber       int
+	roundScoreHistory [][]int
 	actionLogBase
 	knockerIdx      int       // ノックしたプレイヤー (-1 = ノックなし)
 	knockerMelds    [][]*Card // ノッカーのメルド (レイオフ用)
@@ -173,6 +174,7 @@ func (g *Chinchon) Reset() {
 	g.gameEndFlag = false
 	g.winnerIdx = -1
 	g.roundNumber = 1
+	g.roundScoreHistory = nil
 	g.currentPlayerIdx = 0
 	g.actionLog = nil
 	g.resetRoundState()
@@ -478,6 +480,7 @@ func (g *Chinchon) layoffCard(card *Card) {
 // 各プレイヤーは残りデッドウッドを累積点に加算する (ノッカーは自身のデッドウッドのみ)。
 // 累積点が EliminationLimit を超えたプレイヤーは脱落。残り1人になればマッチ終了。
 func (g *Chinchon) scoreRound() {
+	roundScores := make([]int, len(g.players))
 	g.roundDeadwood = make([][]*Card, len(g.players))
 	for i, p := range g.players {
 		if p.GetEliminated() {
@@ -494,9 +497,11 @@ func (g *Chinchon) scoreRound() {
 			deadwoodValue = CalcDeadwoodValue(g.roundDeadwood[i])
 		}
 		p.SetRoundScore(deadwoodValue)
+		roundScores[i] = deadwoodValue
 		p.CommitRoundScore()
 		g.appendLog(i, "score", "chinchon.log.score", map[string]string{"name": playerName(g.players, i), "score": fmt.Sprintf("%d", deadwoodValue), "total": fmt.Sprintf("%d", p.GetCumulativeScore())}, nil)
 	}
+	g.roundScoreHistory = append(g.roundScoreHistory, roundScores)
 
 	// 脱落判定
 	for i, p := range g.players {
@@ -510,6 +515,15 @@ func (g *Chinchon) scoreRound() {
 	if !g.gameEndFlag {
 		g.phase = ChinchonPhaseRoundEnd
 	}
+}
+
+// GetRoundScoreHistory returns round scores by round, with one entry per player.
+func (g *Chinchon) GetRoundScoreHistory() [][]int {
+	history := make([][]int, len(g.roundScoreHistory))
+	for i, scores := range g.roundScoreHistory {
+		history[i] = append([]int(nil), scores...)
+	}
+	return history
 }
 
 // endRoundDraw 山札切れによる引き分け (デッドウッドは加算する)。
@@ -877,43 +891,45 @@ func (g *Chinchon) sortHand(playerIdx int) {
 
 // chinchonJSON is the JSON wire format for Chinchon.
 type chinchonJSON struct {
-	Players          []*ChinchonPlayer `json:"pl"`
-	Config           ChinchonConfig    `json:"cf"`
-	Phase            ChinchonPhase     `json:"ps"`
-	CurrentPlayerIdx int               `json:"ci"`
-	DiscardPile      []*Card           `json:"dp"`
-	DrawPile         []*Card           `json:"wp"`
-	GameEndFlag      bool              `json:"ge"`
-	WinnerIdx        int               `json:"wi"`
-	RoundNumber      int               `json:"rn"`
-	ActionLog        []*ActionLogEntry `json:"al"`
-	KnockerIdx       int               `json:"ki"`
-	KnockerMelds     [][]*Card         `json:"km"`
-	KnockerDeadwood  []*Card           `json:"kd"`
-	LayoffQueue      []int             `json:"lq"`
-	RoundDeadwood    [][]*Card         `json:"rd"`
-	WonByChinchon    bool              `json:"wc"`
+	Players           []*ChinchonPlayer `json:"pl"`
+	Config            ChinchonConfig    `json:"cf"`
+	Phase             ChinchonPhase     `json:"ps"`
+	CurrentPlayerIdx  int               `json:"ci"`
+	DiscardPile       []*Card           `json:"dp"`
+	DrawPile          []*Card           `json:"wp"`
+	GameEndFlag       bool              `json:"ge"`
+	WinnerIdx         int               `json:"wi"`
+	RoundNumber       int               `json:"rn"`
+	ActionLog         []*ActionLogEntry `json:"al"`
+	KnockerIdx        int               `json:"ki"`
+	KnockerMelds      [][]*Card         `json:"km"`
+	KnockerDeadwood   []*Card           `json:"kd"`
+	LayoffQueue       []int             `json:"lq"`
+	RoundDeadwood     [][]*Card         `json:"rd"`
+	WonByChinchon     bool              `json:"wc"`
+	RoundScoreHistory [][]int           `json:"rsh,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (g *Chinchon) MarshalJSON() ([]byte, error) {
 	return json.Marshal(chinchonJSON{
-		Players:          g.players,
-		Config:           g.config,
-		Phase:            g.phase,
-		CurrentPlayerIdx: g.currentPlayerIdx,
-		DiscardPile:      g.discardPile,
-		DrawPile:         g.drawPile,
-		GameEndFlag:      g.gameEndFlag,
-		WinnerIdx:        g.winnerIdx,
-		RoundNumber:      g.roundNumber,
-		ActionLog:        g.actionLog,
-		KnockerIdx:       g.knockerIdx,
-		KnockerMelds:     g.knockerMelds,
-		KnockerDeadwood:  g.knockerDeadwood,
-		LayoffQueue:      g.layoffQueue,
-		RoundDeadwood:    g.roundDeadwood,
-		WonByChinchon:    g.wonByChinchon,
+		Players:           g.players,
+		Config:            g.config,
+		Phase:             g.phase,
+		CurrentPlayerIdx:  g.currentPlayerIdx,
+		DiscardPile:       g.discardPile,
+		DrawPile:          g.drawPile,
+		GameEndFlag:       g.gameEndFlag,
+		WinnerIdx:         g.winnerIdx,
+		RoundNumber:       g.roundNumber,
+		ActionLog:         g.actionLog,
+		KnockerIdx:        g.knockerIdx,
+		KnockerMelds:      g.knockerMelds,
+		KnockerDeadwood:   g.knockerDeadwood,
+		LayoffQueue:       g.layoffQueue,
+		RoundDeadwood:     g.roundDeadwood,
+		WonByChinchon:     g.wonByChinchon,
+		RoundScoreHistory: g.roundScoreHistory,
 	})
 }
 
@@ -996,6 +1012,7 @@ func (g *Chinchon) UnmarshalJSON(data []byte) error {
 	g.layoffQueue = j.LayoffQueue
 	g.roundDeadwood = j.RoundDeadwood
 	g.wonByChinchon = j.WonByChinchon
+	g.roundScoreHistory = j.RoundScoreHistory
 	if g.layoffQueue == nil {
 		g.layoffQueue = make([]int, 0)
 	}

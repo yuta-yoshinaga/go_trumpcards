@@ -16,13 +16,14 @@ import (
 
 func mustYanivOutputJSON(msg string) string {
 	out := &controller.YanivWebOutput{
-		Players:       []*controller.YanivWebOutputPlayer{},
-		PickupCards:   []*controller.WebOutputCard{},
-		WinnerIdx:     -1,
-		CallerIdx:     -1,
-		AsafWinnerIdx: -1,
-		RoundScores:   []int{},
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Players:           []*controller.YanivWebOutputPlayer{},
+		PickupCards:       []*controller.WebOutputCard{},
+		WinnerIdx:         -1,
+		CallerIdx:         -1,
+		AsafWinnerIdx:     -1,
+		RoundScores:       []int{},
+		RoundScoreHistory: [][]int{},
+		WebOutputBase:     controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

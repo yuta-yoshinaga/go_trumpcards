@@ -326,10 +326,15 @@ describe('ZwickerPage', () => {
     await waitFor(() => expect(screen.getByTestId('zwicker-turn-announce')).toHaveTextContent('あなたの手番です'));
   });
 
-  // **変わり目だけを読む。**自分の手番で開いただけの盤で読み上げると、
-  // フェーズ表示が既に言っていることを毎回繰り返すことになる。
-  it('stays silent when the page opens already on the human turn', async () => {
+  it('announces the human turn on the initial state', async () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 0 }));
+    renderWithProviders(<ZwickerPage />);
+    const live = await screen.findByTestId('zwicker-turn-announce');
+    await waitFor(() => expect(live).toHaveTextContent('あなたの手番です'));
+  });
+
+  it('stays silent when the initial state is not the human turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
     renderWithProviders(<ZwickerPage />);
     const live = await screen.findByTestId('zwicker-turn-announce');
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());

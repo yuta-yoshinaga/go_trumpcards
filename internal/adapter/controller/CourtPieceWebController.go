@@ -49,23 +49,31 @@ type CourtPieceWebOutputConfig struct {
 	PointLimit    int `json:"pointLimit"`
 }
 
+// CourtPieceWebOutputScoreBreakdown is a team's component-wise round score.
+type CourtPieceWebOutputScoreBreakdown struct {
+	Sar        int `json:"sar"`
+	CourtBonus int `json:"courtBonus"`
+	Total      int `json:"total"`
+}
+
 // CourtPieceWebOutput Court Piece Web アウトプット
 type CourtPieceWebOutput struct {
-	Players          []*CourtPieceWebOutputPlayer `json:"players"`
-	TeamScores       []int                        `json:"teamScores"`
-	Phase            int                          `json:"phase"`
-	RoundNumber      int                          `json:"roundNumber"`
-	TrickNumber      int                          `json:"trickNumber"`
-	CurrentPlayerIdx int                          `json:"currentPlayerIdx"`
-	CallerIdx        int                          `json:"callerIdx"`
-	TrumpSuit        int                          `json:"trumpSuit"`
-	CurrentTrick     []*WebOutputTrickCard        `json:"currentTrick"`
-	ConsecutiveWins  int                          `json:"consecutiveWins"`
-	LastWinnerTeam   int                          `json:"lastWinnerTeam"`
-	LastRoundCourt   bool                         `json:"lastRoundCourt"`
-	GameEndFlag      bool                         `json:"gameEndFlag"`
-	WinnerTeam       int                          `json:"winnerTeam"`
-	LeadPlayerIdx    int                          `json:"leadPlayerIdx"`
+	Players          []*CourtPieceWebOutputPlayer                                `json:"players"`
+	TeamScores       []int                                                       `json:"teamScores"`
+	ScoreBreakdown   [domain.CourtPieceTeamCnt]CourtPieceWebOutputScoreBreakdown `json:"scoreBreakdown"`
+	Phase            int                                                         `json:"phase"`
+	RoundNumber      int                                                         `json:"roundNumber"`
+	TrickNumber      int                                                         `json:"trickNumber"`
+	CurrentPlayerIdx int                                                         `json:"currentPlayerIdx"`
+	CallerIdx        int                                                         `json:"callerIdx"`
+	TrumpSuit        int                                                         `json:"trumpSuit"`
+	CurrentTrick     []*WebOutputTrickCard                                       `json:"currentTrick"`
+	ConsecutiveWins  int                                                         `json:"consecutiveWins"`
+	LastWinnerTeam   int                                                         `json:"lastWinnerTeam"`
+	LastRoundCourt   bool                                                        `json:"lastRoundCourt"`
+	GameEndFlag      bool                                                        `json:"gameEndFlag"`
+	WinnerTeam       int                                                         `json:"winnerTeam"`
+	LeadPlayerIdx    int                                                         `json:"leadPlayerIdx"`
 	// PlayableIndices は人間がいま出せる手札の位置。マストフォローの判定は
 	// ドメインの GetPlayableIndices が唯一の出どころで、フロントは再実装しない。
 	// プレイフェーズで人間の手番のときだけ埋まり、それ以外は空。

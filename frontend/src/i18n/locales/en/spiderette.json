@@ -17,6 +17,7 @@
   "undo": "Undo",
   "empty": "Empty",
   "emptyColumnAriaLabel": "Empty tableau column {{col}}",
+  "tableauCardAriaLabel": "{{card}}, column {{col}}, position {{pos}}",
   "score": "Score",
   "gameClear": "Game Clear! Moves: {{moveCount}} Score: {{score}}",
   "gameOver": "Game Over",

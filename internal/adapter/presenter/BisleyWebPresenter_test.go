@@ -42,6 +42,7 @@ func setupBisleyWebMockDefaults(bg *interfaces.MockBisleyGame) {
 	}
 	bg.On("GetAceFoundations").Return(ace).Maybe()
 	bg.On("GetKingFoundations").Return(king).Maybe()
+	bg.On("GetFoundationSize").Return(domain.CardValueMax).Maybe()
 }
 
 func parseBisleyOutput(t *testing.T, jsonStr string) *controller.BisleyWebOutput {
@@ -72,6 +73,7 @@ func TestBisleyWebPresenter_Output(t *testing.T) {
 		assert.Len(t, result.Tableau, domain.BisleyTableauCnt)
 		assert.Len(t, result.AceFoundations, domain.BisleyFoundationCnt)
 		assert.Len(t, result.KingFoundations, domain.BisleyFoundationCnt)
+		assert.Equal(t, domain.CardValueMax, result.FoundationSize)
 		assert.Equal(t, "bisley.playing", result.MessageCode)
 	})
 

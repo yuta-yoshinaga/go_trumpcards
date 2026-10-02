@@ -10,6 +10,8 @@
   "noTrump": "なし",
   "target": "目標 {{n}}点",
   "playersTitle": "プレイヤー",
+  "bidHistoryTitle": "入札履歴",
+  "bidHistoryEmpty": "まだ入札はありません",
   "hiddenHand": "非公開 {{count}}枚",
   "yourHand": "あなたの手札",
   "trick": "場",
