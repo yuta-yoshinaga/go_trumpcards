@@ -156,10 +156,26 @@ describe('WhiteheadPage', () => {
     await i18n.changeLanguage('ja');
   });
 
+  it('uses the English empty foundation label without a plural count', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<WhiteheadPage />);
+    expect(
+      await screen.findByRole('button', { name: 'Empty foundation (♦) (overall 0 / 52 cards)' }),
+    ).toBeInTheDocument();
+    await i18n.changeLanguage('ja');
+  });
+
   it('shows foundation progress when the game is over', async () => {
     mockExec.mockResolvedValue({ ...gameOverState, foundation: withFoundationState.foundation });
     renderWithProviders(<WhiteheadPage />);
     expect(await screen.findByTestId('whitehead-gameover-summary')).toHaveTextContent('組札 3/52 枚 (6%)');
+  });
+
+  it('shows zero percent when no cards are in the foundations', async () => {
+    mockExec.mockResolvedValue({ ...gameOverState, totalCardCount: 52 });
+    renderWithProviders(<WhiteheadPage />);
+    expect(await screen.findByTestId('whitehead-gameover-summary')).toHaveTextContent('組札 0/52 枚 (0%)');
   });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));

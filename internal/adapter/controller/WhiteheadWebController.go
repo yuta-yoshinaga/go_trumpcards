@@ -71,10 +71,11 @@ var NewWhiteheadWebController, NewWhiteheadWebControllerWithProvider = webContro
 
 func newWhiteheadDefaultOutput(msg string) *WhiteheadWebOutput {
 	return &WhiteheadWebOutput{
-		Tableau:       make([][]*WhiteheadWebOutputTableauCard, 0),
-		Waste:         make([]*WebOutputCard, 0),
-		Foundation:    make([][]*WebOutputCard, 0),
-		WebOutputBase: WebOutputBase{Message: msg},
+		Tableau:        make([][]*WhiteheadWebOutputTableauCard, 0),
+		Waste:          make([]*WebOutputCard, 0),
+		Foundation:     make([][]*WebOutputCard, 0),
+		TotalCardCount: domain.CardCnt,
+		WebOutputBase:  WebOutputBase{Message: msg},
 	}
 }
 
