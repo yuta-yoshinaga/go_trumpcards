@@ -289,7 +289,8 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
       : { kept, handKey: null, strengthCards: [] };
   }, [variant, isDiscardPhase, selectedDiscards, discardCount, humanPlayer, state?.discardPreviews]);
   const candidatePreviews = useMemo(() => {
-    if (variant === 'irishpoker' || !isDiscardPhase) return null;
+    const showCrazyFlopPreviews = variant === 'crazypineapple' && phase === PineapplePhase.FLOP;
+    if (variant === 'irishpoker' || (!isDiscardPhase && !showCrazyFlopPreviews)) return null;
     return (
       state?.discardPreviews?.map((preview) => ({
         handKey: pokerHandKey(preview.handRank as PokerHandRank),
@@ -297,7 +298,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
         recommended: preview.recommended ?? false,
       })) ?? null
     );
-  }, [variant, isDiscardPhase, state?.discardPreviews]);
+  }, [variant, phase, isDiscardPhase, state?.discardPreviews]);
   const recommendedDiscards = useMemo<Set<number>>(() => {
     const out = new Set<number>();
     if (!candidatePreviews) return out;

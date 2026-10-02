@@ -1193,6 +1193,29 @@ describe('PineapplePage', () => {
     expect(labels[2].previousElementSibling).not.toHaveClass('ring-ds-info');
   });
 
+  it('shows server discard previews during Crazy Pineapple flop betting', async () => {
+    mockCrazyExec.mockResolvedValue({
+      ...preFlopState,
+      phase: PineapplePhase.FLOP,
+      isDiscardPhase: false,
+      players: [humanPlayer(), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardPreviews: [
+        { cardIdx: 0, handRank: 1, recommended: false },
+        { cardIdx: 1, handRank: 1, recommended: false },
+        { cardIdx: 2, handRank: 3, recommended: true },
+      ],
+    });
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getAllByTestId('cp-discard-candidate')).toHaveLength(3));
+    expect(screen.getAllByTestId('cp-discard-recommended')).toHaveLength(1);
+    expect(screen.getAllByTestId('cp-discard-candidate')[2]).toHaveTextContent('スリーカード');
+  });
+
   it('shows no Crazy Pineapple recommended badge when the board is too small', async () => {
     const crazyNoBoardState: PineappleResponse = {
       ...discardState,

@@ -685,9 +685,24 @@ func TestPineapple_GetHumanDiscardPreviews(t *testing.T) {
 		assert.Nil(t, p.GetHumanDiscardPreviews())
 	})
 
-	t.Run("returns nothing outside the discard phase", func(t *testing.T) {
+	t.Run("returns previews during Crazy Pineapple flop betting", func(t *testing.T) {
 		p := pineappleDiscardFixture(t, spadeFlushHole, spadeBoard)
+		p.discardAfterFlopBetting = true
 		p.phase = PineapplePhaseFlop
+		previews := p.GetHumanDiscardPreviews()
+		require.Len(t, previews, 3)
+		assert.Equal(t, PokerHandFlush, previews[2].HandRank)
+		assert.True(t, previews[2].Recommended)
+	})
+
+	t.Run("returns nothing outside discard or delayed-discard flop phases", func(t *testing.T) {
+		p := pineappleDiscardFixture(t, spadeFlushHole, spadeBoard)
+		p.discardAfterFlopBetting = false
+		p.phase = PineapplePhaseFlop
+		assert.Nil(t, p.GetHumanDiscardPreviews())
+
+		p.discardAfterFlopBetting = true
+		p.phase = PineapplePhaseTurn
 		assert.Nil(t, p.GetHumanDiscardPreviews())
 	})
 
