@@ -418,6 +418,61 @@ describe('CourchevelPage', () => {
     expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(3);
   });
 
+  it('highlights the live best-five hole cards and updates them with the board', async () => {
+    const liveHuman = humanPlayer({
+      cards: [
+        { design: 'SPADE', value: 1 },
+        { design: 'SPADE', value: 13 },
+        { design: 'HEART', value: 4 },
+        { design: 'DIAMOND', value: 7 },
+        { design: 'CLOVER', value: 9 },
+      ],
+      liveBestHandHoleIndices: [0, 1],
+      liveBestHandBoardIndices: [0, 1, 2],
+    });
+    const firstBoard = [
+      { design: 'SPADE' as const, value: 2 },
+      { design: 'SPADE' as const, value: 3 },
+      { design: 'SPADE' as const, value: 4 },
+    ];
+    mockExec.mockResolvedValue({
+      ...flopState,
+      players: [liveHuman, ...flopState.players.slice(1)],
+      communityCards: firstBoard,
+    });
+    const { container } = renderWithProviders(<CourchevelPage />);
+    await waitFor(() => expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(2));
+    expect(
+      [...container.querySelectorAll('[data-best5-hole]')].map((el) =>
+        Number(el.getAttribute('data-best5-hole-index')),
+      ),
+    ).toEqual([0, 1]);
+    expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(3);
+    expect(screen.getByTestId('courchevel-live-besthand')).toBeInTheDocument();
+
+    const nextBoard = [...firstBoard, { design: 'SPADE' as const, value: 5 }];
+    const nextHuman = { ...liveHuman, liveBestHandHoleIndices: [0, 1], liveBestHandBoardIndices: [0, 1, 3] };
+    mockExec.mockResolvedValue({
+      ...flopState,
+      players: [nextHuman, ...flopState.players.slice(1)],
+      communityCards: nextBoard,
+    });
+    fireEvent.click(screen.getByRole('button', { name: /チェック/ }));
+    await waitFor(() =>
+      expect(
+        [...container.querySelectorAll('[data-best5-hole]')].map((el) =>
+          Number(el.getAttribute('data-best5-hole-index')),
+        ),
+      ).toEqual([0, 1]),
+    );
+    expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(2);
+    expect(
+      [...container.querySelectorAll('[data-best5-board]')].map((el) =>
+        Number(el.getAttribute('data-community-card-index')),
+      ),
+    ).toEqual([0, 1, 3]);
+  });
+
   it('highlights the winning CPU board cards when the human has folded', async () => {
     mockExec.mockResolvedValue({
       ...showdownState,
