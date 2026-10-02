@@ -53,6 +53,8 @@ export interface BaseballSeat {
   /** The best five cards. Set at showdown only. */
   bestHand: Card[];
   wonAmount: number;
+  /** Net chip change since the hand began, including any buy-in payment. */
+  netChange: number;
 }
 
 /** Baseball Poker game settings. */

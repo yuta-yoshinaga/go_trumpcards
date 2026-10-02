@@ -47,6 +47,7 @@ const seat = (over: Partial<BaseballPokerResponse['seats'][number]> = {}) =>
     usedWild: false,
     bestHand: [],
     wonAmount: 0,
+    netChange: 0,
     ...over,
   }) as BaseballPokerResponse['seats'][number];
 
@@ -401,11 +402,17 @@ describe('BaseballPokerPage', () => {
       withState({
         phase: BaseballPhase.SHOWDOWN,
         isHumanTurn: false,
-        seats: [seat({ isTurn: false, wonAmount: 80, usedWild: true }), cpuSeat()],
+        seats: [
+          seat({ isTurn: false, wonAmount: 80, netChange: 60, usedWild: true }),
+          cpuSeat({ folded: true, netChange: -20 }),
+        ],
       }),
     );
     renderWithProviders(<BaseballPokerPage />);
     await waitFor(() => expect(screen.getByTestId('bb-won-0')).toHaveTextContent('80'));
+    expect(screen.getByTestId('bb-net-change-0')).toHaveTextContent('ハンド収支 +60（買い増しを含む）');
+    expect(screen.getByTestId('bb-net-change-1')).toHaveTextContent('ハンド収支 -20（買い増しを含む）');
+    expect(screen.queryByTestId('bp-showdown-1')).not.toBeInTheDocument();
     expect(screen.getByTestId('bb-usedwild-0')).toBeInTheDocument();
 
     mockApi.mockClear();

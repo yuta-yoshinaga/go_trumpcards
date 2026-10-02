@@ -105,6 +105,7 @@ func baseballSeatsToOutput(c interfaces.BaseballPokerGame) []*controller.Basebal
 		}
 		if i < len(results) {
 			seat.WonAmount = results[i].WonAmount
+			seat.NetChange = results[i].NetChange
 		}
 		out = append(out, seat)
 	}
