@@ -199,6 +199,16 @@ describe('ShelemPage', () => {
     );
   });
 
+  it('announces the translated trump suit on each discard confirmation button', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: 1, declarerIdx: 0, contract: 90, widowSize: 0 } as Partial<ShelemResponse>),
+    );
+    renderWithProviders(<ShelemPage />);
+
+    expect(await screen.findByRole('button', { name: '切り札スペードで確定' })).toBeInTheDocument();
+    expect(screen.getByTestId('sh-discard-1-btn')).toHaveTextContent('切り札 ♠ で確定');
+  });
+
   it('plays the clicked card by its hand index once play starts', async () => {
     mockExec.mockResolvedValue(playing());
     renderWithProviders(<ShelemPage />);
