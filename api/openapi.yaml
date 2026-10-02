@@ -52485,6 +52485,24 @@ components:
                 type: integer
               recommended:
                 type: boolean
+        discardCandidates:
+          type: array
+          description: Evaluated choices for the final Irish Poker discard; empty outside that decision.
+          items:
+            type: object
+            required: [discardIdx, handRankKey, strengthCards, isBest]
+            properties:
+              discardIdx:
+                type: integer
+              handRankKey:
+                type: string
+                description: Existing poker hand rank key.
+              strengthCards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              isBest:
+                type: boolean
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."

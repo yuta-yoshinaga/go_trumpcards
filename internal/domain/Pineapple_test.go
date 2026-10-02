@@ -891,3 +891,49 @@ func TestPineapple_GetEquityWorksForThePlainVariant(t *testing.T) {
 		NewCard(CardDesignHeart, 14, false),
 	}), 2)
 }
+
+func TestPineapple_GetHumanDiscardCandidates(t *testing.T) {
+	newIrish := func(hand []*Card, board []*Card) *Pineapple {
+		cfg := DefaultPineappleConfig()
+		players := NewPineapplePlayersForTable(cfg.TableSize)
+		p := NewIrishPoker(NewTrumpCards(0), players, cfg)
+		p.phase = PineapplePhaseDiscard
+		for _, c := range hand {
+			players[0].AddCard(c)
+		}
+		p.communityCards = board
+		return p
+	}
+	card := func(s int, v int) *Card { return NewCard(s, v, false) }
+
+	t.Run("kickers decide a unique best pair", func(t *testing.T) {
+		p := newIrish([]*Card{card(CardDesignSpade, 1), card(CardDesignHeart, 13), card(CardDesignClover, 12)}, []*Card{card(CardDesignDiamond, 1), card(CardDesignSpade, 9), card(CardDesignHeart, 7)})
+		got := p.GetHumanDiscardCandidates()
+		require.Len(t, got, 3)
+		assert.Equal(t, PokerHandHighCard, got[0].HandRank)
+		assert.Equal(t, PokerHandOnePair, got[1].HandRank)
+		assert.True(t, got[2].IsBest)
+		assert.False(t, got[0].IsBest)
+		assert.False(t, got[1].IsBest)
+		assert.Greater(t, compareHighCardsSlice(got[2].StrengthCards, got[1].StrengthCards), 0)
+	})
+
+	t.Run("exact ties have no unique best", func(t *testing.T) {
+		p := newIrish([]*Card{card(CardDesignSpade, 1), card(CardDesignHeart, 13), card(CardDesignClover, 13)}, []*Card{card(CardDesignDiamond, 1), card(CardDesignSpade, 9), card(CardDesignHeart, 7)})
+		got := p.GetHumanDiscardCandidates()
+		require.Len(t, got, 3)
+		assert.False(t, got[1].IsBest)
+		assert.False(t, got[2].IsBest)
+	})
+
+	t.Run("wheel is five high", func(t *testing.T) {
+		p := newIrish([]*Card{card(CardDesignSpade, 1), card(CardDesignHeart, 2), card(CardDesignClover, 9)}, []*Card{card(CardDesignDiamond, 3), card(CardDesignSpade, 4), card(CardDesignHeart, 5)})
+		got := p.GetHumanDiscardCandidates()
+		require.Len(t, got, 3)
+		assert.Equal(t, PokerHandStraight, got[2].HandRank)
+		wheel := got[2].StrengthCards
+		assert.Equal(t, []int{5, 4, 3, 2, 1}, []int{wheel[0].GetValue(), wheel[1].GetValue(), wheel[2].GetValue(), wheel[3].GetValue(), wheel[4].GetValue()})
+		sixHigh := []*Card{card(CardDesignSpade, 2), card(CardDesignHeart, 3), card(CardDesignClover, 4), card(CardDesignDiamond, 5), card(CardDesignSpade, 6)}
+		assert.Less(t, compareHighCardsSlice(wheel, sixHigh), 0)
+	})
+}

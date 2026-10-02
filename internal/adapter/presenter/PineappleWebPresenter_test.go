@@ -39,6 +39,7 @@ func TestPineappleWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "", out.Message)
 		assert.Equal(t, "", out.MessageCode)
 		assert.False(t, out.IsDiscardPhase)
+		assert.Empty(t, out.DiscardCandidates)
 		assert.False(t, out.MuckAvailable)
 	})
 
@@ -104,6 +105,7 @@ func TestPineappleWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "Select a card to discard.", out.Message)
 		assert.Equal(t, "pineapple.discard.prompt", out.MessageCode)
 		assert.True(t, out.IsDiscardPhase)
+		assert.Empty(t, out.DiscardCandidates)
 	})
 
 	t.Run("muck available message", func(t *testing.T) {

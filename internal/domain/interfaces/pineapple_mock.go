@@ -340,6 +340,15 @@ func (_m *MockPineappleGame) GetHumanDiscardPreviews() []domain.PineappleDiscard
 	return ret.Get(0).([]domain.PineappleDiscardPreview)
 }
 
+// GetHumanDiscardCandidates モック
+func (_m *MockPineappleGame) GetHumanDiscardCandidates() []domain.PineappleDiscardCandidate {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).([]domain.PineappleDiscardCandidate); ok {
+		return val
+	}
+	return nil
+}
+
 // GetEquity モック
 func (_m *MockPineappleGame) GetEquity() *domain.HoldemEquityResult {
 	ret := _m.Called()

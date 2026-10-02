@@ -896,6 +896,87 @@ type PineappleDiscardPairPreview struct {
 	Recommended bool
 }
 
+// PineappleDiscardCandidate は Irish Poker の最後の1枚の捨て札候補。
+type PineappleDiscardCandidate struct {
+	DiscardIdx    int
+	HandRank      int
+	StrengthCards []*Card
+	IsBest        bool
+}
+
+// GetHumanDiscardCandidates は Irish Poker の2枚目のディスカード候補を評価する。
+// フロップ後、1枚目を捨てた後の人間の3枚手札がある局面だけ返す。
+func (p *Pineapple) GetHumanDiscardCandidates() []PineappleDiscardCandidate {
+	if !p.discardAfterFlopBetting || p.initialDealCount != 4 || p.phase != PineapplePhaseDiscard || len(p.communityCards) < 3 {
+		return nil
+	}
+	var human *PineapplePlayer
+	for _, pl := range p.players {
+		if pl.GetIsHuman() {
+			human = pl
+			break
+		}
+	}
+	if human == nil || human.GetFolded() || human.GetCardsSize() != 3 {
+		return nil
+	}
+	candidates := make([]PineappleDiscardCandidate, 3)
+	for discard := range candidates {
+		keep := make([]*Card, 0, 2)
+		for i := 0; i < human.GetCardsSize(); i++ {
+			if i != discard {
+				keep = append(keep, human.GetCard(i))
+			}
+		}
+		player := NewPineapplePlayer(true, HoldemStyleTAG)
+		for _, c := range keep {
+			player.AddCard(c)
+		}
+		rank, cards := player.PeekBestHand(p.communityCards)
+		candidates[discard] = PineappleDiscardCandidate{DiscardIdx: discard, HandRank: rank, StrengthCards: pokerStrengthCardOrder(cards)}
+	}
+	bestIdx, tied := -1, false
+	for i := range candidates {
+		if bestIdx < 0 || candidates[i].HandRank > candidates[bestIdx].HandRank || (candidates[i].HandRank == candidates[bestIdx].HandRank && compareHighCardsSlice(candidates[i].StrengthCards, candidates[bestIdx].StrengthCards) > 0) {
+			bestIdx, tied = i, false
+		} else if candidates[i].HandRank == candidates[bestIdx].HandRank && compareHighCardsSlice(candidates[i].StrengthCards, candidates[bestIdx].StrengthCards) == 0 {
+			tied = true
+		}
+	}
+	if bestIdx >= 0 && !tied {
+		candidates[bestIdx].IsBest = true
+	}
+	return candidates
+}
+
+// pokerStrengthCardOrder arranges a five-card hand by the same rank and kicker
+// precedence used by compareHighCardsSlice.
+func pokerStrengthCardOrder(cards []*Card) []*Card {
+	ordered := copyOf(cards)
+	if len(ordered) != 5 {
+		return ordered
+	}
+	counts := make(map[int]int, 5)
+	for _, c := range ordered {
+		counts[c.GetValue()]++
+	}
+	wheel := isWheelHand(ordered)
+	sort.SliceStable(ordered, func(i, j int) bool {
+		vi, vj := ordered[i].GetValue(), ordered[j].GetValue()
+		if vi == 1 && !wheel {
+			vi = 14
+		}
+		if vj == 1 && !wheel {
+			vj = 14
+		}
+		if counts[ordered[i].GetValue()] != counts[ordered[j].GetValue()] {
+			return counts[ordered[i].GetValue()] > counts[ordered[j].GetValue()]
+		}
+		return vi > vj
+	})
+	return ordered
+}
+
 // GetHumanDiscardPairPreviews は4枚配りで「どの2枚を捨てるか」の C(4,2)=6 通りを
 // すべて評価して返す (#4687)。
 //

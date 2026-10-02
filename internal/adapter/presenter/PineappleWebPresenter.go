@@ -36,6 +36,14 @@ func (pp *PineappleWebPresenter) buildOutput(p interfaces.PineappleGame, lastErr
 			}
 			return out
 		}(),
+		DiscardCandidates: func() []*controller.PineappleWebDiscardCandidate {
+			candidates := p.GetHumanDiscardCandidates()
+			out := make([]*controller.PineappleWebDiscardCandidate, 0, len(candidates))
+			for _, candidate := range candidates {
+				out = append(out, &controller.PineappleWebDiscardCandidate{DiscardIdx: candidate.DiscardIdx, HandRankKey: pokerHandKey(candidate.HandRank), StrengthCards: cardsToOutput(candidate.StrengthCards), IsBest: candidate.IsBest})
+			}
+			return out
+		}(),
 	}
 }
 

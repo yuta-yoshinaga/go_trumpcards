@@ -79,6 +79,8 @@ type PineappleGame interface {
 	GetHumanDiscardPairPreviews() []domain.PineappleDiscardPairPreview
 	// GetHumanDiscardPreviews 人間の各ホールカードについて「それを捨てたら残る手」を取得する
 	GetHumanDiscardPreviews() []domain.PineappleDiscardPreview
+	// GetHumanDiscardCandidates は Irish Poker の最後の1枚の候補を評価する
+	GetHumanDiscardCandidates() []domain.PineappleDiscardCandidate
 	// GetEquity エクイティ計算結果を取得する
 	GetEquity() *domain.HoldemEquityResult
 	// GetPotOdds ポットオッズを取得する
