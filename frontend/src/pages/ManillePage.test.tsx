@@ -47,6 +47,18 @@ beforeEach(() => {
 });
 
 describe('ManillePage', () => {
+  it('shows remaining target points beside each team score and hides them when reached', async () => {
+    mockExec.mockResolvedValue(
+      makeManilleState({
+        teamScores: [40, 101],
+        config: { cpuDifficulty: 1, targetPoints: 101 },
+      }),
+    );
+    renderWithProviders(<ManillePage />);
+    expect(await screen.findByTestId('manille-team-score-0')).toHaveTextContent('チームA: 40点（残り61点）');
+    expect(screen.getByTestId('manille-team-score-1')).toHaveTextContent('チームB: 101点');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<ManillePage />);
