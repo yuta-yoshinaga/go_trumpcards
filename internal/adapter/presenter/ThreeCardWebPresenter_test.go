@@ -56,6 +56,17 @@ func TestThreeCardWebPresenter_Output_BetPhase(t *testing.T) {
 	assert.Empty(t, result.Message)
 }
 
+func TestThreeCardWebPresenter_Output_HidesDealerHandDuringActionPhase(t *testing.T) {
+	p := new(ThreeCardWebPresenter)
+	m := new(interfaces.MockThreeCardGame)
+	setupThreeCardWebMockDefaults(m)
+	m.On("GetPhase").Return(domain.ThreeCardPhaseAction).Maybe()
+	m.On("GetDealerHand").Return([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)}).Maybe()
+
+	result := parseThreeCardOutput(t, p.Output(m, nil))
+	assert.Empty(t, result.DealerHand)
+}
+
 func TestThreeCardWebPresenter_HintOutput(t *testing.T) {
 	p := new(ThreeCardWebPresenter)
 	m := new(interfaces.MockThreeCardGame)

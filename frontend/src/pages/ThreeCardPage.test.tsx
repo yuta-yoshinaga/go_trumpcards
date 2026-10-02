@@ -168,6 +168,16 @@ describe('ThreeCardPage', () => {
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
   });
 
+  it('does not render dealer cards in action phase even if supplied by the response', async () => {
+    mockExec.mockResolvedValue({
+      ...actionPhaseState,
+      dealerHand: [card('CLOVER', 5), card('DIAMOND', 2), card('HEART', 7)],
+    });
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ' })).toBeInTheDocument());
+    expect(screen.getAllByRole('img')).toHaveLength(3);
+  });
+
   it('shows the ante and play-required amounts during action phase', async () => {
     mockExec.mockResolvedValue(actionPhaseState);
     renderWithProviders(<ThreeCardPage />);
