@@ -53832,12 +53832,15 @@ components:
         page cannot derive `wildRank` on its own - it never sees the face-down
         cards the deal walked past - so the server sends it.
       allOf:
-        - $ref: '#/components/schemas/SevenCardStudResponse'
         - type: object
           required:
             - wildRank
             - humanHandRank
           properties:
+            sidePots:
+              type: array
+              items:
+                $ref: '#/components/schemas/FollowTheQueenSidePot'
             wildRank:
               type: integer
               description: Rank currently wild for every player (1=A, 11=J, 12=Q, 13=K); 0 while no face-up Queen has set one
@@ -53850,6 +53853,29 @@ components:
               minimum: -1
               maximum: 10
               example: 3
+        - $ref: '#/components/schemas/SevenCardStudResponse'
+
+    FollowTheQueenSidePot:
+      type: object
+      required: [amount, eligiblePlayers, winners]
+      properties:
+        amount:
+          type: integer
+        eligiblePlayers:
+          type: array
+          items:
+            type: integer
+        winners:
+          type: array
+          description: Players who won each pot at showdown and the amount received. Empty array outside showdown.
+          items:
+            type: object
+            required: [playerIdx, amount]
+            properties:
+              playerIdx:
+                type: integer
+              amount:
+                type: integer
     SevenCardStudResponse:
       type: object
       required:

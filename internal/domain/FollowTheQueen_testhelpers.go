@@ -35,6 +35,9 @@ func (s *FollowTheQueen) SetCpuActions(actions []FollowTheQueenCpuAction) { s.cp
 // SetSidePots サイドポット設定（テスト用）
 func (s *FollowTheQueen) SetSidePots(pots []SidePot) { s.sidePots = pots }
 
+// SetPotAwards sets pot awards for presenter tests.
+func (s *FollowTheQueen) SetPotAwards(awards [][]PotAward) { s.potAwards = awards }
+
 // SetHandCount ハンド数設定（テスト用）
 func (s *FollowTheQueen) SetHandCount(count int) { s.handCount = count }
 
