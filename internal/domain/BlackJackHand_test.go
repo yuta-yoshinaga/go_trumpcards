@@ -1,6 +1,7 @@
 package domain_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -276,4 +277,21 @@ func TestBlackJackHand_IsSoft(t *testing.T) {
 		h.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
 		assert.False(t, h.IsSoft())
 	})
+}
+
+func TestBlackJackHandSettlementSnapshot(t *testing.T) {
+	h := domain.NewBlackJackHand()
+	h.SetResult(domain.GameResultWin)
+	h.SetNetChange(150)
+	data, err := json.Marshal(h)
+	assert.NoError(t, err)
+	var restored domain.BlackJackHand
+	assert.NoError(t, json.Unmarshal(data, &restored))
+	assert.Equal(t, domain.GameResultWin, restored.GetResult())
+	assert.Equal(t, 150, restored.GetNetChange())
+
+	var legacy domain.BlackJackHand
+	assert.NoError(t, json.Unmarshal([]byte(`{"b":100}`), &legacy))
+	assert.Equal(t, domain.GameResultDraw, legacy.GetResult())
+	assert.Zero(t, legacy.GetNetChange())
 }

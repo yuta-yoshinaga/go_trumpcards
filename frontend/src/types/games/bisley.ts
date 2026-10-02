@@ -23,6 +23,8 @@ export interface BisleyResponse extends BaseGameResponse {
   aceFoundations: Card[][];
   /** Descending foundations, one per suit, built K -> A; empty until its King is played. */
   kingFoundations: Card[][];
+  /** Cards in a completed foundation, supplied by the domain. */
+  foundationSize: number;
   phase: number;
   moveCount: number;
   canUndo: boolean;

@@ -22,6 +22,7 @@
   "roundScore": "ラウンド: {{score}}",
   "laidMelds": "場のメルド",
   "meldScore": "得点: {{score}}",
+  "meldScorePreview": "選択中のメルド得点: {{score}}",
   "drawStockButton": "山札から引く",
   "meldButton": "メルドする",
   "invalidMeld": "セットまたはランになっていません",

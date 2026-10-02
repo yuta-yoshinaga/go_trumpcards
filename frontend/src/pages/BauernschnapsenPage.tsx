@@ -263,6 +263,7 @@ function BauernschnapsenPageContent() {
         {/* Team scores */}
         <div className="my-3 p-2 rounded bg-black/30" data-tutorial="gg-score-table">
           <div className="text-ds-text-muted text-sm mb-1">{t('teamScores')}</div>
+          <div className="text-ds-text-muted text-xs mb-1">{t('targetScore', { score: state.config.targetScore })}</div>
           <table className="w-full text-sm text-ds-text-muted">
             <thead>
               <tr>

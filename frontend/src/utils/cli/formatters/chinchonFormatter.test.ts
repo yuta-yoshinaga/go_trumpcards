@@ -30,6 +30,7 @@ const baseState: ChinchonResponse = {
   ],
   phase: 1,
   roundNumber: 2,
+  roundScoreHistory: [],
   currentPlayerIdx: 0,
   discardTop: { design: 'SPADE', value: 5 },
   drawPileCount: 24,

@@ -21,6 +21,8 @@
     "asaf": "{{name}}のYanivはアサフでした。+30点のペナルティです。"
   },
   "label": {
+    "roundHistory": "ラウンド別の失点",
+    "round": "ラウンド",
     "stock": "山札",
     "discardPile": "捨て札",
     "score": "失点",

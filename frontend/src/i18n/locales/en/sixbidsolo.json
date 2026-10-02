@@ -10,6 +10,8 @@
   "noTrump": "none",
   "target": "target {{n}}",
   "playersTitle": "Players",
+  "bidHistoryTitle": "Bid history",
+  "bidHistoryEmpty": "No bids yet",
   "hiddenHand": "{{count}} hidden",
   "yourHand": "Your hand",
   "trick": "Trick",

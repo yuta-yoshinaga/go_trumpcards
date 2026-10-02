@@ -14,6 +14,7 @@ import type {
   CallBreakResponse,
   CasinoHoldemResponse,
   CegoResponse,
+  ChinchonResponse,
   CinchResponse,
   CirullaResponse,
   CoincheResponse,
@@ -46,6 +47,7 @@ import type {
   KnockoutWhistResponse,
   KoenigrufenResponse,
   KoiKoiResponse,
+  LaughAndLieDownResponse,
   LooResponse,
   MadrassoResponse,
   ManilleResponse,
@@ -99,6 +101,28 @@ import type {
   WattenResponse,
   ZwanzigerrufenResponse,
 } from '../types/card';
+
+/** Creates a Chinchón response with round score history defaults. */
+export function makeChinchonState(overrides: Partial<ChinchonResponse> = {}): ChinchonResponse {
+  return {
+    players: [],
+    phase: 0,
+    roundNumber: 1,
+    roundScoreHistory: [],
+    currentPlayerIdx: 0,
+    discardTop: null,
+    drawPileCount: 0,
+    gameEndFlag: false,
+    winnerIdx: -1,
+    knockerIdx: -1,
+    wonByChinchon: false,
+    knockerMelds: [],
+    layoffableIndices: [],
+    message: '',
+    config: { playerCount: 2, knockThreshold: 5, eliminationLimit: 100 },
+    ...overrides,
+  };
+}
 
 /** Creates a default Andar Bahar state. */
 export function makeAndarBaharState(overrides?: Partial<AndarBaharResponse>): AndarBaharResponse {
@@ -493,6 +517,7 @@ const batakPlayers: BatakResponse['players'] = [
     roundScore: 0,
     cumulativeScore: 0,
     trickCount: 0,
+    scoreBreakdown: { declarerBidPoints: 0, declarerBidPenalty: 0, defenderTricks: 0 },
   },
   {
     id: 1,
@@ -503,6 +528,7 @@ const batakPlayers: BatakResponse['players'] = [
     roundScore: 0,
     cumulativeScore: 4,
     trickCount: 1,
+    scoreBreakdown: { declarerBidPoints: 0, declarerBidPenalty: 0, defenderTricks: 0 },
   },
   {
     id: 2,
@@ -513,6 +539,7 @@ const batakPlayers: BatakResponse['players'] = [
     roundScore: 0,
     cumulativeScore: 3,
     trickCount: 2,
+    scoreBreakdown: { declarerBidPoints: 0, declarerBidPenalty: 0, defenderTricks: 0 },
   },
   {
     id: 3,
@@ -523,6 +550,7 @@ const batakPlayers: BatakResponse['players'] = [
     roundScore: 0,
     cumulativeScore: -5,
     trickCount: 5,
+    scoreBreakdown: { declarerBidPoints: 0, declarerBidPenalty: 0, defenderTricks: 0 },
   },
 ];
 
@@ -6034,6 +6062,36 @@ export function makeColourWhistState(overrides?: Partial<ColourWhistResponse>): 
     gameEndFlag: false,
     winnerIdx: -1,
     config: { rounds: 8 },
+    message: '',
+    ...overrides,
+  };
+}
+
+/** Creates a default Laugh and Lie Down state with running scores for every seat. */
+export function makeLaughAndLieDownState(overrides?: Partial<LaughAndLieDownResponse>): LaughAndLieDownResponse {
+  const player = (id: number, isHuman: boolean) => ({
+    id,
+    isHuman,
+    cardCount: 0,
+    cards: [],
+    wonCount: 8,
+    laidDown: false,
+    score: 0,
+    runningScore: 0,
+    hidden: !isHuman,
+  });
+  return {
+    players: [player(0, true), player(1, false), player(2, false), player(3, false), player(4, false)],
+    layout: [],
+    phase: 0,
+    currentPlayerIdx: 0,
+    validIndices: [],
+    threeTakeIndices: [],
+    dealerIdx: 0,
+    lastInIdx: -1,
+    lastInBonus: 5,
+    pot: 11,
+    gameEndFlag: false,
     message: '',
     ...overrides,
   };

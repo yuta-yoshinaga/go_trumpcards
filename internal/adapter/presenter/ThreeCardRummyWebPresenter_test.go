@@ -120,6 +120,7 @@ func TestThreeCardRummyWebPresenter_Output_AllFieldsPresent(t *testing.T) {
 	assert.Equal(t, 400, result.AnteBonusPayout)
 	assert.Equal(t, 500, result.LowBonusPayout)
 	assert.Equal(t, 1400, result.TotalPayout)
+	assert.Equal(t, 1180, result.NetChange)
 	assert.True(t, result.DealerQualified)
 	assert.Equal(t, threeCardRummyPlayerScore, result.PlayerScore)
 	assert.Equal(t, threeCardRummyDealerScore, result.DealerScore)

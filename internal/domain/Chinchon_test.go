@@ -521,6 +521,27 @@ func TestChinchon_NextRound(t *testing.T) {
 	assert.False(t, g.GetWonByChinchon())
 }
 
+func TestChinchon_RoundScoreHistoryPersistsAcrossRoundsAndResets(t *testing.T) {
+	g := newTestChinchon(2)
+	g.Reset()
+	g.SetStock(nil)
+	require.NoError(t, g.PlayerDrawFromStock())
+
+	history := g.GetRoundScoreHistory()
+	require.Len(t, history, 1)
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		assert.Equal(t, g.GetPlayer(i).GetRoundScore(), history[0][i])
+	}
+	history[0][0] = 99
+	assert.NotEqual(t, 99, g.GetRoundScoreHistory()[0][0])
+
+	g.SetPhase(domain.ChinchonPhaseRoundEnd)
+	g.NextRound()
+	assert.Len(t, g.GetRoundScoreHistory(), 1)
+	g.Reset()
+	assert.Empty(t, g.GetRoundScoreHistory())
+}
+
 func TestChinchon_NextRound_WrongPhase(t *testing.T) {
 	g := newTestChinchon(2)
 	g.Reset()
@@ -563,6 +584,7 @@ func TestChinchon_JSONRoundTrip(t *testing.T) {
 	require.NoError(t, err)
 	state["rd"] = deadwood
 	state["wc"] = json.RawMessage("true")
+	state["rsh"] = json.RawMessage(`[[3,5]]`)
 	data, err = json.Marshal(state)
 	require.NoError(t, err)
 	require.NoError(t, g.UnmarshalJSON(data))
@@ -575,6 +597,7 @@ func TestChinchon_JSONRoundTrip(t *testing.T) {
 	assert.Equal(t, g.GetDrawPileCount(), restored.GetDrawPileCount())
 	assert.Equal(t, g.GetRoundDeadwood(), restored.GetRoundDeadwood())
 	assert.Equal(t, g.GetWonByChinchon(), restored.GetWonByChinchon())
+	assert.Equal(t, [][]int{{3, 5}}, restored.GetRoundScoreHistory())
 }
 
 func TestChinchon_UnmarshalRejectsInvalid(t *testing.T) {

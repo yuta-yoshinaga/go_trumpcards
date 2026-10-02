@@ -27,6 +27,8 @@
   "scoresRound": "Round",
   "scoresBreakdown": "Breakdown",
   "scoresTotal": "Total",
+  "scoreHistory": "Score history",
+  "scoreHistoryRound": "Round",
   "listSeparator": ", ",
   "scoreKnocker": "Deadwood at knock: {{breakdown}} = {{score}} pts",
   "scoreAfterLayoff": "Deadwood after layoff: {{breakdown}} = {{score}} pts",

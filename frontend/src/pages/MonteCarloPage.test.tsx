@@ -131,12 +131,17 @@ describe('MonteCarloPage', () => {
     });
     renderWithProviders(<MonteCarloPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const announcement = screen.getByTestId('mc-pair-announcement');
+    expect(announcement).toHaveAttribute('role', 'status');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toBeEmptyDOMElement();
     fireEvent.click(screen.getByTestId('mc-cell-0-0'));
     fireEvent.click(screen.getByTestId('mc-cell-0-1'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('remove', 0, 0, 0, 1));
     expect(screen.queryByTestId('mc-pair-toast')).not.toBeInTheDocument();
     await act(async () => resolveRemove(playingState));
-    expect(screen.getByTestId('mc-pair-toast')).toBeInTheDocument();
+    expect(screen.getByTestId('mc-pair-toast')).toHaveAttribute('aria-hidden', 'true');
+    expect(announcement).toHaveTextContent('ペアを除去しました！');
   });
 
   it('does not show the removal toast when the server rejects the pair', async () => {
@@ -148,6 +153,7 @@ describe('MonteCarloPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('remove', 0, 0, 0, 1));
     await flushPendingDispatch();
     expect(screen.queryByTestId('mc-pair-toast')).not.toBeInTheDocument();
+    expect(screen.getByTestId('mc-pair-announcement')).toBeEmptyDOMElement();
   });
 
   it('does not show the removal toast when the selected pair is locally invalid', async () => {
@@ -369,10 +375,13 @@ describe('MonteCarloPage', () => {
         await Promise.resolve();
       });
       expect(screen.getByTestId('mc-pair-toast')).toBeInTheDocument();
+      expect(screen.getByTestId('mc-pair-announcement')).toHaveTextContent('ペアを除去しました！');
       act(() => {
         vi.advanceTimersByTime(1000);
       });
       expect(screen.queryByTestId('mc-pair-toast')).not.toBeInTheDocument();
+      // The live region empties with the toast so the next removal is announced again.
+      expect(screen.getByTestId('mc-pair-announcement')).toBeEmptyDOMElement();
     } finally {
       vi.useRealTimers();
     }

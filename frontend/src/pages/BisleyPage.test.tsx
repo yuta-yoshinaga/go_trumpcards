@@ -34,6 +34,7 @@ const playingState: BisleyResponse = {
   ]),
   aceFoundations: [[card('SPADE', 1)], [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
   kingFoundations: [[], [], [], []],
+  foundationSize: 13,
   phase: 0,
   moveCount: 3,
   canUndo: false,
@@ -79,8 +80,28 @@ describe('BisleyPage', () => {
   it('renders four ascending piles and four empty descending piles', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BisleyPage />);
-    await waitFor(() => expect(screen.getAllByLabelText(/昇順組札 1枚/).length).toBe(4));
+    await waitFor(() => expect(screen.getAllByLabelText(/昇順組札 スート計 1 \/ 13枚/).length).toBe(4));
     expect(screen.getAllByLabelText(/空の降順組札/).length).toBe(4);
+  });
+
+  it('shows foundation progress during play and includes it in accessible names', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      aceFoundations: [
+        [card('SPADE', 1), card('SPADE', 2), card('SPADE', 3)],
+        [card('CLOVER', 1)],
+        [card('HEART', 1)],
+        [card('DIAMOND', 1)],
+      ],
+      kingFoundations: [[card('SPADE', 13), card('SPADE', 12)], [], [], []],
+      foundationSize: 13,
+    });
+    renderWithProviders(<BisleyPage />);
+    const ascendingPile = await screen.findByRole('button', { name: /♠ 昇順組札 スート計 5 \/ 13枚/ });
+    const descendingPile = screen.getByRole('button', { name: /♠ 降順組札 スート計 5 \/ 13枚/ });
+    expect(ascendingPile).toHaveAccessibleName(/5 \/ 13枚/);
+    expect(descendingPile).toHaveAccessibleName(/5 \/ 13枚/);
+    expect(screen.getAllByText('スート計 5 / 13枚')).toHaveLength(1);
   });
 
   it('announces the next rank for both directions at different counts', async () => {
@@ -96,10 +117,10 @@ describe('BisleyPage', () => {
     });
     renderWithProviders(<BisleyPage />);
 
-    const ascending = await screen.findByRole('button', { name: '♠ 昇順組札 2枚、次に置くべきカード 3' });
-    const descending = screen.getByRole('button', { name: '♠ 降順組札 3枚、次に置くべきカード 10' });
-    expect(ascending).toHaveAccessibleName('♠ 昇順組札 2枚、次に置くべきカード 3');
-    expect(descending).toHaveAccessibleName('♠ 降順組札 3枚、次に置くべきカード 10');
+    const ascending = await screen.findByRole('button', { name: '♠ 昇順組札 スート計 5 / 13枚、次に置くべきカード 3' });
+    const descending = screen.getByRole('button', { name: '♠ 降順組札 スート計 5 / 13枚、次に置くべきカード 10' });
+    expect(ascending).toHaveAccessibleName('♠ 昇順組札 スート計 5 / 13枚、次に置くべきカード 3');
+    expect(descending).toHaveAccessibleName('♠ 降順組札 スート計 5 / 13枚、次に置くべきカード 10');
     expect(ascending.getAttribute('aria-label')).not.toContain('{{');
     expect(descending.getAttribute('aria-label')).not.toContain('{{');
   });
@@ -117,9 +138,9 @@ describe('BisleyPage', () => {
     });
     renderWithProviders(<BisleyPage />);
 
-    const ascending = await screen.findByRole('button', { name: '♠ 昇順組札 13枚' });
+    const ascending = await screen.findByRole('button', { name: '♠ 昇順組札 スート計 13 / 13枚' });
     const descending = screen.getByRole('button', {
-      name: '♠ 降順組札 完成（このスートは反対側の組札で完成しています）',
+      name: '♠ 降順組札 スート計 13 / 13枚（このスートは反対側の組札で完成しています）',
     });
     expect(ascending).not.toHaveAccessibleName(/次/);
     expect(descending).not.toHaveAccessibleName(/次/);
@@ -140,8 +161,8 @@ describe('BisleyPage', () => {
     });
     renderWithProviders(<BisleyPage />);
 
-    const ascending = await screen.findByRole('button', { name: '♠ 昇順組札 6枚' });
-    const descending = screen.getByRole('button', { name: '♠ 降順組札 7枚' });
+    const ascending = await screen.findByRole('button', { name: '♠ 昇順組札 スート計 13 / 13枚' });
+    const descending = screen.getByRole('button', { name: '♠ 降順組札 スート計 13 / 13枚' });
     expect(ascending).not.toHaveAccessibleName(/次/);
     expect(descending).not.toHaveAccessibleName(/次/);
     expect(within(ascending.parentElement as HTMLElement).queryByText(/次:/)).not.toBeInTheDocument();
@@ -315,7 +336,7 @@ describe('BisleyPage', () => {
   it('keeps empty foundation targets focusable and explains selection before a source is chosen', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BisleyPage />);
-    const btn = await screen.findByRole('button', { name: '空の降順組札 (♠)、次に置くべきカード K' });
+    const btn = await screen.findByRole('button', { name: '空の降順組札 (♠) スート計 1 / 13枚、次に置くべきカード K' });
     expect(btn).not.toBeDisabled();
     expect(btn).toHaveAttribute('aria-disabled', 'true');
     const hintId = btn.getAttribute('aria-describedby');
@@ -334,7 +355,7 @@ describe('BisleyPage', () => {
     fireEvent.click(sourceBtn);
     await waitFor(() => expect(sourceBtn).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: '空の降順組札 (♠)、次に置くべきカード K' }));
+    fireEvent.click(screen.getByRole('button', { name: '空の降順組札 (♠) スート計 1 / 13枚、次に置くべきカード K' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'king', col: 0 }),
     );

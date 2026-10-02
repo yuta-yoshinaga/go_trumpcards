@@ -363,7 +363,11 @@ function GrandfathersClockPageContent() {
                       ) : (
                         <div
                           role="img"
-                          aria-label={t('emptyFaceAriaLabel', { idx, hour: CLOCK_HOURS[idx] })}
+                          aria-label={t('emptyFaceAriaLabel', {
+                            idx,
+                            hour: CLOCK_HOURS[idx],
+                            target: face.targetRank,
+                          })}
                           style={{ width: dims.cw, height: dims.ch }}
                           className="rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center"
                         >

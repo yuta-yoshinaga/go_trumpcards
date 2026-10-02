@@ -810,6 +810,9 @@ func (s *Sjavs) GetRemaining(team int) int {
 	return s.remaining[team]
 }
 
+// GetRubberPoints は 1 ラバーの点数を返す。
+func (s *Sjavs) GetRubberPoints() int { return SjavsRubber }
+
 // GetCrosses は team のラバー勝利数を返す。
 func (s *Sjavs) GetCrosses(team int) int {
 	if team < 0 || team >= len(s.crosses) {

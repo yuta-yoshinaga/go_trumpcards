@@ -24,6 +24,7 @@
   "outcome.punterWin": "punter wins",
   "outcome.tie": "tie",
   "result.title": "Settlement (banker {{total}})",
+  "result.sideLine": "{{role}}: {{outcome}} (stake: {{bet}}, net change: {{delta}})",
   "result.bankerDelta": "Banker net: {{n}}",
   "button.draw": "Draw",
   "button.stand": "Stand",

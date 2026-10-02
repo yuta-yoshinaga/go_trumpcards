@@ -47,6 +47,7 @@ type ChinchonWebOutput struct {
 	Players           []*ChinchonWebOutputPlayer `json:"players"`
 	Phase             int                        `json:"phase"`
 	RoundNumber       int                        `json:"roundNumber"`
+	RoundScoreHistory [][]int                    `json:"roundScoreHistory"`
 	CurrentPlayerIdx  int                        `json:"currentPlayerIdx"`
 	DiscardTop        *WebOutputCard             `json:"discardTop"`
 	DrawPileCount     int                        `json:"drawPileCount"`

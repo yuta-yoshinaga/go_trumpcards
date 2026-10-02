@@ -274,9 +274,7 @@ function KillePageContent() {
                   <span>{playerLabel(p.id, p.isHuman)}</span>
                   {p.id === state.dealerIdx && <span className="text-ds-accent">[{t('dealer')}]</span>}
                   <span>{t('chips', { n: p.chips })}</span>
-                  {p.reentries > 0 && (
-                    <span>{t('reentriesUsed', { used: p.reentries, max: KILLE_MAX_REENTRIES })}</span>
-                  )}
+                  <span>{t('reentriesRemaining', { count: KILLE_MAX_REENTRIES - p.reentries })}</span>
                   {p.isSatisfied && !p.isOut && <span className="text-ds-success">[{t('satisfied')}]</span>}
                   {p.isOut && <span className="text-ds-error">[{outReason(p)}]</span>}
                   {p.isFinished && <span>({t('eliminated')})</span>}

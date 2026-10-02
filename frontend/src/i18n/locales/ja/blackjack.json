@@ -135,5 +135,11 @@
     "decline": "N",
     "earlySurrender": "U",
     "continue": "N"
+  },
+  "handResult": {
+    "win": "勝ち",
+    "lose": "負け",
+    "push": "引き分け",
+    "chips": "チップ"
   }
 }

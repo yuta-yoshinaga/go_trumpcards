@@ -297,6 +297,16 @@ describe('MissMilliganPage', () => {
     expect(summary).toHaveTextContent('1/104');
   });
 
+  it('shows foundation progress while playing', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('SPADE', 1), card('SPADE', 2)], [card('CLOVER', 1)], [], [], [], [], [], []],
+    });
+    renderWithProviders(<MissMilliganPage />);
+    expect(await screen.findByTestId('mm-foundation-progress')).toHaveTextContent('3/104');
+    expect(screen.getByTestId('mm-foundation-progress')).toHaveTextContent('3%');
+  });
+
   it('does not show the progress summary on game clear', async () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<MissMilliganPage />);

@@ -94,5 +94,7 @@
   "declineDoubleButton": "Move on",
   "hintBid": "Suggested: bid {{points}} in {{suit}}",
   "bidPhase": "Bid a target and a trump suit, or pass",
-  "doublePhase": "Double the opponents' contract?"
+  "doublePhase": "Double the opponents' contract?",
+  "bidControlsGroup": "Target and trump declaration",
+  "doubleControlsGroup": "Response to coinche"
 }

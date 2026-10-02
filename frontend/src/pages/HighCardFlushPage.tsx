@@ -361,6 +361,14 @@ function HighCardFlushPageContent() {
                 <div className="font-bold mt-1">
                   {t('payout.total')}: {state.totalPayout}
                 </div>
+                <div className="mt-1" data-testid="result-balance">
+                  <div>
+                    {t('payout.betTotal')}: {state.totalBet}
+                  </div>
+                  <div>
+                    {t('payout.net')}: {state.netChange > 0 ? `+${state.netChange}` : state.netChange}
+                  </div>
+                </div>
               </div>
             )}
 

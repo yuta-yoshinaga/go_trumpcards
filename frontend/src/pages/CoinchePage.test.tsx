@@ -161,6 +161,23 @@ describe('CoinchePage', () => {
     expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument();
   });
 
+  it('groups auction and doubling actions by name, without labeling play controls as bidding', async () => {
+    const auction = renderWithProviders(<CoinchePage />);
+    expect(await screen.findByRole('group', { name: '目標点と切り札の宣言' })).toBeInTheDocument();
+    auction.unmount();
+
+    mockExec.mockResolvedValue(makeState({ phase: CoinchePhase.DOUBLE, makerTeam: 1, contractPoints: 120 }));
+    const doubling = renderWithProviders(<CoinchePage />);
+    expect(await screen.findByRole('group', { name: 'コワンシュへの応答' })).toBeInTheDocument();
+    doubling.unmount();
+
+    mockExec.mockResolvedValue(makeState({ phase: CoinchePhase.PLAY, trumpSuit: 1, makerTeam: 0 }));
+    renderWithProviders(<CoinchePage />);
+    await screen.findByRole('button', { name: '出す' });
+    expect(screen.queryByRole('group', { name: '目標点と切り札の宣言' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'コワンシュへの応答' })).not.toBeInTheDocument();
+  });
+
   // **契約は「点 + 切り札」の対。** 点を選ばないうちにスートだけ押せると、
   // 残りに既定値が入って別の契約になる。
   it('cannot bid a suit until a target has been chosen', async () => {

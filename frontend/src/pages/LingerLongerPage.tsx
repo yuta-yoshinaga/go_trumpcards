@@ -212,16 +212,16 @@ function LingerLongerPageContent() {
             )}
 
             {/* **手札の枚数が生死そのもの。** 得点表示は無い。 */}
-            <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="ll-seats">
+            <ul className="flex flex-wrap justify-center gap-2 mb-4 list-none p-0" data-tutorial="ll-seats">
               {state.players.map((p) => (
-                <div
+                <li
                   key={p.id}
                   className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
                   data-testid={`ll-seat-${p.id.toString()}`}
                 >
-                  <span className="text-ds-text-primary">
+                  <h2 className="m-0 inline text-ds-text-primary">
                     {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                  </span>
+                  </h2>
                   {p.eliminatedAt > 0 && (
                     <span className="ml-1 text-ds-accent">
                       {t('header.eliminated', { rank: String(p.eliminatedAt) })}
@@ -234,9 +234,9 @@ function LingerLongerPageContent() {
                   <span className="text-ds-accent">{t('header.cards', { n: String(p.cardCount) })}</span>
                   {' / '}
                   {t('header.tricks', { n: String(p.tricksWon) })}
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
 
             <div data-tutorial="ll-trick">
               <TrickDisplay

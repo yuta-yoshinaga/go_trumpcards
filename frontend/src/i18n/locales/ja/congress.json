@@ -19,6 +19,7 @@
   "emptyStockAriaLabel": "山札は空です（めくり直しはありません）",
   "emptyWasteAriaLabel": "捨て札は空です",
   "wasteCount": "{{count}}枚",
+  "wasteTopCardAriaLabel": "捨て札、{{card}}",
   "stockOrWaste": "山/捨",
   "landscapeBanner": "横画面での表示を推奨します",
   "hint": "ヒント",

@@ -34713,6 +34713,9 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        foundationSize:
+          type: integer
+          description: Number of cards in one suit (the combined ascending and descending foundations).
         phase:
           type: integer
           description: "0=Playing, 1=GameClear, 2=GameOver"
@@ -35809,6 +35812,16 @@ components:
           type: array
           items:
             type: object
+            required:
+              - id
+              - isHuman
+              - cardCount
+              - cards
+              - wonCount
+              - laidDown
+              - score
+              - runningScore
+              - hidden
             properties:
               id:
                 type: integer
@@ -35832,7 +35845,10 @@ components:
                 description: Could not capture, so their whole hand went to the table.
               score:
                 type: integer
-                description: Net chips. Zero until the game ends.
+                description: Final net chips after the game ends.
+              runningScore:
+                type: integer
+                description: Current net chips without the last-in bonus; equals score after the game ends.
               hidden:
                 type: boolean
                 description: Whether this seat's HAND is withheld.
@@ -36005,6 +36021,9 @@ components:
             Zero or below wins.
           items:
             type: integer
+        rubberPoints:
+          type: integer
+          description: Starting score for each rubber.
         crosses:
           type: array
           description: |
@@ -39797,6 +39816,13 @@ components:
         canSurrender:
           type: boolean
           description: Whether the player can surrender this hand (exactly 2 cards, action phase, not yet stood/busted/surrendered).
+        result:
+          type: integer
+          description: Settled hand result (1=win, 0=push, -1=loss); omitted until settlement.
+          enum: [-1, 0, 1]
+        netChange:
+          type: integer
+          description: Net chips returned for this hand minus its total wager; omitted until settlement and always included in the END phase, including as 0 for a push.
 
     BlackJackResponse:
       type: object
@@ -46491,6 +46517,18 @@ components:
           example: 0
         roundNumber:
           type: integer
+        roundHistory:
+          type: array
+          description: Scores recorded at the end of each round, ordered by player index.
+          items:
+            type: object
+            properties:
+              roundNumber:
+                type: integer
+              scores:
+                type: array
+                items:
+                  type: integer
         currentPlayerIdx:
           type: integer
         discardTop:
@@ -46888,6 +46926,13 @@ components:
         roundNumber:
           type: integer
           description: Current round number
+        roundScoreHistory:
+          type: array
+          description: Completed round scores; each row contains one score per player in player order.
+          items:
+            type: array
+            items:
+              type: integer
         currentPlayerIdx:
           type: integer
           description: Index of the player whose turn it is
@@ -47669,6 +47714,13 @@ components:
           items:
             type: integer
           description: Penalty added to each player in the most recent round
+        roundScoreHistory:
+          type: array
+          items:
+            type: array
+            items:
+              type: integer
+          description: Penalty added to each player, indexed by completed round
         config:
           type: object
           properties:
@@ -50886,6 +50938,7 @@ components:
         - anteBonusPayout
         - lowBonusPayout
         - totalPayout
+        - netChange
         - dealerQualified
         - playerScore
         - dealerScore
@@ -50955,6 +51008,10 @@ components:
           type: integer
           description: Total payout for the current round (sum of all payouts)
           example: 0
+        netChange:
+          type: integer
+          description: Round payout minus ante, play bet, and Low Bonus wagers
+          example: -100
         dealerQualified:
           type: boolean
           description: Whether the dealer qualified (a total of 20 or less)
@@ -66473,6 +66530,12 @@ components:
         totalPayout:
           type: integer
           description: Sum of all payouts.
+        totalBet:
+          type: integer
+          description: Sum of all bets placed this round.
+        netChange:
+          type: integer
+          description: Chip balance change for this round (total payout minus total bets).
         dealerQualified:
           type: boolean
           description: True when the dealer's best flush is 3+ cards with high card 9 or better.
@@ -82229,6 +82292,20 @@ components:
           minimum: 1
           maximum: 50
 
+    BatakScoreBreakdown:
+      type: object
+      description: Per-player score components for the most recently scored round.
+      properties:
+        declarerBidPoints:
+          type: integer
+          description: Points awarded to the declarer for meeting the bid.
+        declarerBidPenalty:
+          type: integer
+          description: Positive penalty subtracted when the declarer misses the bid.
+        defenderTricks:
+          type: integer
+          description: Tricks earned by a non-declarer.
+
     BatakResponse:
       type: object
       description: |
@@ -82259,6 +82336,8 @@ components:
                 description: Cumulative score
               trickCount:
                 type: integer
+              scoreBreakdown:
+                $ref: '#/components/schemas/BatakScoreBreakdown'
         phase:
           type: integer
           description: "0 = Bid, 1 = Play, 2 = TrickEnd, 3 = RoundEnd, 4 = GameEnd"

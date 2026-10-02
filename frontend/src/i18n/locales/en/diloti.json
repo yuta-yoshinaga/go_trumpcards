@@ -23,6 +23,7 @@
   "declGroup": "group - cannot be raised",
   "declShort": "decl {{idx}}",
   "chooseMove": "Choose a group to take, or a value to declare",
+  "focusTableCards": "The table cards for the focused option are highlighted",
   "noCapture": "This card cannot take anything",
   "takeGroup": "Take {{cards}}",
   "declareGroup": "Declare {{value}} ({{cards}})",

@@ -292,6 +292,11 @@ function ChinesePokerPageContent() {
           <span>
             {t('label.chips')}: {state.chips}
           </span>
+          {state.bet > 0 && (
+            <span data-testid="cp-current-bet">
+              {t('label.currentBet')}: {state.bet}
+            </span>
+          )}
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }

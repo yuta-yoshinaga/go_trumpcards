@@ -427,6 +427,39 @@ function ChinchonPageContent() {
                     </tbody>
                   </table>
                 </div>
+                {state.roundScoreHistory.length > 0 && (
+                  <div className="my-3 p-2 rounded bg-black/30" data-testid="chinchon-score-history">
+                    <div className="text-ds-text-muted text-sm mb-1">{t('scoreHistory')}</div>
+                    <table className="w-full text-sm text-ds-text-muted">
+                      <thead>
+                        <tr>
+                          <th scope="col" className="text-left">
+                            {t('scoreHistoryRound')}
+                          </th>
+                          {state.players.map((p) => (
+                            <th scope="col" key={p.id}>
+                              {playerName(p.id, p.isHuman)}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {state.roundScoreHistory.map((scores, roundIdx) => (
+                          <tr key={roundIdx}>
+                            <th scope="row" className="text-left">
+                              {roundIdx + 1}
+                            </th>
+                            {state.players.map((p) => (
+                              <td className="text-center" key={p.id}>
+                                {scores[p.id] ?? 0}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </div>
 

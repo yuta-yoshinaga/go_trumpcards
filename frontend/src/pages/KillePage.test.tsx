@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { killeApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { KillePlayer, KilleResponse } from '../types/card';
@@ -231,6 +232,36 @@ describe('KillePage', () => {
     renderWithProviders(<KillePage />);
     await waitFor(() => expect(screen.getByTestId('kille-reenter-exhausted')).toBeInTheDocument());
     expect(screen.queryByTestId('kille-reenter-button')).not.toBeInTheDocument();
+  });
+
+  it('shows remaining buy-backs for every player, including after game end', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: KillePhase.GAME_END,
+        gameEndFlag: true,
+        winnerIdx: 1,
+        players: [
+          seat(0, true, { reentries: 0 }),
+          seat(1, false, { reentries: 1 }),
+          seat(2, false, { reentries: 2 }),
+          seat(3, false, { reentries: 3 }),
+        ],
+      }),
+    );
+    renderWithProviders(<KillePage />);
+
+    const players = await screen.findAllByTestId('kille-player');
+    expect(players[0]).toHaveTextContent('買い戻し残り 3回');
+    expect(players[1]).toHaveTextContent('買い戻し残り 2回');
+    expect(players[2]).toHaveTextContent('買い戻し残り 1回');
+    expect(players[3]).toHaveTextContent('買い戻し残り 0回');
+
+    await i18n.changeLanguage('en');
+    expect(players[0]).toHaveTextContent('3 buy-backs remaining');
+    expect(players[1]).toHaveTextContent('2 buy-backs remaining');
+    expect(players[2]).toHaveTextContent('1 buy-back remaining');
+    expect(players[3]).toHaveTextContent('0 buy-backs remaining');
+    await i18n.changeLanguage('ja');
   });
 
   it('advances to the next round', async () => {

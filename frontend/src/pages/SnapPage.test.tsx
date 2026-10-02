@@ -72,6 +72,17 @@ describe('SnapPage', () => {
     expect(screen.getByTestId('sp-seat-1')).toHaveTextContent('25');
   });
 
+  it('structures seat summaries as a list with a heading for each seat', async () => {
+    renderWithProviders(<SnapPage />);
+    const seatList = await screen.findByRole('list');
+    expect(seatList).toHaveClass('list-none');
+    expect(seatList.querySelectorAll(':scope > li')).toHaveLength(2);
+    expect(screen.getByRole('heading', { name: 'あなた', level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'CPU1', level: 2 })).toBeInTheDocument();
+    expect(screen.getByTestId('sp-seat-0')).toHaveTextContent('24');
+    expect(screen.getByTestId('sp-seat-1')).toHaveTextContent('25');
+  });
+
   it('says when the pile is empty', async () => {
     mockExec.mockResolvedValue(makeState({ centerPileSize: 0, topCard: undefined }));
     renderWithProviders(<SnapPage />);

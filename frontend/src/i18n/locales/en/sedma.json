@@ -28,6 +28,8 @@
     "b": "Team B"
   },
   "teamScore": "{{team}}: {{score}} pts",
+  "remainingPoints_one": " ({{count}} point remaining)",
+  "remainingPoints_other": " ({{count}} points remaining)",
   "playButton": "Play",
   "nextTrick": "Next Trick",
   "nextRound": "Next Round",

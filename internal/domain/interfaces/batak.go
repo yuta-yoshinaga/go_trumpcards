@@ -24,6 +24,8 @@ type BatakGame interface {
 	// ScoreRound ラウンドの得点を計算する
 	ScoreRound()
 
+	// GetScoreBreakdown 指定プレイヤーの直近ラウンド得点内訳を取得する
+	GetScoreBreakdown(playerIdx int) domain.BatakScoreBreakdown
 	// GetConfig ゲーム設定を取得する
 	GetConfig() domain.BatakConfig
 	// SetConfig ゲーム設定をセットする

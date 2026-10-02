@@ -12,6 +12,16 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { batak: vi.fn() },
 }));
 
+const mobileFlag = { value: false };
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileFlag.value }),
+  };
+});
+
 const mockExec = vi.mocked(batakApi.exec);
 
 const playPhaseState = makeBatakState({ validPlayIndices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] });
@@ -59,6 +69,7 @@ const spadesBrokenState = makeBatakState({ spadesBroken: true });
 const cpuTurnState = makeBatakState({ currentPlayerIdx: 1 });
 
 beforeEach(() => {
+  mobileFlag.value = false;
   mockExec.mockResolvedValue(playPhaseState);
 });
 
@@ -85,6 +96,35 @@ describe('BatakPage', () => {
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
       expect(screen.getByAltText('♥ J')).toBeInTheDocument();
     });
+  });
+
+  it.each([false, true])('shows score breakdown in the %s layout without negative zero', async (isMobile) => {
+    mobileFlag.value = isMobile;
+    const scoredState = makeBatakState({
+      phase: 3,
+      players: makeBatakState().players.map((player, index) => ({
+        ...player,
+        scoreBreakdown:
+          index === 0
+            ? { declarerBidPoints: 7, declarerBidPenalty: 0, defenderTricks: 0 }
+            : { declarerBidPoints: 0, declarerBidPenalty: 5, defenderTricks: 2 },
+      })),
+    });
+    mockExec.mockResolvedValue(scoredState);
+    renderWithProviders(<BatakPage />);
+
+    const breakdown = await screen.findByTestId('batak-score-breakdown');
+    expect(breakdown).toHaveTextContent('ビッド成功 7');
+    expect(breakdown).toHaveTextContent('ビッド失敗 −5');
+    expect(breakdown).toHaveTextContent('子の獲得トリック 2');
+    expect(breakdown).toHaveTextContent('ビッド成功 0');
+    expect(breakdown).not.toHaveTextContent('−0');
+  });
+
+  it('does not show score breakdown while playing', async () => {
+    renderWithProviders(<BatakPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    expect(screen.queryByTestId('batak-score-breakdown')).not.toBeInTheDocument();
   });
 
   it('renders bid buttons only from minLegalBid to 13, and does not show buttons below minLegalBid', async () => {

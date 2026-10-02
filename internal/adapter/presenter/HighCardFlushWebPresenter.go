@@ -38,6 +38,8 @@ func (hp *HighCardFlushWebPresenter) Output(hcf interfaces.HighCardFlushGame, la
 	resObj.FlushBonusPayout = hcf.GetFlushBonusPayout()
 	resObj.StraightFlushPayout = hcf.GetStraightFlushPayout()
 	resObj.TotalPayout = hcf.GetTotalPayout()
+	resObj.TotalBet = hcf.GetTotalBet()
+	resObj.NetChange = hcf.GetNetChange()
 	resObj.DealerQualified = hcf.GetDealerQualified()
 	resObj.PlayerFlushLen = hcf.GetPlayerFlushLen()
 	resObj.DealerFlushLen = hcf.GetDealerFlushLen()

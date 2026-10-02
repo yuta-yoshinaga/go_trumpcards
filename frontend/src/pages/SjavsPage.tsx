@@ -13,6 +13,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -77,6 +78,7 @@ function SjavsPageContent() {
   const ended = state.phase === SjavsPhase.GAME_END;
   const bidding = state.phase === SjavsPhase.BID;
   const handOver = state.phase === SjavsPhase.HAND_END;
+  const handResult = state.handResult;
   const human = state.players.find((p) => p.isHuman);
   const opponents = state.players.filter((p) => !p.isHuman);
   const isHumanTurn = !ended && state.currentPlayerIdx === 0;
@@ -206,6 +208,16 @@ function SjavsPageContent() {
                     })}${state.handResult.vol ? t('vol') : ''}`}
               </div>
             )}
+
+            <RoundScoreAnnouncement
+              active={handOver && Boolean(handResult)}
+              entries={[0, 1].map((team) => ({
+                name: t('team', { n: team }),
+                roundScore: handResult?.scoringTeam === team ? handResult.amount : 0,
+                cumulativeScore: state.rubberPoints - state.remaining[team],
+              }))}
+              separator={t('listSeparator')}
+            />
 
             <div className="text-center" data-tutorial="sj-hand">
               <div className="text-game-text-muted text-xs mb-1">

@@ -32,6 +32,12 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** The four suits, in the order the trump buttons are offered. */
 const SUITS: readonly number[] = [1, 2, 3, 4];
+const SUIT_NAMES: Record<number, string> = {
+  1: 'common.suit.spade',
+  2: 'common.suit.club',
+  3: 'common.suit.heart',
+  4: 'common.suit.diamond',
+};
 
 /** Guided tutorial steps (the seven-trick race, the hakem, Kot, hand). */
 const HOKM_TUTORIAL_STEPS: TutorialStep[] = [
@@ -329,6 +335,10 @@ function HokmPageContent() {
                   <button
                     key={suit}
                     type="button"
+                    aria-label={t('actions.trumpAria', {
+                      symbol: suitSymbolAt(suit, '?'),
+                      suit: tc(SUIT_NAMES[suit]),
+                    })}
                     className={btnWarning}
                     onClick={() => handleTrump(suit)}
                     disabled={loading}
