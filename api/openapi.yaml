@@ -60736,6 +60736,9 @@ components:
                   all for a CPU seat in the hold'em-style legs.
                 items:
                   $ref: '#/components/schemas/Card'
+              handName:
+                type: string
+                description: Confirmed hand name at showdown; empty when no hand was exposed.
         discipline:
           type: integer
           description: >-

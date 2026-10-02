@@ -29,7 +29,36 @@
   "result": {
     "title": "最終結果",
     "winner": "勝者: {{name}}",
-    "chips": "{{name}}: {{chips}} チップ"
+    "chips": "{{name}}: {{chips}} チップ",
+    "hand": "役: {{hand}}",
+    "hands": {
+      "High Card": "ハイカード",
+      "One Pair": "ワンペア",
+      "Two Pair": "ツーペア",
+      "Three of a Kind": "スリーカード",
+      "Straight": "ストレート",
+      "Flush": "フラッシュ",
+      "Full House": "フルハウス",
+      "Four of a Kind": "フォーカード",
+      "Straight Flush": "ストレートフラッシュ",
+      "Royal Flush": "ロイヤルフラッシュ",
+      "Five of a Kind": "ファイブカード",
+      "Wheel": "ホイール",
+      "Unknown": "役不明",
+      "1-Low": "1ロー",
+      "2-Low": "2ロー",
+      "3-Low": "3ロー",
+      "4-Low": "4ロー",
+      "5-Low": "5ロー",
+      "6-Low": "6ロー",
+      "7-Low": "7ロー",
+      "8-Low": "8ロー",
+      "9-Low": "9ロー",
+      "10-Low": "10ロー",
+      "11-Low": "11ロー",
+      "12-Low": "12ロー",
+      "13-Low": "13ロー"
+    }
   },
   "tutorial": {
     "discipline": "いま打っている種目です。H→O→R→S→E の順に一定ハンドごとに切り替わり、そのたびに規則が変わります。",

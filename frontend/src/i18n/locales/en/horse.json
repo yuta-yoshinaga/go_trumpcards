@@ -29,7 +29,36 @@
   "result": {
     "title": "Final result",
     "winner": "Winner: {{name}}",
-    "chips": "{{name}}: {{chips}} chips"
+    "chips": "{{name}}: {{chips}} chips",
+    "hand": "Hand: {{hand}}",
+    "hands": {
+      "High Card": "High Card",
+      "One Pair": "One Pair",
+      "Two Pair": "Two Pair",
+      "Three of a Kind": "Three of a Kind",
+      "Straight": "Straight",
+      "Flush": "Flush",
+      "Full House": "Full House",
+      "Four of a Kind": "Four of a Kind",
+      "Straight Flush": "Straight Flush",
+      "Royal Flush": "Royal Flush",
+      "Five of a Kind": "Five of a Kind",
+      "Wheel": "Wheel",
+      "Unknown": "Unknown",
+      "1-Low": "1-Low",
+      "2-Low": "2-Low",
+      "3-Low": "3-Low",
+      "4-Low": "4-Low",
+      "5-Low": "5-Low",
+      "6-Low": "6-Low",
+      "7-Low": "7-Low",
+      "8-Low": "8-Low",
+      "9-Low": "9-Low",
+      "10-Low": "10-Low",
+      "11-Low": "11-Low",
+      "12-Low": "12-Low",
+      "13-Low": "13-Low"
+    }
   },
   "tutorial": {
     "discipline": "The discipline being played right now. It rotates H-O-R-S-E every few hands, and the rules change with it.",

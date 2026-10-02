@@ -5018,6 +5018,7 @@ const baseHorseState: HorseResponse = {
       chips: 1000,
       folded: false,
       allIn: false,
+      handName: '',
       cards: [
         { design: 'SPADE', value: 14, glyph: '\u2660', label: 'A', color: 'black', deck: 'standard' },
         { design: 'HEART', value: 13, glyph: '\u2665', label: 'K', color: 'red', deck: 'standard' },
