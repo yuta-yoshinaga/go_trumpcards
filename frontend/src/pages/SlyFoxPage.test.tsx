@@ -306,6 +306,21 @@ describe('SlyFoxPage', () => {
     expect(selectionStatus).toHaveTextContent('操作元の選択を解除しました');
   });
 
+  it('clicking the selected dealing pile again deselects it', async () => {
+    renderWithProviders(<SlyFoxPage />);
+    await waitFor(() => expect(screen.getByTestId('co-deal-button')).toBeInTheDocument());
+    const dealingPile = screen.getByTestId('co-deal-button');
+    const selectionStatus = screen.getByTestId('slyfox-selection-live');
+
+    fireEvent.click(dealingPile);
+    await waitFor(() => expect(dealingPile).toHaveAttribute('aria-pressed', 'true'));
+    expect(selectionStatus).toHaveTextContent('山札を操作元に選択しました。配り先');
+
+    fireEvent.click(dealingPile);
+    await waitFor(() => expect(dealingPile).toHaveAttribute('aria-pressed', 'false'));
+    expect(selectionStatus).toHaveTextContent('操作元の選択を解除しました');
+  });
+
   it('clicking the selected pile again deselects it', async () => {
     renderWithProviders(<SlyFoxPage />);
     await waitFor(() => expect(screen.getByTestId('co-tableau-0')).toBeInTheDocument());
