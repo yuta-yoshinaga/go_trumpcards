@@ -64,6 +64,12 @@ describe('BettingControls', () => {
     expect(callButton).toHaveTextContent('25 チップ');
   });
 
+  it('uses a single separator when the call amount label has surrounding whitespace', () => {
+    render(<BettingControls {...makeProps({ hasOutstandingBet: true, callAmountLabel: ' 25 チップ ' })} />);
+
+    expect(screen.getByRole('button', { name: 'コール 25 チップ' })).toBeInTheDocument();
+  });
+
   it('renders the call/raise key-hint line and per-button aria-keyshortcuts (outstanding bet)', () => {
     render(<BettingControls {...makeProps({ hasOutstandingBet: true })} />);
     const hints = screen.getByTestId('betting-key-hints');
