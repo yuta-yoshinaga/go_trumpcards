@@ -21,12 +21,13 @@ type ColourWhistWebInput struct {
 
 // ColourWhistWebOutputPlayer はカラーホイストWebアウトプットの席情報
 type ColourWhistWebOutputPlayer struct {
-	ID         int              `json:"id"`
-	IsHuman    bool             `json:"isHuman"`
-	CardCount  int              `json:"cardCount"`
-	Cards      []*WebOutputCard `json:"cards"`
-	TrickCount int              `json:"trickCount"`
-	Score      int              `json:"score"`
+	ID          int              `json:"id"`
+	IsHuman     bool             `json:"isHuman"`
+	CardCount   int              `json:"cardCount"`
+	Cards       []*WebOutputCard `json:"cards"`
+	TrickCount  int              `json:"trickCount"`
+	Score       int              `json:"score"`
+	RoundScores []int            `json:"roundScores"`
 	// IsDeclarerSide は契約側かどうか。**組は席では決まりません。**
 	IsDeclarerSide bool `json:"isDeclarerSide"`
 	HasPassed      bool `json:"hasPassed"`

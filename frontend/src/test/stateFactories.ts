@@ -18,6 +18,7 @@ import type {
   CinchResponse,
   CirullaResponse,
   CoincheResponse,
+  ColourWhistResponse,
   CometResponse,
   ContinentalRummyResponse,
   CostlyColoursResponse,
@@ -6057,6 +6058,45 @@ export function makeCasinoHoldemState(overrides?: Partial<CasinoHoldemResponse>)
     netChange: 0,
     playerHandRank: 0,
     dealerHandRank: 0,
+    message: '',
+    ...overrides,
+  };
+}
+
+/** Creates a default Colour Whist state. */
+export function makeColourWhistState(overrides?: Partial<ColourWhistResponse>): ColourWhistResponse {
+  return {
+    players: Array.from({ length: 4 }, (_, id) => ({
+      id,
+      isHuman: id === 0,
+      cardCount: 0,
+      cards: [],
+      trickCount: 0,
+      score: 0,
+      roundScores: [],
+      isDeclarerSide: false,
+      hasPassed: false,
+    })),
+    phase: 0,
+    validPlays: [],
+    dealerIdx: 0,
+    contract: 0,
+    declarerIdx: -1,
+    partnerIdx: -1,
+    calledCard: null,
+    trumpSuit: -1,
+    troelForced: false,
+    currentTurn: 0,
+    isHumanTurn: true,
+    currentTrick: [],
+    lastTrick: [],
+    lastTrickWinner: -1,
+    trickCount: 0,
+    declarerTricks: 0,
+    roundNumber: 1,
+    gameEndFlag: false,
+    winnerIdx: -1,
+    config: { rounds: 8 },
     message: '',
     ...overrides,
   };

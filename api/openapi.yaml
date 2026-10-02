@@ -61975,6 +61975,11 @@ components:
               score:
                 type: integer
                 description: Running score. Negative values are normal - scoring is zero-sum.
+              roundScores:
+                type: array
+                description: Score changes for completed rounds, in round order.
+                items:
+                  type: integer
               isDeclarerSide:
                 type: boolean
                 description: Sides are set by the contract, not by seat.
