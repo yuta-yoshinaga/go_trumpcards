@@ -95,6 +95,16 @@ describe('PigPage', () => {
     expect(screen.getByTestId('pig-seat-3')).toHaveTextContent('文字[-/PIG]');
   });
 
+  it('marks the seat summary as a list with a heading for each seat', async () => {
+    mockExec.mockResolvedValue(makePigState());
+    renderWithProviders(<PigPage />);
+    const list = await screen.findByRole('list');
+    expect(list).toHaveClass('list-none');
+    expect(list.querySelectorAll(':scope > li')).toHaveLength(4);
+    expect(screen.getByRole('heading', { name: 'あなた' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'CPU1' })).toBeInTheDocument();
+  });
+
   it('labels the signaller seat only during the signal phase', async () => {
     mockExec.mockResolvedValue(liveSignal());
     const { unmount } = renderWithProviders(<PigPage />);
