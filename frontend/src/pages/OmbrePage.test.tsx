@@ -355,4 +355,19 @@ describe('OmbrePage', () => {
     // 催促が**その領域の中**にあること。隣に置いただけの実装は属性の検査を通る。
     expect(live).toContainElement(await screen.findByTestId('ombre-bid-prompt'));
   });
+
+  it('shows every player name with the deal score change at round end', async () => {
+    mockExec.mockResolvedValue(
+      makeOmbreState({
+        phase: 3,
+        outcome: 3,
+        playerScoreDeltas: [-4, 2, 2],
+      }),
+    );
+    renderWithProviders(<OmbrePage />);
+    expect(await screen.findByText('今回の増減')).toBeInTheDocument();
+    expect(screen.getByText('あなた: -4')).toBeInTheDocument();
+    expect(screen.getByText('CPU 1: +2')).toBeInTheDocument();
+    expect(screen.getByText('CPU 2: +2')).toBeInTheDocument();
+  });
 });
