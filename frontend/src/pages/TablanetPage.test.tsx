@@ -80,6 +80,25 @@ describe('TablanetPage', () => {
     expect(pile.querySelector('img[alt="♥ A"]')).toBeInTheDocument();
     expect(pile.querySelector('img[alt="♠ K"]')).toBeInTheDocument();
   });
+
+  it('shows captured cards for CPU 1', async () => {
+    const captured = [
+      { design: 'HEART' as const, value: 1 },
+      { design: 'SPADE' as const, value: 13 },
+    ];
+    mockExec.mockResolvedValue(
+      makeTablanetState({
+        players: playPhaseState.players.map((p, i) =>
+          i === 1 ? { ...p, capturedCount: captured.length, capturedCards: captured } : p,
+        ),
+      }),
+    );
+    renderWithProviders(<TablanetPage />);
+    const pile = await screen.findByTestId('tablanet-captured-1');
+    expect(pile.querySelectorAll('img')).toHaveLength(2);
+    expect(pile.querySelector('img[alt="♥ A"]')).toBeInTheDocument();
+    expect(pile.querySelector('img[alt="♠ K"]')).toBeInTheDocument();
+  });
   it('renders the score breakdown from lastDealDetail', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<TablanetPage />);
