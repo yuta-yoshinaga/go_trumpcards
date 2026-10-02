@@ -223,6 +223,44 @@ describe('PishtiPage', () => {
     await waitFor(() => expect(announcement).toHaveTextContent('あなたの暫定得点は3点です'));
   });
 
+  it('announces a later capture after a reset request fails', async () => {
+    mockExec
+      .mockResolvedValueOnce(playState)
+      .mockRejectedValueOnce(new Error('reset failed'))
+      .mockResolvedValueOnce(
+        makeState({
+          players: [makePlayer({ id: 0, isHuman: true, provisionalScore: 3 }), ...playState.players.slice(1)],
+        }),
+      );
+    renderWithProviders(<PishtiPage />);
+    const announcement = await screen.findByTestId('pishti-score-announcement');
+
+    fireEvent.change(screen.getByLabelText('CPU難易度'), { target: { value: '2' } });
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+
+    await waitFor(() => expect(announcement).toHaveTextContent('あなたの暫定得点は3点です'));
+  });
+
+  it('announces only players whose provisional scores changed', async () => {
+    mockExec.mockResolvedValueOnce(playState).mockResolvedValueOnce(
+      makeState({
+        players: [
+          makePlayer({ id: 0, isHuman: true }),
+          makePlayer({ id: 1, provisionalScore: 4 }),
+          ...playState.players.slice(2),
+        ],
+      }),
+    );
+    renderWithProviders(<PishtiPage />);
+    const announcement = await screen.findByTestId('pishti-score-announcement');
+
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+
+    await waitFor(() => expect(announcement).toHaveTextContent('CPU 1の暫定得点は4点です'));
+    expect(announcement).not.toHaveTextContent('あなたの暫定得点');
+  });
+
   it('does not announce scores when settings reset the game', async () => {
     mockExec
       .mockResolvedValueOnce(
