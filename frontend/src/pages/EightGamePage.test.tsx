@@ -47,6 +47,31 @@ describe('EightGamePage', () => {
     expect(info).toHaveTextContent('テキサスホールデム');
   });
 
+  it('highlights and announces a discipline change with its updated rules', async () => {
+    mockExec
+      .mockResolvedValueOnce(eightGameState)
+      .mockResolvedValueOnce(
+        makeHorseState({ variant: 1, discipline: 1, disciplineLetter: 'O', disciplineName: 'omahaHiLo' }),
+      );
+    renderWithProviders(<EightGamePage />);
+    expect(await screen.findByTestId('ho-discipline')).toHaveTextContent('テキサスホールデム');
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+
+    fireEvent.click(await screen.findByRole('button', { name: 'フォールド' }));
+
+    const status = await screen.findByRole('status');
+    expect(status).toHaveAttribute('role', 'status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+    expect(status).toHaveTextContent('オマハ ハイロー');
+    expect(status).toHaveTextContent('手札から必ず2枚');
+    expect(screen.getByTestId('ho-discipline')).toHaveAttribute('data-discipline-changed', 'true');
+    expect(
+      screen.getByText(
+        (_, element) => element?.tagName === 'P' && Boolean(element.textContent?.includes('手札から必ず2枚')),
+      ),
+    ).toHaveClass('border-ds-accent');
+  });
+
   it.each([
     ['holdem', '手札2枚と場の5枚'],
     ['omahaHiLo', '手札から必ず2枚'],

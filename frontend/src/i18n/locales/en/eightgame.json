@@ -17,6 +17,7 @@
   "discipline.studHiLo": "Stud Hi-Lo",
   "hand": "Hand {{n}}/{{total}}",
   "disciplineOrder": "Discipline {{position}}/{{total}}",
+  "disciplineChangeAnnouncement": "Discipline changed to {{name}}. Rules: {{rules}}",
   "handTotal": "{{n}} overall",
   "pot": "Pot {{pot}}",
   "community": "Board",
