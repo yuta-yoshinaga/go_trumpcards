@@ -63,6 +63,12 @@ func (m *MockCanastaGame) GetActionLog() []*domain.ActionLogEntry {
 	return m.Called().Get(0).([]*domain.ActionLogEntry)
 }
 func (m *MockCanastaGame) GetDrewFromDiscard() bool { return m.Called().Bool(0) }
+
+// GetDrawnCard モック
+func (m *MockCanastaGame) GetDrawnCard() *domain.Card {
+	v, _ := m.Called().Get(0).(*domain.Card)
+	return v
+}
 func (m *MockCanastaGame) GetHint() *domain.CanastaHint {
 	ret := m.Called().Get(0)
 	if ret == nil {

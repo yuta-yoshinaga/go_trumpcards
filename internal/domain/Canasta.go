@@ -1601,6 +1601,9 @@ func (g *Canasta) SetConfig(cfg CanastaConfig) { g.config = cfg }
 // GetDrewFromDiscard 捨て札から引いたか取得
 func (g *Canasta) GetDrewFromDiscard() bool { return g.drewFromDiscard }
 
+// GetDrawnCard returns the discard-pile top card taken this turn, if any.
+func (g *Canasta) GetDrawnCard() *Card { return g.drawnCard }
+
 // --- Hint ---
 
 // CanastaHint はカナスタ / ブラーコの現在手番に対する推奨アクション。

@@ -31,6 +31,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BiribaResponse, Card } from '../types/card';
 import { BiribaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { evaluateBiribaMeld } from '../utils/biribaMeld';
 import { type BiribaSortMode, loadBiribaSortMode, saveBiribaSortMode } from '../utils/biribaSort';
 import { canastaDrawDiscardProblem } from '../utils/canastaDrawDiscard';
 import { cardAlt } from '../utils/cardAlt';
@@ -105,6 +106,17 @@ function BiribaPageContent() {
   } = useGameHint('biriba', state);
 
   const humanPlayer = state?.players.find((p) => p.isHuman);
+  const selectedMeldCards = humanPlayer?.cards.filter((_, index) => selectedCardIndices.includes(index)) ?? [];
+  const meldStatus =
+    state && humanPlayer
+      ? evaluateBiribaMeld(selectedMeldCards, humanPlayer.melds, {
+          hasInitMeld: humanPlayer.hasInitMeld,
+          minMeld: state.minMeld,
+          drewFromDiscard: state.drewFromDiscard,
+          includesDrawnCard: selectedCardIndices.includes(state.drawnCardIndex),
+        })
+      : { ok: false as const, reason: 'selectCards' as const };
+  const meldReason = meldStatus.reason ? t(`meldReason.${meldStatus.reason}`, { min: state?.minMeld }) : '';
   // ヒントが無効なとき・サーバがヒントを返さない場面 (CPU の手番など) では空。
   // **useGameHint が無効時に null を返す**ので、ここで再度フラグを見ない
   // (見ると、条件が二重になって片方が死ぬ)。
@@ -567,14 +579,30 @@ function BiribaPageContent() {
               )}
               {isMeldPhase && isHumanTurn && (
                 <>
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    data-testid="biriba-meld-status"
+                    className="text-xs text-ds-text-muted"
+                  >
+                    {meldStatus.ok ? t('meldStatus.valid') : meldReason}
+                  </div>
                   <button
                     type="button"
                     className={btnPrimary}
-                    onClick={handleMeldSelected}
-                    disabled={loading || selectedCardIndices.length < 3}
+                    onClick={() => {
+                      if (!loading && meldStatus.ok) handleMeldSelected();
+                    }}
+                    aria-disabled={!meldStatus.ok}
+                    aria-describedby={meldReason ? 'biriba-meld-reason' : undefined}
                   >
                     {t('meldButton')}
                   </button>
+                  {meldReason && (
+                    <span id="biriba-meld-reason" className="sr-only">
+                      {meldReason}
+                    </span>
+                  )}
                   <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
                     {t('skipMeldButton')}
                   </button>
