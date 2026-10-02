@@ -35,7 +35,7 @@ type PresidentCpuAction struct {
 	PlayerIdx     int     // 行動したプレイヤーインデックス
 	PlayedCards   []*Card // 出したカード (nil = パス)
 	FieldFlushed  bool    // このパスで場が流れた
-	LeadPlayerIdx int     // 場流れ後にリードするプレイヤー (-1 = 場流れなし)
+	LeadPlayerIdx int     // FieldFlushed が true のときだけ意味を持つ、場流れ後にリードするプレイヤー
 }
 
 // PresidentExchangeAction カード交換1件の記録
@@ -305,13 +305,13 @@ func (p *President) checkPassClear() {
 }
 
 func (p *President) markLastPassAsFieldFlush(leadPlayerIdx int) {
-	for i := len(p.round.cpuActions) - 1; i >= 0; i-- {
-		action := p.round.cpuActions[i]
+	if len(p.round.cpuActions) > 0 {
+		action := p.round.cpuActions[len(p.round.cpuActions)-1]
 		if action.PlayerIdx != p.round.lastPlayPlayerIdx && len(action.PlayedCards) == 0 {
 			action.FieldFlushed = true
 			action.LeadPlayerIdx = leadPlayerIdx
-			return
 		}
+		return
 	}
 	if action := p.round.humanAction; action != nil && action.PlayerIdx != p.round.lastPlayPlayerIdx && len(action.PlayedCards) == 0 {
 		action.FieldFlushed = true

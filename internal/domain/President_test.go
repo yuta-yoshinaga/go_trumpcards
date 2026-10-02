@@ -339,14 +339,32 @@ func TestPresident_Pass_DaifugoStyle_WhenFlushDisabled(t *testing.T) {
 	err := pr.PlayerPlay(nil)
 	require.NoError(t, err)
 	assert.NotNil(t, pr.GetTableCards(), "one pass should not flush in daifugo-style")
-	// CPU at 1, 2 pass too — eventually comes back to last player at index 3 which flushes via checkPassClear
+	// CPUs at 1 and 2 also pass; when the turn returns to player 3, the latest pass records the flush.
 	for pr.GetCurrentTurn() != 3 {
 		pr.CpuPlay()
-		// If the CPU happens to play a card, break to avoid infinite
-		if pr.GetTableCards() != nil && pr.GetLastPlayPlayerIdx() != 3 {
-			break
-		}
 	}
+	require.Nil(t, pr.GetTableCards())
+	actions := pr.GetCpuActions()
+	require.Len(t, actions, 2)
+	assert.True(t, actions[1].FieldFlushed)
+	assert.Equal(t, 3, actions[1].LeadPlayerIdx)
+	assert.False(t, actions[0].FieldFlushed)
+}
+
+func TestPresident_PlayClearsFieldWithoutMarkingOlderPass(t *testing.T) {
+	pr := newTestPresident(t, domain.PresidentConfig{})
+	pr.SetTableCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
+	pr.SetLastPlayPlayerIdx(3)
+	pr.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	pr.GetPlayer(1).AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+	pr.GetPlayer(2).AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	pr.GetPlayer(3).AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+
+	require.NoError(t, pr.PlayerPlay(nil)) // historical pass
+	pr.CpuPlay()                           // player 1 plays their only card and clears the field
+
+	assert.Nil(t, pr.GetTableCards())
+	assert.False(t, pr.GetHumanAction().FieldFlushed)
 }
 
 func TestPresident_FinishAndRanking(t *testing.T) {

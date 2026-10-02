@@ -56303,7 +56303,7 @@ components:
             properties:
               playerIdx: { type: integer }
               fieldFlushed: { type: boolean }
-              leadPlayerIdx: { type: integer }
+              leadPlayerIdx: { type: integer, description: "Meaningful only when fieldFlushed is true." }
               playedCards:
                 type: array
                 nullable: true
@@ -56315,7 +56315,7 @@ components:
           properties:
             playerIdx: { type: integer }
             fieldFlushed: { type: boolean }
-            leadPlayerIdx: { type: integer }
+            leadPlayerIdx: { type: integer, description: "Meaningful only when fieldFlushed is true." }
             playedCards:
               type: array
               nullable: true
