@@ -89,6 +89,7 @@ func (p *SuecaWebPresenter) buildPlayersOutput(g interfaces.SuecaGame) []*contro
 			CardCount:      player.GetCardsSize(),
 			Cards:          playerCardsToOutput(player, player.GetIsHuman()),
 			TrickCount:     player.GetTrickCount(),
+			Team:           team,
 			TeamGamePoints: teamPts[team],
 		})
 	}
