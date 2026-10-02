@@ -20,6 +20,8 @@ export interface SheepsheadPlayer {
 export interface SheepsheadTrickCard {
   playerIdx: number;
   card: Card;
+  points: number;
+  isTrump: boolean;
 }
 
 /** Sheepshead game configuration. */

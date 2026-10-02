@@ -67305,6 +67305,12 @@ components:
                 type: integer
               card:
                 $ref: '#/components/schemas/Card'
+              points:
+                type: integer
+                description: Sheepshead card points (A=11, 10=10, K=4, Q=3, J=2, others=0)
+              isTrump:
+                type: boolean
+                description: Whether the card is trump (all diamonds, queens, and jacks)
         blindCount:
           type: integer
           description: Number of cards currently in the blind (2 before pick, 0 after bury)
