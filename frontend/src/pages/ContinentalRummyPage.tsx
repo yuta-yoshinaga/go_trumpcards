@@ -281,6 +281,40 @@ function ContinentalRummyPageContent() {
               </div>
             )}
 
+            <section className="mt-3" data-testid="cont-score-history" aria-label={t('scoreHistory')}>
+              <h3 className="text-ds-text-primary text-sm font-semibold">{t('scoreHistory')}</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-center text-sm">
+                  <thead>
+                    <tr>
+                      <th scope="col" className="p-1">
+                        {t('historyRound')}
+                      </th>
+                      {state.players.map((player) => (
+                        <th scope="col" className="p-1" key={player.id}>
+                          {player.id === 0 ? t('label.you') : t('label.cpu', { n: player.id })}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {state.roundScoreHistory.map((round) => (
+                      <tr key={round.roundNumber}>
+                        <th scope="row" className="p-1">
+                          {round.roundNumber}
+                        </th>
+                        {state.players.map((player) => (
+                          <td className="p-1" key={player.id}>
+                            {round.scores[player.id] ?? 0}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
           </div>
 

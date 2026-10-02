@@ -75431,6 +75431,18 @@ components:
               type: integer
             total:
               type: integer
+        roundScoreHistory:
+          type: array
+          description: Completed round score gains by seat, retained for the current game.
+          items:
+            type: object
+            properties:
+              roundNumber:
+                type: integer
+              scores:
+                type: array
+                items:
+                  type: integer
         gameEndFlag:
           type: boolean
         winnerIdx:
