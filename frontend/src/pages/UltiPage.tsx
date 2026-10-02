@@ -279,7 +279,11 @@ function UltiPageContent() {
               {contractProgress}
             </div>
             {contractProgress && (
-              <div className="text-ds-text-muted text-sm text-center mb-2" data-testid="ulti-contract-progress">
+              <div
+                className="text-ds-text-muted text-sm text-center mb-2"
+                data-testid="ulti-contract-progress"
+                aria-hidden="true"
+              >
                 {contractProgress}
               </div>
             )}
