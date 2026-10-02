@@ -30,6 +30,7 @@
   },
   "actions": {
     "trump": "Trump {{suit}}",
+    "trumpAria": "Trump {{symbol}} ({{suit}})",
     "nextHand": "Next hand",
     "reset": "Reset",
     "giveUp": "Give up",
