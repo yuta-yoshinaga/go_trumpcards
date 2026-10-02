@@ -47,6 +47,7 @@ export interface FollowTheQueenResult {
 export interface FollowTheQueenSidePot {
   amount: number;
   eligiblePlayers: number[];
+  winners: { playerIdx: number; amount: number }[];
 }
 
 /** Full Follow the Queen game state returned from the API. */

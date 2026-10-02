@@ -30,6 +30,8 @@
   "meldScore": "メルド得点",
   "meldHighlightHint": "メルドバッジをクリックすると手札の対応カードがハイライトされます",
   "trickPoints": "トリック得点",
+  "contractMade": "契約達成",
+  "contractFailed": "契約未達成",
   "trickCount": "獲得トリック",
   "round": "ラウンド",
   "trick": "トリック",

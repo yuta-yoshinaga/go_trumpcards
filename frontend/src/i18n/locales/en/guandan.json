@@ -28,6 +28,8 @@
   "comboPreview": "Selected",
   "invalidCombo": "These cards do not form a combo",
   "comboBeatsAll": "beats every ordinary combo",
+  "comboBeatsTable": "Beats the combo on the table",
+  "comboDoesNotBeatTable": "Does not beat the combo on the table",
   "tributeTitle": "Tribute",
   "tributePending": "seat {{from}} -> seat {{to}}, {{card}} (awaiting the return)",
   "tributeDone": "seat {{from}} -> seat {{to}}, {{card}} / returned: {{back}}",

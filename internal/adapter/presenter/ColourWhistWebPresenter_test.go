@@ -27,6 +27,22 @@ func TestColourWhistWebPresenter_ArraysAreNeverNull(t *testing.T) {
 	}
 }
 
+func TestColourWhistWebPresenter_IncludesRoundScores(t *testing.T) {
+	game := domain.NewDefaultColourWhist()
+	game.GetPlayer(0).AddRoundScore(6)
+	game.GetPlayer(0).AddRoundScore(-2)
+
+	var out struct {
+		Players []struct {
+			RoundScores []int `json:"roundScores"`
+		} `json:"players"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(new(ColourWhistWebPresenter).Output(game, nil)), &out))
+	require.Len(t, out.Players, domain.ColourWhistPlayerCnt)
+	assert.Equal(t, []int{6, -2}, out.Players[0].RoundScores)
+	assert.Empty(t, out.Players[1].RoundScores)
+}
+
 // **相手の手札は返さない。**
 func TestColourWhistWebPresenter_HidesOpponentHands(t *testing.T) {
 	game := domain.NewDefaultColourWhist()

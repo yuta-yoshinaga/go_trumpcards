@@ -24,6 +24,7 @@ function seat(id: number, isHuman: boolean, overrides?: Partial<LobaPlayer>): Lo
     cardCount: 9,
     cards: isHuman ? [card('SPADE', 7), card('HEART', 7), card('CLOVER', 7), card('DIAMOND', 2)] : [],
     score: 12,
+    roundScore: 0,
     eliminated: false,
     hasMelded: false,
     hidden: !isHuman,
@@ -220,13 +221,34 @@ describe('LobaPage', () => {
   });
 
   it('tells a clean go-out apart at the end of a round', async () => {
-    mockExec.mockResolvedValue(makeState({ phase: LobaPhase.ROUND_END, roundWinner: 2, roundClean: true }));
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: LobaPhase.ROUND_END,
+        roundWinner: 2,
+        roundClean: true,
+        players: [
+          seat(0, true, { roundScore: 12, score: 25 }),
+          seat(1, false, { roundScore: 8, score: 20 }),
+          seat(2, false, { roundScore: -10, score: 2 }),
+          seat(3, false, { roundScore: 5, score: 17 }),
+        ],
+      }),
+    );
     renderWithProviders(<LobaPage />);
     await waitFor(() => expect(screen.getByTestId('loba-round-result')).toHaveTextContent('-10'));
+    const announcement = screen.getByRole('status');
+    expect(announcement).toHaveTextContent('あなた: +12 (合計 25)');
+    expect(announcement).toHaveTextContent('CPU 2: +-10 (合計 2)');
 
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '次のラウンドへ' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
+  });
+
+  it('keeps the round score live region empty during play', async () => {
+    renderWithProviders(<LobaPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 
   it('shows the resolved winner name for ordinary and clean rounds, and hides an unset winner', async () => {

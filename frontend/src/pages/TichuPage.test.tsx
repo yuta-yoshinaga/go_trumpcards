@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tichuApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -405,6 +405,79 @@ describe('TichuPage', () => {
     expect(screen.getByTestId('tichu-combo-invalid')).toBeInTheDocument();
     // The Play button stays enabled — the warning is additive, the backend decides.
     expect(screen.getByRole('button', { name: '出す' })).toBeEnabled();
+  });
+
+  it('previews whether a selected play beats the table and omits comparison on lead', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        tableCards: [{ design: 'SPADE', value: 8 }],
+        players: [
+          player({ id: 0, isHuman: true, cards: [{ design: 'HEART', value: 9 }] }),
+          player({ id: 1, team: 1 }),
+          player({ id: 2, team: 0 }),
+          player({ id: 3, team: 1 }),
+        ],
+      }),
+    );
+    const { container } = renderWithProviders(<TichuPage />);
+    await screen.findByRole('button', { name: '出す' });
+    fireEvent.click(container.querySelector('[data-tutorial="tichu-hand"] button') as HTMLElement);
+    expect(screen.getByTestId('tichu-combo-comparison')).toHaveTextContent('場の役に勝てます');
+    mockExec.mockResolvedValue(
+      makeState({
+        tableCards: [],
+        players: [
+          player({ id: 0, isHuman: true, cards: [{ design: 'HEART', value: 9 }] }),
+          player({ id: 1, team: 1 }),
+          player({ id: 2, team: 0 }),
+          player({ id: 3, team: 1 }),
+        ],
+      }),
+    );
+    cleanup();
+    const { container: leadContainer } = renderWithProviders(<TichuPage />);
+    await screen.findByRole('button', { name: '出す' });
+    fireEvent.click(leadContainer.querySelector('[data-tutorial="tichu-hand"] button') as HTMLElement);
+    expect(screen.queryByTestId('tichu-combo-comparison')).not.toBeInTheDocument();
+  });
+
+  it('omits comparison when the table is a Phoenix single with unknown rank', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        tableCards: [{ design: 'JOKER', value: 3 }],
+        players: [
+          player({ id: 0, isHuman: true, cards: [{ design: 'SPADE', value: 1 }] }),
+          player({ id: 1, team: 1 }),
+          player({ id: 2, team: 0 }),
+          player({ id: 3, team: 1 }),
+        ],
+      }),
+    );
+    const { container } = renderWithProviders(<TichuPage />);
+    await screen.findByRole('button', { name: '出す' });
+    fireEvent.click(container.querySelector('[data-tutorial="tichu-hand"] button') as HTMLElement);
+    expect(screen.queryByTestId('tichu-combo-comparison')).not.toBeInTheDocument();
+  });
+
+  it('shows the incomparable message when the selected combo has a different type', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        tableCards: [
+          { design: 'SPADE', value: 9 },
+          { design: 'HEART', value: 9 },
+        ],
+        players: [
+          player({ id: 0, isHuman: true, cards: [{ design: 'SPADE', value: 1 }] }),
+          player({ id: 1, team: 1 }),
+          player({ id: 2, team: 0 }),
+          player({ id: 3, team: 1 }),
+        ],
+      }),
+    );
+    const { container } = renderWithProviders(<TichuPage />);
+    await screen.findByRole('button', { name: '出す' });
+    fireEvent.click(container.querySelector('[data-tutorial="tichu-hand"] button') as HTMLElement);
+    expect(screen.getByTestId('tichu-combo-comparison')).toHaveTextContent('場の役と比較できません');
   });
 
   it('play phase: previews a full house for a 3+2 selection', async () => {

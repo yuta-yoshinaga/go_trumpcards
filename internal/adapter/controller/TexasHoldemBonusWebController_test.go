@@ -18,6 +18,8 @@ func mustTexasHoldemBonusOutputJSON(msg string) string {
 	out := &controller.TexasHoldemBonusWebOutput{
 		PlayerHand:    make([]*controller.WebOutputCard, 0),
 		DealerHand:    make([]*controller.WebOutputCard, 0),
+		PlayerBest:    make([]*controller.WebOutputCard, 0),
+		DealerBest:    make([]*controller.WebOutputCard, 0),
 		Community:     make([]*controller.WebOutputCard, 0),
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}

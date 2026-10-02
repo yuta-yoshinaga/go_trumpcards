@@ -24,6 +24,8 @@ export interface TichuComboResult {
   length: number;
 }
 
+export type TichuComparison = 'beats' | 'cannotBeat' | 'incomparable' | 'unknown';
+
 // Tichu special cards use the JOKER design; the value identifies the special.
 // Mirrors internal/domain/TichuEval.go (Mahjong=1, Dog=2, Phoenix=3, Dragon=4).
 const TICHU_MAHJONG = 1;
@@ -248,4 +250,56 @@ export function classifyTichuCombo(cards: readonly Card[]): TichuComboResult {
       tryFullHouse(cards, pcount);
   }
   return result ?? INVALID;
+}
+
+/** Compares two valid plays using the same rules as TichuCanBeat in internal/domain/TichuEval.go. */
+export function compareTichuCombos(candidate: readonly Card[], table: readonly Card[]): TichuComparison {
+  const cand = classifyTichuCombo(candidate);
+  const current = classifyTichuCombo(table);
+  if (cand.type === 'invalid' || current.type === 'invalid' || cand.type === 'dog') return 'incomparable';
+
+  const rank = (cards: readonly Card[], type: TichuComboType): number => {
+    const counts = rankCounts(nonPhoenix(cards));
+    if (type === 'single') return specialKind(cards[0]) === TICHU_PHOENIX ? TICHU_MAHJONG_RANK : tichuRank(cards[0]);
+    if (type === 'fullHouse') {
+      return [...counts.entries()].find(([, count]) => count === 3)?.[0] ?? 0;
+    }
+    if (type === 'straight' && phoenixCount(cards) === 1) {
+      const ranks = sortedDistinctRanks(counts);
+      const lo = ranks[0];
+      const hi = ranks[ranks.length - 1];
+      return hi - lo === ranks.length - 1 && hi + 1 <= 14 ? hi + 1 : hi;
+    }
+    if (type === 'straight' || type === 'stairs' || type === 'straightFlush') {
+      return Math.max(...counts.keys());
+    }
+    return Math.max(...counts.keys());
+  };
+  const bomb = (type: TichuComboType) => type === 'bomb' || type === 'straightFlush';
+  const candBomb = bomb(cand.type);
+  const tableBomb = bomb(current.type);
+  if (candBomb && !tableBomb) return 'beats';
+  if (!candBomb && tableBomb) return 'cannotBeat';
+  if (candBomb && tableBomb) {
+    if (cand.type !== current.type) return cand.type === 'straightFlush' ? 'beats' : 'cannotBeat';
+    if (cand.type === 'straightFlush' && cand.length !== current.length) {
+      return cand.length > current.length ? 'beats' : 'cannotBeat';
+    }
+    return rank(candidate, cand.type) > rank(table, current.type) ? 'beats' : 'cannotBeat';
+  }
+  if (cand.type !== current.type) return 'incomparable';
+  if ((cand.type === 'straight' || cand.type === 'stairs') && cand.length !== current.length) return 'incomparable';
+  if (cand.type === 'single') {
+    // A Phoenix single's effective rank depends on the single it covered on the table.
+    if (specialKind(table[0]) === TICHU_PHOENIX) return 'unknown';
+    const candPhoenix = specialKind(candidate[0]) === TICHU_PHOENIX;
+    const tablePhoenix = specialKind(table[0]) === TICHU_PHOENIX;
+    if (candPhoenix && !tablePhoenix && specialKind(table[0]) === TICHU_DRAGON) return 'cannotBeat';
+    // Domain callers set a Phoenix single's Rank to the table rank before comparison.
+    const candValueX2 =
+      (candPhoenix ? rank(table, current.type) : rank(candidate, cand.type)) * 2 + (candPhoenix ? 1 : 0);
+    const tableValueX2 = rank(table, current.type) * 2 + (tablePhoenix ? 1 : 0);
+    return candValueX2 > tableValueX2 ? 'beats' : 'cannotBeat';
+  }
+  return rank(candidate, cand.type) > rank(table, current.type) ? 'beats' : 'cannotBeat';
 }

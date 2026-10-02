@@ -103,12 +103,12 @@ describe('EightGamePage', () => {
     mockExec.mockResolvedValue(drawState);
     renderWithProviders(<EightGamePage />);
     expect(await screen.findByTestId('ho-draw')).toHaveTextContent('引き直し 2 回目');
-    expect(screen.queryByRole('button', { name: 'コール' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^コール(?:\s|$)/ })).not.toBeInTheDocument();
   });
 
   it('keeps the betting controls when no draw is pending', async () => {
     renderWithProviders(<EightGamePage />);
-    expect(await screen.findByRole('button', { name: 'コール' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument();
     expect(screen.queryByTestId('ho-draw')).not.toBeInTheDocument();
   });
 

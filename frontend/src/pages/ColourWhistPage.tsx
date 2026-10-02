@@ -279,6 +279,41 @@ function ColourWhistPageContent() {
               ))}
             </div>
 
+            <section className="mb-4 overflow-x-auto" data-testid="colourwhist-score-history">
+              <h2 className="text-ds-text-primary text-center text-sm font-bold mb-2">{t('label.scoreHistory')}</h2>
+              <table className="mx-auto text-sm text-ds-text-primary">
+                <thead>
+                  <tr>
+                    <th scope="col" className="px-2">
+                      {t('label.round')}
+                    </th>
+                    {state.players.map((p) => (
+                      <th scope="col" className="px-2" key={`history-head-${p.id}`}>
+                        #{p.id}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.from(
+                    { length: Math.max(...state.players.map((p) => p.roundScores.length), 0) },
+                    (_, round) => (
+                      <tr key={`history-round-${round}`}>
+                        <th scope="row" className="px-2">
+                          {round + 1}
+                        </th>
+                        {state.players.map((p) => (
+                          <td className="px-2 text-center" key={`history-score-${round}-${p.id}`}>
+                            {p.roundScores[round]}
+                          </td>
+                        ))}
+                      </tr>
+                    ),
+                  )}
+                </tbody>
+              </table>
+            </section>
+
             {human && human.cards.length > 0 && (
               <div data-tutorial="cw-hand">
                 <div className="text-ds-text-primary text-center text-sm font-bold mb-1">{t('label.hand')}</div>

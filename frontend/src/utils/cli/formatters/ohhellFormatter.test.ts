@@ -28,6 +28,7 @@ function makeState(overrides?: Partial<OhHellResponse>): OhHellResponse {
     bidPlayerIdx: 0,
     dealerIdx: 1,
     currentTrick: [],
+    validPlayIndices: [],
     trumpCard: { design: 'HEART', value: 12 },
     trumpSuit: 3,
     restrictedBid: -1,

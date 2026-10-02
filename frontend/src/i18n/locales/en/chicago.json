@@ -1,5 +1,6 @@
 {
   "callAmount": "({{amount}})",
+  "callPotOdds": "Required pot odds: {{percent}}%",
   "phase": {
     "thirdStreet": "Third Street",
     "fourthStreet": "Fourth Street",

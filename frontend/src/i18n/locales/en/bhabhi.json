@@ -16,6 +16,7 @@
     "cpu": "CPU{{idx}}"
   },
   "pile": "The pile",
+  "trickCardByPlayer": "{{card}} played by {{name}}",
   "lastPickup": "{{name}} just picked up {{n}} cards.",
   "lastFinished": "{{name}} just finished in {{rank}} place.",
   "actions": {

@@ -830,7 +830,7 @@ func cegoBidMult(_ CegoBid) int { return 1 }
 // (1 対 3): デクレアラー ±3×base、対戦側各人 ∓base。
 func cegoScoreDeal(declarerPoints int, mult int) CegoBreakdown {
 	threshold := CegoTotalPoints / 2 // 53 — これを超えれば成功
-	won := 2*declarerPoints > CegoTotalPoints
+	won := declarerPoints >= cegoDeclarerTargetPoints()
 	diff := declarerPoints - threshold
 	if diff < 0 {
 		diff = -diff
@@ -851,6 +851,9 @@ func cegoScoreDeal(declarerPoints int, mult int) CegoBreakdown {
 		OpponentScore:  -winSign * base,
 	}
 }
+
+// cegoDeclarerTargetPoints 成功に必要なデクレアラーの獲得カードポイントを返す。
+func cegoDeclarerTargetPoints() int { return CegoTotalPoints/2 + 1 }
 
 // --- Card classification / points ---
 
@@ -1529,6 +1532,12 @@ func (g *Cego) SetPlayerScores(s [CegoPlayerCnt]int) { g.playerScores = s }
 
 // GetCardPoints プレイヤー i が獲得したカードポイント合計を返す (表示用)。
 func (g *Cego) GetCardPoints(i int) int { return g.playerTrickPoints(i) }
+
+// GetDeclarerTargetPoints 成功に必要なデクレアラーの獲得カードポイントを返す。
+func (g *Cego) GetDeclarerTargetPoints() int { return cegoDeclarerTargetPoints() }
+
+// GetTotalCardPoints デッキの総カードポイントを返す。
+func (g *Cego) GetTotalCardPoints() int { return CegoTotalPoints }
 
 // GetOutcome 直近ディールの結果取得
 func (g *Cego) GetOutcome() CegoOutcome { return g.outcome }

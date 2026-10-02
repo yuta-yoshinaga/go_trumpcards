@@ -24,6 +24,7 @@
   },
   "landscapeBanner": "横画面での表示を推奨します",
   "moveCount": "手数",
+  "moveCountAnnouncement": "手数: {{count}}",
   "noHint": "ヒントはありません",
   "phase": {
     "playing": "プレイ中",

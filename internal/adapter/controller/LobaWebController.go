@@ -32,6 +32,8 @@ type LobaWebOutputPlayer struct {
 	Cards     []*WebOutputCard `json:"cards"`
 	// Score は累計失点。101 で脱落するので、常に見えている必要がある。
 	Score int `json:"score"`
+	// RoundScore は直近ラウンドの累計失点の増減。
+	RoundScore int `json:"roundScore"`
 	// Eliminated は 101 点に達して脱落したか。
 	Eliminated bool `json:"eliminated"`
 	// HasMelded はこのラウンドで既に出したか。レイオフの前提。

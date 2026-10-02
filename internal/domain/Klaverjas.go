@@ -440,7 +440,12 @@ func klaverjasPlainStrength(value int) int {
 
 // cardPoints カードポイント。切り札か否かで配点が異なる。
 func (g *Klaverjas) cardPoints(card *Card) int {
-	if card.GetDesign() == g.trumpSuit {
+	return KlaverjasCardPoints(card, g.trumpSuit)
+}
+
+// KlaverjasCardPoints returns the card points for a card under the given trump suit.
+func KlaverjasCardPoints(card *Card, trumpSuit int) int {
+	if card.GetDesign() == trumpSuit {
 		switch card.GetValue() {
 		case 11: // Jack
 			return 20

@@ -7,6 +7,7 @@
   "foundation": "組札",
   "tableau": "場札",
   "moveCount": "手数",
+  "moveCountAnnouncement": "手数: {{count}}",
   "giveup": "ギブアップ",
   "empty": "空",
   "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",

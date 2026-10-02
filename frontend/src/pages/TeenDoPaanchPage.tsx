@@ -27,7 +27,7 @@ import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { parseTeenDoPaanchCommand, TEENDOPAANCH_HELP } from '../utils/cli/commands/teendopaanchCommands';
 import { formatTeenDoPaanchState } from '../utils/cli/formatters/teendopaanchFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { findPlayerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** The four suits, in the order the trump buttons are offered. */
@@ -235,6 +235,9 @@ function TeenDoPaanchPageContent() {
                 label={t('currentTrick')}
                 lastTrick={state.lastTrick}
                 lastTrickWinner={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
+                cardAriaLabelFor={(player, card) =>
+                  t('trickCardByPlayer', { name: playerName(player.id, player.isHuman), card: cardAlt(card) })
+                }
               />
             </div>
 

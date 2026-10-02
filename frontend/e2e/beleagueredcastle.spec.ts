@@ -1,11 +1,15 @@
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 import { navigateTo, waitForLoaded } from './helpers';
+
+function visibleMoveCount(page: Page) {
+  return page.getByTestId('phase-indicator').locator(':scope > span').filter({ hasText: /手数/ });
+}
 
 test.describe('Beleaguered Castle E2E', () => {
   test('navigates, resets, and triggers basic actions', async ({ page }) => {
     await navigateTo(page, '/beleagueredcastle');
 
-    await expect(page.getByText(/手数/)).toBeVisible();
+    await expect(visibleMoveCount(page)).toBeVisible();
 
     const hintButton = page.getByRole('button', { name: 'ヒント' });
     await expect(hintButton).toBeVisible();
@@ -17,7 +21,7 @@ test.describe('Beleaguered Castle E2E', () => {
     await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
-    await expect(page.getByText(/手数/)).toBeVisible();
+    await expect(visibleMoveCount(page)).toBeVisible();
   });
 
   test('give up ends the game', async ({ page }) => {

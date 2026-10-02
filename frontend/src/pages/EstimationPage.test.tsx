@@ -98,8 +98,11 @@ describe('EstimationPage', () => {
 
   it('offers all four trump suits to the dealer', async () => {
     renderWithProviders(<EstimationPage />);
-    for (const suit of [1, 2, 3, 4]) {
-      expect(await screen.findByTestId(`est-trump-${suit.toString()}-btn`)).toBeInTheDocument();
+    const expectedNames = ['スペード', 'クラブ', 'ハート', 'ダイヤ'];
+    for (const [index, suit] of [1, 2, 3, 4].entries()) {
+      const button = await screen.findByTestId(`est-trump-${suit.toString()}-btn`);
+      expect(button).toHaveAccessibleName(new RegExp(expectedNames[index] ?? ''));
+      expect(button).toHaveTextContent(['♠', '♣', '♥', '♦'][index] ?? '');
     }
   });
 

@@ -5,6 +5,7 @@
     "peasant": "農民",
     "kitty": "底牌",
     "table": "場",
+    "lastPlayedBy": "最後に出したプレイヤー: {{player}}",
     "bid": "ビッド",
     "pass": "パス",
     "play": "プレイ",

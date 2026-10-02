@@ -42,12 +42,17 @@
   "declareButton": "宣言",
   "declarePreview": {
     "valid": "宣言OK: 有効な宣言です",
+    "meld": "メルド{{meld}}",
+    "pureSequenceMeld": "純シーケンス{{meld}}",
+    "cardBelongsTo": "{{meld}}の一部",
+    "usesWild": "（ワイルドを使用）",
     "title": "このまま宣言すると無効になります",
     "noPureSequence": "純シーケンス未成立",
     "unmelded": "未メルド {{count}} 枚（{{points}} 点）",
     "incomplete": "純シーケンスが 3 組以上必要です",
     "penalty": "このまま宣言すると +{{penalty}} 点"
   },
+  "listSeparator": "、",
   "nextRound": "次のラウンド",
   "drawPhase": "山札または捨て札から1枚引いてください",
   "discardPhase": "1枚捨てるか、21枚が有効なら宣言してください",

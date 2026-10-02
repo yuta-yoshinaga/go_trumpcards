@@ -50,6 +50,7 @@
     "lossShort": "負",
     "tieShort": "分",
     "tally": "{{wins}}勝 {{losses}}敗 {{ties}}分",
+    "cumulativeNetChange": "累積純損益",
     "clear": "履歴をクリア"
   },
   "tutorial": {

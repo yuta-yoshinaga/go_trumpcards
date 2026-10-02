@@ -13,7 +13,7 @@ test.describe('Poker E2E', () => {
     await waitForLoaded(page);
 
     const checkButton = page.getByRole('button', { name: 'チェック', exact: true });
-    const callButton = page.getByRole('button', { name: 'コール', exact: true });
+    const callButton = page.getByRole('button', { name: /^コール(?:\s|$)/ });
     const standButton = page.getByRole('button', { name: 'スタンド' });
     const endResetButton = page.getByRole('button', { name: '次のゲーム' });
 

@@ -27,6 +27,7 @@ import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { BHABHI_HELP, parseBhabhiCommand } from '../utils/cli/commands/bhabhiCommands';
 import { formatBhabhiState } from '../utils/cli/formatters/bhabhiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Table sizes the game accepts (sync: domain.BhabhiMin/MaxPlayers). */
@@ -218,6 +219,9 @@ function BhabhiPageContent() {
                 players={state.players}
                 cardWidth={cardWidth}
                 label={t('pile')}
+                cardAriaLabelFor={(player, card) =>
+                  t('trickCardByPlayer', { card: cardAlt(card), name: playerName(player.id, player.isHuman) })
+                }
                 wrap
               />
             </div>

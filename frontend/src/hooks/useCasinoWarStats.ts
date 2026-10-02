@@ -19,6 +19,11 @@ export const CasinoWarOutcome = {
 /** A single recorded round outcome (one of the `CasinoWarOutcome` codes). */
 export type CasinoWarOutcomeCode = (typeof CasinoWarOutcome)[keyof typeof CasinoWarOutcome];
 
+interface CasinoWarRound {
+  outcome: CasinoWarOutcomeCode;
+  netChange: number;
+}
+
 /** Win / loss / tie counts aggregated over a history slice. */
 export interface CasinoWarTally {
   wins: number;
@@ -39,12 +44,32 @@ function isOutcomeCode(value: unknown): value is CasinoWarOutcomeCode {
 
 /** Reads and validates the round history from localStorage; returns [] on any error. */
 export function readCasinoWarHistory(): CasinoWarOutcomeCode[] {
+  return readCasinoWarRounds().map(({ outcome }) => outcome);
+}
+
+function readCasinoWarRounds(): CasinoWarRound[] {
   try {
     const raw = localStorage.getItem(CASINOWAR_HISTORY_KEY);
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(isOutcomeCode);
+    return parsed.flatMap((entry) => {
+      if (isOutcomeCode(entry)) return [{ outcome: entry, netChange: 0 }];
+      if (
+        typeof entry === 'object' &&
+        entry !== null &&
+        isOutcomeCode((entry as { outcome?: unknown }).outcome) &&
+        typeof (entry as { netChange?: unknown }).netChange === 'number' &&
+        Number.isFinite((entry as { netChange: number }).netChange)
+      )
+        return [
+          {
+            outcome: (entry as { outcome: CasinoWarOutcomeCode }).outcome,
+            netChange: (entry as { netChange: number }).netChange,
+          },
+        ];
+      return [];
+    });
   } catch {
     return [];
   }
@@ -69,11 +94,12 @@ export function tallyCasinoWarHistory(history: readonly CasinoWarOutcomeCode[]):
  * win / loss / tie counts over the full history.
  */
 export function useCasinoWarStats() {
-  const [history, setHistory] = useState<CasinoWarOutcomeCode[]>(readCasinoWarHistory);
+  const [rounds, setRounds] = useState<CasinoWarRound[]>(readCasinoWarRounds);
+  const history = useMemo(() => rounds.map(({ outcome }) => outcome), [rounds]);
 
-  const recordOutcome = useCallback((outcome: CasinoWarOutcomeCode) => {
-    setHistory((prev) => {
-      const next = [...prev, outcome].slice(-CASINOWAR_HISTORY_MAX);
+  const recordOutcome = useCallback((outcome: CasinoWarOutcomeCode, netChange = 0) => {
+    setRounds((prev) => {
+      const next = [...prev, { outcome, netChange }].slice(-CASINOWAR_HISTORY_MAX);
       try {
         localStorage.setItem(CASINOWAR_HISTORY_KEY, JSON.stringify(next));
       } catch {
@@ -84,7 +110,7 @@ export function useCasinoWarStats() {
   }, []);
 
   const clearHistory = useCallback(() => {
-    setHistory([]);
+    setRounds([]);
     try {
       localStorage.removeItem(CASINOWAR_HISTORY_KEY);
     } catch {
@@ -93,6 +119,7 @@ export function useCasinoWarStats() {
   }, []);
 
   const tally = useMemo(() => tallyCasinoWarHistory(history), [history]);
+  const cumulativeNetChange = useMemo(() => rounds.reduce((sum, round) => sum + round.netChange, 0), [rounds]);
 
-  return { history, tally, recordOutcome, clearHistory };
+  return { history, tally, cumulativeNetChange, recordOutcome, clearHistory };
 }

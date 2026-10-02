@@ -147,13 +147,16 @@ describe('VideoPokerGameContent', () => {
     };
     mockExec.mockResolvedValue(wildHand);
     await i18n.changeLanguage('en');
-    renderContent('deuceswild');
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const firstCard = screen.getAllByRole('button').find((button) => button.getAttribute('aria-pressed') !== null);
-    expect(firstCard).toBeDefined();
-    if (!firstCard) throw new Error('Expected the first card button');
-    expect(firstCard).toHaveAccessibleName(/♠ 2, Card 1, Hold card 1, WILD, selected by auto-hold/);
-    await i18n.changeLanguage('ja');
+    try {
+      renderContent('deuceswild');
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      const firstCard = screen.getAllByRole('button').find((button) => button.getAttribute('aria-pressed') !== null);
+      expect(firstCard).toBeDefined();
+      if (!firstCard) throw new Error('Expected the first card button');
+      expect(firstCard).toHaveAccessibleName(/♠ 2, Card 1, Hold card 1, WILD, selected by auto-hold/);
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('calls reset on mount and renders bet phase', async () => {
@@ -214,6 +217,9 @@ describe('VideoPokerGameContent', () => {
     renderContent();
     await waitFor(() => expect(screen.getByText(/配当.*5/)).toBeInTheDocument());
     expect(screen.getByTestId('vp-net-change')).toHaveTextContent('+4');
+    expect(screen.getByTestId('vp-result-announce')).toHaveTextContent(
+      '役: ジャックス・オア・ベター、配当 5 枚、純増減 +4',
+    );
     expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument();
   });
 
@@ -221,13 +227,42 @@ describe('VideoPokerGameContent', () => {
     mockExec.mockResolvedValue(resultPhaseLose);
     renderContent();
     await waitFor(() => expect(screen.getByTestId('vp-net-change')).toHaveTextContent('-1'));
+    expect(screen.getByTestId('vp-result-announce')).toHaveTextContent('役なし、ベット没収、純増減 -1');
     await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
+  });
+
+  it('translates the Deuces Wild net change label in Japanese and English', async () => {
+    mockExec.mockResolvedValue({ ...resultPhaseLose, variantName: 'deuceswild' });
+    renderContent('deuceswild');
+    const netChange = await screen.findByTestId('vp-net-change');
+    expect(netChange).toHaveTextContent('純増減: -1');
+
+    await i18n.changeLanguage('en');
+    try {
+      expect(netChange).toHaveTextContent('Net change: -1');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('marks a break-even result as positive zero', async () => {
     mockExec.mockResolvedValue({ ...resultPhaseWin, betAmount: 5, payout: 5 });
     renderContent();
     await waitFor(() => expect(screen.getByTestId('vp-net-change')).toHaveTextContent('+0'));
+  });
+
+  it('re-announces identical consecutive hand results', async () => {
+    mockExec.mockImplementation(async () => ({ ...resultPhaseWin }));
+    renderContent();
+    await waitFor(() => expect(screen.getByTestId('vp-result-announce')).toHaveTextContent('純増減 +4'));
+    const firstNonce = Number(screen.getByTestId('vp-result-announce').getAttribute('data-nonce'));
+
+    fireEvent.click(screen.getByRole('button', { name: /次のゲーム/ }));
+
+    await waitFor(() =>
+      expect(Number(screen.getByTestId('vp-result-announce').getAttribute('data-nonce'))).toBeGreaterThan(firstNonce),
+    );
+    expect(screen.getByTestId('vp-result-announce')).toHaveTextContent('純増減 +4');
   });
 
   it('auto-hold pre-selects the hint-recommended cards on entering draw phase', async () => {

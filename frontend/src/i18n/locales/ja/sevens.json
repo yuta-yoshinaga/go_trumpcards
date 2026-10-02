@@ -34,6 +34,7 @@
     "passLimitWarning": "パス残り回数わずか — 慎重に"
   },
   "jokerSelectHint": "配置先を選択してください",
+  "jokerPlacedAnnouncement": "{{card}}を{{suit}}の{{value}}に配置しました",
   "keyHints": "数字キー: 対応する手札をプレイ",
   "mustPass": "出せるカードがありません — パスしてください",
   "passCount": "パス: {{used}}/{{max}}",

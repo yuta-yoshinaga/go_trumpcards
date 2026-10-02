@@ -214,6 +214,9 @@ function NinetyNinePageContent() {
   const isRoundEnd = state.phase === NinetyNinePhase.ROUND_END;
   const isGameEnd = state.phase === NinetyNinePhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const legalPlayIndices = state.validPlayIndices;
+  const legalPlaySet = new Set(legalPlayIndices);
+  const playCardStatus = (idx: number) => t(legalPlaySet.has(idx) ? 'legalPlay' : 'followSuitRequired');
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
   // Bury-selection progress. Selection is not capped, so the player can pick
   // more than BURY_COUNT; clamp both directions so neither the remaining nor
@@ -447,6 +450,8 @@ function NinetyNinePageContent() {
                   onToggle={toggleCard}
                   cardWidth={cardWidth}
                   dataTutorial="nn-player-hand"
+                  legalIndices={isHumanTurn ? legalPlayIndices : undefined}
+                  cardStatusFor={isHumanTurn ? playCardStatus : undefined}
                 />
               ) : (
                 <div className="flex flex-wrap gap-1 mb-2" data-tutorial="nn-player-hand">
@@ -455,9 +460,10 @@ function NinetyNinePageContent() {
                       type="button"
                       key={`${card.design}-${card.value}-${idx}`}
                       onClick={() => toggleCard(idx)}
-                      aria-label={cardAlt(card)}
+                      aria-label={`${cardAlt(card)}${isHumanTurn ? ` (${playCardStatus(idx)})` : ''}`}
                       aria-pressed={selectedCardIndices.includes(idx)}
-                      className={`transition-transform ${focusRingCard}`}
+                      data-legal={isHumanTurn && legalPlaySet.has(idx) ? 'true' : undefined}
+                      className={`transition-transform ${focusRingCard} ${isHumanTurn && legalPlaySet.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
                       style={{
                         background: 'none',
                         padding: 0,
