@@ -20,6 +20,7 @@
     "exchangePair": "{{giver}} to {{taker}}: {{n}}"
   },
   "currentTrick": "Current trick",
+  "trickCardByPlayer": "{{card}} played by {{name}}",
   "actions": {
     "trump": "Trump {{suit}}",
     "chooseTrump": "Choose a suit for trump.",
