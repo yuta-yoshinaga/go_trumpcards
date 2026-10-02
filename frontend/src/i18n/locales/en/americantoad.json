@@ -65,6 +65,7 @@
   },
   "undo": "Undo",
   "waste": "Waste",
+  "wasteCardAriaLabel": "Waste {{card}}",
   "wasteCount_one": "{{count}} card",
   "wasteCount_other": "{{count}} cards"
 }

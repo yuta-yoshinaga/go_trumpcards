@@ -464,7 +464,7 @@ function AmericanToadPageContent() {
                       type="button"
                       onClick={() => game.handleSelectSource(wasteZone)}
                       disabled={!isPlaying || loading}
-                      aria-label={cardAlt(wasteTop)}
+                      aria-label={t('wasteCardAriaLabel', { card: cardAlt(wasteTop) })}
                       aria-describedby="american-toad-waste-count"
                       aria-pressed={isSourceSelected('waste', undefined, undefined)}
                       draggable={isPlaying && !loading}
