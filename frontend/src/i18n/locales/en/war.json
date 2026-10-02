@@ -18,6 +18,7 @@
     "lastBurialCount": "(Buried {{count}})",
     "rounds": "Rounds",
     "roundProgress": "Round {{played}} of {{max}} (at the cap the larger total wins)",
+    "roundLimitWarningAnnouncement": "Approaching the round limit. Current round: {{played}}; limit: {{max}}.",
     "maxRounds": "Max rounds"
   },
   "listSeparator": ", ",
