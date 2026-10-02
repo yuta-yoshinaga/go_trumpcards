@@ -23,6 +23,8 @@ func TestTehonbikiWebPresenterHidesParentUntilResult(t *testing.T) {
 	p := new(TehonbikiWebPresenter)
 	var before map[string]any
 	require.NoError(t, json.Unmarshal([]byte(p.Output(newTehonbikiPresenterGame(t), nil)), &before))
+	require.Equal(t, float64(domain.TehonbikiMinBet), before["minBet"])
+	require.Equal(t, float64(domain.TehonbikiMaxBet), before["maxBet"])
 	if _, ok := before["parentCard"]; ok {
 		t.Fatal("parent card leaked before the bet")
 	}

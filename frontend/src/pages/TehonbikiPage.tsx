@@ -32,6 +32,10 @@ function TehonbikiPageContent() {
     exec('reset');
   }, [exec]);
   if (!state) return <GameSkeleton gameKey="tehonbiki" layout={{ kind: 'casino-table', sections: [1] }} />;
+  const minBet = state.minBet;
+  const maxBet = Math.min(state.maxBet, state.chips);
+  const betAmount = Number(bet);
+  const betValid = bet !== '' && Number.isInteger(betAmount) && betAmount >= minBet && betAmount <= maxBet;
   const toggle = (n: number) => setNumbers((v) => (v.includes(n) ? v.filter((x) => x !== n) : [...v, n]));
   return (
     <GamePageShell
@@ -97,11 +101,25 @@ function TehonbikiPageContent() {
               <option value="half">{t('betType.half')}</option>
             </select>
             <label htmlFor="tehonbiki-bet-amount">{t('label.bet')}</label>
-            <input id="tehonbiki-bet-amount" type="number" value={bet} onChange={(e) => setBet(e.target.value)} />
+            <input
+              id="tehonbiki-bet-amount"
+              type="number"
+              min={minBet}
+              max={maxBet}
+              value={bet}
+              aria-invalid={!betValid}
+              aria-describedby="tehonbiki-bet-constraint"
+              onChange={(e) => setBet(e.target.value)}
+            />
+            <p id="tehonbiki-bet-constraint">{t('bet.constraint', { min: minBet, max: maxBet })}</p>
+            <p role="alert">{!betValid ? t('bet.outOfRange', { min: minBet, max: maxBet }) : ''}</p>
             <button
-              className={btnPrimary}
+              className={`${btnPrimary} aria-disabled:cursor-not-allowed aria-disabled:opacity-50`}
               type="button"
-              onClick={() => exec('bet', { numbers, betType, bet: Number(bet) })}
+              aria-disabled={loading || !betValid}
+              onClick={() => {
+                if (!loading && betValid) exec('bet', { numbers, betType, bet: betAmount });
+              }}
             >
               {t('button.bet')}
             </button>
