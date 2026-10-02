@@ -16,6 +16,7 @@
   },
   "outcomePreview": {
     "betAmount": "各口のベット額: {{amount}}",
+    "maxBet": "上限額: {{amount}}",
     "betRisk": "ベット後のリスク合計: {{amount}}",
     "remainingBet": "残る各口のベット額: {{amount}}",
     "actionRisk": "操作後のリスク合計: {{amount}}"

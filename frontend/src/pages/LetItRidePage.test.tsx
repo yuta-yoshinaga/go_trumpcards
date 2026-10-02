@@ -136,6 +136,24 @@ describe('LetItRidePage', () => {
     expect(screen.getByTestId('bet-outcome-preview')).toHaveTextContent('ベット後のリスク合計: 300');
   });
 
+  it('clamps the displayed and submitted bet when the chip balance lowers the maximum', async () => {
+    mockApi.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce({ ...betPhaseState, chips: 600 });
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByTestId('bet-outcome-preview')).toBeInTheDocument());
+    const input = screen.getByLabelText('ベット') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: '300' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+
+    await waitFor(() => expect(input.value).toBe('200'));
+    expect(screen.getByTestId('bet-outcome-preview')).toHaveTextContent('各口のベット額: 200');
+    expect(screen.getByTestId('bet-outcome-preview')).toHaveTextContent('ベット後のリスク合計: 600');
+    expect(screen.getByText('上限額: 200')).toBeInTheDocument();
+
+    mockApi.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 200));
+  });
+
   it('applies min=10 and step=10 guardrails to the bet input', async () => {
     mockApi.mockResolvedValue(betPhaseState);
     renderWithProviders(<LetItRidePage />);

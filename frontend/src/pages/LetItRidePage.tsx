@@ -118,15 +118,17 @@ function LetItRidePageContent() {
   const isSecondDecision = state?.phase === LetItRidePhase.SECOND_DECISION;
   const isDecisionPhase = isFirstDecision || isSecondDecision;
   const isEndPhase = state?.phase === LetItRidePhase.END;
+  const maxBet = state ? Math.floor(state.chips / 3) : Number.POSITIVE_INFINITY;
+  const displayedBetAmount = Math.min(betAmount, maxBet);
 
   const actionBindings = useMemo(
     () => [
-      { key: 'b', action: () => execApi('bet', betAmount), enabled: isBetPhase, label: 'bet' },
+      { key: 'b', action: () => execApi('bet', displayedBetAmount), enabled: isBetPhase, label: 'bet' },
       { key: 'p', action: () => requestPullConfirm(() => execApi('pull')), enabled: isDecisionPhase, label: 'pull' },
       { key: 'l', action: () => execApi('letitride'), enabled: isDecisionPhase, label: 'letitride' },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, label: 'reset' },
     ],
-    [execApi, betAmount, isBetPhase, isDecisionPhase, isEndPhase, requestPullConfirm],
+    [execApi, displayedBetAmount, isBetPhase, isDecisionPhase, isEndPhase, requestPullConfirm],
   );
 
   useActionKeyboardNav({
@@ -139,7 +141,7 @@ function LetItRidePageContent() {
   if (!state) return <GameSkeleton gameKey="letitride" layout={{ kind: 'casino-table', sections: [3, 2] }} />;
 
   const handleBet = () => {
-    execApi('bet', betAmount);
+    execApi('bet', displayedBetAmount);
   };
 
   const handlePull = () => {
@@ -364,18 +366,21 @@ function LetItRidePageContent() {
                 <ChipBetInput
                   id="letitride-bet-amount"
                   label={t('label.bet')}
-                  value={betAmount}
+                  value={displayedBetAmount}
                   onChange={setBetAmount}
                   min={10}
                   step={10}
-                  max={Math.floor(state.chips / 3)}
+                  max={maxBet}
                 />
+                <div className="text-center text-ds-text-muted text-xs">
+                  {t('outcomePreview.maxBet', { amount: maxBet })}
+                </div>
                 <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
                   {t('button.bet')}
                 </button>
                 <div className="text-center text-ds-text-muted text-xs" data-testid="bet-outcome-preview">
-                  <div>{t('outcomePreview.betAmount', { amount: betAmount })}</div>
-                  <div>{t('outcomePreview.betRisk', { amount: betAmount * 3 })}</div>
+                  <div>{t('outcomePreview.betAmount', { amount: displayedBetAmount })}</div>
+                  <div>{t('outcomePreview.betRisk', { amount: displayedBetAmount * 3 })}</div>
                 </div>
                 <div
                   className="rounded-lg bg-ds-surface px-3 py-2 text-center text-ds-text-muted text-xs"

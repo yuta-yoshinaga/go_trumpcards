@@ -16,6 +16,7 @@
   },
   "outcomePreview": {
     "betAmount": "Bet per wager: {{amount}}",
+    "maxBet": "Maximum bet: {{amount}}",
     "betRisk": "Total risk after betting: {{amount}}",
     "remainingBet": "Bet per remaining wager: {{amount}}",
     "actionRisk": "Total risk after action: {{amount}}"
