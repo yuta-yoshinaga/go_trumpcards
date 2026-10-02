@@ -88,6 +88,27 @@ describe('ChipBetInput', () => {
     expect(input).toHaveAttribute('aria-describedby', 'bet-help');
   });
 
+  it('keeps an aria-disabled input focusable and ignores edits', () => {
+    const onChange = vi.fn();
+    render(
+      <ChipBetInput
+        id="bet"
+        label="Bet"
+        value={50}
+        onChange={onChange}
+        max={500}
+        ariaDisabled
+        describedBy="bet-help"
+      />,
+    );
+    const input = screen.getByLabelText('Bet');
+    expect(input).toHaveAttribute('aria-disabled', 'true');
+    expect(input).toHaveAttribute('aria-describedby', 'bet-help');
+    expect(input).not.toBeDisabled();
+    fireEvent.change(input, { target: { value: '60' } });
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('clamps to min when max is omitted (no-limit mode with autoClamp=true)', () => {
     const onChange = vi.fn();
     render(<ChipBetInput id="bet" label="Bet" value={20} onChange={onChange} />);

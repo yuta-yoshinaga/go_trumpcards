@@ -20,6 +20,8 @@ export interface ChipBetInputProps {
   step?: number;
   /** Disable the input. */
   disabled?: boolean;
+  /** Mark the input unavailable while keeping it focusable for an explanation. */
+  ariaDisabled?: boolean;
   /** Tailwind width class for the input. Defaults to "w-24". */
   widthClass?: string;
   /**
@@ -53,6 +55,7 @@ export function ChipBetInput({
   min = 10,
   step = 10,
   disabled,
+  ariaDisabled,
   widthClass = 'w-24',
   autoClamp = true,
   invalid,
@@ -96,10 +99,13 @@ export function ChipBetInput({
         value={value}
         aria-invalid={invalid || undefined}
         aria-describedby={describedBy}
+        onWheel={(e) => e.currentTarget.blur()}
+        disabled={disabled}
+        aria-disabled={ariaDisabled || undefined}
         onChange={(e) => {
+          if (ariaDisabled) return;
           const raw = e.target.value;
           const cleaned = raw.replace(/[^0-9]/g, '');
-          // User typed only non-digit chars: reject (mirrors prior type=number rejection of NaN input).
           if (raw !== '' && cleaned === '') return;
           const parsed = cleaned === '' ? 0 : Number(cleaned);
           if (!autoClamp) {
@@ -109,9 +115,7 @@ export function ChipBetInput({
           const upper = max ?? Number.POSITIVE_INFINITY;
           onChange(Math.max(min, Math.min(parsed, upper)));
         }}
-        onWheel={(e) => e.currentTarget.blur()}
-        disabled={disabled}
-        className={`${widthClass} px-3 py-2 rounded text-base min-h-[44px] ${errorClasses}`}
+        className={`${widthClass} px-3 py-2 rounded text-base min-h-[44px] ${ariaDisabled ? 'opacity-40 cursor-not-allowed' : ''} ${errorClasses}`}
       />
       {showSteppers && (
         <button
