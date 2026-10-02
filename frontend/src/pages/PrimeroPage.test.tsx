@@ -135,7 +135,7 @@ describe('PrimeroPage', () => {
 
   it('shows the betting action buttons on the human betting turn', async () => {
     renderWithProviders(<PrimeroPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ（ヴィ）' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド（降りる）' })).toBeInTheDocument();
   });
@@ -209,7 +209,7 @@ describe('PrimeroPage', () => {
 
   it('dispatches bet call when the Call button is clicked', async () => {
     renderWithProviders(<PrimeroPage />);
-    const btn = await screen.findByRole('button', { name: 'コール' });
+    const btn = await screen.findByRole('button', { name: /^コール(?:\s|$)/ });
     mockExec.mockClear();
     fireEvent.click(btn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 'call'));
@@ -235,14 +235,14 @@ describe('PrimeroPage', () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<PrimeroPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /リセット|ゲームをリセット/ })).toBeInTheDocument());
-    expect(screen.queryByRole('button', { name: 'コール' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^コール(?:\s|$)/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'フォールド（降りる）' })).not.toBeInTheDocument();
   });
 
   it('hides the raise button when raising is not allowed', async () => {
     mockExec.mockResolvedValue(makePrimeroState({ phase: 0, isHumanTurn: true, canRaise: false }));
     renderWithProviders(<PrimeroPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: 'レイズ（ヴィ）' })).not.toBeInTheDocument();
   });
 
@@ -259,7 +259,7 @@ describe('PrimeroPage', () => {
     mockExec.mockResolvedValue(resultState);
     renderWithProviders(<PrimeroPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
-    expect(screen.queryByRole('button', { name: 'コール' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^コール(?:\s|$)/ })).not.toBeInTheDocument();
   });
 
   it('shows the human round bet, actual payout, and net result', async () => {
@@ -434,7 +434,7 @@ describe('PrimeroPage', () => {
     for (const [text, state] of cases) {
       mockExec.mockResolvedValue(state);
       const { container, unmount } = renderWithProviders(<PrimeroPage />);
-      await screen.findByRole('button', { name: 'コール' });
+      await screen.findByRole('button', { name: /^コール(?:\s|$)/ });
       // 読み上げ対象そのものを掴む ── 別の live region に同じ文字列があっても
       // 通ってしまう「どれかに入っている」式の表明にはしない。
       const live = container.querySelector('[data-testid="primero-raise-count"][aria-live="polite"]');
