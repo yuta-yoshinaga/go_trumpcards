@@ -37,6 +37,8 @@ type ChinchonGame interface {
 	IsHumanTurn() bool
 	// GetRoundNumber 現在のラウンド番号を取得する
 	GetRoundNumber() int
+	// GetRoundScoreHistory returns completed round scores by round and player.
+	GetRoundScoreHistory() [][]int
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
 	GetCurrentPlayerIdx() int
 	// GetDiscardTop 捨て札の一番上のカードを取得する

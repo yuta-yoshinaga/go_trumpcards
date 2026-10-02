@@ -46891,6 +46891,13 @@ components:
         roundNumber:
           type: integer
           description: Current round number
+        roundScoreHistory:
+          type: array
+          description: Completed round scores; each row contains one score per player in player order.
+          items:
+            type: array
+            items:
+              type: integer
         currentPlayerIdx:
           type: integer
           description: Index of the player whose turn it is

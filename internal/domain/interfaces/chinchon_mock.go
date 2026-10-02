@@ -33,8 +33,11 @@ func (m *MockChinchonGame) GetGameEndFlag() bool                { return m.Calle
 func (m *MockChinchonGame) GetPhase() domain.ChinchonPhase {
 	return m.Called().Get(0).(domain.ChinchonPhase)
 }
-func (m *MockChinchonGame) IsHumanTurn() bool        { return m.Called().Bool(0) }
-func (m *MockChinchonGame) GetRoundNumber() int      { return m.Called().Int(0) }
+func (m *MockChinchonGame) IsHumanTurn() bool   { return m.Called().Bool(0) }
+func (m *MockChinchonGame) GetRoundNumber() int { return m.Called().Int(0) }
+func (m *MockChinchonGame) GetRoundScoreHistory() [][]int {
+	return m.Called().Get(0).([][]int)
+}
 func (m *MockChinchonGame) GetCurrentPlayerIdx() int { return m.Called().Int(0) }
 func (m *MockChinchonGame) GetDiscardTop() *domain.Card {
 	return m.Called().Get(0).(*domain.Card)
