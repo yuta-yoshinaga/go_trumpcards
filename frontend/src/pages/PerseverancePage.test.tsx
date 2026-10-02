@@ -106,6 +106,8 @@ describe('PerseverancePage', () => {
     renderWithProviders(<PerseverancePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(mockExec.mock.calls[0]?.[0]).toBe('reset');
+    expect(await screen.findByText('開始数: 1')).toBeInTheDocument();
+    expect(screen.getByText('クリア率: 0%')).toBeInTheDocument();
   });
 
   it('marks the last card in a column with a dashed warning ring', async () => {
