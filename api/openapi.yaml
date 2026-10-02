@@ -61321,6 +61321,7 @@ components:
       required:
         - name
         - chips
+        - chipChange
         - hiddenCount
       properties:
         name:
@@ -61331,6 +61332,10 @@ components:
           type: integer
           description: Chips held by this seat
           example: 190
+        chipChange:
+          type: integer
+          description: Net change in chips since this round began
+          example: 10
         hiddenCount:
           type: integer
           description: How many face-down cards this seat has left to turn

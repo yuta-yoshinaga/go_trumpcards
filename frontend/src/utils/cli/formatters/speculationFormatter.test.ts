@@ -5,7 +5,13 @@ import { formatSpeculationState } from './speculationFormatter';
 
 const card = (design: string, value: number): Card => ({ design, value }) as Card;
 
-const seat = (name: string, chips: number, hiddenCount: number, best?: Card) => ({ name, chips, hiddenCount, best });
+const seat = (name: string, chips: number, hiddenCount: number, best?: Card) => ({
+  name,
+  chips,
+  chipChange: 0,
+  hiddenCount,
+  best,
+});
 
 const base: SpeculationResponse = {
   phase: SpeculationPhase.FLIP,

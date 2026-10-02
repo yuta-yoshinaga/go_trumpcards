@@ -49,6 +49,8 @@ type SpeculationGame interface {
 	GetGameEndFlag() bool
 	// GetLastTrade returns the most recent completed purchase in this round.
 	GetLastTrade() *domain.SpeculationTrade
+	// GetRoundChipChanges returns each seat's net chip change since round start.
+	GetRoundChipChanges() []int
 	// GetActionLog は棋譜を返す。
 	GetActionLog() []*domain.ActionLogEntry
 }

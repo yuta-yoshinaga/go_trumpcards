@@ -3,7 +3,7 @@ import type { SpeculationResponse } from '../../types/card';
 import { SpeculationPhase } from '../../types/phases';
 import { getSpeculationHint } from './speculationHint';
 
-const seat = (hiddenCount: number, name = 'CPU') => ({ name, chips: 200, hiddenCount });
+const seat = (hiddenCount: number, name = 'CPU') => ({ name, chips: 200, chipChange: 0, hiddenCount });
 
 const base: SpeculationResponse = {
   phase: SpeculationPhase.FLIP,

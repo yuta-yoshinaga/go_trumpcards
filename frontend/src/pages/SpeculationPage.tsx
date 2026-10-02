@@ -262,6 +262,18 @@ function SpeculationPageContent() {
                     })}
                   </div>
                 )}
+                {state.seats.map((seat, index) => (
+                  <div
+                    key={`chip-change-${index}`}
+                    className="text-ds-text-muted text-sm"
+                    data-testid={`sp-chip-change-${index}`}
+                  >
+                    {t('result.chipChange', {
+                      name: index === SPECULATION_HUMAN_SEAT ? t('label.you') : seat.name,
+                      change: seat.chipChange > 0 ? `+${seat.chipChange}` : seat.chipChange,
+                    })}
+                  </div>
+                ))}
                 {gameOver && (
                   <div className="text-ds-text-muted text-sm" data-testid="sp-final-chips">
                     {t('result.finalChips', { chips: human?.chips ?? 0 })}
