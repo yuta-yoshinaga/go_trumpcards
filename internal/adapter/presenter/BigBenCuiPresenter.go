@@ -57,6 +57,15 @@ func (p *BigBenCuiPresenter) Output(gc interfaces.BigBenGame, lastErr error) str
 			}
 			b.WriteString("\n")
 		}
+		completedFaces := 0
+		for i := range domain.BigBenFoundationCnt {
+			if gc.IsFoundationComplete(i) {
+				completedFaces++
+			}
+		}
+		b.WriteString(i18n.Tf("bigben.completedFaces",
+			"count", strconv.Itoa(completedFaces),
+			"total", strconv.Itoa(domain.BigBenFoundationCnt)) + "\n")
 
 		b.WriteString("----------\n")
 
