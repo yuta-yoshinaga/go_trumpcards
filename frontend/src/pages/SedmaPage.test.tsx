@@ -88,14 +88,16 @@ describe('SedmaPage', () => {
   // チーム通算得点には role も aria-live も無く、ラウンドが確定して点が動いても
   // スクリーンリーダー利用者には何も伝わらなかった。
   it('announces the match score so a round settling is heard', async () => {
-    mockExec.mockResolvedValue(makeSedmaState({ teamScores: [3, 1] }));
+    mockExec.mockResolvedValue(makeSedmaState({ teamScores: [3, 21], config: { cpuDifficulty: 1, targetPoints: 21 } }));
     renderWithProviders(<SedmaPage />);
 
     const panel = await screen.findByTestId('sedma-team-scores');
     expect(panel).toHaveAttribute('role', 'status');
     expect(panel).toHaveAttribute('aria-live', 'polite');
     expect(panel).toHaveTextContent('チームA: 3');
-    expect(panel).toHaveTextContent('チームB: 1');
+    expect(panel).toHaveTextContent('チームB: 21');
+    expect(panel).toHaveTextContent('（残り18点）');
+    expect(panel).not.toHaveTextContent('残り0点');
   });
 
   // 読み上げ対象が2つに増えても、既存のカード点パネルはそのまま。

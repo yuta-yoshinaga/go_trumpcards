@@ -28,6 +28,7 @@
     "b": "チームB"
   },
   "teamScore": "{{team}}: {{score}}点",
+  "remainingPoints": "（残り{{count}}点）",
   "playButton": "出す",
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",
