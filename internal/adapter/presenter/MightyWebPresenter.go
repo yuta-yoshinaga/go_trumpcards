@@ -71,6 +71,18 @@ func (p *MightyWebPresenter) buildBaseOutput(m interfaces.MightyGame) *controlle
 		}
 	}
 
+	// The domain retains the declarer's three discarded cards in kitty after
+	// the exchange. Keep their identities hidden until the round is scored.
+	if phase := m.GetPhase(); phase == domain.MightyPhasePlay || phase == domain.MightyPhaseTrickEnd || phase == domain.MightyPhaseRoundEnd || phase == domain.MightyPhaseGameEnd {
+		kitty := m.GetKitty()
+		resObj.DiscardedCardCount = len(kitty)
+		if phase == domain.MightyPhaseRoundEnd || phase == domain.MightyPhaseGameEnd {
+			for _, c := range kitty {
+				resObj.DiscardedCards = append(resObj.DiscardedCards, cardToOutput(c))
+			}
+		}
+	}
+
 	cfg := m.GetConfig()
 	resObj.Config = controller.MightyWebOutputConfig{
 		CpuDifficulty: int(cfg.CpuDifficulty),

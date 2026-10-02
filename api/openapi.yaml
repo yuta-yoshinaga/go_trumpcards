@@ -66213,6 +66213,14 @@ components:
           description: Kitty cards (visible to the declarer during the KittyExchange phase).
           items:
             $ref: '#/components/schemas/Card'
+        discardedCards:
+          type: array
+          description: The declarer's discarded cards, revealed only after the round ends.
+          items:
+            $ref: '#/components/schemas/Card'
+        discardedCardCount:
+          type: integer
+          description: Number of face-down discarded cards during play; zero before the kitty exchange.
         gameEndFlag:
           type: boolean
         winnerTeam:
