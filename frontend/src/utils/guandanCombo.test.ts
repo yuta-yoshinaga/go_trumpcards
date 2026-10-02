@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Card, CardDesign } from '../types/card';
-import { GUANDAN_COMBO, guandanEvaluate, guandanIsWild } from './guandanCombo';
+import { GUANDAN_COMBO, guandanBeats, guandanEvaluate, guandanIsWild } from './guandanCombo';
 
 const c = (design: CardDesign, value: number): Card => ({ design, value });
 const s = (v: number) => c('SPADE', v);
@@ -135,5 +135,34 @@ describe('guandanEvaluate — nothing', () => {
 
   it('is null for four cards that form no combo', () => {
     expect(guandanEvaluate([s(2), h(6), d(9), cl(13)], LV)).toBeNull();
+  });
+});
+
+describe('guandanBeats', () => {
+  it('compares ordinary combos only when kind and size match', () => {
+    expect(
+      guandanBeats({ kind: GUANDAN_COMBO.Single, rank: 6, size: 1 }, { kind: GUANDAN_COMBO.Single, rank: 5, size: 1 }),
+    ).toBe(true);
+    expect(
+      guandanBeats({ kind: GUANDAN_COMBO.Pair, rank: 6, size: 2 }, { kind: GUANDAN_COMBO.Single, rank: 5, size: 1 }),
+    ).toBe(false);
+  });
+
+  it('orders bombs by tier, then size, then rank', () => {
+    expect(
+      guandanBeats({ kind: GUANDAN_COMBO.Bomb, rank: 4, size: 4 }, { kind: GUANDAN_COMBO.Pair, rank: 14, size: 2 }),
+    ).toBe(true);
+    expect(
+      guandanBeats(
+        { kind: GUANDAN_COMBO.Bomb, rank: 14, size: 4 },
+        { kind: GUANDAN_COMBO.StraightFlush, rank: 14, size: 5 },
+      ),
+    ).toBe(false);
+    expect(
+      guandanBeats({ kind: GUANDAN_COMBO.Bomb, rank: 7, size: 5 }, { kind: GUANDAN_COMBO.Bomb, rank: 14, size: 4 }),
+    ).toBe(true);
+    expect(
+      guandanBeats({ kind: GUANDAN_COMBO.Bomb, rank: 7, size: 4 }, { kind: GUANDAN_COMBO.Bomb, rank: 14, size: 4 }),
+    ).toBe(false);
   });
 });

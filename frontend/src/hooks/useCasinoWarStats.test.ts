@@ -57,6 +57,10 @@ describe('readCasinoWarHistory', () => {
     localStorage.setItem(CASINOWAR_HISTORY_KEY, JSON.stringify([1, 'x', 2, 9, 0]));
     expect(readCasinoWarHistory()).toEqual([CasinoWarOutcome.WIN, CasinoWarOutcome.LOSS, CasinoWarOutcome.TIE]);
   });
+  it('reads legacy outcomes with zero net change and modern round entries', () => {
+    localStorage.setItem(CASINOWAR_HISTORY_KEY, JSON.stringify([1, { outcome: 2, netChange: -75 }]));
+    expect(readCasinoWarHistory()).toEqual([CasinoWarOutcome.WIN, CasinoWarOutcome.LOSS]);
+  });
 });
 
 describe('useCasinoWarStats', () => {
@@ -73,6 +77,20 @@ describe('useCasinoWarStats', () => {
     act(() => result.current.recordOutcome(CasinoWarOutcome.WIN));
     act(() => result.current.recordOutcome(CasinoWarOutcome.LOSS));
     expect(readCasinoWarHistory()).toEqual([CasinoWarOutcome.WIN, CasinoWarOutcome.LOSS]);
+  });
+
+  it('persists round net changes and derives cumulative profit/loss', () => {
+    const { result } = renderHook(() => useCasinoWarStats());
+    act(() => result.current.recordOutcome(CasinoWarOutcome.WIN, 100));
+    act(() => result.current.recordOutcome(CasinoWarOutcome.LOSS, -75));
+    expect(result.current.cumulativeNetChange).toBe(25);
+    expect(localStorage.getItem(CASINOWAR_HISTORY_KEY)).toContain('"netChange":-75');
+  });
+
+  it('treats legacy outcomes as zero change in cumulative profit/loss', () => {
+    localStorage.setItem(CASINOWAR_HISTORY_KEY, JSON.stringify([1, 2, 0]));
+    const { result } = renderHook(() => useCasinoWarStats());
+    expect(result.current.cumulativeNetChange).toBe(0);
   });
 
   it('rehydrates history from localStorage on mount', () => {

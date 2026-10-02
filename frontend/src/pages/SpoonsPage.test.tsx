@@ -233,6 +233,45 @@ describe('SpoonsPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pass', { cardIndex: 2 }));
   });
 
+  it('announces the passed and received cards after a changed hand response', async () => {
+    const updatedState = makeState({
+      players: [
+        makePlayer({
+          name: 'You',
+          isHuman: true,
+          hand: [
+            { design: 'HEART', value: 2 },
+            { design: 'CLOVER', value: 3 },
+            { design: 'DIAMOND', value: 4 },
+            { design: 'SPADE', value: 5 },
+          ],
+        }),
+        makePlayer(),
+        makePlayer(),
+        makePlayer(),
+      ],
+    });
+    mockExec.mockResolvedValueOnce(passState).mockResolvedValueOnce(updatedState);
+    renderWithProviders(<SpoonsPage />);
+
+    const live = await screen.findByTestId('spoons-pass-live');
+    fireEvent.click(await screen.findByRole('button', { name: '♠ A を渡す' }));
+
+    await waitFor(() => expect(live).toHaveTextContent('♠ Aを渡し、♠ 5を受け取りました。'));
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('does not announce a pass result when the response hand is unchanged', async () => {
+    mockExec.mockResolvedValueOnce(passState).mockResolvedValueOnce(passState);
+    renderWithProviders(<SpoonsPage />);
+
+    const live = await screen.findByTestId('spoons-pass-live');
+    fireEvent.click(await screen.findByRole('button', { name: '♠ A を渡す' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pass', { cardIndex: 0 }));
+    expect(live).toBeEmptyDOMElement();
+  });
+
   it('color-codes same-rank hand cards into groups and leaves singletons neutral', async () => {
     // Hand: 7♠ 7♥ 3♣ K♦ — the two 7s share a group color; 3 and K are neutral.
     mockExec.mockResolvedValue(

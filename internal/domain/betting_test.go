@@ -1059,6 +1059,21 @@ func TestDistributePotsWithWinnerFunc_Lowball(t *testing.T) {
 	assert.Equal(t, 100, players[0].GetChips())
 }
 
+func TestDistributePotsWithAwards_SplitRemainderAndSidePots(t *testing.T) {
+	cards := []*Card{NewCard(CardDesignSpade, 10, false), NewCard(CardDesignSpade, 11, false), NewCard(CardDesignSpade, 12, false), NewCard(CardDesignSpade, 13, false), NewCard(CardDesignSpade, 1, false)}
+	players := []BettingPlayer{
+		&mockBettingPlayer{handRank: 5, cards: cards},
+		&mockBettingPlayer{handRank: 5, cards: cards},
+	}
+	won, awards := DistributePotsWithAwards(players, []SidePot{
+		{Amount: 101, EligiblePlayers: []int{0, 1}},
+		{Amount: 25, EligiblePlayers: []int{0}},
+	})
+	assert.Equal(t, [][]PotAward{{{PlayerIdx: 0, Amount: 51}, {PlayerIdx: 1, Amount: 50}}, {{PlayerIdx: 0, Amount: 25}}}, awards)
+	assert.Equal(t, 76, won[0])
+	assert.Equal(t, 50, won[1])
+}
+
 func TestDistributePotsWithWinnerFunc_LowballEmptyWinners(t *testing.T) {
 	// All eligible players are folded → FindPotWinnersLowball returns [] → skip distribution
 	p0 := &mockBettingPlayer{folded: true, chips: 0}

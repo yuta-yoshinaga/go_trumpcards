@@ -84,6 +84,7 @@
   "trumpAndFriendPhase": "Pick trump suit (or No-Trump) and partner card",
   "kittyExchangePhase": "Kitty merged into your hand. Discard 3 cards.",
   "kittyLabel": "Kitty",
+  "discardedCards": "Discarded cards",
   "playPhase": {
     "lead": "Lead a card",
     "follow": "Play a card"

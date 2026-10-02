@@ -369,34 +369,48 @@ function TressettePageContent() {
                       </tr>
                     </thead>
                     <tbody>
-                      {teamLabels.map((label, idx) => (
-                        <tr key={label} className={humanPlayer && humanPlayer.teamId === idx ? 'text-ds-accent' : ''}>
-                          <td>{t('teamLabel', { team: label })}</td>
-                          <td className="text-center">{state.teamScores[idx] ?? 0}</td>
-                          <td className="text-center">
-                            <span
-                              className="inline-flex gap-0.5 align-middle"
-                              title={t('thirdsTooltip', { n: 3 - thirdsFilled(state.teamRoundThirds[idx]) })}
-                              data-testid={`tr-thirds-${idx.toString()}`}
-                            >
-                              {[0, 1, 2].map((d) => (
-                                <span
-                                  key={`tr-dot-${idx.toString()}-${d.toString()}`}
-                                  aria-hidden="true"
-                                  className={`inline-block w-2 h-2 rounded-full ${
-                                    d < thirdsFilled(state.teamRoundThirds[idx])
-                                      ? 'bg-ds-accent'
-                                      : 'border border-ds-border-subtle'
-                                  }`}
-                                />
-                              ))}
-                              <span className="sr-only">
-                                {t('thirdsAria', { filled: thirdsFilled(state.teamRoundThirds[idx]) })}
+                      {teamLabels.map((label, idx) => {
+                        const score = state.teamScores[idx]!;
+                        const pointsRemaining = state.config.targetPoints - score;
+
+                        return (
+                          <tr key={label} className={humanPlayer && humanPlayer.teamId === idx ? 'text-ds-accent' : ''}>
+                            <td>{t('teamLabel', { team: label })}</td>
+                            <td className="text-center">
+                              {score}
+                              {pointsRemaining > 0 && (
+                                <span className="ml-1">
+                                  {t('pointsRemaining', {
+                                    count: pointsRemaining,
+                                  })}
+                                </span>
+                              )}
+                            </td>
+                            <td className="text-center">
+                              <span
+                                className="inline-flex gap-0.5 align-middle"
+                                title={t('thirdsTooltip', { n: 3 - thirdsFilled(state.teamRoundThirds[idx]) })}
+                                data-testid={`tr-thirds-${idx.toString()}`}
+                              >
+                                {[0, 1, 2].map((d) => (
+                                  <span
+                                    key={`tr-dot-${idx.toString()}-${d.toString()}`}
+                                    aria-hidden="true"
+                                    className={`inline-block w-2 h-2 rounded-full ${
+                                      d < thirdsFilled(state.teamRoundThirds[idx])
+                                        ? 'bg-ds-accent'
+                                        : 'border border-ds-border-subtle'
+                                    }`}
+                                  />
+                                ))}
+                                <span className="sr-only">
+                                  {t('thirdsAria', { filled: thirdsFilled(state.teamRoundThirds[idx]) })}
+                                </span>
                               </span>
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

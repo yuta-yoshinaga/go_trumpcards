@@ -126,6 +126,97 @@ describe('MaoPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 
+  it('announces each card added by a human draw once', async () => {
+    const drawnCard = { design: 'DIAMOND', value: 12 } as const;
+    mockExec.mockResolvedValueOnce(playPhaseState).mockResolvedValueOnce({
+      ...playPhaseState,
+      players: playPhaseState.players.map((player) =>
+        player.isHuman ? { ...player, cards: [...(player.cards ?? []), drawnCard] } : player,
+      ),
+    });
+    renderWithProviders(<MaoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '引く' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '引く' }));
+    const live = await screen.findByTestId('mao-draw-announcement');
+    await waitFor(() => expect(live).toHaveTextContent('♦ Q'));
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('clears a draw announcement after a successful play response', async () => {
+    const drawnCard = { design: 'DIAMOND', value: 12 } as const;
+    mockExec
+      .mockResolvedValueOnce(playPhaseState)
+      .mockResolvedValueOnce({
+        ...playPhaseState,
+        players: playPhaseState.players.map((player) =>
+          player.isHuman ? { ...player, cards: [...(player.cards ?? []), drawnCard] } : player,
+        ),
+      })
+      .mockResolvedValueOnce(playPhaseState);
+    renderWithProviders(<MaoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '引く' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '引く' }));
+    const live = await screen.findByTestId('mao-draw-announcement');
+    await waitFor(() => expect(live).toHaveTextContent('♦ Q'));
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('play', 0));
+    await waitFor(() => expect(live).toBeEmptyDOMElement());
+  });
+
+  it('does not announce a draw response when the human hand did not grow', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      message: 'Draw response received',
+      players: playPhaseState.players.map((player) => ({ ...player })),
+    });
+    renderWithProviders(<MaoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '引く' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '引く' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+    expect(await screen.findByText('Draw response received')).toBeInTheDocument();
+    expect(await screen.findByTestId('mao-draw-announcement')).toBeEmptyDOMElement();
+  });
+
+  it('does not announce cards from a later play response after a rejected draw', async () => {
+    const unrelatedCard = { design: 'DIAMOND', value: 12 } as const;
+    mockExec
+      .mockResolvedValueOnce(playPhaseState)
+      .mockRejectedValueOnce(new Error('draw rejected'))
+      .mockResolvedValueOnce({
+        ...playPhaseState,
+        players: playPhaseState.players.map((player) =>
+          player.isHuman ? { ...player, cards: [...(player.cards ?? []), unrelatedCard] } : player,
+        ),
+      });
+    renderWithProviders(<MaoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '引く' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '引く' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+    await waitFor(() => expect(screen.getByRole('button', { name: '引く' })).toBeEnabled());
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('play', 0));
+    expect(await screen.findByTestId('mao-draw-announcement')).toBeEmptyDOMElement();
+  });
+
+  it('does not announce cards from play or round transition responses', async () => {
+    const unrelatedCard = { design: 'DIAMOND', value: 12 } as const;
+    mockExec.mockResolvedValueOnce(roundEndState).mockResolvedValueOnce({
+      ...playPhaseState,
+      players: playPhaseState.players.map((player) =>
+        player.isHuman ? { ...player, cards: [...(player.cards ?? []), unrelatedCard] } : player,
+      ),
+    });
+    renderWithProviders(<MaoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /次のラウンド|Next Round/ })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: /次のラウンド|Next Round/ }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+    expect(await screen.findByTestId('mao-draw-announcement')).toBeEmptyDOMElement();
+  });
+
   it('buzzes and flashes the rule panel when a rule penalty lands', async () => {
     mockExec.mockResolvedValue(rulePenaltyState);
     renderWithProviders(<MaoPage />);

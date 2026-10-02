@@ -55,6 +55,21 @@ describe('ZwanzigerrufenPage', () => {
     expect(await screen.findByTestId('zw-info')).toHaveTextContent('ディール 1/4');
   });
 
+  it.each([
+    ['bid', bidState, 'あなたの入札の番です'],
+    ['talon', makeZwanzigerrufenState({ ...talonState, currentPlayerIdx: 2 }), 'CPU2の場札交換の番です'],
+    ['play', makeZwanzigerrufenState({ ...playState, currentPlayerIdx: 3 }), 'CPU3のカードプレイの番です'],
+  ])('announces the %s turn in the persistent live region', async (_phase, state, announcement) => {
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<ZwanzigerrufenPage />);
+
+    const liveRegion = await screen.findByTestId('zw-turn-announcement');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toHaveTextContent(announcement);
+    expect(screen.getByTestId('phase-indicator')).toContainElement(liveRegion);
+  });
+
   it('shows the lead suit of the current trick and clears it when the trick is empty', async () => {
     mockExec.mockResolvedValue(
       makeZwanzigerrufenState({

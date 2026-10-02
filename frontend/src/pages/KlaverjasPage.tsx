@@ -271,6 +271,14 @@ function KlaverjasPageContent() {
                   label={t('currentTrick')}
                   dataTutorial="klaverjas-trick-display"
                 />
+                {isPlayPhase && state.currentTrick.length > 0 && (
+                  <div
+                    className="my-2 text-center text-sm text-ds-text-primary"
+                    data-testid="klaverjas-current-trick-points"
+                  >
+                    {t('currentTrickPoints', { points: state.currentTrickPoints })}
+                  </div>
+                )}
                 {/* Show the resolved trick result until the next trick starts. */}
                 {showLastTrickResult && state.lastTrickTeam >= 0 && (
                   <div

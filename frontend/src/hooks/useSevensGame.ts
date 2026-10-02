@@ -3,7 +3,7 @@ import { type SevensConfigInput, sevensApi } from '../api/gameApi';
 import type { SevensAction, SevensResponse } from '../types/card';
 import { buildReplayStates } from '../utils/replayBuilder';
 import { runReplay, shouldSkipReplay } from './gameReplay';
-import { useGameApi } from './useGameApi';
+import { isRejectedAction, useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
 import { useIsMounted } from './useIsMounted';
 
@@ -100,11 +100,17 @@ export function useSevensGame() {
   const { config, setConfig, handleConfigChange, handleToggle } =
     useGameConfig<SevensConfigState>(DEFAULT_SEVENS_CONFIG);
   const [displayState, setDisplayState] = useState<SevensResponse | null>(null);
+  const [placedJoker, setPlacedJoker] = useState<{ suit: number; value: number } | null>(null);
 
   const lastReplayedActionsRef = useRef<SevensResponse['cpuActions']>(undefined);
 
   const onSuccess = useCallback(
-    async (res: SevensResponse) => {
+    async (res: SevensResponse, args: Parameters<typeof sevensApi.exec>) => {
+      if (args[0] === 'joker' && !isRejectedAction(res)) {
+        const suit = args[2] as number;
+        const value = args[3] as number;
+        if ((res.tablePlaced[suit] & (1 << value)) !== 0) setPlacedJoker({ suit, value });
+      }
       setJokerCardIdx(null);
       // Server response uses jokerReclaimEnabled / endStopEnabled, but the API
       // request uses jokerReclaim / endStop — translate while writing into
@@ -152,6 +158,7 @@ export function useSevensGame() {
 
   const handleJokerPlace = useCallback(
     (suit: number, value: number) => {
+      setPlacedJoker(null);
       exec('joker', jokerCardIdx as number, suit, value);
     },
     [exec, jokerCardIdx],
@@ -159,6 +166,7 @@ export function useSevensGame() {
 
   return {
     state: displayState,
+    placedJoker,
     loading,
     error,
     exec,

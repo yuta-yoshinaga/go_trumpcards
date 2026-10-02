@@ -286,7 +286,7 @@ function ThreeCardPageContent() {
             )}
 
             {/* Dealer Hand */}
-            {state.dealerHand.length > 0 && (
+            {!isActionPhase && state.dealerHand.length > 0 && (
               <div className="mb-4">
                 <div className="text-ds-error font-bold text-center mb-1">
                   <span aria-hidden="true">🔴</span> {t('dealer')}

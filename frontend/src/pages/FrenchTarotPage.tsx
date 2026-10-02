@@ -494,6 +494,7 @@ function FrenchTarotPageContent() {
                 validIndices={handValidIndices}
                 restrictedTooltip={canDiscard ? t('chienRestricted') : t('playButton')}
                 cardTitleFor={canDiscard ? ecartTitleFor : undefined}
+                cardStatusFor={canDiscard ? ecartTitleFor : undefined}
               />
             )}
 

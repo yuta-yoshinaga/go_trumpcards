@@ -188,6 +188,14 @@ function CourchevelPageContent() {
     () => omahaLivePreviewKey(humanPlayer, state?.communityCards ?? [], { isActive, isShowdown }),
     [isActive, isShowdown, humanPlayer, state?.communityCards],
   );
+  const liveBestHoleSet = useMemo(() => {
+    if (!liveBestHandKey || !humanPlayer || humanPlayer.folded) return new Set<number>();
+    return new Set(humanPlayer.liveBestHandHoleIndices ?? []);
+  }, [humanPlayer, liveBestHandKey]);
+  const liveBestBoardSet = useMemo(() => {
+    if (!liveBestHandKey || !humanPlayer || humanPlayer.folded) return new Set<number>();
+    return new Set(humanPlayer.liveBestHandBoardIndices ?? []);
+  }, [humanPlayer, liveBestHandKey]);
 
   if (!state)
     return (
@@ -262,7 +270,7 @@ function CourchevelPageContent() {
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
                       ? state.communityCards.map((card, idx) => {
-                          const inBest = showdownBest5.boardSet.has(idx);
+                          const inBest = showdownBest5.boardSet.has(idx) || liveBestBoardSet.has(idx);
                           const dim = showdownBest5.boardSet.size > 0 && !inBest;
                           return (
                             <div
@@ -428,7 +436,7 @@ function CourchevelPageContent() {
                 >
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card, idx) => {
-                        const inBest = showdownBest5.holeSet.has(idx);
+                        const inBest = showdownBest5.holeSet.has(idx) || liveBestHoleSet.has(idx);
                         const showUsage = showdownBest5.holeSet.size > 0;
                         const dim = showUsage && !inBest;
                         return (
@@ -438,6 +446,7 @@ function CourchevelPageContent() {
                                 inBest ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
                               } ${dim ? 'opacity-50' : ''}`}
                               data-best5-hole={inBest || undefined}
+                              data-best5-hole-index={inBest ? idx : undefined}
                             >
                               <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
                             </div>

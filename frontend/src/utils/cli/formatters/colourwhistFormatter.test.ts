@@ -12,7 +12,17 @@ const cards: Card[] = [
 
 const base: ColourWhistResponse = {
   players: [
-    { id: 0, isHuman: true, cardCount: 3, cards, trickCount: 2, score: 6, isDeclarerSide: true, hasPassed: false },
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 3,
+      cards,
+      trickCount: 2,
+      score: 6,
+      roundScores: [],
+      isDeclarerSide: true,
+      hasPassed: false,
+    },
     {
       id: 1,
       isHuman: false,
@@ -20,6 +30,7 @@ const base: ColourWhistResponse = {
       cards: [],
       trickCount: 1,
       score: -2,
+      roundScores: [],
       isDeclarerSide: false,
       hasPassed: true,
     },

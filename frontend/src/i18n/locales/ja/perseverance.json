@@ -50,7 +50,9 @@
   "redeal": "集めて配り直す",
   "stats": {
     "title": "セッション成績",
+    "starts": "開始数: {{count}}",
     "games": "クリア回数: {{count}}",
+    "clearRate": "クリア率: {{rate}}%",
     "moves": "合計手数: {{count}}",
     "redeals": "クリア時の残り再配り回数: {{count}}",
     "clear": "成績を消去"

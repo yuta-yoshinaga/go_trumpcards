@@ -11,6 +11,7 @@
   "hidden": "???",
   "hiddenCardAriaLabel": "相手には見えていますが、あなたには見えないカード",
   "faceUpCardAriaLabel": "{{name}}のカード: {{card}}",
+  "winnerCardAriaLabel": "勝者のカード",
   "ante": "アンティ",
   "settings": {
     "ante": "アンティ",

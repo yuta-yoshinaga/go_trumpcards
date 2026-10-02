@@ -33,6 +33,7 @@ import type { WhistResponse } from '../types/card';
 import { WhistPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { suitName } from '../utils/cardUtils';
 import { parseWhistCommand, WHIST_HELP } from '../utils/cli/commands/whistCommands';
 import { formatWhistState } from '../utils/cli/formatters/whistFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -193,6 +194,14 @@ function WhistPageContent() {
     return <GameSkeleton gameKey="whist" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
+  const trumpDesign = suitName(state.trumpSuit);
+  const trumpIndices =
+    humanPlayer && trumpDesign
+      ? humanPlayer.cards.reduce<number[]>((indices, card, index) => {
+          if (card.design === trumpDesign) indices.push(index);
+          return indices;
+        }, [])
+      : [];
   const isPlayPhase = state.phase === WhistPhase.PLAY;
   const isTrickEnd = state.phase === WhistPhase.TRICK_END;
   const isRoundEnd = state.phase === WhistPhase.ROUND_END;
@@ -446,6 +455,8 @@ function WhistPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="wh"
+                trumpIndices={trumpIndices}
+                trumpAccessibleLabel={t('trumpCardDescription')}
                 highlightIndices={isHumanTurn && hint?.cardIndex !== undefined ? [hint.cardIndex] : undefined}
                 validIndices={isHumanTurn ? state.validPlayIndices : undefined}
                 restrictedTooltip={t('restrictedCard')}

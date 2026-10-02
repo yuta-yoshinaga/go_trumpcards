@@ -17,7 +17,7 @@ test.describe("Short Deck Hold'em E2E", () => {
     let roundEnded = false;
     for (let round = 0; round < 20; round++) {
       const checkButton = page.getByRole('button', { name: 'チェック', exact: true });
-      const callButton = page.getByRole('button', { name: 'コール', exact: true });
+      const callButton = page.getByRole('button', { name: /^コール(?:\s|$)/ });
 
       // Wait for whichever control appears FIRST rather than probing each one
       // in turn: two sequential 3s probes cost 6s per lap even once the hand
