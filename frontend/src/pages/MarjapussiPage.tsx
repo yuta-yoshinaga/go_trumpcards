@@ -551,6 +551,21 @@ function MarjapussiPageContent() {
                 dataTutorialPrefix="marjapussi"
                 validIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}
+                cardStatusFor={(idx) => {
+                  if (
+                    !canPlay ||
+                    state.playableIndices.includes(idx) ||
+                    state.currentTrick.length === 0 ||
+                    !humanPlayer
+                  ) {
+                    return undefined;
+                  }
+                  const leadSuit = state.currentTrick[0].card.design;
+                  if (humanPlayer.cards.some((card) => card.design === leadSuit)) {
+                    return t('restrictionReason.followLeadSuit');
+                  }
+                  return t('restrictionReason.playTrump');
+                }}
               />
             )}
 

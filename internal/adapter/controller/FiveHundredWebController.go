@@ -34,6 +34,7 @@ type FiveHundredWebOutputBid struct {
 	Tricks int `json:"tricks"`
 	Suit   int `json:"suit"`
 	Value  int `json:"value"`
+	Order  int `json:"order"`
 }
 
 // FiveHundredWebOutputPlayer 500 Webアウトプットプレイヤー
