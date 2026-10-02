@@ -36,18 +36,19 @@ type ThreeThirteenWebOutputPlayer struct {
 
 // ThreeThirteenWebOutput スリー・サーティーン Web アウトプット
 type ThreeThirteenWebOutput struct {
-	Players          []*ThreeThirteenWebOutputPlayer `json:"players"`
-	Phase            int                             `json:"phase"`
-	Round            int                             `json:"round"`
-	MaxRound         int                             `json:"maxRound"`
-	WildRank         int                             `json:"wildRank"`
-	DealCount        int                             `json:"dealCount"`
-	CurrentPlayerIdx int                             `json:"currentPlayerIdx"`
-	KnockerIdx       int                             `json:"knockerIdx"`
-	DiscardTop       *WebOutputCard                  `json:"discardTop"`
-	DrawPileCount    int                             `json:"drawPileCount"`
-	GameEndFlag      bool                            `json:"gameEndFlag"`
-	WinnerIdx        int                             `json:"winnerIdx"`
+	Players           []*ThreeThirteenWebOutputPlayer `json:"players"`
+	Phase             int                             `json:"phase"`
+	Round             int                             `json:"round"`
+	RoundScoreHistory [][]int                         `json:"roundScoreHistory"`
+	MaxRound          int                             `json:"maxRound"`
+	WildRank          int                             `json:"wildRank"`
+	DealCount         int                             `json:"dealCount"`
+	CurrentPlayerIdx  int                             `json:"currentPlayerIdx"`
+	KnockerIdx        int                             `json:"knockerIdx"`
+	DiscardTop        *WebOutputCard                  `json:"discardTop"`
+	DrawPileCount     int                             `json:"drawPileCount"`
+	GameEndFlag       bool                            `json:"gameEndFlag"`
+	WinnerIdx         int                             `json:"winnerIdx"`
 	WebOutputBase
 	Config ThreeThirteenWebOutputConfig `json:"config"`
 }

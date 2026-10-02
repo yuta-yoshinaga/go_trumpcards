@@ -25,6 +25,8 @@ export interface ThreeThirteenResponse extends BaseGameResponse {
   players: ThreeThirteenPlayerData[];
   phase: number;
   round: number;
+  /** Completed round scores, indexed by round then player. */
+  roundScoreHistory: number[][];
   /** The total number of rounds in the game. */
   maxRound: number;
   wildRank: number;
