@@ -214,6 +214,9 @@ describe('VideoPokerGameContent', () => {
     renderContent();
     await waitFor(() => expect(screen.getByText(/配当.*5/)).toBeInTheDocument());
     expect(screen.getByTestId('vp-net-change')).toHaveTextContent('+4');
+    expect(screen.getByTestId('vp-result-announce')).toHaveTextContent(
+      '役: ジャックス・オア・ベター、配当 5 枚、純増減 +4',
+    );
     expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument();
   });
 
@@ -221,6 +224,7 @@ describe('VideoPokerGameContent', () => {
     mockExec.mockResolvedValue(resultPhaseLose);
     renderContent();
     await waitFor(() => expect(screen.getByTestId('vp-net-change')).toHaveTextContent('-1'));
+    expect(screen.getByTestId('vp-result-announce')).toHaveTextContent('役なし、ベット没収、純増減 -1');
     await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
   });
 
@@ -228,6 +232,20 @@ describe('VideoPokerGameContent', () => {
     mockExec.mockResolvedValue({ ...resultPhaseWin, betAmount: 5, payout: 5 });
     renderContent();
     await waitFor(() => expect(screen.getByTestId('vp-net-change')).toHaveTextContent('+0'));
+  });
+
+  it('re-announces identical consecutive hand results', async () => {
+    mockExec.mockImplementation(async () => ({ ...resultPhaseWin }));
+    renderContent();
+    await waitFor(() => expect(screen.getByTestId('vp-result-announce')).toHaveTextContent('純増減 +4'));
+    const firstNonce = Number(screen.getByTestId('vp-result-announce').getAttribute('data-nonce'));
+
+    fireEvent.click(screen.getByRole('button', { name: /次のゲーム/ }));
+
+    await waitFor(() =>
+      expect(Number(screen.getByTestId('vp-result-announce').getAttribute('data-nonce'))).toBeGreaterThan(firstNonce),
+    );
+    expect(screen.getByTestId('vp-result-announce')).toHaveTextContent('純増減 +4');
   });
 
   it('auto-hold pre-selects the hint-recommended cards on entering draw phase', async () => {
