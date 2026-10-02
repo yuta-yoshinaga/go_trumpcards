@@ -1035,6 +1035,12 @@ func (g *ChemindeFer) UnmarshalJSON(data []byte) error {
 	g.result = ChemindeFerResult(j.Result)
 	g.lastNet = j.LastNet
 	g.roundNetHistory = j.RoundNetHistory
+	for i := range g.roundNetHistory {
+		if len(g.roundNetHistory[i].Deltas) != len(g.players) {
+			// lastNet と同様に席数へ正規化し、損益を別の席へ貼り違えない。
+			g.roundNetHistory[i].Deltas = make([]int, len(g.players))
+		}
+	}
 	if len(g.lastNet) != len(g.players) {
 		// **長さが席数と合わない保存は損益を席に貼り違える。** 0 で埋め直す。
 		g.lastNet = make([]int, len(g.players))

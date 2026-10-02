@@ -246,7 +246,7 @@ function ChemindeFerPageContent() {
                   <span className="text-ds-text-primary">{t('roundHistory.round', { n: round.roundNumber })}</span>
                   <ul className="flex flex-wrap gap-x-3 text-ds-text-muted">
                     {state.players.map((player) => {
-                      const delta = round.deltas[player.id] ?? 0;
+                      const delta = round.deltas[player.id];
                       return (
                         <li key={player.id}>
                           {player.isHuman ? t('label.you') : t('label.cpu', { idx: player.id })}:{' '}

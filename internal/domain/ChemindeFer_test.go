@@ -872,3 +872,22 @@ func TestChemindeFer_UnmarshalRejectsOversizedRoundHistory(t *testing.T) {
 	var restored ChemindeFer
 	assert.ErrorContains(t, json.Unmarshal(data, &restored), "round history too long")
 }
+
+func TestChemindeFer_UnmarshalNormalizesRoundHistoryDeltas(t *testing.T) {
+	g := NewDefaultChemindeFer()
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var snapshot map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &snapshot))
+	historyJSON := json.RawMessage(`[{"roundNumber":1,"deltas":null},{"roundNumber":2,"deltas":[17]}]`)
+	snapshot["rnh"] = historyJSON
+	data, err = json.Marshal(snapshot)
+	require.NoError(t, err)
+
+	var restored ChemindeFer
+	require.NoError(t, json.Unmarshal(data, &restored))
+	history := restored.GetRoundNetHistory()
+	require.Len(t, history, 2)
+	assert.Equal(t, make([]int, ChemindeFerSeatCnt), history[0].Deltas)
+	assert.Equal(t, make([]int, ChemindeFerSeatCnt), history[1].Deltas)
+}
