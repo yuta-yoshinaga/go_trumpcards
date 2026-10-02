@@ -147,10 +147,16 @@ function SutdaPageContent() {
   const lastResult = state.lastResult;
   const showdownWinners = lastResult?.winners.map((winner, index) => {
     const amount = lastResult.shares[index];
-    if (amount === undefined) return playerName(winner, winner === 0);
-    return t('winnerShare', {
+    const handName = lastResult.handNames[winner];
+    if (amount === undefined)
+      return t('winnerHand', {
+        name: playerName(winner, winner === 0),
+        hand: handName ? t(`handName.${handName}`) : '',
+      });
+    return t('winnerShareHand', {
       name: playerName(winner, winner === 0),
       amount,
+      hand: handName ? t(`handName.${handName}`) : '',
     });
   });
 
@@ -284,8 +290,9 @@ function SutdaPageContent() {
               ))}
             </div>
 
-            {state.lastResult && (isShowdown || isGameEnd) && (
+            {state.lastResult && (
               <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="sutda-result">
+                <p>{t('previousHand', { n: state.handNumber - (isShowdown || isGameEnd ? 0 : 1) })}</p>
                 {t('showdownResult', {
                   names: showdownWinners?.join(t('listSeparator')),
                   pot: state.lastResult.pot,

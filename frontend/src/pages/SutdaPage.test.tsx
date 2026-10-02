@@ -154,6 +154,42 @@ describe('SutdaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nexthand'));
   });
 
+  it('keeps the previous hand number, winners, shares, and winning hands visible during the next hand', async () => {
+    const result = {
+      winners: [0, 1],
+      shares: [26, 25],
+      pot: 51,
+      handNames: ['ali', 'ali', 'kkeut5'],
+      folded: [false, false, false],
+    };
+    mockExec
+      .mockResolvedValueOnce(
+        makeSutdaState({
+          phase: 'showdown',
+          isShowdown: true,
+          isHumanTurn: false,
+          lastResult: result,
+        }),
+      )
+      .mockResolvedValueOnce(
+        makeSutdaState({
+          phase: 'bet',
+          handNumber: 3,
+          lastResult: result,
+        }),
+      );
+    renderWithProviders(<SutdaPage />);
+    fireEvent.click(await screen.findByTestId('sutda-next-hand'));
+    await waitFor(() => expect(screen.getByText('ハンド 3')).toBeInTheDocument());
+    const resultPanel = await screen.findByTestId('sutda-result');
+    expect(resultPanel).toHaveTextContent('ハンド 2');
+    expect(resultPanel).toHaveTextContent('あなた（26）');
+    expect(resultPanel).toHaveTextContent('CPU 1（25）');
+    expect(resultPanel).toHaveTextContent('あなた（26）: アリ（1+2）');
+    expect(resultPanel).toHaveTextContent('CPU 1（25）: アリ（1+2）');
+    expect(resultPanel).toHaveTextContent('合計 51');
+  });
+
   it('shows the winner name without an amount when saved shares are missing', async () => {
     mockExec.mockResolvedValue(
       makeSutdaState({
@@ -233,7 +269,7 @@ describe('SutdaPage', () => {
     );
     renderWithProviders(<SutdaPage />);
     const result = await screen.findByTestId('sutda-result');
-    expect(result).toHaveTextContent('あなた（26）、CPU 1（25）');
+    expect(result).toHaveTextContent('あなた（26）: アリ（1+2）、CPU 1（25）: アリ（1+2）');
     expect(result).toHaveTextContent('合計 51');
     expect(screen.getByTestId('sutda-chips-0')).toHaveTextContent('1026');
     expect(screen.getByTestId('sutda-chips-1')).toHaveTextContent('1025');
