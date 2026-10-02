@@ -35,6 +35,7 @@ import { MACHIAVELLI_HELP, parseMachiavelliCommand } from '../utils/cli/commands
 import { formatMachiavelliState } from '../utils/cli/formatters/machiavelliFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { sortedHandForDisplay } from '../utils/handDisplaySort';
 import { findHandMeld } from '../utils/hints/machiavelliHint';
 import { designToNum, evaluateRearrange, isMachiavelliValidMeld } from '../utils/machiavelliRearrange';
 import { playerName } from '../utils/playerUtils';
@@ -104,6 +105,9 @@ function MachiavelliPageContent() {
     handleRearrange,
     handleNextRound,
   } = useMachiavelliGame();
+  const [handSorted, setHandSorted] = useState(false);
+  const humanHand = state?.players.find((p) => p.isHuman)?.cards ?? [];
+  const displayHand = sortedHandForDisplay(humanHand, handSorted ? 'rank' : 'original');
   // Rearrange composer: staged assignment of pool cards (flattened table cards +
   // selected hand cards) into proposed melds, previewed against the domain rules.
   const [rearrangeOpen, setRearrangeOpen] = useState(false);
@@ -146,7 +150,7 @@ function MachiavelliPageContent() {
 
   useCardKeyboardNav({
     cardCount: humanCardCountForKbd,
-    onToggle: toggleCard,
+    onToggle: (index) => toggleCard(displayHand[index].index),
     onConfirm: confirmAction,
     onClear: clearSelection,
     enabled: !!isHumanTurnForKbd && !loading,
@@ -556,30 +560,32 @@ function MachiavelliPageContent() {
             )}
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="mv-player-hand">
-                {humanPlayer.cards.map((card, idx) => (
-                  <button
-                    type="button"
-                    key={`${card.design}-${card.value}-${idx}`}
-                    onClick={() => toggleCard(idx)}
-                    aria-label={cardAlt(card)}
-                    aria-pressed={selectedCardIndices.includes(idx)}
-                    data-meld-hint={meldHintIndices.has(idx) || undefined}
-                    className={`transition-transform ${focusRingCard} ${
-                      meldHintIndices.has(idx) && !selectedCardIndices.includes(idx)
-                        ? 'ring-2 ring-ds-success rounded'
-                        : ''
-                    }`}
-                    style={{
-                      background: 'none',
-                      padding: 0,
-                      borderRadius: 8,
-                      ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                      boxSizing: 'border-box',
-                    }}
-                  >
-                    <AnimatedCard card={card} width={cardWidth} />
-                  </button>
-                ))}
+                {displayHand.map(({ card, index }) => {
+                  return (
+                    <button
+                      type="button"
+                      key={`${card.design}-${card.value}-${index}`}
+                      onClick={() => toggleCard(index)}
+                      aria-label={cardAlt(card)}
+                      aria-pressed={selectedCardIndices.includes(index)}
+                      data-meld-hint={meldHintIndices.has(index) || undefined}
+                      className={`transition-transform ${focusRingCard} ${
+                        meldHintIndices.has(index) && !selectedCardIndices.includes(index)
+                          ? 'ring-2 ring-ds-success rounded'
+                          : ''
+                      }`}
+                      style={{
+                        background: 'none',
+                        padding: 0,
+                        borderRadius: 8,
+                        ...selectedCardStyle(selectedCardIndices.includes(index)),
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      <AnimatedCard card={card} width={cardWidth} />
+                    </button>
+                  );
+                })}
               </div>
             )}
 
@@ -588,6 +594,16 @@ function MachiavelliPageContent() {
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex gap-2 items-center flex-wrap">
+              {isHumanTurn && (
+                <button
+                  type="button"
+                  className={btnOutline}
+                  onClick={() => setHandSorted((sorted) => !sorted)}
+                  aria-pressed={handSorted}
+                >
+                  {t(handSorted ? 'handOrder.deal' : 'handOrder.rankSuit')}
+                </button>
+              )}
               {isHumanTurn && (
                 <>
                   <button
