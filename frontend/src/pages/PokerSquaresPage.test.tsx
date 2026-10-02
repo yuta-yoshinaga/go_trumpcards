@@ -161,6 +161,97 @@ describe('PokerSquaresPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('place', 2, 3));
   });
 
+  it('announces confirmed line scores and the updated total after a scoring placement', async () => {
+    const board = emptyBoard();
+    board[0] = Array.from({ length: 5 }, (_, col) => ({ card: card('HEART', col + 1) }));
+    const scoredState = {
+      ...playingStateWithUndo,
+      board,
+      rowScores: [2, 0, 0, 0, 0],
+      totalScore: 2,
+    };
+    mockApi.mockResolvedValueOnce(playingState).mockResolvedValueOnce(scoredState);
+    renderWithProviders(<PokerSquaresPage />);
+    const live = await screen.findByTestId('ps-confirmed-live');
+    expect(live).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByTestId('cell-0-0'));
+
+    await waitFor(() => expect(live).toHaveTextContent('行 0 は 2 点。合計 2 点'));
+  });
+
+  it('announces a completed column using zero-based coordinates', async () => {
+    const board = emptyBoard();
+    board.forEach((row, rowIndex) => {
+      row[2] = { card: card('HEART', rowIndex + 1) };
+    });
+    const scoredState = { ...playingStateWithUndo, board, colScores: [0, 0, 2, 0, 0], totalScore: 2 };
+    mockApi.mockResolvedValueOnce(playingState).mockResolvedValueOnce(scoredState);
+    renderWithProviders(<PokerSquaresPage />);
+
+    const live = await screen.findByTestId('ps-confirmed-live');
+    fireEvent.click(screen.getByTestId('cell-0-0'));
+    await waitFor(() => expect(live).toHaveTextContent('列 2 は 2 点。合計 2 点'));
+  });
+
+  it('announces row and column scores together when one placement completes both', async () => {
+    const board = emptyBoard();
+    for (let col = 0; col < 5; col++) {
+      if (col !== 3) board[1][col] = { card: card('HEART', col + 1) };
+    }
+    for (let row = 0; row < 5; row++) {
+      if (row !== 1) board[row][3] = { card: card('SPADE', row + 1) };
+    }
+    const scoredBoard = board.map((row) => row.map((cell) => ({ ...cell })));
+    scoredBoard[1][3] = { card: card('HEART', 5) };
+    const before = { ...playingState, board };
+    const after = {
+      ...playingStateWithUndo,
+      board: scoredBoard,
+      rowScores: [0, 2, 0, 0, 0],
+      colScores: [0, 0, 0, 2, 0],
+      totalScore: 4,
+    };
+    mockApi.mockResolvedValueOnce(before).mockResolvedValueOnce(after);
+    renderWithProviders(<PokerSquaresPage />);
+
+    const live = await screen.findByTestId('ps-confirmed-live');
+    fireEvent.click(screen.getByTestId('cell-1-3'));
+    await waitFor(() => expect(live).toHaveTextContent('行 1 は 2 点、列 3 は 2 点。合計 4 点'));
+  });
+
+  it('announces a line again after undoing and placing the card again', async () => {
+    const board = emptyBoard();
+    board[0] = Array.from({ length: 5 }, (_, col) => ({ card: card('HEART', col + 1) }));
+    const scoredState = { ...playingStateWithUndo, board, rowScores: [2, 0, 0, 0, 0], totalScore: 2 };
+    mockApi
+      .mockResolvedValueOnce(playingState)
+      .mockResolvedValueOnce(scoredState)
+      .mockResolvedValueOnce(playingState)
+      .mockResolvedValueOnce(scoredState);
+    renderWithProviders(<PokerSquaresPage />);
+
+    const live = await screen.findByTestId('ps-confirmed-live');
+    fireEvent.click(screen.getByTestId('cell-0-0'));
+    await waitFor(() => expect(live).toHaveTextContent('行 0 は 2 点。合計 2 点'));
+
+    fireEvent.click(screen.getByRole('button', { name: '元に戻す' }));
+    await waitFor(() => expect(live).toBeEmptyDOMElement());
+    fireEvent.click(screen.getByTestId('cell-0-0'));
+    await waitFor(() => expect(live).toHaveTextContent('行 0 は 2 点。合計 2 点'));
+  });
+
+  it('does not announce scores when a placement completes no scored line', async () => {
+    mockApi.mockResolvedValueOnce(playingState).mockResolvedValueOnce(playingStateWithUndo);
+    renderWithProviders(<PokerSquaresPage />);
+    const live = await screen.findByTestId('ps-confirmed-live');
+
+    fireEvent.click(screen.getByTestId('cell-0-0'));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('place', 0, 0));
+
+    expect(live).toBeEmptyDOMElement();
+  });
+
   it('does not place on the first touch tap and keeps the preview visible', async () => {
     const board = emptyBoard();
     board[0][0] = { card: card('HEART', 2) };
