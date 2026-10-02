@@ -4,6 +4,7 @@ import { createElement, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { matrimonyApi } from '../api/games/matrimony';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
+import { makeMatrimonyState } from '../test/stateFactories';
 import type { MatrimonyResponse } from '../types/games/matrimony';
 import { useMatrimonyGame } from './useMatrimonyGame';
 
@@ -18,18 +19,7 @@ vi.mock('../api/games/matrimony', () => ({
 
 const mockExec = vi.mocked(matrimonyApi.exec);
 
-const baseState: MatrimonyResponse = {
-  tableau: Array.from({ length: 16 }, () => null),
-  foundation: Array.from({ length: 4 }, () => []),
-  stockCount: 88,
-  redealCount: 0,
-  waste: [],
-  phase: 0,
-  moveCount: 0,
-  canUndo: false,
-  isStalemate: false,
-  message: '',
-};
+const baseState: MatrimonyResponse = makeMatrimonyState();
 
 describe('useMatrimonyGame', () => {
   beforeEach(() => {

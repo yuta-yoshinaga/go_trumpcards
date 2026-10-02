@@ -32,6 +32,7 @@ func TestMatrimonyResetUsesTwoDecksAndSixteenTableauSlots(t *testing.T) {
 	c.Reset()
 	assert.Len(t, c.GetTableau(), MatrimonyTableauCnt)
 	assert.Equal(t, 88, c.GetStockCount())
+	assert.Equal(t, MatrimonyMaxRedeals, c.GetMaxRedeals())
 	assert.Equal(t, MatrimonyTotalCards, c.GetStockCount()+MatrimonyTableauCnt)
 }
 

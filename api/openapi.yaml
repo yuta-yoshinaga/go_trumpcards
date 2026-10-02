@@ -7972,7 +7972,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/RoyalCotillionResponse'
+                  - $ref: '#/components/schemas/MatrimonyResponse'
                   - $ref: '#/components/schemas/ActionLogResponse'
                 description: |
                   The shape depends on the command. Ordinary commands return the game
@@ -7982,7 +7982,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RoyalCotillionResponse'
+                $ref: '#/components/schemas/MatrimonyResponse'
   /crazyquilt/exec:
     post:
       tags:
@@ -63477,6 +63477,66 @@ components:
         toIdx:
           type: integer
           description: Destination index, or -1 when the destination is the waste
+    MatrimonyResponse:
+      type: object
+      description: Response payload for /matrimony/exec
+      properties:
+        tableau:
+          type: array
+          description: The sixteen single-card slots; empty slots are null.
+          items:
+            anyOf:
+              - $ref: '#/components/schemas/Card'
+              - type: 'null'
+        foundation:
+          type: array
+          description: Four foundations, two starting at Q♠ and two at J♦.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        stockCount:
+          type: integer
+        redealCount:
+          type: integer
+          description: Number of stock redeals used.
+        maxRedeals:
+          type: integer
+          description: Maximum number of stock redeals (MatrimonyMaxRedeals).
+        waste:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+        undoToEscape:
+          type: integer
+        hint:
+          type: object
+          properties:
+            fromZone:
+              type: string
+            fromIdx:
+              type: integer
+            toZone:
+              type: string
+            toIdx:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
     RoyalCotillionResponse:
       type: object
       description: Response payload for /royalcotillion/exec

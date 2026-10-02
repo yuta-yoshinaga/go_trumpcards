@@ -37,6 +37,7 @@ type MatrimonyWebOutput struct {
 	Foundation  [][]*WebOutputCard      `json:"foundation"`
 	StockCount  int                     `json:"stockCount"`
 	RedealCount int                     `json:"redealCount"`
+	MaxRedeals  int                     `json:"maxRedeals"`
 	Waste       []*WebOutputCard        `json:"waste"`
 	Hint        *MatrimonyWebOutputHint `json:"hint,omitempty"`
 	SolitaireWebOutputBase
