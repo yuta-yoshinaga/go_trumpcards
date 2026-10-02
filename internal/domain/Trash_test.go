@@ -622,3 +622,53 @@ func TestTrashUndoRestoresHumanActionAfterCpuReply(t *testing.T) {
 	assert.Equal(t, beforeSlots, tr.GetPlayerSlots(TrashHumanIdx))
 	assert.False(t, tr.CanUndo())
 }
+
+func TestTrashFailedDrawPreservesUndoSnapshot(t *testing.T) {
+	tr := NewDefaultTrash()
+	tr.phase = TrashPhasePlayerTurn
+	tr.current = TrashHumanIdx
+	tr.moveCount = 3
+	before, err := json.Marshal(tr)
+	require.NoError(t, err)
+	tr.undoState = before
+	tr.moveCount = 9
+
+	err = tr.Draw()
+	require.Error(t, err)
+	assert.EqualError(t, err, "no cards available in stock or discard")
+	require.NoError(t, tr.Undo())
+	assert.Equal(t, 3, tr.GetMoveCount(), "Undo restores the earlier valid snapshot")
+}
+
+func TestTrashCannotUndoAfterGameOver(t *testing.T) {
+	tr := NewDefaultTrash()
+	tr.phase = TrashPhaseGameOver
+	tr.undoState = []byte(`{}`)
+
+	assert.False(t, tr.CanUndo())
+	err := tr.Undo()
+	code, _ := ErrorMessageCode(err)
+	assert.Equal(t, "trash.errUndoUnavailable", code)
+}
+
+func TestTrashDrawUndoSnapshotDoesNotNest(t *testing.T) {
+	tr := NewDefaultTrash()
+	tr.Reset()
+	tr.SetPlayerSlots(TrashHumanIdx, faceDownSlots(aceThroughTen()))
+	tr.SetStock([]*Card{
+		NewCard(CardDesignHeart, 1, false),
+		NewCard(CardDesignDiamond, 2, false),
+	})
+
+	// Both draws are successful human actions. Reset the turn owner between
+	// them so the second draw tests the snapshot taken after the first one.
+	require.NoError(t, tr.Draw())
+	tr.current = TrashHumanIdx
+	require.NoError(t, tr.Draw())
+
+	var snapshot struct {
+		UndoState []byte `json:"us"`
+	}
+	require.NoError(t, json.Unmarshal(tr.undoState, &snapshot))
+	assert.Empty(t, snapshot.UndoState, "undo snapshot must not contain an earlier snapshot")
+}
