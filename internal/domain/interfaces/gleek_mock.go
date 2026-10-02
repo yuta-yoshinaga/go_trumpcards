@@ -268,6 +268,11 @@ func (_m *MockGleekGame) GetRoundDelta() []int {
 	return nil
 }
 
+func (_m *MockGleekGame) GetRoundBreakdown() domain.GleekRoundBreakdown {
+	ret := _m.Called()
+	return ret.Get(0).(domain.GleekRoundBreakdown)
+}
+
 // GetResult モック
 func (_m *MockGleekGame) GetResult() domain.GleekResult {
 	ret := _m.Called()

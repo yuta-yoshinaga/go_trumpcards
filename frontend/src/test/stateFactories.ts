@@ -1939,6 +1939,7 @@ const baseGleekState: GleekResponse = {
   currentTrick: [],
   playerScores: [0, 0, 0],
   roundDelta: [0, 0, 0],
+  roundBreakdown: { bid: [0, 0, 0], ruff: [0, 0, 0], meld: [0, 0, 0], trick: [0, 0, 0] },
   discardCount: 7,
   ruffWinnerIdx: 0,
   melds: [],

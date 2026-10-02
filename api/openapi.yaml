@@ -65241,6 +65241,7 @@ components:
         - currentTrick
         - playerScores
         - roundDelta
+        - roundBreakdown
         - discardCount
         - ruffWinnerIdx
         - melds
@@ -65313,6 +65314,27 @@ components:
           items:
             type: integer
           description: Score delta for each player in the round.
+        roundBreakdown:
+          type: object
+          description: Per-seat score changes by auction (including turn-up bonus), ruff, meld, and trick settlement.
+          required: [bid, ruff, meld, trick]
+          properties:
+            bid:
+              type: array
+              items:
+                type: integer
+            ruff:
+              type: array
+              items:
+                type: integer
+            meld:
+              type: array
+              items:
+                type: integer
+            trick:
+              type: array
+              items:
+                type: integer
         discardCount:
           type: integer
           description: How many cards the buyer must throw (seven).
