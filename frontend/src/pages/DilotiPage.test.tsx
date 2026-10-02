@@ -117,6 +117,58 @@ describe('DilotiPage', () => {
     expect(await screen.findByTestId('diloti-move-options')).toBeInTheDocument();
   });
 
+  it('highlights 0-based table indices referenced by focused take and declaration options', async () => {
+    renderWithProviders(<DilotiPage />);
+    await pickHand(0);
+    const take = await screen.findByTestId('diloti-take-2-3');
+    fireEvent.focus(take);
+    expect(screen.getByTestId('diloti-table-card-2')).toHaveClass('ring-2', 'ring-ds-warning');
+    expect(screen.getByTestId('diloti-table-card-3')).toHaveClass('ring-2', 'ring-ds-warning');
+    expect(screen.getByTestId('diloti-table-card-1')).not.toHaveClass('ring-2');
+    fireEvent.blur(take);
+    expect(screen.getByTestId('diloti-table-card-2')).not.toHaveClass('ring-2');
+
+    await pickHand(1);
+    const declaration = await screen.findByTestId('diloti-declare-8-0');
+    fireEvent.focus(declaration);
+    expect(screen.getByTestId('diloti-table-card-0')).toHaveClass('ring-2', 'ring-ds-warning');
+    expect(declaration).toHaveAttribute('aria-describedby');
+    expect(document.getElementById(declaration.getAttribute('aria-describedby') ?? '')).toHaveTextContent('フォーカス');
+    fireEvent.blur(declaration);
+    expect(screen.getByTestId('diloti-table-card-0')).not.toHaveClass('ring-2');
+  });
+
+  it('highlights option targets on hover and clears them when the pointer leaves', async () => {
+    renderWithProviders(<DilotiPage />);
+    await pickHand(0);
+    const take = await screen.findByTestId('diloti-take-2-3');
+
+    fireEvent.mouseEnter(take);
+    expect(screen.getByTestId('diloti-table-card-2')).toHaveClass('ring-2', 'ring-ds-warning');
+    expect(screen.getByTestId('diloti-table-card-3')).toHaveClass('ring-2', 'ring-ds-warning');
+    fireEvent.mouseLeave(take);
+    expect(screen.getByTestId('diloti-table-card-2')).not.toHaveClass('ring-2');
+
+    await pickHand(1);
+    const declaration = await screen.findByTestId('diloti-declare-8-0');
+    fireEvent.mouseEnter(declaration);
+    expect(screen.getByTestId('diloti-table-card-0')).toHaveClass('ring-2', 'ring-ds-warning');
+    fireEvent.mouseLeave(declaration);
+    expect(screen.getByTestId('diloti-table-card-0')).not.toHaveClass('ring-2');
+  });
+
+  it('clears the focused target when a focused option is executed', async () => {
+    renderWithProviders(<DilotiPage />);
+    await pickHand(0);
+    const take = await screen.findByTestId('diloti-take-2-3');
+    fireEvent.focus(take);
+    expect(screen.getByTestId('diloti-table-card-2')).toHaveClass('ring-2');
+
+    fireEvent.click(take);
+    expect(screen.getByTestId('diloti-table-card-2')).not.toHaveClass('ring-2');
+    expect(screen.getByTestId('diloti-table-card-3')).not.toHaveClass('ring-2');
+  });
+
   it('sends the chosen capture with the card played', async () => {
     renderWithProviders(<DilotiPage />);
     await pickHand(0);
