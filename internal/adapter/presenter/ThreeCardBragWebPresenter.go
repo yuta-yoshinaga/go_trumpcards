@@ -77,6 +77,7 @@ func (p *ThreeCardBragWebPresenter) buildBase(g interfaces.ThreeCardBragGame) *c
 	resObj.DealerIdx = g.GetDealerIdx()
 	resObj.CurrentPlayerIdx = g.GetCurrentPlayerIdx()
 	resObj.RoundWinnerIdx = g.GetRoundWinnerIdx()
+	resObj.RoundPayouts = g.GetRoundPayouts()
 	resObj.MatchWinnerIdx = g.GetMatchWinnerIdx()
 	resObj.IsShowdown = g.IsShowdown()
 	resObj.CanShow = g.CanShow()

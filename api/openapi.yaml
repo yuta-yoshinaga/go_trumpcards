@@ -71111,6 +71111,11 @@ components:
         roundWinnerIdx:
           type: integer
           description: Index of the player who won the current/last deal (-1 if undecided)
+        roundPayouts:
+          type: array
+          description: Chips received by each player in the last completed deal, including remainder allocation
+          items:
+            type: integer
         matchWinnerIdx:
           type: integer
           description: Index of the match winner (last player with chips; -1 if undecided)

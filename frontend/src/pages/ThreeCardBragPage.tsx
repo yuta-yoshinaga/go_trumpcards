@@ -328,6 +328,18 @@ function ThreeCardBragPageContent() {
                     pot: state.pot,
                   })}
                 </div>
+                {state.roundPayouts.filter((amount) => amount > 0).length > 1 &&
+                  state.roundPayouts.map(
+                    (amount, id) =>
+                      amount > 0 && (
+                        <div key={id}>
+                          {t('roundResult.share', {
+                            name: playerLabel(id, state.players[id].isHuman),
+                            amount,
+                          })}
+                        </div>
+                      ),
+                  )}
               </div>
             )}
 

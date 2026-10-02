@@ -73,6 +73,8 @@ export interface ThreeCardBragResponse extends BaseGameResponse {
   currentPlayerIdx: number;
   /** Winning seat index of the current deal, or -1 until it ends. */
   roundWinnerIdx: number;
+  /** Chips received by each seat in the last completed deal. */
+  roundPayouts: number[];
   /** Winning seat index of the match, or -1 until the game ends. */
   matchWinnerIdx: number;
   /** Whether the deal has reached a showdown (hands revealed). */

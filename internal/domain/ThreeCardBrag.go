@@ -160,6 +160,7 @@ type ThreeCardBrag struct {
 	lastAggressorIdx int
 	actionCount      int
 	roundWinnerIdx   int // 直近ディールの勝者 (-1: 未確定)
+	roundPayouts     []int
 	showdown         bool
 	gameEndFlag      bool
 	matchWinnerIdx   int // 試合の勝者 (-1: 未確定)
@@ -177,6 +178,7 @@ func NewThreeCardBrag(trumpCards *TrumpCards, players []*ThreeCardBragPlayer, co
 		players:        players,
 		config:         config,
 		roundWinnerIdx: -1,
+		roundPayouts:   make([]int, len(players)),
 		matchWinnerIdx: -1,
 	}
 }
@@ -220,6 +222,7 @@ func (g *ThreeCardBrag) startDeal() {
 	g.pot = 0
 	g.showdown = false
 	g.roundWinnerIdx = -1
+	g.roundPayouts = make([]int, len(g.players))
 	g.actionCount = 0
 	g.stake = g.config.Ante
 
@@ -493,6 +496,7 @@ func (g *ThreeCardBrag) endDeal(winners []int) {
 			amt += rem
 		}
 		g.players[w].AddChips(amt)
+		g.roundPayouts[w] = amt
 	}
 	g.roundWinnerIdx = winners[0]
 	g.appendLog(winners[0], "win", "threecardbrag.log.win", map[string]string{"player": playerName(g.players, winners[0]), "pot": fmt.Sprint(g.pot)}, nil)
@@ -656,6 +660,9 @@ func (g *ThreeCardBrag) SetStake(v int) { g.stake = v }
 // GetRoundWinnerIdx 直近ディールの勝者取得 (-1: 未確定)
 func (g *ThreeCardBrag) GetRoundWinnerIdx() int { return g.roundWinnerIdx }
 
+// GetRoundPayouts 直近ディールで各プレイヤーが受け取ったチップ数を取得する。
+func (g *ThreeCardBrag) GetRoundPayouts() []int { return append([]int{}, g.roundPayouts...) }
+
 // IsShowdown ショーダウンが行われたか
 func (g *ThreeCardBrag) IsShowdown() bool { return g.showdown }
 
@@ -730,6 +737,7 @@ type threeCardBragJSON struct {
 	LastAggressorIdx int                    `json:"la"`
 	ActionCount      int                    `json:"ac"`
 	RoundWinnerIdx   int                    `json:"rw"`
+	RoundPayouts     []int                  `json:"rp"`
 	Showdown         bool                   `json:"sd"`
 	GameEndFlag      bool                   `json:"ge"`
 	MatchWinnerIdx   int                    `json:"mw"`
@@ -751,6 +759,7 @@ func (g *ThreeCardBrag) MarshalJSON() ([]byte, error) {
 		LastAggressorIdx: g.lastAggressorIdx,
 		ActionCount:      g.actionCount,
 		RoundWinnerIdx:   g.roundWinnerIdx,
+		RoundPayouts:     g.roundPayouts,
 		Showdown:         g.showdown,
 		GameEndFlag:      g.gameEndFlag,
 		MatchWinnerIdx:   g.matchWinnerIdx,
@@ -772,6 +781,7 @@ func (g *ThreeCardBrag) UnmarshalJSON(data []byte) error {
 	}
 	if len(j.Players) != ThreeCardBragPlayerCnt ||
 		len(j.ActionLog) > threeCardBragMaxSliceLen ||
+		len(j.RoundPayouts) > len(j.Players) ||
 		!threeCardBragIdxInRange(j.CurrentPlayerIdx) || !threeCardBragIdxInRange(j.DealerIdx) ||
 		!threeCardBragIdxInRange(j.LastAggressorIdx) ||
 		j.RoundWinnerIdx < -1 || j.RoundWinnerIdx >= ThreeCardBragPlayerCnt ||
@@ -805,6 +815,10 @@ func (g *ThreeCardBrag) UnmarshalJSON(data []byte) error {
 	g.lastAggressorIdx = j.LastAggressorIdx
 	g.actionCount = j.ActionCount
 	g.roundWinnerIdx = j.RoundWinnerIdx
+	g.roundPayouts = j.RoundPayouts
+	if len(g.roundPayouts) != len(g.players) {
+		g.roundPayouts = make([]int, len(g.players))
+	}
 	g.showdown = j.Showdown
 	g.gameEndFlag = j.GameEndFlag
 	g.matchWinnerIdx = j.MatchWinnerIdx
