@@ -204,22 +204,22 @@ describe('OasisPokerPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'ステイ' }));
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('stand'));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
   });
 
   it('action phase shows call/fold buttons', async () => {
     mockApi.mockResolvedValue(actionPhaseState);
     renderWithProviders(<OasisPokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
   });
 
   it('end phase player wins shows payout breakdown', async () => {
     mockApi.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhasePlayerWins);
     renderWithProviders(<OasisPokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(screen.getByText('勝利！')).toBeInTheDocument());
     expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument();
   });
@@ -319,7 +319,7 @@ describe('OasisPokerPage', () => {
     const strongAction: OasisPokerResponse = { ...actionPhaseState, playerHandRank: 1 };
     mockApi.mockResolvedValue(strongAction);
     renderWithProviders(<OasisPokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
     // No hint until the toggle is enabled.
     expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
@@ -461,7 +461,7 @@ describe('OasisPokerPage keyboard shortcuts', () => {
     expect(announcement).toHaveTextContent('選択中: 1枚');
 
     fireEvent.keyDown(document, { key: 's' });
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(announcement).toBeEmptyDOMElement();
 
     fireEvent.keyDown(document, { key: 'p' });

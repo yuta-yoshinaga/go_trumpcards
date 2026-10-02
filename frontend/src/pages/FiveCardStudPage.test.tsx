@@ -344,7 +344,7 @@ describe('FiveCardStudPage', () => {
   it('shows call/raise buttons when canAct and has outstanding bet', async () => {
     mockExec.mockResolvedValue(secondStreetWithBetState);
     renderWithProviders(<FiveCardStudPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
     expect(screen.queryByText(/必要ポットオッズ/)).not.toBeInTheDocument();
   });

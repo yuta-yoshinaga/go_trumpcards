@@ -157,14 +157,14 @@ describe('BouillottePage', () => {
 
   it('shows the betting action buttons on the human betting turn', async () => {
     renderWithProviders(<BouillottePage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: /レイズ／ヴィ/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド（降りる）' })).toBeInTheDocument();
   });
 
   it('dispatches bet call when the Call button is clicked', async () => {
     renderWithProviders(<BouillottePage />);
-    const btn = await screen.findByRole('button', { name: 'コール' });
+    const btn = await screen.findByRole('button', { name: /^コール(?:\s|$)/ });
     mockExec.mockClear();
     fireEvent.click(btn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 'call'));
@@ -190,14 +190,14 @@ describe('BouillottePage', () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<BouillottePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /リセット|ゲームをリセット/ })).toBeInTheDocument());
-    expect(screen.queryByRole('button', { name: 'コール' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^コール(?:\s|$)/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'フォールド（降りる）' })).not.toBeInTheDocument();
   });
 
   it('hides the raise button when raising is not allowed', async () => {
     mockExec.mockResolvedValue(makeBouillotteState({ phase: 0, isHumanTurn: true, canRaise: false }));
     renderWithProviders(<BouillottePage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: /レイズ／ヴィ/ })).not.toBeInTheDocument();
   });
 
@@ -214,7 +214,7 @@ describe('BouillottePage', () => {
     mockExec.mockResolvedValue(resultState);
     renderWithProviders(<BouillottePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
-    expect(screen.queryByRole('button', { name: 'コール' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^コール(?:\s|$)/ })).not.toBeInTheDocument();
   });
 
   it('renders the game-end message', async () => {
@@ -340,7 +340,7 @@ describe('BouillottePage', () => {
     const odds = await screen.findByTestId('bouillotte-pot-odds');
     expect(odds.textContent).toContain('コール不要');
     // With nothing owed the Call button shows the plain label (no amount).
-    expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument();
   });
 
   // **レイズが消えた理由を書く。**回数上限とチップ不足を区別できないと、

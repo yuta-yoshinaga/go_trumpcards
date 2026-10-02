@@ -386,7 +386,7 @@ describe('SevenCardStudPage', () => {
   it('shows call/raise buttons when canAct and has outstanding bet', async () => {
     mockExec.mockResolvedValue(thirdStreetWithBetState);
     renderWithProviders(<SevenCardStudPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
@@ -398,7 +398,7 @@ describe('SevenCardStudPage', () => {
       players: [humanPlayer({ currentBet: 10 }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
     });
     renderWithProviders(<SevenCardStudPage />);
-    const callButton = await screen.findByRole('button', { name: 'コール' });
+    const callButton = await screen.findByRole('button', { name: /^コール(?:\s|$)/ });
     expect(callButton).toHaveTextContent('コール (30)');
   });
 
@@ -408,7 +408,7 @@ describe('SevenCardStudPage', () => {
       players: [humanPlayer({ chips: 20 }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
     });
     renderWithProviders(<SevenCardStudPage />);
-    const callButton = await screen.findByRole('button', { name: 'コール' });
+    const callButton = await screen.findByRole('button', { name: /^コール(?:\s|$)/ });
     expect(callButton).toHaveTextContent('コール (20)');
   });
 
