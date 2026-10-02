@@ -892,8 +892,40 @@ type PineappleDiscardPairPreview struct {
 	DiscardIdx1 int
 	// HandRank は残る2枚がボードと作る最強の役 (PokerHand*)。
 	HandRank int
+	// StrengthCards は役とキッカーの比較順に並べた最善の5枚。
+	StrengthCards []*Card
+	// StrengthOrder は全候補中の強さ順位 (弱い方から0)。同じ強さは同順位。
+	StrengthOrder int
 	// Recommended は最も強い役が残る組み合わせに付く。同点なら全部に付く。
 	Recommended bool
+}
+
+// pokerStrengthCardOrder arranges a five-card hand by the same rank and kicker
+// precedence used by compareHighCardsSlice.
+func pokerStrengthCardOrder(cards []*Card) []*Card {
+	ordered := copyOf(cards)
+	if len(ordered) != 5 {
+		return ordered
+	}
+	counts := make(map[int]int, 5)
+	for _, c := range ordered {
+		counts[c.GetValue()]++
+	}
+	wheel := isWheelHand(ordered)
+	sort.SliceStable(ordered, func(i, j int) bool {
+		vi, vj := ordered[i].GetValue(), ordered[j].GetValue()
+		if vi == 1 && !wheel {
+			vi = 14
+		}
+		if vj == 1 && !wheel {
+			vj = 14
+		}
+		if counts[ordered[i].GetValue()] != counts[ordered[j].GetValue()] {
+			return counts[ordered[i].GetValue()] > counts[ordered[j].GetValue()]
+		}
+		return vi > vj
+	})
+	return ordered
 }
 
 // GetHumanDiscardPairPreviews は4枚配りで「どの2枚を捨てるか」の C(4,2)=6 通りを
@@ -924,7 +956,6 @@ func (p *Pineapple) GetHumanDiscardPairPreviews() []PineappleDiscardPairPreview 
 	}
 
 	previews := make([]PineappleDiscardPairPreview, 0, 6)
-	best := -1
 	for i := 0; i < human.GetCardsSize(); i++ {
 		for j := i + 1; j < human.GetCardsSize(); j++ {
 			keep := make([]*Card, 0, 2)
@@ -933,19 +964,56 @@ func (p *Pineapple) GetHumanDiscardPairPreviews() []PineappleDiscardPairPreview 
 					keep = append(keep, human.GetCard(k))
 				}
 			}
-			rank := p.bestRankWithBoard(keep)
+			player := NewPineapplePlayer(true, HoldemStyleTAG)
+			for _, c := range keep {
+				player.AddCard(c)
+			}
+			rank, cards := player.PeekBestHand(p.communityCards)
 			previews = append(previews, PineappleDiscardPairPreview{
 				DiscardIdx0: i, DiscardIdx1: j, HandRank: rank,
+				StrengthCards: pokerStrengthCardOrder(cards),
 			})
-			if rank > best {
-				best = rank
+		}
+	}
+	// Rank each candidate by the number of distinct weaker strengths. Six
+	// candidates make this direct comparison both simple and deterministic.
+	for i := range previews {
+		for j := range previews {
+			if previewStrengthCompare(previews[j], previews[i]) >= 0 {
+				continue
+			}
+			unique := true
+			for k := 0; k < j; k++ {
+				if previewStrengthCompare(previews[k], previews[j]) == 0 {
+					unique = false
+					break
+				}
+			}
+			if unique {
+				previews[i].StrengthOrder++
 			}
 		}
 	}
+	bestOrder := 0
+	for _, preview := range previews {
+		if preview.StrengthOrder > bestOrder {
+			bestOrder = preview.StrengthOrder
+		}
+	}
 	for i := range previews {
-		previews[i].Recommended = previews[i].HandRank == best
+		previews[i].Recommended = previews[i].StrengthOrder == bestOrder
 	}
 	return previews
+}
+
+func previewStrengthCompare(a, b PineappleDiscardPairPreview) int {
+	if a.HandRank < b.HandRank {
+		return -1
+	}
+	if a.HandRank > b.HandRank {
+		return 1
+	}
+	return compareHighCardsSlice(a.StrengthCards, b.StrengthCards)
 }
 
 // GetPotOdds ポットオッズを返す

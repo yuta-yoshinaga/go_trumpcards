@@ -136,6 +136,56 @@ describe('LetItRidePage', () => {
     expect(screen.getByTestId('bet-outcome-preview')).toHaveTextContent('ベット後のリスク合計: 300');
   });
 
+  it('clamps the displayed and submitted bet when the chip balance lowers the maximum', async () => {
+    mockApi.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce({ ...betPhaseState, chips: 600 });
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByTestId('bet-outcome-preview')).toBeInTheDocument());
+    const input = screen.getByLabelText('ベット') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: '300' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+
+    await waitFor(() => expect(input.value).toBe('200'));
+    expect(screen.getByTestId('bet-outcome-preview')).toHaveTextContent('各口のベット額: 200');
+    expect(screen.getByTestId('bet-outcome-preview')).toHaveTextContent('ベット後のリスク合計: 600');
+    expect(screen.getByText('上限額: 200')).toBeInTheDocument();
+
+    mockApi.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 200));
+  });
+
+  it('disables betting when chips cannot cover the minimum three-part bet', async () => {
+    mockApi.mockResolvedValue({ ...betPhaseState, chips: 20 });
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+
+    const betButton = screen.getByRole('button', { name: 'ベット' });
+    expect(betButton).toHaveAttribute('aria-disabled', 'true');
+    expect(betButton).toBeDisabled();
+    expect(screen.getByText('チップが足りないため最小ベット 10 を置けません')).toBeInTheDocument();
+    expect((screen.getByLabelText('ベット') as HTMLInputElement).value).toBe('10');
+
+    mockApi.mockClear();
+    fireEvent.click(betButton);
+    fireEvent.keyDown(document, { key: 'b' });
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalled();
+  });
+
+  it('allows the minimum bet when chips are exactly sufficient', async () => {
+    mockApi.mockResolvedValue({ ...betPhaseState, chips: 30 });
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    const input = screen.getByLabelText('ベット') as HTMLInputElement;
+    expect(input).toHaveAttribute('max', '10');
+    expect(input.value).toBe('10');
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeEnabled();
+
+    mockApi.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 10));
+  });
+
   it('applies min=10 and step=10 guardrails to the bet input', async () => {
     mockApi.mockResolvedValue(betPhaseState);
     renderWithProviders(<LetItRidePage />);

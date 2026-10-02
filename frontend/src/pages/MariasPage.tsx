@@ -287,63 +287,72 @@ function MariasPageContent() {
                 )}
 
                 {/* Round result: per-player card points + marriage */}
-                {(isPlayPhase || isTrickEnd || isRoundEnd || isGameEnd) && (
-                  <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                    <div className="mb-1 text-ds-text-primary">
-                      {t(isRoundEnd || isGameEnd ? 'roundResult.title' : 'roundResult.progressTitle')}
-                    </div>
-                    {state.players.map((p) => (
-                      <div key={p.id}>
-                        <div>
-                          {t('roundResult.cardPoints', {
-                            name: playerName(p.id, p.isHuman),
-                            points: state.roundCardPoints[p.id] ?? 0,
-                          })}
-                        </div>
-                        {(state.roundMarriage[p.id] ?? 0) > 0 && (
-                          <div>
-                            {t('roundResult.marriage', {
-                              name: playerName(p.id, p.isHuman),
-                              points: state.roundMarriage[p.id] ?? 0,
-                            })}
-                            <span className="ml-1">({marriageDetails(p.id)})</span>
-                          </div>
-                        )}
+                <div data-testid="marias-round-progress-live" role="status" aria-live="polite" aria-atomic="true">
+                  {(isPlayPhase || isTrickEnd || isRoundEnd || isGameEnd) && (
+                    <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                      <div className="mb-1 text-ds-text-primary">
+                        {t(isRoundEnd || isGameEnd ? 'roundResult.title' : 'roundResult.progressTitle')}
                       </div>
-                    ))}
-                    {/* Soloist-vs-Defenders total comparison. Each side total is
-                        cardPoints + marriage; the Soloist wins the round only when
-                        their total strictly exceeds the two Defenders' combined total
-                        (matching the domain's ScoreRound). The winning side is emphasised. */}
-                    {(() => {
-                      const sideTotal = (soloist: boolean) =>
-                        state.players.reduce(
-                          (sum, p) =>
-                            p.isSoloist === soloist
-                              ? sum + (state.roundCardPoints[p.id] ?? 0) + (state.roundMarriage[p.id] ?? 0)
-                              : sum,
-                          0,
+                      {state.players.map((p) => {
+                        const cardPoints = state.roundCardPoints[p.id] ?? 0;
+                        const marriage = state.roundMarriage[p.id] ?? 0;
+
+                        return (
+                          <div key={p.id}>
+                            <div>
+                              {t('roundResult.cardPoints', {
+                                name: playerName(p.id, p.isHuman),
+                                points: cardPoints,
+                              })}
+                            </div>
+                            {marriage > 0 && (
+                              <div>
+                                {t('roundResult.marriage', {
+                                  name: playerName(p.id, p.isHuman),
+                                  points: marriage,
+                                })}
+                                <span className="ml-1">({marriageDetails(p.id)})</span>
+                              </div>
+                            )}
+                          </div>
                         );
-                      const soloistTotal = sideTotal(true);
-                      const defenderTotal = sideTotal(false);
-                      const soloistWon = soloistTotal > defenderTotal;
-                      const highlightWinner = (isRoundEnd || isGameEnd) && soloistWon;
-                      return (
-                        <div className="mt-1 pt-1 border-t border-ds-border-subtle" data-testid="marias-side-totals">
-                          <span className={highlightWinner ? 'text-ds-warning font-semibold' : ''}>
-                            {t('roundResult.soloistTotal', { points: soloistTotal })}
-                          </span>
-                          <span className="mx-1">/</span>
-                          <span
-                            className={(isRoundEnd || isGameEnd) && !soloistWon ? 'text-ds-warning font-semibold' : ''}
-                          >
-                            {t('roundResult.defenderTotal', { points: defenderTotal })}
-                          </span>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                )}
+                      })}
+                      {/* Soloist-vs-Defenders total comparison. Each side total is
+                          cardPoints + marriage; the Soloist wins the round only when
+                          their total strictly exceeds the two Defenders' combined total
+                          (matching the domain's ScoreRound). The winning side is emphasised. */}
+                      {(() => {
+                        const sideTotal = (soloist: boolean) =>
+                          state.players.reduce(
+                            (sum, p) =>
+                              p.isSoloist === soloist
+                                ? sum + (state.roundCardPoints[p.id] ?? 0) + (state.roundMarriage[p.id] ?? 0)
+                                : sum,
+                            0,
+                          );
+                        const soloistTotal = sideTotal(true);
+                        const defenderTotal = sideTotal(false);
+                        const soloistWon = soloistTotal > defenderTotal;
+                        const highlightWinner = (isRoundEnd || isGameEnd) && soloistWon;
+                        return (
+                          <div className="mt-1 pt-1 border-t border-ds-border-subtle" data-testid="marias-side-totals">
+                            <span className={highlightWinner ? 'text-ds-warning font-semibold' : ''}>
+                              {t('roundResult.soloistTotal', { points: soloistTotal })}
+                            </span>
+                            <span className="mx-1">/</span>
+                            <span
+                              className={
+                                (isRoundEnd || isGameEnd) && !soloistWon ? 'text-ds-warning font-semibold' : ''
+                              }
+                            >
+                              {t('roundResult.defenderTotal', { points: defenderTotal })}
+                            </span>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 

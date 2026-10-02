@@ -48,6 +48,7 @@ export interface NinetyNineResponse extends BaseGameResponse {
   dealerIdx: number;
   trumpSuit: number;
   currentTrick: NinetyNineTrickCard[];
+  validPlayIndices: number[];
   gameEndFlag: boolean;
   winnerIdx: number;
   leadPlayerIdx: number;

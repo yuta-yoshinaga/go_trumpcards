@@ -420,7 +420,7 @@ describe('RazzPage', () => {
   it('shows call/raise buttons when canAct and has outstanding bet', async () => {
     mockExec.mockResolvedValue(thirdStreetWithBetState);
     renderWithProviders(<RazzPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();

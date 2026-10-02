@@ -208,6 +208,12 @@ describe('MariasPage', () => {
   it('shows confirmed per-player points and side totals during play', async () => {
     mockExec.mockResolvedValue(makeMariasState({ roundCardPoints: [25, 15, 10], roundMarriage: [40, 0, 20] }));
     renderWithProviders(<MariasPage />);
+    const liveProgress = await screen.findByTestId('marias-round-progress-live');
+    expect(liveProgress).toHaveAttribute('role', 'status');
+    expect(liveProgress).toHaveAttribute('aria-live', 'polite');
+    expect(liveProgress).toHaveAttribute('aria-atomic', 'true');
+    expect(liveProgress).toHaveTextContent('あなた カード点: 25');
+    expect(liveProgress).toHaveTextContent('ソリスト: 65点');
     const row = await screen.findByTestId('marias-side-totals');
     expect(screen.getByText('ラウンド途中経過（確定済み）')).toBeInTheDocument();
     expect(screen.getByText('あなた カード点: 25')).toBeInTheDocument();
@@ -218,6 +224,26 @@ describe('MariasPage', () => {
     expect(screen.queryByText('CPU 2 マリッジ: 0')).not.toBeInTheDocument();
     expect(screen.getByText('ソリスト: 65点')).not.toHaveClass('text-ds-warning');
     expect(screen.getByText('ディフェンダー合計: 45点')).not.toHaveClass('text-ds-warning');
+  });
+
+  it('shows zero progress when a round has no points yet', async () => {
+    mockExec.mockResolvedValue(makeMariasState({ roundCardPoints: [], roundMarriage: [] }));
+    renderWithProviders(<MariasPage />);
+    const liveProgress = await screen.findByTestId('marias-round-progress-live');
+    expect(liveProgress).toHaveTextContent('あなた カード点: 0');
+    expect(liveProgress).toHaveTextContent('CPU 1 カード点: 0');
+    expect(liveProgress).toHaveTextContent('CPU 2 カード点: 0');
+    const sideTotals = screen.getByTestId('marias-side-totals');
+    expect(sideTotals).toHaveTextContent('ソリスト: 0点');
+    expect(sideTotals).toHaveTextContent('ディフェンダー合計: 0点');
+  });
+
+  it('keeps the round result available inside the live region at game end', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<MariasPage />);
+    const liveProgress = await screen.findByTestId('marias-round-progress-live');
+    expect(liveProgress).toHaveAttribute('role', 'status');
+    expect(liveProgress).toHaveTextContent('ラウンド結果');
   });
 
   it('shows confirmed points and side totals after a trick ends', async () => {

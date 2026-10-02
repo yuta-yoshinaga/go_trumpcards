@@ -31,6 +31,8 @@ export interface ColourWhistPlayer {
   trickCount: number;
   /** Running score. **Negative is normal** — scoring is zero-sum. */
   score: number;
+  /** Score change for each completed round, in round order. */
+  roundScores: number[];
   /** Sides are set by the contract, not by seat. */
   isDeclarerSide: boolean;
   hasPassed: boolean;

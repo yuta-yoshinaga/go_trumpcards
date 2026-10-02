@@ -54,35 +54,37 @@ type CegoWebOutputHint struct {
 // CegoWebOutput チェゴのWebアウトプット。
 // 場札 (Cego / blind) の中身は決して出力せず、BlindCount のみを公開する。
 type CegoWebOutput struct {
-	Players          []*CegoWebOutputPlayer    `json:"players"`
-	Phase            int                       `json:"phase"`
-	RoundNumber      int                       `json:"roundNumber"`
-	TrickNumber      int                       `json:"trickNumber"`
-	CurrentPlayerIdx int                       `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                       `json:"leadPlayerIdx"`
-	DealerIdx        int                       `json:"dealerIdx"`
-	BidPlayerIdx     int                       `json:"bidPlayerIdx"`
-	HighestBid       int                       `json:"highestBid"`
-	HighestBidder    int                       `json:"highestBidder"`
-	DeclarerIdx      int                       `json:"declarerIdx"`
-	Contract         int                       `json:"contract"`
-	ContractType     int                       `json:"contractType"`
-	BlindCount       int                       `json:"blindCount"`
-	Blind            []*WebOutputCard          `json:"blind"`
-	StashOwner       int                       `json:"stashOwner"`
-	CurrentTrick     []*WebOutputTrickCard     `json:"currentTrick"`
-	PlayerScores     [domain.CegoPlayerCnt]int `json:"playerScores"`
-	LastTrickWinner  int                       `json:"lastTrickWinner"`
-	Outcome          int                       `json:"outcome"`
-	Result           int                       `json:"result"`
-	PlayableIndices  []int                     `json:"playableIndices"`
-	GameEndFlag      bool                      `json:"gameEndFlag"`
-	WinnerPlayer     int                       `json:"winnerPlayer"`
-	IsHumanTurn      bool                      `json:"isHumanTurn"`
-	IsHumanBidTurn   bool                      `json:"isHumanBidTurn"`
-	IsHumanContract  bool                      `json:"isHumanContract"`
-	IsHumanExchange  bool                      `json:"isHumanExchange"`
-	Hint             *CegoWebOutputHint        `json:"hint,omitempty"`
+	Players              []*CegoWebOutputPlayer    `json:"players"`
+	Phase                int                       `json:"phase"`
+	RoundNumber          int                       `json:"roundNumber"`
+	TrickNumber          int                       `json:"trickNumber"`
+	CurrentPlayerIdx     int                       `json:"currentPlayerIdx"`
+	LeadPlayerIdx        int                       `json:"leadPlayerIdx"`
+	DealerIdx            int                       `json:"dealerIdx"`
+	BidPlayerIdx         int                       `json:"bidPlayerIdx"`
+	HighestBid           int                       `json:"highestBid"`
+	HighestBidder        int                       `json:"highestBidder"`
+	DeclarerIdx          int                       `json:"declarerIdx"`
+	DeclarerTargetPoints int                       `json:"declarerTargetPoints"`
+	TotalCardPoints      int                       `json:"totalCardPoints"`
+	Contract             int                       `json:"contract"`
+	ContractType         int                       `json:"contractType"`
+	BlindCount           int                       `json:"blindCount"`
+	Blind                []*WebOutputCard          `json:"blind"`
+	StashOwner           int                       `json:"stashOwner"`
+	CurrentTrick         []*WebOutputTrickCard     `json:"currentTrick"`
+	PlayerScores         [domain.CegoPlayerCnt]int `json:"playerScores"`
+	LastTrickWinner      int                       `json:"lastTrickWinner"`
+	Outcome              int                       `json:"outcome"`
+	Result               int                       `json:"result"`
+	PlayableIndices      []int                     `json:"playableIndices"`
+	GameEndFlag          bool                      `json:"gameEndFlag"`
+	WinnerPlayer         int                       `json:"winnerPlayer"`
+	IsHumanTurn          bool                      `json:"isHumanTurn"`
+	IsHumanBidTurn       bool                      `json:"isHumanBidTurn"`
+	IsHumanContract      bool                      `json:"isHumanContract"`
+	IsHumanExchange      bool                      `json:"isHumanExchange"`
+	Hint                 *CegoWebOutputHint        `json:"hint,omitempty"`
 	WebOutputBase
 	Config CegoWebOutputConfig `json:"config"`
 }

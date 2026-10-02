@@ -93,12 +93,15 @@ func TestKlaverjasWebPresenter_Output(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
 		m.On("GetPhase").Return(domain.KlaverjasPhasePlay)
 		m.On("GetCurrentTrick").Return([]*domain.TrickCard{
-			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},
+			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 11, false)},
+			{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 9, false)},
+			{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignHeart, 1, false)},
 		})
 		result := p.Output(m, nil)
 		var resObj controller.KlaverjasWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
-		assert.Len(t, resObj.CurrentTrick, 1)
+		assert.Len(t, resObj.CurrentTrick, 3)
+		assert.Equal(t, 45, resObj.CurrentTrickPoints)
 		assert.Equal(t, "klaverjas.playPhase.follow", resObj.MessageCode)
 	})
 

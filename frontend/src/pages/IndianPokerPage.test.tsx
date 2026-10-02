@@ -441,7 +441,7 @@ describe('IndianPokerPage', () => {
   it('shows call/raise buttons when canAct and has outstanding bet', async () => {
     mockExec.mockResolvedValue(bettingWithBetState);
     renderWithProviders(<IndianPokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
@@ -544,11 +544,11 @@ describe('IndianPokerPage', () => {
   it('calls call command when has outstanding bet', async () => {
     mockExec.mockResolvedValue(bettingWithBetState);
     renderWithProviders(<IndianPokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(bettingState);
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', undefined, undefined, expect.any(Number)));
   });
 

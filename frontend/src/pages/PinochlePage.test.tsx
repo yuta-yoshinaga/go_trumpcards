@@ -108,6 +108,7 @@ const trickEndState: PinochleResponse = {
 const roundEndState: PinochleResponse = {
   ...playPhaseState,
   phase: 5, // ROUND_END
+  contractMade: true,
 };
 
 const gameEndState: PinochleResponse = {
@@ -126,6 +127,25 @@ afterEach(() => {
 });
 
 describe('PinochlePage', () => {
+  it('shows bid, meld score, and server trick points separately during play', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      players: makePlayers([{ id: 0, isHuman: true, bid: 25, meldScore: 40, trickPoints: 15 }]),
+    });
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() =>
+      expect(screen.getByText(/ビッド: 25 \| メルド得点: 40 \| トリック得点: 15/)).toBeInTheDocument(),
+    );
+  });
+
+  it.each([
+    [true, '契約達成'],
+    [false, '契約未達成'],
+  ])('shows contract outcome %s at round end', async (contractMade, label) => {
+    mockExec.mockResolvedValue({ ...roundEndState, contractMade });
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByText(label)).toBeInTheDocument());
+  });
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<PinochlePage />);

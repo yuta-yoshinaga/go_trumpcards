@@ -164,7 +164,7 @@ describe('CaribbeanStudPage', () => {
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' }).parentElement).toHaveClass('items-end');
   });
@@ -175,16 +175,16 @@ describe('CaribbeanStudPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
 
-    const callButton = await screen.findByRole('button', { name: 'コール' });
+    const callButton = await screen.findByRole('button', { name: /^コール(?:\s|$)/ });
     expect(callButton.parentElement).toHaveTextContent('プレイベット: 200');
   });
 
   it('shows end phase with player wins', async () => {
     mockApi.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhasePlayerWins);
     renderWithProviders(<CaribbeanStudPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(screen.getByText('勝利！')).toBeInTheDocument());
     expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument();
@@ -194,9 +194,9 @@ describe('CaribbeanStudPage', () => {
   it('shows end phase with dealer wins', async () => {
     mockApi.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhaseDealerWins);
     renderWithProviders(<CaribbeanStudPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(screen.getByText('ディーラー勝利！')).toBeInTheDocument());
   });
 
@@ -212,18 +212,18 @@ describe('CaribbeanStudPage', () => {
   it('shows end phase with push', async () => {
     mockApi.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhasePush);
     renderWithProviders(<CaribbeanStudPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(screen.getByText('引き分け！')).toBeInTheDocument());
   });
 
   it('shows end phase with dealer not qualified', async () => {
     mockApi.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhaseDealerNotQualified);
     renderWithProviders(<CaribbeanStudPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(screen.getAllByText(/未クオリファイ/).length).toBeGreaterThanOrEqual(1));
     const note = screen.getByTestId('dealer-not-qualified-note');
     expect(note).toHaveTextContent('未クオリファイのため、アンテは1:1配当、プレイベットは返却されます。');
@@ -356,7 +356,7 @@ describe('CaribbeanStudPage', () => {
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
     // The 4 masked dealer cards are each announced as "hidden card".
     expect(screen.getAllByRole('img', { name: '非公開のカード' })).toHaveLength(4);
@@ -373,7 +373,7 @@ describe('CaribbeanStudPage', () => {
   it('renders hint toggle checkbox', async () => {
     mockApi.mockResolvedValue(actionPhaseState);
     renderWithProviders(<CaribbeanStudPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('checkbox')).toBeInTheDocument();
   });
 

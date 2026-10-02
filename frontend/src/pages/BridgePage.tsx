@@ -161,15 +161,24 @@ function BridgePageContent() {
   const { handleCommand } = useCliGame(apiExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const isPlayPhaseForKbd = state?.phase === BridgePhase.PLAY;
-  const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
-  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+  const humanPlayerForKbd = state?.players.find((p) => p.isHuman);
+  const isDummyTurnForKbd =
+    isPlayPhaseForKbd &&
+    state?.openingLeadDone === true &&
+    state.currentPlayerIdx === state.dummyIdx &&
+    humanPlayerForKbd?.id === state.declarerIdx;
+  const isHumanTurnForKbd =
+    isPlayPhaseForKbd && (state?.players[state.currentPlayerIdx]?.isHuman === true || isDummyTurnForKbd);
+  const activeCardCountForKbd = isDummyTurnForKbd
+    ? (state?.dummyHand?.length ?? 0)
+    : (humanPlayerForKbd?.cards?.length ?? 0);
 
   const confirmAction = useCallback(() => {
     handlePlay();
   }, [handlePlay]);
 
   useCardKeyboardNav({
-    cardCount: humanCardCountForKbd,
+    cardCount: activeCardCountForKbd,
     onToggle: toggleCard,
     onConfirm: confirmAction,
     onClear: clearSelection,
@@ -197,13 +206,19 @@ function BridgePageContent() {
     return <GameSkeleton gameKey="bridge" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 13 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
+  const isDummyTurn =
+    isPlayPhaseForKbd &&
+    state.openingLeadDone &&
+    state.currentPlayerIdx === state.dummyIdx &&
+    humanPlayer?.id === state.declarerIdx;
+  const activeHand = isDummyTurn ? (state.dummyHand ?? []) : (humanPlayer?.cards ?? []);
   const humanTeam = humanPlayer?.team ?? 0;
   const isBidPhase = state.phase === BridgePhase.BID;
   const isPlayPhase = state.phase === BridgePhase.PLAY;
   const isTrickEnd = state.phase === BridgePhase.TRICK_END;
   const isRoundEnd = state.phase === BridgePhase.ROUND_END;
   const isGameEnd = state.phase === BridgePhase.GAME_END || state.gameEndFlag;
-  const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const isHumanTurn = isPlayPhase && (state.players[state.currentPlayerIdx]?.isHuman === true || isDummyTurn);
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
   const declarerTeam = state.players[state.declarerIdx]?.team;
   const declarerTricks =
@@ -585,18 +600,21 @@ function BridgePageContent() {
           {/* Footer */}
           <GameFooter className={`${gameTheme.bridge.footer} px-4 py-2.5`}>
             {/* Human cards */}
-            {humanPlayer &&
+            {activeHand.length > 0 &&
               (isMobile ? (
                 <MobileHandGrid
-                  cards={humanPlayer.cards}
+                  cards={activeHand}
                   selectedIndices={selectedCardIndices}
                   onToggle={toggleCard}
                   cardWidth={cardWidth}
                   dataTutorial="br-player-hand"
                 />
               ) : (
-                <div className="flex flex-wrap gap-1 mb-2" data-tutorial="br-player-hand">
-                  {humanPlayer.cards.map((card, idx) => (
+                <div
+                  className="flex flex-wrap gap-1 mb-2"
+                  data-tutorial={isDummyTurn ? 'br-dummy-hand' : 'br-player-hand'}
+                >
+                  {activeHand.map((card, idx) => (
                     <button
                       type="button"
                       key={`${card.design}-${card.value}-${idx}`}

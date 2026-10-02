@@ -70,6 +70,7 @@ type PinochleWebOutput struct {
 	LastTrickWinner  int                         `json:"lastTrickWinner"`
 	TeamScores       [2]int                      `json:"teamScores"`
 	GameEndFlag      bool                        `json:"gameEndFlag"`
+	ContractMade     *bool                       `json:"contractMade,omitempty"`
 	WinnerTeam       int                         `json:"winnerTeam"`
 	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
 	PlayerMelds      [4][]*PinochleWebOutputMeld `json:"playerMelds"`
