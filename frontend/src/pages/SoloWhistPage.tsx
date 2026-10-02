@@ -488,7 +488,11 @@ function SoloWhistPageContent() {
               {isBidPhase && isHumanBidTurn && (
                 <>
                   <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
-                  <span className="text-xs text-ds-text-muted self-center mr-1" data-testid="sw-highest-bid">
+                  <span
+                    className="text-xs text-ds-text-muted self-center mr-1"
+                    data-testid="sw-highest-bid"
+                    aria-hidden="true"
+                  >
                     {highestBid > 0
                       ? t('bidHighest', {
                           bid: highestBidLabelKey ? t(highestBidLabelKey) : highestBid,

@@ -190,6 +190,20 @@ describe('SoloWhistPage', () => {
     expect(screen.getByTestId('solowhist-highest-bid-live')).toHaveClass('sr-only');
   });
 
+  it('updates the highest-bid live region after a bid response without unmounting', async () => {
+    mockExec.mockResolvedValue(makeSoloWhistState({ bids: [0, 0, 0, 0] }));
+    renderWithProviders(<SoloWhistPage />);
+    const liveRegion = await screen.findByTestId('solowhist-highest-bid-live');
+    expect(liveRegion).toHaveTextContent('まだ入札なし');
+    expect(screen.getByTestId('sw-highest-bid')).toHaveAttribute('aria-hidden', 'true');
+
+    mockExec.mockResolvedValue(makeSoloWhistState({ bids: [2, 0, 0, 0] }));
+    fireEvent.click(screen.getByTestId('bid-1'));
+
+    await waitFor(() => expect(liveRegion).toHaveTextContent('現在の最高ビッド: ミゼール'));
+    expect(liveRegion).toHaveTextContent('あなた');
+  });
+
   it('exposes the declarer line as a polite live region', async () => {
     renderWithProviders(<SoloWhistPage />);
     const line = await screen.findByTestId('solowhist-declarer');
