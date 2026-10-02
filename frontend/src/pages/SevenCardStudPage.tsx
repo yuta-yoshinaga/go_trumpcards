@@ -230,6 +230,11 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
+  const callAmount = state && humanPlayer ? Math.min(state.lastBet - humanPlayer.currentBet, humanPlayer.chips) : 0;
+  const callPotOddsLabel =
+    hasOutstandingBet && callAmount > 0 && state && state.pot + callAmount > 0
+      ? t('callPotOdds', { percent: ((callAmount / (state.pot + callAmount)) * 100).toFixed(1) })
+      : undefined;
   const minRaise = state?.minRaise ?? 0;
   const isMuckPhase = phase === SevenCardStudPhase.SHOWDOWN && state?.muckAvailable === true;
   const isRebuyPhase =
@@ -729,9 +734,8 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                   maxBetAmount={state?.maxBetAmount}
                   potSize={state?.pot}
                   hasOutstandingBet={hasOutstandingBet}
-                  callAmountLabel={` ${t('callAmount', {
-                    amount: Math.min(state.lastBet - humanPlayer.currentBet, humanPlayer.chips),
-                  })}`}
+                  callAmountLabel={` ${t('callAmount', { amount: callAmount })}`}
+                  callPotOddsLabel={callPotOddsLabel}
                   loading={loading}
                   onCall={() => execApi('call', undefined, undefined, getElapsed())}
                   onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
