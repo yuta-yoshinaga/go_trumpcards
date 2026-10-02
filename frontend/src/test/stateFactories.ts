@@ -63,6 +63,7 @@ import type {
   OmbreResponse,
   PiedmonteseTarotResponse,
   PigResponse,
+  PinochleResponse,
   PreferenceResponse,
   PrimeroResponse,
   QuadrilleResponse,
@@ -103,6 +104,34 @@ import type {
   WattenResponse,
   ZwanzigerrufenResponse,
 } from '../types/card';
+
+/** Creates a default Pinochle state with an unresolved contract result. */
+export function makePinochleState(overrides: Partial<PinochleResponse> = {}): PinochleResponse {
+  return {
+    players: [],
+    phase: 0,
+    roundNumber: 1,
+    trickNumber: 0,
+    currentPlayerIdx: 0,
+    bidPlayerIdx: 0,
+    dealerIdx: 0,
+    trumpSuit: 0,
+    highestBid: 0,
+    highestBidder: -1,
+    currentTrick: [],
+    lastTrick: [],
+    lastTrickWinner: -1,
+    teamScores: [0, 0],
+    gameEndFlag: false,
+    winnerTeam: -1,
+    leadPlayerIdx: -1,
+    playerMelds: [[], [], [], []],
+    meldTable: [],
+    message: '',
+    config: { cpuDifficulty: 1, pointLimit: 1500 },
+    ...overrides,
+  };
+}
 
 /** Creates a Chinchón response with round score history defaults. */
 export function makeChinchonState(overrides: Partial<ChinchonResponse> = {}): ChinchonResponse {

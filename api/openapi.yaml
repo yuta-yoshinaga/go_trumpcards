@@ -48871,6 +48871,9 @@ components:
           maxItems: 2
         gameEndFlag:
           type: boolean
+        contractMade:
+          type: boolean
+          description: Domain-calculated contract result, present only after a round has been scored.
         winnerTeam:
           type: integer
         leadPlayerIdx:

@@ -31,6 +31,7 @@ func setupPinochleWebMock() *interfaces.MockPinochleGame {
 	m.On("GetTrumpSuit").Return(1)
 	m.On("GetHighestBid").Return(20)
 	m.On("GetHighestBidder").Return(0)
+	m.On("GetLastContractMade").Return(false, false)
 	m.On("GetTeamScore", 0).Return(0)
 	m.On("GetTeamScore", 1).Return(0)
 	m.On("GetWinnerTeam").Return(-1)
@@ -129,6 +130,7 @@ func TestPinochleWebPresenter_Output(t *testing.T) {
 		m.On("GetTrumpSuit").Return(1)
 		m.On("GetHighestBid").Return(30)
 		m.On("GetHighestBidder").Return(0)
+		m.On("GetLastContractMade").Return(true, true)
 		m.On("GetTeamScore", 0).Return(1500)
 		m.On("GetTeamScore", 1).Return(800)
 		m.On("GetWinnerTeam").Return(0)
@@ -254,4 +256,17 @@ func TestPinochleWebPresenterOutputCarriesLastTrick(t *testing.T) {
 	require.Len(t, output.LastTrick, 1)
 	assert.Equal(t, 2, output.LastTrick[0].PlayerIdx)
 	assert.Equal(t, 2, output.LastTrickWinner)
+}
+
+func TestPinochleWebPresenterOutputCarriesContractResultOnlyWhenKnown(t *testing.T) {
+	m, _ := setupPinochleWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastContractMade")
+	m.On("GetLastContractMade").Return(false, true)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.On("GetPhase").Return(domain.PinochlePhaseRoundEnd)
+
+	var output controller.PinochleWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.PinochleWebPresenter).Output(m, nil)), &output))
+	require.NotNil(t, output.ContractMade)
+	assert.False(t, *output.ContractMade)
 }
