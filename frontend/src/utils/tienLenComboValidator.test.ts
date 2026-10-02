@@ -1,52 +1,60 @@
 import { describe, expect, it } from 'vitest';
 import type { Card } from '../types/card';
-import { classifyTienLenCombo, isValidTienLenCombo } from './tienLenComboValidator';
+import { type TienLenCombo, type TienLenPlayability, tienLenPlayability } from './tienLenComboValidator';
 
-const c = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
+const c = (value: number, design = 'SPADE'): Card => ({ value, design }) as unknown as Card;
+const run = (values: number[]) => values.map((v) => c(v));
 
-describe('classifyTienLenCombo', () => {
-  it('classifies singles, pairs, triples and four-of-a-kind', () => {
-    expect(classifyTienLenCombo([c('SPADE', 7)])).toBe('single');
-    expect(classifyTienLenCombo([c('SPADE', 7), c('HEART', 7)])).toBe('pair');
-    expect(classifyTienLenCombo([c('SPADE', 7), c('HEART', 7), c('CLOVER', 7)])).toBe('triple');
-    expect(classifyTienLenCombo([c('SPADE', 7), c('HEART', 7), c('CLOVER', 7), c('DIAMOND', 7)])).toBe('fourOfAKind');
-  });
-
-  it('classifies straights of length >= 3 (mixed suits), rejecting any containing a 2', () => {
-    expect(classifyTienLenCombo([c('SPADE', 3), c('HEART', 4), c('CLOVER', 5)])).toBe('straight');
-    // A (1) is high but legal in a run J-Q-K-A; 2 is not.
-    expect(classifyTienLenCombo([c('SPADE', 11), c('HEART', 12), c('CLOVER', 13), c('DIAMOND', 1)])).toBe('straight');
-    expect(classifyTienLenCombo([c('SPADE', 13), c('HEART', 1), c('CLOVER', 2)])).toBe('invalid'); // contains a 2
-  });
-
-  it('classifies longer straights (5, 6, 7 cards) and rejects broken ones', () => {
-    expect(classifyTienLenCombo([c('S', 3), c('H', 4), c('C', 5), c('D', 6), c('S', 7)])).toBe('straight'); // 5
-    expect(classifyTienLenCombo([c('S', 3), c('H', 4), c('C', 5), c('D', 6), c('S', 7), c('H', 8)])).toBe('straight'); // 6
-    expect(classifyTienLenCombo([c('S', 3), c('H', 4), c('C', 5), c('D', 6), c('S', 7), c('H', 8), c('C', 9)])).toBe(
-      'straight',
-    ); // 7
-    expect(classifyTienLenCombo([c('S', 3), c('H', 4), c('C', 5), c('D', 6), c('S', 9)])).toBe('invalid'); // 5, broken
-  });
-
-  it('classifies a three-pair run (chop) and rejects non-consecutive pairs', () => {
-    expect(
-      classifyTienLenCombo([c('SPADE', 4), c('HEART', 4), c('SPADE', 5), c('HEART', 5), c('SPADE', 6), c('HEART', 6)]),
-    ).toBe('threePairRun');
-    expect(
-      classifyTienLenCombo([c('SPADE', 4), c('HEART', 4), c('SPADE', 5), c('HEART', 5), c('SPADE', 8), c('HEART', 8)]),
-    ).toBe('invalid'); // 4-5 then gap to 8
-  });
-
-  it('rejects malformed selections', () => {
-    expect(classifyTienLenCombo([c('SPADE', 7), c('HEART', 8)])).toBe('invalid'); // two different ranks
-    expect(classifyTienLenCombo([c('SPADE', 3), c('HEART', 4), c('CLOVER', 6)])).toBe('invalid'); // broken run
-  });
-});
-
-describe('isValidTienLenCombo', () => {
-  it('is false for an empty selection and true for a legal combo', () => {
-    expect(isValidTienLenCombo([])).toBe(false);
-    expect(isValidTienLenCombo([c('SPADE', 7), c('HEART', 8)])).toBe(false);
-    expect(isValidTienLenCombo([c('SPADE', 7), c('HEART', 7)])).toBe(true);
+describe('tienLenPlayability (same rules as domain tienLenIsPlayable)', () => {
+  it.each([
+    ['anything playable on empty table', [c(3)], [], 'invalid', 'ok'],
+    ['stronger single beats weaker', [c(6)], [c(5)], 'single', 'ok'],
+    ['weaker single cannot beat stronger', [c(5)], [c(6)], 'single', 'tooWeak'],
+    ['same value higher suit wins', [c(5, 'HEART')], [c(5, 'SPADE')], 'single', 'ok'],
+    ['pair must beat pair', [c(6), c(6, 'HEART')], [c(5), c(5, 'HEART')], 'pair', 'ok'],
+    ['single cannot beat pair', [c(2)], [c(5), c(5, 'HEART')], 'pair', 'typeMismatch'],
+    ['longer straight cannot beat shorter', run([8, 9, 10, 11]), run([5, 6, 7]), 'straight', 'countMismatch'],
+    ['stronger straight beats weaker', run([6, 7, 8]), run([5, 6, 7]), 'straight', 'ok'],
+    ['three pair run cuts single 2', [4, 4, 5, 5, 6, 6].map((v) => c(v)), [c(2, 'HEART')], 'single', 'ok'],
+    ['four of a kind cuts single 2', [9, 9, 9, 9].map((v) => c(v)), [c(2, 'HEART')], 'single', 'ok'],
+    [
+      'stronger three pair run beats weaker',
+      [5, 5, 6, 6, 7, 7].map((v) => c(v)),
+      [4, 4, 5, 5, 6, 6].map((v) => c(v)),
+      'threePairRun',
+      'ok',
+    ],
+    [
+      'weaker three pair run cannot beat stronger',
+      [4, 4, 5, 5, 6, 6].map((v) => c(v)),
+      [5, 5, 6, 6, 7, 7].map((v) => c(v)),
+      'threePairRun',
+      'tooWeak',
+    ],
+    [
+      'four of a kind beats three pair run',
+      [9, 9, 9, 9].map((v) => c(v)),
+      [4, 4, 5, 5, 6, 6].map((v) => c(v)),
+      'threePairRun',
+      'ok',
+    ],
+    [
+      'three pair run cannot beat four of a kind',
+      [4, 4, 5, 5, 6, 6].map((v) => c(v)),
+      [9, 9, 9, 9].map((v) => c(v)),
+      'fourOfAKind',
+      'typeMismatch',
+    ],
+    [
+      'stronger four of a kind beats weaker',
+      [9, 9, 9, 9].map((v) => c(v)),
+      [7, 7, 7, 7].map((v) => c(v)),
+      'fourOfAKind',
+      'ok',
+    ],
+    ['bomb cannot cut an unrelated single', [9, 9, 9, 9].map((v) => c(v)), [c(13)], 'single', 'typeMismatch'],
+    ['bomb cannot cut a straight', [4, 4, 5, 5, 6, 6].map((v) => c(v)), run([3, 4, 5]), 'straight', 'typeMismatch'],
+  ] as [string, Card[], Card[], TienLenCombo, TienLenPlayability][])('%s', (_name, play, table, type, expected) => {
+    expect(tienLenPlayability(play, table, type)).toBe(expected);
   });
 });

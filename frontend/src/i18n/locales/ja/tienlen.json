@@ -15,6 +15,11 @@
   "passButton": "パス",
   "passUnavailable": "場にカードがないためパスできません",
   "invalidCombo": "有効な組み合わせではありません（シングル・ペア・トリオ・ストレート・連続ペア・フォーカード）",
+  "unplayable": {
+    "typeMismatch": "場の役と種類が違います",
+    "countMismatch": "枚数が違います",
+    "tooWeak": "場の役より弱いです"
+  },
   "selectedPlayLabel": "選択中",
   "comboBadge": "{{type}}（{{count}}枚）",
   "bombLabel": "爆弾",

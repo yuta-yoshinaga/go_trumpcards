@@ -15,6 +15,11 @@
   "passButton": "Pass",
   "passUnavailable": "You cannot pass when there are no cards on the table.",
   "invalidCombo": "Not a valid combination (single, pair, triple, straight, double-sequence, or four of a kind)",
+  "unplayable": {
+    "typeMismatch": "The combination type differs from the table play",
+    "countMismatch": "The number of cards differs",
+    "tooWeak": "This play is weaker than the table play"
+  },
   "selectedPlayLabel": "Selected",
   "comboBadge": "{{type}} ({{count}} cards)",
   "bombLabel": "Bomb",
