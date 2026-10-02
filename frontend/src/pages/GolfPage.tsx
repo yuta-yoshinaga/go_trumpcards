@@ -179,7 +179,7 @@ function GolfPageContent() {
   const { nineHole, setEnabled: setNineHoleEnabled, recordHole, resetCard } = useGolfNineHole();
   const nineHoleEnabled = nineHole.enabled;
   const endPhase = state?.phase;
-  const endRemaining = state?.layout ? countGolfRemaining(state.layout) : 0;
+  const endRemaining = endPhase === GolfPhase.GAME_CLEAR ? 0 : state?.layout ? countGolfRemaining(state.layout) : 0;
   // Guard so each finished deal is recorded exactly once (phase stays ended across re-renders).
   const recordedRef = useRef(false);
   useEffect(() => {
@@ -269,6 +269,12 @@ function GolfPageContent() {
           <LandscapeBanner message={t('landscapeBanner')} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+            {isEnded && (
+              <p data-testid="golf-result-remaining" className="mb-3 text-center text-ds-text-primary">
+                {t('remainingCards', { count: endRemaining })}
+              </p>
+            )}
+
             {/* 9-hole scorecard (issue #3114) */}
             {nineHoleEnabled && (
               <div data-testid="golf-scorecard" className="mb-3 max-w-2xl mx-auto">
