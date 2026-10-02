@@ -199,13 +199,14 @@ function CourchevelHiLoPageContent() {
           {(state?.sidePots?.length ?? 0) > 1 && (
             <div className="text-xs">
               {state?.sidePots?.map((pot, index) => (
-                <div key={`side-pot-${index}`}>
-                  {t(index === 0 ? 'potAwards.mainPot' : 'potAwards.sidePot', { n: index, amount: pot.amount })}{' '}
-                  {pot.amount}: {t('potAwards.eligible')} [
-                  {pot.eligiblePlayers
-                    .map((playerIdx) => findPlayerName(state.players, playerIdx))
-                    .join(t('listSeparator'))}
-                  ]
+                <div key={index}>
+                  {t('potAwards.eligibleLine', {
+                    pot: t(index === 0 ? 'potAwards.mainPot' : 'potAwards.sidePot', { n: index }),
+                    amount: pot.amount,
+                    players: pot.eligiblePlayers
+                      .map((playerIdx) => findPlayerName(state.players, playerIdx))
+                      .join(t('listSeparator')),
+                  })}
                 </div>
               ))}
             </div>
@@ -361,17 +362,25 @@ function CourchevelHiLoPageContent() {
                 {state?.potAwards?.map((award, index) => {
                   const names = (ids: number[], payouts: number[]) =>
                     ids
-                      .map((id, i) => `${findPlayerName(state?.players ?? [], id)} +${payouts[i]}`)
+                      .map((id, i) =>
+                        t('hiLo.winner', { name: findPlayerName(state?.players ?? [], id), amount: payouts[i] }),
+                      )
                       .join(t('listSeparator'));
                   const eligible = award.eligible
                     .map((id) => findPlayerName(state?.players ?? [], id))
                     .join(t('listSeparator'));
                   return (
-                    <p key={`${index}-${award.amount}`} data-testid="courchevelhilo-pot-award">
-                      {index === 0 ? t('potAwards.mainPot') : t('potAwards.sidePot', { n: index })} {award.amount}:{' '}
-                      {t('potAwards.eligible')} [{eligible}] → {t('potAwards.winners')} {t('hiLo.hi')}:{' '}
-                      {names(award.hiWinners, award.hiPayouts)}
-                      {award.loWinners.length > 0 && ` (${t('hiLo.lo')}: ${names(award.loWinners, award.loPayouts)})`}
+                    <p key={index} data-testid="courchevelhilo-pot-award">
+                      {t('potAwards.winnerLine', {
+                        pot: index === 0 ? t('potAwards.mainPot') : t('potAwards.sidePot', { n: index }),
+                        amount: award.amount,
+                        eligible,
+                        hiWinners: names(award.hiWinners, award.hiPayouts),
+                        loSection:
+                          award.loWinners.length > 0
+                            ? t('potAwards.loSection', { loWinners: names(award.loWinners, award.loPayouts) })
+                            : '',
+                      })}
                     </p>
                   );
                 })}

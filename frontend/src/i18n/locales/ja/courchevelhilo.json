@@ -10,7 +10,10 @@
     "mainPot": "メインポット",
     "sidePot": "サイドポット{{n}}",
     "eligible": "対象",
-    "winners": "勝者"
+    "winners": "勝者",
+    "eligibleLine": "{{pot}} {{amount}}: 対象 [{{players}}]",
+    "winnerLine": "{{pot}} {{amount}}: 対象 [{{eligible}}] → 勝者 ハイ: {{hiWinners}}{{loSection}}",
+    "loSection": " (ロー: {{loWinners}})"
   },
   "listSeparator": "、",
   "scoop": {

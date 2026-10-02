@@ -10,7 +10,10 @@
     "mainPot": "Main pot",
     "sidePot": "Side pot {{n}}",
     "eligible": "Eligible",
-    "winners": "Winners"
+    "winners": "Winners",
+    "eligibleLine": "{{pot}} {{amount}}: eligible [{{players}}]",
+    "winnerLine": "{{pot}} {{amount}}: eligible [{{eligible}}] → winners Hi: {{hiWinners}}{{loSection}}",
+    "loSection": " (Lo: {{loWinners}})"
   },
   "listSeparator": ", ",
   "scoop": {
