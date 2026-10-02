@@ -44,6 +44,8 @@ type ThreeCardRummyGame interface {
 	GetLowBonusPayout() int
 	// GetTotalPayout 合計配当を取得する
 	GetTotalPayout() int
+	// GetNetChange ラウンドの純収支を取得する
+	GetNetChange() int
 	// GetDealerQualified ディーラークオリファイを取得する
 	GetDealerQualified() bool
 	// GetPlayerScore はプレイヤーの点数を取得する。**低いほど強い。**

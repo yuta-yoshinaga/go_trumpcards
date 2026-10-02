@@ -26,7 +26,8 @@
     "play": "プレイ",
     "anteBonus": "アンテボーナス",
     "lowBonus": "ローボーナス",
-    "total": "合計"
+    "total": "合計払戻",
+    "netChange": "純収支"
   },
   "betSlip": {
     "ante": "アンテ",

@@ -50922,6 +50922,7 @@ components:
         - anteBonusPayout
         - lowBonusPayout
         - totalPayout
+        - netChange
         - dealerQualified
         - playerScore
         - dealerScore
@@ -50991,6 +50992,10 @@ components:
           type: integer
           description: Total payout for the current round (sum of all payouts)
           example: 0
+        netChange:
+          type: integer
+          description: Round payout minus ante, play bet, and Low Bonus wagers
+          example: -100
         dealerQualified:
           type: boolean
           description: Whether the dealer qualified (a total of 20 or less)
