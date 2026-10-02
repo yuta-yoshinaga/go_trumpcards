@@ -43,6 +43,11 @@ func TestPresidentWebPresenter_Output(t *testing.T) {
 
 	t.Run("field flush details are included with the action", func(t *testing.T) {
 		pg := domain.NewPresident(domain.NewTrumpCards(0), makePresidentPlayersForPresenter(), domain.DefaultPresidentConfig())
+		pg.SetCpuActions([]*domain.PresidentCpuAction{{
+			PlayerIdx:     1,
+			FieldFlushed:  true,
+			LeadPlayerIdx: 3,
+		}})
 		pg.SetHumanAction(&domain.PresidentCpuAction{
 			PlayerIdx:     0,
 			FieldFlushed:  true,
@@ -53,6 +58,9 @@ func TestPresidentWebPresenter_Output(t *testing.T) {
 		require.NotNil(t, out.HumanAction)
 		assert.True(t, out.HumanAction.FieldFlushed)
 		assert.Equal(t, 2, out.HumanAction.LeadPlayerIdx)
+		require.Len(t, out.CpuActions, 1)
+		assert.True(t, out.CpuActions[0].FieldFlushed)
+		assert.Equal(t, 3, out.CpuActions[0].LeadPlayerIdx)
 	})
 }
 

@@ -367,6 +367,22 @@ func TestPresident_PlayClearsFieldWithoutMarkingOlderPass(t *testing.T) {
 	assert.False(t, pr.GetHumanAction().FieldFlushed)
 }
 
+func TestPresident_PassClearsFieldAndMarksHumanActionWithoutCPUActions(t *testing.T) {
+	pr := newTestPresident(t, domain.PresidentConfig{})
+	pr.SetTableCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
+	pr.SetLastPlayPlayerIdx(1)
+	pr.GetPlayer(2).SetIsFinished(true)
+	pr.GetPlayer(3).SetIsFinished(true)
+
+	require.NoError(t, pr.PlayerPlay(nil))
+
+	assert.Nil(t, pr.GetTableCards())
+	assert.Empty(t, pr.GetCpuActions())
+	require.NotNil(t, pr.GetHumanAction())
+	assert.True(t, pr.GetHumanAction().FieldFlushed)
+	assert.Equal(t, 1, pr.GetHumanAction().LeadPlayerIdx)
+}
+
 func TestPresident_FinishAndRanking(t *testing.T) {
 	pr := newTestPresident(t, domain.PresidentConfig{})
 	// Player 0 has 1 card. Playing it finishes them.

@@ -448,6 +448,24 @@ describe('PresidentPage action history', () => {
     expect(log()).toHaveTextContent('あなた');
   });
 
+  it('joins multiple cards and labels the human as the next leader after a field flush', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        humanAction: {
+          playerIdx: 0,
+          playedCards: [card('SPADE', 3), card('HEART', 3)],
+          fieldFlushed: true,
+          leadPlayerIdx: 0,
+        },
+        cpuActions: undefined,
+      }),
+    );
+    renderWithProviders(<PresidentPage />);
+
+    await waitFor(() => expect(log()).toHaveTextContent('あなたが出しました: SPADE 3、HEART 3'));
+    expect(log()).toHaveTextContent('あなたが次にリードします');
+  });
+
   // **何も起きていないうちは出さない。**空の枠は場所を取るだけ。
   it('renders nothing before anyone has acted', async () => {
     mockExec.mockResolvedValue(makeState({ cpuActions: [], humanAction: null }));
