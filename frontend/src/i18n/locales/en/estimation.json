@@ -28,6 +28,7 @@
   "dealerBadge": "dealer",
   "actions": {
     "trump": "Trump {{suit}}",
+    "trumpAria": "Trump {{suit}}, {{suitName}}",
     "dash": "Dash (0)",
     "nextRound": "Next round",
     "reset": "Reset",

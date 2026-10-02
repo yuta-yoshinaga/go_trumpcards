@@ -28,6 +28,7 @@
   "dealerBadge": "親",
   "actions": {
     "trump": "切り札 {{suit}}",
+    "trumpAria": "切り札 {{suit}}、{{suitName}}",
     "dash": "Dash(0)",
     "nextRound": "次のラウンドへ",
     "reset": "リセット",
