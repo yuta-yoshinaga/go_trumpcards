@@ -56302,6 +56302,8 @@ components:
             type: object
             properties:
               playerIdx: { type: integer }
+              fieldFlushed: { type: boolean }
+              leadPlayerIdx: { type: integer }
               playedCards:
                 type: array
                 nullable: true
@@ -56312,6 +56314,8 @@ components:
           nullable: true
           properties:
             playerIdx: { type: integer }
+            fieldFlushed: { type: boolean }
+            leadPlayerIdx: { type: integer }
             playedCards:
               type: array
               nullable: true

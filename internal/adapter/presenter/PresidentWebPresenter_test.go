@@ -40,6 +40,20 @@ func TestPresidentWebPresenter_Output(t *testing.T) {
 		require.NoError(t, json.Unmarshal([]byte(raw), &out))
 		assert.Equal(t, "test-err", out.Message)
 	})
+
+	t.Run("field flush details are included with the action", func(t *testing.T) {
+		pg := domain.NewPresident(domain.NewTrumpCards(0), makePresidentPlayersForPresenter(), domain.DefaultPresidentConfig())
+		pg.SetHumanAction(&domain.PresidentCpuAction{
+			PlayerIdx:     0,
+			FieldFlushed:  true,
+			LeadPlayerIdx: 2,
+		})
+		var out controller.PresidentWebOutput
+		require.NoError(t, json.Unmarshal([]byte(p.Output(pg, nil)), &out))
+		require.NotNil(t, out.HumanAction)
+		assert.True(t, out.HumanAction.FieldFlushed)
+		assert.Equal(t, 2, out.HumanAction.LeadPlayerIdx)
+	})
 }
 
 func TestPresidentWebPresenter_ActionLog(t *testing.T) {

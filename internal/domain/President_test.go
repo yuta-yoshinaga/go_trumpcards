@@ -322,6 +322,8 @@ func TestPresident_Pass_FlushField_WhenEnabled(t *testing.T) {
 	err := pr.PlayerPlay(nil)
 	require.NoError(t, err)
 	assert.Nil(t, pr.GetTableCards(), "pass should flush field immediately")
+	assert.True(t, pr.GetHumanAction().FieldFlushed)
+	assert.Equal(t, pr.GetCurrentTurn(), pr.GetHumanAction().LeadPlayerIdx)
 }
 
 func TestPresident_Pass_DaifugoStyle_WhenFlushDisabled(t *testing.T) {

@@ -126,6 +126,20 @@ describe('PresidentPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', []));
   });
 
+  it('shows when a pass clears the field and who leads next', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        humanAction: { playerIdx: 0, playedCards: null, fieldFlushed: true, leadPlayerIdx: 2 },
+      } as Partial<PresidentResponse>),
+    );
+    renderWithProviders(<PresidentPage />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId('pr-action-log')).toHaveTextContent(/場が流れました。CPU 2が次にリードします/),
+    );
+    expect(screen.getByTestId('pr-action-log')).toHaveTextContent('あなたがパスしました');
+  });
+
   it('shows revolution banner when active', async () => {
     mockExec.mockResolvedValue(makeState({ revolutionActive: true }));
     renderWithProviders(<PresidentPage />);

@@ -45,16 +45,20 @@ func (pwp *PresidentWebPresenter) Output(pg interfaces.PresidentGame, lastErr er
 	resObj.CpuActions = make([]*controller.PresidentWebOutputAction, 0)
 	for _, action := range pg.GetCpuActions() {
 		resObj.CpuActions = append(resObj.CpuActions, &controller.PresidentWebOutputAction{
-			PlayerIdx:   action.PlayerIdx,
-			PlayedCards: cardsToOutput(action.PlayedCards),
+			PlayerIdx:     action.PlayerIdx,
+			PlayedCards:   cardsToOutput(action.PlayedCards),
+			FieldFlushed:  action.FieldFlushed,
+			LeadPlayerIdx: action.LeadPlayerIdx,
 		})
 	}
 
 	// 人間の最後の行動
 	if humanAction := pg.GetHumanAction(); humanAction != nil {
 		resObj.HumanAction = &controller.PresidentWebOutputAction{
-			PlayerIdx:   humanAction.PlayerIdx,
-			PlayedCards: cardsToOutput(humanAction.PlayedCards),
+			PlayerIdx:     humanAction.PlayerIdx,
+			PlayedCards:   cardsToOutput(humanAction.PlayedCards),
+			FieldFlushed:  humanAction.FieldFlushed,
+			LeadPlayerIdx: humanAction.LeadPlayerIdx,
 		}
 	}
 
