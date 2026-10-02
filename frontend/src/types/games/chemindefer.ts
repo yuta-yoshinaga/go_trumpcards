@@ -50,6 +50,13 @@ export interface ChemindeFerPlayer {
   isRepresentative: boolean;
 }
 
+/** Chip changes for every seat in one completed round. */
+export interface ChemindeFerRoundNet {
+  roundNumber: number;
+  /** Signed net changes indexed by seat. */
+  deltas: number[];
+}
+
 /** A suggestion for the side currently deciding on a third card. */
 export interface ChemindeFerHint {
   draw: boolean;
@@ -66,6 +73,7 @@ export interface ChemindeFerConfig {
 /** Response payload for `/chemindefer/exec`. */
 export interface ChemindeFerResponse extends BaseGameResponse {
   players: ChemindeFerPlayer[];
+  roundNetHistory: ChemindeFerRoundNet[];
   /** 0=Stake, 1=Bet, 2=PunterDraw, 3=BankerDraw, 4=RoundEnd. */
   phase: number;
   bankerIdx: number;
