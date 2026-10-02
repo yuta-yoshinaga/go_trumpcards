@@ -6,7 +6,7 @@
   "cardPosAria": "{{card}} (column {{col}}, position {{pos}})",
   "empty": "Empty",
   "emptyColumnAriaLabel": "Empty tableau column {{col}}. Any card can be placed.",
-  "emptyFaceAriaLabel": "Empty clock face {{idx}} ({{hour}} o'clock)",
+  "emptyFaceAriaLabel": "Empty clock face {{idx}} ({{hour}} o'clock), target {{target}}",
   "faceAriaLabel": "Clock face {{idx}} ({{hour}} o'clock), target {{target}}, {{count}} cards",
   "facePlacementAvailable": "card can be placed",
   "facePlacementUnavailable": "card cannot be placed",
