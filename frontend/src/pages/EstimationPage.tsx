@@ -34,8 +34,13 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 const TRICKS_PER_ROUND = 13;
 
 /** The four suits, in the order the trump buttons are offered. */
-const SUITS: readonly number[] = [1, 2, 3, 4];
-const SUIT_NAME_KEYS = ['', 'spade', 'club', 'heart', 'diamond'] as const;
+const SUITS: readonly (1 | 2 | 3 | 4)[] = [1, 2, 3, 4];
+const SUIT_NAME_KEYS: Readonly<Record<1 | 2 | 3 | 4, string>> = {
+  1: 'spade',
+  2: 'club',
+  3: 'heart',
+  4: 'diamond',
+};
 
 /** Every call a player may make, from a Dash Call up to the whole hand. */
 const BIDS: readonly number[] = Array.from({ length: TRICKS_PER_ROUND + 1 }, (_, i) => i);
@@ -309,7 +314,7 @@ function EstimationPageContent() {
                     disabled={loading}
                     aria-label={t('actions.trumpAria', {
                       suit: suitSymbolAt(suit, '?'),
-                      suitName: tc(`common.suit.${SUIT_NAME_KEYS[suit] ?? 'unknown'}`),
+                      suitName: tc(`common.suit.${SUIT_NAME_KEYS[suit]}`),
                     })}
                     data-testid={`est-trump-${suit.toString()}-btn`}
                   >
