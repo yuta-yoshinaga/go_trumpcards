@@ -39,6 +39,7 @@ func TestPineappleWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "", out.Message)
 		assert.Equal(t, "", out.MessageCode)
 		assert.False(t, out.IsDiscardPhase)
+		assert.Empty(t, out.DiscardPreviews)
 		assert.False(t, out.MuckAvailable)
 	})
 
@@ -104,6 +105,32 @@ func TestPineappleWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "Select a card to discard.", out.Message)
 		assert.Equal(t, "pineapple.discard.prompt", out.MessageCode)
 		assert.True(t, out.IsDiscardPhase)
+		assert.Empty(t, out.DiscardPreviews)
+	})
+
+	t.Run("four-card discard phase exposes ranked pair previews", func(t *testing.T) {
+		game, players := setup()
+		game.SetPhase(domain.PineapplePhaseDiscard)
+		for _, card := range []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 1, false),
+			domain.NewCard(domain.CardDesignSpade, 13, false),
+			domain.NewCard(domain.CardDesignHeart, 2, false),
+			domain.NewCard(domain.CardDesignClover, 2, false),
+		} {
+			players[0].AddCard(card)
+		}
+		game.SetCommunityCards([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 2, false),
+			domain.NewCard(domain.CardDesignSpade, 3, false),
+			domain.NewCard(domain.CardDesignSpade, 4, false),
+		})
+		var out controller.PineappleWebOutput
+		require.NoError(t, json.Unmarshal([]byte(p.Output(game, nil)), &out))
+		require.Len(t, out.DiscardPreviews, 6)
+		assert.Equal(t, 0, out.DiscardPreviews[0].DiscardIdx0)
+		assert.Equal(t, 1, out.DiscardPreviews[0].DiscardIdx1)
+		assert.Len(t, out.DiscardPreviews[0].StrengthCards, 5)
+		assert.NotEmpty(t, out.DiscardPreviews[0].StrengthOrder)
 	})
 
 	t.Run("muck available message", func(t *testing.T) {

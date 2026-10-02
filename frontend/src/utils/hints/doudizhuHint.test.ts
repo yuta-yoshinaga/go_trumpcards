@@ -11,6 +11,7 @@ function makeState(overrides: Partial<DoudizhuResponse> = {}): DoudizhuResponse 
     ],
     phase: 'play',
     currentTurn: 0,
+    lastPlayIdx: -1,
     tableCards: [],
     tableCombo: '',
     kittyCards: [],

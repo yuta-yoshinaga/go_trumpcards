@@ -9,6 +9,7 @@ export interface FiveHundredBidData {
   tricks: number;
   suit: number;
   value: number;
+  order: number;
 }
 
 /** A 500 player's per-round state. */

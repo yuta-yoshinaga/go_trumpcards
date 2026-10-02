@@ -94,5 +94,7 @@
   },
   "hintRequested": "ヒントがあります",
   "noHint": "ヒントはありません",
-  "trickWinnerBadge": "勝ち"
+  "trickWinnerBadge": "勝ち",
+  "legalPlay": "プレイできます",
+  "followSuitRequired": "リードスートに従う必要があります"
 }

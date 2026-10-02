@@ -55,6 +55,7 @@ type NinetyNineWebOutput struct {
 	DealerIdx        int                          `json:"dealerIdx"`
 	TrumpSuit        int                          `json:"trumpSuit"`
 	CurrentTrick     []*WebOutputTrickCard        `json:"currentTrick"`
+	ValidPlayIndices []int                        `json:"validPlayIndices"`
 	GameEndFlag      bool                         `json:"gameEndFlag"`
 	WinnerIdx        int                          `json:"winnerIdx"`
 	LeadPlayerIdx    int                          `json:"leadPlayerIdx"`
@@ -93,10 +94,11 @@ var NewNinetyNineWebController, NewNinetyNineWebControllerWithProvider = webCont
 
 func newNinetyNineDefaultOutput(msg string) *NinetyNineWebOutput {
 	return &NinetyNineWebOutput{
-		Players:       make([]*NinetyNineWebOutputPlayer, 0),
-		CurrentTrick:  make([]*WebOutputTrickCard, 0),
-		WinnerIdx:     -1,
-		WebOutputBase: WebOutputBase{Message: msg},
+		Players:          make([]*NinetyNineWebOutputPlayer, 0),
+		CurrentTrick:     make([]*WebOutputTrickCard, 0),
+		ValidPlayIndices: make([]int, 0),
+		WinnerIdx:        -1,
+		WebOutputBase:    WebOutputBase{Message: msg},
 	}
 }
 

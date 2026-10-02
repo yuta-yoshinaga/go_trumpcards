@@ -155,6 +155,12 @@ func (_m *MockCegoGame) GetPlayerScores() [domain.CegoPlayerCnt]int {
 // GetCardPoints モック
 func (_m *MockCegoGame) GetCardPoints(i int) int { return _m.Called(i).Int(0) }
 
+// GetDeclarerTargetPoints モック
+func (_m *MockCegoGame) GetDeclarerTargetPoints() int { return _m.Called().Int(0) }
+
+// GetTotalCardPoints モック
+func (_m *MockCegoGame) GetTotalCardPoints() int { return _m.Called().Int(0) }
+
 // GetOutcome モック
 func (_m *MockCegoGame) GetOutcome() domain.CegoOutcome {
 	return _m.Called().Get(0).(domain.CegoOutcome)

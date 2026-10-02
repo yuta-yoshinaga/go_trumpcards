@@ -16,9 +16,13 @@ type ThreeCardWebPresenter struct {
 func (tp *ThreeCardWebPresenter) Output(tc interfaces.ThreeCardGame, lastErr error) string {
 	resObj := new(controller.ThreeCardWebOutput)
 
-	resObj.PlayerHand = cardsToOutputOrEmpty(tc.GetPlayerHand())
-	resObj.DealerHand = cardsToOutputOrEmpty(tc.GetDealerHand())
 	resObj.Phase = tc.GetPhase()
+	resObj.PlayerHand = cardsToOutputOrEmpty(tc.GetPlayerHand())
+	if resObj.Phase != domain.ThreeCardPhaseAction {
+		resObj.DealerHand = cardsToOutputOrEmpty(tc.GetDealerHand())
+	} else {
+		resObj.DealerHand = make([]*controller.WebOutputCard, 0)
+	}
 	resObj.Chips = tc.GetChips()
 	resObj.AnteBet = tc.GetAnteBet()
 	resObj.PairPlusBet = tc.GetPairPlusBet()

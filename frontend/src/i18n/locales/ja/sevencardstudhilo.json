@@ -82,6 +82,7 @@
     "straightFlush": "ストレートフラッシュ",
     "royalFlush": "ロイヤルフラッシュ"
   },
+  "listSeparator": "、",
   "hiLo": {
     "title": "ハイ／ローの内訳",
     "hi": "ハイ",

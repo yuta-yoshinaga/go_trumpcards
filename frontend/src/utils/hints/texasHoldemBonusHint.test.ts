@@ -7,6 +7,8 @@ const baseState: TexasHoldemBonusResponse = {
   playerHand: [],
   dealerHand: [],
   community: [],
+  playerBest: [],
+  dealerBest: [],
   phase: TexasHoldemBonusPhase.BET,
   chips: 1000,
   anteBet: 0,

@@ -19,6 +19,7 @@
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
   "currentTrick": "現在のトリック",
+  "currentTrickPoints": "場のカード点合計: {{points}}点",
   "players": "プレイヤー",
   "you": "あなた",
   "cpu": "CPU {{id}}",

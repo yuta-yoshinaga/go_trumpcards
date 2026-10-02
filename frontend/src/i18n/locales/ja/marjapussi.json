@@ -45,6 +45,10 @@
   "score": "得点: {{score}}",
   "playerScore": "{{name}}: {{score}}点",
   "playButton": "出す",
+  "restrictionReason": {
+    "followLeadSuit": "リードスートに従ってください",
+    "playTrump": "切り札を出してください"
+  },
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",
   "playPhase": {

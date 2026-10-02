@@ -41,6 +41,9 @@ func TestCegoWebPresenter_Output(t *testing.T) {
 	if parsed.Config.TargetDeals != domain.CegoDefaultDeals {
 		t.Errorf("targetDeals = %d", parsed.Config.TargetDeals)
 	}
+	if parsed.DeclarerTargetPoints != g.GetDeclarerTargetPoints() || parsed.TotalCardPoints != g.GetTotalCardPoints() {
+		t.Errorf("point target = %d/%d, want %d/%d", parsed.DeclarerTargetPoints, parsed.TotalCardPoints, g.GetDeclarerTargetPoints(), g.GetTotalCardPoints())
+	}
 	if len(parsed.Players[0].Cards) == 0 {
 		t.Errorf("human cards should be revealed")
 	}

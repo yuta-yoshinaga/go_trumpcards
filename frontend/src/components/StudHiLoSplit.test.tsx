@@ -48,6 +48,54 @@ describe('StudHiLoSplit', () => {
     expect(screen.queryByTestId('studhilo-scoop-badge')).not.toBeInTheDocument();
   });
 
+  it('shows the cards making each high winner hand', () => {
+    renderWithProviders(
+      <StudHiLoSplit
+        results={[
+          result({ playerIdx: 0, wonAmount: 201, bestHand: [card('HEART', 10), card('SPADE', 10)] }),
+          result({
+            playerIdx: 1,
+            wonAmount: 200,
+            wonLow: 200,
+            bestHand: [card('CLOVER', 8)],
+            lowBestHand: [card('SPADE', 1)],
+          }),
+        ]}
+        players={players}
+      />,
+    );
+    expect(screen.getByTestId('studhilo-hi-badge')).toHaveTextContent('♥ 10、♠ 10');
+    expect(screen.getByTestId('studhilo-lo-badge')).toHaveTextContent('A');
+  });
+
+  it('shows the high payout without card parentheses for an empty best hand', () => {
+    renderWithProviders(
+      <StudHiLoSplit results={[result({ playerIdx: 0, wonAmount: 201, bestHand: [] })]} players={players} />,
+    );
+    const badge = screen.getByTestId('studhilo-hi-badge');
+    expect(badge).toHaveTextContent('201');
+    expect(badge).not.toHaveTextContent('(');
+  });
+
+  it('does not show high hand cards when there is no high winner', () => {
+    renderWithProviders(
+      <StudHiLoSplit
+        results={[
+          result({
+            playerIdx: 1,
+            wonAmount: 200,
+            wonLow: 200,
+            bestHand: [card('CLOVER', 8)],
+            lowBestHand: [card('SPADE', 1)],
+          }),
+        ]}
+        players={players}
+      />,
+    );
+    expect(screen.queryByTestId('studhilo-hi-badge')).not.toBeInTheDocument();
+    expect(screen.getByTestId('studhilo-lo-badge')).toBeInTheDocument();
+  });
+
   it('calls a scoop when one seat took both halves', () => {
     renderWithProviders(
       <StudHiLoSplit results={[result({ playerIdx: 0, wonAmount: 400, wonLow: 200 })]} players={players} />,

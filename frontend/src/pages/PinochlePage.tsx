@@ -234,6 +234,7 @@ function PinochlePageContent() {
   const minBid = state.highestBid > 0 ? state.highestBid + 1 : 20;
   const bidInvalid = Number.isNaN(bidAmount) || bidAmount < minBid;
   const isGameEnd = phase === PinochlePhase.GAME_END || state.gameEndFlag;
+  const isRoundEnd = phase === PinochlePhase.ROUND_END || phase === PinochlePhase.GAME_END;
 
   return (
     <GamePageShell
@@ -330,13 +331,19 @@ function PinochlePageContent() {
                       {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
                     </div>
                     <div>
-                      {t('team')} {p.team} | {t('bid')}: {p.bid} | {t('meldScore')}: {p.meldScore} | {t('trickCount')}:{' '}
-                      {p.trickCount}
+                      {t('team')} {p.team} | {t('bid')}: {p.bid} | {t('meldScore')}: {p.meldScore} | {t('trickPoints')}:{' '}
+                      {p.trickPoints} | {t('trickCount')}: {p.trickCount}
                     </div>
                   </div>
                 );
               })}
             </div>
+
+            {isRoundEnd && state.contractMade !== undefined && (
+              <p role="status" className="text-sm font-semibold text-ds-text-primary">
+                {state.contractMade ? t('contractMade') : t('contractFailed')}
+              </p>
+            )}
 
             {/* Current Trick */}
             <TrickDisplay
