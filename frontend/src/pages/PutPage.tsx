@@ -242,6 +242,8 @@ function PutPageContent() {
           cardWidth={cardWidth}
           label={t('currentTrick')}
           dataTutorial="put-trick"
+          winnerIdx={isTrickEnd ? state.leadPlayerIdx : undefined}
+          winnerLabel={t('trickWinnerBadge')}
         />
 
         {resultBanner && (
