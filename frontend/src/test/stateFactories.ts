@@ -62,6 +62,7 @@ import type {
   OmbreResponse,
   PiedmonteseTarotResponse,
   PigResponse,
+  PigsTailResponse,
   PreferenceResponse,
   PrimeroResponse,
   QuadrilleResponse,
@@ -5971,6 +5972,26 @@ export function makePigState(overrides?: Partial<PigResponse>): PigResponse {
     winnerIdx: -1,
     message: '',
     config: { playerCnt: 4, cpuDifficulty: 1 },
+    ...overrides,
+  };
+}
+
+/** Creates a default Pig's Tail response. */
+export function makePigsTailState(overrides?: Partial<PigsTailResponse>): PigsTailResponse {
+  return {
+    players: Array.from({ length: 4 }, (_, id) => ({ id, isHuman: id === 0, cardCount: 0, cards: [] })),
+    circleCount: 52,
+    centerTop: null,
+    centerHistory: [],
+    centerCount: 0,
+    currentTurn: 0,
+    gameEndFlag: false,
+    loserIdx: -1,
+    lastDrawCard: null,
+    lastPenalty: false,
+    cpuActions: [],
+    humanAction: null,
+    message: '',
     ...overrides,
   };
 }

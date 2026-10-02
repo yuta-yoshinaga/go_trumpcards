@@ -119,6 +119,15 @@ func (_m *MockPigsTailGame) GetCenter() []*domain.Card {
 	return nil
 }
 
+// GetCenterHistory モック
+func (_m *MockPigsTailGame) GetCenterHistory() []*domain.Card {
+	ret := _m.Called()
+	if v := ret.Get(0); v != nil {
+		return v.([]*domain.Card)
+	}
+	return nil
+}
+
 // GetCenterTopCard モック
 func (_m *MockPigsTailGame) GetCenterTopCard() *domain.Card {
 	ret := _m.Called()

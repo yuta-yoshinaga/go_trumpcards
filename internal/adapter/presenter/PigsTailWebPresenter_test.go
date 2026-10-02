@@ -25,9 +25,31 @@ func TestPigsTailWebPresenter_Output(t *testing.T) {
 
 		assert.Equal(t, 52, result.CircleCount)
 		assert.Equal(t, 0, result.CenterCount)
+		assert.Empty(t, result.CenterHistory)
 		assert.False(t, result.GameEndFlag)
 		assert.Equal(t, -1, result.LoserIdx)
 		assert.Equal(t, 4, len(result.Players))
+	})
+	t.Run("center history is returned from game state", func(t *testing.T) {
+		pt := newTestPigsTailForPresenter()
+		pt.Reset()
+		for !pt.IsHumanTurn() {
+			_ = pt.CpuAction()
+		}
+		_ = pt.PlayerAction(0)
+		output := p.Output(pt, nil)
+		var result controller.PigsTailWebOutput
+		require.NoError(t, json.Unmarshal([]byte(output), &result))
+		assert.Equal(t, len(pt.GetCenterHistory()), len(result.CenterHistory))
+		assert.NotEmpty(t, result.CenterHistory)
+	})
+	t.Run("legacy state outputs empty center history array", func(t *testing.T) {
+		var pt domain.PigsTail
+		require.NoError(t, json.Unmarshal([]byte(`{"tc":null,"ce":[],"pl":[]}`), &pt))
+
+		var result map[string]json.RawMessage
+		require.NoError(t, json.Unmarshal([]byte(p.Output(&pt, nil)), &result))
+		assert.JSONEq(t, `[]`, string(result["centerHistory"]))
 	})
 	t.Run("with error", func(t *testing.T) {
 		pt := newTestPigsTailForPresenter()

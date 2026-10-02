@@ -58,17 +58,18 @@ func (a *PigsTailCpuAction) UnmarshalJSON(data []byte) error {
 
 // PigsTail ぶたのしっぽゲームクラス
 type PigsTail struct {
-	trumpCards   *TrumpCards          // 山札(円状)
-	center       []*Card              // 中央の場札
-	players      []*PigsTailPlayer    // プレイヤー
-	currentTurn  int                  // 現在の手番プレイヤーインデックス
-	gameEndFlag  bool                 // ゲーム終了フラグ
-	loserIdx     int                  // 負けたプレイヤーインデックス (手札最多)
-	lastDrawCard *Card                // 最後に引いたカード
-	lastPenalty  bool                 // 最後のアクションでペナルティが発生したか
-	cpuActions   []*PigsTailCpuAction // CPUターンの行動履歴
-	humanAction  *PigsTailCpuAction   // 人間プレイヤーの最後の行動記録
-	config       PigsTailConfig       // ゲーム設定
+	trumpCards    *TrumpCards          // 山札(円状)
+	center        []*Card              // 中央の場札
+	centerHistory []*Card              // 直近の場札トップ
+	players       []*PigsTailPlayer    // プレイヤー
+	currentTurn   int                  // 現在の手番プレイヤーインデックス
+	gameEndFlag   bool                 // ゲーム終了フラグ
+	loserIdx      int                  // 負けたプレイヤーインデックス (手札最多)
+	lastDrawCard  *Card                // 最後に引いたカード
+	lastPenalty   bool                 // 最後のアクションでペナルティが発生したか
+	cpuActions    []*PigsTailCpuAction // CPUターンの行動履歴
+	humanAction   *PigsTailCpuAction   // 人間プレイヤーの最後の行動記録
+	config        PigsTailConfig       // ゲーム設定
 	actionLogBase
 }
 
@@ -81,6 +82,7 @@ func NewPigsTail(trumpCards *TrumpCards, players []*PigsTailPlayer) *PigsTail {
 	return &PigsTail{
 		trumpCards:    trumpCards,
 		center:        make([]*Card, 0),
+		centerHistory: make([]*Card, 0),
 		players:       players,
 		currentTurn:   0,
 		gameEndFlag:   false,
@@ -133,6 +135,7 @@ func (pt *PigsTail) Reset() {
 	pt.cpuActions = nil
 	pt.humanAction = nil
 	pt.center = make([]*Card, 0)
+	pt.centerHistory = make([]*Card, 0)
 	pt.actionLog = nil
 
 	// 設定の参加人数に合わせてロスター (人間1 + CPU) を再構築する。
@@ -168,12 +171,23 @@ func (pt *PigsTail) GetCenterTopCard() *Card {
 	return pt.center[len(pt.center)-1]
 }
 
+// GetCenterHistory 直近6枚の場札トップを古い順に取得する
+func (pt *PigsTail) GetCenterHistory() []*Card { return pt.centerHistory }
+
+func (pt *PigsTail) appendCenterHistory(card *Card) {
+	pt.centerHistory = append(pt.centerHistory, card)
+	if len(pt.centerHistory) > 6 {
+		pt.centerHistory = pt.centerHistory[len(pt.centerHistory)-6:]
+	}
+}
+
 // drawAndPlace 山札から1枚引いて場札に出し、スートマッチ判定を行う
 func (pt *PigsTail) drawAndPlace(playerIdx int) (*Card, bool) {
 	card := pt.trumpCards.DrawCard()
 	if card == nil {
 		return nil, false
 	}
+	pt.appendCenterHistory(card)
 
 	// スートマッチ判定: 場札のトップと同じスートならペナルティ
 	topCard := pt.GetCenterTopCard()
@@ -353,18 +367,19 @@ func cardShortStr(c *Card) string {
 
 // pigsTailJSON is the JSON wire format for PigsTail.
 type pigsTailJSON struct {
-	TrumpCards   *TrumpCards          `json:"tc"`
-	Center       []*Card              `json:"ce"`
-	Players      []*PigsTailPlayer    `json:"pl"`
-	CurrentTurn  int                  `json:"ct"`
-	GameEndFlag  bool                 `json:"ge"`
-	LoserIdx     int                  `json:"li"`
-	LastDrawCard *Card                `json:"lc"`
-	LastPenalty  bool                 `json:"lp"`
-	CpuActions   []*PigsTailCpuAction `json:"ca"`
-	HumanAction  *PigsTailCpuAction   `json:"ha"`
-	Config       PigsTailConfig       `json:"cf"`
-	ActionLog    []*ActionLogEntry    `json:"al"`
+	TrumpCards    *TrumpCards          `json:"tc"`
+	Center        []*Card              `json:"ce"`
+	CenterHistory []*Card              `json:"ch"`
+	Players       []*PigsTailPlayer    `json:"pl"`
+	CurrentTurn   int                  `json:"ct"`
+	GameEndFlag   bool                 `json:"ge"`
+	LoserIdx      int                  `json:"li"`
+	LastDrawCard  *Card                `json:"lc"`
+	LastPenalty   bool                 `json:"lp"`
+	CpuActions    []*PigsTailCpuAction `json:"ca"`
+	HumanAction   *PigsTailCpuAction   `json:"ha"`
+	Config        PigsTailConfig       `json:"cf"`
+	ActionLog     []*ActionLogEntry    `json:"al"`
 }
 
 // pigsTailMaxSliceLen caps slice sizes during deserialisation.
@@ -373,18 +388,19 @@ const pigsTailMaxSliceLen = 1000
 // MarshalJSON implements json.Marshaler.
 func (pt *PigsTail) MarshalJSON() ([]byte, error) {
 	return json.Marshal(pigsTailJSON{
-		TrumpCards:   pt.trumpCards,
-		Center:       pt.center,
-		Players:      pt.players,
-		CurrentTurn:  pt.currentTurn,
-		GameEndFlag:  pt.gameEndFlag,
-		LoserIdx:     pt.loserIdx,
-		LastDrawCard: pt.lastDrawCard,
-		LastPenalty:  pt.lastPenalty,
-		CpuActions:   pt.cpuActions,
-		HumanAction:  pt.humanAction,
-		Config:       pt.config,
-		ActionLog:    pt.actionLog,
+		TrumpCards:    pt.trumpCards,
+		Center:        pt.center,
+		CenterHistory: pt.centerHistory,
+		Players:       pt.players,
+		CurrentTurn:   pt.currentTurn,
+		GameEndFlag:   pt.gameEndFlag,
+		LoserIdx:      pt.loserIdx,
+		LastDrawCard:  pt.lastDrawCard,
+		LastPenalty:   pt.lastPenalty,
+		CpuActions:    pt.cpuActions,
+		HumanAction:   pt.humanAction,
+		Config:        pt.config,
+		ActionLog:     pt.actionLog,
 	})
 }
 
@@ -394,7 +410,7 @@ func (pt *PigsTail) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.Players) > pigsTailMaxSliceLen || len(j.Center) > pigsTailMaxSliceLen ||
+	if len(j.Players) > pigsTailMaxSliceLen || len(j.Center) > pigsTailMaxSliceLen || len(j.CenterHistory) > 6 ||
 		len(j.CpuActions) > pigsTailMaxSliceLen || len(j.ActionLog) > pigsTailMaxSliceLen {
 		return fmt.Errorf("pigsTail: input array exceeds maximum allowed size")
 	}
@@ -405,6 +421,10 @@ func (pt *PigsTail) UnmarshalJSON(data []byte) error {
 	pt.center = j.Center
 	if pt.center == nil {
 		pt.center = make([]*Card, 0)
+	}
+	pt.centerHistory = j.CenterHistory
+	if pt.centerHistory == nil {
+		pt.centerHistory = make([]*Card, 0)
 	}
 	pt.players = j.Players
 	if pt.players == nil {
