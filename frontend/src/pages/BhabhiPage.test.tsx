@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bhabhiApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BhabhiResponse, Card } from '../types/card';
@@ -61,6 +62,25 @@ beforeEach(() => {
 });
 
 describe('BhabhiPage', () => {
+  it('includes the card and player in pile card accessible names in Japanese and English', async () => {
+    const previousLanguage = i18n.language;
+    const pile = [{ playerIdx: 1, card: card('HEART', 5) }];
+    mockExec.mockResolvedValue(makeState({ pile, leadSuit: 3 } as unknown as Partial<BhabhiResponse>));
+
+    try {
+      await i18n.changeLanguage('ja');
+      const { unmount } = renderWithProviders(<BhabhiPage />);
+      expect(await screen.findByRole('img', { name: 'CPU 1が出した♥ 5' })).toBeInTheDocument();
+      unmount();
+
+      await i18n.changeLanguage('en');
+      renderWithProviders(<BhabhiPage />);
+      expect(await screen.findByRole('img', { name: '♥ 5 played by CPU 1' })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<BhabhiPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
