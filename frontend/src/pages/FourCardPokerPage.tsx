@@ -75,6 +75,12 @@ const HAND_RANK_KEYS: Record<number, string> = {
   8: 'handRank.8',
 };
 
+/** Return the translation key for a best-hand card label, or undefined without a best hand. */
+function bestCardLabel(inBest: boolean, bestSize: number): 'bestCardIncluded' | 'bestCardExcluded' | undefined {
+  if (bestSize === 0) return undefined;
+  return inBest ? 'bestCardIncluded' : 'bestCardExcluded';
+}
+
 /** Renders the Four Card Poker game page. */
 export const FourCardPokerPage = withTutorial(FourCardPokerPageContent, 'fourcardpoker', FCP_TUTORIAL_STEPS);
 
@@ -290,6 +296,7 @@ function FourCardPokerPageContent() {
                     // playerBest で届いているのに画面では見分けられず、自分で
                     // 見比べる必要があった (#5610)。CUI は bestHand 行で出している。
                     const inBest = playerBestIdx.has(i);
+                    const label = isEndPhase ? bestCardLabel(inBest, playerBestIdx.size) : undefined;
                     return (
                       <div
                         key={`p-${card.design}-${card.value}-${i}`}
@@ -301,11 +308,7 @@ function FourCardPokerPageContent() {
                         <AnimatedCard
                           card={card}
                           width={cardWidth}
-                          ariaLabel={
-                            isEndPhase
-                              ? t(inBest ? 'bestCardIncluded' : 'bestCardExcluded', { card: cardAlt(card) })
-                              : undefined
-                          }
+                          ariaLabel={label ? t(label, { card: cardAlt(card) }) : undefined}
                         />
                       </div>
                     );
@@ -327,6 +330,7 @@ function FourCardPokerPageContent() {
                 <div className="flex justify-center gap-2 flex-wrap">
                   {state.dealerHand.map((card, i) => {
                     const inBest = dealerBestIdx.has(i);
+                    const label = isEndPhase ? bestCardLabel(inBest, dealerBestIdx.size) : undefined;
                     return (
                       <div
                         key={`d-${card.design}-${card.value}-${i}`}
@@ -338,11 +342,7 @@ function FourCardPokerPageContent() {
                         <AnimatedCard
                           card={card}
                           width={cardWidth}
-                          ariaLabel={
-                            isEndPhase
-                              ? t(inBest ? 'bestCardIncluded' : 'bestCardExcluded', { card: cardAlt(card) })
-                              : undefined
-                          }
+                          ariaLabel={label ? t(label, { card: cardAlt(card) }) : undefined}
                         />
                       </div>
                     );
