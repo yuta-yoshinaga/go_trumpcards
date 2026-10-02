@@ -35,7 +35,8 @@
   "selectTricks": "トリック数を選択 (6-10):",
   "bidCondition": {
     "suit": "成立には{{tricks}}トリック以上取る必要があります。",
-    "misere": "成立には1トリックも取らない必要があります。"
+    "misere": "成立には1トリックも取らない必要があります。",
+    "underbid": "現在の最高ビッドを上回らないため入札できません。"
   },
   "misereButton": "ミゼール",
   "openMisereButton": "オープンミゼール",

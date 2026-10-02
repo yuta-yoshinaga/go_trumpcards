@@ -307,6 +307,14 @@ function CegoPageContent() {
                     </div>
                   ))}
                 </div>
+                {state.declarerIdx >= 0 && (
+                  <div
+                    className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    data-testid="cego-success-line"
+                  >
+                    {t('successLine', { target: state.declarerTargetPoints, total: state.totalCardPoints })}
+                  </div>
+                )}
 
                 {/* Players: cards / tricks / captured points */}
                 {isMobile ? (
@@ -348,6 +356,10 @@ function CegoPageContent() {
                           {t('roundResult.captured', {
                             points: state.players[state.declarerIdx]?.cardPoints ?? 0,
                           })}
+                        </div>
+                        <div>{t(state.outcome === 1 ? 'roundResult.made' : 'roundResult.failed')}</div>
+                        <div>
+                          {t('successLine', { target: state.declarerTargetPoints, total: state.totalCardPoints })}
                         </div>
                       </>
                     )}
