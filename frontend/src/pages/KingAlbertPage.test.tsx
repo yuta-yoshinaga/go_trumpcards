@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { kingAlbertApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, KingAlbertResponse, KingAlbertTableauCard } from '../types/card';
@@ -91,6 +92,22 @@ describe('KingAlbertPage', () => {
     mockExec.mockResolvedValue({ ...playingState, moveCount: 4, canUndo: true });
     fireEvent.click(screen.getByRole('button', { name: '元に戻す' }));
     await waitFor(() => expect(liveRegion).toHaveTextContent('手数: 4'));
+  });
+
+  it('renders the announcement in the current language', async () => {
+    mockExec.mockResolvedValue({ ...playingState, canUndo: true });
+    renderWithProviders(<KingAlbertPage />);
+    const liveRegion = await screen.findByTestId('ka-move-count-live');
+    mockExec.mockResolvedValue({ ...playingState, moveCount: 5, canUndo: true });
+    fireEvent.click(screen.getByRole('button', { name: '元に戻す' }));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('手数: 5'));
+
+    try {
+      await i18n.changeLanguage('en');
+      expect(liveRegion).toHaveTextContent('Moves: 5');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('renders 4 foundation suits', async () => {

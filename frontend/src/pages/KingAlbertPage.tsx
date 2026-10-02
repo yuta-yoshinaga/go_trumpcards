@@ -101,14 +101,14 @@ function KingAlbertPageContent() {
   const game = useKingAlbertGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
   const previousMoveCount = useRef<number | null>(null);
-  const [announcedMoveCount, setAnnouncedMoveCount] = useState('');
+  const [announcedMoveCount, setAnnouncedMoveCount] = useState<number | null>(null);
   useEffect(() => {
     if (!state) return;
     if (previousMoveCount.current !== null && previousMoveCount.current !== state.moveCount) {
-      setAnnouncedMoveCount(t('moveCountAnnouncement', { count: state.moveCount }));
+      setAnnouncedMoveCount(state.moveCount);
     }
     previousMoveCount.current = state.moveCount;
-  }, [state, t]);
+  }, [state]);
 
   const {
     hint: frontendHint,
@@ -377,7 +377,7 @@ function KingAlbertPageContent() {
             {t('moveCount')}: {state.moveCount}
           </span>
           <div data-testid="ka-move-count-live" className="sr-only" role="status" aria-live="polite">
-            {announcedMoveCount}
+            {announcedMoveCount === null ? '' : t('moveCountAnnouncement', { count: announcedMoveCount })}
           </div>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
