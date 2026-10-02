@@ -2,6 +2,8 @@
   "chips": "Chips: {{count}}",
   "turns": "Turns: {{played}}/{{total}}",
   "remaining": "Cards left: {{count}}",
+  "remainingByRank": "Cards remaining by rank",
+  "rankRemaining": "{{rank}}: {{count}}",
   "rankSelection": "Bet rank",
   "betAmount": "Bet amount",
   "bet": "Bet",
