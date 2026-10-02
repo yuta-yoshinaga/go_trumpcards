@@ -42,6 +42,7 @@
     "shelem": "Shelem宣言（{{value}}点）",
     "pass": "降りる",
     "discard": "切り札 {{suit}} で確定",
+    "discardAria": "切り札{{suit}}で確定",
     "nextRound": "次のラウンドへ",
     "reset": "リセット",
     "giveUp": "投了",

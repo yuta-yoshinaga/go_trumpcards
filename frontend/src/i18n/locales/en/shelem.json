@@ -42,6 +42,7 @@
     "shelem": "Declare Shelem ({{value}} points)",
     "pass": "Pass",
     "discard": "Confirm with {{suit}} trump",
+    "discardAria": "Confirm with {{suit}} trump",
     "nextRound": "Next round",
     "reset": "Reset",
     "giveUp": "Give up",
