@@ -313,9 +313,9 @@ function MariasPageContent() {
                         </div>
                       ))}
                       {/* Soloist-vs-Defenders total comparison. Each side total is
-                        cardPoints + marriage; the Soloist wins the round only when
-                        their total strictly exceeds the two Defenders' combined total
-                        (matching the domain's ScoreRound). The winning side is emphasised. */}
+                          cardPoints + marriage; the Soloist wins the round only when
+                          their total strictly exceeds the two Defenders' combined total
+                          (matching the domain's ScoreRound). The winning side is emphasised. */}
                       {(() => {
                         const sideTotal = (soloist: boolean) =>
                           state.players.reduce(

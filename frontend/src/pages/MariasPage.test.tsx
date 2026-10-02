@@ -211,6 +211,7 @@ describe('MariasPage', () => {
     const liveProgress = await screen.findByTestId('marias-round-progress-live');
     expect(liveProgress).toHaveAttribute('role', 'status');
     expect(liveProgress).toHaveAttribute('aria-live', 'polite');
+    expect(liveProgress).toHaveAttribute('aria-atomic', 'true');
     expect(liveProgress).toHaveTextContent('あなた カード点: 25');
     expect(liveProgress).toHaveTextContent('ソリスト: 65点');
     const row = await screen.findByTestId('marias-side-totals');
