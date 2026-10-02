@@ -57,6 +57,9 @@ func (p *KlaverjasWebPresenter) buildBase(g interfaces.KlaverjasGame) *controlle
 	}
 
 	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
+	for _, trickCard := range g.GetCurrentTrick() {
+		resObj.CurrentTrickPoints += domain.KlaverjasCardPoints(trickCard.Card, g.GetTrumpSuit())
+	}
 	resObj.LastTrickTeam = g.GetLastTrickTeam()
 	resObj.LastTrickPoints = g.GetLastTrickPoints()
 	resObj.LastTrickBonus = g.GetLastTrickBonus()

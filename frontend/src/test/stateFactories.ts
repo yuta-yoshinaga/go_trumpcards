@@ -1248,6 +1248,7 @@ const baseKlaverjasState: KlaverjasResponse = {
   dealerIdx: 3,
   trumpSuit: 4,
   currentTrick: [],
+  currentTrickPoints: 0,
   lastTrickTeam: -1,
   lastTrickPoints: 0,
   lastTrickBonus: 0,

@@ -68292,6 +68292,9 @@ components:
                 type: integer
               card:
                 $ref: '#/components/schemas/Card'
+        currentTrickPoints:
+          type: integer
+          description: Sum of card points currently in the trick, using the current trump suit
         teamScores:
           type: array
           items:
