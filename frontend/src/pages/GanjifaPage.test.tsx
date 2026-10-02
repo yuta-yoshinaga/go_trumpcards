@@ -56,6 +56,11 @@ describe('GanjifaPage', () => {
     );
   });
 
+  it('makes the action log available during play', async () => {
+    renderWithProviders(<GanjifaPage />);
+    expect(await screen.findByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
+  });
+
   // The rank direction is the only thing a player cannot infer from the cards,
   // so the readout has to change with the trump group, not just exist.
   it('states that higher numbers win when trump is a strong suit', async () => {
