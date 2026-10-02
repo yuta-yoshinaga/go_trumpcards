@@ -204,6 +204,15 @@ describe('SoloWhistPage', () => {
     expect(liveRegion).toHaveTextContent('あなた');
   });
 
+  it('announces a numeric highest bid when it has no label key', async () => {
+    mockExec.mockResolvedValue(makeSoloWhistState({ bids: [4, 0, 0, 0] }));
+    renderWithProviders(<SoloWhistPage />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId('solowhist-highest-bid-live')).toHaveTextContent('現在の最高ビッド: 4'),
+    );
+  });
+
   it('exposes the declarer line as a polite live region', async () => {
     renderWithProviders(<SoloWhistPage />);
     const line = await screen.findByTestId('solowhist-declarer');
