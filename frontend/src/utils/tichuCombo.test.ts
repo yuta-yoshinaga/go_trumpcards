@@ -143,6 +143,7 @@ describe('compareTichuCombos', () => {
     expect(compareTichuCombos([PHOENIX], [c('SPADE', 9)])).toBe('beats');
     expect(compareTichuCombos([PHOENIX], [DRAGON])).toBe('cannotBeat');
     expect(compareTichuCombos([PHOENIX], [c('SPADE', 13)])).toBe('beats');
+    expect(compareTichuCombos([c('SPADE', 1)], [PHOENIX])).toBe('unknown');
   });
 
   it('compares bombs and straight flushes as the domain does', () => {

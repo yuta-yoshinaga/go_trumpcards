@@ -405,7 +405,7 @@ function TichuPageContent() {
                           ({t('dogLeadNote')})
                         </span>
                       )}
-                      {comparison && (
+                      {comparison && comparison !== 'unknown' && (
                         <span className="ml-1 text-ds-text-muted" data-testid="tichu-combo-comparison">
                           {t(`comparison.${comparison}`)}
                         </span>

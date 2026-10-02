@@ -24,7 +24,7 @@ export interface TichuComboResult {
   length: number;
 }
 
-export type TichuComparison = 'beats' | 'cannotBeat' | 'incomparable';
+export type TichuComparison = 'beats' | 'cannotBeat' | 'incomparable' | 'unknown';
 
 // Tichu special cards use the JOKER design; the value identifies the special.
 // Mirrors internal/domain/TichuEval.go (Mahjong=1, Dog=2, Phoenix=3, Dragon=4).
@@ -290,6 +290,8 @@ export function compareTichuCombos(candidate: readonly Card[], table: readonly C
   if (cand.type !== current.type) return 'incomparable';
   if ((cand.type === 'straight' || cand.type === 'stairs') && cand.length !== current.length) return 'incomparable';
   if (cand.type === 'single') {
+    // A Phoenix single's effective rank depends on the single it covered on the table.
+    if (specialKind(table[0]) === TICHU_PHOENIX) return 'unknown';
     const candPhoenix = specialKind(candidate[0]) === TICHU_PHOENIX;
     const tablePhoenix = specialKind(table[0]) === TICHU_PHOENIX;
     if (candPhoenix && !tablePhoenix && specialKind(table[0]) === TICHU_DRAGON) return 'cannotBeat';
