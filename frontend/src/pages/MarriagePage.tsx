@@ -206,6 +206,8 @@ function MarriagePageContent() {
   const previewHandCards = humanPlayer?.cards.filter((_, index) => index !== selectedCardIndices[0]) ?? [];
   const handMeldLabels = new Map<number, { label: string; number: number }>();
   if (declarePreview && selectedCardIndices.length === 1) {
+    // declarePreview is evaluated on the hand without the selected finish card;
+    // meld.cardIndices index that reduced hand, so map them back to hand indices.
     const finishIndex = selectedCardIndices[0];
     const remainingHandIndices =
       humanPlayer?.cards.map((_, index) => index).filter((index) => index !== finishIndex) ?? [];

@@ -203,11 +203,7 @@ function covering(n: number, melds: Meld[]): number[][] {
   return cov;
 }
 
-/**
- * Whether `cards` (21 cards) form a valid declaration: every card melded, with
- * at least three pure sequences. Mirrors
- * `MarriageValidateDeclaration`.
- */
+/** Returns the melds that form a valid declaration, or null if none do. */
 function validDeclarationMelds(cards: readonly Card[], wildRank: number): Meld[] | null {
   const n = cards.length;
   if (n !== MARRIAGE_HAND_SIZE) return null;
@@ -245,6 +241,10 @@ function validDeclarationMelds(cards: readonly Card[], wildRank: number): Meld[]
   return dfs(0) ? chosen : null;
 }
 
+/**
+ * Whether `cards` (21 cards) form a valid declaration: every card melded, with
+ * at least three pure sequences. Mirrors `MarriageValidateDeclaration`.
+ */
 export function marriageValidateDeclaration(cards: readonly Card[], wildRank: number): boolean {
   return validDeclarationMelds(cards, wildRank) !== null;
 }
