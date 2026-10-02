@@ -453,6 +453,8 @@ describe('MarriagePage', () => {
     expect(preview).toBeInTheDocument();
     expect(screen.getByTestId('marriage-declare-preview-valid')).toBeInTheDocument();
     expect(screen.queryByTestId('marriage-declare-preview-invalid')).not.toBeInTheDocument();
+    expect(screen.getAllByTestId('marriage-declare-meld')).toHaveLength(7);
+    expect(screen.getByRole('button', { name: /♠ 3.*純シーケンス1/ })).toBeInTheDocument();
     // Declare button is never blocked by the preview.
     expect(screen.getByRole('button', { name: '宣言' })).not.toBeDisabled();
   });
