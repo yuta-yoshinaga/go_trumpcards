@@ -154,6 +154,19 @@ describe('SuecaPage', () => {
     expect(screen.getByTestId('sueca-player-3')).toHaveTextContent('チームB');
   });
 
+  it('shows each player team in the mobile player list', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      renderWithProviders(<SuecaPage />);
+      await screen.findByTestId('sueca-team-game-points');
+      expect(screen.getByTestId('sueca-player-0')).toHaveTextContent('チームA');
+      expect(screen.getByTestId('sueca-player-1')).toHaveTextContent('チームB');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
+
   it('announces the trick-winning team at trick end (leadPlayerIdx → team)', async () => {
     mockExec.mockResolvedValue(trickEndState); // leadPlayerIdx 0 → Team A
     renderWithProviders(<SuecaPage />);
