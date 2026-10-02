@@ -168,24 +168,23 @@ function SlapjackPageContent() {
   const isGameRunning = !!state && !state.gameEndFlag;
   const pendingDeadline = isCpuPending && isGameRunning ? (state?.pendingDeadlineMs ?? 0) : 0;
   const [clockNow, setClockNow] = useState(() => Date.now());
-  const pendingStartedAt = useRef<{ deadline: number; startedAt: number; duration: number }>({
+  const [pendingTiming, setPendingTiming] = useState<{ deadline: number; startedAt: number; duration: number }>({
     deadline: 0,
     startedAt: 0,
     duration: 0,
   });
+  let currentPendingTiming = pendingTiming;
+  if (pendingTiming.deadline !== pendingDeadline) {
+    const now = Date.now();
+    currentPendingTiming = {
+      deadline: pendingDeadline,
+      startedAt: now,
+      duration: Math.max(1, pendingDeadline - now),
+    };
+    setPendingTiming(currentPendingTiming);
+  }
   useEffect(() => {
-    if (!pendingDeadline) {
-      pendingStartedAt.current = { deadline: 0, startedAt: 0, duration: 0 };
-      return;
-    }
-    if (pendingStartedAt.current.deadline !== pendingDeadline) {
-      const now = Date.now();
-      pendingStartedAt.current = {
-        deadline: pendingDeadline,
-        startedAt: now,
-        duration: Math.max(1, pendingDeadline - now),
-      };
-    }
+    if (!pendingDeadline) return;
     const update = () => setClockNow(Date.now());
     update();
     const id = window.setInterval(update, SLAPJACK_TICK_INTERVAL_MS);
@@ -233,11 +232,13 @@ function SlapjackPageContent() {
   }
 
   const isGameEnd = state.gameEndFlag || state.phase === SlapjackPhase.GAME_END;
-  const pendingRemainingMs = pendingDeadline ? Math.max(0, pendingDeadline - clockNow) : 0;
+  // The server/Worker supplies Unix milliseconds; client clock skew can shift the countdown.
+  const effectiveClockNow = pendingTiming.deadline === pendingDeadline ? clockNow : currentPendingTiming.startedAt;
+  const pendingRemainingMs = pendingDeadline ? Math.max(0, pendingDeadline - effectiveClockNow) : 0;
   const pendingProgress = pendingDeadline
     ? Math.min(
         100,
-        Math.max(0, ((clockNow - pendingStartedAt.current.startedAt) / pendingStartedAt.current.duration) * 100),
+        Math.max(0, ((effectiveClockNow - currentPendingTiming.startedAt) / currentPendingTiming.duration) * 100),
       )
     : 0;
   const humanWon = isGameEnd && state.winnerIdx === 0;
@@ -294,7 +295,7 @@ function SlapjackPageContent() {
                 <div>
                   {t(
                     state.pendingKind === SlapjackPendingKind.SLAP ? 'slapjack.pending.slap' : 'slapjack.pending.step',
-                    { count: Math.ceil(pendingRemainingMs / 1000) },
+                    { count: Math.max(1, Math.ceil(pendingRemainingMs / 1000)) },
                   )}
                 </div>
                 <div

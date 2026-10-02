@@ -162,6 +162,58 @@ describe('SlapjackPage', () => {
     expect(screen.getByRole('progressbar', { name: 'CPUの予約アクション実行までの進捗' })).toBeInTheDocument();
   });
 
+  it('starts a new pending countdown below 100 percent, including after switching deadlines', async () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+      const firstPending = {
+        ...baseState,
+        pendingKind: SlapjackPendingKind.STEP,
+        pendingDeadlineMs: Date.now() + 5000,
+      };
+      const nextPending = { ...firstPending, pendingDeadlineMs: Date.now() + 8000 };
+      mockExec.mockResolvedValueOnce(firstPending).mockResolvedValue(nextPending);
+
+      renderWithProviders(<SlapjackPage />);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      const progress = screen.getByRole('progressbar', { name: 'CPUの予約アクション実行までの進捗' });
+      expect(Number(progress.getAttribute('aria-valuenow'))).toBeLessThan(100);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+      await vi.waitFor(() => expect(mockExec).toHaveBeenCalledWith('tick'));
+      expect(Number(progress.getAttribute('aria-valuenow'))).toBeLessThan(100);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps the pending countdown at about one second after its deadline', async () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+      mockExec.mockResolvedValue({
+        ...baseState,
+        pendingKind: SlapjackPendingKind.STEP,
+        pendingDeadlineMs: Date.now() + 500,
+      });
+      renderWithProviders(<SlapjackPage />);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      const status = screen.getByTestId('cpu-pending-status');
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+      expect(status).toHaveTextContent(/残り約1秒/);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('renders stock counts after state loads', async () => {
     renderWithProviders(<SlapjackPage />);
     await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
