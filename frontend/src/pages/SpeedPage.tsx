@@ -61,6 +61,7 @@ function SpeedPageContent() {
     state,
     playedCardCount,
     playAnnouncementNonce,
+    playableChangeCards,
     loading,
     error,
     exec: gameExec,
@@ -213,6 +214,17 @@ function SpeedPageContent() {
         data-testid="speed-play-count-announcement"
       >
         {playedCardCount === null ? '' : t('playedCardCount', { count: playedCardCount })}
+      </span>
+      <span
+        className="sr-only"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        data-testid="speed-playable-change-announcement"
+      >
+        {playableChangeCards.length > 0
+          ? t('playableCardsChanged', { cards: playableChangeCards.join(t('listSeparator')) })
+          : ''}
       </span>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
