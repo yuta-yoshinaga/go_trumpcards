@@ -892,7 +892,7 @@ func TestPineapple_GetEquityWorksForThePlainVariant(t *testing.T) {
 	}), 2)
 }
 
-func TestPineapple_GetHumanDiscardCandidates(t *testing.T) {
+func TestPineapple_GetHumanDiscardPairPreviewsStrength(t *testing.T) {
 	newIrish := func(hand []*Card, board []*Card) *Pineapple {
 		cfg := DefaultPineappleConfig()
 		players := NewPineapplePlayersForTable(cfg.TableSize)
@@ -906,32 +906,41 @@ func TestPineapple_GetHumanDiscardCandidates(t *testing.T) {
 	}
 	card := func(s int, v int) *Card { return NewCard(s, v, false) }
 
-	t.Run("kickers decide a unique best pair", func(t *testing.T) {
-		p := newIrish([]*Card{card(CardDesignSpade, 1), card(CardDesignHeart, 13), card(CardDesignClover, 12)}, []*Card{card(CardDesignDiamond, 1), card(CardDesignSpade, 9), card(CardDesignHeart, 7)})
-		got := p.GetHumanDiscardCandidates()
-		require.Len(t, got, 3)
-		assert.Equal(t, PokerHandHighCard, got[0].HandRank)
-		assert.Equal(t, PokerHandOnePair, got[1].HandRank)
-		assert.True(t, got[2].IsBest)
-		assert.False(t, got[0].IsBest)
-		assert.False(t, got[1].IsBest)
-		assert.Greater(t, compareHighCardsSlice(got[2].StrengthCards, got[1].StrengthCards), 0)
+	t.Run("four cards produce all pairs with original indexes", func(t *testing.T) {
+		p := newIrish([]*Card{card(CardDesignSpade, 1), card(CardDesignHeart, 13), card(CardDesignClover, 12), card(CardDesignDiamond, 8)}, []*Card{card(CardDesignDiamond, 1), card(CardDesignSpade, 9), card(CardDesignHeart, 7)})
+		got := p.GetHumanDiscardPairPreviews()
+		require.Len(t, got, 6)
+		wantIndexes := [][2]int{{0, 1}, {0, 2}, {0, 3}, {1, 2}, {1, 3}, {2, 3}}
+		for i, pv := range got {
+			assert.Equal(t, wantIndexes[i][0], pv.DiscardIdx0)
+			assert.Equal(t, wantIndexes[i][1], pv.DiscardIdx1)
+			assert.Len(t, pv.StrengthCards, 5)
+		}
+		assert.Equal(t, 0, got[0].DiscardIdx0)
+		assert.Equal(t, 1, got[0].DiscardIdx1)
+		assert.Equal(t, 2, got[5].DiscardIdx0)
+		assert.Equal(t, 3, got[5].DiscardIdx1)
 	})
 
-	t.Run("exact ties have no unique best", func(t *testing.T) {
-		p := newIrish([]*Card{card(CardDesignSpade, 1), card(CardDesignHeart, 13), card(CardDesignClover, 13)}, []*Card{card(CardDesignDiamond, 1), card(CardDesignSpade, 9), card(CardDesignHeart, 7)})
-		got := p.GetHumanDiscardCandidates()
-		require.Len(t, got, 3)
-		assert.False(t, got[1].IsBest)
-		assert.False(t, got[2].IsBest)
+	t.Run("same rank kicker strength raises the dense order", func(t *testing.T) {
+		p := newIrish([]*Card{card(CardDesignSpade, 1), card(CardDesignHeart, 13), card(CardDesignClover, 12), card(CardDesignDiamond, 8)}, []*Card{card(CardDesignDiamond, 1), card(CardDesignSpade, 9), card(CardDesignHeart, 7)})
+		got := p.GetHumanDiscardPairPreviews()
+		assert.Equal(t, PokerHandHighCard, got[0].HandRank)
+		assert.Equal(t, PokerHandHighCard, got[1].HandRank)
+		assert.Greater(t, got[1].StrengthOrder, got[0].StrengthOrder)
+	})
+
+	t.Run("identical strengths share an order", func(t *testing.T) {
+		p := newIrish([]*Card{card(CardDesignSpade, 1), card(CardDesignHeart, 13), card(CardDesignClover, 13), card(CardDesignDiamond, 8)}, []*Card{card(CardDesignDiamond, 1), card(CardDesignSpade, 9), card(CardDesignHeart, 7)})
+		got := p.GetHumanDiscardPairPreviews()
+		assert.Equal(t, got[0].StrengthOrder, got[1].StrengthOrder)
 	})
 
 	t.Run("wheel is five high", func(t *testing.T) {
-		p := newIrish([]*Card{card(CardDesignSpade, 1), card(CardDesignHeart, 2), card(CardDesignClover, 9)}, []*Card{card(CardDesignDiamond, 3), card(CardDesignSpade, 4), card(CardDesignHeart, 5)})
-		got := p.GetHumanDiscardCandidates()
-		require.Len(t, got, 3)
-		assert.Equal(t, PokerHandStraight, got[2].HandRank)
-		wheel := got[2].StrengthCards
+		p := newIrish([]*Card{card(CardDesignSpade, 1), card(CardDesignHeart, 2), card(CardDesignClover, 9), card(CardDesignDiamond, 10)}, []*Card{card(CardDesignDiamond, 3), card(CardDesignSpade, 4), card(CardDesignHeart, 5)})
+		got := p.GetHumanDiscardPairPreviews()
+		wheel := got[5].StrengthCards
+		assert.Equal(t, PokerHandStraight, got[5].HandRank)
 		assert.Equal(t, []int{5, 4, 3, 2, 1}, []int{wheel[0].GetValue(), wheel[1].GetValue(), wheel[2].GetValue(), wheel[3].GetValue(), wheel[4].GetValue()})
 		sixHigh := []*Card{card(CardDesignSpade, 2), card(CardDesignHeart, 3), card(CardDesignClover, 4), card(CardDesignDiamond, 5), card(CardDesignSpade, 6)}
 		assert.Less(t, compareHighCardsSlice(wheel, sixHigh), 0)

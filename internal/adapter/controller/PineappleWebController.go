@@ -36,24 +36,19 @@ type PineappleWebOutput struct {
 	// Omaha の Web は同じ表示を TypeScript 側で組み直しているが、こちらは
 	// サーバが答える。役の探索をフロントにもう 1 つ持つと、ドメインを直した
 	// ときに片方だけ古くなる (#5601 で Agnes から同じ複製を消したばかり)。
-	LiveBestHand      string                          `json:"liveBestHand"`
-	DiscardPreviews   []*PineappleWebDiscardPreview   `json:"discardPreviews,omitempty"`
-	DiscardCandidates []*PineappleWebDiscardCandidate `json:"discardCandidates"`
-}
-
-// PineappleWebDiscardCandidate describes the evaluated remaining hand for a final Irish Poker discard.
-type PineappleWebDiscardCandidate struct {
-	DiscardIdx    int              `json:"discardIdx"`
-	HandRankKey   string           `json:"handRankKey"`
-	StrengthCards []*WebOutputCard `json:"strengthCards"`
-	IsBest        bool             `json:"isBest"`
+	LiveBestHand    string                        `json:"liveBestHand"`
+	DiscardPreviews []*PineappleWebDiscardPreview `json:"discardPreviews,omitempty"`
 }
 
 // PineappleWebDiscardPreview is the server's evaluation of one discard candidate.
 type PineappleWebDiscardPreview struct {
-	CardIdx     int  `json:"cardIdx"`
-	HandRank    int  `json:"handRank"`
-	Recommended bool `json:"recommended"`
+	CardIdx       int              `json:"cardIdx,omitempty"`
+	DiscardIdx0   int              `json:"discardIdx0"`
+	DiscardIdx1   int              `json:"discardIdx1"`
+	HandRank      int              `json:"handRank"`
+	Recommended   bool             `json:"recommended"`
+	StrengthCards []*WebOutputCard `json:"strengthCards,omitempty"`
+	StrengthOrder int              `json:"strengthOrder"`
 }
 
 // ToConfig builds a PineappleConfig from the web input.
@@ -96,7 +91,6 @@ func newPineappleDefaultOutput(msg string) *PineappleWebOutput {
 			CpuActions:     make([]*HoldemWebOutputCpuAction, 0),
 			WebOutputBase:  WebOutputBase{Message: msg},
 		},
-		DiscardCandidates: make([]*PineappleWebDiscardCandidate, 0),
 	}
 }
 

@@ -892,61 +892,12 @@ type PineappleDiscardPairPreview struct {
 	DiscardIdx1 int
 	// HandRank は残る2枚がボードと作る最強の役 (PokerHand*)。
 	HandRank int
+	// StrengthCards は役とキッカーの比較順に並べた最善の5枚。
+	StrengthCards []*Card
+	// StrengthOrder は全候補中の強さ順位 (弱い方から0)。同じ強さは同順位。
+	StrengthOrder int
 	// Recommended は最も強い役が残る組み合わせに付く。同点なら全部に付く。
 	Recommended bool
-}
-
-// PineappleDiscardCandidate は Irish Poker の最後の1枚の捨て札候補。
-type PineappleDiscardCandidate struct {
-	DiscardIdx    int
-	HandRank      int
-	StrengthCards []*Card
-	IsBest        bool
-}
-
-// GetHumanDiscardCandidates は Irish Poker の2枚目のディスカード候補を評価する。
-// フロップ後、1枚目を捨てた後の人間の3枚手札がある局面だけ返す。
-func (p *Pineapple) GetHumanDiscardCandidates() []PineappleDiscardCandidate {
-	if !p.discardAfterFlopBetting || p.initialDealCount != 4 || p.phase != PineapplePhaseDiscard || len(p.communityCards) < 3 {
-		return nil
-	}
-	var human *PineapplePlayer
-	for _, pl := range p.players {
-		if pl.GetIsHuman() {
-			human = pl
-			break
-		}
-	}
-	if human == nil || human.GetFolded() || human.GetCardsSize() != 3 {
-		return nil
-	}
-	candidates := make([]PineappleDiscardCandidate, 3)
-	for discard := range candidates {
-		keep := make([]*Card, 0, 2)
-		for i := 0; i < human.GetCardsSize(); i++ {
-			if i != discard {
-				keep = append(keep, human.GetCard(i))
-			}
-		}
-		player := NewPineapplePlayer(true, HoldemStyleTAG)
-		for _, c := range keep {
-			player.AddCard(c)
-		}
-		rank, cards := player.PeekBestHand(p.communityCards)
-		candidates[discard] = PineappleDiscardCandidate{DiscardIdx: discard, HandRank: rank, StrengthCards: pokerStrengthCardOrder(cards)}
-	}
-	bestIdx, tied := -1, false
-	for i := range candidates {
-		if bestIdx < 0 || candidates[i].HandRank > candidates[bestIdx].HandRank || (candidates[i].HandRank == candidates[bestIdx].HandRank && compareHighCardsSlice(candidates[i].StrengthCards, candidates[bestIdx].StrengthCards) > 0) {
-			bestIdx, tied = i, false
-		} else if candidates[i].HandRank == candidates[bestIdx].HandRank && compareHighCardsSlice(candidates[i].StrengthCards, candidates[bestIdx].StrengthCards) == 0 {
-			tied = true
-		}
-	}
-	if bestIdx >= 0 && !tied {
-		candidates[bestIdx].IsBest = true
-	}
-	return candidates
 }
 
 // pokerStrengthCardOrder arranges a five-card hand by the same rank and kicker
@@ -1005,7 +956,6 @@ func (p *Pineapple) GetHumanDiscardPairPreviews() []PineappleDiscardPairPreview 
 	}
 
 	previews := make([]PineappleDiscardPairPreview, 0, 6)
-	best := -1
 	for i := 0; i < human.GetCardsSize(); i++ {
 		for j := i + 1; j < human.GetCardsSize(); j++ {
 			keep := make([]*Card, 0, 2)
@@ -1014,19 +964,56 @@ func (p *Pineapple) GetHumanDiscardPairPreviews() []PineappleDiscardPairPreview 
 					keep = append(keep, human.GetCard(k))
 				}
 			}
-			rank := p.bestRankWithBoard(keep)
+			player := NewPineapplePlayer(true, HoldemStyleTAG)
+			for _, c := range keep {
+				player.AddCard(c)
+			}
+			rank, cards := player.PeekBestHand(p.communityCards)
 			previews = append(previews, PineappleDiscardPairPreview{
 				DiscardIdx0: i, DiscardIdx1: j, HandRank: rank,
+				StrengthCards: pokerStrengthCardOrder(cards),
 			})
-			if rank > best {
-				best = rank
+		}
+	}
+	// Rank each candidate by the number of distinct weaker strengths. Six
+	// candidates make this direct comparison both simple and deterministic.
+	for i := range previews {
+		for j := range previews {
+			if previewStrengthCompare(previews[j], previews[i]) >= 0 {
+				continue
+			}
+			unique := true
+			for k := 0; k < j; k++ {
+				if previewStrengthCompare(previews[k], previews[j]) == 0 {
+					unique = false
+					break
+				}
+			}
+			if unique {
+				previews[i].StrengthOrder++
 			}
 		}
 	}
+	bestOrder := 0
+	for _, preview := range previews {
+		if preview.StrengthOrder > bestOrder {
+			bestOrder = preview.StrengthOrder
+		}
+	}
 	for i := range previews {
-		previews[i].Recommended = previews[i].HandRank == best
+		previews[i].Recommended = previews[i].StrengthOrder == bestOrder
 	}
 	return previews
+}
+
+func previewStrengthCompare(a, b PineappleDiscardPairPreview) int {
+	if a.HandRank < b.HandRank {
+		return -1
+	}
+	if a.HandRank > b.HandRank {
+		return 1
+	}
+	return compareHighCardsSlice(a.StrengthCards, b.StrengthCards)
 }
 
 // GetPotOdds ポットオッズを返す

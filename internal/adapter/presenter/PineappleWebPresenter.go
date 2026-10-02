@@ -29,18 +29,22 @@ func (pp *PineappleWebPresenter) buildOutput(p interfaces.PineappleGame, lastErr
 		InitialDealCount: p.GetInitialDealCount(),
 		LiveBestHand:     pineappleLiveBestHand(p),
 		DiscardPreviews: func() []*controller.PineappleWebDiscardPreview {
+			pairs := p.GetHumanDiscardPairPreviews()
+			if len(pairs) > 0 {
+				out := make([]*controller.PineappleWebDiscardPreview, 0, len(pairs))
+				for _, preview := range pairs {
+					out = append(out, &controller.PineappleWebDiscardPreview{
+						DiscardIdx0: preview.DiscardIdx0, DiscardIdx1: preview.DiscardIdx1,
+						HandRank: preview.HandRank, Recommended: preview.Recommended,
+						StrengthCards: cardsToOutput(preview.StrengthCards), StrengthOrder: preview.StrengthOrder,
+					})
+				}
+				return out
+			}
 			previews := p.GetHumanDiscardPreviews()
 			out := make([]*controller.PineappleWebDiscardPreview, 0, len(previews))
 			for _, preview := range previews {
 				out = append(out, &controller.PineappleWebDiscardPreview{CardIdx: preview.CardIdx, HandRank: preview.HandRank, Recommended: preview.Recommended})
-			}
-			return out
-		}(),
-		DiscardCandidates: func() []*controller.PineappleWebDiscardCandidate {
-			candidates := p.GetHumanDiscardCandidates()
-			out := make([]*controller.PineappleWebDiscardCandidate, 0, len(candidates))
-			for _, candidate := range candidates {
-				out = append(out, &controller.PineappleWebDiscardCandidate{DiscardIdx: candidate.DiscardIdx, HandRankKey: pokerHandKey(candidate.HandRank), StrengthCards: cardsToOutput(candidate.StrengthCards), IsBest: candidate.IsBest})
 			}
 			return out
 		}(),
