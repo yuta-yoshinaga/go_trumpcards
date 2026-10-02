@@ -530,6 +530,30 @@ describe('ThreeCardBragPage', () => {
     expect(await screen.findByTestId('tcb-turn-live')).toHaveTextContent('あなた がマッチに勝利しました');
   });
 
+  it('shows each tie winner their actual share, including remainder', async () => {
+    mockExec.mockResolvedValue(
+      makeThreeCardBragState({
+        phase: 2,
+        roundWinnerIdx: 0,
+        pot: 11,
+        roundPayouts: [6, 5, 0, 0],
+        isHumanTurn: false,
+      }),
+    );
+    renderWithProviders(<ThreeCardBragPage />);
+    expect(await screen.findByText('あなた の受取額は 6 チップです。')).toBeInTheDocument();
+    expect(screen.getByText('CPU 1 の受取額は 5 チップです。')).toBeInTheDocument();
+  });
+
+  it('does not show a share row when only one player receives the pot', async () => {
+    mockExec.mockResolvedValue(
+      makeThreeCardBragState({ phase: 2, roundWinnerIdx: 0, roundPayouts: [11, 0, 0, 0], isHumanTurn: false }),
+    );
+    renderWithProviders(<ThreeCardBragPage />);
+    expect(await screen.findByTestId('tcb-turn-live')).toHaveTextContent('あなた がポット');
+    expect(screen.queryByText(/受取額は/)).not.toBeInTheDocument();
+  });
+
   it('shows the next-deal button at deal end', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<ThreeCardBragPage />);

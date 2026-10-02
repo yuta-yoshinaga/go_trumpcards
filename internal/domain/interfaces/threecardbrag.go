@@ -43,6 +43,8 @@ type ThreeCardBragGame interface {
 	GetStake() int
 	// GetRoundWinnerIdx 直近ディールの勝者を取得する (-1=未確定)
 	GetRoundWinnerIdx() int
+	// GetRoundPayouts 直近ディールで各プレイヤーが受け取ったチップ数を取得する
+	GetRoundPayouts() []int
 	// IsShowdown ショーダウンが行われたかを返す
 	IsShowdown() bool
 	// GetGameEndFlag ゲーム終了フラグを取得する

@@ -3469,6 +3469,7 @@ const baseThreeCardBragState: ThreeCardBragResponse = {
   dealerIdx: 3,
   currentPlayerIdx: 0,
   roundWinnerIdx: -1,
+  roundPayouts: [0, 0, 0, 0],
   matchWinnerIdx: -1,
   isShowdown: false,
   canShow: false,
