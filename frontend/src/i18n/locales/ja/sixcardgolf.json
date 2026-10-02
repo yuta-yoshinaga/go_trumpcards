@@ -29,6 +29,11 @@
     "skipFlip": "スキップ",
     "nextRound": "次のラウンドへ"
   },
+  "gridSlotAction": {
+    "initial": "初期公開",
+    "swap": "交換",
+    "flip": "公開"
+  },
   "phase": {
     "setup": "初期カードを2枚めくってください",
     "playerTurn": "カードを引いてください",
@@ -75,6 +80,8 @@
     "flipCard": "伏せ札をめくりましょう"
   },
   "gridSlotFaceDownAria": "位置{{pos}}（裏向き）",
+  "gridSlotFaceUpAria": "{{card}}、位置{{pos}}",
+  "gridSlotWithAction": "{{name}}（{{action}}）",
   "cliUsagePos": "使い方: {{cmd}} <位置>",
   "cliUnknown": "不明なコマンド: {{cmd}}",
   "landscapeBanner": "横画面での表示を推奨します"
