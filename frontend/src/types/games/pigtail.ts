@@ -25,6 +25,7 @@ export interface PigsTailResponse extends BaseGameResponse {
   players: PigsTailPlayer[];
   circleCount: number;
   centerTop: Card | null;
+  centerHistory: Card[];
   centerCount: number;
   currentTurn: number;
   gameEndFlag: boolean;

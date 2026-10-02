@@ -40,6 +40,51 @@ func TestPigsTail_Reset(t *testing.T) {
 	assert.Equal(t, 52, pt.GetCircleCount())
 	assert.Empty(t, pt.GetCenter())
 	assert.Nil(t, pt.GetCenterTopCard())
+	assert.Empty(t, pt.GetCenterHistory())
+}
+
+func TestPigsTail_CenterHistoryKeepsLatestSixDraws(t *testing.T) {
+	pt, _ := newTestPigsTail()
+	pt.centerHistory = []*Card{NewCard(CardDesignSpade, 1, false)}
+	pt.Reset()
+	assert.Empty(t, pt.GetCenterHistory())
+	for i := 1; i <= 8; i++ {
+		pt.appendCenterHistory(NewCard(CardDesignSpade, i, false))
+	}
+	assert.Len(t, pt.GetCenterHistory(), 6)
+	assert.Equal(t, 3, pt.GetCenterHistory()[0].GetValue())
+	assert.Equal(t, 8, pt.GetCenterHistory()[5].GetValue())
+}
+
+func TestPigsTail_DrawAndPlaceCenterHistory(t *testing.T) {
+	t.Run("penalty clears history", func(t *testing.T) {
+		pt, players := newTestPigsTail()
+		pt.center = []*Card{NewCard(CardDesignSpade, 1, false)}
+		pt.centerHistory = []*Card{NewCard(CardDesignHeart, 2, false)}
+		pt.trumpCards = &TrumpCards{deck: []*Card{NewCard(CardDesignSpade, 3, false)}, deckCnt: 1}
+
+		_, penalty := pt.drawAndPlace(0)
+
+		assert.True(t, penalty)
+		assert.Empty(t, pt.GetCenterHistory())
+		assert.Equal(t, 2, players[0].GetCardsSize())
+	})
+
+	t.Run("safe draw appends new center top", func(t *testing.T) {
+		pt, _ := newTestPigsTail()
+		previousTop := NewCard(CardDesignHeart, 2, false)
+		newTop := NewCard(CardDesignDiamond, 3, false)
+		pt.center = []*Card{NewCard(CardDesignSpade, 1, false)}
+		pt.centerHistory = []*Card{previousTop}
+		pt.trumpCards = &TrumpCards{deck: []*Card{newTop}, deckCnt: 1}
+
+		_, penalty := pt.drawAndPlace(0)
+
+		assert.False(t, penalty)
+		require.Len(t, pt.GetCenterHistory(), 2)
+		assert.Same(t, previousTop, pt.GetCenterHistory()[0])
+		assert.Same(t, newTop, pt.GetCenterHistory()[1])
+	})
 }
 
 func TestPigsTail_Reset_ClearsPlayerHands(t *testing.T) {
@@ -302,6 +347,7 @@ func TestPigsTail_JSONRoundTrip(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, pt.GetGameEndFlag(), restored.GetGameEndFlag())
+	assert.Equal(t, pt.GetCenterHistory(), restored.GetCenterHistory())
 	assert.Equal(t, pt.GetCurrentTurn(), restored.GetCurrentTurn())
 	assert.Equal(t, pt.GetLoserIdx(), restored.GetLoserIdx())
 	assert.Equal(t, pt.GetCircleCount(), restored.GetCircleCount())
@@ -317,6 +363,13 @@ func TestPigsTail_UnmarshalJSON_NilFields(t *testing.T) {
 	assert.NotNil(t, pt.center)
 	assert.NotNil(t, pt.players)
 	assert.NotNil(t, pt.actionLog)
+}
+
+func TestPigsTail_UnmarshalJSON_LegacyStateHasEmptyCenterHistory(t *testing.T) {
+	var pt PigsTail
+	require.NoError(t, json.Unmarshal([]byte(`{"tc":null,"ce":[],"pl":[]}`), &pt))
+	assert.NotNil(t, pt.GetCenterHistory())
+	assert.Empty(t, pt.GetCenterHistory())
 }
 
 func TestPigsTail_UnmarshalJSON_InvalidJSON(t *testing.T) {

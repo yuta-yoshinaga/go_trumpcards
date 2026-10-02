@@ -37,6 +37,7 @@ const baseState: PigsTailResponse = {
   ],
   circleCount: 52,
   centerTop: null,
+  centerHistory: [],
   centerCount: 0,
   currentTurn: 0,
   gameEndFlag: false,
@@ -83,6 +84,17 @@ beforeEach(() => {
 });
 
 describe('PigsTailPage', () => {
+  it('renders center history supplied by the server', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      centerHistory: [
+        { design: 'HEART', value: 3 },
+        { design: 'SPADE', value: 8 },
+      ],
+    });
+    renderWithProviders(<PigsTailPage />);
+    expect(await screen.findByTestId('pt-center-history')).toHaveTextContent('♥3♠8');
+  });
   it('renders pigtail-penalty-flash when a penalty occurs', async () => {
     // ペナルティが発生した（場札と同じマークを引いて引き取らされた）ときに画面をフラッシュさせる
     const state = {
@@ -188,13 +200,26 @@ describe('PigsTailPage', () => {
     expect(center).toHaveTextContent('?');
   });
 
-  it('accumulates a recent-center history strip across draws', async () => {
-    mockExec.mockResolvedValue({ ...baseState, centerTop: { design: 'SPADE', value: 1 }, centerCount: 3 });
+  it('renders the server recent-center history across draws', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      centerTop: { design: 'SPADE', value: 1 },
+      centerHistory: [{ design: 'SPADE', value: 1 }],
+      centerCount: 3,
+    });
     renderWithProviders(<PigsTailPage />);
     const strip = await screen.findByTestId('pt-center-history');
     expect(strip).toHaveTextContent('♠A');
 
-    mockExec.mockResolvedValue({ ...baseState, centerTop: { design: 'HEART', value: 3 }, centerCount: 4 });
+    mockExec.mockResolvedValue({
+      ...baseState,
+      centerTop: { design: 'HEART', value: 3 },
+      centerHistory: [
+        { design: 'SPADE', value: 1 },
+        { design: 'HEART', value: 3 },
+      ],
+      centerCount: 4,
+    });
     fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
     await waitFor(() => expect(screen.getByTestId('pt-center-history')).toHaveTextContent('♥3'));
     // The earlier center top is still part of the tail.
@@ -205,6 +230,7 @@ describe('PigsTailPage', () => {
     mockExec.mockResolvedValue({
       ...baseState,
       centerTop: { design: 'SPADE', value: 1 },
+      centerHistory: [{ design: 'SPADE', value: 1 }],
       centerCount: 3,
       circleCount: 52,
     });
@@ -217,6 +243,7 @@ describe('PigsTailPage', () => {
     mockExec.mockResolvedValue({
       ...baseState,
       centerTop: { design: 'SPADE', value: 1 },
+      centerHistory: [{ design: 'SPADE', value: 1 }],
       centerCount: 3,
       circleCount: 51,
     });
@@ -227,11 +254,16 @@ describe('PigsTailPage', () => {
   });
 
   it('clears the center history when the pile is collected (centerCount 0)', async () => {
-    mockExec.mockResolvedValue({ ...baseState, centerTop: { design: 'SPADE', value: 1 }, centerCount: 3 });
+    mockExec.mockResolvedValue({
+      ...baseState,
+      centerTop: { design: 'SPADE', value: 1 },
+      centerHistory: [{ design: 'SPADE', value: 1 }],
+      centerCount: 3,
+    });
     renderWithProviders(<PigsTailPage />);
     await screen.findByTestId('pt-center-history');
 
-    mockExec.mockResolvedValue({ ...baseState, centerTop: null, centerCount: 0 });
+    mockExec.mockResolvedValue({ ...baseState, centerTop: null, centerHistory: [], centerCount: 0 });
     fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
     await waitFor(() => expect(screen.queryByTestId('pt-center-history')).not.toBeInTheDocument());
   });

@@ -79672,6 +79672,11 @@ components:
           allOf:
             - $ref: '#/components/schemas/Card'
           description: Top card of the center pile (null if empty)
+        centerHistory:
+          type: array
+          description: Most recent six cards that became the center pile top, oldest first
+          items:
+            $ref: '#/components/schemas/Card'
         centerCount:
           type: integer
           description: Number of cards in the center pile

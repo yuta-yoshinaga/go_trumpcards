@@ -34,17 +34,18 @@ type PigsTailWebOutputCpuAction struct {
 
 // PigsTailWebOutput ぶたのしっぽWebアウトプット
 type PigsTailWebOutput struct {
-	Players      []*PigsTailWebOutputPlayer    `json:"players"`
-	CircleCount  int                           `json:"circleCount"`
-	CenterTop    *WebOutputCard                `json:"centerTop"`
-	CenterCount  int                           `json:"centerCount"`
-	CurrentTurn  int                           `json:"currentTurn"`
-	GameEndFlag  bool                          `json:"gameEndFlag"`
-	LoserIdx     int                           `json:"loserIdx"`
-	LastDrawCard *WebOutputCard                `json:"lastDrawCard"`
-	LastPenalty  bool                          `json:"lastPenalty"`
-	CpuActions   []*PigsTailWebOutputCpuAction `json:"cpuActions"`
-	HumanAction  *PigsTailWebOutputCpuAction   `json:"humanAction"`
+	Players       []*PigsTailWebOutputPlayer    `json:"players"`
+	CircleCount   int                           `json:"circleCount"`
+	CenterTop     *WebOutputCard                `json:"centerTop"`
+	CenterHistory []*WebOutputCard              `json:"centerHistory"`
+	CenterCount   int                           `json:"centerCount"`
+	CurrentTurn   int                           `json:"currentTurn"`
+	GameEndFlag   bool                          `json:"gameEndFlag"`
+	LoserIdx      int                           `json:"loserIdx"`
+	LastDrawCard  *WebOutputCard                `json:"lastDrawCard"`
+	LastPenalty   bool                          `json:"lastPenalty"`
+	CpuActions    []*PigsTailWebOutputCpuAction `json:"cpuActions"`
+	HumanAction   *PigsTailWebOutputCpuAction   `json:"humanAction"`
 	WebOutputBase
 }
 
@@ -60,6 +61,7 @@ var NewPigsTailWebController, NewPigsTailWebControllerWithProvider = webControll
 func newPigsTailDefaultOutput(msg string) *PigsTailWebOutput {
 	return &PigsTailWebOutput{
 		Players:       make([]*PigsTailWebOutputPlayer, 0),
+		CenterHistory: make([]*WebOutputCard, 0),
 		CpuActions:    make([]*PigsTailWebOutputCpuAction, 0),
 		LoserIdx:      -1,
 		WebOutputBase: WebOutputBase{Message: msg},
