@@ -80,6 +80,7 @@ export function OldMaidPlayerArea({
   const [focusedCardIdx, setFocusedCardIdx] = useState<number | null>(null);
   const [selectedForMove, setSelectedForMove] = useState<number | null>(null);
   const [reorderAnnouncement, setReorderAnnouncement] = useState('');
+  const [reorderAnnouncementNonce, setReorderAnnouncementNonce] = useState(0);
   const cardCount = player.cards?.length ?? 0;
 
   useEffect(() => {
@@ -121,6 +122,7 @@ export function OldMaidPlayerArea({
       [indices[index1], indices[index2]] = [indices[index2], indices[index1]];
       onReorder(indices);
       setReorderAnnouncement(t('reorder.moved', { card: cardAlt(movedCard), position: index2 }));
+      setReorderAnnouncementNonce((nonce) => nonce + 1);
       setFocusedCardIdx(index2);
     };
 
@@ -178,7 +180,15 @@ export function OldMaidPlayerArea({
       <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10">
         <CpuActionBubble message={bubble?.message} triggerKey={bubble?.triggerKey} />
       </div>
-      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="reorder-announcement">
+      <div
+        key={reorderAnnouncementNonce}
+        className="sr-only"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        data-testid="reorder-announcement"
+        data-announcement-nonce={reorderAnnouncementNonce}
+      >
         {reorderAnnouncement}
       </div>
       <div className="text-ds-text-primary font-bold mb-1 text-sm">
@@ -256,7 +266,7 @@ export function OldMaidPlayerArea({
               // Guard against stale selectedForMove: if cards shrink between
               // render and useEffect cleanup, the index may be out of bounds.
               const movingCard = player.cards?.[selectedForMove];
-              return movingCard ? t('reorder.moveHere', { card: cardAlt(movingCard), to: i + 1 }) : '';
+              return movingCard ? t('reorder.moveHere', { card: cardAlt(movingCard), to: i }) : '';
             })();
             return (
               <button

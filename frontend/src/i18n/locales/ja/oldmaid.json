@@ -65,7 +65,7 @@
   "reorder": {
     "selectCardToMove": "並び替えるカード: {{card}}",
     "deselectCard": "{{card}} の選択を解除",
-    "moveHere": "{{card}} をここ（{{to}}番目）に移動",
+    "moveHere": "{{card}} をここ（位置{{to}}）に移動",
     "moved": "{{card}}を位置{{position}}に移動しました"
   },
   "bubble": {
