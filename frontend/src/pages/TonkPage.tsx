@@ -340,6 +340,39 @@ function TonkPageContent() {
                   </div>
                 )}
 
+                {isRoundEnd &&
+                  state.players.map((player) => (
+                    <section
+                      key={`tonk-reveal-${player.id}`}
+                      className="my-3 p-2 rounded bg-black/30"
+                      data-testid={`tonk-player-reveal-${player.id}`}
+                    >
+                      <div className="text-ds-text-muted text-sm mb-1">{playerName(player.id, player.isHuman)}</div>
+                      <div className="text-ds-text-muted text-sm">{t('playerMelds')}</div>
+                      {(player.melds ?? []).map((meld, meldIdx) => (
+                        <div key={`player-${player.id}-meld-${meldIdx}`} className="flex flex-wrap gap-1 mb-1">
+                          {meld.cards.map((card, cardIdx) => (
+                            <AnimatedCard
+                              key={`${card.design}-${card.value}-${cardIdx}`}
+                              card={card}
+                              width={cardWidth * 0.7}
+                            />
+                          ))}
+                        </div>
+                      ))}
+                      <div className="text-ds-text-muted text-sm mt-1">{t('playerDeadwood')}</div>
+                      <div className="flex flex-wrap gap-1">
+                        {(player.deadwood ?? []).map((card, cardIdx) => (
+                          <AnimatedCard
+                            key={`${card.design}-${card.value}-${cardIdx}`}
+                            card={card}
+                            width={cardWidth * 0.7}
+                          />
+                        ))}
+                      </div>
+                    </section>
+                  ))}
+
                 {(state.opponentDeadwood.length > 0 || (isRoundEnd && state.knockerIdx >= 0)) && (
                   <div className="my-3 p-2 rounded bg-black/30" data-testid="tonk-opponent-deadwood">
                     <div className="text-ds-text-muted text-sm mb-1">

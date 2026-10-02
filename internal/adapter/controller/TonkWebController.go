@@ -23,12 +23,14 @@ type TonkWebConfig struct {
 
 // TonkWebOutputPlayer Tonk Webアウトプットプレイヤー
 type TonkWebOutputPlayer struct {
-	ID              int              `json:"id"`
-	IsHuman         bool             `json:"isHuman"`
-	CardCount       int              `json:"cardCount"`
-	Cards           []*WebOutputCard `json:"cards"`
-	RoundScore      int              `json:"roundScore"`
-	CumulativeScore int              `json:"cumulativeScore"`
+	ID              int                  `json:"id"`
+	IsHuman         bool                 `json:"isHuman"`
+	CardCount       int                  `json:"cardCount"`
+	Cards           []*WebOutputCard     `json:"cards"`
+	RoundScore      int                  `json:"roundScore"`
+	CumulativeScore int                  `json:"cumulativeScore"`
+	Melds           []*TonkWebOutputMeld `json:"melds"`
+	Deadwood        []*WebOutputCard     `json:"deadwood"`
 }
 
 // TonkWebOutputMeld メルドのアウトプット

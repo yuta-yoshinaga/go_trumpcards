@@ -26,8 +26,10 @@ function makeState(overrides: Partial<TonkResponse> = {}): TonkResponse {
         cards: [card('SPADE', 3), card('HEART', 5), card('DIAMOND', 7), card('CLOVER', 9), card('SPADE', 11)],
         roundScore: 0,
         cumulativeScore: 0,
+        melds: [],
+        deadwood: [],
       },
-      { id: 1, isHuman: false, cardCount: 5, cards: [], roundScore: 0, cumulativeScore: 0 },
+      { id: 1, isHuman: false, cardCount: 5, cards: [], roundScore: 0, cumulativeScore: 0, melds: [], deadwood: [] },
     ],
     phase: TonkPhase.DISCARD,
     roundNumber: 1,
@@ -359,6 +361,42 @@ describe('TonkPage', () => {
     expect(screen.getByTestId('tonk-knocker-deadwood')).toHaveTextContent('7点');
     expect(screen.getByTestId('tonk-opponent-deadwood')).toHaveTextContent('2点');
     expect(screen.getByTestId('tonk-undercut-result')).toHaveTextContent('UNDERCUT!');
+  });
+
+  it('shows meld and deadwood grouped under each player name at round end', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: TonkPhase.ROUND_END,
+        knockerIdx: 0,
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 4,
+            cards: [],
+            roundScore: 0,
+            cumulativeScore: 0,
+            melds: [{ cards: [card('SPADE', 7), card('HEART', 7), card('DIAMOND', 7)] }],
+            deadwood: [card('CLOVER', 2)],
+          },
+          {
+            id: 1,
+            isHuman: false,
+            cardCount: 4,
+            cards: [],
+            roundScore: 0,
+            cumulativeScore: 0,
+            melds: [],
+            deadwood: [card('SPADE', 3), card('HEART', 4)],
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<TonkPage />);
+    expect(await screen.findByTestId('tonk-player-reveal-0')).toHaveTextContent('あなた');
+    expect(screen.getByTestId('tonk-player-reveal-0')).toHaveTextContent('メルド');
+    expect(screen.getByTestId('tonk-player-reveal-1')).toHaveTextContent('CPU 1');
+    expect(screen.getByTestId('tonk-player-reveal-1')).toHaveTextContent('デッドウッド');
   });
 
   // FindBestMelds returns an empty slice when the whole hand is melds, so reverting the

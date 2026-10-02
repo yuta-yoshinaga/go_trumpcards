@@ -69,5 +69,7 @@
     "notKnockable": "ノック不可（{{threshold}}点以下が必要）"
   },
   "opponentMelds": "相手のメルド",
-  "opponentDeadwood": "相手のデッドウッド"
+  "opponentDeadwood": "相手のデッドウッド",
+  "playerMelds": "メルド",
+  "playerDeadwood": "デッドウッド"
 }

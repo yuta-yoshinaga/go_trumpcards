@@ -11,6 +11,8 @@ export interface TonkPlayerData {
   cards: Card[];
   roundScore: number;
   cumulativeScore: number;
+  melds?: TonkMeld[];
+  deadwood?: Card[];
 }
 
 /** A meld (set or run) in Tonk. */
