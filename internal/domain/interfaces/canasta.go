@@ -65,6 +65,7 @@ type CanastaGame interface {
 	GetPlayer(i int) *domain.CanastaPlayer
 	// GetDrewFromDiscard 捨て札から引いたかを返す
 	GetDrewFromDiscard() bool
+	GetDrawnCard() *domain.Card
 	// GetHint 現在手番に対する推奨アクションを返す
 	GetHint() *domain.CanastaHint
 }

@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { biribaApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BiribaPlayerData, BiribaResponse } from '../types/card';
 import { BiribaPage } from './BiribaPage';
@@ -63,6 +64,10 @@ const drawPhaseState: BiribaResponse = {
   roundNumber: 1,
   currentPlayerIdx: 0,
   discardTop: { design: 'SPADE', value: 5 },
+  minMeld: 50,
+  drewFromDiscard: false,
+  drawnCard: null,
+  drawnCardIndex: -1,
   discardPile: [{ design: 'SPADE', value: 5 }],
   drawPileCount: 67,
   discardPileCount: 1,
@@ -205,6 +210,41 @@ describe('BiribaPage', () => {
     renderWithProviders(<BiribaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'メルドする' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'スキップ' })).toBeInTheDocument();
+  });
+
+  it('updates meld status and prevents an invalid meld request', async () => {
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      players: [{ ...basePlayers[0], hasInitMeld: true }, basePlayers[1]],
+    });
+    renderWithProviders(<BiribaPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'メルドする' })).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('bu-hand-card-0'));
+    fireEvent.click(screen.getByTestId('bu-hand-card-1'));
+    fireEvent.click(screen.getByTestId('bu-hand-card-2'));
+    expect(screen.getByTestId('biriba-meld-status')).toHaveTextContent('ランは同じスートのカードで作ってください。');
+    const meld = screen.getByRole('button', { name: 'メルドする' });
+    expect(meld).toHaveAttribute('aria-disabled', 'true');
+    mockExec.mockClear();
+    fireEvent.click(meld);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('allows a valid initial meld', async () => {
+    const validCards = [8, 9, 10, 11, 12].map((value) => ({ design: 'HEART' as const, value }));
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      players: [{ ...basePlayers[0], cards: validCards, hasInitMeld: false }, basePlayers[1]],
+    });
+    renderWithProviders(<BiribaPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'メルドする' })).toBeInTheDocument());
+    for (let index = 0; index < 5; index++) fireEvent.click(screen.getByTestId(`bu-hand-card-${index}`));
+    expect(screen.getByTestId('biriba-meld-status')).toHaveTextContent('このメルドを出せます。');
+    fireEvent.click(screen.getByRole('button', { name: 'メルドする' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, undefined, [[0, 1, 2, 3, 4]]),
+    );
   });
 
   it('calls skipmeld command when skip button clicked', async () => {
@@ -440,23 +480,27 @@ describe('BiribaPage', () => {
   });
 
   it('melds the correct original indices after the hand is display-sorted', async () => {
-    mockExec.mockResolvedValue(meldPhaseState);
+    const sortedRun = [10, 8, 9, 12, 11].map((value) => ({ design: 'HEART' as const, value }));
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      players: [{ ...basePlayers[0], cards: sortedRun, hasInitMeld: true }, basePlayers[1]],
+    });
     renderWithProviders(<BiribaPage />);
     await waitFor(() => expect(screen.getByTestId('bu-hand-card-0')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByTestId('bu-sort-suit'));
+    fireEvent.click(screen.getByTestId('bu-sort-rank'));
 
-    // In suit order the three 7s sit at DOM positions 0, 2 and 3. Select them by
-    // DOM position and confirm the meld targets their ORIGINAL indices (0,2,1),
+    // In rank order the first run cards sit at DOM positions 0, 1 and 2. Select them by
+    // DOM position and confirm the meld targets their ORIGINAL indices (1,2,0),
     // proving the sort only reorders the display, never the action indices.
     const handButtons = screen.getAllByTestId(/^bu-hand-card-/);
-    fireEvent.click(handButtons[0]); // SPADE7  -> index 0
-    fireEvent.click(handButtons[2]); // HEART7  -> index 2
-    fireEvent.click(handButtons[3]); // CLOVER7 -> index 1
+    fireEvent.click(handButtons[0]); // HEART8  -> index 1
+    fireEvent.click(handButtons[1]); // HEART9  -> index 2
+    fireEvent.click(handButtons[2]); // HEART10 -> index 0
 
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'メルドする' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, undefined, [[0, 2, 1]]));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, undefined, [[1, 2, 0]]));
   });
 
   it('persists the chosen sort mode to localStorage', async () => {

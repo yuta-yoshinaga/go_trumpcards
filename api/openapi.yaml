@@ -48667,6 +48667,10 @@ components:
       type: object
       description: Current state of the Biriba game
       properties:
+        minMeld: {type: integer, description: Minimum points required for the human's initial meld}
+        drewFromDiscard: {type: boolean, description: Whether the human took the discard pile this turn}
+        drawnCard: {allOf: [{$ref: '#/components/schemas/Card'}], nullable: true, description: Discard top taken this turn}
+        drawnCardIndex: {type: integer, description: Human hand index of the exact discard top card, or -1}
         players:
           type: array
           items:
