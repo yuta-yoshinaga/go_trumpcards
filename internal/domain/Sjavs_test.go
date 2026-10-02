@@ -12,6 +12,10 @@ import (
 
 func sjCard(design, value int) *Card { return NewCard(design, value, true) }
 
+func TestSjavs_GetRubberPoints(t *testing.T) {
+	assert.Equal(t, SjavsRubber, NewDefaultSjavs().GetRubberPoints())
+}
+
 func TestSjavs_TheDeckIsThirtyTwoCardsWorthOneHundredAndTwenty(t *testing.T) {
 	deck := newSjavsDeck()
 	assert.Len(t, deck, SjavsDeckSize)

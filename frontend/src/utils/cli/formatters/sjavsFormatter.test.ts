@@ -35,6 +35,7 @@ function makeState(overrides?: Partial<SjavsResponse>): SjavsResponse {
     trumpIndices: [],
     teamPoints: [30, 20],
     remaining: [24, 24],
+    rubberPoints: 24,
     crosses: [0, 0],
     carryOver: 0,
     gameEndFlag: false,

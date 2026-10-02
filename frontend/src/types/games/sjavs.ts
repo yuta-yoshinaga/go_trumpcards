@@ -85,7 +85,9 @@ export interface SjavsResponse extends BaseGameResponse {
   /** Card points this hand, per team. Always sums to 120. */
   teamPoints: number[];
   /** Each team's distance from winning the rubber, counted DOWN from 24. */
-  remaining: number[];
+  remaining: [number, number];
+  /** Starting score for each rubber, supplied by the server. */
+  rubberPoints: number;
   /** Rubbers won, per team. A cross records a rubber, not a hand. */
   crosses: number[];
   /** Extra points a 60-60 hand added to the next game. */

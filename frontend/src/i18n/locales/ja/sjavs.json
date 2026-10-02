@@ -17,6 +17,7 @@
   "trickCardAriaLabel": "{{player}}: {{card}}",
   "handPoints": "今ハンド: チーム0 {{a}} / チーム1 {{b}}（合計120）",
   "team": "チーム{{n}}",
+  "listSeparator": "、",
   "opponentHand": "{{name}}: 手札{{n}}枚",
   "opponentHandAriaLabel": "{{name}} の手札 {{n}} 枚（裏向き）",
   "yourHand": "あなたの手札",

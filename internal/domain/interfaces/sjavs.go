@@ -51,6 +51,8 @@ type SjavsGame interface {
 	GetTeamPoints(team int) int
 	// GetRemaining チームの 24 からの残りを取得する
 	GetRemaining(team int) int
+	// GetRubberPoints 1 ラバーの点数を取得する
+	GetRubberPoints() int
 	// GetCrosses チームのラバー勝利数を取得する
 	GetCrosses(team int) int
 	// GetCarryOver 60-60 で持ち越された上乗せ点を取得する
