@@ -116,7 +116,7 @@ function BriscolaPageContent() {
     onToggle: toggleSelect,
     onConfirm: confirmPlay,
     onClear: clearSelect,
-    enabled: !!isHumanTurnForKbd && !loading,
+    enabled: !!isHumanTurnForKbd && !loading && !actionLog,
   });
 
   const {
@@ -336,6 +336,7 @@ function BriscolaPageContent() {
 
       <ActionLogSection
         isEndPhase={isGameEnd}
+        availableDuringPlay
         actionLog={actionLog}
         showActionLog={showActionLog}
         hideActionLog={hideActionLog}

@@ -78,6 +78,12 @@ describe('BraidPage', () => {
     expect(mockExec.mock.calls[0]?.[0]).toBe('reset');
   });
 
+  it('shows the action log button during play', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BraidPage />);
+    expect(await screen.findByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
+  });
+
   it('renders heading, base rank, direction and move count', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BraidPage />);

@@ -39,6 +39,7 @@
   "dabbCardsLabel": "公開された Dabb",
   "dabbWaiting": "{{name}} が Dabb を整理中...",
   "discardDabb": "選んだ3枚を捨てる ({{count}}/3)",
+  "dabbSelectionCount": "選択済み {{count}} / 3 枚",
   "discardSelected": "選択した3枚を捨てる",
   "bidStatus": {
     "passed": "パス",

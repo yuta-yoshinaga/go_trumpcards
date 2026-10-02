@@ -128,6 +128,14 @@ func (m *MockAndarBaharGame) GetHistory() []int {
 	return args.Get(0).([]int)
 }
 
+func (m *MockAndarBaharGame) GetRoundHistory() []domain.AndarBaharRoundHistoryEntry {
+	args := m.Called()
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).([]domain.AndarBaharRoundHistoryEntry)
+}
+
 func (m *MockAndarBaharGame) GetHint() string {
 	args := m.Called()
 	return args.String(0)

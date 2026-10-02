@@ -4,7 +4,6 @@ import { waspApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, WaspResponse } from '../types/card';
-import { cardAlt } from '../utils/cardAlt';
 import { WaspPage } from './WaspPage';
 
 /**
@@ -78,6 +77,14 @@ beforeEach(() => {
 });
 
 describe('WaspPage', () => {
+  it('includes zero-based tableau column and card position in each face-up card accessible name', async () => {
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByRole('button', { name: '♠ K、列0・位置1' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 8、列1・位置1' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♣ 5、列2・位置0' })).toBeInTheDocument();
+  });
+
   it('passes the completed suit mask to the badge', async () => {
     mockExec.mockResolvedValue({ ...playingState, completedSuitMask: 12 });
     renderWithProviders(<WaspPage />);
@@ -117,15 +124,18 @@ describe('WaspPage', () => {
     renderWithProviders(<WaspPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     // Select the top card of a column.
-    const cardButton = screen.getByRole('button', { name: '♠ K' });
+    const cardButton = screen.getByRole('button', { name: '♠ K、列0・位置1' });
     expect(cardButton).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(cardButton);
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: '♠ K', pressed: true })).toHaveAttribute('aria-pressed', 'true'),
+      expect(screen.getByRole('button', { name: '♠ K、列0・位置1', pressed: true })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      ),
     );
     // Re-clicking deselects and restores the unpressed state.
-    fireEvent.click(screen.getByRole('button', { name: '♠ K', pressed: true }));
-    expect(screen.getByRole('button', { name: '♠ K' })).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(screen.getByRole('button', { name: '♠ K、列0・位置1', pressed: true }));
+    expect(screen.getByRole('button', { name: '♠ K、列0・位置1' })).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('shows game clear phase', async () => {
@@ -248,7 +258,7 @@ describe('WaspPage', () => {
     // No source selected yet → no persistent ring.
     expect(emptyCol.className).not.toContain('ring-ds-success');
     // Select ♠K as the move source (no hover event fired).
-    fireEvent.click(screen.getByRole('button', { name: '♠ K' }));
+    fireEvent.click(screen.getByRole('button', { name: /♠ K/ }));
     await waitFor(() => expect(screen.getByTestId('sc-empty-col-1').className).toContain('ring-ds-success'));
     // The highlight is persistent, not hover-gated.
     expect(screen.getByTestId('sc-empty-col-1').className).not.toContain('hover:ring');
@@ -351,7 +361,7 @@ describe('WaspPage', () => {
     renderWithProviders(<WaspPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     // SPADE 13 is the last (face-up) card of column 0.
-    const lastCardBtn = screen.getByRole('button', { name: cardAlt(card('SPADE', 13)) });
+    const lastCardBtn = screen.getByRole('button', { name: /♠ K/ });
     mockExec.mockClear();
     fireEvent.click(lastCardBtn); // select
     fireEvent.click(lastCardBtn); // re-click → deselect, no API call
@@ -518,11 +528,11 @@ describe('WaspPage', () => {
     mockExec.mockResolvedValue(state);
     renderWithProviders(<WaspPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const kBtn = screen.getByRole('button', { name: '♠ K' });
+    const kBtn = screen.getByRole('button', { name: /♠ K/ });
     mockExec.mockClear();
     fireEvent.click(kBtn);
     await waitFor(() => expect(kBtn.className).toMatch(/ring-/));
-    const qBtn = screen.getByRole('button', { name: '♠ Q' });
+    const qBtn = screen.getByRole('button', { name: /♠ Q/ });
     fireEvent.click(qBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)));
   });
@@ -535,7 +545,7 @@ describe('WaspPage', () => {
     renderWithProviders(<WaspPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
-    const heart8 = screen.getByRole('button', { name: '♥ 8' });
+    const heart8 = screen.getByRole('button', { name: /♥ 8/ });
     fireEvent.click(heart8);
     await waitFor(() => expect(heart8.className).toMatch(/ring-/));
     // Clicking again deselects (no API call)
@@ -553,7 +563,7 @@ describe('WaspPage', () => {
     renderWithProviders(<WaspPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     // Select ♥8 from col 1
-    const heart8 = screen.getByRole('button', { name: '♥ 8' });
+    const heart8 = screen.getByRole('button', { name: /♥ 8/ });
     mockExec.mockClear();
     fireEvent.click(heart8);
     await waitFor(() => expect(heart8.className).toMatch(/ring-/));
@@ -729,7 +739,7 @@ describe('WaspPage destination preview', () => {
     );
     expect(screen.getByTestId('sc-empty-col-2')).toHaveAttribute('aria-label', expect.stringContaining('移動先候補'));
 
-    fireEvent.click(screen.getByRole('button', { name: '♥ 7', pressed: true }));
+    fireEvent.click(screen.getByRole('button', { name: /♥ 7/, pressed: true }));
     expect(screen.queryByTestId('wasp-legal-target')).not.toBeInTheDocument();
     expect(screen.getByTestId('sc-empty-col-2')).not.toHaveAttribute(
       'aria-label',

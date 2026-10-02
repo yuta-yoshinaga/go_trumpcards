@@ -35,6 +35,7 @@ func fillAndarBaharCuiDefaults(m *interfaces.MockAndarBaharGame) {
 	m.On("GetMainPayout").Return(0).Maybe()
 	m.On("GetSidePayout").Return(0).Maybe()
 	m.On("GetHistory").Return(([]int)(nil)).Maybe()
+	m.On("GetRoundHistory").Return([]domain.AndarBaharRoundHistoryEntry(nil)).Maybe()
 	m.On("GetHint").Return("andarBaharHintAndarFirst").Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 }

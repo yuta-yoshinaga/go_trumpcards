@@ -28,6 +28,11 @@ export interface KalookiConfig {
   openingThreshold: number;
 }
 
+/** Penalty scores for one completed Kalooki round, indexed by player. */
+export interface KalookiRoundScore {
+  scores: number[];
+}
+
 /** Kalooki API response. */
 export interface KalookiResponse extends BaseGameResponse {
   players: KalookiPlayer[];
@@ -41,6 +46,7 @@ export interface KalookiResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   winnerIdx: number;
   roundWinnerIdx: number;
+  roundScoreHistory: KalookiRoundScore[];
   config: KalookiConfig;
 }
 

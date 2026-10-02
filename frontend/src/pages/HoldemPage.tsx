@@ -138,10 +138,26 @@ function HoldemPageContent() {
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const turnStartRef = useRef(0);
+  // Blinds rise in place every config.blindLevelHands hands, so the change is detected on the blind amounts
+  // themselves; blindLevelHands is the (fixed) interval setting, not the current level.
+  const previousBigBlindRef = useRef<number | null>(null);
+  const [blindLevelAnnouncement, setBlindLevelAnnouncement] = useState('');
 
   useMountReset(exec);
 
   const communityCardsAnnouncement = useCommunityCardAnnouncement(state?.communityCards ?? [], t);
+
+  useEffect(() => {
+    if (!state?.tournamentMode) {
+      previousBigBlindRef.current = null;
+      setBlindLevelAnnouncement('');
+      return;
+    }
+    if (previousBigBlindRef.current !== null && state.bigBlind > previousBigBlindRef.current) {
+      setBlindLevelAnnouncement(t('blindLevelChanged', { smallBlind: state.smallBlind, bigBlind: state.bigBlind }));
+    }
+    previousBigBlindRef.current = state.bigBlind;
+  }, [state, t]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -293,6 +309,9 @@ function HoldemPageContent() {
     >
       <div aria-live="polite" aria-atomic="true" className="sr-only" data-testid="community-cards-announcement">
         {communityCardsAnnouncement}
+      </div>
+      <div aria-live="polite" aria-atomic="true" className="sr-only" data-testid="blind-level-announcement">
+        {blindLevelAnnouncement}
       </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />

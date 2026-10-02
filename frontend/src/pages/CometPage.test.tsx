@@ -101,6 +101,33 @@ describe('CometPage', () => {
     });
   });
 
+  it('shows how many leading cards are omitted when the sequence exceeds eight cards', async () => {
+    const pile = Array.from({ length: 9 }, (_, value) => ({
+      design: 'SPADE' as const,
+      value,
+      color: 'black' as const,
+    }));
+    mockExec.mockResolvedValue(makeCometState({ pile }));
+    renderWithProviders(<CometPage />);
+
+    expect(await screen.findByTestId('comet-pile-omitted')).toHaveTextContent('先頭の 1 枚を省略');
+    expect(screen.getByTestId('comet-pile').querySelectorAll('img')).toHaveLength(8);
+  });
+
+  it('does not show an omission notice for a sequence of eight cards', async () => {
+    const pile = Array.from({ length: 8 }, (_, value) => ({
+      design: 'SPADE' as const,
+      value,
+      color: 'black' as const,
+    }));
+    mockExec.mockResolvedValue(makeCometState({ pile }));
+    renderWithProviders(<CometPage />);
+
+    await screen.findByTestId('comet-pile');
+    expect(screen.queryByTestId('comet-pile-omitted')).not.toBeInTheDocument();
+    expect(screen.getByTestId('comet-pile').querySelectorAll('img')).toHaveLength(8);
+  });
+
   it('plays the card that is clicked', async () => {
     renderWithProviders(<CometPage />);
     const cards = await screen.findAllByRole('button', { name: /♠|♥|♦|♣/ });

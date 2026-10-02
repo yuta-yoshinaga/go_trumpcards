@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { montebankApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -55,7 +55,36 @@ function MonteBankPageContent() {
   const [selected, setSelected] = useState(0);
   const [selectionAnnouncement, setSelectionAnnouncement] = useState('');
   const { cardWidth } = useCardDimensions();
-  const { state, loading, error, exec: execApi, retry } = useGameApi(montebankApi.exec);
+  const [session, setSession] = useState({ wins: 0, losses: 0, net: 0 });
+  const sessionRoundRef = useRef<number | null>(null);
+  const {
+    state,
+    loading,
+    error,
+    exec: execApi,
+    retry,
+  } = useGameApi(montebankApi.exec, {
+    onSuccess: (response, [command]) => {
+      if (command === 'reset') {
+        sessionRoundRef.current = null;
+        setSession({ wins: 0, losses: 0, net: 0 });
+        return;
+      }
+      if (
+        response.phase !== MonteBankPhase.RESULT ||
+        (response.result !== MONTE_BANK_RESULT.win && response.result !== MONTE_BANK_RESULT.lose) ||
+        sessionRoundRef.current === response.roundNumber
+      ) {
+        return;
+      }
+      sessionRoundRef.current = response.roundNumber;
+      setSession((current) => ({
+        wins: current.wins + (response.result === MONTE_BANK_RESULT.win ? 1 : 0),
+        losses: current.losses + (response.result === MONTE_BANK_RESULT.lose ? 1 : 0),
+        net: current.net + response.payout - response.bet,
+      }));
+    },
+  });
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('montebank');
   const cliConfig: CliGameConfig<MonteBankResponse, Parameters<typeof montebankApi.exec>> = useMemo(
@@ -152,6 +181,13 @@ function MonteBankPageContent() {
               {t('label.remaining')}: {state.remainingCards}
               {' · '}
               {t('label.payout', { mult: state.payoutMultiplier })}
+            </div>
+            <div className="text-ds-text-muted text-center text-xs mb-2" data-testid="mb-session-line">
+              {t('label.sessionWins', { count: session.wins })}
+              {' · '}
+              {t('label.sessionLosses', { count: session.losses })}
+              {' · '}
+              {t('label.sessionNet', { net: session.net })}
             </div>
             <p className="text-ds-text-muted text-center text-xs mb-2">{t('suitNotice')}</p>
 

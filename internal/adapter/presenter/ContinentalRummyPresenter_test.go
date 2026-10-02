@@ -351,6 +351,9 @@ func TestContinentalRummyWebPresenter_Output(t *testing.T) {
 		assert.NotEmpty(t, out.LastResult.Bonuses)
 		assert.Equal(t, out.LastResult.PerOpponent*(domain.ContinentalRummyPlayerCnt-1),
 			out.LastResult.Total)
+		require.Len(t, out.RoundScoreHistory, 1)
+		assert.Equal(t, 1, out.RoundScoreHistory[0].RoundNumber)
+		assert.Equal(t, out.LastResult.Total, out.RoundScoreHistory[0].Scores[domain.ContinentalRummyHumanIdx])
 		// 並べたシーケンスは公開情報。
 		assert.Len(t, out.Players[0].Melds, 5)
 	})

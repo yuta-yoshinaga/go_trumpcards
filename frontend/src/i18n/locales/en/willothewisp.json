@@ -17,6 +17,7 @@
   "undo": "Undo",
   "empty": "Empty",
   "emptyColumnTarget": "Column {{column}} is available as a move target",
+  "tableauCardColumn": "{{card}}, column {{column}}",
   "score": "Score",
   "gameClear": "Game Clear! Moves: {{moveCount}} Score: {{score}}",
   "gameOver": "Game Over",

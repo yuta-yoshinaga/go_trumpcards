@@ -82,6 +82,37 @@ func TestKalooki_Reset_DealsHand(t *testing.T) {
 	}
 }
 
+func TestKalooki_RoundScoreHistory(t *testing.T) {
+	players := []*KalookiPlayer{NewKalookiPlayer(true), NewKalookiPlayer(false)}
+	players[1].AddCard(klCard(CardDesignSpade, 5))
+	g := NewKalooki(NewTrumpCardsWithDecks(1, 0), players, DefaultKalookiConfig())
+	g.finishRound(0)
+
+	history := g.GetRoundScoreHistory()
+	if len(history) != 1 || len(history[0]) != 2 || history[0][0] != 0 || history[0][1] != 5 {
+		t.Fatalf("unexpected round score history: %v", history)
+	}
+	data, err := json.Marshal(g)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var restored Kalooki
+	if err := json.Unmarshal(data, &restored); err != nil {
+		t.Fatal(err)
+	}
+	if got := restored.GetRoundScoreHistory(); len(got) != 1 || got[0][1] != 5 {
+		t.Fatalf("round-trip lost history: %v", got)
+	}
+	history[0][1] = 99
+	if got := g.GetRoundScoreHistory()[0][1]; got != 5 {
+		t.Fatalf("history getter exposed internal state: got %d", got)
+	}
+	g.Reset()
+	if got := len(g.GetRoundScoreHistory()); got != 0 {
+		t.Fatalf("Reset should clear history, got %d rounds", got)
+	}
+}
+
 func TestKalooki_DomainErrorsHaveMessageCodes(t *testing.T) {
 	g := newTestKalooki()
 	g.SetDiscardPile(nil)

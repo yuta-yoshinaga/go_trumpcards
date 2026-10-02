@@ -78,6 +78,7 @@ beforeEach(() => {
 });
 
 afterEach(async () => {
+  vi.useRealTimers();
   await i18n.changeLanguage('ja');
 });
 
@@ -85,6 +86,31 @@ describe('FreeCellPage', () => {
   it('shows the persistent double-click foundation hint', async () => {
     renderWithProviders(<FreeCellPage />);
     expect(await screen.findByTestId('fc-doubleclick-hint')).toHaveTextContent('ダブルクリック');
+  });
+
+  it('tracks elapsed time and restarts it after resetting the game', async () => {
+    vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
+    renderWithProviders(<FreeCellPage />);
+    expect(await screen.findByTestId('freecell-timer')).toHaveTextContent('経過時間: 00:00');
+    await vi.waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(screen.getByTestId('freecell-timer')).toHaveTextContent('経過時間: 00:03');
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await screen.findByRole('button', { name: 'ヒント' });
+    await vi.waitFor(() => expect(screen.getByTestId('freecell-timer')).toHaveTextContent('00:00'));
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(screen.getByTestId('freecell-timer')).toHaveTextContent('経過時間: 00:02');
+
+    mockExec.mockImplementation((command) => Promise.resolve(command === 'giveup' ? gameOverState : playingState));
+    fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('ゲームオーバー'));
+    const finalTime = screen.getByTestId('freecell-timer').textContent;
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(screen.getByTestId('freecell-timer')).toHaveTextContent(finalTime ?? '');
   });
   // --- Skeleton ---
 

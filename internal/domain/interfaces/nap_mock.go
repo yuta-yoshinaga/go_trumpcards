@@ -160,6 +160,12 @@ func (_m *MockNapGame) GetBids() [domain.NapPlayerCnt]domain.NapBid {
 	return ret.Get(0).([domain.NapPlayerCnt]domain.NapBid)
 }
 
+// GetBidDone モック
+func (_m *MockNapGame) GetBidDone() [domain.NapPlayerCnt]bool {
+	ret := _m.Called()
+	return ret.Get(0).([domain.NapPlayerCnt]bool)
+}
+
 // GetTrumpSuit モック
 func (_m *MockNapGame) GetTrumpSuit() int {
 	ret := _m.Called()

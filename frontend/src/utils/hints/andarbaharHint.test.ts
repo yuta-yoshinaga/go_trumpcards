@@ -24,6 +24,7 @@ const base: AndarBaharResponse = {
   mainPayout: 0,
   sidePayout: 0,
   history: [],
+  roundHistory: [],
   message: '',
 };
 

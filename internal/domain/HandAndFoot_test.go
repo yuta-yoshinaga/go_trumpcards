@@ -685,6 +685,19 @@ func TestHandAndFoot_Scoring_RoundEnd(t *testing.T) {
 	assert.Equal(t, 1080, g.GetPlayer(0).GetCumulativeScore())
 	assert.Equal(t, 1080, g.GetPlayer(2).GetCumulativeScore()) // same team
 	assert.Equal(t, 0, g.GetPlayer(1).GetCumulativeScore())    // team1, nothing
+	assert.Equal(t, 1080, g.GetScoreBreakdown(0).Total())
+	assert.Equal(t, 180, g.GetScoreBreakdown(0).MeldCards)
+	assert.Equal(t, 500, g.GetScoreBreakdown(0).RedCanasta)
+	assert.Equal(t, 300, g.GetScoreBreakdown(0).BlackCanasta)
+	assert.Equal(t, 100, g.GetScoreBreakdown(0).GoingOut)
+	assert.Equal(t, g.GetPlayer(0).GetRoundScore(), g.GetScoreBreakdown(0).Total())
+	assert.Equal(t, g.GetPlayer(1).GetRoundScore(), g.GetScoreBreakdown(1).Total())
+	snapshot, err := json.Marshal(g)
+	require.NoError(t, err)
+	restored := newTestHandAndFoot()
+	require.NoError(t, json.Unmarshal(snapshot, restored))
+	assert.Equal(t, g.GetScoreBreakdown(0), restored.GetScoreBreakdown(0))
+	assert.Equal(t, g.GetScoreBreakdown(1), restored.GetScoreBreakdown(1))
 }
 
 func TestHandAndFoot_Scoring_Red3Bonus(t *testing.T) {

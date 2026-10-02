@@ -254,6 +254,30 @@ function AndarBaharPageContent() {
               </div>
             )}
 
+            {state.roundHistory.length > 0 && (
+              <section className="mb-4" aria-label={t('label.roundHistory')} data-testid="andarbahar-round-history">
+                <h2 className="text-ds-text-primary text-center text-sm font-bold mb-1">{t('label.roundHistory')}</h2>
+                <table className="mx-auto text-sm text-ds-text-primary">
+                  <thead>
+                    <tr>
+                      <th className="px-2">{t('label.roundBet')}</th>
+                      <th className="px-2">{t('label.roundPayout')}</th>
+                      <th className="px-2">{t('label.roundChips')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {state.roundHistory.map((round, index) => (
+                      <tr key={`${index}-${round.chips}`}>
+                        <td className="px-2 text-right">{round.bet}</td>
+                        <td className="px-2 text-right">{round.payout}</td>
+                        <td className="px-2 text-right">{round.chips}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </section>
+            )}
+
             {isEndPhase && (
               <div className="text-ds-text-primary text-center text-sm mb-2 space-y-1" data-testid="payout-breakdown">
                 <div data-testid="payout-result">

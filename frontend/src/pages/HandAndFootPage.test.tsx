@@ -51,6 +51,7 @@ const drawPhaseState: HandAndFootResponse = {
   minMeld: 50,
   players: basePlayers,
   teams: baseTeams,
+  scoreBreakdown: [],
   phase: 0,
   roundNumber: 1,
   currentPlayerIdx: 0,
@@ -114,6 +115,28 @@ const goOutNeedBlackState: HandAndFootResponse = {
 const roundEndState: HandAndFootResponse = {
   ...drawPhaseState,
   phase: 3,
+  scoreBreakdown: [
+    {
+      team: 0,
+      meldCards: 125,
+      redCanasta: 500,
+      blackCanasta: 300,
+      redThrees: 200,
+      goingOut: 100,
+      handPenalty: 45,
+      footPenalty: 12,
+    },
+    {
+      team: 1,
+      meldCards: 0,
+      redCanasta: 0,
+      blackCanasta: 0,
+      redThrees: 0,
+      goingOut: 0,
+      handPenalty: 0,
+      footPenalty: 0,
+    },
+  ],
   messageCode: 'handandfoot.roundEnd',
 };
 
@@ -125,6 +148,34 @@ const gameEndState: HandAndFootResponse = {
 };
 
 describe('HandAndFootPage', () => {
+  it('shows the server score breakdown at round end and formats penalties as negative values', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByTestId('hf-score-breakdown')).toBeInTheDocument());
+    const breakdown = screen.getByTestId('hf-score-breakdown');
+    for (const label of [
+      'メルドのカード',
+      '赤カナスタ',
+      '黒カナスタ',
+      '赤3',
+      '上がりボーナス',
+      '手札ペナルティ',
+      'フットペナルティ',
+    ]) {
+      expect(breakdown).toHaveTextContent(label);
+    }
+    for (const value of ['125', '500', '300', '200', '100', '−45', '−12']) {
+      expect(breakdown).toHaveTextContent(value);
+    }
+  });
+
+  it('does not show score breakdown while the round is in progress', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, scoreBreakdown: roundEndState.scoreBreakdown });
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByText('山札から引く')).toBeInTheDocument());
+    expect(screen.queryByTestId('hf-score-breakdown')).not.toBeInTheDocument();
+  });
+
   // 最初の手札が配られるまでは捨て札の山がないので表示しない
   it('hides discard pile when there is no discard top', async () => {
     mockExec.mockResolvedValue({ ...drawPhaseState, discardTop: null });

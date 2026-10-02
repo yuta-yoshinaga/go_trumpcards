@@ -211,6 +211,9 @@ function DoubleAttackPageContent() {
                     </div>
                     <div className="text-ds-text-primary text-center text-sm mt-1">
                       {state.hands.length > 1 && `${t('label.hand', { idx: i + 1 })} · `}
+                      {isPlayPhase && state.hands.length > 1 && i === state.activeHand && (
+                        <span>{t('label.activeHand')} · </span>
+                      )}
                       {h.score} {t('label.score')} · {t('label.bet')} {h.bet}
                       {isResultPhase && ` · ${t(`result.${resultKeyOf(h.result)}`)}`}
                     </div>

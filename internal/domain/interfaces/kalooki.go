@@ -53,4 +53,6 @@ type KalookiGame interface {
 	GetPlayer(i int) *domain.KalookiPlayer
 	// GetRoundWinnerIdx 直近ラウンドの勝者
 	GetRoundWinnerIdx() int
+	// GetRoundScoreHistory ラウンドごとのプレイヤー別ペナルティ得点
+	GetRoundScoreHistory() [][]int
 }

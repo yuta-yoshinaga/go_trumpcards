@@ -98,6 +98,15 @@ type PreferenceHint struct {
 	Reason      string // ヒント理由キー
 }
 
+// PreferenceScoreBreakdown はプレイヤーごとの直近ラウンド得点内訳。
+type PreferenceScoreBreakdown struct {
+	DeclarerContract  int `json:"declarerContract"`
+	DefendingContract int `json:"defendingContract"`
+}
+
+// Total returns the points awarded to the player in the round.
+func (b PreferenceScoreBreakdown) Total() int { return b.DeclarerContract + b.DefendingContract }
+
 // Preference プレフェランスのゲームクラス
 type Preference struct {
 	trumpCards       *TrumpCards
@@ -116,6 +125,7 @@ type Preference struct {
 	contract         PreferenceBid
 	trumpSuit        int
 	playerScores     [PreferencePlayerCnt]int
+	scoreBreakdown   [PreferencePlayerCnt]PreferenceScoreBreakdown
 	roundTricks      [PreferencePlayerCnt]int
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
@@ -168,6 +178,7 @@ func (g *Preference) startRound() {
 	g.contract = PreferenceBidPass
 	g.trumpSuit = 0
 	g.roundTricks = [PreferencePlayerCnt]int{}
+	g.scoreBreakdown = [PreferencePlayerCnt]PreferenceScoreBreakdown{}
 	for _, p := range g.players {
 		p.ResetRound()
 	}
@@ -397,10 +408,12 @@ func (g *Preference) ScoreRound() {
 		value := preferenceBidValue(g.contract)
 		won := g.contractMade()
 		if won {
+			g.scoreBreakdown[g.declarerIdx].DeclarerContract = value
 			g.playerScores[g.declarerIdx] += value
 		} else {
 			for i := 0; i < PreferencePlayerCnt; i++ {
 				if i != g.declarerIdx {
+					g.scoreBreakdown[i].DefendingContract = value
 					g.playerScores[i] += value
 				}
 			}
@@ -681,6 +694,11 @@ func (g *Preference) SetTrumpSuit(suit int) { g.trumpSuit = suit }
 // GetPlayerScores プレイヤー別累積点取得
 func (g *Preference) GetPlayerScores() [PreferencePlayerCnt]int { return g.playerScores }
 
+// GetScoreBreakdown returns the per-player breakdown for the latest round.
+func (g *Preference) GetScoreBreakdown() [PreferencePlayerCnt]PreferenceScoreBreakdown {
+	return g.scoreBreakdown
+}
+
 // SetPlayerScores プレイヤー別累積点設定 (テスト用)
 func (g *Preference) SetPlayerScores(s [PreferencePlayerCnt]int) { g.playerScores = s }
 
@@ -797,26 +815,27 @@ func (g *Preference) GetPlayableIndices(playerIdx int) []int {
 
 // preferenceJSON is the JSON wire format for Preference.
 type preferenceJSON struct {
-	TrumpCards       *TrumpCards                        `json:"tc"`
-	Players          []*PreferencePlayer                `json:"ps"`
-	Config           PreferenceConfig                   `json:"cf"`
-	Phase            PreferencePhase                    `json:"ph"`
-	RoundNumber      int                                `json:"rn"`
-	TrickNumber      int                                `json:"tn"`
-	CurrentPlayerIdx int                                `json:"ci"`
-	CurrentTrick     []*TrickCard                       `json:"ct"`
-	LeadPlayerIdx    int                                `json:"li"`
-	DealerIdx        int                                `json:"di"`
-	Bids             [PreferencePlayerCnt]PreferenceBid `json:"bd"`
-	BidDone          [PreferencePlayerCnt]bool          `json:"bf"`
-	DeclarerIdx      int                                `json:"dc"`
-	Contract         PreferenceBid                      `json:"co"`
-	TrumpSuit        int                                `json:"ts"`
-	PlayerScores     [PreferencePlayerCnt]int           `json:"sc"`
-	RoundTricks      [PreferencePlayerCnt]int           `json:"rt"`
-	GameEndFlag      bool                               `json:"ge"`
-	WinnerPlayer     int                                `json:"wp"`
-	ActionLog        []*ActionLogEntry                  `json:"al"`
+	TrumpCards       *TrumpCards                                   `json:"tc"`
+	Players          []*PreferencePlayer                           `json:"ps"`
+	Config           PreferenceConfig                              `json:"cf"`
+	Phase            PreferencePhase                               `json:"ph"`
+	RoundNumber      int                                           `json:"rn"`
+	TrickNumber      int                                           `json:"tn"`
+	CurrentPlayerIdx int                                           `json:"ci"`
+	CurrentTrick     []*TrickCard                                  `json:"ct"`
+	LeadPlayerIdx    int                                           `json:"li"`
+	DealerIdx        int                                           `json:"di"`
+	Bids             [PreferencePlayerCnt]PreferenceBid            `json:"bd"`
+	BidDone          [PreferencePlayerCnt]bool                     `json:"bf"`
+	DeclarerIdx      int                                           `json:"dc"`
+	Contract         PreferenceBid                                 `json:"co"`
+	TrumpSuit        int                                           `json:"ts"`
+	PlayerScores     [PreferencePlayerCnt]int                      `json:"sc"`
+	ScoreBreakdown   [PreferencePlayerCnt]PreferenceScoreBreakdown `json:"sb"`
+	RoundTricks      [PreferencePlayerCnt]int                      `json:"rt"`
+	GameEndFlag      bool                                          `json:"ge"`
+	WinnerPlayer     int                                           `json:"wp"`
+	ActionLog        []*ActionLogEntry                             `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -838,6 +857,7 @@ func (g *Preference) MarshalJSON() ([]byte, error) {
 		Contract:         g.contract,
 		TrumpSuit:        g.trumpSuit,
 		PlayerScores:     g.playerScores,
+		ScoreBreakdown:   g.scoreBreakdown,
 		RoundTricks:      g.roundTricks,
 		GameEndFlag:      g.gameEndFlag,
 		WinnerPlayer:     g.winnerPlayer,
@@ -919,6 +939,7 @@ func (g *Preference) UnmarshalJSON(data []byte) error {
 	g.contract = j.Contract
 	g.trumpSuit = j.TrumpSuit
 	g.playerScores = j.PlayerScores
+	g.scoreBreakdown = j.ScoreBreakdown
 	g.roundTricks = j.RoundTricks
 	g.gameEndFlag = j.GameEndFlag
 	g.winnerPlayer = j.WinnerPlayer

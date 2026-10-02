@@ -183,6 +183,31 @@ describe('DehlaPakadPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nexthand'));
   });
 
+  it('shows completed hand history separately from the current hand score', async () => {
+    mockExec.mockResolvedValue(
+      makeDehlaPakadState({
+        ...playState,
+        handNumber: 3,
+        teamTens: [1, 3],
+        teamKots: [1, 0],
+        handHistory: [
+          { winnerTeam: 0, teamTens: [3, 1], kot: true, kotReason: 'allTens', dealerIdx: 3, trumpSuit: 1 },
+          { winnerTeam: 1, teamTens: [1, 3], kot: false, kotReason: '', dealerIdx: 2, trumpSuit: 2 },
+        ],
+      }),
+    );
+    renderWithProviders(<DehlaPakadPage />);
+    const history = await screen.findByTestId('dehlapakad-hand-history');
+    expect(history).toHaveTextContent('ハンド 1');
+    expect(history).toHaveTextContent('組0');
+    expect(history).toHaveTextContent('3 対 1');
+    expect(history).toHaveTextContent('コート');
+    expect(history).toHaveTextContent('ハンド 2');
+    expect(history).toHaveTextContent('組1');
+    expect(history).toHaveTextContent('1 対 3');
+    expect(screen.getByTestId('dehlapakad-scores')).toHaveTextContent('10（デーラ）— 味方 1 / 相手 3');
+  });
+
   it('shows the last trick winner with their team only at hand end', async () => {
     mockExec.mockResolvedValue(
       makeDehlaPakadState({

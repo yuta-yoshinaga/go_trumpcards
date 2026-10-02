@@ -42,6 +42,8 @@
     "rankandfileDraw": "他に動かせる札はありません。山札から引きましょう"
   },
   "cannotGrab": "掴めません",
-  "moveTargetCount": "移動先の候補は{{count}}か所です",
+  "tableauMoveTarget": "場札列{{col}}",
+  "foundationMoveTarget": "組札",
+  "listSeparator": "、",
   "noMoveTargets": "移動先の候補はありません"
 }

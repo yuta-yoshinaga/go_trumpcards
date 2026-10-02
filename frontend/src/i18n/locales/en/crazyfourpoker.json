@@ -57,5 +57,6 @@
   "wagerSummary.superBonus": "Required Super Bonus: {{amount}}",
   "wagerSummary.optional": "Optional Queens Up: {{amount}}",
   "wagerSummary.required": "Required total: {{amount}}",
-  "wagerSummary.total": "Total: {{amount}}"
+  "wagerSummary.total": "Total: {{amount}}",
+  "wagerSummary.playChoice": "Additional play bet: {{playBet}} · Total wager: {{total}}"
 }

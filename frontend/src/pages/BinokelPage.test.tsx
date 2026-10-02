@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { binokelApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BinokelResponse } from '../types/card';
 import { BinokelPhase } from '../types/phases';
@@ -268,7 +269,9 @@ describe('BinokelPage', () => {
     await waitFor(() => expect(screen.getByTestId('bn-dabb-display')).toBeInTheDocument());
 
     const discardBtn = screen.getByTestId('discard-dabb-button');
+    const selectionStatus = screen.getByTestId('bn-dabb-selection-live');
     expect(discardBtn).toBeDisabled();
+    expect(selectionStatus).toHaveTextContent('選択済み 0 / 3 枚');
 
     const handContainer = container.querySelector('[data-tutorial="bn-player-hand"]') as HTMLElement;
     const cardButtons = within(handContainer).getAllByRole('button');
@@ -280,22 +283,27 @@ describe('BinokelPage', () => {
     // 1 selected -> disabled
     fireEvent.click(cardButtons[0]);
     expect(discardBtn).toBeDisabled();
+    expect(selectionStatus).toHaveTextContent('選択済み 1 / 3 枚');
 
     // 2 selected -> disabled
     fireEvent.click(cardButtons[1]);
     expect(discardBtn).toBeDisabled();
+    expect(selectionStatus).toHaveTextContent('選択済み 2 / 3 枚');
 
     // 3 selected -> enabled!
     fireEvent.click(cardButtons[2]);
     expect(discardBtn).toBeEnabled();
+    expect(selectionStatus).toHaveTextContent('選択済み 3 / 3 枚');
 
     // 4 selected -> disabled again
     fireEvent.click(cardButtons[3]);
     expect(discardBtn).toBeDisabled();
+    expect(selectionStatus).toHaveTextContent('選択済み 4 / 3 枚');
 
     // Deselect 4th card -> enabled (3 cards)
     fireEvent.click(cardButtons[3]);
     expect(discardBtn).toBeEnabled();
+    expect(selectionStatus).toHaveTextContent('選択済み 3 / 3 枚');
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(trumpPhaseState);
@@ -305,12 +313,40 @@ describe('BinokelPage', () => {
     );
   });
 
+  it('announces Dabb selection count in English and clears it outside Dabb', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(dabbPhaseStateHuman);
+      const { container } = renderWithProviders(<BinokelPage />);
+      const status = await screen.findByTestId('bn-dabb-selection-live');
+      expect(status).toHaveTextContent('Selected 0 / 3 cards');
+
+      const hand = container.querySelector('[data-tutorial="bn-player-hand"]') as HTMLElement;
+      const cardButtons = within(hand).getAllByRole('button');
+      fireEvent.click(cardButtons[0]);
+      expect(status).toHaveTextContent('Selected 1 / 3 cards');
+      fireEvent.click(cardButtons[0]);
+      expect(status).toHaveTextContent('Selected 0 / 3 cards');
+
+      mockExec.mockResolvedValue(trumpPhaseState);
+      fireEvent.click(cardButtons[0]);
+      fireEvent.click(cardButtons[1]);
+      fireEvent.click(cardButtons[2]);
+      fireEvent.click(screen.getByTestId('discard-dabb-button'));
+      await waitFor(() => expect(status).toBeEmptyDOMElement());
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('renders waiting message when CPU is declarer in Dabb phase', async () => {
     mockExec.mockResolvedValue(dabbPhaseStateCpu);
     renderWithProviders(<BinokelPage />);
     await waitFor(() => expect(screen.getByTestId('dabb-waiting')).toBeInTheDocument());
 
     expect(screen.getByTestId('dabb-waiting')).toHaveTextContent('CPU 1 が Dabb を整理中...');
+    expect(screen.getByTestId('bn-dabb-selection-live')).toBeEmptyDOMElement();
     expect(screen.queryByTestId('discard-dabb-button')).not.toBeInTheDocument();
   });
 

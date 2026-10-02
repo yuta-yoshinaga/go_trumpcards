@@ -90,4 +90,13 @@ export interface AndarBaharResponse extends BaseGameResponse {
   sidePayout: number;
   /** Winning column per round. Always an array. */
   history: number[];
+  /** Bet, payout, and chip balance after each settled round. */
+  roundHistory: AndarBaharRoundHistoryEntry[];
+}
+
+/** Financial summary for one settled round. */
+export interface AndarBaharRoundHistoryEntry {
+  bet: number;
+  payout: number;
+  chips: number;
 }

@@ -470,6 +470,36 @@ describe('TwoTenJackPage', () => {
     }
   });
 
+  it('shows both cumulative team scores while the mobile score table is closed', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      mockExec.mockResolvedValue(
+        makeTwoTenJackState({
+          players: makeTwoTenJackState().players.map((player, index) => ({
+            ...player,
+            cumulativeScore: [11, 23, 7, 9][index] ?? 0,
+          })),
+        }),
+      );
+      const { container } = renderWithProviders(<TwoTenJackPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+      const scoreDetails = container.querySelector('details[data-tutorial="tt-score-table"]');
+      expect(scoreDetails).not.toHaveAttribute('open');
+      expect(screen.getByText('あなたのチーム (0,2) 累計点: 18')).toBeVisible();
+      expect(screen.getByText('相手チーム (1,3) 累計点: 32')).toBeVisible();
+
+      fireEvent.click(scoreDetails?.querySelector('summary') as HTMLElement);
+      const table = scoreDetails?.querySelector('table');
+      expect(table).toBeInTheDocument();
+      expect(table?.querySelector('tbody tr:first-child td:last-child')).toHaveTextContent('18');
+      expect(table?.querySelector('tbody tr:last-child td:last-child')).toHaveTextContent('32');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
+
   // **同じページ内で非対称だった (#4741)。**プレイフェーズはヒント札を
   // 光らせているのに、宣言フェーズはテキストで「♠」と言うだけで、4つの
   // 宣言ボタンのどれが推奨か視覚的に分からなかった。

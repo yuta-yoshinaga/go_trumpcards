@@ -56,6 +56,13 @@ func (p *ContinentalRummyWebPresenter) buildBase(g interfaces.ContinentalRummyGa
 	// 引く前に、配られた 15 枚のまま上がれるならそれも伝える。
 	resObj.CanGoOutOnDeal = g.CanGoOutOnTheDeal()
 	resObj.LastResult = p.lastResult(g)
+	resObj.RoundScoreHistory = make([]controller.ContinentalRummyWebOutputRoundScore, 0)
+	for _, entry := range g.GetRoundScoreHistory() {
+		resObj.RoundScoreHistory = append(resObj.RoundScoreHistory, controller.ContinentalRummyWebOutputRoundScore{
+			RoundNumber: entry.RoundNumber,
+			Scores:      append([]int(nil), entry.Scores...),
+		})
+	}
 
 	cfg := g.GetConfig()
 	resObj.TotalRounds = cfg.TotalRounds

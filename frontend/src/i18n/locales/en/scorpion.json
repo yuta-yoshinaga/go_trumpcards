@@ -15,6 +15,7 @@
   "autoComplete": "Auto Complete",
   "undo": "Undo",
   "empty": "Empty",
+  "cardPositionAriaLabel": "{{card}}, column {{col}}, position {{pos}}",
   "cardSelected": "selected",
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",

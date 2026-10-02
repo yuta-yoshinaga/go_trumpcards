@@ -411,7 +411,7 @@ function WillOTheWispPageContent() {
                                         }
                                       }}
                                       disabled={!isPlaying || loading}
-                                      aria-label={cardAlt(tc.card)}
+                                      aria-label={t('tableauCardColumn', { card: cardAlt(tc.card), column: colIdx })}
                                       aria-pressed={isSourceSelected(colIdx, cardIdx)}
                                       draggable={isPlaying && !loading}
                                       onDragStart={dnd.handleDragStart(cardZone)}

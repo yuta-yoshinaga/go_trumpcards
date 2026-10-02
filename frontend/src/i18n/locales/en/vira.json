@@ -56,6 +56,8 @@
   "roundResult": {
     "title": "Round Result",
     "tricks": "{{name}} tricks: {{count}}",
+    "contractMade": "{{name}} made the {{contract}} contract",
+    "contractFailed": "{{name}} failed the {{contract}} contract",
     "potWon": "The declarer sweeps the pot ({{chips}})",
     "potCarried": "The pot carries over and now holds {{chips}}"
   },

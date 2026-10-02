@@ -88,6 +88,11 @@ beforeEach(() => {
 });
 
 describe('KempsPage', () => {
+  it('shows the action log button during the exchange phase', async () => {
+    renderWithProviders(<KempsPage />);
+    expect(await screen.findByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<KempsPage />);

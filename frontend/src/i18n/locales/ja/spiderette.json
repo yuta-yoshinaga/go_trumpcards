@@ -17,6 +17,7 @@
   "undo": "元に戻す",
   "empty": "空",
   "emptyColumnAriaLabel": "空の場札列 {{col}}",
+  "tableauCardAriaLabel": "{{card}}、列{{col}}・位置{{pos}}",
   "score": "スコア",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}} スコア: {{score}}",
   "gameOver": "ゲームオーバー",

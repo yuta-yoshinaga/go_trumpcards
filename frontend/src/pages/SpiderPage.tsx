@@ -456,7 +456,11 @@ function SpiderPageContent() {
                                         }
                                       }}
                                       disabled={!isPlaying || loading}
-                                      aria-label={cardAlt(tc.card)}
+                                      aria-label={t('cardPosAria', {
+                                        card: cardAlt(tc.card),
+                                        col: colIdx,
+                                        pos: cardIdx + 1,
+                                      })}
                                       aria-pressed={isSourceSelected(colIdx, cardIdx)}
                                       draggable={isPlaying && !loading}
                                       onDragStart={dnd.handleDragStart(cardZone)}

@@ -373,17 +373,24 @@ function CrazyFourPokerPageContent() {
                   </p>
                   <div className="flex gap-2 flex-wrap justify-center">
                     {multipliers.map((m) => (
-                      <button
-                        key={`mult-${m}`}
-                        type="button"
-                        className={btnPrimary}
-                        data-hint-action={m === state.maxMultiplier && state.hasAcesOrBetter ? 'raise' : 'play'}
-                        data-testid={`c4p-play-${m}`}
-                        onClick={() => execApi('play', { multiplier: m })}
-                        disabled={loading}
-                      >
-                        {t('button.play', { multiplier: m })}
-                      </button>
+                      <div key={`mult-${m}`} className="text-center">
+                        <button
+                          type="button"
+                          className={btnPrimary}
+                          data-hint-action={m === state.maxMultiplier && state.hasAcesOrBetter ? 'raise' : 'play'}
+                          data-testid={`c4p-play-${m}`}
+                          onClick={() => execApi('play', { multiplier: m })}
+                          disabled={loading}
+                        >
+                          {t('button.play', { multiplier: m })}
+                        </button>
+                        <p className="text-ds-text-muted text-xs" data-testid={`c4p-play-wager-${m}`}>
+                          {t('wagerSummary.playChoice', {
+                            playBet: state.anteBet * m,
+                            total: state.anteBet + state.superBet + state.queensUpBet + state.anteBet * m,
+                          })}
+                        </p>
+                      </div>
                     ))}
                     <button type="button" className={btnWarning} onClick={() => execApi('fold')} disabled={loading}>
                       {t('button.fold')}

@@ -16,10 +16,11 @@ import (
 
 func mustKalookiOutputJSON(msg string) string {
 	out := &controller.KalookiWebOutput{
-		Players:        []*controller.KalookiWebOutputPlayer{},
-		WinnerIdx:      -1,
-		RoundWinnerIdx: -1,
-		WebOutputBase:  controller.WebOutputBase{Message: msg},
+		Players:           []*controller.KalookiWebOutputPlayer{},
+		RoundScoreHistory: []*controller.KalookiWebOutputRoundScore{},
+		WinnerIdx:         -1,
+		RoundWinnerIdx:    -1,
+		WebOutputBase:     controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

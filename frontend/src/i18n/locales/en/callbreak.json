@@ -27,6 +27,7 @@
   "bidProgressAria": "{{name}}'s bid progress",
   "currentTrick": "Current Trick",
   "trickWinnerBadge": "Winner",
+  "trickWinnerAnnouncement": "{{name}} won the trick",
   "scores": "Scores",
   "scoresPlayer": "Player",
   "scoresBid": "Bid",

@@ -75,6 +75,9 @@ func (p *CourtPieceWebPresenter) buildBase(t interfaces.CourtPieceGame) *control
 	}
 
 	resObj.TeamScores = []int{t.GetTeamScore(0), t.GetTeamScore(1)}
+	for i, bd := range t.GetScoreBreakdown() {
+		resObj.ScoreBreakdown[i] = controller.CourtPieceWebOutputScoreBreakdown{Sar: bd.Sar, CourtBonus: bd.CourtBonus, Total: bd.Total()}
+	}
 	resObj.CurrentTrick = trickCardsToOutput(t.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(t)
 	return resObj

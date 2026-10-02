@@ -35,6 +35,8 @@ type ThreeThirteenGame interface {
 	IsHumanTurn() bool
 	// GetRound 現在のラウンド番号（1..11）
 	GetRound() int
+	// GetRoundScoreHistory returns completed round scores indexed by round then player.
+	GetRoundScoreHistory() [][]int
 	// WildRank そのラウンドのワイルドランク
 	WildRank() int
 	// GetDealCount そのラウンドの 1 人あたり配布枚数

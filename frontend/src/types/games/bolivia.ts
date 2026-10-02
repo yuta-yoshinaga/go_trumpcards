@@ -51,6 +51,7 @@ export interface BoliviaPlayerData {
   red3Count: number;
   red3s: Card[];
   roundScore: number;
+  scoreBreakdown: BoliviaScoreBreakdown;
   cumulativeScore: number;
   hasCanasta: boolean;
   /** Holds a completed escalera. **This is what going out requires.** */
@@ -58,6 +59,19 @@ export interface BoliviaPlayerData {
   /** Holds a completed bolivia (seven wilds). Heaviest score, not a go-out key. */
   hasBolivia: boolean;
   hasInitMeld: boolean;
+}
+
+/** Server-calculated components of a Bolivia team's round score. Penalties are positive values. */
+export interface BoliviaScoreBreakdown {
+  cardPoints: number;
+  naturalCanastaBonus: number;
+  mixedCanastaBonus: number;
+  escaleraBonus: number;
+  boliviaBonus: number;
+  red3Bonus: number;
+  red3Penalty: number;
+  goOutBonus: number;
+  handPenalty: number;
 }
 
 /** Full Bolivia game state returned from the API. */

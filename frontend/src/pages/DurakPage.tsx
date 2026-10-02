@@ -359,6 +359,7 @@ function DurakPageContent() {
                             onClick={() => setSelectedAttackIdx(selectedAttackIdx === i ? null : i)}
                             data-testid={`dk-pair-${i}`}
                             aria-label={ariaLabel}
+                            aria-pressed={showDefendBtn ? selectedAttackIdx === i : undefined}
                           >
                             <div
                               className={`absolute top-0 left-0 rounded ${

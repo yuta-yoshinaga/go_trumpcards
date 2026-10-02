@@ -249,6 +249,24 @@ function DoubtPageContent() {
       >
         {tellPlayerIdx !== null ? t('tellAnnouncement', { name: playerName(tellPlayerIdx, false) }) : ''}
       </div>
+      <div
+        className="sr-only"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        data-testid="doubt-result-announcement"
+      >
+        {state?.lastDoubtResult
+          ? t('doubtResult.announcement', {
+              outcome: state.lastDoubtResult.wasLying ? t('doubtResult.wasLying') : t('doubtResult.wasTruth'),
+              name: playerName(
+                state.players[state.lastDoubtResult.loserIdx]?.id ?? state.lastDoubtResult.loserIdx,
+                state.players[state.lastDoubtResult.loserIdx]?.isHuman ?? false,
+              ),
+              count: state.lastDoubtResult.cardCount,
+            })
+          : ''}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
