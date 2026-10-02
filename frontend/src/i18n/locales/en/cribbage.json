@@ -19,6 +19,18 @@
   "dealer": "Dealer: {{name}}",
   "pegCount": "Peg count: {{count}}/31",
   "pegCountAnnouncement": "Peg count updated to {{count}}",
+  "pegScoreAnnouncement": "{{player}} scored {{points}} points for {{reasons}}",
+  "pegScoreReasons": {
+    "fifteen": "15",
+    "thirtyOne": "31",
+    "pair": "a pair",
+    "threeOfAKind": "three of a kind",
+    "fourOfAKind": "four of a kind",
+    "run": "a run of {{count}}",
+    "go": "a go",
+    "lastCard": "the last card"
+  },
+  "listSeparator": ", ",
   "pegPreview": "{{from}} → {{to}} / 31",
   "pegRestrictedTooltip": "Playing this card would push the count over 31",
   "pegRestrictedAria": "cannot play (would exceed peg count of 31)",

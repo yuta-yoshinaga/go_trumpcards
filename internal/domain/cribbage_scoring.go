@@ -195,17 +195,23 @@ func CribbageScoreHand(hand []*Card, starter *Card, isCrib bool) CribbageScoreDe
 // CribbageScorePegging ペギングのスコアを計算する
 // playedCards は現在のペギングシーケンスで最後に追加されたカードがスコア対象
 func CribbageScorePegging(playedCards []*Card, pegCount int) int {
+	detail := CribbageScorePeggingDetail(playedCards, pegCount)
+	return detail.Total
+}
+
+// CribbageScorePeggingDetail returns the pegging score broken down by reason.
+func CribbageScorePeggingDetail(playedCards []*Card, pegCount int) CribbagePeggingScoreDetail {
+	detail := CribbagePeggingScoreDetail{}
 	if len(playedCards) == 0 {
-		return 0
+		return detail
 	}
-	score := 0
 
 	// 15 or 31
 	if pegCount == 15 {
-		score += 2
+		detail.Fifteen = 2
 	}
 	if pegCount == 31 {
-		score += 2
+		detail.ThirtyOne = 2
 	}
 
 	n := len(playedCards)
@@ -222,11 +228,11 @@ func CribbageScorePegging(playedCards []*Card, pegCount int) int {
 	}
 	switch pairCount {
 	case 1:
-		score += 2 // pair
+		detail.Pair = 2
 	case 2:
-		score += 6 // three of a kind
+		detail.ThreeOfAKind = 6
 	case 3:
-		score += 12 // four of a kind
+		detail.FourOfAKind = 12
 	}
 
 	// ラン検出: 末尾からN枚を取り、ソートして連続かチェック (N=3,4,5,...,n)
@@ -249,10 +255,23 @@ func CribbageScorePegging(playedCards []*Card, pegCount int) int {
 		}
 	}
 	if bestRun >= 3 {
-		score += bestRun
+		detail.Run = bestRun
 	}
+	detail.Total = detail.Fifteen + detail.ThirtyOne + detail.Pair + detail.ThreeOfAKind + detail.FourOfAKind + detail.Run + detail.Go + detail.LastCard
+	return detail
+}
 
-	return score
+// CribbagePeggingScoreDetail describes points awarded for one pegging play.
+type CribbagePeggingScoreDetail struct {
+	Fifteen      int
+	ThirtyOne    int
+	Pair         int
+	ThreeOfAKind int
+	FourOfAKind  int
+	Run          int
+	Go           int
+	LastCard     int
+	Total        int
 }
 
 // sortInts 整数スライスをソート (sort パッケージを避けるシンプル実装)

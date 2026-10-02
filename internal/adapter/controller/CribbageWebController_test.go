@@ -21,6 +21,7 @@ func mustCribbageOutputJSON(msg string) string {
 		Crib:           []*controller.WebOutputCard{},
 		PegPlayedCards: []*controller.WebOutputCard{},
 		PegPlayedBy:    []int{},
+		PegScoreEvents: []controller.CribbageWebOutputPegScoreEvent{},
 		WinnerIdx:      -1,
 		WebOutputBase:  controller.WebOutputBase{Message: msg},
 	}
@@ -32,7 +33,7 @@ func mustCribbageOutputJSON(msg string) string {
 }
 
 func TestCribbageWebController_Method(t *testing.T) {
-	mockOutput := `{"players":[],"phase":0,"roundNumber":0,"currentPlayerIdx":0,"dealerIdx":0,"crib":[],"starter":null,"pegCount":0,"pegPlayedCards":[],"pegPlayedBy":[],"showPhaseStep":0,"handScoreDetails":[null,null,null],"gameEndFlag":false,"winnerIdx":-1,"message":"","config":{"cpuDifficulty":0,"pointLimit":0}}`
+	mockOutput := `{"players":[],"phase":0,"roundNumber":0,"currentPlayerIdx":0,"dealerIdx":0,"crib":[],"starter":null,"pegCount":0,"pegPlayedCards":[],"pegPlayedBy":[],"pegScoreEvents":[],"showPhaseStep":0,"handScoreDetails":[null,null,null],"gameEndFlag":false,"winnerIdx":-1,"message":"","config":{"cpuDifficulty":0,"pointLimit":0}}`
 	expectedBody := mockOutput
 
 	siMock := new(usecase.MockCribbageInteractor)
