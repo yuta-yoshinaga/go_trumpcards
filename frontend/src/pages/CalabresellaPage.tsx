@@ -296,19 +296,6 @@ function CalabresellaPageContent() {
                         {t('tricks', { count: p.trickCount })}
                       </div>
                     ))}
-                    <div>{t(state.soloistWon ? 'roundResult.soloistWon' : 'roundResult.soloistLost')}</div>
-                    {state.players.map((p) => {
-                      const change = state.roundScoreChanges[p.id];
-                      const signedChange = `${change > 0 ? '+' : ''}${change}`;
-                      return (
-                        <div key={`settlement-${p.id}`}>
-                          {t('roundResult.settlement', {
-                            name: playerName(p.id, p.isHuman),
-                            change: signedChange,
-                          })}
-                        </div>
-                      );
-                    })}
                   </div>
                 )}
 
@@ -324,6 +311,19 @@ function CalabresellaPageContent() {
                         })}
                       </div>
                     ))}
+                    <div>{t(state.soloistWon ? 'roundResult.soloistWon' : 'roundResult.soloistLost')}</div>
+                    {state.players.map((p) => {
+                      const change = state.roundScoreChanges[p.id];
+                      const signedChange = `${change > 0 ? '+' : ''}${change}`;
+                      return (
+                        <div key={`settlement-${p.id}`}>
+                          {t('roundResult.settlement', {
+                            name: playerName(p.id, p.isHuman),
+                            change: signedChange,
+                          })}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
