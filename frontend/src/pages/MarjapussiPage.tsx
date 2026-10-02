@@ -564,15 +564,7 @@ function MarjapussiPageContent() {
                   if (humanPlayer.cards.some((card) => card.design === leadSuit)) {
                     return t('restrictionReason.followLeadSuit');
                   }
-                  if (state.trumpSuit > 0) {
-                    const trumpDesign = Object.entries(DESIGN_TO_SUIT).find(
-                      ([, suit]) => suit === state.trumpSuit,
-                    )?.[0];
-                    if (trumpDesign && humanPlayer.cards.some((card) => card.design === trumpDesign)) {
-                      return t('restrictionReason.playTrump');
-                    }
-                  }
-                  return undefined;
+                  return t('restrictionReason.playTrump');
                 }}
               />
             )}
