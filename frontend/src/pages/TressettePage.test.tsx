@@ -100,7 +100,9 @@ describe('TressettePage', () => {
     renderWithProviders(<TressettePage />);
 
     expect(await screen.findByText('（残り13点）')).toBeInTheDocument();
+    expect(screen.getByText('チームA').closest('tr')).toHaveTextContent('8');
     expect(screen.getByText('チームB').closest('tr')).toHaveTextContent('22');
+    expect(screen.getByText('チームA').closest('tr')).toHaveTextContent('残り13点');
     expect(screen.getByText('チームB').closest('tr')).not.toHaveTextContent('残り');
   });
 
