@@ -35,6 +35,13 @@ describe('SutdaPage', () => {
     expect(screen.getByTestId('sutda-pot')).toHaveTextContent('ポット 30');
   });
 
+  it('does not show a previous-hand result on the first hand without a saved result', async () => {
+    mockExec.mockResolvedValue(makeSutdaState({ handNumber: 1, lastResult: null }));
+    renderWithProviders(<SutdaPage />);
+    await screen.findByText('ハンド 1');
+    expect(screen.queryByTestId('sutda-result')).not.toBeInTheDocument();
+  });
+
   it('pairs each seat’s remaining chips with its current contribution', async () => {
     renderWithProviders(<SutdaPage />);
     expect(await screen.findByTestId('sutda-chips-0')).toHaveTextContent('990');
@@ -209,6 +216,49 @@ describe('SutdaPage', () => {
     const result = await screen.findByTestId('sutda-result');
     expect(result).toHaveTextContent('あなた');
     expect(result).not.toHaveTextContent('（0）');
+  });
+
+  it('keeps the old winner display when the saved hand name is empty', async () => {
+    mockExec.mockResolvedValue(
+      makeSutdaState({
+        phase: 'showdown',
+        isShowdown: true,
+        isHumanTurn: false,
+        lastResult: {
+          winners: [0],
+          shares: [26],
+          pot: 26,
+          handNames: ['', 'mangtong', 'kkeut5'],
+          folded: [false, false, false],
+        },
+      }),
+    );
+    renderWithProviders(<SutdaPage />);
+    const result = await screen.findByTestId('sutda-result');
+    expect(result).toHaveTextContent('あなた（26）');
+    expect(result).not.toHaveTextContent('あなた（26）:');
+  });
+
+  it('shows only the winner name when both the hand name and saved share are missing', async () => {
+    mockExec.mockResolvedValue(
+      makeSutdaState({
+        phase: 'showdown',
+        isShowdown: true,
+        isHumanTurn: false,
+        lastResult: {
+          winners: [0],
+          shares: [],
+          pot: 26,
+          handNames: ['', 'mangtong', 'kkeut5'],
+          folded: [false, false, false],
+        },
+      }),
+    );
+    renderWithProviders(<SutdaPage />);
+    const result = await screen.findByTestId('sutda-result');
+    expect(result).toHaveTextContent('あなた');
+    expect(result).not.toHaveTextContent('あなた:');
+    expect(result).not.toHaveTextContent('あなた（');
   });
 
   it('shows each split-pot share and gives the odd chip to the first winner', async () => {
