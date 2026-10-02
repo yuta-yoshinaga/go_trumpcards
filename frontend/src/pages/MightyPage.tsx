@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { mightyApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardBack } from '../components/CardImage';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CardRoleBadge } from '../components/CardRoleBadge';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -237,6 +238,7 @@ function MightyPageContent() {
   const isTrickEnd = state.phase === MightyPhase.TRICK_END;
   const isRoundEnd = state.phase === MightyPhase.ROUND_END;
   const isGameEnd = state.phase === MightyPhase.GAME_END || state.gameEndFlag;
+  const canShowDiscardedCards = isRoundEnd || isGameEnd;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
   const isHumanDeclarer = isTrumpAndFriend && state.players[state.declarerIdx]?.isHuman === true;
@@ -404,6 +406,25 @@ function MightyPageContent() {
                       {state.kitty.map((card, idx) => (
                         <AnimatedCard key={`kitty-${card.design}-${card.value}-${idx}`} card={card} width={cardWidth} />
                       ))}
+                    </div>
+                  </div>
+                )}
+
+                {(state.discardedCardCount ?? 0) > 0 && !isKittyExchange && (
+                  <div className="my-2" data-testid="mighty-discarded-cards">
+                    <div className="text-ds-text-muted text-sm mb-1">{t('discardedCards')}</div>
+                    <div className="flex gap-2">
+                      {canShowDiscardedCards && state.discardedCards
+                        ? state.discardedCards.map((card, idx) => (
+                            <AnimatedCard
+                              key={`discarded-${card.design}-${card.value}-${idx}`}
+                              card={card}
+                              width={cardWidth}
+                            />
+                          ))
+                        : Array.from({ length: state.discardedCardCount ?? 0 }, (_, idx) => (
+                            <CardBack key={idx} width={cardWidth} />
+                          ))}
                     </div>
                   </div>
                 )}

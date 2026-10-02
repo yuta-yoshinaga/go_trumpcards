@@ -102,6 +102,8 @@ func (p *CegoWebPresenter) buildBase(g interfaces.CegoGame) *controller.CegoWebO
 	resObj.HighestBid = int(g.GetHighestBid())
 	resObj.HighestBidder = g.GetHighestBidder()
 	resObj.DeclarerIdx = g.GetDeclarerIdx()
+	resObj.DeclarerTargetPoints = g.GetDeclarerTargetPoints()
+	resObj.TotalCardPoints = g.GetTotalCardPoints()
 	resObj.Contract = int(g.GetContract())
 	resObj.ContractType = int(g.GetContractType())
 	resObj.BlindCount = g.GetBlindCount()
