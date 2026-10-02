@@ -20,6 +20,7 @@
   "emptyWasteAriaLabel": "The waste is empty",
   "wasteCount_one": "{{count}} card",
   "wasteCount_other": "{{count}} cards",
+  "wasteTopCardAriaLabel": "Waste, {{card}}",
   "stockOrWaste": "S/W",
   "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",
