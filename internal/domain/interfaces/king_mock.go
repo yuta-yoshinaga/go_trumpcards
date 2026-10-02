@@ -144,6 +144,15 @@ func (_m *MockKingGame) GetLastDealDetail() *domain.KingDealDetail {
 	return nil
 }
 
+// GetDealHistory モック
+func (_m *MockKingGame) GetDealHistory() []*domain.KingDealDetail {
+	ret := _m.Called()
+	if v := ret.Get(0); v != nil {
+		return v.([]*domain.KingDealDetail)
+	}
+	return nil
+}
+
 // GetRoundWinners モック
 func (_m *MockKingGame) GetRoundWinners() []int {
 	ret := _m.Called()

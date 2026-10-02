@@ -1494,6 +1494,7 @@ const baseKingState: KingResponse = {
   config: { cpuDifficulty: 1 },
   roundWinners: [],
   lastDealDetail: null,
+  dealHistory: [],
   isHumanTurn: true,
   hint: null,
   message: '',
