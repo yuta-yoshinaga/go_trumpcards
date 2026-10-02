@@ -51553,6 +51553,8 @@ components:
         - playerHand
         - dealerHand
         - community
+        - playerBest
+        - dealerBest
         - phase
         - chips
         - anteBet
@@ -51588,6 +51590,16 @@ components:
         community:
           type: array
           description: Community cards (length grows from 0 to 5 as the streets advance)
+          items:
+            $ref: '#/components/schemas/Card'
+        playerBest:
+          type: array
+          description: Player's best five cards, populated at showdown.
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerBest:
+          type: array
+          description: Dealer's best five cards, populated at showdown.
           items:
             $ref: '#/components/schemas/Card'
         phase:

@@ -22,6 +22,13 @@ func (tp *TexasHoldemBonusWebPresenter) Output(g interfaces.TexasHoldemBonusGame
 		resObj.DealerHand = texasHoldemBonusMaskDealerHand(g.GetDealerHand())
 	}
 	resObj.Community = cardsToOutputOrEmpty(g.GetCommunity())
+	if g.GetPhase() == domain.TexasHoldemBonusPhaseEnd {
+		resObj.PlayerBest = cardsToOutputOrEmpty(g.GetPlayerBest())
+		resObj.DealerBest = cardsToOutputOrEmpty(g.GetDealerBest())
+	} else {
+		resObj.PlayerBest = make([]*controller.WebOutputCard, 0)
+		resObj.DealerBest = make([]*controller.WebOutputCard, 0)
+	}
 	resObj.Phase = g.GetPhase()
 	resObj.Chips = g.GetChips()
 	resObj.AnteBet = g.GetAnteBet()
