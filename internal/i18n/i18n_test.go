@@ -44,6 +44,19 @@ func TestT_KeyFound_ReturnsValue(t *testing.T) {
 	assert.Equal(t, "コマンドが不明です: {{cmd}}", result)
 }
 
+func TestTForLang(t *testing.T) {
+	originalLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(originalLang) })
+
+	i18n.SetLang("en")
+	assert.Equal(t, "No games match your search", i18n.TForLang("en", "cliGamesNoMatches"))
+	assert.Equal(t, "一致するゲームはありません", i18n.TForLang("ja", "cliGamesNoMatches"))
+	assert.Equal(t, "en", i18n.Lang())
+
+	assert.Equal(t, "一致するゲームはありません", i18n.TForLang("fr", "cliGamesNoMatches"))
+	assert.Equal(t, "missing.translation.key", i18n.TForLang("ja", "missing.translation.key"))
+}
+
 func TestTf_WithParams(t *testing.T) {
 	i18n.SetLang("ja")
 	result := i18n.Tf("unknownCommand", "cmd", "foo")

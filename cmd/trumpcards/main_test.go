@@ -1428,8 +1428,6 @@ func TestPrintGamesLongIsFlatAndSorted(t *testing.T) {
 func TestPrintGamesLongDynamicWidthAlignsDescriptions(t *testing.T) {
 	var buf bytes.Buffer
 	printGames(false, false, "", "", &buf)
-	descs := ui.GameDescriptions()
-
 	width := 0
 	for _, n := range ui.GameNames() {
 		if len(n) > width {
@@ -1448,7 +1446,7 @@ func TestPrintGamesLongDynamicWidthAlignsDescriptions(t *testing.T) {
 			continue
 		}
 		name := strings.TrimSpace(line[2 : descStart-1])
-		desc := descs[name]
+		desc := ui.GameTitle(name)
 		if desc == "" {
 			continue
 		}
@@ -1701,6 +1699,59 @@ func TestGamesSearchAndCategoryCLI(t *testing.T) {
 	_, stderr, code = runCLI(t, "games", "--category", "casno", "--lang", "en")
 	require.Equal(t, 2, code)
 	assert.Contains(t, stderr, `Did you mean "casino"?`)
+}
+
+func TestGamesListingUsesLocalizedHelpTitles(t *testing.T) {
+	originalLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(originalLang) })
+	for _, lang := range []string{"en", "ja"} {
+		t.Run(lang, func(t *testing.T) {
+			i18n.SetLang(lang)
+			var long bytes.Buffer
+			printGames(false, false, "", "", &long)
+			width := 0
+			for _, name := range ui.GameNames() {
+				if len(name) > width {
+					width = len(name)
+				}
+			}
+			var entries []struct {
+				Name        string `json:"name"`
+				Description string `json:"description"`
+			}
+			var raw bytes.Buffer
+			require.NoError(t, printGamesJSON("", "", &raw))
+			require.NoError(t, json.Unmarshal(raw.Bytes(), &entries))
+			for _, entry := range entries {
+				assert.Equal(t, ui.GameTitle(entry.Name), entry.Description, entry.Name)
+				expected := fmt.Sprintf("  %-*s %s", width, entry.Name, ui.GameTitle(entry.Name))
+				assert.Contains(t, long.String(), expected, entry.Name)
+			}
+			if lang == "en" {
+				for lineNo, line := range strings.Split(long.String(), "\n") {
+					for _, r := range line {
+						if (r >= 'ぁ' && r <= 'ゟ') || (r >= 'ァ' && r <= 'ヿ') || (r >= '一' && r <= '龯') {
+							t.Errorf("English games output line %d contains Japanese: %q", lineNo+1, line)
+							break
+						}
+					}
+				}
+			} else {
+				assert.Contains(t, long.String(), "BlackJack (ブラックジャック)")
+			}
+		})
+	}
+}
+
+func TestGamesSearchMatchesEnglishHelpTitlesRegardlessOfLocale(t *testing.T) {
+	originalLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(originalLang) })
+	for _, lang := range []string{"ja", "en"} {
+		i18n.SetLang(lang)
+		assert.True(t, gameMatchesSearch("bigohilo", "8 or better", nil))
+	}
+	i18n.SetLang("en")
+	assert.True(t, gameMatchesSearch("dramaha", "オマハ役とドロー役でポット二分", nil))
 }
 
 func TestGamesSearchShortMatchesAlias(t *testing.T) {

@@ -1,5 +1,5 @@
 {
-  "helpTitle": "Omi (オミ)",
+  "helpTitle": "Omi",
   "helpTrump": "  t / trump <1-4>      declare trump suit (1=S, 2=C, 3=H, 4=D)",
   "helpPlay": "  p <idx>              play a card",
   "helpNext": "  n                    next trick",

@@ -1,5 +1,5 @@
 {
-  "helpTitle": "Kemps (ケムプス)",
+  "helpTitle": "Kemps",
   "helpSwap": "  s <h> <f>, swap <h> <f>  swap hand card h with field card f",
   "helpPass": "  p, pass              skip the swap (in the declare window, decline)",
   "helpSignal": "  sig <n>, signal <n>  set signal type (0=Sound, 1=Blink)",
