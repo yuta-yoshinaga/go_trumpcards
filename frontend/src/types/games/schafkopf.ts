@@ -79,6 +79,10 @@ export interface SchafkopfResponse extends BaseGameResponse {
   playableIndices: number[];
   /** Card points captured by the picker's team this round. */
   roundPickerPoints: number;
+  /** Whether the running points include the partner's tricks. */
+  roundPickerPointsTeamTotal: boolean;
+  /** Card points the picker's team needs to win the round. */
+  pickerTargetPoints: number;
   /** Score multiplier applied to this round's result. */
   roundMultiplier: number;
   /** Whether the picker's team won the round. */

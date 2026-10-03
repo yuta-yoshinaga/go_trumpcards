@@ -39,6 +39,7 @@ func setupSchafkopfWebMock() *interfaces.MockSchafkopfGame {
 	m.On("GetPlayableIndices", 0).Return([]int{0})
 	m.On("IsHumanTurn").Return(true)
 	m.On("GetRoundPickerPoints").Return(0)
+	m.On("IsRoundPickerPointsTeamTotal").Return(true)
 	m.On("GetRoundMultiplier").Return(1)
 	m.On("GetRoundPickerWon").Return(false)
 	for i := 0; i < 5; i++ {
@@ -83,6 +84,8 @@ func TestSchafkopfWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, -1, resObj.PickerIdx)
 		assert.Equal(t, -1, resObj.PartnerIdx)
 		assert.Equal(t, "schafkopf.pickPhase", resObj.MessageCode)
+		assert.Equal(t, domain.SchafkopfPickerTargetPoints, resObj.PickerTargetPoints)
+		assert.True(t, resObj.RoundPickerPointsTeamTotal)
 		// human cards visible, CPU hidden
 		assert.Len(t, resObj.Players[0].Cards, 1)
 		assert.Len(t, resObj.Players[1].Cards, 0)
@@ -98,6 +101,16 @@ func TestSchafkopfWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 2, resObj.Config.BaseChips)
 		assert.Equal(t, 20, resObj.Config.StartChips)
 		assert.Equal(t, 40, resObj.Config.TargetChips)
+	})
+
+	t.Run("picker-only running points flag", func(t *testing.T) {
+		m, _ := setupSchafkopfWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsRoundPickerPointsTeamTotal")
+		m.On("IsRoundPickerPointsTeamTotal").Return(false)
+		result := p.Output(m, nil)
+		var resObj controller.SchafkopfWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.False(t, resObj.RoundPickerPointsTeamTotal)
 	})
 
 	t.Run("call phase returns callable suits", func(t *testing.T) {
