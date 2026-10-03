@@ -636,3 +636,11 @@ func TestCitadel_AllFaceUp(t *testing.T) {
 	c := newTestCitadel()
 	assert.True(t, c.AllFaceUp())
 }
+
+func TestCitadel_GetHint_SkipsSingletonToEmptyColumn(t *testing.T) {
+	c := setupPlayingCitadel()
+	var tab [domain.CitadelTableauCnt][]*domain.CitadelTableauCard
+	tab[0] = []*domain.CitadelTableauCard{makeCitadelTableauCard(domain.CardDesignSpade, 13)}
+	c.SetTableau(tab)
+	assert.Nil(t, c.GetHint())
+}

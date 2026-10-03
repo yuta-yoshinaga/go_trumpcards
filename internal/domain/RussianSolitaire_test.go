@@ -755,3 +755,12 @@ func TestRussianSolitaire_UnmarshalJSON_invalid(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestRussianSolitaire_GetHint_SkipsWholeColumnToEmpty(t *testing.T) {
+	c := newTestRussianSolitaire()
+	c.Reset()
+	var tab [domain.RussianSolitaireTableauCnt][]*domain.KlondikeTableauCard
+	tab[0] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 13, true)}
+	c.SetTableau(tab)
+	assert.Nil(t, c.GetHint())
+}

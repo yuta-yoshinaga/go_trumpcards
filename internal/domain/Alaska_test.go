@@ -855,3 +855,11 @@ func TestAlaska_UnmarshalJSON_invalid(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestAlaska_GetHint_SkipsWholeColumnToEmpty(t *testing.T) {
+	c := setupPlayingAlaska()
+	var tab [domain.AlaskaTableauCnt][]*domain.AlaskaTableauCard
+	tab[0] = []*domain.AlaskaTableauCard{makeAlaskaTableauCard(domain.CardDesignSpade, 13, true)}
+	c.SetTableau(tab)
+	assert.Nil(t, c.GetHint())
+}

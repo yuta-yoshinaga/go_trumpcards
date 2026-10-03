@@ -597,3 +597,11 @@ func TestFortress_ActionLog(t *testing.T) {
 	assert.Equal(t, "fortress.log.moveTableauToFoundation", entry.DetailCode)
 	assert.Equal(t, map[string]string{"col": "0"}, entry.DetailParams)
 }
+
+func TestFortress_GetHint_SkipsSingletonToEmptyColumn(t *testing.T) {
+	c := setupPlayingFortress()
+	var tab [domain.FortressTableauCnt][]*domain.FortressTableauCard
+	tab[0] = []*domain.FortressTableauCard{makeFortressTableauCard(domain.CardDesignSpade, 13)}
+	c.SetTableau(tab)
+	assert.Nil(t, c.GetHint())
+}

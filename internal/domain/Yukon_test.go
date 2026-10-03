@@ -821,3 +821,12 @@ func TestYukon_ErrorsCarryAnI18nCode(t *testing.T) {
 		}
 	})
 }
+
+func TestYukon_GetHint_SkipsWholeColumnToEmpty(t *testing.T) {
+	c := newTestYukon()
+	c.Reset()
+	var tab [domain.YukonTableauCnt][]*domain.KlondikeTableauCard
+	tab[0] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 13, true)}
+	c.SetTableau(tab)
+	assert.Nil(t, c.GetHint())
+}

@@ -607,3 +607,11 @@ func TestSomerset_ActionLog(t *testing.T) {
 	assert.Equal(t, "somerset.log.moveTableauToFoundation", entry.DetailCode)
 	assert.Equal(t, map[string]string{"col": "0"}, entry.DetailParams)
 }
+
+func TestSomerset_GetHint_SkipsSingletonToEmptyColumn(t *testing.T) {
+	c := setupPlayingSomerset()
+	var tab [domain.SomersetTableauCnt][]*domain.SomersetTableauCard
+	tab[0] = []*domain.SomersetTableauCard{makeSomersetTableauCard(domain.CardDesignSpade, 13)}
+	c.SetTableau(tab)
+	assert.Nil(t, c.GetHint())
+}
