@@ -46545,6 +46545,11 @@ components:
           type: integer
         discardTop:
           $ref: '#/components/schemas/Card'
+        discardPile:
+          type: array
+          description: Discard pile ordered from oldest to newest.
+          items:
+            $ref: '#/components/schemas/Card'
         drawPileCount:
           type: integer
         gameEndFlag:
@@ -78106,6 +78111,11 @@ components:
           type: integer
         discardTop:
           $ref: '#/components/schemas/Card'
+        discardPile:
+          type: array
+          description: Discard pile ordered from oldest to newest.
+          items:
+            $ref: '#/components/schemas/Card'
         drawPileCount:
           type: integer
         wildRank:

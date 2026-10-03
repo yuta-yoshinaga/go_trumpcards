@@ -43,6 +43,10 @@ const drawPhaseState: IndianRummyResponse = {
   currentPlayerIdx: 0,
   dealerIdx: 0,
   discardTop: { design: 'HEART', value: 7 },
+  discardPile: [
+    { design: 'SPADE', value: 3 },
+    { design: 'HEART', value: 7 },
+  ],
   drawPileCount: 40,
   wildJoker: { design: 'CLOVER', value: 5 },
   wildRank: 5,
@@ -201,6 +205,22 @@ describe('IndianRummyPage', () => {
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
       expect(screen.getByAltText('♥ J')).toBeInTheDocument();
     });
+  });
+
+  it('renders discard history oldest first and marks the latest card', async () => {
+    renderWithProviders(<IndianRummyPage />);
+    await waitFor(() => expect(screen.getByTestId('indianrummy-discard-latest')).toBeInTheDocument());
+    const history = screen.getByTestId('indianrummy-discard-history');
+    expect(history).toHaveTextContent('捨て札の履歴（古い順）');
+    expect(history.querySelectorAll('img')).toHaveLength(2);
+    expect(screen.getByTestId('indianrummy-discard-latest')).toHaveAccessibleName('♥ 7 最新');
+  });
+
+  it('keeps the discard history area empty without breaking when there are no discards', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, discardTop: null, discardPile: [] });
+    renderWithProviders(<IndianRummyPage />);
+    await waitFor(() => expect(screen.getByTestId('indianrummy-discard-history')).toBeInTheDocument());
+    expect(screen.getByTestId('indianrummy-discard-history')).toBeEmptyDOMElement();
   });
 
   it('marks wild-rank cards in the human hand with a WILD badge', async () => {
@@ -442,7 +462,7 @@ describe('IndianRummyPage', () => {
   it('shows discard top card', async () => {
     renderWithProviders(<IndianRummyPage />);
     await waitFor(() => {
-      expect(screen.getByText('捨て札')).toBeInTheDocument();
+      expect(screen.getByText('捨て札の履歴（古い順）')).toBeInTheDocument();
       expect(screen.getByAltText('♥ 7')).toBeInTheDocument();
     });
   });
