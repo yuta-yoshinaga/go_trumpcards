@@ -728,3 +728,36 @@ func TestEightOffSetters(t *testing.T) {
 	e.SetFoundation(fnd)
 	assert.Equal(t, 1, len(e.GetFoundation()[2]))
 }
+
+func TestEightOffHintSkipsWholeColumnToEmpty(t *testing.T) {
+	for _, useful := range []bool{true, false} {
+		e := setupPlayingEightOff()
+		e.Reset()
+		var tableau [EightOffTableauCnt][]*Card
+		tableau[0] = []*Card{makeCard(CardDesignSpade, 13)}
+		if useful {
+			tableau[2] = []*Card{makeCard(CardDesignClover, 3), makeCard(CardDesignHeart, 13), makeCard(CardDesignHeart, 12)}
+		}
+		e.SetTableau(tableau)
+		var cells [EightOffCellCnt]*Card
+		for i := range cells {
+			cells[i] = makeCard(CardDesignSpade, 9)
+		}
+		e.SetFreeCells(cells)
+		var foundation [EightOffFoundationCnt][]*Card
+		for i := range foundation {
+			foundation[i] = []*Card{makeCard(i+1, 13)}
+		}
+		e.SetFoundation(foundation)
+		hint := e.GetHint()
+		if !useful {
+			assert.Nil(t, hint)
+			continue
+		}
+		if assert.NotNil(t, hint) {
+			assert.Equal(t, 2, hint.FromCol)
+			assert.Equal(t, 1, hint.CardIndex)
+			assert.Equal(t, 1, hint.ToCol)
+		}
+	}
+}
