@@ -54,7 +54,7 @@
   },
   "tutorial": {
     "trickDisplay": "This is the current trick. Follow the led suit; trump when you cannot. The Sküs is the highest card.",
-    "playerHand": "Your twelve cards. If you win the auction you take the six-card talon and bury six (kings and trull cards cannot be buried).",
+    "playerHand": "Your hand contains 16 cards. If you win the auction you take the six-card talon and bury six (kings and trull cards cannot be buried).",
     "actions": "The highest bidder plays alone against the other two players. If everyone passes the deal becomes Trischaken, where taking the most card points loses."
   },
   "frontendHint.tapptarockNextTrick": "the trick is complete — move on",

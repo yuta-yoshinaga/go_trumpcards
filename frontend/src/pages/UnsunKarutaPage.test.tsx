@@ -176,6 +176,26 @@ describe('UnsunKarutaPage', () => {
     expect(screen.getByTestId('unsunkaruta-result')).toHaveTextContent('味方 5 個 / 相手 4 個');
   });
 
+  it('shows each team’s captured cards with one ko per captured trick at deal end', async () => {
+    const card = { design: 'JOKER', value: 1, deck: 'unsun', glyph: '杯', label: '1', color: 'red' } as const;
+    mockExec.mockResolvedValue(
+      makeUnsunKarutaState({
+        phase: 2,
+        isHumanTurn: false,
+        playableIndices: [],
+        teamTricks: [1, 1],
+        teamCapturedTricks: [[Array.from({ length: 8 }, () => card)], [Array.from({ length: 8 }, () => card)]],
+      }),
+    );
+    renderWithProviders(<UnsunKarutaPage />);
+    const breakdown = await screen.findByTestId('unsunkaruta-captured-cards');
+    expect(breakdown).toHaveTextContent('組0の獲得札');
+    expect(breakdown).toHaveTextContent('組1の獲得札');
+    expect(breakdown).toHaveTextContent('トリック1: 1個');
+    expect(breakdown.querySelectorAll('[role="img"]')).toHaveLength(16);
+    expect(breakdown.querySelectorAll('section')).toHaveLength(2);
+  });
+
   it('names the winning team at the end of the match', async () => {
     mockExec.mockResolvedValue(
       makeUnsunKarutaState({ phase: 3, gameEndFlag: true, winnerTeam: 0, isHumanTurn: false, playableIndices: [] }),

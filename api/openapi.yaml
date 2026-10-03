@@ -8426,7 +8426,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/RamsResponse'
+                  - $ref: '#/components/schemas/JulepeResponse'
                   - $ref: '#/components/schemas/ActionLogResponse'
                 description: |
                   The shape depends on the command. Ordinary commands return the game
@@ -8436,7 +8436,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RamsResponse'
+                $ref: '#/components/schemas/JulepeResponse'
   /schafkopf/exec:
     post:
       tags:
@@ -46545,6 +46545,11 @@ components:
           type: integer
         discardTop:
           $ref: '#/components/schemas/Card'
+        discardPile:
+          type: array
+          description: Discard pile ordered from oldest to newest.
+          items:
+            $ref: '#/components/schemas/Card'
         drawPileCount:
           type: integer
         gameEndFlag:
@@ -47852,6 +47857,9 @@ components:
         currentTrickThirds:
           type: integer
           description: Card points in the current trick, in thirds of a point
+        lastTrickThirds:
+          type: integer
+          description: Card points won in the last resolved trick, in thirds of a point
         leadPlayerIdx:
           type: integer
         teamScores:
@@ -63198,6 +63206,20 @@ components:
           type: object
           additionalProperties:
             type: string
+    JulepeResponse:
+      allOf:
+        - $ref: '#/components/schemas/RamsResponse'
+        - type: object
+          description: Response payload for /julepe/exec
+          properties:
+            lastTrick:
+              type: array
+              description: Cards in the most recently completed trick; empty before the first trick.
+              items:
+                $ref: '#/components/schemas/RamsTrickCard'
+            lastTrickWinner:
+              type: integer
+              description: Seat that won the most recently completed trick, or -1 before the first trick.
     ReversisTrickCard:
       type: object
       description: A card played in the current trick
@@ -67633,7 +67655,13 @@ components:
           description: Hand indices the human may legally play (must-follow filtered)
         roundPickerPoints:
           type: integer
-          description: Card points taken by the declaring side this round
+          description: Running points during play; while the partner is hidden, this includes only the picker. After the round, this is the final declaring-side total.
+        roundPickerPointsTeamTotal:
+          type: boolean
+          description: Whether roundPickerPoints includes the partner's points (always true after the round).
+        pickerTargetPoints:
+          type: integer
+          description: Card points the declaring side needs to win the round
         roundMultiplier:
           type: integer
           description: "Chip stake multiplier for this round: 1=normal, 2=Schneider, 3=Schwarz"
@@ -78119,6 +78147,11 @@ components:
           type: integer
         discardTop:
           $ref: '#/components/schemas/Card'
+        discardPile:
+          type: array
+          description: Discard pile ordered from oldest to newest.
+          items:
+            $ref: '#/components/schemas/Card'
         drawPileCount:
           type: integer
         wildRank:
@@ -82083,6 +82116,15 @@ components:
           type: array
           items:
             type: integer
+        teamCapturedTricks:
+          type: array
+          description: Captured cards grouped by team and trick; each trick scores one ko.
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Card'
         lastTrickWinner:
           type: integer
         result:

@@ -67,6 +67,8 @@ type SchafkopfGame interface {
 	GetPassCount() int
 	// GetRoundPickerPoints 直近ラウンドのピッカー組得点を取得する
 	GetRoundPickerPoints() int
+	// IsRoundPickerPointsTeamTotal reports whether round picker points include the partner's points.
+	IsRoundPickerPointsTeamTotal() bool
 	// GetRoundMultiplier 直近ラウンドの倍率を取得する
 	GetRoundMultiplier() int
 	// GetRoundPickerWon 直近ラウンドでピッカー組が勝ったかを取得する

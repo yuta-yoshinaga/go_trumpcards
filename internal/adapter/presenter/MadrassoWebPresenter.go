@@ -54,7 +54,7 @@ func (p *MadrassoWebPresenter) buildBase(g interfaces.MadrassoGame) *controller.
 		TargetPoints:  cfg.TargetPoints,
 	}
 
-	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = madrassoTrickCardsToOutput(g.GetCurrentTrick())
 	resObj.LastTrick, resObj.LastTrickWinner = p.buildLastTrickOutput(g)
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
@@ -100,7 +100,7 @@ func (p *MadrassoWebPresenter) buildLastTrickOutput(g interfaces.MadrassoGame) (
 	for _, e := range plays {
 		out = append(out, &controller.WebOutputTrickCard{
 			PlayerIdx: e.PlayerIdx,
-			Card:      cardToOutput(e.Cards[0]),
+			Card:      madrassoCardToOutput(e.Cards[0]),
 		})
 	}
 	return out, log[winIdx].PlayerIdx
@@ -130,10 +130,38 @@ func (p *MadrassoWebPresenter) buildPlayersOutput(g interfaces.MadrassoGame) []*
 			ID:         i,
 			IsHuman:    player.GetIsHuman(),
 			CardCount:  player.GetCardsSize(),
-			Cards:      playerCardsToOutput(player, player.GetIsHuman()),
+			Cards:      madrassoPlayerCardsToOutput(player, player.GetIsHuman()),
 			TrickCount: player.GetTrickCount(),
 			TeamID:     domain.MadrassoTeamOf(i),
 		})
+	}
+	return out
+}
+
+func madrassoCardToOutput(card *domain.Card) *controller.WebOutputCard {
+	out := cardToOutput(card)
+	if out != nil {
+		points := domain.MadrassoCardPoints(card.GetValue())
+		out.Points = &points
+	}
+	return out
+}
+
+func madrassoPlayerCardsToOutput(holder cardHolder, shouldShow bool) []*controller.WebOutputCard {
+	if !shouldShow {
+		return make([]*controller.WebOutputCard, 0)
+	}
+	out := make([]*controller.WebOutputCard, 0, holder.GetCardsSize())
+	for i := 0; i < holder.GetCardsSize(); i++ {
+		out = append(out, madrassoCardToOutput(holder.GetCard(i)))
+	}
+	return out
+}
+
+func madrassoTrickCardsToOutput(trick []*domain.TrickCard) []*controller.WebOutputTrickCard {
+	out := make([]*controller.WebOutputTrickCard, 0, len(trick))
+	for _, card := range trick {
+		out = append(out, &controller.WebOutputTrickCard{PlayerIdx: card.PlayerIdx, Card: madrassoCardToOutput(card.Card)})
 	}
 	return out
 }
@@ -210,5 +238,17 @@ func (p *MadrassoWebPresenter) HintOutput(g interfaces.MadrassoGame) string {
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *MadrassoWebPresenter) ActionLogOutput(g interfaces.MadrassoGame) string {
-	return actionLogOutputJSON(g)
+	entries := g.GetActionLog()
+	out := &controller.ActionLogWebOutput{Entries: make([]*controller.ActionLogWebEntry, len(entries))}
+	for i, entry := range entries {
+		cards := make([]*controller.WebOutputCard, len(entry.Cards))
+		for j, card := range entry.Cards {
+			cards[j] = madrassoCardToOutput(card)
+		}
+		out.Entries[i] = &controller.ActionLogWebEntry{
+			TurnNumber: entry.TurnNumber, PlayerIdx: entry.PlayerIdx, ActionType: entry.ActionType,
+			DetailCode: entry.DetailCode, DetailParams: entry.DetailParams, Cards: cards,
+		}
+	}
+	return marshalOrError(out)
 }

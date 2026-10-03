@@ -20,6 +20,8 @@
   "wildBadge": "WILD",
   "wildAria": "（ワイルド）",
   "discardTop": "捨て札",
+  "discardHistory": "捨て札の履歴（古い順）",
+  "discardLatest": "最新",
   "cards": "{{count}}枚",
   "cumulativeScore": "累計: {{score}}",
   "deadwoodShort": "デッドウッド {{score}}",

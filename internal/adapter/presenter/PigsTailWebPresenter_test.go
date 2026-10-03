@@ -32,15 +32,19 @@ func TestPigsTailWebPresenter_Output(t *testing.T) {
 	})
 	t.Run("center history is returned from game state", func(t *testing.T) {
 		pt := newTestPigsTailForPresenter()
-		pt.Reset()
-		for !pt.IsHumanTurn() {
-			_ = pt.CpuAction()
+		center := []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 3, false),
+			domain.NewCard(domain.CardDesignHeart, 7, false),
 		}
-		_ = pt.PlayerAction(0)
+		pt.SetCenter(center)
+		pt.SetCenterHistory(center)
 		output := p.Output(pt, nil)
 		var result controller.PigsTailWebOutput
 		require.NoError(t, json.Unmarshal([]byte(output), &result))
-		assert.Equal(t, len(pt.GetCenterHistory()), len(result.CenterHistory))
+		assert.Equal(t, []*controller.WebOutputCard{
+			{Design: "SPADE", Value: 3},
+			{Design: "HEART", Value: 7},
+		}, result.CenterHistory)
 		assert.NotEmpty(t, result.CenterHistory)
 	})
 	t.Run("legacy state outputs empty center history array", func(t *testing.T) {

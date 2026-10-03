@@ -239,6 +239,40 @@ func joinKeys(m map[string]bool) string {
 	return strings.Join(out, "|")
 }
 
+// TestOpenAPISeparatesJulepeAndRamsTrickFields keeps Julepe-only history out of Rams.
+func TestOpenAPISeparatesJulepeAndRamsTrickFields(t *testing.T) {
+	root := filepath.Join("..", "..", "..")
+	raw, err := os.ReadFile(filepath.Join(root, "api", "openapi.yaml")) //nolint:gosec // test-only, fixed path
+	if err != nil {
+		t.Fatalf("openapi.yaml が読めない: %v", err)
+	}
+	var spec liveSpec
+	if err := yaml.Unmarshal(raw, &spec); err != nil {
+		t.Fatalf("openapi.yaml が YAML として壊れている: %v", err)
+	}
+
+	julepe := spec.Paths["/julepe/exec"].Post.Responses.OK.Content.JSON.Schema
+	if len(julepe.OneOf) == 0 || julepe.OneOf[0].Ref != openAPIRefPrefix+"JulepeResponse" {
+		t.Fatalf("Julepe 200 response must use JulepeResponse, got %#v", julepe)
+	}
+	if spec.Paths["/julepe/exec"].Post.Responses.Bad.Content.JSON.Schema.Ref != openAPIRefPrefix+"JulepeResponse" {
+		t.Fatal("Julepe 400 response must use JulepeResponse")
+	}
+	julepeProps := spec.props(spec.Components.Schemas["JulepeResponse"])
+	for _, field := range []string{"lastTrick", "lastTrickWinner"} {
+		if julepeProps[field] == nil {
+			t.Errorf("JulepeResponse does not declare %s", field)
+		}
+		if spec.Components.Schemas["RamsResponse"].Properties[field] != nil {
+			t.Errorf("RamsResponse must not declare %s", field)
+		}
+	}
+	rams := spec.Paths["/rams/exec"].Post.Responses.OK.Content.JSON.Schema
+	if len(rams.OneOf) == 0 || rams.OneOf[0].Ref != openAPIRefPrefix+"RamsResponse" {
+		t.Fatalf("Rams 200 response must use RamsResponse, got %#v", rams)
+	}
+}
+
 // probe は 1 コマンドを叩いて応答と状態コードを返す。
 //
 // **状態コードを返すこと。** 呼び出し側はこれで 200 と 400 を振り分け、

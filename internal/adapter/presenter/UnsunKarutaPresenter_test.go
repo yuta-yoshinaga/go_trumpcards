@@ -230,9 +230,12 @@ func TestUnsunKarutaCuiPresenter_HintOutput(t *testing.T) {
 }
 
 func TestUnsunKarutaWebPresenter_Output(t *testing.T) {
+	oldLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(oldLang) })
 	i18n.SetLang("ja")
 	p := new(presenter.UnsunKarutaWebPresenter)
 	g := unsunKarutaGame()
+	g.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(domain.UnsunKarutaSuitPao, 9, false)})
 	unsunKarutaAdvanceToHuman(g)
 
 	var res map[string]any
@@ -243,6 +246,11 @@ func TestUnsunKarutaWebPresenter_Output(t *testing.T) {
 	assert.Len(t, res["players"], domain.UnsunKarutaPlayerCnt)
 	assert.Len(t, res["teamTricks"], domain.UnsunKarutaTeamCnt)
 	assert.Len(t, res["teamScores"], domain.UnsunKarutaTeamCnt)
+	teamTricks, ok := res["teamCapturedTricks"].([]any)
+	require.True(t, ok)
+	require.Len(t, teamTricks, domain.UnsunKarutaTeamCnt)
+	assert.Len(t, teamTricks[0], 1)
+	assert.Empty(t, teamTricks[1])
 	// **切り札のスート名は文字列で運ぶ。** 番号だけだと i18n が引けない。
 	assert.NotEmpty(t, res["trumpSuitName"])
 
