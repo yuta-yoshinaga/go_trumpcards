@@ -20,8 +20,8 @@ const mockExec = vi.mocked(paigowApi.exec);
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
 /** The 7 SET_HANDS fixture card buttons, in deal order, located by their cardAlt names. */
-const getCardButtons = () =>
-  setHandsPhaseState.playerCards.map((c) => screen.getByRole('button', { name: cardAlt(c) }));
+const getCardButtons = (cards: Card[] = setHandsPhaseState.playerCards) =>
+  cards.map((c) => screen.getByRole('button', { name: cardAlt(c) }));
 
 const betPhaseState: PaiGowResponse = {
   playerCards: [],
@@ -48,6 +48,7 @@ const betPhaseState: PaiGowResponse = {
 const setHandsPhaseState: PaiGowResponse = {
   ...betPhaseState,
   phase: 2,
+  hint: { lowIdx0: 0, lowIdx1: 1, lowIsPair: false, reason: 'house_way' },
   playerCards: [
     card('SPADE', 10),
     card('HEART', 11),
@@ -230,7 +231,7 @@ describe('PaiGowPage', () => {
     expect(cardButtons[1]).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('disables the auto-set button when a joker is present', async () => {
+  it('enables the auto-set button for a joker hand when the server supplies a split', async () => {
     mockExec.mockResolvedValue({
       ...setHandsPhaseState,
       playerCards: [
@@ -242,10 +243,40 @@ describe('PaiGowPage', () => {
         card('SPADE', 5),
         card('HEART', 7),
       ],
+      hint: { lowIdx0: 2, lowIdx1: 4, lowIsPair: false, reason: 'house_way' },
     });
     renderWithProviders(<PaiGowPage />);
     await waitFor(() => expect(screen.getByTestId('auto-set-button')).toBeInTheDocument());
+    expect(screen.getByTestId('auto-set-button')).toBeEnabled();
+    fireEvent.click(screen.getByTestId('auto-set-button'));
+    const cardButtons = getCardButtons([
+      card('JOKER', 0),
+      card('HEART', 13),
+      card('SPADE', 2),
+      card('DIAMOND', 3),
+      card('CLOVER', 4),
+      card('SPADE', 5),
+      card('HEART', 7),
+    ]);
+    expect(cardButtons[2]).toHaveAttribute('aria-pressed', 'true');
+    expect(cardButtons[4]).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('disables auto-set when the server has no split hint', async () => {
+    mockExec.mockResolvedValue({ ...setHandsPhaseState, hint: null });
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByTestId('auto-set-button')).toBeInTheDocument());
     expect(screen.getByTestId('auto-set-button')).toBeDisabled();
+  });
+
+  it('uses the server split for the A keyboard shortcut', async () => {
+    mockExec.mockResolvedValue(setHandsPhaseState);
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByTestId('auto-set-button')).toBeInTheDocument());
+    fireEvent.keyDown(document, { key: 'a' });
+    const cardButtons = getCardButtons();
+    expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true');
+    expect(cardButtons[1]).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('blocks Set and shows a foul warning when the low hand outranks the high hand', async () => {

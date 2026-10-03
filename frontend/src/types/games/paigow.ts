@@ -5,6 +5,8 @@ import type { BaseGameResponse, Card } from '../common';
 
 /** Pai Gow Poker API response. */
 export interface PaiGowResponse extends BaseGameResponse {
+  /** Server-selected low-hand indices during the set-hands phase. */
+  hint?: { lowIdx0: number; lowIdx1: number; lowIsPair: boolean; reason: string } | null;
   playerCards: Card[];
   dealerCards: Card[];
   playerHighHand: Card[];

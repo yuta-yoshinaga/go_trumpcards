@@ -1,4 +1,12 @@
 import type { Card } from '../types/card';
+import type { PaiGowResponse } from '../types/games/paigow';
+import { PaiGowPhase } from '../types/phases';
+
+/** Return the server's house-way low-hand indices during the set-hands phase. */
+export function paiGowHouseWaySplit(state: PaiGowResponse | null | undefined): readonly [number, number] | null {
+  if (state?.phase !== PaiGowPhase.SET_HANDS || state.hint == null) return null;
+  return [state.hint.lowIdx0, state.hint.lowIdx1];
+}
 
 /** Numeric rank used for Pai Gow comparisons: Ace = 14, J/Q/K = 11/12/13, otherwise face value. */
 function paiGowValue(card: Card): number {
@@ -93,42 +101,4 @@ export function paiGowFoulCheck(playerCards: Card[], lowIndices: readonly number
   // Both are high card: compare top card, then second card.
   if (lowVals[0] !== highInfo.highVals[0]) return { isFoul: lowVals[0] > highInfo.highVals[0] };
   return { isFoul: lowVals[1] > highInfo.highVals[1] };
-}
-
-/** Lexicographically compare two descending value arrays: positive when `a` outranks `b`. */
-function compareDescValues(a: number[], b: number[]): number {
-  for (let i = 0; i < a.length && i < b.length; i++) {
-    if (a[i] !== b[i]) return a[i] - b[i];
-  }
-  return 0;
-}
-
-/**
- * Compute a "house way" style low-hand split: the pair of indices (into the 7-card
- * player hand) that forms the strongest legal 2-card low hand without fouling.
- *
- * It enumerates all C(7,2)=21 splits, keeps only the non-foul ones (via
- * {@link paiGowFoulCheck}), and picks the split that maximizes the low hand
- * (a pair beats a high card, then higher card values win) — the same primary
- * criterion the dealer's house-way algorithm uses.
- *
- * Returns `null` when the hand contains a joker (foul evaluation is unavailable, so
- * an auto-split cannot be guaranteed legal) or when the hand is not exactly 7 cards.
- */
-export function paiGowAutoSplit(playerCards: Card[]): [number, number] | null {
-  if (playerCards.length !== 7) return null;
-  if (playerCards.some(isJoker)) return null;
-
-  let best: { indices: [number, number]; rank: number; vals: number[] } | null = null;
-  for (let i = 0; i < 7; i++) {
-    for (let j = i + 1; j < 7; j++) {
-      if (paiGowFoulCheck(playerCards, [i, j]).isFoul) continue;
-      const vals = [paiGowValue(playerCards[i]), paiGowValue(playerCards[j])].sort((a, b) => b - a);
-      const rank = vals[0] === vals[1] ? 1 : 0; // a pair outranks a high card
-      if (best === null || rank > best.rank || (rank === best.rank && compareDescValues(vals, best.vals) > 0)) {
-        best = { indices: [i, j], rank, vals };
-      }
-    }
-  }
-  return best?.indices ?? null;
 }

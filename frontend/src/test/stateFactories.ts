@@ -61,6 +61,7 @@ import type {
   MusResponse,
   NapResponse,
   OmbreResponse,
+  PaiGowResponse,
   PiedmonteseTarotResponse,
   PigResponse,
   PigsTailResponse,
@@ -105,6 +106,33 @@ import type {
   WattenResponse,
   ZwanzigerrufenResponse,
 } from '../types/card';
+
+/** Creates a Pai Gow set-hands response with no server split hint by default. */
+export function makePaiGowState(overrides: Partial<PaiGowResponse> = {}): PaiGowResponse {
+  return {
+    playerCards: [],
+    dealerCards: [],
+    playerHighHand: [],
+    playerLowHand: [],
+    dealerHighHand: [],
+    dealerLowHand: [],
+    phase: 1,
+    chips: 1000,
+    bet: 0,
+    result: 0,
+    highHandResult: 0,
+    lowHandResult: 0,
+    payout: 0,
+    commission: 0,
+    playerHighRank: 0,
+    playerLowRank: 0,
+    dealerHighRank: 0,
+    dealerLowRank: 0,
+    hint: null,
+    message: '',
+    ...overrides,
+  };
+}
 
 /** Creates a default Pinochle state with an unresolved contract result. */
 export function makePinochleState(overrides: Partial<PinochleResponse> = {}): PinochleResponse {
