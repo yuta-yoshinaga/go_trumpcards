@@ -31,6 +31,27 @@ func TestTablanetWebPresenter_Output(t *testing.T) {
 	assert.Contains(t, decoded, "captureOptions")
 }
 
+func TestTablanetWebPresenter_IncludesCapturedCards(t *testing.T) {
+	g := domain.NewDefaultTablanet()
+	g.Reset()
+	g.GetPlayer(0).AddCaptured([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 1, false)})
+
+	var decoded struct {
+		Players []struct {
+			CapturedCount int `json:"capturedCount"`
+			CapturedCards []struct {
+				Design string `json:"design"`
+				Value  int    `json:"value"`
+			} `json:"capturedCards"`
+		} `json:"players"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.TablanetWebPresenter).Output(g, nil)), &decoded))
+	require.Len(t, decoded.Players[0].CapturedCards, 1)
+	assert.Equal(t, decoded.Players[0].CapturedCount, len(decoded.Players[0].CapturedCards))
+	assert.Equal(t, "HEART", decoded.Players[0].CapturedCards[0].Design)
+	assert.Equal(t, 1, decoded.Players[0].CapturedCards[0].Value)
+}
+
 func TestTablanetWebPresenter_Error(t *testing.T) {
 	g := domain.NewDefaultTablanet()
 	g.Reset()

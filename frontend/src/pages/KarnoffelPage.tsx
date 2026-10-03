@@ -249,9 +249,35 @@ function KarnoffelPageContent() {
             {state.trick.length > 0 && (
               <div className="mb-2 flex items-center gap-2" data-testid="karnoffel-trick">
                 <span className="text-ds-text-muted text-sm">{t('trick')}</span>
-                {state.trick.map((c, i) => (
-                  <CardImage key={`trick-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />
-                ))}
+                {state.trick.map((c, i) => {
+                  const seatIdx = (state.trickLeaderIdx + i) % state.players.length;
+                  const isHuman = state.players.some((p) => p.id === seatIdx && p.isHuman);
+                  const name = t('seatPlayer', { idx: seatIdx, name: playerLabel(seatIdx, isHuman) });
+                  const baseRankKey = karnoffelRankKey(c, state.chosenSuit);
+                  const rankKey = baseRankKey === 'devil' ? (i === 0 ? 'devilLead' : 'devilFollow') : baseRankKey;
+                  const accessibleName = rankKey
+                    ? `${name}${t('listSeparator')}${cardAlt(c)}${t('listSeparator')}${t(`rankBadge.${rankKey}`)}`
+                    : `${name}${t('listSeparator')}${cardAlt(c)}`;
+                  return (
+                    <div key={`trick-${c.design}-${c.value}-${i}`} className="flex flex-col items-center">
+                      <span className="mb-1 text-ds-text-muted text-xs" aria-hidden="true">
+                        {name}
+                      </span>
+                      <span className="relative inline-block">
+                        <CardImage card={c} width={cardWidth} ariaLabel={accessibleName} />
+                        {rankKey && (
+                          <span
+                            aria-hidden="true"
+                            data-testid={`karnoffel-trick-rank-${i}`}
+                            className={`absolute left-0 right-0 bottom-0 rounded-b px-0.5 text-[9px] font-bold text-center truncate ${badgeWarningColors}`}
+                          >
+                            {t(`rankBadge.${rankKey}`)}
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             )}
 

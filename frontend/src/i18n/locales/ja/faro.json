@@ -21,6 +21,8 @@
   "losing": "負け札（バンク回収）",
   "winning": "勝ち札（1:1配当）",
   "split": "スプリット（バンクが半分回収）",
+  "noSplit": "スプリットなし",
+  "dealResultAnnouncement": "負け札 {{losing}}、勝ち札 {{winning}}、{{split}}",
   "callTitle": "コール（最後の3枚の順序を予想・4:1）",
   "callHint": "残り3ランクの並ぶ順序を選んでください。",
   "callButton": "コールする",

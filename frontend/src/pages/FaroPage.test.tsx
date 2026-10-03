@@ -51,12 +51,18 @@ const splitState = makeState({
   losingCard: card('SPADE', 5),
   winningCard: card('HEART', 5),
   split: true,
+  turnsPlayed: 1,
 });
 const callState = makeState({
   phase: 3,
   callCards: [card('SPADE', 3), card('HEART', 9), card('DIAMOND', 12)],
 });
-const roundEndWinState = makeState({ phase: 4, totalPayout: 200, chips: 1200 });
+const roundEndWinState = makeState({
+  phase: 4,
+  totalPayout: 200,
+  chips: 1200,
+  callWon: true,
+});
 const gameEndState = makeState({ phase: 5, gameEndFlag: true, chips: 0 });
 
 beforeEach(() => {
@@ -195,6 +201,27 @@ describe('FaroPage', () => {
     await waitFor(() => expect(screen.getByText('スプリット（バンクが半分回収）')).toBeInTheDocument());
   });
 
+  it('announces a newly dealt result with both cards and whether they split', async () => {
+    renderWithProviders(<FaroPage />);
+    await screen.findByTestId('deal-button');
+    expect(screen.getByTestId('faro-deal-result-live')).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValueOnce(turnState);
+    fireEvent.click(screen.getByTestId('deal-button'));
+    expect(await screen.findByTestId('faro-deal-result-live')).toHaveTextContent(
+      '負け札 ♠ 3、勝ち札 ♥ 7、スプリットなし',
+    );
+  });
+
+  it('announces when the dealt cards split', async () => {
+    mockExec.mockResolvedValue(bettingState);
+    renderWithProviders(<FaroPage />);
+    const dealButton = await screen.findByTestId('deal-button');
+    mockExec.mockResolvedValue(splitState);
+    fireEvent.click(dealButton);
+    expect(await screen.findByTestId('faro-deal-result-live')).toHaveTextContent('負け札 ♠ 5、勝ち札 ♥ 5、スプリット');
+  });
+
   it('submits a call once all three ranks are ordered by tapping the card images', async () => {
     mockExec.mockResolvedValue(callState);
     renderWithProviders(<FaroPage />);
@@ -253,10 +280,18 @@ describe('FaroPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', { order: [] }));
   });
 
+  it('shows a negative round net in the header when the round ends in a loss', async () => {
+    mockExec.mockResolvedValue({ ...roundEndWinState, totalPayout: -100, callWon: false });
+    renderWithProviders(<FaroPage />);
+    await screen.findByTestId('next-button');
+    expect(document.querySelector('[data-tutorial="faro-info"]')).toHaveTextContent('今回の収支: -100');
+  });
+
   it('shows a next button at round end and dispatches next', async () => {
     mockExec.mockResolvedValue(roundEndWinState);
     renderWithProviders(<FaroPage />);
     const nextBtn = await screen.findByTestId('next-button');
+    expect(document.querySelector('[data-tutorial="faro-info"]')).toHaveTextContent('今回の収支: +200');
     mockExec.mockClear();
     fireEvent.click(nextBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));

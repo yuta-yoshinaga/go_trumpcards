@@ -20,13 +20,13 @@ func TestGaigel_DeckAndPoints(t *testing.T) {
 	assert.Equal(t, 48, deck.GetTotalCount())
 
 	// Card points.
-	assert.Equal(t, 11, domain.GaigelCardPoints(domain.NewCard(domain.CardDesignSpade, 1, false)))
-	assert.Equal(t, 10, domain.GaigelCardPoints(domain.NewCard(domain.CardDesignSpade, 10, false)))
-	assert.Equal(t, 4, domain.GaigelCardPoints(domain.NewCard(domain.CardDesignSpade, 13, false)))
-	assert.Equal(t, 3, domain.GaigelCardPoints(domain.NewCard(domain.CardDesignSpade, 12, false)))
-	assert.Equal(t, 2, domain.GaigelCardPoints(domain.NewCard(domain.CardDesignSpade, 11, false)))
-	assert.Equal(t, 0, domain.GaigelCardPoints(domain.NewCard(domain.CardDesignSpade, 7, false)))
-	assert.Equal(t, 0, domain.GaigelCardPoints(nil))
+	assert.Equal(t, 11, domain.AceTenCardPoints(domain.NewCard(domain.CardDesignSpade, 1, false)))
+	assert.Equal(t, 10, domain.AceTenCardPoints(domain.NewCard(domain.CardDesignSpade, 10, false)))
+	assert.Equal(t, 4, domain.AceTenCardPoints(domain.NewCard(domain.CardDesignSpade, 13, false)))
+	assert.Equal(t, 3, domain.AceTenCardPoints(domain.NewCard(domain.CardDesignSpade, 12, false)))
+	assert.Equal(t, 2, domain.AceTenCardPoints(domain.NewCard(domain.CardDesignSpade, 11, false)))
+	assert.Equal(t, 0, domain.AceTenCardPoints(domain.NewCard(domain.CardDesignSpade, 7, false)))
+	assert.Equal(t, 0, domain.AceTenCardPoints(nil))
 
 	// Total = 240.
 	total := (11 + 10 + 4 + 3 + 2 + 0) * 4 * 2

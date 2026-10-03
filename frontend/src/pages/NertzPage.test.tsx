@@ -125,7 +125,7 @@ describe('NertzPage', () => {
       </MemoryRouter>,
     );
     await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '35' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ストックを引く、残り35枚' })).toBeInTheDocument();
   });
 
   it('renders each CPU tableau and visible waste card', async () => {
@@ -262,10 +262,10 @@ describe('NertzPage', () => {
         <NertzPage />
       </MemoryRouter>,
     );
-    await waitFor(() => expect(screen.getByRole('button', { name: '35' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ストックを引く、残り35枚' })).toBeInTheDocument());
     mockExec.mockClear();
     mockExec.mockResolvedValue(playingState);
-    fireEvent.click(screen.getByRole('button', { name: '35' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ストックを引く、残り35枚' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('d', { playerIdx: 0 }));
   });
 
@@ -364,6 +364,39 @@ describe('NertzPage', () => {
       expect(announce).toHaveAttribute('aria-live', 'polite');
       expect(announce.textContent).toMatch(/組札3/);
     });
+  });
+
+  it('announces CPU score increases and decreases with signed deltas, but not initial scores', async () => {
+    const initial = {
+      ...playingState,
+      players: playingState.players.map((p, i) => ({ ...p, score: i === 0 ? 0 : 8 })),
+    };
+    const increased = {
+      ...initial,
+      players: initial.players.map((p, i) => ({ ...p, score: i === 0 ? 0 : 12 })),
+      foundations: initial.foundations.map((f, i) => (i === 2 ? { ...f, suit: 3, size: 1 } : f)),
+    };
+    const decreased = {
+      ...increased,
+      players: increased.players.map((p, i) => ({ ...p, score: i === 0 ? 0 : 10 })),
+    };
+    vi.useFakeTimers();
+    try {
+      mockExec.mockResolvedValueOnce(initial).mockResolvedValueOnce(increased).mockResolvedValueOnce(decreased);
+      renderWithProviders(
+        <MemoryRouter initialEntries={['/nertz']}>
+          <NertzPage />
+        </MemoryRouter>,
+      );
+      await act(async () => vi.advanceTimersByTimeAsync(0));
+      expect(screen.getByTestId('nertz-announce')).toBeEmptyDOMElement();
+      await act(async () => vi.advanceTimersByTimeAsync(700));
+      expect(screen.getByTestId('nertz-announce').textContent).toMatch(/CPU1.*\+4.*12.*組札3/);
+      await act(async () => vi.advanceTimersByTimeAsync(700));
+      expect(screen.getByTestId('nertz-announce').textContent).toMatch(/CPU1.*-2.*10/);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("announces the human's own foundation placement", async () => {
@@ -470,15 +503,20 @@ describe('NertzPage', () => {
   });
 
   it('starts CPU tick polling while round is active', async () => {
-    renderWithProviders(
-      <MemoryRouter initialEntries={['/nertz']}>
-        <NertzPage />
-      </MemoryRouter>,
-    );
-    await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(playingState);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('tick'), { timeout: 2000 });
+    vi.useFakeTimers();
+    try {
+      renderWithProviders(
+        <MemoryRouter initialEntries={['/nertz']}>
+          <NertzPage />
+        </MemoryRouter>,
+      );
+      await act(async () => vi.advanceTimersByTimeAsync(0));
+      mockExec.mockClear();
+      await act(async () => vi.advanceTimersByTimeAsync(700));
+      expect(mockExec).toHaveBeenCalledWith('tick');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('pressing "d" draws stock for the human', async () => {

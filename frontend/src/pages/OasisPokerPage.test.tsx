@@ -204,22 +204,22 @@ describe('OasisPokerPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'ステイ' }));
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('stand'));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
   });
 
   it('action phase shows call/fold buttons', async () => {
     mockApi.mockResolvedValue(actionPhaseState);
     renderWithProviders(<OasisPokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
   });
 
   it('end phase player wins shows payout breakdown', async () => {
     mockApi.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhasePlayerWins);
     renderWithProviders(<OasisPokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(screen.getByText('勝利！')).toBeInTheDocument());
     expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument();
   });
@@ -266,6 +266,34 @@ describe('OasisPokerPage', () => {
     expect(mockApi).not.toHaveBeenCalledWith('bet', 1000, 500);
   });
 
+  it('sets each bet to its minimum or remaining-chip maximum', async () => {
+    mockApi.mockResolvedValue({ ...betPhaseState, chips: 1000 });
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+
+    const anteInput = screen.getByLabelText('アンテ');
+    const jackpotInput = screen.getByLabelText('ジャックポット');
+    const anteMin = screen.getByRole('button', { name: 'アンテ 最小額' });
+    const anteMax = screen.getByRole('button', { name: 'アンテ 最大額' });
+    const jackpotMin = screen.getByRole('button', { name: 'ジャックポット 最小額' });
+    const jackpotMax = screen.getByRole('button', { name: 'ジャックポット 最大額' });
+
+    fireEvent.click(anteMax);
+    expect(anteInput).toHaveValue('1000');
+    expect(jackpotInput).toHaveAttribute('max', '0');
+    fireEvent.click(jackpotMax);
+    expect(jackpotInput).toHaveValue('0');
+
+    fireEvent.click(anteMin);
+    expect(anteInput).toHaveValue('10');
+    expect(jackpotInput).toHaveAttribute('max', '990');
+    fireEvent.click(jackpotMax);
+    expect(jackpotInput).toHaveValue('990');
+
+    fireEvent.click(jackpotMin);
+    expect(jackpotInput).toHaveValue('0');
+  });
+
   // **CUI は交換すべき札をインデックスで列挙しているのに、Web は「交換すべき」
   // としか言っていなかった (#4711)。**5枚を個別にクリックする UI があるのに、
   // どれを選ぶかの案内が無い。
@@ -291,7 +319,7 @@ describe('OasisPokerPage', () => {
     const strongAction: OasisPokerResponse = { ...actionPhaseState, playerHandRank: 1 };
     mockApi.mockResolvedValue(strongAction);
     renderWithProviders(<OasisPokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
     // No hint until the toggle is enabled.
     expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
@@ -400,6 +428,58 @@ describe('OasisPokerPage keyboard shortcuts', () => {
     renderWithProviders(<OasisPokerPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('oasis-exchange-fee-line')).not.toBeInTheDocument();
+  });
+
+  it('politely announces the updated exchange count and fee only after card selection changes', async () => {
+    mockApi.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    const announcement = await screen.findByTestId('oasis-exchange-fee-announcement');
+
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toBeEmptyDOMElement();
+
+    const card0 = screen.getByTestId('player-card-0');
+    fireEvent.click(card0);
+    expect(announcement).toHaveTextContent('選択中: 1枚');
+    expect(announcement).toHaveTextContent('手数料: 1枚あたりアンテ × 100 = 100');
+
+    fireEvent.click(card0);
+    expect(announcement).toHaveTextContent('選択中: 0枚');
+    expect(announcement).toHaveTextContent('手数料: 1枚あたりアンテ × 100 = 0');
+  });
+
+  it('clears the selection announcement when the phase changes and starts the next exchange empty', async () => {
+    mockApi
+      .mockResolvedValueOnce(exchangePhaseState)
+      .mockResolvedValueOnce(actionPhaseState)
+      .mockResolvedValueOnce(endPhasePlayerWins)
+      .mockResolvedValueOnce(betPhaseState)
+      .mockResolvedValueOnce(exchangePhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    const announcement = await screen.findByTestId('oasis-exchange-fee-announcement');
+    fireEvent.click(screen.getByTestId('player-card-0'));
+    expect(announcement).toHaveTextContent('選択中: 1枚');
+
+    fireEvent.keyDown(document, { key: 's' });
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
+    expect(announcement).toBeEmptyDOMElement();
+
+    fireEvent.keyDown(document, { key: 'p' });
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    fireEvent.keyDown(document, { key: 'r' });
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    fireEvent.keyDown(document, { key: 'b' });
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ステイ' })).toBeInTheDocument());
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
+  it('keeps the exchange fee announcement empty outside the exchange phase', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    const announcement = await screen.findByTestId('oasis-exchange-fee-announcement');
+
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toBeEmptyDOMElement();
   });
 
   // #5595: 配当率も交換手数料も書いてあるのに、**アンティがプッシュになる理由**

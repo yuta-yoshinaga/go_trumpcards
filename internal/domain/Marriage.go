@@ -747,26 +747,6 @@ func marriageCollectCards(p *MarriagePlayer) []*Card {
 
 // --- Wild / points ---
 
-// MarriageIsTiplu reports whether card is the tiplu.
-func MarriageIsTiplu(card, tiplu *Card) bool {
-	return MarriageMaalOf(card, tiplu) == MarriageMaalTiplu
-}
-
-// MarriageIsPoplu は tiplu の次ランク（K の次は A）かを返す。
-func MarriageIsPoplu(card, tiplu *Card) bool {
-	return MarriageMaalOf(card, tiplu) == MarriageMaalPoplu
-}
-
-// MarriageIsJhiplu は tiplu の前ランク（A の前は K）かを返す。
-func MarriageIsJhiplu(card, tiplu *Card) bool {
-	return MarriageMaalOf(card, tiplu) == MarriageMaalJhiplu
-}
-
-// MarriageIsAlter は tiplu と同じランクで別スートのカードかを返す。
-func MarriageIsAlter(card, tiplu *Card) bool {
-	return MarriageMaalOf(card, tiplu) == MarriageMaalAlter
-}
-
 // MarriageMaalOf is the sole maal classifier. Maal names are distinct from
 // the wild set: wildness uses rank only, while maal also uses suit.
 func MarriageMaalOf(card, tiplu *Card) MarriageMaalKind {
@@ -851,11 +831,6 @@ func marriageCardPoints(card *Card, wildRank int) int {
 		return 10
 	}
 	return v
-}
-
-// MarriageCardPoints はデッドウッド計算に使うカード点を返す（外部公開用）。
-func MarriageCardPoints(card *Card, wildRank int) int {
-	return marriageCardPoints(card, wildRank)
 }
 
 func marriageCardTypeKey(c *Card, wildRank int) string {

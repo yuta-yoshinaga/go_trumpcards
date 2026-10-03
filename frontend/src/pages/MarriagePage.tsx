@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { marriageApi } from '../api/games/marriage';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
@@ -103,6 +103,7 @@ const MARRIAGE_TUTORIAL_STEPS: TutorialStep[] = [
 export const MarriagePage = withTutorial(MarriagePageContent, 'marriage', MARRIAGE_TUTORIAL_STEPS);
 /** Inner content of the Marriage page, wrapped by TutorialProvider. */
 function MarriagePageContent() {
+  const [showDiscardHistory, setShowDiscardHistory] = useState(false);
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('marriage');
   const {
@@ -202,6 +203,23 @@ function MarriagePageContent() {
     );
 
   const humanPlayer = state.players.find((p) => p.isHuman);
+  const previewHandCards = humanPlayer?.cards.filter((_, index) => index !== selectedCardIndices[0]) ?? [];
+  const handMeldLabels = new Map<number, { label: string; number: number }>();
+  if (declarePreview && selectedCardIndices.length === 1) {
+    // declarePreview is evaluated on the hand without the selected finish card;
+    // meld.cardIndices index that reduced hand, so map them back to hand indices.
+    const finishIndex = selectedCardIndices[0];
+    const remainingHandIndices =
+      humanPlayer?.cards.map((_, index) => index).filter((index) => index !== finishIndex) ?? [];
+    declarePreview.melds.forEach((meld, meldIndex) => {
+      const label = t(meld.pureSequence ? 'declarePreview.pureSequenceMeld' : 'declarePreview.meld', {
+        meld: meldIndex + 1,
+      });
+      meld.cardIndices.forEach((index) => {
+        handMeldLabels.set(remainingHandIndices[index], { label, number: meldIndex + 1 });
+      });
+    });
+  }
   const isDrawPhase = state.phase === MarriagePhase.DRAW;
   const isDiscardPhase = state.phase === MarriagePhase.DISCARD;
   const isRoundEnd = state.phase === MarriagePhase.ROUND_END;
@@ -309,6 +327,34 @@ function MarriagePageContent() {
                     </div>
                   </div>
                 )}
+                {isDrawPhase && isHumanTurn && (
+                  <div className="my-2">
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      aria-expanded={showDiscardHistory}
+                      onClick={() => setShowDiscardHistory((shown) => !shown)}
+                    >
+                      {t(showDiscardHistory ? 'discardHistory.hide' : 'discardHistory.show')}
+                    </button>
+                    {showDiscardHistory && (
+                      <div className="mt-2 p-3 rounded bg-ds-surface" data-testid="marriage-discard-history">
+                        <div className="text-ds-text-muted text-sm mb-2">{t('discardHistory.title')}</div>
+                        <div className="flex flex-wrap gap-2">
+                          {state.discardPile.map((card, idx) => {
+                            const isTop = idx === state.discardPile.length - 1;
+                            return (
+                              <div key={`discard-${card.design}-${card.value}-${idx}`} className="text-center">
+                                <AnimatedCard card={card} width={cardWidth * 0.8} />
+                                {isTop && <div className="text-xs text-ds-accent">{t('discardHistory.top')}</div>}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Right: info sidebar */}
@@ -414,7 +460,7 @@ function MarriagePageContent() {
                     type="button"
                     key={`${card.design}-${card.value}-${idx}`}
                     onClick={() => toggleCard(idx)}
-                    aria-label={`${cardAlt(card)}${isWildCard(card) ? ` ${t('wildAria')}` : ''}`}
+                    aria-label={`${cardAlt(card)}${isWildCard(card) ? ` ${t('wildAria')}` : ''}${handMeldLabels.has(idx) ? ` ${t('declarePreview.cardBelongsTo', { meld: handMeldLabels.get(idx)?.label })}` : ''}`}
                     aria-pressed={selectedCardIndices.includes(idx)}
                     className={`relative transition-transform ${focusRingCard} ${
                       isWildCard(card) ? 'ring-2 ring-ds-info' : ''
@@ -429,6 +475,14 @@ function MarriagePageContent() {
                   >
                     <AnimatedCard card={card} width={cardWidth} />
                     {wildBadge(card)}
+                    {handMeldLabels.has(idx) && (
+                      <span
+                        aria-hidden="true"
+                        className="absolute bottom-0.5 left-0.5 rounded bg-ds-accent px-1 text-[9px] font-bold text-ds-text-on-accent"
+                      >
+                        {handMeldLabels.get(idx)?.number}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -472,7 +526,25 @@ function MarriagePageContent() {
                 }`}
               >
                 {declarePreview.valid ? (
-                  <span data-testid="marriage-declare-preview-valid">{t('declarePreview.valid')}</span>
+                  <div data-testid="marriage-declare-preview-valid">
+                    <div>{t('declarePreview.valid')}</div>
+                    <ul className="mt-1 space-y-1">
+                      {declarePreview.melds.map((meld, index) => (
+                        <li key={index} data-testid="marriage-declare-meld">
+                          {t(meld.pureSequence ? 'declarePreview.pureSequenceMeld' : 'declarePreview.meld', {
+                            meld: index + 1,
+                          })}
+                          :{' '}
+                          {meld.cardIndices
+                            .map((cardIndex) => cardAlt(previewHandCards[cardIndex]))
+                            .join(t('listSeparator'))}
+                          {meld.cardIndices.some((cardIndex) =>
+                            marriageIsWild(previewHandCards[cardIndex], state.wildRank),
+                          ) && ` ${t('declarePreview.usesWild')}`}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 ) : (
                   <div data-testid="marriage-declare-preview-invalid">
                     <div className="font-semibold">{t('declarePreview.title')}</div>

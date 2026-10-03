@@ -21,6 +21,7 @@
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
   "currentTrick": "現在のトリック",
+  "trickWinner": "勝者",
   "trickEmpty": "(まだカードがありません)",
   "players": "プレイヤー",
   "you": "あなた",
@@ -54,7 +55,9 @@
   },
   "roundResult": {
     "title": "ラウンド結果",
-    "tricks": "{{name}} トリック: {{count}}"
+    "tricks": "{{name}} トリック: {{count}}",
+    "declarerContract": "宣言者契約",
+    "defendingContract": "防御側契約"
   },
   "progress": {
     "line": "宣言者の進捗: {{won}} / {{needed}} トリック",

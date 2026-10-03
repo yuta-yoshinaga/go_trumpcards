@@ -76,6 +76,7 @@ func (p *SevenTwentySevenWebPresenter) buildPlayersOutput(g interfaces.SevenTwen
 			ID:        i,
 			IsHuman:   player.GetIsHuman(),
 			Chips:     player.GetChips(),
+			NetChange: g.GetRoundNetChange(i),
 			Standing:  player.GetStanding(),
 			Out:       player.GetOut(),
 			RoundBet:  player.GetRoundBet(),

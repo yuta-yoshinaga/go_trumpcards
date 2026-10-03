@@ -50,7 +50,7 @@ func TestKlaberjassCardPoints(t *testing.T) {
 		{"nil", nil, 0},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			if got := KlaberjassCardPoints(tc.card, trump); got != tc.want {
+			if got := JassFamilyCardPoints(tc.card, trump); got != tc.want {
 				t.Errorf("points = %d, want %d", got, tc.want)
 			}
 		})
@@ -66,7 +66,7 @@ func TestKlaberjassPackTotalIsOneSixtyTwo(t *testing.T) {
 	total := 0
 	for _, suit := range []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond} {
 		for _, v := range []int{1, 7, 8, 9, 10, 11, 12, 13} {
-			total += KlaberjassCardPoints(kjCard(suit, v), trump)
+			total += JassFamilyCardPoints(kjCard(suit, v), trump)
 		}
 	}
 	if total != KlaberjassCardPointsTotal {
@@ -78,7 +78,7 @@ func TestKlaberjassPackTotalIsOneSixtyTwo(t *testing.T) {
 	// 切札スートだけで 62 点、平のスートは各 30 点。
 	trumpOnly := 0
 	for _, v := range []int{1, 7, 8, 9, 10, 11, 12, 13} {
-		trumpOnly += KlaberjassCardPoints(kjCard(trump, v), trump)
+		trumpOnly += JassFamilyCardPoints(kjCard(trump, v), trump)
 	}
 	if trumpOnly != 62 {
 		t.Errorf("the trump suit holds %d, want 62", trumpOnly)
@@ -1080,6 +1080,70 @@ func TestKlaberjassRoundTripsThroughJSON(t *testing.T) {
 	// **復元後もプレイできる。**山札が nil のままだと次のディールで落ちる。
 	if err := restored.NextDeal(); err == nil {
 		t.Error("NextDeal mid-hand is still refused after a restore")
+	}
+}
+
+func TestKlaberjassTrickHistory(t *testing.T) {
+	k := NewDefaultKlaberjass()
+	k.trumpSuit = CardDesignSpade
+	k.trickLeader = 0
+	k.trick = []*Card{kjCard(CardDesignHeart, 7), kjCard(CardDesignHeart, 8)}
+	k.resolveTrick()
+	k.trick = []*Card{kjCard(CardDesignClover, 7), kjCard(CardDesignClover, 14)}
+	k.trickLeader = 1
+	k.resolveTrick()
+	history := k.GetTrickHistory()
+	if len(history) != 2 {
+		t.Fatalf("history length = %d, want 2", len(history))
+	}
+	if history[0].WinnerIdx != 1 || history[0].Points != JassFamilyCardPoints(kjCard(CardDesignHeart, 7), k.trumpSuit)+JassFamilyCardPoints(kjCard(CardDesignHeart, 8), k.trumpSuit) {
+		t.Errorf("first trick = %+v", history[0])
+	}
+	if history[1].WinnerIdx != 1 || history[1].Points != JassFamilyCardPoints(kjCard(CardDesignClover, 7), k.trumpSuit)+JassFamilyCardPoints(kjCard(CardDesignClover, 14), k.trumpSuit) {
+		t.Errorf("second trick = %+v", history[1])
+	}
+	data, err := json.Marshal(k)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var restored Klaberjass
+	if err := json.Unmarshal(data, &restored); err != nil {
+		t.Fatal(err)
+	}
+	if got := restored.GetTrickHistory(); len(got) != 2 || *got[0] != *history[0] || *got[1] != *history[1] {
+		t.Fatalf("round-trip history = %+v, want %+v", got, history)
+	}
+	k.phase = KlaberjassPhaseHandEnd
+	if err := k.NextDeal(); err != nil {
+		t.Fatal(err)
+	}
+	if got := k.GetTrickHistory(); len(got) != 0 {
+		t.Errorf("new deal history = %+v, want empty", got)
+	}
+}
+
+func TestKlaberjassOldSnapshotHasEmptyTrickHistory(t *testing.T) {
+	k := NewDefaultKlaberjass()
+	k.Reset()
+	data, err := json.Marshal(k)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var snapshot map[string]json.RawMessage
+	if err := json.Unmarshal(data, &snapshot); err != nil {
+		t.Fatal(err)
+	}
+	delete(snapshot, "th")
+	data, err = json.Marshal(snapshot)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var restored Klaberjass
+	if err := json.Unmarshal(data, &restored); err != nil {
+		t.Fatal(err)
+	}
+	if len(restored.GetTrickHistory()) != 0 {
+		t.Fatalf("old snapshot history = %+v", restored.GetTrickHistory())
 	}
 }
 

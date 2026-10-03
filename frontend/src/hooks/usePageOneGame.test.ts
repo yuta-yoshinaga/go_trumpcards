@@ -37,6 +37,7 @@ const defaultState: PageOneResponse = {
   ],
   phase: 0,
   roundNumber: 1,
+  roundHistory: [],
   currentPlayerIdx: 0,
   discardTop: { design: 'HEART', value: 7 },
   drawPileCount: 30,

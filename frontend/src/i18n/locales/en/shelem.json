@@ -42,10 +42,12 @@
     "shelem": "Declare Shelem ({{value}} points)",
     "pass": "Pass",
     "discard": "Confirm with {{suit}} trump",
+    "discardAria": "Confirm with {{suit}} trump",
     "nextRound": "Next round",
     "reset": "Reset",
     "giveUp": "Give up",
-    "playAria": "Play {{card}}"
+    "playAria": "Play {{card}}",
+    "illegalPlayReason": "This card is not a legal play right now."
   },
   "result": {
     "youWin": "Your team wins! {{t0}} - {{t1}}",

@@ -500,6 +500,14 @@ func (hcf *HighCardFlush) GetTotalPayout() int {
 	return hcf.antePayout + hcf.raisePayout + hcf.flushBonusPayout + hcf.straightFlushPay
 }
 
+// GetTotalBet returns the total amount wagered this round.
+func (hcf *HighCardFlush) GetTotalBet() int {
+	return hcf.anteBet + hcf.flushBonusBet + hcf.straightFlushBet + hcf.raiseBet
+}
+
+// GetNetChange returns the player's chip change for this round.
+func (hcf *HighCardFlush) GetNetChange() int { return hcf.GetTotalPayout() - hcf.GetTotalBet() }
+
 // GetDealerQualified ディーラークオリファイ
 func (hcf *HighCardFlush) GetDealerQualified() bool { return hcf.dealerQualified }
 

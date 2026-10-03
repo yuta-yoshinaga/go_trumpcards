@@ -120,6 +120,15 @@ function SeahavenTowersPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('seahaventowers', state);
+  const hintedCard =
+    hint && state
+      ? hint.fromZone === 'tableau'
+        ? state.tableau[hint.fromCol]?.[hint.cardIndex]
+        : hint.fromZone === 'reserved'
+          ? state.reservedCells[hint.fromCol]
+          : undefined
+      : undefined;
+  const hintedCardName = hintedCard ? cardAlt(hintedCard) : undefined;
   // Live longest-column length: shrinks the per-card vertical step on mobile so the tallest
   // tableau column fits within 375×667 without scrolling (#1861).
   const maxColCards = useMemo(
@@ -392,6 +401,7 @@ function SeahavenTowersPageContent() {
                               type="button"
                               onClick={() => handleSelectTarget(tableauColZone)}
                               disabled={!isPlaying || loading}
+                              aria-label={t('emptyColumnAriaLabel', { idx: String(colIdx) })}
                               aria-disabled={!selectedSource || undefined}
                               aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                               style={{ height: cardHeight }}
@@ -500,7 +510,8 @@ function SeahavenTowersPageContent() {
                 <div className="text-ds-warning text-sm mb-2">
                   {/* Zone identifiers (tableau/reserved/foundation) double as i18n
                       keys, matching the CUI HintOutput terminology. */}
-                  {t('hintAvailable')}: {t(hint.fromZone)}
+                  {t('hintAvailable')}: {hintedCardName ? `${hintedCardName} — ` : ''}
+                  {t(hint.fromZone)}
                   {hint.fromCol >= 0 ? ` ${hint.fromCol}` : ''} → {t(hint.toZone)}
                   {hint.toCol >= 0 ? ` ${hint.toCol}` : ''}
                 </div>

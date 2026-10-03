@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tarabishApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, TarabishResponse } from '../types/card';
 import { TarabishPage } from './TarabishPage';
@@ -67,6 +68,40 @@ beforeEach(() => {
 });
 
 describe('TarabishPage', () => {
+  it('keeps the original points label off turn', async () => {
+    renderWithProviders(<TarabishPage />);
+    const cards = await screen.findAllByRole('button', { name: /を出す/ });
+    expect(cards[0]).toHaveAccessibleName(/♥ J（20点）を出す/);
+    expect(cards[0]).not.toHaveAccessibleName(/出せる|出せない/);
+    expect(cards[0]).not.toHaveAttribute('aria-disabled');
+  });
+
+  it('announces playable and unplayable cards from validPlays', async () => {
+    mockExec.mockResolvedValue(playing({ validPlays: [1] }));
+    renderWithProviders(<TarabishPage />);
+    const cards = await screen.findAllByRole('button', { name: /を出す/ });
+    expect(cards).toHaveLength(3);
+    expect(cards[0]).toHaveAccessibleName(/出せない/);
+    expect(cards[1]).toHaveAccessibleName(/出せる/);
+    expect(cards[2]).toHaveAccessibleName(/出せない/);
+  });
+
+  it('keeps illegal cards focusable but aria-disabled and does not play them', async () => {
+    mockExec.mockResolvedValue(playing({ validPlays: [1] }));
+    renderWithProviders(<TarabishPage />);
+    const cards = await screen.findAllByRole('button', { name: /出す/ });
+    expect(cards[1]).not.toHaveAttribute('aria-disabled');
+    expect(cards[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[0]).not.toBeDisabled();
+    expect(document.getElementById(cards[0].getAttribute('aria-describedby') ?? '')).toHaveTextContent(
+      'この札は現在出せません',
+    );
+
+    mockExec.mockClear();
+    fireEvent.click(cards[0]);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
+  });
   it('resets on mount', async () => {
     renderWithProviders(<TarabishPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -83,6 +118,7 @@ describe('TarabishPage', () => {
     renderWithProviders(<TarabishPage />);
     expect(await screen.findByTestId('tb-take-btn')).toBeInTheDocument();
     expect(screen.getByTestId('tb-pass-btn')).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /出す/ })[0]).not.toHaveAttribute('aria-disabled');
   });
 
   // **親は見送れないので、見送りボタンを出さない。** 負のコントロール付き。

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { horseApi as HorseApi } from '../api/gameApi';
 import { eightGameApi, horseApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
@@ -26,6 +26,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { HorseResponse } from '../types/card';
 import { HorsePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { EIGHT_GAME_HELP, HORSE_HELP, parseHorseCommand } from '../utils/cli/commands/horseCommands';
 import { formatHorseState } from '../utils/cli/formatters/horseFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -114,9 +115,37 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
   const [handsPerDiscipline, setHandsPerDiscipline] = useState(2);
   const [betAmount, setBetAmount] = useState(20);
   const [drawSelection, setDrawSelection] = useState<number[]>([]);
+  const previousDiscipline = useRef<string | null>(null);
+  const previousHandNumber = useRef<number | null>(null);
+  const [disciplineChanged, setDisciplineChanged] = useState(false);
+  const [disciplineAnnouncement, setDisciplineAnnouncement] = useState('');
 
   const api = gameKey === 'eightgame' ? eightGameApi : horseApi;
   const { loading, error, state, exec: callApi, retry } = useGameApi(api.exec);
+  useEffect(() => {
+    if (!state) return;
+    const isNewGame = previousHandNumber.current !== null && state.handNumber < previousHandNumber.current;
+    if (isNewGame) {
+      previousDiscipline.current = null;
+      setDisciplineChanged(false);
+      setDisciplineAnnouncement('');
+    }
+    if (previousDiscipline.current === null) {
+      previousDiscipline.current = state.disciplineName;
+    } else if (previousDiscipline.current !== state.disciplineName) {
+      setDisciplineChanged(true);
+      if (gameKey === 'eightgame') {
+        const name = t(`discipline.${state.disciplineName}`, { defaultValue: state.disciplineName });
+        const rules = t(`rules.${state.disciplineName}`);
+        setDisciplineAnnouncement(t('disciplineChangeAnnouncement', { name, rules }));
+      }
+    } else if (previousHandNumber.current !== null && state.handNumber > previousHandNumber.current) {
+      setDisciplineChanged(false);
+      setDisciplineAnnouncement('');
+    }
+    previousDiscipline.current = state.disciplineName;
+    previousHandNumber.current = state.handNumber;
+  }, [gameKey, state, t]);
   const { cardWidth } = useCardDimensions();
   const {
     hint: frontendHint,
@@ -203,6 +232,7 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
               className="text-center text-sm text-ds-text-muted"
               data-testid="ho-discipline"
               data-tutorial="ho-discipline"
+              data-discipline-changed={gameKey === 'eightgame' && disciplineChanged ? 'true' : undefined}
               // **手番かどうかを DOM に出す。** 出さないと E2E は「押しても
               // 何も起きない」を待つことになり、配り次第で落ちる。
               data-human-turn={isHumanTurn || undefined}
@@ -210,7 +240,11 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
               <span className="mr-2 text-lg text-ds-text-primary" data-testid="ho-letter">
                 {state.disciplineLetter}
               </span>
-              <span className="mr-3 text-ds-text-primary">{disciplineName}</span>
+              <span
+                className={`mr-3 text-lg font-semibold text-ds-text-primary ${gameKey === 'eightgame' && disciplineChanged ? 'rounded-md bg-ds-surface px-2 py-1 ring-2 ring-ds-accent' : ''}`}
+              >
+                {disciplineName}
+              </span>
               <span className="mr-3">
                 {t('disciplineOrder', { position: state.disciplinePosition, total: state.disciplineTotal })}
               </span>
@@ -225,6 +259,19 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
               <span className="mr-3">{t('handTotal', { n: state.handNumber })}</span>
               <span data-testid="ho-pot">{t('pot', { pot: state.pot })}</span>
             </div>
+
+            {gameKey === 'eightgame' && (
+              <p
+                className={`mx-auto max-w-3xl rounded-md bg-ds-surface px-3 py-2 text-center text-sm ${disciplineChanged ? 'border-2 border-ds-accent text-ds-text-primary' : 'text-ds-text-muted'}`}
+              >
+                {t(`rules.${state.disciplineName}`)}
+              </p>
+            )}
+            {gameKey === 'eightgame' && (
+              <div role="status" aria-live="polite" className="sr-only">
+                {disciplineAnnouncement}
+              </div>
+            )}
 
             {state.communityCards.length > 0 && (
               <div className="flex flex-col items-center gap-1" data-testid="ho-community">
@@ -261,18 +308,28 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
               ))}
             </div>
 
-            {isGameEnd && (
+            {(isGameEnd || isHandEnd) && (
               <div className="my-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="ho-result">
-                <div className="mb-1 text-ds-text-primary">{t('result.title')}</div>
-                <div className="text-ds-success mb-1">
-                  {t('result.winner', {
-                    name: state.seats[state.winnerSeat]?.isHuman
-                      ? t('you')
-                      : (state.seats[state.winnerSeat]?.name ?? ''),
-                  })}
-                </div>
+                <div className="mb-1 text-ds-text-primary">{isGameEnd ? t('result.title') : t('phase.handEnd')}</div>
+                {isGameEnd && (
+                  <div className="text-ds-success mb-1">
+                    {t('result.winner', {
+                      name: state.seats[state.winnerSeat]?.isHuman
+                        ? t('you')
+                        : (state.seats[state.winnerSeat]?.name ?? ''),
+                    })}
+                  </div>
+                )}
                 {state.seats.map((s) => (
-                  <div key={s.id}>{t('result.chips', { name: s.isHuman ? t('you') : s.name, chips: s.chips })}</div>
+                  <div key={s.id}>
+                    {t('result.chips', { name: s.isHuman ? t('you') : s.name, chips: s.chips })}
+                    {s.handName && (
+                      <span>
+                        {' '}
+                        · {t('result.hand', { hand: t(`result.hands.${s.handName}`, { defaultValue: s.handName }) })}
+                      </span>
+                    )}
+                  </div>
                 ))}
               </div>
             )}
@@ -340,7 +397,7 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
                           key={`${card.design}-${card.value}`}
                           className={`rounded ${selected ? 'ring-2 ring-ds-accent' : ''}`}
                           aria-pressed={selected}
-                          aria-label={t('draw.toggle', { n: idx })}
+                          aria-label={cardAlt(card)}
                           data-testid={`ho-draw-card-${idx}`}
                           disabled={loading}
                           onClick={() =>

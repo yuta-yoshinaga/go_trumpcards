@@ -47,6 +47,7 @@ type SetteEMezzoWebOutput struct {
 	BankerIdx     int                         `json:"bankerIdx"`
 	IsHumanBanker bool                        `json:"isHumanBanker"`
 	Chips         int                         `json:"chips"`
+	DrawPileCount int                         `json:"drawPileCount"`
 	ActiveSeat    int                         `json:"activeSeat"`
 	NextBanker    int                         `json:"nextBanker"`
 	LastResult    string                      `json:"lastResult"`

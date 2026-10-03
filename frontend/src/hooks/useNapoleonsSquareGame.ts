@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { napoleonsSquareApi } from '../api/gameApi';
 import type { NapoleonsSquareHint, NapoleonsSquareMoveZone } from '../types/card';
+import { type NapoleonsSquareMoveSource, napoleonsSquareLegalTargets } from '../utils/napoleonsSquareLegalTargets';
 import { useAutoCompleteState } from './useAutoCompleteState';
 import { useGameApi } from './useGameApi';
 import { useHintRequest } from './useHintRequest';
@@ -8,10 +9,12 @@ import { useHintRequest } from './useHintRequest';
 /** Hook that manages Napoleon's Square game state, source selection, hints, and moves. */
 export function useNapoleonsSquareGame() {
   const { state, loading, error, exec: rawExec, retry } = useGameApi(napoleonsSquareApi.exec);
-  const [selectedSource, setSelectedSource] = useState<NapoleonsSquareMoveZone | null>(null);
+  const [selectedSource, setSelectedSource] = useState<NapoleonsSquareMoveSource | null>(null);
   const [hint, setHint] = useState<NapoleonsSquareHint | null>(null);
   const [hintError, setHintError] = useState<string | null>(null);
   const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
+
+  const legalTargets = state && selectedSource ? napoleonsSquareLegalTargets(state, selectedSource) : [];
 
   const runApi = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 
@@ -68,11 +71,26 @@ export function useNapoleonsSquareGame() {
   );
 
   const handleSelectSource = useCallback((zone: NapoleonsSquareMoveZone) => {
+    const source: NapoleonsSquareMoveSource | null =
+      zone.zone === 'waste'
+        ? { zone: 'waste' }
+        : zone.zone === 'tableau' && zone.col !== undefined && zone.cardIndex !== undefined
+          ? { zone: 'tableau', col: zone.col, cardIndex: zone.cardIndex }
+          : null;
+    if (!source) return;
     setSelectedSource((prev) => {
-      if (prev && prev.zone === zone.zone && prev.col === zone.col && prev.cardIndex === zone.cardIndex) {
+      if (
+        prev &&
+        prev.zone === source.zone &&
+        prev.zone === 'tableau' &&
+        source.zone === 'tableau' &&
+        prev.col === source.col &&
+        prev.cardIndex === source.cardIndex
+      ) {
         return null;
       }
-      return zone;
+      if (prev?.zone === 'waste' && source.zone === 'waste') return null;
+      return source;
     });
   }, []);
 
@@ -93,6 +111,7 @@ export function useNapoleonsSquareGame() {
     hintError,
     exec: runApi,
     selectedSource,
+    legalTargets,
     hint,
     handleReset,
     handleDraw,

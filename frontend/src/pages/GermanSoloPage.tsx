@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { germansoloApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -124,6 +124,10 @@ function GermanSoloPageContent() {
   // choosing a contract sets `pendingBid` and advances to stage 2, where a trump
   // suit is picked and the declaration is confirmed. `null` = stage 1.
   const [pendingBid, setPendingBid] = useState<number | null>(null);
+  const bidOriginCodeRef = useRef<number | null>(null);
+  const bidButtonsRef = useRef(new Map<number, HTMLButtonElement>());
+  const trumpFirstRef = useRef<HTMLButtonElement | null>(null);
+  const previousPendingBidRef = useRef<number | null>(null);
   // Trump suit chosen for a pending declaration (null until picked).
   const [selectedTrump, setSelectedTrump] = useState<number | null>(null);
 
@@ -153,6 +157,13 @@ function GermanSoloPageContent() {
   } = useGameHint('germansolo', state);
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('germansolo', GERMAN_SOLO_PHASE_KEYS);
+
+  useEffect(() => {
+    if (pendingBid !== null) trumpFirstRef.current?.focus();
+    else if (previousPendingBidRef.current !== null && bidOriginCodeRef.current !== null)
+      bidButtonsRef.current.get(bidOriginCodeRef.current)?.focus();
+    previousPendingBidRef.current = pendingBid;
+  }, [pendingBid]);
 
   if (!state)
     return <GameSkeleton gameKey="germansolo" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 8 }} />;
@@ -194,6 +205,7 @@ function GermanSoloPageContent() {
       handleBid(0);
       return;
     }
+    bidOriginCodeRef.current = bid;
     setPendingBid(bid);
     setSelectedTrump(null);
   };
@@ -478,8 +490,11 @@ function GermanSoloPageContent() {
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="germansolo-action-buttons">
               {canCallAce && (
-                <div className="flex flex-wrap gap-2 items-center" data-testid="germansolo-ace-call">
-                  <span className="text-ds-text-muted text-sm">{t('chooseAce')}:</span>
+                <fieldset
+                  className="flex flex-wrap gap-2 items-center border-0 p-0 m-0 min-w-0"
+                  data-testid="germansolo-ace-call"
+                >
+                  <legend className="text-ds-text-muted text-sm">{t('chooseAce')}</legend>
                   {state.callableAceSuits.map((suit) => (
                     <button
                       key={suit}
@@ -492,11 +507,14 @@ function GermanSoloPageContent() {
                       {t('callAceOf', { suit: t(SUIT_KEYS[suit] ?? 'suitNone') })}
                     </button>
                   ))}
-                </div>
+                </fieldset>
               )}
               {canBid && pendingBid === null && (
-                <div className="flex flex-wrap gap-2 items-center" data-testid="germansolo-bid-stage1">
-                  <span className="text-ds-text-muted text-sm">{t('chooseBidType')}:</span>
+                <fieldset
+                  className="flex flex-wrap gap-2 items-center border-0 p-0 m-0 min-w-0"
+                  data-testid="germansolo-bid-stage1"
+                >
+                  <legend className="text-ds-text-muted text-sm">{t('chooseBidType')}</legend>
                   {/* **サーバが弾く選択肢は出さない。** biddableBids は「この席が
                       いま上回れる契約」そのもの。定数を並べると、既に Solo が出て
                       いる卓で Frage のボタンが押せてしまう。 */}
@@ -507,6 +525,10 @@ function GermanSoloPageContent() {
                       className={btnPrimary}
                       onClick={() => chooseBid(bid)}
                       disabled={loading}
+                      ref={(button) => {
+                        if (button) bidButtonsRef.current.set(bid, button);
+                        else bidButtonsRef.current.delete(bid);
+                      }}
                     >
                       {t(BID_KEYS[bid] ?? 'bidNone')}
                     </button>
@@ -514,13 +536,16 @@ function GermanSoloPageContent() {
                   <button type="button" className={btnSecondary} onClick={() => chooseBid(0)} disabled={loading}>
                     {t('bidPass')}
                   </button>
-                </div>
+                </fieldset>
               )}
               {canBid && pendingBid !== null && (
-                <div className="flex flex-wrap gap-2 items-center" data-testid="germansolo-bid-stage2">
-                  <span className="text-ds-text-muted text-sm">
-                    {t('chooseTrumpFor', { bid: t(BID_KEYS[pendingBid] ?? 'bidNone') })}:
-                  </span>
+                <fieldset
+                  className="flex flex-wrap gap-2 items-center border-0 p-0 m-0 min-w-0"
+                  data-testid="germansolo-bid-stage2"
+                >
+                  <legend className="text-ds-text-muted text-sm">
+                    {t('chooseTrumpFor', { bid: t(BID_KEYS[pendingBid]) })}
+                  </legend>
                   {TRUMP_CHOICES.map((c) => (
                     <button
                       key={c.code}
@@ -530,6 +555,7 @@ function GermanSoloPageContent() {
                       disabled={loading}
                       aria-label={t(SUIT_KEYS[c.code])}
                       aria-pressed={selectedTrump === c.code}
+                      ref={c.code === TRUMP_CHOICES[0].code ? trumpFirstRef : undefined}
                     >
                       {c.symbol}
                     </button>
@@ -552,7 +578,7 @@ function GermanSoloPageContent() {
                   >
                     {t('bidBack')}
                   </button>
-                </div>
+                </fieldset>
               )}
               {canPlay && (
                 <button

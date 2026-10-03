@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { BeleagueredCastleMoveZone, beleagueredCastleApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -94,6 +94,16 @@ function BeleagueredCastlePageContent() {
   } = useGamePageSetup('beleagueredcastle');
   const game = useBeleagueredCastleGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
+  const previousMoveCount = useRef<number | null>(null);
+  const [announcedMoveCount, setAnnouncedMoveCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (state === null) return;
+    if (previousMoveCount.current !== null && previousMoveCount.current !== state.moveCount) {
+      setAnnouncedMoveCount(state.moveCount);
+    }
+    previousMoveCount.current = state.moveCount;
+  }, [state]);
 
   const {
     hint: frontendHint,
@@ -248,7 +258,7 @@ function BeleagueredCastlePageContent() {
                 type="button"
                 onClick={() => game.handleSelectTarget(tableauColZone)}
                 disabled={!isPlaying || loading}
-                aria-label={t('emptyColumnAriaLabel', { col: colIdx + 1 })}
+                aria-label={t('emptyColumnAriaLabel', { col: colIdx })}
                 style={{ height: dims.ch }}
                 className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite}`}
               >
@@ -282,7 +292,11 @@ function BeleagueredCastlePageContent() {
                           }
                         }}
                         disabled={!isPlaying || loading || (!isTop && !selectedSource)}
-                        aria-label={cardAlt(tc.card)}
+                        aria-label={t('tableauCardAriaLabel', {
+                          card: cardAlt(tc.card),
+                          col: colIdx,
+                          pos: cardIdx,
+                        })}
                         aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
                         draggable={isPlaying && !loading && isTop}
                         onDragStart={dnd.handleDragStart(cardZone)}
@@ -328,6 +342,9 @@ function BeleagueredCastlePageContent() {
         <>
           <span className="text-sm text-ds-text-muted">
             {t('moveCount')}: {state.moveCount}
+          </span>
+          <span className="sr-only" role="status" aria-live="polite" data-testid="bc-move-count-status">
+            {announcedMoveCount === null ? '' : t('moveCountAnnouncement', { count: announcedMoveCount })}
           </span>
           <span className="sr-only" role="status" aria-live="polite" data-testid="bc-selection-status">
             {isPlaying && selectedSource !== null

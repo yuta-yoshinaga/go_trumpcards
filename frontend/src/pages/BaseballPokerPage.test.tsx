@@ -47,6 +47,7 @@ const seat = (over: Partial<BaseballPokerResponse['seats'][number]> = {}) =>
     usedWild: false,
     bestHand: [],
     wonAmount: 0,
+    netChange: 0,
     ...over,
   }) as BaseballPokerResponse['seats'][number];
 
@@ -216,9 +217,40 @@ describe('BaseballPokerPage', () => {
     expect(screen.getByTestId('bb-buyfold')).toBeInTheDocument();
     // 払う額を出す。
     expect(screen.getByTestId('bb-buy-guide')).toHaveTextContent('80');
+    expect(screen.getByTestId('bb-buy-summary')).toBeInTheDocument();
+    expect(screen.getByTestId('bb-buy-cost')).toHaveTextContent('80');
+    expect(screen.getByTestId('bb-buy-remaining')).toHaveTextContent('920');
     // ベットの手は出さない。
     expect(screen.queryByTestId('bb-check')).not.toBeInTheDocument();
     expect(screen.queryByTestId('bb-fold')).not.toBeInTheDocument();
+  });
+
+  it('買い増し額が所持チップを超える場合は支払額を上限化して残り0を表示する', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: BaseballPhase.BUY_IN,
+        isBuying: true,
+        isHumanTurn: false,
+        buyerSeat: 0,
+        buyCost: 80,
+        seats: [seat({ chips: 50, isTurn: false, isBuying: true }), cpuSeat()],
+      }),
+    );
+    renderWithProviders(<BaseballPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('bb-pay')).toBeInTheDocument());
+
+    expect(screen.getByTestId('bb-buy-cost')).toHaveTextContent('50');
+    expect(screen.getByTestId('bb-buy-remaining')).toHaveTextContent('0');
+    expect(screen.getByTestId('bb-buy-guide')).toHaveTextContent('50');
+  });
+
+  it('人間席が応答にない場合は買い増し額とチップを0として表示する', async () => {
+    mockApi.mockResolvedValue(withState({ phase: BaseballPhase.BUY_IN, isBuying: true, humanSeat: 9, buyCost: 80 }));
+    renderWithProviders(<BaseballPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('bb-pay')).toBeInTheDocument());
+    expect(screen.getByTestId('bb-chips')).toHaveTextContent('0');
+    expect(screen.getByTestId('bb-buy-cost')).toHaveTextContent('0');
+    expect(screen.getByTestId('bb-buy-remaining')).toHaveTextContent('0');
   });
 
   // **降りるつもりが支払いに化けない。** 両方の返事を別々に送る。
@@ -370,11 +402,17 @@ describe('BaseballPokerPage', () => {
       withState({
         phase: BaseballPhase.SHOWDOWN,
         isHumanTurn: false,
-        seats: [seat({ isTurn: false, wonAmount: 80, usedWild: true }), cpuSeat()],
+        seats: [
+          seat({ isTurn: false, wonAmount: 80, netChange: 60, usedWild: true }),
+          cpuSeat({ folded: true, netChange: -20 }),
+        ],
       }),
     );
     renderWithProviders(<BaseballPokerPage />);
     await waitFor(() => expect(screen.getByTestId('bb-won-0')).toHaveTextContent('80'));
+    expect(screen.getByTestId('bb-net-change-0')).toHaveTextContent('ハンド収支 +60（買い増しを含む）');
+    expect(screen.getByTestId('bb-net-change-1')).toHaveTextContent('ハンド収支 -20（買い増しを含む）');
+    expect(screen.queryByTestId('bp-showdown-1')).not.toBeInTheDocument();
     expect(screen.getByTestId('bb-usedwild-0')).toBeInTheDocument();
 
     mockApi.mockClear();

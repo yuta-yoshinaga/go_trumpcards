@@ -40,11 +40,12 @@ type OldMaidCpuAction struct {
 
 // OldMaidDrawHistoryEntry ゲーム全体の引き履歴の1エントリ
 type OldMaidDrawHistoryEntry struct {
-	DrawPlayerIdx  int  // 引いたプレイヤーインデックス
-	DrawFromIdx    int  // 引かれた相手のインデックス
-	DiscardedPairs int  // 捨てたペア数
-	DrawerFinished bool // 引いた側が上がったか
-	TargetFinished bool // 引かれた側が上がったか
+	DrawPlayerIdx  int     // 引いたプレイヤーインデックス
+	DrawFromIdx    int     // 引かれた相手のインデックス
+	DiscardedPairs int     // 捨てたペア数
+	DiscardedCards []*Card // 捨てたカード
+	DrawerFinished bool    // 引いた側が上がったか
+	TargetFinished bool    // 引かれた側が上がったか
 }
 
 // OldMaid ババ抜きゲームクラス
@@ -302,11 +303,12 @@ func (o *OldMaid) drawCard(playerIdx int, cardIdx int) *Card {
 	// ゲーム終了チェック
 	o.checkGameEnd()
 
-	// 引き履歴に追加 (カード情報なし — プライバシー保護)
+	// 引き履歴に追加
 	o.drawHistory = append(o.drawHistory, &OldMaidDrawHistoryEntry{
 		DrawPlayerIdx:  playerIdx,
 		DrawFromIdx:    targetIdx,
 		DiscardedPairs: discardedCount,
+		DiscardedCards: append([]*Card{}, discardedCards...),
 		DrawerFinished: player.GetIsFinished(),
 		TargetFinished: target.GetIsFinished(),
 	})
@@ -755,11 +757,12 @@ func (a *OldMaidCpuAction) UnmarshalJSON(data []byte) error {
 
 // oldMaidDrawHistoryEntryJSON is the JSON wire format for OldMaidDrawHistoryEntry.
 type oldMaidDrawHistoryEntryJSON struct {
-	DrawPlayerIdx  int  `json:"dp"`
-	DrawFromIdx    int  `json:"df"`
-	DiscardedPairs int  `json:"di"`
-	DrawerFinished bool `json:"dr"`
-	TargetFinished bool `json:"tf"`
+	DrawPlayerIdx  int     `json:"dp"`
+	DrawFromIdx    int     `json:"df"`
+	DiscardedPairs int     `json:"di"`
+	DiscardedCards []*Card `json:"dc"`
+	DrawerFinished bool    `json:"dr"`
+	TargetFinished bool    `json:"tf"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -768,6 +771,7 @@ func (e *OldMaidDrawHistoryEntry) MarshalJSON() ([]byte, error) {
 		DrawPlayerIdx:  e.DrawPlayerIdx,
 		DrawFromIdx:    e.DrawFromIdx,
 		DiscardedPairs: e.DiscardedPairs,
+		DiscardedCards: e.DiscardedCards,
 		DrawerFinished: e.DrawerFinished,
 		TargetFinished: e.TargetFinished,
 	})
@@ -782,6 +786,10 @@ func (e *OldMaidDrawHistoryEntry) UnmarshalJSON(data []byte) error {
 	e.DrawPlayerIdx = j.DrawPlayerIdx
 	e.DrawFromIdx = j.DrawFromIdx
 	e.DiscardedPairs = j.DiscardedPairs
+	e.DiscardedCards = j.DiscardedCards
+	if e.DiscardedCards == nil {
+		e.DiscardedCards = make([]*Card, 0)
+	}
 	e.DrawerFinished = j.DrawerFinished
 	e.TargetFinished = j.TargetFinished
 	return nil

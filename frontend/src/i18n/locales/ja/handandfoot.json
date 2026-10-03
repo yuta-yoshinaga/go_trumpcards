@@ -66,7 +66,15 @@
   },
   "score": {
     "cumulative": "累積",
-    "round": "ラウンド"
+    "round": "ラウンド",
+    "breakdown": "得点内訳",
+    "meldCards": "メルドのカード",
+    "redCanasta": "赤カナスタ",
+    "blackCanasta": "黒カナスタ",
+    "redThrees": "赤3",
+    "goingOut": "上がりボーナス",
+    "handPenalty": "手札ペナルティ",
+    "footPenalty": "フットペナルティ"
   },
   "tutorial": {
     "drawArea": "山札と捨て札エリアです。ここからカードを引きます。",

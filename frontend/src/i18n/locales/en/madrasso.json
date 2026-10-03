@@ -22,6 +22,7 @@
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",
   "currentTrickPoints": "Card points in this trick: {{points}}",
+  "cardPoints": "{{points}} points",
   "wonTrickPoints": "Team {{team}} won this trick: {{points}} points",
   "previousTrick": "Previous Trick",
   "previousTrickEmpty": "No previous trick yet this round",

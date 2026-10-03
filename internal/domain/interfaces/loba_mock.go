@@ -69,7 +69,8 @@ func (_m *MockLobaGame) GetMelds() []*domain.LobaMeld {
 
 func (_m *MockLobaGame) HasMelded(idx int) bool { return _m.Called(idx).Bool(0) }
 
-func (_m *MockLobaGame) GetScore(idx int) int { return _m.Called(idx).Int(0) }
+func (_m *MockLobaGame) GetScore(idx int) int      { return _m.Called(idx).Int(0) }
+func (_m *MockLobaGame) GetRoundScore(idx int) int { return _m.Called(idx).Int(0) }
 
 func (_m *MockLobaGame) IsEliminated(idx int) bool { return _m.Called(idx).Bool(0) }
 

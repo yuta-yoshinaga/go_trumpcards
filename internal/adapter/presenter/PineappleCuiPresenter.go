@@ -173,6 +173,7 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 		if p.GetPhase() == domain.PineapplePhaseDiscard {
 			b.WriteString("----------\n")
 			b.WriteString(i18n.T("pineapple.discardHeader") + "\n")
+			human := pineappleHumanPlayer(p)
 			// The number of cards to discard is variant-dependent (Pineapple keeps
 			// 2 of 3, Irish Poker keeps 2 of 4), so derive it from the deal count.
 			discardCount := p.GetInitialDealCount() - 2
@@ -190,7 +191,9 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 				for _, pv := range pairs {
 					line := i18n.Tf("pineapple.discardCandidatePair",
 						"idx0", strconv.Itoa(pv.DiscardIdx0),
+						"card0", pineappleDiscardCardName(human, pv.DiscardIdx0),
 						"idx1", strconv.Itoa(pv.DiscardIdx1),
+						"card1", pineappleDiscardCardName(human, pv.DiscardIdx1),
 						"hand", cuiPokerHandName(pv.HandRank))
 					if pv.Recommended {
 						line += color.BoldYellow(i18n.T("pineapple.discardRecommended"))
@@ -201,6 +204,7 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 				for _, pv := range previews {
 					line := i18n.Tf("pineapple.discardCandidate",
 						"idx", strconv.Itoa(pv.CardIdx),
+						"card", pineappleDiscardCardName(human, pv.CardIdx),
 						"hand", cuiPokerHandName(pv.HandRank))
 					if pv.Recommended {
 						line += color.BoldYellow(i18n.T("pineapple.discardRecommended"))
@@ -208,7 +212,7 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 					b.WriteString(line + "\n")
 				}
 			} else if !p.IsDiscardAfterFlopBetting() {
-				if human := pineappleHumanPlayer(p); human != nil {
+				if human != nil {
 					for _, line := range pineappleKeepFeatureLines(human) {
 						b.WriteString(line + "\n")
 					}
@@ -288,6 +292,15 @@ func pineappleHumanPlayer(p interfaces.PineappleGame) *domain.PineapplePlayer {
 		}
 	}
 	return nil
+}
+
+// pineappleDiscardCardName returns a face-labeled card name for a zero-based
+// index in the human player's current hand.
+func pineappleDiscardCardName(player *domain.PineapplePlayer, idx int) string {
+	if player == nil || idx < 0 || idx >= player.GetCardsSize() {
+		return "??"
+	}
+	return cuiCardStrEmojiRank(player.GetCard(idx))
 }
 
 // pineappleKeepFeatureLines は「この札を捨てたら残る2枚はどういう手か」を

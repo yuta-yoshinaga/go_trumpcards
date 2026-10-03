@@ -118,7 +118,7 @@ function ReversisPageContent() {
 
   const phaseName = isGameEnd ? t('phase.gameEnd') : isRoundEnd ? t('phase.roundEnd') : t('phase.play');
 
-  // 出せる札に緑の枠を足すだけで、押せなくはしない（サーバが必ず検証する）。
+  // 合法札だけを手番中に操作できるようにする。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
 
   /** Which marked cards a seat has been landed with this round. */
@@ -256,15 +256,27 @@ function ReversisPageContent() {
                     <button
                       key={`${card.design}-${card.value}-${idx}`}
                       type="button"
-                      onClick={() => handlePlay(idx)}
+                      onClick={() => {
+                        if (legalRing.has(idx)) handlePlay(idx);
+                      }}
                       disabled={loading || !isHumanTurn}
+                      aria-disabled={isHumanTurn && !legalRing.has(idx) ? true : undefined}
                       // **点を取り合うのが核なのに、どの札が何点かは出ていなかった**
                       // (#5747)。A=4 / K=3 / Q=2 / J=1 を暗算し続けることになる。
-                      aria-label={t('actions.playAriaWithPoints', {
-                        card: cardAlt(card),
-                        points: reversisCardPoints(card),
-                      })}
-                      className={`relative disabled:opacity-50 ${
+                      aria-label={
+                        isHumanTurn
+                          ? t(
+                              legalRing.has(idx)
+                                ? 'actions.playAriaWithPointsPlayable'
+                                : 'actions.playAriaWithPointsUnplayable',
+                              { card: cardAlt(card), points: reversisCardPoints(card) },
+                            )
+                          : t('actions.playAriaWithPoints', {
+                              card: cardAlt(card),
+                              points: reversisCardPoints(card),
+                            })
+                      }
+                      className={`relative disabled:opacity-50 aria-disabled:opacity-50 aria-disabled:cursor-not-allowed ${
                         legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
                       }`}
                     >

@@ -97,6 +97,11 @@ func TestCostlyColours_CannotExceedThirtyOne(t *testing.T) {
 	assert.Error(t, c.PlayerPlay(0), "31 を超える札が通っている")
 	require.NoError(t, c.PlayerPlay(1))
 	assert.Equal(t, 0, c.GetTotal(), "31 ちょうどで数え上げが畳まれていない")
+	require.Len(t, c.GetRecentPlays(), 1)
+	assert.Equal(t, 31, c.GetRecentPlays()[0].Total, "リセット後も出札時点の累計が残る")
+	assert.Equal(t, 1, c.GetRecentPlays()[0].Points)
+	c.ClearRecentPlays()
+	assert.Empty(t, c.GetRecentPlays())
 }
 
 // **15・25・31 はどれも作った枚数ぶん点になる。** 25 が Cribbage との
@@ -129,6 +134,8 @@ func TestCostlyColours_PegsAtEveryMark(t *testing.T) {
 			require.NoError(t, c.PlayerPlay(0))
 			assert.Equal(t, before+tc.want, c.GetPlayer(0).GetScore(),
 				"%s で作った枚数ぶん入っていない", tc.name)
+			assert.Equal(t, tc.start+tc.card, c.GetRecentPlays()[0].Total)
+			assert.Equal(t, tc.want, c.GetRecentPlays()[0].Points)
 		})
 	}
 }
@@ -324,6 +331,7 @@ func TestCostlyColours_RejectsBadInput(t *testing.T) {
 func TestCostlyColours_SaveRestoreKeepsPlaying(t *testing.T) {
 	c := newCostlyGame(t)
 	require.NoError(t, c.PlayerMog(true))
+	c.recentPlays = []CostlyColoursRecentPlay{{Seat: 0, Card: ccCard(CardDesignSpade, 7), Total: 15, Points: 2}}
 
 	data, err := json.Marshal(c)
 	require.NoError(t, err)
@@ -331,6 +339,7 @@ func TestCostlyColours_SaveRestoreKeepsPlaying(t *testing.T) {
 
 	var r CostlyColours
 	require.NoError(t, json.Unmarshal(data, &r))
+	assert.Empty(t, r.GetRecentPlays(), "復元後に古いコマンドの履歴を再読み上げしない")
 	assert.Equal(t, c.GetPhase(), r.GetPhase())
 	assert.Equal(t, c.GetTotal(), r.GetTotal())
 	require.NotNil(t, r.GetTurnUp(), "表の 1 枚が消えている")

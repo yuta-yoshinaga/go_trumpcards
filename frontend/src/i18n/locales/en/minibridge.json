@@ -19,6 +19,7 @@
     "dealer": "[dealer]",
     "declarerByTie": "The HCP were level, so the dealer's side (seat {{seat}}) declares.",
     "you": "You",
+    "currentTurn": "Current turn",
     "cpu": "CPU{{idx}}",
     "dummyHand": "Dummy's hand",
     "yourTurn": "Your turn",
@@ -31,7 +32,8 @@
   "currentTrick": "Current trick",
   "roundResult": {
     "made": "Contract made: {{took}} of the {{need}} tricks needed.",
-    "down": "Contract down: only {{took}} of the {{need}} tricks needed."
+    "down": "Contract down: only {{took}} of the {{need}} tricks needed.",
+    "delta": "This round: Team {{team}} {{delta}} points"
   },
   "actions": {
     "level": "Level",

@@ -41,6 +41,8 @@ func (p *SheepsheadWebPresenter) buildBase(g interfaces.SheepsheadGame) *control
 	resObj.Phase = int(g.GetPhase())
 	resObj.RoundNumber = g.GetRoundNumber()
 	resObj.TrickNumber = g.GetTrickNumber()
+	resObj.LastTrickWinner = g.GetLastTrickWinner()
+	resObj.CompletedTrickCount = g.GetCompletedTrickCount()
 	resObj.CurrentPlayerIdx = g.GetCurrentPlayerIdx()
 	resObj.LeadPlayerIdx = g.GetLeadPlayerIdx()
 	resObj.DealerIdx = g.GetDealerIdx()
@@ -86,9 +88,22 @@ func (p *SheepsheadWebPresenter) buildBase(g interfaces.SheepsheadGame) *control
 		TargetChips:   cfg.TargetChips,
 	}
 
-	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
+	resObj.CurrentTrick = sheepsheadTrickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
+}
+
+func sheepsheadTrickCardsToOutput(trick []*domain.TrickCard) []*controller.SheepsheadWebOutputTrickCard {
+	out := make([]*controller.SheepsheadWebOutputTrickCard, 0, len(trick))
+	for _, tc := range trick {
+		out = append(out, &controller.SheepsheadWebOutputTrickCard{
+			PlayerIdx: tc.PlayerIdx,
+			Card:      cardToOutput(tc.Card),
+			Points:    domain.SheepsheadCardPoints(tc.Card.GetValue()),
+			IsTrump:   domain.SheepsheadIsTrump(tc.Card),
+		})
+	}
+	return out
 }
 
 // callableSuits 呼び可能スートを返す (Call フェーズ以外は空)

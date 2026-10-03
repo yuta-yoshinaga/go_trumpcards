@@ -15,6 +15,8 @@
     "hard": "Hard"
   },
   "round": "ラウンド {{n}}/{{total}}",
+  "roundEndByPan": "{{name}}がパンを宣言してラウンド終了",
+  "roundEndByStockOut": "山札切れでラウンド終了",
   "drawPile": "山札: {{count}}枚",
   "drawStockEmpty": "山札が空です。山札から引くとラウンドが終了します。",
   "discardTop": "捨て札",
@@ -28,6 +30,7 @@
   "meldsTitle": "場のメルド",
   "noMelds": "まだメルドはありません",
   "meldOwner": "{{name}} のメルド",
+  "listSeparator": "、",
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",
   "scoresRound": "ラウンド",
@@ -38,6 +41,7 @@
   "meldButton": "メルド",
   "layoffButton": "レイオフ",
   "a11y": {
+    "meldGroup": "{{name}} のメルド: {{cards}}",
     "layoffTo": "{{name}} のメルド {{meld}} にレイオフ"
   },
   "discardButton": "捨てる",

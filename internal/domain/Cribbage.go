@@ -59,8 +59,10 @@ type Cribbage struct {
 	// ペギング状態
 	pegCount       int     // 現在の合計 (0-31)
 	pegPlayedCards []*Card // 現在のペギングシーケンスで出されたカード
-	pegGoState     int     // 0=通常, 1=一方がGoを宣言, 2=両方がGoを宣言
-	lastPegPlayer  int     // 最後にカードを出したプレイヤー
+	pegPlayedBy    []int   // 各カードを出したプレイヤーのインデックス
+	pegScoreEvents []CribbagePeggingScoreEvent
+	pegGoState     int // 0=通常, 1=一方がGoを宣言, 2=両方がGoを宣言
+	lastPegPlayer  int // 最後にカードを出したプレイヤー
 	// ペギング中の各プレイヤーの出したカード (手札から除外済み)
 	playerPeggedCards [CribbagePlayerCnt][]*Card
 	// ショーフェーズ状態
@@ -75,6 +77,12 @@ type Cribbage struct {
 	discardDone [CribbagePlayerCnt]bool
 	// 各プレイヤーの元の手札 (ショーフェーズ用に保持)
 	originalHands [CribbagePlayerCnt][]*Card
+}
+
+// CribbagePeggingScoreEvent records the reason and points for a pegging score.
+type CribbagePeggingScoreEvent struct {
+	PlayerIdx int
+	Detail    CribbagePeggingScoreDetail
 }
 
 // NewCribbage コンストラクタ
@@ -133,6 +141,8 @@ func (g *Cribbage) startRound() {
 	g.starter = nil
 	g.pegCount = 0
 	g.pegPlayedCards = nil
+	g.pegPlayedBy = nil
+	g.pegScoreEvents = nil
 	g.pegGoState = 0
 	g.lastPegPlayer = -1
 	g.playerPeggedCards = [CribbagePlayerCnt][]*Card{}
@@ -275,6 +285,8 @@ func (g *Cribbage) doCut() {
 	g.currentPlayerIdx = 1 - g.dealerIdx // 非ディーラーが先攻
 	g.pegCount = 0
 	g.pegPlayedCards = nil
+	g.pegPlayedBy = nil
+	g.pegScoreEvents = nil
 	g.pegGoState = 0
 	g.lastPegPlayer = -1
 }
@@ -290,6 +302,7 @@ func (g *Cribbage) PlayerPeg(cardIndex int) error {
 	if !g.players[g.currentPlayerIdx].GetIsHuman() {
 		return ErrNotHumanTurn
 	}
+	g.pegScoreEvents = nil
 	return g.doPeg(g.currentPlayerIdx, cardIndex)
 }
 
@@ -311,6 +324,7 @@ func (g *Cribbage) doPeg(playerIdx int, cardIndex int) error {
 	p.RemoveCard(cardIndex)
 	g.pegCount += cardVal
 	g.pegPlayedCards = append(g.pegPlayedCards, card)
+	g.pegPlayedBy = append(g.pegPlayedBy, playerIdx)
 	g.playerPeggedCards[playerIdx] = append(g.playerPeggedCards[playerIdx], card)
 	g.lastPegPlayer = playerIdx
 	g.pegGoState = 0
@@ -318,9 +332,10 @@ func (g *Cribbage) doPeg(playerIdx int, cardIndex int) error {
 	g.addLog(playerIdx, "peg", "cribbage.log.peg", map[string]string{"total": fmt.Sprintf("%d", g.pegCount)}, []*Card{card})
 
 	// ペギングスコア
-	pegScore := CribbageScorePegging(g.pegPlayedCards, g.pegCount)
-	if pegScore > 0 {
-		g.addScore(playerIdx, pegScore, "cribbage.log.scorePegging", map[string]string{"points": fmt.Sprintf("%d", pegScore)})
+	pegScore := CribbageScorePeggingDetail(g.pegPlayedCards, g.pegCount)
+	if pegScore.Total > 0 {
+		g.pegScoreEvents = append(g.pegScoreEvents, CribbagePeggingScoreEvent{PlayerIdx: playerIdx, Detail: pegScore})
+		g.addScore(playerIdx, pegScore.Total, "cribbage.log.scorePegging", map[string]string{"points": fmt.Sprintf("%d", pegScore.Total)})
 		if g.checkWin() {
 			return nil
 		}
@@ -346,6 +361,7 @@ func (g *Cribbage) PlayerGo() error {
 	if !g.players[g.currentPlayerIdx].GetIsHuman() {
 		return ErrNotHumanTurn
 	}
+	g.pegScoreEvents = nil
 	// プレイ可能なカードがない場合のみGoを許可
 	if g.canPeg(g.currentPlayerIdx) {
 		return NewDomainErrorCode(ErrInvalidPlay, "cribbage.errPlayableCardsRemain", nil)
@@ -361,6 +377,7 @@ func (g *Cribbage) doGo(playerIdx int) error {
 	if g.pegGoState >= 2 || !g.canAnyPlayerPeg() {
 		// 両方Go → ラストカードの1点を最後にカードを出したプレイヤーに付与
 		if g.lastPegPlayer >= 0 && g.pegCount < CribbagePegLimit {
+			g.pegScoreEvents = append(g.pegScoreEvents, CribbagePeggingScoreEvent{PlayerIdx: g.lastPegPlayer, Detail: CribbagePeggingScoreDetail{Go: 1, Total: 1}})
 			g.addScore(g.lastPegPlayer, 1, "cribbage.log.scoreLastCardGo", nil)
 			if g.checkWin() {
 				return nil
@@ -400,6 +417,7 @@ func (g *Cribbage) canAnyPlayerPeg() bool {
 func (g *Cribbage) resetPegSequence() {
 	g.pegCount = 0
 	g.pegPlayedCards = nil
+	g.pegPlayedBy = nil
 	g.pegGoState = 0
 	g.lastPegPlayer = -1
 }
@@ -410,6 +428,7 @@ func (g *Cribbage) advancePegging() {
 	if g.players[0].GetCardsSize() == 0 && g.players[1].GetCardsSize() == 0 {
 		// 最後のカードを出したプレイヤーに1点 (31でなかった場合)
 		if g.lastPegPlayer >= 0 && g.pegCount > 0 && g.pegCount < CribbagePegLimit {
+			g.pegScoreEvents = append(g.pegScoreEvents, CribbagePeggingScoreEvent{PlayerIdx: g.lastPegPlayer, Detail: CribbagePeggingScoreDetail{LastCard: 1, Total: 1}})
 			g.addScore(g.lastPegPlayer, 1, "cribbage.log.scoreLastCard", nil)
 			if g.checkWin() {
 				return
@@ -428,6 +447,7 @@ func (g *Cribbage) advancePegging() {
 	} else {
 		// どちらも出せない
 		if g.lastPegPlayer >= 0 && g.pegCount > 0 && g.pegCount < CribbagePegLimit {
+			g.pegScoreEvents = append(g.pegScoreEvents, CribbagePeggingScoreEvent{PlayerIdx: g.lastPegPlayer, Detail: CribbagePeggingScoreDetail{Go: 1, Total: 1}})
 			g.addScore(g.lastPegPlayer, 1, "cribbage.log.scoreLastCardGo", nil)
 			if g.checkWin() {
 				return
@@ -807,6 +827,12 @@ func (g *Cribbage) GetPegCount() int { return g.pegCount }
 // GetPegPlayedCards ペギングで出されたカード取得
 func (g *Cribbage) GetPegPlayedCards() []*Card { return g.pegPlayedCards }
 
+// GetPegPlayedBy ペギングで各カードを出したプレイヤーのインデックスを取得
+func (g *Cribbage) GetPegPlayedBy() []int { return g.pegPlayedBy }
+
+// GetPegScoreEvents returns scoring events generated by the most recent human pegging action.
+func (g *Cribbage) GetPegScoreEvents() []CribbagePeggingScoreEvent { return g.pegScoreEvents }
+
 // GetShowPhaseStep ショーフェーズのステップ取得
 func (g *Cribbage) GetShowPhaseStep() int { return g.showPhaseStep }
 
@@ -910,6 +936,7 @@ type cribbageJSON struct {
 	DrawPile         []*Card              `json:"dp"`
 	PegCount         int                  `json:"pc"`
 	PegPlayedCards   []*Card              `json:"pp"`
+	PegPlayedBy      []int                `json:"pb"`
 	PegGoState       int                  `json:"pg"`
 	LastPegPlayer    int                  `json:"lp"`
 	PlayerPegCards0  []*Card              `json:"p0"`
@@ -945,6 +972,7 @@ func (g *Cribbage) MarshalJSON() ([]byte, error) {
 		DrawPile:         g.drawPile,
 		PegCount:         g.pegCount,
 		PegPlayedCards:   g.pegPlayedCards,
+		PegPlayedBy:      g.pegPlayedBy,
 		PegGoState:       g.pegGoState,
 		LastPegPlayer:    g.lastPegPlayer,
 		PlayerPegCards0:  g.playerPeggedCards[0],
@@ -1001,9 +1029,37 @@ func (g *Cribbage) UnmarshalJSON(data []byte) error {
 	if g.pegPlayedCards == nil {
 		g.pegPlayedCards = make([]*Card, 0)
 	}
+	g.pegPlayedBy = j.PegPlayedBy
+	if g.pegPlayedBy == nil {
+		g.pegPlayedBy = make([]int, 0)
+	}
 	g.pegGoState = j.PegGoState
 	g.lastPegPlayer = j.LastPegPlayer
 	g.playerPeggedCards = [CribbagePlayerCnt][]*Card{j.PlayerPegCards0, j.PlayerPegCards1}
+	if len(g.pegPlayedBy) != len(g.pegPlayedCards) {
+		// 旧セッションには提出者情報がないため、プレイヤー別履歴から復元する。
+		g.pegPlayedBy = make([]int, 0, len(g.pegPlayedCards))
+		for _, played := range g.pegPlayedCards {
+			owner := -1
+			for playerIdx, cards := range g.playerPeggedCards {
+				for _, card := range cards {
+					if card.GetDesign() == played.GetDesign() && card.GetValue() == played.GetValue() {
+						owner = playerIdx
+						break
+					}
+				}
+				if owner >= 0 {
+					break
+				}
+			}
+			if owner < 0 {
+				g.pegPlayedCards = make([]*Card, 0)
+				g.pegPlayedBy = make([]int, 0)
+				break
+			}
+			g.pegPlayedBy = append(g.pegPlayedBy, owner)
+		}
+	}
 	g.showPhaseStep = j.ShowPhaseStep
 	g.handScoreDetails = [3]*CribbageScoreDetail{j.HandScoreDetail0, j.HandScoreDetail1, j.HandScoreDetail2}
 	g.gameEndFlag = j.GameEndFlag

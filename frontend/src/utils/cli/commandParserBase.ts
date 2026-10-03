@@ -1,3 +1,5 @@
+import type { CliParseResult } from './types';
+
 /** Split user input into a lowercased command and string arguments. */
 export function splitCommand(input: string): { cmd: string; args: string[] } {
   const parts = input.trim().split(/\s+/);
@@ -61,4 +63,14 @@ export function suggestCommand(input: string, commands: string[]): string | null
   }
   const maxDist = Math.max(2, Math.floor(input.length / 2));
   return bestDist <= maxDist ? best : null;
+}
+
+/** Error result for an unrecognised command, with a typo suggestion when one is close. */
+export function unknownCommand<T extends unknown[]>(
+  cmd: string,
+  validCommands: readonly string[],
+): CliParseResult<T> & { error: string } {
+  const suggestion = suggestCommand(cmd, [...validCommands]);
+  if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
+  return { error: `Unknown command: ${cmd}` };
 }

@@ -94,6 +94,70 @@ describe('CinchPage', () => {
     expect(screen.getByRole('button', { name: '1' })).toBeInTheDocument();
   });
 
+  it('marks the dealer in the bid status and explains the forced minimum bid to a human dealer', async () => {
+    mockExec.mockResolvedValue(
+      makeCinchState({
+        phase: 0,
+        bidPlayerIdx: 0,
+        dealerIdx: 0,
+        bidWinnerIdx: -1,
+        currentBid: 0,
+        isHumanTurn: true,
+        players: makeCinchState().players.map((player) => ({ ...player, bid: -1 })),
+      }),
+    );
+    renderWithProviders(<CinchPage />);
+
+    const bids = await screen.findByTestId('cinch-bid-status');
+    expect(bids).toHaveTextContent('あなた: 未入札');
+    expect(bids).toHaveTextContent('ディーラー');
+    expect(await screen.findByTestId('cinch-dealer-bid-notice')).toHaveTextContent(
+      '全員がパスした場合、ディーラーはパスできず、1以上をビッドする必要があります。',
+    );
+  });
+
+  it('shows each player bid status during bidding and updates it from the response', async () => {
+    mockExec.mockResolvedValue(
+      makeCinchState({
+        phase: 0,
+        bidPlayerIdx: 0,
+        bidWinnerIdx: -1,
+        currentBid: 0,
+        players: [
+          { id: 0, isHuman: true, cardCount: 9, cards: [], trickCount: 0, bid: -1, totalScore: 0 },
+          { id: 1, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: 0, totalScore: 0 },
+          { id: 2, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: 4, totalScore: 0 },
+          { id: 3, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: -1, totalScore: 0 },
+        ],
+      }),
+    );
+    renderWithProviders(<CinchPage />);
+
+    const bids = await screen.findByTestId('cinch-bid-status');
+    expect(bids).toHaveTextContent('あなた: 未入札');
+    expect(bids).toHaveTextContent('CPU 1: パス');
+    expect(bids).toHaveTextContent('CPU 2: 4');
+    expect(bids).toHaveTextContent('CPU 3: 未入札');
+    expect(screen.queryByTestId('cinch-dealer-bid-notice')).not.toBeInTheDocument();
+
+    mockExec.mockResolvedValue(
+      makeCinchState({
+        phase: 0,
+        bidPlayerIdx: 1,
+        players: [
+          { id: 0, isHuman: true, cardCount: 9, cards: [], trickCount: 0, bid: 5, totalScore: 0 },
+          { id: 1, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: -1, totalScore: 0 },
+          { id: 2, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: 4, totalScore: 0 },
+          { id: 3, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: 0, totalScore: 0 },
+        ],
+      }),
+    );
+    fireEvent.click(await screen.findByRole('button', { name: '5' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 5 }));
+    await waitFor(() => expect(bids).toHaveTextContent('あなた: 5'));
+    expect(bids).toHaveTextContent('CPU 3: パス');
+  });
+
   it('passing dispatches bid with bid=0', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<CinchPage />);
@@ -166,9 +230,9 @@ describe('CinchPage', () => {
     mockExec.mockResolvedValue(nameTrumpState);
     renderWithProviders(<CinchPage />);
     const diamondBtn = await screen.findByRole('button', { name: 'ダイヤ' });
-    expect(diamondBtn.querySelector('span')?.className).toContain('text-ds-error');
+    expect(diamondBtn.querySelector('span')?.className).toContain('text-ds-error-text');
     const spadeBtn = screen.getByRole('button', { name: 'スペード' });
-    expect(spadeBtn.querySelector('span')?.className ?? '').not.toContain('text-ds-error');
+    expect(spadeBtn.querySelector('span')?.className ?? '').not.toContain('text-ds-error-text');
   });
 
   it('shows the trump suit name and a red symbol in the header when declared', async () => {
@@ -177,7 +241,7 @@ describe('CinchPage', () => {
     const header = await screen.findByTestId('cinch-trump-header');
     expect(header).toHaveTextContent('ハート');
     // The ♥ symbol is wrapped in a red span.
-    expect(header.querySelector('.text-ds-error')?.textContent).toBe('♥');
+    expect(header.querySelector('.text-ds-error-text')?.textContent).toBe('♥');
   });
 
   it('selecting a card then playing dispatches play', async () => {
@@ -203,8 +267,26 @@ describe('CinchPage', () => {
     renderWithProviders(<CinchPage />);
     const detail = await screen.findByTestId('cinch-bidder-detail');
     // Made-bid detail is not styled with the danger color and no set-back row is present.
-    expect(detail).not.toHaveClass('text-ds-error');
+    expect(detail).not.toHaveClass('text-ds-error-text');
     expect(screen.queryByTestId('cinch-setback-row')).not.toBeInTheDocument();
+  });
+
+  it('formats a zero bidder delta as ±0', async () => {
+    mockExec.mockResolvedValue(
+      makeCinchState({
+        phase: 4,
+        lastDealDetail: {
+          trumpSuit: 1,
+          bidderIdx: 0,
+          bid: 6,
+          setBack: false,
+          points: { 0: 8, 1: 2, 2: 2, 3: 2 },
+          gained: { 0: 0, 1: 0, 2: 0, 3: 0 },
+        },
+      }),
+    );
+    renderWithProviders(<CinchPage />);
+    expect(await screen.findByTestId('cinch-bidder-detail')).toHaveTextContent('±0');
   });
 
   it('emphasizes the bidder detail and set-back row when the bidder is set back', async () => {
@@ -212,7 +294,7 @@ describe('CinchPage', () => {
     renderWithProviders(<CinchPage />);
     const detail = await screen.findByTestId('cinch-bidder-detail');
     // Set-back bidder detail is emphasized with the danger color.
-    expect(detail).toHaveClass('text-ds-error');
+    expect(detail).toHaveClass('text-ds-error-text');
     // The bidder's gained row is highlighted as a set-back row.
     expect(screen.getByTestId('cinch-setback-row')).toBeInTheDocument();
   });

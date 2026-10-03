@@ -37,6 +37,14 @@ export interface PiedmonteseTarotTrickCard {
   card: Card;
 }
 
+/** A completed trick recorded in the current deal. */
+export interface PiedmonteseTarotCompletedTrick {
+  trickNumber: number;
+  leadPlayerIdx: number;
+  winnerIdx: number;
+  cards: PiedmonteseTarotTrickCard[];
+}
+
 /** Piedmontese Tarot game configuration. */
 export interface PiedmonteseTarotConfig {
   /** Table size: 3 or 4. The deal and the talon change with it. */
@@ -76,9 +84,12 @@ export interface PiedmonteseTarotResponse extends BaseGameResponse {
   dealerIdx: number;
   /** Cards the dealer has already buried this deal (0 until the scarto is done). */
   scartoCount: number;
+  /** Cards the dealer buried; populated only after the deal ends. */
+  scartoCards: Card[];
   /** Cards the dealer must bury: 2 at four seats, 3 at three seats. */
   talonSize: number;
   currentTrick: PiedmonteseTarotTrickCard[];
+  completedTricks: PiedmonteseTarotCompletedTrick[];
   /** Cumulative match score per seat. */
   playerScores: number[];
   /** Signed settlement of the most recent deal per seat. */

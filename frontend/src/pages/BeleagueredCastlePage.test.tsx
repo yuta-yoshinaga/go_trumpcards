@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { beleagueredCastleApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BeleagueredCastleResponse, BeleagueredCastleTableauCard, Card, CardDesign } from '../types/card';
@@ -133,21 +134,30 @@ describe('BeleagueredCastlePage', () => {
     }
   });
 
+  it('includes the 0-based tableau column and position in each card accessible name', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BeleagueredCastlePage />);
+
+    expect(await screen.findByRole('button', { name: '♠ K、列0・位置0' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 5、列0・位置1' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 6、列1・位置0' })).toBeInTheDocument();
+  });
+
   it('gives each empty tableau column a distinct column-numbered aria-label', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BeleagueredCastlePage />);
-    // Columns 3 and 8 (1-based) are empty and each reads distinctly, unlike the
+    // Columns 2 and 7 (0-based) are empty and each reads distinctly, unlike the
     // previous shared "empty" text.
-    await waitFor(() => expect(screen.getByRole('button', { name: '空のタブロー列 3' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '空のタブロー列 8' })).toBeInTheDocument();
-    // The two filled columns (1, 2) are not rendered as empty-column buttons.
-    expect(screen.queryByRole('button', { name: '空のタブロー列 1' })).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: '空のタブロー列 2' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '空のタブロー列 7' })).toBeInTheDocument();
+    // The two filled columns (0, 1) are not rendered as empty-column buttons.
+    expect(screen.queryByRole('button', { name: '空のタブロー列 0' })).not.toBeInTheDocument();
   });
 
   it('keeps empty tableau columns focusable before a card is selected and ignores clicks', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BeleagueredCastlePage />);
-    const emptyColumn = await screen.findByRole('button', { name: '空のタブロー列 3' });
+    const emptyColumn = await screen.findByRole('button', { name: '空のタブロー列 2' });
     expect(emptyColumn).toBeEnabled();
     emptyColumn.focus();
     expect(emptyColumn).toHaveFocus();
@@ -177,8 +187,8 @@ describe('BeleagueredCastlePage', () => {
   it('moves a selected card to a legal empty tableau column', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BeleagueredCastlePage />);
-    fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
-    const emptyColumn = await screen.findByRole('button', { name: '空のタブロー列 3' });
+    fireEvent.click(await screen.findByRole('button', { name: /^♠ 5/ }));
+    const emptyColumn = await screen.findByRole('button', { name: '空のタブロー列 2' });
     expect(emptyColumn).toBeEnabled();
 
     fireEvent.click(emptyColumn);
@@ -275,7 +285,7 @@ describe('BeleagueredCastlePage', () => {
   it('selecting a tableau card marks it as selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BeleagueredCastlePage />);
-    const sourceBtn = await screen.findByRole('button', { name: '♠ 5' });
+    const sourceBtn = await screen.findByRole('button', { name: /^♠ 5/ });
     fireEvent.click(sourceBtn);
     await waitFor(() => expect(sourceBtn).toHaveAttribute('aria-pressed', 'true'));
   });
@@ -292,7 +302,7 @@ describe('BeleagueredCastlePage', () => {
     it('marks nothing until a card is selected', async () => {
       mockExec.mockResolvedValue(playingState);
       renderWithProviders(<BeleagueredCastlePage />);
-      await screen.findByRole('button', { name: '♠ 5' });
+      await screen.findByRole('button', { name: /^♠ 5/ });
       expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(0);
     });
 
@@ -301,7 +311,7 @@ describe('BeleagueredCastlePage', () => {
     it('marks the ranks-down column and every empty column, but not the source column', async () => {
       mockExec.mockResolvedValue(playingState);
       renderWithProviders(<BeleagueredCastlePage />);
-      fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
+      fireEvent.click(await screen.findByRole('button', { name: /^♠ 5/ }));
       await waitFor(() => expect(markedColumns()).toContain('#1'));
       expect(markedColumns().sort()).toEqual(['#1', '#2', '#3', '#4', '#5', '#6', '#7']);
     });
@@ -315,7 +325,7 @@ describe('BeleagueredCastlePage', () => {
         foundation: [[], [], [], []],
       });
       renderWithProviders(<BeleagueredCastlePage />);
-      fireEvent.click(await screen.findByRole('button', { name: '♠ A' }));
+      fireEvent.click(await screen.findByRole('button', { name: /^♠ A/ }));
 
       await waitFor(() =>
         expect(
@@ -330,7 +340,7 @@ describe('BeleagueredCastlePage', () => {
     it('marks a foundation only for the card that continues it', async () => {
       mockExec.mockResolvedValue(playingState);
       const { unmount } = renderWithProviders(<BeleagueredCastlePage />);
-      fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
+      fireEvent.click(await screen.findByRole('button', { name: /^♠ 5/ }));
       await waitFor(() => expect(markedColumns()).toContain('#1'));
       expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(7);
       unmount();
@@ -340,7 +350,7 @@ describe('BeleagueredCastlePage', () => {
         tableau: makeTableau([[{ card: card('SPADE', 2), faceUp: true }]]),
       });
       renderWithProviders(<BeleagueredCastlePage />);
-      fireEvent.click(await screen.findByRole('button', { name: '♠ 2' }));
+      fireEvent.click(await screen.findByRole('button', { name: /^♠ 2/ }));
       await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]').length).toBeGreaterThan(7));
     });
   });
@@ -395,7 +405,7 @@ describe('BeleagueredCastlePage destination preview', () => {
   const render = async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BeleagueredCastlePage />);
-    return screen.findByRole('button', { name: '♠ 5' });
+    return screen.findByRole('button', { name: /^♠ 5/ });
   };
   const targets = () => document.querySelectorAll('[data-legal-target="true"]');
   const previews = () => document.querySelectorAll('[data-preview-target="true"]');
@@ -513,7 +523,7 @@ describe('BeleagueredCastlePage selection status announcement', () => {
     expect(status).toBeEmptyDOMElement();
 
     // ♠2 can go to ♠ foundation (top ♠1) and tableau cols 1 (♥3) and 2 (♦3) -> 3 legal destinations
-    fireEvent.click(screen.getByRole('button', { name: '♠ 2' }));
+    fireEvent.click(screen.getByRole('button', { name: /^♠ 2/ }));
     await waitFor(() => expect(status).toHaveTextContent('選択中のカードを置ける場所が3箇所あります'));
   });
 
@@ -527,7 +537,65 @@ describe('BeleagueredCastlePage selection status announcement', () => {
     expect(status).toBeEmptyDOMElement();
 
     // ♣9 has no legal destinations on foundations or non-empty tableau columns
-    fireEvent.click(screen.getByRole('button', { name: '♣ 9' }));
+    fireEvent.click(screen.getByRole('button', { name: /^♣ 9/ }));
     await waitFor(() => expect(status).toHaveTextContent('選択中のカードを置ける場所はありません'));
+  });
+});
+
+describe('BeleagueredCastlePage move count announcement', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+    localStorage.clear();
+  });
+
+  it('announces only move count changes and starts empty', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({ ...playingState, moveCount: 4 });
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.getByText(/包囲された城/)).toBeInTheDocument());
+
+    const status = screen.getByTestId('bc-move-count-status');
+    expect(status).toBeInTheDocument();
+    expect(status).toBeEmptyDOMElement();
+    expect(status).toHaveAttribute('role', 'status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+
+    fireEvent.click(screen.getByRole('button', { name: /^♠ 5/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^♥ 6/ }));
+
+    await waitFor(() => expect(status).toHaveTextContent('手数: 4'));
+  });
+
+  it('announces a move count decrease after undo', async () => {
+    mockExec
+      .mockResolvedValueOnce({ ...playingState, canUndo: true })
+      .mockResolvedValueOnce({ ...playingState, moveCount: 2, canUndo: false });
+    renderWithProviders(<BeleagueredCastlePage />);
+
+    const status = await screen.findByTestId('bc-move-count-status');
+    expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
+    expect(status).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByRole('button', { name: '元に戻す' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+    await waitFor(() => expect(status).toHaveTextContent('手数: 2'));
+  });
+
+  it('translates an existing move count announcement when the language changes', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({ ...playingState, moveCount: 4 });
+    renderWithProviders(<BeleagueredCastlePage />);
+
+    const status = await screen.findByTestId('bc-move-count-status');
+    fireEvent.click(screen.getByRole('button', { name: /^♠ 5/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^♥ 6/ }));
+    await waitFor(() => expect(status).toHaveTextContent('手数: 4'));
+
+    try {
+      await i18n.changeLanguage('en');
+      await waitFor(() => expect(status).toHaveTextContent('Moves: 4'));
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 });

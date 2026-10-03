@@ -263,7 +263,7 @@ func (g *Madrasso) ScoreRound() {
 		g.gameEndFlag = true
 		g.winnerTeam = leader
 		g.phase = MadrassoPhaseGameEnd
-		g.appendLog(-1, "game_end", "madrasso.log.gameEnd", map[string]string{"team": madrassoTeamName(leader)}, nil)
+		g.appendLog(-1, "game_end", "madrasso.log.gameEnd", map[string]string{"team": TeamName(leader)}, nil)
 	}
 }
 
@@ -451,17 +451,6 @@ func madrassoSortHand(p *MadrassoPlayer) {
 	})
 }
 
-// madrassoTeamName チーム表示名 (0=A, 1=B)。
-//
-// **クローン元の teamName は共有できない。** あちら (Tressette.go) は casino
-// タグ、こちらは extra3 なので、extra3 のビルドでは定義ごと消える。
-func madrassoTeamName(team int) string {
-	if team == 0 {
-		return "A"
-	}
-	return "B"
-}
-
 // --- Card helpers ---
 
 // madrassoStrength トリックの強さ。3 が最強 (9)、4 が最弱 (0)。
@@ -532,6 +521,9 @@ func madrassoPoints(value int) int {
 		return 0
 	}
 }
+
+// MadrassoCardPoints returns the points awarded for a single card.
+func MadrassoCardPoints(value int) int { return madrassoPoints(value) }
 
 // GetTrumpSuit は配りで決まった切り札スートを返す (-1=未確定)。
 func (g *Madrasso) GetTrumpSuit() int { return g.trumpSuit }

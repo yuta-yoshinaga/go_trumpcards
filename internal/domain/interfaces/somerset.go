@@ -25,6 +25,8 @@ type SomersetGame interface {
 	GetTableau() [domain.SomersetTableauCnt][]*domain.SomersetTableauCard
 	// GetFoundation ファンデーションを取得する
 	GetFoundation() [domain.SomersetFoundationCnt][]*domain.Card
+	// GetTotalCardCount returns the total number of cards in the deck.
+	GetTotalCardCount() int
 	// AllFaceUp 全カードが表向きかを返す
 	AllFaceUp() bool
 	// IsStalemate 手詰まり状態を取得する

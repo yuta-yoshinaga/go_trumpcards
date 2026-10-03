@@ -23,6 +23,7 @@
     "cpu": "CPU{{idx}}"
   },
   "currentTrick": "現在のトリック",
+  "trickCardByPlayer": "{{name}}が出した{{card}}",
   "handEnd": {
     "tens": "チーム{{team}} が 10 の枚数で勝ちました（+1）。",
     "tricks": "10 が2枚ずつだったので、トリックの多いチーム{{team}} の勝ちです（+1）。",
@@ -33,7 +34,8 @@
     "nextHand": "次のハンドへ",
     "reset": "リセット",
     "giveUp": "投了",
-    "playAria": "{{card}} を出す"
+    "playAria": "{{card}} を出す",
+    "playableAria": "{{card}} を出す（プレイ可能）"
   },
   "result": {
     "youWin": "あなたのチームの勝ち！ {{t0}} － {{t1}}",

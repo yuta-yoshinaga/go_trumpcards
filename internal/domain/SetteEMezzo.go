@@ -575,6 +575,9 @@ func (s *SetteEMezzo) GetPhase() int { return s.phase }
 // GetChips 人間のチップ
 func (s *SetteEMezzo) GetChips() int { return s.chips.GetChips() }
 
+// GetDrawPileCount returns the number of cards not yet dealt in this round.
+func (s *SetteEMezzo) GetDrawPileCount() int { return s.trumpCards.GetRemainingCount() }
+
 // GetSeats 全席を取得する
 func (s *SetteEMezzo) GetSeats() []*SetteEMezzoSeat { return s.seats }
 

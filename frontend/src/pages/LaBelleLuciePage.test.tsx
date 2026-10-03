@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { labellelucieApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, LaBelleLucieResponse } from '../types/card';
 import { LaBelleLuciePage } from './LaBelleLuciePage';
@@ -35,6 +36,37 @@ beforeEach(() => {
 });
 
 describe('LaBelleLuciePage', () => {
+  it('includes fan card counts, move state, and hint state in accessible names', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        fans: [[card('SPADE', 9), card('HEART', 10)], [card('SPADE', 8)], []],
+        movableFans: [true, false, false],
+        hint: { fromFan: 0, toFan: 1, toFoundation: false },
+      }),
+    );
+    renderWithProviders(<LaBelleLuciePage />);
+
+    const fan = await screen.findByTestId('fan-0');
+    expect(fan).toHaveAccessibleName('扇 1、最上段は♥ 10、2枚、移動可能');
+    expect(await screen.findByRole('button', { name: '扇 2、最上段は♠ 8、1枚' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '扇 3、空' })).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('hint-button'));
+    await waitFor(() => expect(fan).toHaveAccessibleName('扇 1、最上段は♥ 10、2枚、ヒントの元'));
+  });
+
+  it('uses natural singular and plural card counts in English accessible names', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(makeState({ fans: [[card('SPADE', 9), card('HEART', 10)], [card('SPADE', 8)], []] }));
+      renderWithProviders(<LaBelleLuciePage />);
+      expect(await screen.findByRole('button', { name: 'Fan 1, top card: ♥ 10, 2 cards' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Fan 2, top card: ♠ 8, 1 card, movable' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Fan 3, empty' })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
   // **リングは 1 つだけ。** ring-* は同じ box-shadow を共有するので重ねられず、
   // 連結すると選択中かつ移動可能な扇で選択リングが黙って消える (レビュー指摘)。
   it('keeps the selection ring on a fan that can also move', async () => {
@@ -132,6 +164,38 @@ describe('LaBelleLuciePage', () => {
     renderWithProviders(<LaBelleLuciePage />);
     await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());
     expect(screen.getByTestId('foundation-0')).toBeInTheDocument();
+  });
+
+  it('shows foundation progress and remaining cards from the current board', async () => {
+    renderWithProviders(<LaBelleLuciePage />);
+    expect(await screen.findByTestId('ll-progress')).toHaveTextContent('組札: 0/52');
+
+    mockExec.mockResolvedValueOnce(makeState({ foundation: [[card('DIAMOND', 1)], [], [], []], canUndo: true }));
+    fireEvent.click(screen.getByTestId('fan-2'));
+    fireEvent.click(screen.getByTestId('foundation-0'));
+    await waitFor(() => expect(screen.getByTestId('ll-progress')).toHaveTextContent('組札: 1/52'));
+    expect(screen.getByTestId('ll-progress')).toHaveTextContent('残り: 51');
+
+    mockExec.mockResolvedValueOnce(makeState());
+    fireEvent.click(screen.getByTestId('undo-button'));
+    await waitFor(() => expect(screen.getByTestId('ll-progress')).toHaveTextContent('組札: 0/52'));
+
+    mockExec.mockResolvedValueOnce(
+      makeState({ foundation: [[card('DIAMOND', 1), card('DIAMOND', 2)], [card('HEART', 1)], [], []] }),
+    );
+    fireEvent.click(screen.getByTestId('redeal-button'));
+    await waitFor(() => expect(screen.getByTestId('ll-progress')).toHaveTextContent('組札: 3/52'));
+    expect(screen.getByTestId('ll-progress')).toHaveTextContent('残り: 49');
+
+    const fullFoundation = [
+      ...(['SPADE', 'HEART', 'CLOVER', 'DIAMOND'] as const).map((suit) =>
+        Array.from({ length: 13 }, (_, i) => card(suit, i + 1)),
+      ),
+    ];
+    mockExec.mockResolvedValueOnce(makeState({ foundation: fullFoundation, phase: 1 }));
+    fireEvent.click(screen.getByTestId('autocomplete-button'));
+    await waitFor(() => expect(screen.getByTestId('ll-progress')).toHaveTextContent('組札: 52/52'));
+    expect(screen.getByTestId('ll-progress')).toHaveTextContent('残り: 0');
   });
 
   it('keeps an unselected foundation focusable and explains how to enable it', async () => {
@@ -261,8 +325,8 @@ describe('LaBelleLuciePage', () => {
     renderWithProviders(<LaBelleLuciePage />);
 
     await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());
-    expect(screen.getByTestId('fan-1')).toHaveAccessibleName('扇 2、最上段は♠ 8、移動可能');
-    expect(screen.getByTestId('fan-0')).toHaveAccessibleName('扇 1、最上段は♠ 9');
+    expect(screen.getByTestId('fan-1')).toHaveAccessibleName('扇 2、最上段は♠ 8、1枚、移動可能');
+    expect(screen.getByTestId('fan-0')).toHaveAccessibleName('扇 1、最上段は♠ 9、1枚');
   });
 
   it('describes hint source and destination only while the hint is shown', async () => {
@@ -270,12 +334,12 @@ describe('LaBelleLuciePage', () => {
     renderWithProviders(<LaBelleLuciePage />);
     await screen.findByTestId('hint-button');
 
-    expect(screen.getByTestId('fan-1')).toHaveAccessibleName('扇 2、最上段は♠ 8、移動可能');
-    expect(screen.getByTestId('fan-0')).toHaveAccessibleName('扇 1、最上段は♠ 9');
+    expect(screen.getByTestId('fan-1')).toHaveAccessibleName('扇 2、最上段は♠ 8、1枚、移動可能');
+    expect(screen.getByTestId('fan-0')).toHaveAccessibleName('扇 1、最上段は♠ 9、1枚');
 
     fireEvent.click(screen.getByTestId('hint-button'));
-    await waitFor(() => expect(screen.getByTestId('fan-1')).toHaveAccessibleName('扇 2、最上段は♠ 8、ヒントの元'));
-    expect(screen.getByTestId('fan-0')).toHaveAccessibleName('扇 1、最上段は♠ 9、ヒントの先');
+    await waitFor(() => expect(screen.getByTestId('fan-1')).toHaveAccessibleName('扇 2、最上段は♠ 8、1枚、ヒントの元'));
+    expect(screen.getByTestId('fan-0')).toHaveAccessibleName('扇 1、最上段は♠ 9、1枚、ヒントの先');
   });
 
   it('describes empty fans and does not expose translation keys', async () => {

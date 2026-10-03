@@ -213,6 +213,25 @@ describe('ContractRummyPage', () => {
     );
   });
 
+  it('announces only contract slot progress that changes', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<ContractRummyPage />);
+    const liveRegion = await screen.findByTestId('cr-slot-progress-live');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    const handButtons = screen.getAllByRole('button').filter((button) => button.querySelector('img'));
+    fireEvent.click(handButtons[0]);
+    fireEvent.click(handButtons[1]);
+    fireEvent.click(handButtons[2]);
+    fireEvent.click(screen.getByRole('button', { name: /スロットに追加|Add to slot/ }));
+
+    await waitFor(() => expect(liveRegion).toHaveTextContent('スロット1: 3/3枚、達成'));
+    expect(liveRegion).not.toHaveTextContent('スロット2');
+
+    fireEvent.click(screen.getByTestId('cr-slot-card-0'));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('スロット1: 2/3枚、未達成'));
+  });
+
   it('undoing a slot pop returns the cards to the hand', async () => {
     mockExec.mockResolvedValue(playState);
     renderWithProviders(<ContractRummyPage />);
@@ -513,6 +532,45 @@ describe('ContractRummyPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /Add to slot|スロットに追加/ }));
     await waitFor(() => expect(screen.getByTestId('cr-slot-progress-1')).toHaveAttribute('data-state', 'satisfied'));
     expect(screen.getByTestId('cr-submit-contract')).not.toBeDisabled();
+  });
+
+  it('prevents staging beyond the required slot count and explains the limit', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<ContractRummyPage />);
+    await screen.findByTestId('cr-hand');
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.querySelector('img'));
+    const addButton = screen.getByRole('button', { name: /Add to slot|スロットに追加/ });
+
+    for (const indexes of [
+      [0, 1, 2],
+      [3, 4, 5],
+    ]) {
+      for (const index of indexes) fireEvent.click(cardButtons[index]);
+      fireEvent.click(addButton);
+    }
+
+    expect(addButton).not.toBeDisabled();
+    expect(addButton).toHaveAttribute('aria-disabled', 'true');
+    expect(
+      screen.getByRole('button', {
+        name: /Add to slot|スロットに追加/,
+        description: '必要なスロット数に達しました',
+      }),
+    ).toBe(addButton);
+    expect(screen.getByText('必要なスロット数に達しました')).toBeInTheDocument();
+    for (const index of [6, 7, 8]) fireEvent.click(cardButtons[index]);
+    fireEvent.click(addButton);
+    expect(screen.getAllByTestId(/cr-slot-progress-\d/)).toHaveLength(2);
+    expect(screen.getByTestId('cr-submit-contract')).not.toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('does not report a slot limit when the contract has no slots', async () => {
+    mockExec.mockResolvedValue({ ...playState, contractSlots: [] });
+    renderWithProviders(<ContractRummyPage />);
+    const addButton = await screen.findByRole('button', { name: /Add to slot|スロットに追加/ });
+
+    expect(addButton).not.toHaveAttribute('aria-disabled', 'true');
+    expect(screen.queryByText('必要なスロット数に達しました')).not.toBeInTheDocument();
   });
 
   it('flags an invalid set as invalid in the slot progress chip', async () => {

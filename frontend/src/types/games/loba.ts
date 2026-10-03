@@ -16,6 +16,8 @@ export interface LobaPlayer {
    * each one is drives every decision.
    */
   score: number;
+  /** Penalty delta from the most recently completed round. */
+  roundScore: number;
   eliminated: boolean;
   /** Whether this seat has melded this round, which is what allows laying off. */
   hasMelded: boolean;

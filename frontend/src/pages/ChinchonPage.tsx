@@ -237,6 +237,24 @@ function ChinchonPageContent() {
       />
     );
 
+  const scoreBreakdown = (p: ChinchonResponse['players'][number]): string => {
+    if (state.wonByChinchon) {
+      if (state.winnerIdx === p.id) return t('scoreChinchon');
+      return '—';
+    }
+
+    let role: 'scoreKnocker' | 'scoreAfterLayoff' | 'scoreDeadwood';
+    if (state.knockerIdx === p.id) {
+      role = 'scoreKnocker';
+    } else if (state.knockerIdx >= 0) {
+      role = 'scoreAfterLayoff';
+    } else {
+      role = 'scoreDeadwood';
+    }
+    const breakdown = p.roundDeadwoodCards.map(cardAlt).join(t('listSeparator')) || t('noDeadwood');
+    return t(role, { breakdown, score: p.roundScore });
+  };
+
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isDrawPhase = state.phase === ChinchonPhase.DRAW;
   const isDiscardPhase = state.phase === ChinchonPhase.DISCARD;
@@ -386,6 +404,7 @@ function ChinchonPageContent() {
                           {t('scoresPlayer')}
                         </th>
                         <th scope="col">{t('scoresRound')}</th>
+                        {isRoundEnd || isGameEnd ? <th scope="col">{t('scoresBreakdown')}</th> : null}
                         <th scope="col">{t('scoresTotal')}</th>
                       </tr>
                     </thead>
@@ -397,12 +416,50 @@ function ChinchonPageContent() {
                         >
                           <td>{playerName(p.id, p.isHuman)}</td>
                           <td className="text-center">{p.roundScore}</td>
+                          {isRoundEnd || isGameEnd ? (
+                            <td data-testid={`ch-score-breakdown-${p.id}`} className="px-1 text-xs">
+                              {scoreBreakdown(p)}
+                            </td>
+                          ) : null}
                           <td className="text-center">{p.cumulativeScore}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
+                {state.roundScoreHistory.length > 0 && (
+                  <div className="my-3 p-2 rounded bg-black/30" data-testid="chinchon-score-history">
+                    <div className="text-ds-text-muted text-sm mb-1">{t('scoreHistory')}</div>
+                    <table className="w-full text-sm text-ds-text-muted">
+                      <thead>
+                        <tr>
+                          <th scope="col" className="text-left">
+                            {t('scoreHistoryRound')}
+                          </th>
+                          {state.players.map((p) => (
+                            <th scope="col" key={p.id}>
+                              {playerName(p.id, p.isHuman)}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {state.roundScoreHistory.map((scores, roundIdx) => (
+                          <tr key={roundIdx}>
+                            <th scope="row" className="text-left">
+                              {roundIdx + 1}
+                            </th>
+                            {state.players.map((p) => (
+                              <td className="text-center" key={p.id}>
+                                {scores[p.id] ?? 0}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </div>
 

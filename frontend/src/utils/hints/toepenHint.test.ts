@@ -9,6 +9,7 @@ const base = {
   leadPlayerIdx: 0,
   dealerIdx: 0,
   currentTrick: [],
+  currentTrickWinnerIdx: -1,
   leadSuit: -1,
   trickNumber: 0,
   handNumber: 1,

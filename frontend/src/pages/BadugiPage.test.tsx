@@ -92,10 +92,29 @@ describe('BadugiPage', () => {
     expect(screen.queryByText(/サイドポット|Side pot/)).not.toBeInTheDocument();
   });
 
-  it('lists side pots with eligible player names', async () => {
-    mockExec.mockResolvedValue(baseState({ sidePots: [{ amount: 25, eligiblePlayers: [0, 2] }] }));
+  it('does not list the main pot when there are no side pots', async () => {
+    mockExec.mockResolvedValue(baseState({ sidePots: [{ amount: 40, eligiblePlayers: [0, 1, 2, 3] }] }));
     renderWithProviders(<BadugiPage />);
-    expect(await screen.findByText('サイドポット1: 25チップ（受給資格: あなた, CPU 2）')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('40')).toBeInTheDocument());
+    expect(screen.queryByText(/メインポット|サイドポット/)).not.toBeInTheDocument();
+  });
+
+  it('labels the first split pot as main and subsequent pots as numbered side pots', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        sidePots: [
+          { amount: 25, eligiblePlayers: [0, 1, 2, 3] },
+          { amount: 15, eligiblePlayers: [0, 2] },
+          { amount: 10, eligiblePlayers: [2] },
+        ],
+      }),
+    );
+    renderWithProviders(<BadugiPage />);
+    expect(
+      await screen.findByText('メインポット: 25チップ（受給資格: あなた, CPU 1, CPU 2, CPU 3）'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('サイドポット1: 15チップ（受給資格: あなた, CPU 2）')).toBeInTheDocument();
+    expect(screen.getByText('サイドポット2: 10チップ（受給資格: CPU 2）')).toBeInTheDocument();
   });
 
   it('renders the pre-draw badge on the initial deal', async () => {
@@ -170,6 +189,26 @@ describe('BadugiPage', () => {
     );
     renderWithProviders(<BadugiPage />);
     await waitFor(() => expect(screen.getByText('あなたの勝ちです。')).toBeInTheDocument());
+  });
+
+  it('lists each showdown result with its hand name and winnings', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: BadugiPhase.END,
+        gameEndFlag: true,
+        roundResults: [
+          { playerIdx: 0, handSize: 4, handName: 'Badugi', wonAmount: 40 },
+          { playerIdx: 1, handSize: 3, handName: '3-card', wonAmount: 0 },
+        ],
+      }),
+    );
+    renderWithProviders(<BadugiPage />);
+    expect(await screen.findByTestId('bg-round-results')).toHaveTextContent('あなた');
+    expect(screen.getByTestId('bg-round-results')).toHaveTextContent('バドゥーギ');
+    expect(screen.getByTestId('bg-round-results')).toHaveTextContent('獲得: 40チップ');
+    expect(screen.getByTestId('bg-round-results')).toHaveTextContent('CPU 1');
+    expect(screen.getByTestId('bg-round-results')).toHaveTextContent('3カード');
+    expect(screen.getByTestId('bg-round-results')).toHaveTextContent('獲得: 0チップ');
   });
 
   // **サーバの handName は英語の生値。**バドゥーギの役名はポーカー役表と対応
@@ -366,6 +405,61 @@ describe('BadugiPage', () => {
       expect(btn.className).toContain('-translate-y-1');
       expect(btn.className).not.toContain('opacity-50');
     }
+  });
+
+  it('shows the current best hand rank during exchange, updates after exchange, and follows the hint setting', async () => {
+    localStorage.setItem('hint_enabled_badugi', 'true');
+    const initial = baseState({
+      phase: BadugiPhase.DRAW,
+      drawIndex: 1,
+      currentTurn: 0,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 2 },
+            { design: 'DIAMOND', value: 3 },
+            { design: 'SPADE', value: 5 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+    });
+    mockExec.mockResolvedValueOnce(initial).mockResolvedValueOnce(
+      baseState({
+        phase: BadugiPhase.DRAW,
+        drawIndex: 2,
+        currentTurn: 0,
+        players: [
+          humanPlayer({
+            cards: [
+              { design: 'SPADE', value: 1 },
+              { design: 'HEART', value: 2 },
+              { design: 'DIAMOND', value: 3 },
+              { design: 'CLOVER', value: 4 },
+            ],
+          }),
+          cpuPlayer(1),
+          cpuPlayer(2),
+          cpuPlayer(3),
+        ],
+      }),
+    );
+    renderWithProviders(<BadugiPage />);
+
+    expect(await screen.findByTestId('bg-current-hand-rank')).toHaveTextContent('3カード');
+    fireEvent.click(screen.getByRole('button', { name: '交換' }));
+    await waitFor(() => expect(screen.getByTestId('bg-current-hand-rank')).toHaveTextContent('バドゥーギ'));
+  });
+
+  it('hides the current hand rank when hints are disabled', async () => {
+    localStorage.removeItem('hint_enabled_badugi');
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.DRAW, currentTurn: 0 }));
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+    expect(screen.queryByTestId('bg-current-hand-rank')).not.toBeInTheDocument();
   });
 
   it('dims duplicate-suit cards in the draw phase and omits data-badugi-subset on them', async () => {

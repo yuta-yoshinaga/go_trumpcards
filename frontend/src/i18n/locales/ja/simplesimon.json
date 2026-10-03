@@ -12,6 +12,7 @@
   "undo": "元に戻す",
   "empty": "空",
   "columnNumber": "列{{col}}",
+  "columnCardCount": "{{count}}枚",
   "columnSource": "選択元",
   "columnDestination": "移動先候補",
   "selectSource": "動かすカード（列の最上位、または同スート降順の列）を選んでください。ダブルクリックで最適な列へ自動移動します",
@@ -29,6 +30,7 @@
     "resetButton": "新しいゲームを始めるボタンです。"
   },
   "cardPosAria": "{{card}}（列{{col}}・上から{{pos}}枚目）",
+  "movableRunStartAria": "移動可能な連続札の先頭、{{count}}枚",
   "emptyColAria": "列{{col}}（空）",
   "frontendHint": {
     "simplesimonMove": "この列の札を別の列へ移せます"

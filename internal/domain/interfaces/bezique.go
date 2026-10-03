@@ -55,6 +55,8 @@ type BeziqueGame interface {
 	GetDealPoints(i int) int
 	// GetDealMeldPoints プレイヤーの当ディール得点のうちメルド由来分を取得する
 	GetDealMeldPoints(i int) int
+	// GetLastTrickBonus プレイヤーの当ディール最終トリック加点を取得する
+	GetLastTrickBonus(i int) int
 	// GetMatchScore プレイヤーの試合累積得点を取得する
 	GetMatchScore(i int) int
 	// GetWinnerIdx 勝者プレイヤーインデックスを取得する (-1: 未確定)

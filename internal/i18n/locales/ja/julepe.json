@@ -8,6 +8,8 @@
   "header": "ラウンド: {{round}}/{{rounds}}  トリック: {{trick}}/{{tricks}}  ({{players}}人)",
   "potLine": "ポット: {{pot}} チップ（トリック数に応じて分配）",
   "trumpLine": "切り札: {{card}}",
+  "lastTrick": "直前のトリック",
+  "lastTrickWinner": "直前のトリックの勝者: {{name}}",
   "riskLine": "参加して規定 {{required}} トリックに届かないと、ポットへ追加で {{penalty}} 支払い、次ラウンドのアンティが倍になります。",
   "playerLine": "{{name}}: {{chips}}チップ [{{status}}] 獲得{{tricks}} 手札{{cards}}枚",
   "statusIn": "参加",

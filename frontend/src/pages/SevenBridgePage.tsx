@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { Fragment, useCallback, useMemo, useState } from 'react';
 import type { sevenBridgeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -261,11 +261,30 @@ function SevenBridgePageContent() {
                     </thead>
                     <tbody>
                       {state?.players?.map((p) => (
-                        <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                          <td>{playerName(p.id, p.isHuman)}</td>
-                          <td className="text-center">{p.roundScore}</td>
-                          <td className="text-center">{p.cumulativeScore}</td>
-                        </tr>
+                        <Fragment key={p.id}>
+                          <tr className={p.isHuman ? 'text-ds-accent' : ''}>
+                            <td>{playerName(p.id, p.isHuman)}</td>
+                            <td className="text-center">{p.roundScore}</td>
+                            <td className="text-center">{p.cumulativeScore}</td>
+                          </tr>
+                          {(isRoundEnd || isGameEnd) && (
+                            <tr>
+                              <td colSpan={3} className="pb-1 pl-2 text-xs">
+                                <div>{t('scoreBreakdown.title')}</div>
+                                <div className="flex flex-wrap gap-x-3">
+                                  {(['ace', 'number', 'face', 'seven'] as const).map((category) => {
+                                    const value = p.scoreBreakdown[category];
+                                    return (
+                                      <span key={category}>
+                                        {t(`scoreBreakdown.${category}`)}: {value > 0 ? `−${value}` : value}
+                                      </span>
+                                    );
+                                  })}
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </Fragment>
                       ))}
                     </tbody>
                   </table>
@@ -449,11 +468,15 @@ function SevenBridgePageContent() {
                   >
                     {t('layoffButton')}
                   </button>
+                  <span id="sb-discard-hint" className="sr-only" data-testid="sb-discard-hint">
+                    {selectedCardIndices.length === 1 ? t('requirementMet') : t('discardRequireOne')}
+                  </span>
                   <button
                     type="button"
                     className={btnSuccess}
                     onClick={handleDiscard}
                     disabled={loading || selectedCardIndices.length !== 1}
+                    aria-describedby="sb-discard-hint"
                     data-tutorial="sb-discard-button"
                   >
                     {t('discardButton')}

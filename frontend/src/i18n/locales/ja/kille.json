@@ -15,7 +15,7 @@
   "outLowest": "最弱で脱落",
   "eliminated": "退場",
   "satisfied": "交換しない",
-  "reentriesUsed": "買い戻し {{used}}/{{max}}",
+  "reentriesRemaining": "買い戻し残り {{count}}回",
   "turnNotice": "あなたの番です — 左隣と交換するか、そのまま残すかを選んでください。",
   "dealerNotice": "あなたは親です — 交換相手は左隣ではなく山札です。誰にも仕掛けられません。",
   "exchangeButton": "交換する",
@@ -25,6 +25,9 @@
   "reenterExhausted": "買い戻しは3回までです。",
   "nextRound": "次のラウンドへ",
   "showdownTitle": "公開",
+  "listSeparator": "、",
+  "showdownSummary": "このショーダウンで {{names}} が脱落しました。",
+  "gameWinner": "{{name}} の勝ちです。",
   "loserLine": "{{name}} が脱落しました（{{reason}}）",
   "eventsTitle": "このラウンドの交換",
   "event": {

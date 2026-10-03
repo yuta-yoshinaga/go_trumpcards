@@ -69,6 +69,7 @@ func (p *EuchreWebPresenter) buildBase(e interfaces.EuchreGame) *controller.Euch
 	resObj.GameEndFlag = e.GetGameEndFlag()
 	resObj.WinnerTeam = e.GetWinnerTeam()
 	resObj.LeadPlayerIdx = e.GetLeadPlayerIdx()
+	resObj.TrickWinnerIdx = e.GetCurrentTrickWinner()
 
 	// 設定
 	cfg := e.GetConfig()

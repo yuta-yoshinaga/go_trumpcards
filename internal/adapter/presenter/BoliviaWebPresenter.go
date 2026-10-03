@@ -14,6 +14,7 @@ type BoliviaWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *BoliviaWebPresenter) Output(g interfaces.BoliviaGame, lastErr error) string {
 	resObj := new(controller.BoliviaWebOutput)
+	resObj.MinMeld = g.GetMinimumMeldValue(0)
 	resObj.Phase = int(g.GetPhase())
 	resObj.RoundNumber = g.GetRoundNumber()
 	resObj.CurrentPlayerIdx = g.GetCurrentPlayerIdx()
@@ -89,6 +90,7 @@ func (p *BoliviaWebPresenter) buildPlayersOutput(g interfaces.BoliviaGame) []*co
 			Red3Count:       len(player.GetRed3s()),
 			Red3s:           red3s,
 			RoundScore:      player.GetRoundScore(),
+			ScoreBreakdown:  player.GetScoreBreakdown(),
 			CumulativeScore: player.GetCumulativeScore(),
 			HasCanasta:      player.HasCanasta(),
 			HasEscalera:     player.HasEscalera(),

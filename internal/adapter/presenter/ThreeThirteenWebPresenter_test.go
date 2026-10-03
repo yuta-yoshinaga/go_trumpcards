@@ -22,6 +22,7 @@ func setupThreeThirteenWebMock(phase domain.ThreeThirteenPhase, gameEnd bool) (*
 		domain.NewThreeThirteenPlayer(false),
 	}
 	m.On("GetRound").Return(2)
+	m.On("GetRoundScoreHistory").Return([][]int{{5, 12}})
 	m.On("WildRank").Return(4)
 	m.On("GetDealCount").Return(4)
 	m.On("GetDrawPileCount").Return(80)

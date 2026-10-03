@@ -88,8 +88,8 @@ function BlackHolePageContent() {
   }, []);
 
   const phaseNames = usePhaseNames('blackhole', BH_PHASE_KEYS);
-  const { cardWidth } = useCardDimensions();
-  const w = Math.round(cardWidth * 0.5);
+  const { cardWidth, isMobile } = useCardDimensions();
+  const w = Math.max(isMobile ? 44 : 0, Math.round(cardWidth * 0.5));
 
   // On a hint request, ring the fans whose top card is ±1 the black hole's top
   // rank (Black Hole accepts only adjacent ranks, no A-K wrap). The highlight
@@ -191,7 +191,7 @@ function BlackHolePageContent() {
   const renderFan = (fan: (typeof state.fans)[number], idx: number) => (
     <div
       key={`fan-${idx}`}
-      className="flex flex-col items-center rounded p-0.5"
+      className={`flex flex-col items-center rounded p-0.5 ${isMobile ? 'shrink-0' : ''}`}
       style={{ minHeight: cardH }}
       data-testid={`fan-${idx}`}
     >
@@ -310,7 +310,14 @@ function BlackHolePageContent() {
           {hintAnnounce}
         </span>
 
-        <div className="grid grid-cols-6 sm:grid-cols-9 gap-1 items-start" data-tutorial="bh-fans">
+        <div
+          className={
+            isMobile
+              ? 'flex flex-nowrap overflow-x-auto gap-1 items-start pb-1'
+              : 'grid grid-cols-6 sm:grid-cols-9 gap-1 items-start'
+          }
+          data-tutorial="bh-fans"
+        >
           {state.fans.map((fan, i) => renderFan(fan, i))}
         </div>
         {canAct && <div className="mt-2 text-ds-text-primary text-xs">{t('selectSource')}</div>}
@@ -325,6 +332,7 @@ function BlackHolePageContent() {
 
         <ActionLogSection
           isEndPhase={isEnd}
+          availableDuringPlay
           actionLog={actionLog}
           showActionLog={showActionLog}
           hideActionLog={hideActionLog}

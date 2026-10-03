@@ -16,7 +16,8 @@
     "first": "最初のトリックです。取ると -1 点。",
     "last": "最後のトリックです。取ると -1 点。",
     "queen": "♣Q が場に出ています。このトリックを取ると -1 点。",
-    "queenInHand": "♣Q を持っています（出すと、そのトリックを取った人が -1 点）。"
+    "queenInHand": "♣Q を持っています（出すと、そのトリックを取った人が -1 点）。",
+    "queenUnseen": "♣Q はまだ場に出ていません。所在は不明です。"
   },
   "marks": {
     "first": "初",
@@ -31,7 +32,9 @@
     "reset": "リセット",
     "nextRound": "次のラウンドへ",
     "giveUp": "投了",
-    "playAria": "{{card}} を出す"
+    "playAria": "{{card}} を出す",
+    "playAriaPlayable": "出せる札、{{card}} を出す",
+    "playAriaUnplayable": "出せない札、{{card}} を出す"
   },
   "result": {
     "youWin": "あなたの勝ち！ {{score}}点",

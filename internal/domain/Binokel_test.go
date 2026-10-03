@@ -369,7 +369,7 @@ func TestBinokel_DabbExchangeAndDiscard(t *testing.T) {
 	c0 := p0.GetCard(0)
 	c1 := p0.GetCard(1)
 	c2 := p0.GetCard(2)
-	expectedDiscardPoints := binokelCardPointValue(c0) + binokelCardPointValue(c1) + binokelCardPointValue(c2)
+	expectedDiscardPoints := AceTenCardPoints(c0) + AceTenCardPoints(c1) + AceTenCardPoints(c2)
 
 	if err := game.PlayerDiscardToDabb([]int{0, 1, 2}); err != nil {
 		t.Fatalf("PlayerDiscardToDabb failed: %v", err)
@@ -391,7 +391,7 @@ func TestBinokel_DabbExchangeAndDiscard(t *testing.T) {
 	}
 	actualPoints := 0
 	for _, c := range discarded {
-		actualPoints += binokelCardPointValue(c)
+		actualPoints += AceTenCardPoints(c)
 	}
 	if actualPoints != expectedDiscardPoints {
 		t.Errorf("discard points: expected %d, got %d", expectedDiscardPoints, actualPoints)

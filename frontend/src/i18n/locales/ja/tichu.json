@@ -6,6 +6,7 @@
   "bombCardAriaLabel": "{{card}}（ボム構成カード）",
   "label": {
     "table": "場",
+    "playedBy": "{{player}}（チーム {{team}}）",
     "bombs": "爆弾",
     "team": "チーム",
     "cards": "枚",
@@ -30,6 +31,11 @@
   },
   "comboPreview": "選択中の役",
   "invalidCombo": "無効な組み合わせ（このままでは出せません）",
+  "comparison": {
+    "beats": "場の役に勝てます",
+    "cannotBeat": "場の役に勝てません",
+    "incomparable": "場の役と比較できません"
+  },
   "dogLeadNote": "出すとリード権がパートナーに移ります",
   "combo": {
     "single": "シングル",

@@ -272,6 +272,35 @@ describe('TonkPage', () => {
     expect(badge).not.toHaveAttribute('data-knockable');
   });
 
+  it('shows deadwood and knock eligibility for each discard candidate using the server threshold', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 5,
+            cards: [card('SPADE', 3), card('HEART', 3), card('DIAMOND', 3), card('CLOVER', 9), card('SPADE', 11)],
+            roundScore: 0,
+            cumulativeScore: 0,
+          },
+          { id: 1, isHuman: false, cardCount: 5, cards: [], roundScore: 0, cumulativeScore: 0 },
+        ],
+        knockThreshold: 10,
+      }),
+    );
+    renderWithProviders(<TonkPage />);
+
+    expect(await screen.findByTestId('tonk-discard-candidate-0')).toHaveTextContent('25点');
+    expect(screen.getByTestId('tonk-discard-candidate-3')).toHaveTextContent('10点');
+    expect(screen.getByTestId('tonk-discard-candidate-3')).toHaveTextContent('ノック可能');
+    expect(screen.getByTestId('tonk-discard-candidate-4')).toHaveTextContent('9点');
+    expect(screen.getByTestId('tonk-discard-candidate-4')).toHaveTextContent('ノック可能');
+    expect(screen.getByTestId('tonk-discard-candidate-4')).toHaveAttribute('data-best', 'true');
+    expect(screen.getByTestId('tonk-discard-candidate-3')).not.toHaveAttribute('data-best');
+    expect(screen.getByTestId('tonk-discard-candidate-0')).toHaveTextContent('ノック不可');
+  });
+
   // **-1 は「まだ聞くべき場面でない」印。**0 と混同すると、ドローフェーズで
   // 「デッドウッド0 = ノック可能」と誤って案内してしまう。
   it('shows nothing outside the human discard turn', async () => {
@@ -330,6 +359,39 @@ describe('TonkPage', () => {
     expect(screen.getByTestId('tonk-knocker-deadwood')).toHaveTextContent('7点');
     expect(screen.getByTestId('tonk-opponent-deadwood')).toHaveTextContent('2点');
     expect(screen.getByTestId('tonk-undercut-result')).toHaveTextContent('UNDERCUT!');
+  });
+
+  it.each([
+    { knockerIdx: 0, knocker: 'あなた', opponent: 'CPU 1' },
+    { knockerIdx: 1, knocker: 'CPU 1', opponent: 'あなた' },
+  ])(
+    'labels round-end melds and deadwoods with the right names (knockerIdx=$knockerIdx)',
+    async ({ knockerIdx, knocker, opponent }) => {
+      mockExec.mockResolvedValue(
+        makeState({
+          phase: TonkPhase.ROUND_END,
+          knockerIdx,
+          knockerMelds: [{ cards: [card('SPADE', 7), card('HEART', 7), card('DIAMOND', 7)] }],
+          knockerDeadwood: [card('CLOVER', 2)],
+          opponentMelds: [{ cards: [card('SPADE', 3), card('HEART', 4), card('DIAMOND', 5)] }],
+          opponentDeadwood: [card('CLOVER', 6)],
+        }),
+      );
+      renderWithProviders(<TonkPage />);
+      expect(await screen.findByTestId('tonk-knocker-deadwood')).toHaveTextContent(`${knocker}のデッドウッド`);
+      expect(screen.getByText(`${knocker}（ノッカー）のメルド`)).toBeInTheDocument();
+      expect(screen.getByTestId('tonk-opponent-melds')).toHaveTextContent(`${opponent}のメルド`);
+      expect(screen.getByTestId('tonk-opponent-deadwood')).toHaveTextContent(`${opponent}のデッドウッド`);
+    },
+  );
+
+  it('does not show player-labeled melds or deadwoods when the round is a draw', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: TonkPhase.ROUND_END, knockerIdx: -1 }));
+    renderWithProviders(<TonkPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('tonk-knocker-deadwood')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('tonk-opponent-melds')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('tonk-opponent-deadwood')).not.toBeInTheDocument();
   });
 
   // FindBestMelds returns an empty slice when the whole hand is melds, so reverting the

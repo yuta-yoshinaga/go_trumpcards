@@ -124,10 +124,113 @@ describe('SlapjackPage', () => {
     expect(screen.getByRole('button', { name: /再試行/i })).toBeInTheDocument();
   });
 
+  it('announces pending CPU flips without a countdown and clears the visible status when complete', async () => {
+    const pendingState = {
+      ...baseState,
+      pendingKind: SlapjackPendingKind.STEP,
+      pendingDeadlineMs: Date.now() + 1500,
+    };
+    mockExec.mockResolvedValueOnce(pendingState);
+    renderWithProviders(<SlapjackPage />);
+
+    const liveRegion = await screen.findByTestId('cpu-pending-announcement');
+    await waitFor(() => expect(liveRegion).toHaveTextContent('CPUのめくりを待っています'));
+    expect(liveRegion.textContent).not.toMatch(/\d/);
+    const status = screen.getByTestId('cpu-pending-status');
+    expect(status).toHaveTextContent(/CPUのめくり実行待ち（残り約\d+秒）/);
+    expect(screen.getByRole('progressbar', { name: 'CPUの予約アクション実行までの進捗' })).toBeInTheDocument();
+
+    mockExec.mockResolvedValue(baseState);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('tick'));
+    await waitFor(() => expect(liveRegion).toBeEmptyDOMElement());
+    expect(screen.queryByTestId('cpu-pending-status')).not.toBeInTheDocument();
+    expect(screen.queryByRole('progressbar', { name: 'CPUの予約アクション実行までの進捗' })).not.toBeInTheDocument();
+  });
+
+  it('announces pending CPU slaps with the slap-specific message', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      pendingKind: SlapjackPendingKind.SLAP,
+      pendingDeadlineMs: Date.now() + 1500,
+    });
+    renderWithProviders(<SlapjackPage />);
+
+    const liveRegion = await screen.findByTestId('cpu-pending-announcement');
+    await waitFor(() => expect(liveRegion).toHaveTextContent('CPUのスラップを待っています'));
+    expect(liveRegion.textContent).not.toMatch(/\d/);
+    expect(screen.getByTestId('cpu-pending-status')).toHaveTextContent(/CPUのスラップ実行待ち（残り約\d+秒）/);
+    expect(screen.getByRole('progressbar', { name: 'CPUの予約アクション実行までの進捗' })).toBeInTheDocument();
+  });
+
+  it('starts a new pending countdown below 100 percent, including after switching deadlines', async () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+      const firstPending = {
+        ...baseState,
+        pendingKind: SlapjackPendingKind.STEP,
+        pendingDeadlineMs: Date.now() + 5000,
+      };
+      const nextPending = { ...firstPending, pendingDeadlineMs: Date.now() + 8000 };
+      mockExec.mockResolvedValueOnce(firstPending).mockResolvedValue(nextPending);
+
+      renderWithProviders(<SlapjackPage />);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      const progress = screen.getByRole('progressbar', { name: 'CPUの予約アクション実行までの進捗' });
+      expect(Number(progress.getAttribute('aria-valuenow'))).toBeLessThan(100);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+      await vi.waitFor(() => expect(mockExec).toHaveBeenCalledWith('tick'));
+      expect(Number(progress.getAttribute('aria-valuenow'))).toBeLessThan(100);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps the pending countdown at about one second after its deadline', async () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+      mockExec.mockResolvedValue({
+        ...baseState,
+        pendingKind: SlapjackPendingKind.STEP,
+        pendingDeadlineMs: Date.now() + 500,
+      });
+      renderWithProviders(<SlapjackPage />);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      const status = screen.getByTestId('cpu-pending-status');
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+      expect(status).toHaveTextContent(/残り約1秒/);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('renders stock counts after state loads', async () => {
     renderWithProviders(<SlapjackPage />);
     await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
     expect(screen.getAllByText(/26/).length).toBeGreaterThan(0);
+  });
+
+  it('shows accessible stock progress for both players and clamps an empty stock to zero', async () => {
+    mockExec.mockResolvedValueOnce(gameEndState);
+    renderWithProviders(<SlapjackPage />);
+    const cpuProgress = await screen.findByRole('progressbar', { name: 'CPU 1のストック残り 0枚' });
+    const humanProgress = screen.getByRole('progressbar', { name: 'あなたのストック残り 52枚' });
+    expect(cpuProgress).toHaveAttribute('aria-valuemin', '0');
+    expect(cpuProgress).toHaveAttribute('aria-valuemax', '52');
+    expect(cpuProgress).toHaveAttribute('aria-valuenow', '0');
+    expect(cpuProgress.firstElementChild).toHaveStyle({ width: '0%' });
+    expect(humanProgress).toHaveAttribute('aria-valuenow', '52');
+    expect(humanProgress.firstElementChild).toHaveStyle({ width: '100%' });
   });
 
   it('step button calls exec with step', async () => {
@@ -289,7 +392,7 @@ describe('SlapjackPage', () => {
   it('reset settings select fires reset with cpuDifficulty config', async () => {
     renderWithProviders(<SlapjackPage />);
     await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
-    const select = screen.getByLabelText(/CPU/i) as HTMLSelectElement;
+    const select = screen.getByLabelText('CPU難易度') as HTMLSelectElement;
     fireEvent.change(select, { target: { value: '2' } });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2 } }));
   });

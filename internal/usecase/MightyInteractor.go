@@ -119,6 +119,9 @@ func (mi *MightyInteractor) Play(cardIndex int) string {
 	if err := mi.Game.PlayerPlay(cardIndex); err != nil {
 		return mi.mp.Output(mi.Game, err)
 	}
+	if mi.Game.GetPhase() == domain.MightyPhaseTrickEnd {
+		mi.Game.ResolveTrick()
+	}
 	mi.runCpuTurns()
 	return mi.mp.Output(mi.Game, nil)
 }
@@ -130,6 +133,9 @@ func (mi *MightyInteractor) PlayJokerLead(cardIndex int, demandSuit int) string 
 	}
 	if err := mi.Game.PlayerPlayJokerLead(cardIndex, demandSuit); err != nil {
 		return mi.mp.Output(mi.Game, err)
+	}
+	if mi.Game.GetPhase() == domain.MightyPhaseTrickEnd {
+		mi.Game.ResolveTrick()
 	}
 	mi.runCpuTurns()
 	return mi.mp.Output(mi.Game, nil)

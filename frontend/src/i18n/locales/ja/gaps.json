@@ -10,6 +10,8 @@
   "undo": "元に戻す",
   "redeal": "再配り",
   "redealKeepLabel": "再配り ({{used}}/{{total}}) — {{locked}}枚維持",
+  "redealConfirmTitle": "再配りを確認",
+  "redealConfirmMessage": "再配りを行うと、ロック済みカード以外の配置が変わります。残り回数: {{remaining}}",
   "giveup": "ギブアップ",
   "hint": "ヒント",
   "kbd": {
@@ -22,6 +24,8 @@
   "gapAriaNeeded": "空き（{{card}} を置けます）",
   "gapAriaAnySuit": "空き（任意のスートの {{value}} を置けます）",
   "gapAriaBlocked": "空き（K の後ろのため使用不可）",
+  "cardAria": "{{card}}、行{{row}}・列{{col}}",
+  "lockedCardAria": "{{card}}、行{{row}}・列{{col}}、{{locked}}",
   "lockedAria": "ロック済み (次のリディール後も残ります)",
   "lockedTooltip": "ロック済み (次のリディール後も残ります)",
   "playing": "プレイ中",

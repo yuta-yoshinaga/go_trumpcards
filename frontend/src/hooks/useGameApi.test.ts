@@ -3,6 +3,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ApiError } from '../api/gameExec';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { SoundProvider, useSound } from '../providers/SoundProvider';
 import { useGameApi } from './useGameApi';
@@ -95,6 +96,76 @@ describe('useGameApi', () => {
     expect(result.current.error).toBe(NETWORK_ERROR_MESSAGE());
     expect(result.current.state).toBeNull();
     expect(result.current.loading).toBe(false);
+  });
+
+  it('uses actionable messages and disables retry for rejected requests', async () => {
+    const apiFn = vi.fn().mockRejectedValue(new ApiError(400, 'private server detail'));
+    const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createWrapper() });
+    await act(async () => {
+      await result.current.exec('play');
+    });
+    expect(result.current.error).toBe('この操作は受け付けられませんでした。');
+    expect(result.current.retry.retryable).toBe(false);
+  });
+
+  it('restores retryability after a successful request following a rejected request', async () => {
+    const apiFn = vi.fn().mockRejectedValueOnce(new ApiError(400)).mockResolvedValueOnce({ ok: true });
+    const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createWrapper() });
+
+    await act(async () => {
+      await result.current.exec('play');
+    });
+    expect(result.current.retry.retryable).toBe(false);
+
+    await act(async () => {
+      await result.current.exec('play');
+    });
+    expect(result.current.retry.retryable).toBe(true);
+  });
+
+  it('keeps retry callback identity while retryability is unchanged', async () => {
+    const apiFn = vi.fn().mockResolvedValue({ ok: true });
+    const { result, rerender } = renderHook(() => useGameApi(apiFn), { wrapper: createWrapper() });
+    const retry = result.current.retry;
+
+    rerender();
+
+    expect(result.current.retry).toBe(retry);
+  });
+
+  it('creates a new retry callback when retryability changes', async () => {
+    const apiFn = vi.fn().mockRejectedValue(new ApiError(400));
+    const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createWrapper() });
+    const retryBeforeFailure = result.current.retry;
+
+    await act(async () => {
+      await result.current.exec('play');
+    });
+
+    expect(result.current.retry).not.toBe(retryBeforeFailure);
+    expect(retryBeforeFailure.retryable).toBe(true);
+    expect(result.current.retry.retryable).toBe(false);
+  });
+
+  it('allows retry for communication failures', async () => {
+    const apiFn = vi.fn().mockRejectedValue(new Error('network'));
+    const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createWrapper() });
+
+    await act(async () => {
+      await result.current.exec('play');
+    });
+
+    expect(result.current.retry.retryable).toBe(true);
+  });
+
+  it('allows retry for server errors', async () => {
+    const apiFn = vi.fn().mockRejectedValue(new ApiError(503));
+    const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createWrapper() });
+    await act(async () => {
+      await result.current.exec('play');
+    });
+    expect(result.current.error).toBe('サーバでエラーが発生しました。解決しない場合は新しいゲームを始めてください。');
+    expect(result.current.retry).toBeTypeOf('function');
   });
 
   it('clears error on successful retry', async () => {

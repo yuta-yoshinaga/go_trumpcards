@@ -160,6 +160,14 @@ type GleekHint struct {
 	Reason string
 }
 
+// GleekRoundBreakdown は直近ラウンドの段階別・席別得点増減を表す。
+type GleekRoundBreakdown struct {
+	Bid   [GleekPlayerCnt]int `json:"bid"`
+	Ruff  [GleekPlayerCnt]int `json:"ruff"`
+	Meld  [GleekPlayerCnt]int `json:"meld"`
+	Trick [GleekPlayerCnt]int `json:"trick"`
+}
+
 // Gleek グリークのゲームクラス
 type Gleek struct {
 	trumpCards       *TrumpCards
@@ -194,6 +202,7 @@ type Gleek struct {
 	trickPoints      [GleekPlayerCnt]int // 3 点 × トリック数 + 取った名札の点
 	playerScores     [GleekPlayerCnt]int // 累積ゲーム点
 	roundStartScores [GleekPlayerCnt]int // ラウンド開始時の累積点スナップショット
+	roundBreakdown   GleekRoundBreakdown // 競り (Tiddy 含む), ラフ, メルド, トリックの実際の増減
 	lastTrickWinner  int
 
 	result       GleekResult
@@ -271,6 +280,7 @@ func (g *Gleek) NextRound() {
 // startRound 手札を配り、切り札をめくって競りフェーズを開始する。
 func (g *Gleek) startRound() {
 	g.roundStartScores = g.playerScores
+	g.roundBreakdown = GleekRoundBreakdown{}
 	g.trickNumber = 1
 	g.currentTrick = nil
 	g.trickResolved = false
@@ -347,10 +357,13 @@ func (g *Gleek) payTiddyTurnUp() {
 	}
 	for i := 0; i < GleekPlayerCnt; i++ {
 		if i == g.dealerIdx {
-			g.playerScores[i] += GleekTiddyTurnUpBonus * (GleekPlayerCnt - 1)
+			delta := GleekTiddyTurnUpBonus * (GleekPlayerCnt - 1)
+			g.playerScores[i] += delta
+			g.roundBreakdown.Bid[i] += delta
 			continue
 		}
 		g.playerScores[i] -= GleekTiddyTurnUpBonus
+		g.roundBreakdown.Bid[i] -= GleekTiddyTurnUpBonus
 	}
 	g.appendLog(g.dealerIdx, "tiddy_turn_up", "gleek.log.tiddyTurnUp",
 		map[string]string{"name": playerName(g.players, g.dealerIdx), "amount": fmt.Sprint(GleekTiddyTurnUpBonus)}, nil)
@@ -487,10 +500,13 @@ func (g *Gleek) finalizeAuction() {
 	half := g.winningBid / 2
 	for i := 0; i < GleekPlayerCnt; i++ {
 		if i == buyer {
-			g.playerScores[i] -= half * (GleekPlayerCnt - 1)
+			delta := -half * (GleekPlayerCnt - 1)
+			g.playerScores[i] += delta
+			g.roundBreakdown.Bid[i] += delta
 			continue
 		}
 		g.playerScores[i] += half
+		g.roundBreakdown.Bid[i] += half
 	}
 	g.appendLog(buyer, "buy_stock", "gleek.log.buyStock",
 		map[string]string{"name": playerName(g.players, buyer), "bid": fmt.Sprint(g.winningBid), "amount": fmt.Sprint(half)}, nil)
@@ -681,10 +697,13 @@ func (g *Gleek) scoreRuff() {
 	g.ruffWinnerIdx = winner
 	for i := 0; i < GleekPlayerCnt; i++ {
 		if i == winner {
-			g.playerScores[i] += GleekRuffStake * (GleekPlayerCnt - 1)
+			delta := GleekRuffStake * (GleekPlayerCnt - 1)
+			g.playerScores[i] += delta
+			g.roundBreakdown.Ruff[i] += delta
 			continue
 		}
 		g.playerScores[i] -= GleekRuffStake
+		g.roundBreakdown.Ruff[i] -= GleekRuffStake
 	}
 	g.appendLog(winner, "ruff", "gleek.log.ruff",
 		map[string]string{"name": playerName(g.players, winner), "total": fmt.Sprint(g.ruffs[winner].Total), "suitKey": suitKeyOf(g.ruffs[winner].Suit)}, nil)
@@ -704,10 +723,13 @@ func (g *Gleek) scoreMelds() {
 			g.melds = append(g.melds, &GleekMeld{PlayerIdx: seat, Rank: rank, Count: n, Value: value})
 			for j := 0; j < GleekPlayerCnt; j++ {
 				if j == seat {
-					g.playerScores[j] += value * (GleekPlayerCnt - 1)
+					delta := value * (GleekPlayerCnt - 1)
+					g.playerScores[j] += delta
+					g.roundBreakdown.Meld[j] += delta
 					continue
 				}
 				g.playerScores[j] -= value
+				g.roundBreakdown.Meld[j] -= value
 			}
 			g.appendLog(seat, "meld", "gleek.log.meld",
 				map[string]string{"name": playerName(g.players, seat), "meldKey": gleekMeldKey(n), "rankKey": gleekRankKey(rank), "value": fmt.Sprint(value)}, nil)
@@ -857,6 +879,7 @@ func (g *Gleek) applyTrickSettlement() {
 	for i := 0; i < GleekPlayerCnt; i++ {
 		delta := g.trickPoints[i] - par
 		g.playerScores[i] += delta
+		g.roundBreakdown.Trick[i] += delta
 		g.appendLog(i, "round_score", "gleek.log.roundScore",
 			map[string]string{"name": playerName(g.players, i), "points": fmt.Sprint(g.trickPoints[i]), "total": fmt.Sprint(total), "par": fmt.Sprint(par), "delta": fmt.Sprintf("%+d", delta)}, nil)
 	}
@@ -1456,6 +1479,9 @@ func (g *Gleek) GetRoundDelta() []int {
 	return delta
 }
 
+// GetRoundBreakdown returns per-seat score changes for auction, ruff, meld, and trick settlement.
+func (g *Gleek) GetRoundBreakdown() GleekRoundBreakdown { return g.roundBreakdown }
+
 // GetResult 人間視点のマッチ結果取得
 func (g *Gleek) GetResult() GleekResult { return g.result }
 
@@ -1534,6 +1560,7 @@ type gleekJSON struct {
 	TrickPoints      [GleekPlayerCnt]int  `json:"tp"`
 	PlayerScores     [GleekPlayerCnt]int  `json:"sc"`
 	RoundStartScores [GleekPlayerCnt]int  `json:"rss"`
+	RoundBreakdown   GleekRoundBreakdown  `json:"rb,omitempty"`
 	LastTrickWinner  int                  `json:"lt"`
 	Result           GleekResult          `json:"rs"`
 	Scored           bool                 `json:"sd"`
@@ -1571,6 +1598,7 @@ func (g *Gleek) MarshalJSON() ([]byte, error) {
 		TrickPoints:      g.trickPoints,
 		PlayerScores:     g.playerScores,
 		RoundStartScores: g.roundStartScores,
+		RoundBreakdown:   g.roundBreakdown,
 		LastTrickWinner:  g.lastTrickWinner,
 		Result:           g.result,
 		Scored:           g.scored,
@@ -1709,6 +1737,7 @@ func (g *Gleek) UnmarshalJSON(data []byte) error {
 	g.trickPoints = j.TrickPoints
 	g.playerScores = j.PlayerScores
 	g.roundStartScores = j.RoundStartScores
+	g.roundBreakdown = j.RoundBreakdown
 	g.lastTrickWinner = j.LastTrickWinner
 	g.result = j.Result
 	g.scored = j.Scored

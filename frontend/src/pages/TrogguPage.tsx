@@ -3,6 +3,7 @@ import type { trogguApi as TrogguApi } from '../api/gameApi';
 import { trogguApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
+import { CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -28,6 +29,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { TrogguResponse } from '../types/card';
 import { TrogguPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseTrogguCommand, TROGGU_HELP } from '../utils/cli/commands/trogguCommands';
 import { formatTrogguState } from '../utils/cli/formatters/trogguFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -276,6 +278,20 @@ function TrogguPageContent() {
               winnerLabel={t('trickWinner')}
             />
 
+            {isPlay && state.currentTrick.length > 0 && state.lastTrickCards.length > 0 && (
+              <section className="my-3 p-3 rounded bg-black/30" data-testid="tg-previous-trick">
+                <div className="text-ds-text-muted text-sm mb-1">{t('previousTrick')}</div>
+                <div className="flex justify-center gap-2">
+                  {state.lastTrickCards.map((card, index) => (
+                    <CardImage key={index} card={card} ariaLabel={cardAlt(card)} width={cardWidth} />
+                  ))}
+                </div>
+                <div className="mt-2 text-center text-sm text-ds-text-primary">
+                  {t('previousTrickWinner', { name: seatName(state.lastTrickWinner) })}
+                </div>
+              </section>
+            )}
+
             {human && (
               <PlayerHandSection
                 humanPlayer={human}
@@ -292,6 +308,9 @@ function TrogguPageContent() {
             {isRoundEnd && (
               <div className="my-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="tg-round-result">
                 <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
+                {state.breakdown && (
+                  <div className="mb-1">{t('roundResult.declarer', { name: seatName(state.declarerIdx) })}</div>
+                )}
                 <div className="text-ds-success mb-1">{roundResultLine()}</div>
                 {state.breakdown?.seats.map((delta, i) => (
                   <div key={i} data-testid={`tg-round-seat-${i}`}>

@@ -105,6 +105,11 @@ func (_m *MockManilleGame) GetCurrentTrick() []*domain.TrickCard {
 	return nil
 }
 
+func (_m *MockManilleGame) GetCurrentTrickPoints() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 // GetLeadPlayerIdx モック
 func (_m *MockManilleGame) GetLeadPlayerIdx() int {
 	ret := _m.Called()

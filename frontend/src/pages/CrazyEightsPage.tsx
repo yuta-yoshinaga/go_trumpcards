@@ -426,7 +426,16 @@ function CrazyEightsPageContent() {
                               )}
                             </td>
                             <td className="text-center">{p.roundScore}</td>
-                            <td className="text-center">{p.cumulativeScore}</td>
+                            <td className="text-center">
+                              {p.cumulativeScore}
+                              {state.config.pointLimit > 0 && (
+                                <div className="text-ds-text-muted text-xs">
+                                  {t('remainingPoints', {
+                                    score: Math.max(0, state.config.pointLimit - p.cumulativeScore),
+                                  })}
+                                </div>
+                              )}
+                            </td>
                           </tr>
                         );
                       })}
@@ -526,14 +535,16 @@ function CrazyEightsPageContent() {
                   </button>
                 </div>
               )}
-              {serverHint && (
-                <p className="mt-2 text-sm text-ds-accent" data-testid="ce-server-hint">
-                  {serverHint.suit !== undefined
-                    ? t('hintSuit', { suit: suitSymbolAt(serverHint.suit, '?') })
-                    : t('hintCard', { idx: serverHint.cardIndex })}{' '}
-                  ({t(`hintReason.${serverHint.reason}`)})
-                </p>
-              )}
+              <div role="status" aria-live="polite" data-testid="ce-server-hint">
+                {serverHint && (
+                  <p className="mt-2 text-sm text-ds-accent">
+                    {serverHint.suit !== undefined
+                      ? t('hintSuit', { suit: suitSymbolAt(serverHint.suit, '?') })
+                      : t('hintCard', { idx: serverHint.cardIndex })}{' '}
+                    ({t(`hintReason.${serverHint.reason}`)})
+                  </p>
+                )}
+              </div>
               <ErrorAlert message={hintError} onRetry={undefined} />
 
               {isChooseSuit && (

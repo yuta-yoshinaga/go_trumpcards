@@ -127,6 +127,41 @@ describe('MachiavelliPage', () => {
     });
   });
 
+  it('sorts the hand by rank and suit while selection and rearrange references stay on the same card', async () => {
+    renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(screen.getByAltText('♥ J')).toBeInTheDocument());
+    const jackButton = screen.getByAltText('♥ J').closest('button') as HTMLButtonElement;
+    fireEvent.click(jackButton);
+    fireEvent.click(screen.getByRole('button', { name: 'ランク・スート順に並べる' }));
+
+    const hand = document.querySelector('[data-tutorial="mv-player-hand"]');
+    const cardButtons = hand?.querySelectorAll('button[aria-pressed]');
+    expect(Array.from(cardButtons ?? []).map((button) => button.getAttribute('aria-label'))).toEqual([
+      '♠ A',
+      '♣ 7',
+      '♥ J',
+    ]);
+    expect(cardButtons?.[2]).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(screen.getByRole('button', { name: '配られた順に戻す' }));
+    expect(
+      Array.from(hand?.querySelectorAll('button[aria-pressed]') ?? []).map((button) =>
+        button.getAttribute('aria-label'),
+      ),
+    ).toEqual(['♠ A', '♥ J', '♣ 7']);
+    expect(screen.getByAltText('♥ J').closest('button')).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(screen.getByTestId('machiavelli-rearrange-toggle'));
+    expect(screen.getByTestId('machiavelli-assign-h-1')).toHaveAccessibleName(/J/);
+
+    fireEvent.click(screen.getByRole('button', { name: 'ランク・スート順に並べる' }));
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♣ 7').closest('button') as HTMLButtonElement);
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'メルドを出す' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('newmeld', { handIndices: [1, 0, 2] }));
+  });
+
   it('renders draw and new-meld buttons on the human turn', async () => {
     renderWithProviders(<MachiavelliPage />);
     await waitFor(() => {
@@ -386,6 +421,14 @@ describe('MachiavelliPage', () => {
       expect(screen.getByText('ラウンド 1/3')).toBeInTheDocument();
       expect(screen.getByText('山札: 40枚')).toBeInTheDocument();
     });
+  });
+
+  it('announces draw pile count changes and when the pile is empty', async () => {
+    renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(screen.getByTestId('machiavelli-draw-pile-live')).toHaveTextContent('山札の残り: 40枚'));
+    mockExec.mockResolvedValue({ ...turnState, drawPileCount: 0 });
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    await waitFor(() => expect(screen.getByTestId('machiavelli-draw-pile-live')).toHaveTextContent('山札切れ'));
   });
 
   it('phase indicator shows your turn on the human turn', async () => {

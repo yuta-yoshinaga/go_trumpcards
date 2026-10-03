@@ -16,6 +16,10 @@
   "empty": "空",
   "tableauCardPosition": "列{{col}}、位置{{idx}}、{{card}}",
   "emptyTableauPosition": "列{{col}}、空列",
+  "tableauColumn": "列{{col}}",
+  "selectionTargets": "移動先は{{count}}箇所です: {{targets}}",
+  "selectionNoTargets": "移動先はありません",
+  "listSeparator": "、",
   "score": "スコア",
   "difficulty": "難易度",
   "difficulty1": "1スート",
@@ -26,6 +30,7 @@
   "playing": "プレイ中",
   "noHint": "ヒントはありません",
   "hintAvailable": "ヒントがあります",
+  "hintMove": "ヒントがあります: 列{{fromCol}} [{{cardIndex}}] → 列{{toCol}}",
   "stalemate": "手詰まりです",
   "tutorial": {
     "tableau": "タブローです。1枚だけなら、値が1つ大きいカードの上にスート不問で置けます。まとめて動かせるのは同スート降順に並んだ札だけです。K〜Aの同スート13枚が揃うと自動的に除去されます。",

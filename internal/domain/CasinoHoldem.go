@@ -500,6 +500,11 @@ func (c *CasinoHoldem) GetTotalPayout() int {
 	return c.antePayout + c.callPayout + c.bonusPayout
 }
 
+// GetNetChange はこのラウンドの純増減チップ数を返す。
+func (c *CasinoHoldem) GetNetChange() int {
+	return c.GetTotalPayout() - c.anteBet - c.bonusBet - c.callBet
+}
+
 // GetPlayerHandRank プレイヤーハンドランク
 func (c *CasinoHoldem) GetPlayerHandRank() int { return c.playerHandRank }
 

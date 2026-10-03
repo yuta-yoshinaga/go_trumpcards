@@ -220,7 +220,12 @@ function MusPageContent() {
               <div className="mb-1 text-ds-text-primary">{t('amarrakos')}</div>
               {state.amarrakos.map((score, team) => (
                 <div key={`team-${team}`} className={team === state.humanTeam ? 'text-ds-text-primary' : ''}>
-                  {t('amarrakosTeam', { team, score })}
+                  {t('amarrakosProgress', {
+                    team,
+                    score,
+                    target: state.config.targetAmarrakos,
+                    remaining: Math.max(0, state.config.targetAmarrakos - score),
+                  })}
                   {team === state.humanTeam ? ` (${t('yourTeam')})` : ''}
                 </div>
               ))}
@@ -229,8 +234,21 @@ function MusPageContent() {
                   中身だけを差し替える ── 領域と中身が同じコミットで DOM に入ると、
                   変化として扱われず読み上げられないことがある。 */}
               <div className="mt-1 text-ds-warning" role="status" aria-live="polite" data-testid="mus-pending-stake">
-                {state.pendingStake !== 0 &&
-                  t('pendingStake', { amount: state.pendingStake === -1 ? t('ordagoLabel') : state.pendingStake })}
+                {state.pendingStake !== 0 && (
+                  <>
+                    <span>
+                      {t('pendingStake', { amount: state.pendingStake === -1 ? t('ordagoLabel') : state.pendingStake })}
+                    </span>
+                    <span className="block">
+                      {t('betTeamLabel', { team: state.betTeam })}
+                      {state.betTeam === state.humanTeam ? ` (${t('yourTeam')})` : ''}
+                    </span>
+                    <span className="block">
+                      {t('lastBettorTeamLabel', { team: state.lastBettorTeam })}
+                      {state.lastBettorTeam === state.humanTeam ? ` (${t('yourTeam')})` : ''}
+                    </span>
+                  </>
+                )}
               </div>
             </div>
 

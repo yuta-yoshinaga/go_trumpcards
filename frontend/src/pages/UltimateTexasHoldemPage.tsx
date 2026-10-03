@@ -25,6 +25,7 @@ import { gameTheme } from '../styles/gameTheme';
 import { isMaskedCard } from '../types/card';
 import { UltimateTexasHoldemPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { utHoldemBetBounds } from '../utils/utHoldemBet';
 import { utHoldemPreflopStrength } from '../utils/utHoldemPreflop';
 
@@ -184,6 +185,11 @@ function UltimateTexasHoldemPageContent() {
           ? t('phase.river')
           : t('phase.end');
 
+  const hasMadeHand = (isFlopPhase || isRiverPhase) && state.playerHand.length + state.community.length >= 5;
+  const madeHandText = hasMadeHand
+    ? t('madeHand', { hand: t(HAND_RANK_KEYS[state.playerHandRank] ?? 'handRank.0') })
+    : '';
+
   return (
     <GamePageShell
       title={tc('nav.ultimatetexasholdem')}
@@ -285,7 +291,7 @@ function UltimateTexasHoldemPageContent() {
 
         {state.dealerHand.length > 0 && (
           <div className="mb-4">
-            <div className="text-ds-error font-bold text-center mb-1">
+            <div className="text-ds-error-text font-bold text-center mb-1">
               <span aria-hidden="true">🔴</span> {t('dealer')}
               {isEndPhase && (
                 <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank] ?? 'handRank.0')})</span>
@@ -322,28 +328,47 @@ function UltimateTexasHoldemPageContent() {
         {isEndPhase && (
           <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
             <div>{state.dealerQualified ? t('result.dealerQualified') : t('result.dealerNotQualified')}</div>
-            {state.antePayout !== 0 && (
+            {state.anteBet > 0 && (
               <div>
-                {t('payout.ante')}: {state.antePayout}
+                {t('payout.ante')}: {state.antePayout} (
+                {t(
+                  `payout.${state.antePayout > state.anteBet ? 'win' : state.antePayout === state.anteBet ? 'push' : 'loss'}`,
+                )}
+                )
               </div>
             )}
-            {state.blindPayout !== 0 && (
+            {state.blindBet > 0 && (
               <div>
-                {t('payout.blind')}: {state.blindPayout}
+                {t('payout.blind')}: {state.blindPayout} (
+                {t(
+                  `payout.${state.blindPayout > state.blindBet ? 'win' : state.blindPayout === state.blindBet ? 'push' : 'loss'}`,
+                )}
+                )
               </div>
             )}
-            {state.playPayout !== 0 && (
+            {state.playBet > 0 && (
               <div>
-                {t('payout.play')}: {state.playPayout}
+                {t('payout.play')}: {state.playPayout} (
+                {t(
+                  `payout.${state.playPayout > state.playBet ? 'win' : state.playPayout === state.playBet ? 'push' : 'loss'}`,
+                )}
+                )
               </div>
             )}
-            {state.tripsPayout !== 0 && (
+            {state.tripsBet > 0 && (
               <div>
-                {t('payout.trips')}: {state.tripsPayout}
+                {t('payout.trips')}: {state.tripsPayout} (
+                {t(
+                  `payout.${state.tripsPayout > state.tripsBet ? 'win' : state.tripsPayout === state.tripsBet ? 'push' : 'loss'}`,
+                )}
+                )
               </div>
             )}
             <div className="font-bold mt-1">
               {t('payout.total')}: {state.totalPayout}
+            </div>
+            <div className="font-bold">
+              {t('payout.netChange')}: {formatSignedDelta(state.netChange)}
             </div>
           </div>
         )}
@@ -387,7 +412,7 @@ function UltimateTexasHoldemPageContent() {
               {t('betSummary.total')}: {betBounds.total} / {state.chips}
             </div>
             {!betBounds.valid && (
-              <p id="uth-bet-error" role="alert" className="text-ds-error text-sm" data-testid="uth-bet-error">
+              <p id="uth-bet-error" role="alert" className="text-ds-error-text text-sm" data-testid="uth-bet-error">
                 {t('betSummary.overBalance')}
               </p>
             )}
@@ -400,11 +425,14 @@ function UltimateTexasHoldemPageContent() {
             どこにも出ていなかった。姉妹の Mississippi Stud は ms-made-hand として
             常時出している。ランクはサーバが updatePlayerCurrentRank で
             各ストリート更新するので、判定を2つ持たない。 */}
-        {(isFlopPhase || isRiverPhase) && state.playerHand.length + state.community.length >= 5 && (
+        {madeHandText && (
           <p className="text-center text-sm font-medium pb-1 text-ds-text-primary" data-testid="uth-made-hand">
-            {t('madeHand', { hand: t(HAND_RANK_KEYS[state.playerHandRank] ?? 'handRank.0') })}
+            {madeHandText}
           </p>
         )}
+        <div className="sr-only" role="status" aria-live="polite" data-testid="uth-made-hand-announcement">
+          {madeHandText}
+        </div>
         {isPreFlopPhase &&
           (() => {
             const strength = utHoldemPreflopStrength(state.playerHand);

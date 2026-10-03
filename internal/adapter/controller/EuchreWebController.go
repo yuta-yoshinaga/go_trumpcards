@@ -71,6 +71,7 @@ type EuchreWebOutput struct {
 	GameEndFlag         bool                     `json:"gameEndFlag"`
 	WinnerTeam          int                      `json:"winnerTeam"`
 	LeadPlayerIdx       int                      `json:"leadPlayerIdx"`
+	TrickWinnerIdx      int                      `json:"trickWinnerIdx"`
 	Hint                *EuchreWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config EuchreWebOutputConfig `json:"config"`
@@ -106,10 +107,11 @@ var NewEuchreWebController, NewEuchreWebControllerWithProvider = webControllerPa
 
 func newEuchreDefaultOutput(msg string) *EuchreWebOutput {
 	return &EuchreWebOutput{
-		Players:       make([]*EuchreWebOutputPlayer, 0),
-		CurrentTrick:  make([]*WebOutputTrickCard, 0),
-		WinnerTeam:    -1,
-		WebOutputBase: WebOutputBase{Message: msg},
+		Players:        make([]*EuchreWebOutputPlayer, 0),
+		CurrentTrick:   make([]*WebOutputTrickCard, 0),
+		WinnerTeam:     -1,
+		TrickWinnerIdx: -1,
+		WebOutputBase:  WebOutputBase{Message: msg},
 	}
 }
 

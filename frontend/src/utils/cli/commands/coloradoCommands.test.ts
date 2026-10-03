@@ -75,6 +75,10 @@ describe('parseColoradoCommand', () => {
     expect('error' in result && result.error).toContain('draw');
   });
 
+  it('includes the unknown command when suggesting a near miss', () => {
+    expect(parseColoradoCommand('hont')).toEqual({ error: 'Unknown command: hont. Did you mean: hint?' });
+  });
+
   it('reports an unknown command', () => {
     const result = parseColoradoCommand('zzz');
     expect('error' in result && result.error).toContain('zzz');

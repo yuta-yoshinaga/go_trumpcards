@@ -13,6 +13,12 @@ export interface KlaberjassSequence {
   points: number;
 }
 
+/** Winner and card points for one completed trick. */
+export interface KlaberjassTrickHistoryEntry {
+  winnerIdx: number;
+  points: number;
+}
+
 /** One Klaberjass seat. */
 export interface KlaberjassPlayer {
   id: number;
@@ -62,6 +68,8 @@ export interface KlaberjassResponse extends BaseGameResponse {
   trick: Card[];
   trickLeaderIdx: number;
   trickNumber: number;
+  /** Completed tricks in this deal, in play order. */
+  trickHistory: KlaberjassTrickHistoryEntry[];
   /**
    * Hand indices the human may legally play. Sent by the server because
    * following suit, trumping when void and **overtrumping a trump lead** are

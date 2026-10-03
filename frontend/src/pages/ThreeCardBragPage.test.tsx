@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { threeCardBragApi } from '../api/gameApi';
+import jaThreeCardBrag from '../i18n/locales/ja/threecardbrag.json';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeThreeCardBragState } from '../test/stateFactories';
 import { ThreeCardBragPage } from './ThreeCardBragPage';
@@ -35,6 +36,115 @@ describe('ThreeCardBragPage', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<ThreeCardBragPage />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('shows the human hand and hand name in the showdown hands list', async () => {
+    mockExec.mockResolvedValue(
+      makeThreeCardBragState({
+        phase: 1,
+        isShowdown: true,
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            chips: 96,
+            seen: true,
+            folded: false,
+            out: false,
+            roundBet: 2,
+            cardCount: 3,
+            handName: 'prial',
+            cards: [
+              { design: 'SPADE', value: 13 },
+              { design: 'HEART', value: 13 },
+              { design: 'CLOVER', value: 13 },
+            ],
+          },
+          {
+            id: 1,
+            isHuman: false,
+            chips: 104,
+            seen: false,
+            folded: false,
+            out: false,
+            roundBet: 2,
+            cardCount: 3,
+            handName: 'highcard',
+            cards: [
+              { design: 'SPADE', value: 2 },
+              { design: 'HEART', value: 5 },
+              { design: 'CLOVER', value: 9 },
+            ],
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<ThreeCardBragPage />);
+
+    const revealedHands = await screen.findByTestId('tcb-showdown-hands');
+    expect(revealedHands).toHaveTextContent('あなた — プライアル（スリーカード）');
+    expect(revealedHands).toHaveTextContent('CPU 1 — ハイカード');
+    expect(revealedHands.querySelectorAll('img')).toHaveLength(6);
+  });
+
+  it('does not show the blind label in the footer at showdown', async () => {
+    mockExec.mockResolvedValue(
+      makeThreeCardBragState({
+        phase: 1,
+        isShowdown: true,
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            chips: 96,
+            seen: true,
+            folded: false,
+            out: false,
+            roundBet: 2,
+            cardCount: 3,
+            handName: 'prial',
+            cards: [
+              { design: 'SPADE', value: 13 },
+              { design: 'HEART', value: 13 },
+              { design: 'CLOVER', value: 13 },
+            ],
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<ThreeCardBragPage />);
+
+    await screen.findByTestId('tcb-showdown-hands');
+    expect(screen.getByRole('contentinfo')).not.toHaveTextContent(jaThreeCardBrag.badge.blind);
+  });
+
+  it('shows the seen human hand in the footer before showdown', async () => {
+    mockExec.mockResolvedValue(
+      makeThreeCardBragState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            chips: 100,
+            seen: true,
+            folded: false,
+            out: false,
+            roundBet: 1,
+            cardCount: 3,
+            cards: [
+              { design: 'SPADE', value: 13 },
+              { design: 'HEART', value: 12 },
+              { design: 'CLOVER', value: 11 },
+            ],
+          },
+        ],
+      }),
+    );
+    const { container } = renderWithProviders(<ThreeCardBragPage />);
+
+    await waitFor(() => expect(container.querySelector('[data-tutorial="threecardbrag-player-hand"]')).not.toBeNull());
+    expect(container.querySelectorAll('[data-tutorial="threecardbrag-player-hand"] button')).toHaveLength(3);
+    expect(screen.queryByTestId('tcb-showdown-hands')).not.toBeInTheDocument();
   });
 
   it('calls reset on mount with the default config', async () => {
@@ -418,6 +528,30 @@ describe('ThreeCardBragPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '次のディール' }));
     expect(await screen.findByTestId('tcb-turn-live')).toHaveTextContent('あなた がマッチに勝利しました');
+  });
+
+  it('shows each tie winner their actual share, including remainder', async () => {
+    mockExec.mockResolvedValue(
+      makeThreeCardBragState({
+        phase: 2,
+        roundWinnerIdx: 0,
+        pot: 11,
+        roundPayouts: [6, 5, 0, 0],
+        isHumanTurn: false,
+      }),
+    );
+    renderWithProviders(<ThreeCardBragPage />);
+    expect(await screen.findByText('あなた の受取額は 6 チップです。')).toBeInTheDocument();
+    expect(screen.getByText('CPU 1 の受取額は 5 チップです。')).toBeInTheDocument();
+  });
+
+  it('does not show a share row when only one player receives the pot', async () => {
+    mockExec.mockResolvedValue(
+      makeThreeCardBragState({ phase: 2, roundWinnerIdx: 0, roundPayouts: [11, 0, 0, 0], isHumanTurn: false }),
+    );
+    renderWithProviders(<ThreeCardBragPage />);
+    expect(await screen.findByTestId('tcb-turn-live')).toHaveTextContent('あなた がポット');
+    expect(screen.queryByText(/受取額は/)).not.toBeInTheDocument();
   });
 
   it('shows the next-deal button at deal end', async () => {

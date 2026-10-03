@@ -1,5 +1,9 @@
 {
   "handTotalHelp": "Declare Yaniv when your hand total is 5 or less; any excess becomes penalty points.",
+  "yanivGuidance": "Hand total: {{total}}. Declare Yaniv at 5 or less. {{availability}}",
+  "yanivAvailable": "Yaniv is available.",
+  "yanivUnavailableTotal": "Your total is above 5, so you cannot declare.",
+  "yanivUnavailableTurn": "You can declare during your discard turn.",
   "button": {
     "discard": "Discard",
     "yaniv": "Yaniv!",
@@ -17,6 +21,8 @@
     "asaf": "{{name}}'s Yaniv was Asaf. +30 penalty."
   },
   "label": {
+    "roundHistory": "Penalty by round",
+    "round": "Round",
     "stock": "Stock",
     "discardPile": "Discard",
     "score": "Penalty",

@@ -28,6 +28,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useNarcoticGame } from '../hooks/useNarcoticGame';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
+import { badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { HINT_FROM_RING } from '../styles/cardStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -234,6 +235,7 @@ function NarcoticPageContent() {
                 const col = state.columns[colIdx] ?? [];
                 const topIdx = col.length - 1;
                 const topCard = col[topIdx];
+                const isMovable = topCard?.movable === true;
                 const columnZone = { zone: 'column', col: colIdx };
                 const isDropping = dnd.isDropTarget(columnZone);
                 const isHinted = (hint?.type === 'remove' || hint?.type === 'move') && hint.col === colIdx;
@@ -276,7 +278,11 @@ function NarcoticPageContent() {
                                     // まとまりなので、盤面全体のボタンに分けてある。
                                     onClick={() => handleMove(colIdx)}
                                     disabled={!isPlaying || busy || c.movable !== true}
-                                    aria-label={cardAlt(c.card)}
+                                    aria-label={t('topCardStatus', {
+                                      card: cardAlt(c.card),
+                                      col: colIdx,
+                                      state: t(c.movable === true ? 'movable' : 'notMovable'),
+                                    })}
                                     draggable={isPlaying && !busy && c.movable === true}
                                     onDragStart={dnd.handleDragStart(columnZone)}
                                     onDragEnd={dnd.handleDragEnd}
@@ -304,6 +310,12 @@ function NarcoticPageContent() {
                         })
                       )}
                     </div>
+                    <span
+                      data-testid={`narcotic-movable-${colIdx.toString()}`}
+                      className={`mt-1 rounded px-1.5 py-0.5 text-xs ${isMovable ? badgeSuccessColors : badgeWarningColors}`}
+                    >
+                      {t(isMovable ? 'movable' : 'notMovable')}
+                    </span>
                     {/* Per-column move control */}
                     <button
                       type="button"

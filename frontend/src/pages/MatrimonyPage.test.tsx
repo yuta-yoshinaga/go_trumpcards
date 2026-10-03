@@ -4,6 +4,7 @@ import { matrimonyApi } from '../api/games/matrimony';
 import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { makeMatrimonyState } from '../test/stateFactories';
 import type { Card, CardDesign } from '../types/card';
 import type { MatrimonyResponse } from '../types/games/matrimony';
 import { MatrimonyPage } from './MatrimonyPage';
@@ -31,7 +32,7 @@ function makeTableau(cards: (Card | null)[]): (Card | null)[] {
   return Array.from({ length: 16 }, (_, i) => (i in cards ? cards[i] : card('DIAMOND', 7)));
 }
 
-const playingState: MatrimonyResponse = {
+const playingState: MatrimonyResponse = makeMatrimonyState({
   tableau: makeTableau([card('SPADE', 9), card('HEART', 8), card('CLOVER', 1), null]),
   foundation: Array.from({ length: 4 }, () => []),
   stockCount: 88,
@@ -42,7 +43,7 @@ const playingState: MatrimonyResponse = {
   canUndo: false,
   isStalemate: false,
   message: '',
-};
+});
 
 const gameClearState: MatrimonyResponse = {
   ...playingState,
@@ -95,6 +96,59 @@ describe('MatrimonyPage', () => {
     mockExec.mockClear();
     fireEvent.click(stock);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+  });
+
+  it('shows remaining redeals, updates after a redeal, and identifies the limit', async () => {
+    mockExec
+      .mockResolvedValueOnce(playingState)
+      .mockResolvedValueOnce({ ...playingState, stockCount: 0, redealCount: 1, waste: [card('HEART', 4)] })
+      .mockResolvedValueOnce({ ...playingState, stockCount: 0, redealCount: 2, waste: [card('HEART', 4)] })
+      .mockResolvedValueOnce({ ...playingState, stockCount: 0, redealCount: 3, waste: [card('HEART', 4)] });
+    renderWithProviders(<MatrimonyPage />);
+
+    expect(await screen.findByText('配り直し残り: 3回')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'めくる' }));
+    expect(await screen.findByText('配り直し残り: 2回')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'めくる' }));
+    expect(await screen.findByText('配り直し残り: 1回')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'めくる' }));
+    expect(await screen.findByText('配り直し上限に達しました')).toBeInTheDocument();
+  });
+
+  it('announces stock destinations when an empty slot is available', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('HEART', 4)] });
+    renderWithProviders(<MatrimonyPage />);
+    await screen.findByRole('button', { name: /山札 残り88枚/ });
+    const live = screen.getByTestId('source-move-live');
+    expect(live).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByRole('button', { name: '枠 0 ♠ 9' }));
+    fireEvent.click(screen.getByRole('button', { name: '山札 残り88枚' }));
+    expect(live).toHaveTextContent('山札を選択しました。移動先は空き枠です。空き枠を選択して移動します。');
+  });
+
+  it('announces when stock has no empty slot destination', async () => {
+    mockExec.mockResolvedValue({ ...playingState, tableau: makeTableau([]) });
+    renderWithProviders(<MatrimonyPage />);
+    const stock = await screen.findByRole('button', { name: /山札 残り88枚/ });
+    const live = screen.getByTestId('source-move-live');
+    fireEvent.click(screen.getByRole('button', { name: '枠 0 ♦ 7' }));
+    fireEvent.click(stock);
+    expect(live).toHaveTextContent('山札を選択しました。移動先にできる空き枠はありません。');
+  });
+
+  it('announces waste destinations as empty slots or foundations and clears after a move', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('HEART', 4)] });
+    renderWithProviders(<MatrimonyPage />);
+    await screen.findByRole('button', { name: /山札 残り88枚/ });
+    const live = screen.getByTestId('source-move-live');
+    fireEvent.click(screen.getByRole('button', { name: '♥ 4' }));
+    expect(live).toHaveTextContent('ウェイストを選択しました。移動先は空き枠または組札です。');
+
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.click(screen.getByRole('button', { name: '空の枠 3 (山札か捨て札から埋められます)' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'tableau', col: 3 }));
+    expect(live).toBeEmptyDOMElement();
   });
 
   // An empty pile takes only a stock or waste card, so the label says so and a

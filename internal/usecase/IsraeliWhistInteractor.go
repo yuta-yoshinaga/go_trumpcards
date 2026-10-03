@@ -92,14 +92,7 @@ func (wi *IsraeliWhistInteractor) act(fn func() error) string {
 
 // Play カードをプレイ
 func (wi *IsraeliWhistInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(wi.Game, wi.wp); blocked {
-		return out
-	}
-	if err := wi.Game.PlayerPlay(cardIndex); err != nil {
-		return wi.wp.Output(wi.Game, err)
-	}
-	wi.runCpuTurns()
-	return wi.wp.Output(wi.Game, nil)
+	return humanAction(wi.Game, wi.wp, func() error { return wi.Game.PlayerPlay(cardIndex) }, wi.runCpuTurns)
 }
 
 // NextRound 次のラウンドへ進む

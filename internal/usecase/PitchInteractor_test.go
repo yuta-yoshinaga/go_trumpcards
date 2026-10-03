@@ -258,3 +258,28 @@ func TestRestorePitchInteractor_InvalidData(t *testing.T) {
 	_, err := usecase.RestorePitchInteractor([]byte("not json"), new(presenter.MockPitchPresenter))
 	assert.Error(t, err)
 }
+
+func TestPitchInteractor_Play_ResolvesHumanCompletedTrick(t *testing.T) {
+	g := domain.NewDefaultPitch()
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		g.GetPlayer(i).Reset()
+	}
+	for i, rank := range []int{5, 7, 9} {
+		g.SetCurrentTrick(append(g.GetCurrentTrick(), &domain.TrickCard{
+			PlayerIdx: i + 1,
+			Card:      domain.NewCard(domain.CardDesignDiamond, rank, false),
+		}))
+	}
+	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignDiamond, 13, false))
+	g.SetCurrentPlayerIdx(0)
+	g.SetPhase(domain.PitchPhasePlay)
+	g.SetTrumpSuit(domain.CardDesignDiamond)
+
+	sp := new(presenter.MockPitchPresenter)
+	sp.On("Output", mock.Anything, mock.Anything).Return("ok")
+	i := usecase.NewPitchInteractor(g, sp)
+	i.Play(0)
+
+	assert.Equal(t, 1, g.GetPlayer(0).GetTrickCount(), "human's final card should resolve the trick")
+	assert.Equal(t, domain.PitchPhaseTrickEnd, g.GetPhase(), "resolved trick remains in trick-end phase until NextTrick")
+}

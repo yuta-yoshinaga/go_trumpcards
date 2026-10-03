@@ -23,7 +23,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
-import { badgeErrorColors, badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
+import { badgeErrorColors, badgeInfoColors, badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -221,11 +221,11 @@ function BlackJackSwitchPageContent() {
                     previewScore === null
                       ? ''
                       : previewScore > 21
-                        ? 'text-ds-error'
+                        ? 'text-ds-error-text'
                         : previewDelta > 0
                           ? 'text-ds-success'
                           : previewDelta < 0
-                            ? 'text-ds-error'
+                            ? 'text-ds-error-text'
                             : 'text-ds-text-muted';
                   return (
                     <div
@@ -255,6 +255,14 @@ function BlackJackSwitchPageContent() {
                             className={`ml-1 inline-block rounded px-1.5 py-0.5 text-[10px] ${badgeSuccessColors}`}
                           >
                             {t('badge.bj')}
+                          </span>
+                        )}
+                        {hand.doubled && (
+                          <span
+                            data-testid={`hand-${idx}-doubled-badge`}
+                            className={`ml-1 inline-block rounded px-1.5 py-0.5 text-[10px] ${badgeInfoColors}`}
+                          >
+                            {t('badge.doubled')}
                           </span>
                         )}
                         {isCurrent && (
@@ -329,6 +337,14 @@ function BlackJackSwitchPageContent() {
                   onChange={setBetAmount}
                   max={Math.min(Math.floor(state.chips / 2), BJSWITCH_MAX_BET)}
                 />
+                <div className="text-ds-text-muted text-sm" data-testid="bjswitch-bet-total">
+                  {t('betSummary.total', { amount: betAmount * 2, chips: state.chips })}
+                </div>
+                {betAmount * 2 > state.chips && (
+                  <p className="text-ds-error-text text-sm" data-testid="bjswitch-bet-insufficient">
+                    {t('betSummary.overBalance')}
+                  </p>
+                )}
                 <button
                   type="button"
                   className={btnPrimary}

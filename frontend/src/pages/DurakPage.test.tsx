@@ -209,6 +209,21 @@ describe('DurakPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('attack', 0));
   });
 
+  it('runs the selected-card attack shortcut and advertises it', async () => {
+    renderWithProviders(<DurakPage />);
+    const card = await screen.findByRole('button', { name: '♠ A' });
+    fireEvent.click(card);
+    fireEvent.click(screen.getByText('キーボードショートカット'));
+    expect(screen.getByTestId('durak-kbd-shortcuts')).toHaveTextContent('a');
+    expect(screen.getByTestId('durak-kbd-shortcuts')).toHaveTextContent('攻撃する');
+    expect(screen.getByTestId('durak-kbd-shortcuts')).not.toHaveTextContent('カードを出す');
+    mockExec.mockClear();
+
+    fireEvent.keyDown(document, { key: 'a' });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('attack', 0));
+  });
+
   it('calls pass on pass button click', async () => {
     const stateWithPairs: DurakResponse = {
       ...baseState,
@@ -308,6 +323,34 @@ describe('DurakPage', () => {
     expect(screen.queryByTestId('dk-defense-0')).not.toBeInTheDocument();
     // ARIA label includes suit + rank so screen readers convey "Undefended attack: ♣ 7".
     expect(screen.getByTestId('dk-pair-0')).toHaveAttribute('aria-label', '未防御の攻撃: ♣ 7');
+  });
+
+  it('exposes the selected defense target and updates it when selection moves or clears', async () => {
+    mockExec.mockResolvedValue({
+      ...defendPhaseState,
+      tablePairs: [
+        { attack: { design: 'CLOVER', value: 7 }, defense: null },
+        { attack: { design: 'SPADE', value: 8 }, defense: null },
+      ],
+    });
+    renderWithProviders(<DurakPage />);
+
+    const firstAttack = await screen.findByTestId('dk-pair-0');
+    const secondAttack = screen.getByTestId('dk-pair-1');
+    expect(firstAttack).toHaveAttribute('aria-pressed', 'false');
+    expect(secondAttack).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(firstAttack);
+    expect(firstAttack).toHaveAttribute('aria-pressed', 'true');
+    expect(secondAttack).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(secondAttack);
+    expect(firstAttack).toHaveAttribute('aria-pressed', 'false');
+    expect(secondAttack).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(secondAttack);
+    expect(firstAttack).toHaveAttribute('aria-pressed', 'false');
+    expect(secondAttack).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('does not pulse an undefended attack when the human is not the defender', async () => {

@@ -418,6 +418,61 @@ describe('CourchevelPage', () => {
     expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(3);
   });
 
+  it('highlights the live best-five hole cards and updates them with the board', async () => {
+    const liveHuman = humanPlayer({
+      cards: [
+        { design: 'SPADE', value: 1 },
+        { design: 'SPADE', value: 13 },
+        { design: 'HEART', value: 4 },
+        { design: 'DIAMOND', value: 7 },
+        { design: 'CLOVER', value: 9 },
+      ],
+      liveBestHandHoleIndices: [0, 1],
+      liveBestHandBoardIndices: [0, 1, 2],
+    });
+    const firstBoard = [
+      { design: 'SPADE' as const, value: 2 },
+      { design: 'SPADE' as const, value: 3 },
+      { design: 'SPADE' as const, value: 4 },
+    ];
+    mockExec.mockResolvedValue({
+      ...flopState,
+      players: [liveHuman, ...flopState.players.slice(1)],
+      communityCards: firstBoard,
+    });
+    const { container } = renderWithProviders(<CourchevelPage />);
+    await waitFor(() => expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(2));
+    expect(
+      [...container.querySelectorAll('[data-best5-hole]')].map((el) =>
+        Number(el.getAttribute('data-best5-hole-index')),
+      ),
+    ).toEqual([0, 1]);
+    expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(3);
+    expect(screen.getByTestId('courchevel-live-besthand')).toBeInTheDocument();
+
+    const nextBoard = [...firstBoard, { design: 'SPADE' as const, value: 5 }];
+    const nextHuman = { ...liveHuman, liveBestHandHoleIndices: [0, 1], liveBestHandBoardIndices: [0, 1, 3] };
+    mockExec.mockResolvedValue({
+      ...flopState,
+      players: [nextHuman, ...flopState.players.slice(1)],
+      communityCards: nextBoard,
+    });
+    fireEvent.click(screen.getByRole('button', { name: /チェック/ }));
+    await waitFor(() =>
+      expect(
+        [...container.querySelectorAll('[data-best5-hole]')].map((el) =>
+          Number(el.getAttribute('data-best5-hole-index')),
+        ),
+      ).toEqual([0, 1]),
+    );
+    expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(2);
+    expect(
+      [...container.querySelectorAll('[data-best5-board]')].map((el) =>
+        Number(el.getAttribute('data-community-card-index')),
+      ),
+    ).toEqual([0, 1, 3]);
+  });
+
   it('highlights the winning CPU board cards when the human has folded', async () => {
     mockExec.mockResolvedValue({
       ...showdownState,
@@ -804,7 +859,7 @@ describe('CourchevelPage', () => {
   it('shows call/raise buttons when canAct and has outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<CourchevelPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
@@ -907,11 +962,11 @@ describe('CourchevelPage', () => {
   it('calls call command when has outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<CourchevelPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', undefined, undefined, 0));
   });
 
@@ -1398,7 +1453,7 @@ describe('CourchevelPage', () => {
     it('pressing c triggers call when canAct and hasOutstandingBet', async () => {
       mockExec.mockResolvedValue(preFlopWithBetState);
       renderWithProviders(<CourchevelPage />);
-      await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
       mockExec.mockClear();
       mockExec.mockResolvedValue(preFlopWithBetState);
@@ -1513,7 +1568,7 @@ describe('CourchevelPage', () => {
     it('pressing k is ignored when hasOutstandingBet', async () => {
       mockExec.mockResolvedValue(preFlopWithBetState);
       renderWithProviders(<CourchevelPage />);
-      await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
       mockExec.mockClear();
 
@@ -1736,11 +1791,28 @@ describe('CourchevelPage', () => {
     expect(await screen.findByTestId('cv-preflop-exposed-note')).toBeInTheDocument();
   });
 
+  it('announces the exposed pre-flop card to a screen reader', async () => {
+    mockExec.mockResolvedValue({
+      ...preFlopState,
+      communityCards: [{ design: 'SPADE', value: 14 } as unknown as OmahaResponse['communityCards'][number]],
+    });
+    renderWithProviders(<CourchevelPage />);
+
+    const live = await screen.findByTestId('cv-preflop-exposed-status');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live.textContent?.trim()).toBeTruthy();
+    expect(live.textContent).toBe(screen.getByTestId('cv-preflop-exposed-note').textContent);
+  });
+
   it('drops the pre-flop note once the rest of the flop is out', async () => {
     mockExec.mockResolvedValue(flopState);
     renderWithProviders(<CourchevelPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('cv-preflop-exposed-note')).not.toBeInTheDocument();
+    const live = screen.getByTestId('cv-preflop-exposed-status');
+    expect(live).toBeInTheDocument();
+    expect(live.textContent?.trim()).toBe('');
   });
 
   it('renders action shortcuts panel during betting phase', async () => {

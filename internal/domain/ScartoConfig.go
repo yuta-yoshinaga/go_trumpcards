@@ -6,9 +6,7 @@ package domain
 type ScartoCpuDifficulty int
 
 // ScartoMaxTargetDeals は CUI で指定できる最大ディール数。
-// **ドメイン (Validate) に上限は無い。**Web のセレクトが 3/5/7 しか出さないのは
-// 見せ方の都合で、9 ディールを「無効」と言う理由はドメインの側に無い。CUI に
-// 上限が要るのは打ち間違いで遊べない長さのマッチが始まらないようにするためだけ。
+// Validate と CUI が受け付ける最大ディール数。
 const ScartoMaxTargetDeals = 100
 
 // Scarto の CPU 難易度定数
@@ -39,7 +37,7 @@ func (c ScartoConfig) Validate() error {
 	if err := ValidateRange("CPU difficulty", int(c.CpuDifficulty), int(ScartoCpuDifficultyEasy), int(ScartoCpuDifficultyHard)); err != nil {
 		return err
 	}
-	if err := ValidateMin("target deals", c.TargetDeals, 1); err != nil {
+	if err := ValidateRange("target deals", c.TargetDeals, 1, ScartoMaxTargetDeals); err != nil {
 		return err
 	}
 	return nil

@@ -61,6 +61,7 @@ const playPhaseState: NinetyNineResponse = {
   dealerIdx: 2,
   trumpSuit: 3,
   currentTrick: [],
+  validPlayIndices: [0],
   gameEndFlag: false,
   winnerIdx: -1,
   leadPlayerIdx: 0,
@@ -116,6 +117,20 @@ beforeEach(() => {
 });
 
 describe('NinetyNinePage', () => {
+  it('announces each player bid, won tricks, round score, and cumulative score at round end', async () => {
+    mockExec.mockResolvedValue({
+      ...roundEndState,
+      players: roundEndState.players.map((p, i) => (i === 1 ? { ...p, bid: -1 } : p)),
+    });
+    renderWithProviders(<NinetyNinePage />);
+
+    await waitFor(() =>
+      expect(screen.getByRole('status')).toHaveTextContent(
+        'ラウンド終了。あなた（ビッド 3、獲得 0 トリック）: +0 (合計 0)、CPU 1（ビッドなし、獲得 1 トリック）: +0 (合計 10)、CPU 2（ビッド 4、獲得 2 トリック）: +0 (合計 20)',
+      ),
+    );
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<NinetyNinePage />);
@@ -135,6 +150,41 @@ describe('NinetyNinePage', () => {
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
       expect(screen.getByAltText('♥ J')).toBeInTheDocument();
     });
+  });
+
+  it('marks cards that follow the led suit and explains restricted cards accessibly', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      currentTrick: [{ playerIdx: 1, card: { design: 'SPADE', value: 5 } }],
+      validPlayIndices: [0],
+    });
+    renderWithProviders(<NinetyNinePage />);
+    const playable = await screen.findByRole('button', { name: '♠ A (プレイできます)' });
+    const restricted = screen.getByRole('button', { name: '♥ J (リードスートに従う必要があります)' });
+    expect(playable).toHaveAttribute('data-legal', 'true');
+    expect(restricted).not.toHaveAttribute('data-legal');
+  });
+
+  it('marks all cards playable when the hand has no card of the led suit', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      players: playPhaseState.players.map((player) =>
+        player.isHuman
+          ? {
+              ...player,
+              cards: [
+                { design: 'HEART', value: 11 },
+                { design: 'DIAMOND', value: 8 },
+              ],
+            }
+          : player,
+      ),
+      currentTrick: [{ playerIdx: 1, card: { design: 'SPADE', value: 5 } }],
+      validPlayIndices: [0, 1],
+    });
+    renderWithProviders(<NinetyNinePage />);
+    expect(await screen.findByRole('button', { name: '♥ J (プレイできます)' })).toHaveAttribute('data-legal', 'true');
+    expect(screen.getByRole('button', { name: '♦ 8 (プレイできます)' })).toHaveAttribute('data-legal', 'true');
   });
 
   it('shows deal/trick/trump info', async () => {

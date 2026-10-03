@@ -35,6 +35,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseSevenTwentySevenCommand, SEVENTWENTYSEVEN_HELP } from '../utils/cli/commands/seventwentysevenCommands';
 import { formatSevenTwentySevenState } from '../utils/cli/formatters/seventwentysevenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** SevenTwentySeven tutorial step definitions. */
@@ -268,6 +269,7 @@ function SevenTwentySevenPageContent() {
                 >
                   {playerLabel(p.id, p.isHuman)} — {t('chips', { amount: p.chips })} ·{' '}
                   {t('roundBet', { amount: p.roundBet })} · [{playerBadge(p)}]
+                  {isResultPhase ? ` · ${t('roundResult.netChange', { change: formatSignedDelta(p.netChange) })}` : ''}
                   {scoreLabel(p) ? ` · ${scoreLabel(p)}` : ''}
                 </div>
               ))}

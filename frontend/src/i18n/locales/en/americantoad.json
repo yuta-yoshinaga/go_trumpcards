@@ -64,5 +64,8 @@
     "controls": "Draw, hint, undo, auto-complete, and the other controls."
   },
   "undo": "Undo",
-  "waste": "Waste"
+  "waste": "Waste",
+  "wasteCardAriaLabel": "Waste {{card}}",
+  "wasteCount_one": "{{count}} card",
+  "wasteCount_other": "{{count}} cards"
 }

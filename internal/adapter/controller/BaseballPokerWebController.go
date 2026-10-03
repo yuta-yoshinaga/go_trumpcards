@@ -46,6 +46,7 @@ type BaseballPokerWebOutputSeat struct {
 	UsedWild  bool             `json:"usedWild"`
 	BestHand  []*WebOutputCard `json:"bestHand"`
 	WonAmount int              `json:"wonAmount"`
+	NetChange int              `json:"netChange"`
 }
 
 // BaseballPokerWebOutput ベースボールポーカーWebアウトプット

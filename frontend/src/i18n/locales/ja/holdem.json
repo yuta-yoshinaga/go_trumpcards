@@ -20,6 +20,7 @@
     "minimumRaise": "最小レイズ額: {{amount}}"
   },
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
+  "blindLevelChanged": "ブラインドレベルが上がりました: SB {{smallBlind}}、BB {{bigBlind}}",
   "bettingLimit": {
     "label": "リミット",
     "fixed": "固定リミット",
@@ -96,5 +97,7 @@
     "strongHandRank": "強いハンド — レイズ推奨",
     "decentHandRank": "まずまずのハンド — コール推奨",
     "weakHandRank": "弱いハンド — フォールド推奨"
-  }
+  },
+  "communityCardsRevealed": "コミュニティカードが公開されました: {{cards}}",
+  "listSeparator": "、"
 }

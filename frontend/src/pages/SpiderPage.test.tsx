@@ -455,6 +455,19 @@ describe('SpiderPage', () => {
     await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'true'));
   });
 
+  it('includes the zero-based column and top-down position in face-up tableau card names', async () => {
+    renderWithProviders(<SpiderPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    const firstColumnCard = screen.getByAltText('♠ K').closest('button');
+    const secondColumnCard = screen.getByAltText('♥ 5').closest('button');
+    expect(firstColumnCard).toHaveAttribute('aria-label', '♠ K（列0・上から1枚目）');
+    expect(secondColumnCard).toHaveAttribute('aria-label', '♥ 5（列1・上から2枚目）');
+    expect(firstColumnCard).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(firstColumnCard!);
+    await waitFor(() => expect(firstColumnCard).toHaveAttribute('aria-pressed', 'true'));
+  });
+
   it('empty tableau targets stay focusable and explain source selection before a move', async () => {
     renderWithProviders(<SpiderPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
@@ -556,6 +569,14 @@ describe('SpiderPage', () => {
     await waitFor(() => expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument());
   });
 
+  it('keeps the message live region mounted before a message arrives', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<SpiderPage />);
+    const region = await screen.findByTestId('spider-game-message');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toBeEmptyDOMElement();
+  });
+
   it('displays message with messageCode', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
@@ -563,7 +584,8 @@ describe('SpiderPage', () => {
       messageCode: 'spider.playing',
     });
     renderWithProviders(<SpiderPage />);
-    await waitFor(() => expect(screen.getAllByText('プレイ中').length).toBeGreaterThanOrEqual(1));
+    const region = await screen.findByTestId('spider-game-message');
+    await waitFor(() => expect(region).toHaveTextContent('プレイ中'));
   });
 
   it('stock card back is clickable during playing phase', async () => {

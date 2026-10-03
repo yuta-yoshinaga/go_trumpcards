@@ -283,7 +283,7 @@ function CrazyFourPokerPageContent() {
                 {state.queensUpBet > 0 && (
                   <div className="text-sm">{t('result.queensUp', { amount: queensUpReturn - state.queensUpBet })}</div>
                 )}
-                <div className={`text-sm font-medium ${net >= 0 ? 'text-ds-success' : 'text-ds-error'}`}>
+                <div className={`text-sm font-medium ${net >= 0 ? 'text-ds-success' : 'text-ds-error-text'}`}>
                   {t('label.net')}: {net}
                 </div>
               </div>
@@ -322,6 +322,14 @@ function CrazyFourPokerPageContent() {
                     max={Math.max(0, state.chips - ante * 2)}
                     step={CRAZY_FOUR_POKER_ANTE_UNIT}
                   />
+                  <section className="text-ds-text-primary text-sm text-center" data-testid="c4p-wager-summary">
+                    <h2 className="font-bold">{t('wagerSummary.title')}</h2>
+                    <p>{t('wagerSummary.ante', { amount: ante })}</p>
+                    <p>{t('wagerSummary.superBonus', { amount: ante })}</p>
+                    <p>{t('wagerSummary.required', { amount: ante * 2 })}</p>
+                    <p>{t('wagerSummary.optional', { amount: queensUp })}</p>
+                    <p className="font-bold">{t('wagerSummary.total', { amount: ante * 2 + queensUp })}</p>
+                  </section>
                   {/* **賭ける前に見えなければ意味がない** (#5775)。何が当たれば
                       何倍かを知って額を決めるもの。倍率はサーバの配当表そのまま。 */}
                   {/* **Super Bonus はアンティに必ず付く。** 任意の Queens Up は
@@ -365,17 +373,24 @@ function CrazyFourPokerPageContent() {
                   </p>
                   <div className="flex gap-2 flex-wrap justify-center">
                     {multipliers.map((m) => (
-                      <button
-                        key={`mult-${m}`}
-                        type="button"
-                        className={btnPrimary}
-                        data-hint-action={m === state.maxMultiplier && state.hasAcesOrBetter ? 'raise' : 'play'}
-                        data-testid={`c4p-play-${m}`}
-                        onClick={() => execApi('play', { multiplier: m })}
-                        disabled={loading}
-                      >
-                        {t('button.play', { multiplier: m })}
-                      </button>
+                      <div key={`mult-${m}`} className="text-center">
+                        <button
+                          type="button"
+                          className={btnPrimary}
+                          data-hint-action={m === state.maxMultiplier && state.hasAcesOrBetter ? 'raise' : 'play'}
+                          data-testid={`c4p-play-${m}`}
+                          onClick={() => execApi('play', { multiplier: m })}
+                          disabled={loading}
+                        >
+                          {t('button.play', { multiplier: m })}
+                        </button>
+                        <p className="text-ds-text-muted text-xs" data-testid={`c4p-play-wager-${m}`}>
+                          {t('wagerSummary.playChoice', {
+                            playBet: state.anteBet * m,
+                            total: state.anteBet + state.superBet + state.queensUpBet + state.anteBet * m,
+                          })}
+                        </p>
+                      </div>
                     ))}
                     <button type="button" className={btnWarning} onClick={() => execApi('fold')} disabled={loading}>
                       {t('button.fold')}

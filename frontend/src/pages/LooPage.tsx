@@ -136,6 +136,22 @@ function LooPageContent() {
   const canDecide = isDecidePhase && state.decidePlayerIdx === humanIdx && isHumanTurn;
   const canPlay = isPlayPhase && isHumanTurn;
 
+  const decideStartIdx = (state.dealerIdx + 1) % state.players.length;
+  const decideCursor = (state.decidePlayerIdx - decideStartIdx + state.players.length) % state.players.length;
+  const decisionCounts = state.players.reduce(
+    (counts, player, idx) => {
+      const order = (idx - decideStartIdx + state.players.length) % state.players.length;
+      if (order < decideCursor) {
+        if (player.playing) counts.play++;
+        else counts.pass++;
+      } else {
+        counts.undecided++;
+      }
+      return counts;
+    },
+    { play: 0, pass: 0, undecided: 0 },
+  );
+
   const trumpSymbol = state.trumpSuit >= 1 ? suitSymbolAt(state.trumpSuit, '-') : '-';
 
   const handleManualReset = () => {
@@ -220,7 +236,7 @@ function LooPageContent() {
                       {/* ルーの罰金には下限が無いのでチップは負に落ちる。色だけの
                           警告にならないよう ▼ と aria-label も添える。 */}
                       <span
-                        className={p.chips < 0 ? 'text-ds-error font-semibold' : undefined}
+                        className={p.chips < 0 ? 'text-ds-error-text font-semibold' : undefined}
                         data-testid={`loo-chips-${p.id}`}
                       >
                         {p.chips < 0 && (
@@ -230,7 +246,18 @@ function LooPageContent() {
                             ▼{' '}
                           </span>
                         )}
-                        {playerName(p.id, p.isHuman)}: {t('chips', { chips: p.chips })}
+                        {playerName(p.id, p.isHuman)}
+                        {p.id === state.dealerIdx && (
+                          <span
+                            className="ml-1 rounded px-1.5 py-0.5 text-xs bg-ds-accent/30 text-ds-accent"
+                            role="img"
+                            aria-label={t('dealerBadge')}
+                            data-testid={`loo-dealer-${p.id}`}
+                          >
+                            {t('dealerBadge')}
+                          </span>
+                        )}
+                        : {t('chips', { chips: p.chips })}
                       </span>
                       <span
                         className={`px-1.5 py-0.5 rounded text-xs ${
@@ -284,7 +311,7 @@ function LooPageContent() {
                   >
                     <div className="mb-1 text-ds-text-primary">{t('dealResult.title')}</div>
                     {state.lastDealDetail.looed.length > 0 && (
-                      <div className="text-ds-error mb-1">
+                      <div className="text-ds-error-text mb-1">
                         {t('dealResult.looed', {
                           names: state.lastDealDetail.looed
                             .map((i) => playerName(i, state.players[i]?.isHuman ?? false))
@@ -344,6 +371,16 @@ function LooPageContent() {
                 </div>
               )}
             </div>
+            <div data-testid="loo-decision-counts-live" role="status" aria-live="polite">
+              {isDecidePhase && (
+                <div
+                  className="mb-2 mx-auto max-w-md text-center text-sm text-ds-text-muted"
+                  data-testid="loo-decision-counts"
+                >
+                  {t('decisionCounts', decisionCounts)}
+                </div>
+              )}
+            </div>
             {/* ポットの損益表示は領域を常設し、中身だけを判断フェーズで差し替える。領域と
                 パネルを同時に挿入すると、変化として読み上げられないことがある (#7352)。 */}
             <div data-testid="loo-pot-risk-live" role="status" aria-live="polite">
@@ -357,7 +394,7 @@ function LooPageContent() {
                     >
                       <div className="text-ds-text-muted mb-0.5">{t('potRisk.label')}</div>
                       <div className="text-ds-accent">{t('potRisk.win', { pot: maxWin, perTrick })}</div>
-                      <div className="text-ds-error">{t('potRisk.loss', { penalty: looPenalty })}</div>
+                      <div className="text-ds-error-text">{t('potRisk.loss', { penalty: looPenalty })}</div>
                     </div>
                   );
                 })()}

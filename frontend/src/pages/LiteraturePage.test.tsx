@@ -222,6 +222,24 @@ describe('LiteraturePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('claim', { halfSuit: 2, holders: [0, 0, 0, 0, 0, 0] }));
   });
 
+  it('shows all six current card placements in the claim confirmation', async () => {
+    renderWithProviders(<LiteraturePage />);
+    await screen.findByRole('button', { name: '宣言する' });
+
+    const holders = screen.getAllByLabelText(/^♠[0-9]+$/);
+    fireEvent.change(holders[0], { target: { value: '2' } });
+    fireEvent.change(holders[5], { target: { value: '4' } });
+    fireEvent.click(screen.getByRole('button', { name: '宣言する' }));
+
+    const dialog = screen.getByRole('alertdialog');
+    expect(dialog).toHaveTextContent('♠ 2: 席2');
+    expect(dialog).toHaveTextContent('♠ 3: 席0');
+    expect(dialog).toHaveTextContent('♠ 4: 席0');
+    expect(dialog).toHaveTextContent('♠ 5: 席0');
+    expect(dialog).toHaveTextContent('♠ 6: 席0');
+    expect(dialog).toHaveTextContent('♠ 7: 席4');
+  });
+
   // **無効は「相手に渡る」とは違う。**宣言の説明に書く。
   it('explains that misplacing within your own team cancels the claim', async () => {
     renderWithProviders(<LiteraturePage />);
@@ -304,6 +322,53 @@ describe('LiteraturePage', () => {
     renderWithProviders(<LiteraturePage />);
     const history = await screen.findByTestId('literature-history');
     expect(history).toHaveTextContent('?');
+  });
+
+  it('shows claim history with the claimant and outcome, and hides it when empty', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        claims: [
+          { player: 0, halfSuit: 0, outcome: 0, awardedTeam: 0 },
+          { player: 1, halfSuit: 2, outcome: 1, awardedTeam: -1 },
+          { player: 2, halfSuit: 4, outcome: 2, awardedTeam: 1 },
+        ],
+      }),
+    );
+    renderWithProviders(<LiteraturePage />);
+    const history = await screen.findByTestId('literature-claim-history');
+    expect(history).toHaveTextContent('所在宣言履歴');
+    expect(history).toHaveTextContent('あなた: ♠ 低位 (2-7) をチーム0が獲得しました');
+    expect(history).toHaveTextContent('CPU 1: ♣ 低位 (2-7) は【無効】');
+    expect(history).toHaveTextContent('CPU 2: ♥ 低位 (2-7) は相手（チーム1）の獲得');
+    expect(history.querySelectorAll('[data-testid="literature-recent-claim"]')).toHaveLength(3);
+    expect(history.querySelectorAll('[data-testid="literature-older-claim"]')).toHaveLength(0);
+  });
+
+  it('does not render claim history when claims are empty', async () => {
+    mockExec.mockResolvedValue(makeState({ claims: [] }));
+    renderWithProviders(<LiteraturePage />);
+    await waitFor(() => expect(screen.getByTestId('literature-threshold-note')).toBeInTheDocument());
+    expect(screen.queryByTestId('literature-claim-history')).not.toBeInTheDocument();
+  });
+
+  it('collapses older claims when the claim history exceeds five entries', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        claims: Array.from({ length: 6 }, (_, i) => ({
+          player: i % 2,
+          halfSuit: i,
+          outcome: 0,
+          awardedTeam: i % 2,
+        })),
+      }),
+    );
+    renderWithProviders(<LiteraturePage />);
+    const history = await screen.findByTestId('literature-claim-history');
+    const details = history.querySelector('details');
+    expect(details).not.toBeNull();
+    expect(history.querySelectorAll('[data-testid="literature-recent-claim"]')).toHaveLength(5);
+    expect(history.querySelectorAll('[data-testid="literature-older-claim"]')).toHaveLength(1);
+    expect(details).toHaveTextContent('さらに1件（展開すると全件表示）');
   });
 
   // **同数で終わることがある。**無効が絡むため。

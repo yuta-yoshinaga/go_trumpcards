@@ -47,6 +47,7 @@ func (p *PreferenceWebPresenter) buildBase(g interfaces.PreferenceGame) *control
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerPlayer = g.GetWinnerPlayer()
 	resObj.PlayerScores = g.GetPlayerScores()
+	resObj.ScoreBreakdown = g.GetScoreBreakdown()
 	resObj.RoundTricks = g.GetRoundTricks()
 	resObj.IsHumanTurn = g.IsHumanTurn()
 	resObj.IsHumanBidTurn = g.IsHumanBidTurn()

@@ -19,6 +19,7 @@
     "dealer": "[親]",
     "declarerByTie": "HCP が同点だったため、親（席{{seat}}）の側が宣言側になりました。",
     "you": "あなた",
+    "currentTurn": "手番中",
     "cpu": "CPU{{idx}}",
     "dummyHand": "ダミーの手札",
     "yourTurn": "あなたの番",
@@ -31,7 +32,8 @@
   "currentTrick": "現在のトリック",
   "roundResult": {
     "made": "契約成立: {{need}}トリック必要で {{took}} 取りました。",
-    "down": "契約失敗: {{need}}トリック必要で {{took}} しか取れませんでした。"
+    "down": "契約失敗: {{need}}トリック必要で {{took}} しか取れませんでした。",
+    "delta": "今回のラウンド: チーム{{team}} {{delta}}点"
   },
   "actions": {
     "level": "レベル",

@@ -637,6 +637,78 @@ describe('PokerPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('exchange', expect.arrayContaining([0, 1])));
   });
 
+  it('announces the replacement cards in a separate polite live region after exchange', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    renderWithProviders(<PokerPage />);
+    const exchangeButton = await screen.findByRole('button', { name: '交換' });
+    const liveRegion = screen.getByTestId('pk-exchanged-cards-live');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByAltText('♠ A'));
+    mockExec.mockResolvedValue({
+      ...exchangeState,
+      phase: 3,
+      players: [
+        humanPlayer({
+          cards: [{ design: 'HEART', value: 12 }, ...humanPlayer().cards.slice(1)],
+        }),
+        ...exchangeState.players.slice(1),
+      ],
+    });
+    fireEvent.click(exchangeButton);
+
+    await waitFor(() => expect(liveRegion).toHaveTextContent('交換後に引いたカード: ♥ Q'));
+    expect(screen.getByTestId('pk-exchange-confirmability')).toBeInTheDocument();
+    expect(liveRegion).toHaveAttribute('role', 'status');
+  });
+
+  it('does not announce replacement cards from a later stand response after exchange fails', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    renderWithProviders(<PokerPage />);
+    const exchangeButton = await screen.findByRole('button', { name: '交換' });
+    const liveRegion = screen.getByTestId('pk-exchanged-cards-live');
+    fireEvent.click(screen.getByAltText('♠ A'));
+
+    mockExec.mockRejectedValueOnce(new Error('network error'));
+    fireEvent.click(exchangeButton);
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
+
+    mockExec.mockResolvedValue({
+      ...exchangeState,
+      phase: 3,
+      players: [
+        humanPlayer({ cards: [{ design: 'HEART', value: 12 }, ...humanPlayer().cards.slice(1)] }),
+        ...exchangeState.players.slice(1),
+      ],
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'スタンド' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('stand'));
+    await waitFor(() => expect(liveRegion).toBeEmptyDOMElement());
+  });
+
+  it('joins multiple replacement cards with the localized list separator', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    renderWithProviders(<PokerPage />);
+    const exchangeButton = await screen.findByRole('button', { name: '交換' });
+    fireEvent.click(screen.getByAltText('♠ A'));
+    fireEvent.click(screen.getByAltText('♥ 5'));
+    mockExec.mockResolvedValue({
+      ...exchangeState,
+      phase: 3,
+      players: [
+        humanPlayer({
+          cards: [{ design: 'HEART', value: 12 }, { design: 'DIAMOND', value: 9 }, ...humanPlayer().cards.slice(2)],
+        }),
+        ...exchangeState.players.slice(1),
+      ],
+    });
+    fireEvent.click(exchangeButton);
+    await waitFor(() =>
+      expect(screen.getByTestId('pk-exchanged-cards-live')).toHaveTextContent('交換後に引いたカード: ♥ Q、♦ 9'),
+    );
+  });
+
   it('calls stand command', async () => {
     mockExec.mockResolvedValue(exchangeState);
     renderWithProviders(<PokerPage />);
@@ -732,7 +804,7 @@ describe('PokerPage', () => {
   it('shows call/raise buttons when canAct and has outstanding bet', async () => {
     mockExec.mockResolvedValue(dealWithBetState);
     renderWithProviders(<PokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
@@ -880,11 +952,11 @@ describe('PokerPage', () => {
   it('calls call command when has outstanding bet', async () => {
     mockExec.mockResolvedValue(dealWithBetState);
     renderWithProviders(<PokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(dealState);
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', undefined, undefined, undefined, 0));
   });
 

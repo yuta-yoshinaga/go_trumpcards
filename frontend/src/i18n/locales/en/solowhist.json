@@ -22,6 +22,7 @@
   "cpu": "CPU {{id}}",
   "currentTrick": "Current Trick",
   "declarerBadge": "Declarer",
+  "dealerBadge": "Dealer",
   "declarerLine": "Declarer: {{name}} — {{contract}}",
   "hint": {
     "lead_low": "Lead a low card to conserve strength",

@@ -32,8 +32,10 @@ const (
 
 // PresidentCpuAction CPUまたは人間の1ターン分の行動記録
 type PresidentCpuAction struct {
-	PlayerIdx   int     // 行動したプレイヤーインデックス
-	PlayedCards []*Card // 出したカード (nil = パス)
+	PlayerIdx     int     // 行動したプレイヤーインデックス
+	PlayedCards   []*Card // 出したカード (nil = パス)
+	FieldFlushed  bool    // このパスで場が流れた
+	LeadPlayerIdx int     // FieldFlushed が true のときだけ意味を持つ、場流れ後にリードするプレイヤー
 }
 
 // PresidentExchangeAction カード交換1件の記録
@@ -243,6 +245,8 @@ func (p *President) handlePass(playerIdx int, setAction func(*PresidentCpuAction
 		p.clearTableState()
 		// 場流れ後は最後に出したプレイヤーの次から再開 (= パスしたプレイヤーの次)
 		p.advanceTurn()
+		action.FieldFlushed = true
+		action.LeadPlayerIdx = p.round.currentTurn
 		return nil
 	}
 
@@ -295,7 +299,23 @@ func (p *President) checkPassClear() {
 		return
 	}
 	if p.round.currentTurn == p.round.lastPlayPlayerIdx {
+		p.markLastPassAsFieldFlush(p.round.currentTurn)
 		p.clearTableState()
+	}
+}
+
+func (p *President) markLastPassAsFieldFlush(leadPlayerIdx int) {
+	if len(p.round.cpuActions) > 0 {
+		action := p.round.cpuActions[len(p.round.cpuActions)-1]
+		if action.PlayerIdx != p.round.lastPlayPlayerIdx && len(action.PlayedCards) == 0 {
+			action.FieldFlushed = true
+			action.LeadPlayerIdx = leadPlayerIdx
+		}
+		return
+	}
+	if action := p.round.humanAction; action != nil && action.PlayerIdx != p.round.lastPlayPlayerIdx && len(action.PlayedCards) == 0 {
+		action.FieldFlushed = true
+		action.LeadPlayerIdx = leadPlayerIdx
 	}
 }
 

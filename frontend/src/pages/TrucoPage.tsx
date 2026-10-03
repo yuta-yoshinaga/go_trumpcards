@@ -225,6 +225,28 @@ function TrucoPageContent() {
           label={t('currentTrick')}
           dataTutorial="truco-trick"
         />
+        <div data-testid="truco-trick-live" className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          {state.currentTrick
+            .map(({ playerIdx, card }) => `${playerLabel(playerIdx)}: ${cardAlt(card)}`)
+            .join(t('listSeparator'))}
+        </div>
+
+        <div
+          data-testid="truco-trick-result-live"
+          className="sr-only"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {isTrickEnd && state.trickResults.length > 0
+            ? state.trickResults[state.trickResults.length - 1] === -1
+              ? t('trickResult.tie', { number: state.trickResults.length })
+              : t('trickResult.winner', {
+                  number: state.trickResults.length,
+                  name: playerLabel(state.trickResults[state.trickResults.length - 1]),
+                })
+            : ''}
+        </div>
 
         {state.trickResults.length > 0 && (
           <div className="mx-auto my-3 max-w-md rounded bg-black/30 p-2 text-sm" data-testid="truco-trick-history">

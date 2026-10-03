@@ -18,6 +18,11 @@
     "cpu": "CPU{{idx}}"
   },
   "currentTrick": "現在のトリック",
+  "listSeparator": "、",
+  "announcement": {
+    "cardPlayed": "{{name}}: {{card}}",
+    "trickResolved": "トリックが解決しました"
+  },
   "actions": {
     "players": "人数",
     "reset": "リセット",

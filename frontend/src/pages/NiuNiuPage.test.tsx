@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { niuniuApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, NiuNiuHand, NiuNiuResponse } from '../types/card';
 import { NiuNiuPage } from './NiuNiuPage';
@@ -42,6 +43,7 @@ function makeState(overrides?: Partial<NiuNiuResponse>): NiuNiuResponse {
     bankerHand: hiddenHand(0),
     bankerIdx: 3,
     chips: 900,
+    drawPileCount: 32,
     maxMultiplier: 3,
     bankerRankKey: '',
     phase: 1,
@@ -66,6 +68,12 @@ describe('NiuNiuPage', () => {
     mockExec.mockResolvedValue(makeState());
     renderWithProviders(<NiuNiuPage />);
     await waitFor(() => expect(screen.getByText(/チップ: 900/)).toBeInTheDocument());
+  });
+
+  it('shows the undealt shoe count', async () => {
+    mockExec.mockResolvedValue(makeState({ drawPileCount: 32 }));
+    renderWithProviders(<NiuNiuPage />);
+    await waitFor(() => expect(screen.getByText('山札の残り: 32')).toBeInTheDocument());
   });
 
   // The server withholds a hidden hand's cards; the page renders backs from
@@ -121,6 +129,21 @@ describe('NiuNiuPage', () => {
     // 50 x 3 = 150 > 50 -- a stake equal to the whole stack is NOT affordable.
     expect(screen.getByRole('button', { name: '50' })).toBeDisabled();
     expect(screen.getByRole('button', { name: '500' })).toBeDisabled();
+    expect(screen.getByText('所持チップが不足しています（最大3倍で150チップ必要）')).toBeInTheDocument();
+    expect(screen.queryByText('所持チップが不足しています（最大3倍で30チップ必要）')).not.toBeInTheDocument();
+  });
+
+  it('shows the unaffordable stake reason in English', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(makeState({ chips: 50 }));
+      renderWithProviders(<NiuNiuPage />);
+      expect(await screen.findByText('Not enough chips — up to 3x means 150 are needed')).toBeInTheDocument();
+      expect(screen.queryByText('Not enough chips — up to 3x means 30 are needed')).not.toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   // The round settles at the bet, so the stake buttons go away entirely.
@@ -168,7 +191,7 @@ describe('NiuNiuPage', () => {
     );
     renderWithProviders(<NiuNiuPage />);
     const payout = await screen.findByText('-100');
-    expect(payout).toHaveClass('text-ds-error');
+    expect(payout).toHaveClass('text-ds-error-text');
     expect(payout).not.toHaveClass('text-ds-success');
   });
 

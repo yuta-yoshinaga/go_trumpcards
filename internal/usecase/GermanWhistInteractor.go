@@ -45,14 +45,7 @@ func (gi *GermanWhistInteractor) Reset() string {
 
 // Play カードをプレイ
 func (gi *GermanWhistInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(gi.Game, gi.gp); blocked {
-		return out
-	}
-	if err := gi.Game.PlayerPlay(cardIndex); err != nil {
-		return gi.gp.Output(gi.Game, err)
-	}
-	gi.runCpuTurns()
-	return gi.gp.Output(gi.Game, nil)
+	return humanAction(gi.Game, gi.gp, func() error { return gi.Game.PlayerPlay(cardIndex) }, gi.runCpuTurns)
 }
 
 // GiveUp 投了する

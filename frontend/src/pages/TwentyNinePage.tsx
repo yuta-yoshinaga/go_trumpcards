@@ -162,7 +162,7 @@ function TwentyNinePageContent() {
     contractProgress?.status === 'made'
       ? 'text-ds-success'
       : contractProgress?.status === 'failed'
-        ? 'text-ds-error'
+        ? 'text-ds-error-text'
         : 'text-ds-warning';
   const isGameEnd = state.phase === TwentyNinePhase.GAME_END || state.gameEndFlag;
 
@@ -180,6 +180,16 @@ function TwentyNinePageContent() {
   // The seat holding that highest bid, so the bidder's name can be surfaced during bidding.
   const highestBidder = highestBid > 0 ? state.players[state.bids.indexOf(highestBid)] : undefined;
   const highestBidderName = highestBidder ? playerName(highestBidder.id, highestBidder.isHuman) : '';
+  const bidHistory = state.players.map((player, seat) => {
+    let committed = !isBidPhase;
+    if (isBidPhase) {
+      for (let step = 1; step < state.players.length; step++) {
+        if ((state.dealerIdx + step) % state.players.length === state.currentPlayerIdx) break;
+        if ((state.dealerIdx + step) % state.players.length === seat) committed = true;
+      }
+    }
+    return { player, seat, committed, bid: state.bids[seat] };
+  });
 
   const contractLabel = state.contract === 0 ? t('contractUndecided') : String(state.contract);
 
@@ -245,6 +255,25 @@ function TwentyNinePageContent() {
               <span>{t('target', { points: state.config.targetPoints })}</span>
             </div>
 
+            <details className="mb-3 text-sm">
+              <summary className="cursor-pointer select-none text-ds-text-primary hover:text-ds-accent">
+                {t('strengthReference.title')}
+              </summary>
+              <div className="mt-2 rounded-lg bg-ds-surface p-3 text-ds-text-primary">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <div className="mb-1 font-semibold">{t('strengthReference.trump')}</div>
+                    <div>{t('strengthReference.order')}</div>
+                  </div>
+                  <div>
+                    <div className="mb-1 font-semibold">{t('strengthReference.plain')}</div>
+                    <div>{t('strengthReference.order')}</div>
+                  </div>
+                </div>
+                <div className="mt-2 text-ds-text-muted">{t('strengthReference.points')}</div>
+              </div>
+            </details>
+
             {showTrumpBanner && (
               <div
                 role="status"
@@ -296,6 +325,20 @@ function TwentyNinePageContent() {
                   <div className="mt-1">
                     {t('yourTeam')}: {humanTeam === 0 ? t('team.a') : t('team.b')}
                   </div>
+                </div>
+
+                <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="tn29-bid-history">
+                  <div className="text-ds-text-primary text-xs mb-1">{t('bidHistory.title')}</div>
+                  {bidHistory.map(({ player, seat, committed, bid }) => (
+                    <div key={seat} className="py-0.5">
+                      {t('bidHistory.player', {
+                        seat,
+                        player: playerName(player.id, player.isHuman),
+                        team: seat % 2 === 0 ? t('team.a') : t('team.b'),
+                      })}
+                      : {committed ? (bid === 0 ? t('bid.pass') : bid) : t('bidHistory.pending')}
+                    </div>
+                  ))}
                 </div>
 
                 {/* Players grouped by team, with the declarer badge */}

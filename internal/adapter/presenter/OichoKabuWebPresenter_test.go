@@ -102,6 +102,7 @@ func TestOichoKabuWebPresenter_Output_EndRevealsBanker(t *testing.T) {
 	assert.Len(t, r.BankerHand, 1)
 	assert.Equal(t, 8, r.BankerRank)
 	assert.Equal(t, 200, r.TotalPayout)
+	assert.Equal(t, 100, r.NetChange)
 	assert.Equal(t, "oichokabu.result.playerWins", r.MessageCode)
 }
 
@@ -127,10 +128,16 @@ func TestOichoKabuWebPresenter_Output_EndMessages(t *testing.T) {
 			m.On("GetGameEndFlag").Return(true)
 			m.On("GetBet").Return(100)
 			m.On("GetResult").Return(tt.result)
-			m.On("GetTotalPayout").Return(0)
+			payout := map[domain.OichoKabuResult]int{
+				domain.OichoKabuResultWin:  200,
+				domain.OichoKabuResultLose: 0,
+				domain.OichoKabuResultDraw: 100,
+			}[tt.result]
+			m.On("GetTotalPayout").Return(payout)
 
 			r := parseOichoKabuOutput(t, p.Output(m, nil))
 			assert.Equal(t, tt.wantKey, r.MessageCode)
+			assert.Equal(t, payout-100, r.NetChange)
 		})
 	}
 }

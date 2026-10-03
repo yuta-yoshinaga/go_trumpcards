@@ -61,7 +61,7 @@ func tarabishHandStr(player *domain.TarabishPlayer, trumpSuit int) string {
 		parts = append(parts, i18n.Tf("tarabish.handCard",
 			"idx", strconv.Itoa(i),
 			"card", cuiCardStr(card),
-			"points", strconv.Itoa(domain.TarabishCardPoints(card, trumpSuit))))
+			"points", strconv.Itoa(domain.JassFamilyCardPoints(card, trumpSuit))))
 	}
 	return strings.Join(parts, "  ")
 }

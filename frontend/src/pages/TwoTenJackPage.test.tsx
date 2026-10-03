@@ -80,6 +80,29 @@ afterEach(() => {
 });
 
 describe('TwoTenJackPage', () => {
+  it('announces the resolved trick winner when the winner is not the leader', async () => {
+    mockExec.mockResolvedValue(
+      makeTwoTenJackState({
+        phase: 2,
+        leadPlayerIdx: 3,
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'DIAMOND', value: 3 } },
+          { playerIdx: 1, card: { design: 'HEART', value: 5 } },
+          { playerIdx: 2, card: { design: 'CLOVER', value: 7 } },
+          { playerIdx: 3, card: { design: 'SPADE', value: 9 } },
+        ],
+      }),
+    );
+
+    renderWithProviders(<TwoTenJackPage />);
+
+    const liveRegion = await screen.findByTestId('twotenjack-trick-winner-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toHaveTextContent('CPU 3');
+    expect(liveRegion).not.toHaveTextContent('あなた');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<TwoTenJackPage />);
@@ -442,6 +465,36 @@ describe('TwoTenJackPage', () => {
       expect(scoreDetails).toBeInTheDocument();
       const summary = scoreDetails?.querySelector('summary');
       expect(summary).toHaveTextContent('スコア');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
+
+  it('shows both cumulative team scores while the mobile score table is closed', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      mockExec.mockResolvedValue(
+        makeTwoTenJackState({
+          players: makeTwoTenJackState().players.map((player, index) => ({
+            ...player,
+            cumulativeScore: [11, 23, 7, 9][index] ?? 0,
+          })),
+        }),
+      );
+      const { container } = renderWithProviders(<TwoTenJackPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+      const scoreDetails = container.querySelector('details[data-tutorial="tt-score-table"]');
+      expect(scoreDetails).not.toHaveAttribute('open');
+      expect(screen.getByText('あなたのチーム (0,2) 累計点: 18')).toBeVisible();
+      expect(screen.getByText('相手チーム (1,3) 累計点: 32')).toBeVisible();
+
+      fireEvent.click(scoreDetails?.querySelector('summary') as HTMLElement);
+      const table = scoreDetails?.querySelector('table');
+      expect(table).toBeInTheDocument();
+      expect(table?.querySelector('tbody tr:first-child td:last-child')).toHaveTextContent('18');
+      expect(table?.querySelector('tbody tr:last-child td:last-child')).toHaveTextContent('32');
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }

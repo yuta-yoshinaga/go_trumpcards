@@ -1,4 +1,5 @@
 {
+  "mainPot": "Main pot: {{amount}} chips (eligible: {{eligiblePlayers}})",
   "sidePot": "Side pot {{index}}: {{amount}} chips (eligible: {{eligiblePlayers}})",
   "phase": {
     "init": "Init",
@@ -12,6 +13,7 @@
   "drawBadge": "Draw {{n}}/3",
   "preDrawLabel": "Pre-draw",
   "exchangeInstruction": "Click the cards you want to exchange, then press Exchange or Stand.",
+  "currentBestRank": "Current best rank: {{rank}}",
   "exchangeLabel": "Exchange",
   "standLabel": "Stand pat",
   "completeBadugiBanner": "✨ Badugi complete — stand pat recommended",
@@ -49,6 +51,10 @@
     "lose": "You lose.",
     "folded": "You folded.",
     "gameOver": "Game over."
+  },
+  "roundResults": {
+    "title": "Round results",
+    "wonAmount": "Won: {{amount}} chips"
   },
   "handName": {
     "1": "1-card",

@@ -27,6 +27,9 @@
   "discardNeedHand": "Select a hand card first",
   "discardReady": "Hand card selected — ready to discard",
   "autoComplete": "Auto Complete",
+  "undo": "Undo",
+  "undoAvailableHint": "Undo the previous action",
+  "undoUnavailableHint": "No action is available to undo",
   "autoCompleteHint": "Automatically play every available card to a foundation. When no more plays are available, continue manually and discard to end your turn.",
   "selectSource": "Select a card to play",
   "selectFoundation": "Select a foundation",
@@ -36,6 +39,8 @@
   "win": "You win! Moves: {{moveCount}}",
   "lose": "CPU wins. Moves: {{moveCount}}",
   "playing": "Playing",
+  "goalRemaining_one": "{{count}} card left",
+  "goalRemaining_other": "{{count}} cards left",
   "noHint": "No hint",
   "hintAvailable": "Hint available",
   "settings": {

@@ -55,6 +55,24 @@ describe('OldMaidDrawHistory (graphical timeline)', () => {
     expect(screen.getByTestId('discard-burst').textContent).toBe('💥');
   });
 
+  it('shows the discarded card names in the history entry', () => {
+    render(
+      <OldMaidDrawHistory
+        entries={[
+          baseEntry({
+            discardedPairs: 1,
+            discardedCards: [
+              { design: 'SPADE', value: 5 },
+              { design: 'HEART', value: 5 },
+            ],
+          }),
+        ]}
+        players={players}
+      />,
+    );
+    expect(screen.getByTestId('discarded-card-names')).toHaveTextContent('（♠ 5、♥ 5）');
+  });
+
   it('omits the discard burst when no pair was discarded', () => {
     render(<OldMaidDrawHistory entries={[baseEntry({ discardedPairs: 0 })]} players={players} />);
     expect(screen.queryByTestId('discard-burst')).not.toBeInTheDocument();
@@ -65,7 +83,7 @@ describe('OldMaidDrawHistory (graphical timeline)', () => {
     render(<OldMaidDrawHistory entries={[baseEntry()]} players={players} suspectPins={suspectPins} />);
     const entry = screen.getByTestId('draw-history-entry');
     expect(entry.dataset.suspectTarget).toBe('true');
-    expect(entry.querySelector('.text-ds-error')).not.toBeNull();
+    expect(entry.querySelector('.text-ds-error-text')).not.toBeNull();
   });
 
   it('does not flag suspect when pins do not include the target', () => {

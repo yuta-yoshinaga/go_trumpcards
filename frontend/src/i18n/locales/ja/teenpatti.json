@@ -25,11 +25,16 @@
   "handLabel": "あなたの手札",
   "currentTurn": "現在の手番: {{name}}",
   "playersTitle": "プレイヤー",
+  "dealerBadge": "ディーラー",
   "badge": {
     "blind": "ブラインド",
     "seen": "シーン",
     "folded": "フォールド",
     "out": "脱落"
+  },
+  "callCost": {
+    "blind": "ブラインドの必要額: {{amount}}",
+    "seen": "シーンの必要額（ブラインドの2倍）: {{amount}}"
   },
   "hand": {
     "trail": "トレイル（スリーカード）",

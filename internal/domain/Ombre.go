@@ -340,6 +340,9 @@ func (g *Ombre) highestBid() OmbreBid {
 	return best
 }
 
+// GetHighestBid returns the highest bid declared so far, including during the auction.
+func (g *Ombre) GetHighestBid() OmbreBid { return g.highestBid() }
+
 // applyBid ビッドを適用し、全員が宣言し終えたら auction を締める。
 func (g *Ombre) applyBid(playerIdx int, bid OmbreBid, trumpSuit int) {
 	g.bids[playerIdx] = bid
@@ -594,24 +597,33 @@ func (g *Ombre) evalOutcome() OmbreOutcome {
 
 // applyScores ディール結果に応じて累積点を更新する。オンブルと連合 2 人の間で点が移動する。
 func (g *Ombre) applyScores(outcome OmbreOutcome) {
+	deltas := ombreScoreDeltas(outcome, g.ombreIdx)
+	for i, delta := range deltas {
+		g.playerScores[i] += delta
+	}
+}
+
+func ombreScoreDeltas(outcome OmbreOutcome, ombreIdx int) [OmbrePlayerCnt]int {
 	var ombreDelta, oppDelta int
 	switch outcome {
 	case OmbreOutcomeSacar:
-		ombreDelta, oppDelta = +ombreScoreSacar, -1
+		ombreDelta, oppDelta = ombreScoreSacar, -1
 	case OmbreOutcomePuesta:
-		ombreDelta, oppDelta = -ombreScorePuesta, +1
+		ombreDelta, oppDelta = -ombreScorePuesta, 1
 	case OmbreOutcomeCodille:
-		ombreDelta, oppDelta = -ombreScoreCodille, +2
+		ombreDelta, oppDelta = -ombreScoreCodille, 2
 	default:
-		return
+		return [OmbrePlayerCnt]int{}
 	}
-	for i := 0; i < OmbrePlayerCnt; i++ {
-		if i == g.ombreIdx {
-			g.playerScores[i] += ombreDelta
+	var deltas [OmbrePlayerCnt]int
+	for i := range deltas {
+		if i == ombreIdx {
+			deltas[i] = ombreDelta
 		} else {
-			g.playerScores[i] += oppDelta
+			deltas[i] = oppDelta
 		}
 	}
+	return deltas
 }
 
 // checkGameEnd 規定ディール数を終えたらマッチ終了を判定し、累積点最上位を勝者とする。
@@ -1184,6 +1196,11 @@ func (g *Ombre) GetCurrentBidderIdx() int { return g.currentBidderIdx }
 
 // GetPlayerScores プレイヤー別累積点取得
 func (g *Ombre) GetPlayerScores() [OmbrePlayerCnt]int { return g.playerScores }
+
+// GetPlayerScoreDeltas returns the score changes for the most recent deal.
+func (g *Ombre) GetPlayerScoreDeltas() [OmbrePlayerCnt]int {
+	return ombreScoreDeltas(g.outcome, g.ombreIdx)
+}
 
 // SetPlayerScores プレイヤー別累積点設定 (テスト用)
 func (g *Ombre) SetPlayerScores(s [OmbrePlayerCnt]int) { g.playerScores = s }

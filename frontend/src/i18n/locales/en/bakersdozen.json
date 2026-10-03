@@ -17,6 +17,11 @@
   "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",
   "autoComplete": "Auto Complete",
+  "autoCompleteStatus": {
+    "inProgress": "Auto-complete in progress",
+    "finished": "Auto-complete finished",
+    "interrupted": "Auto-complete interrupted"
+  },
   "undo": "Undo",
   "stalemate": "Stalemate",
   "playing": "Move cards to build foundations",
@@ -26,7 +31,7 @@
   "noHint": "No hint available",
   "destinationStatusLabel": "Move destinations",
   "listSeparator": ", ",
-  "destinationAnnouncement": "Legal tableau columns: {{tableau}}. Legal foundations: {{foundation}}.",
+  "destinationAnnouncement": "Source card: {{card}}. Legal tableau columns: {{tableau}}. Legal foundations: {{foundation}}.",
   "noDestination": "none",
   "tutorial": {
     "foundation": "Build 4 foundation piles by suit from Ace to King.",

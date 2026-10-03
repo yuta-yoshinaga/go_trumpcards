@@ -243,6 +243,17 @@ function CourtPiecePageContent() {
 
               {/* Right: info sidebar */}
               <div>
+                <div data-testid="cp-trick-winner-live" className="sr-only" role="status" aria-live="polite">
+                  {(isTrickEnd || isRoundEnd || isGameEnd) && state.players[state.leadPlayerIdx]
+                    ? t('trickWinnerAnnouncement', {
+                        name: playerName(
+                          state.players[state.leadPlayerIdx].id,
+                          state.players[state.leadPlayerIdx].isHuman,
+                        ),
+                        team: state.players[state.leadPlayerIdx].team === 0 ? t('team.a') : t('team.b'),
+                      })
+                    : ''}
+                </div>
                 {/* Team match scores */}
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
                   {([0, 1] as const).map((team) => {
@@ -325,6 +336,25 @@ function CourtPiecePageContent() {
                     <div>{t('roundResult.teamA', { tricks: teamTricks(0) })}</div>
                     <div>{t('roundResult.teamB', { tricks: teamTricks(1) })}</div>
                     {state.lastRoundCourt && <div className="mt-1 text-ds-warning">{t('roundResult.court')}</div>}
+                    <div className="mt-2 pt-1 border-t border-white/10" data-testid="cp-score-breakdown">
+                      {([0, 1] as const).map((team) => {
+                        const breakdown = state.scoreBreakdown[team];
+                        const formatPoints = (value: number | undefined) =>
+                          value == null || value === 0 ? '0' : value < 0 ? `−${Math.abs(value)}` : `+${value}`;
+                        return (
+                          <div key={team}>
+                            <span>{team === 0 ? t('team.a') : t('team.b')}: </span>
+                            <span>
+                              {t('roundResult.sar')}: {formatPoints(breakdown?.sar)}
+                            </span>
+                            {' · '}
+                            <span>
+                              {t('roundResult.courtBonus')}: {formatPoints(breakdown?.courtBonus)}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>

@@ -77,6 +77,20 @@ func (m *MockCribbageGame) GetPegPlayedCards() []*domain.Card {
 	}
 	return nil
 }
+func (m *MockCribbageGame) GetPegPlayedBy() []int {
+	ret := m.Called()
+	if v, ok := ret.Get(0).([]int); ok {
+		return v
+	}
+	return nil
+}
+func (m *MockCribbageGame) GetPegScoreEvents() []domain.CribbagePeggingScoreEvent {
+	ret := m.Called()
+	if v, ok := ret.Get(0).([]domain.CribbagePeggingScoreEvent); ok {
+		return v
+	}
+	return nil
+}
 func (m *MockCribbageGame) GetShowPhaseStep() int { return m.Called().Int(0) }
 func (m *MockCribbageGame) GetHandScoreDetails() [3]*domain.CribbageScoreDetail {
 	return m.Called().Get(0).([3]*domain.CribbageScoreDetail)

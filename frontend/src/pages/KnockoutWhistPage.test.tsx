@@ -119,6 +119,35 @@ describe('KnockoutWhistPage', () => {
     expect(preview).toHaveTextContent('次ラウンド: 手札6枚 / 切り札選択: あなた');
   });
 
+  it('announces the round result and next-round preview through a permanent live region', async () => {
+    mockExec.mockResolvedValue(
+      makeKnockoutWhistState({
+        phase: 2,
+        roundWinnerIdx: 0,
+        roundSurvived: [1],
+        roundEliminated: [2],
+      }),
+    );
+    renderWithProviders(<KnockoutWhistPage />);
+
+    const announcement = await screen.findByTestId('kw-round-result-live');
+    expect(announcement).toHaveAttribute('role', 'status');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toHaveClass('sr-only');
+    expect(announcement).toHaveTextContent('ラウンド勝者: あなた');
+    expect(announcement).toHaveTextContent('CPU 1 はDogboneを消費して生き残りました');
+    expect(announcement).toHaveTextContent('CPU 2 は0トリックで脱落しました');
+    expect(announcement).toHaveTextContent('次ラウンド: 手札6枚 / 切り札選択: あなた');
+  });
+
+  it('keeps the round-result live region mounted and empty during play', async () => {
+    renderWithProviders(<KnockoutWhistPage />);
+
+    const announcement = await screen.findByTestId('kw-round-result-live');
+    expect(announcement).toHaveAttribute('role', 'status');
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
   it('flags the final round when the next hand size bottoms out at 1', async () => {
     mockExec.mockResolvedValue(makeKnockoutWhistState({ phase: 2, roundWinnerIdx: 1, handSize: 2 }));
     renderWithProviders(<KnockoutWhistPage />);
@@ -323,5 +352,14 @@ describe('KnockoutWhistPage round survivors and eliminations', () => {
     renderWithProviders(<KnockoutWhistPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('knockoutwhist-trump-select')).not.toBeInTheDocument();
+  });
+
+  it('marks only the current dealer, including an eliminated player', async () => {
+    const state = makeKnockoutWhistState({ dealerIdx: 2 });
+    state.players[2].eliminated = true;
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<KnockoutWhistPage />);
+    expect(await screen.findAllByTestId('kw-dealer-badge')).toHaveLength(1);
+    expect(screen.getByTestId('kw-dealer-badge').parentElement).toHaveAttribute('data-eliminated', 'true');
   });
 });

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sirtommyApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -76,6 +76,35 @@ describe('SirTommyPage', () => {
     const waste0 = await screen.findByTestId('calc-waste-button-0');
     await waitFor(() => expect(waste0.getAttribute('aria-label')).toContain('ウェイスト0'));
     expect(waste0).not.toHaveAttribute('aria-label', 'ウェイスト0: 空');
+  });
+
+  it('shows every waste card in pile order after the stock is empty without making cards interactive', async () => {
+    const first = card('SPADE', 2);
+    const second = card('HEART', 5);
+    const third = card('DIAMOND', 13);
+    mockExec.mockResolvedValue({
+      ...playingState,
+      stockCount: 0,
+      stockTop: undefined,
+      wastes: [[first, second], [], [third], []],
+    });
+    renderWithProviders(<SirTommyPage />);
+
+    const viewer = await screen.findByTestId('calc-waste-card-viewer');
+    expect(viewer).toBeInTheDocument();
+    expect(within(viewer).getByRole('heading', { name: 'ウェイスト0' })).toBeInTheDocument();
+    expect(
+      within(viewer)
+        .getAllByText(/^[♠♥♦♣] /)
+        .map((node) => node.textContent),
+    ).toEqual(['♠ 2', '♥ 5', '♦ K']);
+    expect(within(viewer).queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('does not show the waste card viewer while stock remains', async () => {
+    renderWithProviders(<SirTommyPage />);
+    await screen.findByTestId('calc-stock-button');
+    expect(screen.queryByTestId('calc-waste-card-viewer')).not.toBeInTheDocument();
   });
 
   it('shows move count', async () => {
@@ -238,6 +267,15 @@ describe('SirTommyPage', () => {
     fireEvent.click(screen.getByTestId('calc-waste-button-1'));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'stock' }, { zone: 'waste', idx: 1 }));
+  });
+
+  it('announces that an empty waste can receive stock only while stock is selected', async () => {
+    renderWithProviders(<SirTommyPage />);
+    const waste = await screen.findByTestId('calc-waste-button-0');
+
+    expect(waste).toHaveAttribute('aria-label', 'ウェイスト0: 空');
+    fireEvent.click(screen.getByTestId('calc-stock-button'));
+    expect(waste).toHaveAttribute('aria-label', 'ウェイスト0: 空。ストックのカードをここへ移せます');
   });
 
   it('selecting a waste and clicking a foundation dispatches a waste→foundation move', async () => {

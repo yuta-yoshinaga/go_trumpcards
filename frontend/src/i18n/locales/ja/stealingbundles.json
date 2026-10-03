@@ -12,6 +12,9 @@
     "table": "場",
     "tableEmpty": "（なし）",
     "bundle": "束{{n}}枚",
+    "bundleGap": "首位まで{{count}}枚",
+    "lead": "首位",
+    "tiedLead": "首位（同数）",
     "bundleTop": "一番上",
     "bundleEmpty": "なし",
     "cards": "手札{{n}}枚",
@@ -38,7 +41,8 @@
     "availableActions": "{{card}} でできること: {{actions}}。",
     "noActions": "できる行動はありません",
     "deselected": "カードの選択を解除しました。",
-    "turnEnded": "手番が終了しました。"
+    "turnEnded": "手番が終了しました。",
+    "turnYou": "あなたの番です。"
   },
   "result": {
     "you": "あなたの勝ち！ {{n}} 枚でいちばん多く集めました。",

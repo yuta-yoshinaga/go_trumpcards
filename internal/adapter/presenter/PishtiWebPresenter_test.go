@@ -77,9 +77,11 @@ func TestPishtiWebPresenter_ServesTheProvisionalScore(t *testing.T) {
 
 	var out struct {
 		Players []struct {
-			ID               int `json:"id"`
-			CapturedCount    int `json:"capturedCount"`
-			ProvisionalScore int `json:"provisionalScore"`
+			ID                 int `json:"id"`
+			CapturedCount      int `json:"capturedCount"`
+			ProvisionalScore   int `json:"provisionalScore"`
+			CardPoints         int `json:"cardPoints"`
+			MostCapturedPoints int `json:"mostCapturedPoints"`
 		} `json:"players"`
 	}
 	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &out))
@@ -87,11 +89,52 @@ func TestPishtiWebPresenter_ServesTheProvisionalScore(t *testing.T) {
 
 	want := domain.PishtiScoreTenDiamonds + domain.PishtiScoreMostCards
 	assert.Equal(t, want, out.Players[0].ProvisionalScore)
+	assert.Equal(t, domain.PishtiScoreTenDiamonds, out.Players[0].CardPoints)
+	assert.Equal(t, domain.PishtiScoreMostCards, out.Players[0].MostCapturedPoints)
 	// **枚数からは出せない値であること。**1 枚しか捕っていないのに 6 点なので、
 	// capturedCount を足しただけの実装ではこの数にならない。
 	assert.Equal(t, 1, out.Players[0].CapturedCount)
 	// 何も捕っていない席は 0。
 	assert.Equal(t, 0, out.Players[1].ProvisionalScore)
+}
+
+func TestPishtiWebPresenter_ProvisionalBreakdownHandlesTiesAndPistiBonus(t *testing.T) {
+	p := new(presenter.PishtiWebPresenter)
+
+	t.Run("tie for most captured cards awards no points", func(t *testing.T) {
+		g := newPishtiForPresenter()
+		for i := 0; i < 4; i++ {
+			g.GetPlayer(i).AddCaptured([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 5+i, false)})
+		}
+		var out struct {
+			Players []struct {
+				MostCapturedPoints int `json:"mostCapturedPoints"`
+			} `json:"players"`
+		}
+		require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &out))
+		require.Len(t, out.Players, 4)
+		for _, player := range out.Players {
+			assert.Zero(t, player.MostCapturedPoints)
+		}
+	})
+
+	t.Run("card points exclude the pisti bonus", func(t *testing.T) {
+		g := newPishtiForPresenter()
+		g.GetPlayer(0).AddCaptured([]*domain.Card{domain.NewCard(domain.CardDesignDiamond, 10, false)})
+		g.GetPlayer(0).AddPistiBonus(5)
+		var out struct {
+			Players []struct {
+				CardPoints         int `json:"cardPoints"`
+				MostCapturedPoints int `json:"mostCapturedPoints"`
+				PistiBonus         int `json:"pistiBonus"`
+			} `json:"players"`
+		}
+		require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &out))
+		require.NotEmpty(t, out.Players)
+		assert.Equal(t, domain.PishtiScoreTenDiamonds, out.Players[0].CardPoints)
+		assert.Equal(t, 5, out.Players[0].PistiBonus)
+		assert.Equal(t, domain.PishtiScoreMostCards, out.Players[0].MostCapturedPoints)
+	})
 }
 
 func TestPishtiWebPresenter_AnnouncesLastTake(t *testing.T) {

@@ -44,8 +44,10 @@ type PresidentWebOutputPlayer struct {
 
 // PresidentWebOutputAction プレイヤー行動記録
 type PresidentWebOutputAction struct {
-	PlayerIdx   int              `json:"playerIdx"`
-	PlayedCards []*WebOutputCard `json:"playedCards"` // nil = パス
+	PlayerIdx     int              `json:"playerIdx"`
+	PlayedCards   []*WebOutputCard `json:"playedCards"` // nil = パス
+	FieldFlushed  bool             `json:"fieldFlushed"`
+	LeadPlayerIdx int              `json:"leadPlayerIdx"`
 }
 
 // PresidentWebOutputExchangeAction カード交換記録

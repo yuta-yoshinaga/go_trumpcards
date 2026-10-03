@@ -49,8 +49,26 @@ const cpuTurnState = makePreferenceState({
   isHumanTurn: false,
   currentPlayerIdx: 1,
 });
-const trickEndState = makePreferenceState({ phase: 2, isHumanBidTurn: false });
-const roundEndState = makePreferenceState({ phase: 3, isHumanBidTurn: false, roundTricks: [6, 2, 2] });
+const trickEndState = makePreferenceState({
+  phase: 2,
+  isHumanBidTurn: false,
+  leadPlayerIdx: 2,
+  currentTrick: [
+    { playerIdx: 0, card: { design: 'HEART', value: 9 } },
+    { playerIdx: 1, card: { design: 'HEART', value: 10 } },
+    { playerIdx: 2, card: { design: 'HEART', value: 1 } },
+  ],
+});
+const roundEndState = makePreferenceState({
+  phase: 3,
+  isHumanBidTurn: false,
+  roundTricks: [6, 2, 2],
+  scoreBreakdown: [
+    { declarerContract: 120, defendingContract: 0 },
+    { declarerContract: 0, defendingContract: -40 },
+    { declarerContract: 0, defendingContract: -40 },
+  ],
+});
 const gameEndState = makePreferenceState({
   phase: 4,
   isHumanBidTurn: false,
@@ -180,6 +198,15 @@ describe('PreferencePage', () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<PreferencePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('勝者');
+    expect(screen.getByTestId('trick-display-cards').querySelector('[data-trick-winner="true"]')).toBeInTheDocument();
+  });
+
+  it('does not show a winner during ordinary play', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<PreferencePage />);
+    await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
   });
 
   it('renders round end with the next round button and the round result', async () => {
@@ -187,6 +214,16 @@ describe('PreferencePage', () => {
     renderWithProviders(<PreferencePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
     expect(screen.getByText('ラウンド結果')).toBeInTheDocument();
+    expect(screen.getByTestId('preference-score-breakdown-0')).toHaveTextContent('宣言者契約: 120');
+    expect(screen.getByTestId('preference-score-breakdown-1')).toHaveTextContent('防御側契約: −40');
+    expect(screen.getByTestId('preference-score-breakdown-2')).toHaveTextContent('防御側契約: −40');
+  });
+
+  it('does not show score breakdown during play', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<PreferencePage />);
+    await waitFor(() => expect(screen.getByTestId('preference-contract-progress')).toBeInTheDocument());
+    expect(screen.queryByTestId('preference-score-breakdown-0')).not.toBeInTheDocument();
   });
 
   it('renders the game end message', async () => {
@@ -248,7 +285,7 @@ describe('PreferencePage', () => {
     const readout = await screen.findByTestId('preference-contract-progress');
     expect(readout).toHaveTextContent('2 / 8');
     expect(readout).toHaveTextContent('失敗確定');
-    expect(readout).toHaveClass('text-ds-error');
+    expect(readout).toHaveClass('text-ds-error-text');
   });
 
   it('flags Misère failure the instant the declarer wins a trick', async () => {
@@ -258,7 +295,7 @@ describe('PreferencePage', () => {
     const readout = await screen.findByTestId('preference-contract-progress');
     expect(readout).toHaveTextContent('ミゼール');
     expect(readout).toHaveTextContent('失敗確定');
-    expect(readout).toHaveClass('text-ds-error');
+    expect(readout).toHaveClass('text-ds-error-text');
   });
 
   it('does not show contract progress before a declarer is decided', async () => {

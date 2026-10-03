@@ -41,12 +41,10 @@ const DIFFICULTY_OPTIONS = [
   { value: '2', label: 'Hard' },
 ];
 
-const LIVES_OPTIONS = [
-  { value: '2', label: '2' },
-  { value: '3', label: '3' },
-  { value: '4', label: '4' },
-  { value: '5', label: '5' },
-];
+const LIVES_OPTIONS = Array.from({ length: 10 }, (_, index) => {
+  const lives = index + 1;
+  return { value: String(lives), label: String(lives) };
+});
 
 /** Tutorial steps for the Thirty-One game. */
 const TO_TUTORIAL_STEPS: TutorialStep[] = [
@@ -78,15 +76,23 @@ const TO_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders a row of life icons for a player. */
-function Lives({ lives, out }: { lives: number; out: boolean }) {
+function Lives({
+  lives,
+  out,
+  t,
+}: {
+  lives: number;
+  out: boolean;
+  t: (key: string, options?: Record<string, unknown>) => string;
+}) {
   if (out)
     return (
-      <span role="img" aria-label="out">
+      <span role="img" aria-label={t('label.out')}>
         💀
       </span>
     );
   return (
-    <span role="img" aria-label={`lives-${lives}`}>
+    <span role="img" aria-label={t('label.livesAria', { count: lives })}>
       {'❤'.repeat(Math.max(0, lives)) || '·'}
     </span>
   );
@@ -255,7 +261,7 @@ function ThirtyOnePageContent() {
         <>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             {error && (
-              <button type="button" onClick={retry} className="text-ds-error underline">
+              <button type="button" onClick={retry} className="text-ds-error-text underline">
                 {error}
               </button>
             )}
@@ -267,7 +273,7 @@ function ThirtyOnePageContent() {
                 .map((p) => (
                   <div key={p.id} className={p.isEliminated ? 'text-center opacity-40' : 'text-center'}>
                     <div className="text-xs text-ds-text-muted mb-1">
-                      {tc('player.cpu', { id: p.id })} — <Lives lives={p.lives} out={p.isEliminated} />
+                      {tc('player.cpu', { id: p.id })} — <Lives lives={p.lives} out={p.isEliminated} t={t} />
                       {state.knockerIdx === p.id && <span className="ml-1 text-ds-warning">{t('label.knocked')}</span>}
                     </div>
                     <div className="text-[10px] text-ds-text-muted mb-1">
@@ -323,7 +329,7 @@ function ThirtyOnePageContent() {
             {/* Human hand */}
             <div className="text-center" data-tutorial="to-player-hand">
               <div className="text-xs text-ds-text-muted mb-1">
-                {tc('player.you')} — <Lives lives={human.lives} out={human.isEliminated} /> · {t('label.score')}:{' '}
+                {tc('player.you')} — <Lives lives={human.lives} out={human.isEliminated} t={t} /> · {t('label.score')}:{' '}
                 {human.score}
               </div>
               <SuitScoreBadges cards={human.cards} ariaLabel={t('label.suitScores')} />
@@ -434,7 +440,7 @@ function ThirtyOnePageContent() {
                         <li
                           key={idx}
                           data-testid={`life-loss-${idx}`}
-                          className={out ? 'text-ds-error font-medium' : ''}
+                          className={out ? 'text-ds-error-text font-medium' : ''}
                         >
                           {t('roundSummary.lifeLost', { name: roundPlayerLabel(idx) })}
                           <span className="ml-1 motion-safe:animate-pulse" aria-hidden="true">

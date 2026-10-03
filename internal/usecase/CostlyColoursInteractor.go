@@ -59,6 +59,7 @@ func (ci *CostlyColoursInteractor) Mog(accept bool) string {
 	if out, blocked := guardGameEnd(ci.Game, ci.cp); blocked {
 		return out
 	}
+	ci.Game.ClearRecentPlays()
 	err := ci.Game.PlayerMog(accept)
 	if err == nil {
 		ci.runCpuTurns()
@@ -71,6 +72,7 @@ func (ci *CostlyColoursInteractor) Play(handIdx int) string {
 	if out, blocked := guardGameEnd(ci.Game, ci.cp); blocked {
 		return out
 	}
+	ci.Game.ClearRecentPlays()
 	err := ci.Game.PlayerPlay(handIdx)
 	if err == nil {
 		ci.runCpuTurns()

@@ -42,6 +42,7 @@ type BasraWebOutputPlayer struct {
 	IsHuman       bool             `json:"isHuman"`
 	CardCount     int              `json:"cardCount"`
 	Cards         []*WebOutputCard `json:"cards"`
+	CapturedCards []*WebOutputCard `json:"capturedCards"`
 	CapturedCount int              `json:"capturedCount"`
 	BasraCount    int              `json:"basraCount"`
 	Score         int              `json:"score"`

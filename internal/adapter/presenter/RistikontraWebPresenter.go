@@ -4,7 +4,6 @@ package presenter
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -82,15 +81,13 @@ func (pwp *RistikontraWebPresenter) Output(pg interfaces.RistikontraGame, lastEr
 // encodeScoresParam は最終得点を "0:11,1:7,..." 形式のロケール非依存文字列へ詰める。
 func (pwp *RistikontraWebPresenter) encodeScoresParam(pg interfaces.RistikontraGame) string {
 	scores := pg.GetFinalScores()
-	parts := make([]string, 0, pg.GetPlayerCnt())
-	for i := 0; i < pg.GetPlayerCnt(); i++ {
+	return encodeIndexedScores(pg.GetPlayerCnt(), func(i int) (int, bool) {
 		score := 0
 		if i < len(scores) {
 			score = scores[i]
 		}
-		parts = append(parts, fmt.Sprintf("%d:%d", i, score))
-	}
-	return strings.Join(parts, ",")
+		return score, true
+	})
 }
 
 // buildResultMessage はゲーム終了時のフォールバック (英語) メッセージ。

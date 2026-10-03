@@ -42,6 +42,31 @@ describe('TrogguPage', () => {
     expect(await screen.findByTestId('tg-info')).toHaveTextContent('ディール 1/4');
   });
 
+  it('keeps the previous trick and winner visible while the next trick is in progress', async () => {
+    const previousCard = { design: 'HEART', value: 3, glyph: '♥', label: '3', color: 'red', deck: 'tarot' } as const;
+    const currentCard = { design: 'SPADE', value: 14, glyph: '♠', label: 'K', color: 'black', deck: 'tarot' } as const;
+    mockExec.mockResolvedValue(
+      makeTrogguState({
+        phase: 1,
+        trickNumber: 2,
+        declarerIdx: 0,
+        contract: 2,
+        contractName: 'solo',
+        currentTrick: [{ playerIdx: 0, card: currentCard }],
+        lastTrickCards: [previousCard],
+        lastTrickWinner: 2,
+      }),
+    );
+
+    renderWithProviders(<TrogguPage />);
+
+    const previous = await screen.findByTestId('tg-previous-trick');
+    expect(previous).toHaveTextContent('直前のトリック');
+    expect(previous).toHaveTextContent('勝者: CPU2');
+    expect(previous.querySelector('[role="img"]')).toHaveAttribute('aria-label', '3 ♥');
+    expect(screen.getByText('現在のトリック')).toBeInTheDocument();
+  });
+
   // **4 契約すべてが打てる。** どれか一つ欠けると、その契約だけが遊べなくなる。
   it('offers all four contracts and pass', async () => {
     renderWithProviders(<TrogguPage />);
@@ -205,6 +230,7 @@ describe('TrogguPage', () => {
     );
     renderWithProviders(<TrogguPage />);
     const result = await screen.findByTestId('tg-round-result');
+    expect(result).toHaveTextContent('宣言者: あなた');
     expect(result).toHaveTextContent('60点');
     expect(result).not.toHaveTextContent('トリック');
     expect(screen.getByTestId('tg-round-seat-0')).toHaveTextContent('60');
@@ -241,7 +267,9 @@ describe('TrogguPage', () => {
   it('reports a thrown-in deal', async () => {
     mockExec.mockResolvedValue(makeTrogguState({ phase: 3, breakdown: null }));
     renderWithProviders(<TrogguPage />);
-    expect(await screen.findByTestId('tg-round-result')).toHaveTextContent('流局');
+    const result = await screen.findByTestId('tg-round-result');
+    expect(result).toHaveTextContent('流局');
+    expect(result).not.toHaveTextContent('宣言者');
   });
 
   it('shows the final scores and restarts with the chosen settings', async () => {

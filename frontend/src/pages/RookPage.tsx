@@ -23,8 +23,10 @@ import { gameTheme } from '../styles/gameTheme';
 import type { RookResponse } from '../types/card';
 import { RookPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { formatRookState, parseRookCommand, ROOK_HELP, type RookCliArgs } from '../utils/cli/commands/rookCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { playerName } from '../utils/playerUtils';
 import { rookBidStatus } from '../utils/rookBidStatus';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -240,7 +242,7 @@ function RookPageContent() {
         <>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             {error && (
-              <button type="button" onClick={retry} className="text-ds-error underline">
+              <button type="button" onClick={retry} className="text-ds-error-text underline">
                 {error}
               </button>
             )}
@@ -284,10 +286,9 @@ function RookPageContent() {
                       bid: state.roundResult.contractBid,
                     })}
                   </div>
-                  <div className={state.roundResult.made ? 'text-ds-success' : 'text-ds-error'}>
+                  <div className={state.roundResult.made ? 'text-ds-success' : 'text-ds-error-text'}>
                     {state.roundResult.made ? t('roundResult.made') : t('roundResult.failed')} (
-                    {state.roundResult.scoreDelta >= 0 ? '+' : ''}
-                    {state.roundResult.scoreDelta})
+                    {formatSignedDelta(state.roundResult.scoreDelta)})
                   </div>
                 </div>
               )}
@@ -323,9 +324,20 @@ function RookPageContent() {
                 {state.currentTrick.length === 0 ? (
                   <span className="text-ds-text-muted text-sm self-center">{t('trickEmpty')}</span>
                 ) : (
-                  state.currentTrick.map((tcard) => (
-                    <AnimatedCard key={tcard.playerIdx} card={tcard.card} width={cardWidth * 0.9} />
-                  ))
+                  state.currentTrick.map((tcard) => {
+                    const player = state.players[tcard.playerIdx];
+                    const name = playerName(player.id, player.isHuman);
+                    return (
+                      <div key={tcard.playerIdx} className="text-center">
+                        <AnimatedCard
+                          card={tcard.card}
+                          width={cardWidth * 0.9}
+                          ariaLabel={t('trickPlay', { name, card: cardAlt(tcard.card) })}
+                        />
+                        <div className="text-xs mt-1 text-ds-text-muted">{name}</div>
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>
@@ -371,6 +383,7 @@ function RookPageContent() {
                       type="button"
                       onClick={() => selectable && toggleCard(i)}
                       disabled={!selectable}
+                      aria-pressed={selectable ? selected : undefined}
                       className={cardClass}
                       data-testid={`hand-card-${i}`}
                       data-recommended-discard={recommendedDiscard ? 'true' : undefined}

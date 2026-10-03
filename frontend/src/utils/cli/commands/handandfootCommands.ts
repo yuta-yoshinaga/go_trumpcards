@@ -1,5 +1,5 @@
 import type { handandfootApi } from '../../../api/gameApi';
-import { parseIntArg, parseIntSlice, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, parseIntSlice, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type HandAndFootArgs = Parameters<typeof handandfootApi.exec>;
@@ -67,11 +67,8 @@ export function parseHandAndFootCommand(input: string): CliParseResult<HandAndFo
     case 'h':
     case 'hint':
       return { args: ['hint'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

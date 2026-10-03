@@ -299,9 +299,9 @@ function ThreeCardBragPageContent() {
 
             {/* Revealed hands at showdown */}
             {state.isShowdown && (
-              <div className="mb-2 p-2 rounded bg-black/30">
+              <div className="mb-2 p-2 rounded bg-black/30" data-testid="tcb-showdown-hands">
                 {state.players
-                  .filter((p) => !p.isHuman && p.cards.length > 0)
+                  .filter((p) => p.cards.length > 0)
                   .map((p) => (
                     <div key={p.id} className="mb-1">
                       <div className="text-ds-text-muted text-xs mb-0.5">
@@ -328,6 +328,18 @@ function ThreeCardBragPageContent() {
                     pot: state.pot,
                   })}
                 </div>
+                {state.roundPayouts.filter((amount) => amount > 0).length > 1 &&
+                  state.roundPayouts.map(
+                    (amount, id) =>
+                      amount > 0 && (
+                        <div key={id}>
+                          {t('roundResult.share', {
+                            name: playerLabel(id, state.players[id].isHuman),
+                            amount,
+                          })}
+                        </div>
+                      ),
+                  )}
               </div>
             )}
 
@@ -347,7 +359,7 @@ function ThreeCardBragPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.threecardbrag.footer} px-4 py-2.5`}>
-            {humanPlayer && (humanPlayer.seen || state.isShowdown) && humanPlayer.cards.length > 0 ? (
+            {state.isShowdown ? null : humanPlayer && humanPlayer.seen && humanPlayer.cards.length > 0 ? (
               <PlayerHandSection
                 humanPlayer={humanPlayer}
                 selectedCardIndices={[]}

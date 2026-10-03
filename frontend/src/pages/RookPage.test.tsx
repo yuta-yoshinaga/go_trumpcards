@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { rookApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, RookResponse } from '../types/card';
+import { cardAlt } from '../utils/cardAlt';
 import { RookPage } from './RookPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -72,6 +73,20 @@ beforeEach(() => {
 });
 
 describe('RookPage', () => {
+  it('exposes nest exchange hand-card selection with aria-pressed', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, declarerIdx: 0 }));
+    renderWithProviders(<RookPage />);
+
+    const handCard = await screen.findByTestId('hand-card-0');
+    expect(handCard).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(handCard);
+    expect(handCard).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(handCard);
+    expect(handCard).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<RookPage />);
     await waitFor(() =>
@@ -83,6 +98,21 @@ describe('RookPage', () => {
     renderWithProviders(<RookPage />);
     expect(await screen.findByTestId('pass-button')).toBeEnabled();
     expect(screen.getByTestId('bid-button')).toBeEnabled();
+  });
+
+  it('shows the localized player name with each trick card and includes it in the card accessible name', async () => {
+    const played = card('5', 5);
+    mockExec.mockResolvedValue(
+      makeState({ currentTrick: [{ playerIdx: 1, card: played }] as RookResponse['currentTrick'] }),
+    );
+    const { container } = renderWithProviders(<RookPage />);
+
+    expect(await screen.findAllByText('CPU 1')).toHaveLength(2);
+    expect(
+      [...container.querySelectorAll('[aria-label]')].some(
+        (el) => el.getAttribute('aria-label') === `CPU 1が出した${cardAlt(played)}`,
+      ),
+    ).toBe(true);
   });
 
   // #5708: 他ページは buttonStyles.ts の共通トークンを使うのに、Rook だけ生の

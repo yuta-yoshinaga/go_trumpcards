@@ -6,6 +6,8 @@
   },
   "title": "シャムロックス",
   "foundation": "組札",
+  "foundationAriaLabel": "組札、最上札 {{card}}",
+  "emptyFoundationAriaLabel": "組札 {{index}}、空",
   "fan": "扇",
   "fanAriaLabel": "扇 {{index}}、最上段は{{card}}",
   "emptyFanAriaLabel": "扇 {{index}}、空",
@@ -23,6 +25,12 @@
   "playing": "プレイ中",
   "noHint": "ヒントはありません",
   "hintAvailable": "ヒントがあります",
+  "stats": {
+    "title": "セッション成績",
+    "games": "クリア回数: {{count}}",
+    "averageMoves": "平均手数: {{count}}",
+    "clear": "統計をリセット"
+  },
   "tutorial": {
     "foundation": "4つの組札です。各スートのAからKへ昇順に積み上げ、52枚すべて揃えるとクリアです。",
     "fan": "扇（ファン）の最上位カードだけを操作できます。同スートで1つ下のランクの扇の上札へ重ねられます。",

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, crescentApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -95,6 +95,30 @@ describe('CrescentPage', () => {
   it('renders move count', async () => {
     renderWithProviders(<CrescentPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/手数: 5/));
+  });
+
+  it('announces auto-complete transitions in a persistent status region', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: playingState.foundation.map((pile, index) => (index === 0 ? [...pile, card('SPADE', 2)] : pile)),
+    });
+    renderWithProviders(<CrescentPage />);
+    await screen.findByTestId('phase-indicator');
+    const status = screen.getByTestId('crescent-autocomplete-status');
+    expect(status).toHaveAttribute('role', 'status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+    expect(status).toHaveClass('sr-only');
+    expect(status).toBeEmptyDOMElement();
+
+    vi.useFakeTimers();
+    try {
+      fireEvent.click(screen.getByTestId('autocomplete-button'));
+      expect(status).toHaveTextContent('オートコンプリートを開始しました');
+      await act(async () => vi.advanceTimersByTimeAsync(3000));
+      expect(status).toHaveTextContent('オートコンプリートが完了しました');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('keeps foundation targets focusable and explains that a source must be selected', async () => {
@@ -409,7 +433,7 @@ describe('CrescentPage', () => {
     renderWithProviders(<CrescentPage />);
     const status = await screen.findByTestId('cr-selection-status');
     fireEvent.click(screen.getByAltText('♠ 2').closest('button') as HTMLButtonElement);
-    await waitFor(() => expect(status).toHaveTextContent(/置ける場所が\d+箇所/));
+    await waitFor(() => expect(status).toHaveTextContent(/置ける場所が\d+箇所.*組札0/));
   });
 });
 

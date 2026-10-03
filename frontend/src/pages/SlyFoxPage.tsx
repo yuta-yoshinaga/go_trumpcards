@@ -102,6 +102,7 @@ function SlyFoxPageContent() {
   useMountReset(runApi);
 
   const [source, setSource] = useState<Source | null>(null);
+  const [sourceAnnouncement, setSourceAnnouncement] = useState('');
 
   const {
     hint: frontendHint,
@@ -136,11 +137,13 @@ function SlyFoxPageContent() {
   const handleManualReset = useCallback(() => {
     void runApi('reset');
     setSource(null);
+    setSourceAnnouncement('');
   }, [runApi]);
 
   const handleGiveUp = useCallback(() => {
     void runApi('giveup');
     setSource(null);
+    setSourceAnnouncement('');
   }, [runApi]);
 
   // Give-up is irreversible, so route both the button and the `g` key through
@@ -150,8 +153,14 @@ function SlyFoxPageContent() {
   // **山札は配りボタンではなく「配り先を選ぶモード」に入る。**捨て札が無いので、
   // 行き先を決めずに札をめくることはできない。
   const toggleDealing = useCallback(() => {
-    setSource((prev) => (prev?.kind === 'dealing' ? null : { kind: 'dealing' }));
-  }, []);
+    if (source?.kind === 'dealing') {
+      setSource(null);
+      setSourceAnnouncement(t('selectionCleared'));
+      return;
+    }
+    setSource({ kind: 'dealing' });
+    setSourceAnnouncement(t('selectionPrompt', { source: t('stock'), target: t('dealTarget') }));
+  }, [source, t]);
 
   const handleHint = useCallback(() => {
     void runApi('hint');
@@ -160,11 +169,13 @@ function SlyFoxPageContent() {
   const handleUndo = useCallback(() => {
     void runApi('undo');
     setSource(null);
+    setSourceAnnouncement('');
   }, [runApi]);
 
   const handleAutoComplete = useCallback(() => {
     void runApi('autocomplete');
     setSource(null);
+    setSourceAnnouncement('');
   }, [runApi]);
 
   const clickFoundation = useCallback(
@@ -174,10 +185,12 @@ function SlyFoxPageContent() {
       if (source.kind === 'dealing') {
         void runApi('deal', undefined, { zone: 'foundation', idx: fIdx });
         setSource(null);
+        setSourceAnnouncement('');
         return;
       }
       void runApi('move', { zone: 'tableau', idx: source.idx }, { zone: 'foundation' });
       setSource(null);
+      setSourceAnnouncement('');
     },
     [runApi, source],
   );
@@ -192,11 +205,20 @@ function SlyFoxPageContent() {
       if (source?.kind === 'dealing') {
         void runApi('deal', undefined, { zone: 'tableau', idx });
         setSource(null);
+        setSourceAnnouncement('');
         return;
       }
-      setSource((prev) => (prev?.kind === 'tableau' && prev.idx === idx ? null : { kind: 'tableau', idx }));
+      if (source?.kind === 'tableau' && source.idx === idx) {
+        setSource(null);
+        setSourceAnnouncement(t('selectionCleared'));
+        return;
+      }
+      setSource({ kind: 'tableau', idx });
+      setSourceAnnouncement(
+        t('selectionPrompt', { source: `${t('tableau')} ${idx.toString()}`, target: t('selectTarget') }),
+      );
     },
-    [runApi, source],
+    [runApi, source, t],
   );
 
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
@@ -245,6 +267,7 @@ function SlyFoxPageContent() {
           <span>
             {t('moveCount')}: {state.moveCount}
           </span>
+          <span data-testid="slyfox-foundation-progress">{t('foundationProgress', { count: foundationCount })}</span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }
@@ -435,13 +458,23 @@ function SlyFoxPageContent() {
                   </div>
                 )}
               </div>
+              <div data-testid="slyfox-selection-live" role="status" aria-live="polite" className="sr-only">
+                {sourceAnnouncement}
+              </div>
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
               {source && (
                 <div className="mt-2 text-xs text-ds-text-muted">
                   {t('selectTarget')}:{' '}
                   {source.kind === 'dealing' ? t('dealTarget') : `${t('tableau')} ${source.idx.toString()}`}{' '}
-                  <button type="button" className={`${btnOutline} ml-2 text-xs`} onClick={() => setSource(null)}>
+                  <button
+                    type="button"
+                    className={`${btnOutline} ml-2 text-xs`}
+                    onClick={() => {
+                      setSource(null);
+                      setSourceAnnouncement(t('selectionCleared'));
+                    }}
+                  >
                     {t('deselect')}
                   </button>
                 </div>

@@ -4,13 +4,23 @@ import { batakApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeBatakState } from '../test/stateFactories';
-import type { BatakResponse } from '../types/card';
+import type { BatakResponse, BatakTrickCard } from '../types/card';
 import { BatakPage } from './BatakPage';
 
 vi.mock('../api/gameApi', () => ({
   batakApi: { exec: vi.fn() },
   actionLogApi: { batak: vi.fn() },
 }));
+
+const mobileFlag = { value: false };
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileFlag.value }),
+  };
+});
 
 const mockExec = vi.mocked(batakApi.exec);
 
@@ -59,6 +69,7 @@ const spadesBrokenState = makeBatakState({ spadesBroken: true });
 const cpuTurnState = makeBatakState({ currentPlayerIdx: 1 });
 
 beforeEach(() => {
+  mobileFlag.value = false;
   mockExec.mockResolvedValue(playPhaseState);
 });
 
@@ -85,6 +96,35 @@ describe('BatakPage', () => {
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
       expect(screen.getByAltText('♥ J')).toBeInTheDocument();
     });
+  });
+
+  it.each([false, true])('shows score breakdown in the %s layout without negative zero', async (isMobile) => {
+    mobileFlag.value = isMobile;
+    const scoredState = makeBatakState({
+      phase: 3,
+      players: makeBatakState().players.map((player, index) => ({
+        ...player,
+        scoreBreakdown:
+          index === 0
+            ? { declarerBidPoints: 7, declarerBidPenalty: 0, defenderTricks: 0 }
+            : { declarerBidPoints: 0, declarerBidPenalty: 5, defenderTricks: 2 },
+      })),
+    });
+    mockExec.mockResolvedValue(scoredState);
+    renderWithProviders(<BatakPage />);
+
+    const breakdown = await screen.findByTestId('batak-score-breakdown');
+    expect(breakdown).toHaveTextContent('ビッド成功 7');
+    expect(breakdown).toHaveTextContent('ビッド失敗 −5');
+    expect(breakdown).toHaveTextContent('子の獲得トリック 2');
+    expect(breakdown).toHaveTextContent('ビッド成功 0');
+    expect(breakdown).not.toHaveTextContent('−0');
+  });
+
+  it('does not show score breakdown while playing', async () => {
+    renderWithProviders(<BatakPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    expect(screen.queryByTestId('batak-score-breakdown')).not.toBeInTheDocument();
   });
 
   it('renders bid buttons only from minLegalBid to 13, and does not show buttons below minLegalBid', async () => {
@@ -379,11 +419,11 @@ describe('BatakPage', () => {
           'zero',
           'zero',
         ]);
-        expect(scoreCells[0]).toHaveClass('text-ds-error');
+        expect(scoreCells[0]).toHaveClass('text-ds-error-text');
         expect(scoreCells[1]).toHaveClass('text-ds-success');
         expect(scoreCells[0]).not.toHaveClass('text-ds-danger');
         expect(scoreCells[1]).not.toHaveClass('text-ds-danger');
-        expect(scoreCells[2]).not.toHaveClass('text-ds-error');
+        expect(scoreCells[2]).not.toHaveClass('text-ds-error-text');
         expect(scoreCells[2]).not.toHaveClass('text-ds-success');
         expect(document.querySelectorAll('.text-ds-danger')).toHaveLength(0);
 
@@ -594,5 +634,86 @@ describe('BatakPage', () => {
       expect(region).toHaveTextContent('-');
       expect(region).not.toHaveTextContent('{{');
     });
+  });
+});
+
+describe('BatakPage trick winner badge', () => {
+  const settledTrick: BatakTrickCard[] = [
+    { playerIdx: 0, card: { design: 'DIAMOND', value: 3 } },
+    { playerIdx: 1, card: { design: 'HEART', value: 5 } },
+    { playerIdx: 2, card: { design: 'SPADE', value: 10 } },
+    { playerIdx: 3, card: { design: 'CLOVER', value: 2 } },
+  ];
+
+  it('marks the trick winner once the trick ends', async () => {
+    mockExec.mockResolvedValue({
+      ...trickEndState,
+      leadPlayerIdx: 2,
+      currentTrick: settledTrick,
+    });
+    renderWithProviders(<BatakPage />);
+    const badge = await screen.findByTestId('trick-winner-badge');
+    expect(badge).toBeInTheDocument();
+    expect(badge).toHaveTextContent('勝者');
+    expect(badge.parentElement).toHaveAttribute('data-trick-winner', 'true');
+    expect(screen.getAllByTestId('trick-display-cards')[0].querySelectorAll('[data-trick-winner="true"]')).toHaveLength(
+      1,
+    );
+  });
+
+  it('follows leadPlayerIdx rather than a fixed seat', async () => {
+    const badgedCardAlt = async () => {
+      const badge = await screen.findByTestId('trick-winner-badge');
+      const cell = badge.closest('[data-trick-winner]');
+      return cell?.querySelector('img')?.getAttribute('alt') ?? null;
+    };
+
+    mockExec.mockResolvedValue({
+      ...trickEndState,
+      leadPlayerIdx: 0,
+      currentTrick: settledTrick,
+    });
+    const { unmount } = renderWithProviders(<BatakPage />);
+    const first = await badgedCardAlt();
+    expect(first).toBeTruthy();
+    unmount();
+
+    mockExec.mockResolvedValue({
+      ...trickEndState,
+      leadPlayerIdx: 1,
+      currentTrick: settledTrick,
+    });
+    renderWithProviders(<BatakPage />);
+    expect(await badgedCardAlt()).not.toBe(first);
+  });
+
+  it('stays quiet while the trick is still being played', async () => {
+    mockExec.mockResolvedValue({
+      ...trickEndState,
+      phase: 1,
+      leadPlayerIdx: 1,
+      currentTrick: settledTrick,
+    });
+    renderWithProviders(<BatakPage />);
+    await waitFor(() => expect(screen.getAllByRole('img').length).toBeGreaterThan(0));
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
+  });
+
+  it('removes the trick winner display after starting the next trick', async () => {
+    mockExec.mockResolvedValue({
+      ...trickEndState,
+      leadPlayerIdx: 2,
+      currentTrick: settledTrick,
+    });
+    renderWithProviders(<BatakPage />);
+    await screen.findByTestId('trick-winner-badge');
+
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      trickNumber: 2,
+      currentTrick: [],
+    });
+    fireEvent.click(screen.getByRole('button', { name: '次のトリック' }));
+    await waitFor(() => expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument());
   });
 });

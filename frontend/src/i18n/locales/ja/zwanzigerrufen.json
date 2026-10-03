@@ -29,10 +29,18 @@
   "rolePartner": "（パートナー）",
   "you": "あなた",
   "cpu": "CPU{{n}}",
+  "turnAction": {
+    "bid": "入札",
+    "talon": "場札交換",
+    "play": "カードプレイ"
+  },
+  "turnAnnouncement": "{{name}}の{{action}}の番です",
   "cards": "手札{{count}}枚",
   "points": "今局{{points}}点",
   "score": "通算{{score}}",
   "currentTrick": "現在のトリック",
+  "leadSuit": "リードスート",
+  "leadTarock": "タロック（切り札）",
   "trickWinner": "勝ち",
   "restricted": "リードスートに従う必要があります",
   "bidRufer": "20番呼び",

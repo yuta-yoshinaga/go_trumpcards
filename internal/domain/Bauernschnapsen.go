@@ -220,30 +220,6 @@ func newBauernschnapsenDeck() *TrumpCards {
 	return t
 }
 
-// BauernschnapsenCardPoints カードの得点を返す (A=11,10=10,K=4,Q=3,J=2,7=0)。
-// SchnapsenCardPoints と同一の値だが、schnapsen は別ワーカー (solo) のビルドタグ
-// 配下にあり extra ワーカーからは参照できないため、ここで同じ switch を再実装する。
-// グローバルマップを避けて全 Cloudflare Worker WASM バイナリのサイズを抑える。
-func BauernschnapsenCardPoints(c *Card) int {
-	if c == nil {
-		return 0
-	}
-	switch c.GetValue() {
-	case 1: // Ace
-		return 11
-	case 10: // Ten
-		return 10
-	case 13: // King
-		return 4
-	case 12: // Queen
-		return 3
-	case 11: // Jack
-		return 2
-	default: // 7
-		return 0
-	}
-}
-
 // BauernschnapsenRankOrder カードのスート内順位を返す (大きいほど強い; A>10>K>Q>J>7)。
 func BauernschnapsenRankOrder(c *Card) int {
 	if c == nil {
@@ -644,7 +620,7 @@ func (g *Bauernschnapsen) ResolveTrick() {
 	trickPoints := 0
 	for i, tc := range g.currentTrick {
 		trickCards[i] = tc.Card
-		trickPoints += BauernschnapsenCardPoints(tc.Card)
+		trickPoints += AceTenCardPoints(tc.Card)
 	}
 
 	g.players[winnerIdx].AddTrick(trickCards)
@@ -1039,7 +1015,7 @@ func (g *Bauernschnapsen) GetHint() *BauernschnapsenHint {
 // playHintReason ヒント理由キーを判定する
 func (g *Bauernschnapsen) playHintReason(playerIdx, chosenIdx int) string {
 	card := g.players[playerIdx].GetCard(chosenIdx)
-	pts := BauernschnapsenCardPoints(card)
+	pts := AceTenCardPoints(card)
 	// トリックを取ってはいけない契約では「取りに行け」という理由は嘘になる。
 	if g.avoidsTricks(playerIdx) {
 		return "duck"
@@ -1179,7 +1155,7 @@ func (g *Bauernschnapsen) cpuLead(playerIdx int, legal []int) int {
 
 // bauernschnapsenLeadScore 値が小さいほど「リードに適している」(トランプ・高得点札を温存する)
 func bauernschnapsenLeadScore(c *Card, trumpSuit int) int {
-	score := BauernschnapsenCardPoints(c)*10 + BauernschnapsenRankOrder(c)
+	score := AceTenCardPoints(c)*10 + BauernschnapsenRankOrder(c)
 	if c.GetDesign() == trumpSuit {
 		score += 1000
 	}
@@ -1199,7 +1175,7 @@ func (g *Bauernschnapsen) cpuFollow(playerIdx int, legal []int) int {
 		best := legal[0]
 		bestPts := -1
 		for _, i := range legal {
-			pts := BauernschnapsenCardPoints(player.GetCard(i))
+			pts := AceTenCardPoints(player.GetCard(i))
 			if pts > bestPts {
 				bestPts = pts
 				best = i
@@ -1227,7 +1203,7 @@ func (g *Bauernschnapsen) cpuFollow(playerIdx int, legal []int) int {
 			dumpIdx = i
 		}
 	}
-	if winIdx >= 0 && BauernschnapsenCardPoints(leadCard) >= 10 {
+	if winIdx >= 0 && AceTenCardPoints(leadCard) >= 10 {
 		return winIdx
 	}
 	if !g.legalAllowsDump(playerIdx, legal) && winIdx >= 0 {

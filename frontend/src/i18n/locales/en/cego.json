@@ -15,7 +15,8 @@
     "targetDeals": "Deals per Match",
     "easy": "Easy",
     "normal": "Normal",
-    "hard": "Hard"
+    "hard": "Hard",
+    "targetDealsGuide": "Enter a whole number of at least 1."
   },
   "round": "Deal {{n}}",
   "trick": "Trick {{n}}",
@@ -33,6 +34,7 @@
   "you": "You",
   "cpu": "CPU {{id}}",
   "declarerBadge": "Declarer",
+  "successLine": "Success line: {{target}} / {{total}} pts",
   "blind": "Blind (Cego): {{count}} cards (hidden)",
   "bidPass": "Pass",
   "bidPlay": "Declare",
@@ -66,7 +68,9 @@
     "title": "Deal Result",
     "outcome": "Result: {{outcome}}",
     "declarer": "Declarer: {{name}}",
-    "captured": "Captured: {{points}} pts"
+    "captured": "Captured: {{points}} pts",
+    "made": "Success line reached: made",
+    "failed": "Success line not reached: failed"
   },
   "hintAvailable": "Hint",
   "hint": {

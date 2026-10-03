@@ -12,6 +12,14 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(blackholeApi.exec);
+const cardDimensions = { isMobile: true, cardWidth: 40 };
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), ...cardDimensions }),
+  };
+});
 
 const card = (design: Card['design'], value: number): Card => ({ design, value });
 
@@ -32,6 +40,8 @@ function makeState(overrides: Partial<BlackHoleResponse> = {}): BlackHoleRespons
 }
 
 beforeEach(() => {
+  cardDimensions.isMobile = false;
+  cardDimensions.cardWidth = 60;
   mockExec.mockReset();
   mockExec.mockResolvedValue(makeState());
 });
@@ -46,6 +56,11 @@ describe('BlackHolePage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<BlackHolePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('shows the action log button during play', async () => {
+    renderWithProviders(<BlackHolePage />);
+    expect(await screen.findByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
   });
 
   // #5681: 勝利条件は52枚すべてを吸い込むこと。17個の扇を掘る長いゲームなのに、
@@ -70,6 +85,26 @@ describe('BlackHolePage', () => {
     renderWithProviders(<BlackHolePage />);
     await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());
     expect(screen.getByTestId('fan-16')).toBeInTheDocument();
+  });
+
+  it('keeps mobile fan tops at least 44px wide in a horizontally scrollable row', async () => {
+    cardDimensions.isMobile = true;
+    cardDimensions.cardWidth = 40;
+    renderWithProviders(<BlackHolePage />);
+    const top = await screen.findByTestId('card-0-1');
+    const fans = top.closest('[data-tutorial="bh-fans"]');
+    if (!fans) throw new Error('Black Hole fan row is missing');
+    expect(fans.className).toContain('overflow-x-auto');
+    expect(screen.getByTestId('fan-16')).toBeInTheDocument();
+    expect(screen.getByTestId('card-0-1').querySelector('img')).toHaveStyle({ width: '44px' });
+  });
+
+  it('keeps the compact card width on desktop', async () => {
+    cardDimensions.isMobile = false;
+    cardDimensions.cardWidth = 60;
+    renderWithProviders(<BlackHolePage />);
+    const top = await screen.findByTestId('card-0-1');
+    expect(top.querySelector('img')).toHaveStyle({ width: '30px' });
   });
 
   it('plays a fan top into the black hole', async () => {

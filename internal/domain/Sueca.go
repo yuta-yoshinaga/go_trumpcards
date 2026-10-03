@@ -263,7 +263,7 @@ func (g *Sueca) ScoreRound() {
 		g.gameEndFlag = true
 		g.winnerTeam = leader
 		g.phase = SuecaPhaseGameEnd
-		g.appendLogCode(-1, "game_end", "sueca.log.gameEnd", map[string]string{"team": teamName(leader)}, nil)
+		g.appendLogCode(-1, "game_end", "sueca.log.gameEnd", map[string]string{"team": TeamName(leader)}, nil)
 	}
 }
 
@@ -360,13 +360,6 @@ func suecaStrength(value int) int {
 		return 1
 	}
 }
-
-// SuecaCardPoints はカード 1 枚の得点を返す。A=11,7=10,K=4,J=3,Q=2,その他=0。
-//
-// **配点は Web の早見表にも文字として書いてある** (#5642)。非公開のままだと
-// 表と実際の採点が食い違っても誰も気づけないので、突き合わせられるように公開
-// する (Baccarat の払い戻し表で同じ乖離が起きている: #5497)。
-func SuecaCardPoints(value int) int { return suecaCardPoints(value) }
 
 // suecaCardPoints カードポイント。A=11,7=10,K=4,J=3,Q=2,その他=0。
 func suecaCardPoints(value int) int {

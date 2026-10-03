@@ -22,5 +22,8 @@ func (p *President) SetExchangeActions(actions []*PresidentExchangeAction) {
 	p.round.exchangeActions = actions
 }
 
+// SetCpuActions CPU行動履歴設定 (テスト用)
+func (p *President) SetCpuActions(actions []*PresidentCpuAction) { p.round.cpuActions = actions }
+
 // SetHumanAction 人間の行動設定 (テスト用)
 func (p *President) SetHumanAction(action *PresidentCpuAction) { p.round.humanAction = action }

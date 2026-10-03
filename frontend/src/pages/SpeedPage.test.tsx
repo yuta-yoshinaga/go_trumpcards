@@ -108,6 +108,27 @@ describe('SpeedPage', () => {
     await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
   });
 
+  it('announces newly playable hand cards after a CPU response only when the set changes', async () => {
+    const cpuMoved: SpeedResponse = {
+      ...playState,
+      centerPiles: [
+        { design: 'DIAMOND', value: 3 },
+        { design: 'SPADE', value: 9 },
+      ],
+      cpuActions: [{ cardIndex: 0, pileIndex: 0, card: { design: 'HEART', value: 4 } }],
+    };
+    mockExec.mockResolvedValueOnce(playState).mockResolvedValue(cpuMoved);
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' }));
+    await waitFor(() =>
+      expect(screen.getByTestId('speed-playable-change-announcement')).toHaveTextContent('新たに出せるカード: ♦ 2'),
+    );
+    fireEvent.click(screen.getByRole('button', { name: '♥ 8 (今すぐ出せる)' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(3));
+    expect(screen.getByTestId('speed-playable-change-announcement')).toBeEmptyDOMElement();
+  });
+
   it('shows stuck phase flip button', async () => {
     mockExec.mockResolvedValue(stuckState);
     renderWithProviders(<SpeedPage />);
@@ -228,6 +249,21 @@ describe('SpeedPage', () => {
     // 完全一致ではなく前方一致で見る。**確かめたいのは札名が入っていること。**
     expect(screen.getByRole('button', { name: /^台札1: ♦ 5/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^台札2: ♠ 9/ })).toBeInTheDocument();
+  });
+
+  it('advertises the arrow key that plays onto each center pile', async () => {
+    renderWithProviders(<SpeedPage />);
+    await screen.findByText('手札');
+    expect(screen.getByRole('button', { name: /^台札1:/ })).toHaveAttribute('aria-keyshortcuts', 'ArrowLeft');
+    expect(screen.getByRole('button', { name: /^台札2:/ })).toHaveAttribute('aria-keyshortcuts', 'ArrowRight');
+  });
+
+  it('does not advertise the arrow keys while stuck, when the piles are flipped instead', async () => {
+    mockExec.mockResolvedValue(stuckState);
+    renderWithProviders(<SpeedPage />);
+    const flipPile = await screen.findByRole('button', { name: '台札1をめくる' });
+    expect(flipPile).not.toHaveAttribute('aria-keyshortcuts');
+    expect(screen.getByRole('button', { name: '台札2をめくる' })).not.toHaveAttribute('aria-keyshortcuts');
   });
 
   it('auto-plays a card via smart-click when only one valid pile exists', async () => {
@@ -631,6 +667,7 @@ describe('SpeedPage elapsed / best time', () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     localStorage.removeItem('speed_best_time_1');
   });
 
@@ -654,35 +691,51 @@ describe('SpeedPage elapsed / best time', () => {
   });
 
   it('records and announces a new best time on a human win', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.useFakeTimers();
+    const gameStartedAt = new Date('2025-01-01T00:00:00.000Z');
+    vi.setSystemTime(gameStartedAt);
     mockExec.mockResolvedValueOnce(playState).mockResolvedValue(gameEndState);
     renderWithProviders(<SpeedPage />);
-    await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(screen.getByText('手札')).toBeInTheDocument();
     await act(async () => {
       await vi.advanceTimersByTimeAsync(3000);
     });
+    vi.setSystemTime(new Date(gameStartedAt.getTime() + 3000));
     // Smart-click SPADE 4 auto-plays to pile 0; the response ends the game as a human win.
-    fireEvent.click(screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' }));
-    await waitFor(() => expect(screen.getByTestId('speed-clear-time')).toBeInTheDocument());
-    expect(screen.getByTestId('speed-clear-time')).toHaveTextContent('ベスト更新');
-    expect(Number(localStorage.getItem('speed_best_time_1'))).toBeGreaterThanOrEqual(3000);
-    vi.useRealTimers();
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' }));
+      await Promise.resolve();
+    });
+    expect(screen.getByTestId('speed-clear-time')).toBeInTheDocument();
+    expect(screen.getByTestId('speed-clear-time')).toHaveTextContent('ベスト更新! 00:03');
+    expect(localStorage.getItem('speed_best_time_1')).toBe('3000');
   });
 
   it('keeps a faster stored best when the new win is slower', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.useFakeTimers();
+    const gameStartedAt = new Date('2025-01-01T00:00:00.000Z');
+    vi.setSystemTime(gameStartedAt);
     localStorage.setItem('speed_best_time_1', '1000');
     mockExec.mockResolvedValueOnce(playState).mockResolvedValue(gameEndState);
     renderWithProviders(<SpeedPage />);
-    await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(screen.getByText('手札')).toBeInTheDocument();
     await act(async () => {
       await vi.advanceTimersByTimeAsync(3000);
     });
-    fireEvent.click(screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' }));
-    await waitFor(() => expect(screen.getByTestId('speed-clear-time')).toBeInTheDocument());
+    vi.setSystemTime(new Date(gameStartedAt.getTime() + 3000));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' }));
+      await Promise.resolve();
+    });
+    expect(screen.getByTestId('speed-clear-time')).toBeInTheDocument();
     expect(screen.getByTestId('speed-clear-time')).not.toHaveTextContent('ベスト更新');
     expect(localStorage.getItem('speed_best_time_1')).toBe('1000');
-    vi.useRealTimers();
   });
 });
 

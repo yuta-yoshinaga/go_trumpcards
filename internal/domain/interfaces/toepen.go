@@ -41,6 +41,8 @@ type ToepenGame interface {
 	GetDealerIdx() int
 	// GetCurrentTrick 場に出ている札を取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// CurrentTrickWinner 現在のトリックでリードスートの最強札を出したプレイヤーを取得する (-1: 該当なし)
+	CurrentTrickWinner() int
 	// GetLeadSuit リードスートを取得する (未決は -1)
 	GetLeadSuit() int
 	// GetTrickNumber 完了したトリック数を取得する

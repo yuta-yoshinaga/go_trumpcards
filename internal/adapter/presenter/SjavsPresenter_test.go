@@ -51,6 +51,7 @@ func sjStub(phase domain.SjavsPhase, trump int, gameEnd bool, winner int) *inter
 	g.On("GetValidPlayIndices", mock.Anything).Return([]int{0})
 	g.On("GetTeamPoints", mock.Anything).Return(60)
 	g.On("GetRemaining", mock.Anything).Return(domain.SjavsRubber)
+	g.On("GetRubberPoints").Return(domain.SjavsRubber)
 	g.On("GetCrosses", mock.Anything).Return(0)
 	g.On("GetCarryOver").Return(0)
 	g.On("GetHandResult").Return((*domain.SjavsHandResult)(nil))
@@ -84,6 +85,11 @@ func TestSjavsWebPresenter_HidesTheCpuHandButNeverTheBids(t *testing.T) {
 	assert.Positive(t, cpu["cardCount"], "but its size is public")
 	assert.NotNil(t, cpu["bid"], "and so is its bid")
 	assert.Equal(t, float64(1), cpu["team"], "seat 1 is the other team")
+}
+
+func TestSjavsWebPresenter_IncludesRubberPoints(t *testing.T) {
+	out := sjDecode(t, new(SjavsWebPresenter).Output(sjStub(domain.SjavsPhaseBid, -1, false, -1), nil))
+	assert.Equal(t, float64(domain.SjavsRubber), out["rubberPoints"])
 }
 
 func TestSjavsCuiPresenter_LabelsPointsWithPlayerTeamIdentifiers(t *testing.T) {

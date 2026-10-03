@@ -27,6 +27,7 @@
   "stalemateWithEscape": "手詰まりです。アンドゥで{{count}}手戻せます",
   "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
   "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
+  "tableauCardAriaLabel": "{{card}}、列{{col}}",
   "frontendHint": {
     "moveToFoundation": "組札へ移動できるカードがあります",
     "moveToTableau": "場札間で移動可能なカードがあります",
@@ -65,5 +66,6 @@
     "winRate": "勝率 {{rate}}%",
     "fewestMoves": "最少 {{moves}}手",
     "newBest": "自己ベスト更新！"
-  }
+  },
+  "emptyColumnRule": "空き列にはカードを移動できません"
 }

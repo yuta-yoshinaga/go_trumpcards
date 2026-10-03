@@ -16,6 +16,7 @@ const player = (over: Partial<FiveCardStudPlayerData> = {}): FiveCardStudPlayerD
   handRank: 0,
   handName: '',
   bestHand: [],
+  bestHandCore: [],
   playStyleName: '',
   totalHands: 0,
   vpip: 0,

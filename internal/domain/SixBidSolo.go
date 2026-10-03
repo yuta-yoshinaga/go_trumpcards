@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"math/rand"
+	"slices"
 	"strconv"
 )
 
@@ -673,7 +674,7 @@ func (s *SixBidSolo) PlayCard(player, idx int) error {
 	if p == nil || idx < 0 || idx >= p.GetCardsSize() {
 		return errors.New("there is no such card")
 	}
-	if !sixBidSoloContains(s.SixBidSoloValidPlays(player), idx) {
+	if !slices.Contains(s.SixBidSoloValidPlays(player), idx) {
 		return errors.New("you must follow suit")
 	}
 	c := p.GetCard(idx)
@@ -753,16 +754,6 @@ func sixBidSoloBeats(c, best, lead *Card, trumpSuit int) bool {
 		return true
 	}
 	return sixBidSoloRank(c) > sixBidSoloRank(best)
-}
-
-// sixBidSoloContains は s に v が含まれるかを返す。
-func sixBidSoloContains(s []int, v int) bool {
-	for _, x := range s {
-		if x == v {
-			return true
-		}
-	}
-	return false
 }
 
 // SixBidSoloWidowPoints はウィドウのカード点を返す。
@@ -1193,25 +1184,6 @@ func (s *SixBidSolo) addLog(playerIdx int, actionType, detailCode string, detail
 	s.appendLogCodeAt(0, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
-// sixBidSoloBidName はビッドの内部名を返す (棋譜用)。
-func sixBidSoloBidName(k SixBidSoloBidKind) string {
-	switch k {
-	case SixBidSoloBidSolo:
-		return "solo"
-	case SixBidSoloBidHeartSolo:
-		return "heartSolo"
-	case SixBidSoloBidMisere:
-		return "misere"
-	case SixBidSoloBidGuarantee:
-		return "guarantee"
-	case SixBidSoloBidSpreadMisere:
-		return "spreadMisere"
-	case SixBidSoloBidCall:
-		return "callSolo"
-	}
-	return "pass"
-}
-
 func sixBidSoloBidLogCode(kind SixBidSoloBidKind) string {
 	switch kind {
 	case SixBidSoloBidSolo:
@@ -1306,21 +1278,6 @@ func (s *SixBidSolo) addSixBidSoloBidLog(player int, kind SixBidSoloBidKind) {
 
 func (s *SixBidSolo) addSixBidSoloDeclareLog(player int, kind SixBidSoloBidKind, suit int) {
 	s.addLog(player, "declare", sixBidSoloDeclareLogCode(kind, suit), nil, nil)
-}
-
-// sixBidSoloSuitName はスートの内部名を返す (棋譜用)。
-func sixBidSoloSuitName(suit int) string {
-	switch suit {
-	case CardDesignSpade:
-		return "S"
-	case CardDesignClover:
-		return "C"
-	case CardDesignHeart:
-		return "H"
-	case CardDesignDiamond:
-		return "D"
-	}
-	return "-"
 }
 
 // ---- テスト用 ----

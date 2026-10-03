@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { quodlibetApi } from '../api/gameApi';
+import i18n from '../i18n';
 import enQuodlibet from '../i18n/locales/en/quodlibet.json';
 import jaQuodlibet from '../i18n/locales/ja/quodlibet.json';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -227,6 +228,38 @@ describe('QuodlibetPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextdeal'));
   });
 
+  it('shows completed deal penalties by seat and keeps the full history at game end', async () => {
+    const deals = Array.from({ length: 12 }, (_, i) => ({
+      contract: i % 4,
+      contractName: ['plus', 'minus', 'badNeighbour', 'alarich'][i % 4],
+      round: Math.floor(i / 4),
+      dealerIdx: i % 4,
+      points: [i + 1, 2, 3, 4],
+    }));
+    const totals = [deals.reduce((sum, deal) => sum + deal.points[0], 0), 24, 36, 48];
+    mockExec.mockResolvedValue(
+      makeQuodlibetState({
+        phase: 'gameEnd',
+        gameEndFlag: true,
+        dealNumber: 12,
+        dealHistory: deals,
+        players: contractState.players.map((player, i) => ({ ...player, penalty: totals[i] })),
+      }),
+    );
+    renderWithProviders(<QuodlibetPage />);
+
+    const history = await screen.findByTestId('quodlibet-score-history');
+    expect(history.querySelectorAll('tbody tr')).toHaveLength(12);
+    expect(history).toHaveTextContent('プラス');
+    for (const [i, total] of totals.entries()) {
+      const seatRows = history.querySelectorAll(`tbody tr td:nth-child(${i + 3})`);
+      expect(
+        Array.from(seatRows).reduce((sum, cell) => sum + Number(cell.textContent?.match(/[0-9]+/)?.[0] ?? 0), 0),
+      ).toBe(total);
+    }
+    expect(screen.getByTestId('quodlibet-scores')).toHaveTextContent(`${totals[0]} 点`);
+  });
+
   it('names the seats on the fewest penalty points at the end', async () => {
     mockExec.mockResolvedValue(
       makeQuodlibetState({ phase: 'gameEnd', gameEndFlag: true, isContractPhase: false, winners: [2] }),
@@ -275,6 +308,7 @@ describe('QuodlibetPage', () => {
 
     // 初期状態では第1候補 (プラス) の説明が表示される
     expect(descPanel).toHaveTextContent(jaQuodlibet.contractDesc.plus);
+    expect(screen.queryByTestId('quodlibet-current-contract-desc')).not.toBeInTheDocument();
 
     // ホバーで表示が変わり、離れると戻る (値を変えると表示も変わる)
     fireEvent.mouseEnter(badNeighbourBtn);
@@ -293,12 +327,42 @@ describe('QuodlibetPage', () => {
     expect(descPanel).toHaveTextContent(jaQuodlibet.contractDesc.plus);
   });
 
-  // 負のコントロール: 種目選択フェーズでない局面では説明パネルも出ない
-  it('hides the description panel when not in contract selection phase', async () => {
+  it('shows the current contract description during play', async () => {
     mockExec.mockResolvedValue(playState);
     renderWithProviders(<QuodlibetPage />);
     await screen.findByTestId('quodlibet-play');
     expect(screen.queryByTestId('quodlibet-contract-desc')).not.toBeInTheDocument();
+    expect(screen.getByTestId('quodlibet-current-contract-desc')).toHaveTextContent(jaQuodlibet.contractDesc.minus);
+  });
+
+  it('shows the current shedding contract description during play', async () => {
+    mockExec.mockResolvedValueOnce(
+      makeQuodlibetState({
+        phase: 'play',
+        isContractPhase: false,
+        currentContract: 10,
+        currentContractName: 'quadrature',
+        isShedding: true,
+      }),
+    );
+    renderWithProviders(<QuodlibetPage />);
+    await screen.findByTestId('quodlibet-play');
+    expect(screen.getByTestId('quodlibet-current-contract-desc')).toHaveTextContent(
+      jaQuodlibet.contractDesc.quadrature,
+    );
+  });
+
+  it('shows the current contract description in English', async () => {
+    const originalLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(playState);
+      renderWithProviders(<QuodlibetPage />);
+      await screen.findByTestId('quodlibet-play');
+      expect(screen.getByTestId('quodlibet-current-contract-desc')).toHaveTextContent(enQuodlibet.contractDesc.minus);
+    } finally {
+      await i18n.changeLanguage(originalLanguage);
+    }
   });
 
   // 全12種目の説明文が ja / en の両方で未解決プレースホルダなく定義されていること

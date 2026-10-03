@@ -234,16 +234,24 @@ function GaigelPageContent() {
           </div>
         )}
 
-        {/* CPU players */}
+        {/* Player list */}
         <div className="mb-3">
-          {state.players
-            .filter((p) => !p.isHuman)
-            .map((p) => (
-              <div key={p.id} className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                {playerName(p.id, p.isHuman)}: {t('team', { n: p.team })} | {t('cards', { count: p.cardCount })} |{' '}
-                {t('trickCount', { count: p.trickCount })}
-              </div>
-            ))}
+          {state.players.map((p) => (
+            <div
+              key={p.id}
+              data-testid={`gaigel-player-${p.id}`}
+              className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+            >
+              {playerName(p.id, p.isHuman)}
+              {p.id === state.dealerIdx && (
+                <span className="ml-1 text-ds-accent" data-testid="gaigel-dealer-badge">
+                  [{t('dealerBadge')}]
+                </span>
+              )}
+              : {t('team', { n: p.team })} | {t('cards', { count: p.cardCount })} |{' '}
+              {t('trickCount', { count: p.trickCount })}
+            </div>
+          ))}
         </div>
 
         {/* Current trick */}
@@ -261,6 +269,7 @@ function GaigelPageContent() {
           <table className="w-full text-sm text-ds-text-muted">
             <thead>
               <tr>
+                <th scope="col" />
                 <th scope="col" className="text-left">
                   {t('team', { n: 0 })}
                 </th>
@@ -271,19 +280,26 @@ function GaigelPageContent() {
             </thead>
             <tbody>
               <tr>
+                <th scope="row" className="text-left">
+                  {t('scoreRows.cumulative')}
+                </th>
                 <td className="text-ds-accent">{state.teamScores[0]}</td>
                 <td className="text-center">{state.teamScores[1]}</td>
               </tr>
               <tr>
-                <td className="text-xs">{t('roundPoints', { points: state.roundPoints[0] })}</td>
-                <td className="text-center text-xs">{t('roundPoints', { points: state.roundPoints[1] })}</td>
+                <th scope="row" className="text-left text-xs">
+                  {t('scoreRows.round')}
+                </th>
+                <td className="text-xs">{state.roundPoints[0]}</td>
+                <td className="text-center text-xs">{state.roundPoints[1]}</td>
               </tr>
               {(state.roundMarriage[0] > 0 || state.roundMarriage[1] > 0) && (
                 <tr>
-                  <td className="text-xs text-ds-warning">{t('marriagePoints', { points: state.roundMarriage[0] })}</td>
-                  <td className="text-center text-xs text-ds-warning">
-                    {t('marriagePoints', { points: state.roundMarriage[1] })}
-                  </td>
+                  <th scope="row" className="text-left text-xs text-ds-warning">
+                    {t('scoreRows.marriage')}
+                  </th>
+                  <td className="text-xs text-ds-warning">{state.roundMarriage[0]}</td>
+                  <td className="text-center text-xs text-ds-warning">{state.roundMarriage[1]}</td>
                 </tr>
               )}
             </tbody>

@@ -35,6 +35,7 @@ import { BACCARAT_HELP, parseBaccaratCommand } from '../utils/cli/commands/bacca
 import { formatBaccaratState } from '../utils/cli/formatters/baccaratFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 
 const BET_TYPE_LABELS: Record<number, string> = {
   [BaccaratBetType.PLAYER]: 'betType.player',
@@ -232,7 +233,7 @@ function ShoeStatsPanel({
     <div className="mb-2 text-xs text-ds-text-primary" data-testid="baccarat-shoe-stats">
       <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
         <span className="text-ds-info">{t('stats.player', { n: stats.playerCount, pct: stats.playerPct })}</span>
-        <span className="text-ds-error">{t('stats.banker', { n: stats.bankerCount, pct: stats.bankerPct })}</span>
+        <span className="text-ds-error-text">{t('stats.banker', { n: stats.bankerCount, pct: stats.bankerPct })}</span>
         <span className="text-ds-success">{t('stats.tie', { n: stats.tieCount, pct: stats.tiePct })}</span>
         {streakLabel && (
           <span className="font-bold text-ds-warning">
@@ -284,7 +285,18 @@ function BaccaratPageContent() {
   } | null>(null);
 
   const { cardWidth } = useCardDimensions();
-  const { state, loading, error, exec: execApi, retry } = useGameApi(baccaratApi.exec);
+  const sessionStartChips = useRef<number | null>(null);
+  const {
+    state,
+    loading,
+    error,
+    exec: execApi,
+    retry,
+  } = useGameApi(baccaratApi.exec, {
+    onSuccess: (response, args) => {
+      if (args[0] === 'reset') sessionStartChips.current = response.chips;
+    },
+  });
   const hintState = useMemo(() => (state ? { ...state, betType } : null), [state, betType]);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('baccarat', hintState);
   // CLI mode
@@ -388,6 +400,7 @@ function BaccaratPageContent() {
   const handleClearHistory = () => {
     execApi('clearhistory');
   };
+  const chipChange = state.chips - (sessionStartChips.current ?? state.chips);
 
   return (
     <GamePageShell
@@ -403,6 +416,7 @@ function BaccaratPageContent() {
       headerExtra={
         <>
           <span>{t('label.chips', { chips: state.chips })}</span>
+          <span>{t('label.chipChange', { change: formatSignedDelta(chipChange) })}</span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }
@@ -456,7 +470,7 @@ function BaccaratPageContent() {
             {/* Banker Hand — staged reveal hides the 3rd card until step 3 */}
             {state.bankerHand.length > 0 && (
               <div className="mb-4" data-tutorial="bac-banker-hand">
-                <div className="text-ds-error font-bold text-center mb-1">
+                <div className="text-ds-error-text font-bold text-center mb-1">
                   <span aria-hidden="true">🔴</span> {t('banker')}{' '}
                   {t('label.value', { value: isEndPhase ? visibleBankerValue : state.bankerHandValue })}
                 </div>

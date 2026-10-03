@@ -313,7 +313,7 @@ function PyramidPageContent() {
                               handleSelectCard({ zone: 'pyramid', row: rowIdx, col: colIdx }, pc.card.value);
                             }}
                             disabled={!isPlaying || loading || !exposed}
-                            aria-label={`${cardAlt(pc.card)}${statusSuffix}`}
+                            aria-label={`${cardAlt(pc.card)} ${t('a11y.position', { row: rowIdx, col: colIdx })}${statusSuffix}`}
                             aria-pressed={cellSelected}
                             data-pair-candidate={isPairCandidate ? 'true' : undefined}
                             data-king-removable={isExposedKing ? 'true' : undefined}
@@ -372,13 +372,16 @@ function PyramidPageContent() {
 
               {/* Waste */}
               <div className="text-center">
-                <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
+                <div className="text-game-text-muted text-xs mb-1">
+                  {t('waste')} <span id="pyramid-waste-count">{t('wasteCount', { count: state.waste.length })}</span>
+                </div>
                 {wasteTopCard ? (
                   <button
                     type="button"
                     onClick={() => handleSelectCard({ zone: 'waste' }, wasteTopCard.value)}
                     disabled={!isPlaying || loading}
                     aria-label={`${cardAlt(wasteTopCard)}${isWasteExposedKing ? ` ${t('a11y.kingRemovable')}` : ''}`}
+                    aria-describedby="pyramid-waste-count"
                     aria-pressed={isSelected('waste')}
                     data-pair-candidate={isWastePairCandidate ? 'true' : undefined}
                     data-king-removable={isWasteExposedKing ? 'true' : undefined}

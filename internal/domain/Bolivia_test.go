@@ -497,7 +497,7 @@ func TestBolivia_ScoringPaysEachMeldKindItsOwnBonus(t *testing.T) {
 		if meld != nil {
 			players[0].SetMelds([]*BoliviaMeld{meld})
 			for _, c := range meld.Cards {
-				cards += BoliviaCardValue(c)
+				cards += CanastaFamilyCardValue(c)
 			}
 		}
 		before := g.GetTeamScore(0)
@@ -525,6 +525,66 @@ func TestBolivia_ScoringPaysEachMeldKindItsOwnBonus(t *testing.T) {
 	// **重さの順序**: ボリビア > エスカレラ > ナチュラルカナスタ。
 	assert.Greater(t, BoliviaBoliviaBonus, BoliviaEscaleraBonus)
 	assert.Greater(t, BoliviaEscaleraBonus, BoliviaNaturalCanastaBonus)
+}
+
+func TestBolivia_ScoreBreakdownMatchesRoundScore(t *testing.T) {
+	players := make([]*BoliviaPlayer, BoliviaPlayerCnt)
+	for i := range players {
+		players[i] = NewBoliviaPlayer(i == 0, i%BoliviaTeamCnt)
+	}
+	players[0].SetHasInitMeld(true)
+	players[0].SetMelds([]*BoliviaMeld{{Kind: BoliviaMeldSet, IsNatural: true, Cards: boliviaSeven(CardDesignSpade, 5)}})
+	players[0].AddRed3(bolCard(CardDesignHeart, 3))
+	players[2].AddCard(bolCard(CardDesignSpade, 4))
+	g := NewBolivia(newBoliviaDeck(), players, DefaultBoliviaConfig())
+	g.scoreRound(0, BoliviaGoingOutBonus)
+	breakdown := players[0].GetScoreBreakdown()
+	assert.Equal(t, g.GetTeamScore(0), breakdown.Total())
+	assert.Equal(t, BoliviaNaturalCanastaBonus, breakdown.NaturalCanastaBonus)
+	assert.Equal(t, BoliviaRed3Bonus, breakdown.Red3Bonus)
+	assert.Equal(t, BoliviaGoingOutBonus, breakdown.GoOutBonus)
+	assert.Equal(t, CanastaFamilyCardValue(bolCard(CardDesignSpade, 4)), breakdown.HandPenalty)
+	snapshot, err := json.Marshal(g)
+	require.NoError(t, err)
+	restored := NewBolivia(newBoliviaDeck(), nil, DefaultBoliviaConfig())
+	require.NoError(t, json.Unmarshal(snapshot, restored))
+	assert.Equal(t, breakdown, restored.GetPlayer(0).GetScoreBreakdown())
+	players[0].ResetRound()
+	assert.Equal(t, BoliviaScoreBreakdown{}, players[0].GetScoreBreakdown())
+}
+
+func TestBolivia_ScoreBreakdownAggregatesTeamContributionsAndRed3Penalty(t *testing.T) {
+	t.Run("aggregates two players on the same team", func(t *testing.T) {
+		players := make([]*BoliviaPlayer, BoliviaPlayerCnt)
+		for i := range players {
+			players[i] = NewBoliviaPlayer(i == 0, i%BoliviaTeamCnt)
+		}
+		players[0].SetMelds([]*BoliviaMeld{{Kind: BoliviaMeldSet, IsNatural: true, Cards: boliviaSeven(CardDesignSpade, 5)}})
+		players[2].AddCard(bolCard(CardDesignHeart, 4))
+		g := NewBolivia(newBoliviaDeck(), players, DefaultBoliviaConfig())
+
+		g.scoreRound(-1, 0)
+
+		breakdown := players[0].GetScoreBreakdown()
+		assert.Equal(t, players[0].GetRoundScore(), breakdown.Total())
+		assert.Equal(t, CanastaFamilyCardValue(bolCard(CardDesignHeart, 4)), breakdown.HandPenalty)
+		assert.Equal(t, players[2].GetRoundScore(), players[0].GetRoundScore())
+	})
+
+	t.Run("includes red three penalty when team has no initial meld", func(t *testing.T) {
+		players := make([]*BoliviaPlayer, BoliviaPlayerCnt)
+		for i := range players {
+			players[i] = NewBoliviaPlayer(i == 0, i%BoliviaTeamCnt)
+		}
+		players[0].AddRed3(bolCard(CardDesignHeart, 3))
+		g := NewBolivia(newBoliviaDeck(), players, DefaultBoliviaConfig())
+
+		g.scoreRound(-1, 0)
+
+		breakdown := players[0].GetScoreBreakdown()
+		assert.Equal(t, players[0].GetRoundScore(), breakdown.Total())
+		assert.Equal(t, BoliviaRed3Bonus, breakdown.Red3Penalty)
+	})
 }
 
 func TestBolivia_TeamHasInitMeld(t *testing.T) {

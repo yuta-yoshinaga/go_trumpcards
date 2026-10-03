@@ -23,12 +23,13 @@
   "you": "あなた",
   "cpu": "CPU {{id}}",
   "yourTeam": "あなたのチーム",
-  "trickWinner": "{{name}}（{{team}}）がトリック獲得",
+  "trickWinner": "{{name}}（{{team}}）がトリック獲得（{{points}}点）",
   "team": {
     "a": "チームA",
     "b": "チームB"
   },
   "teamScore": "{{team}}: {{score}}点",
+  "remainingPoints": "（残り{{count}}点）",
   "playButton": "出す",
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",

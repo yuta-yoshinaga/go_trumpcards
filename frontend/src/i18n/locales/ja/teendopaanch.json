@@ -20,6 +20,7 @@
     "exchangePair": "{{giver}}→{{taker}} {{n}}枚"
   },
   "currentTrick": "現在のトリック",
+  "trickCardByPlayer": "{{name}}が出した{{card}}",
   "actions": {
     "trump": "切り札 {{suit}}",
     "chooseTrump": "切り札にするスートを選んでください。",
@@ -27,7 +28,8 @@
     "nextRound": "次のラウンドへ",
     "reset": "リセット",
     "giveUp": "投了",
-    "playAria": "{{card}} を出す"
+    "playAria": "{{card}} を出す",
+    "playUnavailable": "このカードは現在出せません。"
   },
   "result": {
     "you": "あなたの勝ち！ ノルマ達成回数がいちばん多いです。",

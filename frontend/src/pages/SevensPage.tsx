@@ -30,13 +30,15 @@ import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { SevensResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
+import { valueName } from '../utils/cardUtils';
 import { parseSevensCommand, SEVENS_HELP } from '../utils/cli/commands/sevensCommands';
 import { formatSevensState } from '../utils/cli/formatters/sevensFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import { actionDesc, listJokerPlacements } from '../utils/sevensUtils';
+import { actionDesc, isCardPlayable, listJokerPlacements } from '../utils/sevensUtils';
 
 /** Sevens tutorial step definitions. */
 const SV_TUTORIAL_STEPS: TutorialStep[] = [
@@ -65,6 +67,7 @@ function SevensPageContent() {
     useGamePageSetup('sevens');
   const {
     state,
+    placedJoker,
     loading,
     error,
     exec,
@@ -106,6 +109,29 @@ function SevensPageContent() {
     },
     [handleCardPlay],
   );
+  const canDirectPlay = useCallback(
+    (idx: number) => {
+      const player = state?.players.find((p) => p.isHuman);
+      const card = player?.cards?.[idx];
+      return (
+        !!state &&
+        !!player &&
+        !!card &&
+        isCardPlayable(
+          card,
+          state.tablePlaced,
+          state.config.tunnelEnabled,
+          state.config.noJokerFinish,
+          player.cards,
+          state.config.endStopEnabled,
+          state.config.jokerConsecutiveBanned,
+          player.lastPlayedJoker,
+          state.config.tunnelSkipWidth,
+        )
+      );
+    },
+    [state],
+  );
   useCardKeyboardNav({
     cardCount: humanCardCount,
     onToggle: noop,
@@ -113,6 +139,7 @@ function SevensPageContent() {
     onClear: noop,
     enabled: isHumanTurnForKbd && !loading,
     onDirectPlay: directPlay,
+    canDirectPlay,
   });
 
   const runAction = exec;
@@ -331,7 +358,7 @@ function SevensPageContent() {
                 state.config.jokerReclaimEnabled ||
                 state.config.endStopEnabled ||
                 state.config.jokerConsecutiveBanned) && (
-                <div className="bg-black/30 rounded-lg text-ds-warning py-1.5 px-3 mb-2 text-xs">
+                <div className="bg-ds-surface rounded-lg text-ds-warning py-1.5 px-3 mb-2 text-xs">
                   {t('rules.title')}
                   {state.config.tunnelEnabled && ` ${t('rules.tunnelTag')}`}
                   {state.config.tunnelSkipWidth >= 2 &&
@@ -365,6 +392,21 @@ function SevensPageContent() {
                 jokerSelecting={jokerCardIdx !== null}
                 onJokerPlace={handleJokerPlace}
               />
+            </div>
+            <div
+              className="sr-only"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              data-testid="joker-placement-live"
+            >
+              {placedJoker
+                ? t('jokerPlacedAnnouncement', {
+                    card: cardAlt({ design: 'JOKER', value: 0 }),
+                    suit: suitSymbolAt(placedJoker.suit),
+                    value: valueName(placedJoker.value),
+                  })
+                : ''}
             </div>
 
             {state.humanAction && (

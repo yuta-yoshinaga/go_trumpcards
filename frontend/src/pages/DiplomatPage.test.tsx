@@ -233,6 +233,16 @@ describe('DiplomatPage', () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<DiplomatPage />);
     await waitFor(() => expect(screen.getByLabelText('捨て札は空です')).toBeInTheDocument());
+    expect(screen.getByText('0枚')).toHaveAttribute('id', 'diplomat-waste-count');
+    expect(screen.getByLabelText('捨て札は空です')).toHaveAttribute('aria-describedby', 'diplomat-waste-count');
+  });
+
+  it('shows the waste count and describes the top card with it', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('DIAMOND', 4), card('HEART', 7)] });
+    renderWithProviders(<DiplomatPage />);
+    const wasteCard = await screen.findByRole('button', { name: '♥ 7' });
+    expect(screen.getByText('2枚')).toHaveAttribute('id', 'diplomat-waste-count');
+    expect(wasteCard).toHaveAttribute('aria-describedby', 'diplomat-waste-count');
   });
 
   it('disables the stock once it runs out', async () => {
@@ -300,6 +310,23 @@ describe('DiplomatPage', () => {
     });
     renderWithProviders(<DiplomatPage />);
     await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
+  });
+
+  it('announces auto-complete start and completion in its own persistent live region', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('SPADE', 1)], [], [], [], [], [], [], []],
+    });
+    renderWithProviders(<DiplomatPage />);
+    const button = await screen.findByTestId('autocomplete-button');
+    const liveRegion = screen.getByTestId('diplomat-autocomplete-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
+    fireEvent.click(button);
+    expect(liveRegion).toHaveTextContent('自動完成を開始しました');
+    await waitFor(() => expect(liveRegion).toHaveTextContent('自動完成が完了しました'), { timeout: 5000 });
+    expect(screen.getByTestId('cg-hint-live')).toBeInTheDocument();
   });
 
   it('shows StalemateEscapeButton when the stalemate flag is set', async () => {

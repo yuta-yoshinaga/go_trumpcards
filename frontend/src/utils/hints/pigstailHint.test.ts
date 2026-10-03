@@ -10,6 +10,7 @@ function makeState(overrides?: Partial<PigsTailResponse>): PigsTailResponse {
     ],
     circleCount: 0,
     centerTop: null,
+    centerHistory: [],
     centerCount: 52,
     currentTurn: 0,
     gameEndFlag: false,

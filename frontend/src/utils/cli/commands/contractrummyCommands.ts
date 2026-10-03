@@ -1,5 +1,5 @@
 import type { contractrummyApi } from '../../../api/gameApi';
-import { splitCommand, suggestCommand } from '../commandParserBase';
+import { splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type ContractRummyArgs = Parameters<typeof contractrummyApi.exec>;
@@ -96,11 +96,8 @@ export function parseContractRummyCommand(input: string): CliParseResult<Contrac
     case 'r':
     case 'reset':
       return { args: ['reset'] as ContractRummyArgs };
-    default: {
-      const suggestion = suggestCommand(cmd, CR_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, CR_COMMANDS);
   }
 }
 

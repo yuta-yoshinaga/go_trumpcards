@@ -188,6 +188,14 @@ function CourchevelPageContent() {
     () => omahaLivePreviewKey(humanPlayer, state?.communityCards ?? [], { isActive, isShowdown }),
     [isActive, isShowdown, humanPlayer, state?.communityCards],
   );
+  const liveBestHoleSet = useMemo(() => {
+    if (!liveBestHandKey || !humanPlayer || humanPlayer.folded) return new Set<number>();
+    return new Set(humanPlayer.liveBestHandHoleIndices ?? []);
+  }, [humanPlayer, liveBestHandKey]);
+  const liveBestBoardSet = useMemo(() => {
+    if (!liveBestHandKey || !humanPlayer || humanPlayer.folded) return new Set<number>();
+    return new Set(humanPlayer.liveBestHandBoardIndices ?? []);
+  }, [humanPlayer, liveBestHandKey]);
 
   if (!state)
     return (
@@ -250,10 +258,19 @@ function CourchevelPageContent() {
                       {t('exposedNotice')}
                     </div>
                   )}
+                  <div
+                    className="sr-only"
+                    role="status"
+                    aria-live="polite"
+                    aria-atomic="true"
+                    data-testid="cv-preflop-exposed-status"
+                  >
+                    {phase === OmahaPhase.PRE_FLOP && state?.communityCards?.length ? t('exposedNotice') : ''}
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
                       ? state.communityCards.map((card, idx) => {
-                          const inBest = showdownBest5.boardSet.has(idx);
+                          const inBest = showdownBest5.boardSet.has(idx) || liveBestBoardSet.has(idx);
                           const dim = showdownBest5.boardSet.size > 0 && !inBest;
                           return (
                             <div
@@ -367,7 +384,9 @@ function CourchevelPageContent() {
                       {tc('betting.currentBet')} {humanPlayer.currentBet}
                     </span>
                   )}
-                  {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
+                  {humanPlayer.folded && (
+                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
+                  )}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                   {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
                     <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
@@ -419,7 +438,7 @@ function CourchevelPageContent() {
                 >
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card, idx) => {
-                        const inBest = showdownBest5.holeSet.has(idx);
+                        const inBest = showdownBest5.holeSet.has(idx) || liveBestHoleSet.has(idx);
                         const showUsage = showdownBest5.holeSet.size > 0;
                         const dim = showUsage && !inBest;
                         return (
@@ -429,6 +448,7 @@ function CourchevelPageContent() {
                                 inBest ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
                               } ${dim ? 'opacity-50' : ''}`}
                               data-best5-hole={inBest || undefined}
+                              data-best5-hole-index={inBest ? idx : undefined}
                             >
                               <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
                             </div>

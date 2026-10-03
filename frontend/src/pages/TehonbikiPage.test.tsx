@@ -2,6 +2,8 @@ import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tehonbikiApi } from '../api/games/tehonbiki';
 import { useGameApi } from '../hooks/useGameApi';
+import i18n from '../i18n';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { TehonbikiResponse } from '../types/games/tehonbiki';
 import { TehonbikiPage } from './TehonbikiPage';
@@ -25,6 +27,8 @@ const base: TehonbikiResponse = {
   gameEndFlag: false,
   payoutNum: 9,
   payoutDen: 2,
+  minBet: 10,
+  maxBet: 500,
   message: '',
 };
 
@@ -66,6 +70,20 @@ describe('TehonbikiPage', () => {
     expect(screen.queryByText('single')).not.toBeInTheDocument();
   });
 
+  it('associates translated labels with the wager type and amount inputs', async () => {
+    renderWithProviders(<TehonbikiPage />);
+    expect(screen.getByRole('combobox', { name: '賭け方' })).toBeInTheDocument();
+    expect(screen.getByRole('spinbutton', { name: '張り金' })).toBeInTheDocument();
+
+    await i18n.changeLanguage('en');
+    try {
+      expect(screen.getByRole('combobox', { name: 'Wager type' })).toBeInTheDocument();
+      expect(screen.getByRole('spinbutton', { name: 'Stake' })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('summarizes the wager and clearly shows an empty number selection', async () => {
     renderWithProviders(<TehonbikiPage />);
     const summary = await screen.findByRole('status');
@@ -92,6 +110,42 @@ describe('TehonbikiPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '3' }));
     fireEvent.click(screen.getByRole('button', { name: '張る' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', { numbers: [2, 3], betType: 'double', bet: 50 }));
+  });
+
+  it('shows the legal range including the current chip balance and blocks out-of-range bets', async () => {
+    mockUseGameApi.mockReturnValue({
+      state: state({ chips: 40 }),
+      loading: false,
+      error: null,
+      exec: mockExec,
+      retry: vi.fn(),
+    } as never);
+    renderWithProviders(<TehonbikiPage />);
+    const input = screen.getByRole('spinbutton', { name: '張り金' });
+    expect(input).toHaveAttribute('min', '10');
+    expect(input).toHaveAttribute('max', '40');
+    expect(screen.getByText('賭けられる額: 10〜40チップ（残高が上限）')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '張る' })).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(screen.getByRole('button', { name: '張る' }));
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('bet', expect.anything());
+    fireEvent.change(input, { target: { value: '40' } });
+    expect(screen.getByRole('button', { name: '張る' })).toHaveAttribute('aria-disabled', 'false');
+    fireEvent.click(screen.getByRole('button', { name: '張る' }));
+    expect(mockExec).toHaveBeenCalledWith('bet', { numbers: [], betType: 'single', bet: 40 });
+  });
+
+  it('translates bet range guidance into English', async () => {
+    renderWithProviders(<TehonbikiPage />);
+    await i18n.changeLanguage('en');
+    try {
+      expect(screen.getByText('Allowed stake: 10–500 chips (limited by your balance)')).toBeInTheDocument();
+      fireEvent.change(screen.getByRole('spinbutton', { name: 'Stake' }), { target: { value: '501' } });
+      expect(screen.getByText('Enter a whole number from 10 to 500 chips.')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Place bet' })).toHaveAttribute('aria-disabled', 'true');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('shows the revealed parent card and next-round action after a result', async () => {

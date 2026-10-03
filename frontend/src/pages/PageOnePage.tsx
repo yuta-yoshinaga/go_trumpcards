@@ -306,6 +306,32 @@ function PageOnePageContent() {
                       ))}
                     </tbody>
                   </table>
+                  {state.roundHistory.length > 0 && (
+                    <table className="w-full text-sm text-ds-text-muted mt-3" data-testid="po-round-history">
+                      <thead>
+                        <tr>
+                          <th scope="col">{t('historyRound')}</th>
+                          {state.players.map((p) => (
+                            <th scope="col" key={p.id}>
+                              {playerName(p.id, p.isHuman)}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {state.roundHistory.map((round) => (
+                          <tr key={round.roundNumber}>
+                            <th scope="row">{round.roundNumber}</th>
+                            {state.players.map((p, playerIndex) => (
+                              <td className="text-center" key={p.id}>
+                                {round.scores[playerIndex] ?? 0}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               </div>
             </div>
@@ -334,7 +360,11 @@ function PageOnePageContent() {
                       type="button"
                       key={`${card.design}-${card.value}-${idx}`}
                       onClick={() => toggleCard(idx)}
-                      aria-label={playable ? `${cardAlt(card)} (${t('playableAria')})` : cardAlt(card)}
+                      aria-label={t(playable ? 'handCardPlayableAria' : 'handCardAria', {
+                        card: cardAlt(card),
+                        playable: t('playableAria'),
+                        position: idx,
+                      })}
                       aria-pressed={selectedCardIndices.includes(idx)}
                       data-playable={playable || undefined}
                       className={`transition-transform ${focusRingCard} ${

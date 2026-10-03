@@ -21,6 +21,7 @@
   "winningBid": "入札: {{bid}}",
   "bidNone": "-",
   "bidPhase": "入札フェーズ — パス／キアーモ（賭け1）／ソロ（賭け2）。",
+  "bidUnavailable": "現在の入札を上回らないため選択できません。",
   "discardPhase": "モンテ交換 — 16枚から12枚になるよう4枚を捨てます。",
   "discardPhaseRemaining": "捨て札を選択（残り {{count}} 枚）",
   "bidChiamo": "キアーモ",
@@ -61,7 +62,10 @@
   },
   "roundResult": {
     "title": "ラウンド結果",
-    "thirds": "{{name}} 取得（1/3単位）: {{thirds}}"
+    "thirds": "{{name}} 取得（1/3単位）: {{thirds}}",
+    "soloistWon": "ソリストの契約達成",
+    "soloistLost": "ソリストの契約未達",
+    "settlement": "{{name}} 今回の精算: {{change}}点"
   },
   "hintAvailable": "ヒント",
   "hint": {

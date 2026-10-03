@@ -192,10 +192,12 @@ function FreeBetPageContent() {
                   <div
                     key={`hand-${i}-${h.cards.length}-${h.score}`}
                     data-testid={`fb-hand-${i}`}
+                    aria-current={isPlayPhase && i === state.activeHand ? 'true' : undefined}
                     className={`mb-2 rounded px-2 py-1 ${
                       isPlayPhase && i === state.activeHand ? 'ring-2 ring-ds-success' : ''
                     }`}
                   >
+                    {isPlayPhase && i === state.activeHand && <span className="sr-only">{t('label.activeHand')}</span>}
                     <div className="flex justify-center gap-1 flex-wrap">
                       {h.cards.map((card, k) => (
                         <AnimatedCard key={`h${i}-${card.design}-${card.value}-${k}`} card={card} width={cardWidth} />
@@ -227,7 +229,7 @@ function FreeBetPageContent() {
 
             {isResultPhase && (
               <div className="text-center mb-2" data-testid="fb-result">
-                <div className={`text-sm font-medium ${net >= 0 ? 'text-ds-success' : 'text-ds-error'}`}>
+                <div className={`text-sm font-medium ${net >= 0 ? 'text-ds-success' : 'text-ds-error-text'}`}>
                   {t('label.net')}: {net}
                 </div>
               </div>
@@ -248,6 +250,15 @@ function FreeBetPageContent() {
               {isBetPhase && !gameOver && (
                 <div className="flex flex-col items-center gap-2" data-tutorial="fb-bet">
                   <p className="text-ds-text-muted text-sm">{t('betGuide')}</p>
+                  <div
+                    data-testid="fb-bet-summary"
+                    className="rounded bg-ds-surface-elevated px-3 py-2 text-ds-text-primary text-sm tabular-nums"
+                  >
+                    <p>{t('betSummary.balance', { amount: state.chips })}</p>
+                    <p>{t('betSummary.ante', { amount: ante })}</p>
+                    <p>{t('betSummary.remaining', { amount: state.chips - ante })}</p>
+                    <p className="text-ds-text-muted">{t('betSummary.freeBets')}</p>
+                  </div>
                   <ChipBetInput
                     id="freebet-ante"
                     label={t('label.ante')}

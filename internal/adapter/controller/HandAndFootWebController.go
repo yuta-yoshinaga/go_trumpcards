@@ -54,19 +54,33 @@ type HandAndFootWebOutputTeam struct {
 	Red3s     []*WebOutputCard            `json:"red3s"`
 }
 
+// HandAndFootWebOutputScoreBreakdown exposes the settled score by team.
+type HandAndFootWebOutputScoreBreakdown struct {
+	Team         int `json:"team"`
+	MeldCards    int `json:"meldCards"`
+	RedCanasta   int `json:"redCanasta"`
+	BlackCanasta int `json:"blackCanasta"`
+	RedThrees    int `json:"redThrees"`
+	GoingOut     int `json:"goingOut"`
+	HandPenalty  int `json:"handPenalty"`
+	FootPenalty  int `json:"footPenalty"`
+}
+
 // HandAndFootWebOutput ハンドアンドフットWebアウトプット
 type HandAndFootWebOutput struct {
-	Players          []*HandAndFootWebOutputPlayer `json:"players"`
-	Teams            []*HandAndFootWebOutputTeam   `json:"teams"`
-	Phase            int                           `json:"phase"`
-	RoundNumber      int                           `json:"roundNumber"`
-	CurrentPlayerIdx int                           `json:"currentPlayerIdx"`
-	DiscardTop       *WebOutputCard                `json:"discardTop"`
-	DrawPileCount    int                           `json:"drawPileCount"`
-	DiscardPileCount int                           `json:"discardPileCount"`
-	IsFrozen         bool                          `json:"isFrozen"`
-	GameEndFlag      bool                          `json:"gameEndFlag"`
-	WinnerTeam       int                           `json:"winnerTeam"`
+	MinMeld          int                                   `json:"minMeld"`
+	Players          []*HandAndFootWebOutputPlayer         `json:"players"`
+	Teams            []*HandAndFootWebOutputTeam           `json:"teams"`
+	ScoreBreakdown   []*HandAndFootWebOutputScoreBreakdown `json:"scoreBreakdown"`
+	Phase            int                                   `json:"phase"`
+	RoundNumber      int                                   `json:"roundNumber"`
+	CurrentPlayerIdx int                                   `json:"currentPlayerIdx"`
+	DiscardTop       *WebOutputCard                        `json:"discardTop"`
+	DrawPileCount    int                                   `json:"drawPileCount"`
+	DiscardPileCount int                                   `json:"discardPileCount"`
+	IsFrozen         bool                                  `json:"isFrozen"`
+	GameEndFlag      bool                                  `json:"gameEndFlag"`
+	WinnerTeam       int                                   `json:"winnerTeam"`
 	WebOutputBase
 	Config HandAndFootWebOutputConfig `json:"config"`
 }

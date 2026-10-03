@@ -148,6 +148,33 @@ describe('TongitsPage', () => {
     expect(screen.queryByRole('button', { name: '捨てる' })).not.toBeInTheDocument();
   });
 
+  it('announces the updated stock count only after drawing from the stock', async () => {
+    mockExec
+      .mockResolvedValueOnce(state({ phase: TongitsPhase.DRAW }))
+      .mockResolvedValueOnce(state({ phase: TongitsPhase.DISCARD, drawPileCount: 29 }));
+    renderWithProviders(<TongitsPage />);
+    const announcement = await screen.findByTestId('tongits-draw-pile-announcement');
+    expect(announcement).toBeEmptyDOMElement();
+    fireEvent.click(await screen.findByRole('button', { name: '山札から引く' }));
+    await waitFor(() => expect(announcement).toHaveTextContent('山札の残りは29枚です'));
+  });
+
+  it('does not announce stock count changes caused by another action', async () => {
+    mockExec
+      .mockResolvedValueOnce(state())
+      .mockResolvedValueOnce(state({ phase: TongitsPhase.DISCARD, drawPileCount: 29 }));
+    renderWithProviders(<TongitsPage />);
+    const announcement = await screen.findByTestId('tongits-draw-pile-announcement');
+    fireEvent.click(await screen.findByRole('button', { name: 'チャレンジ' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('challenge', undefined, undefined, undefined, undefined, undefined, [
+        true,
+        true,
+      ]),
+    );
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
   it('does not draw from the discard pile during the discard phase', async () => {
     renderWithProviders(<TongitsPage />);
     const pile = await screen.findByTestId('tongits-discard-pile');
@@ -204,5 +231,39 @@ describe('TongitsPage', () => {
     mockExec.mockResolvedValue(state({ phase: TongitsPhase.ROUND_END, roundEndReason: 3, roundWinner: -1 }));
     renderWithProviders(<TongitsPage />);
     expect(await screen.findByTestId('tongits-round-result')).toHaveTextContent('勝者: 引き分け');
+  });
+
+  it('announces round scores in the persistent live region at round end', async () => {
+    const roundEndState = state({
+      phase: TongitsPhase.ROUND_END,
+      players: state().players.map((player, index) => ({
+        ...player,
+        roundScore: index + 1,
+        cumulativeScore: 10 + index,
+      })),
+    });
+    mockExec.mockResolvedValueOnce(state()).mockResolvedValueOnce(roundEndState);
+    renderWithProviders(<TongitsPage />);
+
+    await screen.findByTestId('tongits-melds');
+    const announcement = screen.getByTestId('tongits-round-score-announcement');
+    const liveRegion = announcement.querySelector('[aria-live="polite"]');
+    expect(liveRegion).toBeInTheDocument();
+    expect(liveRegion).toBeEmptyDOMElement();
+    fireEvent.click(await screen.findByRole('button', { name: 'チャレンジ' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('challenge', undefined, undefined, undefined, undefined, undefined, [
+        true,
+        true,
+      ]),
+    );
+    await waitFor(() => {
+      expect(liveRegion).toHaveTextContent('+1');
+      expect(liveRegion).toHaveTextContent('+2');
+      expect(liveRegion).toHaveTextContent('+3');
+    });
+    expect(liveRegion).toHaveTextContent('+1');
+    expect(liveRegion).toHaveTextContent('+2');
+    expect(announcement.querySelector('[aria-live="polite"]')).toBe(liveRegion);
   });
 });

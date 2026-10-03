@@ -443,24 +443,6 @@ func (p *Binokel) cardRank(card *Card) int {
 	return 100 + base
 }
 
-// binokelCardPointValue カードのポイント値を返す
-func binokelCardPointValue(card *Card) int {
-	switch card.GetValue() {
-	case 1: // Ace
-		return 11
-	case 10:
-		return 10
-	case 13: // King
-		return 4
-	case 12: // Queen
-		return 3
-	case 11: // Jack
-		return 2
-	default: // 7
-		return 0
-	}
-}
-
 // ─── Meld Evaluation ────────────────────────────────────
 
 // evaluateBinokelMelds 手札からメルドを検出する
@@ -1395,7 +1377,7 @@ func (p *Binokel) ResolveTrick() {
 	trickPoints := 0
 	trickCards := make([]*Card, 0, BinokelPlayerCnt)
 	for _, tc := range p.currentTrick {
-		trickPoints += binokelCardPointValue(tc.Card)
+		trickPoints += AceTenCardPoints(tc.Card)
 		trickCards = append(trickCards, tc.Card)
 	}
 
@@ -1442,7 +1424,7 @@ func (p *Binokel) scoreRound() {
 	// 捨てた Dabb 3枚のカードポイントを落札者のトリック点に加算
 	dabbPoints := 0
 	for _, c := range p.dabbDiscarded {
-		dabbPoints += binokelCardPointValue(c)
+		dabbPoints += AceTenCardPoints(c)
 	}
 	p.players[p.highestBidder].AddTrickPoints(dabbPoints)
 

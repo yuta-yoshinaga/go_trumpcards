@@ -68,26 +68,12 @@ func (ki *KempsInteractor) ResetWithConfig(cfg domain.KempsConfig) string {
 
 // Swap 人間が手札の 1 枚をフィールドの 1 枚と交換する
 func (ki *KempsInteractor) Swap(handIndex, fieldIndex int) string {
-	if out, blocked := guardNotPlayable(ki.Game, ki.sp); blocked {
-		return out
-	}
-	if err := ki.Game.PlayerSwap(handIndex, fieldIndex); err != nil {
-		return ki.sp.Output(ki.Game, err)
-	}
-	ki.advanceCpu()
-	return ki.sp.Output(ki.Game, nil)
+	return humanAction(ki.Game, ki.sp, func() error { return ki.Game.PlayerSwap(handIndex, fieldIndex) }, ki.advanceCpu)
 }
 
 // Pass 人間が交換せずにパスする
 func (ki *KempsInteractor) Pass() string {
-	if out, blocked := guardNotPlayable(ki.Game, ki.sp); blocked {
-		return out
-	}
-	if err := ki.Game.PlayerPass(); err != nil {
-		return ki.sp.Output(ki.Game, err)
-	}
-	ki.advanceCpu()
-	return ki.sp.Output(ki.Game, nil)
+	return humanAction(ki.Game, ki.sp, func() error { return ki.Game.PlayerPass() }, ki.advanceCpu)
 }
 
 // SetSignal 人間が秘密のシグナル種別を設定する

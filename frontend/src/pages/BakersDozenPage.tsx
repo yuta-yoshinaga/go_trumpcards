@@ -113,6 +113,7 @@ function BakersDozenPageContent() {
     handleSelectSource,
     handleSelectTarget,
     isAutoCompleting,
+    autoCompleteStatus,
   } = useBakersDozenGame();
 
   // Card-move SFX: play `cardPlace` whenever the server confirms a successful
@@ -232,6 +233,7 @@ function BakersDozenPageContent() {
   const legalTargets = bakersDozenLegalTargets(state.tableau, state.foundation, previewedCard);
   const destinationAnnouncement = previewedCard
     ? t('destinationAnnouncement', {
+        card: cardAlt(previewedCard),
         tableau: [...legalTargets.tableau].map((col) => col + 1).join(t('listSeparator')) || t('noDestination'),
         foundation:
           [...legalTargets.foundation].map((idx) => FOUNDATION_SUITS[idx]).join(t('listSeparator')) ||
@@ -443,7 +445,7 @@ function BakersDozenPageContent() {
                                   <div
                                     data-testid={`bd-empty-column-warn-${colIdx}`}
                                     role="alert"
-                                    className="absolute inset-0 flex items-center justify-center pointer-events-none text-xs text-ds-error font-bold text-center px-1 motion-safe:animate-pulse"
+                                    className="absolute inset-0 flex items-center justify-center pointer-events-none text-xs text-ds-error-text font-bold text-center px-1 motion-safe:animate-pulse"
                                   >
                                     🚫 {t('lastCardWarning')}
                                   </div>
@@ -468,6 +470,10 @@ function BakersDozenPageContent() {
               aria-label={t('destinationStatusLabel')}
             >
               {destinationAnnouncement}
+            </div>
+
+            <div data-testid="bd-autocomplete-live" role="status" aria-live="polite" aria-atomic="true">
+              {autoCompleteStatus && <span className="sr-only">{t(`autoCompleteStatus.${autoCompleteStatus}`)}</span>}
             </div>
 
             {/* Hint display */}

@@ -101,6 +101,33 @@ describe('CometPage', () => {
     });
   });
 
+  it('shows how many leading cards are omitted when the sequence exceeds eight cards', async () => {
+    const pile = Array.from({ length: 9 }, (_, value) => ({
+      design: 'SPADE' as const,
+      value,
+      color: 'black' as const,
+    }));
+    mockExec.mockResolvedValue(makeCometState({ pile }));
+    renderWithProviders(<CometPage />);
+
+    expect(await screen.findByTestId('comet-pile-omitted')).toHaveTextContent('先頭の 1 枚を省略');
+    expect(screen.getByTestId('comet-pile').querySelectorAll('img')).toHaveLength(8);
+  });
+
+  it('does not show an omission notice for a sequence of eight cards', async () => {
+    const pile = Array.from({ length: 8 }, (_, value) => ({
+      design: 'SPADE' as const,
+      value,
+      color: 'black' as const,
+    }));
+    mockExec.mockResolvedValue(makeCometState({ pile }));
+    renderWithProviders(<CometPage />);
+
+    await screen.findByTestId('comet-pile');
+    expect(screen.queryByTestId('comet-pile-omitted')).not.toBeInTheDocument();
+    expect(screen.getByTestId('comet-pile').querySelectorAll('img')).toHaveLength(8);
+  });
+
   it('plays the card that is clicked', async () => {
     renderWithProviders(<CometPage />);
     const cards = await screen.findAllByRole('button', { name: /♠|♥|♦|♣/ });
@@ -159,6 +186,37 @@ describe('CometPage', () => {
 
     fireEvent.click(screen.getByTestId('comet-next-round'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+
+  it('shows each seat round gain alongside its cumulative score for variable seat counts', async () => {
+    const players = makeCometState().players.map((player, idx) => ({
+      ...player,
+      score: [33, 10, 8, 3, 7][idx],
+    }));
+    players.push({ id: 4, isHuman: false, cards: [], cardCount: 0, score: 7, isDealer: false });
+    mockExec.mockResolvedValue(
+      makeCometState({
+        players,
+        phase: 'roundEnd',
+        isHumanTurn: false,
+        lastResult: {
+          winnerIdx: 0,
+          cardsLeft: [0, 2, 3, 1, 4],
+          gained: [13, 0, 0, -1, 7],
+          unplayedKings: 2,
+          heldWildIdx: 3,
+        },
+        config: { cpuDifficulty: 1, players: 5, targetScore: 100 },
+      }),
+    );
+
+    renderWithProviders(<CometPage />);
+    await screen.findByTestId('comet-round-result');
+    expect(screen.getByTestId('comet-round-score-0')).toHaveTextContent('あなた: 今回 +13 点 / 累計 33 点');
+    expect(screen.getByTestId('comet-round-score-1')).toHaveTextContent('CPU 1: 今回 ±0 点 / 累計 10 点');
+    expect(screen.getByTestId('comet-round-score-2')).toHaveTextContent('CPU 2: 今回 ±0 点 / 累計 8 点');
+    expect(screen.getByTestId('comet-round-score-3')).toHaveTextContent('CPU 3: 今回 -1 点 / 累計 3 点');
+    expect(screen.getByTestId('comet-round-score-4')).toHaveTextContent('CPU 4: 今回 +7 点 / 累計 7 点');
   });
 
   it('updates cards left breakdown when values change (positive control)', async () => {

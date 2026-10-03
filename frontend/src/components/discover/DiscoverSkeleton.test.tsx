@@ -11,6 +11,7 @@ describe('DiscoverSkeleton', () => {
     render(<DiscoverSkeleton />);
     const status = screen.getByRole('status');
     expect(status).toHaveAttribute('aria-busy', 'true');
+    expect(status).toHaveAccessibleName('読み込み中…');
   });
 
   it('renders TOTAL_QUESTIONS card placeholders + 4 option rows', () => {

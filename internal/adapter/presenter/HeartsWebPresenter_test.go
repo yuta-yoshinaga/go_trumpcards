@@ -21,6 +21,7 @@ func setupHeartsWebMock() *interfaces.MockHeartsGame {
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetHeartsBroken").Return(false)
 	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
+	m.On("CurrentTrickPoints").Return(0)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.HeartsPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -93,6 +94,7 @@ func TestHeartsWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 0, resObj.LeadPlayerIdx)
 		assert.Equal(t, "", resObj.Message)
 		assert.Empty(t, resObj.CurrentTrick)
+		assert.Zero(t, resObj.TrickPoints)
 	})
 
 	t.Run("human cards shown, CPU cards hidden", func(t *testing.T) {
@@ -218,12 +220,15 @@ func TestHeartsWebPresenter_Output(t *testing.T) {
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
 		}
 		m.On("GetCurrentTrick").Return(trick)
+		m.ExpectedCalls = removeWebMockCall(m.ExpectedCalls, "CurrentTrickPoints")
+		m.On("CurrentTrickPoints").Return(-10)
 
 		result := p.Output(m, nil)
 		var resObj controller.HeartsWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 
 		assert.Len(t, resObj.CurrentTrick, 2)
+		assert.Equal(t, -10, resObj.TrickPoints)
 		assert.Equal(t, 0, resObj.CurrentTrick[0].PlayerIdx)
 		assert.Equal(t, "CLOVER", resObj.CurrentTrick[0].Card.Design)
 		assert.Equal(t, 3, resObj.CurrentTrick[0].Card.Value)

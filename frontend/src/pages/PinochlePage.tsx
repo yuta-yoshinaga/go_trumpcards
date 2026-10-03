@@ -13,6 +13,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
+import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -233,6 +234,7 @@ function PinochlePageContent() {
   const minBid = state.highestBid > 0 ? state.highestBid + 1 : 20;
   const bidInvalid = Number.isNaN(bidAmount) || bidAmount < minBid;
   const isGameEnd = phase === PinochlePhase.GAME_END || state.gameEndFlag;
+  const isRoundEnd = phase === PinochlePhase.ROUND_END || phase === PinochlePhase.GAME_END;
 
   return (
     <GamePageShell
@@ -329,35 +331,30 @@ function PinochlePageContent() {
                       {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
                     </div>
                     <div>
-                      {t('team')} {p.team} | {t('bid')}: {p.bid} | {t('meldScore')}: {p.meldScore} | {t('trickCount')}:{' '}
-                      {p.trickCount}
+                      {t('team')} {p.team} | {t('bid')}: {p.bid} | {t('meldScore')}: {p.meldScore} | {t('trickPoints')}:{' '}
+                      {p.trickPoints} | {t('trickCount')}: {p.trickCount}
                     </div>
                   </div>
                 );
               })}
             </div>
 
-            {/* Current Trick */}
-            {state.currentTrick?.length > 0 && (
-              <div className="mb-3 p-2 rounded bg-black/40" data-tutorial="pn-trick-display">
-                <div className="text-ds-text-muted text-sm mb-1">{t('table')}:</div>
-                <div className="flex gap-2 justify-center">
-                  {state.currentTrick.map((tc, i) => {
-                    const isHuman = state.players[tc.playerIdx]?.isHuman === true;
-                    return (
-                      <div key={i} className="text-center">
-                        <AnimatedCard card={tc.card} width={cardWidth * 0.8} />
-                        <div
-                          className={`text-xs mt-1 ${isHuman ? 'text-ds-accent font-semibold' : 'text-ds-text-muted'}`}
-                        >
-                          {playerName(tc.playerIdx, isHuman)}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+            {isRoundEnd && state.contractMade !== undefined && (
+              <p role="status" className="text-sm font-semibold text-ds-text-primary">
+                {state.contractMade ? t('contractMade') : t('contractFailed')}
+              </p>
             )}
+
+            {/* Current Trick */}
+            <TrickDisplay
+              currentTrick={state.currentTrick ?? []}
+              lastTrick={state.lastTrick.map(({ playerIdx, card }) => ({ playerIdx, card }))}
+              lastTrickWinner={state.lastTrickWinner}
+              players={state.players.map(({ id, isHuman, team }) => ({ id, isHuman, team }))}
+              cardWidth={cardWidth * 0.8}
+              label={`${t('table')}:`}
+              dataTutorial="pn-trick-display"
+            />
 
             {/* Meld reference: ビッド額を決める段階で「自分の手にいくら分の目が
                 あるか」を見る先がどこにも無かった (#5519)。点数はサーバが送る
@@ -579,7 +576,7 @@ function PinochlePageContent() {
                     {t('pass')}
                   </button>
                   {bidInvalid && (
-                    <p id="pinochle-bid-error" role="alert" className="text-ds-error text-xs w-full text-center">
+                    <p id="pinochle-bid-error" role="alert" className="text-ds-error-text text-xs w-full text-center">
                       {t('bidTooLow', { min: minBid })}
                     </p>
                   )}

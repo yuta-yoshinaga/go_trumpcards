@@ -23,6 +23,7 @@
     "hard": "Hard"
   },
   "round": "Round {{n}}",
+  "listSeparator": ", ",
   "drawPile": "Stock: {{count}} cards",
   "discardPile": "Discard: {{count}} cards",
   "handCards": "{{count}} cards",
@@ -56,13 +57,20 @@
   },
   "frozenIndicator": "❄️ Frozen",
   "selectMeld": "Select cards to meld",
+  "meldSelectionReason": {
+    "select": "Select cards to meld",
+    "valid": "The selected cards can be melded",
+    "validInitial": "This is a valid combination. The initial meld must meet the minimum point requirement.",
+    "invalid": "The selected cards cannot be melded"
+  },
   "result": {
     "humanWin": "You win!",
     "cpuWin": "CPU {{cpuId}} wins!"
   },
   "score": {
     "cumulative": "Total",
-    "round": "Round"
+    "round": "Round",
+    "update": "{{player}}'s round score: {{score}}"
   },
   "tutorial": {
     "drawArea": "The stock and discard area. Draw cards from here.",

@@ -5,7 +5,11 @@
   "betError": {
     "ante": "アンテは10〜10000の範囲で10単位で入力してください",
     "bonus": "{{label}}は0または10〜10000の範囲で10単位で入力してください",
-    "balance": "合計ベット{{total}}、所持チップ{{chips}}。合計ベットを所持チップ以内にしてください"
+    "balance": "合計ベット{{total}}、所持チップ{{chips}}。不足額{{shortfall}}。合計ベットを所持チップ以内にしてください"
+  },
+  "betSummary": {
+    "total": "合計ベット: {{amount}}",
+    "remaining": "ベット後の残高: {{amount}}"
   },
   "label": {
     "chips": "チップ",
@@ -39,7 +43,9 @@
     "raise": "レイズ",
     "flushBonus": "フラッシュボーナス",
     "straightFlush": "ストレートフラッシュ",
-    "total": "合計"
+    "total": "総配当",
+    "betTotal": "合計ベット",
+    "net": "差引収支"
   },
   "hintReason": {
     "raise3x": "6枚以上のフラッシュ — 3倍レイズ推奨",

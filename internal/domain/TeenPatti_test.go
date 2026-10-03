@@ -31,6 +31,14 @@ func newAllHumanTeenPatti() *domain.TeenPatti {
 	return domain.NewTeenPatti(domain.NewTrumpCards(0), players, cfg)
 }
 
+func TestTeenPatti_GetCallCost(t *testing.T) {
+	g := newTestTeenPatti(true)
+	g.SetStake(7)
+	assert.Equal(t, 7, g.GetCallCost(0), "Blind players pay the stake")
+	g.GetPlayer(0).SetSeen(true)
+	assert.Equal(t, 14, g.GetCallCost(0), "Seen players pay twice the stake")
+}
+
 func tpCard(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
 
 func tpSetHand(p *domain.TeenPattiPlayer, cards ...*domain.Card) {

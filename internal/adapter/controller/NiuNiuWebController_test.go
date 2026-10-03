@@ -26,7 +26,7 @@ func mustNiuNiuOutputJSON(msg string) string {
 }
 
 func TestNiuNiuWebController_Method(t *testing.T) {
-	mockOutput := `{"seats":[],"bankerIdx":3,"chips":1000,"lastResult":"","phase":1,"message":""}`
+	mockOutput := `{"seats":[],"bankerIdx":3,"chips":1000,"drawPileCount":32,"lastResult":"","phase":1,"message":""}`
 
 	niMock := new(usecase.MockNiuNiuInteractor)
 	niMock.On("Reset").Return(mockOutput)

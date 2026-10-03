@@ -95,6 +95,27 @@ describe('useActionKeyboardNav', () => {
     expect(action).toHaveBeenCalledTimes(1);
   });
 
+  it('uses updated bindings immediately after rerender', () => {
+    const action = vi.fn();
+    const { rerender } = renderHook(
+      ({ bindingEnabled }) => {
+        useActionKeyboardNav({
+          bindings: [{ key: 'k', action, enabled: bindingEnabled }],
+          enabled: true,
+        });
+        // Fire during the updated render, before passive effects can replace
+        // the old listener. This is the window the page can hit after a
+        // promise resolves and React commits the new UI.
+        if (!bindingEnabled) fire('k');
+      },
+      { initialProps: { bindingEnabled: true } },
+    );
+
+    rerender({ bindingEnabled: false });
+
+    expect(action).not.toHaveBeenCalled();
+  });
+
   it('blocks bound keys while a modal is open, then resumes them', () => {
     const action = vi.fn();
     renderHook(() => useActionKeyboardNav({ bindings: [{ key: 'h', action }], enabled: true }));

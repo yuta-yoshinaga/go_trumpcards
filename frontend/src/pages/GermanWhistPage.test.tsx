@@ -72,7 +72,7 @@ describe('GermanWhistPage', () => {
     renderWithProviders(<GermanWhistPage />);
     expect(await screen.findByTestId('trick-lead-suit')).toHaveTextContent('リードスート: ハート');
 
-    fireEvent.click(screen.getAllByRole('button', { name: /を出す/ })[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: /出せる札/ })[0]);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', expect.any(Number)));
     await waitFor(() => expect(screen.queryByTestId('trick-lead-suit')).not.toBeInTheDocument());
   });
@@ -81,11 +81,58 @@ describe('GermanWhistPage', () => {
     renderWithProviders(<GermanWhistPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
-    const cards = await screen.findAllByRole('button', { name: /を出す|^Play / });
+    const cards = await screen.findAllByRole('button', { name: /出せる札|^Play / });
     mockExec.mockClear();
     fireEvent.click(cards[1]);
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 1));
+  });
+
+  it('announces legal status and prevents playing an illegal card', async () => {
+    mockExec.mockResolvedValue(makeState({ validPlays: [0] }));
+    renderWithProviders(<GermanWhistPage />);
+    const playable = await screen.findByRole('button', { name: /出せる札/ });
+    const unplayable = screen.getAllByRole('button', { name: /出せない札/ })[0];
+    expect(playable).not.toHaveAttribute('aria-disabled');
+    expect(unplayable).toHaveAttribute('aria-disabled', 'true');
+    expect(document.getElementById(unplayable.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
+      'この札は現在出せません',
+    );
+    mockExec.mockClear();
+    fireEvent.click(unplayable);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
+  });
+
+  it('shows a non-color marker on legal cards', async () => {
+    mockExec.mockResolvedValue(makeState({ validPlays: [0] }));
+    renderWithProviders(<GermanWhistPage />);
+    const cards = await screen.findAllByTestId('gw-hand-card');
+    expect(cards[0].querySelector('[data-testid="gw-playable-marker"]')).toBeInTheDocument();
+    expect(cards[1].querySelector('[data-testid="gw-playable-marker"]')).not.toBeInTheDocument();
+  });
+
+  it('does not show legal markers during the CPU turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1, validPlays: [0] }));
+    renderWithProviders(<GermanWhistPage />);
+    const cards = await screen.findAllByTestId('gw-hand-card');
+    expect(cards.every((card) => !card.querySelector('[data-testid="gw-playable-marker"]'))).toBe(true);
+  });
+
+  it('hides legal markers while a play request is in flight', async () => {
+    let resolvePlay!: (state: GermanWhistResponse) => void;
+    mockExec.mockImplementation((action) => {
+      if (action === 'play')
+        return new Promise((resolve) => {
+          resolvePlay = resolve;
+        });
+      return Promise.resolve(makeState({ validPlays: [0] }));
+    });
+    renderWithProviders(<GermanWhistPage />);
+    const cards = await screen.findAllByTestId('gw-hand-card');
+    fireEvent.click(cards[0]);
+    await waitFor(() => expect(cards[0].querySelector('[data-testid="gw-playable-marker"]')).not.toBeInTheDocument());
+    resolvePlay(makeState());
   });
 
   it('gives up when the give-up button is pressed', async () => {
@@ -149,8 +196,9 @@ describe('GermanWhistPage', () => {
   it('disables the hand while it is the CPU turn', async () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
     renderWithProviders(<GermanWhistPage />);
-    const cards = await screen.findAllByRole('button', { name: /を出す/ });
+    const cards = await screen.findAllByRole('button', { name: /♠|♥|♦|♣/ });
     expect(cards[0]).toBeDisabled();
+    expect(cards[0]).toHaveAccessibleName(/を出す$/);
   });
 
   it('shows the hint when one is enabled', async () => {

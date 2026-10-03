@@ -108,7 +108,8 @@ function GoStopPageContent() {
   const isRoundEnd = state.phase === GoStopPhase.ROUND_END;
   const isGameEnd = state.phase === GoStopPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = state.isHumanTurn && !isGameEnd;
-  const humanWon = isGameEnd && state.winner === (human?.id ?? 0);
+  const isHumanWinner = (winnerId: number) => winnerId === (human?.id ?? 0);
+  const humanWon = isGameEnd && isHumanWinner(state.winner);
   const phaseName = isGameEnd
     ? t('phase.gameEnd')
     : isRoundEnd
@@ -184,7 +185,7 @@ function GoStopPageContent() {
       },
     )}`;
 
-  const winnerName = state.winner < 0 ? '' : state.winner === (human?.id ?? 0) ? t('you') : t('cpu');
+  const winnerName = (winnerId: number) => (isHumanWinner(winnerId) ? t('you') : t('cpu'));
 
   // Yaku that are a few cards from completing if the player calls Go and plays on.
   const pendingNearYaku = isDecisionPhase ? computeNearYaku(state.pendingBreakdown) : [];
@@ -274,6 +275,7 @@ function GoStopPageContent() {
                     <button
                       key={i}
                       type="button"
+                      aria-pressed={handIndex === i}
                       onClick={() => onHandClick(i)}
                       disabled={!isPlayPhase || !isHumanTurn}
                       className={`rounded transition-all ${
@@ -300,10 +302,20 @@ function GoStopPageContent() {
               )}
             </div>
 
+            <div data-testid="gostop-round-result-live" role="status" aria-live="polite" className="sr-only">
+              {state.lastRoundResult &&
+                (state.lastRoundResult.winner < 0
+                  ? t('roundResult.announcementDraw', { total: state.lastRoundResult.total })
+                  : t('roundResult.announcementWinner', {
+                      name: winnerName(state.lastRoundResult.winner),
+                      total: state.lastRoundResult.total,
+                    }))}
+            </div>
+
             {/* Go / Stop decision */}
             {isDecisionPhase && !isGameEnd && (
               <div
-                className="my-2 p-3 rounded-lg bg-black/40 text-center border border-ds-warning/60"
+                className="my-2 p-3 rounded-lg bg-ds-surface text-center border border-ds-warning/60"
                 data-testid="gostop-decision"
               >
                 <div className="text-ds-text-primary font-semibold mb-1">{t('decision.title')}</div>
@@ -349,7 +361,7 @@ function GoStopPageContent() {
                   {state.lastRoundResult.winner < 0
                     ? t('roundResult.draw')
                     : t('roundResult.winner', {
-                        name: state.lastRoundResult.winner === (human?.id ?? 0) ? t('you') : t('cpu'),
+                        name: winnerName(state.lastRoundResult.winner),
                       })}
                 </div>
                 {breakdownChips(state.lastRoundResult.breakdown)}
@@ -397,7 +409,7 @@ function GoStopPageContent() {
               <div className="my-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="gostop-result">
                 <div className="mb-1 text-ds-text-primary">{t('result.title')}</div>
                 {state.winner >= 0 && (
-                  <div className="text-ds-success mb-1">{t('result.winner', { name: winnerName })}</div>
+                  <div className="text-ds-success mb-1">{t('result.winner', { name: winnerName(state.winner) })}</div>
                 )}
                 {state.players.map((p) => (
                   <div key={p.id}>{t('result.score', { name: p.isHuman ? t('you') : t('cpu'), score: p.score })}</div>

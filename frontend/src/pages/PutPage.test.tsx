@@ -118,6 +118,30 @@ describe('PutPage', () => {
     }
   });
 
+  it('shows the trick winner badge only during trick end using the zero-based seat index', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        leadPlayerIdx: 1,
+        currentTrick: [{ playerIdx: 1, card: card('CLOVER', 4) }],
+      }),
+    );
+    const { container } = renderWithProviders(<PutPage />);
+
+    expect(await screen.findByTestId('trick-winner-badge')).toHaveTextContent('勝者');
+    expect(container.querySelector('[data-tutorial="put-trick"] [data-trick-winner="true"]')).not.toBeNull();
+  });
+
+  it('does not show the trick winner badge during normal play', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: 0, leadPlayerIdx: 1, currentTrick: [{ playerIdx: 1, card: card('CLOVER', 4) }] }),
+    );
+    const { container } = renderWithProviders(<PutPage />);
+    await screen.findByText('現在のトリック');
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
+    expect(container.querySelector('[data-tutorial="put-trick"] [data-trick-winner="true"]')).toBeNull();
+  });
+
   it('renders the collapsible card-strength reference panel', async () => {
     renderWithProviders(<PutPage />);
     await waitFor(() => expect(screen.getByTestId('put-rank-ref')).toBeInTheDocument());
@@ -205,6 +229,8 @@ describe('PutPage', () => {
     renderWithProviders(<PutPage />);
     const acceptBtn = await screen.findByRole('button', { name: '受諾' });
     expect(screen.getByRole('button', { name: '拒否' })).toBeInTheDocument();
+    expect(screen.getByText('受諾すると賭け点は 2 点になります')).toBeInTheDocument();
+    expect(screen.getByText('拒否すると宣言者が現在の賭け点 1 点を獲得します')).toBeInTheDocument();
 
     mockExec.mockClear();
     fireEvent.click(acceptBtn);

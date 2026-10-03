@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, pyramidApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { PYRAMID_STATS_KEY } from '../hooks/usePyramidStats';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, PyramidCard, PyramidResponse } from '../types/card';
@@ -85,35 +86,61 @@ beforeEach(() => {
 });
 
 describe('PyramidPage', () => {
+  it('announces the waste count when its top card receives focus', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('CLOVER', 3), card('SPADE', 13)] });
+    renderWithProviders(<PyramidPage />);
+
+    const wasteCard = await screen.findByRole('button', { name: '♠ K （単独除去可能なK）' });
+    const count = screen.getByText('2枚');
+    expect(count).toHaveAttribute('id', 'pyramid-waste-count');
+    expect(wasteCard).toHaveAttribute('aria-describedby', 'pyramid-waste-count');
+  });
+
   it('conveys blocked / selected / pair-candidate state in the card aria-labels', async () => {
     renderWithProviders(<PyramidPage />);
-    await screen.findByLabelText('♠ 10');
+    await screen.findByLabelText(/♠ 10/);
     // Top-row cards are covered by the row below → blocked.
-    expect(screen.getByRole('button', { name: '♠ K （ブロック中）' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /♠ K.*0行0列.*ブロック中/ })).toBeInTheDocument();
     // Selecting ♠10 marks it selected and makes ♦3 (sum 13) a pair candidate.
-    fireEvent.click(screen.getByLabelText('♠ 10'));
-    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 10 （選択中）' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '♦ 3 （合計13の相手）' })).toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText(/♠ 10/));
+    await waitFor(() => expect(screen.getByRole('button', { name: /♠ 10.*2行1列.*選択中/ })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /♦ 3.*2行0列.*合計13の相手/ })).toBeInTheDocument();
+  });
+
+  it('includes the zero-based row and column in pyramid card names', async () => {
+    renderWithProviders(<PyramidPage />);
+    expect(await screen.findByRole('button', { name: /♦ 3.*2行0列/ })).toBeInTheDocument();
+  });
+
+  it('announces the zero-based row and column in English', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<PyramidPage />);
+      expect(await screen.findByRole('button', { name: /♦ 3.*row 2, column 0/ })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('rings both cards of a pair hint on the board', async () => {
     renderWithProviders(<PyramidPage />);
-    await waitFor(() => expect(screen.getByLabelText('♦ 3')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByLabelText(/♦ 3/)).toBeInTheDocument());
 
     mockExec.mockResolvedValueOnce({ ...playingState, hint: { type: 'pair', row1: 2, col1: 0, row2: 2, col2: 1 } });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
-    await waitFor(() => expect(screen.getByLabelText('♦ 3')).toHaveClass('ring-ds-warning'));
-    expect(screen.getByLabelText('♠ 10')).toHaveClass('ring-ds-warning');
+    await waitFor(() => expect(screen.getByLabelText(/♦ 3/)).toHaveClass('ring-ds-warning'));
+    expect(screen.getByLabelText(/♠ 10/)).toHaveClass('ring-ds-warning');
     expect(screen.getByLabelText(/♥ K/)).not.toHaveClass('ring-ds-warning');
   });
 
   it('shows only the hint ring when a card is both hinted and a pair candidate', async () => {
     renderWithProviders(<PyramidPage />);
-    await waitFor(() => expect(screen.getByLabelText('♠ 10')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByLabelText(/♠ 10/)).toBeInTheDocument());
 
     // Select ♠10 (partner value 3) so ♦3 becomes a pair candidate…
     // (its aria-label now gains the "（合計13の相手）" suffix, so match by regex).
-    fireEvent.click(screen.getByLabelText('♠ 10'));
+    fireEvent.click(screen.getByLabelText(/♠ 10/));
     await waitFor(() => expect(screen.getByLabelText(/♦ 3/)).toHaveClass('ring-ds-success'));
 
     // …then request a hint that also targets ♦3: the hint ring must win alone.
@@ -132,7 +159,7 @@ describe('PyramidPage', () => {
     await waitFor(() => expect(screen.getByLabelText(/♥ K/)).toHaveClass('ring-ds-warning'));
 
     // Any card interaction clears the hint highlight.
-    fireEvent.click(screen.getByLabelText('♦ 3'));
+    fireEvent.click(screen.getByLabelText(/♦ 3/));
     await waitFor(() => expect(screen.getByLabelText(/♥ K/)).not.toHaveClass('ring-ds-warning'));
   });
 
@@ -345,7 +372,7 @@ describe('PyramidPage', () => {
     expect(kingButton.className).toContain('ring-ds-success');
     // The always-on King ring must not reuse the pulsing pair-candidate style.
     expect(kingButton.className).not.toContain('animate-pulse');
-    expect(kingButton).toHaveAttribute('aria-label', '♥ K （単独除去可能なK）');
+    expect(kingButton).toHaveAttribute('aria-label', '♥ K （2行2列） （単独除去可能なK）');
   });
 
   it('does not mark a covered King or a non-King exposed card as removable-alone', async () => {

@@ -94,14 +94,14 @@ func TestSchnapsen_CardPointsAndRank(t *testing.T) {
 	}
 	for _, c := range cases {
 		cd := schnCard(domain.CardDesignSpade, c.val)
-		if got := domain.SchnapsenCardPoints(cd); got != c.pts {
-			t.Errorf("SchnapsenCardPoints(val=%d) = %d, want %d", c.val, got, c.pts)
+		if got := domain.AceTenCardPoints(cd); got != c.pts {
+			t.Errorf("AceTenCardPoints(val=%d) = %d, want %d", c.val, got, c.pts)
 		}
 		if got := domain.SchnapsenRankOrder(cd); got != c.rank {
 			t.Errorf("SchnapsenRankOrder(val=%d) = %d, want %d", c.val, got, c.rank)
 		}
 	}
-	if domain.SchnapsenCardPoints(nil) != 0 || domain.SchnapsenRankOrder(nil) != 0 {
+	if domain.AceTenCardPoints(nil) != 0 || domain.SchnapsenRankOrder(nil) != 0 {
 		t.Error("nil card should return 0 for points and rank")
 	}
 }
@@ -401,22 +401,6 @@ func TestSchnapsen_NextTrick_EndsWhenHandsEmpty(t *testing.T) {
 	// Neither reached 66 -> last trick winner (lead idx 1) wins.
 	if s.GetWinnerIdx() != 1 {
 		t.Errorf("winner = %d, want 1 (last trick fallback)", s.GetWinnerIdx())
-	}
-}
-
-func TestSchnapsen_DetermineWinner(t *testing.T) {
-	cases := []struct {
-		p0, p1, last, want int
-	}{
-		{70, 30, 1, 0},
-		{30, 70, 0, 1},
-		{40, 30, 1, 1},
-		{40, 30, 0, 0},
-	}
-	for _, c := range cases {
-		if got := domain.SchnapsenDetermineWinner(c.p0, c.p1, c.last); got != c.want {
-			t.Errorf("DetermineWinner(%d,%d,%d) = %d, want %d", c.p0, c.p1, c.last, got, c.want)
-		}
 	}
 }
 

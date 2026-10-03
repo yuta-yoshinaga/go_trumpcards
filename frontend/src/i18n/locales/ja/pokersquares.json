@@ -47,10 +47,19 @@
     "straightFlush": "ストレートフラッシュ",
     "royalFlush": "ロイヤルフラッシュ"
   },
+  "scoreReference": {
+    "title": "役と得点",
+    "hand": "役",
+    "score": "得点"
+  },
   "previewRowAnnounce": "行 {{row}} が{{hand}}で完成し、{{delta}}点獲得します",
   "previewColAnnounce": "列 {{col}} が{{hand}}で完成し、{{delta}}点獲得します",
   "previewPartialPrefix": "〜",
   "previewRowPartialAnnounce": "行 {{row}} は現在{{hand}}の見込みです",
   "previewColPartialAnnounce": "列 {{col}} は現在{{hand}}の見込みです",
+  "listSeparator": "、",
+  "confirmedRowScore": "行 {{row}} は {{score}} 点",
+  "confirmedColScore": "列 {{col}} は {{score}} 点",
+  "confirmedScoreAnnounce": "{{lines}}。合計 {{total}} 点",
   "touchPlaceHint": "もう一度タップで確定"
 }

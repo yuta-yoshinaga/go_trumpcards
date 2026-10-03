@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { toepenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardBack } from '../components/CardImage';
+import { CardBack, CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -144,22 +144,41 @@ function ToepenPageContent() {
             </div>
 
             <div className="flex justify-center gap-4 mb-3">
-              {opponents.map((o) => (
-                <div key={`opp-${o.id.toString()}`} className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">
-                    {t('cpuHand', { n: o.id, count: o.cardCount })}
+              {opponents.map((o) => {
+                const revealed = ended && o.cards.length > 0;
+                return (
+                  <div key={`opp-${o.id.toString()}`} className="text-center">
+                    <div className="text-game-text-muted text-xs mb-1">
+                      {t('cpuHand', { n: o.id, count: o.cardCount })}
+                    </div>
+                    {revealed ? (
+                      <fieldset
+                        className="m-0 flex gap-1 justify-center border-0 p-0"
+                        aria-label={t('cpuHandRevealedAriaLabel', { n: o.id })}
+                      >
+                        {o.cards.map((card, i) => (
+                          <CardImage
+                            key={`opp-${o.id.toString()}-c${i.toString()}`}
+                            card={card}
+                            ariaLabel={cardAlt(card)}
+                            width={cardWidth}
+                          />
+                        ))}
+                      </fieldset>
+                    ) : (
+                      <div
+                        className="flex gap-1 justify-center"
+                        role="img"
+                        aria-label={t('cpuHandAriaLabel', { n: o.id, count: o.cardCount })}
+                      >
+                        {Array.from({ length: o.cardCount }, (_, i) => (
+                          <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <div
-                    className="flex gap-1 justify-center"
-                    role="img"
-                    aria-label={t('cpuHandAriaLabel', { n: o.id, count: o.cardCount })}
-                  >
-                    {Array.from({ length: o.cardCount }, (_, i) => (
-                      <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                    ))}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="text-center mb-4 min-h-24">
@@ -171,13 +190,22 @@ function ToepenPageContent() {
                   const player = state.players[tc2.playerIdx];
                   if (!player) return null;
                   const playerName = player.isHuman ? t('you') : t('cpu', { n: player.id });
+                  const isWinningCard = state.currentTrickWinnerIdx === tc2.playerIdx;
                   return (
                     <div
                       key={`trick-${i.toString()}`}
-                      className="flex flex-col items-center gap-1"
+                      className={`flex flex-col items-center gap-1 ${isWinningCard ? 'rounded ring-2 ring-ds-warning p-1' : ''}`}
                       data-testid="toepen-trick-card"
+                      data-winning={isWinningCard}
                     >
-                      <AnimatedCard card={tc2.card} width={cardWidth} draggable={false} />
+                      <div
+                        role="img"
+                        aria-label={
+                          isWinningCard ? `${cardAlt(tc2.card)} (${t('currentTrickWinner')})` : cardAlt(tc2.card)
+                        }
+                      >
+                        <AnimatedCard card={tc2.card} width={cardWidth} draggable={false} />
+                      </div>
                       <span className="text-xs text-ds-text-primary">{playerName}</span>
                       {player.folded && <span className="text-xs text-ds-text-muted">{t('folded')}</span>}
                     </div>

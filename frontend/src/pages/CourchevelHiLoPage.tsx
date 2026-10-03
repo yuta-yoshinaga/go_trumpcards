@@ -196,6 +196,21 @@ function CourchevelHiLoPageContent() {
           <span data-tutorial="bohl-pot-display">
             {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
           </span>
+          {(state?.sidePots?.length ?? 0) > 1 && (
+            <div className="text-xs">
+              {state?.sidePots?.map((pot, index) => (
+                <div key={index}>
+                  {t('potAwards.eligibleLine', {
+                    pot: t(index === 0 ? 'potAwards.mainPot' : 'potAwards.sidePot', { n: index }),
+                    amount: pot.amount,
+                    players: pot.eligiblePlayers
+                      .map((playerIdx) => findPlayerName(state.players, playerIdx))
+                      .join(t('listSeparator')),
+                  })}
+                </div>
+              ))}
+            </div>
+          )}
           <span>
             SB/BB:{' '}
             <strong>
@@ -342,6 +357,35 @@ function CourchevelHiLoPageContent() {
 
             {/* Round results */}
             {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
+            {isShowdown && (state?.potAwards?.length ?? 0) > 1 && (
+              <div className="mb-3 text-sm" data-testid="courchevelhilo-pot-awards">
+                {state?.potAwards?.map((award, index) => {
+                  const names = (ids: number[], payouts: number[]) =>
+                    ids
+                      .map((id, i) =>
+                        t('hiLo.winner', { name: findPlayerName(state?.players ?? [], id), amount: payouts[i] }),
+                      )
+                      .join(t('listSeparator'));
+                  const eligible = award.eligible
+                    .map((id) => findPlayerName(state?.players ?? [], id))
+                    .join(t('listSeparator'));
+                  return (
+                    <p key={index} data-testid="courchevelhilo-pot-award">
+                      {t('potAwards.winnerLine', {
+                        pot: index === 0 ? t('potAwards.mainPot') : t('potAwards.sidePot', { n: index }),
+                        amount: award.amount,
+                        eligible,
+                        hiWinners: names(award.hiWinners, award.hiPayouts),
+                        loSection:
+                          award.loWinners.length > 0
+                            ? t('potAwards.loSection', { loWinners: names(award.loWinners, award.loPayouts) })
+                            : '',
+                      })}
+                    </p>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Hi/Lo split breakdown: green Hi badges + blue Lo badges (Lo omitted when nobody qualifies) */}
             {isShowdown &&
@@ -458,7 +502,9 @@ function CourchevelHiLoPageContent() {
                       {tc('betting.currentBet')} {humanPlayer.currentBet}
                     </span>
                   )}
-                  {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
+                  {humanPlayer.folded && (
+                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
+                  )}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                   {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
                     <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
@@ -637,7 +683,11 @@ function CourchevelHiLoPageContent() {
                   </label>
                 </div>
                 {learningMode && state?.equity && state.potOdds != null && (
-                  <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
+                  <EquityDisplay
+                    equity={state.equity}
+                    potOdds={state.potOdds}
+                    lowProbability={state.equity.lowProbability}
+                  />
                 )}
                 <div className="flex items-center gap-3">
                   <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">

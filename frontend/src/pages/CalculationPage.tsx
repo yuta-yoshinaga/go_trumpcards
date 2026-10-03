@@ -334,7 +334,20 @@ function CalculationPageContent() {
 
   const phaseName = isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing');
 
-  const autoCompleteReady = state.stockCount === 0 && state.wastes.some((w) => w.length > 0) && !isEnded;
+  const hasPlayableWaste = state.wastes.some((waste) => {
+    const top = waste.at(-1);
+    if (!top) return false;
+    return state.foundations.some(
+      (foundation, idx) => calculationNextRank(idx, foundation.at(-1)?.value, foundation.length) === top.value,
+    );
+  });
+  const autoCompleteReady = state.stockCount === 0 && hasPlayableWaste && !isEnded;
+  const autoCompleteReason =
+    state.stockCount > 0
+      ? t('autoCompleteStockRemaining')
+      : !hasPlayableWaste
+        ? t('autoCompleteNoPlayableWaste')
+        : undefined;
 
   const sourceIsStock = source?.kind === 'stock';
   const isWasteSelected = (idx: number) => source?.kind === 'waste' && source.idx === idx;
@@ -483,7 +496,7 @@ function CalculationPageContent() {
                     onClick={handleSelectStock}
                     disabled={!isPlaying || loading}
                     aria-pressed={sourceIsStock}
-                    aria-label={t('stockTopAria', { card: cardAlt(state.stockTop) })}
+                    aria-label={t('stockTopAria', { card: cardAlt(state.stockTop), count: state.stockCount })}
                     data-testid="calc-stock-button"
                     className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${sourceIsStock ? 'ring-2 ring-ds-warning' : ''} ${hintStock ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
                   >
@@ -630,13 +643,23 @@ function CalculationPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={`${btnSuccess}${autoCompleteReady ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
-                    onClick={handleAutoComplete}
-                    disabled={loading || !autoCompleteReady}
+                    className={`${btnSuccess}${autoCompleteReady ? ' animate-pulse ring-2 ring-ds-success' : ''} aria-disabled:cursor-not-allowed aria-disabled:opacity-50`}
+                    onClick={() => {
+                      if (autoCompleteReady) handleAutoComplete();
+                    }}
+                    disabled={loading}
+                    aria-disabled={!autoCompleteReady || undefined}
+                    aria-describedby={autoCompleteReason ? 'calculation-autocomplete-disabled-reason' : undefined}
+                    title={autoCompleteReason}
                     data-testid="autocomplete-button"
                   >
                     {t('autoComplete')}
                   </button>
+                  {autoCompleteReason && (
+                    <span id="calculation-autocomplete-disabled-reason" className="sr-only">
+                      {autoCompleteReason}
+                    </span>
+                  )}
                   <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
                     {t('giveup')}
                   </button>

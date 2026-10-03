@@ -42,6 +42,8 @@ export interface PontoonResponse extends BaseGameResponse {
   /** While true the human banks: no stake, and they decide the draw at the end. */
   isHumanBanker: boolean;
   chips: number;
+  /** Cards not yet dealt in the current round. */
+  drawPileCount: number;
   activeSeat: number;
   activeHand: number;
   /** Seat that takes the bank next deal, or -1. */

@@ -11,6 +11,9 @@ func (l *LingerLonger) SetLeadPlayerIdxForTest(i int) { l.leadPlayerIdx = i }
 // SetCurrentTrickForTest は現在のトリックを設定する
 func (l *LingerLonger) SetCurrentTrickForTest(tc []*TrickCard) { l.currentTrick = tc }
 
+// SetLastTrickForTest は直近に解決したトリックを設定する。
+func (l *LingerLonger) SetLastTrickForTest(tc []*TrickCard) { l.lastTrick = tc }
+
 // PlayForTest は指定プレイヤーに 1 枚出させる
 func (l *LingerLonger) PlayForTest(playerIdx, cardIndex int) error {
 	return l.play(playerIdx, cardIndex)

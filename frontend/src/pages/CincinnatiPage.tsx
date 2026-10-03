@@ -33,6 +33,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { CINCINNATI_CLI_HELP, parseCincinnatiCommand } from '../utils/cli/commands/cincinnatiCommands';
 import { formatCincinnatiState } from '../utils/cli/formatters/cincinnatiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { type PokerHandRank, pokerHandKey } from '../utils/pokerSquaresUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -198,6 +199,12 @@ function CincinnatiPageContent() {
                     {seat.allIn && ` · ${t('label.allIn')}`}
                     {' · '}
                     {t('label.chips')} {seat.chips}
+                    {(isShowdown || gameOver) && (
+                      <span data-testid={`cin-net-change-${i}`}>
+                        {' · '}
+                        {t('label.netChange')} {formatSignedDelta(seat.netChange)}
+                      </span>
+                    )}
                     {seat.bet > 0 && ` · ${t('label.bet')} ${seat.bet}`}
                     {seat.wonAmount > 0 && (
                       <span data-testid={`cin-won-${i}`}> · {t('label.won', { amount: seat.wonAmount })}</span>
@@ -261,6 +268,15 @@ function CincinnatiPageContent() {
             <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="cin-actions">
               {canAct && (
                 <>
+                  <p className="text-ds-text-muted text-sm" data-testid="cin-call-pot-ratio">
+                    {state.toCall === 0
+                      ? t('label.callPotRatio', { percentage: 0 })
+                      : state.pot === 0
+                        ? t('label.callPotRatioUnavailable')
+                        : t('label.callPotRatio', {
+                            percentage: Math.round((state.toCall / state.pot) * 100),
+                          })}
+                  </p>
                   <p className="text-ds-text-muted text-sm" data-testid="cin-bet-guide">
                     {facingBet ? t('label.toCall', { amount: state.toCall }) : t('label.canCheck')}
                   </p>

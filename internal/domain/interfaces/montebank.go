@@ -39,7 +39,7 @@ type MonteBankGame interface {
 
 	// SuitCountInLayout 場札に指定スートが何枚出ているか
 	SuitCountInLayout(design int) int
-	// RemainingOfSuit 場札を除いた残りに指定スートが何枚あるか
+	// RemainingOfSuit 山に残っている指定スートが何枚あるか
 	RemainingOfSuit(design int) int
 
 	// GetChips 保有チップ数

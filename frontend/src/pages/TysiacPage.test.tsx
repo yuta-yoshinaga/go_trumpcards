@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tysiacApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeTysiacState } from '../test/stateFactories';
 import { TysiacPage } from './TysiacPage';
@@ -77,6 +78,23 @@ describe('TysiacPage', () => {
     });
     // The human (seat 0) is the default Declarer.
     expect(screen.getByText('デクレアラー')).toBeInTheDocument();
+  });
+
+  it('marks only the dealer seat independently from the Declarer seat', async () => {
+    const previousLanguage = i18n.language;
+    renderWithProviders(<TysiacPage />);
+    await waitFor(() => expect(screen.getByTestId('tysiac-dealer-2')).toBeInTheDocument());
+
+    expect(screen.getByTestId('tysiac-dealer-2')).toHaveTextContent('◆');
+    expect(screen.getByTestId('tysiac-dealer-2')).toHaveTextContent('ディーラー');
+    expect(screen.queryByTestId('tysiac-dealer-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('tysiac-dealer-1')).not.toBeInTheDocument();
+    expect(screen.getByTestId('tysiac-declarer-0')).toHaveTextContent('デクレアラー');
+
+    await i18n.changeLanguage('en');
+    expect(screen.getByTestId('tysiac-dealer-2')).toHaveTextContent('Dealer');
+    expect(screen.getByTestId('tysiac-declarer-0')).toHaveTextContent('Declarer');
+    await i18n.changeLanguage(previousLanguage);
   });
 
   it('shows a marriage banner during play (trump-suit K-Q ♥ scores +100)', async () => {
@@ -303,6 +321,30 @@ describe('TysiacPage', () => {
     renderWithProviders(<TysiacPage />);
     const banner = await screen.findByTestId('tysiac-marriage');
     expect(banner.textContent).toMatch(/リード/);
+  });
+
+  it('announces marriage candidates and the no-candidate state in the persistent prompt live region', async () => {
+    const noMarriageState = makeTysiacState({
+      players: [
+        { ...playPhaseState.players[0], cards: [{ design: 'SPADE', value: 1 }] },
+        ...playPhaseState.players.slice(1),
+      ],
+    });
+    mockExec.mockResolvedValueOnce(playPhaseState).mockResolvedValueOnce(noMarriageState);
+    renderWithProviders(<TysiacPage />);
+
+    const live = await screen.findByTestId('tysiac-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(await screen.findByTestId('tysiac-marriage-announcement')).toHaveTextContent('♥ K-Q (+100)');
+
+    fireEvent.click(await screen.findByAltText('♥ Q'));
+    fireEvent.click(await screen.findByRole('button', { name: '出す' }));
+
+    expect(await screen.findByTestId('tysiac-marriage-announcement')).toHaveTextContent('マリッジ候補なし');
+    expect(screen.getByTestId('tysiac-prompt-live')).toContainElement(
+      screen.getByTestId('tysiac-marriage-announcement'),
+    );
   });
 
   // **催促は常設のライブ領域の中にある (#6880)。** フェーズ切り替えで現れる

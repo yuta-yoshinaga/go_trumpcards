@@ -63,12 +63,18 @@ type CalabresellaGame interface {
 	GetSoloistIdx() int
 	// GetWinningBid 確定ビッドを取得する
 	GetWinningBid() domain.CalabresellaBid
+	// GetHighestBid 現在までに宣言された最高ビッドを取得する
+	GetHighestBid() domain.CalabresellaBid
 	// GetCurrentBidderIdx 現在のビッド手番インデックスを取得する
 	GetCurrentBidderIdx() int
 	// GetPlayerScores プレイヤー別累積点を取得する
 	GetPlayerScores() [domain.CalabresellaPlayerCnt]int
 	// GetRoundThirds 現ラウンドのプレイヤー別 1/3 点を取得する
 	GetRoundThirds() [domain.CalabresellaPlayerCnt]int
+	// GetRoundScoreChanges 直近ラウンドの精算点を取得する
+	GetRoundScoreChanges() [domain.CalabresellaPlayerCnt]int
+	// GetSoloistWon 直近ラウンドでソリストが勝ったかを取得する
+	GetSoloistWon() bool
 	// GetWinnerPlayer 勝利プレイヤーを取得する (-1=未確定)
 	GetWinnerPlayer() int
 	// GetPlayerCnt プレイヤー数を取得する

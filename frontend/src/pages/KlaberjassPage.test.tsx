@@ -50,6 +50,7 @@ function makeState(overrides?: Partial<KlaberjassResponse>): KlaberjassResponse 
     trick: [],
     trickLeaderIdx: 0,
     trickNumber: 0,
+    trickHistory: [],
     validPlays: [0, 1, 2],
     sequenceWinner: -1,
     lastTrickWinner: -1,
@@ -94,6 +95,24 @@ describe('KlaberjassPage', () => {
     expect(ladder).toHaveTextContent('A (11)');
     // シーケンスは点数順ではないという注意書きも出す。
     expect(ladder).toHaveTextContent(/7-8-9-10-J-Q-K-A/);
+  });
+
+  it('lists completed tricks separately from the current trick', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        trickHistory: [
+          { winnerIdx: 1, points: 24 },
+          { winnerIdx: 0, points: 17 },
+        ],
+        trick: [card('HEART', 10)],
+      }),
+    );
+    renderWithProviders(<KlaberjassPage />);
+    await waitFor(() => expect(screen.getByTestId('klaberjass-trick-history')).toBeInTheDocument());
+    expect(screen.getByTestId('klaberjass-trick-history')).toHaveTextContent('CPU 1が24点を獲得');
+    expect(screen.getByTestId('klaberjass-trick-history')).toHaveTextContent('あなたが17点を獲得');
+    expect(screen.getByTestId('klaberjass-trick')).toBeInTheDocument();
+    expect(screen.getByTestId('klaberjass-trick')).toHaveTextContent('進行中のトリック');
   });
 
   it('plays exactly one card', async () => {
@@ -213,13 +232,25 @@ describe('KlaberjassPage', () => {
       makeState({
         phase: KlaberjassPhase.HAND_END,
         players: [
-          seat(0, true, { cardPoints: 42, sequencePoints: 20, belaPoints: 20, lastTrickPoints: 10, handPoints: 92 }),
-          seat(1, false, { cardPoints: 31, handPoints: 31 }),
+          seat(0, true, {
+            cardPoints: 42,
+            sequencePoints: 20,
+            belaPoints: 20,
+            lastTrickPoints: 10,
+            handPoints: 92,
+            score: 192,
+          }),
+          seat(1, false, { cardPoints: 31, handPoints: 31, score: 131 }),
         ],
       }),
     );
     renderWithProviders(<KlaberjassPage />);
     await waitFor(() => expect(screen.getAllByTestId('klaberjass-points-breakdown')).toHaveLength(2));
+    const settlement = screen.getByTestId('klaberjass-settlement');
+    expect(settlement.querySelector('h2')).toHaveTextContent('精算');
+    expect(settlement.querySelectorAll('ul > li')).toHaveLength(2);
+    expect(settlement).toHaveTextContent('更新後の通算 192');
+    expect(settlement).toHaveTextContent('更新後の通算 131');
     expect(screen.getAllByTestId('klaberjass-points-breakdown')[0]).toHaveTextContent(
       'カード 42、シーケンス 20、ベラ 20、最終トリック 10、合計 92',
     );
@@ -298,6 +329,47 @@ describe('KlaberjassPage', () => {
       await waitFor(() => expect(screen.getByTestId('klaberjass-settlement')).toBeInTheDocument());
       expect(screen.queryByTestId('klaberjass-last-trick-bonus')).not.toBeInTheDocument();
     });
+  });
+
+  it('announces each deal settlement once and keeps the live region mounted', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: KlaberjassPhase.HAND_END,
+        players: [seat(0, true, { handPoints: 20, score: 120 }), seat(1, false, { handPoints: 15, score: 95 })],
+      }),
+    );
+    renderWithProviders(<KlaberjassPage />);
+    const announcement = await screen.findByTestId('klaberjass-settlement-announcement');
+    await waitFor(() => expect(announcement).toHaveTextContent('更新後の通算 120'));
+    expect(announcement).toHaveTextContent('更新後の通算 95');
+
+    // A refreshed response for the same settlement must not replace/re-announce it.
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: KlaberjassPhase.HAND_END,
+        players: [seat(0, true, { handPoints: 30, score: 130 }), seat(1, false, { handPoints: 25, score: 105 })],
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: '次のディールへ' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
+    await waitFor(() =>
+      expect(screen.getByTestId('klaberjass-settlement-announcement')).toHaveTextContent('更新後の通算 120'),
+    );
+    expect(screen.getByTestId('klaberjass-settlement-announcement')).not.toHaveTextContent('更新後の通算 130');
+    expect(screen.getAllByRole('status')).toHaveLength(1);
+
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: KlaberjassPhase.HAND_END,
+        dealNumber: 2,
+        players: [seat(0, true, { handPoints: 40, score: 170 }), seat(1, false, { handPoints: 35, score: 140 })],
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: '次のディールへ' }));
+    await waitFor(() =>
+      expect(screen.getByTestId('klaberjass-settlement-announcement')).toHaveTextContent('更新後の通算 170'),
+    );
+    expect(screen.getByTestId('klaberjass-settlement-announcement')).toHaveTextContent('更新後の通算 140');
   });
   // **リングは目にしか届かない。**どの札を選んでいるかを音声でも確かめられないと、
   // 出す前に選択内容を検証できない (#6523)。姉妹ページ (Poch / PopeJoan /

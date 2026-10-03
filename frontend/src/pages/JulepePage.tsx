@@ -274,6 +274,24 @@ function JulepePageContent() {
                 label={t('currentTrick')}
               />
             </div>
+            <div data-testid="rm-last-trick">
+              <TrickDisplay
+                currentTrick={state.lastTrick}
+                players={state.players}
+                cardWidth={cardWidth}
+                label={t('lastTrick')}
+              />
+              {state.lastTrickWinner >= 0 && (
+                <p className="text-center text-sm text-ds-text-muted" data-testid="rm-last-trick-winner">
+                  {t('lastTrickWinner', {
+                    name:
+                      state.lastTrickWinner === 0
+                        ? t('header.you')
+                        : t('header.cpu', { idx: String(state.lastTrickWinner) }),
+                  })}
+                </p>
+              )}
+            </div>
 
             {resultBanner && (
               <div className="text-center text-xl my-4 text-ds-accent font-semibold" role="status">
@@ -311,7 +329,9 @@ function JulepePageContent() {
                       type="button"
                       onClick={() => handlePlayCard(idx)}
                       disabled={loading || !isHumanTurn}
-                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
+                      aria-label={t(legalRing.has(idx) ? 'actions.playableAria' : 'actions.playAria', {
+                        card: cardAlt(card),
+                      })}
                       className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
                     >
                       <CardImage card={card} width={cardWidth} />

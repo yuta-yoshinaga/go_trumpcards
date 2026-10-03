@@ -21,7 +21,7 @@
   "promptDraw": "c to take a card / s to stand pat",
   "promptResult": "n for the next round",
   "promptHelp": "help for the command list",
-  "gameEnd": "Game over: Player {{player}} wins",
+  "gameEnd": "Game over: {{name}} won",
   "takeCard": "take a card",
   "stand": "stand pat",
   "result.carry": "Everyone busted both ways. Pot {{pot}} carries over (carry #{{count}})",

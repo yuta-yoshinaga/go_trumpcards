@@ -19,6 +19,7 @@ export interface EgyptianRatscrewResponse extends BaseGameResponse {
   isHumanTurn: boolean;
   isTopFaceCard: boolean;
   isSlappable: boolean;
+  slappableReason: number;
   centerPileSize: number;
   topCard?: Card | null;
   players: EgyptianRatscrewPlayerData[];

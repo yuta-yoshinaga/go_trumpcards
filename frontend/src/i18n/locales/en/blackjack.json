@@ -13,8 +13,12 @@
   "deckUnit_other": "{{count}} decks",
   "dealerHand": "Dealer Hand",
   "score": "Score",
+  "hitAnnouncement": "Drew {{card}}. Current score: {{score}}.",
+  "dealerFinalScore": "The dealer's final score is {{score}}.",
+  "dealerBust": "The dealer busted.",
   "playerHand": "Player Hand",
   "hand": "Hand {{idx}}",
+  "currentHand": "Current Hand",
   "insurance": "Insurance:",
   "suggestion": "Suggested:",
   "suggest": {
@@ -132,5 +136,11 @@
     "decline": "N",
     "earlySurrender": "U",
     "continue": "N"
+  },
+  "handResult": {
+    "win": "Win",
+    "lose": "Loss",
+    "push": "Push",
+    "chips": "chips"
   }
 }

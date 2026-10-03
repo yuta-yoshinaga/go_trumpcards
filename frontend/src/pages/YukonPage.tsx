@@ -31,7 +31,7 @@ import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { YukonResponse } from '../types/card';
+import type { Card, YukonResponse } from '../types/card';
 import { YukonPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -397,6 +397,14 @@ function YukonPageContent() {
               {state.tableau.map((col, colIdx) => (
                 <div key={colIdx} className="flex flex-col items-center" style={{ width: yk.cw }}>
                   <div className="text-game-text-muted text-xs mb-1">{colIdx}</div>
+                  {(() => {
+                    const faceDownCount = col.filter((card) => !card.faceUp).length;
+                    return faceDownCount > 0 ? (
+                      <span className="sr-only">
+                        {t('faceDownCountAria', { column: colIdx, count: faceDownCount })}
+                      </span>
+                    ) : null;
+                  })()}
                   {col.length === 0 ? (
                     <DropZone
                       onDrop={dnd.handleDrop({ zone: 'tableau', col: colIdx })}
@@ -497,7 +505,7 @@ function YukonPageContent() {
                                         }
                                       }}
                                       disabled={!isPlaying}
-                                      aria-label={`${tc.card ? cardAlt(tc.card) : ''}${hintAria}`}
+                                      aria-label={`${cardAlt(tc.card as Card)}${isSelected ? ` ${t('selectedMoveCount', { count: col.length - cardIdx })}` : ''}${hintAria}`}
                                     >
                                       {tc.card && <AnimatedCard card={tc.card} width={yk.cw} />}
                                     </button>

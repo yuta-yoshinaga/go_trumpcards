@@ -1,4 +1,4 @@
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 
 /** Shared trick-taking command aliases used by Spades, Euchre, Napoleon, OhHell, Bridge, Pinochle. */
 const TRICK_COMMANDS = ['p', 'play', 'n', 'next', 'nr', 'nextround', 'h', 'hint', 'r', 'reset', 'help', '?'];
@@ -39,11 +39,8 @@ export function parseTrickCommand(
     case 'r':
     case 'reset':
       return { command: 'reset' };
-    default: {
-      const suggestion = suggestCommand(cmd, allCommands);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, allCommands);
   }
 }
 

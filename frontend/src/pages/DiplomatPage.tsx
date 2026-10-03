@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { diplomatApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -85,6 +85,15 @@ function DiplomatPageContent() {
   } = useGamePageSetup('diplomat');
   const game = useDiplomatGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
+  const wasAutoCompleting = useRef(isAutoCompleting);
+  const [autoCompleteAnnouncement, setAutoCompleteAnnouncement] = useState('');
+
+  useEffect(() => {
+    if (wasAutoCompleting.current !== isAutoCompleting) {
+      wasAutoCompleting.current = isAutoCompleting;
+      setAutoCompleteAnnouncement(isAutoCompleting ? 'autoCompleteStarted' : 'autoCompleteCompleted');
+    }
+  }, [isAutoCompleting]);
 
   const {
     hint: frontendHint,
@@ -405,12 +414,16 @@ function DiplomatPageContent() {
                 </div>
                 <div className="text-center">
                   <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
+                  <div id="diplomat-waste-count" className="text-game-text-muted text-xs mb-1">
+                    {t('wasteCount', { count: state.waste.length })}
+                  </div>
                   {wasteTop ? (
                     <button
                       type="button"
                       onClick={() => game.handleSelectSource(wasteZone)}
                       disabled={!isPlaying || loading}
                       aria-label={cardAlt(wasteTop)}
+                      aria-describedby="diplomat-waste-count"
                       aria-pressed={isSourceSelected('waste', undefined)}
                       draggable={isPlaying && !loading}
                       onDragStart={dnd.handleDragStart(wasteZone)}
@@ -423,6 +436,7 @@ function DiplomatPageContent() {
                     <div
                       role="img"
                       aria-label={t('emptyWasteAriaLabel')}
+                      aria-describedby="diplomat-waste-count"
                       style={{ width: dims.cw, height: dims.ch }}
                       className="rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
                     >
@@ -452,6 +466,9 @@ function DiplomatPageContent() {
                   {formatHintZone(t, hint.toZone, hint.toIdx)}
                 </div>
               )}
+            </div>
+            <div data-testid="diplomat-autocomplete-live" className="sr-only" role="status" aria-live="polite">
+              {autoCompleteAnnouncement ? t(autoCompleteAnnouncement) : ''}
             </div>
             <div className="flex justify-center">
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />

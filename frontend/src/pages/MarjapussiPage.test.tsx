@@ -47,6 +47,45 @@ beforeEach(() => {
 });
 
 describe('MarjapussiPage', () => {
+  it('announces the matching follow restriction on illegal cards only', async () => {
+    mockExec.mockResolvedValue(
+      makeMarjapussiState({
+        trumpSuit: 3,
+        currentTrick: [{ playerIdx: 1, card: { design: 'HEART', value: 10 } }],
+        playableIndices: [0, 1],
+      }),
+    );
+    const firstRender = renderWithProviders(<MarjapussiPage />);
+    const restrictedBySuit = await screen.findByAltText('♠ A');
+    expect(restrictedBySuit.closest('button')).toHaveAttribute('aria-disabled', 'true');
+    expect(restrictedBySuit.closest('button')).toHaveAccessibleName(/♠ A.*リードスートに従ってください/);
+    expect(screen.getByRole('button', { name: '♥ Q' })).not.toHaveAttribute('aria-disabled');
+    firstRender.unmount();
+
+    mockExec.mockResolvedValue(
+      makeMarjapussiState({
+        trumpSuit: 1,
+        currentTrick: [{ playerIdx: 1, card: { design: 'HEART', value: 10 } }],
+        players: [
+          {
+            ...makeMarjapussiState().players[0],
+            cards: [
+              { design: 'SPADE', value: 1 },
+              { design: 'CLOVER', value: 9 },
+            ],
+          },
+          ...makeMarjapussiState().players.slice(1),
+        ],
+        playableIndices: [0],
+      }),
+    );
+    const { unmount } = renderWithProviders(<MarjapussiPage />);
+    const discard = await screen.findByAltText('♣ 9');
+    expect(discard.closest('button')).toHaveAttribute('aria-disabled', 'true');
+    expect(discard.closest('button')).toHaveAccessibleName(/♣ 9.*切り札を出してください/);
+    unmount();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<MarjapussiPage />);
@@ -285,5 +324,56 @@ describe('MarjapussiPage', () => {
     expect(live).toHaveAttribute('role', 'status');
     expect(live).toHaveAttribute('aria-live', 'polite');
     expect(live).toContainElement(await screen.findByTestId('marjapussi-play-prompt'));
+  });
+
+  it('does not announce team scores on the first render', async () => {
+    renderWithProviders(<MarjapussiPage />);
+
+    const live = await screen.findByTestId('marjapussi-score-live');
+    await screen.findByAltText('♥ Q');
+    expect(live).toBeEmptyDOMElement();
+  });
+
+  it('does not announce team scores when a response keeps both scores unchanged', async () => {
+    const unchangedScores = makeMarjapussiState({ teamScores: [100, 200] });
+    mockExec.mockResolvedValueOnce(unchangedScores).mockResolvedValueOnce(unchangedScores);
+    renderWithProviders(<MarjapussiPage />);
+
+    const live = await screen.findByTestId('marjapussi-score-live');
+    fireEvent.click(await screen.findByAltText('♥ Q'));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
+    expect(live).toBeEmptyDOMElement();
+  });
+
+  it('announces the team label and new score when one team score changes', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeMarjapussiState({ teamScores: [100, 200] }))
+      .mockResolvedValueOnce(makeMarjapussiState({ teamScores: [125, 200] }));
+    renderWithProviders(<MarjapussiPage />);
+
+    fireEvent.click(await screen.findByAltText('♥ Q'));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('marjapussi-score-live')).toHaveTextContent('チーム 0（あなた & CPU 2） の得点: 125点');
+    });
+  });
+
+  it('announces both team scores when both change in one update', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeMarjapussiState({ teamScores: [100, 200] }))
+      .mockResolvedValueOnce(makeMarjapussiState({ teamScores: [125, 225] }));
+    renderWithProviders(<MarjapussiPage />);
+
+    fireEvent.click(await screen.findByAltText('♥ Q'));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('marjapussi-score-live')).toHaveTextContent(
+        'チーム 0（あなた & CPU 2） の得点: 125点、チーム 1（CPU 1 & CPU 3） の得点: 225点',
+      );
+    });
   });
 });

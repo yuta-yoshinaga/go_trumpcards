@@ -77,6 +77,29 @@ describe('QuinzePage', () => {
     expect(screen.getByText(/目標: 15/)).toBeInTheDocument();
   });
 
+  it('announces the active player seat as the current turn', async () => {
+    mockExec.mockResolvedValue(makeState({ activeSeat: 2 }));
+    renderWithProviders(<QuinzePage />);
+
+    const currentSeat = await screen.findByRole('group', { name: /CPU2.*あなたの手番/ });
+    expect(screen.getAllByRole('group', { name: /あなたの手番/ })).toHaveLength(1);
+    expect(currentSeat).toHaveAttribute('aria-current', 'true');
+    expect(screen.getByRole('group', { name: 'あなた' })).not.toHaveAttribute('aria-current');
+  });
+
+  it.each([
+    ['betting', bettingState],
+    ['banker turn', makeState({ phase: 3, isHumanBanker: true, bankerIdx: 0 })],
+    ['round end', makeState({ phase: 4 })],
+  ])('does not mark a player seat current during %s', async (_phase, state) => {
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<QuinzePage />);
+
+    await screen.findByTestId('phase-indicator');
+    expect(screen.queryAllByRole('group', { name: /あなたの手番/ })).toHaveLength(0);
+    expect(screen.getAllByRole('group').every((seat) => !seat.hasAttribute('aria-current'))).toBe(true);
+  });
+
   // The server withholds a hidden hand's cards; the page renders backs from
   // `hidden` rather than deciding for itself what may be seen.
   it('renders a hand the server marked hidden as backs', async () => {
@@ -179,7 +202,16 @@ describe('QuinzePage', () => {
       }),
     );
     renderWithProviders(<QuinzePage />);
-    await waitFor(() => expect(screen.getByText(/\+100/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/^\s*\+100\s*$/)).toBeInTheDocument());
+    const handImage = screen.getByRole('img', { name: /あなた.*15/ });
+    expect(handImage).toHaveAttribute('aria-describedby');
+    expect(document.getElementById(handImage.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
+      'プレイヤー席、賭け金100、払戻額+100、勝ち',
+    );
+    const bankerImage = screen.getByRole('img', { name: /親の手 合計/ });
+    expect(document.getElementById(bankerImage.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
+      '親席、精算 -100',
+    );
   });
 
   it('marks a losing payout as an error after the round', async () => {
@@ -192,8 +224,12 @@ describe('QuinzePage', () => {
     );
     renderWithProviders(<QuinzePage />);
     const payout = await screen.findByText('-100');
-    expect(payout).toHaveClass('text-ds-error');
+    expect(payout).toHaveClass('text-ds-error-text');
     expect(payout).not.toHaveClass('text-ds-success');
+    const handImage = screen.getByRole('img', { name: /あなた.*15/ });
+    expect(document.getElementById(handImage.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
+      'プレイヤー席、賭け金100、払戻額-100、負け',
+    );
   });
 
   it('swaps the board for a terminal when CLI mode is toggled', async () => {

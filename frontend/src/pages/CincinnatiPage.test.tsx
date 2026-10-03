@@ -36,6 +36,7 @@ const seat = (over: Partial<CincinnatiResponse['seats'][number]> = {}) =>
     name: 'YOU',
     isHuman: true,
     chips: 1000,
+    netChange: 0,
     bet: 0,
     cards: hand(),
     folded: false,
@@ -84,6 +85,24 @@ beforeEach(() => {
 });
 
 describe('CincinnatiPage', () => {
+  it('ショーダウンで各席の符号付きチップ増減を表示する', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: CincinnatiPhase.SHOWDOWN,
+        isHumanTurn: false,
+        seats: [
+          seat({ netChange: 45 }),
+          seat({ name: 'CPU1', isHuman: false, cards: [], isTurn: false, netChange: -45 }),
+          seat({ name: 'CPU2', isHuman: false, cards: [], isTurn: false, netChange: 0 }),
+        ],
+      }),
+    );
+    renderWithProviders(<CincinnatiPage />);
+    await waitFor(() => expect(screen.getByTestId('cin-net-change-0')).toHaveTextContent('+45'));
+    expect(screen.getByTestId('cin-net-change-1')).toHaveTextContent('-45');
+    expect(screen.getByTestId('cin-net-change-2')).toHaveTextContent('±0');
+  });
+
   it('マウント時に reset を呼ぶ', async () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<CincinnatiPage />);
@@ -141,6 +160,25 @@ describe('CincinnatiPage', () => {
     await waitFor(() => expect(screen.getByTestId('cin-call')).toBeInTheDocument());
     expect(screen.queryByTestId('cin-check')).not.toBeInTheDocument();
     expect(screen.getByTestId('cin-raise')).toBeInTheDocument();
+  });
+
+  it('人間のベット手番でコール額のポット比を状態に追従させ、ゼロ値も定義する', async () => {
+    mockApi.mockResolvedValueOnce(withState({ toCall: 20, pot: 40, currentBet: 20 }));
+    mockApi.mockResolvedValueOnce(withState({ toCall: 15, pot: 75, currentBet: 20 }));
+    const { unmount } = renderWithProviders(<CincinnatiPage />);
+    expect(await screen.findByTestId('cin-call-pot-ratio')).toHaveTextContent('50%');
+    fireEvent.click(screen.getByTestId('cin-call'));
+    await waitFor(() => expect(screen.getByTestId('cin-call-pot-ratio')).toHaveTextContent('20%'));
+    unmount();
+
+    mockApi.mockResolvedValue(withState({ toCall: 0, pot: 40 }));
+    const zeroCall = renderWithProviders(<CincinnatiPage />);
+    expect(await screen.findByTestId('cin-call-pot-ratio')).toHaveTextContent('0%');
+    zeroCall.unmount();
+
+    mockApi.mockResolvedValue(withState({ toCall: 20, pot: 0, currentBet: 20 }));
+    renderWithProviders(<CincinnatiPage />);
+    expect(await screen.findByTestId('cin-call-pot-ratio')).toHaveTextContent('算出できません');
   });
 
   // **レイズの可否はサーバが決める。** 上限に達したら出さない。

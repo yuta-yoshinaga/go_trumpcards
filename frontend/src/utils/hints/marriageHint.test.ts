@@ -32,6 +32,7 @@ function makeState(overrides: Partial<MarriageResponse> = {}): MarriageResponse 
     currentPlayerIdx: 0,
     dealerIdx: 0,
     discardTop: null,
+    discardPile: [],
     drawPileCount: 40,
     wildJoker: null,
     wildRank: 0,

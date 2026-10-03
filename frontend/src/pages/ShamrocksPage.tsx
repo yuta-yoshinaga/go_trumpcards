@@ -17,6 +17,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useShamrocksStats } from '../hooks/useShamrocksStats';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card } from '../types/card';
@@ -79,12 +80,19 @@ function ShamrocksPageContent() {
   }, [exec]);
   const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
   const [selected, setSelected] = useState<number | null>(null);
+  const { stats, recordClear, markPlaying, resetStats } = useShamrocksStats();
   // Whether the last hint's suggested move is currently highlighted on the board.
   // The move coordinates themselves come from `state.hint` (set by the server on a
   // `hint` command); this flag just gates the rings so they only show after the
   // player asks for a hint, then auto-dismiss.
   const [showHint, setShowHint] = useState(false);
   const hintTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!state) return;
+    if (state.phase === ShamrocksPhase.GAME_CLEAR && !stats.clearRecorded) recordClear(state.moveCount);
+    if (state.phase === ShamrocksPhase.PLAYING && stats.clearRecorded) markPlaying();
+  }, [state, stats.clearRecorded, recordClear, markPlaying]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useEffect(() => {
@@ -257,25 +265,33 @@ function ShamrocksPageContent() {
             data-testid="ll-foundation-row"
             data-hint-foundation={hintFoundation ? 'true' : undefined}
           >
-            {state.foundation.map((pile, i) => (
-              <button
-                type="button"
-                key={`fnd-${i}`}
-                className={`rounded ${foundationAcceptsSelected(pile) ? 'ring-1 ring-ds-success cursor-pointer' : ''}`}
-                onClick={foundationAcceptsSelected(pile) ? sendToFoundation : undefined}
-                disabled={!canAct || !foundationAcceptsSelected(pile)}
-                data-testid={`foundation-${i}`}
-              >
-                {pile.length > 0 ? (
-                  <CardImage card={pile[pile.length - 1]} width={w} />
-                ) : (
-                  <div
-                    className="rounded border border-dashed border-white/25 bg-black/20"
-                    style={{ width: w, height: Math.round(w * 1.4) }}
-                  />
-                )}
-              </button>
-            ))}
+            {state.foundation.map((pile, i) => {
+              const topCard = pile.at(-1);
+              return (
+                <button
+                  type="button"
+                  key={`fnd-${i}`}
+                  className={`rounded ${foundationAcceptsSelected(pile) ? 'ring-1 ring-ds-success cursor-pointer' : ''}`}
+                  onClick={foundationAcceptsSelected(pile) ? sendToFoundation : undefined}
+                  disabled={!canAct || !foundationAcceptsSelected(pile)}
+                  aria-label={
+                    topCard
+                      ? t('foundationAriaLabel', { card: cardAlt(topCard) })
+                      : t('emptyFoundationAriaLabel', { index: i })
+                  }
+                  data-testid={`foundation-${i}`}
+                >
+                  {topCard ? (
+                    <CardImage card={topCard} width={w} />
+                  ) : (
+                    <div
+                      className="rounded border border-dashed border-white/25 bg-black/20"
+                      style={{ width: w, height: Math.round(w * 1.4) }}
+                    />
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -285,9 +301,20 @@ function ShamrocksPageContent() {
         </div>
 
         <div className="mt-2 text-ds-text-muted text-xs">{t('moveCount', { count: state.moveCount })}</div>
+        <section
+          aria-label={t('stats.title')}
+          className="my-3 rounded-lg bg-ds-surface p-3 text-sm text-ds-text-primary"
+        >
+          <h2 className="font-semibold">{t('stats.title')}</h2>
+          <p>{t('stats.games', { count: stats.games })}</p>
+          <p>{t('stats.averageMoves', { count: stats.games ? Math.round(stats.moves / stats.games) : 0 })}</p>
+          <button type="button" className={btnSecondary} onClick={resetStats}>
+            {t('stats.clear')}
+          </button>
+        </section>
         {deadlocked && (
           <div
-            className="mt-1 flex items-center gap-2 text-ds-error text-sm font-medium"
+            className="mt-1 flex items-center gap-2 text-ds-error-text text-sm font-medium"
             role="status"
             data-testid="ll-deadlock-banner"
           >

@@ -91,6 +91,45 @@ beforeEach(() => {
 });
 
 describe('CoinchePage', () => {
+  it('aligns team column headers with their score values after the row labels', async () => {
+    renderWithProviders(<CoinchePage />);
+    const cumulativeRowHeader = await screen.findByRole('rowheader', { name: '累計得点' });
+    const table = cumulativeRowHeader.closest('table');
+    expect(table).not.toBeNull();
+
+    const headers = Array.from(table!.querySelectorAll('thead th'));
+    expect(headers).toHaveLength(3);
+    expect(headers[0]).toHaveAttribute('scope', 'col');
+    expect(headers[0]).toHaveTextContent('');
+    expect(headers[1]).toHaveTextContent('チーム0');
+    expect(headers[2]).toHaveTextContent('チーム1');
+
+    const rowHeaders = Array.from(table!.querySelectorAll('tbody th[scope="row"]'));
+    expect(rowHeaders.map((header) => header.textContent)).toEqual(['累計得点', 'ラウンド得点']);
+    for (const row of Array.from(table!.querySelectorAll<HTMLTableRowElement>('tbody tr'))) {
+      expect(row.cells[0].tagName).toBe('TH');
+      expect(row.cells).toHaveLength(3);
+      expect(row.cells[1].tagName).toBe('TD');
+      expect(row.cells[2].tagName).toBe('TD');
+    }
+  });
+
+  it('labels cumulative and round score rows in Japanese and English', async () => {
+    renderWithProviders(<CoinchePage />);
+    await waitFor(() => expect(screen.getByRole('rowheader', { name: '累計得点' })).toHaveAttribute('scope', 'row'));
+    expect(screen.getByRole('rowheader', { name: 'ラウンド得点' })).toHaveAttribute('scope', 'row');
+
+    const i18n = (await import('../i18n')).default;
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      expect(await screen.findByRole('rowheader', { name: 'Cumulative score' })).toHaveAttribute('scope', 'row');
+      expect(screen.getByRole('rowheader', { name: 'Round score' })).toHaveAttribute('scope', 'row');
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('calls reset on mount with default config', async () => {
     renderWithProviders(<CoinchePage />);
     await waitFor(() =>
@@ -120,6 +159,23 @@ describe('CoinchePage', () => {
       expect(screen.getByRole('button', { name })).toBeInTheDocument();
     }
     expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument();
+  });
+
+  it('groups auction and doubling actions by name, without labeling play controls as bidding', async () => {
+    const auction = renderWithProviders(<CoinchePage />);
+    expect(await screen.findByRole('group', { name: '目標点と切り札の宣言' })).toBeInTheDocument();
+    auction.unmount();
+
+    mockExec.mockResolvedValue(makeState({ phase: CoinchePhase.DOUBLE, makerTeam: 1, contractPoints: 120 }));
+    const doubling = renderWithProviders(<CoinchePage />);
+    expect(await screen.findByRole('group', { name: 'コワンシュへの応答' })).toBeInTheDocument();
+    doubling.unmount();
+
+    mockExec.mockResolvedValue(makeState({ phase: CoinchePhase.PLAY, trumpSuit: 1, makerTeam: 0 }));
+    renderWithProviders(<CoinchePage />);
+    await screen.findByRole('button', { name: '出す' });
+    expect(screen.queryByRole('group', { name: '目標点と切り札の宣言' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'コワンシュへの応答' })).not.toBeInTheDocument();
   });
 
   // **契約は「点 + 切り札」の対。** 点を選ばないうちにスートだけ押せると、

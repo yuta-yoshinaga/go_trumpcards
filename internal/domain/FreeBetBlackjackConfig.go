@@ -119,18 +119,6 @@ const (
 // FreeBetPhaseMax は最大のフェーズ値 (復元時の範囲検査に使う)。
 const FreeBetPhaseMax = FreeBetPhaseResult
 
-// FreeBetPhaseName はフェーズの識別子を返す (i18n キーの一部に使う)。
-func FreeBetPhaseName(p FreeBetPhase) string {
-	switch p {
-	case FreeBetPhaseBet:
-		return "bet"
-	case FreeBetPhasePlay:
-		return "play"
-	default:
-		return "result"
-	}
-}
-
 // FreeBetCanFreeDouble は合計と手札の形から**無料ダブルできるか**を返す。
 //
 // **ハードの 9-11 で、まだ 2 枚のときだけ。**

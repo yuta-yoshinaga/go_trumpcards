@@ -22,6 +22,7 @@
     "wasLying": "It was a lie!",
     "wasTruth": "It was the truth!",
     "loserTook": "{{name}} took {{count}} cards",
+    "announcement": "{{outcome}} {{name}} took {{count}} cards",
     "discarded": "{{count}} cards were discarded from the game"
   },
   "yourCards": "You ({{count}} cards)",
@@ -30,6 +31,7 @@
   "playButton": "Play",
   "tell": "Tell",
   "tellBadge": "Suspicious",
+  "tellAnnouncement": "A tell is showing for {{name}}",
   "settings": {
     "title": "Settings",
     "doubtTime": "Doubt Time:",

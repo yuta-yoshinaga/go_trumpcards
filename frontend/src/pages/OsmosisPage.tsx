@@ -20,7 +20,7 @@ import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
-import { useGameApi } from '../hooks/useGameApi';
+import { isRejectedAction, useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
@@ -79,6 +79,7 @@ export const OsmosisPage = withTutorial(OsmosisPageContent, 'osmosis', OS_TUTORI
 /** Inner content of the Osmosis page. */
 function OsmosisPageContent() {
   const selectSourceHintId = useId();
+  const [moveAnnouncement, setMoveAnnouncement] = useState('');
   const {
     t,
     tc,
@@ -94,7 +95,25 @@ function OsmosisPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('osmosis');
-  const { state, loading, error, exec: execApi, retry } = useGameApi(osmosisApi.exec);
+  const {
+    state,
+    loading,
+    error,
+    exec: execApi,
+    retry,
+  } = useGameApi(osmosisApi.exec, {
+    onSuccess: (response, args) => {
+      if (args[0] !== 'move' || isRejectedAction(response)) return;
+      const source = args[1];
+      const target = args[2];
+      if (!source || !target) return;
+      const sourceLabel = source.zone === 'waste' ? t('waste') : `${t('reserve')} ${source.col}`;
+      const targetLabel = `${t('foundation')} ${target.col}`;
+      setMoveAnnouncement(
+        t('moveAnnouncement', { source: sourceLabel, destination: targetLabel, moveCount: response.moveCount }),
+      );
+    },
+  });
   const { cardWidth, cardHeight } = useCardDimensions();
   const {
     hint: frontendHint,
@@ -247,6 +266,9 @@ function OsmosisPageContent() {
         </>
       }
     >
+      <span className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="osmosis-move-live">
+        {moveAnnouncement}
+      </span>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -400,7 +422,7 @@ function OsmosisPageContent() {
                   onClick={handleDraw}
                   disabled={!isPlaying || loading}
                   className="rounded border border-white/30"
-                  aria-label={t('stock')}
+                  aria-label={t('stockAriaLabel', { count: state.stockCount })}
                   style={{ width: cardWidth, height: cardHeight }}
                 >
                   {state.stockCount > 0 ? (

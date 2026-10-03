@@ -171,6 +171,34 @@ describe('GuandanPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndexes: [0, 2] }));
   });
 
+  it('exposes selected hand cards as pressed in play and tribute phases', async () => {
+    const { unmount } = renderWithProviders(<GuandanPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toHaveAttribute('aria-pressed', 'false'));
+
+    const playCard = screen.getByTestId('hand-card-0');
+    fireEvent.click(playCard);
+    expect(playCard).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(playCard);
+    expect(playCard).toHaveAttribute('aria-pressed', 'false');
+    unmount();
+
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: GuandanPhase.TRIBUTE,
+        handNumber: 2,
+        tributes: [{ from: 3, to: 0, card: card('SPADE', 1), returned: null }],
+      }),
+    );
+    renderWithProviders(<GuandanPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-1')).toHaveAttribute('aria-pressed', 'false'));
+
+    const tributeCard = screen.getByTestId('hand-card-1');
+    fireEvent.click(tributeCard);
+    expect(tributeCard).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(tributeCard);
+    expect(tributeCard).toHaveAttribute('aria-pressed', 'false');
+  });
+
   // **選び直せる。**一度選んだ札を外せないと役が組めない。
   it('deselects a card that is clicked twice', async () => {
     renderWithProviders(<GuandanPage />);
@@ -375,20 +403,22 @@ describe('GuandanPage', () => {
       const preview = screen.getByTestId('guandan-combo-preview');
       expect(preview).toHaveTextContent('シングル (1)');
       expect(screen.queryByTestId('guandan-combo-invalid')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('guandan-combo-result')).not.toBeInTheDocument();
     });
 
     // **役にならない組はここで分かる。**出して初めてサーバに拒否される、では遅い。
     it('warns when the selection is not a combo at all', async () => {
-      mockExec.mockResolvedValue(makeState());
+      mockExec.mockResolvedValue(makeState({ lastCombo: { kind: 1, rank: 5, size: 1 } }));
       renderWithProviders(<GuandanPage />);
       await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
 
-      // ♠2 と ♣K。同ランクでも階段でもない。
+      // ♠2 と ♣K.同ランクでも階段でもない。
       fireEvent.click(screen.getByTestId('hand-card-0'));
       fireEvent.click(screen.getByTestId('hand-card-2'));
 
       expect(screen.getByTestId('guandan-combo-invalid')).toHaveTextContent('役になりません');
       expect(screen.getByTestId('guandan-combo-preview')).not.toHaveTextContent('選択中');
+      expect(screen.queryByTestId('guandan-combo-result')).not.toBeInTheDocument();
     });
 
     it('marks a bomb as beating every ordinary combo', async () => {
@@ -407,6 +437,26 @@ describe('GuandanPage', () => {
       fireEvent.click(screen.getByTestId('hand-card-3'));
       expect(screen.getByTestId('guandan-combo-preview')).toHaveTextContent('ボム (4)');
       expect(screen.getByTestId('guandan-combo-bomb')).toHaveTextContent('通常役をすべて上回ります');
+    });
+
+    it('shows whether a valid selection beats the combo on the table', async () => {
+      mockExec.mockResolvedValue(makeState({ lastCombo: { kind: 1, rank: 5, size: 1 } }));
+      renderWithProviders(<GuandanPage />);
+      await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByTestId('hand-card-0'));
+
+      expect(screen.getByTestId('guandan-combo-result')).toHaveTextContent('場の役を上回ります');
+    });
+
+    it('shows when a valid selection cannot beat the combo on the table', async () => {
+      mockExec.mockResolvedValue(makeState({ lastCombo: { kind: 1, rank: 5, size: 1 } }));
+      renderWithProviders(<GuandanPage />);
+      await waitFor(() => expect(screen.getByTestId('hand-card-1')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByTestId('hand-card-1'));
+
+      expect(screen.getByTestId('guandan-combo-result')).toHaveTextContent('場の役を上回りません');
     });
 
     it('reads the level card in hearts as a wild', async () => {

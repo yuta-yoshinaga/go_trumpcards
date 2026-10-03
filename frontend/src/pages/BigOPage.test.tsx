@@ -176,7 +176,13 @@ const flopState: OmahaResponse = {
 /** SHOWDOWN (phase 5) */
 const showdownState: OmahaResponse = {
   players: [
-    humanPlayer({ handName: '\u30ef\u30f3\u30da\u30a2', currentBet: 0, chips: 950 }),
+    humanPlayer({
+      handName: '\u30ef\u30f3\u30da\u30a2',
+      currentBet: 0,
+      chips: 950,
+      liveBestHandHoleIndices: [0, 1],
+      liveBestHandBoardIndices: [0, 1, 2],
+    }),
     cpuPlayer(1, {
       handName: '\u30c4\u30fc\u30da\u30a2',
       folded: false,
@@ -264,6 +270,14 @@ beforeEach(() => {
 });
 
 describe('BigOPage', () => {
+  it('announces newly revealed community cards', async () => {
+    mockExec.mockResolvedValue(flopState);
+    renderWithProviders(<BigOPage />);
+    expect(await screen.findByTestId('community-cards-announcement')).toHaveTextContent(
+      'コミュニティカードが公開されました: ♠ 10、♥ 5、♦ 8',
+    );
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<BigOPage />);
@@ -721,7 +735,7 @@ describe('BigOPage', () => {
   it('shows call/raise buttons when canAct and has outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<BigOPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
@@ -824,11 +838,11 @@ describe('BigOPage', () => {
   it('calls call command when has outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<BigOPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', undefined, undefined, 0));
   });
 
@@ -1321,7 +1335,7 @@ describe('BigOPage', () => {
     it('pressing c triggers call when canAct and hasOutstandingBet', async () => {
       mockExec.mockResolvedValue(preFlopWithBetState);
       renderWithProviders(<BigOPage />);
-      await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
       mockExec.mockClear();
       mockExec.mockResolvedValue(preFlopWithBetState);
@@ -1436,7 +1450,7 @@ describe('BigOPage', () => {
     it('pressing k is ignored when hasOutstandingBet', async () => {
       mockExec.mockResolvedValue(preFlopWithBetState);
       renderWithProviders(<BigOPage />);
-      await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
       mockExec.mockClear();
 
@@ -1586,6 +1600,21 @@ describe('BigOPage', () => {
       fireEvent.click(screen.getByText(label));
       expect((screen.getByLabelText(label) as HTMLInputElement).checked).toBe(!before);
     });
+  });
+
+  it('highlights the server-selected hole cards during play', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue({
+      ...flopState,
+      players: flopState.players.map((player) =>
+        player.isHuman ? { ...player, liveBestHandHoleIndices: [1, 3], liveBestHandBoardIndices: [0, 1, 2] } : player,
+      ),
+    });
+    renderWithProviders(<BigOPage />);
+    await waitFor(() => expect(screen.getAllByTestId('bigo-hole-used')).toHaveLength(2));
+    expect(screen.getAllByTestId('bigo-hole-unused')).toHaveLength(2);
+    expect(screen.getAllByText(/最善役に使用するカード/)).toHaveLength(5);
   });
 
   it('previews the current best hand during play', async () => {

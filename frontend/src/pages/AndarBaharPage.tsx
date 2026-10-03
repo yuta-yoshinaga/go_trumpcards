@@ -77,16 +77,21 @@ function AndarBaharPageContent() {
 
   const isBetPhase = state?.phase === AndarBaharPhase.BET;
   const isEndPhase = state?.phase === AndarBaharPhase.END;
+  const sideBetSelected = sideBand !== AndarBaharSideBand.NONE;
+  const chips = state?.chips ?? 0;
+  const mainBetMax = Math.max(0, chips - (sideBetSelected ? sideAmount : 0));
+  const sideBetMax = Math.max(0, chips - betAmount);
 
   const handleBet = useCallback(
     (target: number) => {
+      const stake = sideBand === AndarBaharSideBand.NONE ? 0 : sideAmount;
+      if (betAmount + stake > chips) return;
       setLastBet({ amount: betAmount, target });
       // **賭けていない帯は送らない。** band 0 は「1 枚目」という有効な値なので、
       // 金額 0 のまま送るとサーバに拒否されます。
-      const stake = sideBand === AndarBaharSideBand.NONE ? 0 : sideAmount;
       return execApi('bet', betAmount, target, stake, stake > 0 ? sideBand : AndarBaharSideBand.NONE);
     },
-    [execApi, betAmount, sideAmount, sideBand],
+    [execApi, betAmount, sideAmount, sideBand, chips],
   );
 
   const canRebet = lastBet !== null && lastBet.amount > 0 && !!state && lastBet.amount <= state.chips;
@@ -249,13 +254,37 @@ function AndarBaharPageContent() {
               </div>
             )}
 
+            {state.roundHistory.length > 0 && (
+              <section className="mb-4" aria-label={t('label.roundHistory')} data-testid="andarbahar-round-history">
+                <h2 className="text-ds-text-primary text-center text-sm font-bold mb-1">{t('label.roundHistory')}</h2>
+                <table className="mx-auto text-sm text-ds-text-primary">
+                  <thead>
+                    <tr>
+                      <th className="px-2">{t('label.roundBet')}</th>
+                      <th className="px-2">{t('label.roundPayout')}</th>
+                      <th className="px-2">{t('label.roundChips')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {state.roundHistory.map((round, index) => (
+                      <tr key={`${index}-${round.chips}`}>
+                        <td className="px-2 text-right">{round.bet}</td>
+                        <td className="px-2 text-right">{round.payout}</td>
+                        <td className="px-2 text-right">{round.chips}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </section>
+            )}
+
             {isEndPhase && (
               <div className="text-ds-text-primary text-center text-sm mb-2 space-y-1" data-testid="payout-breakdown">
                 <div data-testid="payout-result">
                   {state.winner === AndarBaharColumn.ANDAR ? t('result.andarWins') : t('result.baharWins')}
                 </div>
                 <div
-                  className={`font-medium ${isProfit ? 'text-ds-success' : 'text-ds-error'}`}
+                  className={`font-medium ${isProfit ? 'text-ds-success' : 'text-ds-error-text'}`}
                   data-testid="payout-diff"
                 >
                   {isProfit ? t('payout.win', { amount: profit }) : t('payout.loss', { amount: Math.abs(profit) })}
@@ -295,7 +324,7 @@ function AndarBaharPageContent() {
                   label={t('label.bet')}
                   value={betAmount}
                   onChange={setBetAmount}
-                  max={state.chips}
+                  max={mainBetMax}
                 />
                 <div className="flex items-center gap-2 flex-wrap justify-center">
                   <label htmlFor="andarbahar-side-band" className="text-ds-text-primary text-sm">
@@ -305,7 +334,13 @@ function AndarBaharPageContent() {
                     id="andarbahar-side-band"
                     className="rounded border border-ds-border bg-ds-surface px-2 py-1 text-sm text-ds-text-primary"
                     value={sideBand}
-                    onChange={(e) => setSideBand(Number(e.target.value))}
+                    onChange={(e) => {
+                      const band = Number(e.target.value);
+                      setSideBand(band);
+                      if (band !== AndarBaharSideBand.NONE) {
+                        setSideAmount(Math.min(sideAmount, sideBetMax));
+                      }
+                    }}
                   >
                     <option value={AndarBaharSideBand.NONE}>{t('label.noSideBet')}</option>
                     {ANDAR_BAHAR_SIDE_BANDS.map((b) => (
@@ -321,7 +356,7 @@ function AndarBaharPageContent() {
                       label={t('label.sideAmount')}
                       value={sideAmount}
                       onChange={setSideAmount}
-                      max={state.chips}
+                      max={sideBetMax}
                     />
                   )}
                 </div>

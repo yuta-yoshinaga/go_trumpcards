@@ -67,6 +67,23 @@ beforeEach(() => {
 });
 
 describe('BourrePage', () => {
+  it('explains each payment, the winner, and the carried pot at round end', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'roundEnd',
+        carryPot: 25,
+        results: [
+          { playerIdx: 0, tricks: 3, wonAmount: 25, paidAmount: 0, bourreed: false, folded: false },
+          { playerIdx: 1, tricks: 0, wonAmount: 0, paidAmount: 25, bourreed: true, folded: false },
+        ],
+      }),
+    );
+    renderWithProviders(<BourrePage />);
+    expect(await screen.findByText(/ポット獲得 25/)).toBeInTheDocument();
+    expect(screen.getByText(/ブーレ罰金として 25 チップを支払い/)).toBeInTheDocument();
+    expect(screen.getByText(/ポット 25 チップを次のハンドへ持ち越し/)).toBeInTheDocument();
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<BourrePage />);
@@ -91,21 +108,21 @@ describe('BourrePage', () => {
     mockExec.mockResolvedValue(makeState({ trumpSuit: 'HEART' }));
     renderWithProviders(<BourrePage />);
     const trump = await screen.findByTestId('bourre-trump');
-    expect(within(trump).getByText('♥')).toHaveClass('text-ds-error');
+    expect(within(trump).getByText('♥')).toHaveClass('text-ds-error-text');
   });
 
   it('header colors a red trump suit (diamonds) with the error token', async () => {
     mockExec.mockResolvedValue(makeState({ trumpSuit: 'DIAMOND' }));
     renderWithProviders(<BourrePage />);
     const trump = await screen.findByTestId('bourre-trump');
-    expect(within(trump).getByText('♦')).toHaveClass('text-ds-error');
+    expect(within(trump).getByText('♦')).toHaveClass('text-ds-error-text');
   });
 
   it('header does not color a black trump suit (clubs) with the error token', async () => {
     mockExec.mockResolvedValue(makeState({ trumpSuit: 'CLOVER' }));
     renderWithProviders(<BourrePage />);
     const trump = await screen.findByTestId('bourre-trump');
-    expect(within(trump).getByText('♣')).not.toHaveClass('text-ds-error');
+    expect(within(trump).getByText('♣')).not.toHaveClass('text-ds-error-text');
   });
 
   it('header shows a dash when the trump suit is unset', async () => {
@@ -190,7 +207,7 @@ describe('BourrePage', () => {
         phase: 'roundEnd',
         gameEndFlag: true,
         winnerIdx: 2,
-        results: [{ playerIdx: 2, tricks: 3, wonAmount: 0, bourreed: false, folded: false }],
+        results: [{ playerIdx: 2, tricks: 3, wonAmount: 0, paidAmount: 0, bourreed: false, folded: false }],
       }),
     );
     renderWithProviders(<BourrePage />);
@@ -320,8 +337,8 @@ describe('BourrePage', () => {
       makeState({
         phase: 'roundEnd',
         results: [
-          { playerIdx: 0, tricks: 3, wonAmount: 25, bourreed: false, folded: false },
-          { playerIdx: 1, tricks: 0, wonAmount: 0, bourreed: true, folded: false },
+          { playerIdx: 0, tricks: 3, wonAmount: 25, paidAmount: 0, bourreed: false, folded: false },
+          { playerIdx: 1, tricks: 0, wonAmount: 0, paidAmount: 0, bourreed: true, folded: false },
         ],
       }),
     );
@@ -338,7 +355,7 @@ describe('BourrePage', () => {
         phase: 'gameEnd',
         gameEndFlag: true,
         winnerIdx: 0,
-        results: [{ playerIdx: 0, tricks: 5, wonAmount: 50, bourreed: false, folded: false }],
+        results: [{ playerIdx: 0, tricks: 5, wonAmount: 50, paidAmount: 0, bourreed: false, folded: false }],
       }),
     );
     renderWithProviders(<BourrePage />);
@@ -371,11 +388,38 @@ describe('BourrePage', () => {
     const { container } = renderWithProviders(<BourrePage />);
     await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
     const cardBtn = container.querySelector('[data-tutorial="bourre-hand"] button');
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(cardBtn as Element);
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(cardBtn as Element);
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(cardBtn as Element);
     fireEvent.click(screen.getByRole('button', { name: /交換する/ }));
     await waitFor(() => {
       expect(mockExec).toHaveBeenCalledWith(expect.objectContaining({ command: 'draw', indices: [0] }));
     });
+  });
+
+  it('does not expose a pressed state outside the draw phase', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'play',
+        currentPlayerIdx: 0,
+        validPlays: [0],
+        players: [
+          player({ id: 0, isHuman: true, cards: [{ design: 'SPADE', value: 9 }] }),
+          player({ id: 1 }),
+          player({ id: 2 }),
+          player({ id: 3 }),
+          player({ id: 4 }),
+        ],
+      }),
+    );
+    const { container } = renderWithProviders(<BourrePage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
+    const cardBtn = container.querySelector('[data-tutorial="bourre-hand"] button');
+    expect(cardBtn).toBeInTheDocument();
+    expect(cardBtn).not.toHaveAttribute('aria-pressed');
   });
 
   it('draw phase: keep all dispatches an empty draw', async () => {
@@ -404,8 +448,8 @@ describe('BourrePage', () => {
       makeState({
         phase: 'roundEnd',
         results: [
-          { playerIdx: 0, tricks: 0, wonAmount: 0, bourreed: true, folded: false },
-          { playerIdx: 1, tricks: 3, wonAmount: 25, bourreed: false, folded: false },
+          { playerIdx: 0, tricks: 0, wonAmount: 0, paidAmount: 0, bourreed: true, folded: false },
+          { playerIdx: 1, tricks: 3, wonAmount: 25, paidAmount: 0, bourreed: false, folded: false },
         ],
       }),
     );
@@ -422,7 +466,7 @@ describe('BourrePage', () => {
         phase: 'gameEnd',
         gameEndFlag: true,
         winnerIdx: 1,
-        results: [{ playerIdx: 1, tricks: 5, wonAmount: 50, bourreed: false, folded: false }],
+        results: [{ playerIdx: 1, tricks: 5, wonAmount: 50, paidAmount: 0, bourreed: false, folded: false }],
       }),
     );
     renderWithProviders(<BourrePage />);
@@ -451,7 +495,7 @@ describe('BourrePage', () => {
         phase: 'gameEnd',
         gameEndFlag: true,
         winnerIdx: 0,
-        results: [{ playerIdx: 0, tricks: 5, wonAmount: 50, bourreed: false, folded: false }],
+        results: [{ playerIdx: 0, tricks: 5, wonAmount: 50, paidAmount: 0, bourreed: false, folded: false }],
       }),
     );
     renderWithProviders(<BourrePage />);

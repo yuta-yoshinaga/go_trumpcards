@@ -2,6 +2,7 @@
   "cpu": "CPU{{n}}",
   "cpuHand": "CPU{{n}}: {{count}} cards",
   "cpuHandAriaLabel": "CPU{{n}} hand, {{count}} cards face down",
+  "cpuHandRevealedAriaLabel": "CPU{{n}} hand (revealed)",
   "fold": "Fold ({{cost}})",
   "foldCost": "Folding costs {{cost}} -- the stake BEFORE the raise you are declining",
   "folded": "[folded]",
@@ -33,5 +34,6 @@
   "you": "You",
   "yourHand": "Your hand",
   "toepedBy": "{{name}} toeps -- the stake is {{stake}}",
+  "currentTrickWinner": "currently winning card",
   "lastTrickWinner": "Last trick winner: {{name}}"
 }

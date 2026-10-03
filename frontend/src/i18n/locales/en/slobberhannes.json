@@ -16,7 +16,8 @@
     "first": "This is the FIRST trick. Taking it costs 1 point.",
     "last": "This is the LAST trick. Taking it costs 1 point.",
     "queen": "The Queen of clubs is on the table: taking this trick costs -1.",
-    "queenInHand": "You hold the Queen of clubs (whoever takes the trick it is played in loses a point)."
+    "queenInHand": "You hold the Queen of clubs (whoever takes the trick it is played in loses a point).",
+    "queenUnseen": "The Queen of clubs has not appeared on the table yet; its location is unknown."
   },
   "marks": {
     "first": "1st",
@@ -32,7 +33,9 @@
     "reset": "Reset",
     "nextRound": "Next round",
     "giveUp": "Give up",
-    "playAria": "Play {{card}}"
+    "playAria": "Play {{card}}",
+    "playAriaPlayable": "Playable card, play {{card}}",
+    "playAriaUnplayable": "Unplayable card, play {{card}}"
   },
   "result": {
     "youWin": "You win! {{score}} points",

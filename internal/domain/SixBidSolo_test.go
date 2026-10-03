@@ -1072,28 +1072,6 @@ func TestSixBidSoloAccessors(t *testing.T) {
 	if s.GetConfig().TargetHands != 8 {
 		t.Error("SetConfig must take effect")
 	}
-	// 棋譜用の内部名は 6 段階ぶんそろっている。
-	for kind, want := range map[SixBidSoloBidKind]string{
-		SixBidSoloBidPass:         "pass",
-		SixBidSoloBidSolo:         "solo",
-		SixBidSoloBidHeartSolo:    "heartSolo",
-		SixBidSoloBidMisere:       "misere",
-		SixBidSoloBidGuarantee:    "guarantee",
-		SixBidSoloBidSpreadMisere: "spreadMisere",
-		SixBidSoloBidCall:         "callSolo",
-	} {
-		if got := sixBidSoloBidName(kind); got != want {
-			t.Errorf("bid name for %v = %q, want %q", kind, got, want)
-		}
-	}
-	for suit, want := range map[int]string{
-		CardDesignSpade: "S", CardDesignClover: "C", CardDesignHeart: "H", CardDesignDiamond: "D", 0: "-",
-	} {
-		if got := sixBidSoloSuitName(suit); got != want {
-			t.Errorf("suit name for %d = %q, want %q", suit, got, want)
-		}
-	}
-
 	// 通算得点は範囲内なら読める。
 	s.SetScoreForTest(1, 42)
 	if got := s.GetScore(1); got != 42 {

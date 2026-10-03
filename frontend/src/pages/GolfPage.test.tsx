@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, golfApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, GolfCard, GolfResponse } from '../types/card';
@@ -112,8 +113,28 @@ describe('GolfPage', () => {
   it('renders waste card', async () => {
     renderWithProviders(<GolfPage />);
     await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());
+    const count = screen.getByText('1枚');
+    expect(count).toHaveAttribute('id', 'golf-waste-count');
+    expect(
+      document.querySelector('[aria-describedby="golf-waste-count"] [data-testid="animated-card"]'),
+    ).toBeInTheDocument();
+    expect(document.querySelector('[aria-describedby="golf-waste-count"]')).toHaveAttribute(
+      'aria-describedby',
+      'golf-waste-count',
+    );
     const imgs = screen.getAllByRole('img');
     expect(imgs.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('renders waste count with English singular and plural forms', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue({ ...playingState, waste: [card('CLOVER', 4), card('HEART', 5)] });
+      renderWithProviders(<GolfPage />);
+      await waitFor(() => expect(screen.getByText('2 cards')).toBeInTheDocument());
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('renders empty waste', async () => {
@@ -170,12 +191,14 @@ describe('GolfPage', () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<GolfPage />);
     await waitFor(() => expect(screen.getByText('ゲームクリア')).toBeInTheDocument());
+    expect(screen.getByTestId('golf-result-remaining')).toHaveTextContent('残りカード数: 0枚');
   });
 
   it('renders game over state', async () => {
     mockExec.mockResolvedValue(gameOverState);
     renderWithProviders(<GolfPage />);
     await waitFor(() => expect(screen.getAllByText('ゲームオーバー').length).toBeGreaterThanOrEqual(1));
+    expect(screen.getByTestId('golf-result-remaining')).toHaveTextContent('残りカード数: 35枚');
   });
 
   it('hides action buttons when game is over', async () => {

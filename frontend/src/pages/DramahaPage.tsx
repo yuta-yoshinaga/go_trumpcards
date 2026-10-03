@@ -130,7 +130,27 @@ function DramahaPageContent() {
   const { cardWidth } = useCardDimensions();
   const isMobile = useIsMobile();
   const isLargeDesktop = useIsLargeDesktop();
-  const { state, loading, error, exec: execApi, retry } = useGameApi(dramahaApi.exec);
+  const [rebuyAnnouncement, setRebuyAnnouncement] = useState('');
+  const {
+    state,
+    loading,
+    error,
+    exec: execApi,
+    retry,
+  } = useGameApi(dramahaApi.exec, {
+    onSuccess: (response, [command]) => {
+      const announcementKeys: Record<string, string> = {
+        rebuy: 'rebuy.selected',
+        skiprebuy: 'rebuy.skipped',
+        addon: 'addon.selected',
+        skipaddon: 'addon.skipped',
+      };
+      const key = announcementKeys[command];
+      if (!key) return;
+      const chips = response.players?.find((player) => player.isHuman)?.chips ?? 0;
+      setRebuyAnnouncement(t(key, { chips }));
+    },
+  });
   const [betAmount, setBetAmount] = useState(20);
   const [learningMode, setLearningMode] = useState(false);
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
@@ -340,6 +360,9 @@ function DramahaPageContent() {
         </>
       }
     >
+      <div className="sr-only" role="status" aria-live="polite" data-testid="rebuy-announcement">
+        {rebuyAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -487,7 +510,9 @@ function DramahaPageContent() {
                       {tc('betting.currentBet')} {humanPlayer.currentBet}
                     </span>
                   )}
-                  {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
+                  {humanPlayer.folded && (
+                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
+                  )}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                 </div>
                 <div
@@ -576,7 +601,7 @@ function DramahaPageContent() {
                   {t('draw.onceOnly')}
                 </p>
                 <p className="text-ds-text-primary text-xs mb-2" data-testid="dramaha-draw-selected">
-                  {t('draw.selected', { count: selectedDraw.length })}
+                  {t('draw.selected', { count: selectedDraw.length, max: DRAMAHA_HOLE_CARDS })}
                 </p>
                 <div className="flex justify-center gap-2">
                   <button

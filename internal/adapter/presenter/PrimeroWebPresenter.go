@@ -110,16 +110,18 @@ func (p *PrimeroWebPresenter) buildPlayersOutput(g interfaces.PrimeroGame) []*co
 			handName = primeroHandName(player)
 		}
 		out = append(out, &controller.PrimeroWebOutputPlayer{
-			ID:        i,
-			IsHuman:   player.GetIsHuman(),
-			Chips:     player.GetChips(),
-			RoundBet:  player.GetRoundBet(),
-			Folded:    player.GetFolded(),
-			Out:       player.GetOut(),
-			CardCount: player.GetCardsSize(),
-			Cards:     playerCardsToOutput(player, showCards),
-			HandName:  handName,
-			IsWinner:  i == g.GetWinnerIdx(),
+			ID:          i,
+			IsHuman:     player.GetIsHuman(),
+			Chips:       player.GetChips(),
+			RoundBet:    player.GetRoundBet(),
+			RoundPayout: g.GetRoundPayout(i),
+			NetChange:   g.GetRoundNetChange(i),
+			Folded:      player.GetFolded(),
+			Out:         player.GetOut(),
+			CardCount:   player.GetCardsSize(),
+			Cards:       playerCardsToOutput(player, showCards),
+			HandName:    handName,
+			IsWinner:    i == g.GetWinnerIdx(),
 		})
 	}
 	return out

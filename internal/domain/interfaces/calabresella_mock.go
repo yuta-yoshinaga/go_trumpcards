@@ -170,6 +170,12 @@ func (_m *MockCalabresellaGame) GetWinningBid() domain.CalabresellaBid {
 	return ret.Get(0).(domain.CalabresellaBid)
 }
 
+// GetHighestBid モック
+func (_m *MockCalabresellaGame) GetHighestBid() domain.CalabresellaBid {
+	ret := _m.Called()
+	return ret.Get(0).(domain.CalabresellaBid)
+}
+
 // GetCurrentBidderIdx モック
 func (_m *MockCalabresellaGame) GetCurrentBidderIdx() int {
 	ret := _m.Called()
@@ -186,6 +192,18 @@ func (_m *MockCalabresellaGame) GetPlayerScores() [domain.CalabresellaPlayerCnt]
 func (_m *MockCalabresellaGame) GetRoundThirds() [domain.CalabresellaPlayerCnt]int {
 	ret := _m.Called()
 	return ret.Get(0).([domain.CalabresellaPlayerCnt]int)
+}
+
+// GetRoundScoreChanges モック
+func (_m *MockCalabresellaGame) GetRoundScoreChanges() [domain.CalabresellaPlayerCnt]int {
+	ret := _m.Called()
+	return ret.Get(0).([domain.CalabresellaPlayerCnt]int)
+}
+
+// GetSoloistWon モック
+func (_m *MockCalabresellaGame) GetSoloistWon() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
 }
 
 // GetWinnerPlayer モック

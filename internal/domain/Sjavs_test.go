@@ -12,6 +12,10 @@ import (
 
 func sjCard(design, value int) *Card { return NewCard(design, value, true) }
 
+func TestSjavs_GetRubberPoints(t *testing.T) {
+	assert.Equal(t, SjavsRubber, NewDefaultSjavs().GetRubberPoints())
+}
+
 func TestSjavs_TheDeckIsThirtyTwoCardsWorthOneHundredAndTwenty(t *testing.T) {
 	deck := newSjavsDeck()
 	assert.Len(t, deck, SjavsDeckSize)
@@ -19,7 +23,7 @@ func TestSjavs_TheDeckIsThirtyTwoCardsWorthOneHundredAndTwenty(t *testing.T) {
 	total := 0
 	for _, c := range deck {
 		assert.NotContains(t, []int{2, 3, 4, 5, 6}, c.GetValue(), "2-6 are removed")
-		total += SjavsCardPoints(c)
+		total += AceTenCardPoints(c)
 	}
 	// A11 + 10*10 + K4 + Q3 + J2 = 30 per suit, 120 in all. 精算表の分母なので、
 	// ここがずれると 61/90 の閾値の意味も変わる。

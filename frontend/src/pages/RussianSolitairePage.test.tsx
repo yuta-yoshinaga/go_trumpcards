@@ -75,6 +75,42 @@ beforeEach(() => {
 });
 
 describe('RussianSolitairePage', () => {
+  it('highlights legal tableau destinations and removes highlights when deselected', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: playingState.tableau.map((column, index) =>
+        index === 4 ? [{ card: card('SPADE', 12), faceUp: true }] : column,
+      ),
+    });
+    renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const legalColumnTop = screen.getByRole('button', { name: '♠ K' });
+    const illegalColumnTop = screen.getByRole('button', { name: '♥ 8' });
+    fireEvent.click(screen.getByRole('button', { name: '♠ Q' }));
+
+    expect(legalColumnTop).toHaveClass('ring-ds-success');
+    expect(illegalColumnTop).not.toHaveClass('ring-ds-success');
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ Q' }));
+    expect(legalColumnTop).not.toHaveClass('ring-ds-success');
+  });
+
+  it('highlights a legal foundation destination', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: playingState.tableau.map((column, index) =>
+        index === 4 ? [{ card: card('SPADE', 1), faceUp: true }] : column,
+      ),
+    });
+    renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const spadeFoundation = screen.getByRole('button', { name: '空の組札 (♠)' });
+    fireEvent.click(screen.getByRole('button', { name: '♠ A' }));
+    expect(spadeFoundation).toHaveClass('ring-ds-success');
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<RussianSolitairePage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -222,7 +258,26 @@ describe('RussianSolitairePage', () => {
   it('autocomplete button is disabled while face-down cards exist', async () => {
     renderWithProviders(<RussianSolitairePage />);
     await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeInTheDocument());
-    expect(screen.getByTestId('autocomplete-button')).toBeDisabled();
+    const button = screen.getByTestId('autocomplete-button');
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(button).toHaveAttribute('aria-describedby');
+    expect(screen.getByText('全カードが表向きになるとクリックできます')).toBeInTheDocument();
+    fireEvent.click(button);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('autocomplete');
+  });
+
+  it('shows autocomplete readiness when all cards are face up', async () => {
+    const readyState: RussianSolitaireResponse = {
+      ...playingState,
+      tableau: playingState.tableau.map((column) => column.filter((item) => item.faceUp)),
+    };
+    mockExec.mockResolvedValue(readyState);
+    renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const button = screen.getByTestId('autocomplete-button');
+    expect(button).not.toHaveAttribute('aria-disabled');
+    expect(screen.getByText('オートコンプリートを実行できます')).toBeInTheDocument();
   });
 
   it('give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {
@@ -324,11 +379,15 @@ describe('RussianSolitairePage keyboard shortcuts', () => {
     ['a', 'autocomplete'],
     ['z', 'undo'],
   ])('pressing %s dispatches %s', async (key, command) => {
-    mockExec.mockResolvedValue(playingState);
+    const state =
+      command === 'autocomplete'
+        ? { ...playingState, tableau: playingState.tableau.map((column) => column.filter((item) => item.faceUp)) }
+        : playingState;
+    mockExec.mockResolvedValue(state);
     renderWithProviders(<RussianSolitairePage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     mockExec.mockClear();
-    mockExec.mockResolvedValue(playingState);
+    mockExec.mockResolvedValue(state);
     fireEvent.keyDown(document, { key });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith(command));
   });

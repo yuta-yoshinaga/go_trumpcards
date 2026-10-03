@@ -98,11 +98,98 @@ describe('BoliviaPage', () => {
     expect(screen.getByRole('button', { name: 'スキップ' })).toBeInTheDocument();
   });
 
+  it('sends staged hand selections as separate meld groups in one action', async () => {
+    const state = makeBoliviaState({
+      phase: 1,
+      players: makeBoliviaState().players.map((player) =>
+        player.isHuman
+          ? {
+              ...player,
+              cardCount: 6,
+              cards: Array.from({ length: 6 }, (_, value) => ({ design: 'SPADE' as const, value })),
+            }
+          : player,
+      ),
+    });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<BoliviaPage />);
+    await screen.findByRole('button', { name: 'メルドする' });
+    const handCards = screen
+      .getAllByRole('button', { pressed: false })
+      .filter((button) => button.hasAttribute('aria-pressed'));
+    for (const card of handCards.slice(0, 3)) fireEvent.click(card);
+    fireEvent.click(screen.getByRole('button', { name: 'グループを追加' }));
+    expect(screen.getByTestId('sa-meld-groups')).toHaveTextContent('グループ1（3枚）');
+    for (const card of handCards.slice(3, 6)) fireEvent.click(card);
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'メルドする' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, undefined, [
+        [0, 1, 2],
+        [3, 4, 5],
+      ]),
+    );
+  });
+
+  it('allows deselecting a staged meld group', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<BoliviaPage />);
+    await screen.findByRole('button', { name: 'メルドする' });
+    const handCards = screen
+      .getAllByRole('button', { pressed: false })
+      .filter((button) => button.hasAttribute('aria-pressed'));
+    for (const card of handCards.slice(0, 3)) fireEvent.click(card);
+    fireEvent.click(screen.getByRole('button', { name: 'グループを追加' }));
+    fireEvent.click(screen.getByRole('button', { name: 'グループ1（3枚）を選択解除' }));
+    expect(screen.queryByTestId('sa-meld-groups')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'メルドする' })).toBeDisabled();
+  });
+
+  it('does not select a card already in a staged group and makes it selectable after removal', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<BoliviaPage />);
+    await screen.findByRole('button', { name: 'メルドする' });
+    const handCards = screen
+      .getAllByRole('button', { pressed: false })
+      .filter((button) => button.hasAttribute('aria-pressed'));
+    for (const card of handCards.slice(0, 3)) fireEvent.click(card);
+    fireEvent.click(screen.getByRole('button', { name: 'グループを追加' }));
+
+    const groupedCard = handCards[0];
+    expect(groupedCard).toHaveAttribute('aria-disabled', 'true');
+    expect(groupedCard).toHaveAccessibleName(/グループ1に追加済み/);
+    fireEvent.click(groupedCard);
+    expect(screen.getByRole('button', { name: 'グループを追加' })).toBeDisabled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'グループ1（3枚）を選択解除' }));
+    expect(groupedCard).not.toHaveAttribute('aria-disabled');
+    fireEvent.click(groupedCard);
+    expect(screen.getByRole('button', { name: 'グループを追加' })).toBeDisabled();
+    fireEvent.click(handCards[1]);
+    fireEvent.click(handCards[2]);
+    expect(screen.getByRole('button', { name: 'グループを追加' })).toBeEnabled();
+  });
+
+  it('keeps staged groups and shows the server error when a meld is rejected', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<BoliviaPage />);
+    await screen.findByRole('button', { name: 'メルドする' });
+    const handCards = screen
+      .getAllByRole('button', { pressed: false })
+      .filter((button) => button.hasAttribute('aria-pressed'));
+    for (const card of handCards.slice(0, 3)) fireEvent.click(card);
+    fireEvent.click(screen.getByRole('button', { name: 'グループを追加' }));
+    mockExec.mockRejectedValueOnce(new Error('invalid meld group'));
+    fireEvent.click(screen.getByRole('button', { name: 'メルドする' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('通信エラーが発生しました。もう一度お試しください。');
+    expect(screen.getByTestId('sa-meld-groups')).toHaveTextContent('グループ1（3枚）');
+  });
+
   it('shows the initial-meld minimum and selected total in the meld phase', async () => {
-    mockExec.mockResolvedValue(meldPhaseState); // team score 0 → min 50; hasInitMeld false
+    mockExec.mockResolvedValue({ ...meldPhaseState, minMeld: 90 }); // team score 0 → min 50; hasInitMeld false
     renderWithProviders(<BoliviaPage />);
     const info = await screen.findByTestId('sa-meld-points');
-    expect(info).toHaveTextContent('初回メルド最低点: 50');
+    expect(info).toHaveTextContent('初回メルド最低点: 90');
     expect(info).toHaveTextContent('選択合計: 0');
   });
 
@@ -475,5 +562,51 @@ describe('BoliviaPage', () => {
     mockExec.mockResolvedValueOnce(makeBoliviaState({ ...base, discardTop: { design: 'SPADE', value: 4 } }));
     renderWithProviders(<BoliviaPage />);
     expect(await screen.findByTestId('sa-discard-pile')).toBeInTheDocument();
+  });
+
+  it('shows server score breakdown values only at round or game end', async () => {
+    const state = makeBoliviaState({
+      players: makeBoliviaState().players.map((player) =>
+        player.team === 0
+          ? {
+              ...player,
+              scoreBreakdown: {
+                cardPoints: 37,
+                naturalCanastaBonus: 500,
+                mixedCanastaBonus: 0,
+                escaleraBonus: 1500,
+                boliviaBonus: 2500,
+                red3Bonus: 300,
+                red3Penalty: 100,
+                goOutBonus: 100,
+                handPenalty: 65,
+              },
+            }
+          : player,
+      ),
+    });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<BoliviaPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('bo-score-breakdown-0')).not.toBeInTheDocument();
+
+    mockExec.mockResolvedValue(makeBoliviaState({ ...state, phase: 3 }));
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    const breakdown = await screen.findByTestId('bo-score-breakdown-0');
+    expect(breakdown).toHaveTextContent('チーム0');
+    expect(breakdown).toHaveTextContent('あなたのチーム');
+    expect(breakdown).toHaveTextContent('37');
+    expect(breakdown).toHaveTextContent('500');
+    expect(breakdown).toHaveTextContent('1500');
+    expect(breakdown).toHaveTextContent('2500');
+    expect(breakdown).toHaveTextContent('300');
+    expect(breakdown).toHaveTextContent('−100');
+    expect(breakdown).toHaveTextContent('−65');
+    expect(breakdown).toHaveTextContent('100');
+    expect(breakdown).toHaveTextContent('ミックスカナスタ0');
+    const opponentBreakdown = await screen.findByTestId('bo-score-breakdown-1');
+    expect(opponentBreakdown).toHaveTextContent('チーム1');
+    expect(opponentBreakdown).not.toHaveTextContent('あなたのチーム');
+    expect(opponentBreakdown).not.toHaveTextContent('−0');
   });
 });

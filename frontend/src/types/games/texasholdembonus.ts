@@ -11,6 +11,10 @@ export interface TexasHoldemBonusResponse extends BaseGameResponse {
   dealerHand: (Card | MaskedCard)[];
   /** Community cards (flop / turn / river). Length grows from 0 → 5 over phases. */
   community: Card[];
+  /** Player's best five cards at showdown. */
+  playerBest: Card[];
+  /** Dealer's best five cards at showdown. */
+  dealerBest: Card[];
   phase: number;
   chips: number;
   anteBet: number;

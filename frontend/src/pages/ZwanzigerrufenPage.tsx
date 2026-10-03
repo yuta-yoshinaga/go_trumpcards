@@ -11,6 +11,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
@@ -26,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { ZwanzigerrufenResponse } from '../types/card';
 import { ZwanzigerrufenBid, ZwanzigerrufenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { isSuitDesign, suitSymbol } from '../utils/cardAlt';
 import { parseZwanzigerrufenCommand, ZWANZIGERRUFEN_HELP } from '../utils/cli/commands/zwanzigerrufenCommands';
 import { formatZwanzigerrufenState } from '../utils/cli/formatters/zwanzigerrufenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -156,6 +158,16 @@ function ZwanzigerrufenPageContent() {
 
   const seatName = (id: number): string =>
     state.players[id]?.isHuman ? t('you') : t('cpu', { n: id, defaultValue: `CPU${id}` });
+  const activeTurn = isBid
+    ? { playerIdx: state.bidPlayerIdx, action: t('turnAction.bid') }
+    : isTalon
+      ? { playerIdx: state.currentPlayerIdx, action: t('turnAction.talon') }
+      : isPlay
+        ? { playerIdx: state.currentPlayerIdx, action: t('turnAction.play') }
+        : null;
+  const turnAnnouncement = activeTurn
+    ? t('turnAnnouncement', { name: seatName(activeTurn.playerIdx), action: activeTurn.action })
+    : '';
 
   return (
     <GamePageShell
@@ -170,7 +182,12 @@ function ZwanzigerrufenPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+      headerExtra={
+        <>
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+          <LiveAnnouncement message={turnAnnouncement} testId="zw-turn-announcement" />
+        </>
+      }
     >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
@@ -230,6 +247,15 @@ function ZwanzigerrufenPageContent() {
 
             <TrickDisplay
               currentTrick={state.currentTrick}
+              leadSuit={
+                state.currentTrick.length > 0
+                  ? isSuitDesign(state.currentTrick[0].card.design) &&
+                    !['✦', '★'].includes(String(state.currentTrick[0].card.glyph))
+                    ? suitSymbol(state.currentTrick[0].card.design)
+                    : t('leadTarock')
+                  : undefined
+              }
+              leadSuitLabel={t('leadSuit')}
               players={state.players.map((p) => ({ id: p.id, name: seatName(p.id), isHuman: p.isHuman }))}
               cardWidth={cardWidth}
               label={t('currentTrick')}

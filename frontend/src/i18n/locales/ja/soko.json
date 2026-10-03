@@ -10,9 +10,15 @@
     "rebuy": "リバイ/アドオン"
   },
   "doorCards": "ドアカード",
+  "latestDoorCard": "{{card}}、最新",
   "holeCards": "ホールカード",
   "yourHand": "あなたの手札",
   "anteBringIn": "アンティ/ブリングイン",
+  "callPotOdds": "、必要ポットオッズ: {{percent}}%",
+  "betting": {
+    "callAmount": "コールに必要な額: {{amount}}",
+    "checkAvailable": "チェック可能"
+  },
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "rebuy": {
     "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",

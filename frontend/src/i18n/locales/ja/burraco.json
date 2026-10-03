@@ -23,6 +23,7 @@
     "hard": "難しい"
   },
   "round": "ラウンド {{n}}",
+  "listSeparator": "、",
   "drawPile": "山札: {{count}}枚",
   "discardPile": "捨て札: {{count}}枚",
   "handCards": "{{count}}枚",
@@ -56,13 +57,20 @@
   },
   "frozenIndicator": "❄️ フリーズ",
   "selectMeld": "メルドするカードを選択してください",
+  "meldSelectionReason": {
+    "select": "メルドするカードを選択してください",
+    "valid": "選択したカードでメルドできます",
+    "validInitial": "組み合わせとしては成立します。初回メルドは最低点が必要です",
+    "invalid": "選択したカードではメルドできません"
+  },
   "result": {
     "humanWin": "あなたの勝利！",
     "cpuWin": "CPU {{cpuId}} の勝利！"
   },
   "score": {
     "cumulative": "累積",
-    "round": "ラウンド"
+    "round": "ラウンド",
+    "update": "{{player}}のラウンド得点は{{score}}点"
   },
   "tutorial": {
     "drawArea": "山札と捨て札エリアです。ここからカードを引きます。",

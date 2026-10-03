@@ -17,7 +17,7 @@ export interface CliTerminalProps {
 const ENTRY_STYLES: Record<CliLogEntry['type'], string> = {
   input: 'text-ds-success',
   output: 'text-ds-text-primary whitespace-pre-wrap',
-  error: 'text-ds-error',
+  error: 'text-ds-error-text',
 };
 
 /** Renders a pseudo-terminal UI with log display and command input. */

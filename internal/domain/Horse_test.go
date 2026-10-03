@@ -3,6 +3,10 @@
 package domain
 
 import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,6 +18,73 @@ func newHorseForTest(t *testing.T) *Horse {
 	g := NewDefaultHorse()
 	g.Reset()
 	return g
+}
+
+func TestHorse_GetSeatHandName(t *testing.T) {
+	t.Parallel()
+	known := map[string]bool{"Wheel": true, "Unknown": true}
+	for _, name := range PokerHandNames {
+		known[name] = true
+	}
+	for v := 1; v <= 13; v++ {
+		known[fmt.Sprintf("%d-Low", v)] = true
+	}
+	for _, discipline := range HorseRotation(HorseVariantHorse) {
+		t.Run(HorseDisciplineName(discipline), func(t *testing.T) {
+			g := NewHorse(HorseConfig{Variant: HorseVariantHorse, Seats: 4, InitialChips: 50000, HandsPerDiscipline: 1})
+			g.Reset()
+			g.discipline = discipline
+			g.startHand()
+			for steps := 0; g.GetPhase() == HorsePhaseHand; steps++ {
+				require.Less(t, steps, 200, "hand did not end")
+				if g.IsHumanTurn() {
+					if err := g.PlayerAction(HoldemActionCall, 0, 0); err != nil {
+						require.NoError(t, g.PlayerAction(HoldemActionCheck, 0, 0))
+					}
+				} else {
+					require.FailNow(t, "no human turn while hand remains active")
+				}
+			}
+			found := false
+			for seat := range g.GetSeatCount() {
+				if !g.GetSeatFolded(seat) {
+					name := g.GetSeatHandName(seat)
+					assert.NotEmpty(t, name)
+					assert.True(t, known[name], "unexpected hand name %q", name)
+					found = true
+				}
+			}
+			require.True(t, found, "expected a non-folded seat")
+			assert.Empty(t, g.GetSeatHandName(-1))
+			assert.Empty(t, g.GetSeatHandName(g.GetSeatCount()))
+			g.table = nil
+			assert.Empty(t, g.GetSeatHandName(0))
+		})
+	}
+	g := newHorseForTest(t)
+	horseFoldOutHand(t, g)
+	assert.Empty(t, g.GetSeatHandName(g.GetHumanSeat()), "folded seat must not expose a showdown hand")
+}
+
+func TestHorse_HandNamesHaveLocaleKeys(t *testing.T) {
+	names := append([]string(nil), PokerHandNames...)
+	names = append(names, "Unknown", "Wheel")
+	for value := 1; value <= 13; value++ {
+		names = append(names, fmt.Sprintf("%d-Low", value))
+	}
+	for _, lang := range []string{"ja", "en"} {
+		data, err := os.ReadFile(filepath.Join("..", "..", "frontend", "src", "i18n", "locales", lang, "horse.json"))
+		require.NoError(t, err)
+		var locale struct {
+			Result struct {
+				Hands map[string]json.RawMessage `json:"hands"`
+			} `json:"result"`
+		}
+		require.NoError(t, json.Unmarshal(data, &locale))
+		for _, name := range names {
+			assert.Contains(t, locale.Result.Hands, name, "%s locale missing hand key %q", lang, name)
+		}
+	}
 }
 
 // horseTotalChips は卓のチップ総量を返す。
@@ -200,9 +271,17 @@ func TestHorse_ChipsCarryAcrossDisciplines(t *testing.T) {
 // 卓が作れない以上、そこで区切るのが誤魔化しの無い扱いになる。
 func TestHorse_ABustEndsTheMatch(t *testing.T) {
 	t.Parallel()
-	g := NewHorse(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
-	g.Reset()
-	horseFoldOutHand(t, g)
+	var g *Horse
+	for attempts := 0; attempts < 1000; attempts++ {
+		candidate := NewHorse(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+		candidate.Reset()
+		horseFoldOutHand(t, candidate)
+		if !candidate.GetGameEndFlag() {
+			g = candidate
+			break
+		}
+	}
+	require.NotNil(t, g, "マッチが継続する配りが見つからなかった")
 	g.SetSeatChips(2, 0)
 	require.NoError(t, g.NextHand())
 
@@ -471,7 +550,7 @@ func TestHorse_HandIsSettledWhenNoHumanActionWasNeeded(t *testing.T) {
 	t.Parallel()
 	stuckShaped := 0
 	for range 200 {
-		g := NewEightGame(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+		g := NewHorse(HorseConfig{Variant: HorseVariantEightGame, Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
 		g.Reset()
 		g.discipline = HorseStudHiLo
 		// アンティ (1) でちょうど出し切る席にする。
@@ -503,7 +582,7 @@ func TestHorse_HandIsSettledWhenNoHumanActionWasNeeded(t *testing.T) {
 // では落ちない)。決着の記録の方を見る ── 門が無いと `handEnd` が 2 行積まれる。
 func TestHorse_SettleIsIdempotent(t *testing.T) {
 	t.Parallel()
-	g := NewEightGame(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+	g := NewHorse(HorseConfig{Variant: HorseVariantEightGame, Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
 	g.Reset()
 	// 普通に 1 ハンド打ち切る。配りに依らずここで決着まで行く。
 	for range 200 {

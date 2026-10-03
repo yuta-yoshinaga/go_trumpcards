@@ -86,14 +86,7 @@ func (ti *RussianBankInteractor) MoveToTableau(zone int, fromOpp bool, col, toCo
 
 // Discard 手札を 1 枚捨てて手番終了し、CPU 手番を自動進行する。
 func (ti *RussianBankInteractor) Discard() string {
-	if out, blocked := guardNotPlayable(ti.Game, ti.sp); blocked {
-		return out
-	}
-	if err := ti.Game.Discard(); err != nil {
-		return ti.sp.Output(ti.Game, err)
-	}
-	ti.advanceCpu()
-	return ti.sp.Output(ti.Game, nil)
+	return humanAction(ti.Game, ti.sp, func() error { return ti.Game.Discard() }, ti.advanceCpu)
 }
 
 // CallStop CPU の取りこぼしを咎める。

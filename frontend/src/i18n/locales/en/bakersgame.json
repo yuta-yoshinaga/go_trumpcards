@@ -14,6 +14,8 @@
   "moveCount": "Moves",
   "foundationProgress": "Foundations: {{count}}/52",
   "empty": "Empty",
+  "hintCardPosition": "card position {{index}}",
+  "tableauCardAriaLabel": "{{card}}, column {{col}}, position {{pos}}",
   "hintAvailable": "Hint",
   "doubleClickHint": "Double-click or double-tap a card to send it to the foundation",
   "foundationAriaLabel": "{{suit}} Foundation ({{cardCount}} cards)",

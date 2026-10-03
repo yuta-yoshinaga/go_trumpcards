@@ -30,6 +30,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, FourCardPokerResponse } from '../types/card';
 import { FourCardPokerPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { FOURCARDPOKER_HELP, parseFourCardPokerCommand } from '../utils/cli/commands/fourcardpokerCommands';
 import { formatFourCardPokerState } from '../utils/cli/formatters/fourcardpokerFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
@@ -73,6 +74,12 @@ const HAND_RANK_KEYS: Record<number, string> = {
   7: 'handRank.7',
   8: 'handRank.8',
 };
+
+/** Return the translation key for a best-hand card label, or undefined without a best hand. */
+function bestCardLabel(inBest: boolean, bestSize: number): 'bestCardIncluded' | 'bestCardExcluded' | undefined {
+  if (bestSize === 0) return undefined;
+  return inBest ? 'bestCardIncluded' : 'bestCardExcluded';
+}
 
 /** Renders the Four Card Poker game page. */
 export const FourCardPokerPage = withTutorial(FourCardPokerPageContent, 'fourcardpoker', FCP_TUTORIAL_STEPS);
@@ -289,6 +296,7 @@ function FourCardPokerPageContent() {
                     // playerBest で届いているのに画面では見分けられず、自分で
                     // 見比べる必要があった (#5610)。CUI は bestHand 行で出している。
                     const inBest = playerBestIdx.has(i);
+                    const label = isEndPhase ? bestCardLabel(inBest, playerBestIdx.size) : undefined;
                     return (
                       <div
                         key={`p-${card.design}-${card.value}-${i}`}
@@ -297,7 +305,11 @@ function FourCardPokerPageContent() {
                         }`}
                         data-fcp-best={inBest || undefined}
                       >
-                        <AnimatedCard card={card} width={cardWidth} />
+                        <AnimatedCard
+                          card={card}
+                          width={cardWidth}
+                          ariaLabel={label ? t(label, { card: cardAlt(card) }) : undefined}
+                        />
                       </div>
                     );
                   })}
@@ -308,7 +320,7 @@ function FourCardPokerPageContent() {
             {/* Dealer Hand */}
             {state.dealerHand.length > 0 && (
               <div className="mb-4">
-                <div className="text-ds-error font-bold text-center mb-1">
+                <div className="text-ds-error-text font-bold text-center mb-1">
                   <span aria-hidden="true">🔴</span> {t('dealer')}
                   {isActionPhase && <span className="ml-2 text-xs">({t('dealerUpcard')})</span>}
                   {isEndPhase && state.dealerHandRank > 0 && (
@@ -318,6 +330,7 @@ function FourCardPokerPageContent() {
                 <div className="flex justify-center gap-2 flex-wrap">
                   {state.dealerHand.map((card, i) => {
                     const inBest = dealerBestIdx.has(i);
+                    const label = isEndPhase ? bestCardLabel(inBest, dealerBestIdx.size) : undefined;
                     return (
                       <div
                         key={`d-${card.design}-${card.value}-${i}`}
@@ -326,7 +339,11 @@ function FourCardPokerPageContent() {
                         }`}
                         data-fcp-dealer-best={inBest || undefined}
                       >
-                        <AnimatedCard card={card} width={cardWidth} />
+                        <AnimatedCard
+                          card={card}
+                          width={cardWidth}
+                          ariaLabel={label ? t(label, { card: cardAlt(card) }) : undefined}
+                        />
                       </div>
                     );
                   })}
@@ -412,7 +429,7 @@ function FourCardPokerPageContent() {
                   describedBy={betInvalid ? 'fcp-bet-error' : undefined}
                 />
                 {betInvalid && (
-                  <p id="fcp-bet-error" role="alert" className="text-ds-error text-xs">
+                  <p id="fcp-bet-error" role="alert" className="text-ds-error-text text-xs">
                     {t('betError')}
                   </p>
                 )}
@@ -423,6 +440,7 @@ function FourCardPokerPageContent() {
             )}
             {isActionPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="fcp-action-buttons">
+                <p className="text-ds-warning text-sm text-center">{t('foldWarning', { amount: state.anteBet })}</p>
                 <div className="flex flex-wrap justify-center gap-2">
                   {[1, 2, 3].map((mult) => (
                     <button

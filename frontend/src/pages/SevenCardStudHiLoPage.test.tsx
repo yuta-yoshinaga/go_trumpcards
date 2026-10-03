@@ -1,10 +1,11 @@
 import { screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { sevenCardStudHiLoApi } from '../api/gameApi';
+import { sevenCardStudApi, sevenCardStudHiLoApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { SevenCardStudPlayerData, SevenCardStudResponse } from '../types/card';
 import { SevenCardStudPhase } from '../types/phases';
 import { SevenCardStudHiLoPage } from './SevenCardStudHiLoPage';
+import { SevenCardStudPage } from './SevenCardStudPage';
 
 vi.mock('../api/gameApi', () => ({
   sevenCardStudApi: { exec: vi.fn() },
@@ -13,6 +14,7 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(sevenCardStudHiLoApi.exec);
+const mockStudExec = vi.mocked(sevenCardStudApi.exec);
 
 const card = (design: 'SPADE' | 'HEART' | 'CLOVER' | 'DIAMOND', value: number) => ({ design, value });
 
@@ -203,5 +205,32 @@ describe('SevenCardStudHiLoPage low hand badge', () => {
 
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('scs-current-low')).not.toBeInTheDocument();
+  });
+
+  it('shows opponents’ exposed low ranks during play without using their hole cards', async () => {
+    const cpu = {
+      ...seat(1, false),
+      doorCards: [card('CLOVER', 1), card('SPADE', 3), card('HEART', 6), card('DIAMOND', 8)],
+      holeCards: [card('SPADE', 2), card('HEART', 4), card('DIAMOND', 5)],
+    } as unknown as SevenCardStudPlayerData;
+    mockExec.mockResolvedValue(makeState({ players: [seat(0, true), cpu] }));
+    renderWithProviders(<SevenCardStudHiLoPage />);
+
+    const badge = await screen.findByTestId('scs-opponent-low-1');
+    expect(badge).toHaveTextContent('8-6-3-A');
+    expect(badge).not.toHaveTextContent('5');
+  });
+
+  it('does not show exposed low ranks in plain Seven Card Stud', async () => {
+    const cpu = {
+      ...seat(1, false),
+      doorCards: [card('CLOVER', 1), card('SPADE', 3), card('HEART', 6), card('DIAMOND', 8)],
+    } as unknown as SevenCardStudPlayerData;
+    mockExec.mockResolvedValue(makeState({ isHiLo: false, players: [seat(0, true), cpu] }));
+    mockStudExec.mockResolvedValue(makeState({ isHiLo: false, players: [seat(0, true), cpu] }));
+    renderWithProviders(<SevenCardStudPage />);
+
+    await waitFor(() => expect(mockStudExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('scs-opponent-low-1')).not.toBeInTheDocument();
   });
 });

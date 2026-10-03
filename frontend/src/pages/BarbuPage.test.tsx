@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { barbuApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -187,7 +187,7 @@ describe('BarbuPage', () => {
     expect(matrix).toHaveTextContent('♠');
   });
 
-  it('hides the score matrix while a deal is in progress', async () => {
+  it('opens the completed-deal score matrix while a deal is in progress', async () => {
     mockExec.mockResolvedValue(
       makeState({
         phase: 'play',
@@ -198,7 +198,29 @@ describe('BarbuPage', () => {
     );
     renderWithProviders(<BarbuPage />);
     await waitFor(() => expect(screen.getByTestId('play-button')).toBeInTheDocument());
-    expect(screen.queryByTestId('bb-score-matrix')).not.toBeInTheDocument();
+    const history = screen.getByTestId('bb-deal-history');
+    expect(history).not.toHaveAttribute('open');
+    fireEvent.click(within(history).getByText('ディール履歴'));
+    expect(history).toHaveAttribute('open');
+    const matrix = within(history).getByTestId('bb-score-matrix');
+    expect(matrix).toHaveTextContent('ノー・トリック');
+    expect(matrix).toHaveTextContent('-4');
+    fireEvent.click(within(history).getByText('ディール履歴'));
+    expect(history).not.toHaveAttribute('open');
+  });
+
+  it('keeps the score matrix open at game end', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'gameEnd',
+        gameEndFlag: true,
+        dealHistory: [{ contract: 0, trumpSuit: -1, dealerIdx: 0, gained: { 0: -4, 1: 0, 2: -2, 3: 0 } }],
+      }),
+    );
+    renderWithProviders(<BarbuPage />);
+    const history = await screen.findByTestId('bb-deal-history');
+    expect(history).toHaveAttribute('open');
+    expect(within(history).getByTestId('bb-score-matrix')).toHaveTextContent('ノー・トリック');
   });
 
   it('shows the next-deal button at deal end', async () => {
@@ -273,6 +295,9 @@ describe('BarbuPage', () => {
     expect(nonTrump).not.toHaveAttribute('data-trump');
     expect(trump).toHaveAttribute('data-trump', 'true');
     expect(secondTrump).toHaveAttribute('data-trump', 'true');
+    expect(within(trump).getByTestId('trump-card-badge')).toHaveTextContent('切札');
+    expect(within(secondTrump).getByTestId('trump-card-badge')).toHaveTextContent('切札');
+    expect(within(nonTrump).queryByTestId('trump-card-badge')).not.toBeInTheDocument();
     expect(trump).toHaveAttribute('aria-label', '♥ 5 (切札のカード)');
     fireEvent.click(trump);
     expect(trump).toHaveClass('border-ds-accent', 'ring-2', 'ring-ds-info');
@@ -292,5 +317,6 @@ describe('BarbuPage', () => {
 
     expect(await screen.findByTestId('hand-card-0')).not.toHaveAttribute('data-trump');
     expect(screen.getByTestId('hand-card-1')).not.toHaveAttribute('data-trump');
+    expect(screen.queryByTestId('trump-card-badge')).not.toBeInTheDocument();
   });
 });

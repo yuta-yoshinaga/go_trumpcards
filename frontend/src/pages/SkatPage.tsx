@@ -143,6 +143,7 @@ function SkatPageContent() {
   const isRoundEnd = state.phase === SkatPhase.ROUND_END;
   const isGameEnd = state.phase === SkatPhase.GAME_END || state.gameEndFlag;
 
+  const declarer = state.declarerIdx >= 0 ? state.players[state.declarerIdx] : undefined;
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isHumanTurn = isPlay && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanBidTurn =
@@ -214,7 +215,7 @@ function SkatPageContent() {
                     <div
                       data-testid="bid-estimate"
                       data-exceeds={exceeds ? 'true' : undefined}
-                      className={`text-xs ${exceeds ? 'text-ds-error' : 'text-ds-text-muted'}`}
+                      className={`text-xs ${exceeds ? 'text-ds-error-text' : 'text-ds-text-muted'}`}
                     >
                       {t('bidEstimate', { value: est.value, type: t(`gameTypeLabel.${est.gameType.toLowerCase()}`) })}
                       {exceeds && <span className="ml-2">⚠️ {t('bidExceedsHand')}</span>}
@@ -234,6 +235,16 @@ function SkatPageContent() {
                           : t('nullGame')}
                     </span>
                   )}
+                </div>
+              )}
+              {(isPlay || isTrickEnd) && declarer && state.gameType !== SkatGameType.NONE && (
+                <div data-testid="skat-contract-progress" className="text-ds-text-muted">
+                  {state.gameType === SkatGameType.NULL
+                    ? t('nullContractProgress', { current: declarer.trickCount })
+                    : t('pointsContractProgress', {
+                        current: declarer.cardPoints,
+                        target: 61,
+                      })}
                 </div>
               )}
             </div>
@@ -264,10 +275,20 @@ function SkatPageContent() {
             {/* Skat (face-up at round end) */}
             {state.originalSkat && state.originalSkat.length > 0 && (
               <div className="bg-black/30 text-ds-text-primary p-3 rounded">
-                <div className="text-sm mb-1">{t('skatLabel')}:</div>
-                <div className="flex gap-2" data-testid="skat-reveal">
+                <div className="text-sm mb-1">{t('originalSkatLabel')}:</div>
+                <div className="flex gap-2" data-testid="original-skat-reveal">
                   {state.originalSkat.map((c, i) => (
                     <AnimatedCard key={`skat-${i}`} card={c} width={cardWidth} dealDelay={i * 0.15} />
+                  ))}
+                </div>
+              </div>
+            )}
+            {(isRoundEnd || isGameEnd) && state.pickedSkat && state.skat && state.skat.length > 0 && (
+              <div className="bg-black/30 text-ds-text-primary p-3 rounded">
+                <div className="text-sm mb-1">{t('finalSkatLabel')}:</div>
+                <div className="flex gap-2" data-testid="final-skat-reveal">
+                  {state.skat.map((c, i) => (
+                    <AnimatedCard key={`final-skat-${i}`} card={c} width={cardWidth} dealDelay={i * 0.15} />
                   ))}
                 </div>
               </div>

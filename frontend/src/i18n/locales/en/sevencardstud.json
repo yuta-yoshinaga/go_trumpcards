@@ -18,6 +18,8 @@
   "currentLow": "Current low: {{low}}",
   "anteBringIn": "Ante/Bring-in",
   "bringIn": "Bring-in",
+  "callAmount": "({{amount}})",
+  "callPotOdds": "Required pot odds: {{percent}}%",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",

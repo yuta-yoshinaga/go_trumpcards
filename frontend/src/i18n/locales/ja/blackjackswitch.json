@@ -28,9 +28,14 @@
     "switch": "ハンド1とハンド2の2枚目を交換できます。",
     "action": "ハンド{{idx}} の操作: ヒット / スタンド / ダブルダウン"
   },
+  "betSummary": {
+    "total": "2ハンド合計必要額: {{amount}}（所持チップ {{chips}}）",
+    "overBalance": "合計必要額がチップを超えています"
+  },
   "badge": {
     "bust": "バースト",
     "bj": "BJ",
+    "doubled": "ダブルダウン済み",
     "acting": "操作中"
   },
   "result": {

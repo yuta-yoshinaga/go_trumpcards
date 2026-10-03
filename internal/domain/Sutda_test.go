@@ -282,6 +282,41 @@ func TestSutda_SplitPotLosesNoChips(t *testing.T) {
 	assert.Equal(t, before+7, s.GetPlayer(0).GetChips()+s.GetPlayer(1).GetChips(), "チップが消えている")
 }
 
+func TestSutda_RecordsWinnerSharesInOrder(t *testing.T) {
+	t.Run("three-way split of 100", func(t *testing.T) {
+		s := newSutdaForTest(t)
+		hands := [][2]*Card{
+			{sutdaPlain(2), sutdaPlain(3)},
+			{sutdaPlain(2), sutdaPlain(3)},
+			{sutdaPlain(2), sutdaPlain(3)},
+		}
+		for i, hand := range hands {
+			sutdaSetHand(s, i, hand[0], hand[1])
+		}
+		s.pot = 100
+		s.showdown()
+		res := s.GetLastResult()
+		require.NotNil(t, res)
+		assert.Equal(t, []int{0, 1, 2}, res.Winners)
+		assert.Equal(t, []int{34, 33, 33}, res.Shares)
+	})
+
+	t.Run("sole winner", func(t *testing.T) {
+		s := newSutdaForTest(t)
+		sutdaSetHand(s, 0, sutdaPlain(2), sutdaPlain(3))
+		sutdaSetHand(s, 1, sutdaCard(3, 1), sutdaCard(8, 1))
+		for i := 2; i < s.GetPlayerCnt(); i++ {
+			s.GetPlayer(i).SetFolded(true)
+		}
+		s.pot = 100
+		s.showdown()
+		res := s.GetLastResult()
+		require.NotNil(t, res)
+		assert.Equal(t, []int{1}, res.Winners)
+		assert.Equal(t, []int{100}, res.Shares)
+	})
+}
+
 // **強い役が勝つ。** 光ッタンは땡 にも끗 にも負けない。
 func TestSutda_StrongestHandTakesThePot(t *testing.T) {
 	s := newSutdaForTest(t)
@@ -390,6 +425,13 @@ func TestSutda_RejectsTamperedSnapshot(t *testing.T) {
 	restored := new(Sutda)
 	assert.Error(t, restored.UnmarshalJSON([]byte("{")))
 	assert.Error(t, restored.UnmarshalJSON([]byte(`{"pl":[]}`)))
+}
+
+func TestSutdaHandResult_UnmarshalOldSnapshotWithoutShares(t *testing.T) {
+	var result SutdaHandResult
+	require.NoError(t, json.Unmarshal([]byte(`{"w":[1],"p":40,"h":[],"f":[]}`), &result))
+	assert.Equal(t, []int{1}, result.Winners)
+	assert.Nil(t, result.Shares)
 }
 
 // **席数を変えたら卓も変わる。** 設定だけ変えて席が据え置きだと食い違う。

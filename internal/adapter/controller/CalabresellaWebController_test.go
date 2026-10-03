@@ -20,6 +20,7 @@ func mustCalabresellaOutputJSON(msg string) string {
 		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		SoloistIdx:      -1,
+		HighestBid:      0,
 		LastTrickWinner: -1,
 		WinnerPlayer:    -1,
 		WebOutputBase:   controller.WebOutputBase{Message: msg},

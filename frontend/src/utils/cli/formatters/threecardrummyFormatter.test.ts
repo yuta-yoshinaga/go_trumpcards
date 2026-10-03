@@ -49,6 +49,7 @@ function makeState(overrides: Partial<ThreeCardRummyResponse> = {}): ThreeCardRu
     anteBonusPayout: 0,
     lowBonusPayout: 0,
     totalPayout: 0,
+    netChange: 0,
     dealerQualified: false,
     playerScore: 17,
     dealerScore: 13,

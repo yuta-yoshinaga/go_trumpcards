@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, courchevelHiLoApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { OmahaResponse } from '../types/card';
@@ -853,7 +854,7 @@ describe('CourchevelHiLoPage', () => {
   it('shows call/raise buttons when canAct and has outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<CourchevelHiLoPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
@@ -956,11 +957,11 @@ describe('CourchevelHiLoPage', () => {
   it('calls call command when has outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<CourchevelHiLoPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', undefined, undefined, 0));
   });
 
@@ -1447,7 +1448,7 @@ describe('CourchevelHiLoPage', () => {
     it('pressing c triggers call when canAct and hasOutstandingBet', async () => {
       mockExec.mockResolvedValue(preFlopWithBetState);
       renderWithProviders(<CourchevelHiLoPage />);
-      await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
       mockExec.mockClear();
       mockExec.mockResolvedValue(preFlopWithBetState);
@@ -1562,7 +1563,7 @@ describe('CourchevelHiLoPage', () => {
     it('pressing k is ignored when hasOutstandingBet', async () => {
       mockExec.mockResolvedValue(preFlopWithBetState);
       renderWithProviders(<CourchevelHiLoPage />);
-      await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
       mockExec.mockClear();
 
@@ -1632,6 +1633,29 @@ describe('CourchevelHiLoPage', () => {
 
       fireEvent.click(screen.getByLabelText('ラーニングモード'));
       expect(screen.getByTestId('equity-display')).toBeInTheDocument();
+    });
+
+    it('shows low share percentage when learning mode is on and lowProbability exists', async () => {
+      mockExec.mockResolvedValue({
+        ...preFlopState,
+        equity: { winProbability: 0.75, lowProbability: 0.42, handOdds: [] },
+        potOdds: 33.3,
+      });
+      renderWithProviders(<CourchevelHiLoPage />);
+      await waitFor(() => expect(screen.getByTestId('learning-mode-toggle')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByLabelText('ラーニングモード'));
+      expect(screen.getByTestId('low-probability')).toHaveTextContent('42%');
+    });
+
+    it('does not show low share when lowProbability is absent', async () => {
+      mockExec.mockResolvedValue(stateWithEquity);
+      renderWithProviders(<CourchevelHiLoPage />);
+      await waitFor(() => expect(screen.getByTestId('learning-mode-toggle')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByLabelText('ラーニングモード'));
+      expect(screen.getByTestId('equity-display')).toBeInTheDocument();
+      expect(screen.queryByTestId('low-probability')).not.toBeInTheDocument();
     });
 
     it('hides equity display when learning mode is toggled off', async () => {
@@ -1814,5 +1838,56 @@ describe('CourchevelHiLoPage', () => {
     renderWithProviders(<CourchevelHiLoPage />);
     const panel = await screen.findByTestId('courchevelhilo-kbd-shortcuts');
     expect(panel).toBeInTheDocument();
+  });
+
+  it('shows each contested pot amount and its eligible players while betting', async () => {
+    mockExec.mockResolvedValue({
+      ...preFlopState,
+      sidePots: [
+        { amount: 120, eligiblePlayers: [0, 1, 2] },
+        { amount: 80, eligiblePlayers: [1, 2] },
+        { amount: 40, eligiblePlayers: [2] },
+      ],
+    });
+    renderWithProviders(<CourchevelHiLoPage />);
+
+    expect(await screen.findByText('メインポット 120: 対象 [あなた、CPU 1、CPU 2]')).toBeInTheDocument();
+    expect(screen.getByText('サイドポット1 80: 対象 [CPU 1、CPU 2]')).toBeInTheDocument();
+    expect(screen.getByText('サイドポット2 40: 対象 [CPU 2]')).toBeInTheDocument();
+  });
+
+  it('shows Hi and Lo payouts separately for every showdown pot', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      potAwards: [
+        { amount: 120, eligible: [0, 1, 2], hiWinners: [0], hiPayouts: [60], loWinners: [1], loPayouts: [60] },
+        { amount: 80, eligible: [1, 2], hiWinners: [2], hiPayouts: [80], loWinners: [], loPayouts: [] },
+      ],
+    });
+    renderWithProviders(<CourchevelHiLoPage />);
+
+    expect(await screen.findByTestId('courchevelhilo-pot-awards')).toBeInTheDocument();
+    const pots = await screen.findAllByTestId('courchevelhilo-pot-award');
+    expect(pots).toHaveLength(2);
+    expect(pots[0]).toHaveTextContent(
+      'メインポット 120: 対象 [あなた、CPU 1、CPU 2] → 勝者 ハイ: あなた (+60) (ロー: CPU 1 (+60))',
+    );
+    expect(pots[1]).toHaveTextContent('サイドポット1 80: 対象 [CPU 1、CPU 2] → 勝者 ハイ: CPU 2 (+80)');
+  });
+
+  it('renders pot award sentences in English', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      potAwards: [
+        { amount: 80, eligible: [1, 2], hiWinners: [2], hiPayouts: [80], loWinners: [], loPayouts: [] },
+        { amount: 30, eligible: [2], hiWinners: [2], hiPayouts: [30], loWinners: [], loPayouts: [] },
+      ],
+    });
+    renderWithProviders(<CourchevelHiLoPage />);
+
+    const awards = await screen.findAllByTestId('courchevelhilo-pot-award');
+    expect(awards[0]).toHaveTextContent('Main pot 80: eligible [CPU 1, CPU 2] → winners Hi: CPU 2 (+80)');
+    await i18n.changeLanguage('ja');
   });
 });

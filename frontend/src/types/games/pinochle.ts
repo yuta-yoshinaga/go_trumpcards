@@ -51,6 +51,8 @@ export interface PinochlePlayerData {
 export interface PinochleResponse extends BaseGameResponse {
   players: PinochlePlayerData[];
   phase: number;
+  /** Domain-calculated contract result; present only after a round is scored. */
+  contractMade?: boolean;
   roundNumber: number;
   trickNumber: number;
   currentPlayerIdx: number;
@@ -60,6 +62,10 @@ export interface PinochleResponse extends BaseGameResponse {
   highestBid: number;
   highestBidder: number;
   currentTrick: PinochleTrickCard[];
+  /** Cards in the most recently completed trick. */
+  lastTrick: PinochleTrickCard[];
+  /** Winner of the most recently completed trick, or -1 when none. */
+  lastTrickWinner: number;
   teamScores: [number, number];
   gameEndFlag: boolean;
   winnerTeam: number;

@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { SlobberhannesPlayer, SlobberhannesResponse } from '../types/card';
@@ -144,6 +145,7 @@ function SlobberhannesPageContent() {
   // ♣Q は「今場に出ているか」がリスクの本体で、取ってから penaltyMarks で
   // 気づくのでは遅い。
   const queenOnTable = state.currentTrick.some((tc) => isPenaltyQueen(tc.card));
+  const queenAlreadyTaken = state.players.some((player) => player.tookQueen);
   const queenInHandIdx = human?.cards.findIndex((card) => isPenaltyQueen(card)) ?? -1;
   const isLastTrick = state.trickNumber === TRICKS_PER_ROUND - 1;
 
@@ -199,7 +201,7 @@ function SlobberhannesPageContent() {
             {/* ♣Q が場に出ている間は、位置の警告と並べて出す。 */}
             {!isGameEnd && !isRoundEnd && queenOnTable && (
               <div
-                className="mb-3 rounded bg-black/30 border border-ds-error px-3 py-2 text-ds-text-primary text-sm text-center"
+                className="mb-3 rounded bg-ds-surface border border-ds-error px-3 py-2 text-ds-text-primary text-sm text-center"
                 role="status"
                 data-testid="sh-queen-warning"
               >
@@ -207,10 +209,20 @@ function SlobberhannesPageContent() {
               </div>
             )}
 
+            {!isGameEnd && !isRoundEnd && !queenOnTable && !queenAlreadyTaken && queenInHandIdx < 0 && (
+              <div
+                className={`mb-3 rounded px-3 py-2 text-ds-text-primary text-sm text-center ${badgeInfoColors}`}
+                role="status"
+                data-testid="sh-queen-unseen-warning"
+              >
+                {t('warn.queenUnseen')}
+              </div>
+            )}
+
             {/* 最初と最後のトリックは中身に関係なく罰点対象。盤面には出ない情報。 */}
             {!isGameEnd && !isRoundEnd && (isFirstTrick || isLastTrick) && (
               <div
-                className="mb-3 rounded bg-black/30 border border-ds-warning px-3 py-2 text-ds-text-primary text-sm text-center"
+                className="mb-3 rounded bg-ds-surface border border-ds-warning px-3 py-2 text-ds-text-primary text-sm text-center"
                 role="status"
                 data-testid="sh-position-warning"
               >
@@ -265,29 +277,32 @@ function SlobberhannesPageContent() {
                   {t('header.you')}: {human.cardCount}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {human.cards.map((card, idx) => (
-                    <button
-                      key={`${card.design}-${card.value}-${idx}`}
-                      type="button"
-                      onClick={() => handlePlay(idx)}
-                      disabled={loading || !isHumanTurn}
-                      aria-label={
-                        idx === queenInHandIdx
-                          ? `${t('actions.playAria', { card: cardAlt(card) })} - ${t('warn.queenInHand')}`
-                          : t('actions.playAria', { card: cardAlt(card) })
-                      }
-                      className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''} ${
-                        idx === queenInHandIdx ? 'rounded-lg outline outline-2 outline-ds-error' : ''
-                      }`}
-                    >
-                      <CardImage card={card} width={cardWidth} />
-                      {idx === queenInHandIdx && (
-                        <span className="sr-only" data-testid="sh-queen-in-hand">
-                          {t('warn.queenInHand')}
-                        </span>
-                      )}
-                    </button>
-                  ))}
+                  {human.cards.map((card, idx) => {
+                    const label = isHumanTurn
+                      ? t(legalRing.has(idx) ? 'actions.playAriaPlayable' : 'actions.playAriaUnplayable', {
+                          card: cardAlt(card),
+                        })
+                      : t('actions.playAria', { card: cardAlt(card) });
+                    return (
+                      <button
+                        key={`${card.design}-${card.value}-${idx}`}
+                        type="button"
+                        onClick={() => handlePlay(idx)}
+                        disabled={loading || !isHumanTurn}
+                        aria-label={`${label}${idx === queenInHandIdx ? ` - ${t('warn.queenInHand')}` : ''}`}
+                        className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''} ${
+                          idx === queenInHandIdx ? 'rounded-lg outline outline-2 outline-ds-error' : ''
+                        }`}
+                      >
+                        <CardImage card={card} width={cardWidth} />
+                        {idx === queenInHandIdx && (
+                          <span className="sr-only" data-testid="sh-queen-in-hand">
+                            {t('warn.queenInHand')}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}

@@ -6,6 +6,8 @@
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpSetTarget": "  st <n>               目標点設定 (既定21)",
   "round": "ラウンド: {{round}}  トリック: {{trick}}",
+  "currentTrickPoints": "場札の得点: {{thirds}}/3点",
+  "resolvedTrickPoints": "チーム{{team}}がこのトリックで獲得: {{thirds}}/3点",
   "teamScores": "チームA: {{a}}点 (今R {{athird}}/3)   チームB: {{b}}点 (今R {{bthird}}/3)",
   "thirdsRule": "サード: カード点は1/3点単位で数え、3たまるごとに1点へ換算されます (端数は持ち越し)",
   "playerLine": "{{name}} [チーム{{team}}]: {{cards}}枚 {{tricks}}トリック",

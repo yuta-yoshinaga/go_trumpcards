@@ -27,6 +27,10 @@
   "bidNone": "No bid",
   "buried": "Buried: {{count}}",
   "bidProgress": "Bid: {{bid}} / Won: {{won}}",
+  "roundScoreAnnouncementName": "{{name}} ({{result}})",
+  "roundScoreAnnouncementResult": "bid {{bid}}, {{tricks}} tricks won",
+  "roundScoreAnnouncementResultNoBid": "no bid, {{tricks}} tricks won",
+  "listSeparator": ", ",
   "buryRemaining": "Select {{count}} more card(s)",
   "buryReady": "3 cards selected. Press Bury to confirm.",
   "buryTooMany": "{{count}} too many selected; choose exactly 3",
@@ -90,5 +94,7 @@
   },
   "hintRequested": "Hint available",
   "noHint": "No hint available",
-  "trickWinnerBadge": "WIN"
+  "trickWinnerBadge": "WIN",
+  "legalPlay": "Playable",
+  "followSuitRequired": "Must follow the led suit"
 }

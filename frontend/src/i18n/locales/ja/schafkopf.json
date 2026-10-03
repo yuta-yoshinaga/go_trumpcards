@@ -48,7 +48,12 @@
     "pickerPoints": "ピッカー側の得点: {{points}}",
     "multiplier": "倍率: x{{multiplier}}",
     "pickerWon": "ピッカー側の勝ち",
-    "pickerLost": "ピッカー側の負け"
+    "pickerLost": "ピッカー側の負け",
+    "chipChanges": "チップ増減"
+  },
+  "roundProgress": {
+    "pickerPoints": "ピッカー側の獲得点: {{points}} / 勝利に必要な点数: {{target}}",
+    "pickerOnlyPoints": "ピッカーの獲得点 (パートナー未公開): {{points}} / 勝利に必要な点数: {{target}}"
   },
   "passCount": "パス: {{count}}人",
   "hintAvailable": "ヒント",

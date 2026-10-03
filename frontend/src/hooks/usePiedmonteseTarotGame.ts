@@ -98,5 +98,6 @@ export function usePiedmonteseTarotGame() {
     handlePlay,
     handleNextTrick,
     handleNextRound,
+    completedTricks: state?.completedTricks ?? [],
   };
 }

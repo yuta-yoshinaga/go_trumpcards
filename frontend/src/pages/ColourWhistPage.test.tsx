@@ -3,9 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { colourwhistApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { makeColourWhistState } from '../test/stateFactories';
 import type { Card, ColourWhistResponse } from '../types/card';
 import { COLOUR_WHIST_NO_TRUMP } from '../types/games/colourwhist';
 import { ColourWhistContract, ColourWhistPhase } from '../types/phases';
+import { cardAlt } from '../utils/cardAlt';
 import { ColourWhistPage } from './ColourWhistPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -38,6 +40,7 @@ const seat = (id: number, isHuman: boolean, cards: Card[] = []) => ({
   cards,
   trickCount: 0,
   score: 0,
+  roundScores: [],
   isDeclarerSide: false,
   hasPassed: false,
 });
@@ -92,6 +95,24 @@ beforeEach(() => {
 });
 
 describe('ColourWhistPage', () => {
+  it('shows each completed round score by player', async () => {
+    mockApi.mockResolvedValue(
+      makeColourWhistState({ players: bidState.players.map((p, i) => ({ ...p, roundScores: [i, -i] })) }),
+    );
+    renderWithProviders(<ColourWhistPage />);
+    const history = await screen.findByTestId('colourwhist-score-history');
+    expect(history).toHaveTextContent('ラウンド別得点');
+    expect(history).toHaveTextContent('0');
+    expect(history).toHaveTextContent('1');
+    expect(history.querySelectorAll('tbody tr')).toHaveLength(2);
+  });
+  it('uses localized card names for hand buttons', async () => {
+    mockApi.mockResolvedValue(playState);
+    renderWithProviders(<ColourWhistPage />);
+    const handElement = await screen.findByTestId('colourwhist-hand');
+    expect(handElement.querySelector('button')).toHaveAttribute('aria-label', cardAlt({ design: 'SPADE', value: 1 }));
+  });
+
   it('resets on mount', async () => {
     mockApi.mockResolvedValue(bidState);
     renderWithProviders(<ColourWhistPage />);

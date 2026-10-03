@@ -12,6 +12,8 @@ type SpiteAndMaliceInteractorIF interface {
 	Snapshot() ([]byte, error)
 	// Reset ゲーム初期化
 	Reset() string
+	// Undo reverts the latest human action.
+	Undo() string
 	// PlayFromHand 手札からファウンデーションに出す
 	PlayFromHand(handIdx, foundationIdx int) string
 	// PlayFromGoal ゴールパイルのトップをファウンデーションに出す
@@ -45,6 +47,11 @@ func NewSpiteAndMaliceInteractor(g interfaces.SpiteAndMaliceGame, sp presenter.S
 // Reset ゲーム初期化
 func (si *SpiteAndMaliceInteractor) Reset() string {
 	return runAndPresent(si.Game, si.sp, si.Game.Reset)
+}
+
+// Undo reverts the latest human action.
+func (si *SpiteAndMaliceInteractor) Undo() string {
+	return execAndPresent(si.Game, si.sp, si.Game.Undo)
 }
 
 // PlayFromHand 手札からファウンデーションに出す

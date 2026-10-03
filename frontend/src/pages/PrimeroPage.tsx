@@ -35,6 +35,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { PRIMERO_HELP, parsePrimeroCommand } from '../utils/cli/commands/primeroCommands';
 import { formatPrimeroState } from '../utils/cli/formatters/primeroFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { raiseAvailability, raiseCost } from '../utils/raiseAvailability';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -296,6 +297,17 @@ function PrimeroPageContent() {
                     pot: state.pot,
                   })}
                 </div>
+                {humanPlayer && (
+                  <div data-testid="primero-round-settlement">
+                    <div>{t('roundResult.yourBet', { amount: humanPlayer.roundBet })}</div>
+                    <div>{t('roundResult.payout', { amount: humanPlayer.roundPayout })}</div>
+                    <div>
+                      {t('roundResult.net', {
+                        amount: formatSignedDelta(humanPlayer.netChange),
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -388,6 +400,7 @@ function PrimeroPageContent() {
                   <div className="w-full text-ds-text-primary text-sm" data-testid="primero-betting-controls">
                     <span className="mr-4">{t('yourRoundBet', { amount: humanPlayer.roundBet })}</span>
                     <span>{t('callAmount', { amount: Math.max(0, state.currentBet - humanPlayer.roundBet) })}</span>
+                    {state.canRaise && <span className="ml-4">{t('raiseAmount', { amount: raiseNeeded })}</span>}
                   </div>
                   <button type="button" className={btnPrimary} onClick={handleCall} disabled={loading}>
                     {t('callButton')}

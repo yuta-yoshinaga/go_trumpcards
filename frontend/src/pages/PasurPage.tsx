@@ -168,12 +168,23 @@ function PasurPageContent() {
               {state.players.map((p) => (
                 <div
                   key={p.id}
-                  className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                  className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
+                    isHumanTurn && p.id === state.currentPlayerIdx ? 'ring-2 ring-ds-accent' : ''
+                  }`}
                   data-testid={`ps-seat-${p.id.toString()}`}
                 >
                   <span className="text-ds-text-primary">
                     {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
                   </span>
+                  {isHumanTurn && p.id === state.currentPlayerIdx && (
+                    <span
+                      className="ml-1 text-ds-accent"
+                      aria-current="step"
+                      data-testid={`ps-turn-${p.id.toString()}`}
+                    >
+                      {t('header.currentTurn')}
+                    </span>
+                  )}
                   {p.id === state.lastCaptureIdx && (
                     <span className="ml-1 text-ds-accent">{t('header.lastCapture')}</span>
                   )}
@@ -188,12 +199,50 @@ function PasurPageContent() {
             </div>
 
             {resultBanner && (
-              <div
-                className="text-center text-xl my-4 text-ds-accent font-semibold"
-                role="status"
-                data-testid="ps-result"
-              >
-                {resultBanner}
+              <div className="my-4" data-testid="ps-final-result">
+                <div
+                  className="text-center text-xl mb-3 text-ds-accent font-semibold"
+                  role="status"
+                  data-testid="ps-result"
+                >
+                  {resultBanner}
+                </div>
+                <section className="rounded bg-black/30 px-3 py-2" aria-label={t('result.breakdownTitle')}>
+                  <h2 className="text-ds-text-primary text-center font-semibold mb-2">{t('result.breakdownTitle')}</h2>
+                  <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {state.players.map((p) => {
+                      const captures = state.captureScores?.[p.id] ?? [];
+                      const cardPoints = captures.reduce((total, capture) => total + capture.normal, 0);
+                      const soorPoints = captures.reduce((total, capture) => total + capture.soorBonus, 0);
+                      return (
+                        <li
+                          key={p.id}
+                          className="text-center text-sm text-ds-text-muted"
+                          data-testid={`ps-final-score-${p.id}`}
+                        >
+                          <span className="block text-ds-text-primary">
+                            {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
+                          </span>
+                          <span className="block">
+                            {t('result.cardPointsLabel')} {t('result.pointsCount', { n: String(cardPoints) })}
+                          </span>
+                          <span className="block">
+                            {t('result.soorPointsLabel')} {t('result.pointsCount', { n: String(soorPoints) })}
+                          </span>
+                          <span className="block">
+                            {t('result.finalScoreLabel')} {t('result.finalScoreCount', { n: String(p.score) })}
+                          </span>
+                          <span className="block">
+                            {t('result.capturedLabel')} {t('result.capturedCount', { n: String(p.capturedCount) })}
+                          </span>
+                          <span className="block">
+                            {t('result.soorsLabel')} {t('result.soorsCount', { n: String(p.soors) })}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </section>
               </div>
             )}
 

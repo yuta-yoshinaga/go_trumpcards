@@ -8,6 +8,8 @@
   "stock": "Stock",
   "waste": "Waste",
   "foundation": "Foundations",
+  "foundationAriaLabel": "Foundation {{col}}",
+  "foundationTopAriaLabel": "Foundation {{col}}: {{card}}",
   "tableau": "Tableau",
   "stockCount": "Stock left: {{count}}",
   "stockDrawAriaLabel": "Draw from stock, {{count}} cards remaining",
@@ -26,6 +28,7 @@
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",
   "playing": "Playing",
+  "stalemateGuidance": "No more moves are available. Undo a move or start a new game.",
   "noHint": "No hint available",
   "hintAvailable": "A hint is available",
   "tutorial": {

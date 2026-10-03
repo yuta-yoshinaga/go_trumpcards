@@ -32,13 +32,14 @@ type ChinchonWebOutputMeld struct {
 
 // ChinchonWebOutputPlayer チンチョンWebアウトプットプレイヤー
 type ChinchonWebOutputPlayer struct {
-	ID              int              `json:"id"`
-	IsHuman         bool             `json:"isHuman"`
-	CardCount       int              `json:"cardCount"`
-	Cards           []*WebOutputCard `json:"cards"`
-	RoundScore      int              `json:"roundScore"`
-	CumulativeScore int              `json:"cumulativeScore"`
-	Eliminated      bool             `json:"eliminated"`
+	ID                 int              `json:"id"`
+	IsHuman            bool             `json:"isHuman"`
+	CardCount          int              `json:"cardCount"`
+	Cards              []*WebOutputCard `json:"cards"`
+	RoundDeadwoodCards []*WebOutputCard `json:"roundDeadwoodCards"`
+	RoundScore         int              `json:"roundScore"`
+	CumulativeScore    int              `json:"cumulativeScore"`
+	Eliminated         bool             `json:"eliminated"`
 }
 
 // ChinchonWebOutput チンチョンWebアウトプット
@@ -46,12 +47,14 @@ type ChinchonWebOutput struct {
 	Players           []*ChinchonWebOutputPlayer `json:"players"`
 	Phase             int                        `json:"phase"`
 	RoundNumber       int                        `json:"roundNumber"`
+	RoundScoreHistory [][]int                    `json:"roundScoreHistory"`
 	CurrentPlayerIdx  int                        `json:"currentPlayerIdx"`
 	DiscardTop        *WebOutputCard             `json:"discardTop"`
 	DrawPileCount     int                        `json:"drawPileCount"`
 	GameEndFlag       bool                       `json:"gameEndFlag"`
 	WinnerIdx         int                        `json:"winnerIdx"`
 	KnockerIdx        int                        `json:"knockerIdx"`
+	WonByChinchon     bool                       `json:"wonByChinchon"`
 	KnockerMelds      []*ChinchonWebOutputMeld   `json:"knockerMelds"`
 	LayoffableIndices []int                      `json:"layoffableIndices"`
 	WebOutputBase

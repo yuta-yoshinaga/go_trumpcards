@@ -26,6 +26,8 @@
   "drewCard": "{{from}}が{{target}}から1枚引きました",
   "drewCardWithLabel": "{{from}}が{{target}}から1枚引きました ({{card}})",
   "discardedPairs": "。{{count}}組捨てました",
+  "discardedCardNames": "（{{cards}}）",
+  "listSeparator": "、",
   "yourTurn": "あなたの番！ {{target}}のカードをクリックして引いてください。",
   "removedCard": "除外カード: {{card}}",
   "history": {
@@ -63,7 +65,8 @@
   "reorder": {
     "selectCardToMove": "並び替えるカード: {{card}}",
     "deselectCard": "{{card}} の選択を解除",
-    "moveHere": "{{card}} をここ（{{to}}番目）に移動"
+    "moveHere": "{{card}} をここ（位置{{to}}）に移動",
+    "moved": "{{card}}を位置{{position}}に移動しました"
   },
   "bubble": {
     "drewFrom": "← {{from}} から",

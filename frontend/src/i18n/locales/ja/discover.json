@@ -23,7 +23,7 @@
     "question": "QUESTION {{current}} / {{total}}"
   },
   "aria": {
-    "question": "Question {{current}} of {{total}}",
+    "question": "全 {{total}} 問中 {{current}} 問目",
     "progress": "{{current}} / {{total}} に進みました",
     "start": "全 {{total}} 問のアンケートを開始しました"
   },

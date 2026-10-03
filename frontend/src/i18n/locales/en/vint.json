@@ -13,7 +13,11 @@
   "hiddenHand": "hidden ({{count}})",
   "yourHand": "Your hand",
   "trick": "Trick",
+  "trickCardLabel": "{{card}} ({{name}})",
   "tricksWon": "Tricks {{n}}",
+  "progress": {
+    "line": "Declarer side: {{won}} / {{needed}} tricks"
+  },
   "noDummyNote": "There is NO DUMMY — even your partner's hand stays concealed to the end.",
   "ladderTitle": "Bidding order (level-1 trick value in brackets)",
   "ladderNote": "Spades are the LOWEST and no trump the highest — the reverse of bridge. Each level above 1 adds 10 to the trick value.",

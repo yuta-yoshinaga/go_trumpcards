@@ -142,8 +142,9 @@ function BalootPageContent() {
         ? t('phase.declare')
         : t('phase.play');
 
-  // 出せる札に緑の枠を足すだけで、押せなくはしない（サーバが必ず検証する）。
+  // 出せる札を緑の枠と支援技術向けの状態で示す。最終判定はサーバで行う。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
+  const canAnnotatePlays = isHumanTurn && !loading;
 
   const declarerName = state.declarerIdx === 0 ? t('header.you') : t('header.cpu', { idx: String(state.declarerIdx) });
 
@@ -186,7 +187,15 @@ function BalootPageContent() {
             </div>
 
             <div className="text-ds-text-primary text-center mb-2" data-testid="bl-score">
-              {t('header.score', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
+              <div data-testid="bl-cumulative-score">
+                {t('header.cumulativeScore', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
+              </div>
+              <div data-testid="bl-round-points">
+                {t('header.roundPoints', {
+                  t0: String(state.roundPoints[0] ?? 0),
+                  t1: String(state.roundPoints[1] ?? 0),
+                })}
+              </div>
             </div>
 
             {/* **有効な序列だけを出す。** モードで入れ替わるので、両方出すと
@@ -284,10 +293,23 @@ function BalootPageContent() {
                     <button
                       key={`${card.design}-${card.value}-${idx}`}
                       type="button"
-                      onClick={() => handlePlay(idx)}
+                      onClick={() => {
+                        if (loading || !isHumanTurn || !legalRing.has(idx)) return;
+                        handlePlay(idx);
+                      }}
                       disabled={loading || !isHumanTurn}
-                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                      className={`relative disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                      aria-label={
+                        canAnnotatePlays
+                          ? t(legalRing.has(idx) ? 'actions.playableAria' : 'actions.notPlayableAria', {
+                              card: cardAlt(card),
+                            })
+                          : t('actions.playAria', { card: cardAlt(card) })
+                      }
+                      aria-disabled={canAnnotatePlays && !legalRing.has(idx) ? true : undefined}
+                      aria-describedby={
+                        canAnnotatePlays && !legalRing.has(idx) ? 'baloot-unplayable-reason' : undefined
+                      }
+                      className={`relative disabled:opacity-50 aria-disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
                     >
                       <CardImage card={card} width={cardWidth} />
                       {state.mode !== BalootMode.NONE && (
@@ -302,6 +324,9 @@ function BalootPageContent() {
                     </button>
                   ))}
                 </div>
+                <span id="baloot-unplayable-reason" className="sr-only">
+                  {t('actions.notPlayableReason')}
+                </span>
               </div>
             )}
 

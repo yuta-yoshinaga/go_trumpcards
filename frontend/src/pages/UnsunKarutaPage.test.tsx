@@ -20,6 +20,15 @@ beforeEach(() => {
 });
 
 describe('UnsunKarutaPage', () => {
+  it('shows the dealer badge in the mobile player list only for the dealer', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    renderWithProviders(<UnsunKarutaPage />);
+    fireEvent(window, new Event('resize'));
+    const badge = await screen.findByText('親', { selector: 'span' });
+    expect(badge.parentElement).toHaveTextContent('CPU 7');
+    expect(screen.getAllByText('親', { selector: 'span' })).toHaveLength(1);
+  });
+
   it('highlights the individual trick winner only until the next trick starts', async () => {
     const trickEnd = makeUnsunKarutaState({
       phase: 1,
@@ -165,6 +174,26 @@ describe('UnsunKarutaPage', () => {
     fireEvent.click(await screen.findByTestId('unsunkaruta-next-round'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
     expect(screen.getByTestId('unsunkaruta-result')).toHaveTextContent('味方 5 個 / 相手 4 個');
+  });
+
+  it('shows each team’s captured cards with one ko per captured trick at deal end', async () => {
+    const card = { design: 'JOKER', value: 1, deck: 'unsun', glyph: '杯', label: '1', color: 'red' } as const;
+    mockExec.mockResolvedValue(
+      makeUnsunKarutaState({
+        phase: 2,
+        isHumanTurn: false,
+        playableIndices: [],
+        teamTricks: [1, 1],
+        teamCapturedTricks: [[Array.from({ length: 8 }, () => card)], [Array.from({ length: 8 }, () => card)]],
+      }),
+    );
+    renderWithProviders(<UnsunKarutaPage />);
+    const breakdown = await screen.findByTestId('unsunkaruta-captured-cards');
+    expect(breakdown).toHaveTextContent('組0の獲得札');
+    expect(breakdown).toHaveTextContent('組1の獲得札');
+    expect(breakdown).toHaveTextContent('トリック1: 1個');
+    expect(breakdown.querySelectorAll('[role="img"]')).toHaveLength(16);
+    expect(breakdown.querySelectorAll('section')).toHaveLength(2);
   });
 
   it('names the winning team at the end of the match', async () => {

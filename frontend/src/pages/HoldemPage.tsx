@@ -27,6 +27,7 @@ import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useCommunityCardAnnouncement } from '../hooks/useCommunityCardAnnouncement';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -137,8 +138,26 @@ function HoldemPageContent() {
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const turnStartRef = useRef(0);
+  // Blinds rise in place every config.blindLevelHands hands, so the change is detected on the blind amounts
+  // themselves; blindLevelHands is the (fixed) interval setting, not the current level.
+  const previousBigBlindRef = useRef<number | null>(null);
+  const [blindLevelAnnouncement, setBlindLevelAnnouncement] = useState('');
 
   useMountReset(exec);
+
+  const communityCardsAnnouncement = useCommunityCardAnnouncement(state?.communityCards ?? [], t);
+
+  useEffect(() => {
+    if (!state?.tournamentMode) {
+      previousBigBlindRef.current = null;
+      setBlindLevelAnnouncement('');
+      return;
+    }
+    if (previousBigBlindRef.current !== null && state.bigBlind > previousBigBlindRef.current) {
+      setBlindLevelAnnouncement(t('blindLevelChanged', { smallBlind: state.smallBlind, bigBlind: state.bigBlind }));
+    }
+    previousBigBlindRef.current = state.bigBlind;
+  }, [state, t]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -288,6 +307,12 @@ function HoldemPageContent() {
         </>
       }
     >
+      <div aria-live="polite" aria-atomic="true" className="sr-only" data-testid="community-cards-announcement">
+        {communityCardsAnnouncement}
+      </div>
+      <div aria-live="polite" aria-atomic="true" className="sr-only" data-testid="blind-level-announcement">
+        {blindLevelAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -409,7 +434,9 @@ function HoldemPageContent() {
                       {tc('betting.currentBet')} {humanPlayer.currentBet}
                     </span>
                   )}
-                  {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
+                  {humanPlayer.folded && (
+                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
+                  )}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                   {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
                     <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${badgeSuccessColors}`}>

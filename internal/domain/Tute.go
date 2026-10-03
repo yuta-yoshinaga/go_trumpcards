@@ -241,7 +241,7 @@ func (g *Tute) applyTute(playerIdx int) {
 	g.gameEndFlag = true
 	g.winnerTeam = team
 	g.phase = TutePhaseGameEnd
-	g.appendLog(playerIdx, "tute", "tute.log.tute", map[string]string{"name": playerName(g.players, playerIdx), "team": teamName(team)}, nil)
+	g.appendLog(playerIdx, "tute", "tute.log.tute", map[string]string{"name": playerName(g.players, playerIdx), "team": TeamName(team)}, nil)
 }
 
 // CpuPlay 現在の手番が CPU の場合に 1 ターン実行する。
@@ -349,7 +349,7 @@ func (g *Tute) ScoreRound() {
 		g.gameEndFlag = true
 		g.winnerTeam = leader
 		g.phase = TutePhaseGameEnd
-		g.appendLog(-1, "game_end", "tute.log.gameEnd", map[string]string{"team": teamName(leader)}, nil)
+		g.appendLog(-1, "game_end", "tute.log.gameEnd", map[string]string{"team": TeamName(leader)}, nil)
 	}
 }
 

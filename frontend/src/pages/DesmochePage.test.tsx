@@ -107,10 +107,56 @@ describe('DesmochePage', () => {
     renderWithProviders(<DesmochePage />);
     await screen.findByRole('button', { name: '山札から引く' });
 
+    expect(screen.getByTestId('desmoche-action-guide')).toHaveTextContent('捨て札は空です。山札から引いてください');
+    expect(screen.getByRole('button', { name: '捨て札を取る' })).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('asks before drawing from an empty stock', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: DesmochePhase.DRAW, stockCount: 0 }));
+    renderWithProviders(<DesmochePage />);
+    const stock = await screen.findByRole('button', { name: '山札から引く' });
+
+    expect(stock).not.toHaveAttribute('aria-disabled', 'true');
+    expect(stock).toHaveAttribute('aria-describedby', 'desmoche-draw-guide');
+    expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeEnabled();
     expect(screen.getByTestId('desmoche-action-guide')).toHaveTextContent(
-      '山札から引くか、捨て札がある場合は捨て札を取ってください',
+      '山札は空です。山札から引くと勝者なしでラウンドが終了します。捨て札から引くこともできます',
     );
-    expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeDisabled();
+    mockExec.mockClear();
+    fireEvent.click(stock);
+    expect(await screen.findByRole('alertdialog')).toHaveTextContent(
+      '山札は空です。引くと勝者なしでラウンドが終了します。終了しますか？',
+    );
+    expect(mockExec).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'ラウンドを終了する' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawstock'));
+  });
+
+  it('does nothing when an empty stock draw is cancelled', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: DesmochePhase.DRAW, stockCount: 0 }));
+    renderWithProviders(<DesmochePage />);
+    fireEvent.click(await screen.findByRole('button', { name: '山札から引く' }));
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    await flushPendingDispatch();
+    expect(mockExec).toHaveBeenCalledTimes(1); // initial reset only
+  });
+
+  it('allows confirming an empty-stock draw when both piles are empty', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: DesmochePhase.DRAW, stockCount: 0, discardTop: undefined }));
+    renderWithProviders(<DesmochePage />);
+    const stock = await screen.findByRole('button', { name: '山札から引く' });
+
+    expect(stock).not.toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', { name: '捨て札を取る' })).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByTestId('desmoche-action-guide')).toHaveTextContent(
+      '山札も捨て札も空です。山札から引くと勝者なしでラウンドが終了します',
+    );
+    mockExec.mockClear();
+    fireEvent.click(stock);
+    expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
+    expect(mockExec).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'ラウンドを終了する' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawstock'));
   });
 
   it('shows only the hand selection hint in the act step', async () => {

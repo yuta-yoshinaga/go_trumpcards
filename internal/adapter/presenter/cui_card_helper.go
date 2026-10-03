@@ -256,6 +256,23 @@ func cuiIndexedCardListStr(hand cuiCardList) string {
 	return formatCardList(hand, cuiCardStr, "  ", true)
 }
 
+// cuiIndexedCardSliceStr formats a card slice as single-space separated cards,
+// prefixing each with "[i]" when indexed, or "-" if the slice is empty.
+func cuiIndexedCardSliceStr(cards []*domain.Card, indexed bool) string {
+	if len(cards) == 0 {
+		return "-"
+	}
+	parts := make([]string, 0, len(cards))
+	for i, c := range cards {
+		if indexed {
+			parts = append(parts, fmt.Sprintf("[%d]%s", i, cuiCardStr(c)))
+			continue
+		}
+		parts = append(parts, cuiCardStr(c))
+	}
+	return strings.Join(parts, " ")
+}
+
 // CuiHoleMark は「その札は自分の手札から出したもの」を示す印。ショーダウンで
 // ベストハンド5枚を並べたとき、どれがボード由来でどれが手札由来かを分ける。
 //

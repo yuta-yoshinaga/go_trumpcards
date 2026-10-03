@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { balootApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BalootResponse, Card } from '../types/card';
 import { BalootPage } from './BalootPage';
@@ -74,6 +75,31 @@ describe('BalootPage', () => {
   it('says the mode is undecided before anyone declares', async () => {
     renderWithProviders(<BalootPage />);
     expect(await screen.findByTestId('bl-mode')).toHaveTextContent(/モード未定/);
+  });
+
+  it('labels cumulative and current-round team points and follows updated response values', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeState({ scores: [12, 8], roundPoints: [3, 5] }))
+      .mockResolvedValueOnce(playing({ scores: [12, 8], roundPoints: [21, 17] }));
+    renderWithProviders(<BalootPage />);
+
+    expect(await screen.findByTestId('bl-cumulative-score')).toHaveTextContent('累計得点: あなたのチーム 12 － 相手 8');
+    expect(screen.getByTestId('bl-round-points')).toHaveTextContent('今回のラウンド: あなたのチーム 3 － 相手 5');
+
+    fireEvent.click(screen.getByTestId('bl-sun-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('bl-cumulative-score')).toHaveTextContent('累計得点: あなたのチーム 12 － 相手 8');
+      expect(screen.getByTestId('bl-round-points')).toHaveTextContent('今回のラウンド: あなたのチーム 21 － 相手 17');
+    });
+  });
+
+  it('uses zero when either score array omits a team value', async () => {
+    mockExec.mockResolvedValue(makeState({ scores: [], roundPoints: [] } as Partial<BalootResponse>));
+    renderWithProviders(<BalootPage />);
+
+    expect(await screen.findByTestId('bl-cumulative-score')).toHaveTextContent('累計得点: あなたのチーム 0 － 相手 0');
+    expect(screen.getByTestId('bl-round-points')).toHaveTextContent('今回のラウンド: あなたのチーム 0 － 相手 0');
   });
 
   // **序列はモードで入れ替わる。** 有効な方だけを出し、他方は出さない。
@@ -172,11 +198,27 @@ describe('BalootPage', () => {
     renderWithProviders(<BalootPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
-    const cards = await screen.findAllByRole('button', { name: /を出す/ });
+    const cards = await screen.findAllByRole('button', { name: /出せる札/ });
     mockExec.mockClear();
     fireEvent.click(cards[2]);
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 2));
+  });
+
+  it('announces playable and unplayable cards and guards the unplayable click', async () => {
+    mockExec.mockResolvedValue(playing({ validPlays: [0] }));
+    renderWithProviders(<BalootPage />);
+    const playable = await screen.findByRole('button', { name: /出せる札/ });
+    const unplayable = screen.getAllByRole('button', { name: /出せない札/ })[0];
+    expect(playable).not.toHaveAttribute('aria-disabled');
+    expect(unplayable).toHaveAttribute('aria-disabled', 'true');
+    expect(document.getElementById(unplayable.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
+      'この札は現在出せません',
+    );
+    mockExec.mockClear();
+    fireEvent.click(unplayable);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
   });
 
   // **チーム番号と Baloot 役は盤面から読めない。** 席ごとに出す。
@@ -276,8 +318,9 @@ describe('BalootPage', () => {
   it('disables the hand while it is a CPU turn', async () => {
     mockExec.mockResolvedValue(playing({ currentPlayerIdx: 1 } as Partial<BalootResponse>));
     renderWithProviders(<BalootPage />);
-    const cards = await screen.findAllByRole('button', { name: /を出す/ });
+    const cards = await screen.findAllByRole('button', { name: /♠|♥|♦|♣/ });
     expect(cards[0]).toBeDisabled();
+    expect(cards[0]).toHaveAccessibleName(/を出す$/);
   });
 
   it('shows the hint when one is enabled', async () => {

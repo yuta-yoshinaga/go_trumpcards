@@ -26,6 +26,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { usePerseveranceGame } from '../hooks/usePerseveranceGame';
+import { perseveranceClearRate, usePerseveranceStats } from '../hooks/usePerseveranceStats';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -115,6 +116,13 @@ function PerseverancePageContent() {
     handleSelectTarget,
     isAutoCompleting,
   } = usePerseveranceGame();
+  const { stats, clearStats, recordClear, markPlaying } = usePerseveranceStats();
+
+  useEffect(() => {
+    if (!state) return;
+    if (state.phase === PerseverancePhase.GAME_CLEAR) recordClear(state.moveCount, state.redealsLeft);
+    else if (state.phase === PerseverancePhase.PLAYING) markPlaying();
+  }, [state, recordClear, markPlaying]);
 
   // Card-move SFX: play `cardPlace` whenever the server confirms a successful
 
@@ -456,7 +464,7 @@ function PerseverancePageContent() {
                                   <div
                                     data-testid={`bd-empty-column-warn-${colIdx}`}
                                     role="alert"
-                                    className="absolute inset-0 flex items-center justify-center pointer-events-none text-xs text-ds-error font-bold text-center px-1 motion-safe:animate-pulse"
+                                    className="absolute inset-0 flex items-center justify-center pointer-events-none text-xs text-ds-error-text font-bold text-center px-1 motion-safe:animate-pulse"
                                   >
                                     🚫 {t('lastCardWarning')}
                                   </div>
@@ -497,6 +505,20 @@ function PerseverancePageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+            <section
+              aria-label={t('stats.title')}
+              className="my-3 rounded-lg bg-ds-surface p-3 text-sm text-ds-text-primary"
+            >
+              <h2 className="font-semibold">{t('stats.title')}</h2>
+              <p>{t('stats.starts', { count: stats.starts })}</p>
+              <p>{t('stats.games', { count: stats.games })}</p>
+              <p>{t('stats.clearRate', { rate: perseveranceClearRate(stats) })}</p>
+              <p>{t('stats.moves', { count: stats.moves })}</p>
+              <p>{t('stats.redeals', { count: stats.redeals })}</p>
+              <button type="button" className={btnWarning} onClick={clearStats}>
+                {t('stats.clear')}
+              </button>
+            </section>
             <div role="status">
               {stalemateMessage && <p className="text-center text-sm mb-2">{stalemateMessage}</p>}
             </div>

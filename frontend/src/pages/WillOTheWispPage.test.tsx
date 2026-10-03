@@ -94,6 +94,12 @@ beforeEach(() => {
 });
 
 describe('WillOTheWispPage', () => {
+  it('includes the card name and zero-based tableau column in face-up card names', async () => {
+    renderWithProviders(<WillOTheWispPage />);
+    const cardButton = await screen.findByTestId('willothewisp-card-1-1');
+
+    expect(cardButton).toHaveAccessibleName('♥ 5、列1');
+  });
   it('keeps an empty tableau target focusable and explains that a source must be selected', async () => {
     mockSend.mockResolvedValue({ ...playingState, tableau: makeTableau([[], ...playingState.tableau.slice(1)]) });
     renderWithProviders(<WillOTheWispPage />);
@@ -119,7 +125,9 @@ describe('WillOTheWispPage', () => {
     await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
     const target = screen.getByTestId('willothewisp-empty-col-0');
     expect(target).not.toHaveAttribute('aria-disabled');
-    expect(target).not.toHaveAttribute('aria-describedby');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('列0は移動先として選択できます');
 
     mockSend.mockClear();
     fireEvent.click(target);

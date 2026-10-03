@@ -23,6 +23,13 @@
   "scoresPlayer": "Player",
   "scoresRound": "Round",
   "scoresTotal": "Total",
+  "scoreBreakdown": {
+    "title": "Round Score Breakdown",
+    "ace": "Aces",
+    "number": "Number cards",
+    "face": "Face cards",
+    "seven": "Sevens"
+  },
   "target": "Target: {{points}} pts",
   "drawStockButton": "Draw from stock",
   "ponButton": "Pon",
@@ -32,6 +39,7 @@
   "ponChiSelectionProgress": "Pon/Chi selection: {{selected}}/{{required}} cards",
   "requireThree": "Select 3 or more cards",
   "requirementMet": "Selection requirement met — ready",
+  "discardRequireOne": "Select exactly 1 card",
   "discardButton": "Discard",
   "layoffButton": "Layoff",
   "layoffTarget": "Target",

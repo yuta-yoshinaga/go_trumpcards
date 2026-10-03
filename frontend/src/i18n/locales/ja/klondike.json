@@ -11,6 +11,8 @@
   "tableau": "場札",
   "moveCount": "手数",
   "draw": "引く",
+  "redealShort": "配り直す",
+  "redeal": "配り直す — ウェイストを山札に戻します",
   "giveup": "ギブアップ",
   "hint": "ヒント",
   "autoComplete": "自動完成",

@@ -118,14 +118,6 @@ func NewDefaultTwentyNine() *TwentyNine {
 // TwentyNineTeamOf プレイヤーが属するチーム (0 = 席0&2, 1 = 席1&3)
 func TwentyNineTeamOf(playerIdx int) int { return playerIdx % TwentyNineTeamCnt }
 
-// twentyNineTeamName チーム番号を表示名 (A/B) に変換する (casino ワーカーで自己完結)。
-func twentyNineTeamName(team int) string {
-	if team == 0 {
-		return "A"
-	}
-	return "B"
-}
-
 // Reset ゲーム初期化
 func (g *TwentyNine) Reset() {
 	g.gameEndFlag = false
@@ -282,7 +274,7 @@ func (g *TwentyNine) resolveBidding() {
 	g.trumpSuit = g.longestSuit(idx)
 	g.trumpRevealed = false
 	g.trumpJustRevealed = false
-	g.appendLog(idx, "contract", "twentynine.log.contract", map[string]string{"name": playerName(g.players, idx), "team": twentyNineTeamName(TwentyNineTeamOf(idx)), "bid": fmt.Sprint(int(bid))}, nil)
+	g.appendLog(idx, "contract", "twentynine.log.contract", map[string]string{"name": playerName(g.players, idx), "team": TeamName(TwentyNineTeamOf(idx)), "bid": fmt.Sprint(int(bid))}, nil)
 	g.leadPlayerIdx = idx
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = TwentyNinePhasePlay
@@ -436,7 +428,7 @@ func (g *TwentyNine) ScoreRound() {
 		} else {
 			g.teamScores[otherTeam]++
 		}
-		g.appendLog(-1, "round_score", "twentynine.log.roundScore", map[string]string{"round": fmt.Sprint(g.roundNumber), "team": twentyNineTeamName(bidTeam), "bid": fmt.Sprint(int(g.contract)), "points": fmt.Sprint(g.roundTeamPts[bidTeam]), "resultKey": twentyNineOutcomeKey(made)}, nil)
+		g.appendLog(-1, "round_score", "twentynine.log.roundScore", map[string]string{"round": fmt.Sprint(g.roundNumber), "team": TeamName(bidTeam), "bid": fmt.Sprint(int(g.contract)), "points": fmt.Sprint(g.roundTeamPts[bidTeam]), "resultKey": twentyNineOutcomeKey(made)}, nil)
 		g.checkGameEnd()
 	}
 }
@@ -462,7 +454,7 @@ func (g *TwentyNine) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerTeam = leader
 		g.phase = TwentyNinePhaseGameEnd
-		g.appendLog(-1, "game_end", "twentynine.log.gameEnd", map[string]string{"team": twentyNineTeamName(leader)}, nil)
+		g.appendLog(-1, "game_end", "twentynine.log.gameEnd", map[string]string{"team": TeamName(leader)}, nil)
 	}
 }
 

@@ -22,6 +22,8 @@ func setupCribbageWebMock() *interfaces.MockCribbageGame {
 	m.On("GetStarter").Return((*domain.Card)(nil))
 	m.On("GetPegCount").Return(0)
 	m.On("GetPegPlayedCards").Return(([]*domain.Card)(nil))
+	m.On("GetPegPlayedBy").Return([]int{})
+	m.On("GetPegScoreEvents").Return([]domain.CribbagePeggingScoreEvent{})
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.CribbagePhaseDiscard)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -64,6 +66,7 @@ func TestCribbageWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 0, resObj.DealerIdx)
 		assert.Equal(t, -1, resObj.WinnerIdx)
 		assert.Nil(t, resObj.Starter)
+		assert.Empty(t, resObj.PegScoreEvents)
 		assert.Equal(t, "", resObj.Message)
 	})
 
@@ -200,6 +203,8 @@ func TestCribbageWebPresenter_Output(t *testing.T) {
 		m.On("GetPegPlayedCards").Return([]*domain.Card{
 			domain.NewCard(domain.CardDesignSpade, 5, false),
 		})
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPegPlayedBy")
+		m.On("GetPegPlayedBy").Return([]int{1})
 
 		result := p.Output(m, nil)
 		var resObj controller.CribbageWebOutput
@@ -207,6 +212,7 @@ func TestCribbageWebPresenter_Output(t *testing.T) {
 
 		assert.Len(t, resObj.PegPlayedCards, 1)
 		assert.Equal(t, "SPADE", resObj.PegPlayedCards[0].Design)
+		assert.Equal(t, []int{1}, resObj.PegPlayedBy)
 	})
 
 	t.Run("hand score details", func(t *testing.T) {
@@ -401,6 +407,18 @@ func TestCribbageWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, int(domain.CribbageCpuDifficultyNormal), resObj.Config.CpuDifficulty)
 		assert.Equal(t, 121, resObj.Config.PointLimit)
 	})
+}
+
+func TestCribbageWebPresenter_OutputsPegScoreEvents(t *testing.T) {
+	m, _ := setupCribbageWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPegScoreEvents")
+	m.On("GetPegScoreEvents").Return([]domain.CribbagePeggingScoreEvent{{
+		PlayerIdx: 1,
+		Detail:    domain.CribbagePeggingScoreDetail{Fifteen: 2, Pair: 2, Go: 1, LastCard: 1, Total: 6},
+	}})
+	var output controller.CribbageWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(presenter.CribbageWebPresenter).Output(m, nil)), &output))
+	assert.Equal(t, []controller.CribbageWebOutputPegScoreEvent{{PlayerIdx: 1, Fifteen: 2, Pair: 2, Go: 1, LastCard: 1, Total: 6}}, output.PegScoreEvents)
 }
 
 func TestCribbageWebPresenter_CodedError(t *testing.T) {

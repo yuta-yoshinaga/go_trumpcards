@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { faroApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -25,12 +25,14 @@ import { gameTheme } from '../styles/gameTheme';
 import type { FaroResponse } from '../types/card';
 import { FaroPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { FARO_HELP, parseFaroCommand } from '../utils/cli/commands/faroCommands';
 import { formatFaroState } from '../utils/cli/formatters/faroFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { FARO_RANK_COUNT, FARO_RANKS } from '../utils/faroCaseKeeper';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 
 /** Rank values on the Faro layout, A (1) through K (13). */
 const RANKS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] as const;
@@ -100,6 +102,23 @@ function FaroPageContent() {
   const [chipAmount, setChipAmount] = useState<number>(CHIP_AMOUNTS[0]);
   const [copper, setCopper] = useState(false);
   const [callOrder, setCallOrder] = useState<number[]>([]);
+  const [dealResultAnnouncement, setDealResultAnnouncement] = useState('');
+  const announcedTurns = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!state) return;
+    const previousTurns = announcedTurns.current;
+    announcedTurns.current = state.turnsPlayed;
+    if (previousTurns !== null && state.turnsPlayed > previousTurns && state.losingCard && state.winningCard) {
+      setDealResultAnnouncement(
+        t('dealResultAnnouncement', {
+          losing: cardAlt(state.losingCard),
+          winning: cardAlt(state.winningCard),
+          split: t(state.split ? 'split' : 'noSplit'),
+        }),
+      );
+    }
+  }, [state, t]);
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
@@ -158,14 +177,19 @@ function FaroPageContent() {
   const betFor = (rank: number) => state.bets.find((b) => b.rank === rank);
 
   const handleReset = () => {
+    setDealResultAnnouncement('');
     hideActionLog();
     setCallOrder([]);
     exec('reset');
   };
 
-  const handleDeal = () => exec('deal');
+  const handleDeal = () => {
+    setDealResultAnnouncement('');
+    return exec('deal');
+  };
 
   const handleNext = () => {
+    setDealResultAnnouncement('');
     setCallOrder([]);
     exec('next');
   };
@@ -202,6 +226,9 @@ function FaroPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div className="sr-only" aria-live="polite" aria-atomic="true" data-testid="faro-deal-result-live">
+        {dealResultAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -213,7 +240,11 @@ function FaroPageContent() {
               data-tutorial="faro-info"
             >
               <span className="font-semibold text-ds-warning">{t('chips', { count: state.chips })}</span>
-              <span className="text-ds-text-primary">{t('payout', { amount: state.totalPayout })}</span>
+              <span className="text-ds-text-primary">
+                {t('payout', {
+                  amount: formatSignedDelta(state.totalPayout),
+                })}
+              </span>
               <span className="text-ds-text-muted">
                 {t('turns', { played: state.turnsPlayed, total: state.turnsTotal })}
               </span>
@@ -323,7 +354,7 @@ function FaroPageContent() {
                       >
                         {left}
                       </span>
-                      {(depleted || !canAfford) && <span className="text-[10px] text-ds-error">{status}</span>}
+                      {(depleted || !canAfford) && <span className="text-[10px] text-ds-error-text">{status}</span>}
                     </div>
                   );
                 })}
@@ -366,7 +397,7 @@ function FaroPageContent() {
                 <div className="text-ds-text-muted text-xs mb-2">{t('lastTurnTitle')}</div>
                 <div className="flex justify-center gap-6">
                   <div className="flex flex-col items-center gap-1">
-                    <span className="text-ds-error text-xs">{t('losing')}</span>
+                    <span className="text-ds-error-text text-xs">{t('losing')}</span>
                     {state.losingCard && <CardImage card={state.losingCard} width={cardWidth} />}
                   </div>
                   <div className="flex flex-col items-center gap-1">
@@ -450,7 +481,6 @@ function FaroPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
-
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}

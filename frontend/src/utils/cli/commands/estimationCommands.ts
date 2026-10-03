@@ -1,5 +1,5 @@
 import type { estimationApi } from '../../../api/gameApi';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type EstimationArgs = Parameters<typeof estimationApi.exec>;
@@ -72,11 +72,8 @@ export function parseEstimationCommand(input: string): CliParseResult<Estimation
     case 'r':
     case 'reset':
       return { args: ['reset'] as EstimationArgs };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

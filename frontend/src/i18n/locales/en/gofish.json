@@ -17,6 +17,7 @@
   },
   "selectOpponent": "Select an opponent",
   "selectRank": "Select a rank to ask for",
+  "askPreview": "Ask {{name}} for rank {{rank}}",
   "askResult": {
     "hit": "{{asker}} asked {{target}} for rank {{rank}} → got {{count}} card(s)!",
     "miss": "{{asker}} asked {{target}} for rank {{rank}} → Go Fish!",
@@ -31,6 +32,7 @@
     "cpuWin": "Game over! CPU {{cpuId}} wins!"
   },
   "deck": "Deck: {{count}} cards",
+  "emptyDeckGuidance": "Choose an opponent and rank to ask. If successful, you can ask again; if you miss, you draw no card and your turn ends.",
   "handCount": "Hand: {{count}} cards",
   "books": "Books: {{count}}",
   "knownRanksLabel": "Ranks they asked for",

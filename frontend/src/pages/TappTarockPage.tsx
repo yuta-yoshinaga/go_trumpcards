@@ -64,7 +64,7 @@ type RoundResult = 'trischaken' | 'won' | 'lost';
 const ROUND_RESULT_COLORS: Record<RoundResult, string> = {
   trischaken: 'text-ds-text-muted',
   won: 'text-ds-success',
-  lost: 'text-ds-error',
+  lost: 'text-ds-error-text',
 };
 
 /** CPU difficulty options. */
@@ -270,7 +270,7 @@ function TappTarockPageContent() {
             {isGameEnd && (
               <div className="my-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="zw-result">
                 <div className="mb-1 text-ds-text-primary">{t('result.title')}</div>
-                <div className="text-ds-success mb-1">
+                <div className={`${state.winnerPlayer < 0 ? 'text-ds-text-muted' : 'text-ds-success'} mb-1`}>
                   {state.winnerPlayer < 0
                     ? t('result.draw')
                     : t('result.winner', { name: seatName(state.winnerPlayer) })}

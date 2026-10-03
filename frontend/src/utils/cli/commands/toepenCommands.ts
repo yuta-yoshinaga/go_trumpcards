@@ -1,5 +1,5 @@
 import type { toepenApi } from '../../../api/gameApi';
-import { splitCommand, suggestCommand } from '../commandParserBase';
+import { splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type ToepenArgs = Parameters<typeof toepenApi.exec>;
@@ -22,6 +22,8 @@ const VALID_COMMANDS = [
   'hint',
   'help',
   '?',
+  'd',
+  'redeal',
 ];
 
 /** Parse a Toepen CLI command into API exec arguments. */
@@ -61,11 +63,8 @@ export function parseToepenCommand(input: string): CliParseResult<ToepenArgs> {
     case 'h':
     case 'hint':
       return { args: ['hint'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

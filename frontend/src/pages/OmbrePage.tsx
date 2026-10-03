@@ -32,6 +32,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { OMBRE_HELP, parseOmbreCommand } from '../utils/cli/commands/ombreCommands';
 import { formatOmbreState } from '../utils/cli/formatters/ombreFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { isRequestedHint } from '../utils/hintRequest';
 import { MATADOR_NAME_KEY, matadorRank } from '../utils/ombreMatadors';
 import { findPlayerName, playerName } from '../utils/playerUtils';
@@ -184,6 +185,7 @@ function OmbrePageContent() {
 
   // Stage 1 → pass immediately, or stage into trump selection for entrar/solo.
   const chooseBid = (bid: number) => {
+    if (bid > 0 && bid <= state.highestBid) return;
     if (bid === 0) {
       handleBid(0);
       return;
@@ -331,6 +333,20 @@ function OmbrePageContent() {
                         {t('roundResult.ombre', { name: playerName(state.ombreIdx, state.ombreIdx === humanIdx) })}
                       </div>
                     )}
+                    <div className="mt-2">
+                      <div className="text-ds-text-primary">{t('roundResult.scoreChanges')}</div>
+                      {state.players.map((p) => {
+                        const delta = state.playerScoreDeltas[p.id];
+                        return (
+                          <div key={p.id}>
+                            {t('roundResult.scoreChange', {
+                              name: playerName(p.id, p.isHuman),
+                              delta: formatSignedDelta(delta),
+                            })}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
@@ -402,12 +418,29 @@ function OmbrePageContent() {
               {canBid && pendingBid === null && (
                 <div className="flex flex-wrap gap-2 items-center" data-testid="ombre-bid-stage1">
                   <span className="text-ds-text-muted text-sm">{t('chooseBidType')}:</span>
-                  <button type="button" className={btnPrimary} onClick={() => chooseBid(1)} disabled={loading}>
-                    {t('bidEntrar')}
-                  </button>
-                  <button type="button" className={btnPrimary} onClick={() => chooseBid(2)} disabled={loading}>
-                    {t('bidSolo')}
-                  </button>
+                  {([1, 2] as const).map((bid) => {
+                    const unavailable = bid <= state.highestBid;
+                    const reasonId = `ombre-bid-unavailable-${bid}`;
+                    return (
+                      <span key={bid}>
+                        <button
+                          type="button"
+                          className={btnPrimary}
+                          onClick={() => chooseBid(bid)}
+                          disabled={loading}
+                          aria-disabled={unavailable || undefined}
+                          aria-describedby={unavailable ? reasonId : undefined}
+                        >
+                          {t(BID_KEYS[bid])}
+                        </button>
+                        {unavailable && (
+                          <span id={reasonId} className="sr-only">
+                            {t('bidMustExceedWinningBid')}
+                          </span>
+                        )}
+                      </span>
+                    );
+                  })}
                   <button type="button" className={btnSecondary} onClick={() => chooseBid(0)} disabled={loading}>
                     {t('bidPass')}
                   </button>

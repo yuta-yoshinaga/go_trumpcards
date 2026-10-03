@@ -109,6 +109,26 @@ describe('GoFishPage', () => {
     await waitFor(() => expect(screen.getByText(/30/)).toBeInTheDocument());
   });
 
+  it('explains how to continue when the deck is empty on the human turn', async () => {
+    mockExec.mockResolvedValue({ ...baseState, deckRemaining: 0 });
+    renderWithProviders(<GoFishPage />);
+    expect(await screen.findByText(/成功すれば続けて要求できます/)).toBeInTheDocument();
+    expect(screen.getByText(/失敗時はカードを引かず、ターンが終了します/)).toBeInTheDocument();
+  });
+
+  it('keeps the empty deck guidance hidden when cards remain', async () => {
+    renderWithProviders(<GoFishPage />);
+    await waitFor(() => expect(screen.getByText(/30/)).toBeInTheDocument());
+    expect(screen.queryByText(/成功すれば続けて要求できます/)).not.toBeInTheDocument();
+  });
+
+  it('keeps the empty deck guidance hidden during a CPU turn', async () => {
+    mockExec.mockResolvedValue({ ...baseState, currentTurn: 1, deckRemaining: 0 });
+    renderWithProviders(<GoFishPage />);
+    await waitFor(() => expect(screen.getByText(/山札: 0枚/)).toBeInTheDocument());
+    expect(screen.queryByText(/成功すれば続けて要求できます/)).not.toBeInTheDocument();
+  });
+
   it('shows ask button on human turn', async () => {
     renderWithProviders(<GoFishPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '要求する' })).toBeInTheDocument());
@@ -132,6 +152,33 @@ describe('GoFishPage', () => {
     fireEvent.click(cardButton);
 
     expect(screen.getByRole('button', { name: '要求する' })).not.toBeDisabled();
+  });
+
+  it('shows the selected opponent and rank beside ask and updates when either is cleared or changed', async () => {
+    renderWithProviders(<GoFishPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 2/)).toBeInTheDocument());
+    const askPreview = () => screen.queryByTestId('gofish-ask-preview');
+    expect(askPreview()).not.toBeInTheDocument();
+
+    const opponents = screen.getAllByRole('button', { name: /CPU/ });
+    fireEvent.click(opponents[0]);
+    fireEvent.click(screen.getByRole('button', { name: /♠ 7/ }));
+    expect(askPreview()).toHaveTextContent('CPU 1');
+    expect(askPreview()).toHaveTextContent('7');
+
+    fireEvent.click(opponents[1]);
+    expect(askPreview()).toHaveTextContent('CPU 2');
+    expect(askPreview()).toHaveTextContent('7');
+
+    fireEvent.click(screen.getByRole('button', { name: /♦ 3/ }));
+    expect(askPreview()).toHaveTextContent('CPU 2');
+    expect(askPreview()).toHaveTextContent('3');
+
+    fireEvent.click(screen.getByRole('button', { name: /♠ 7/ }));
+    expect(askPreview()).toHaveTextContent('CPU 2');
+    expect(askPreview()).toHaveTextContent('7');
+    fireEvent.click(opponents[1]);
+    expect(askPreview()).not.toBeInTheDocument();
   });
 
   it('calls ask command when ask button clicked', async () => {

@@ -356,6 +356,8 @@ func TestCalabresella_ScoreRound_SoloistWinsAndLoses(t *testing.T) {
 	g.SetRoundThirds([domain.CalabresellaPlayerCnt]int{20, 7, 6})
 	g.ScoreRound()
 	scores := g.GetPlayerScores()
+	assert.Equal(t, [domain.CalabresellaPlayerCnt]int{2, -1, -1}, g.GetRoundScoreChanges())
+	assert.True(t, g.GetSoloistWon())
 	assert.Equal(t, 2, scores[0], "soloist +stake*coalitionSize (1*2)")
 	assert.Equal(t, -1, scores[1])
 	assert.Equal(t, -1, scores[2])
@@ -370,11 +372,49 @@ func TestCalabresella_ScoreRound_SoloistWinsAndLoses(t *testing.T) {
 	g2.SetRoundThirds([domain.CalabresellaPlayerCnt]int{10, 12, 11})
 	g2.ScoreRound()
 	s2 := g2.GetPlayerScores()
+	assert.Equal(t, [domain.CalabresellaPlayerCnt]int{-4, 2, 2}, g2.GetRoundScoreChanges())
+	assert.False(t, g2.GetSoloistWon())
 	assert.Equal(t, -4, s2[0], "soloist -stake*coalitionSize (2*2)")
 	assert.Equal(t, 2, s2[1])
 	assert.Equal(t, 2, s2[2])
 	assert.Equal(t, "calabresella.log.roundScoreLost", g2.GetActionLog()[len(g2.GetActionLog())-1].DetailCode)
 	assert.NotContains(t, g2.GetActionLog()[len(g2.GetActionLog())-1].DetailParams, "result")
+}
+
+func TestCalabresella_ScoreRound_InvalidSoloistDoesNotChangeScores(t *testing.T) {
+	g := newTestCalabresella()
+	g.SetPhase(domain.CalabresellaPhaseRoundEnd)
+	g.SetSoloistIdx(-1)
+	g.SetWinningBid(domain.CalabresellaBidChiamo)
+	initialScores := [domain.CalabresellaPlayerCnt]int{3, -1, 2}
+	g.SetPlayerScores(initialScores)
+
+	g.ScoreRound()
+
+	assert.Equal(t, initialScores, g.GetPlayerScores())
+}
+
+func TestCalabresella_ResolveFinalTrickScoresRoundImmediately(t *testing.T) {
+	g := newTestCalabresella()
+	g.SetPhase(domain.CalabresellaPhaseTrickEnd)
+	g.SetTrickNumber(domain.CalabresellaTrickCount)
+	g.SetSoloistIdx(0)
+	g.SetWinningBid(domain.CalabresellaBidChiamo)
+	g.SetRoundThirds([domain.CalabresellaPlayerCnt]int{16, 7, 6})
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: calCard(domain.CardDesignHeart, 13)},
+		{PlayerIdx: 1, Card: calCard(domain.CardDesignHeart, 12)},
+		{PlayerIdx: 2, Card: calCard(domain.CardDesignHeart, 11)},
+	})
+
+	g.ResolveTrick()
+
+	assert.Equal(t, domain.CalabresellaPhaseRoundEnd, g.GetPhase())
+	assert.True(t, g.GetSoloistWon())
+	assert.Equal(t, [domain.CalabresellaPlayerCnt]int{2, -1, -1}, g.GetRoundScoreChanges())
+	assert.Equal(t, [domain.CalabresellaPlayerCnt]int{2, -1, -1}, g.GetPlayerScores())
+	g.ScoreRound()
+	assert.Equal(t, [domain.CalabresellaPlayerCnt]int{2, -1, -1}, g.GetPlayerScores(), "scoring an already scored round must be idempotent")
 }
 
 func TestCalabresella_GameEnd_AtTarget(t *testing.T) {
@@ -636,6 +676,9 @@ func TestCalabresella_JSON_RoundTrip(t *testing.T) {
 	g := newTestCalabresella()
 	g.SetSoloistIdx(0)
 	g.SetWinningBid(domain.CalabresellaBidSolo)
+	g.SetPhase(domain.CalabresellaPhaseRoundEnd)
+	g.SetRoundThirds([domain.CalabresellaPlayerCnt]int{20, 7, 6})
+	g.ScoreRound()
 	data, err := json.Marshal(g)
 	require.NoError(t, err)
 
@@ -645,6 +688,11 @@ func TestCalabresella_JSON_RoundTrip(t *testing.T) {
 	assert.Equal(t, g.GetPlayerCnt(), g2.GetPlayerCnt())
 	assert.Equal(t, g.GetSoloistIdx(), g2.GetSoloistIdx())
 	assert.Equal(t, g.GetWinningBid(), g2.GetWinningBid())
+	assert.Equal(t, g.GetRoundScoreChanges(), g2.GetRoundScoreChanges())
+	assert.Equal(t, g.GetSoloistWon(), g2.GetSoloistWon())
+	assert.Equal(t, g.GetPlayerScores(), g2.GetPlayerScores())
+	g2.ScoreRound()
+	assert.Equal(t, g.GetPlayerScores(), g2.GetPlayerScores(), "restored scored rounds must not be scored twice")
 }
 
 func TestCalabresella_JSON_Invalid(t *testing.T) {

@@ -139,6 +139,7 @@ describe('DragonTigerPage', () => {
     expect(screen.getByTestId('bet-odds')).toHaveTextContent('ドラゴン 1:1');
     expect(screen.getByTestId('bet-odds')).toHaveTextContent('タイガー 1:1');
     expect(screen.getByTestId('bet-odds')).toHaveTextContent('タイ 8:1');
+    expect(screen.queryByTestId('payout-breakdown')).not.toBeInTheDocument();
   });
 
   it('dispatches a Dragon bet on button click', async () => {
@@ -198,6 +199,7 @@ describe('DragonTigerPage', () => {
     renderWithProviders(<DragonTigerPage />);
     const breakdown = await screen.findByTestId('payout-breakdown');
     expect(breakdown).toHaveTextContent('ドラゴンの勝ち');
+    expect(screen.getByTestId('payout-bet-amount')).toHaveTextContent('ベット額: 100');
     expect(breakdown).toHaveTextContent('配当倍率: ドラゴン 1:1');
     const diff = screen.getByTestId('payout-diff');
     expect(diff).toHaveTextContent('+100');
@@ -231,7 +233,7 @@ describe('DragonTigerPage', () => {
     renderWithProviders(<DragonTigerPage />);
     const diff = await screen.findByTestId('payout-diff');
     expect(diff).toHaveTextContent('-50');
-    expect(diff).toHaveClass('text-ds-error');
+    expect(diff).toHaveClass('text-ds-error-text');
     expect(screen.getByTestId('payout-result')).toHaveTextContent('返還'); // tieRefund text
   });
 
@@ -405,5 +407,15 @@ describe('DragonTigerPage history capping (issue #6381)', () => {
     renderWithProviders(<DragonTigerPage />);
     const trendBar = await screen.findByTestId('dragontiger-trend-bar');
     expect(trendBar).toHaveTextContent('25');
+  });
+
+  it('announces each visible history result with its original round position', async () => {
+    const history = [DragonTigerHistoryResult.TIE, DragonTigerHistoryResult.DRAGON, DragonTigerHistoryResult.TIGER];
+    mockApi.mockResolvedValueOnce({ ...dragonWinState, history });
+    renderWithProviders(<DragonTigerPage />);
+
+    expect(await screen.findByLabelText('1ラウンド目: 引き分け')).toBeInTheDocument();
+    expect(screen.getByLabelText('2ラウンド目: ドラゴンの勝ち')).toBeInTheDocument();
+    expect(screen.getByLabelText('3ラウンド目: タイガーの勝ち')).toBeInTheDocument();
   });
 });

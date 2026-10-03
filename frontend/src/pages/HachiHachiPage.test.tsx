@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { hachihachiApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeHachiHachiState } from '../test/stateFactories';
@@ -88,6 +89,17 @@ describe('HachiHachiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, fieldIndex: 1 }));
   });
 
+  it('exposes hand selection and clearing through aria-pressed', async () => {
+    mockExec.mockResolvedValue(makeHachiHachiState({ captureOptions: { 0: [0, 1] } }));
+    renderWithProviders(<HachiHachiPage />);
+    const handCard = await screen.findByTestId('hand-card-0');
+    expect(handCard).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(handCard);
+    expect(handCard).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(handCard).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('names each field card and exposes whether it is a capture candidate', async () => {
     const state = makeHachiHachiState({ captureOptions: { 0: [0, 1] } });
     mockExec.mockResolvedValue({ ...state, fieldCards: [...state.fieldCards, state.fieldCards[1]] });
@@ -138,14 +150,31 @@ describe('HachiHachiPage', () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<HachiHachiPage />);
     await waitFor(() => expect(screen.getByTestId('hachihachi-result')).toBeInTheDocument());
+    expect(screen.getByText('勝者: あなた')).toBeInTheDocument();
+    expect(screen.getByText('あなた: 52')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '新しいゲーム' })).toBeInTheDocument();
   });
 
-  it('renders a game-end result without a winner banner when winner is -1', async () => {
+  it('identifies a tied game in Japanese when there is no winner', async () => {
     mockExec.mockResolvedValue(makeHachiHachiState({ phase: 2, gameEndFlag: true, winner: -1, message: '引き分け' }));
     renderWithProviders(<HachiHachiPage />);
     const result = await screen.findByTestId('hachihachi-result');
-    expect(result).toBeInTheDocument();
+    expect(result).toHaveTextContent('引き分け');
+    expect(result).toHaveTextContent('あなた:');
+  });
+
+  it('identifies a tied game in English when there is no winner', async () => {
+    const originalLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(makeHachiHachiState({ phase: 2, gameEndFlag: true, winner: -1, message: 'Tie' }));
+      renderWithProviders(<HachiHachiPage />);
+      const result = await screen.findByTestId('hachihachi-result');
+      expect(result).toHaveTextContent('The game is a draw.');
+      expect(result).toHaveTextContent('You:');
+    } finally {
+      await i18n.changeLanguage(originalLanguage);
+    }
   });
 
   it('does not play a hand card when it is a CPU turn', async () => {

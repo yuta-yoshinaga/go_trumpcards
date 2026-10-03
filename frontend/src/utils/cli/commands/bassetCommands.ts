@@ -1,5 +1,5 @@
 import type { bassetApi } from '../../../api/games/basset';
-import { splitCommand, suggestCommand } from '../commandParserBase';
+import { splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 /** Args accepted by the Basset API command. */
@@ -22,8 +22,7 @@ export function parseBassetCommand(input: string): CliParseResult<BassetCliArgs>
   if (cmd === 'n' || cmd === 'next') return { args: ['next'] };
   if (cmd === 'r' || cmd === 'reset') return { args: ['reset'] };
   if (cmd === 'log') return { args: ['log'] };
-  const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-  return { error: `Unknown command: ${cmd}${suggestion ? `. Did you mean ${suggestion}?` : ''}` };
+  return unknownCommand(cmd, VALID_COMMANDS);
 }
 
 /** Help text shown for Basset. */

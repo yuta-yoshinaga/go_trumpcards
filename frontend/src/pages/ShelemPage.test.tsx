@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { shelemApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeShelemState } from '../test/stateFactories';
 import type { Card, ShelemResponse } from '../types/card';
@@ -198,6 +199,16 @@ describe('ShelemPage', () => {
     );
   });
 
+  it('announces the translated trump suit on each discard confirmation button', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: 1, declarerIdx: 0, contract: 90, widowSize: 0 } as Partial<ShelemResponse>),
+    );
+    renderWithProviders(<ShelemPage />);
+
+    expect(await screen.findByRole('button', { name: '切り札スペードで確定' })).toBeInTheDocument();
+    expect(screen.getByTestId('sh-discard-1-btn')).toHaveTextContent('切り札 ♠ で確定');
+  });
+
   it('plays the clicked card by its hand index once play starts', async () => {
     mockExec.mockResolvedValue(playing());
     renderWithProviders(<ShelemPage />);
@@ -207,6 +218,21 @@ describe('ShelemPage', () => {
     mockExec.mockClear();
     fireEvent.click(cards[2]);
 
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 2));
+  });
+
+  it('blocks illegal cards during play but keeps legal cards operable', async () => {
+    mockExec.mockResolvedValue(playing({ validPlays: [0, 2] }));
+    renderWithProviders(<ShelemPage />);
+    const cards = await screen.findAllByRole('button', { name: /を出す/ });
+    expect(cards[1]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[1]).toHaveAttribute('aria-describedby');
+    expect(cards[0]).not.toHaveAttribute('aria-disabled');
+    mockExec.mockClear();
+    fireEvent.click(cards[1]);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+    fireEvent.click(cards[2]);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 2));
   });
 

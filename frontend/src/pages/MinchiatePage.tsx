@@ -287,6 +287,18 @@ function MinchiatePageContent() {
                         })}
                       </div>
                     ))}
+                    <div className="mt-2 mb-1 text-ds-text-primary">{t('roundResult.breakdownTitle')}</div>
+                    {state.roundBreakdown.map((breakdown, team) => (
+                      <div key={team} data-testid={`mc-round-breakdown-${team}`}>
+                        {t('roundResult.teamBreakdown', {
+                          team,
+                          tricks: breakdown.tricks,
+                          lastTrickBonus: breakdown.lastTrickBonus,
+                          scartoBonus: breakdown.scartoBonus,
+                          total: breakdown.total,
+                        })}
+                      </div>
+                    ))}
                     {/* **トリック数を足しても teamScores の増分と合わない。**精算には
                         最終トリックボーナスとスカルト枚数分が乗っているのに、どちらの
                         画面にも出ていなかった (#6512)。検算できないのは内訳が足りないから。 */}
@@ -336,6 +348,15 @@ function MinchiatePageContent() {
                 </div>
               )}
             </div>
+
+            {canScarto && (
+              <div
+                className="mb-1 text-center text-sm text-ds-text-primary tabular-nums"
+                data-testid="minchiate-scarto-progress"
+              >
+                {t('scartoProgress', { selected: selectedCardIndices.length, count: MINCHIATE_SURPLUS })}
+              </div>
+            )}
 
             {humanPlayer && (
               <PlayerHandSection

@@ -13,13 +13,17 @@
     "row": "行",
     "col": "列",
     "empty": "空",
+    "placedCell": "{{card}}、行{{rowNo}}・列{{colNo}}",
     "emptyCell": "空 {{rowNo}}-{{colNo}}、行{{rowNo}}(現在{{rowScore}}点)・列{{colNo}}(現在{{colScore}}点)",
     "win": "クリア！",
     "lose": "未達成"
   },
   "partialPrefix": "途中",
   "partialTooltip": "スターター抜きで確定している点。スターターで増えることはあっても減りません",
-  "placementAnnouncement": "行{{rowNo}}が{{rowScore}}点、列{{colNo}}が{{colScore}}点、合計{{total}}点",
+  "listSeparator": "、",
+  "noScoredParts": "得点項目なし",
+  "placementAnnouncementPartial": "スターター公開前の途中得点。行{{rowNo}}が{{rowScore}}点（{{rowParts}}）、列{{colNo}}が{{colScore}}点（{{colParts}}）、合計{{total}}点",
+  "placementAnnouncement": "行{{rowNo}}が{{rowScore}}点（{{rowParts}}）、列{{colNo}}が{{colScore}}点（{{colParts}}）、合計{{total}}点",
   "part": {
     "fifteens": "15が{{n}}",
     "pairs": "ペア{{n}}",

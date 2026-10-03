@@ -262,6 +262,40 @@ func TestContinentalRummy_RoundsAndGameEnd(t *testing.T) {
 	assert.Equal(t, 1, c.GetRoundNumber())
 }
 
+func TestContinentalRummy_RoundScoreHistoryResetAndJSON(t *testing.T) {
+	cfg := DefaultContinentalRummyConfig()
+	cfg.TotalRounds = ContinentalRummyMaxRounds
+	c := NewContinentalRummy(cfg)
+	c.Reset()
+
+	wantScores := make([][]int, 0, 2)
+	for round := 1; round <= 2; round++ {
+		c.roundNumber = round
+		c.finishRound(ContinentalRummyHumanIdx)
+		roundScore := make([]int, ContinentalRummyPlayerCnt)
+		roundScore[c.lastResult.WinnerIdx] = c.lastResult.Total
+		wantScores = append(wantScores, roundScore)
+	}
+
+	history := c.GetRoundScoreHistory()
+	require.Len(t, history, 2)
+	for i, entry := range history {
+		assert.Equal(t, i+1, entry.RoundNumber)
+		require.Len(t, entry.Scores, ContinentalRummyPlayerCnt)
+		// roundScore is the winner's award for this round; every other seat earned zero.
+		assert.Equal(t, wantScores[i], entry.Scores)
+	}
+
+	data, err := json.Marshal(c)
+	require.NoError(t, err)
+	restored := new(ContinentalRummy)
+	require.NoError(t, json.Unmarshal(data, restored))
+	assert.Equal(t, history, restored.GetRoundScoreHistory())
+
+	c.Reset()
+	assert.Empty(t, c.GetRoundScoreHistory())
+}
+
 // **山が尽きたら捨て札を裏返して積み直す。**
 //
 // 原典は山が尽きたときのことを書いていないが、そこで流局にすると実測で

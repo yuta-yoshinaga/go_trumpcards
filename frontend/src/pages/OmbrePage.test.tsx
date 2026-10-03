@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ombreApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeOmbreState } from '../test/stateFactories';
 import { OmbrePage } from './OmbrePage';
@@ -19,6 +20,7 @@ const bidPhaseState = makeOmbreState({
   isHumanTurn: false,
   isHumanBidTurn: true,
   winningBid: 0,
+  highestBid: 0,
   ombreIdx: -1,
   trumpSuit: -1,
 });
@@ -79,6 +81,54 @@ describe('OmbrePage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'エントラール' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'ソロ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument();
+  });
+
+  it('marks bids at or below the highest bid unavailable and keeps pass selectable', async () => {
+    mockExec.mockResolvedValue({ ...bidPhaseState, highestBid: 1 });
+    renderWithProviders(<OmbrePage />);
+    const entrar = await screen.findByRole('button', { name: 'エントラール' });
+    const solo = screen.getByRole('button', { name: 'ソロ' });
+    const pass = screen.getByRole('button', { name: 'パス' });
+    expect(entrar).toHaveAttribute('aria-disabled', 'true');
+    expect(entrar).toHaveAttribute('aria-describedby');
+    expect(solo).not.toHaveAttribute('aria-disabled', 'true');
+    expect(pass).not.toHaveAttribute('aria-disabled', 'true');
+
+    mockExec.mockClear();
+    fireEvent.click(entrar);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+    expect(screen.getByTestId('ombre-bid-stage1')).toBeInTheDocument();
+  });
+
+  it('disables both declarations when solo is the current winning bid', async () => {
+    mockExec.mockResolvedValue({ ...bidPhaseState, highestBid: 2 });
+    renderWithProviders(<OmbrePage />);
+    const entrar = await screen.findByRole('button', { name: 'エントラール' });
+    const solo = screen.getByRole('button', { name: 'ソロ' });
+    const pass = screen.getByRole('button', { name: 'パス' });
+    expect(entrar).toHaveAttribute('aria-disabled', 'true');
+    expect(solo).toHaveAttribute('aria-disabled', 'true');
+    expect(pass).not.toHaveAttribute('aria-disabled', 'true');
+    expect(entrar).toHaveAccessibleDescription('現在の入札を上回る必要があります');
+    expect(solo).toHaveAccessibleDescription('現在の入札を上回る必要があります');
+
+    mockExec.mockClear();
+    fireEvent.click(solo);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+    expect(screen.getByTestId('ombre-bid-stage1')).toBeInTheDocument();
+  });
+
+  it('keeps both declarations selectable when no bid has been made', async () => {
+    mockExec.mockResolvedValue({ ...bidPhaseState, highestBid: 0 });
+    renderWithProviders(<OmbrePage />);
+    const entrar = await screen.findByRole('button', { name: 'エントラール' });
+    const solo = screen.getByRole('button', { name: 'ソロ' });
+    expect(entrar).not.toHaveAttribute('aria-disabled', 'true');
+    expect(solo).not.toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(entrar);
+    await waitFor(() => expect(screen.getByTestId('ombre-bid-stage2')).toBeInTheDocument());
   });
 
   it('stages entrar → trump selection → confirm and dispatches the bid with the suit', async () => {
@@ -304,5 +354,20 @@ describe('OmbrePage', () => {
     expect(live).toHaveAttribute('aria-live', 'polite');
     // 催促が**その領域の中**にあること。隣に置いただけの実装は属性の検査を通る。
     expect(live).toContainElement(await screen.findByTestId('ombre-bid-prompt'));
+  });
+
+  it('shows every player name with the deal score change at round end', async () => {
+    mockExec.mockResolvedValue(
+      makeOmbreState({
+        phase: 3,
+        outcome: 3,
+        playerScoreDeltas: [-4, 2, 2],
+      }),
+    );
+    renderWithProviders(<OmbrePage />);
+    expect(await screen.findByText('今回の増減')).toBeInTheDocument();
+    expect(screen.getByText('あなた: -4')).toBeInTheDocument();
+    expect(screen.getByText('CPU 1: +2')).toBeInTheDocument();
+    expect(screen.getByText('CPU 2: +2')).toBeInTheDocument();
   });
 });

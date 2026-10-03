@@ -33,7 +33,11 @@ import { cardAlt } from '../utils/cardAlt';
 import { PAIGOW_HELP, parsePaigowCommand } from '../utils/cli/commands/paigowCommands';
 import { formatPaigowState } from '../utils/cli/formatters/paigowFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { paiGowAutoSplit, paiGowFoulCheck } from '../utils/paiGowFoul';
+import { paiGowFoulCheck } from '../utils/paiGowFoul';
+import { paiGowHouseWaySplit } from '../utils/paiGowHouseWay';
+
+/** Bet cap enforced by the domain (`PaiGowMaxBet`); bets are multiples of 10. */
+const PAIGOW_MAX_BET = 10000;
 
 /** High hand rank display name lookup. */
 const HIGH_HAND_RANK_KEYS: Record<number, string> = {
@@ -53,6 +57,12 @@ const HIGH_HAND_RANK_KEYS: Record<number, string> = {
 const LOW_HAND_RANK_KEYS: Record<number, string> = {
   0: 'lowHandRank.0',
   1: 'lowHandRank.1',
+};
+
+const HAND_RESULT_KEYS: Record<number, string> = {
+  [-1]: 'handResult.lose',
+  0: 'handResult.draw',
+  1: 'handResult.win',
 };
 
 /** Pai Gow Poker tutorial step definitions. */
@@ -135,12 +145,7 @@ function PaiGowPageContent() {
     [isSetHandsPhase, state, selectedIndices],
   );
 
-  // House-way auto-split: the strongest legal low-hand indices, or null when it
-  // cannot be safely computed (e.g. a joker is present).
-  const autoSplit = useMemo(
-    () => (isSetHandsPhase && state ? paiGowAutoSplit(state.playerCards) : null),
-    [isSetHandsPhase, state],
-  );
+  const autoSplit = useMemo(() => paiGowHouseWaySplit(state), [state]);
 
   const handleAutoSet = useCallback(() => {
     if (autoSplit) setSelectedIndices([autoSplit[0], autoSplit[1]]);
@@ -192,6 +197,8 @@ function PaiGowPageContent() {
   });
 
   if (!state) return <GameSkeleton gameKey="paigow" layout={{ kind: 'casino-table', sections: [7, 7] }} />;
+  // The largest bet the domain accepts: a multiple of 10, within the cap and the balance.
+  const maxBet = Math.min(Math.floor(state.chips / 10) * 10, PAIGOW_MAX_BET);
 
   const handleBet = () => {
     execApi('bet', betAmount);
@@ -286,7 +293,8 @@ function PaiGowPageContent() {
                 {state.playerHighHand.length > 0 && (
                   <div className="mb-4">
                     <div className="text-ds-warning font-bold text-center mb-1">
-                      <span aria-hidden="true">🟡</span> {t('label.highHand')}
+                      <span aria-hidden="true">🟡</span> {t('label.highHand')}{' '}
+                      <span className="text-sm">({t(HAND_RESULT_KEYS[state.highHandResult])})</span>
                       {state.playerHighRank >= 0 && (
                         <span className="ml-2 text-sm">({t(HIGH_HAND_RANK_KEYS[state.playerHighRank])})</span>
                       )}
@@ -301,7 +309,8 @@ function PaiGowPageContent() {
                 {state.playerLowHand.length > 0 && (
                   <div className="mb-4">
                     <div className="text-ds-warning font-bold text-center mb-1">
-                      <span aria-hidden="true">🟡</span> {t('label.lowHand')}
+                      <span aria-hidden="true">🟡</span> {t('label.lowHand')}{' '}
+                      <span className="text-sm">({t(HAND_RESULT_KEYS[state.lowHandResult])})</span>
                       {state.playerLowRank >= 0 && (
                         <span className="ml-2 text-sm">({t(LOW_HAND_RANK_KEYS[state.playerLowRank])})</span>
                       )}
@@ -317,8 +326,9 @@ function PaiGowPageContent() {
                 {/* Dealer High Hand and Low Hand */}
                 {state.dealerHighHand.length > 0 && (
                   <div className="mb-4">
-                    <div className="text-ds-error font-bold text-center mb-1">
-                      <span aria-hidden="true">🔴</span> {t('label.highHand')}
+                    <div className="text-ds-error-text font-bold text-center mb-1">
+                      <span aria-hidden="true">🔴</span> {t('label.highHand')}{' '}
+                      <span className="text-sm">({t(HAND_RESULT_KEYS[-state.highHandResult])})</span>
                       {state.dealerHighRank >= 0 && (
                         <span className="ml-2 text-sm">({t(HIGH_HAND_RANK_KEYS[state.dealerHighRank])})</span>
                       )}
@@ -332,8 +342,9 @@ function PaiGowPageContent() {
                 )}
                 {state.dealerLowHand.length > 0 && (
                   <div className="mb-4">
-                    <div className="text-ds-error font-bold text-center mb-1">
-                      <span aria-hidden="true">🔴</span> {t('label.lowHand')}
+                    <div className="text-ds-error-text font-bold text-center mb-1">
+                      <span aria-hidden="true">🔴</span> {t('label.lowHand')}{' '}
+                      <span className="text-sm">({t(HAND_RESULT_KEYS[-state.lowHandResult])})</span>
                       {state.dealerLowRank >= 0 && (
                         <span className="ml-2 text-sm">({t(LOW_HAND_RANK_KEYS[state.dealerLowRank])})</span>
                       )}
@@ -389,7 +400,7 @@ function PaiGowPageContent() {
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="pg-bet-controls">
                 <p data-testid="paigow-bet-guidance" className="text-ds-text-muted text-xs text-center">
-                  {t('betLimits', { chips: state.chips, amount: betAmount })}
+                  {t('betLimits', { chips: state.chips, amount: betAmount, max: maxBet })}
                 </p>
                 <ChipBetInput
                   id="paigow-bet-amount"
@@ -397,7 +408,7 @@ function PaiGowPageContent() {
                   value={betAmount}
                   onChange={setBetAmount}
                   min={10}
-                  max={Math.min(state.chips, 10000)}
+                  max={maxBet}
                   step={10}
                   disabled={loading}
                   showSteppers
@@ -405,7 +416,7 @@ function PaiGowPageContent() {
                   describedBy={betInvalid ? 'paigow-bet-error' : undefined}
                 />
                 {betInvalid && (
-                  <p id="paigow-bet-error" role="alert" className="text-ds-error text-xs">
+                  <p id="paigow-bet-error" role="alert" className="text-ds-error-text text-xs">
                     {t(betErrorKey)}
                   </p>
                 )}
@@ -419,7 +430,7 @@ function PaiGowPageContent() {
                 {/* Always-rendered assertive live region so both the onset and the
                     clearing of a foul are announced (an unmounted region can't
                     announce its own removal). Empty <p> collapses to no height. */}
-                <p data-testid="foul-warning" aria-live="assertive" className="text-ds-error text-sm font-medium">
+                <p data-testid="foul-warning" aria-live="assertive" className="text-ds-error-text text-sm font-medium">
                   {foul.isFoul ? t('foulWarning') : ''}
                 </p>
                 <details data-testid="foul-rule-help" className="text-xs text-ds-text-muted max-w-sm text-center">

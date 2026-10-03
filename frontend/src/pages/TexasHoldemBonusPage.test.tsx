@@ -20,6 +20,8 @@ const betPhaseState: TexasHoldemBonusResponse = {
   playerHand: [],
   dealerHand: [],
   community: [],
+  playerBest: [],
+  dealerBest: [],
   phase: 1,
   chips: 1000,
   anteBet: 0,
@@ -68,6 +70,8 @@ const endPlayerWins: TexasHoldemBonusResponse = {
   phase: 5,
   dealerHand: [card('HEART', 7), card('DIAMOND', 5)],
   community: [card('SPADE', 12), card('SPADE', 11), card('SPADE', 10), card('CLOVER', 2), card('HEART', 4)],
+  playerBest: [card('SPADE', 1), card('SPADE', 13), card('SPADE', 12), card('SPADE', 11), card('SPADE', 10)],
+  dealerBest: [card('HEART', 7), card('DIAMOND', 5), card('SPADE', 12), card('SPADE', 11), card('SPADE', 10)],
   result: 1,
   antePayout: 200 + 100 * 1000,
   playPayout: 400,
@@ -126,6 +130,15 @@ afterEach(() => {
 });
 
 describe('TexasHoldemBonusPage', () => {
+  it('highlights the best five cards across hole cards and the board with accessible labels', async () => {
+    mockApi.mockResolvedValue(endPlayerWins);
+    const { container } = renderWithProviders(<TexasHoldemBonusPage />);
+    await waitFor(() => expect(container.querySelectorAll('[data-best5]')).toHaveLength(7));
+    expect(container.querySelectorAll('[data-player-best5]')).toHaveLength(5);
+    expect(container.querySelectorAll('[data-dealer-best5]')).toHaveLength(5);
+    expect(screen.getAllByText('プレイヤーの最善の5枚に含まれるカード: ♠ A')).toHaveLength(1);
+    expect(screen.getAllByText('ディーラーの最善の5枚に含まれるカード: ♠ Q')).toHaveLength(1);
+  });
   it('renders bet phase on mount', async () => {
     mockApi.mockResolvedValue(betPhaseState);
     renderWithProviders(<TexasHoldemBonusPage />);
@@ -142,11 +155,43 @@ describe('TexasHoldemBonusPage', () => {
     expect(screen.getByTestId('thb-bet-summary')).toHaveTextContent('合計: 100 / 残り: 900');
 
     fireEvent.change(anteInput, { target: { value: '900' } });
-    expect(bonusInput).toHaveAttribute('max', '100');
-    fireEvent.change(bonusInput, { target: { value: '200' } });
-    expect(bonusInput).toHaveValue('100');
-    expect(anteInput).toHaveAttribute('max', '900');
-    expect(screen.getByTestId('thb-bet-summary')).toHaveTextContent('合計: 1000 / 残り: 0');
+    expect(anteInput).toHaveValue('330');
+    expect(bonusInput).toHaveAttribute('max', '10');
+    fireEvent.change(bonusInput, { target: { value: '10' } });
+    expect(bonusInput).toHaveValue('10');
+    expect(screen.getByTestId('thb-bet-summary')).toHaveTextContent('合計: 340 / 残り: 660');
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockApi).toHaveBeenLastCalledWith('bet', 330, 10));
+  });
+
+  it('prevents betting when the balance cannot cover the minimum ante and its play bet', async () => {
+    mockApi.mockResolvedValue({ ...betPhaseState, chips: 29 });
+    renderWithProviders(<TexasHoldemBonusPage />);
+    const bet = await screen.findByRole('button', { name: 'ベット' });
+    expect(bet).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(bet);
+    expect(mockApi).toHaveBeenCalledTimes(1); // mount reset only
+  });
+
+  it('restores the default ante when chips recover above the minimum', async () => {
+    mockApi.mockResolvedValueOnce({ ...betPhaseState, chips: 20 }).mockResolvedValueOnce(betPhaseState);
+    renderWithProviders(<TexasHoldemBonusPage />);
+
+    const anteInput = (await screen.findByLabelText('アンテ')) as HTMLInputElement;
+    const bet = screen.getByRole('button', { name: 'ベット' });
+    await waitFor(() => expect(anteInput).toHaveValue('0'));
+    expect(bet).toHaveAttribute('aria-disabled', 'true');
+
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    const commandInput = screen.getByRole('textbox');
+    fireEvent.change(commandInput, { target: { value: 'reset' } });
+    fireEvent.keyDown(commandInput, { key: 'Enter' });
+
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
+    const recoveredAnteInput = await screen.findByLabelText('アンテ');
+    await waitFor(() => expect(recoveredAnteInput).toHaveValue('100'));
+    expect(screen.getByRole('button', { name: 'ベット' })).toHaveAttribute('aria-disabled', 'false');
   });
 
   it('adjusts bet values when the chip balance decreases', async () => {
@@ -159,9 +204,9 @@ describe('TexasHoldemBonusPage', () => {
     fireEvent.change(bonusInput, { target: { value: '100' } });
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
 
-    await waitFor(() => expect(anteInput).toHaveValue('300'));
+    await waitFor(() => expect(anteInput).toHaveValue('100'));
     expect(bonusInput).toHaveValue('0');
-    expect(screen.getByTestId('thb-bet-summary')).toHaveTextContent('合計: 300 / 残り: 0');
+    expect(screen.getByTestId('thb-bet-summary')).toHaveTextContent('合計: 100 / 残り: 200');
   });
 
   it('explains that ante and bonus payouts are judged independently', async () => {

@@ -41,6 +41,28 @@ describe('EscobaPage', () => {
     expect(screen.getByTestId('table-card-1')).toBeInTheDocument();
   });
 
+  it('exposes hand and table card selection through aria-pressed', async () => {
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+    const handCard = screen.getByTestId('hand-card-0');
+    const tableCard = screen.getByTestId('table-card-0');
+    expect(handCard).toHaveAttribute('aria-pressed', 'false');
+    expect(tableCard).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(handCard);
+    fireEvent.click(tableCard);
+    expect(handCard).toHaveAttribute('aria-pressed', 'true');
+    expect(tableCard).toHaveAttribute('aria-pressed', 'true');
+    expect(handCard).toHaveClass('-translate-y-2');
+    expect(tableCard).toHaveClass('ring-2');
+
+    fireEvent.click(handCard);
+    fireEvent.click(tableCard);
+    expect(handCard).toHaveAttribute('aria-pressed', 'false');
+    expect(tableCard).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('shows Escoba card values for capture totals', async () => {
     renderWithProviders(<EscobaPage />);
     await waitFor(() => expect(screen.getByTestId('escoba-card-values')).toBeInTheDocument());
@@ -185,6 +207,7 @@ describe('EscobaPage', () => {
     mockExec.mockResolvedValue(
       makeEscobaState({
         phase: 'roundEnd',
+        lastCaptureIdx: 2,
         isHumanTurn: false,
         lastRoundDetail: {
           cards: [1, 0, 0, 0],
@@ -201,6 +224,7 @@ describe('EscobaPage', () => {
     renderWithProviders(<EscobaPage />);
     await waitFor(() => expect(screen.getByTestId('round-detail')).toBeInTheDocument());
     expect(screen.getByTestId('next-round-button')).toBeInTheDocument();
+    expect(screen.getByTestId('last-capture')).toHaveTextContent('最後の捕獲者: CPU 2');
 
     // **列見出しだけが `P0` の英字リテラルだった。**同じページの他はすべて
     // tc('player.*') を通っていて、日本語 UI でここだけ表記がずれていた (#6458)。
@@ -214,6 +238,28 @@ describe('EscobaPage', () => {
       expect(th).toHaveAttribute('scope', 'col');
       expect(th.textContent).not.toMatch(/^P\d/);
     }
+  });
+
+  it('omits the last capturer when there was no valid capture', async () => {
+    mockExec.mockResolvedValue(makeEscobaState({ phase: 'roundEnd', lastCaptureIdx: -1, isHumanTurn: false }));
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('next-round-button')).toBeInTheDocument());
+    expect(screen.queryByTestId('last-capture')).not.toBeInTheDocument();
+  });
+
+  it('shows the human as last capturer in Japanese', async () => {
+    mockExec.mockResolvedValue(makeEscobaState({ phase: 'roundEnd', lastCaptureIdx: 0, isHumanTurn: false }));
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('next-round-button')).toBeInTheDocument());
+    expect(screen.getByTestId('last-capture')).toHaveTextContent('最後の捕獲者: あなた');
+  });
+
+  it('localizes the last capturer in English', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue(makeEscobaState({ phase: 'roundEnd', lastCaptureIdx: 0, isHumanTurn: false }));
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('next-round-button')).toBeInTheDocument());
+    expect(screen.getByTestId('last-capture')).toHaveTextContent('Last capturer: You');
   });
 
   it('next-round button dispatches "n"', async () => {
@@ -367,7 +413,7 @@ describe('EscobaPage', () => {
     fireEvent.click(screen.getByTestId('table-card-1')); // +4 => 16
     const counter = await screen.findByTestId('escoba-sum-indicator');
     expect(counter).toHaveTextContent('16 / 15');
-    expect(counter.className).toContain('text-ds-error');
+    expect(counter.className).toContain('text-ds-error-text');
   });
 
   it('does not show the escoba badge on initial load', async () => {

@@ -59,6 +59,7 @@ function TuSacPageContent() {
   // **選ぶのは手札の位置。** 同じ色・同じ駒が 4 枚あるので、札そのものでは
   // どの 1 枚か決まらない。
   const [selected, setSelected] = useState<number[]>([]);
+  const [selectionChanged, setSelectionChanged] = useState(false);
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(tusacApi.exec);
 
@@ -83,9 +84,13 @@ function TuSacPageContent() {
   const gameOver = !!state?.gameEndFlag;
   const canAct = !!state?.isHumanTurn && !gameOver;
 
-  const clearSelection = useCallback(() => setSelected([]), []);
+  const clearSelection = useCallback(() => {
+    setSelected([]);
+    setSelectionChanged(false);
+  }, []);
 
   const toggleCard = useCallback((index: number) => {
+    setSelectionChanged(true);
     setSelected((prev) => (prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]));
   }, []);
 
@@ -209,6 +214,12 @@ function TuSacPageContent() {
                 >
                   <span className="text-ds-text-primary">
                     {seat.name}
+                    {seat.isTurn && (
+                      <span className="text-ds-success">
+                        {' · '}
+                        {t('label.currentTurn')}
+                      </span>
+                    )}
                     {' · '}
                     {/* **相手の手札は届いていない。** 枚数だけが分かる。 */}
                     <span data-testid={`tusac-count-${i}`}>{t('label.handCount', { count: seat.handCount })}</span>
@@ -263,10 +274,15 @@ function TuSacPageContent() {
                     変化として扱われず読み上げられないことがある (#5955)。中身だけを
                     出し入れするので、見た目は従来どおり 0 枚のときは何も出ない。 */}
                 <span role="status" aria-live="polite">
-                  {selected.length > 0 && (
+                  {selectionChanged && (
                     <span data-testid="tusac-selected">
                       {' · '}
-                      {t('label.selected', { count: selected.length })}
+                      {selected.length === 0
+                        ? t('label.selectionCleared')
+                        : t('label.selected', {
+                            count: selected.length,
+                            cards: selected.map((index) => cardAlt(human?.cards[index])).join(t('listSeparator')),
+                          })}
                     </span>
                   )}
                 </span>

@@ -1,5 +1,5 @@
 import type { honeymoonbridgeApi } from '../../../api/gameApi';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type HoneymoonBridgeArgs = Parameters<typeof honeymoonbridgeApi.exec>;
@@ -70,11 +70,8 @@ export function parseHoneymoonBridgeCommand(input: string): CliParseResult<Honey
     case 'r':
     case 'reset':
       return { args: ['reset'] as HoneymoonBridgeArgs };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

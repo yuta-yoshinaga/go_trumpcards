@@ -209,6 +209,14 @@ function RazzPageContent() {
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
+  const callAmount = Math.min(
+    Math.max(0, (state?.lastBet ?? 0) - (humanPlayer?.currentBet ?? 0)),
+    humanPlayer?.chips ?? 0,
+  );
+  const callPotOdds =
+    callAmount > 0 && Number.isFinite(state?.pot)
+      ? ((callAmount / ((state?.pot ?? 0) + callAmount)) * 100).toFixed(1)
+      : null;
   // Current best Razz low from the human's known cards (door + hole), shown from 3rd street.
   const humanLow =
     (isActive || isShowdown) && humanPlayer && !humanPlayer.folded
@@ -327,7 +335,7 @@ function RazzPageContent() {
                         {tc('betting.currentBet')} {p.currentBet}
                       </span>
                     )}
-                    {p.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
+                    {p.folded && <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>}
                     {p.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                     {p.id === bringInPlayerId && (
                       <span data-testid={`razz-bringin-badge-${p.id}`} className={bringInBadgeClass}>
@@ -473,7 +481,9 @@ function RazzPageContent() {
                       {tc('betting.currentBet')} {humanPlayer.currentBet}
                     </span>
                   )}
-                  {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
+                  {humanPlayer.folded && (
+                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
+                  )}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                   {humanPlayer.id === bringInPlayerId && (
                     <span data-testid={`razz-bringin-badge-${humanPlayer.id}`} className={bringInBadgeClass}>
@@ -621,6 +631,11 @@ function RazzPageContent() {
             {/* Betting controls */}
             {canAct && (
               <div data-tutorial="razz-action-buttons">
+                {hasOutstandingBet && callPotOdds !== null && (
+                  <p data-testid="razz-call-pot-odds" className="text-ds-text-primary text-sm mb-2">
+                    {t('callPotOdds', { amount: callAmount, odds: callPotOdds })}
+                  </p>
+                )}
                 <BettingControls
                   inputId="razzBetAmount"
                   betAmount={betAmount}

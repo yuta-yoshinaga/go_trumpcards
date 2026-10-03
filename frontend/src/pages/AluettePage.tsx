@@ -139,6 +139,7 @@ function AluettePageContent() {
   const isPlayPhase = state.phase === AluettePhase.PLAY;
   const isTrickEnd = state.phase === AluettePhase.TRICK_END;
   const isRoundEnd = state.phase === AluettePhase.ROUND_END;
+  const lastTrickWinner = isTrickEnd ? state.players.find((player) => player.id === state.lastTrickWinner) : undefined;
 
   // チーム分けはサーバが player.team として返しているので、席番号から
   // 計算し直さない (対面同士という規則が変わっても追随する)。
@@ -175,6 +176,10 @@ function AluettePageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <span className="sr-only" role="status" aria-live="polite" data-testid="aluette-trick-winner-live">
+        {lastTrickWinner &&
+          t('trickWinnerAnnouncement', { name: playerName(lastTrickWinner.id, lastTrickWinner.isHuman) })}
+      </span>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -310,6 +315,14 @@ function AluettePageContent() {
                         読者にさせない (バックエンドの settleRound と同じ条件)。 */}
                       <div className="mt-1 text-ds-text-primary" data-testid="aluette-team-tally">
                         {t('roundResult.teamTally', { team0: meneTeamTricks[0], team1: meneTeamTricks[1] })}
+                        {[0, 1].map((team) => (
+                          <div key={team}>
+                            {t('roundResult.tricksRemaining', {
+                              team,
+                              count: Math.max(0, ALUETTE_TRICKS_TO_WIN - meneTeamTricks[team]),
+                            })}
+                          </div>
+                        ))}
                       </div>
                       {meneWinner !== null && (
                         <div data-testid="aluette-meine-winner">

@@ -5,7 +5,7 @@ import type { TrashResponse } from '../../types/card';
 import { gameExec } from '../gameExec';
 
 /** Command verbs accepted by the Trash /trash/exec endpoint. */
-export type TrashCommand = 'reset' | 'draw' | 'place' | 'cpu' | 'log';
+export type TrashCommand = 'reset' | 'draw' | 'place' | 'cpu' | 'undo' | 'log';
 
 /** API client for the Trash /trash/exec endpoint. */
 export const trashApi = {

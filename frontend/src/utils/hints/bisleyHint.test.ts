@@ -7,6 +7,7 @@ function makeState(overrides?: Partial<BisleyResponse>): BisleyResponse {
     tableau: Array.from({ length: 13 }, () => []),
     aceFoundations: [[], [], [], []],
     kingFoundations: [[], [], [], []],
+    foundationSize: 13,
     phase: 0,
     moveCount: 0,
     canUndo: false,

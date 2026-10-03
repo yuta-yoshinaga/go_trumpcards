@@ -26,21 +26,27 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { outcomeFromTexasHoldemBonusResult, useTexasHoldemBonusStats } from '../hooks/useTexasHoldemBonusStats';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { highlightCardStyle, placeholderCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { TexasHoldemBonusResponse } from '../types/card';
 import { isMaskedCard } from '../types/card';
 import { TexasHoldemBonusPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseTexasholdembonusCommand, TEXASHOLDEMBONUS_HELP } from '../utils/cli/commands/texasholdembonusCommands';
 import { formatTexasholdembonusState } from '../utils/cli/formatters/texasholdembonusFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import {
   TEXASHOLDEMBONUS_FLOP_MULTIPLIER,
   TEXASHOLDEMBONUS_RAISE_MULTIPLIER,
   texasHoldemBonusBetCost,
 } from '../utils/texasHoldemBonusBet';
+
+const INITIAL_ANTE_AMOUNT = 100;
+const FLOP_BET_COST_MULTIPLIER = 1 + TEXASHOLDEMBONUS_FLOP_MULTIPLIER;
 
 /** Texas Hold'em Bonus Poker tutorial step definitions. */
 const THB_TUTORIAL_STEPS: TutorialStep[] = [
@@ -91,7 +97,7 @@ function TexasHoldemBonusPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('texasholdembonus');
 
-  const [anteAmount, setAnteAmount] = useState(100);
+  const [anteAmount, setAnteAmount] = useState(INITIAL_ANTE_AMOUNT);
   const [bonusAmount, setBonusAmount] = useState(0);
 
   const { cardWidth } = useCardDimensions();
@@ -101,9 +107,12 @@ function TexasHoldemBonusPageContent() {
   // biome-ignore lint/correctness/useExhaustiveDependencies: anteAmount is intentionally excluded.
   useEffect(() => {
     if (chips == null) return;
-    const nextAnte = Math.min(anteAmount, Math.max(10, chips));
-    setAnteAmount((current) => Math.min(current, Math.max(10, chips)));
-    setBonusAmount((current) => Math.min(current, Math.max(0, chips - nextAnte)));
+    const maxAnte = Math.floor(chips / FLOP_BET_COST_MULTIPLIER / 10) * 10;
+    const nextAnte = Math.min(anteAmount, maxAnte);
+    setAnteAmount((current) =>
+      current < 10 && maxAnte >= 10 ? Math.min(INITIAL_ANTE_AMOUNT, maxAnte) : Math.min(current, maxAnte),
+    );
+    setBonusAmount((current) => Math.min(current, Math.max(0, chips - FLOP_BET_COST_MULTIPLIER * nextAnte)));
   }, [chips]);
   const {
     hint: frontendHint,
@@ -131,6 +140,8 @@ function TexasHoldemBonusPageContent() {
   const isTurnPhase = state?.phase === TexasHoldemBonusPhase.TURN;
   const isPostFlopPhase = isFlopPhase || isTurnPhase;
   const isEndPhase = state?.phase === TexasHoldemBonusPhase.END;
+  const playerBestSet = new Set((state?.playerBest ?? []).map(({ design, value }) => `${design}:${value}`));
+  const dealerBestSet = new Set((state?.dealerBest ?? []).map(({ design, value }) => `${design}:${value}`));
   const { tally, recordRound, clearHistory } = useTexasHoldemBonusStats();
   const recordedRef = useRef(false);
   const net = state ? state.totalPayout - (state.anteBet + state.bonusBet + state.totalPlayBet) : 0;
@@ -164,9 +175,13 @@ function TexasHoldemBonusPageContent() {
 
   if (!state) return <GameSkeleton gameKey="texasholdembonus" layout={{ kind: 'casino-table', sections: [2, 5, 2] }} />;
 
-  const handleBet = () => execApi('bet', anteAmount, bonusAmount);
-  const anteMax = Math.max(10, state.chips - bonusAmount);
-  const bonusMax = Math.max(0, state.chips - anteAmount);
+  const anteMax = Math.floor(Math.max(0, state.chips - bonusAmount) / FLOP_BET_COST_MULTIPLIER / 10) * 10;
+  const bonusMax = Math.max(0, state.chips - FLOP_BET_COST_MULTIPLIER * anteAmount);
+  const canBet = anteAmount >= 10 && anteAmount <= anteMax && bonusAmount <= bonusMax;
+  const handleBet = () => {
+    if (loading || !canBet) return;
+    return execApi('bet', anteAmount, bonusAmount);
+  };
   const handlePlay = () => execApi('play');
   const handleFold = () => execApi('fold');
   const handleCheck = () => execApi('check');
@@ -238,7 +253,7 @@ function TexasHoldemBonusPageContent() {
                   </span>
                   <span>{t('session.hands', { hands: tally.hands })}</span>
                   <span data-testid="thb-session-net" className="font-bold">
-                    {t('session.net')}: {tally.net > 0 ? `+${tally.net}` : tally.net}
+                    {t('session.net')}: {formatSignedDelta(tally.net)}
                   </span>
                 </div>
                 <div className="mt-1 flex items-center justify-center gap-3 text-xs text-ds-text-muted">
@@ -324,16 +339,50 @@ function TexasHoldemBonusPageContent() {
                   <span aria-hidden="true">🃏</span> {t('board')}
                 </div>
                 <div className="flex justify-center gap-2 flex-wrap">
-                  {state.community.map((card, i) => (
-                    <AnimatedCard key={`c-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
-                  ))}
+                  {state.community.map((card, i) => {
+                    const key = `${card.design}:${card.value}`;
+                    const inPlayerBest = isEndPhase && playerBestSet.has(key);
+                    const inDealerBest = isEndPhase && dealerBestSet.has(key);
+                    const inBest = inPlayerBest || inDealerBest;
+                    return (
+                      <div
+                        key={`c-${card.design}-${card.value}-${i}`}
+                        className={
+                          inBest
+                            ? `-translate-y-1 ring-2 ${inDealerBest && !inPlayerBest ? 'ring-ds-error' : 'ring-ds-warning'}`
+                            : ''
+                        }
+                        data-best5={inBest || undefined}
+                        data-player-best5={inPlayerBest || undefined}
+                        data-dealer-best5={inDealerBest || undefined}
+                      >
+                        <AnimatedCard
+                          card={card}
+                          width={cardWidth}
+                          style={
+                            inDealerBest && !inPlayerBest
+                              ? { ...placeholderCardStyle, border: '3px solid var(--color-ds-error)' }
+                              : inBest
+                                ? highlightCardStyle()
+                                : placeholderCardStyle
+                          }
+                        />
+                        {inPlayerBest && (
+                          <span className="sr-only">{t('playerBestCardUsedAria', { card: cardAlt(card) })}</span>
+                        )}
+                        {inDealerBest && (
+                          <span className="sr-only">{t('dealerBestCardUsedAria', { card: cardAlt(card) })}</span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
             {state.dealerHand.length > 0 && (
               <div className="mb-4">
-                <div className="text-ds-error font-bold text-center mb-1">
+                <div className="text-ds-error-text font-bold text-center mb-1">
                   <span aria-hidden="true">🔴</span> {t('dealer')}
                   {isEndPhase && HAND_RANK_KEYS[state.dealerHandRank] && (
                     <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank])})</span>
@@ -348,7 +397,31 @@ function TexasHoldemBonusPageContent() {
                         <AnimatedCardBack width={cardWidth} />
                       </span>
                     ) : (
-                      <AnimatedCard key={`d-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
+                      <div
+                        key={`d-${card.design}-${card.value}-${i}`}
+                        className={
+                          isEndPhase && dealerBestSet.has(`${card.design}:${card.value}`)
+                            ? '-translate-y-1 ring-2 ring-ds-error'
+                            : ''
+                        }
+                        data-best5={(isEndPhase && dealerBestSet.has(`${card.design}:${card.value}`)) || undefined}
+                        data-dealer-best5={
+                          (isEndPhase && dealerBestSet.has(`${card.design}:${card.value}`)) || undefined
+                        }
+                      >
+                        <AnimatedCard
+                          card={card}
+                          width={cardWidth}
+                          style={
+                            isEndPhase && dealerBestSet.has(`${card.design}:${card.value}`)
+                              ? { ...placeholderCardStyle, border: '3px solid var(--color-ds-error)' }
+                              : placeholderCardStyle
+                          }
+                        />
+                        {isEndPhase && dealerBestSet.has(`${card.design}:${card.value}`) && (
+                          <span className="sr-only">{t('dealerBestCardUsedAria', { card: cardAlt(card) })}</span>
+                        )}
+                      </div>
                     ),
                   )}
                 </div>
@@ -364,9 +437,26 @@ function TexasHoldemBonusPageContent() {
                   )}
                 </div>
                 <div className="flex justify-center gap-2 flex-wrap">
-                  {state.playerHand.map((card, i) => (
-                    <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
-                  ))}
+                  {state.playerHand.map((card, i) => {
+                    const inBest = isEndPhase && playerBestSet.has(`${card.design}:${card.value}`);
+                    return (
+                      <div
+                        key={`p-${card.design}-${card.value}-${i}`}
+                        className={inBest ? '-translate-y-1 ring-2 ring-ds-warning' : ''}
+                        data-best5={inBest || undefined}
+                        data-player-best5={inBest || undefined}
+                      >
+                        <AnimatedCard
+                          card={card}
+                          width={cardWidth}
+                          style={inBest ? highlightCardStyle() : placeholderCardStyle}
+                        />
+                        {inBest && (
+                          <span className="sr-only">{t('playerBestCardUsedAria', { card: cardAlt(card) })}</span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -430,7 +520,12 @@ function TexasHoldemBonusPageContent() {
                   disabled={loading}
                   showSteppers
                 />
-                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+                <button
+                  type="button"
+                  className={`${btnPrimary} aria-disabled:opacity-40 aria-disabled:cursor-not-allowed`}
+                  onClick={handleBet}
+                  aria-disabled={loading || !canBet}
+                >
                   {t('button.bet')}
                 </button>
               </div>

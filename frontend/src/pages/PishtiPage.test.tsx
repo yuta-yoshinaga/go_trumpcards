@@ -23,6 +23,8 @@ function makePlayer(overrides: Partial<PishtiPlayer> = {}): PishtiPlayer {
     cards: [],
     capturedCount: 0,
     pistiBonus: 0,
+    cardPoints: 0,
+    mostCapturedPoints: 0,
     provisionalScore: 0,
     finalScore: 0,
     ...overrides,
@@ -202,6 +204,80 @@ describe('PishtiPage', () => {
     await waitFor(() => expect(announcement).toHaveTextContent('場札更新。トップは場札なし、0枚。場札が取られました'));
   });
 
+  it('announces a changed provisional score but not the initial scores', async () => {
+    mockExec.mockResolvedValueOnce(playState).mockResolvedValueOnce(
+      makeState({
+        players: [
+          makePlayer({ id: 0, isHuman: true, provisionalScore: 3 }),
+          makePlayer({ id: 1 }),
+          makePlayer({ id: 2 }),
+          makePlayer({ id: 3 }),
+        ],
+      }),
+    );
+    renderWithProviders(<PishtiPage />);
+    const announcement = await screen.findByTestId('pishti-score-announcement');
+    expect(announcement).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    await waitFor(() => expect(announcement).toHaveTextContent('あなたの暫定得点は3点です'));
+  });
+
+  it('announces a later capture after a reset request fails', async () => {
+    mockExec
+      .mockResolvedValueOnce(playState)
+      .mockRejectedValueOnce(new Error('reset failed'))
+      .mockResolvedValueOnce(
+        makeState({
+          players: [makePlayer({ id: 0, isHuman: true, provisionalScore: 3 }), ...playState.players.slice(1)],
+        }),
+      );
+    renderWithProviders(<PishtiPage />);
+    const announcement = await screen.findByTestId('pishti-score-announcement');
+
+    fireEvent.change(screen.getByLabelText('CPU難易度'), { target: { value: '2' } });
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+
+    await waitFor(() => expect(announcement).toHaveTextContent('あなたの暫定得点は3点です'));
+  });
+
+  it('announces only players whose provisional scores changed', async () => {
+    mockExec.mockResolvedValueOnce(playState).mockResolvedValueOnce(
+      makeState({
+        players: [
+          makePlayer({ id: 0, isHuman: true }),
+          makePlayer({ id: 1, provisionalScore: 4 }),
+          ...playState.players.slice(2),
+        ],
+      }),
+    );
+    renderWithProviders(<PishtiPage />);
+    const announcement = await screen.findByTestId('pishti-score-announcement');
+
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+
+    await waitFor(() => expect(announcement).toHaveTextContent('CPU 1の暫定得点は4点です'));
+    expect(announcement).not.toHaveTextContent('あなたの暫定得点');
+  });
+
+  it('does not announce scores when settings reset the game', async () => {
+    mockExec
+      .mockResolvedValueOnce(
+        makeState({
+          players: [makePlayer({ id: 0, isHuman: true, provisionalScore: 12 }), ...playState.players.slice(1)],
+        }),
+      )
+      .mockResolvedValueOnce(playState);
+    renderWithProviders(<PishtiPage />);
+    const announcement = await screen.findByTestId('pishti-score-announcement');
+    expect(announcement).toBeEmptyDOMElement();
+
+    fireEvent.change(screen.getByLabelText('CPU難易度'), { target: { value: '2' } });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2, playerCnt: 4 } }));
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
   it('does not announce a capture when reset replaces a six-card pile with four cards', async () => {
     mockExec.mockResolvedValue(makeState({ pile: Array.from({ length: 6 }, () => card('HEART', 2)), pileCount: 6 }));
     renderWithProviders(<PishtiPage />);
@@ -323,8 +399,16 @@ describe('PishtiPage', () => {
         players: [
           // 捕獲 10 枚 / ピシュティ 10 点だが、サーバの答えは 26 点。
           // 枚数とボーナスだけからは絶対に出ない数字。
-          makePlayer({ id: 0, isHuman: true, capturedCount: 10, pistiBonus: 10, provisionalScore: 26 }),
-          makePlayer({ id: 1, capturedCount: 4, provisionalScore: 4 }),
+          makePlayer({
+            id: 0,
+            isHuman: true,
+            capturedCount: 10,
+            pistiBonus: 10,
+            provisionalScore: 26,
+            cardPoints: 13,
+            mostCapturedPoints: 3,
+          }),
+          makePlayer({ id: 1, capturedCount: 4, provisionalScore: 4, cardPoints: 4 }),
           makePlayer({ id: 2, capturedCount: 0, provisionalScore: 0 }),
           makePlayer({ id: 3, capturedCount: 0, provisionalScore: 0 }),
         ],
@@ -333,10 +417,15 @@ describe('PishtiPage', () => {
     renderWithProviders(<PishtiPage />);
     const humanReadout = await screen.findByTestId('pishti-provisional-0');
     expect(humanReadout).toHaveTextContent('暫定 26点');
+    expect(screen.getByTestId('pishti-breakdown-0')).toHaveTextContent(
+      'カード点 13 / Pişti賞 10 / 最多捕獲 3点（暫定）',
+    );
     // 枚数とボーナスから組み直すと 13 点になる。その数字が出ていないこと。
     expect(humanReadout).not.toHaveTextContent('暫定 13点');
     // 何も捕っていない席でも渡された値を出す。
     expect(screen.getByTestId('pishti-provisional-1')).toHaveTextContent('暫定 4点');
+    expect(screen.getByTestId('pishti-breakdown-1')).toHaveTextContent('カード点 4');
+    expect(screen.getByTestId('pishti-breakdown-1')).toHaveTextContent('最多捕獲 0点（暫定）');
     // The disclosure note is shown during play.
     expect(screen.getByTestId('pishti-provisional-note')).toBeInTheDocument();
   });

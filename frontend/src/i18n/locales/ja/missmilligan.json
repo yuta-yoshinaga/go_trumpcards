@@ -9,6 +9,7 @@
   "emptyFoundationAriaLabel": "空の組札{{idx}} ({{suit}})",
   "emptyWaivedAriaLabel": "保持中の札はありません",
   "foundation": "組札",
+  "foundationProgress": "組札の合計: {{count}}/104枚（{{percent}}%）",
   "foundationAriaLabel": "{{suit}} 組札{{idx}} {{count}}枚",
   "frontendHint": {
     "tableau": "タブロー列{{col}}",
@@ -57,5 +58,6 @@
   "waiveReadyAriaLabel": "保持枠は空です。山札を使い切ったので保持できます",
   "waived": "保持",
   "waivedAriaLabel": "保持中の札 {{count}}枚",
+  "waivedCount": "{{count}}枚",
   "waiving": "保持中の札を場に戻してください"
 }

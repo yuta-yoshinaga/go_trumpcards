@@ -70,6 +70,9 @@ var doubleAttackBustItPayouts = map[int]int{
 	8: 500, // 8 枚以上
 }
 
+// DoubleAttackBustItMinCards は配当表が個別に持つ最小の枚数。
+const DoubleAttackBustItMinCards = 3
+
 // DoubleAttackBustItMaxCards は配当表が個別に持つ最大の枚数。これ以上は同じ配当。
 const DoubleAttackBustItMaxCards = 8
 
@@ -146,17 +149,3 @@ const (
 
 // DoubleAttackPhaseMax は最大のフェーズ値 (復元時の範囲検査に使う)。
 const DoubleAttackPhaseMax = DoubleAttackPhaseResult
-
-// DoubleAttackPhaseName はフェーズの識別子を返す (i18n キーの一部に使う)。
-func DoubleAttackPhaseName(p DoubleAttackPhase) string {
-	switch p {
-	case DoubleAttackPhaseBet:
-		return "bet"
-	case DoubleAttackPhaseAttack:
-		return "attack"
-	case DoubleAttackPhasePlay:
-		return "play"
-	default:
-		return "result"
-	}
-}

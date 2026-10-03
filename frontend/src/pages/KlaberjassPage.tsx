@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { klaberjassApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -112,6 +112,36 @@ function KlaberjassPageContent() {
   const [targetScore, setTargetScore] = useState(501);
   const [allowSchmeiss, setAllowSchmeiss] = useState(true);
   const [selected, setSelected] = useState<number | null>(null);
+  const [settlementAnnouncement, setSettlementAnnouncement] = useState('');
+  const lastSettlementKey = useRef<string | null>(null);
+
+  const settlementKey =
+    state && (state.phase === KlaberjassPhase.HAND_END || state.phase === KlaberjassPhase.GAME_END)
+      ? `${state.dealNumber}-${state.phase}`
+      : null;
+
+  useEffect(() => {
+    if (!state || settlementKey === null) {
+      lastSettlementKey.current = null;
+      setSettlementAnnouncement('');
+      return;
+    }
+    if (lastSettlementKey.current === settlementKey) return;
+
+    lastSettlementKey.current = settlementKey;
+    const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
+    const details = state.players.map(
+      (p) =>
+        `${playerLabel(p.id, p.isHuman)}: ${t('pointsBreakdown', {
+          card: p.cardPoints,
+          sequence: p.sequencePoints,
+          bela: p.belaPoints,
+          lastTrick: p.lastTrickPoints,
+          total: p.handPoints,
+        })} ${t('scoreUpdate', { score: p.score })}`,
+    );
+    setSettlementAnnouncement(`${t('settlementTitle')}: ${details.join(t('listSeparator'))}`);
+  }, [settlementKey, state, t]);
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
@@ -203,6 +233,9 @@ function KlaberjassPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div className="sr-only" role="status" aria-live="polite" data-testid="klaberjass-settlement-announcement">
+        {settlementAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -293,10 +326,23 @@ function KlaberjassPageContent() {
               ))}
             </div>
 
-            {/* Trick */}
+            <section className="mb-2 p-2 rounded bg-black/20 text-sm" data-testid="klaberjass-trick-history">
+              <h2 className="mb-1 text-ds-text-primary">{t('trickHistory')}</h2>
+              {state.trickHistory.map((entry, index) => (
+                <div key={`trick-history-${index}`} className="text-ds-text-muted">
+                  {t('trickHistoryEntry', {
+                    number: index + 1,
+                    name: playerLabel(entry.winnerIdx, entry.winnerIdx === 0),
+                    points: entry.points,
+                  })}
+                </div>
+              ))}
+            </section>
+
+            {/* Current trick */}
             {state.trick.length > 0 && (
               <div className="mb-2 flex items-center gap-2" data-testid="klaberjass-trick">
-                <span className="text-ds-text-muted text-sm">{t('trick')}</span>
+                <span className="text-ds-text-muted text-sm">{t('currentTrick')}</span>
                 {state.trick.map((c, i) => (
                   <CardImage key={`trick-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />
                 ))}
@@ -305,26 +351,24 @@ function KlaberjassPageContent() {
 
             {/* Settlement */}
             {(isHandEnd || isGameEnd) && (
-              <div
-                className={`mb-2 p-2 rounded text-sm ${badgeWarningColors}`}
-                data-testid="klaberjass-settlement"
-                role="status"
-                aria-live="polite"
-              >
-                <div className="mb-1">{t('settlementTitle')}</div>
+              <div className={`mb-2 p-2 rounded text-sm ${badgeWarningColors}`} data-testid="klaberjass-settlement">
+                <h2 className="mb-1 font-semibold">{t('settlementTitle')}</h2>
                 <div>{state.bete ? t('beteLine') : t('madeLine')}</div>
-                {state.players.map((p) => (
-                  <div key={p.id} data-testid="klaberjass-points-breakdown">
-                    {playerLabel(p.id, p.isHuman)}:{' '}
-                    {t('pointsBreakdown', {
-                      card: p.cardPoints,
-                      sequence: p.sequencePoints,
-                      bela: p.belaPoints,
-                      lastTrick: p.lastTrickPoints,
-                      total: p.handPoints,
-                    })}
-                  </div>
-                ))}
+                <ul>
+                  {state.players.map((p) => (
+                    <li key={p.id} data-testid="klaberjass-points-breakdown">
+                      {playerLabel(p.id, p.isHuman)}:{' '}
+                      {t('pointsBreakdown', {
+                        card: p.cardPoints,
+                        sequence: p.sequencePoints,
+                        bela: p.belaPoints,
+                        lastTrick: p.lastTrickPoints,
+                        total: p.handPoints,
+                      })}{' '}
+                      {t('scoreUpdate', { score: p.score })}
+                    </li>
+                  ))}
+                </ul>
                 <div>
                   {state.sequenceWinner >= 0
                     ? t('sequenceWinner', { name: playerLabel(state.sequenceWinner, state.sequenceWinner === 0) })

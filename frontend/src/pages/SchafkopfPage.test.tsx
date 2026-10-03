@@ -33,6 +33,10 @@ const roundEndState = makeSchafkopfState({
   roundPickerPoints: 70,
   roundMultiplier: 2,
   roundPickerWon: true,
+  players: makeSchafkopfState().players.map((player, index) => ({
+    ...player,
+    chipDelta: [30, -10, -10, -10][index],
+  })),
 });
 const gameEndState = makeSchafkopfState({
   phase: 5,
@@ -69,6 +73,24 @@ describe('SchafkopfPage', () => {
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
       expect(screen.getByAltText('♦ K')).toBeInTheDocument();
     });
+  });
+
+  it('shows the picker team points and winning threshold during play', async () => {
+    mockExec.mockResolvedValue(
+      makeSchafkopfState({ roundPickerPoints: 35, roundPickerPointsTeamTotal: true, pickerTargetPoints: 47 }),
+    );
+    renderWithProviders(<SchafkopfPage />);
+    expect(await screen.findByTestId('schafkopf-round-points')).toHaveTextContent('35');
+    expect(screen.getByTestId('schafkopf-round-points')).toHaveTextContent('47');
+    expect(screen.getByTestId('schafkopf-round-points')).toHaveTextContent('ピッカー側の獲得点');
+  });
+
+  it('labels picker-only points while the partner is hidden', async () => {
+    mockExec.mockResolvedValue(makeSchafkopfState({ roundPickerPoints: 18, roundPickerPointsTeamTotal: false }));
+    renderWithProviders(<SchafkopfPage />);
+    expect(await screen.findByTestId('schafkopf-round-points')).toHaveTextContent(
+      'ピッカーの獲得点 (パートナー未公開)',
+    );
   });
 
   it('selecting a card then playing dispatches play', async () => {
@@ -177,6 +199,8 @@ describe('SchafkopfPage', () => {
     renderWithProviders(<SchafkopfPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
     expect(screen.getByText('ラウンド結果')).toBeInTheDocument();
+    expect(screen.getByText('あなた: +30')).toBeInTheDocument();
+    expect(screen.getByText('CPU 1: -10')).toBeInTheDocument();
   });
 
   it('renders the game end message', async () => {

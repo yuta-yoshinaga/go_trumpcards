@@ -1,5 +1,6 @@
 {
   "currentTrick": "現在のトリック",
+  "trickWinnerBadge": "勝者",
   "title": "Put (プット)",
   "subtitle": "南米・スペインの心理戦トリックテイキング — 賭け点を釣り上げるブラフ",
   "header": {
@@ -38,6 +39,10 @@
     "cpuWin": "CPUの勝ち ({{p0}}-{{p1}})"
   },
   "respondPrompt": "{{name}} が {{level}} を宣言しました。応答してください。",
+  "respondOutcome": {
+    "accept": "受諾すると賭け点は {{stake}} 点になります",
+    "decline": "拒否すると宣言者が現在の賭け点 {{stake}} 点を獲得します"
+  },
   "hintReason": {
     "leadStrong": "強いカードでリードしましょう",
     "leadLow": "弱いカードでリードして強い札を温存",

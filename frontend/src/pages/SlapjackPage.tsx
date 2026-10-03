@@ -166,6 +166,30 @@ function SlapjackPageContent() {
   // (SlapjackPendingSlap) ので、「CPU の手番中だけ」に絞ると CPU が J を叩かなくなる。
   const isCpuPending = state?.pendingKind !== undefined && state.pendingKind !== SlapjackPendingKind.NONE;
   const isGameRunning = !!state && !state.gameEndFlag;
+  const pendingDeadline = isCpuPending && isGameRunning ? (state?.pendingDeadlineMs ?? 0) : 0;
+  const [clockNow, setClockNow] = useState(() => Date.now());
+  const [pendingTiming, setPendingTiming] = useState<{ deadline: number; startedAt: number; duration: number }>({
+    deadline: 0,
+    startedAt: 0,
+    duration: 0,
+  });
+  let currentPendingTiming = pendingTiming;
+  if (pendingTiming.deadline !== pendingDeadline) {
+    const now = Date.now();
+    currentPendingTiming = {
+      deadline: pendingDeadline,
+      startedAt: now,
+      duration: Math.max(1, pendingDeadline - now),
+    };
+    setPendingTiming(currentPendingTiming);
+  }
+  useEffect(() => {
+    if (!pendingDeadline) return;
+    const update = () => setClockNow(Date.now());
+    update();
+    const id = window.setInterval(update, SLAPJACK_TICK_INTERVAL_MS);
+    return () => window.clearInterval(id);
+  }, [pendingDeadline]);
   useEffect(() => {
     if (!isGameRunning || !isCpuPending) return;
     const id = window.setInterval(() => {
@@ -208,9 +232,19 @@ function SlapjackPageContent() {
   }
 
   const isGameEnd = state.gameEndFlag || state.phase === SlapjackPhase.GAME_END;
+  // The server/Worker supplies Unix milliseconds; client clock skew can shift the countdown.
+  const effectiveClockNow = pendingTiming.deadline === pendingDeadline ? clockNow : currentPendingTiming.startedAt;
+  const pendingRemainingMs = pendingDeadline ? Math.max(0, pendingDeadline - effectiveClockNow) : 0;
+  const pendingProgress = pendingDeadline
+    ? Math.min(
+        100,
+        Math.max(0, ((effectiveClockNow - currentPendingTiming.startedAt) / currentPendingTiming.duration) * 100),
+      )
+    : 0;
   const humanWon = isGameEnd && state.winnerIdx === 0;
   const human = state.players[0];
   const cpu = state.players[1];
+  const stockProgress = (stockSize: number) => Math.min(52, Math.max(0, stockSize));
 
   const phaseName = isGameEnd ? t('phase.end') : state.isTopJack ? t('phase.slap') : t('phase.play');
   const lastEvent = state.lastEventKind;
@@ -237,11 +271,67 @@ function SlapjackPageContent() {
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             <ErrorAlert message={error} onRetry={retry} />
 
+            <div
+              className="sr-only"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              data-testid="cpu-pending-announcement"
+            >
+              {isCpuPending && !isGameEnd
+                ? t(
+                    state.pendingKind === SlapjackPendingKind.SLAP
+                      ? 'slapjack.pending.slapStart'
+                      : 'slapjack.pending.stepStart',
+                    { count: 1 },
+                  )
+                : ''}
+            </div>
+            {isCpuPending && !isGameEnd && (
+              <div
+                className="rounded-lg bg-ds-surface px-3 py-2 text-sm text-ds-warning"
+                data-testid="cpu-pending-status"
+              >
+                <div>
+                  {t(
+                    state.pendingKind === SlapjackPendingKind.SLAP ? 'slapjack.pending.slap' : 'slapjack.pending.step',
+                    { count: Math.max(1, Math.ceil(pendingRemainingMs / 1000)) },
+                  )}
+                </div>
+                <div
+                  className="mt-1 h-1.5 overflow-hidden rounded-full bg-ds-surface-elevated"
+                  role="progressbar"
+                  aria-label={t('slapjack.pending.progress')}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.round(pendingProgress)}
+                >
+                  <div className="h-full bg-ds-warning" style={{ width: `${pendingProgress}%` }} />
+                </div>
+              </div>
+            )}
+
             {/* CPU pile */}
             <div className="flex items-center justify-center gap-4" data-tutorial="sj-cpu-pile">
               <div className="text-center">
                 <div className="text-xs text-ds-text-muted">
                   {tc('player.cpu', { id: 1 })} — {t('label.stock')}: {cpu.stockSize}
+                </div>
+                <div
+                  className="mx-auto mt-1 h-2 w-32 overflow-hidden rounded-full bg-ds-surface-elevated"
+                  role="progressbar"
+                  aria-label={t('label.stockProgressAria', {
+                    player: tc('player.cpu', { id: 1 }),
+                    count: cpu.stockSize,
+                  })}
+                  aria-valuemin={0}
+                  aria-valuemax={52}
+                  aria-valuenow={stockProgress(cpu.stockSize)}
+                >
+                  <div
+                    className="h-full rounded-full bg-ds-accent"
+                    style={{ width: `${(stockProgress(cpu.stockSize) / 52) * 100}%` }}
+                  />
                 </div>
                 {cpu.stockSize > 0 ? (
                   <AnimatedCardBack width={cardWidth * 0.9} />
@@ -303,6 +393,19 @@ function SlapjackPageContent() {
               <div className="text-center">
                 <div className="text-xs text-ds-text-muted">
                   {tc('player.you')} — {t('label.stock')}: {human.stockSize}
+                </div>
+                <div
+                  className="mx-auto mt-1 h-2 w-32 overflow-hidden rounded-full bg-ds-surface-elevated"
+                  role="progressbar"
+                  aria-label={t('label.stockProgressAria', { player: tc('player.you'), count: human.stockSize })}
+                  aria-valuemin={0}
+                  aria-valuemax={52}
+                  aria-valuenow={stockProgress(human.stockSize)}
+                >
+                  <div
+                    className="h-full rounded-full bg-ds-accent"
+                    style={{ width: `${(stockProgress(human.stockSize) / 52) * 100}%` }}
+                  />
                 </div>
                 {human.stockSize > 0 ? (
                   <AnimatedCardBack width={cardWidth * 0.9} />

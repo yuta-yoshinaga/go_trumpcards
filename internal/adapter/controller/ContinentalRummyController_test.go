@@ -23,6 +23,7 @@ func mustContinentalRummyOutputJSON(msg string) string {
 		Layouts:        domain.ContinentalRummyLayouts(),
 		WinnerIdx:      -1,
 		GoOutIdx:       -1,
+		GoOutGroups:    [][]int{},
 		HintDiscardIdx: -1,
 		WebOutputBase:  controller.WebOutputBase{Message: msg},
 	}

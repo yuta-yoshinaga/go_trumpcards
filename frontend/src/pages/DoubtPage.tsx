@@ -223,7 +223,8 @@ function DoubtPageContent() {
   const isDoubtPhase = state.phase === DoubtPhase.DOUBT;
   const cpuPlayed = isDoubtPhase && state.lastAction !== null && !state.players[state.lastAction.playerIdx]?.isHuman;
 
-  const cpuTells = new Set(cpuPlayed && state.lastAction?.hasTell === true ? [state.lastAction.playerIdx] : []);
+  const tellPlayerIdx = cpuPlayed && state.lastAction?.hasTell === true ? state.lastAction.playerIdx : null;
+  const cpuTells = new Set(tellPlayerIdx !== null ? [tellPlayerIdx] : []);
 
   return (
     <GamePageShell
@@ -239,6 +240,33 @@ function DoubtPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div
+        className="sr-only"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        data-testid="doubt-tell-announcement"
+      >
+        {tellPlayerIdx !== null ? t('tellAnnouncement', { name: playerName(tellPlayerIdx, false) }) : ''}
+      </div>
+      <div
+        className="sr-only"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        data-testid="doubt-result-announcement"
+      >
+        {state?.lastDoubtResult
+          ? t('doubtResult.announcement', {
+              outcome: state.lastDoubtResult.wasLying ? t('doubtResult.wasLying') : t('doubtResult.wasTruth'),
+              name: playerName(
+                state.players[state.lastDoubtResult.loserIdx]?.id ?? state.lastDoubtResult.loserIdx,
+                state.players[state.lastDoubtResult.loserIdx]?.isHuman ?? false,
+              ),
+              count: state.lastDoubtResult.cardCount,
+            })
+          : ''}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -376,7 +404,7 @@ function DoubtPageContent() {
                       <>
                         <div className="text-ds-text-primary font-bold mb-2">{t('cpuJudging')}</div>
                         {state.cpuDoubters.length > 0 && (
-                          <div className="text-ds-error text-sm mb-2">
+                          <div className="text-ds-error-text text-sm mb-2">
                             {t('cpuDoubtExclaim', {
                               names: state.cpuDoubters.map((idx) => playerName(idx, false)).join(', '),
                             })}
@@ -394,7 +422,7 @@ function DoubtPageContent() {
                 {state.lastDoubtResult && (
                   <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 text-xs">
                     <div className="text-ds-text-primary font-bold mb-1">{t('doubtResult.title')}</div>
-                    <div className={state.lastDoubtResult.wasLying ? 'text-ds-error' : 'text-ds-success'}>
+                    <div className={state.lastDoubtResult.wasLying ? 'text-ds-error-text' : 'text-ds-success'}>
                       {state.lastDoubtResult.wasLying ? t('doubtResult.wasLying') : t('doubtResult.wasTruth')}
                     </div>
                     <div className="text-game-text-muted">

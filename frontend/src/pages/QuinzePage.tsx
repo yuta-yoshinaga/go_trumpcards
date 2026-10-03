@@ -31,6 +31,7 @@ import { parseQuinzeCommand, QUINZE_HELP } from '../utils/cli/commands/quinzeCom
 import { formatQuinzeState } from '../utils/cli/formatters/quinzeFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 
 const BET_OPTIONS = [10, 50, 100, 500];
 
@@ -95,12 +96,13 @@ function QuinzePageContent() {
    * Render one hand. Visibility comes from the server's `hidden` flag; the page
    * never re-derives it, so there is one place that can be wrong instead of two.
    */
-  const renderHand = (hand: QuinzeHand, label: string, keyPrefix: string) => (
+  const renderHand = (hand: QuinzeHand, label: string, keyPrefix: string, settlementId?: string) => (
     <div className="text-center">
       <div
         className="flex gap-1 justify-center"
         role="img"
         aria-label={hand.hidden ? label : t('seatAriaLabel', { name: label, total: hand.totalLabel })}
+        aria-describedby={settlementId}
       >
         {hand.cards.map((card, i) =>
           hand.hidden || !card ? (
@@ -175,9 +177,17 @@ function QuinzePageContent() {
                     ? t('hiddenBankerHandAriaLabel', { count: state.bankerHand.cards.length })
                     : t('bankerHandAriaLabel', { total: state.bankerHand.totalLabel }),
                   'banker',
+                  ended ? 'quinze-banker-settlement' : undefined,
                 )
               ) : (
                 <div className="text-game-text-muted text-sm">—</div>
+              )}
+              {ended && state.bankerHand && (
+                <span id="quinze-banker-settlement" className="sr-only">
+                  {t('settlement.banker', {
+                    net: formatSignedDelta(-state.seats.reduce((sum, seat) => sum + (seat.hand?.payout ?? 0), 0)),
+                  })}
+                </span>
               )}
             </div>
 
@@ -186,8 +196,15 @@ function QuinzePageContent() {
                 if (seatIdx === state.bankerIdx || !seat.hand) return null;
                 const onTurn = isPlayerTurn && seatIdx === state.activeSeat;
                 return (
-                  <div key={`seat-${seatIdx.toString()}`} className="text-center">
-                    <div className="text-game-text-muted text-xs mb-1">{seat.name}</div>
+                  <fieldset
+                    key={`seat-${seatIdx.toString()}`}
+                    className="border-0 p-0 m-0 min-w-0 text-center"
+                    aria-current={onTurn ? 'true' : undefined}
+                  >
+                    <legend className="text-game-text-muted text-xs mb-1">
+                      {seat.name}
+                      {onTurn && <span className="sr-only">: {t('phase.playerTurn')}</span>}
+                    </legend>
                     <div className={onTurn ? 'ring-2 ring-ds-warning rounded p-1' : 'p-1'}>
                       {renderHand(
                         seat.hand,
@@ -197,18 +214,27 @@ function QuinzePageContent() {
                           ? t('hiddenHandAriaLabel', { name: seat.name, count: seat.hand.cards.length })
                           : seat.name,
                         `s${seatIdx.toString()}`,
+                        ended ? `quinze-seat-settlement-${seatIdx.toString()}` : undefined,
+                      )}
+                      {ended && (
+                        <span id={`quinze-seat-settlement-${seatIdx.toString()}`} className="sr-only">
+                          {t(seat.hand.payout > 0 ? 'settlement.playerWin' : 'settlement.playerLoss', {
+                            bet: seat.hand.bet,
+                            payout: formatSignedDelta(seat.hand.payout),
+                          })}
+                        </span>
                       )}
                       <div className="text-game-text-muted text-xs mt-1">
                         {t('bet')}: {seat.hand.bet}
                         {ended && seat.hand.payout !== 0 && (
-                          <span className={seat.hand.payout > 0 ? ' text-ds-success' : ' text-ds-error'}>
+                          <span className={seat.hand.payout > 0 ? ' text-ds-success' : ' text-ds-error-text'}>
                             {' '}
-                            {seat.hand.payout > 0 ? `+${seat.hand.payout}` : seat.hand.payout}
+                            {formatSignedDelta(seat.hand.payout)}
                           </span>
                         )}
                       </div>
                     </div>
-                  </div>
+                  </fieldset>
                 );
               })}
             </div>

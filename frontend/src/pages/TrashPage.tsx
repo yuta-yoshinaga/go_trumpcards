@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { trashApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -198,6 +199,10 @@ function TrashPageContent() {
     void apiCall('draw');
   }, [apiCall]);
 
+  const handleUndo = useCallback(() => {
+    void apiCall('undo');
+  }, [apiCall]);
+
   const handleSlotClick = useCallback(
     (slotIdx: number) => {
       if (!state) return;
@@ -382,6 +387,16 @@ function TrashPageContent() {
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
             <GameFooter>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!loading && state.canUndo) handleUndo();
+                }}
+                aria-disabled={loading || !state.canUndo}
+                className={`${focusRingWhite} min-h-[44px] px-3 rounded-md text-ds-text-primary aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+              >
+                {t('button.undo')}
+              </button>
               <label className="flex items-center gap-1 text-ds-text-primary text-xs min-h-[44px]">
                 <input
                   type="checkbox"
@@ -427,6 +442,7 @@ function PlayerRow({
   /** Slot index (0..9) where a freshly drawn non-wild card should land, or null. */
   pendingTargetIdx: number | null;
 }) {
+  const { t } = useTranslation('trash');
   return (
     <div className="flex flex-col items-center" data-tutorial={dataTutorial}>
       <span className="text-sm text-ds-text-muted mb-1">
@@ -460,7 +476,11 @@ function PlayerRow({
               onClick={() => onSlotClick?.(idx)}
               disabled={!interactive}
               data-pending-target={pendingHighlight ? 'true' : 'false'}
-              aria-label={slot.faceUp && slot.card ? `${idx + 1}: ${cardAlt(slot.card)}` : `${idx + 1}: face-down`}
+              aria-label={
+                slot.faceUp && slot.card
+                  ? `${idx + 1}: ${cardAlt(slot.card)}`
+                  : `${idx + 1}: ${t('label.faceDown')}${wildHighlight ? `${t('listSeparator')}${t('label.placeable')}` : ''}`
+              }
             >
               {slot.faceUp && slot.card ? (
                 <AnimatedCard card={slot.card} width={cardWidth} />

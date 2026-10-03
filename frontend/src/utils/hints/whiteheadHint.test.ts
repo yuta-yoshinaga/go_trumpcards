@@ -27,6 +27,7 @@ function makeState(overrides: Partial<WhiteheadResponse> = {}): WhiteheadRespons
     stockCount: 20,
     waste: [],
     foundation: [[], [], [], []],
+    totalCardCount: 52,
     phase: WhiteheadPhase.PLAYING,
     moveCount: 0,
     drawCount: 1,

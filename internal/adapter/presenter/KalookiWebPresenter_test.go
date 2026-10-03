@@ -33,6 +33,7 @@ func setupKalookiWebMock() (*interfaces.MockKalookiGame, []*domain.KalookiPlayer
 	m.On("GetConfig").Return(domain.DefaultKalookiConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetRoundWinnerIdx").Return(-1)
+	m.On("GetRoundScoreHistory").Return([][]int{})
 	m.On("GetPlayerCnt").Return(4)
 	m.On("GetPlayer", 0).Return(players[0])
 	m.On("GetPlayer", 1).Return(players[1])
@@ -62,6 +63,7 @@ func TestKalookiWebPresenter_Output(t *testing.T) {
 		players[0].SetHasOpened(true)
 
 		out := unmarshalKalooki(t, p.Output(m, nil))
+		assert.Empty(t, out.RoundScoreHistory)
 		assert.Len(t, out.Players, 4)
 		assert.Equal(t, 51, out.OpeningThreshold)
 		assert.True(t, out.Players[0].HasOpened)
@@ -93,6 +95,7 @@ func TestKalookiWebPresenter_Output(t *testing.T) {
 		m.On("GetWinnerIdx").Return(-1)
 		m.On("GetConfig").Return(domain.DefaultKalookiConfig())
 		m.On("GetRoundWinnerIdx").Return(-1)
+		m.On("GetRoundScoreHistory").Return([][]int{})
 		m.On("GetPlayerCnt").Return(2)
 		m.On("GetPlayer", 0).Return(players[0])
 		m.On("GetPlayer", 1).Return(players[1])
@@ -113,6 +116,7 @@ func TestKalookiWebPresenter_Output(t *testing.T) {
 		m.On("GetWinnerIdx").Return(0)
 		m.On("GetConfig").Return(domain.DefaultKalookiConfig())
 		m.On("GetRoundWinnerIdx").Return(0)
+		m.On("GetRoundScoreHistory").Return([][]int{{0, 14}})
 		m.On("GetPlayerCnt").Return(2)
 		m.On("GetPlayer", 0).Return(players[0])
 		m.On("GetPlayer", 1).Return(players[1])
@@ -145,6 +149,7 @@ func TestKalookiWebPresenter_Output(t *testing.T) {
 		m.On("GetWinnerIdx").Return(-1)
 		m.On("GetConfig").Return(domain.DefaultKalookiConfig())
 		m.On("GetRoundWinnerIdx").Return(0)
+		m.On("GetRoundScoreHistory").Return([][]int{{0, 14}})
 		m.On("GetPlayerCnt").Return(2)
 		m.On("GetPlayer", 0).Return(players[0])
 		m.On("GetPlayer", 1).Return(players[1])
@@ -153,6 +158,7 @@ func TestKalookiWebPresenter_Output(t *testing.T) {
 		// Round end: CPU card faces are revealed so penalty scores can be verified.
 		assert.Equal(t, "kalooki.roundEnd", out.MessageCode)
 		assert.Len(t, out.Players[1].Cards, 2)
+		assert.Equal(t, [][]int{{0, 14}}, [][]int{out.RoundScoreHistory[0].Scores})
 	})
 }
 

@@ -30,7 +30,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { HandAndFootResponse } from '../types/card';
 import { HandAndFootPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { canastaMinMeld, canastaSelectionPoints } from '../utils/canastaScore';
+import { canastaFamilySelectionPoints } from '../utils/canastaFamilyScore';
 import { cardAlt } from '../utils/cardAlt';
 import { HANDANDFOOT_HELP, parseHandAndFootCommand } from '../utils/cli/commands/handandfootCommands';
 import { formatHandAndFootState } from '../utils/cli/formatters/handandfootFormatter';
@@ -148,8 +148,9 @@ function HandAndFootPageContent() {
 
   // Meld phase: show the selected cards' running point total and, until the
   // team has opened (no melds yet), the initial-meld minimum so the player can
-  // tell if the selection qualifies. Point values + minimum bands mirror the
-  // shared Canasta-family scoring (the backend uses CanastaCardValue). The
+  // tell if the selection qualifies. Point values mirror the shared
+  // Canasta-family table (domain.CanastaFamilyCardValue); the minimum is the
+  // server's `minMeld`. The
   // readout also gates the meld button now (#5663): below the minimum the
   // button is disabled, so the player is not sent to a server rejection.
   // **メルドフェーズ以外では 0 点・未達なしを返す。** null を返すと、この値を
@@ -162,13 +163,13 @@ function HandAndFootPageContent() {
     const selectedCards = selectedCardIndices
       .map((i) => humanPlayer.cards[i])
       .filter((c): c is NonNullable<typeof c> => !!c);
-    const selectedPoints = canastaSelectionPoints(selectedCards);
+    const selectedPoints = canastaFamilySelectionPoints(selectedCards);
     const team = state?.teams.find((tm) => tm.team === humanPlayer.team);
     const needInitial = (team?.melds.length ?? 0) === 0;
-    const minMeld = canastaMinMeld(humanPlayer.cumulativeScore);
+    const minMeld = state.minMeld;
     const met = selectedPoints >= minMeld;
     return { selectedPoints, needInitial, minMeld, met, below: needInitial && !met };
-  }, [isMeldPhase, humanPlayer, selectedCardIndices, state?.teams]);
+  }, [isMeldPhase, humanPlayer, selectedCardIndices, state?.teams, state?.minMeld]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -221,6 +222,22 @@ function HandAndFootPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+        data-testid="hf-meld-points-announcement"
+      >
+        {isMeldPhase && isHumanTurn
+          ? meldPointInfo.needInitial
+            ? t('meldPoints.initial', {
+                min: meldPointInfo.minMeld,
+                points: meldPointInfo.selectedPoints,
+              })
+            : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })
+          : ''}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -321,7 +338,7 @@ function HandAndFootPageContent() {
                       ))}
                       {team.red3s.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
-                          <span className="text-xs text-ds-error self-center mr-1">{t('red3s')}</span>
+                          <span className="text-xs text-ds-error-text self-center mr-1">{t('red3s')}</span>
                           {team.red3s.map((card, ri) => (
                             <AnimatedCard key={`red3-${ti}-${ri}`} card={card} width={cardWidth * 0.6} />
                           ))}
@@ -360,6 +377,34 @@ function HandAndFootPageContent() {
                       ))}
                     </tbody>
                   </table>
+                  {(isRoundEnd || isGameEnd) && state.scoreBreakdown.length > 0 && (
+                    <div data-testid="hf-score-breakdown" className="mt-2 border-t border-white/20 pt-2">
+                      <h3 className="text-sm font-semibold text-ds-text-primary">{t('score.breakdown')}</h3>
+                      {state.scoreBreakdown.map((breakdown) => (
+                        <div key={breakdown.team} className="mt-1 text-xs text-ds-text-muted">
+                          <h4 className="font-medium">{t('team', { n: breakdown.team + 1 })}</h4>
+                          <dl className="grid grid-cols-2 gap-x-2">
+                            {(
+                              [
+                                ['meldCards', breakdown.meldCards],
+                                ['redCanasta', breakdown.redCanasta],
+                                ['blackCanasta', breakdown.blackCanasta],
+                                ['redThrees', breakdown.redThrees],
+                                ['goingOut', breakdown.goingOut],
+                                ['handPenalty', -breakdown.handPenalty],
+                                ['footPenalty', -breakdown.footPenalty],
+                              ] as const
+                            ).map(([key, value]) => (
+                              <div key={key} className="flex justify-between gap-2">
+                                <dt>{t(`score.${key}`)}</dt>
+                                <dd>{value < 0 ? `−${Math.abs(value)}` : value}</dd>
+                              </div>
+                            ))}
+                          </dl>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* CPU hands (shown at round/game end) */}
@@ -482,7 +527,6 @@ function HandAndFootPageContent() {
                     // のにボタンはそれを見ておらず、サーバーのバリデーションで
                     // 弾かれて初めて気づく形だった。
                     disabled={loading || selectedCardIndices.length < 3 || meldPointInfo.below}
-                    aria-describedby={meldPointInfo.below ? 'hf-meld-points' : undefined}
                   >
                     {t('meldButton')}
                   </button>

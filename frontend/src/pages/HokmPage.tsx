@@ -32,6 +32,12 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** The four suits, in the order the trump buttons are offered. */
 const SUITS: readonly number[] = [1, 2, 3, 4];
+const SUIT_NAMES: Record<number, string> = {
+  1: 'common.suit.spade',
+  2: 'common.suit.club',
+  3: 'common.suit.heart',
+  4: 'common.suit.diamond',
+};
 
 /** Guided tutorial steps (the seven-trick race, the hakem, Kot, hand). */
 const HOKM_TUTORIAL_STEPS: TutorialStep[] = [
@@ -130,7 +136,6 @@ function HokmPageContent() {
         ? t('phase.trump')
         : t('phase.play');
 
-  // 出せる札に緑の枠を足すだけで、押せなくはしない（サーバが必ず検証する）。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
 
   const resultBanner = (() => {
@@ -292,19 +297,29 @@ function HokmPageContent() {
                   {t('header.you')}: {human.cardCount}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {human.cards.map((card, idx) => (
-                    <button
-                      key={`${card.design}-${card.value}-${idx}`}
-                      type="button"
-                      onClick={() => handlePlay(idx)}
-                      disabled={loading || !isHumanTurn}
-                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                      className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
-                    >
-                      <CardImage card={card} width={cardWidth} />
-                    </button>
-                  ))}
+                  {human.cards.map((card, idx) => {
+                    const unplayable = isHumanTurn && !legalRing.has(idx);
+                    return (
+                      <button
+                        key={`${card.design}-${card.value}-${idx}`}
+                        type="button"
+                        disabled={loading || !isHumanTurn}
+                        onClick={() => {
+                          if (!unplayable) handlePlay(idx);
+                        }}
+                        aria-disabled={unplayable || undefined}
+                        aria-describedby={unplayable ? 'hk-play-unavailable' : undefined}
+                        aria-label={t('actions.playAria', { card: cardAlt(card) })}
+                        className={`disabled:opacity-50 disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:cursor-not-allowed ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                      >
+                        <CardImage card={card} width={cardWidth} />
+                      </button>
+                    );
+                  })}
                 </div>
+                <span id="hk-play-unavailable" className="sr-only">
+                  {t('actions.playUnavailable')}
+                </span>
               </div>
             )}
 
@@ -320,6 +335,10 @@ function HokmPageContent() {
                   <button
                     key={suit}
                     type="button"
+                    aria-label={t('actions.trumpAria', {
+                      symbol: suitSymbolAt(suit, '?'),
+                      suit: tc(SUIT_NAMES[suit]),
+                    })}
                     className={btnWarning}
                     onClick={() => handleTrump(suit)}
                     disabled={loading}

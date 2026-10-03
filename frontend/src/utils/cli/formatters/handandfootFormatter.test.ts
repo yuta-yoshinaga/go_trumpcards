@@ -3,6 +3,7 @@ import type { HandAndFootResponse } from '../../../types/card';
 import { formatHandAndFootState } from './handandfootFormatter';
 
 const baseState: HandAndFootResponse = {
+  minMeld: 50,
   players: [
     {
       id: 0,
@@ -50,6 +51,7 @@ const baseState: HandAndFootResponse = {
     },
     { team: 1, melds: [], red3Count: 0, red3s: [] },
   ],
+  scoreBreakdown: [],
   phase: 1,
   roundNumber: 2,
   currentPlayerIdx: 0,

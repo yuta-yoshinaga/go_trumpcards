@@ -33,6 +33,7 @@ import { estimateCinchBidStrength } from '../utils/cinchBidStrength';
 import { CINCH_HELP, parseCinchCommand } from '../utils/cli/commands/cinchCommands';
 import { formatCinchState } from '../utils/cli/formatters/cinchFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -44,7 +45,6 @@ const SUIT_KEYS: Readonly<Record<number, string>> = { 1: 'spade', 2: 'club', 3: 
 const isRedSuit = (suit: number): boolean => suit === 3 || suit === 4;
 
 /** Format a signed match-point delta for display (e.g. 6 -> "+6", -8 -> "-8", 0 -> "0"). */
-const signedDelta = (n: number): string => (n > 0 ? `+${n}` : String(n));
 
 /** Selectable trump suits named by the bid winner. */
 const TRUMP_SUITS = [1, 2, 3, 4] as const;
@@ -171,7 +171,7 @@ function CinchPageContent() {
   const suitLabel = (suit: number): string => (SUIT_KEYS[suit] ? t(`suit.${SUIT_KEYS[suit]}`) : '');
   /** Colored suit symbol: hearts/diamonds red, spades/clubs default. */
   const renderSuitSymbol = (suit: number) => (
-    <span className={isRedSuit(suit) ? 'text-ds-error' : undefined}>{suitSymbolAt(suit, '-')}</span>
+    <span className={isRedSuit(suit) ? 'text-ds-error-text' : undefined}>{suitSymbolAt(suit, '-')}</span>
   );
 
   const handleManualReset = () => {
@@ -276,6 +276,30 @@ function CinchPageContent() {
                   ))}
                 </div>
 
+                {isBidPhase && (
+                  <div
+                    className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    data-testid="cinch-bid-status"
+                  >
+                    {state.players.map((p) => (
+                      <div key={p.id} className="py-0.5">
+                        {playerName(p.id, p.isHuman)}:{' '}
+                        {p.bid < 0 ? t('bidStatus.unbid') : p.bid === 0 ? t('bidStatus.pass') : p.bid}
+                        {p.id === state.dealerIdx && (
+                          <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
+                            {t('dealerBadge')}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                    {state.dealerIdx === humanIdx && (
+                      <div className="mt-1 text-ds-text-primary" data-testid="cinch-dealer-bid-notice">
+                        {t('forcedBidNotice')}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Players: cards / tricks */}
                 {isMobile ? (
                   <details className="mb-2 p-2 rounded bg-black/30">
@@ -309,14 +333,14 @@ function CinchPageContent() {
                     <div className="mb-1 text-ds-text-primary">{t('dealResult.title')}</div>
                     {state.lastDealDetail.bidderIdx >= 0 && (
                       <div
-                        className={`mb-1 ${state.lastDealDetail.setBack ? 'text-ds-error font-semibold' : 'text-ds-text-primary'}`}
+                        className={`mb-1 ${state.lastDealDetail.setBack ? 'text-ds-error-text font-semibold' : 'text-ds-text-primary'}`}
                         data-testid="cinch-bidder-detail"
                       >
                         {t(state.lastDealDetail.setBack ? 'dealResult.bidderSet' : 'dealResult.bidderMade', {
                           name: playerName(state.lastDealDetail.bidderIdx, state.lastDealDetail.bidderIdx === humanIdx),
                           bid: state.lastDealDetail.bid,
                           captured: state.lastDealDetail.points[state.lastDealDetail.bidderIdx] ?? 0,
-                          delta: signedDelta(state.lastDealDetail.gained[state.lastDealDetail.bidderIdx] ?? 0),
+                          delta: formatSignedDelta(state.lastDealDetail.gained[state.lastDealDetail.bidderIdx] ?? 0),
                         })}
                       </div>
                     )}
@@ -325,7 +349,7 @@ function CinchPageContent() {
                       return (
                         <div
                           key={p.id}
-                          className={isSetBackRow ? 'text-ds-error font-semibold' : undefined}
+                          className={isSetBackRow ? 'text-ds-error-text font-semibold' : undefined}
                           data-testid={isSetBackRow ? 'cinch-setback-row' : undefined}
                         >
                           {t('dealResult.gained', {

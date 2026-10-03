@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { minchiateApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeMinchiateState } from '../test/stateFactories';
 import { MINCHIATE_SURPLUS } from '../types/card';
@@ -28,6 +29,10 @@ const roundEndState = makeMinchiateState({
   isHumanTurn: false,
   playableIndices: [],
   roundTricks: [5, 4, 3, 3],
+  roundBreakdown: [
+    { tricks: 8, lastTrickBonus: 0, scartoBonus: 13, total: 21 },
+    { tricks: 5, lastTrickBonus: 3, scartoBonus: 0, total: 8 },
+  ],
 });
 
 beforeEach(() => {
@@ -94,6 +99,25 @@ describe('MinchiatePage', () => {
     expect(scores).toHaveTextContent('4');
   });
 
+  it('shows the server-provided team round score breakdown', async () => {
+    mockExec.mockResolvedValue(
+      makeMinchiateState({
+        phase: 3,
+        roundBreakdown: [
+          { tricks: 8, lastTrickBonus: 0, scartoBonus: 13, total: 21 },
+          { tricks: 5, lastTrickBonus: 3, scartoBonus: 0, total: 8 },
+        ],
+      }),
+    );
+    renderWithProviders(<MinchiatePage />);
+    expect(await screen.findByTestId('mc-round-breakdown-0')).toHaveTextContent(
+      'チーム0: トリック 8 点 / 最終トリック +0 / スカルト +13 / ラウンド計 21 点',
+    );
+    expect(screen.getByTestId('mc-round-breakdown-1')).toHaveTextContent(
+      'チーム1: トリック 5 点 / 最終トリック +3 / スカルト +0 / ラウンド計 8 点',
+    );
+  });
+
   it('plays the selected card', async () => {
     renderWithProviders(<MinchiatePage />);
     const playButton = await screen.findByRole('button', { name: '出す' });
@@ -136,10 +160,21 @@ describe('MinchiatePage', () => {
         ],
       });
 
+    it('shows the scarto selection progress in English', async () => {
+      await i18n.changeLanguage('en');
+      mockExec.mockResolvedValue(scartoHandState());
+      renderWithProviders(<MinchiatePage />);
+
+      expect(await screen.findByTestId('minchiate-scarto-progress')).toHaveTextContent('Selected 0/13 cards');
+      await i18n.changeLanguage('ja');
+    });
+
     it('prompts for the full surplus and dispatches every index', async () => {
       mockExec.mockResolvedValue(scartoHandState());
       renderWithProviders(<MinchiatePage />);
       expect(await screen.findByTestId('minchiate-scarto-prompt')).toHaveTextContent(String(MINCHIATE_SURPLUS));
+      const progress = screen.getByTestId('minchiate-scarto-progress');
+      expect(progress).toHaveTextContent('選択済み 0/13枚');
 
       expect(screen.getByRole('button', { name: '捨てる' })).toBeDisabled();
 
@@ -147,9 +182,11 @@ describe('MinchiatePage', () => {
       for (let i = 1; i < MINCHIATE_SURPLUS; i++) {
         fireEvent.click(screen.getByRole('button', { name: `${i} \u2660` }));
       }
+      expect(progress).toHaveTextContent('選択済み 12/13枚');
       expect(screen.getByRole('button', { name: '捨てる' })).toBeDisabled();
 
       fireEvent.click(screen.getByRole('button', { name: `${MINCHIATE_SURPLUS} \u2660` }));
+      expect(progress).toHaveTextContent('選択済み 13/13枚');
       mockExec.mockClear();
       mockExec.mockResolvedValue(scartoHandState());
       fireEvent.click(screen.getByRole('button', { name: '捨てる' }));
@@ -279,5 +316,8 @@ describe('MinchiatePage', () => {
     expect(live).toHaveAttribute('aria-live', 'polite');
     // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
     expect(live).toContainElement(await screen.findByTestId('minchiate-scarto-prompt'));
+
+    const progress = await screen.findByTestId('minchiate-scarto-progress');
+    expect(progress.closest('[aria-live]')).toBeNull();
   });
 });

@@ -93,12 +93,7 @@ func (ci *AluetteInteractor) NextTrick() string {
 // NextRound メーヌをスコアリングして次のメーヌへ進む
 func (ci *AluetteInteractor) NextRound() string {
 	ci.Game.ScoreRound()
-	if out, blocked := guardGameEnd(ci.Game, ci.tp); blocked {
-		return out
-	}
-	ci.Game.NextRound()
-	ci.advance()
-	return ci.tp.Output(ci.Game, nil)
+	return advanceRound(ci.Game, ci.tp, ci.advance)
 }
 
 // GetConfig 現在の設定を取得

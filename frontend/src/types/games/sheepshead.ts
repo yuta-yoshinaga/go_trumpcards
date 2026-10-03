@@ -20,6 +20,8 @@ export interface SheepsheadPlayer {
 export interface SheepsheadTrickCard {
   playerIdx: number;
   card: Card;
+  points: number;
+  isTrump: boolean;
 }
 
 /** Sheepshead game configuration. */
@@ -46,6 +48,10 @@ export interface SheepsheadResponse extends BaseGameResponse {
   phase: SheepsheadPhase;
   roundNumber: number;
   trickNumber: number;
+  /** Winner index of the most recently completed trick, or -1. */
+  lastTrickWinner: number;
+  /** Number of completed tricks in this round. */
+  completedTrickCount: number;
   currentPlayerIdx: number;
   leadPlayerIdx: number;
   dealerIdx: number;

@@ -281,13 +281,15 @@ describe('AgnesPage', () => {
     const dataTransfer = { setData: vi.fn(), effectAllowed: '', dropEffect: '' };
     fireEvent.dragStart(screen.getByAltText('♣ 6').closest('button') as HTMLButtonElement, { dataTransfer });
     await waitFor(() => expect(document.querySelectorAll('[data-eligible="true"]')).toHaveLength(1));
-
     const eligible = document.querySelector('[data-eligible="true"]') as HTMLElement;
     expect(eligible.parentElement).toHaveClass('border-2', 'border-ds-success');
     expect(eligible.parentElement).not.toHaveClass('ring-2');
     expect(screen.getByAltText('♠ 7').closest('button')?.closest('[data-eligible="true"]')).not.toBeNull();
     expect(screen.getByAltText('♥ 8').closest('button')?.closest('[data-eligible="true"]')).toBeNull();
     expect(screen.getByAltText('♣ 6').closest('button')?.closest('[data-eligible="true"]')).toBeNull();
+    expect(screen.getByTestId('agnes-drag-target-status')).toHaveTextContent('列0に移動できます');
+    fireEvent.dragEnd(screen.getByAltText('♣ 6').closest('button') as HTMLButtonElement);
+    await waitFor(() => expect(screen.getByTestId('agnes-drag-target-status')).toHaveTextContent(''));
   });
 
   it('does not highlight destinations when no drag is in progress', async () => {
@@ -398,6 +400,54 @@ describe('AgnesPage', () => {
     );
     // Loop stops after the swept state (no further foundation move): exactly one move.
     await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(1));
+  });
+
+  it('announces auto-complete start, move progress, and completion in its own live region', async () => {
+    const ready: AgnesResponse = {
+      ...playingState,
+      stockCount: 0,
+      tableau: [[up('SPADE', 6)]],
+      foundation: [[card('SPADE', 5)], [], [], []],
+    };
+    let resolveFirstMove!: (value: AgnesResponse) => void;
+    let resolveSecondMove!: (value: AgnesResponse) => void;
+    mockExec.mockResolvedValue(ready);
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(screen.getByTestId('ag-autocomplete-button')).toBeEnabled());
+    mockExec.mockClear();
+    mockExec
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveFirstMove = resolve;
+          }),
+      )
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveSecondMove = resolve;
+          }),
+      );
+    fireEvent.click(screen.getByTestId('ag-autocomplete-button'));
+    const status = screen.getByTestId('agnes-autocomplete-status');
+    await waitFor(() => expect(status).toHaveTextContent('オートコンプリートを開始しました'));
+    resolveFirstMove({
+      ...ready,
+      tableau: [[up('SPADE', 7)]],
+      foundation: [[card('SPADE', 5), card('SPADE', 6)], [], [], []],
+      moveCount: 1,
+    });
+    await waitFor(() => expect(status).toHaveTextContent('オートコンプリート進行中、手数1'));
+    resolveSecondMove({
+      ...ready,
+      tableau: [[]],
+      foundation: [[card('SPADE', 5), card('SPADE', 6), card('SPADE', 7)], [], [], []],
+      moveCount: 2,
+    });
+    await waitFor(() => expect(status).toHaveTextContent('オートコンプリートが完了しました'));
+    expect(status).toHaveAttribute('aria-live', 'polite');
+    expect(status).toHaveClass('sr-only');
+    expect(screen.getByTestId('agnes-drag-target-status')).toBeInTheDocument();
   });
 
   it('keyboard: "a" triggers auto-complete when ready', async () => {

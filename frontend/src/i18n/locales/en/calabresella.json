@@ -21,6 +21,7 @@
   "winningBid": "Bid: {{bid}}",
   "bidNone": "-",
   "bidPhase": "Bidding phase — pass / chiamo (stake 1) / solo (stake 2).",
+  "bidUnavailable": "Unavailable because this bid does not exceed the current bid.",
   "discardPhase": "Monte exchange — discard four cards down to twelve.",
   "discardPhaseRemaining": "Select cards to discard ({{count}} left)",
   "bidChiamo": "Chiamo",
@@ -61,7 +62,10 @@
   },
   "roundResult": {
     "title": "Round Result",
-    "thirds": "{{name}} thirds captured: {{thirds}}"
+    "thirds": "{{name}} thirds captured: {{thirds}}",
+    "soloistWon": "The Soloist made the contract.",
+    "soloistLost": "The Soloist failed the contract.",
+    "settlement": "{{name}} score change this round: {{change}} pts"
   },
   "hintAvailable": "Hint",
   "hint": {

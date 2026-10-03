@@ -37,6 +37,12 @@ const TRICKS_PER_ROUND = 12;
 
 /** The four suits, in the order the trump buttons are offered. */
 const SUITS: readonly number[] = [1, 2, 3, 4];
+const SUIT_I18N_KEYS: Record<number, string> = {
+  1: 'common.suit.spade',
+  2: 'common.suit.club',
+  3: 'common.suit.heart',
+  4: 'common.suit.diamond',
+};
 
 /**
  * Bidding tops out at the whole round's card points (sync: `ShelemMaxBid` in
@@ -180,8 +186,9 @@ function ShelemPageContent() {
           ? t('phase.discard')
           : t('phase.play');
 
-  // 出せる札に緑の枠を足すだけで、押せなくはしない（サーバが必ず検証する）。
+  // 出せる札は緑の枠で示し、出せない札は aria-disabled にしてクリックを無視する。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
+  const hasIllegalPlay = isHumanTurn && (human?.cards.some((_, idx) => !legalRing.has(idx)) ?? false);
 
   /** Bids that would actually beat the standing one, capped at the maximum. */
   const bidChoices: number[] = [];
@@ -337,29 +344,43 @@ function ShelemPageContent() {
                     ` — ${t('discard.picked', { n: String(picked.length), of: String(state.discardCount) })}`}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {human.cards.map((card, idx) => (
-                    <button
-                      key={`${card.design}-${card.value}-${idx}`}
-                      type="button"
-                      onClick={() => (isHumanDiscardTurn ? togglePick(idx) : handlePlay(idx))}
-                      disabled={loading || (!isHumanTurn && !isHumanDiscardTurn)}
-                      aria-pressed={isHumanDiscardTurn ? picked.includes(idx) : undefined}
-                      aria-label={
-                        isHumanDiscardTurn
-                          ? t('discard.pickAria', { card: cardAlt(card) })
-                          : t('actions.playAria', { card: cardAlt(card) })
-                      }
-                      className={`disabled:opacity-50 ${
-                        isHumanDiscardTurn && picked.includes(idx)
-                          ? 'rounded-lg ring-2 ring-ds-warning'
-                          : legalRing.has(idx)
-                            ? 'rounded-lg ring-2 ring-ds-success'
-                            : ''
-                      }`}
-                    >
-                      <CardImage card={card} width={cardWidth} />
-                    </button>
-                  ))}
+                  {hasIllegalPlay && (
+                    <span id="shelem-illegal-play-reason" className="sr-only">
+                      {t('actions.illegalPlayReason')}
+                    </span>
+                  )}
+                  {human.cards.map((card, idx) => {
+                    const illegalPlay = isHumanTurn && !legalRing.has(idx);
+                    return (
+                      <button
+                        key={`${card.design}-${card.value}-${idx}`}
+                        type="button"
+                        onClick={() => {
+                          if (illegalPlay) return;
+                          if (isHumanDiscardTurn) togglePick(idx);
+                          else handlePlay(idx);
+                        }}
+                        disabled={loading || (!isHumanTurn && !isHumanDiscardTurn)}
+                        aria-disabled={illegalPlay ? 'true' : undefined}
+                        aria-describedby={illegalPlay ? 'shelem-illegal-play-reason' : undefined}
+                        aria-pressed={isHumanDiscardTurn ? picked.includes(idx) : undefined}
+                        aria-label={
+                          isHumanDiscardTurn
+                            ? t('discard.pickAria', { card: cardAlt(card) })
+                            : t('actions.playAria', { card: cardAlt(card) })
+                        }
+                        className={`disabled:opacity-50 aria-disabled:opacity-50 aria-disabled:cursor-not-allowed ${
+                          isHumanDiscardTurn && picked.includes(idx)
+                            ? 'rounded-lg ring-2 ring-ds-warning'
+                            : legalRing.has(idx)
+                              ? 'rounded-lg ring-2 ring-ds-success'
+                              : ''
+                        }`}
+                      >
+                        <CardImage card={card} width={cardWidth} />
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -423,6 +444,7 @@ function ShelemPageContent() {
                     // **ちょうど4枚選ぶまで押させない。** サーバが必ず拒否する。
                     disabled={loading || picked.length !== state.discardCount}
                     aria-disabled={picked.length !== state.discardCount}
+                    aria-label={t('actions.discardAria', { suit: tc(SUIT_I18N_KEYS[suit]) })}
                     data-testid={`sh-discard-${suit.toString()}-btn`}
                   >
                     {t('actions.discard', { suit: suitSymbolAt(suit, '?') })}

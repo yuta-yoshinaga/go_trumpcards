@@ -30,6 +30,53 @@ describe('TrickDisplay', () => {
     expect(screen.getAllByTestId('animated-card')).toHaveLength(2);
   });
 
+  it('passes server trick details through to the visible detail and card announcement', () => {
+    const detailTrick: TrickDisplayCard[] = [{ playerIdx: 0, card, points: 11, isTrump: false }];
+    render(
+      <TrickDisplay
+        currentTrick={detailTrick}
+        players={players}
+        cardWidth={40}
+        label="Current trick"
+        cardAriaLabelFor={(_, playedCard) => `${playedCard.value} of Spades`}
+        cardDetailFor={(_, trickCard) => `${trickCard.points} points · ${trickCard.isTrump ? 'trump' : 'not trump'}`}
+      />,
+    );
+    expect(screen.getByText('11 points · not trump')).toBeInTheDocument();
+    expect(screen.getByAltText('1 of Spades · 11 points · not trump')).toBeInTheDocument();
+  });
+
+  it('keeps the legacy parenthesized format when a card has only a badge', () => {
+    render(
+      <TrickDisplay
+        currentTrick={[{ playerIdx: 0, card }]}
+        players={players}
+        cardWidth={40}
+        label="Current trick"
+        cardAriaLabelFor={() => '♠ A'}
+        cardBadgeFor={() => ({ glyph: '★', title: '切り札: スペード' })}
+      />,
+    );
+
+    expect(screen.getByAltText('♠ A (切り札: スペード)')).toBeInTheDocument();
+  });
+
+  it('appends detail after the legacy badge format', () => {
+    render(
+      <TrickDisplay
+        currentTrick={[{ playerIdx: 0, card, points: 11, isTrump: true }]}
+        players={players}
+        cardWidth={40}
+        label="Current trick"
+        cardAriaLabelFor={() => '♠ A'}
+        cardBadgeFor={() => ({ glyph: '★', title: '切り札: スペード' })}
+        cardDetailFor={(_, trickCard) => `${trickCard.points}点 · 切り札`}
+      />,
+    );
+
+    expect(screen.getByAltText('♠ A (切り札: スペード) · 11点 · 切り札')).toBeInTheDocument();
+  });
+
   it('resolves player display names from the players array', () => {
     render(<TrickDisplay currentTrick={trick} players={players} cardWidth={40} label="label" />);
     expect(screen.getByText('あなた')).toBeInTheDocument();

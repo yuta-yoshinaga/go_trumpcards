@@ -32,6 +32,7 @@ const playPhaseState: PageOneResponse = {
   ],
   phase: 0,
   roundNumber: 1,
+  roundHistory: [],
   currentPlayerIdx: 0,
   discardTop: { design: 'HEART', value: 7 },
   drawPileCount: 30,
@@ -108,6 +109,15 @@ describe('PageOnePage', () => {
       expect(screen.getByRole('button', { name: '出す' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '引く' })).toBeInTheDocument();
     });
+  });
+
+  it('includes each hand card position and playability in its accessible name', async () => {
+    renderWithProviders(<PageOnePage />);
+
+    const unavailableCard = await screen.findByRole('button', { name: /位置 0/ });
+    const playableCard = screen.getByRole('button', { name: /位置 1/ });
+    expect(unavailableCard).toHaveAccessibleName('♠ A、位置 0');
+    expect(playableCard).toHaveAccessibleName('♥ J（出せます）、位置 1');
   });
 
   it('explains the empty draw pile fallback while keeping draw available', async () => {
@@ -199,6 +209,16 @@ describe('PageOnePage', () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<PageOnePage />);
     await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+  });
+
+  it('renders server provided round score history by round and player', async () => {
+    mockExec.mockResolvedValue({ ...gameEndState, roundHistory: [{ roundNumber: 1, scores: [0, 12, 7, 3] }] });
+    renderWithProviders(<PageOnePage />);
+    const history = await screen.findByTestId('po-round-history');
+    expect(history).toHaveTextContent('ラウンド');
+    expect(history).toHaveTextContent('1');
+    expect(history).toHaveTextContent('12');
+    expect(history).toHaveTextContent('7');
   });
 
   it('shows the last-card warning banner when the human is at 1 undeclared card during play', async () => {

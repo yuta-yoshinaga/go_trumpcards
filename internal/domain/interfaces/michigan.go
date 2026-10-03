@@ -45,6 +45,8 @@ type MichiganGame interface {
 	GetBoodleCnt() int
 	// GetBoodle 指定インデックスのブードルを取得する
 	GetBoodle(i int) *domain.MichiganBoodle
+	// GetRoundBoodleWins 直近ラウンドに獲得したブードルの記録を取得する
+	GetRoundBoodleWins() []*domain.MichiganBoodleWin
 	// GetSeqSuit 現在のシーケンスのスートを取得する (0 = 新シーケンス待ち)
 	GetSeqSuit() int
 	// GetSeqHighValue 現在のシーケンスの最大値を取得する (0 = なし)

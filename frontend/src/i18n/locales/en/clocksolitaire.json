@@ -16,6 +16,12 @@
   },
   "placementHint": "goes to the {{hour}} o’clock pile",
   "placementKing": "goes to the centre (K) pile",
+  "pileAriaLabel_one": "{{position}}, {{count}} face-up card, {{status}}",
+  "pileAriaLabel_other": "{{position}}, {{count}} face-up cards, {{status}}",
+  "pileComplete": "complete",
+  "pileIncomplete": "incomplete",
+  "hourPilePosition": "{{hour}} o’clock pile",
+  "centerPilePosition": "Center (K) pile",
   "playing": "Playing",
   "settings": {
     "speed": "Animation Speed",
@@ -25,7 +31,9 @@
     "speedFast": "Fast"
   },
   "step": "Step",
+  "stepAnnouncement": "Moved {{card}} to the {{hour}} o’clock pile",
   "stepCount": "Steps",
+  "stepKingAnnouncement": "Moved {{card}} to the center (K) pile",
   "stopAutoplay": "Stop",
   "title": "Clock Solitaire",
   "tutorial": {

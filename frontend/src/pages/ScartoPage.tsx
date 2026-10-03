@@ -20,12 +20,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import {
-  CPU_DIFFICULTY_OPTIONS,
-  SCARTO_DISCARD_COUNT,
-  TARGET_DEALS_OPTIONS,
-  useScartoGame,
-} from '../hooks/useScartoGame';
+import { CPU_DIFFICULTY_OPTIONS, SCARTO_DISCARD_COUNT, useScartoGame } from '../hooks/useScartoGame';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -36,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseScartoCommand, SCARTO_HELP } from '../utils/cli/commands/scartoCommands';
 import { formatScartoState } from '../utils/cli/formatters/scartoFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { isRequestedHint } from '../utils/hintRequest';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 import { scartoUndiscardableReason } from '../utils/scartoDiscard';
@@ -86,10 +82,10 @@ function formatPoints(n: number): string {
   return Number.isInteger(n) ? String(n) : n.toFixed(1);
 }
 
-/** Formats a signed difference, prefixing a leading `+` for positive values. */
+/** Formats an average difference with the page's one-decimal precision. */
 function formatSigned(n: number): string {
-  const s = formatPoints(n);
-  return n > 0 ? `+${s}` : s;
+  const value = formatPoints(n);
+  return n > 0 ? `+${value}` : value;
 }
 
 /** Renders the Scarto (スカルト) game page: a 3-player 78-card Italian tarocchi trick-taker with a dealer scarto (discard) and trump-priority tricks — no bidding, chien, or partnership. */
@@ -185,6 +181,7 @@ function ScartoPageContent() {
               points: p.cardPoints,
               diff: formatSigned(p.cardPoints - average),
               scaled: formatSigned((p.cardPoints - average) * players.length),
+              outcome: t(OUTCOME_KEYS[p.cardPoints > average ? 1 : p.cardPoints < average ? 2 : 0]),
             })}
           </div>
         ))}
@@ -254,11 +251,13 @@ function ScartoPageContent() {
                     onSelect: (v) => handleConfigChange('cpuDifficulty', v),
                   },
                   {
-                    type: 'select',
+                    type: 'number',
                     id: 'targetDeals',
                     label: t('settings.targetDeals'),
                     value: scartoConfig.targetDeals,
-                    options: TARGET_DEALS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    min: 1,
+                    max: 100,
+                    description: t('settings.targetDealsGuide'),
                     onSelect: (v) => handleConfigChange('targetDeals', v),
                   },
                   hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
@@ -363,7 +362,7 @@ function ScartoPageContent() {
                         <div key={p.id}>
                           {t('roundResult.playerLine', {
                             name: playerName(p.id, p.isHuman),
-                            delta: delta > 0 ? `+${delta}` : String(delta),
+                            delta: formatSignedDelta(delta),
                             score: p.score,
                           })}
                         </div>

@@ -14,6 +14,7 @@
   "placeable": "置ける",
   "baseRank": "ベースランク",
   "moveCount": "手数",
+  "moveAnnouncement": "{{source}}から{{destination}}へ移動しました。手数: {{moveCount}}",
   "draw": "引く",
   "giveup": "ギブアップ",
   "hint": "ヒント",
@@ -47,5 +48,6 @@
     "stockWaste": "山札をクリックして1枚めくります。ウェイストの一番上を組札へ使えます。",
     "actionButtons": "ヒント・自動完成・元に戻すなどの操作ボタンです。",
     "resetButton": "新しいゲームを始めるボタンです。"
-  }
+  },
+  "stockAriaLabel": "山札 残り{{count}}枚"
 }

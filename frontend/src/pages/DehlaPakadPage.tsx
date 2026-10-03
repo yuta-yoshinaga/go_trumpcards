@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { dehlaPakadApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -223,6 +224,36 @@ function DehlaPakadPageContent() {
               )}
             </div>
 
+            {state.handHistory.length > 0 && (
+              <section className="mt-4" data-testid="dehlapakad-hand-history">
+                <h2 className="text-ds-text-primary text-lg mb-2">{t('handHistory.title')}</h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-ds-text-primary tabular-nums">
+                    <thead>
+                      <tr className="border-b border-ds-border text-left text-ds-text-muted">
+                        <th className="p-2">{t('handHistory.hand')}</th>
+                        <th className="p-2">{t('handHistory.winner')}</th>
+                        <th className="p-2">{t('handHistory.tens')}</th>
+                        <th className="p-2">{t('handHistory.kot')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {state.handHistory.map((hand, index) => (
+                        <tr key={`${index}-${hand.dealerIdx}`} className="border-b border-ds-border-subtle">
+                          <td className="p-2">{t('handHistory.handNumber', { n: index + 1 })}</td>
+                          <td className="p-2">{t('team', { n: hand.winnerTeam })}</td>
+                          <td className="p-2">
+                            {t('handHistory.tensResult', { a: hand.teamTens[0], b: hand.teamTens[1] })}
+                          </td>
+                          <td className="p-2">{t(hand.kot ? 'handHistory.kotWon' : 'handHistory.noKot')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            )}
+
             <div className={lgTwoColGrid}>
               <div data-tutorial="dehlapakad-centre">
                 <TrickDisplay
@@ -270,6 +301,31 @@ function DehlaPakadPageContent() {
                     </div>
                   )}
                 </div>
+
+                <section
+                  className="mb-2 p-2 rounded bg-ds-surface text-ds-text-primary"
+                  data-testid="dehlapakad-earned-tens"
+                >
+                  <h3 className="text-sm mb-1">{t('earnedTens')}</h3>
+                  {[0, 1].map((team) => {
+                    const cards = state.players
+                      .filter((player) => player.team === team)
+                      .flatMap((player) => player.gatheredCards ?? [])
+                      .filter((card) => card.value === 10);
+                    return (
+                      <div key={team} className="mb-2" data-testid={`dehlapakad-earned-tens-team-${team}`}>
+                        <div className="text-sm">
+                          {t('team', { n: team })} ({cards.length})
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {cards.map((card, index) => (
+                            <CardImage key={`${card.design}-${card.value}-${index}`} card={card} width={36} />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </section>
 
                 <div className="mb-2 p-2 rounded bg-black/30">
                   {state.players.map((p) => (

@@ -209,7 +209,7 @@ function AnacondaPageContent() {
       : selectionDiff > 0
         ? {
             text: t('selectionOver', { n: selectionDiff, selected: selected.length, required: requiredSelection }),
-            cls: 'text-ds-error',
+            cls: 'text-ds-error-text',
           }
         : {
             text: t('selectionReady', { selected: selected.length, required: requiredSelection }),
@@ -315,12 +315,27 @@ function AnacondaPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2" data-tutorial="anaconda-info">
+            <div
+              className="text-ds-text-primary text-center mb-2"
+              data-tutorial="anaconda-info"
+              data-testid="anaconda-info"
+            >
               <span className="mr-4">{t('round', { n: state.roundNumber, total: state.config.targetRounds })}</span>
               <span className="mr-4">{t('pot', { amount: state.pot })}</span>
               <span className="mr-4">{t('ante', { amount: state.ante })}</span>
               {isRollPhase && <span>{t('currentBet', { amount: state.currentBet })}</span>}
+              {isRollPhase && humanTurn && humanPlayer && (
+                <span className="ml-4" data-testid="anaconda-call-needed">
+                  {state.currentBet > humanPlayer.streetBet
+                    ? t('additionalCallAmount', { amount: state.currentBet - humanPlayer.streetBet })
+                    : t('noAdditionalCallAmount')}
+                </span>
+              )}
             </div>
+            <LiveAnnouncement
+              testId="anaconda-current-bet-live"
+              message={isRollPhase ? t('currentBet', { amount: state.currentBet }) : ''}
+            />
 
             {isPassPhase && humanTurn && (
               <div
@@ -558,6 +573,7 @@ function AnacondaPageContent() {
                 </>
               )}
               <LiveAnnouncement
+                testId="anaconda-raise-count-live"
                 message={
                   isRollPhase && humanTurn
                     ? raiseBlock === 'cap'

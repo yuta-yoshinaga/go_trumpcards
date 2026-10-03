@@ -9,6 +9,7 @@
   "playersTitle": "Players",
   "handLabel": "Your hand",
   "passNotice": "Your turn — pick one card to pass to the next player.",
+  "passResult": "Passed {{passed}} and received {{received}}.",
   "grabNotice": "Four of a kind! Grab a spoon!",
   "grabWindowOpened": "You can grab a spoon now.",
   "grabWindowClosed": "You can no longer grab a spoon.",

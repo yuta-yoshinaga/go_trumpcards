@@ -34,6 +34,7 @@ import {
   FIVEHUNDRED_OPEN_MISERE_VALUE,
   fivehundredBidValue,
 } from '../utils/fivehundredBidValue';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -64,7 +65,7 @@ const SUITS: { id: number; glyph: string; nameKey: string }[] = [
 /** Returns the glyph for a suit id, or "NT" for no-trump (-1). */
 /** 増減点に符号を付ける (宣言側の +220 と守備側の +10 で書式を揃える)。 */
 function formatDelta(delta: number): string {
-  return delta > 0 ? `+${delta}` : String(delta);
+  return formatSignedDelta(delta);
 }
 
 function suitGlyph(suit: number): string {
@@ -149,6 +150,7 @@ function FiveHundredPageContent() {
         return '';
     }
   };
+  const bidIsUnder = (value: number) => state?.highestBid != null && value <= state.highestBid.order;
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('fivehundred');
@@ -244,7 +246,7 @@ function FiveHundredPageContent() {
         <>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             {error && (
-              <button type="button" onClick={retry} className="text-ds-error underline">
+              <button type="button" onClick={retry} className="text-ds-error-text underline">
                 {error}
               </button>
             )}
@@ -275,7 +277,11 @@ function FiveHundredPageContent() {
               {state.players
                 .filter((p) => !p.isHuman)
                 .map((p) => (
-                  <div key={p.id} className="text-center">
+                  <fieldset
+                    key={p.id}
+                    className="text-center border-0 p-0 min-w-0"
+                    aria-label={t('cpuHandAriaLabel', { player: tc('player.cpu', { id: p.id }), count: p.cardCount })}
+                  >
                     <div className="text-xs text-ds-text-muted mb-1 flex items-center justify-center gap-1">
                       <span>{tc('player.cpu', { id: p.id })}</span>
                       <span>
@@ -288,12 +294,12 @@ function FiveHundredPageContent() {
                         p.bid && <span className="ml-1">{t('playerBid', { bid: formatBid(p.bid) })}</span>
                       )}
                     </div>
-                    <div className="flex gap-0.5 justify-center">
+                    <div className="flex gap-0.5 justify-center" aria-hidden="true">
                       {Array.from({ length: Math.min(p.cardCount, 13) }, (_, i) => (
                         <AnimatedCardBack key={i} width={cardWidth * 0.4} />
                       ))}
                     </div>
-                  </div>
+                  </fieldset>
                 ))}
             </div>
 
@@ -463,20 +469,29 @@ function FiveHundredPageContent() {
                       </option>
                     ))}
                   </select>
+                  <p id="fh-underbid-reason" className="sr-only">
+                    {t('bidCondition.underbid')}
+                  </p>
                   {SUITS.map((s) => (
                     <button
                       key={s.id}
                       type="button"
                       {...conditionHandlers(FiveHundredContract.SUIT)}
-                      onClick={() => bidSuit(bidTricks, s.id)}
+                      onClick={() => {
+                        if (!bidIsUnder(fivehundredBidValue(bidTricks, s.id))) bidSuit(bidTricks, s.id);
+                      }}
                       disabled={loading}
+                      aria-disabled={bidIsUnder(fivehundredBidValue(bidTricks, s.id))}
+                      aria-describedby={
+                        bidIsUnder(fivehundredBidValue(bidTricks, s.id)) ? 'fh-underbid-reason' : undefined
+                      }
                       data-testid={`fh-bid-suit-${s.id}`}
                       aria-label={t('bidSuitAria', {
                         suit: t(`suitName.${s.nameKey}`),
                         tricks: bidTricks,
                         value: fivehundredBidValue(bidTricks, s.id),
                       })}
-                      className="flex flex-col items-center rounded-lg bg-ds-info px-3 py-1.5 text-sm text-white disabled:opacity-40"
+                      className={`flex flex-col items-center rounded-lg bg-ds-info px-3 py-1.5 text-sm text-white disabled:opacity-40 ${bidIsUnder(fivehundredBidValue(bidTricks, s.id)) ? 'opacity-40 cursor-not-allowed' : ''}`}
                     >
                       <span aria-hidden="true">{s.glyph}</span>
                       <span aria-hidden="true" className="text-[10px] text-white">
@@ -487,10 +502,14 @@ function FiveHundredPageContent() {
                   <button
                     type="button"
                     {...conditionHandlers(FiveHundredContract.NO_TRUMP)}
-                    onClick={() => bidNoTrump(bidTricks)}
+                    onClick={() => {
+                      if (!bidIsUnder(fivehundredBidValue(bidTricks, -1))) bidNoTrump(bidTricks);
+                    }}
                     disabled={loading}
+                    aria-disabled={bidIsUnder(fivehundredBidValue(bidTricks, -1))}
+                    aria-describedby={bidIsUnder(fivehundredBidValue(bidTricks, -1)) ? 'fh-underbid-reason' : undefined}
                     data-testid="fh-bid-nt"
-                    className="flex flex-col items-center rounded-lg bg-ds-info px-3 py-1.5 text-sm text-white disabled:opacity-40"
+                    className={`flex flex-col items-center rounded-lg bg-ds-info px-3 py-1.5 text-sm text-white disabled:opacity-40 ${bidIsUnder(fivehundredBidValue(bidTricks, -1)) ? 'opacity-40 cursor-not-allowed' : ''}`}
                   >
                     <span>NT</span>
                     <span className="text-[10px] text-white">
@@ -591,7 +610,7 @@ function FiveHundredPageContent() {
 
               {isRoundEnd && state.roundResult && (
                 <div className="w-full text-sm mb-2" role="status" aria-live="polite" data-testid="fh-round-result">
-                  <span className={state.roundResult.made ? 'text-ds-success' : 'text-ds-error'}>
+                  <span className={state.roundResult.made ? 'text-ds-success' : 'text-ds-error-text'}>
                     {t(
                       // ミゼールには「必要トリック数」が無い (0 トリックで成立)。
                       // suit 用の「取得/必要」表記を使い回すと分数として読めてしまう。

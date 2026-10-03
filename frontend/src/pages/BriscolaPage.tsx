@@ -38,6 +38,12 @@ const BRISCOLA_TUTORIAL_STEPS: TutorialStep[] = [
 /** Suit labels for display. */
 const SUIT_LABELS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
+/** Return the Briscola scoring value for a card. */
+function briscolaCardPoints(value: number): number {
+  const points: Record<number, number> = { 1: 11, 3: 10, 11: 2, 12: 3, 13: 4 };
+  return points[value] ?? 0;
+}
+
 /**
  * Inner content for the Briscola page (wrapped by `withTutorial` below).
  *
@@ -110,7 +116,7 @@ function BriscolaPageContent() {
     onToggle: toggleSelect,
     onConfirm: confirmPlay,
     onClear: clearSelect,
-    enabled: !!isHumanTurnForKbd && !loading,
+    enabled: !!isHumanTurnForKbd && !loading && !actionLog,
   });
 
   const {
@@ -268,7 +274,10 @@ function BriscolaPageContent() {
                   type="button"
                   onClick={() => handlePlay(idx)}
                   disabled={loading || !isHumanTurn}
-                  aria-label={tc('card.play', { card: cardAlt(card) })}
+                  aria-label={t('actions.playCardAria', {
+                    card: cardAlt(card),
+                    points: briscolaCardPoints(card.value),
+                  })}
                   aria-pressed={selectedIdx === idx}
                   className={`rounded disabled:opacity-50 ${
                     selectedIdx === idx ? 'ring-2 ring-ds-accent -translate-y-1 transition-transform' : ''
@@ -327,6 +336,7 @@ function BriscolaPageContent() {
 
       <ActionLogSection
         isEndPhase={isGameEnd}
+        availableDuringPlay
         actionLog={actionLog}
         showActionLog={showActionLog}
         hideActionLog={hideActionLog}

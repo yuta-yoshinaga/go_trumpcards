@@ -58,6 +58,8 @@ const endPhaseWithBonus: BlackJackResponse = {
       canSplit: false,
       surrendered: false,
       canSurrender: false,
+      bonusKey: 'spanish21.bonus.777.spade',
+      bonusAmount: 200,
     },
   ],
   phase: 5,
@@ -85,6 +87,21 @@ describe('Spanish21Page', () => {
     expect(badge).toHaveTextContent('7-7-7 (全スペード)');
     expect(badge).not.toHaveTextContent('spanish21.bonus');
     expect(badge).not.toHaveTextContent('bonus.777.spade');
+    const announcement = screen.getByTestId('bj-bonus-announcement');
+    expect(announcement).toHaveAttribute('role', 'status');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toHaveTextContent('7-7-7 (全スペード)');
+    expect(await screen.findByTestId('hand-bonus-0')).toHaveTextContent('7-7-7 (全スペード) ボーナス +200');
+  });
+
+  it('keeps the bonus announcement empty when the round has no bonuses', async () => {
+    mockExec.mockResolvedValue({ ...endPhaseWithBonus, bonuses: [] });
+    renderWithProviders(<Spanish21Page />);
+    const announcement = await screen.findByTestId('bj-bonus-announcement');
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    expect(announcement).toHaveAttribute('role', 'status');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toBeEmptyDOMElement();
   });
 
   it('shows the reset confirmation dialog when the next game button is clicked', async () => {

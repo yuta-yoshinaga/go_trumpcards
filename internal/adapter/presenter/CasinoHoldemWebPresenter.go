@@ -34,6 +34,7 @@ func (cp *CasinoHoldemWebPresenter) Output(g interfaces.CasinoHoldemGame, lastEr
 	resObj.CallPayout = g.GetCallPayout()
 	resObj.BonusPayout = g.GetBonusPayout()
 	resObj.TotalPayout = g.GetTotalPayout()
+	resObj.NetChange = g.GetNetChange()
 	resObj.PlayerHandRank = g.GetPlayerHandRank()
 	resObj.DealerHandRank = g.GetDealerHandRank()
 

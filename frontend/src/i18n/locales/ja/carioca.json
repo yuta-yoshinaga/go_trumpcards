@@ -1,5 +1,15 @@
 {
   "title": "カリオカ",
+  "settings": {
+    "playerCount": "プレイヤー数",
+    "cpuDifficulty": "CPU の強さ",
+    "difficulty": {
+      "0": "弱い",
+      "1": "普通",
+      "2": "強い"
+    },
+    "failContractPenalty": "コントラクト未達ペナルティ"
+  },
   "phase": {
     "draw": "ドロー",
     "play": "プレイ",
@@ -11,6 +21,11 @@
   "stockLabel": "山札",
   "discardLabel": "捨て札",
   "yourHand": "あなたの手札",
+  "sort": {
+    "label": "手札の並べ替え",
+    "rank": "ランク順",
+    "suit": "スート順"
+  },
   "cards": "枚数",
   "scoreLabel": "累計",
   "slotsBuilt": "組成済スロット",

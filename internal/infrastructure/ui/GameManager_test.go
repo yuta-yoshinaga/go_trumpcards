@@ -346,6 +346,23 @@ func TestGameRegistry_DescriptionsMatchGameDescriptions(t *testing.T) {
 	}
 }
 
+func TestGameTitleMatchesHelpTitleForAllGames(t *testing.T) {
+	original := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(original) })
+
+	for _, lang := range []string{"ja", "en"} {
+		i18n.SetLang(lang)
+		for _, entry := range gameRegistry {
+			helpLines := entry.NewCui().HelpLines()
+			if len(helpLines) == 0 {
+				t.Errorf("%s help in %s has no title line", entry.Name, lang)
+				continue
+			}
+			assert.Equal(t, GameTitle(entry.Name), helpLines[0], "%s title in %s", entry.Name, lang)
+		}
+	}
+}
+
 func TestGameRegistry_NoDuplicateNames(t *testing.T) {
 	seen := make(map[string]bool, len(gameRegistry))
 	for _, entry := range gameRegistry {

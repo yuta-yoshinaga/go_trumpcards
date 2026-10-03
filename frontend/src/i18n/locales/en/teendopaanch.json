@@ -20,6 +20,7 @@
     "exchangePair": "{{giver}} to {{taker}}: {{n}}"
   },
   "currentTrick": "Current trick",
+  "trickCardByPlayer": "{{card}} played by {{name}}",
   "actions": {
     "trump": "Trump {{suit}}",
     "chooseTrump": "Choose a suit for trump.",
@@ -27,7 +28,8 @@
     "nextRound": "Next round",
     "reset": "Reset",
     "giveUp": "Give up",
-    "playAria": "Play {{card}}"
+    "playAria": "Play {{card}}",
+    "playUnavailable": "This card cannot be played right now."
   },
   "result": {
     "you": "You win! You made your target most often.",

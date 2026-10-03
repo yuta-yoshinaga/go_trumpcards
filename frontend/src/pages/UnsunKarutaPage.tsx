@@ -269,6 +269,11 @@ function UnsunKarutaPageContent() {
                         <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                           {playerName(p.id, p.isHuman)} ({t('team', { n: p.team })}):{' '}
                           {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
+                          {p.isDealer && (
+                            <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
+                              {t('dealerBadge')}
+                            </span>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -302,6 +307,25 @@ function UnsunKarutaPageContent() {
                         a: teamTricks[state.humanTeam] ?? 0,
                         b: teamTricks[1 - state.humanTeam] ?? 0,
                       })}
+                    </div>
+                    <div className="mt-2" data-testid="unsunkaruta-captured-cards">
+                      {[state.humanTeam, 1 - state.humanTeam].map((team) => (
+                        <section key={team} className="mt-2">
+                          <h3 className="text-ds-text-primary">{t('roundResult.capturedTeam', { team })}</h3>
+                          {state.teamCapturedTricks[team].map((trick, index) => (
+                            <div key={`${team}-${index}`} className="mt-1 flex flex-wrap items-center gap-1">
+                              <span>{t('roundResult.trickPoint', { n: index + 1 })}</span>
+                              {trick.map((card, cardIndex) => (
+                                <CardImage
+                                  key={`${team}-${index}-${cardIndex}`}
+                                  card={card}
+                                  width={Math.round(cardWidth * 0.45)}
+                                />
+                              ))}
+                            </div>
+                          ))}
+                        </section>
+                      ))}
                     </div>
                     {isGameEnd && (
                       <div className="text-ds-text-primary" data-testid="unsunkaruta-winner">

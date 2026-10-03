@@ -137,6 +137,64 @@ describe('RussianPokerPage', () => {
     expect(line).toHaveTextContent('選択中: 1枚');
   });
 
+  it('announces the selected exchange count and fee only when cards are toggled during exchange selection', async () => {
+    renderWithProviders(<RussianPokerPage />);
+    await screen.findByTestId('russian-exchange-fee-line');
+
+    const announcement = await screen.findByTestId('exchange-selection-announcement');
+    expect(announcement).toBeEmptyDOMElement();
+    fireEvent.click(screen.getByTestId('player-card-0'));
+    expect(announcement).toHaveTextContent('選択中: 1枚');
+    expect(announcement).toHaveTextContent('手数料: 1枚あたりアンテ × 100 = 100');
+
+    fireEvent.click(screen.getByTestId('player-card-0'));
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
+  it('clears the exchange announcement when the selection is cleared with Escape', async () => {
+    renderWithProviders(<RussianPokerPage />);
+    await screen.findByTestId('russian-exchange-fee-line');
+
+    const announcement = screen.getByTestId('exchange-selection-announcement');
+    fireEvent.click(screen.getByTestId('player-card-0'));
+    fireEvent.click(screen.getByTestId('player-card-1'));
+    expect(announcement).toHaveTextContent('選択中: 2枚');
+
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
+  it('does not announce unrelated updates outside exchange selection', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: RussianPokerPhase.SELECT }));
+    renderWithProviders(<RussianPokerPage />);
+    const card = await screen.findByTestId('player-card-0');
+    const announcement = screen.getByTestId('exchange-selection-announcement');
+    expect(announcement).toBeEmptyDOMElement();
+    fireEvent.click(card);
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
+  it('previews kept cards and replacement positions as exchange selection changes', async () => {
+    renderWithProviders(<RussianPokerPage />);
+    await screen.findByTestId('russian-exchange-fee-line');
+
+    const preview = screen.getByTestId('russian-exchange-preview');
+    expect(within(preview).getByText('♠ 10')).toBeInTheDocument();
+    expect(within(preview).getByText('♥ J')).toBeInTheDocument();
+    expect(within(preview).queryAllByTestId('russian-exchange-replacement')).toHaveLength(0);
+
+    fireEvent.click(screen.getByTestId('player-card-1'));
+    expect(within(preview).getByTestId('russian-exchange-replacement')).toBeInTheDocument();
+    expect(within(preview).queryByText('♥ J')).not.toBeInTheDocument();
+    expect(within(preview).getByText('♠ 10')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '6枚目を購入' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('player-card-1'));
+    expect(within(preview).queryAllByTestId('russian-exchange-replacement')).toHaveLength(0);
+    expect(within(preview).getByText('♥ J')).toBeInTheDocument();
+  });
+
   it('shows the high-risk warning and error styling at 4+ selected cards', async () => {
     renderWithProviders(<RussianPokerPage />);
     await screen.findByTestId('russian-exchange-fee-line');
@@ -148,7 +206,7 @@ describe('RussianPokerPage', () => {
     const line = screen.getByTestId('russian-exchange-fee-line');
     expect(line).toHaveTextContent('選択中: 4枚');
     expect(within(line).getByText(/⚠/)).toBeInTheDocument();
-    expect(line.querySelector('.text-ds-error')).not.toBeNull();
+    expect(line.querySelector('.text-ds-error-text')).not.toBeNull();
   });
 
   it('toggles exchange selection with number keys in the action phase', async () => {

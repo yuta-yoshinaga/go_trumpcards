@@ -349,6 +349,7 @@ function SpiderettePageContent() {
                               disabled={!isPlaying || loading}
                               aria-disabled={!selectedSource || undefined}
                               aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                              aria-label={t('emptyColumnAriaLabel', { col: colIdx })}
                               style={{ height: tableau.ch }}
                               data-testid={`spdt-empty-col-${colIdx.toString()}`}
                               className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${emptyDealAttemptKey > 0 ? ' animate-shake border-ds-warning text-ds-warning' : ''}`}
@@ -384,7 +385,11 @@ function SpiderettePageContent() {
                                         ((!selectedSource || selectedSource.col === colIdx) &&
                                           !spideretteCanSelectSource(col, cardIdx))
                                       }
-                                      aria-label={cardAlt(tc.card)}
+                                      aria-label={t('tableauCardAriaLabel', {
+                                        card: cardAlt(tc.card),
+                                        col: colIdx,
+                                        pos: cardIdx,
+                                      })}
                                       aria-pressed={isSourceSelected(colIdx, cardIdx)}
                                       draggable={isPlaying && !loading}
                                       onDragStart={dnd.handleDragStart(cardZone)}

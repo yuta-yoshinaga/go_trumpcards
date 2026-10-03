@@ -5,6 +5,7 @@
     "peasant": "Peasant",
     "kitty": "Kitty Cards",
     "table": "Table",
+    "lastPlayedBy": "Last played by player {{player}}",
     "bid": "Bid",
     "pass": "Pass",
     "play": "Play",

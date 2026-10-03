@@ -49,7 +49,7 @@ import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { holdemBestFive } from '../utils/holdemBestFive';
 import { findPlayerName } from '../utils/playerUtils';
-import { evaluateFiveCardHand, type PokerHandRank, pokerHandKey } from '../utils/pokerSquaresUtils';
+import { type PokerHandRank, pokerHandKey } from '../utils/pokerSquaresUtils';
 
 /** Pineapple Poker tutorial step definitions. */
 const PN_TUTORIAL_STEPS: TutorialStep[] = [
@@ -103,6 +103,10 @@ const PN_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
+const IRISH_POKER_TUTORIAL_STEPS = PN_TUTORIAL_STEPS.map((step) =>
+  step.messageKey === 'tutorial.learningMode' ? { ...step, target: '[data-tutorial="pn-betting-info"]' } : step,
+);
+
 const PINEAPPLE_PHASE_KEYS: Readonly<Record<number, string>> = {
   [PineapplePhase.PRE_FLOP]: 'preFlop',
   [PineapplePhase.FLOP]: 'flop',
@@ -121,7 +125,10 @@ export type PineappleVariant = 'pineapple' | 'crazypineapple' | 'irishpoker';
 /** Renders the Pineapple Poker game page with community cards, discard phase, betting, and showdown. */
 export function PineapplePage({ variant = 'pineapple' }: { variant?: PineappleVariant } = {}) {
   return (
-    <TutorialWrapper gameName={variant} steps={PN_TUTORIAL_STEPS}>
+    <TutorialWrapper
+      gameName={variant}
+      steps={variant === 'irishpoker' ? IRISH_POKER_TUTORIAL_STEPS : PN_TUTORIAL_STEPS}
+    >
       <PineapplePageContent variant={variant} />
     </TutorialWrapper>
   );
@@ -151,6 +158,8 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   // on every repeated over-limit attempt, even with identical text.
   const [limitAnnounce, setLimitAnnounce] = useState('');
   const [limitNonce, setLimitNonce] = useState(0);
+  const previousDiscardDoneRef = useRef<boolean[] | null>(null);
+  const [cpuDiscardedPlayers, setCpuDiscardedPlayers] = useState<number[]>([]);
   // Mirror the selection in a ref so toggleDiscard can read it without listing
   // selectedDiscards as a dependency — otherwise the callback (and the global
   // keydown listener in useCardKeyboardNav) would be re-created on every toggle.
@@ -199,8 +208,21 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
       setSelectedDiscards([]);
       setDiscardConfirming(false);
       setLimitAnnounce('');
+      setCpuDiscardedPlayers([]);
     }
   }, [state?.isDiscardPhase]);
+
+  useEffect(() => {
+    if (!state) return;
+    const previous = previousDiscardDoneRef.current;
+    if (variant === 'crazypineapple' && state.isDiscardPhase && previous) {
+      const completed = state.discardDone.flatMap((done, idx) =>
+        done && !previous[idx] && !state.players[idx]?.isHuman ? [idx] : [],
+      );
+      if (completed.length > 0) setCpuDiscardedPlayers(completed);
+    }
+    previousDiscardDoneRef.current = state.discardDone;
+  }, [state, variant]);
 
   const getElapsed = useCallback(() => {
     if (!cpuMetaAI || turnStartRef.current === 0) return 0;
@@ -250,34 +272,33 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   // Irish Poker discards 2 of 4 hole cards; while choosing, preview the 2 cards
   // that would be kept plus the best hand they make with the current board.
   const discardPreview = useMemo(() => {
-    const isIrishDiscardChoice = variant === 'irishpoker' && isDiscardPhase && selectedDiscards.length === discardCount;
-    if (!isIrishDiscardChoice) return null;
+    if (variant !== 'irishpoker' || !isDiscardPhase || selectedDiscards.length !== discardCount) return null;
     const kept = (humanPlayer?.cards ?? []).filter((_, i) => !selectedDiscards.includes(i));
-    // holdemBestFive picks the best 5 of (kept + board); it returns null for <5 cards.
-    const all = [...kept, ...(state?.communityCards ?? [])];
-    const picked = holdemBestFive(all);
-    const rank = picked ? evaluateFiveCardHand(picked.map((i) => all[i])) : null;
-    return { kept, handKey: rank == null ? null : pokerHandKey(rank) };
-  }, [variant, isDiscardPhase, humanPlayer, state?.communityCards, selectedDiscards, discardCount]);
-  // Every Pineapple variant discards with the flop already on the table
-  // (advancePhase deals it before entering the discard phase), so annotate each
-  // hole card with the best hand the OTHER two would make with that board. Irish
-  // Poker is the exception: it throws two, so "what remains after discarding
-  // one" does not describe its choice. Each entry carries both the i18n hand key
-  // and the raw rank, so the strongest keep can be flagged as recommended below.
+    const [discardIdx0, discardIdx1] = selectedDiscards;
+    const candidate = state?.discardPreviews?.find(
+      (item) =>
+        (item.discardIdx0 === discardIdx0 && item.discardIdx1 === discardIdx1) ||
+        (item.discardIdx0 === discardIdx1 && item.discardIdx1 === discardIdx0),
+    );
+    return candidate
+      ? {
+          kept,
+          handKey: pokerHandKey(candidate.handRank as PokerHandRank),
+          strengthCards: candidate.strengthCards ?? [],
+        }
+      : { kept, handKey: null, strengthCards: [] };
+  }, [variant, isDiscardPhase, selectedDiscards, discardCount, humanPlayer, state?.discardPreviews]);
   const candidatePreviews = useMemo(() => {
-    if (variant === 'irishpoker' || !isDiscardPhase) return null;
+    const showCrazyFlopPreviews = variant === 'crazypineapple' && phase === PineapplePhase.FLOP;
+    if (variant === 'irishpoker' || (!isDiscardPhase && !showCrazyFlopPreviews)) return null;
     return (
       state?.discardPreviews?.map((preview) => ({
         handKey: pokerHandKey(preview.handRank as PokerHandRank),
         rank: preview.handRank,
-        recommended: preview.recommended,
+        recommended: preview.recommended ?? false,
       })) ?? null
     );
-  }, [variant, isDiscardPhase, state?.discardPreviews]);
-  // The Crazy Pineapple discard(s) whose removal leaves the strongest resulting
-  // hand — flagged with a "recommended" badge and ring. When several discards
-  // tie for the best rank, all of them are flagged.
+  }, [variant, phase, isDiscardPhase, state?.discardPreviews]);
   const recommendedDiscards = useMemo<Set<number>>(() => {
     const out = new Set<number>();
     if (!candidatePreviews) return out;
@@ -286,48 +307,21 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
     });
     return out;
   }, [candidatePreviews]);
-  // Irish Poker discards 2 of 4 hole cards. Once the FIRST card is chosen, annotate
-  // each still-selectable card with the best hand the OTHER two kept cards would make
-  // with the board if that card became the second discard — turning the C(3,1)=3
-  // remaining choices into a side-by-side comparison before the pair is committed.
-  // (At 2 selected, the full `discardPreview` above takes over instead.)
-  const irishCandidatePreviews = useMemo<({ handKey: string; rank: PokerHandRank } | null)[] | null>(() => {
-    if (variant !== 'irishpoker' || !isDiscardPhase) return null;
-    if (selectedDiscards.length !== discardCount - 1) return null;
-    const hole = humanPlayer?.cards ?? [];
-    const board = state?.communityCards ?? [];
-    return hole.map((_, idx) => {
-      // The already-selected card is marked as selected, not annotated.
-      if (selectedDiscards.includes(idx)) return null;
-      const kept = hole.filter((_, i) => i !== idx && !selectedDiscards.includes(i));
-      const all = [...kept, ...board];
-      const picked = holdemBestFive(all);
-      const rank = picked ? evaluateFiveCardHand(picked.map((i) => all[i])) : null;
-      return rank == null ? null : { handKey: pokerHandKey(rank), rank };
-    });
-  }, [variant, isDiscardPhase, humanPlayer, state?.communityCards, selectedDiscards, discardCount]);
-
-  // Badge the second Irish discard only when ONE candidate is strictly best.
-  // PokerHandRank is the category alone -- it carries no kicker -- so keeping AA
-  // and keeping 88 both read as onePair. Marking every tied candidate would badge
-  // all three and assert a preference the evaluator cannot actually support, so a
-  // tie means the page says nothing rather than something it cannot back up.
+  const irishCandidatePreviews = useMemo(() => {
+    if (variant !== 'irishpoker' || !isDiscardPhase || selectedDiscards.length !== discardCount - 1) return null;
+    const firstDiscard = selectedDiscards[0];
+    return (state?.discardPreviews ?? [])
+      .filter((candidate) => candidate.discardIdx0 === firstDiscard || candidate.discardIdx1 === firstDiscard)
+      .map((candidate) => ({
+        ...candidate,
+        discardIdx: candidate.discardIdx0 === firstDiscard ? candidate.discardIdx1 : candidate.discardIdx0,
+      }));
+  }, [variant, isDiscardPhase, selectedDiscards, discardCount, state?.discardPreviews]);
   const irishRecommendedDiscard = useMemo<number | null>(() => {
-    if (!irishCandidatePreviews) return null;
-    let best = -1;
-    let bestIdx: number | null = null;
-    let tied = false;
-    irishCandidatePreviews.forEach((p, i) => {
-      if (!p) return;
-      if (p.rank > best) {
-        best = p.rank;
-        bestIdx = i;
-        tied = false;
-      } else if (p.rank === best) {
-        tied = true;
-      }
-    });
-    return tied ? null : bestIdx;
+    if (!irishCandidatePreviews?.length) return null;
+    const maxOrder = Math.max(...irishCandidatePreviews.map((candidate) => candidate.strengthOrder ?? -Infinity));
+    const best = irishCandidatePreviews.filter((candidate) => candidate.strengthOrder === maxOrder);
+    return best.length === 1 ? (best[0].discardIdx ?? null) : null;
   }, [irishCandidatePreviews]);
   const cpSelectedPreview = useMemo(() => {
     if (variant === 'irishpoker' || !isDiscardPhase) return null;
@@ -540,6 +534,20 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
 
             {/* CPU actions: toast on mobile, inline log on desktop */}
             {isMobile ? <CpuActionToast actions={state?.cpuActions} /> : <CpuActionLog actions={state?.cpuActions} />}
+            {variant === 'crazypineapple' && (
+              <div role="log" aria-live="polite" aria-label={t('cpuDiscard.logLabel')}>
+                {cpuDiscardedPlayers.length > 0 && (
+                  <div
+                    className="bg-black/30 rounded p-2 mb-3 text-ds-text-primary text-xs"
+                    data-testid="cp-cpu-discard-log"
+                  >
+                    {cpuDiscardedPlayers.map((idx) => (
+                      <div key={idx}>{t('cpuDiscard.completed', { player: findPlayerName(state.players, idx) })}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Round results */}
             {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
@@ -610,7 +618,9 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                       {tc('betting.currentBet')} {humanPlayer.currentBet}
                     </span>
                   )}
-                  {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
+                  {humanPlayer.folded && (
+                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
+                  )}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                   {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
                     <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
@@ -650,7 +660,11 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                         const dim = showdownBest5.holeSet.size > 0 && !inBest;
                         const candKey = candidatePreviews?.[idx]?.handKey ?? null;
                         const isRecommendedDiscard = recommendedDiscards.has(idx);
-                        const irishCandKey = irishCandidatePreviews?.[idx]?.handKey ?? null;
+                        const irishCandidate =
+                          irishCandidatePreviews?.find((candidate) => candidate.discardIdx === idx) ?? null;
+                        const irishCandKey = irishCandidate
+                          ? pokerHandKey(irishCandidate.handRank as PokerHandRank)
+                          : null;
                         const isIrishRecommended = irishRecommendedDiscard === idx;
                         return (
                           <div key={`${card.design}-${card.value}`} className="flex flex-col items-center">
@@ -658,8 +672,18 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                               type="button"
                               onClick={() => toggleDiscard(idx)}
                               aria-pressed={canDiscard ? isSelected : undefined}
+                              aria-describedby={
+                                canDiscard
+                                  ? [
+                                      'pn-discard-limit-desc',
+                                      irishCandKey ? `irishpoker-discard-candidate-${idx}` : null,
+                                    ]
+                                      .filter(Boolean)
+                                      .join(' ')
+                                  : undefined
+                              }
                               className={`${canDiscard ? 'cursor-pointer' : 'cursor-default'} ${inBest ? 'rounded-lg ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${isRecommendedDiscard ? 'rounded-lg ring-2 ring-ds-info' : ''} ${dim ? 'opacity-50' : ''}`}
-                              disabled={!canDiscard}
+                              disabled={!canDiscard || loading}
                               style={selectedCardStyle(canDiscard && isSelected)}
                               data-testid={inBest ? 'pn-best5-card' : undefined}
                             >
@@ -683,10 +707,14 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                             )}
                             {irishCandKey && (
                               <span
+                                id={`irishpoker-discard-candidate-${idx}`}
                                 className="mt-0.5 text-[10px] text-ds-text-muted"
                                 data-testid="irishpoker-discard-candidate"
                               >
-                                {`${t('discard.candidateHand')}: ${t(`hand.${irishCandKey}`)}`}
+                                {t('discard.candidateWithStrength', {
+                                  hand: t(`hand.${irishCandKey}`),
+                                  strength: irishCandidate?.strengthCards?.map(cardAlt).join(t('listSeparator')) ?? '',
+                                })}
                               </span>
                             )}
                             {isIrishRecommended && (
@@ -772,6 +800,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                         ? t('discard.previewAriaWithHand', {
                             cards: discardPreview.kept.map((c) => cardAlt(c)).join(', '),
                             hand: t(`hand.${discardPreview.handKey}`),
+                            strength: discardPreview.strengthCards.map(cardAlt).join(t('listSeparator')),
                           })
                         : t('discard.previewAria', {
                             cards: discardPreview.kept.map((c) => cardAlt(c)).join(', '),
@@ -783,7 +812,10 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                     </span>
                     {discardPreview.handKey && (
                       <span className="ml-2 inline-block rounded-full bg-ds-accent/30 px-2 py-0.5 text-ds-text-primary font-semibold">
-                        {`${t('discard.previewHand')}: ${t(`hand.${discardPreview.handKey}`)}`}
+                        {t('discard.previewWithStrength', {
+                          hand: t(`hand.${discardPreview.handKey}`),
+                          strength: discardPreview.strengthCards.map(cardAlt).join(t('listSeparator')),
+                        })}
                       </span>
                     )}
                   </div>
@@ -939,40 +971,55 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
             )}
 
             {/* Settings + Reset */}
-            <details className="mb-1" data-tutorial="pn-learning-mode" open={learningMode || undefined}>
-              <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
-                {tc('settings.title')}
-              </summary>
-              <div className="flex flex-col gap-2 py-1">
-                <div className="flex items-center gap-2" data-testid="learning-mode-toggle">
-                  <label
-                    htmlFor="learningModeCheckbox"
-                    className="text-ds-text-primary text-sm cursor-pointer flex items-center gap-2 min-h-[44px]"
-                  >
-                    {t('learning.toggle')}
-                    <input
-                      id="learningModeCheckbox"
-                      type="checkbox"
-                      checked={learningMode}
-                      onChange={(e) => setLearningMode(e.target.checked)}
-                    />
-                  </label>
+            {variant === 'irishpoker' && (
+              <details className="mb-1" data-tutorial="pn-betting-info">
+                <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
+                  {t('bettingInfo.title')}
+                </summary>
+                <div className="py-1">
+                  <p className="text-ds-text-muted text-xs mb-2">{t('bettingInfo.description')}</p>
+                  {state?.equity && state.potOdds != null && (
+                    <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
+                  )}
                 </div>
-                {learningMode && state?.equity && state.potOdds != null && (
-                  <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
-                )}
-                <div className="flex items-center gap-3">
-                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
-                    <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-                    {tc('hint.toggle', { ns: 'tutorial' })}
-                  </label>
-                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
-                    <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
-                    {t('settings.cpuMetaAI')}
-                  </label>
+              </details>
+            )}
+            {variant !== 'irishpoker' && (
+              <details className="mb-1" data-tutorial="pn-learning-mode" open={learningMode || undefined}>
+                <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
+                  {tc('settings.title')}
+                </summary>
+                <div className="flex flex-col gap-2 py-1">
+                  <div className="flex items-center gap-2" data-testid="learning-mode-toggle">
+                    <label
+                      htmlFor="learningModeCheckbox"
+                      className="text-ds-text-primary text-sm cursor-pointer flex items-center gap-2 min-h-[44px]"
+                    >
+                      {t('learning.toggle')}
+                      <input
+                        id="learningModeCheckbox"
+                        type="checkbox"
+                        checked={learningMode}
+                        onChange={(e) => setLearningMode(e.target.checked)}
+                      />
+                    </label>
+                  </div>
+                  {learningMode && state?.equity && state.potOdds != null && (
+                    <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
+                  )}
+                  <div className="flex items-center gap-3">
+                    <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
+                      <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+                      {tc('hint.toggle', { ns: 'tutorial' })}
+                    </label>
+                    <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
+                      <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
+                      {t('settings.cpuMetaAI')}
+                    </label>
+                  </div>
                 </div>
-              </div>
-            </details>
+              </details>
+            )}
             <GameResetButton
               isGameEnd={phase === PineapplePhase.SHOWDOWN || phase === PineapplePhase.END}
               onReset={handleManualReset}

@@ -128,8 +128,10 @@ func (p *FiveCardStudWebPresenter) buildPlayersOutput(s interfaces.FiveCardStudG
 			pObj.HandRank = player.GetHandRank()
 			pObj.HandName = p.getHandName(s, player.GetHandRank())
 			pObj.BestHand = cardsToOutput(player.GetBestHand())
+			pObj.BestHandCore = cardsToOutput(domain.FiveCardStudRankCards(player.GetBestHand(), player.GetHandRank(), s.GetIsSoko()))
 		} else {
 			pObj.BestHand = make([]*controller.WebOutputCard, 0)
+			pObj.BestHandCore = make([]*controller.WebOutputCard, 0)
 		}
 
 		out = append(out, pObj)

@@ -92,6 +92,18 @@ func (m *MockPinochleGame) GetCurrentTrick() []*domain.TrickCard {
 	return args.Get(0).([]*domain.TrickCard)
 }
 
+func (m *MockPinochleGame) GetLastTrick() []*domain.TrickCard {
+	args := m.Called()
+	if v := args.Get(0); v != nil {
+		return v.([]*domain.TrickCard)
+	}
+	return nil
+}
+
+func (m *MockPinochleGame) GetLastTrickWinner() int {
+	return m.Called().Int(0)
+}
+
 func (m *MockPinochleGame) GetLeadPlayerIdx() int {
 	args := m.Called()
 	return args.Int(0)
@@ -120,6 +132,11 @@ func (m *MockPinochleGame) GetHighestBid() int {
 func (m *MockPinochleGame) GetHighestBidder() int {
 	args := m.Called()
 	return args.Int(0)
+}
+
+func (m *MockPinochleGame) GetLastContractMade() (bool, bool) {
+	args := m.Called()
+	return args.Bool(0), args.Bool(1)
 }
 
 func (m *MockPinochleGame) GetTeamScore(team int) int {

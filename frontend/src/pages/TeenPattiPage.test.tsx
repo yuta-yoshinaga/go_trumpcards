@@ -31,6 +31,14 @@ beforeEach(() => {
 });
 
 describe('TeenPattiPage', () => {
+  it('shows the dealer badge alongside the dealer seat status', async () => {
+    renderWithProviders(<TeenPattiPage />);
+    const badge = await screen.findByText('ディーラー', { selector: 'span' });
+    expect(badge.parentElement).toHaveTextContent('CPU 3');
+    expect(badge.parentElement).toHaveTextContent('[ブラインド]');
+    expect(screen.getAllByText('ディーラー', { selector: 'span' })).toHaveLength(1);
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<TeenPattiPage />);
@@ -51,6 +59,23 @@ describe('TeenPattiPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '手札を見る' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'ベット (1)' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
+  });
+
+  it('shows the required call amount for the human Blind or Seen status', async () => {
+    const blind = renderWithProviders(<TeenPattiPage />);
+    expect(await screen.findByText('ブラインドの必要額: 1')).toBeInTheDocument();
+    blind.unmount();
+
+    mockExec.mockResolvedValue(
+      makeTeenPattiState({
+        players: makeTeenPattiState().players.map((player) => (player.isHuman ? { ...player, seen: true } : player)),
+        stake: 3,
+        humanCallCost: 73,
+      }),
+    );
+    renderWithProviders(<TeenPattiPage />);
+    expect(await screen.findByText('シーンの必要額（ブラインドの2倍）: 73')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ベット (73)' })).toBeInTheDocument();
   });
 
   it('dispatches see when the See button is clicked', async () => {

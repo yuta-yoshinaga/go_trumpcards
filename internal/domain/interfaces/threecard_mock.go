@@ -106,6 +106,8 @@ func (m *MockThreeCardGame) GetTotalPayout() int {
 	return args.Int(0)
 }
 
+func (m *MockThreeCardGame) GetNetChange() int { return m.Called().Int(0) }
+
 func (m *MockThreeCardGame) GetDealerQualified() bool {
 	args := m.Called()
 	return args.Bool(0)

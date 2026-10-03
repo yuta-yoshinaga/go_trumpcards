@@ -32,6 +32,7 @@
     "dealerNotQualified": "Dealer does not qualify!"
   },
   "payout": {
+    "line": "{{bet}}: Bet {{betAmount}} / Payout {{payoutAmount}}",
     "ante": "Ante",
     "play": "Play",
     "jackpot": "Jackpot",

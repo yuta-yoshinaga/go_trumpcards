@@ -96,12 +96,7 @@ func (gi *GaigelInteractor) NextTrick() string {
 // NextRound ラウンドをスコアリングして次のラウンドへ進む
 func (gi *GaigelInteractor) NextRound() string {
 	gi.Game.ScoreRound()
-	if out, blocked := guardGameEnd(gi.Game, gi.gp); blocked {
-		return out
-	}
-	gi.Game.NextRound()
-	gi.runCpuTurns()
-	return gi.gp.Output(gi.Game, nil)
+	return advanceRound(gi.Game, gi.gp, gi.runCpuTurns)
 }
 
 // GetConfig 現在の設定を取得

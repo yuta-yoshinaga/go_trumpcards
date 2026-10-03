@@ -1,10 +1,10 @@
 import type { pokersquaresApi } from '../../../api/gameApi';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type PokerSquaresArgs = Parameters<typeof pokersquaresApi.exec>;
 
-const VALID_COMMANDS = ['p', 'place', 'u', 'undo', 'g', 'giveup', 'log', 'r', 'reset', 'help', '?'];
+const VALID_COMMANDS = ['p', 'place', 'u', 'undo', 'g', 'giveup', 'log', 'r', 'reset', 'help', '?', 'h', 'hint'];
 
 /** Parse a Poker Squares CLI command into API exec arguments. */
 export function parsePokerSquaresCommand(input: string): CliParseResult<PokerSquaresArgs> {
@@ -36,11 +36,8 @@ export function parsePokerSquaresCommand(input: string): CliParseResult<PokerSqu
     case 'h':
     case 'hint':
       return { args: ['hint'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

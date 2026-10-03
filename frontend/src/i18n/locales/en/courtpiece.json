@@ -22,6 +22,7 @@
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",
   "trickWinnerBadge": "Won",
+  "trickWinnerAnnouncement": "{{name}} of {{team}} won the trick",
   "trickEmpty": "(no cards yet)",
   "players": "Players",
   "you": "You",
@@ -58,7 +59,9 @@
     "title": "Round Result (tricks won)",
     "teamA": "Team A: {{tricks}} tricks",
     "teamB": "Team B: {{tricks}} tricks",
-    "court": "A Court (sweep / consecutive-win bonus) was scored!"
+    "court": "A Court (sweep / consecutive-win bonus) was scored!",
+    "sar": "Sar",
+    "courtBonus": "Court bonus"
   },
   "hintAvailable": "Hint",
   "hint": {

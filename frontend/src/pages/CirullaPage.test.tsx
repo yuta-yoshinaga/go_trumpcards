@@ -79,6 +79,19 @@ describe('CirullaPage', () => {
     for (const card of tableCards) expect(card).not.toHaveClass('ring-2');
   });
 
+  it('highlights matching table cards while a capture option is focused and clears on blur', async () => {
+    renderWithProviders(<CirullaPage />);
+    await pickHand(2); // ♦A → [[0, 1, 2, 3]]
+    const option = await screen.findByTestId('cirulla-take-0-1-2-3');
+    const tableCards = [0, 1, 2, 3].map((idx) => screen.getByTestId(`cirulla-table-card-${idx}`));
+
+    fireEvent.focus(option);
+    for (const card of tableCards) expect(card).toHaveClass('ring-2', 'ring-ds-warning');
+
+    fireEvent.blur(option);
+    for (const card of tableCards) expect(card).not.toHaveClass('ring-2');
+  });
+
   it('clears the table highlight after a hovered capture option is clicked', async () => {
     renderWithProviders(<CirullaPage />);
     await pickHand(2);
@@ -216,8 +229,7 @@ describe('CirullaPage', () => {
     await pickHand(0); // ♠3 → [[2]] (場の 2 は ♠ 2)
     const btn2 = await screen.findByTestId('cirulla-take-2');
 
-    // 表示文言は数字のまま維持される。
-    expect(btn2).toHaveTextContent('場の 2 を取る');
+    expect(btn2).toHaveTextContent('場の 2（♠ 2）を取る');
     // aria-label には実際のカード名が含まれる。
     expect(btn2).toHaveAttribute('aria-label', '場の ♠ 2 を取る');
     expect(btn2.getAttribute('aria-label')).not.toContain('{{');
@@ -236,8 +248,8 @@ describe('CirullaPage', () => {
     await pickHand(2); // ♦A → [[0, 1, 2, 3]]
     const btnAll = await screen.findByTestId('cirulla-take-0-1-2-3');
 
-    expect(btnAll).toHaveTextContent('場の 0, 1, 2, 3 を取る');
-    expect(btnAll).toHaveAttribute('aria-label', '場の ♣ A, ♥ 2, ♦ 3, ♠ 4 を取る');
+    expect(btnAll).toHaveTextContent('場の 0、1、2、3（♣ A、♥ 2、♦ 3、♠ 4）を取る');
+    expect(btnAll).toHaveAttribute('aria-label', '場の ♣ A、♥ 2、♦ 3、♠ 4 を取る');
     expect(btnAll.getAttribute('aria-label')).not.toContain('{{');
   });
 

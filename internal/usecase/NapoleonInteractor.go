@@ -122,6 +122,10 @@ func (ni *NapoleonInteractor) Play(cardIndex int) string {
 	if err != nil {
 		return ni.np.Output(ni.Game, err)
 	}
+	// Resolve a trick completed by the human before returning its TRICK_END state.
+	if ni.Game.GetPhase() == domain.NapoleonPhaseTrickEnd {
+		ni.Game.ResolveTrick()
+	}
 	ni.runCpuTurns()
 	return ni.np.Output(ni.Game, nil)
 }

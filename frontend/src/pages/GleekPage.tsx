@@ -148,6 +148,7 @@ function GleekPageContent() {
   const isTrickEnd = state.phase === GleekPhase.TRICK_END;
   const isRoundEnd = state.phase === GleekPhase.ROUND_END;
   const isGameEnd = state.phase === GleekPhase.GAME_END || state.gameEndFlag;
+  const breakdownLabels = t('roundResult.stages', { returnObjects: true }) as string[];
 
   const canBid = state.phase === GleekPhase.BID && state.isHumanBidTurn;
   const biddingSeatIdx = state.phase === GleekPhase.BID ? state.currentBidderIdx : -1;
@@ -284,6 +285,12 @@ function GleekPageContent() {
                         {playerName(p.id, p.isHuman)}: {t('score', { score: p.score })}
                       </span>
                       {p.id === biddingSeatIdx && <span data-testid="gleek-bid-turn-label">{t('bidTurn')}</span>}
+                      {state.phase === GleekPhase.BID && (
+                        <span data-testid={`gleek-player-bid-${p.id.toString()}`}>
+                          {t('playerBid', { bid: p.bid })}
+                          {p.passed ? ` · ${t('playerPassed')}` : ''}
+                        </span>
+                      )}
                       {p.isBuyer && (
                         <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>{t('buyerBadge')}</span>
                       )}
@@ -310,16 +317,29 @@ function GleekPageContent() {
                     </div>
                     {state.players.map((p, idx) => {
                       const delta = state.roundDelta[idx];
+                      const breakdown = [
+                        state.roundBreakdown.bid[idx],
+                        state.roundBreakdown.ruff[idx],
+                        state.roundBreakdown.meld[idx],
+                        state.roundBreakdown.trick[idx],
+                      ];
                       return (
                         <div
                           key={p.id}
-                          className={`py-0.5 ${delta > 0 ? 'text-ds-success' : delta < 0 ? 'text-ds-error' : ''}`}
+                          className={`py-0.5 ${delta > 0 ? 'text-ds-success' : delta < 0 ? 'text-ds-error-text' : ''}`}
                           data-testid={`gleek-round-delta-${p.id.toString()}`}
                         >
                           {t('roundResult.delta', {
                             name: playerName(p.id, p.isHuman),
                             delta: formatSignedDelta(delta),
                           })}
+                          <div data-testid={`gleek-round-breakdown-${p.id.toString()}`}>
+                            {t('roundResult.breakdown', {
+                              stages: breakdownLabels
+                                .map((label, stageIdx) => `${label}: ${formatSignedDelta(breakdown[stageIdx])}`)
+                                .join(t('listSeparator')),
+                            })}
+                          </div>
                         </div>
                       );
                     })}

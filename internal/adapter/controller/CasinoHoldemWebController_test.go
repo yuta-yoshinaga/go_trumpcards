@@ -19,6 +19,7 @@ func mustCasinoHoldemOutputJSON(msg string) string {
 		PlayerHand:    make([]*controller.WebOutputCard, 0),
 		DealerHand:    make([]*controller.WebOutputCard, 0),
 		Community:     make([]*controller.WebOutputCard, 0),
+		NetChange:     0,
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
@@ -29,7 +30,7 @@ func mustCasinoHoldemOutputJSON(msg string) string {
 }
 
 func TestCasinoHoldemWebController_Method(t *testing.T) {
-	mockOutput := `{"playerHand":[],"dealerHand":[],"community":[],"phase":0,"chips":0,"anteBet":0,"bonusBet":0,"callBet":0,"result":0,"dealerQualify":false,"antePayout":0,"callPayout":0,"bonusPayout":0,"totalPayout":0,"playerHandRank":0,"dealerHandRank":0,"message":""}`
+	mockOutput := `{"playerHand":[],"dealerHand":[],"community":[],"phase":0,"chips":0,"anteBet":0,"bonusBet":0,"callBet":0,"result":0,"dealerQualify":false,"antePayout":0,"callPayout":0,"bonusPayout":0,"totalPayout":0,"netChange":0,"playerHandRank":0,"dealerHandRank":0,"message":""}`
 
 	ciMock := new(usecase.MockCasinoHoldemInteractor)
 	ciMock.On("Reset").Return(mockOutput)

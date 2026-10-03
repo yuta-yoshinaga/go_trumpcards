@@ -34,6 +34,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { HIGHCARDFLUSH_HELP, parseHighcardflushCommand } from '../utils/cli/commands/highcardflushCommands';
 import { formatHighcardflushState } from '../utils/cli/formatters/highcardflushFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { longestFlushSuit } from '../utils/highCardFlushUtils';
 
 /** High Card Flush tutorial step definitions. */
@@ -291,7 +292,7 @@ function HighCardFlushPageContent() {
             {/* Dealer Hand */}
             {state.dealerHand.length > 0 && (
               <div className="mb-4">
-                <div className="text-ds-error font-bold text-center mb-1">
+                <div className="text-ds-error-text font-bold text-center mb-1">
                   <span aria-hidden="true">🔴</span> {t('dealer')}
                   {isEndPhase && state.dealerFlushLen > 0 && (
                     <span className="ml-2 text-sm">({t('flushLine', { count: state.dealerFlushLen })})</span>
@@ -361,6 +362,14 @@ function HighCardFlushPageContent() {
                 <div className="font-bold mt-1">
                   {t('payout.total')}: {state.totalPayout}
                 </div>
+                <div className="mt-1" data-testid="result-balance">
+                  <div>
+                    {t('payout.betTotal')}: {state.totalBet}
+                  </div>
+                  <div>
+                    {t('payout.net')}: {formatSignedDelta(state.netChange)}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -369,6 +378,14 @@ function HighCardFlushPageContent() {
           </div>
 
           <GameFooter className={`${gameTheme.highcardflush.footer} px-4 pt-3`}>
+            <div role="status" aria-live="polite" className="text-center">
+              {isBetPhase && state && (
+                <div className="text-ds-text-primary text-sm" data-testid="hcf-bet-summary">
+                  {t('betSummary.total', { amount: betTotal })} ·{' '}
+                  {t('betSummary.remaining', { amount: Math.max(0, state.chips - betTotal) })}
+                </div>
+              )}
+            </div>
             <ErrorAlert message={error} onRetry={retry} />
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
             <SettingsPanel
@@ -446,7 +463,7 @@ function HighCardFlushPageContent() {
                         : undefined
                   }
                 />
-                <div role="alert" className="text-ds-error text-xs">
+                <div role="alert" className="text-ds-error-text text-xs">
                   {anteInvalid && <p id="highcardflush-ante-error">{t('betError.ante')}</p>}
                   {flushBonusInvalid && (
                     <p id="highcardflush-flush-bonus-error">{t('betError.bonus', { label: t('label.flushBonus') })}</p>
@@ -458,7 +475,11 @@ function HighCardFlushPageContent() {
                   )}
                   {balanceInvalid && (
                     <p id="highcardflush-balance-error">
-                      {t('betError.balance', { total: betTotal, chips: state.chips })}
+                      {t('betError.balance', {
+                        total: betTotal,
+                        chips: state.chips,
+                        shortfall: betTotal - state.chips,
+                      })}
                     </p>
                   )}
                 </div>

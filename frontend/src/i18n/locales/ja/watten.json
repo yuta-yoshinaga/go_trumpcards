@@ -35,6 +35,8 @@
   "team": "チーム{{n}}",
   "teamShort": "T{{n}}",
   "score": "{{score}}点",
+  "scoreUpdated": "{{team}}の得点は{{score}}点",
+  "listSeparator": "、",
   "stake": "ステーク: {{stake}}点",
   "stakePending": "ステーク: {{stake}}点（提案 {{pending}}点）",
   "declarePhase": "宣言 — Schlag ランクと切り札スートを選んで宣言します。",
@@ -42,6 +44,7 @@
   "chooseCritical": "切り札スート",
   "declareButton": "宣言",
   "trumpRing": "強札（トランプ）",
+  "trumpCardDescription": "切り札",
   "trumpPanel": {
     "title": "強札プレビュー",
     "rule": "宣言すると、永久最強札 Max（♥K）＞ Belli（♦K）＞ Spitz（♦7）に続き、Schlag ランクの札、切り札スートの残り札の順で強くなります。下はいまの選択での手札の強札です。",

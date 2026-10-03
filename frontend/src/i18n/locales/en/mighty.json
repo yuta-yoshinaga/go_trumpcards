@@ -67,6 +67,10 @@
   "scoresRound": "Round",
   "scoresTotal": "Total",
   "scoresRole": "Role",
+  "contractResult": "Required: {{required}} / Scored: {{actual}} / {{result}}{{multiplier}}",
+  "contractMade": "Made",
+  "contractMissed": "Failed",
+  "contractNoTrumpMultiplier": "No-Trump: scores doubled",
   "bidButton": "Bid",
   "bidSelectLabel": "Select your bid",
   "passButton": "Pass",
@@ -80,6 +84,7 @@
   "trumpAndFriendPhase": "Pick trump suit (or No-Trump) and partner card",
   "kittyExchangePhase": "Kitty merged into your hand. Discard 3 cards.",
   "kittyLabel": "Kitty",
+  "discardedCards": "Discarded cards",
   "playPhase": {
     "lead": "Lead a card",
     "follow": "Play a card"

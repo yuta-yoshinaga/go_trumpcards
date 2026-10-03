@@ -18,6 +18,7 @@ function player(overrides: Partial<CanastaPlayerData> = {}): CanastaPlayerData {
     red3s: [],
     roundScore: 0,
     cumulativeScore: 0,
+    scoreBreakdown: { meldCards: 0, canastaBonus: 0, red3Bonus: 0, goOutBonus: 0, handPenalty: 0 },
     hasCanasta: false,
     hasInitMeld: false,
     ...overrides,
@@ -26,6 +27,7 @@ function player(overrides: Partial<CanastaPlayerData> = {}): CanastaPlayerData {
 
 function makeState(overrides: Partial<CanastaResponse> = {}): CanastaResponse {
   return {
+    minMeld: 50,
     players: [player(), player({ id: 1, isHuman: false })],
     phase: CanastaPhase.DRAW,
     roundNumber: 1,

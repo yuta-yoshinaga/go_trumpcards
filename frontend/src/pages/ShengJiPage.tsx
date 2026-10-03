@@ -26,6 +26,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, ShengJiResponse } from '../types/card';
 import { ShengJiPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseShengJiCommand, SHENGJI_HELP } from '../utils/cli/commands/shengjiCommands';
 import { formatShengJiState } from '../utils/cli/formatters/shengjiFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
@@ -131,8 +132,46 @@ function ShengJiPageContent() {
     return shengjiEvaluate(picked, state?.level ?? 2, state?.trumpSuit ?? 0);
   }, [selected, state]);
 
+  const trickAnnouncement = !state
+    ? ''
+    : state.trick.length === 0
+      ? t('trickEmpty')
+      : state.leadCombo
+        ? t('trickAnnouncement', {
+            lead: t('trickLead', {
+              combo: t(COMBO_KEYS[state.leadCombo.kind] ?? 'comboSingle'),
+              size: state.leadCombo.size,
+            }),
+            plays: state.trick
+              .map((play) =>
+                t('trickPlay', {
+                  seat: t('seat', { n: play.seat }),
+                  cards: play.cards.map(cardAlt).join(t('listSeparator')),
+                }),
+              )
+              .join(t('listSeparator')),
+          })
+        : state.trick
+            .map((play) =>
+              t('trickPlay', {
+                seat: t('seat', { n: play.seat }),
+                cards: play.cards.map(cardAlt).join(t('listSeparator')),
+              }),
+            )
+            .join(t('listSeparator'));
+  const trickStatus = (
+    <div role="status" aria-live="polite" className="sr-only" data-testid="shengji-trick-status">
+      {trickAnnouncement}
+    </div>
+  );
+
   if (!state)
-    return <GameSkeleton gameKey="shengji" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 12 }} />;
+    return (
+      <>
+        {trickStatus}
+        <GameSkeleton gameKey="shengji" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 12 }} />
+      </>
+    );
 
   const human = state.players.find((p) => p.isHuman);
   const isGameEnd = state.phase === ShengJiPhase.GAME_END || state.gameEndFlag;
@@ -188,271 +227,281 @@ function ShengJiPageContent() {
   const canSelect = isPlay || isKitty;
 
   return (
-    <GamePageShell
-      title={tc('nav.shengji')}
-      gameThemeBg={gameTheme.shengji.bg}
-      phaseName={phaseNames[state.phase]}
-      isHumanTurn={isHumanTurn}
-      gamePath="/shengji"
-      gameEndFlag={isGameEnd}
-      winShow={humanWon}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
-    >
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            {/* The trump group and who collects the points are the two things you cannot play without. */}
-            <div className="mb-2 p-2 rounded bg-black/20 text-sm" data-testid="shengji-info">
-              <div data-tutorial="shengji-info">
-                {t('scoreLine', {
-                  hand: state.handNumber,
-                  level: levelLabel(state.level),
-                  trump: suitLabel(state.trumpSuit),
-                  t0: levelLabel(state.teamLevels[0]),
-                  t1: levelLabel(state.teamLevels[1]),
-                })}
-              </div>
-              <div className="text-xs text-ds-text-muted" data-testid="shengji-trump-note">
-                {t('trumpNote', { level: levelLabel(state.level) })}
-              </div>
-              <div className="text-xs text-ds-text-muted" data-testid="shengji-points-note">
-                {t('pointsLine', {
-                  team: defenders,
-                  points: defenderPoints,
-                  target: state.defenderTarget,
-                  total: state.totalPoints,
-                })}
-              </div>
-            </div>
-
-            {/* Players — which side you are on decides what you are trying to do. */}
-            <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="shengji-players">
-              <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
-              {state.players.map((p) => (
-                <div
-                  key={`player-${p.id}`}
-                  data-testid="shengji-player"
-                  className={`text-sm py-0.5 flex items-center gap-2 ${
-                    p.isCurrentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
-                  } ${p.isHuman ? 'font-semibold' : ''}`}
-                >
-                  <span>{t('seat', { n: p.id })}</span>
-                  <span>{playerLabel(p.id, p.isHuman)}</span>
-                  <span>({t('team', { n: p.team })})</span>
-                  <span className={p.isDeclarer ? 'text-ds-accent' : ''}>
-                    {p.isDeclarer ? t('declarer') : t('defender')}
-                  </span>
-                  <span>{t('cardCount', { count: p.cardCount })}</span>
-                  {p.isCurrentTurn && !isGameEnd && <span className="text-ds-accent">[{t('turnTag')}]</span>}
-                </div>
-              ))}
-            </div>
-
-            {/* The trick. */}
-            <div className="mb-2 p-2 rounded bg-black/20 text-sm" data-testid="shengji-trick">
-              {state.trick.length === 0 ? (
-                <span>{t('trickEmpty')}</span>
-              ) : (
-                <>
-                  {state.leadCombo && (
-                    <div>{t('trickLead', { combo: comboLabel(state.leadCombo.kind), size: state.leadCombo.size })}</div>
-                  )}
-                  {state.trick.map((play) => (
-                    <div key={`play-${play.seat}`} className="flex items-center gap-1 flex-wrap">
-                      <span className="text-xs text-ds-text-muted">{t('seat', { n: play.seat })}</span>
-                      {play.cards.map((c, i) => (
-                        <CardImage key={`trick-${play.seat}-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />
-                      ))}
-                    </div>
-                  ))}
-                </>
-              )}
-            </div>
-
-            {/* The settled hand. */}
-            {isHandEnd && state.lastResult && (
-              <div className="mb-2 p-2 rounded bg-black/20 text-sm" data-testid="shengji-hand-result">
-                <div>
-                  {t(state.lastResult.declarerHeld ? 'handHeldLine' : 'handTakenLine', {
-                    points: state.lastResult.defenderPoints,
-                    target: state.defenderTarget,
-                    team: state.lastResult.advancingTeam,
-                    advance: state.lastResult.advance,
+    <>
+      {trickStatus}
+      <GamePageShell
+        title={tc('nav.shengji')}
+        gameThemeBg={gameTheme.shengji.bg}
+        phaseName={phaseNames[state.phase]}
+        isHumanTurn={isHumanTurn}
+        gamePath="/shengji"
+        gameEndFlag={isGameEnd}
+        winShow={humanWon}
+        loading={loading}
+        confirmOpen={confirmOpen}
+        confirmReset={confirmReset}
+        cancelReset={cancelReset}
+        headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+      >
+        {cliEnabled ? (
+          <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+        ) : (
+          <>
+            <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+              {/* The trump group and who collects the points are the two things you cannot play without. */}
+              <div className="mb-2 p-2 rounded bg-black/20 text-sm" data-testid="shengji-info">
+                <div data-tutorial="shengji-info">
+                  {t('scoreLine', {
+                    hand: state.handNumber,
+                    level: levelLabel(state.level),
+                    trump: suitLabel(state.trumpSuit),
+                    t0: levelLabel(state.teamLevels[0]),
+                    t1: levelLabel(state.teamLevels[1]),
                   })}
                 </div>
-                {/* **底牌の倍率は最終トリックを取った側にしか掛からない。** */}
-                {state.lastResult.kittyMultiplier > 0 && (
-                  <div data-testid="shengji-kitty-line">
-                    {t('kittyLine', {
-                      points: state.lastResult.kittyPoints,
-                      mult: state.lastResult.kittyMultiplier,
-                    })}
-                  </div>
-                )}
-                {state.kitty.length > 0 && (
-                  <div className="mt-2" data-testid="shengji-kitty-cards">
-                    <div className="text-xs text-ds-text-muted mb-1">{t('kittyCardsTitle')}</div>
-                    <div className="flex items-center gap-1 flex-wrap">
-                      {state.kitty.map((c, i) => (
-                        <CardImage key={`kitty-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <div className="text-xs text-ds-text-muted" data-testid="shengji-trump-note">
+                  {t('trumpNote', { level: levelLabel(state.level) })}
+                </div>
+                <div className="text-xs text-ds-text-muted" data-testid="shengji-points-note">
+                  {t('pointsLine', {
+                    team: defenders,
+                    points: defenderPoints,
+                    target: state.defenderTarget,
+                    total: state.totalPoints,
+                  })}
+                </div>
               </div>
-            )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            <label className="flex items-center gap-1 text-ds-text-primary text-xs w-full justify-center cursor-pointer min-h-[44px]">
-              <input
-                type="checkbox"
-                checked={frontendHintEnabled}
-                onChange={(e) => setFrontendHintEnabled(e.target.checked)}
-              />
-              {tc('hint.toggle', { ns: 'tutorial' })}
-            </label>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          {/* Footer */}
-          <GameFooter className={`${gameTheme.shengji.footer} px-4 py-2.5`}>
-            <div className="mb-2" data-tutorial="shengji-hand">
-              <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
-              <div className="flex flex-wrap gap-1">
-                {(human?.cards ?? []).map((c, i) => (
-                  <button
-                    key={`hand-${c.design}-${c.value}-${i}`}
-                    type="button"
-                    onClick={() => canSelect && toggle(i)}
-                    disabled={!canSelect}
-                    className={`rounded transition-all ${selected.includes(i) ? 'ring-2 ring-ds-info -translate-y-2' : ''} ${
-                      canSelect ? 'cursor-pointer hover:opacity-90' : 'cursor-default'
-                    }`}
-                    data-testid={`hand-card-${i}`}
+              {/* Players — which side you are on decides what you are trying to do. */}
+              <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="shengji-players">
+                <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
+                {state.players.map((p) => (
+                  <div
+                    key={`player-${p.id}`}
+                    data-testid="shengji-player"
+                    className={`text-sm py-0.5 flex items-center gap-2 ${
+                      p.isCurrentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
+                    } ${p.isHuman ? 'font-semibold' : ''}`}
                   >
-                    <CardImage card={c} width={cardWidth} />
-                  </button>
+                    <span>{t('seat', { n: p.id })}</span>
+                    <span>{playerLabel(p.id, p.isHuman)}</span>
+                    <span>({t('team', { n: p.team })})</span>
+                    <span className={p.isDeclarer ? 'text-ds-accent' : ''}>
+                      {p.isDeclarer ? t('declarer') : t('defender')}
+                    </span>
+                    <span>{t('cardCount', { count: p.cardCount })}</span>
+                    {p.isCurrentTurn && !isGameEnd && <span className="text-ds-accent">[{t('turnTag')}]</span>}
+                  </div>
                 ))}
               </div>
-              {isPlay && selected.length > 0 && (
-                <div className="mt-2 text-center text-xs" data-testid="shengji-combo-preview">
-                  {selectedCombo === null ? (
-                    <span className="font-medium text-ds-warning" data-testid="shengji-combo-invalid">
-                      {t('invalidCombo')}
-                    </span>
-                  ) : (
-                    <span className="text-ds-text-muted">
-                      {t('comboPreview')}:{' '}
-                      <span className="font-medium text-ds-accent">
-                        {comboLabel(selectedCombo.kind)} ({selectedCombo.size})
-                      </span>
-                    </span>
+
+              {/* The trick. */}
+              <div className="mb-2 p-2 rounded bg-black/20 text-sm" data-testid="shengji-trick">
+                {state.trick.length === 0 ? (
+                  <span>{t('trickEmpty')}</span>
+                ) : (
+                  <>
+                    {state.leadCombo && (
+                      <div>
+                        {t('trickLead', { combo: comboLabel(state.leadCombo.kind), size: state.leadCombo.size })}
+                      </div>
+                    )}
+                    {state.trick.map((play) => (
+                      <div key={`play-${play.seat}`} className="flex items-center gap-1 flex-wrap">
+                        <span className="text-xs text-ds-text-muted">{t('seat', { n: play.seat })}</span>
+                        {play.cards.map((c, i) => (
+                          <CardImage
+                            key={`trick-${play.seat}-${c.design}-${c.value}-${i}`}
+                            card={c}
+                            width={cardWidth}
+                          />
+                        ))}
+                      </div>
+                    ))}
+                  </>
+                )}
+              </div>
+
+              {/* The settled hand. */}
+              {isHandEnd && state.lastResult && (
+                <div className="mb-2 p-2 rounded bg-black/20 text-sm" data-testid="shengji-hand-result">
+                  <div>
+                    {t(state.lastResult.declarerHeld ? 'handHeldLine' : 'handTakenLine', {
+                      points: state.lastResult.defenderPoints,
+                      target: state.defenderTarget,
+                      team: state.lastResult.advancingTeam,
+                      advance: state.lastResult.advance,
+                    })}
+                  </div>
+                  {/* **底牌の倍率は最終トリックを取った側にしか掛からない。** */}
+                  {state.lastResult.kittyMultiplier > 0 && (
+                    <div data-testid="shengji-kitty-line">
+                      {t('kittyLine', {
+                        points: state.lastResult.kittyPoints,
+                        mult: state.lastResult.kittyMultiplier,
+                      })}
+                    </div>
+                  )}
+                  {state.kitty.length > 0 && (
+                    <div className="mt-2" data-testid="shengji-kitty-cards">
+                      <div className="text-xs text-ds-text-muted mb-1">{t('kittyCardsTitle')}</div>
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {state.kitty.map((c, i) => (
+                          <CardImage key={`kitty-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
               )}
-            </div>
 
-            <ErrorAlert message={error} onRetry={retry} />
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="shengji-actions">
-              {isDeclare && (
-                <>
-                  <span className="text-ds-text-muted text-xs" data-testid="shengji-declare-rules">
-                    {t('declareRules')}
-                  </span>
-                  {declarableSuits.map(({ suit, strength }) => (
-                    <button
-                      key={`declare-${suit}`}
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => handleDeclare(suit)}
-                      disabled={loading}
-                      data-testid={`shengji-declare-${suit}`}
-                    >
-                      {t('declareButton', { suit: suitLabel(suit), strength })}
-                    </button>
-                  ))}
-                  {/* **0 はパス。**宣言できる札が無くても手番は進める。 */}
-                  <button
-                    type="button"
-                    className={btnSecondary}
-                    onClick={() => handleDeclare(0)}
-                    disabled={loading}
-                    data-testid="shengji-pass"
-                  >
-                    {t('passButton')}
-                  </button>
-                </>
-              )}
+              <label className="flex items-center gap-1 text-ds-text-primary text-xs w-full justify-center cursor-pointer min-h-[44px]">
+                <input
+                  type="checkbox"
+                  checked={frontendHintEnabled}
+                  onChange={(e) => setFrontendHintEnabled(e.target.checked)}
+                />
+                {tc('hint.toggle', { ns: 'tutorial' })}
+              </label>
+              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-              {isKitty && (
-                <>
-                  <span className="text-ds-text-muted text-xs" data-testid="shengji-kitty-rules">
-                    {t('kittyRules', { count: state.kittySizeMax })}
-                  </span>
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={handleBury}
-                    disabled={loading || selected.length !== state.kittySizeMax}
-                  >
-                    {t('buryButton', { selected: selected.length, count: state.kittySizeMax })}
-                  </button>
-                </>
-              )}
-
-              {isPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selected.length === 0}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-
-              {isHandEnd && (
-                <button type="button" className={btnPrimary} onClick={handleNext} disabled={loading}>
-                  {t('nextButton')}
-                </button>
-              )}
-
-              {isGameEnd && (
-                <span className="text-ds-text-primary text-sm font-semibold mr-1">
-                  {humanWon ? t('win') : t('lose')}
-                </span>
-              )}
-
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="shengji-reset-button"
+              <ActionLogSection
+                isEndPhase={isGameEnd}
+                actionLog={actionLog}
+                showActionLog={showActionLog}
+                hideActionLog={hideActionLog}
               />
             </div>
-          </GameFooter>
-        </>
-      )}
-    </GamePageShell>
+
+            {/* Footer */}
+            <GameFooter className={`${gameTheme.shengji.footer} px-4 py-2.5`}>
+              <div className="mb-2" data-tutorial="shengji-hand">
+                <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
+                <div className="flex flex-wrap gap-1">
+                  {(human?.cards ?? []).map((c, i) => (
+                    <button
+                      key={`hand-${c.design}-${c.value}-${i}`}
+                      type="button"
+                      aria-pressed={selected.includes(i)}
+                      onClick={() => canSelect && toggle(i)}
+                      disabled={!canSelect}
+                      className={`rounded transition-all ${selected.includes(i) ? 'ring-2 ring-ds-info -translate-y-2' : ''} ${
+                        canSelect ? 'cursor-pointer hover:opacity-90' : 'cursor-default'
+                      }`}
+                      data-testid={`hand-card-${i}`}
+                    >
+                      <CardImage card={c} width={cardWidth} />
+                    </button>
+                  ))}
+                </div>
+                {isPlay && selected.length > 0 && (
+                  <div className="mt-2 text-center text-xs" data-testid="shengji-combo-preview">
+                    {selectedCombo === null ? (
+                      <span className="font-medium text-ds-warning" data-testid="shengji-combo-invalid">
+                        {t('invalidCombo')}
+                      </span>
+                    ) : (
+                      <span className="text-ds-text-muted">
+                        {t('comboPreview')}:{' '}
+                        <span className="font-medium text-ds-accent">
+                          {comboLabel(selectedCombo.kind)} ({selectedCombo.size})
+                        </span>
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <ErrorAlert message={error} onRetry={retry} />
+
+              <div className="flex flex-wrap gap-2 items-center" data-tutorial="shengji-actions">
+                {isDeclare && (
+                  <>
+                    <span className="text-ds-text-muted text-xs" data-testid="shengji-declare-rules">
+                      {t('declareRules')}
+                    </span>
+                    {declarableSuits.map(({ suit, strength }) => (
+                      <button
+                        key={`declare-${suit}`}
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => handleDeclare(suit)}
+                        disabled={loading}
+                        data-testid={`shengji-declare-${suit}`}
+                      >
+                        {t('declareButton', { suit: suitLabel(suit), strength })}
+                      </button>
+                    ))}
+                    {/* **0 はパス。**宣言できる札が無くても手番は進める。 */}
+                    <button
+                      type="button"
+                      className={btnSecondary}
+                      onClick={() => handleDeclare(0)}
+                      disabled={loading}
+                      data-testid="shengji-pass"
+                    >
+                      {t('passButton')}
+                    </button>
+                  </>
+                )}
+
+                {isKitty && (
+                  <>
+                    <span className="text-ds-text-muted text-xs" data-testid="shengji-kitty-rules">
+                      {t('kittyRules', { count: state.kittySizeMax })}
+                    </span>
+                    <button
+                      type="button"
+                      className={btnSuccess}
+                      onClick={handleBury}
+                      disabled={loading || selected.length !== state.kittySizeMax}
+                    >
+                      {t('buryButton', { selected: selected.length, count: state.kittySizeMax })}
+                    </button>
+                  </>
+                )}
+
+                {isPlay && (
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handlePlay}
+                    disabled={loading || selected.length === 0}
+                  >
+                    {t('playButton')}
+                  </button>
+                )}
+
+                {isHandEnd && (
+                  <button type="button" className={btnPrimary} onClick={handleNext} disabled={loading}>
+                    {t('nextButton')}
+                  </button>
+                )}
+
+                {isGameEnd && (
+                  <span className="text-ds-text-primary text-sm font-semibold mr-1">
+                    {humanWon ? t('win') : t('lose')}
+                  </span>
+                )}
+
+                <GameResetButton
+                  isGameEnd={isGameEnd}
+                  onReset={handleManualReset}
+                  requestConfirm={requestConfirm}
+                  loading={loading}
+                  dataTutorial="shengji-reset-button"
+                />
+              </div>
+            </GameFooter>
+          </>
+        )}
+      </GamePageShell>
+    </>
   );
 }

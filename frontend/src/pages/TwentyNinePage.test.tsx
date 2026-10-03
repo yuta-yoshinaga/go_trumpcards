@@ -90,6 +90,17 @@ describe('TwentyNinePage', () => {
     expect(screen.getByTestId('bid-28')).toBeInTheDocument();
   });
 
+  it('shows the trump and plain card strength and point reference when expanded', async () => {
+    renderWithProviders(<TwentyNinePage />);
+    const summary = await screen.findByText('カードの強さと点数');
+    fireEvent.click(summary);
+
+    expect(screen.getByText('切り札')).toBeInTheDocument();
+    expect(screen.getByText('通常札')).toBeInTheDocument();
+    expect(screen.getAllByText('強さ順: J > 9 > A > 10 > K > Q > 8 > 7')).toHaveLength(2);
+    expect(screen.getByText('カード点: J: 3点、9: 2点、A: 1点、10: 1点、K・Q・8・7: 0点')).toBeInTheDocument();
+  });
+
   it('shows "no bids yet" when no one has bid during the bid phase', async () => {
     renderWithProviders(<TwentyNinePage />);
     const readout = await screen.findByTestId('tn29-highest-bid');
@@ -122,6 +133,23 @@ describe('TwentyNinePage', () => {
     renderWithProviders(<TwentyNinePage />);
     const readout = await screen.findByTestId('tn29-highest-bid');
     expect(readout).toHaveTextContent('現在の最高ビッド: 20（CPU 2）');
+  });
+
+  it('shows committed bids and passes by seat during bidding and keeps them during play', async () => {
+    mockExec.mockResolvedValue(makeTwentyNineState({ dealerIdx: 3, currentPlayerIdx: 2, bids: [0, 16, 0, 0] }));
+    const { unmount } = renderWithProviders(<TwentyNinePage />);
+    const history = await screen.findByTestId('tn29-bid-history');
+    expect(history).toHaveTextContent('CPU 1');
+    expect(history).toHaveTextContent('パス');
+    expect(history).toHaveTextContent('CPU 2');
+    expect(history).toHaveTextContent('16');
+    expect(history).toHaveTextContent('チームB');
+    expect(history).toHaveTextContent('未入札');
+
+    unmount();
+    mockExec.mockResolvedValue(makeTwentyNineState({ phase: 1, bids: [0, 16, 24, 0] }));
+    renderWithProviders(<TwentyNinePage />);
+    await waitFor(() => expect(screen.getByTestId('tn29-bid-history')).toHaveTextContent('24'));
   });
 
   it('updates the highest-bid readout as bids change', async () => {

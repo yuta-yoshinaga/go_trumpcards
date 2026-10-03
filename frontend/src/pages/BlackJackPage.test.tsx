@@ -137,6 +137,8 @@ const endPhaseState: BlackJackResponse = {
       canSplit: false,
       surrendered: false,
       canSurrender: false,
+      result: 1,
+      netChange: 150,
     },
   ],
   phase: 5,
@@ -167,6 +169,45 @@ beforeEach(() => {
 });
 
 describe('BlackJackPage', () => {
+  it('shows settled per-hand result and net change only in the end phase', async () => {
+    mockExec.mockResolvedValueOnce(actionPhaseState);
+    const { unmount } = renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('hand-result-0')).not.toBeInTheDocument();
+    unmount();
+
+    mockExec.mockResolvedValueOnce({
+      ...endPhaseState,
+      hands: [
+        { ...baseHand, result: 1, netChange: 100 },
+        { ...baseHand, result: -1, netChange: -200 },
+      ],
+    });
+    renderWithProviders(<BlackJackPage />);
+    expect(await screen.findByTestId('hand-result-0')).toHaveTextContent('勝ち');
+    expect(screen.getByTestId('hand-result-0')).toHaveTextContent('+100');
+    expect(screen.getByTestId('hand-result-1')).toHaveTextContent('負け');
+    expect(screen.getByTestId('hand-result-1')).toHaveTextContent('-200');
+  });
+  it('shows a signed zero for a push and omits the separator without settlement amount', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...endPhaseState,
+      hands: [{ ...baseHand, result: 0, netChange: 0 }],
+    });
+    const { unmount } = renderWithProviders(<BlackJackPage />);
+    const pushResult = await screen.findByTestId('hand-result-0');
+    expect(pushResult).toHaveTextContent('引き分け · ±0');
+    unmount();
+
+    mockExec.mockResolvedValueOnce({
+      ...endPhaseState,
+      hands: [{ ...baseHand, result: 0 }],
+    });
+    renderWithProviders(<BlackJackPage />);
+    const unsettledResult = await screen.findByTestId('hand-result-0');
+    expect(unsettledResult).toHaveTextContent('引き分け');
+    expect(unsettledResult).not.toHaveTextContent('·');
+  });
   it('shows Double Exposure double-down eligibility in the action area', async () => {
     mockDoubleExposureExec.mockResolvedValue(actionPhaseState);
     renderWithProviders(<BlackJackPage variant="doubleexposure" />);
@@ -313,6 +354,7 @@ describe('BlackJackPage', () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
     expect(screen.queryByTestId('bj-bonus-badges')).not.toBeInTheDocument();
+    expect(screen.getByTestId('bj-bonus-announcement')).toBeEmptyDOMElement();
   });
 
   it('shows message overlay when message is non-empty', async () => {
@@ -340,6 +382,20 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hit'));
   });
 
+  it('announces the drawn card and updated score after a hit', async () => {
+    mockExec.mockResolvedValueOnce(actionPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockResolvedValue({
+      ...actionPhaseState,
+      hands: [{ ...baseHand, score: 19, cards: [...baseHand.cards, { design: 'SPADE', value: 4 }] }],
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒット' }));
+    expect(await screen.findByTestId('bj-hit-announcement')).toHaveTextContent(
+      '♠ 4を引きました。現在のスコアは19です。',
+    );
+  });
+
   it('calls stand command when Stand button is clicked', async () => {
     mockExec.mockResolvedValue(actionPhaseState);
     renderWithProviders(<BlackJackPage />);
@@ -361,6 +417,37 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue(endPhaseState);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByText(/スコア 19/)).toBeInTheDocument());
+  });
+
+  it('announces the dealer final score and bust reason when the round ends', async () => {
+    mockExec.mockResolvedValue({
+      ...endPhaseState,
+      dealer: { ...endPhaseState.dealer, score: 23 },
+    });
+    renderWithProviders(<BlackJackPage />);
+    const announcement = await screen.findByTestId('bj-end-announcement');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toHaveTextContent('ディーラーの最終スコアは23です。 ディーラーはバストしました。');
+  });
+
+  it('announces only the dealer final score when the dealer does not bust', async () => {
+    mockExec.mockResolvedValue(endPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    const announcement = await screen.findByTestId('bj-end-announcement');
+    expect(announcement).toHaveTextContent('ディーラーの最終スコアは19です。');
+    expect(announcement).not.toHaveTextContent('バスト');
+  });
+
+  it('clears the end announcement when a non-end phase follows END', async () => {
+    mockExec.mockResolvedValueOnce(endPhaseState).mockResolvedValueOnce(actionPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    const announcement = await screen.findByTestId('bj-end-announcement');
+    expect(announcement).toHaveTextContent('ディーラーの最終スコアは19です。');
+
+    fireEvent.click(await screen.findByRole('button', { name: '次のゲーム' }));
+    fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('reset', undefined, expect.anything()));
+    await waitFor(() => expect(announcement).toBeEmptyDOMElement());
   });
 
   it('shows card back when dealer score is zero', async () => {
@@ -542,7 +629,7 @@ describe('BlackJackPage', () => {
     await waitFor(() => {
       expect(screen.getByText(/ハンド 1/)).toBeInTheDocument();
       expect(screen.getByText(/ハンド 2/)).toBeInTheDocument();
-      expect(screen.getByText(/\(\*\)/)).toBeInTheDocument();
+      expect(screen.getByText('現在のハンド')).toBeInTheDocument();
     });
   });
 
@@ -1499,14 +1586,26 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('declineearlysurrender'));
   });
 
-  it('shows active hand marker (*) during early surrender phase', async () => {
+  it('labels the active hand during early surrender phase', async () => {
     const earlySurrenderState: BlackJackResponse = {
       ...actionPhaseState,
       phase: 6,
     };
     mockExec.mockResolvedValue(earlySurrenderState);
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText(/プレイヤー手札 \(\*\)/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('現在のハンド')).toBeInTheDocument());
+  });
+
+  it('includes the current hand label in the heading name during action', async () => {
+    mockDoubleExposureExec.mockResolvedValue({
+      ...actionPhaseState,
+      hands: [{ ...baseHand }, { ...baseHand, score: 18 }],
+      currentHandIdx: 1,
+    });
+
+    renderWithProviders(<BlackJackPage variant="doubleexposure" />);
+
+    await screen.findByRole('heading', { name: /ハンド 2.*現在のハンド/ });
   });
 
   it('syncs surrenderRule from response', async () => {

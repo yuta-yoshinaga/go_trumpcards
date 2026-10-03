@@ -1,5 +1,6 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import i18n from '../i18n';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, VideoPokerResponse } from '../types/card';
@@ -121,6 +122,43 @@ beforeEach(() => {
 });
 
 describe('VideoPokerGameContent', () => {
+  it('includes the card name and keeps position, hold, wild, and auto-selection details in card button names', async () => {
+    const wildHand: VideoPokerResponse = {
+      ...drawPhaseState,
+      hand: [card('SPADE', 2), ...drawPhaseState.hand.slice(1)],
+    };
+    mockExec.mockResolvedValue(wildHand);
+    renderContent('deuceswild');
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const firstCard = screen.getAllByRole('button').find((button) => button.getAttribute('aria-pressed') !== null);
+    expect(firstCard).toBeDefined();
+    if (!firstCard) throw new Error('Expected the first card button');
+    expect(firstCard).toHaveAccessibleName(/♠ 2.*カード 1.*カード1をホールド.*ワイルド.*自動ホールドで選択/);
+    fireEvent.click(firstCard);
+    await waitFor(() => expect(firstCard).toHaveAttribute('aria-pressed', 'false'));
+    expect(firstCard).toHaveAccessibleName(/♠ 2.*カード 1.*ワイルド/);
+  });
+
+  it('announces the same card details in English', async () => {
+    const wildHand: VideoPokerResponse = {
+      ...drawPhaseState,
+      hand: [card('SPADE', 2), ...drawPhaseState.hand.slice(1)],
+    };
+    mockExec.mockResolvedValue(wildHand);
+    try {
+      await i18n.changeLanguage('en');
+      renderContent('deuceswild');
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      const firstCard = screen.getAllByRole('button').find((button) => button.getAttribute('aria-pressed') !== null);
+      expect(firstCard).toBeDefined();
+      if (!firstCard) throw new Error('Expected the first card button');
+      expect(firstCard).toHaveAccessibleName(/♠ 2, Card 1, Hold card 1, WILD, selected by auto-hold/);
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('calls reset on mount and renders bet phase', async () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderContent();
@@ -179,6 +217,9 @@ describe('VideoPokerGameContent', () => {
     renderContent();
     await waitFor(() => expect(screen.getByText(/配当.*5/)).toBeInTheDocument());
     expect(screen.getByTestId('vp-net-change')).toHaveTextContent('+4');
+    expect(screen.getByTestId('vp-result-announce')).toHaveTextContent(
+      '役: ジャックス・オア・ベター、配当 5 枚、純増減 +4',
+    );
     expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument();
   });
 
@@ -186,13 +227,55 @@ describe('VideoPokerGameContent', () => {
     mockExec.mockResolvedValue(resultPhaseLose);
     renderContent();
     await waitFor(() => expect(screen.getByTestId('vp-net-change')).toHaveTextContent('-1'));
+    expect(screen.getByTestId('vp-result-announce')).toHaveTextContent('役なし、ベット没収、純増減 -1');
     await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
   });
 
-  it('marks a break-even result as positive zero', async () => {
+  it('translates the Deuces Wild net change label in Japanese and English', async () => {
+    mockExec.mockResolvedValue({ ...resultPhaseLose, variantName: 'deuceswild' });
+    renderContent('deuceswild');
+    const netChange = await screen.findByTestId('vp-net-change');
+    expect(netChange).toHaveTextContent('純増減: -1');
+
+    await i18n.changeLanguage('en');
+    try {
+      expect(netChange).toHaveTextContent('Net change: -1');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
+  it('formats a break-even result as ±0', async () => {
     mockExec.mockResolvedValue({ ...resultPhaseWin, betAmount: 5, payout: 5 });
     renderContent();
-    await waitFor(() => expect(screen.getByTestId('vp-net-change')).toHaveTextContent('+0'));
+    await waitFor(() => expect(screen.getByTestId('vp-net-change')).toHaveTextContent('±0'));
+  });
+
+  it('translates Joker Poker net change and keeps its sign in Japanese and English', async () => {
+    mockExec.mockResolvedValue({ ...resultPhaseWin, variantName: 'jokerpoker' });
+    renderContent('jokerpoker');
+    await waitFor(() => expect(screen.getByTestId('vp-net-change')).toHaveTextContent('純増減: +4'));
+
+    try {
+      await i18n.changeLanguage('en');
+      expect(screen.getByTestId('vp-net-change')).toHaveTextContent('Net change: +4');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
+  it('re-announces identical consecutive hand results', async () => {
+    mockExec.mockImplementation(async () => ({ ...resultPhaseWin }));
+    renderContent();
+    await waitFor(() => expect(screen.getByTestId('vp-result-announce')).toHaveTextContent('純増減 +4'));
+    const firstNonce = Number(screen.getByTestId('vp-result-announce').getAttribute('data-nonce'));
+
+    fireEvent.click(screen.getByRole('button', { name: /次のゲーム/ }));
+
+    await waitFor(() =>
+      expect(Number(screen.getByTestId('vp-result-announce').getAttribute('data-nonce'))).toBeGreaterThan(firstNonce),
+    );
+    expect(screen.getByTestId('vp-result-announce')).toHaveTextContent('純増減 +4');
   });
 
   it('auto-hold pre-selects the hint-recommended cards on entering draw phase', async () => {

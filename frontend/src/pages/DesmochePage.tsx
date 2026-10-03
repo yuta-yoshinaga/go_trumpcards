@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import type { desmocheApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -62,6 +63,7 @@ function DesmochePageContent() {
   // The desmoche move needs a card *inside* a meld, which is a different
   // selection from the hand: {meld index, card index within it}.
   const [meldCard, setMeldCard] = useState<{ meld: number; card: number } | null>(null);
+  const [stockDrawConfirmOpen, setStockDrawConfirmOpen] = useState(false);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('desmoche');
   const cliConfig: CliGameConfig<DesmocheResponse, Parameters<typeof desmocheApi.exec>> = useMemo(
@@ -89,9 +91,19 @@ function DesmochePageContent() {
   const drawing = state.phase === DesmochePhase.DRAW;
   const acting = state.phase === DesmochePhase.ACT;
   const roundOver = state.phase === DesmochePhase.ROUND_END;
+  const stockEmpty = state.stockCount === 0;
+  const discardEmpty = !state.discardTop;
   const human = state.players.find((p) => p.isHuman);
   const opponents = state.players.filter((p) => !p.isHuman);
   const isHumanTurn = !ended && state.currentPlayerIdx === 0;
+
+  const handleStockDraw = () => {
+    if (state.stockCount === 0) {
+      setStockDrawConfirmOpen(true);
+      return;
+    }
+    game.handleDrawStock();
+  };
 
   const toggleCard = (i: number) => {
     setSelected((prev) => (prev.includes(i) ? prev.filter((n) => n !== i) : [...prev, i]));
@@ -318,8 +330,18 @@ function DesmochePageContent() {
           <GameFooter className={`${gameTheme.desmoche.footer} px-4 py-2.5`}>
             <ErrorAlert message={error} onRetry={retry} />
             {drawing && isHumanTurn && (
-              <p className="mb-2 text-sm text-ds-text-muted" data-testid="desmoche-action-guide">
-                {t('actionGuide.draw')}
+              <p
+                id="desmoche-draw-guide"
+                className="mb-2 text-sm text-ds-text-muted"
+                data-testid="desmoche-action-guide"
+              >
+                {stockEmpty
+                  ? discardEmpty
+                    ? t('actionGuide.bothEmpty')
+                    : t('actionGuide.stockEmpty')
+                  : discardEmpty
+                    ? t('actionGuide.discardEmpty')
+                    : t('actionGuide.draw')}
               </p>
             )}
             <div className="flex gap-2 items-center flex-wrap">
@@ -328,16 +350,21 @@ function DesmochePageContent() {
                   <button
                     type="button"
                     data-hint-action="draw"
+                    aria-describedby={stockEmpty ? 'desmoche-draw-guide' : undefined}
                     className={`${btnPrimary} min-h-11`}
-                    onClick={game.handleDrawStock}
+                    onClick={handleStockDraw}
                   >
                     {t('drawStock')}
                   </button>
                   <button
                     type="button"
-                    className={`${btnSecondary} min-h-11`}
-                    onClick={game.handleDrawDiscard}
-                    disabled={!state.discardTop}
+                    aria-disabled={discardEmpty ? true : undefined}
+                    aria-describedby={discardEmpty ? 'desmoche-draw-guide' : undefined}
+                    className={`${btnSecondary} min-h-11 ${discardEmpty ? 'aria-disabled:opacity-50 aria-disabled:cursor-not-allowed' : ''}`}
+                    onClick={() => {
+                      if (discardEmpty) return;
+                      game.handleDrawDiscard();
+                    }}
                   >
                     {t('drawDiscard')}
                   </button>
@@ -416,6 +443,18 @@ function DesmochePageContent() {
           </GameFooter>
         </>
       )}
+      <ConfirmDialog
+        open={stockDrawConfirmOpen}
+        title={t('emptyStockConfirmTitle')}
+        message={t('emptyStockConfirmMessage')}
+        confirmLabel={t('emptyStockConfirmButton')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={() => {
+          setStockDrawConfirmOpen(false);
+          game.handleDrawStock();
+        }}
+        onCancel={() => setStockDrawConfirmOpen(false)}
+      />
     </GamePageShell>
   );
 }

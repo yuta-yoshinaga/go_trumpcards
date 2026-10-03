@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -27,6 +28,7 @@ func setupOpenFaceChineseWebMock() (*interfaces.MockOpenFaceChineseGame, []*doma
 	m.On("IsHumanTurn").Return(true)
 	m.On("GetCurrentCard").Return(domain.NewCard(domain.CardDesignSpade, 13, false))
 	m.On("GetConfig").Return(domain.DefaultOpenFaceChineseConfig())
+	m.On("RoundBreakdown", mock.Anything).Return(domain.OpenFaceChineseBreakdown{Rows: make([]domain.OpenFaceChineseRowBreakdown, 0)})
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	human := domain.NewOpenFaceChinesePlayer(true)
 	human.SetPending([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 13, false)})
@@ -109,6 +111,69 @@ func TestOpenFaceChineseWebPresenter_Output(t *testing.T) {
 		assert.NoError(t, json.Unmarshal([]byte(result), &out))
 		assert.Equal(t, "openfacechinese.result.draw", out.MessageCode)
 	})
+}
+
+func TestOpenFaceChineseWebPresenter_RoundBreakdownOutput(t *testing.T) {
+	p := new(presenter.OpenFaceChineseWebPresenter)
+
+	t.Run("placing phase has empty breakdown", func(t *testing.T) {
+		m, _ := setupOpenFaceChineseWebMock()
+		result := p.Output(m, nil)
+		var out controller.OpenFaceChineseWebOutput
+		require.NoError(t, json.Unmarshal([]byte(result), &out))
+		require.Len(t, out.Players, 2)
+		for _, player := range out.Players {
+			assert.NotNil(t, player.RowDetails)
+			assert.Empty(t, player.RowDetails)
+			assert.Zero(t, player.ScoopScore)
+			assert.Zero(t, player.RoyaltyAdjustment)
+		}
+		m.AssertNotCalled(t, "RoundBreakdown", mock.Anything)
+		assert.JSONEq(t, `[]`, jsonString(t, out.Players[0].RowDetails))
+	})
+
+	t.Run("round end includes breakdown", func(t *testing.T) {
+		m, _ := setupOpenFaceChineseWebMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.OpenFaceChinesePhaseRoundEnd)
+		rows := make([]domain.OpenFaceChineseRowBreakdown, 3)
+		for i, outcome := range []int{1, 0, -1} {
+			rows[i] = domain.OpenFaceChineseRowBreakdown{
+				Row: i, Rank: 10 + i, Score: outcome,
+				Comparisons: []domain.OpenFaceChineseRowComparison{{OpponentIdx: 1, Outcome: outcome}},
+			}
+		}
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "RoundBreakdown")
+		m.On("RoundBreakdown", 0).Return(domain.OpenFaceChineseBreakdown{Rows: rows, ScoopScore: 3, RoyaltyAdjustment: -2})
+		m.On("RoundBreakdown", 1).Return(domain.OpenFaceChineseBreakdown{Rows: []domain.OpenFaceChineseRowBreakdown{}})
+
+		result := p.Output(m, nil)
+		var out controller.OpenFaceChineseWebOutput
+		require.NoError(t, json.Unmarshal([]byte(result), &out))
+		require.Len(t, out.Players, 2)
+		player := out.Players[0]
+		require.Len(t, player.RowDetails, 3)
+		for i, outcome := range []int{1, 0, -1} {
+			row := player.RowDetails[i]
+			assert.Equal(t, i, row.Row)
+			assert.Equal(t, 10+i, row.Rank)
+			assert.Equal(t, outcome, row.Score)
+			require.Len(t, row.Comparisons, 1)
+			assert.Equal(t, 1, row.Comparisons[0].OpponentID)
+			assert.Equal(t, outcome, row.Comparisons[0].Outcome)
+		}
+		assert.Equal(t, 3, player.ScoopScore)
+		assert.Equal(t, -2, player.RoyaltyAdjustment)
+		m.AssertCalled(t, "RoundBreakdown", 0)
+		m.AssertCalled(t, "RoundBreakdown", 1)
+	})
+}
+
+func jsonString(t *testing.T, value any) string {
+	t.Helper()
+	data, err := json.Marshal(value)
+	require.NoError(t, err)
+	return string(data)
 }
 
 func TestOpenFaceChineseWebPresenter_HintOutput(t *testing.T) {

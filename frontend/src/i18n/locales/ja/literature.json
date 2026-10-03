@@ -1,4 +1,5 @@
 {
+  "listSeparator": "、",
   "you": "あなた",
   "cpu": "CPU {{id}}",
   "seat": "席{{n}}",
@@ -33,6 +34,8 @@
   "claimWonLine": "{{name}} をチーム{{team}}が獲得しました",
   "claimCancelledLine": "{{name}} は【無効】になりました（所在の申告が誤り。相手には渡りません）",
   "claimLostLine": "{{name}} は相手（チーム{{team}}）の獲得になりました",
+  "claimHistoryTitle": "所在宣言履歴",
+  "claimHistoryMore": "さらに{{count}}件（展開すると全件表示）",
   "lastClaimTitle": "直近の宣言",
   "settings": {
     "title": "設定"
@@ -60,5 +63,5 @@
     "literatureMustClaim": "持っている札のハーフスートは決着済みです。宣言しか残っていません"
   },
   "claimConfirmTitle": "所在宣言の確認",
-  "claimConfirmMessage": "1枚でも間違えると、その組は無効になるか相手チームのものになります。この内容で宣言しますか？"
+  "claimConfirmMessage": "1枚でも間違えると、その組は無効になるか相手チームのものになります。申告内容: {{placements}}。この内容で宣言しますか？"
 }

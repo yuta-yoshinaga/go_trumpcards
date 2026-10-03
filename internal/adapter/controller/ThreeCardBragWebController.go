@@ -62,6 +62,7 @@ type ThreeCardBragWebOutput struct {
 	DealerIdx        int                             `json:"dealerIdx"`
 	CurrentPlayerIdx int                             `json:"currentPlayerIdx"`
 	RoundWinnerIdx   int                             `json:"roundWinnerIdx"`
+	RoundPayouts     []int                           `json:"roundPayouts"`
 	MatchWinnerIdx   int                             `json:"matchWinnerIdx"`
 	IsShowdown       bool                            `json:"isShowdown"`
 	CanShow          bool                            `json:"canShow"`

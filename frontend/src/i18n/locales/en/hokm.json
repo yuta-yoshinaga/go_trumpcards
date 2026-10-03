@@ -30,10 +30,12 @@
   },
   "actions": {
     "trump": "Trump {{suit}}",
+    "trumpAria": "Trump {{symbol}} ({{suit}})",
     "nextHand": "Next hand",
     "reset": "Reset",
     "giveUp": "Give up",
-    "playAria": "Play {{card}}"
+    "playAria": "Play {{card}}",
+    "playUnavailable": "This card cannot be played now"
   },
   "result": {
     "youWin": "Your team wins! {{t0}} - {{t1}}",

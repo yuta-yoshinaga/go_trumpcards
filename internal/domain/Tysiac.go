@@ -312,7 +312,7 @@ func (g *Tysiac) cpuMaxBid(playerIdx int) int {
 	p := g.players[playerIdx]
 	pts := 0
 	for i := 0; i < p.GetCardsSize(); i++ {
-		pts += tysiacCardPoints(p.GetCard(i))
+		pts += AceTenCardPoints(p.GetCard(i))
 	}
 	// 手札のカード点 (最大 ~70 程度) + 結婚ポテンシャル。
 	marriage := g.handMarriagePotential(playerIdx)
@@ -447,7 +447,7 @@ func (g *Tysiac) cpuSelectDiscard() int {
 	for i := 0; i < p.GetCardsSize(); i++ {
 		c := p.GetCard(i)
 		// K/Q は結婚維持のため残したい: 高スコアで保護。
-		score := tysiacCardPoints(c)*10 + tysiacStrength(c.GetValue())
+		score := AceTenCardPoints(c)*10 + tysiacStrength(c.GetValue())
 		if c.GetValue() == 13 || c.GetValue() == 12 {
 			score += 100
 		}
@@ -566,7 +566,7 @@ func (g *Tysiac) ResolveTrick() {
 	pts := 0
 	for i, tc := range g.currentTrick {
 		trickCards[i] = tc.Card
-		pts += tysiacCardPoints(tc.Card)
+		pts += AceTenCardPoints(tc.Card)
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundCardPts[winnerIdx] += pts
@@ -756,24 +756,6 @@ func tysiacStrength(value int) int {
 	}
 }
 
-// tysiacCardPoints カードポイント。A=11, 10=10, K=4, Q=3, J=2, 9=0。
-func tysiacCardPoints(card *Card) int {
-	switch card.GetValue() {
-	case 1:
-		return 11
-	case 10:
-		return 10
-	case 13:
-		return 4
-	case 12:
-		return 3
-	case 11:
-		return 2
-	default:
-		return 0
-	}
-}
-
 // tysiacMarriagePoints スート別結婚点。♠=40, ♣=60, ♦=80, ♥=100。
 func tysiacMarriagePoints(suit int) int {
 	switch suit {
@@ -867,21 +849,21 @@ func (g *Tysiac) cpuPlaySmart(playerIdx int, valid []int) int {
 			return idx
 		}
 		return pickLowest(player, valid, func(c *Card) int {
-			return tysiacCardPoints(c)*100 + g.tysiacRank(c)
+			return AceTenCardPoints(c)*100 + g.tysiacRank(c)
 		})
 	}
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
 	trickPts := 0
 	for _, tc := range g.currentTrick {
-		trickPts += tysiacCardPoints(tc.Card)
+		trickPts += AceTenCardPoints(tc.Card)
 	}
 	winners := filterIndices(valid, func(idx int) bool { return g.tysiacRank(player.GetCard(idx)) > topRank })
 	if trickPts > 0 && len(winners) > 0 {
 		return pickLowest(player, winners, func(c *Card) int { return g.tysiacRank(c) })
 	}
 	return pickLowest(player, valid, func(c *Card) int {
-		return tysiacCardPoints(c)*100 + g.tysiacRank(c)
+		return AceTenCardPoints(c)*100 + g.tysiacRank(c)
 	})
 }
 

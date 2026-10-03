@@ -35,6 +35,20 @@ beforeEach(() => {
 });
 
 describe('SuecaPage', () => {
+  it('shows cumulative team game points against the configured target', async () => {
+    mockExec.mockResolvedValue(
+      makeSuecaState({
+        teamGamePoints: [2, 3],
+        config: { cpuDifficulty: 1, targetGamePoints: 7 },
+      }),
+    );
+    renderWithProviders(<SuecaPage />);
+
+    const sidebar = await screen.findByTestId('sueca-team-game-points');
+    expect(sidebar).toHaveTextContent('チームA: 2 / 7ゲームポイント');
+    expect(sidebar).toHaveTextContent('チームB: 3 / 7ゲームポイント');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SuecaPage />);
@@ -129,6 +143,28 @@ describe('SuecaPage', () => {
   it('shows the trump suit in the always-visible sidebar', async () => {
     renderWithProviders(<SuecaPage />); // default trump ♦
     await waitFor(() => expect(screen.getByTestId('sueca-sidebar-trump')).toHaveTextContent('切り札: ♦'));
+  });
+
+  it('shows each player team using the server assigned team alongside the score names', async () => {
+    renderWithProviders(<SuecaPage />);
+    await screen.findByTestId('sueca-team-game-points');
+    expect(screen.getByTestId('sueca-player-0')).toHaveTextContent('チームA');
+    expect(screen.getByTestId('sueca-player-1')).toHaveTextContent('チームB');
+    expect(screen.getByTestId('sueca-player-2')).toHaveTextContent('チームA');
+    expect(screen.getByTestId('sueca-player-3')).toHaveTextContent('チームB');
+  });
+
+  it('shows each player team in the mobile player list', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      renderWithProviders(<SuecaPage />);
+      await screen.findByTestId('sueca-team-game-points');
+      expect(screen.getByTestId('sueca-player-0')).toHaveTextContent('チームA');
+      expect(screen.getByTestId('sueca-player-1')).toHaveTextContent('チームB');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
   });
 
   it('announces the trick-winning team at trick end (leadPlayerIdx → team)', async () => {

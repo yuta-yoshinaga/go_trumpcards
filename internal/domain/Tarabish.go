@@ -508,7 +508,7 @@ func (t *Tarabish) resolveTrick() {
 	pts := 0
 	for _, tc := range t.currentTrick {
 		cards = append(cards, tc.Card)
-		pts += TarabishCardPoints(tc.Card, t.trumpSuit)
+		pts += JassFamilyCardPoints(tc.Card, t.trumpSuit)
 	}
 	t.players[winner].AddTrick(cards)
 	t.roundPoints[TarabishTeamOf(winner)] += pts
@@ -526,46 +526,6 @@ func (t *Tarabish) resolveTrick() {
 		t.appendLog(winner, "last", "tarabish.log.lastTrickBonus", map[string]string{"bonus": strconv.Itoa(TarabishLastTrickBonus)}, nil)
 		t.finishRound()
 	}
-}
-
-// TarabishCardPoints 札の点数。**切り札だけ序列が変わる。**
-//
-//	切り札: J=20, 9=14, A=11, 10=10, K=4, Q=3, 他=0
-//	非切り札: A=11, 10=10, K=4, Q=3, J=2, 他=0
-func TarabishCardPoints(c *Card, trumpSuit int) int {
-	if c == nil {
-		return 0
-	}
-	if c.GetDesign() == trumpSuit {
-		switch c.GetValue() {
-		case 11: // J = Jass
-			return 20
-		case 9: // Menel
-			return 14
-		case 1:
-			return 11
-		case 10:
-			return 10
-		case 13:
-			return 4
-		case 12:
-			return 3
-		}
-		return 0
-	}
-	switch c.GetValue() {
-	case 1:
-		return 11
-	case 10:
-		return 10
-	case 13:
-		return 4
-	case 12:
-		return 3
-	case 11:
-		return 2
-	}
-	return 0
 }
 
 // finishRound カード点にメルド点を足してチーム得点を確定させる
@@ -691,10 +651,10 @@ func (t *Tarabish) chooseCpuCard(playerIdx int) int {
 		// 選ぶと 0 点の切り札 8/7/6 が 0 点の非切り札より先に出てしまい、
 		// 「温存する」という意図と裏返る。
 		bestIdx := valid[0]
-		bestPts, bestTrump := TarabishCardPoints(p.GetCard(bestIdx), t.trumpSuit), t.isTrump(p.GetCard(bestIdx))
+		bestPts, bestTrump := JassFamilyCardPoints(p.GetCard(bestIdx), t.trumpSuit), t.isTrump(p.GetCard(bestIdx))
 		for _, i := range valid[1:] {
 			c := p.GetCard(i)
-			pts, isTrump := TarabishCardPoints(c, t.trumpSuit), t.isTrump(c)
+			pts, isTrump := JassFamilyCardPoints(c, t.trumpSuit), t.isTrump(c)
 			if pts < bestPts || (pts == bestPts && bestTrump && !isTrump) {
 				bestIdx, bestPts, bestTrump = i, pts, isTrump
 			}
@@ -706,7 +666,7 @@ func (t *Tarabish) chooseCpuCard(playerIdx int) int {
 	if t.partnerIsWinning(playerIdx) {
 		bestIdx, bestPts := valid[0], -1
 		for _, i := range valid {
-			if pts := TarabishCardPoints(p.GetCard(i), t.trumpSuit); pts > bestPts && !t.wouldWin(p.GetCard(i)) {
+			if pts := JassFamilyCardPoints(p.GetCard(i), t.trumpSuit); pts > bestPts && !t.wouldWin(p.GetCard(i)) {
 				bestIdx, bestPts = i, pts
 			}
 		}
@@ -717,9 +677,9 @@ func (t *Tarabish) chooseCpuCard(playerIdx int) int {
 	if idx, ok := t.pickWinning(p, valid); ok {
 		return idx
 	}
-	bestIdx, bestPts := valid[0], TarabishCardPoints(p.GetCard(valid[0]), t.trumpSuit)
+	bestIdx, bestPts := valid[0], JassFamilyCardPoints(p.GetCard(valid[0]), t.trumpSuit)
 	for _, i := range valid[1:] {
-		if pts := TarabishCardPoints(p.GetCard(i), t.trumpSuit); pts < bestPts {
+		if pts := JassFamilyCardPoints(p.GetCard(i), t.trumpSuit); pts < bestPts {
 			bestIdx, bestPts = i, pts
 		}
 	}
@@ -765,7 +725,7 @@ func (t *Tarabish) pickWinning(p *TarabishPlayer, valid []int) (int, bool) {
 		if !t.wouldWin(c) {
 			continue
 		}
-		if pts := TarabishCardPoints(c, t.trumpSuit); bestIdx < 0 || pts < bestPts {
+		if pts := JassFamilyCardPoints(c, t.trumpSuit); bestIdx < 0 || pts < bestPts {
 			bestIdx, bestPts = i, pts
 		}
 	}

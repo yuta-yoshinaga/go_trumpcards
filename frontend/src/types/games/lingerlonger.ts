@@ -51,6 +51,8 @@ export interface LingerLongerResponse extends BaseGameResponse {
    */
   stockSize: number;
   currentTrick: LingerLongerTrickCard[];
+  /** Plays in the most recently completed trick. */
+  lastTrick: LingerLongerTrickCard[];
   currentPlayerIdx: number;
   leadPlayerIdx: number;
   /** Tricks resolved so far. */

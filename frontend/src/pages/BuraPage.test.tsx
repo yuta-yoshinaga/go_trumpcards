@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { buraApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -65,14 +65,62 @@ describe('BuraPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  it('never renders the opponent hand as cards', async () => {
+  it('keeps the opponent hand face down during play', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        gameEndFlag: false,
+        players: [human(), cpu({ cardCount: 2, cards: [card('HEART', 1), card('DIAMOND', 10)], hidden: false })],
+      }),
+    );
     renderWithProviders(<BuraPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
 
-    // The human's three cards are buttons; the opponent's are backs, which are
-    // not. If the page ever renders the opponent from `cards`, this count moves.
+    const opponentHandContainer = screen.getByRole('img', { name: /CPU.*手札/ });
+    const opponentHand = within(opponentHandContainer);
+    expect(opponentHand.getAllByAltText('カード裏面')).toHaveLength(2);
+    expect(screen.queryByAltText('♥ A')).not.toBeInTheDocument();
+    expect(screen.queryByAltText('♦ 10')).not.toBeInTheDocument();
+    expect(opponentHandContainer).not.toHaveAttribute('role', 'group');
+
+    // The human's three cards remain buttons; opponent backs are not.
     const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
     expect(cardButtons).toHaveLength(3);
+  });
+
+  it('reveals the opponent hand after the game ends', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        gameEndFlag: true,
+        players: [human(), cpu({ cards: [card('HEART', 1), card('DIAMOND', 10)], hidden: false })],
+      }),
+    );
+    renderWithProviders(<BuraPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const opponentHand = within(screen.getByRole('group', { name: 'CPU の手札（公開）' }));
+    expect(opponentHand.getByRole('img', { name: '♥ A' })).toBeInTheDocument();
+    expect(opponentHand.getByRole('img', { name: '♦ 10' })).toBeInTheDocument();
+    expect(screen.queryAllByAltText('カード裏面')).toHaveLength(0);
+  });
+
+  it('identifies the lead player visually and in each card label, and hides it with no lead', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ currentLead: [card('DIAMOND', 13), card('DIAMOND', 12)], leadPlayerIdx: 1 }),
+    );
+    renderWithProviders(<BuraPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.getByText('CPU 1が出しました')).toBeInTheDocument();
+    expect(screen.getByAltText('CPU 1が出したカード: ♦ K')).toBeInTheDocument();
+    expect(screen.getByAltText('CPU 1が出したカード: ♦ Q')).toBeInTheDocument();
+
+    cleanup();
+    mockExec.mockResolvedValue(makeState({ currentLead: [], leadPlayerIdx: 0 }));
+    renderWithProviders(<BuraPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByText('あなたがリードします')).toBeInTheDocument();
+    expect(screen.queryByText(/が出しました$/)).not.toBeInTheDocument();
   });
 
   it('plays the selected cards and clears the selection', async () => {

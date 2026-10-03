@@ -29,12 +29,13 @@
   "you": "あなた",
   "cpu": "CPU {{id}}",
   "yourTeam": "あなたのチーム",
+  "playerTeam": "{{player}}（{{team}}）",
   "trickWinner": "{{team}} がトリック獲得",
   "team": {
     "a": "チームA",
     "b": "チームB"
   },
-  "teamScore": "{{team}}: {{score}}ゲームポイント",
+  "teamScore": "{{team}}: {{score}} / {{target}}ゲームポイント",
   "playButton": "出す",
   "selectedCards": "選択中: {{cards}}",
   "noCardSelected": "カード未選択",

@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { clocksolitaireApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -392,6 +392,52 @@ describe('ClockSolitairePage', () => {
     await waitFor(() => expect(screen.getByTestId('cs-live-region')).toHaveTextContent(/3時/));
   });
 
+  it('announces the card just moved and clears it after undo', async () => {
+    restoreCliModeDefault();
+    mockExec
+      .mockReset()
+      .mockResolvedValueOnce({ ...playingState, currentCard: card('SPADE', 5) })
+      .mockResolvedValueOnce({ ...playingState, stepCount: 1, canUndo: true, currentCard: card('HEART', 3) })
+      .mockResolvedValueOnce({ ...playingState, canUndo: false, currentCard: card('SPADE', 5) });
+    renderWithProviders(<ClockSolitairePage />);
+    const live = await screen.findByTestId('cs-live-region');
+    fireEvent.click(await screen.findByTestId('cs-step-button'));
+    await waitFor(() => expect(live).toHaveTextContent('♠ 5'));
+    expect(live).toHaveTextContent('5時');
+    expect(live).not.toHaveTextContent('♥ 3');
+    fireEvent.click(await screen.findByTestId('cs-undo-button'));
+    await waitFor(() => expect(live).not.toHaveTextContent('♠ 5'));
+  });
+
+  it('announces the center pile when the moved card is a king', async () => {
+    restoreCliModeDefault();
+    mockExec
+      .mockReset()
+      .mockResolvedValueOnce({ ...playingState, currentCard: card('SPADE', 13) })
+      .mockResolvedValueOnce({ ...playingState, stepCount: 1, currentCard: card('HEART', 3) });
+    renderWithProviders(<ClockSolitairePage />);
+    const live = await screen.findByTestId('cs-live-region');
+    fireEvent.click(await screen.findByTestId('cs-step-button'));
+    await waitFor(() => expect(live).toHaveTextContent('♠ Kを中央（K）の山に配置しました'));
+  });
+
+  it('clears the step announcement after reset', async () => {
+    restoreCliModeDefault();
+    mockExec
+      .mockReset()
+      .mockResolvedValueOnce(playingState)
+      .mockResolvedValueOnce({ ...playingState, stepCount: 1, canUndo: true, currentCard: card('HEART', 3) })
+      .mockResolvedValueOnce(playingState);
+    renderWithProviders(<ClockSolitairePage />);
+    const live = await screen.findByTestId('cs-live-region');
+    fireEvent.click(await screen.findByTestId('cs-step-button'));
+    await waitFor(() => expect(live).toHaveTextContent('♠ 5を5時の山に配置しました'));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    const confirm = await screen.findByRole('alertdialog');
+    fireEvent.click(within(confirm).getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(live).not.toHaveTextContent('♠ 5を5時の山に配置しました'));
+  });
+
   it('announces the centre pile for a king', async () => {
     localStorage.clear();
     mockExec.mockReset();
@@ -403,6 +449,22 @@ describe('ClockSolitairePage', () => {
 
 // #5523: 「あと何山で揃うか」は CLI ターミナルを開いたときだけ見える計算だった。
 describe('ClockSolitairePage progress', () => {
+  it('names each clock pile and the centre pile with position and progress', async () => {
+    const fuc = Array(13).fill(0);
+    fuc[0] = 4;
+    fuc[11] = 2;
+    fuc[12] = 3;
+    mockExec.mockResolvedValue({ ...playingState, faceUpCount: fuc });
+    renderWithProviders(<ClockSolitairePage />);
+
+    const completedPile = await screen.findByText('1時の山、表向き4枚、完成');
+    const incompletePile = screen.getByText('12時の山、表向き2枚、未完成');
+    const centerPile = screen.getByText('中央のKの山、表向き3枚、未完成');
+    expect(completedPile.closest('fieldset')).toBeInTheDocument();
+    expect(incompletePile.closest('fieldset')).toBeInTheDocument();
+    expect(centerPile.closest('fieldset')).toBeInTheDocument();
+  });
+
   it('shows how many piles are finished in the header', async () => {
     mockExec.mockResolvedValue(playingState); // 1枚だけ表なので完成 0
     renderWithProviders(<ClockSolitairePage />);

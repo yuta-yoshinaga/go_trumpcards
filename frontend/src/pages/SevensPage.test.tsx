@@ -246,7 +246,7 @@ describe('SevensPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /パス/ })).toBeDisabled());
     expect(screen.getByText('あなたの手番ではありません')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /パス/, description: 'あなたの手番ではありません' })).toBeInTheDocument();
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.getByTestId('joker-placement-live')).toBeEmptyDOMElement();
   });
 
   it('pass button is disabled when game has ended', async () => {
@@ -710,7 +710,7 @@ describe('SevensPage', () => {
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByAltText('ジョーカー')).toBeInTheDocument());
     const jokerBtn = screen.getByAltText('ジョーカー').closest('button');
-    expect(jokerBtn).toBeDisabled();
+    expect(jokerBtn).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('shows cancel button when joker card is selected for placement', async () => {
@@ -784,12 +784,37 @@ describe('SevensPage', () => {
     expect(boardButtons6.length).toBeGreaterThan(0);
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue(humanTurnState);
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      tablePlaced: [0, 128 | 64, 128, 128, 128],
+    });
     fireEvent.click(boardButtons6[0]);
 
     // exec is called as: sevensApi.exec('joker', 0, suit, 6)
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('joker', 0, expect.any(Number), 6));
+    expect(await screen.findByTestId('joker-placement-live')).toHaveTextContent('ジョーカーを♠の6に配置しました');
   }, 10000);
+
+  it('does not announce a rejected joker placement', async () => {
+    const jokerHandState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, jokerCount: 1 },
+      players: [
+        { ...humanTurnState.players[0], cardCount: 1, cards: [{ design: 'JOKER', value: 0 }] },
+        ...humanTurnState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(jokerHandState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByAltText('ジョーカー')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('ジョーカー'));
+    const target = screen.getAllByRole('button', { name: /6 に配置/ })[0];
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...humanTurnState, message: 'invalid placement', messageCode: '' });
+    fireEvent.click(target);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('joker', 0, expect.any(Number), 6));
+    expect(screen.getByTestId('joker-placement-live')).toBeEmptyDOMElement();
+  });
 
   it('shows rank badge when human player finishes', async () => {
     const humanFinishedState: SevensResponse = {
@@ -1055,7 +1080,7 @@ describe('SevensPage', () => {
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByAltText('ジョーカー')).toBeInTheDocument());
     const jokerBtn = screen.getByAltText('ジョーカー').closest('button');
-    expect(jokerBtn).toBeDisabled();
+    expect(jokerBtn).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('shows joker played without target info when targetSuit is 0', async () => {

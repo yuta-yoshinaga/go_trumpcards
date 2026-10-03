@@ -34,6 +34,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { playerName } from '../utils/playerUtils';
 import { rummy500HandPenalty } from '../utils/rummy500HandPenalty';
+import { rummy500MeldScore } from '../utils/rummy500MeldScore';
 import { classifyRummy500Meld } from '../utils/rummy500MeldValidator';
 import { rummy500PickupCount } from '../utils/rummy500PickupCount';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -132,6 +133,7 @@ function Rummy500PageContent() {
     .map((i) => humanPlayer?.cards[i])
     .filter((c): c is NonNullable<typeof c> => c !== undefined);
   const meldValid = classifyRummy500Meld(selectedMeldCards).valid;
+  const meldScorePreview = meldValid ? rummy500MeldScore(selectedMeldCards) : null;
   // 選択中の 1 枚を、選んだメルドに本当に置けるか。
   const selectedLayoffIsLegal =
     layoffTarget !== null &&
@@ -369,6 +371,9 @@ function Rummy500PageContent() {
                               width={cardWidth * 0.6}
                             />
                           ))}
+                          <span className="self-center text-xs text-ds-text-muted">
+                            {t('meldScore', { score: meld.score })}
+                          </span>
                         </button>
                       );
                     })}
@@ -447,6 +452,12 @@ function Rummy500PageContent() {
               </button>
             ))}
           </div>
+        )}
+
+        {meldScorePreview !== null && (
+          <p data-testid="r5-meld-score-preview" className="mb-2 text-xs text-ds-text-muted">
+            {t('meldScorePreview', { score: meldScorePreview })}
+          </p>
         )}
 
         <ErrorAlert message={error} onRetry={retry} />

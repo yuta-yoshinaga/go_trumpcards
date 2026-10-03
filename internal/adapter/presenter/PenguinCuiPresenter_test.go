@@ -58,6 +58,7 @@ func TestPenguinCuiPresenterOutputGameOver(t *testing.T) {
 	result := p.Output(g, nil)
 
 	assert.Contains(t, result, "ゲームオーバー")
+	assert.Contains(t, result, "手数: 0")
 }
 
 func TestPenguinCuiPresenterOutputStalemate(t *testing.T) {

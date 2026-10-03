@@ -12,6 +12,7 @@ function state(overrides: Partial<CasinoWarResponse> = {}): CasinoWarResponse {
     warBet: 0,
     result: 0,
     totalPayout: 0,
+    netChange: 0,
     message: '',
     ...overrides,
   };

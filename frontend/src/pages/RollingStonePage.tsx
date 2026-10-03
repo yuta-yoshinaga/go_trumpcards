@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { rollingstoneApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -62,6 +62,46 @@ function RollingStonePageContent() {
   const { cardWidth } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('rollingstone', state);
   const [playerCnt, setPlayerCnt] = useState(4);
+  const [trickAnnouncement, setTrickAnnouncement] = useState('');
+  const announcedTrickRef = useRef<{ trick: RollingStoneResponse['currentTrick']; number: number } | null>(null);
+
+  useEffect(() => {
+    if (!state) return;
+    const previous = announcedTrickRef.current;
+    if (previous === null) {
+      announcedTrickRef.current = { trick: state.currentTrick, number: state.trickNumber };
+      return;
+    }
+    let appended: RollingStoneResponse['currentTrick'];
+    let resolved = false;
+    if (state.trickNumber === previous.number) {
+      appended = state.currentTrick.slice(previous.trick.length);
+    } else if (state.trickNumber === previous.number + 1) {
+      // When one response completes multiple tricks, only the latest completed trick is announced.
+      appended = state.lastTrick.slice(previous.trick.length);
+      resolved = true;
+    } else {
+      appended = state.currentTrick;
+    }
+    if (appended.length > 0) {
+      const played = appended
+        .map(({ playerIdx, card }) => {
+          const name = playerIdx === 0 ? t('header.you') : t('header.cpu', { idx: String(playerIdx) });
+          return t('cardPlayed', { name, card: cardAlt(card) });
+        })
+        .join(t('listSeparator'));
+      const nextTrick = state.currentTrick
+        .map(({ playerIdx, card }) => {
+          const name = playerIdx === 0 ? t('header.you') : t('header.cpu', { idx: String(playerIdx) });
+          return t('cardPlayed', { name, card: cardAlt(card) });
+        })
+        .join(t('listSeparator'));
+      setTrickAnnouncement(
+        resolved ? `${played}${t('listSeparator')}${t('trickResolved')}${t('listSeparator')}${nextTrick}` : played,
+      );
+    }
+    announcedTrickRef.current = { trick: state.currentTrick, number: state.trickNumber };
+  }, [state, t]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('rollingstone');
   const cliConfig: CliGameConfig<RollingStoneResponse, Parameters<typeof rollingstoneApi.exec>> = useMemo(
@@ -175,16 +215,16 @@ function RollingStonePageContent() {
             </div>
 
             {/* **手札の枚数がそのまま順位。** 得点表示は無い。 */}
-            <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="rs-seats">
+            <ul className="flex flex-wrap justify-center gap-2 mb-4 list-none p-0" data-tutorial="rs-seats">
               {state.players.map((p) => (
-                <div
+                <li
                   key={p.id}
                   className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
                   data-testid={`rs-seat-${p.id.toString()}`}
                 >
-                  <span className="text-ds-text-primary">
+                  <h2 className="m-0 inline font-normal text-ds-text-primary">
                     {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                  </span>
+                  </h2>
                   {p.finishedAt > 0 && (
                     <span className="ml-1 text-ds-accent">{t('header.finished', { rank: String(p.finishedAt) })}</span>
                   )}
@@ -195,9 +235,9 @@ function RollingStonePageContent() {
                   <span className="text-ds-accent">{t('header.cards', { n: String(p.cardCount) })}</span>
                   {' / '}
                   {t('header.pickups', { n: String(p.pickups) })}
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
 
             <div data-tutorial="rs-trick">
               <TrickDisplay
@@ -206,6 +246,9 @@ function RollingStonePageContent() {
                 cardWidth={cardWidth}
                 label={t('currentTrick')}
               />
+            </div>
+            <div aria-live="polite" aria-atomic="true" className="sr-only" data-testid="rs-trick-announcement">
+              {trickAnnouncement}
             </div>
 
             {resultBanner && (

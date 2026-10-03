@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { followTheQueenApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { FollowTheQueenResponse } from '../types/card';
@@ -341,6 +342,67 @@ describe('FollowTheQueenPage', () => {
     await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
   });
 
+  it('shows the main pot and side pots with eligible player names in showdown', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      sidePots: [
+        {
+          amount: 300,
+          eligiblePlayers: [0, 1, 2],
+          winners: [
+            { playerIdx: 0, amount: 150 },
+            { playerIdx: 1, amount: 150 },
+          ],
+        },
+        { amount: 100, eligiblePlayers: [0, 2], winners: [{ playerIdx: 2, amount: 100 }] },
+        { amount: 50, eligiblePlayers: [2], winners: [{ playerIdx: 2, amount: 50 }] },
+      ],
+    });
+    renderWithProviders(<FollowTheQueenPage />);
+    await waitFor(() =>
+      expect(
+        screen.getByText('メインポット: 300チップ（対象: あなた、CPU 1、CPU 2）（獲得: あなた 150、CPU 1 150）'),
+      ).toBeInTheDocument(),
+    );
+    expect(screen.getByText('サイドポット1: 100チップ（対象: あなた、CPU 2）（獲得: CPU 2 100）')).toBeInTheDocument();
+    expect(screen.getByText('サイドポット2: 50チップ（対象: CPU 2）（獲得: CPU 2 50）')).toBeInTheDocument();
+  });
+
+  it('shows the sole winner when showdown has a single pot entry', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      sidePots: [{ amount: 150, eligiblePlayers: [0, 1], winners: [{ playerIdx: 0, amount: 150 }] }],
+    });
+    renderWithProviders(<FollowTheQueenPage />);
+    await waitFor(() =>
+      expect(
+        screen.getByText('メインポット: 150チップ（対象: あなた、CPU 1）（獲得: あなた 150）'),
+      ).toBeInTheDocument(),
+    );
+  });
+
+  it('uses English award wording without Japanese full-width parentheses', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [humanPlayer(), cpuPlayer(1), cpuPlayer(2)],
+      sidePots: [{ amount: 150, eligiblePlayers: [0, 1], winners: [{ playerIdx: 0, amount: 150 }] }],
+    });
+    const { unmount } = renderWithProviders(<FollowTheQueenPage />);
+    try {
+      const pot = await screen.findByText(
+        (_, element) => element?.tagName === 'P' && !!element.textContent?.includes('Main pot'),
+      );
+      expect(pot.textContent).toContain('Awarded:');
+      expect(pot.textContent).not.toContain('（');
+      expect(pot.textContent).not.toContain('）');
+    } finally {
+      unmount();
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('does not show round results when not in showdown', async () => {
     mockExec.mockResolvedValue(thirdStreetState);
     renderWithProviders(<FollowTheQueenPage />);
@@ -408,7 +470,7 @@ describe('FollowTheQueenPage', () => {
   it('shows call/raise buttons when canAct and has outstanding bet', async () => {
     mockExec.mockResolvedValue(thirdStreetWithBetState);
     renderWithProviders(<FollowTheQueenPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();

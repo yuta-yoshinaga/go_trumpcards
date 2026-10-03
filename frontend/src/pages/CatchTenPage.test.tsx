@@ -1,6 +1,7 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { catchtenApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CatchTenResponse } from '../types/card';
 import { CatchTenPage } from './CatchTenPage';
@@ -9,6 +10,16 @@ vi.mock('../api/gameApi', () => ({
   catchtenApi: { exec: vi.fn() },
   actionLogApi: { catchten: vi.fn() },
 }));
+
+const mobileFlag = { value: false };
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileFlag.value }),
+  };
+});
 
 const mockExec = vi.mocked(catchtenApi.exec);
 
@@ -53,10 +64,47 @@ const playState = makeState();
 const gameEndState = makeState({ phase: 3, gameEndFlag: true, winnerTeam: 0 });
 
 beforeEach(() => {
+  mobileFlag.value = false;
   mockExec.mockResolvedValue(playState);
 });
 
 describe('CatchTenPage', () => {
+  it('shows the configured target score alongside team scores', async () => {
+    renderWithProviders(<CatchTenPage />);
+    expect(await screen.findByText(/チームスコア · 目標: 41/)).toBeInTheDocument();
+  });
+
+  it('includes the player name in each trick card accessible label', async () => {
+    mockExec.mockResolvedValue(makeState({ currentTrick: [{ playerIdx: 1, card: card('SPADE', 1) }] }));
+    renderWithProviders(<CatchTenPage />);
+
+    const trickCards = await screen.findByTestId('trick-display-cards');
+    await waitFor(() => expect(trickCards.querySelector('img')).toHaveAttribute('alt', 'CPU 1が出した♠ A'));
+  });
+
+  it('localizes the trick card accessible label in English', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(makeState({ currentTrick: [{ playerIdx: 1, card: card('SPADE', 1) }] }));
+      renderWithProviders(<CatchTenPage />);
+
+      const trickCards = await screen.findByTestId('trick-display-cards');
+      await waitFor(() => expect(trickCards.querySelector('img')).toHaveAttribute('alt', '♠ A played by CPU 1'));
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
+  it('shows the configured target score in the mobile team-score summary', async () => {
+    mobileFlag.value = true;
+    renderWithProviders(<CatchTenPage />);
+    const scoreHeading = await screen.findByText(/チームスコア · 目標: 41/);
+    const summary = scoreHeading.closest('summary');
+    expect(summary).toBeInTheDocument();
+    expect(summary).toHaveTextContent('目標: 41');
+  });
+
   it('badges trump honors, but not non-trumps or cards before trump is known', async () => {
     mockExec.mockResolvedValue(
       makeState({
@@ -179,7 +227,7 @@ describe('CatchTenPage', () => {
     await waitFor(() => expect(screen.getAllByText('チーム 0').length).toBeGreaterThan(0));
     // Score-table cells render the team label inside a colored chip span.
     const team0Chips = screen.getAllByText('チーム 0').filter((el) => el.className.includes('text-ds-info'));
-    const team1Chips = screen.getAllByText('チーム 1').filter((el) => el.className.includes('text-ds-error'));
+    const team1Chips = screen.getAllByText('チーム 1').filter((el) => el.className.includes('text-ds-error-text'));
     expect(team0Chips.length).toBeGreaterThan(0);
     expect(team1Chips.length).toBeGreaterThan(0);
   });

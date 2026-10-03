@@ -43,6 +43,17 @@ func (p *CribbageWebPresenter) Output(g interfaces.CribbageGame, lastErr error) 
 	// ペギングで出されたカード
 	pegCards := g.GetPegPlayedCards()
 	resObj.PegPlayedCards = make([]*controller.WebOutputCard, 0, len(pegCards))
+	resObj.PegPlayedBy = append([]int{}, g.GetPegPlayedBy()...)
+	pegScoreEvents := g.GetPegScoreEvents()
+	resObj.PegScoreEvents = make([]controller.CribbageWebOutputPegScoreEvent, 0, len(pegScoreEvents))
+	for _, event := range pegScoreEvents {
+		d := event.Detail
+		resObj.PegScoreEvents = append(resObj.PegScoreEvents, controller.CribbageWebOutputPegScoreEvent{
+			PlayerIdx: event.PlayerIdx, Fifteen: d.Fifteen, ThirtyOne: d.ThirtyOne,
+			Pair: d.Pair, ThreeOfAKind: d.ThreeOfAKind, FourOfAKind: d.FourOfAKind, Run: d.Run,
+			Go: d.Go, LastCard: d.LastCard, Total: d.Total,
+		})
+	}
 	for _, card := range pegCards {
 		resObj.PegPlayedCards = append(resObj.PegPlayedCards, cardToOutput(card))
 	}

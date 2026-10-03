@@ -19,6 +19,7 @@
   },
   "actions": {
     "play": "Play",
+    "playCardAria": "Play {{card}} ({{points}} points)",
     "next": "Next trick",
     "reset": "Reset",
     "hint": "Hint"

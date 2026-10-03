@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { buraApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardBack } from '../components/CardImage';
+import { CardBack, CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -26,9 +26,11 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BuraResponse } from '../types/card';
 import { BuraPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { BURA_HELP, parseBuraCommand } from '../utils/cli/commands/buraCommands';
 import { formatBuraState } from '../utils/cli/formatters/buraFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { findPlayerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const BURA_TUTORIAL_STEPS: TutorialStep[] = [
@@ -81,6 +83,7 @@ function BuraPageContent() {
   const opponents = state.players.filter((p) => !p.isHuman);
   const isHumanTurn = !ended && state.currentPlayerIdx === 0;
   const leadCount = state.currentLead.length;
+  const leadPlayerName = leadCount > 0 ? findPlayerName(state.players, state.leadPlayerIdx) : '';
   // The server also ships the exact indices it recommends; the tooltip only
   // carries the reason, so read them off the state response directly.
   const hintedIndices = new Set(state.hint?.cardIndices ?? []);
@@ -169,32 +172,61 @@ function BuraPageContent() {
               ))}
             </div>
 
-            {/* Opponent hands: backs only. The server withholds the cards, so
-                there is nothing here to reveal even by mistake. */}
             <div className="flex justify-center gap-4 mb-4">
-              {opponents.map((o) => (
-                <div key={`opp-${o.id.toString()}`} className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">{t('opponentHand', { n: o.cardCount })}</div>
-                  <div
-                    className="flex gap-1 justify-center"
-                    role="img"
-                    aria-label={t('opponentHandAriaLabel', { n: o.cardCount })}
-                  >
-                    {Array.from({ length: o.cardCount }, (_, i) => (
+              {opponents.map((o) => {
+                const revealed = ended && o.cards.length > 0;
+                const handCards = revealed
+                  ? o.cards.map((card, i) => (
+                      <CardImage
+                        key={`opp-${o.id.toString()}-c${i.toString()}`}
+                        card={card}
+                        ariaLabel={cardAlt(card)}
+                        width={cardWidth}
+                      />
+                    ))
+                  : Array.from({ length: o.cardCount }, (_, i) => (
                       <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                    ))}
+                    ));
+                return (
+                  <div key={`opp-${o.id.toString()}`} className="text-center">
+                    <div className="text-game-text-muted text-xs mb-1">{t('opponentHand', { n: o.cardCount })}</div>
+                    {revealed ? (
+                      <fieldset
+                        className="m-0 flex gap-1 justify-center border-0 p-0"
+                        aria-label={t('opponentHandRevealedAriaLabel')}
+                      >
+                        {handCards}
+                      </fieldset>
+                    ) : (
+                      <div
+                        className="flex gap-1 justify-center"
+                        role="img"
+                        aria-label={t('opponentHandAriaLabel', { n: o.cardCount })}
+                      >
+                        {handCards}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="text-center mb-4 min-h-24" data-tutorial="bura-table">
               <div className="text-game-text-muted text-xs mb-1">
                 {leadCount > 0 ? t('ledCards', { n: leadCount }) : t('noLead')}
               </div>
+              {leadCount > 0 && (
+                <div className="text-ds-text-primary text-sm mb-1">{t('leadPlayer', { name: leadPlayerName })}</div>
+              )}
               <div className="flex gap-1 justify-center">
                 {state.currentLead.map((card, i) => (
-                  <AnimatedCard key={`lead-${i.toString()}`} card={card} width={cardWidth} draggable={false} />
+                  <AnimatedCard
+                    key={`lead-${i.toString()}`}
+                    card={card}
+                    ariaLabel={t('leadCardAriaLabel', { name: leadPlayerName, card: cardAlt(card) })}
+                    width={cardWidth}
+                    draggable={false}
+                  />
                 ))}
               </div>
             </div>

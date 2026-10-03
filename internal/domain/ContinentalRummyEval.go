@@ -48,29 +48,6 @@ func ContinentalRummyLayouts() [][]int {
 	return out
 }
 
-// IsContinentalRummyLayout は枚数の並びが認められた上がりの形かを返す。
-// 並び順は問わない (4+3+4+4 も {4,4,4,3} と同じ形)。
-func IsContinentalRummyLayout(sizes []int) bool {
-	got := append([]int(nil), sizes...)
-	sort.Sort(sort.Reverse(sort.IntSlice(got)))
-	for _, want := range continentalRummyLayouts {
-		if len(want) != len(got) {
-			continue
-		}
-		ok := true
-		for i := range want {
-			if want[i] != got[i] {
-				ok = false
-				break
-			}
-		}
-		if ok {
-			return true
-		}
-	}
-	return false
-}
-
 // IsContinentalRummyJoker はその札がワイルドかを返す。
 //
 // **ワイルドはジョーカーだけ。** 2 をワイルドに含める流儀もあるが、出典が

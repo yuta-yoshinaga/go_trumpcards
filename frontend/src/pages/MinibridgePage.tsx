@@ -27,6 +27,7 @@ import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { MINIBRIDGE_HELP, parseMinibridgeCommand } from '../utils/cli/commands/minibridgeCommands';
 import { formatMinibridgeState } from '../utils/cli/formatters/minibridgeFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** The five denominations, in the order the contract buttons are offered. */
@@ -242,12 +243,25 @@ function MinibridgePageContent() {
               {state.players.map((p) => (
                 <div
                   key={p.id}
-                  className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                  className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
+                    state.phase === MinibridgePhase.PLAY && isHumanTurn && p.id === state.currentPlayerIdx
+                      ? 'ring-2 ring-ds-accent'
+                      : ''
+                  }`}
                   data-testid={`mb-seat-${p.id.toString()}`}
                 >
                   <span className="text-ds-text-primary">
                     {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
                   </span>
+                  {state.phase === MinibridgePhase.PLAY && isHumanTurn && p.id === state.currentPlayerIdx && (
+                    <span
+                      className="ml-1 text-ds-accent"
+                      aria-current="step"
+                      data-testid={`mb-turn-${p.id.toString()}`}
+                    >
+                      {t('header.currentTurn')}
+                    </span>
+                  )}
                   {/* **競りが無いぶん、味方が誰かは席表示でしか分からない** (#5761)。
                       CUI は最初から team を出しているのに、Web は契約が決まって
                       デクレアラー/ダミーのタグが付くまで何も出していなかった。 */}
@@ -287,6 +301,14 @@ function MinibridgePageContent() {
             {roundResult && (
               <div className="text-center my-3 text-ds-text-primary" role="status" data-testid="mb-round-result">
                 {roundResult}
+                {state.roundDelta.map((delta, team) => (
+                  <div key={team}>
+                    {t('roundResult.delta', {
+                      team: String(team),
+                      delta: formatSignedDelta(delta),
+                    })}
+                  </div>
+                ))}
               </div>
             )}
 

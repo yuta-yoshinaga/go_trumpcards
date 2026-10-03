@@ -28,6 +28,7 @@ const basePlayers: CanastaPlayerData[] = [
     red3s: [],
     roundScore: 0,
     cumulativeScore: 0,
+    scoreBreakdown: { meldCards: 0, canastaBonus: 0, red3Bonus: 0, goOutBonus: 0, handPenalty: 0 },
     hasCanasta: false,
     hasInitMeld: false,
   },
@@ -41,12 +42,14 @@ const basePlayers: CanastaPlayerData[] = [
     red3s: [],
     roundScore: 0,
     cumulativeScore: 0,
+    scoreBreakdown: { meldCards: 0, canastaBonus: 0, red3Bonus: 0, goOutBonus: 0, handPenalty: 0 },
     hasCanasta: false,
     hasInitMeld: false,
   },
 ];
 
 const drawPhaseState: CanastaResponse = {
+  minMeld: 50,
   players: basePlayers,
   phase: 0,
   roundNumber: 1,
@@ -130,6 +133,36 @@ describe('CanastaPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
+  it('shows server score breakdown only at round or game end, including hand penalty as a negative value', async () => {
+    const completedState: CanastaResponse = {
+      ...roundEndState,
+      players: [
+        {
+          ...basePlayers[0],
+          roundScore: 120,
+          scoreBreakdown: { meldCards: 70, canastaBonus: 50, red3Bonus: 100, goOutBonus: 100, handPenalty: 35 },
+        },
+        {
+          ...basePlayers[1],
+          roundScore: -20,
+          scoreBreakdown: { meldCards: 15, canastaBonus: 0, red3Bonus: 0, goOutBonus: 0, handPenalty: 35 },
+        },
+      ],
+    };
+    mockExec.mockResolvedValue(completedState);
+    const view = renderWithProviders(<CanastaPage />);
+    expect(await screen.findAllByText('メルド札')).toHaveLength(2);
+    expect(screen.getByText('70')).toBeInTheDocument();
+    expect(screen.getAllByText('100')).toHaveLength(2);
+    expect(screen.getAllByText('−35')).toHaveLength(2);
+
+    view.unmount();
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<CanastaPage />);
+    await waitFor(() => expect(screen.getAllByText('ラウンド').length).toBeGreaterThan(0));
+    expect(screen.queryByText('メルド札')).not.toBeInTheDocument();
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<CanastaPage />);
     await waitFor(() =>
@@ -163,10 +196,10 @@ describe('CanastaPage', () => {
   });
 
   it('shows the initial-meld minimum and selected total in the meld phase', async () => {
-    mockExec.mockResolvedValue(meldPhaseState); // score 0 → min 50; hasInitMeld false
+    mockExec.mockResolvedValue({ ...meldPhaseState, minMeld: 90 }); // score 0 → min 50; hasInitMeld false
     renderWithProviders(<CanastaPage />);
     const info = await screen.findByTestId('ca-meld-points');
-    expect(info).toHaveTextContent('初回メルド最低点: 50');
+    expect(info).toHaveTextContent('初回メルド最低点: 90');
     expect(info).toHaveTextContent('選択合計: 0');
   });
 
@@ -179,6 +212,22 @@ describe('CanastaPage', () => {
     const info = await screen.findByTestId('ca-meld-points');
     expect(info).toHaveTextContent('選択合計: 0');
     expect(info).not.toHaveTextContent('初回メルド最低点');
+  });
+
+  it('announces selected meld points in a permanent live region', async () => {
+    mockExec.mockResolvedValue({ ...meldPhaseState, minMeld: 90 });
+    renderWithProviders(<CanastaPage />);
+
+    const announcement = await screen.findByTestId('ca-meld-points-announcement');
+    expect(announcement).toHaveAttribute('role', 'status');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toHaveTextContent('初回メルド最低点: 90 / 選択合計: 0');
+    expect(announcement).toHaveClass('sr-only');
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ 7' }));
+    await waitFor(() => expect(announcement).toHaveTextContent('初回メルド最低点: 90 / 選択合計: 5'));
+    fireEvent.click(screen.getByRole('button', { name: '♠ 7' }));
+    await waitFor(() => expect(announcement).toHaveTextContent('初回メルド最低点: 90 / 選択合計: 0'));
   });
 
   // **最低点に届かない選択でボタンが押せてしまい、サーバのバリデーションで

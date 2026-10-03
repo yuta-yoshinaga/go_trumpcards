@@ -40,6 +40,7 @@ const nnFiveCards = `[{"d":1,"v":10,"f":true},{"d":2,"v":10,"f":true},{"d":3,"v"
 func setupNiuNiuWebMockDefaults(g *interfaces.MockNiuNiuGame) {
 	g.On("GetPhase").Return(domain.NiuNiuPhaseBet).Maybe()
 	g.On("GetChips").Return(900).Maybe()
+	g.On("GetDrawPileCount").Return(32).Maybe()
 	g.On("GetMaxMultiplier").Return(domain.NiuNiuMaxMultiplier).Maybe()
 	g.On("GetBankerIdx").Return(3).Maybe()
 	g.On("GetBankerRankKey").Return("none").Maybe()
@@ -71,6 +72,7 @@ func TestNiuNiuWebPresenter_Output(t *testing.T) {
 		result := parseNiuNiuOutput(t, new(NiuNiuWebPresenter).Output(g, nil))
 		assert.Equal(t, domain.NiuNiuPhaseBet, result.Phase)
 		assert.Equal(t, 900, result.Chips)
+		assert.Equal(t, 32, result.DrawPileCount)
 		assert.Len(t, result.Seats, 4)
 		assert.Equal(t, 3, result.BankerIdx)
 		assert.Equal(t, "niuniu.placeBet", result.MessageCode)

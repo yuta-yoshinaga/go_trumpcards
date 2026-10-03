@@ -37,6 +37,9 @@ func (m *MockMarriageGame) GetDealerIdx() int        { return m.Called().Int(0) 
 func (m *MockMarriageGame) GetDiscardTop() *domain.Card {
 	return m.Called().Get(0).(*domain.Card)
 }
+func (m *MockMarriageGame) GetDiscardPile() []*domain.Card {
+	return m.Called().Get(0).([]*domain.Card)
+}
 func (m *MockMarriageGame) GetDrawPileCount() int { return m.Called().Int(0) }
 func (m *MockMarriageGame) GetWildJoker() *domain.Card {
 	return m.Called().Get(0).(*domain.Card)

@@ -226,4 +226,53 @@ describe('TutePage', () => {
     // Negative control: last trick bonus must not appear during play phase
     expect(screen.queryByTestId('tute-last-trick-bonus')).not.toBeInTheDocument();
   });
+
+  it('shows a collapsible scoring reference during play', async () => {
+    renderWithProviders(<TutePage />);
+    const summary = await screen.findByText('カード点早見表');
+    const details = summary.closest('details');
+    expect(details).not.toBeNull();
+    expect(details).not.toHaveAttribute('open');
+    fireEvent.click(summary);
+    expect(details).toHaveAttribute('open');
+    expect(details).toHaveTextContent('A: 11点');
+    expect(details).toHaveTextContent('3: 10点');
+    expect(details).toHaveTextContent('K: 4点');
+    expect(details).toHaveTextContent('Q: 3点');
+    expect(details).toHaveTextContent('J: 2点');
+    expect(details).toHaveTextContent('最終トリック: +10点');
+  });
+
+  it('translates the scoring reference into English', async () => {
+    const i18n = (await import('../i18n')).default;
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<TutePage />);
+      const summary = await screen.findByText('Card scoring reference');
+      fireEvent.click(summary);
+      const details = summary.closest('details');
+      expect(details).toHaveTextContent('A: 11 points');
+      expect(details).toHaveTextContent('3: 10 points');
+      expect(details).toHaveTextContent('K: 4 points');
+      expect(details).toHaveTextContent('Q: 3 points');
+      expect(details).toHaveTextContent('J: 2 points');
+      expect(details).toHaveTextContent('Last trick: +10 points');
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
+  it('shows each team score and the configured target during play', async () => {
+    mockExec.mockResolvedValue(
+      makeTuteState({
+        teamScores: [80, 121],
+        config: { cpuDifficulty: 1, targetPoints: 121 },
+      }),
+    );
+    renderWithProviders(<TutePage />);
+
+    expect(await screen.findByText('チームA: 80 / 目標 121点')).toBeInTheDocument();
+    expect(screen.getByText('チームB: 121 / 目標 121点')).toBeInTheDocument();
+  });
 });

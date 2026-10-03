@@ -33,7 +33,7 @@ import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import { classifyTienLenCombo } from '../utils/tienLenComboValidator';
+import { classifyTienLenCombo, type TienLenCombo, tienLenPlayability } from '../utils/tienLenComboValidator';
 
 // Values match the Go domain constants: 0=Normal, 1=Easy, 2=Hard
 // (see TienLenConfig.go / TienLenCuiController help text).
@@ -146,12 +146,17 @@ function TienLenPageContent() {
   const isGameEnd = state.gameEndFlag;
   const humanWon = isGameEnd && state.players[0]?.rank === 1;
   const isHumanTurn = state.currentTurn === 0 && !isGameEnd;
+  const canPass = isHumanTurn && state.tableCards.length > 0 && !loading;
   const human = state.players[0];
   const selectedCards = selectedIndices.map((i) => human.cards[i]).filter((c): c is NonNullable<typeof c> => c != null);
   const selectedCombo = classifyTienLenCombo(selectedCards);
   const hasValidCombo = selectedCards.length > 0 && selectedCombo !== 'invalid';
+  const playability =
+    hasValidCombo && state.tableCards.length > 0
+      ? tienLenPlayability(selectedCards, state.tableCards, TIENLEN_PLAY_TYPE_KEYS[state.tablePlayType] as TienLenCombo)
+      : 'ok';
   const isBomb = selectedCombo === 'threePairRun' || selectedCombo === 'fourOfAKind';
-  const canPlay = isHumanTurn && selectedIndices.length > 0 && hasValidCombo;
+  const canPlay = isHumanTurn && selectedIndices.length > 0 && hasValidCombo && playability === 'ok';
   const showInvalidCombo = isHumanTurn && selectedIndices.length > 0 && !hasValidCombo;
   const showComboType = isHumanTurn && selectedIndices.length > 0 && hasValidCombo;
   const phaseName = isGameEnd ? t('phase.end') : t('phase.play');
@@ -177,7 +182,7 @@ function TienLenPageContent() {
         <>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             {error && (
-              <button type="button" onClick={retry} className="text-ds-error underline">
+              <button type="button" onClick={retry} className="text-ds-error-text underline">
                 {error}
               </button>
             )}
@@ -312,11 +317,21 @@ function TienLenPageContent() {
                 {t('invalidCombo')}
               </p>
             )}
+            {isHumanTurn && hasValidCombo && playability !== 'ok' && (
+              <p
+                role="status"
+                data-testid="tl-unplayable-reason"
+                className="mb-1 text-center font-medium text-ds-warning text-xs"
+              >
+                {t(`unplayable.${playability}`)}
+              </p>
+            )}
             <div className="flex gap-2 justify-center flex-wrap" data-tutorial="tl-play-pass">
               <button
                 type="button"
                 onClick={handlePlay}
                 disabled={loading || !canPlay}
+                aria-disabled={isHumanTurn && hasValidCombo && playability !== 'ok' ? 'true' : undefined}
                 className="px-4 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="play-button"
               >
@@ -324,13 +339,23 @@ function TienLenPageContent() {
               </button>
               <button
                 type="button"
-                onClick={handlePass}
+                onClick={() => {
+                  if (!canPass) return;
+                  handlePass();
+                }}
                 disabled={loading || !isHumanTurn}
-                className="px-4 py-2 rounded-lg bg-ds-warning hover:bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                aria-disabled={isHumanTurn && state.tableCards.length === 0 ? 'true' : undefined}
+                aria-describedby={isHumanTurn && state.tableCards.length === 0 ? 'tl-pass-unavailable' : undefined}
+                className="px-4 py-2 rounded-lg bg-ds-warning hover:bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed aria-disabled:opacity-40 aria-disabled:cursor-not-allowed text-sm"
                 data-testid="pass-button"
               >
                 {t('passButton')}
               </button>
+              {isHumanTurn && state.tableCards.length === 0 && (
+                <span id="tl-pass-unavailable" className="sr-only">
+                  {t('passUnavailable')}
+                </span>
+              )}
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={onReset}

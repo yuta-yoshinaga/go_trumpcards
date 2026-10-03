@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"reflect"
 	"testing"
 )
 
@@ -614,9 +615,9 @@ func TestPinochleCardPointValue(t *testing.T) {
 	}
 	for _, tt := range tests {
 		card := NewCard(CardDesignSpade, tt.value, false)
-		got := pinochleCardPointValue(card)
+		got := AceTenCardPoints(card)
 		if got != tt.expected {
-			t.Errorf("pinochleCardPointValue(value=%d) = %d, want %d", tt.value, got, tt.expected)
+			t.Errorf("AceTenCardPoints(value=%d) = %d, want %d", tt.value, got, tt.expected)
 		}
 	}
 }
@@ -953,6 +954,9 @@ func TestPinochle_ScoreRound_BidSuccess(t *testing.T) {
 
 	g.phase = PinochlePhaseRoundEnd
 	g.scoreRound()
+	if made, ok := g.GetLastContractMade(); !ok || !made {
+		t.Fatalf("expected recorded successful contract, got made=%v ok=%v", made, ok)
+	}
 
 	// チーム0: trickPoints(15) + meldPoints(10) = 25 >= bid(20) → 25加算
 	if g.teamScores[0] != 25 {
@@ -986,6 +990,9 @@ func TestPinochle_ScoreRound_BidFailure(t *testing.T) {
 
 	g.phase = PinochlePhaseRoundEnd
 	g.scoreRound()
+	if made, ok := g.GetLastContractMade(); !ok || made {
+		t.Fatalf("expected recorded failed contract, got made=%v ok=%v", made, ok)
+	}
 
 	// チーム0: total 25 < bid 50 → -50
 	if g.teamScores[0] != -50 {
@@ -994,6 +1001,34 @@ func TestPinochle_ScoreRound_BidFailure(t *testing.T) {
 	// チーム1: 15点
 	if g.teamScores[1] != 15 {
 		t.Errorf("expected team 1 score 15, got %d", g.teamScores[1])
+	}
+}
+
+func TestPinochle_ContractResultSnapshotCompatibility(t *testing.T) {
+	g := newTestPinochle()
+	g.lastContractMade = true
+	g.hasContractResult = true
+	data, err := json.Marshal(g)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var restored Pinochle
+	if err := json.Unmarshal(data, &restored); err != nil {
+		t.Fatal(err)
+	}
+	if made, ok := restored.GetLastContractMade(); !ok || !made {
+		t.Fatalf("snapshot lost contract result: made=%v ok=%v", made, ok)
+	}
+	if err := json.Unmarshal([]byte(`{"ph":5}`), &restored); err != nil {
+		t.Fatal(err)
+	}
+	if made, ok := restored.GetLastContractMade(); ok || made {
+		t.Fatalf("old snapshot should have unresolved result: made=%v ok=%v", made, ok)
+	}
+	g.phase = PinochlePhaseRoundEnd
+	g.NextRound()
+	if made, ok := g.GetLastContractMade(); ok || made {
+		t.Fatalf("next round should clear the prior contract result: made=%v ok=%v", made, ok)
 	}
 }
 
@@ -1333,6 +1368,50 @@ func TestPinochle_NextTrick(t *testing.T) {
 	}
 	if g.GetTrickNumber() != 2 {
 		t.Errorf("expected trick number 2, got %d", g.GetTrickNumber())
+	}
+}
+
+func TestPinochle_KeepsLastTrickUntilNewDeal(t *testing.T) {
+	g := setupPlayPhase(t)
+	plays := []int{0, 0, 0, 0}
+	for playerIdx, cardIdx := range plays {
+		if err := g.doPlay(playerIdx, cardIdx); err != nil {
+			t.Fatalf("play %d: %v", playerIdx, err)
+		}
+	}
+	g.ResolveTrick()
+	g.NextTrick()
+
+	if len(g.GetCurrentTrick()) != 0 {
+		t.Fatalf("current trick length after NextTrick = %d, want 0", len(g.GetCurrentTrick()))
+	}
+	if got := g.GetLastTrick(); len(got) != PinochlePlayerCnt {
+		t.Fatalf("last trick length = %d, want %d", len(got), PinochlePlayerCnt)
+	}
+	for i, play := range g.GetLastTrick() {
+		if play.PlayerIdx != i {
+			t.Errorf("last trick play %d player = %d, want %d", i, play.PlayerIdx, i)
+		}
+	}
+	if got := g.GetLastTrickWinner(); got != 0 {
+		t.Errorf("last trick winner = %d, want 0", got)
+	}
+
+	snapshot, err := json.Marshal(g)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var restored Pinochle
+	if err := json.Unmarshal(snapshot, &restored); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(g.GetLastTrick(), restored.GetLastTrick()) || restored.GetLastTrickWinner() != 0 {
+		t.Fatal("JSON round-trip did not preserve the last trick and winner")
+	}
+
+	g.Reset()
+	if len(g.GetLastTrick()) != 0 || g.GetLastTrickWinner() != -1 {
+		t.Errorf("new deal retained last trick: cards=%d winner=%d", len(g.GetLastTrick()), g.GetLastTrickWinner())
 	}
 }
 

@@ -124,14 +124,55 @@ describe('AnacondaPage', () => {
 
   it('announces the raise count through the atomic polite live region', async () => {
     mockExec.mockResolvedValue(rollState);
+    renderWithProviders(<AnacondaPage />);
+
+    const live = await screen.findByTestId('anaconda-raise-count-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveAttribute('aria-atomic', 'true');
+    expect(live).toHaveTextContent('レイズ 0/3回');
+  });
+
+  it('announces the current call amount with the same text shown on screen', async () => {
+    mockExec.mockResolvedValueOnce(rollState).mockResolvedValueOnce({ ...rollState, currentBet: 25 });
     const { container } = renderWithProviders(<AnacondaPage />);
 
-    const live = await waitFor(() => {
-      const element = container.querySelector('[role="status"][aria-live="polite"][aria-atomic="true"]');
-      expect(element).not.toBeNull();
-      return element;
+    const live = await screen.findByTestId('anaconda-current-bet-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveAttribute('aria-atomic', 'true');
+    expect(live).toHaveTextContent('コール額: 10');
+    expect(container.querySelector('[data-testid="anaconda-info"]')).toHaveTextContent('コール額: 10');
+
+    fireEvent.click(screen.getByRole('button', { name: 'コール / チェック' }));
+    await waitFor(() => {
+      expect(live).toHaveTextContent('コール額: 25');
+      expect(container.querySelector('[data-testid="anaconda-info"]')).toHaveTextContent('コール額: 25');
     });
-    expect(live).toHaveTextContent('レイズ 0/3回');
+  });
+
+  it('shows the additional call amount on the human turn, including when no chips are needed', async () => {
+    // The domain owes currentBet - streetBet (this betting round only); roundBet also
+    // includes earlier rounds, so it is set higher here to prove it is not used.
+    for (const { streetBet, amountText } of [
+      { streetBet: 10, amountText: 'コールに必要な追加額: 15' },
+      { streetBet: 25, amountText: 'コールに追加支払いは不要です' },
+    ]) {
+      mockExec.mockResolvedValueOnce(
+        makeAnacondaState({
+          phase: 2,
+          rollIndex: 1,
+          isHumanTurn: true,
+          currentBet: 25,
+          players: makeAnacondaState().players.map((player) =>
+            player.isHuman ? { ...player, streetBet, roundBet: streetBet + 40 } : player,
+          ),
+        }),
+      );
+      const { unmount } = renderWithProviders(<AnacondaPage />);
+      expect(await screen.findByTestId('anaconda-call-needed')).toHaveTextContent(amountText);
+      unmount();
+    }
   });
 
   it('disables the Raise button when canRaise is false', async () => {

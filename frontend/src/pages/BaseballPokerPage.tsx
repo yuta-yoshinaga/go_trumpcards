@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { BASEBALLPOKER_CLI_HELP, parseBaseballPokerCommand } from '../utils/cli/commands/baseballpokerCommands';
 import { formatBaseballPokerState } from '../utils/cli/formatters/baseballpokerFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { type PokerHandRank, pokerHandKey } from '../utils/pokerSquaresUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -123,6 +124,11 @@ function BaseballPokerPageContent() {
     }[state.phase] ?? '';
 
   const human = state.seats[state.humanSeat];
+  const humanChips = human?.chips ?? 0;
+  // 買い増し画面では buyerSeat が有効な人間席を指す。ドメインは買い増し額を
+  // 所持チップ以下に制限するので、支払い後の残額も負にならない。
+  const buyPayment = isBuying ? Math.min(state.buyCost, humanChips) : 0;
+  const chipsAfterBuy = isBuying ? humanChips - buyPayment : 0;
   const humanWon = gameOver && state.winnerSeat === state.humanSeat;
 
   /**
@@ -178,7 +184,7 @@ function BaseballPokerPageContent() {
       headerExtra={
         <>
           <span data-testid="bb-chips">
-            {t('label.chips')}: {human?.chips ?? 0}
+            {t('label.chips')}: {humanChips}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
@@ -248,6 +254,11 @@ function BaseballPokerPageContent() {
                     {seat.wonAmount > 0 && (
                       <span data-testid={`bb-won-${i}`}> · {t('label.won', { amount: seat.wonAmount })}</span>
                     )}
+                    {isShowdown && (
+                      <span className="ml-2 text-ds-text-primary text-xs" data-testid={`bb-net-change-${i}`}>
+                        {t('label.netChange', { amount: formatSignedDelta(seat.netChange) })}
+                      </span>
+                    )}
                   </span>
                   {/* **他人の表札も出す。** スタッドの読み合いはここが材料。 */}
                   {!seat.isHuman && (
@@ -303,7 +314,12 @@ function BaseballPokerPageContent() {
               {isBuying && (
                 <>
                   <p className="text-ds-text-muted text-sm" data-testid="bb-buy-guide">
-                    {t('label.buyIn', { amount: state.buyCost })}
+                    {t('label.buyIn', { amount: buyPayment })}
+                  </p>
+                  <p className="text-ds-text-muted text-sm" data-testid="bb-buy-summary">
+                    <span data-testid="bb-buy-cost">{t('label.buyCost', { amount: buyPayment })}</span>
+                    {' · '}
+                    <span data-testid="bb-buy-remaining">{t('label.buyRemaining', { amount: chipsAfterBuy })}</span>
                   </p>
                   <div className="flex gap-2 flex-wrap justify-center">
                     <button

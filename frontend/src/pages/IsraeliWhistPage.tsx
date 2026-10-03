@@ -34,7 +34,14 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 const TRICKS_PER_ROUND = 13;
 
 /** The four suits, in the order the auction buttons are offered. */
-const SUITS: readonly number[] = [1, 2, 3, 4];
+type Suit = 1 | 2 | 3 | 4;
+const SUITS: readonly Suit[] = [1, 2, 3, 4];
+const SUIT_TRANSLATION_KEYS: Readonly<Record<Suit, string>> = {
+  1: 'common.suit.spade',
+  2: 'common.suit.club',
+  3: 'common.suit.heart',
+  4: 'common.suit.diamond',
+};
 
 /** The auction opens at five. */
 const AUCTION_MIN = 5;
@@ -181,7 +188,6 @@ function IsraeliWhistPageContent() {
           ? t('phase.bid')
           : t('phase.play');
 
-  // 出せる札に緑の枠を足すだけで、押せなくはしない（サーバが必ず検証する）。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
 
   /** A seat's standing in the auction, which the calling round does not replace. */
@@ -263,7 +269,7 @@ function IsraeliWhistPageContent() {
                   {t('header.total', { n: String(p.totalScore) })}
                   {isRoundEnd && (
                     <span
-                      className={`ml-2 ${p.roundScore < 0 ? 'text-ds-error' : 'text-ds-success'}`}
+                      className={`ml-2 ${p.roundScore < 0 ? 'text-ds-error-text' : 'text-ds-success'}`}
                       data-testid={`iw-round-delta-${p.id.toString()}`}
                     >
                       {t('header.roundDelta', { delta: formatSignedDelta(p.roundScore) })}
@@ -286,7 +292,7 @@ function IsraeliWhistPageContent() {
                 ログを開かないと、点が普段の倍動いた理由が分からなかった。 */}
             {isRoundEnd && state.doubled === true && (
               <div
-                className="my-3 rounded bg-black/30 border border-ds-warning px-3 py-2 text-center text-ds-text-primary"
+                className="my-3 rounded bg-ds-surface border border-ds-warning px-3 py-2 text-center text-ds-text-primary"
                 role="status"
                 data-testid="iw-doubled-banner"
               >
@@ -313,19 +319,29 @@ function IsraeliWhistPageContent() {
                   {t('header.you')}: {human.cardCount}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {human.cards.map((card, idx) => (
-                    <button
-                      key={`${card.design}-${card.value}-${idx}`}
-                      type="button"
-                      onClick={() => handlePlay(idx)}
-                      disabled={loading || !isHumanTurn}
-                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                      className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
-                    >
-                      <CardImage card={card} width={cardWidth} />
-                    </button>
-                  ))}
+                  {human.cards.map((card, idx) => {
+                    const unplayable = isHumanTurn && !legalRing.has(idx);
+                    return (
+                      <button
+                        key={`${card.design}-${card.value}-${idx}`}
+                        type="button"
+                        disabled={loading || !isHumanTurn}
+                        onClick={() => {
+                          if (!unplayable) handlePlay(idx);
+                        }}
+                        aria-disabled={unplayable || undefined}
+                        aria-describedby={unplayable ? 'iw-play-unavailable' : undefined}
+                        aria-label={t('actions.playAria', { card: cardAlt(card) })}
+                        className={`disabled:opacity-50 disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:cursor-not-allowed ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                      >
+                        <CardImage card={card} width={cardWidth} />
+                      </button>
+                    );
+                  })}
                 </div>
+                <span id="iw-play-unavailable" className="sr-only">
+                  {t('actions.playUnavailable')}
+                </span>
               </div>
             )}
 
@@ -362,6 +378,10 @@ function IsraeliWhistPageContent() {
                         onClick={() => handleAuction(bid, suit)}
                         disabled={loading || barred}
                         aria-disabled={barred}
+                        aria-label={t('actions.auction', {
+                          n: String(bid),
+                          suit: tc(SUIT_TRANSLATION_KEYS[suit]),
+                        })}
                         data-testid={`iw-auction-${suit.toString()}-btn`}
                       >
                         {t('actions.auction', { n: String(bid), suit: suitSymbolAt(suit, '?') })}

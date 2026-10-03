@@ -105,7 +105,12 @@ describe('GoofspielPage', () => {
 
   it('separates the current prize points from carried points and updates when the carry clears', async () => {
     mockExec.mockResolvedValueOnce(
-      makeState({ phase: 1, carriedPrizes: [card('DIAMOND', 4), card('DIAMOND', 5)], prizeValue: 18 }),
+      makeState({
+        phase: 1,
+        carriedPrizes: [card('DIAMOND', 4), card('DIAMOND', 5)],
+        prizeValue: 18,
+        players: [seat(0, { revealedBid: card('SPADE', 3) }), seat(1, { revealedBid: card('CLOVER', 2) })],
+      }),
     );
     mockExec.mockResolvedValueOnce(makeState({ carriedPrizes: [], prizeValue: 9 }));
     renderWithProviders(<GoofspielPage />);
@@ -174,17 +179,90 @@ describe('GoofspielPage', () => {
     renderWithProviders(<GoofspielPage />);
     expect(await screen.findByTestId('gs-seat-1')).toHaveTextContent(/出した札/);
     expect(screen.getByTestId('gs-round-end')).toHaveTextContent(/CPU1 が 9 点/);
+    expect(screen.getByTestId('gs-seat-1')).toHaveTextContent('最高札');
+    expect(screen.getByTestId('gs-bid-margin')).toHaveTextContent('次点との差: 8');
+  });
+
+  it('announces revealed cards and the round result once, only after reveal', async () => {
+    const revealed = makeState({
+      phase: 1,
+      currentPrize: undefined,
+      lastWinnerIdx: 1,
+      lastGained: 9,
+      players: [
+        seat(0, { hasBid: true, revealedBid: card('SPADE', 3) }),
+        seat(1, { hasBid: true, revealedBid: card('CLOVER', 11) }),
+      ],
+    });
+    mockExec.mockResolvedValueOnce(revealed).mockResolvedValueOnce(revealed);
+    renderWithProviders(<GoofspielPage />);
+
+    const live = await screen.findByTestId('gs-reveal-announcement');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).not.toHaveAttribute('aria-live');
+    expect(screen.getByTestId('gs-round-end')).not.toHaveAttribute('role', 'status');
+    await waitFor(() => expect(live).toHaveTextContent(/あなた.*♠ 3.*CPU1.*♣ J.*CPU1 が 9 点/));
+
+    // Same reveal returned by an action is the same announced state.
+    fireEvent.click(screen.getByTestId('gs-next-btn'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
+    expect(screen.getByTestId('gs-reveal-announcement')).toHaveTextContent(/あなた.*♠ 3.*CPU1.*♣ J.*CPU1 が 9 点/);
+  });
+
+  it('keeps the persistent reveal announcement empty before bids are revealed', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: 0, lastWinnerIdx: -1, lastGained: 0, players: [seat(0, { hasBid: true }), seat(1)] }),
+    );
+    renderWithProviders(<GoofspielPage />);
+    const live = await screen.findByTestId('gs-reveal-announcement');
+    expect(live).toBeEmptyDOMElement();
+    expect(live).not.toHaveTextContent(/SPADE|CLOVER|3|11/);
   });
 
   // **同点は誰も取りません。** 勝者が居ない結果を言い分けます。
   it('reports a tie as nobody taking the prize', async () => {
-    mockExec.mockResolvedValue(makeState({ phase: 1, currentPrize: undefined, lastWinnerIdx: -1, lastGained: 0 }));
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        currentPrize: undefined,
+        lastWinnerIdx: -1,
+        lastGained: 0,
+        players: [seat(0, { revealedBid: card('SPADE', 3) }), seat(1, { revealedBid: card('CLOVER', 3) })],
+      }),
+    );
     renderWithProviders(<GoofspielPage />);
     expect(await screen.findByTestId('gs-round-end')).toHaveTextContent(/誰も取りません/);
+    expect(screen.getByTestId('gs-reveal-announcement')).toHaveTextContent(/あなた.*♠ 3.*CPU1.*♣ 3.*誰も取りません/);
+    expect(screen.getByTestId('gs-seat-0')).toHaveTextContent('最高札');
+    expect(screen.getByTestId('gs-seat-1')).toHaveTextContent('最高札');
+    expect(screen.queryByTestId('gs-bid-margin')).not.toBeInTheDocument();
+  });
+
+  it('does not show a bid margin when there is no winner', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        currentPrize: undefined,
+        lastWinnerIdx: -1,
+        lastGained: 0,
+        players: [seat(0, { revealedBid: card('SPADE', 8) }), seat(1, { revealedBid: card('CLOVER', 4) })],
+      }),
+    );
+    renderWithProviders(<GoofspielPage />);
+    expect(await screen.findByTestId('gs-seat-0')).toHaveTextContent('最高札');
+    expect(screen.queryByTestId('gs-bid-margin')).not.toBeInTheDocument();
   });
 
   it('turns the next prize on request', async () => {
-    mockExec.mockResolvedValue(makeState({ phase: 1, currentPrize: undefined, lastWinnerIdx: 0, lastGained: 9 }));
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        currentPrize: undefined,
+        lastWinnerIdx: 0,
+        lastGained: 9,
+        players: [seat(0, { revealedBid: card('SPADE', 3) }), seat(1, { revealedBid: card('CLOVER', 2) })],
+      }),
+    );
     renderWithProviders(<GoofspielPage />);
     await screen.findByTestId('gs-round-end');
 

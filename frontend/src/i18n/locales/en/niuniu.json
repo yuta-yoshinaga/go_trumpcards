@@ -4,6 +4,7 @@
     "end": "Settled"
   },
   "chips": "Chips",
+  "drawPileCount": "Cards remaining",
   "banker": "Banker",
   "bankerHand": "Banker's hand",
   "bet": "Bet",

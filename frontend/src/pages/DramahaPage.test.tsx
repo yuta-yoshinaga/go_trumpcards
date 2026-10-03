@@ -733,7 +733,7 @@ describe('DramahaPage', () => {
   it('shows call/raise buttons when canAct and has outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<DramahaPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
@@ -836,11 +836,11 @@ describe('DramahaPage', () => {
   it('calls call command when has outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<DramahaPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', undefined, undefined, 0));
   });
 
@@ -1169,9 +1169,17 @@ describe('DramahaPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'アドオン' })).toBeInTheDocument());
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue(preFlopState);
+    mockExec.mockResolvedValue({
+      ...preFlopState,
+      players: preFlopState.players.map((player) => (player.isHuman ? { ...player, chips: 2500 } : player)),
+    });
     fireEvent.click(screen.getByRole('button', { name: 'アドオン' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('addon'));
+    await waitFor(() =>
+      expect(screen.getByTestId('rebuy-announcement')).toHaveTextContent(
+        'アドオンを選択しました。更新後のチップ数: 2500',
+      ),
+    );
   });
 
   it('calls skipaddon command when addon skip button is clicked', async () => {
@@ -1327,7 +1335,7 @@ describe('DramahaPage', () => {
     it('pressing c triggers call when canAct and hasOutstandingBet', async () => {
       mockExec.mockResolvedValue(preFlopWithBetState);
       renderWithProviders(<DramahaPage />);
-      await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
       mockExec.mockClear();
       mockExec.mockResolvedValue(preFlopWithBetState);
@@ -1442,7 +1450,7 @@ describe('DramahaPage', () => {
     it('pressing k is ignored when hasOutstandingBet', async () => {
       mockExec.mockResolvedValue(preFlopWithBetState);
       renderWithProviders(<DramahaPage />);
-      await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
       mockExec.mockClear();
 
@@ -1624,6 +1632,27 @@ describe('DramahaPage draw round', () => {
     await screen.findByTestId('draw-controls');
     expect(screen.getByText(/Select a chosen card again to unselect it/)).toBeInTheDocument();
     expect(screen.getByText(/press Enter or Space/)).toBeInTheDocument();
+  });
+
+  it('shows the selected and maximum exchange counts and the available actions', async () => {
+    mockExec.mockResolvedValue(drawState);
+    renderWithProviders(<DramahaPage />);
+    await screen.findByTestId('draw-controls');
+
+    expect(screen.getByTestId('dramaha-draw-selected')).toHaveTextContent('選択中: 0 / 5枚');
+    expect(screen.getByTestId('dramaha-draw-exchange')).toHaveTextContent('0枚を交換');
+    expect(screen.getByTestId('dramaha-draw-standpat')).toHaveTextContent('交換しない');
+  });
+
+  it('shows the selected and maximum exchange counts in English', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue(drawState);
+    renderWithProviders(<DramahaPage />);
+    await screen.findByTestId('draw-controls');
+
+    expect(screen.getByTestId('dramaha-draw-selected')).toHaveTextContent('Selected: 0 / 5');
+    expect(screen.getByTestId('dramaha-draw-exchange')).toHaveTextContent('Exchange 0');
+    expect(screen.getByTestId('dramaha-draw-standpat')).toHaveTextContent('Stand pat');
   });
 
   it('shows the draw controls and says the draw happens only once', async () => {

@@ -54,14 +54,7 @@ func (bi *TablanetInteractor) ResetWithConfig(cfg domain.TablanetConfig) string 
 
 // Play 手札を出す。
 func (bi *TablanetInteractor) Play(handIdx int, tableIdxs []int) string {
-	if out, blocked := guardNotPlayable(bi.Game, bi.cp); blocked {
-		return out
-	}
-	if err := bi.Game.PlayerPlay(handIdx, tableIdxs); err != nil {
-		return bi.cp.Output(bi.Game, err)
-	}
-	bi.advance()
-	return bi.cp.Output(bi.Game, nil)
+	return humanAction(bi.Game, bi.cp, func() error { return bi.Game.PlayerPlay(handIdx, tableIdxs) }, bi.advance)
 }
 
 // NextRound 次のゲームを開始する。タブラネットは山札を配り切る 1 セッションで完結するため、

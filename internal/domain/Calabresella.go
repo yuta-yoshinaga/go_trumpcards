@@ -101,30 +101,33 @@ type CalabresellaHint struct {
 
 // Calabresella カラブレセッラのゲームクラス
 type Calabresella struct {
-	trumpCards       *TrumpCards
-	players          []*CalabresellaPlayer
-	config           CalabresellaConfig
-	phase            CalabresellaPhase
-	roundNumber      int
-	trickNumber      int
-	currentPlayerIdx int
-	currentTrick     []*TrickCard
-	leadPlayerIdx    int
-	dealerIdx        int
-	forehandIdx      int                                    // ディーラーの左隣 (ビッド開始 & 最初のリード)
-	soloistIdx       int                                    // ソリスト (-1=未確定)
-	winningBid       CalabresellaBid                        // 確定したビッド (ソリストの宣言)
-	currentBidderIdx int                                    // 現在ビッド中のプレイヤー (bid フェーズ)
-	bids             [CalabresellaPlayerCnt]CalabresellaBid // 各プレイヤーの宣言
-	bidActed         [CalabresellaPlayerCnt]bool            // 各プレイヤーが宣言済みか
-	monte            []*Card                                // monte (widow) 4 枚
-	monteTaken       bool                                   // ソリストが monte を取得済みか
-	discardCount     int                                    // discard で捨てた枚数 (0..CalabresellaMonteSize)
-	playerScores     [CalabresellaPlayerCnt]int             // 累積ゲーム点
-	roundThirds      [CalabresellaPlayerCnt]int             // 現ラウンドのプレイヤー別 1/3 点
-	lastTrickWinner  int                                    // 直前トリックの勝者 (-1=未確定)
-	gameEndFlag      bool
-	winnerPlayer     int // -1=未確定
+	trumpCards        *TrumpCards
+	players           []*CalabresellaPlayer
+	config            CalabresellaConfig
+	phase             CalabresellaPhase
+	roundNumber       int
+	trickNumber       int
+	currentPlayerIdx  int
+	currentTrick      []*TrickCard
+	leadPlayerIdx     int
+	dealerIdx         int
+	forehandIdx       int                                    // ディーラーの左隣 (ビッド開始 & 最初のリード)
+	soloistIdx        int                                    // ソリスト (-1=未確定)
+	winningBid        CalabresellaBid                        // 確定したビッド (ソリストの宣言)
+	currentBidderIdx  int                                    // 現在ビッド中のプレイヤー (bid フェーズ)
+	bids              [CalabresellaPlayerCnt]CalabresellaBid // 各プレイヤーの宣言
+	bidActed          [CalabresellaPlayerCnt]bool            // 各プレイヤーが宣言済みか
+	monte             []*Card                                // monte (widow) 4 枚
+	monteTaken        bool                                   // ソリストが monte を取得済みか
+	discardCount      int                                    // discard で捨てた枚数 (0..CalabresellaMonteSize)
+	playerScores      [CalabresellaPlayerCnt]int             // 累積ゲーム点
+	roundThirds       [CalabresellaPlayerCnt]int             // 現ラウンドのプレイヤー別 1/3 点
+	roundScoreChanges [CalabresellaPlayerCnt]int             // 直近ラウンドの精算点
+	soloistWon        bool                                   // 直近ラウンドでソリストが勝ったか
+	roundScored       bool                                   // 現ラウンドの精算済みフラグ
+	lastTrickWinner   int                                    // 直前トリックの勝者 (-1=未確定)
+	gameEndFlag       bool
+	winnerPlayer      int // -1=未確定
 	actionLogBase
 }
 
@@ -187,6 +190,9 @@ func (g *Calabresella) startRound() {
 	g.trickNumber = 1
 	g.currentTrick = nil
 	g.roundThirds = [CalabresellaPlayerCnt]int{}
+	g.roundScoreChanges = [CalabresellaPlayerCnt]int{}
+	g.soloistWon = false
+	g.roundScored = false
 	g.lastTrickWinner = -1
 	g.soloistIdx = -1
 	g.winningBid = CalabresellaBidNone
@@ -577,6 +583,7 @@ func (g *Calabresella) ResolveTrick() {
 	g.lastTrickWinner = winnerIdx
 	if g.trickNumber >= CalabresellaTrickCount {
 		g.phase = CalabresellaPhaseRoundEnd
+		g.ScoreRound()
 	} else {
 		g.phase = CalabresellaPhaseTrickEnd
 	}
@@ -597,7 +604,7 @@ func (g *Calabresella) NextTrick() {
 // ソリストが過半 (CalabresellaWinThirds 以上) を獲得すれば勝ち。ステーク分の点数が
 // ソリストと連合の 2 人の間で移動する。
 func (g *Calabresella) ScoreRound() {
-	if g.phase != CalabresellaPhaseRoundEnd {
+	if g.phase != CalabresellaPhaseRoundEnd || g.roundScored || g.soloistIdx < 0 || g.soloistIdx >= CalabresellaPlayerCnt {
 		return
 	}
 	stake := int(g.winningBid)
@@ -606,20 +613,24 @@ func (g *Calabresella) ScoreRound() {
 	}
 	soloistThirds := g.roundThirds[g.soloistIdx]
 	soloistWon := soloistThirds >= CalabresellaWinThirds
+	g.soloistWon = soloistWon
+	g.roundScored = true
+	g.roundScoreChanges = [CalabresellaPlayerCnt]int{}
 	for i := 0; i < CalabresellaPlayerCnt; i++ {
 		if i == g.soloistIdx {
 			if soloistWon {
-				g.playerScores[i] += stake * CalabresellaCoalitionSize
+				g.roundScoreChanges[i] = stake * CalabresellaCoalitionSize
 			} else {
-				g.playerScores[i] -= stake * CalabresellaCoalitionSize
+				g.roundScoreChanges[i] = -stake * CalabresellaCoalitionSize
 			}
 		} else {
 			if soloistWon {
-				g.playerScores[i] -= stake
+				g.roundScoreChanges[i] = -stake
 			} else {
-				g.playerScores[i] += stake
+				g.roundScoreChanges[i] = stake
 			}
 		}
+		g.playerScores[i] += g.roundScoreChanges[i]
 	}
 	code := "calabresella.log.roundScoreLost"
 	if soloistWon {
@@ -986,6 +997,9 @@ func (g *Calabresella) SetSoloistIdx(idx int) { g.soloistIdx = idx }
 // GetWinningBid 確定ビッド取得
 func (g *Calabresella) GetWinningBid() CalabresellaBid { return g.winningBid }
 
+// GetHighestBid returns the highest bid declared so far during the auction.
+func (g *Calabresella) GetHighestBid() CalabresellaBid { return g.highestBid() }
+
 // SetWinningBid 確定ビッド設定 (テスト用)
 func (g *Calabresella) SetWinningBid(b CalabresellaBid) { g.winningBid = b }
 
@@ -1000,6 +1014,12 @@ func (g *Calabresella) SetPlayerScores(s [CalabresellaPlayerCnt]int) { g.playerS
 
 // GetRoundThirds 現ラウンドのプレイヤー別 1/3 点取得
 func (g *Calabresella) GetRoundThirds() [CalabresellaPlayerCnt]int { return g.roundThirds }
+
+// GetRoundScoreChanges 直近ラウンドの精算点を取得する。
+func (g *Calabresella) GetRoundScoreChanges() [CalabresellaPlayerCnt]int { return g.roundScoreChanges }
+
+// GetSoloistWon 直近ラウンドでソリストが勝ったかを取得する。
+func (g *Calabresella) GetSoloistWon() bool { return g.soloistWon }
 
 // SetRoundThirds 現ラウンドのプレイヤー別 1/3 点設定 (テスト用)
 func (g *Calabresella) SetRoundThirds(s [CalabresellaPlayerCnt]int) { g.roundThirds = s }
@@ -1052,61 +1072,67 @@ func (g *Calabresella) GetPlayableIndices(playerIdx int) []int {
 
 // calabresellaJSON is the JSON wire format for Calabresella.
 type calabresellaJSON struct {
-	TrumpCards       *TrumpCards                            `json:"tc"`
-	Players          []*CalabresellaPlayer                  `json:"ps"`
-	Config           CalabresellaConfig                     `json:"cf"`
-	Phase            CalabresellaPhase                      `json:"ph"`
-	RoundNumber      int                                    `json:"rn"`
-	TrickNumber      int                                    `json:"tn"`
-	CurrentPlayerIdx int                                    `json:"ci"`
-	CurrentTrick     []*TrickCard                           `json:"ct"`
-	LeadPlayerIdx    int                                    `json:"li"`
-	DealerIdx        int                                    `json:"di"`
-	ForehandIdx      int                                    `json:"fh"`
-	SoloistIdx       int                                    `json:"so"`
-	WinningBid       CalabresellaBid                        `json:"wb"`
-	CurrentBidderIdx int                                    `json:"cbi"`
-	Bids             [CalabresellaPlayerCnt]CalabresellaBid `json:"bd"`
-	BidActed         [CalabresellaPlayerCnt]bool            `json:"ba"`
-	Monte            []*Card                                `json:"mo"`
-	MonteTaken       bool                                   `json:"mt"`
-	DiscardCount     int                                    `json:"dn"`
-	PlayerScores     [CalabresellaPlayerCnt]int             `json:"sc"`
-	RoundThirds      [CalabresellaPlayerCnt]int             `json:"rt"`
-	LastTrickWinner  int                                    `json:"lt"`
-	GameEndFlag      bool                                   `json:"ge"`
-	WinnerPlayer     int                                    `json:"wp"`
-	ActionLog        []*ActionLogEntry                      `json:"al"`
+	TrumpCards        *TrumpCards                            `json:"tc"`
+	Players           []*CalabresellaPlayer                  `json:"ps"`
+	Config            CalabresellaConfig                     `json:"cf"`
+	Phase             CalabresellaPhase                      `json:"ph"`
+	RoundNumber       int                                    `json:"rn"`
+	TrickNumber       int                                    `json:"tn"`
+	CurrentPlayerIdx  int                                    `json:"ci"`
+	CurrentTrick      []*TrickCard                           `json:"ct"`
+	LeadPlayerIdx     int                                    `json:"li"`
+	DealerIdx         int                                    `json:"di"`
+	ForehandIdx       int                                    `json:"fh"`
+	SoloistIdx        int                                    `json:"so"`
+	WinningBid        CalabresellaBid                        `json:"wb"`
+	CurrentBidderIdx  int                                    `json:"cbi"`
+	Bids              [CalabresellaPlayerCnt]CalabresellaBid `json:"bd"`
+	BidActed          [CalabresellaPlayerCnt]bool            `json:"ba"`
+	Monte             []*Card                                `json:"mo"`
+	MonteTaken        bool                                   `json:"mt"`
+	DiscardCount      int                                    `json:"dn"`
+	PlayerScores      [CalabresellaPlayerCnt]int             `json:"sc"`
+	RoundThirds       [CalabresellaPlayerCnt]int             `json:"rt"`
+	RoundScoreChanges [CalabresellaPlayerCnt]int             `json:"rsc"`
+	SoloistWon        bool                                   `json:"sw"`
+	RoundScored       bool                                   `json:"rs"`
+	LastTrickWinner   int                                    `json:"lt"`
+	GameEndFlag       bool                                   `json:"ge"`
+	WinnerPlayer      int                                    `json:"wp"`
+	ActionLog         []*ActionLogEntry                      `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (g *Calabresella) MarshalJSON() ([]byte, error) {
 	return json.Marshal(calabresellaJSON{
-		TrumpCards:       g.trumpCards,
-		Players:          g.players,
-		Config:           g.config,
-		Phase:            g.phase,
-		RoundNumber:      g.roundNumber,
-		TrickNumber:      g.trickNumber,
-		CurrentPlayerIdx: g.currentPlayerIdx,
-		CurrentTrick:     g.currentTrick,
-		LeadPlayerIdx:    g.leadPlayerIdx,
-		DealerIdx:        g.dealerIdx,
-		ForehandIdx:      g.forehandIdx,
-		SoloistIdx:       g.soloistIdx,
-		WinningBid:       g.winningBid,
-		CurrentBidderIdx: g.currentBidderIdx,
-		Bids:             g.bids,
-		BidActed:         g.bidActed,
-		Monte:            g.monte,
-		MonteTaken:       g.monteTaken,
-		DiscardCount:     g.discardCount,
-		PlayerScores:     g.playerScores,
-		RoundThirds:      g.roundThirds,
-		LastTrickWinner:  g.lastTrickWinner,
-		GameEndFlag:      g.gameEndFlag,
-		WinnerPlayer:     g.winnerPlayer,
-		ActionLog:        g.actionLog,
+		TrumpCards:        g.trumpCards,
+		Players:           g.players,
+		Config:            g.config,
+		Phase:             g.phase,
+		RoundNumber:       g.roundNumber,
+		TrickNumber:       g.trickNumber,
+		CurrentPlayerIdx:  g.currentPlayerIdx,
+		CurrentTrick:      g.currentTrick,
+		LeadPlayerIdx:     g.leadPlayerIdx,
+		DealerIdx:         g.dealerIdx,
+		ForehandIdx:       g.forehandIdx,
+		SoloistIdx:        g.soloistIdx,
+		WinningBid:        g.winningBid,
+		CurrentBidderIdx:  g.currentBidderIdx,
+		Bids:              g.bids,
+		BidActed:          g.bidActed,
+		Monte:             g.monte,
+		MonteTaken:        g.monteTaken,
+		DiscardCount:      g.discardCount,
+		PlayerScores:      g.playerScores,
+		RoundThirds:       g.roundThirds,
+		RoundScoreChanges: g.roundScoreChanges,
+		SoloistWon:        g.soloistWon,
+		RoundScored:       g.roundScored,
+		LastTrickWinner:   g.lastTrickWinner,
+		GameEndFlag:       g.gameEndFlag,
+		WinnerPlayer:      g.winnerPlayer,
+		ActionLog:         g.actionLog,
 	})
 }
 
@@ -1238,6 +1264,9 @@ func (g *Calabresella) UnmarshalJSON(data []byte) error {
 	g.discardCount = j.DiscardCount
 	g.playerScores = j.PlayerScores
 	g.roundThirds = j.RoundThirds
+	g.roundScoreChanges = j.RoundScoreChanges
+	g.soloistWon = j.SoloistWon
+	g.roundScored = j.RoundScored
 	g.lastTrickWinner = j.LastTrickWinner
 	g.gameEndFlag = j.GameEndFlag
 	g.winnerPlayer = j.WinnerPlayer

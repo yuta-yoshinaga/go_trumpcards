@@ -81,7 +81,7 @@ function ClockPileFaceUpSuits({ pile, testId }: { pile: ClockSolitaireCard[]; te
           key={`${card.design}-${card.value.toString()}`}
           role="img"
           aria-label={cardAlt(card)}
-          className={isRedSuitDesign(card.design) ? 'text-ds-error' : 'text-ds-text-primary'}
+          className={isRedSuitDesign(card.design) ? 'text-ds-error-text' : 'text-ds-text-primary'}
         >
           {suitSymbol(card.design)}
         </span>
@@ -133,6 +133,8 @@ function ClockSolitairePageContent() {
 
   const [autoPlaySpeed, setAutoPlaySpeed] = useState<AutoPlaySpeed>(loadAutoPlaySpeed);
   const [autoPlaying, setAutoPlaying] = useState(false);
+  const previousStepStateRef = useRef<ClockSolitaireResponse | null | undefined>(undefined);
+  const [stepAnnouncement, setStepAnnouncement] = useState('');
 
   const handleStep = useCallback(() => execApi('step'), [execApi]);
   // Undo the last placed card. Stop autoplay first so the timed loop doesn't
@@ -190,6 +192,23 @@ function ClockSolitairePageContent() {
   }, [autoPlaying, execApi]);
 
   useMountReset(execApi);
+  useEffect(() => {
+    const previous = previousStepStateRef.current;
+    if (state && previous && state.stepCount !== previous.stepCount) {
+      if (state.stepCount === previous.stepCount + 1 && previous.currentCard) {
+        const cardName = cardAlt(previous.currentCard);
+        setStepAnnouncement(
+          previous.currentCard.value === 13
+            ? t('stepKingAnnouncement', { card: cardName })
+            : t('stepAnnouncement', { card: cardName, hour: previous.currentCard.value }),
+        );
+      } else {
+        // Undo and reset change the step count without placing the current card.
+        setStepAnnouncement('');
+      }
+    }
+    previousStepStateRef.current = state;
+  }, [state, t]);
   const { cardWidth, cardHeight } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('clocksolitaire', state);
 
@@ -269,6 +288,7 @@ function ClockSolitairePageContent() {
     } else {
       parts.push(state.message ?? '');
     }
+    if (stepAnnouncement) parts.push(stepAnnouncement);
     // The pulsing ring on the destination pile is visual only. The CUI presenter
     // already spells the same thing out every turn, so mirror it here (#4785).
     const value = state.currentCard?.value ?? 0;
@@ -335,17 +355,23 @@ function ClockSolitairePageContent() {
                   const cx = radius + cardWidth / 2 + 8 + pos.x * radius;
                   const cy = radius + cardHeight / 2 + 8 + pos.y * radius;
                   const isFlightTarget = targetIdx === i;
+                  const pileLabel = t('pileAriaLabel', {
+                    position: t('hourPilePosition', { hour: CLOCK_LABELS[i] }),
+                    count: faceUpCount,
+                    status: t(isComplete ? 'pileComplete' : 'pileIncomplete'),
+                  });
 
                   return (
-                    <div
+                    <fieldset
                       key={i}
-                      className="absolute flex flex-col items-center"
+                      className="absolute flex flex-col items-center border-0 p-0 m-0 min-w-0"
                       style={{
                         left: cx - cardWidth / 2,
                         top: cy - cardHeight / 2,
                         width: cardWidth,
                       }}
                     >
+                      <legend className="sr-only">{pileLabel}</legend>
                       <span className="mb-0.5 text-xs font-bold text-ds-text-muted">{CLOCK_LABELS[i]}</span>
                       {pile && pile.length > 0 ? (
                         <div
@@ -377,21 +403,28 @@ function ClockSolitairePageContent() {
                           style={{ width: cardWidth, height: cardHeight }}
                         />
                       )}
-                    </div>
+                    </fieldset>
                   );
                 });
               })()}
 
               {/* Center pile (K) */}
-              <div
+              <fieldset
                 data-tutorial="clock-center"
-                className="absolute flex flex-col items-center"
+                className="absolute flex flex-col items-center border-0 p-0 m-0 min-w-0"
                 style={{
                   left: radius + 8,
                   top: radius + 8,
                   width: cardWidth,
                 }}
               >
+                <legend className="sr-only">
+                  {t('pileAriaLabel', {
+                    position: t('centerPilePosition'),
+                    count: state.faceUpCount[12],
+                    status: t(state.faceUpCount[12] >= 4 ? 'pileComplete' : 'pileIncomplete'),
+                  })}
+                </legend>
                 <span className="mb-0.5 text-xs font-bold text-ds-warning">K</span>
                 {(() => {
                   const centerPile = state.piles[12];
@@ -431,7 +464,7 @@ function ClockSolitairePageContent() {
                     />
                   );
                 })()}
-              </div>
+              </fieldset>
             </div>
 
             {/* Current card */}

@@ -70,7 +70,7 @@ func BuildCuiHelp(spec CuiHelpSpec) []string {
 		return spec.Body
 	}
 	lines := make([]string, 0, 10+len(spec.CommandKeys)+len(spec.ExtraCommandLines)+len(spec.SettingKeys)+len(spec.ExtraSettingLines)+len(spec.NoteKeys))
-	lines = append(lines, i18n.T(spec.TitleKey), "", i18n.T("gameCommands"))
+	lines = append(lines, GameTitleKey(spec.TitleKey), "", i18n.T("gameCommands"))
 	for _, k := range spec.CommandKeys {
 		lines = append(lines, i18n.T(k))
 	}

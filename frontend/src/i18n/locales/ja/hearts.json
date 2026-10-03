@@ -17,7 +17,7 @@
   },
   "round": "ラウンド {{n}}",
   "trick": "トリック {{n}}",
-  "trickResult": "{{name}}がトリックを獲得し、次のリードを担当します。",
+  "trickResult": "{{name}}がトリックを獲得し、ペナルティ点は{{points}}点で、次のリードを担当します。",
   "heartsBroken": "ハートブレイク済",
   "heartsNotBroken": "ハート未ブレイク",
   "passDirection": {
@@ -43,6 +43,7 @@
   "scoresTricks": "トリック",
   "passButton": "パス",
   "passProgress": "{{count}}/3 枚選択済み",
+  "passProgressAnnouncement": "{{selected}}枚選択済み、残り{{remaining}}枚",
   "passRemaining": "あと{{count}}枚",
   "passTo": "{{direction}} → {{name}} へ",
   "playButton": "出す",

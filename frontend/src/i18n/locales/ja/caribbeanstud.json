@@ -32,6 +32,7 @@
     "dealerNotQualified": "ディーラー未クオリファイ！"
   },
   "payout": {
+    "line": "{{bet}}: 賭け {{betAmount}} / 払い戻し {{payoutAmount}}",
     "ante": "アンテ",
     "play": "プレイ",
     "jackpot": "ジャックポット",

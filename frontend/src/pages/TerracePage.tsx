@@ -222,7 +222,7 @@ function TerracePageContent() {
                         }
                       }}
                       disabled={!isPlaying || loading || isTerraceSourceSelected || (!isTop && !selectedSource)}
-                      aria-label={cardAlt(card)}
+                      aria-label={t('tableauCardAriaLabel', { card: cardAlt(card), pile: pileIdx })}
                       aria-pressed={isTop ? isSourceSelected('tableau', pileIdx) : undefined}
                       draggable={isTop && isPlaying && !loading}
                       onDragStart={dnd.handleDragStart(pileZone)}
@@ -390,19 +390,25 @@ function TerracePageContent() {
                 <div className="text-center">
                   <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
                   {wasteTop ? (
-                    <button
-                      type="button"
-                      onClick={() => game.handleSelectSource(wasteZone)}
-                      disabled={!isPlaying || loading}
-                      aria-label={cardAlt(wasteTop)}
-                      aria-pressed={isSourceSelected('waste', undefined)}
-                      draggable={isPlaying && !loading}
-                      onDragStart={dnd.handleDragStart(wasteZone)}
-                      onDragEnd={dnd.handleDragEnd}
-                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste', undefined) ? 'ring-2 ring-ds-warning' : ''}`}
-                    >
-                      <AnimatedCard card={wasteTop} width={dims.cw} draggable={false} />
-                    </button>
+                    <>
+                      <div id="terrace-waste-count" className="text-game-text-muted text-xs mb-1">
+                        {t('wasteCount', { count: state.waste.length })}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => game.handleSelectSource(wasteZone)}
+                        disabled={!isPlaying || loading}
+                        aria-label={cardAlt(wasteTop)}
+                        aria-describedby="terrace-waste-count"
+                        aria-pressed={isSourceSelected('waste', undefined)}
+                        draggable={isPlaying && !loading}
+                        onDragStart={dnd.handleDragStart(wasteZone)}
+                        onDragEnd={dnd.handleDragEnd}
+                        className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste', undefined) ? 'ring-2 ring-ds-warning' : ''}`}
+                      >
+                        <AnimatedCard card={wasteTop} width={dims.cw} draggable={false} />
+                      </button>
+                    </>
                   ) : (
                     <div
                       role="img"

@@ -60,6 +60,9 @@ const ECARTE_PHASE_KEYS: Readonly<Record<number, string>> = {
   [EcartePhase.GAME_END]: 'gameEnd',
 };
 
+/** Tricks required to win an Écarté deal; mirrors `EcarteTricksToWin` in `internal/domain/Ecarte.go`. */
+const ECARTE_TRICKS_TO_WIN = 3;
+
 /**
  * Exchange-phase negotiation sub-step → i18n key, mirroring the CUI's
  * `ecarteNegPromptKey` grouping (both discard steps share one label) so the
@@ -147,6 +150,14 @@ function EcartePageContent() {
   const isPlayPhase = state.phase === EcartePhase.PLAY;
   const isRoundEnd = state.phase === EcartePhase.ROUND_END;
   const isGameEnd = state.phase === EcartePhase.GAME_END || state.gameEndFlag;
+  const dealWinner = state.players.find((player) => player.trickCount >= ECARTE_TRICKS_TO_WIN);
+  const dealWinnerAnnouncement =
+    (isRoundEnd || isGameEnd) && dealWinner
+      ? t('roundResult.winnerAnnouncement', {
+          name: dealWinner.isHuman ? t('you') : t('cpu', { id: dealWinner.id }),
+          points: state.dealPoints[dealWinner.id],
+        })
+      : '';
 
   // The web contract carries no explicit turn flags, so derive them from the
   // current seat: it is the human's turn whenever currentPlayerIdx is the human.
@@ -286,6 +297,8 @@ function EcartePageContent() {
                         {t('roundResult.line', {
                           name: p.isHuman ? t('you') : t('cpu', { id: p.id }),
                           points: state.dealPoints[p.id] ?? 0,
+                          tricks: state.dealTrickPoints[p.id] ?? 0,
+                          kingBonus: state.dealKingBonus[p.id] ?? 0,
                         })}
                       </div>
                     ))}
@@ -342,6 +355,9 @@ function EcartePageContent() {
                     ` (${t(`action.${state.hint.action}`, { defaultValue: state.hint.action })})`}
                 </div>
               )}
+            </div>
+            <div data-testid="ecarte-winner-live" className="sr-only" role="status" aria-live="polite">
+              {dealWinnerAnnouncement}
             </div>
             <div data-testid="ecarte-discard-live" className="sr-only" role="status" aria-live="polite">
               {isDiscardStep && t('discardSelectionGuide', { count: selectedCardIndices.length })}

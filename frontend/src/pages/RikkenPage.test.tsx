@@ -6,6 +6,7 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, RikkenResponse } from '../types/card';
 import { RIKKEN_NO_TRUMP } from '../types/games/rikken';
 import { RikkenContract, RikkenPhase } from '../types/phases';
+import { cardAlt } from '../utils/cardAlt';
 import { RikkenPage } from './RikkenPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -121,10 +122,31 @@ beforeEach(() => {
 });
 
 describe('RikkenPage', () => {
+  it('uses localized card names for hand buttons', async () => {
+    mockApi.mockResolvedValue(playState);
+    renderWithProviders(<RikkenPage />);
+    const handElement = await screen.findByTestId('rikken-hand');
+    expect(handElement.querySelector('button')).toHaveAttribute('aria-label', cardAlt({ design: 'SPADE', value: 1 }));
+  });
+
   it('resets on mount', async () => {
     mockApi.mockResolvedValue(bidState);
     renderWithProviders(<RikkenPage />);
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
+  });
+
+  it('shows that there is no current highest contract when bidding starts', async () => {
+    mockApi.mockResolvedValue(bidState);
+    renderWithProviders(<RikkenPage />);
+
+    expect(await screen.findByTestId('rikken-current-bid')).toHaveTextContent('現在の最高契約：なし');
+  });
+
+  it('shows the current highest contract and its declarer in the bidding controls', async () => {
+    mockApi.mockResolvedValue({ ...bidState, contract: RikkenContract.MISERE, declarerIdx: 2 });
+    renderWithProviders(<RikkenPage />);
+
+    expect(await screen.findByTestId('rikken-current-bid')).toHaveTextContent('現在の最高契約：ミゼール（0）（CPU 2）');
   });
 
   it('offers all four contracts plus pass', async () => {

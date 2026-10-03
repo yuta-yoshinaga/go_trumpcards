@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tarneebApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, TarneebResponse } from '../types/card';
 import { TarneebPhase } from '../types/phases';
@@ -65,6 +66,23 @@ beforeEach(() => {
 });
 
 describe('TarneebPage', () => {
+  it('shows the declared trump symbol and translated suit name in Japanese and English', async () => {
+    const previousLanguage = i18n.language;
+    mockExec.mockResolvedValue(makeState({ phase: TarneebPhase.PLAY, trumpSuit: 1 }));
+    try {
+      await i18n.changeLanguage('ja');
+      const { unmount } = renderWithProviders(<TarneebPage />);
+      expect(await screen.findByText('♠ スペード', { exact: false })).toBeInTheDocument();
+      unmount();
+
+      await i18n.changeLanguage('en');
+      renderWithProviders(<TarneebPage />);
+      expect(await screen.findByText('♠ Spade', { exact: false })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<TarneebPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, expect.any(Object)));
@@ -110,6 +128,28 @@ describe('TarneebPage', () => {
     expect(cellsOf('あなたのチーム')).toEqual(['あなたのチーム', '4', '4', '10']);
     // Opponents (team 1): 2 tricks, round score 2, total 5.
     expect(cellsOf('相手チーム')).toEqual(['相手チーム', '2', '2', '5']);
+  });
+
+  it('announces both teams’ round score changes and totals only at round end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: TarneebPhase.ROUND_END }));
+    renderWithProviders(<TarneebPage />);
+
+    await waitFor(() =>
+      expect(
+        screen
+          .getAllByRole('status')
+          .some((region) => /あなたのチーム.*4.*10.*相手チーム.*2.*5/.test(region.textContent ?? '')),
+      ).toBe(true),
+    );
+  });
+
+  it('keeps the score announcement live region empty during normal play', async () => {
+    renderWithProviders(<TarneebPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, expect.any(Object)));
+    const announcement = screen.getAllByRole('status').find((region) => region.getAttribute('aria-atomic') === 'true');
+    expect(announcement).toBeInTheDocument();
+    expect(announcement).toBeEmptyDOMElement();
   });
 
   it('displays round score (including negative scores for failed bids) instead of trick count in the score table', async () => {

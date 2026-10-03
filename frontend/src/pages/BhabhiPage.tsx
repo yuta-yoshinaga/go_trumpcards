@@ -27,6 +27,7 @@ import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { BHABHI_HELP, parseBhabhiCommand } from '../utils/cli/commands/bhabhiCommands';
 import { formatBhabhiState } from '../utils/cli/formatters/bhabhiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Table sizes the game accepts (sync: domain.BhabhiMin/MaxPlayers). */
@@ -128,8 +129,9 @@ function BhabhiPageContent() {
 
   const phaseName = isGameEnd ? t('phase.gameEnd') : t('phase.play');
 
-  // 出せる札に緑の枠を足すだけで、押せなくはしない（サーバが必ず検証する）。
+  // 出せる札を緑の枠と支援技術向けの状態で示す。最終判定はサーバで行う。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
+  const canAnnotatePlays = isHumanTurn && !loading;
 
   const resultBanner = (() => {
     if (!isGameEnd) return null;
@@ -217,6 +219,9 @@ function BhabhiPageContent() {
                 players={state.players}
                 cardWidth={cardWidth}
                 label={t('pile')}
+                cardAriaLabelFor={(player, card) =>
+                  t('trickCardByPlayer', { card: cardAlt(card), name: playerName(player.id, player.isHuman) })
+                }
                 wrap
               />
             </div>
@@ -299,15 +304,31 @@ function BhabhiPageContent() {
                     <button
                       key={`${card.design}-${card.value}-${idx}`}
                       type="button"
-                      onClick={() => handlePlay(idx)}
+                      onClick={() => {
+                        if (loading || !isHumanTurn || !legalRing.has(idx)) return;
+                        handlePlay(idx);
+                      }}
                       disabled={loading || !isHumanTurn}
-                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                      className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                      aria-label={
+                        canAnnotatePlays
+                          ? t(legalRing.has(idx) ? 'actions.playableAria' : 'actions.notPlayableAria', {
+                              card: cardAlt(card),
+                            })
+                          : t('actions.playAria', { card: cardAlt(card) })
+                      }
+                      aria-disabled={canAnnotatePlays && !legalRing.has(idx) ? true : undefined}
+                      aria-describedby={
+                        canAnnotatePlays && !legalRing.has(idx) ? 'bhabhi-unplayable-reason' : undefined
+                      }
+                      className={`disabled:opacity-50 aria-disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
                     >
                       <CardImage card={card} width={cardWidth} />
                     </button>
                   ))}
                 </div>
+                <span id="bhabhi-unplayable-reason" className="sr-only">
+                  {t('actions.notPlayableReason')}
+                </span>
               </div>
             )}
 

@@ -82,6 +82,24 @@ describe('GapsPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/手数: 5/));
   });
 
+  it('includes zero-based row and column in card names, preserving locked status', async () => {
+    renderWithProviders(<GapsPage />);
+    expect(
+      await screen.findByRole('button', { name: '♠ 2、行0・列0、ロック済み (次のリディール後も残ります)' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: '♠ 2、行0・列0、ロック済み (次のリディール後も残ります)' }),
+    ).toHaveAttribute('data-testid', 'gaps-locked-0-0');
+  });
+
+  it('includes zero-based coordinates in unlocked card names', async () => {
+    const grid = makeGrid();
+    grid[0][0] = card('SPADE', 5);
+    mockedRun.mockResolvedValue({ ...playingState, grid });
+    renderWithProviders(<GapsPage />);
+    expect(await screen.findByRole('button', { name: '♠ 5、行0・列0' })).toBeInTheDocument();
+  });
+
   it('reflects the server-provided gap needs (needed / anySuit / blocked) in each cell aria-label and ghost preview', async () => {
     const grid: (Card | null)[][] = [
       Array(13).fill(null),
@@ -156,10 +174,26 @@ describe('GapsPage', () => {
     expect(btn).toBeDisabled();
   });
 
-  it('calls run redeal when redeal clicked', async () => {
+  it('cancels redeal without changing the game', async () => {
     renderWithProviders(<GapsPage />);
     const btn = await screen.findByRole('button', { name: /再配り/ });
+    mockedRun.mockClear();
     fireEvent.click(btn);
+    expect(await screen.findByRole('alertdialog')).toHaveTextContent(
+      '再配りを行うと、ロック済みカード以外の配置が変わります。残り回数: 3',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    await flushPendingDispatch();
+    expect(mockedRun).not.toHaveBeenCalledWith('redeal');
+    expect(screen.getByText('再配り残り: 3')).toBeInTheDocument();
+  });
+
+  it('runs redeal only after confirmation and shows the current remaining count', async () => {
+    renderWithProviders(<GapsPage />);
+    fireEvent.click(await screen.findByTestId('gaps-redeal-button'));
+    expect(await screen.findByRole('alertdialog')).toHaveTextContent('残り回数: 3');
+    mockedRun.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockedRun).toHaveBeenCalledWith('redeal'));
   });
 
@@ -290,12 +324,13 @@ describe('GapsPage', () => {
     expect(mockedRun).not.toHaveBeenCalledWith('undo');
   });
 
-  it('fires redeal when the d key is pressed', async () => {
+  it('opens the redeal confirmation when the d key is pressed', async () => {
     renderWithProviders(<GapsPage />);
     await screen.findByTestId('gaps-redeal-button');
     mockedRun.mockClear();
     fireEvent.keyDown(document.body, { key: 'd' });
-    await waitFor(() => expect(mockedRun).toHaveBeenCalledWith('redeal'));
+    expect(await screen.findByRole('alertdialog')).toHaveTextContent('残り回数: 3');
+    expect(mockedRun).not.toHaveBeenCalledWith('redeal');
   });
 
   it('does not fire redeal via the d key when no redeals remain', async () => {

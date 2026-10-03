@@ -42,8 +42,9 @@ type AndarBaharWebOutput struct {
 	MainPayout int `json:"mainPayout"`
 	SidePayout int `json:"sidePayout"`
 	// SideBandProbabilities は帯 0〜6 の的中確率を順番に返す。
-	SideBandProbabilities []float64 `json:"sideBandProbabilities"`
-	History               []int     `json:"history"`
+	SideBandProbabilities []float64                            `json:"sideBandProbabilities"`
+	History               []int                                `json:"history"`
+	RoundHistory          []domain.AndarBaharRoundHistoryEntry `json:"roundHistory"`
 	WebOutputBase
 }
 
@@ -61,6 +62,7 @@ func newAndarBaharDefaultOutput(msg string) *AndarBaharWebOutput {
 		AndarCards:            make([]*WebOutputCard, 0),
 		BaharCards:            make([]*WebOutputCard, 0),
 		History:               make([]int, 0),
+		RoundHistory:          make([]domain.AndarBaharRoundHistoryEntry, 0),
 		SideBandProbabilities: make([]float64, 0),
 		Winner:                -1,
 		WebOutputBase:         WebOutputBase{Message: msg},

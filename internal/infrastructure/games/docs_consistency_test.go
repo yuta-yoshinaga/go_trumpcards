@@ -310,10 +310,6 @@ var openapiPathRe = regexp.MustCompile(`(?m)^  /([a-z0-9]+)/exec:`)
 // it drifted by four games (braid, pontoon, settemezzo, niuniu) before anyone
 // looked. A rule that is only written down is a rule that gets skipped -- that
 // is the whole reason the other guards exist.
-//
-// api/openapi.yaml is CRLF. The regex tolerates that because `$` in Go's
-// multiline mode stops before the \r, but anything that rewrites the file must
-// preserve the line endings or the diff becomes every line.
 func TestOpenAPIMatchesRegistry(t *testing.T) {
 	data, err := os.ReadFile(filepath.Join(repoRoot, "api/openapi.yaml"))
 	if err != nil {
@@ -359,12 +355,8 @@ func TestOpenAPIMatchesRegistry(t *testing.T) {
 // openapiSchemaRe a schema definition at the fixed four-space indent the file
 // uses under components.schemas.
 var (
-	openapiRefRe = regexp.MustCompile(`\$ref: '#/components/schemas/([A-Za-z0-9]+)'`)
-	// The trailing \r? is load-bearing: api/openapi.yaml is CRLF, so `$` sits
-	// after the carriage return and an anchored pattern matches nothing --
-	// which reads as "every reference is dangling" rather than as a broken
-	// regex.
-	openapiSchemaRe = regexp.MustCompile(`(?m)^    ([A-Za-z0-9]+):\r?$`)
+	openapiRefRe    = regexp.MustCompile(`\$ref: '#/components/schemas/([A-Za-z0-9]+)'`)
+	openapiSchemaRe = regexp.MustCompile(`(?m)^    ([A-Za-z0-9]+):$`)
 )
 
 // TestOpenAPIHasNoDanglingSchemaRefs asserts that every $ref points at a schema
@@ -387,7 +379,7 @@ func TestOpenAPIHasNoDanglingSchemaRefs(t *testing.T) {
 	// Only the components.schemas block defines schemas; the four-space indent
 	// is unique to it in this file, but confirm the section exists so a
 	// restructure fails loudly instead of silently matching nothing.
-	if !strings.Contains(text, "\n  schemas:\n") && !strings.Contains(text, "\r\n  schemas:\r\n") {
+	if !strings.Contains(text, "\n  schemas:\n") {
 		t.Fatal("no components.schemas block found -- the file structure changed")
 	}
 	for _, m := range openapiSchemaRe.FindAllStringSubmatch(text, -1) {
@@ -415,7 +407,7 @@ func TestOpenAPIHasNoDanglingSchemaRefs(t *testing.T) {
 // consumes the following key and silently skips every other path. That is not
 // hypothetical -- the first version of this guard checked 72 of 234 paths and
 // reported one of the three real mismatches.
-var openapiExecKeyRe = regexp.MustCompile(`(?m)^  /([a-z0-9]+)/exec:\r?$`)
+var openapiExecKeyRe = regexp.MustCompile(`(?m)^  /([a-z0-9]+)/exec:$`)
 
 // openapiStatusRefRe captures a status code and the schema its response body
 // references, e.g. ('200', 'BuraResponse').

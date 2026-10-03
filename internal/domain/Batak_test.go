@@ -377,6 +377,10 @@ func TestBatak_ScoreRound_Asymmetry(t *testing.T) {
 		assert.Equal(t, 5, cb.GetPlayer(1).GetRoundScore(), "親はオーバートリックでも +bid のみ")
 		assert.Equal(t, 2, cb.GetPlayer(2).GetRoundScore())
 		assert.Equal(t, 2, cb.GetPlayer(3).GetRoundScore())
+		for i := 0; i < cb.GetPlayerCnt(); i++ {
+			assert.Equal(t, cb.GetPlayer(i).GetRoundScore(), cb.GetScoreBreakdown(i).Total())
+		}
+		assert.Equal(t, domain.BatakScoreBreakdown{DeclarerBidPoints: 5}, cb.GetScoreBreakdown(1))
 	})
 
 	t.Run("親が宣言未達の卓", func(t *testing.T) {
@@ -412,6 +416,11 @@ func TestBatak_ScoreRound_Asymmetry(t *testing.T) {
 		assert.Equal(t, 3, cb.GetPlayer(1).GetRoundScore(), "子はトリック数がそのまま加点")
 		assert.Equal(t, -7, cb.GetPlayer(2).GetRoundScore(), "親は未達で -bid")
 		assert.Equal(t, 1, cb.GetPlayer(3).GetRoundScore(), "子はトリック数がそのまま加点")
+		for i := 0; i < cb.GetPlayerCnt(); i++ {
+			assert.Equal(t, cb.GetPlayer(i).GetRoundScore(), cb.GetScoreBreakdown(i).Total())
+		}
+		assert.Equal(t, domain.BatakScoreBreakdown{DeclarerBidPenalty: 7}, cb.GetScoreBreakdown(2))
+		assert.Equal(t, domain.BatakScoreBreakdown{DefenderTricks: 4}, cb.GetScoreBreakdown(0))
 	})
 }
 
@@ -831,8 +840,10 @@ func TestBatak_Auction_Statistics(t *testing.T) {
 	assert.GreaterOrEqual(t, d3Pct, 10.0, "席 3 の親割合は 10%% 以上であること")
 	assert.LessOrEqual(t, d3Pct, 45.0, "席 3 の親割合は 45%% 以下であること")
 
-	// 4. 全員パスで強制的に親が決まった割合: 25% 以下
-	assert.LessOrEqual(t, forcedPct, 25.0, "全員パスでの強制親割合は 25%% 以下であること")
+	// 4. 全員パスで強制的に親が決まった割合: 27% 以下
+	// 実測 (300 回) は平均 22.1% / 標準偏差 1.0%。25% だと約 3σ で 1/300 ほど落ちたため
+	// 約 5σ の 27% に置く。CPU が常にパスする変異では強制親が 77% になり、この帯で落ちる。
+	assert.LessOrEqual(t, forcedPct, 27.0, "全員パスでの強制親割合は 27%% 以下であること")
 
 	// 5. 人間 (席 0) が親になる割合: 10% 以上
 	assert.GreaterOrEqual(t, d0Pct, 10.0, "人間 (席 0) が親になる割合は 10%% 以上であること")

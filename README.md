@@ -501,7 +501,7 @@ trumpcards version --short       # バージョン番号のみ出力 (機械読�
 trumpcards help                  # ヘルプを表示
 trumpcards help blackjack        # 特定ゲームの操作方法を表示
 trumpcards games                 # 全ゲームを名前順で一覧表示
-trumpcards games --search solitaire --short  # 名前・エイリアス・説明文から検索
+trumpcards games --search solitaire --short  # 名前・エイリアス・ゲーム名・説明文から検索
 trumpcards games --category casino           # Workerのバイナリサイズ区分で絞り込み
 PORT=3000 trumpcards web         # カスタムポートで起動 (環境変数)
 source <(trumpcards completion bash)  # Bash 補完を有効化

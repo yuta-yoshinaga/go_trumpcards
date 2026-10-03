@@ -11,7 +11,16 @@
     "rougeRow": "ルージュ",
     "total": "合計",
     "winner": "勝ち列",
-    "crossing": "31到達"
+    "crossing": "31到達",
+    "crossingAria": "累積 {{total}}、{{card}}で31到達"
+  },
+  "session": {
+    "title": "セッション収支",
+    "net": "差引収支",
+    "wins": "勝ち",
+    "losses": "負け",
+    "draws": "引き分け",
+    "refaits": "31での引き分け（ルフェ）"
   },
   "betType": {
     "noir": "ノワール",

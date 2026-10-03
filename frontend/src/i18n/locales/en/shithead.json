@@ -23,6 +23,8 @@
     "faceUp": "Face-up cards",
     "faceDown": "Face-down cards",
     "discardPile": "Discard pile",
+    "wasteCount_one": "{{count}} card",
+    "wasteCount_other": "{{count}} cards",
     "stock": "Stock",
     "currentSource": "Source",
     "you": "You",

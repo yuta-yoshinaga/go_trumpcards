@@ -1,6 +1,8 @@
 {
   "autoComplete": "Auto Complete",
+  "autoCompleteCompleted": "Auto-complete finished",
   "autoCompleteNotReady": "Available when all tops can reach the foundations",
+  "autoCompleteStarted": "Auto-complete started",
   "direction": {
     "asc": "Ascending",
     "desc": "Descending"
@@ -35,6 +37,10 @@
   "redealsLeft": "Redeals left: {{count}}",
   "rulesNote": "Same suit and rank ±1 (A↔K wraps). Empty piles take no cards.",
   "selectionMoves": "Selected card has {{count}} legal destination(s)",
+  "selectionMovesWithTargets": "Selected card has {{count}} legal destination(s): {{targets}}",
+  "selectionTableauTarget": "tableau column {{col}}",
+  "selectionFoundationTarget": "foundation {{pile}}",
+  "listSeparator": ", ",
   "selectionNoMoves": "Selected card has no legal destination",
   "stalemate": "Stalemate",
   "stalemateAlert": "Stalemate. Undo {{count}} time(s) to escape.",

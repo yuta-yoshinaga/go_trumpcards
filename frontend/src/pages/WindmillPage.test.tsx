@@ -120,6 +120,14 @@ describe('WindmillPage', () => {
     }
   });
 
+  it('shows the current card count beside each corner pile', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<WindmillPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '四隅組札0 1/13枚' })).toBeInTheDocument());
+    expect(screen.getByText('1枚')).toBeInTheDocument();
+    expect(screen.getAllByText('0枚')).toHaveLength(3);
+  });
+
   // The centre runs A-K four times, so its progress readout is 52, not 13.
   it('shows the centre progress against 52 cards', async () => {
     mockExec.mockResolvedValue(playingState);

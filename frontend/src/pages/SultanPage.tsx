@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -113,6 +113,14 @@ function SultanPageContent() {
     handlePlay,
     isAutoCompleting,
   } = useSultanGame();
+  const [autoCompleteAnnouncement, setAutoCompleteAnnouncement] = useState('');
+  const previousAutoCompleting = useRef(isAutoCompleting);
+
+  useEffect(() => {
+    if (previousAutoCompleting.current === isAutoCompleting) return;
+    previousAutoCompleting.current = isAutoCompleting;
+    setAutoCompleteAnnouncement(t(isAutoCompleting ? 'autoCompleteStarted' : 'autoCompleteCompleted'));
+  }, [isAutoCompleting, t]);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('sultan');
@@ -325,7 +333,9 @@ function SultanPageContent() {
                         type="button"
                         onClick={() => handlePlay({ zone: 'divan', divanIdx: idx })}
                         disabled={!isPlaying || loading || isAutoCompleting}
-                        aria-label={t('divanCard', { idx, card: cardAlt(dcard) })}
+                        aria-label={t(divanPlayable ? 'divanPlayableCard' : 'divanUnplayableCard', {
+                          label: t('divanCard', { idx, card: cardAlt(dcard) }),
+                        })}
                         className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}${divanPlayable ? ' ring-2 ring-ds-success' : ''}`}
                         data-playable={divanPlayable ? 'true' : undefined}
                       >
@@ -359,6 +369,9 @@ function SultanPageContent() {
                   {t('frontendHint.foundation', { idx: hint.toFoundation })}
                 </div>
               )}
+            </div>
+            <div data-testid="sultan-autocomplete-live" className="sr-only" role="status" aria-live="polite">
+              {autoCompleteAnnouncement}
             </div>
             <div className="flex justify-center">
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />

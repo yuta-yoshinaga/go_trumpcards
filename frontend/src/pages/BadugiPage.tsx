@@ -218,12 +218,12 @@ function BadugiPageContent() {
           <span>
             {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
           </span>
-          {state.sidePots.length > 0 && (
+          {state.sidePots.length > 1 && (
             <div className="text-xs">
               {state.sidePots.map((sidePot, index) => (
                 <div key={`side-pot-${index}`}>
-                  {t('sidePot', {
-                    index: index + 1,
+                  {t(index === 0 ? 'mainPot' : 'sidePot', {
+                    index,
                     amount: sidePot.amount,
                     eligiblePlayers: sidePot.eligiblePlayers
                       .map((playerIdx) => findPlayerName(state.players, playerIdx))
@@ -253,6 +253,25 @@ function BadugiPageContent() {
         <>
           {/* Scrollable: CPU players + logs */}
           <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
+            {isEnd && state?.roundResults && state.roundResults.length > 0 && (
+              <section
+                data-testid="bg-round-results"
+                aria-label={t('roundResults.title')}
+                className="mb-3 rounded-lg p-3 bg-ds-surface text-ds-text-primary"
+              >
+                <h2 className="font-bold mb-2">{t('roundResults.title')}</h2>
+                <ul className="space-y-1">
+                  {state.roundResults.map((result) => (
+                    <li key={result.playerIdx} className="flex justify-between gap-4">
+                      <span>
+                        {findPlayerName(state.players, result.playerIdx)}: {badugiHandName(result.handSize, t)}
+                      </span>
+                      <span className="tabular-nums">{t('roundResults.wonAmount', { amount: result.wonAmount })}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
             {/* CPU players */}
             {(() => {
               const cpuCards = cpuPlayers.map((p) => (
@@ -313,7 +332,9 @@ function BadugiPageContent() {
                       {tc('betting.currentBet')} {humanPlayer.currentBet}
                     </span>
                   )}
-                  {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
+                  {humanPlayer.folded && (
+                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
+                  )}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                   {isEnd && !humanPlayer.folded && humanPlayer.handSize > 0 && (
                     <span
@@ -324,7 +345,16 @@ function BadugiPageContent() {
                     </span>
                   )}
                 </div>
-                {canExchange && <div className="text-game-text-highlight text-xs mb-1">{t('exchangeInstruction')}</div>}
+                {canExchange && (
+                  <div className="text-game-text-highlight text-xs mb-1">
+                    {t('exchangeInstruction')}
+                    {hintEnabled && subsetIndices && (
+                      <span data-testid="bg-current-hand-rank" className="ml-2 font-bold text-ds-accent">
+                        {t('currentBestRank', { rank: badugiHandName(subsetIndices.size, t) })}
+                      </span>
+                    )}
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {(humanPlayer.cards ?? []).map((card, i) => {
                     const isSelected = selected.includes(i);

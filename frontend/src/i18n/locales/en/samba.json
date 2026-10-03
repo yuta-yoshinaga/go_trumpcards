@@ -43,6 +43,8 @@
     "canastaComplete": "Canasta complete!",
     "sambaComplete": "Samba complete!"
   },
+  "meldProgressAnnouncement": "Your team's meld: {{updates}}",
+  "listSeparator": ", ",
   "melds": "Melds",
   "mixedCanasta": "Mixed Canasta",
   "naturalCanasta": "Natural Canasta",
@@ -80,6 +82,7 @@
   },
   "skipMeldButton": "Skip",
   "teamLabel": "Team {{n}}",
+  "teamScoreAnnouncement": "{{team}} score: {{score}}",
   "teamScores": "Team 0: {{a}} / Team 1: {{b}}",
   "tutorial": {
     "drawArea": "The stock and discard area. Draw cards from here.",

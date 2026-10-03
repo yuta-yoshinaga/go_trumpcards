@@ -24,7 +24,8 @@
     "nextRound": "Next round",
     "reset": "Reset",
     "giveUp": "Give up",
-    "playAria": "Play {{card}}"
+    "playAria": "Play {{card}}",
+    "playableAria": "Play {{card}} (playable)"
   },
   "result": {
     "youWin": "You win! {{score}} penalty points",
@@ -46,6 +47,7 @@
   },
   "jacks": {
     "label": "jacks",
+    "unclaimedLabel": "Not yet taken",
     "spade": "♠J",
     "other": "{{suit}}J",
     "spadeAria": "the spade jack (-2)",

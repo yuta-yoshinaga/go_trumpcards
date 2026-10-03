@@ -81,6 +81,9 @@ func (ti *TwoTenJackInteractor) Play(cardIndex int) string {
 	if err != nil {
 		return ti.tp.Output(ti.Game, err)
 	}
+	if ti.Game.GetPhase() == domain.TwoTenJackPhaseTrickEnd {
+		ti.Game.ResolveTrick()
+	}
 	ti.runCpuTurns()
 	return ti.tp.Output(ti.Game, nil)
 }

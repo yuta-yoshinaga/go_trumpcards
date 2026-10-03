@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bidWhistApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -74,6 +74,47 @@ beforeEach(() => {
 });
 
 describe('BidWhistPage', () => {
+  it('announces every card played by the human and CPUs in play order', async () => {
+    const wonState = makeState({
+      phase: BidWhistPhase.TRICK_END,
+      currentTrick: [{ playerIdx: 1, card: card('HEART', 9) }],
+      players: [
+        player(0, true, sixCards),
+        player(1, false, [], { trickCount: 0 }),
+        player(2, false, [], { trickCount: 1 }),
+        player(3, false, []),
+      ],
+    });
+    mockExec.mockResolvedValueOnce(makeState({ phase: BidWhistPhase.PLAY }));
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        phase: BidWhistPhase.TRICK_END,
+        currentTrick: [
+          { playerIdx: 1, card: card('SPADE', 5) },
+          { playerIdx: 2, card: card('HEART', 6) },
+          { playerIdx: 3, card: card('DIAMOND', 7) },
+          { playerIdx: 1, card: card('CLOVER', 8) },
+        ],
+      }),
+    );
+    mockExec.mockResolvedValueOnce(wonState);
+    renderWithProviders(<BidWhistPage />);
+
+    const status = await screen.findByRole('status');
+    expect(status).toBeEmptyDOMElement();
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() =>
+      expect(status).toHaveTextContent(
+        'CPU 1が♠ 5を出しました、CPU 2が♥ 6を出しました、CPU 3が♦ 7を出しました、CPU 1が♣ 8を出しました',
+      ),
+    );
+    fireEvent.click(screen.getByTestId('next-button'));
+    await waitFor(() => expect(status).toHaveTextContent('CPU 2がトリックを取りました、CPU 1が♥ 9を出しました'));
+    fireEvent.click(screen.getByRole('button', { name: /CLI/ }));
+    expect(status).toHaveTextContent('CPU 2がトリックを取りました、CPU 1が♥ 9を出しました');
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<BidWhistPage />);
     await waitFor(() =>
@@ -482,5 +523,21 @@ describe('BidWhistPage', () => {
     renderWithProviders(<BidWhistPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('nextround-button')).not.toBeInTheDocument();
+  });
+
+  it('marks the current dealer seat', async () => {
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 1 }));
+    renderWithProviders(<BidWhistPage />);
+    expect(await screen.findAllByTestId('bidwhist-dealer-badge')).toHaveLength(1);
+  });
+
+  it('marks the human seat when the human is the dealer', async () => {
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 0 }));
+    renderWithProviders(<BidWhistPage />);
+
+    expect(await screen.findAllByTestId('bidwhist-dealer-badge')).toHaveLength(1);
+    const humanRow = document.querySelector<HTMLElement>('[data-tutorial="bw-hand"]');
+    if (!humanRow) throw new Error('Human hand row was not rendered');
+    expect(within(humanRow).getByTestId('bidwhist-dealer-badge')).toBeInTheDocument();
   });
 });

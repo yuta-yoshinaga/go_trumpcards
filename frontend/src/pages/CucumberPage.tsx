@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cucumberApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -65,6 +65,10 @@ function CucumberPageContent() {
   const { hint, hintEnabled, setHintEnabled } = useGameHint('cucumber', state);
   const [playerCnt, setPlayerCnt] = useState(4);
   const [targetScore, setTargetScore] = useState(30);
+  const previousStateRef = useRef<CucumberResponse | null>(null);
+  const resetPendingRef = useRef(false);
+  const [turnAnnouncement, setTurnAnnouncement] = useState('');
+  const [turnAnnouncementNonce, setTurnAnnouncementNonce] = useState(0);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('cucumber');
   const cliConfig: CliGameConfig<CucumberResponse, Parameters<typeof cucumberApi.exec>> = useMemo(
@@ -82,8 +86,30 @@ function CucumberPageContent() {
     void dispatch('reset');
   }, [dispatch]);
 
+  useEffect(() => {
+    if (!state || previousStateRef.current === state) return;
+
+    const previousState = previousStateRef.current;
+    previousStateRef.current = state;
+    if (previousState === null || resetPendingRef.current) {
+      resetPendingRef.current = false;
+      setTurnAnnouncement('');
+      return;
+    }
+
+    const humanTurn =
+      state.phase === CucumberPhase.PLAY && !state.gameEndFlag && state.players[state.currentPlayerIdx].isHuman;
+    if (humanTurn) {
+      setTurnAnnouncement(t('status.yourTurn'));
+      setTurnAnnouncementNonce((nonce) => nonce + 1);
+    } else {
+      setTurnAnnouncement('');
+    }
+  }, [state, t]);
+
   const handleReset = useCallback(() => {
     hideActionLog();
+    resetPendingRef.current = true;
     void dispatch('reset', undefined, { playerCnt, targetScore });
   }, [dispatch, hideActionLog, playerCnt, targetScore]);
 
@@ -103,7 +129,12 @@ function CucumberPageContent() {
   }, [dispatch]);
 
   if (!state) {
-    return <GameSkeleton gameKey="cucumber" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 7 }} />;
+    return (
+      <>
+        <LiveAnnouncement key={turnAnnouncementNonce} message={turnAnnouncement} testId="cu-turn-announcement" />
+        <GameSkeleton gameKey="cucumber" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 7 }} />
+      </>
+    );
   }
 
   const human = state.players.find((p) => p.isHuman);
@@ -144,6 +175,7 @@ function CucumberPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <LiveAnnouncement key={turnAnnouncementNonce} message={turnAnnouncement} testId="cu-turn-announcement" />
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -209,6 +241,12 @@ function CucumberPageContent() {
                   <span>{t('header.cards', { n: String(p.cardCount) })}</span>
                   {' / '}
                   <span className="text-ds-accent">{t('header.penalty', { n: String(p.penalty) })}</span>
+                  {' / '}
+                  <span className={p.penalty >= state.config.targetScore ? 'text-ds-warning' : ''}>
+                    {p.penalty >= state.config.targetScore
+                      ? t('header.targetReached')
+                      : t('header.targetRemaining', { count: state.config.targetScore - p.penalty })}
+                  </span>
                 </div>
               ))}
             </div>

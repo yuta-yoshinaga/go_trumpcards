@@ -180,6 +180,8 @@ function YanivPageContent() {
   const caller = isRoundEnd ? state.players[state.callerIdx] : undefined;
   const callerName = caller?.isHuman ? tc('player.you') : caller ? tc('player.cpu', { id: caller.id }) : '';
   const canYaniv = isHumanTurn && isDiscard && human.handTotal <= 5;
+  const yanivAvailabilityKey =
+    human.handTotal > 5 ? 'yanivUnavailableTotal' : canYaniv ? 'yanivAvailable' : 'yanivUnavailableTurn';
   const phaseName = isGameEnd
     ? t('phase.end')
     : isRoundEnd
@@ -217,7 +219,7 @@ function YanivPageContent() {
         <>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             {error && (
-              <button type="button" onClick={retry} className="text-ds-error underline">
+              <button type="button" onClick={retry} className="text-ds-error-text underline">
                 {error}
               </button>
             )}
@@ -383,6 +385,39 @@ function YanivPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+            {state.roundScoreHistory.length > 0 && (
+              <section aria-label={t('label.roundHistory')} className="overflow-x-auto rounded-lg bg-ds-surface p-3">
+                <h2 className="mb-2 text-sm font-medium text-ds-text-primary">{t('label.roundHistory')}</h2>
+                <table className="w-full text-center text-xs text-ds-text-primary">
+                  <thead>
+                    <tr>
+                      <th scope="col" className="p-1">
+                        {t('label.round')}
+                      </th>
+                      {state.players.map((p) => (
+                        <th scope="col" key={p.id} className="p-1">
+                          {p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id })}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {state.roundScoreHistory.map((scores, roundIndex) => (
+                      <tr key={roundIndex} className="border-t border-ds-border-subtle">
+                        <th scope="row" className="p-1">
+                          {roundIndex + 1}
+                        </th>
+                        {state.players.map((p, playerIndex) => (
+                          <td key={p.id} className="p-1">
+                            {scores[playerIndex] ?? 0}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </section>
+            )}
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
           </div>
 
@@ -419,6 +454,12 @@ function YanivPageContent() {
                 ⚠️ {discardWarning}
               </div>
             )}
+            <div className="mb-2 text-center text-xs text-ds-text-primary" data-testid="yaniv-guidance">
+              {t('yanivGuidance', {
+                total: human.handTotal,
+                availability: t(yanivAvailabilityKey),
+              })}
+            </div>
             <div className="flex gap-2 justify-center flex-wrap" data-tutorial="y-action-buttons">
               <button
                 type="button"

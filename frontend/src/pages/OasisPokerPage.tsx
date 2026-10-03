@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { oasispokerApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -88,6 +88,7 @@ function OasisPokerPageContent() {
   const [anteAmount, setAnteAmount] = useState(100);
   const [jackpotAmount, setJackpotAmount] = useState(0);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
+  const [exchangeAnnouncement, setExchangeAnnouncement] = useState('');
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(oasispokerApi.exec);
@@ -107,14 +108,27 @@ function OasisPokerPageContent() {
 
   useMountReset(execApi);
 
+  const phase = state?.phase;
+  useEffect(() => {
+    if (phase !== undefined) setExchangeAnnouncement('');
+  }, [phase]);
+
   const isBetPhase = state?.phase === OasisPokerPhase.BET;
   const isExchangePhase = state?.phase === OasisPokerPhase.EXCHANGE;
   const isActionPhase = state?.phase === OasisPokerPhase.ACTION;
   const isEndPhase = state?.phase === OasisPokerPhase.END;
 
   const toggleSelected = (idx: number) => {
-    setSelectedIndices((prev) =>
-      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx].sort((a, b) => a - b),
+    const next = selectedIndices.includes(idx)
+      ? selectedIndices.filter((i) => i !== idx)
+      : [...selectedIndices, idx].sort((a, b) => a - b);
+    setSelectedIndices(next);
+    setExchangeAnnouncement(
+      t('exchangeSelectionAnnouncement', {
+        count: next.length,
+        ante: state?.anteBet ?? 0,
+        fee: (state?.anteBet ?? 0) * next.length,
+      }),
     );
   };
 
@@ -226,6 +240,9 @@ function OasisPokerPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          <div className="sr-only" role="status" aria-live="polite" data-testid="oasis-exchange-fee-announcement">
+            {isExchangePhase ? exchangeAnnouncement : ''}
+          </div>
           <div
             data-testid="card-area"
             className={[`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`, !isBetPhase && 'flex-1']
@@ -353,7 +370,7 @@ function OasisPokerPageContent() {
 
             {state.dealerHand.length > 0 && (
               <div className="mb-4">
-                <div className="text-ds-error font-bold text-center mb-1">
+                <div className="text-ds-error-text font-bold text-center mb-1">
                   <span aria-hidden="true">🔴</span> {t('dealer')}
                   {isEndPhase && (
                     <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank] ?? 'handRank.0')})</span>
@@ -437,28 +454,72 @@ function OasisPokerPageContent() {
             />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="oasis-bet-controls">
-                <ChipBetInput
-                  id="oasispoker-ante-amount"
-                  label={t('label.ante')}
-                  value={anteAmount}
-                  onChange={setAnteAmount}
-                  min={10}
-                  max={Math.max(0, state.chips - jackpotAmount)}
-                  step={10}
-                  disabled={loading}
-                  showSteppers
-                />
-                <ChipBetInput
-                  id="oasispoker-jackpot-amount"
-                  label={t('label.jackpot')}
-                  value={jackpotAmount}
-                  onChange={setJackpotAmount}
-                  min={0}
-                  max={Math.max(0, state.chips - anteAmount)}
-                  step={10}
-                  disabled={loading}
-                  showSteppers
-                />
+                <div className="flex flex-col items-center gap-1">
+                  <ChipBetInput
+                    id="oasispoker-ante-amount"
+                    label={t('label.ante')}
+                    value={anteAmount}
+                    onChange={setAnteAmount}
+                    min={10}
+                    max={Math.max(0, state.chips - jackpotAmount)}
+                    step={10}
+                    disabled={loading}
+                    showSteppers
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      className={btnSecondary}
+                      onClick={() => setAnteAmount(10)}
+                      disabled={loading}
+                      aria-label={`${t('label.ante')} ${t('button.minimum')}`}
+                    >
+                      {t('button.minimum')}
+                    </button>
+                    <button
+                      type="button"
+                      className={btnSecondary}
+                      onClick={() => setAnteAmount(Math.max(0, state.chips - jackpotAmount))}
+                      disabled={loading}
+                      aria-label={`${t('label.ante')} ${t('button.maximum')}`}
+                    >
+                      {t('button.maximum')}
+                    </button>
+                  </div>
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <ChipBetInput
+                    id="oasispoker-jackpot-amount"
+                    label={t('label.jackpot')}
+                    value={jackpotAmount}
+                    onChange={setJackpotAmount}
+                    min={0}
+                    max={Math.max(0, state.chips - anteAmount)}
+                    step={10}
+                    disabled={loading}
+                    showSteppers
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      className={btnSecondary}
+                      onClick={() => setJackpotAmount(0)}
+                      disabled={loading}
+                      aria-label={`${t('label.jackpot')} ${t('button.minimum')}`}
+                    >
+                      {t('button.minimum')}
+                    </button>
+                    <button
+                      type="button"
+                      className={btnSecondary}
+                      onClick={() => setJackpotAmount(Math.max(0, state.chips - anteAmount))}
+                      disabled={loading}
+                      aria-label={`${t('label.jackpot')} ${t('button.maximum')}`}
+                    >
+                      {t('button.maximum')}
+                    </button>
+                  </div>
+                </div>
                 <button
                   type="button"
                   className={btnPrimary}
@@ -479,7 +540,7 @@ function OasisPokerPageContent() {
                   data-testid="oasis-exchange-fee-line"
                   className={
                     selectedIndices.length >= 4
-                      ? 'font-semibold text-ds-error'
+                      ? 'font-semibold text-ds-error-text'
                       : selectedIndices.length >= 2
                         ? 'font-semibold text-ds-warning'
                         : 'text-ds-text-primary'

@@ -1,4 +1,5 @@
 {
+  "dealerBadge": "ディーラー",
   "phase": {
     "play": "プレイ",
     "trickEnd": "トリック終了",
@@ -14,6 +15,7 @@
     "hard": "Hard"
   },
   "round": "ラウンド {{n}}",
+  "listSeparator": "、",
   "trick": "トリック {{n}}",
   "handSize": "手札 {{n}}枚",
   "playerHandCount": {

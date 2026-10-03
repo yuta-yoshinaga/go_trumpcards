@@ -73,14 +73,7 @@ func (ti *TeenDoPaanchInteractor) DeclareTrump(suit int) string {
 
 // Play カードをプレイ
 func (ti *TeenDoPaanchInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(ti.Game, ti.tp); blocked {
-		return out
-	}
-	if err := ti.Game.PlayerPlay(cardIndex); err != nil {
-		return ti.tp.Output(ti.Game, err)
-	}
-	ti.advance()
-	return ti.tp.Output(ti.Game, nil)
+	return humanAction(ti.Game, ti.tp, func() error { return ti.Game.PlayerPlay(cardIndex) }, ti.advance)
 }
 
 // NextRound 次のラウンドへ進む

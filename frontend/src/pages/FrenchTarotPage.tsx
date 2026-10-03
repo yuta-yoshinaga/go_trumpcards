@@ -174,6 +174,7 @@ function FrenchTarotPageContent() {
   const isTrickEnd = state.phase === FrenchTarotPhase.TRICK_END;
   const isRoundEnd = state.phase === FrenchTarotPhase.ROUND_END;
   const isGameEnd = state.phase === FrenchTarotPhase.GAME_END || state.gameEndFlag;
+  const trickPoints = state.trickHalfPoints / 2;
 
   const canBid = isBidPhase && state.isHumanBidTurn;
   const canDiscard = isChienPhase && state.isHumanDiscard;
@@ -280,6 +281,17 @@ function FrenchTarotPageContent() {
                   }
                   dataTutorial="frenchtarot-trick-display"
                 />
+                {isTrickEnd && (
+                  <div
+                    className="mt-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    data-testid="frenchtarot-trick-summary"
+                  >
+                    {t('trickSummary', {
+                      points: Number.isInteger(trickPoints) ? trickPoints : trickPoints.toFixed(1),
+                      count: state.trickBouts,
+                    })}
+                  </div>
+                )}
                 {/* Chien reveal for the human declarer during écart */}
                 {isChienPhase && state.chienRevealed && state.chien.length > 0 && (
                   <div className="mt-2 p-2 rounded bg-black/30" data-testid="frenchtarot-chien">
@@ -482,6 +494,7 @@ function FrenchTarotPageContent() {
                 validIndices={handValidIndices}
                 restrictedTooltip={canDiscard ? t('chienRestricted') : t('playButton')}
                 cardTitleFor={canDiscard ? ecartTitleFor : undefined}
+                cardStatusFor={canDiscard ? ecartTitleFor : undefined}
               />
             )}
 

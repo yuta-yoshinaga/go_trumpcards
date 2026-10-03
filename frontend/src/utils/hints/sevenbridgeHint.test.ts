@@ -13,6 +13,7 @@ const humanPlayer = (cards: Card[]): SevenBridgePlayerData => ({
   melds: [],
   roundScore: 0,
   cumulativeScore: 0,
+  scoreBreakdown: { ace: 0, number: 0, face: 0, seven: 0 },
 });
 
 const base = (phase: number, discardTop: Card | null, cards: Card[]): SevenBridgeResponse => ({

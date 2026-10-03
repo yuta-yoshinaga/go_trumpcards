@@ -90,6 +90,7 @@ func (p *SpadesWebPresenter) buildPlayersOutput(s interfaces.SpadesGame) []*cont
 			CumulativeScore: player.GetCumulativeScore(),
 			TrickCount:      player.GetTrickCount(),
 			Bags:            player.GetBags(),
+			ScoreBreakdown:  player.GetScoreBreakdown(),
 		}
 		out = append(out, pObj)
 	}

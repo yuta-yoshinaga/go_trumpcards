@@ -53,6 +53,7 @@ type BeziqueWebOutput struct {
 	Players          []*BeziqueWebOutputPlayer `json:"players"`
 	DealPoints       []int                     `json:"dealPoints"`
 	DealMeldPoints   []int                     `json:"dealMeldPoints"`
+	LastTrickBonus   []int                     `json:"lastTrickBonus"`
 	MatchScore       []int                     `json:"matchScore"`
 	Phase            int                       `json:"phase"`
 	RoundNumber      int                       `json:"roundNumber"`
@@ -104,6 +105,7 @@ func newBeziqueDefaultOutput(msg string) *BeziqueWebOutput {
 		Players:        make([]*BeziqueWebOutputPlayer, 0),
 		DealPoints:     make([]int, 0),
 		DealMeldPoints: make([]int, 0),
+		LastTrickBonus: make([]int, 0),
 		MatchScore:     make([]int, 0),
 		CurrentTrick:   make([]*WebOutputTrickCard, 0),
 		AvailableMelds: make([]*BeziqueWebOutputMeld, 0),

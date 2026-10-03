@@ -46,6 +46,7 @@ type ManilleWebOutput struct {
 	DealerIdx        int                        `json:"dealerIdx"`
 	TrumpSuit        int                        `json:"trumpSuit"`
 	CurrentTrick     []*WebOutputTrickCard      `json:"currentTrick"`
+	TrickCardPoints  int                        `json:"trickCardPoints"`
 	TeamScores       [domain.ManilleTeamCnt]int `json:"teamScores"`
 	RoundCardPoints  [domain.ManilleTeamCnt]int `json:"roundCardPoints"`
 	PlayableIndices  []int                      `json:"playableIndices"`

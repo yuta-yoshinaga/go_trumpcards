@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { contractrummyApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -133,6 +133,7 @@ function ContractRummyPageContent() {
   const [selectedCards, setSelectedCards] = useState<number[]>([]);
   // Slots being assembled for the contract meld (one card-set per slot).
   const [contractSlots, setContractSlots] = useState<number[][]>([]);
+  const requiredSlots = state?.contractSlots.length ?? 0;
   // Layoff target: { playerIdx, meldIdx }.
   const [layoffTarget, setLayoffTarget] = useState<{ playerIdx: number; meldIdx: number } | null>(null);
 
@@ -187,10 +188,10 @@ function ContractRummyPageContent() {
   }, [execApi, selectedCards, clearSelection]);
 
   const handleAddSlot = useCallback(() => {
-    if (selectedCards.length === 0) return;
+    if (selectedCards.length === 0 || contractSlots.length >= requiredSlots) return;
     setContractSlots((prev) => [...prev, [...selectedCards]]);
     setSelectedCards([]);
-  }, [selectedCards]);
+  }, [selectedCards, contractSlots.length, requiredSlots]);
 
   const handleRemoveLastSlot = useCallback(() => {
     setContractSlots((prev) => prev.slice(0, -1));
@@ -292,11 +293,40 @@ function ContractRummyPageContent() {
     });
   }, [state, humanPlayer, contractSlots]);
 
+  const previousSlotEvaluations = useRef<typeof slotEvaluations | null>(null);
+  const [slotProgressAnnouncement, setSlotProgressAnnouncement] = useState('');
+  useEffect(() => {
+    const previous = previousSlotEvaluations.current;
+    previousSlotEvaluations.current = slotEvaluations;
+    if (!previous || previous.length === 0) return;
+    const changed = slotEvaluations.flatMap((evaluation, slotIdx) => {
+      const old = previous[slotIdx];
+      if (
+        old &&
+        old.placed === evaluation.placed &&
+        old.required === evaluation.required &&
+        old.satisfied === evaluation.satisfied
+      ) {
+        return [];
+      }
+      return [
+        t('slotProgressAnnouncement', {
+          n: slotIdx + 1,
+          placed: evaluation.placed,
+          required: evaluation.required,
+          status: t(evaluation.satisfied ? 'slotAchieved' : 'slotNotAchieved'),
+        }),
+      ];
+    });
+    setSlotProgressAnnouncement(changed.join(t('listSeparator')));
+  }, [slotEvaluations, t]);
+
   // humanPlayer gates slotEvaluations population, so checking it here keeps the
   // intent obvious; the length>0 guard prevents `[].every(...)` from vacuously
   // enabling submit on a contract with zero slots.
   const allSlotsSatisfied =
     humanPlayer != null && slotEvaluations.length > 0 && slotEvaluations.every((ev) => ev.satisfied);
+  const slotsAtLimit = requiredSlots > 0 && contractSlots.length >= requiredSlots;
 
   if (!state) {
     return (
@@ -326,6 +356,15 @@ function ContractRummyPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          <div
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            className="sr-only"
+            data-testid="cr-slot-progress-live"
+          >
+            {slotProgressAnnouncement}
+          </div>
           {/* **CUI だけが難易度を変えられる状態だった** (`sd` コマンド)。設定は
               ドメインにもレスポンス型にもあるのに、Web からは触れなかった (#5588)。
               数値は CUI と同じ 0/1/2。 */}
@@ -544,11 +583,18 @@ function ContractRummyPageContent() {
                 <button
                   type="button"
                   onClick={handleAddSlot}
-                  disabled={selectedCards.length === 0}
-                  className={btnOutline}
+                  disabled={selectedCards.length === 0 && !slotsAtLimit}
+                  aria-disabled={slotsAtLimit || undefined}
+                  aria-describedby={slotsAtLimit ? 'cr-slot-limit' : undefined}
+                  className={`${btnOutline} ${slotsAtLimit ? 'aria-disabled:opacity-50 aria-disabled:cursor-not-allowed' : ''}`}
                 >
                   {t('addSlot')}
                 </button>
+                {slotsAtLimit && (
+                  <p id="cr-slot-limit" className="text-sm text-ds-warning">
+                    {t('slotLimitReached')}
+                  </p>
+                )}
                 <button
                   type="button"
                   onClick={handleRemoveLastSlot}

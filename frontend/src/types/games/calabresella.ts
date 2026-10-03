@@ -64,6 +64,8 @@ export interface CalabresellaResponse extends BaseGameResponse {
   soloistIdx: number;
   /** The winning bid (0=none, 1=chiamo, 2=solo). */
   winningBid: number;
+  /** Highest declaration made so far in the auction (0=none, 1=chiamo, 2=solo). */
+  highestBid: number;
   currentTrick: CalabresellaTrickCard[];
   /**
    * The four monte (widow) cards, revealed to every player once the Soloist has
@@ -74,6 +76,10 @@ export interface CalabresellaResponse extends BaseGameResponse {
   playerScores: number[];
   /** Thirds of a point captured per player this round — [p0, p1, p2]. */
   roundThirds: number[];
+  /** Net score transfer from the most recently scored round per player. */
+  roundScoreChanges: number[];
+  /** Whether the Soloist reached the round's winning thirds threshold. */
+  soloistWon: boolean;
   /** Seat index of the last trick winner, or -1. */
   lastTrickWinner: number;
   /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */

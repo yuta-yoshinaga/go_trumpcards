@@ -17,6 +17,7 @@ import (
 
 func setupCanastaWebMock() *interfaces.MockCanastaGame {
 	m := new(interfaces.MockCanastaGame)
+	m.On("GetMinimumMeldValue", 0).Return(50)
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetDrawPileCount").Return(54)
 	m.On("GetDiscardPileCount").Return(0)
@@ -54,6 +55,22 @@ func TestCanastaWebPresenter_HintOutput(t *testing.T) {
 	assert.Equal(t, p.Output(m, nil), p.HintOutput(m))
 }
 
+func TestCanastaWebPresenter_IncludesScoreBreakdown(t *testing.T) {
+	p := new(presenter.CanastaWebPresenter)
+	m, _ := setupCanastaWebMockWithPlayers()
+	players := []*domain.CanastaPlayer{domain.NewCanastaPlayer(true), domain.NewCanastaPlayer(false)}
+	players[0].AddMeld(&domain.CanastaMeld{Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)}})
+	g := domain.NewCanasta(domain.NewTrumpCardsWithDecks(2, 4), players, domain.DefaultCanastaConfig())
+	g.CanastaScoreRoundForTest(-1, 0)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayer")
+	m.On("GetPlayer", 0).Return(players[0])
+	m.On("GetPlayer", 1).Return(players[1])
+
+	var output controller.CanastaWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &output))
+	assert.Equal(t, 5, output.Players[0].ScoreBreakdown.MeldCards)
+}
+
 func TestCanastaWebPresenter_Output(t *testing.T) {
 	p := new(presenter.CanastaWebPresenter)
 
@@ -72,6 +89,7 @@ func TestCanastaWebPresenter_Output(t *testing.T) {
 		assert.False(t, resObj.GameEndFlag)
 		assert.Equal(t, 0, resObj.CurrentPlayerIdx)
 		assert.Equal(t, 0, resObj.Phase)
+		assert.Equal(t, 50, resObj.MinMeld)
 		assert.Equal(t, 1, resObj.RoundNumber)
 		assert.Equal(t, 54, resObj.DrawPileCount)
 		assert.Equal(t, -1, resObj.WinnerIdx)
@@ -374,6 +392,15 @@ func TestCanastaWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, int(domain.CanastaCpuDifficultyNormal), resObj.Config.CpuDifficulty)
 		assert.Equal(t, 5000, resObj.Config.PointLimit)
 	})
+	t.Run("minimum meld reflects the 90 point band", func(t *testing.T) {
+		m, _ := setupCanastaWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetMinimumMeldValue")
+		m.On("GetMinimumMeldValue", 0).Return(90)
+		var resObj controller.CanastaWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &resObj))
+		assert.Equal(t, 90, resObj.MinMeld)
+	})
+
 }
 
 func TestCanastaWebPresenter_ActionLogOutput(t *testing.T) {

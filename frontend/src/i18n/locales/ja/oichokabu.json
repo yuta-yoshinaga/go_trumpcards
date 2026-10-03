@@ -3,6 +3,7 @@
   "betGuide": "賭け金を置くと、子（あなた）と親に2枚ずつ配られます",
   "drawGuide": "3枚目を引くか、このまま勝負（スタンド）するか選択",
   "previousBet": "前回額を使う ({{amount}})",
+  "maxBetDescription": "現在の最大ベット額は{{amount}}チップです",
   "label": {
     "chips": "チップ",
     "bet": "賭け金",
@@ -30,7 +31,9 @@
     "push": "引き分け"
   },
   "payout": {
-    "total": "合計配当"
+    "total": "合計配当",
+    "bet": "賭け金",
+    "netProfit": "純損益"
   },
   "dealerPolicy": {
     "label": "親のドロー方針",

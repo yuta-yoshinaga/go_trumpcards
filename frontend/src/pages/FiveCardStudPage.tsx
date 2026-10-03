@@ -35,9 +35,10 @@ import { placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { FiveCardStudResponse } from '../types/card';
+import type { Card, FiveCardStudResponse } from '../types/card';
 import { FiveCardStudPhase, FiveCardStudRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { FIVECARDSTUD_HELP, parseFiveCardStudCommand } from '../utils/cli/commands/fiveCardStudCommands';
 import { formatFiveCardStudState } from '../utils/cli/formatters/fiveCardStudFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
@@ -183,6 +184,25 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
   const isShowdown = phase === FiveCardStudPhase.SHOWDOWN || phase === FiveCardStudPhase.END;
   const humanPlayer = state?.players?.find((p) => p.isHuman);
   const humanFolded = humanPlayer?.folded ?? false;
+  const isBestHandCard = (player: FiveCardStudResponse['players'][number], card: Card) =>
+    isShowdown &&
+    !player.folded &&
+    player.bestHandCore.some((best) => best.design === card.design && best.value === card.value);
+  const renderPlayerCard = (player: FiveCardStudResponse['players'][number], card: Card) => {
+    const inBestHand = isBestHandCard(player, card);
+    const image = <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />;
+    return inBestHand ? (
+      <span
+        role="img"
+        aria-label={`${cardAlt(card)}、${t('bestHandCard')}`}
+        className="inline-block rounded ring-2 ring-ds-success"
+      >
+        {image}
+      </span>
+    ) : (
+      image
+    );
+  };
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
@@ -246,6 +266,7 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
         layout={{ kind: 'community-poker', community: 4, opponents: 3, opponentCards: 2, footerHandSize: 2 }}
       />
     );
+  const callPotOdds = callAmount > 0 ? ((callAmount / (state.pot + callAmount)) * 100).toFixed(1) : null;
 
   // Reset raises the ante at a positive multiple, then increments handCount.
   // Therefore hand n is level floor((n - 1) / period) + 1, with this many
@@ -345,7 +366,7 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
                         {tc('betting.currentBet')} {p.currentBet}
                       </span>
                     )}
-                    {p.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
+                    {p.folded && <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>}
                     {p.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                     {isShowdown && !p.folded && p.handName && (
                       <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
@@ -363,16 +384,14 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
                               key={`${card.design}-${card.value}`}
                               className="inline-block rounded ring-2 ring-ds-accent motion-safe:animate-pulse"
                               data-testid={`latest-door-cpu-${p.id}`}
+                              {...(gameKey === 'soko'
+                                ? { role: 'img' as const, 'aria-label': t('latestDoorCard', { card: cardAlt(card) }) }
+                                : {})}
                             >
-                              <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                              {renderPlayerCard(p, card)}
                             </span>
                           ) : (
-                            <AnimatedCard
-                              key={`${card.design}-${card.value}`}
-                              card={card}
-                              width={cardWidth}
-                              style={placeholderCardStyle}
-                            />
+                            <span key={`${card.design}-${card.value}`}>{renderPlayerCard(p, card)}</span>
                           ),
                         )
                       : !p.folded &&
@@ -383,12 +402,7 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
                   <div className="flex flex-wrap gap-1">
                     {isShowdown && !p.folded && p.holeCards?.length
                       ? p.holeCards.map((card) => (
-                          <AnimatedCard
-                            key={`${card.design}-${card.value}`}
-                            card={card}
-                            width={cardWidth}
-                            style={placeholderCardStyle}
-                          />
+                          <span key={`${card.design}-${card.value}`}>{renderPlayerCard(p, card)}</span>
                         ))
                       : !p.folded && <AnimatedCardBack width={cardWidth} />}
                   </div>
@@ -454,7 +468,9 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
                       {tc('betting.currentBet')} {humanPlayer.currentBet}
                     </span>
                   )}
-                  {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
+                  {humanPlayer.folded && (
+                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
+                  )}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                   {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
                     <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
@@ -472,16 +488,14 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
                             key={`${card.design}-${card.value}`}
                             className="inline-block rounded ring-2 ring-ds-accent motion-safe:animate-pulse"
                             data-testid="latest-door-human"
+                            {...(gameKey === 'soko'
+                              ? { role: 'img' as const, 'aria-label': t('latestDoorCard', { card: cardAlt(card) }) }
+                              : {})}
                           >
-                            <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                            {renderPlayerCard(humanPlayer, card)}
                           </span>
                         ) : (
-                          <AnimatedCard
-                            key={`${card.design}-${card.value}`}
-                            card={card}
-                            width={cardWidth}
-                            style={placeholderCardStyle}
-                          />
+                          <span key={`${card.design}-${card.value}`}>{renderPlayerCard(humanPlayer, card)}</span>
                         ),
                       )
                     : !humanPlayer.folded &&
@@ -593,7 +607,14 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
               <div data-tutorial="fcs-action-buttons">
                 <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
                 <p className="text-center text-sm text-ds-text-primary" aria-live="polite" role="status">
-                  {hasOutstandingBet ? t('betting.callAmount', { amount: callAmount }) : t('betting.checkAvailable')}
+                  {hasOutstandingBet ? (
+                    <>
+                      {t('betting.callAmount', { amount: callAmount })}
+                      {callPotOdds !== null && t('callPotOdds', { percent: callPotOdds })}
+                    </>
+                  ) : (
+                    t('betting.checkAvailable')
+                  )}
                 </p>
 
                 <BettingControls

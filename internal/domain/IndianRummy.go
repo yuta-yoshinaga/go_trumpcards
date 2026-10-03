@@ -790,11 +790,6 @@ func indianRummyCardPoints(card *Card, wildRank int) int {
 	return v
 }
 
-// IndianRummyCardPoints はデッドウッド計算に使うカード点を返す（外部公開用）。
-func IndianRummyCardPoints(card *Card, wildRank int) int {
-	return indianRummyCardPoints(card, wildRank)
-}
-
 // IndianRummyValidateDeclaration は全カード被覆とシーケンス条件を検証する。
 func IndianRummyValidateDeclaration(cards []*Card, wildRank int) bool {
 	if len(cards) != IndianRummyHandSize {

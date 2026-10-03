@@ -33,6 +33,7 @@ function makeState(overrides?: Partial<EuchreResponse>): EuchreResponse {
     gameEndFlag: false,
     winnerTeam: -1,
     leadPlayerIdx: 0,
+    trickWinnerIdx: -1,
     config: { cpuDifficulty: 1, pointLimit: 10 },
     message: '',
     ...overrides,

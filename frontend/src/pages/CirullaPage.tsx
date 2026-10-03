@@ -254,15 +254,20 @@ function CirullaPageContent() {
                           }}
                           onMouseEnter={() => setHoveredCapture(group)}
                           onMouseLeave={() => setHoveredCapture(null)}
+                          onFocus={() => setHoveredCapture(group)}
+                          onBlur={() => setHoveredCapture(null)}
                           disabled={loading}
                           data-testid={`cirulla-take-${group.join('-')}`}
                           // **取り札ボタンの読み上げには場札の実際の名前が要る。** 索引だけでは
                           // スクリーンリーダー利用者にどの札の組かが分からない (#6628)。
                           aria-label={t('takeGroup', {
-                            cards: group.map((i) => cardAlt(state.table[i])).join(', '),
+                            cards: group.map((i) => cardAlt(state.table[i])).join(t('listSeparator')),
                           })}
                         >
-                          {t('takeGroup', { cards: group.join(', ') })}
+                          {t('takeGroupOption', {
+                            indices: group.join(t('listSeparator')),
+                            cards: group.map((i) => cardAlt(state.table[i])).join(t('listSeparator')),
+                          })}
                         </button>
                       ))}
                       {options.length === 0 && (

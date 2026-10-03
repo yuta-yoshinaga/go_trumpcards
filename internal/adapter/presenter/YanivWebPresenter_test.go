@@ -40,6 +40,7 @@ func setupYanivWebMock() (*interfaces.MockYanivGame, []*domain.YanivPlayer) {
 	m.On("GetAsafWinnerIdx").Return(-1)
 	m.On("GetIsAsaf").Return(false)
 	m.On("GetRoundScores").Return([]int{})
+	m.On("GetRoundScoreHistory").Return([][]int{})
 	m.On("GetPlayerCnt").Return(4)
 	for i := 0; i < 4; i++ {
 		m.On("GetPlayer", i).Return(players[i])

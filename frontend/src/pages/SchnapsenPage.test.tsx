@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { schnapsenApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, SchnapsenResponse } from '../types/card';
 import { SchnapsenPage } from './SchnapsenPage';
@@ -59,6 +60,11 @@ beforeEach(() => {
 });
 
 describe('SchnapsenPage', () => {
+  it('shows the action log button during play', async () => {
+    renderWithProviders(<SchnapsenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument());
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<SchnapsenPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -116,7 +122,7 @@ describe('SchnapsenPage', () => {
     expect(m3.className).not.toContain('ring-ds-warning');
   });
 
-  it('rings legal cards but keeps illegal cards clickable in the endgame (phase 2)', async () => {
+  it('marks illegal phase-2 cards unavailable and does not dispatch them', async () => {
     mockExec.mockResolvedValue(makeState({ isEndgame: true, validPlays: [0] }));
     renderWithProviders(<SchnapsenPage />);
     await waitFor(() => expect(screen.getByTestId('schnapsen-phase')).toHaveTextContent(/第2フェーズ/));
@@ -127,11 +133,13 @@ describe('SchnapsenPage', () => {
     // Legal card gets an additive success ring; illegal card does not.
     expect(legal.className).toContain('ring-ds-success');
     expect(illegal.className).not.toContain('ring-ds-success');
-    // Illegal card stays clickable (no hard block) — backend still validates.
-    expect(illegal).not.toBeDisabled();
+    expect(illegal).toHaveAttribute('aria-disabled', 'true');
+    expect(illegal).toHaveAttribute('aria-describedby');
+    expect(legal).not.toHaveAttribute('aria-disabled');
     mockExec.mockClear();
     fireEvent.click(illegal);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 1));
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   it('shows the must-follow guide banner in phase 2 on the human turn', async () => {

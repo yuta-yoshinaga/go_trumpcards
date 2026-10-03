@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { osmosisApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, OsmosisResponse } from '../types/card';
@@ -99,6 +100,18 @@ describe('OsmosisPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 
+  it('includes the remaining stock count in the stock button name', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByRole('button', { name: '山札 残り34枚' })).toBeInTheDocument();
+  });
+
+  it('announces when the stock is empty in the stock button name', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0 });
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '山札 残り0枚' })).toBeInTheDocument());
+  });
+
   it('selects waste then moves it to a foundation row', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -109,6 +122,31 @@ describe('OsmosisPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'foundation', col: 0 }),
     );
+  });
+
+  it('announces a successful click move with source, destination, and updated move count', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockResolvedValueOnce({ ...playingState, moveCount: 1 });
+    fireEvent.click(screen.getByRole('button', { name: /^ウェイスト:/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^組札 0/ }));
+    await waitFor(() =>
+      expect(screen.getByTestId('osmosis-move-live')).toHaveTextContent('ウェイストから組札 0へ移動しました。手数: 1'),
+    );
+  });
+
+  it('announces moves in English when English is selected', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockResolvedValueOnce({ ...playingState, moveCount: 3 });
+    fireEvent.click(screen.getByRole('button', { name: /^Waste:/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Foundation 0/ }));
+    await waitFor(() =>
+      expect(screen.getByTestId('osmosis-move-live')).toHaveTextContent('Moved from Waste to Foundation 0. Moves: 3'),
+    );
+    await i18n.changeLanguage(previousLanguage);
   });
 
   it('selects a reserve column then moves it to a foundation row', async () => {
@@ -436,10 +474,16 @@ describe('OsmosisPage', () => {
       fireEvent.dragStart(wasteBtn, { dataTransfer: dt });
       const dropZone = screen.getByRole('button', { name: '組札 0' }).parentElement as HTMLElement;
       mockExec.mockClear();
+      mockExec.mockResolvedValueOnce({ ...playingState, moveCount: 1 });
       fireEvent.dragOver(dropZone, { dataTransfer: dt });
       fireEvent.drop(dropZone, { dataTransfer: dt });
       await waitFor(() =>
         expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'foundation', col: 0 }),
+      );
+      await waitFor(() =>
+        expect(screen.getByTestId('osmosis-move-live')).toHaveTextContent(
+          'ウェイストから組札 0へ移動しました。手数: 1',
+        ),
       );
     });
 

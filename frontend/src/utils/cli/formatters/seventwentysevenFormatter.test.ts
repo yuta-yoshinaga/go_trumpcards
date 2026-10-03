@@ -11,6 +11,7 @@ const player = (
   id,
   isHuman: id === 0,
   chips: 200,
+  netChange: 0,
   standing: false,
   out: false,
   roundBet: 10,

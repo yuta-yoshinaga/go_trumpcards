@@ -1,5 +1,5 @@
 import type { snapApi } from '../../../api/gameApi';
-import { splitCommand, suggestCommand } from '../commandParserBase';
+import { splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type SnapArgs = Parameters<typeof snapApi.exec>;
@@ -33,11 +33,8 @@ export function parseSnapCommand(input: string): CliParseResult<SnapArgs> {
     case 'r':
     case 'reset':
       return { args: ['reset'] as SnapArgs };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

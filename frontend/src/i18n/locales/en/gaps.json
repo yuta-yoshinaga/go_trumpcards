@@ -10,6 +10,8 @@
   "undo": "Undo",
   "redeal": "Redeal",
   "redealKeepLabel": "Redeal ({{used}}/{{total}}) — keeps {{locked}}",
+  "redealConfirmTitle": "Confirm redeal",
+  "redealConfirmMessage": "Redealing changes the positions of all unlocked cards. Redeals remaining: {{remaining}}",
   "giveup": "Give Up",
   "hint": "Hint",
   "kbd": {
@@ -22,6 +24,8 @@
   "gapAriaNeeded": "Gap (place {{card}})",
   "gapAriaAnySuit": "Gap (place any suit {{value}})",
   "gapAriaBlocked": "Gap (blocked — follows a King)",
+  "cardAria": "{{card}}, row {{row}}, column {{col}}",
+  "lockedCardAria": "{{card}}, row {{row}}, column {{col}}, {{locked}}",
   "lockedAria": "locked card (survives redeal)",
   "lockedTooltip": "Locked (will survive the next redeal)",
   "playing": "Playing",

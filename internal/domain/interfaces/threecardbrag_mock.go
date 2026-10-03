@@ -111,6 +111,15 @@ func (_m *MockThreeCardBragGame) GetRoundWinnerIdx() int {
 	return ret.Get(0).(int)
 }
 
+// GetRoundPayouts モック
+func (_m *MockThreeCardBragGame) GetRoundPayouts() []int {
+	ret := _m.Called()
+	if ret.Get(0) == nil {
+		return nil
+	}
+	return ret.Get(0).([]int)
+}
+
 // IsShowdown モック
 func (_m *MockThreeCardBragGame) IsShowdown() bool {
 	ret := _m.Called()

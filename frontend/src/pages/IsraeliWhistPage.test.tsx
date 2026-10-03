@@ -71,6 +71,24 @@ beforeEach(() => {
 });
 
 describe('IsraeliWhistPage', () => {
+  it('keeps on-turn illegal cards focusable, blocks play, and explains why', async () => {
+    mockExec.mockResolvedValue(playing({ validPlays: [0] }));
+    renderWithProviders(<IsraeliWhistPage />);
+    const cards = await screen.findAllByRole('button', { name: /を出す/ });
+    mockExec.mockClear();
+    expect(cards[0]).not.toHaveAttribute('disabled');
+    expect(cards[0]).not.toHaveAttribute('aria-disabled');
+    expect(cards[0]).not.toHaveAttribute('aria-describedby');
+    expect(cards[1]).not.toHaveAttribute('disabled');
+    expect(cards[1]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[1]).toHaveAttribute('aria-describedby', 'iw-play-unavailable');
+    expect(document.getElementById('iw-play-unavailable')).toHaveTextContent('自分の手番で出せる札ではありません');
+    fireEvent.click(cards[1]);
+    fireEvent.click(cards[0]);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+    expect(mockExec.mock.calls).toEqual([['play', 0]]);
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<IsraeliWhistPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -90,6 +108,22 @@ describe('IsraeliWhistPage', () => {
       expect(await screen.findByTestId(`iw-auction-${suit.toString()}-btn`)).toBeInTheDocument();
     }
     expect(screen.getByTestId('iw-pass-btn')).toBeInTheDocument();
+  });
+
+  it('includes the translated suit name in each auction button accessible name', async () => {
+    renderWithProviders(<IsraeliWhistPage />);
+    const suits = [
+      [1, 'スペード', '♠'],
+      [2, 'クラブ', '♣'],
+      [3, 'ハート', '♥'],
+      [4, 'ダイヤ', '♦'],
+    ] as const;
+
+    for (const [suit, name, symbol] of suits) {
+      const button = await screen.findByTestId(`iw-auction-${suit.toString()}-btn`);
+      expect(button).toHaveAccessibleName(new RegExp(name));
+      expect(button).toHaveTextContent(symbol);
+    }
   });
 
   // **入札は数とスートの両方を送る。** 位置がずれると別の入札になる。
@@ -341,7 +375,7 @@ describe('IsraeliWhistPage', () => {
     expect(await screen.findByTestId('iw-round-delta-0')).toHaveTextContent('今回 +59');
     expect(screen.getByTestId('iw-round-delta-1')).toHaveTextContent('今回 -20');
     expect(screen.getByTestId('iw-round-delta-2')).toHaveTextContent('今回 ±0');
-    expect(screen.getByTestId('iw-round-delta-1').className).toContain('text-ds-error');
+    expect(screen.getByTestId('iw-round-delta-1').className).toContain('text-ds-error-text');
     expect(screen.getByTestId('iw-round-delta-0').className).toContain('text-ds-success');
   });
 
@@ -399,11 +433,13 @@ describe('IsraeliWhistPage', () => {
     }
   });
 
-  it('disables the hand while it is a CPU turn', async () => {
+  it('natively disables the hand while it is a CPU turn', async () => {
     mockExec.mockResolvedValue(playing({ currentPlayerIdx: 1 } as Partial<IsraeliWhistResponse>));
     renderWithProviders(<IsraeliWhistPage />);
     const cards = await screen.findAllByRole('button', { name: /を出す/ });
-    expect(cards[0]).toBeDisabled();
+    expect(cards[0]).toHaveAttribute('disabled');
+    expect(cards[0]).not.toHaveAttribute('aria-disabled');
+    expect(cards[0]).not.toHaveAttribute('aria-describedby');
   });
 
   it('shows the hint when one is enabled', async () => {

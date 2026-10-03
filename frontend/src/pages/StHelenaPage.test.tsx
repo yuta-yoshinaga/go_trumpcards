@@ -1,7 +1,8 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, stHelenaApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, StHelenaResponse, StHelenaTableauCard } from '../types/card';
@@ -109,6 +110,10 @@ beforeEach(() => {
   vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
 });
 
+afterEach(async () => {
+  await i18n.changeLanguage('ja');
+});
+
 describe('StHelenaPage', () => {
   it('keeps an unselected foundation target focusable and explains the required source', async () => {
     renderWithProviders(<StHelenaPage />);
@@ -157,6 +162,19 @@ describe('StHelenaPage', () => {
     expect(desc.className).toContain('text-ds-warning');
     // Ascending ♠ pile tops out at A → aria-label is localized and names the top card.
     expect(screen.getByLabelText(/昇順組札 ♠ 残り1枚 トップ ♠ A/)).toBeInTheDocument();
+  });
+
+  it('keeps English foundation aria labels capitalized and destinations lowercase', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: sideTableau([{ card: card('SPADE', 2), faceUp: true }]),
+    });
+    renderWithProviders(<StHelenaPage />);
+    expect(await screen.findByLabelText('Ascending foundation ♠ 1 cards top ♠ A')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByAltText('♠ 2').closest('button') as HTMLButtonElement);
+    await waitFor(() => expect(screen.getByTestId('cr-selection-status')).toHaveTextContent('♠ ascending foundation'));
   });
 
   it('redeal button shows remaining count', async () => {
@@ -611,6 +629,36 @@ describe('StHelenaPage', () => {
     // the dead end has to be announced too, not just left silent.
     fireEvent.click(screen.getByAltText('♠ 4').closest('button') as HTMLButtonElement);
     await waitFor(() => expect(status).toHaveTextContent('置ける場所はありません'));
+  });
+
+  it('announces the suit and direction of legal foundation destinations', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: sideTableau([{ card: card('SPADE', 2), faceUp: true }]),
+    });
+    renderWithProviders(<StHelenaPage />);
+    const status = await screen.findByTestId('cr-selection-status');
+    fireEvent.click(screen.getByAltText('♠ 2').closest('button') as HTMLButtonElement);
+    await waitFor(() => expect(status).toHaveTextContent('♠の昇順組札'));
+  });
+
+  it('announces tableau columns alongside foundation destinations and includes each in the count', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: sideTableau([{ card: card('SPADE', 2), faceUp: true }], [{ card: card('HEART', 3), faceUp: true }]),
+    });
+    renderWithProviders(<StHelenaPage />);
+    const status = await screen.findByTestId('cr-selection-status');
+    fireEvent.click(screen.getByAltText('♠ 2').closest('button') as HTMLButtonElement);
+    await waitFor(() => {
+      expect(status).toHaveTextContent('置ける場所が2箇所');
+      expect(status).toHaveTextContent('♠の昇順組札');
+      expect(status).toHaveTextContent('列5');
+    });
   });
 
   it('counts the legal destinations of a playable card', async () => {

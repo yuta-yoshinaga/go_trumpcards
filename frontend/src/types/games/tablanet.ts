@@ -12,6 +12,8 @@ export interface TablanetPlayer {
   isHuman: boolean;
   cardCount: number;
   cards: Card[];
+  /** Cards captured so far this game. */
+  capturedCards: Card[];
   /** Number of cards captured so far this game. */
   capturedCount: number;
   /** Number of Tabla sweeps (clearing the table with a single non-Jack card). */

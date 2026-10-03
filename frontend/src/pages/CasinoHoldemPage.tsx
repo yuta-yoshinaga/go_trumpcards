@@ -252,7 +252,7 @@ function CasinoHoldemPageContent() {
 
             {state.dealerHand.length > 0 && (
               <div className="mb-4">
-                <div className="text-ds-error font-bold text-center mb-1">
+                <div className="text-ds-error-text font-bold text-center mb-1">
                   <span aria-hidden="true">🔴</span> {t('dealer')}
                   {isEndPhase && state.callBet > 0 && (
                     <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank] ?? 'handRank.0')})</span>
@@ -283,6 +283,11 @@ function CasinoHoldemPageContent() {
                     </span>
                   )}
                 </div>
+                {isFlopPhase && (
+                  <p className="text-ds-text-muted text-sm text-center" data-testid="ch-dealer-qualify-rule">
+                    {t('dealerQualifyRule')}
+                  </p>
+                )}
                 <div className="flex justify-center gap-2 flex-wrap">
                   {state.playerHand.map((card, i) => (
                     <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
@@ -315,6 +320,17 @@ function CasinoHoldemPageContent() {
                 )}
                 <div className="font-bold mt-1">
                   {t('payout.total')}: {state.totalPayout}
+                </div>
+                <div
+                  className={`font-bold ${state.netChange > 0 ? 'text-ds-success' : state.netChange < 0 ? 'text-ds-error-text' : 'text-ds-text-muted'}`}
+                  data-testid="net-change"
+                >
+                  {t('payout.netChange')}:{' '}
+                  {state.netChange > 0
+                    ? `+${state.netChange}`
+                    : state.netChange < 0
+                      ? state.netChange
+                      : t('payout.noNetChange')}
                 </div>
               </div>
             )}
@@ -365,13 +381,13 @@ function CasinoHoldemPageContent() {
                   role="status"
                   aria-live="polite"
                   aria-atomic="true"
-                  className={`text-sm text-center ${chipShortfall > 0 ? 'text-ds-error font-bold' : 'text-ds-text-primary'}`}
+                  className={`text-sm text-center ${chipShortfall > 0 ? 'text-ds-error-text font-bold' : 'text-ds-text-primary'}`}
                 >
                   <p>{t('betPreview.required', { amount: totalChipsNeeded })}</p>
                   {chipShortfall > 0 && <p>{t('betPreview.shortfall', { amount: chipShortfall })}</p>}
                 </div>
                 {betInvalid && (
-                  <p id="casinoholdem-bet-error" role="alert" className="text-ds-error text-xs">
+                  <p id="casinoholdem-bet-error" role="alert" className="text-ds-error-text text-xs">
                     {t('betError')}
                   </p>
                 )}

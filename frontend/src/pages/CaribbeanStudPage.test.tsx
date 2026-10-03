@@ -164,7 +164,7 @@ describe('CaribbeanStudPage', () => {
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' }).parentElement).toHaveClass('items-end');
   });
@@ -175,16 +175,16 @@ describe('CaribbeanStudPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
 
-    const callButton = await screen.findByRole('button', { name: 'コール' });
+    const callButton = await screen.findByRole('button', { name: /^コール(?:\s|$)/ });
     expect(callButton.parentElement).toHaveTextContent('プレイベット: 200');
   });
 
   it('shows end phase with player wins', async () => {
     mockApi.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhasePlayerWins);
     renderWithProviders(<CaribbeanStudPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(screen.getByText('勝利！')).toBeInTheDocument());
     expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument();
@@ -194,9 +194,9 @@ describe('CaribbeanStudPage', () => {
   it('shows end phase with dealer wins', async () => {
     mockApi.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhaseDealerWins);
     renderWithProviders(<CaribbeanStudPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(screen.getByText('ディーラー勝利！')).toBeInTheDocument());
   });
 
@@ -212,18 +212,18 @@ describe('CaribbeanStudPage', () => {
   it('shows end phase with push', async () => {
     mockApi.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhasePush);
     renderWithProviders(<CaribbeanStudPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(screen.getByText('引き分け！')).toBeInTheDocument());
   });
 
   it('shows end phase with dealer not qualified', async () => {
     mockApi.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhaseDealerNotQualified);
     renderWithProviders(<CaribbeanStudPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(screen.getAllByText(/未クオリファイ/).length).toBeGreaterThanOrEqual(1));
     const note = screen.getByTestId('dealer-not-qualified-note');
     expect(note).toHaveTextContent('未クオリファイのため、アンテは1:1配当、プレイベットは返却されます。');
@@ -234,8 +234,17 @@ describe('CaribbeanStudPage', () => {
     mockApi.mockResolvedValue(endPhaseWithJackpot);
     renderWithProviders(<CaribbeanStudPage />);
     await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
-    expect(screen.getByText(/ジャックポット: 1000/)).toBeInTheDocument();
+    expect(screen.getByText('ジャックポット: 賭け 10 / 払い戻し 1000')).toBeInTheDocument();
     expect(screen.getByText(/合計: 2000/)).toBeInTheDocument();
+  });
+
+  it('shows each wager and payout, including zero payouts and unbet items', async () => {
+    mockApi.mockResolvedValue(endPhaseDealerWins);
+    renderWithProviders(<CaribbeanStudPage />);
+    const breakdown = await screen.findByTestId('payout-breakdown');
+    expect(breakdown).toHaveTextContent('アンテ: 賭け 100 / 払い戻し 0');
+    expect(breakdown).toHaveTextContent('プレイ: 賭け 200 / 払い戻し 0');
+    expect(breakdown).toHaveTextContent('ジャックポット: 賭け 0 / 払い戻し 0');
   });
 
   it('can change ante and jackpot amounts', async () => {
@@ -251,6 +260,39 @@ describe('CaribbeanStudPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 200, 10));
+  });
+
+  it('caps ante and jackpot so the call bet remains affordable', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<CaribbeanStudPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    const anteInput = screen.getByLabelText('アンテ') as HTMLInputElement;
+    const jackpotInput = screen.getByLabelText('ジャックポット') as HTMLInputElement;
+    expect(anteInput.max).toBe('330');
+
+    fireEvent.change(anteInput, { target: { value: '300' } });
+    expect(jackpotInput.max).toBe('100');
+    fireEvent.change(jackpotInput, { target: { value: '200' } });
+    expect(jackpotInput.value).toBe('100');
+
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 300, 100));
+  });
+
+  it('disables betting when the ante and play bet exceed the available chips', async () => {
+    mockApi.mockResolvedValue({ ...betPhaseState, chips: 250 });
+    renderWithProviders(<CaribbeanStudPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 250')).toBeInTheDocument());
+
+    const anteInput = screen.getByLabelText('アンテ') as HTMLInputElement;
+    const betButton = screen.getByRole('button', { name: 'ベット' });
+    expect(anteInput.value).toBe('100');
+    expect(betButton).toBeDisabled();
+
+    fireEvent.change(anteInput, { target: { value: '80' } });
+    expect(anteInput.value).toBe('80');
+    expect(betButton).toBeEnabled();
   });
 
   it('steps the ante and jackpot amounts with the chip steppers', async () => {
@@ -314,7 +356,7 @@ describe('CaribbeanStudPage', () => {
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
     // The 4 masked dealer cards are each announced as "hidden card".
     expect(screen.getAllByRole('img', { name: '非公開のカード' })).toHaveLength(4);
@@ -331,7 +373,7 @@ describe('CaribbeanStudPage', () => {
   it('renders hint toggle checkbox', async () => {
     mockApi.mockResolvedValue(actionPhaseState);
     renderWithProviders(<CaribbeanStudPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('checkbox')).toBeInTheDocument();
   });
 
@@ -369,7 +411,7 @@ describe('CaribbeanStudPage', () => {
       expect(screen.getByTestId('csp-session-tally')).toHaveTextContent('0勝 1敗 0分');
       const netEl = screen.getByTestId('csp-session-net');
       expect(netEl).toHaveTextContent('収支: -300');
-      expect(netEl).toHaveClass('text-ds-error');
+      expect(netEl).toHaveClass('text-ds-error-text');
     });
 
     it('does not double-count the same END round on re-render', async () => {

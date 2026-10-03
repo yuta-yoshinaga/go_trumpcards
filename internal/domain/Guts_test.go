@@ -225,12 +225,6 @@ func TestGutsConfig_Validate(t *testing.T) {
 	assert.Error(t, domain.GutsConfig{PlayerCount: 4, Ante: 10, StartingChips: 200, TargetRounds: 0}.Validate())
 }
 
-func TestGutsDeclarationValid(t *testing.T) {
-	assert.True(t, domain.GutsDeclarationValid(domain.GutsDeclarationIn))
-	assert.True(t, domain.GutsDeclarationValid(domain.GutsDeclarationOut))
-	assert.False(t, domain.GutsDeclarationValid(domain.GutsDeclaration(9)))
-}
-
 func TestGutsPlayer_JSON(t *testing.T) {
 	p := domain.NewGutsPlayer(true, 300)
 	p.SetIn(true)

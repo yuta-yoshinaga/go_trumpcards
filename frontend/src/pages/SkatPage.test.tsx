@@ -146,12 +146,17 @@ const trickEndPhase: SkatResponse = {
 const roundEndPhase: SkatResponse = {
   ...playPhaseHumanTurn,
   phase: SkatPhase.ROUND_END,
+  pickedSkat: true,
   declarerCardPoints: 75,
   defendersCardPoints: 45,
   gameValue: 18,
   originalSkat: [
     { design: 'DIAMOND', value: 7 },
     { design: 'DIAMOND', value: 8 },
+  ],
+  skat: [
+    { design: 'HEART', value: 9 },
+    { design: 'CLOVER', value: 10 },
   ],
 };
 
@@ -182,6 +187,71 @@ beforeEach(() => {
 });
 
 describe('SkatPage', () => {
+  it.each([SkatGameType.SUIT, SkatGameType.GRAND])(
+    'shows card-point progress for game type %i while playing',
+    async (gameType) => {
+      mockExec.mockResolvedValue({
+        ...playPhaseHumanTurn,
+        gameType,
+        players: playPhaseHumanTurn.players.map((player, index) =>
+          index === 0 ? { ...player, cardPoints: 37 } : player,
+        ),
+      });
+      renderWithProviders(<SkatPage />);
+
+      expect(await screen.findByTestId('skat-contract-progress')).toHaveTextContent('37 / 61');
+    },
+  );
+
+  it('shows null trick progress while playing', async () => {
+    mockExec.mockResolvedValue({
+      ...nullGamePhase,
+      phase: SkatPhase.PLAY,
+      trickNumber: 4,
+      players: nullGamePhase.players.map((player, index) => (index === 0 ? { ...player, trickCount: 2 } : player)),
+    });
+    renderWithProviders(<SkatPage />);
+
+    expect(await screen.findByTestId('skat-contract-progress')).toHaveTextContent('宣言者の獲得トリック: 2（条件: 0）');
+  });
+
+  it('does not show contract progress without a declarer', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseHumanTurn, declarerIdx: -1 });
+    renderWithProviders(<SkatPage />);
+
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('skat-contract-progress')).not.toBeInTheDocument();
+  });
+
+  it('shows and distinguishes the original and final skat at round end', async () => {
+    mockExec.mockResolvedValue(roundEndPhase);
+    renderWithProviders(<SkatPage />);
+
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('ラウンド終了'));
+    expect(screen.getByTestId('original-skat-reveal')).toBeInTheDocument();
+    expect(screen.getByTestId('final-skat-reveal')).toBeInTheDocument();
+    expect(screen.getByText('開始時のスカート:')).toBeInTheDocument();
+    expect(screen.getByText('最終スカート:')).toBeInTheDocument();
+    expect(within(screen.getByTestId('final-skat-reveal')).getAllByRole('img')).toHaveLength(2);
+  });
+
+  it('does not show the final skat at round end when the declarer did not pick it up', async () => {
+    mockExec.mockResolvedValue({ ...roundEndPhase, pickedSkat: false });
+    renderWithProviders(<SkatPage />);
+
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('ラウンド終了'));
+    expect(screen.getByTestId('original-skat-reveal')).toBeInTheDocument();
+    expect(screen.queryByTestId('final-skat-reveal')).not.toBeInTheDocument();
+  });
+
+  it('does not reveal the final skat before the round ends', async () => {
+    mockExec.mockResolvedValue(playPhaseHumanTurn);
+    renderWithProviders(<SkatPage />);
+
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('プレイ'));
+    expect(screen.queryByTestId('final-skat-reveal')).not.toBeInTheDocument();
+  });
+
   it('shows the completed trick winner through the next trick and clears it for a new round', async () => {
     mockExec.mockResolvedValue({
       ...playPhaseHumanTurn,
@@ -628,9 +698,9 @@ describe('SkatPage', () => {
         <SkatPage />
       </MemoryRouter>,
     );
-    await waitFor(() => expect(screen.getByText(/スカート \(場札\)/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('開始時のスカート:')).toBeInTheDocument());
     // The two skat cards now render as real card images, not raw "DIAMOND 7" text.
-    const reveal = screen.getByTestId('skat-reveal');
+    const reveal = screen.getByTestId('original-skat-reveal');
     expect(within(reveal).getAllByRole('img')).toHaveLength(2);
     expect(reveal).not.toHaveTextContent('DIAMOND');
   });

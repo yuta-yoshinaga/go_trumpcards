@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { goofspielApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -19,7 +19,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnDanger, btnPrimary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { GoofspielResponse } from '../types/card';
+import type { Card, GoofspielResponse } from '../types/card';
 import { GoofspielPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -60,6 +60,65 @@ function GoofspielPageContent() {
   const { hint, hintEnabled, setHintEnabled } = useGameHint('goofspiel', state);
   const [playerCnt, setPlayerCnt] = useState(2);
   const [tieRule, setTieRule] = useState(0);
+  const [revealAnnouncement, setRevealAnnouncement] = useState('');
+  const announcedRevealKey = useRef<string | null>(null);
+  const revealedBidValues =
+    state?.players.flatMap((player) => (player.revealedBid ? [player.revealedBid.value] : [])) ?? [];
+  const highestBidValue = revealedBidValues.length > 0 ? Math.max(...revealedBidValues) : null;
+  const highestBidCount =
+    highestBidValue === null ? 0 : revealedBidValues.filter((value) => value === highestBidValue).length;
+  const sortedBidValues = [...revealedBidValues].sort((a, b) => b - a);
+  const bidMargin =
+    state?.phase === GoofspielPhase.REVEAL &&
+    !state.gameEndFlag &&
+    state.lastWinnerIdx >= 0 &&
+    highestBidCount === 1 &&
+    sortedBidValues.length > 1
+      ? sortedBidValues[0] - sortedBidValues[1]
+      : null;
+
+  const revealKey =
+    state?.phase === GoofspielPhase.REVEAL && !state.gameEndFlag
+      ? JSON.stringify([
+          state.roundNumber,
+          state.players.map((player) => [player.id, player.revealedBid?.design, player.revealedBid?.value]),
+          state.lastWinnerIdx,
+          state.lastGained,
+        ])
+      : null;
+  const revealText =
+    revealKey && state
+      ? t('status.revealAnnouncement', {
+          bids: state.players
+            .map((player) =>
+              t('status.revealPlayer', {
+                name: player.id === 0 ? t('header.you') : t('header.cpu', { idx: String(player.id) }),
+                // 公開フェーズでは全員が公開札を持つ (Goofspiel は全員が同時に 1 枚伏せて同時に開く)。
+                card: cardAlt(player.revealedBid as Card),
+              }),
+            )
+            .join(t('listSeparator')),
+          result:
+            state.lastWinnerIdx < 0
+              ? t('status.tie')
+              : t('status.roundEnd', {
+                  name:
+                    state.lastWinnerIdx === 0 ? t('header.you') : t('header.cpu', { idx: String(state.lastWinnerIdx) }),
+                  n: String(state.lastGained),
+                }),
+        })
+      : '';
+
+  useEffect(() => {
+    if (!revealKey) {
+      announcedRevealKey.current = null;
+      setRevealAnnouncement('');
+      return;
+    }
+    if (announcedRevealKey.current === revealKey) return;
+    announcedRevealKey.current = revealKey;
+    setRevealAnnouncement(revealText);
+  }, [revealKey, revealText]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('goofspiel');
   const cliConfig: CliGameConfig<GoofspielResponse, Parameters<typeof goofspielApi.exec>> = useMemo(
@@ -142,6 +201,9 @@ function GoofspielPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          <div role="status" data-testid="gs-reveal-announcement" className="sr-only">
+            {isReveal ? revealAnnouncement : ''}
+          </div>
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
             <div className="text-ds-text-primary text-center mb-2" data-testid="gs-header">
               <span className="mr-4">{t('header.round', { n: String(state.roundNumber) })}</span>
@@ -198,11 +260,20 @@ function GoofspielPageContent() {
             {/* **残り札は全員分を公開。** 使った札は場に出るので隠せていません。 */}
             <div className="flex flex-col gap-2 mb-4" data-tutorial="gs-seats">
               {state.players.map((p) => (
-                <div key={p.id} className="rounded bg-black/30 px-3 py-2" data-testid={`gs-seat-${p.id.toString()}`}>
+                <div
+                  key={p.id}
+                  className={`rounded bg-black/30 px-3 py-2${p.revealedBid && highestBidValue === p.revealedBid.value ? ' border-2 border-ds-accent' : ''}`}
+                  data-testid={`gs-seat-${p.id.toString()}`}
+                >
                   <div className="text-sm text-ds-text-muted">
                     <span className="text-ds-text-primary">{seatName(p.id)}</span>
                     {p.revealedBid ? (
-                      <span className="ml-1 text-ds-accent">{t('header.revealed')}</span>
+                      <>
+                        <span className="ml-1 text-ds-accent">{t('header.revealed')}</span>
+                        {highestBidValue === p.revealedBid.value && (
+                          <span className="ml-1 text-ds-accent font-semibold">{t('status.highestBid')}</span>
+                        )}
+                      </>
                     ) : (
                       p.hasBid && <span className="ml-1 text-ds-warning">{t('header.bidDone')}</span>
                     )}
@@ -253,13 +324,18 @@ function GoofspielPageContent() {
 
             {/* **同点は誰も取らない。** 勝者が居ない結果を言い分けます。 */}
             {isReveal && (
-              <div className="mt-3 text-center text-ds-warning" role="status" data-testid="gs-round-end">
+              <div className="mt-3 text-center text-ds-warning" data-testid="gs-round-end">
                 {state.lastWinnerIdx < 0
                   ? t('status.tie')
                   : t('status.roundEnd', {
                       name: seatName(state.lastWinnerIdx),
                       n: String(state.lastGained),
                     })}
+              </div>
+            )}
+            {bidMargin !== null && (
+              <div className="mt-2 text-center text-ds-accent" data-testid="gs-bid-margin">
+                {t('status.bidMargin', { n: String(bidMargin) })}
               </div>
             )}
 

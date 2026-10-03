@@ -7,7 +7,8 @@
     "dragon": "Dragon",
     "tiger": "Tiger",
     "bigRoad": "History (Big Road)",
-    "historyOverflow": "+{{count}} more"
+    "historyOverflow": "+{{count}} more",
+    "historyMarker": "Round {{round}}: {{result}}"
   },
   "button": {
     "betDragon": "Dragon",
@@ -30,10 +31,12 @@
   "result": {
     "dragonWins": "Dragon wins",
     "tigerWins": "Tiger wins",
+    "tie": "Tie",
     "tieWin": "Tie (Tie bet wins)",
     "tieRefund": "Tie (half bet refunded)"
   },
   "payout": {
+    "betAmount": "Bet amount: {{amount}}",
     "total": "Payout",
     "dragon": "Dragon",
     "tiger": "Tiger",

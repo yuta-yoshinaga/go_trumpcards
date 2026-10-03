@@ -26,6 +26,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { LiteratureClaim, LiteratureResponse } from '../types/card';
 import { LiteraturePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import {
   LITERATURE_HELP,
   literatureLocalCommand,
@@ -187,6 +188,9 @@ function LiteraturePageContent() {
 
   // 自チームの席だけが所在の候補になる。
   const ownTeamSeats = state.players.filter((p) => p.team === 0).map((p) => p.id);
+  const claimPlacements = state.halfSuitCards[selectedHalf].map(
+    (card, index) => `${cardAlt(card)}: ${t('seat', { n: claimHolders[index] })}`,
+  );
 
   const handleAsk = () => {
     if (!selectedCard) return;
@@ -289,6 +293,33 @@ function LiteraturePageContent() {
                 </div>
               )}
             </div>
+
+            {state.claims.length > 0 && (
+              <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="literature-claim-history">
+                <div className="mb-1 text-ds-text-primary">{t('claimHistoryTitle')}</div>
+                <div className="mt-1">
+                  {state.claims.slice(-5).map((c, i) => (
+                    <div data-testid="literature-recent-claim" key={`claim-${c.player}-${c.halfSuit}-${i}`}>
+                      {claimLine(c)}
+                    </div>
+                  ))}
+                </div>
+                {state.claims.length > 5 && (
+                  <details>
+                    <summary className="cursor-pointer text-ds-text-primary">
+                      {t('claimHistoryMore', { count: state.claims.length - 5 })}
+                    </summary>
+                    <div className="mt-1">
+                      {state.claims.slice(0, -5).map((c, i) => (
+                        <div data-testid="literature-older-claim" key={`old-claim-${c.player}-${c.halfSuit}-${i}`}>
+                          {claimLine(c)}
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                )}
+              </div>
+            )}
 
             {/* Ask history — public information, and the raw material for deduction. */}
             {state.asks.length > 0 && (
@@ -498,7 +529,7 @@ function LiteraturePageContent() {
       <ConfirmDialog
         open={claimConfirmOpen}
         title={t('claimConfirmTitle')}
-        message={t('claimConfirmMessage')}
+        message={t('claimConfirmMessage', { placements: claimPlacements.join(t('listSeparator')) })}
         confirmLabel={tc('button.confirm')}
         cancelLabel={tc('button.cancel')}
         onConfirm={() => {

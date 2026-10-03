@@ -107,7 +107,8 @@ func (p *PenguinCuiPresenter) Output(pg interfaces.PenguinGame, lastErr error) s
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(pg.GetMoveCount())) + "\n")
 		case domain.PenguinPhaseGameOver:
-			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + " " +
+				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(pg.GetMoveCount())) + "\n")
 		}
 	})
 }

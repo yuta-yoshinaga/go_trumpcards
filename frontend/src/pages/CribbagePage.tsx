@@ -259,6 +259,22 @@ function CribbagePageContent() {
   const [hoveredPegValue, setHoveredPegValue] = useState<number | null>(null);
   const previousPegCountRef = useRef<number | null>(null);
   const [pegCountAnnouncement, setPegCountAnnouncement] = useState('');
+  const pegScoreAnnouncements = (state?.pegScoreEvents ?? []).map((event) => {
+    const reasons: string[] = [];
+    if (event.fifteen) reasons.push(t('pegScoreReasons.fifteen'));
+    if (event.thirtyOne) reasons.push(t('pegScoreReasons.thirtyOne'));
+    if (event.pair) reasons.push(t('pegScoreReasons.pair'));
+    if (event.threeOfAKind) reasons.push(t('pegScoreReasons.threeOfAKind'));
+    if (event.fourOfAKind) reasons.push(t('pegScoreReasons.fourOfAKind'));
+    if (event.run) reasons.push(t('pegScoreReasons.run', { count: event.run }));
+    if (event.go) reasons.push(t('pegScoreReasons.go'));
+    if (event.lastCard) reasons.push(t('pegScoreReasons.lastCard'));
+    return t('pegScoreAnnouncement', {
+      player: t(event.playerIdx === 0 ? 'pegSubmitterHuman' : 'pegSubmitterCpu'),
+      points: event.total,
+      reasons: reasons.join(t('listSeparator')),
+    });
+  });
   useEffect(() => {
     if (!state) return;
     if (previousPegCountRef.current !== null && previousPegCountRef.current !== state.pegCount) {
@@ -419,19 +435,44 @@ function CribbagePageContent() {
 
                 {/* Pegging area */}
                 {(isPeggingPhase || state.pegPlayedCards.length > 0) && (
-                  <div className="my-3 p-2 rounded bg-black/30" data-tutorial="cb-pegging-area">
+                  <div
+                    className="my-3 p-2 rounded bg-black/30"
+                    data-tutorial="cb-pegging-area"
+                    data-testid="cb-pegging-area"
+                  >
                     <div className="text-ds-text-muted text-sm mb-1">
                       {t('pegPlayedCards')} - {t('pegCount', { count: state.pegCount })}
                     </div>
                     <div className="flex flex-wrap gap-1">
-                      {state.pegPlayedCards.map((card, idx) => (
-                        <AnimatedCard
-                          key={`peg-${card.design}-${card.value}-${idx}`}
-                          card={card}
-                          width={cardWidth * 0.8}
-                        />
-                      ))}
+                      {state.pegPlayedCards.map((card, idx) => {
+                        const submitter = t(
+                          state.players[state.pegPlayedBy[idx]].isHuman ? 'pegSubmitterHuman' : 'pegSubmitterCpu',
+                        );
+                        return (
+                          <figure
+                            key={`peg-${card.design}-${card.value}-${idx}`}
+                            className="flex flex-col items-center gap-1"
+                            aria-label={`${cardAlt(card)}, ${t('pegSubmittedBy', { player: submitter })}`}
+                          >
+                            <AnimatedCard card={card} width={cardWidth * 0.8} />
+                            <span className="text-ds-text-muted text-xs">{submitter}</span>
+                          </figure>
+                        );
+                      })}
                     </div>
+                    {pegScoreAnnouncements.length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        {pegScoreAnnouncements.map((announcement, idx) => (
+                          <p
+                            key={`${idx}-${announcement}`}
+                            className="text-ds-warning font-bold"
+                            data-testid="cb-peg-score"
+                          >
+                            {announcement}
+                          </p>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -570,6 +611,15 @@ function CribbagePageContent() {
               data-testid="cb-peg-count-live"
             >
               {pegCountAnnouncement}
+            </div>
+            <div
+              className="sr-only"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              data-testid="cb-peg-score-live"
+            >
+              {pegScoreAnnouncements.join(t('listSeparator'))}
             </div>
 
             <ActionLogSection

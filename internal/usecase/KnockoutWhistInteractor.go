@@ -92,12 +92,7 @@ func (mi *KnockoutWhistInteractor) SelectTrump(suit int) string {
 // NextRound ラウンドをスコアリングして次のラウンドへ進む
 func (mi *KnockoutWhistInteractor) NextRound() string {
 	mi.Game.ScoreRound()
-	if out, blocked := guardGameEnd(mi.Game, mi.mp); blocked {
-		return out
-	}
-	mi.Game.NextRound()
-	mi.runCpuTurns()
-	return mi.mp.Output(mi.Game, nil)
+	return advanceRound(mi.Game, mi.mp, mi.runCpuTurns)
 }
 
 // GetConfig 現在の設定を取得

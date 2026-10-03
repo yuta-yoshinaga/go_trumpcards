@@ -3,6 +3,7 @@ import { cariocaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -21,15 +22,16 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeErrorColors, badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
-import { btnDanger, btnOutline, btnPrimary, focusRingWhite } from '../styles/buttonStyles';
+import { btnDanger, btnOutline, btnPrimary, btnSecondary, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card, CariocaContractSlot, CariocaResponse } from '../types/card';
+import type { CariocaContractSlot, CariocaResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { canLayoffCariocaMeld, describeCariocaSlotShortfall, evaluateCariocaContractSlot } from '../utils/cariocaUtils';
 import { CARIOCA_HELP, parseCariocaCommand } from '../utils/cli/commands/cariocaCommands';
 import { formatCariocaState } from '../utils/cli/formatters/cariocaFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { type HandSortMode, sortedHandForDisplay } from '../utils/handDisplaySort';
 
 /** Phase identifiers for Carioca. */
 const CA_PHASE = {
@@ -46,6 +48,11 @@ const CA_PHASE_KEYS: Readonly<Record<number, string>> = {
   [CA_PHASE.GAME_END]: 'gameEnd',
 };
 
+type CariocaSortMode = HandSortMode;
+const CA_SORT_MODES: ReadonlyArray<{ mode: CariocaSortMode; labelKey: string }> = [
+  { mode: 'rank', labelKey: 'sort.rank' },
+  { mode: 'suit', labelKey: 'sort.suit' },
+];
 /** Carioca tutorial step definitions. */
 const CA_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -114,6 +121,7 @@ function CariocaPageContent() {
 
   // Selected card indices in the human's hand (multi-select).
   const [selectedCards, setSelectedCards] = useState<number[]>([]);
+  const [sortMode, setSortMode] = useState<CariocaSortMode>('original');
   // Slots being assembled for the contract meld (one card-set per slot).
   const [contractSlots, setContractSlots] = useState<number[][]>([]);
   // Layoff target: { playerIdx, meldIdx }.
@@ -214,6 +222,14 @@ function CariocaPageContent() {
     clearSelection();
   }, [execApi, clearSelection]);
 
+  const handleConfigChange = useCallback(
+    (config: { playerCount: number; cpuDifficulty: number; failContractPenalty: number }) => {
+      void execApi('reset', { config });
+      clearSelection();
+    },
+    [execApi, clearSelection],
+  );
+
   const phaseName = useMemo(() => {
     if (!state) return '';
     return phaseNames[state.phase] ?? '';
@@ -264,6 +280,55 @@ function CariocaPageContent() {
       ) : (
         <>
           {error && <ErrorAlert message={error} onRetry={retry} />}
+
+          <SettingsPanel
+            title={tc('settings.title')}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'select',
+                    id: 'carioca-player-count',
+                    label: t('settings.playerCount'),
+                    value: state.config.playerCount,
+                    options: [3, 4, 5, 6].map((value) => ({ value, label: String(value) })),
+                    onSelect: (value) =>
+                      handleConfigChange({
+                        playerCount: Number(value),
+                        cpuDifficulty: state.config.cpuDifficulty,
+                        failContractPenalty: state.config.failContractPenalty,
+                      }),
+                  },
+                  {
+                    type: 'select',
+                    id: 'carioca-cpu-difficulty',
+                    label: t('settings.cpuDifficulty'),
+                    value: state.config.cpuDifficulty,
+                    options: [0, 1, 2].map((value) => ({ value, label: t(`settings.difficulty.${value}`) })),
+                    onSelect: (value) =>
+                      handleConfigChange({
+                        playerCount: state.config.playerCount,
+                        cpuDifficulty: Number(value),
+                        failContractPenalty: state.config.failContractPenalty,
+                      }),
+                  },
+                  {
+                    type: 'select',
+                    id: 'carioca-fail-contract-penalty',
+                    label: t('settings.failContractPenalty'),
+                    value: state.config.failContractPenalty,
+                    options: [0, 25, 50, 100].map((value) => ({ value, label: String(value) })),
+                    onSelect: (value) =>
+                      handleConfigChange({
+                        playerCount: state.config.playerCount,
+                        cpuDifficulty: state.config.cpuDifficulty,
+                        failContractPenalty: Number(value),
+                      }),
+                  },
+                ],
+              },
+            ]}
+          />
 
           {/* Scrollable state display. Carioca had no play area at all, so its
           content grew the document by 333px at 375x667; the pinned action row,
@@ -425,8 +490,22 @@ function CariocaPageContent() {
                     </span>
                   )}
                 </div>
+                <fieldset className="mb-2 flex flex-wrap gap-1 border-0 p-0 m-0 min-w-0">
+                  <legend className="sr-only">{t('sort.label')}</legend>
+                  {CA_SORT_MODES.map(({ mode, labelKey }) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => setSortMode(mode)}
+                      className={sortMode === mode ? `${btnPrimary} min-w-[64px]` : `${btnSecondary} min-w-[64px]`}
+                      aria-pressed={sortMode === mode}
+                    >
+                      {t(labelKey)}
+                    </button>
+                  ))}
+                </fieldset>
                 <div className="flex flex-wrap gap-1">
-                  {humanPlayer.cards.map((c: Card, idx: number) => {
+                  {sortedHandForDisplay(humanPlayer.cards, sortMode).map(({ card: c, index: idx }) => {
                     const isSelected = selectedCards.includes(idx);
                     const isInSlot = contractSlots.some((slot) => slot.includes(idx));
                     return (
@@ -557,7 +636,7 @@ function CariocaPageContent() {
                     <span
                       data-testid="ca-layoff-acceptance"
                       data-accepts={String(layoffTargetAccepts)}
-                      className={`ml-1 ${layoffTargetAccepts ? 'text-ds-success' : 'text-ds-error'}`}
+                      className={`ml-1 ${layoffTargetAccepts ? 'text-ds-success' : 'text-ds-error-text'}`}
                     >
                       {layoffTargetAccepts ? t('layoffAcceptable') : t('layoffNotAcceptable')}
                     </span>

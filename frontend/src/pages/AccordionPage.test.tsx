@@ -329,6 +329,20 @@ describe('AccordionPage', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 
+  it('exposes the selected pile with aria-pressed', async () => {
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const pile0 = screen.getByRole('button', { name: /^0:/ });
+    const pile1 = screen.getByRole('button', { name: /^1:/ });
+    expect(pile0).toHaveAttribute('aria-pressed', 'false');
+    expect(pile1).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(pile0);
+    expect(pile0).toHaveAttribute('aria-pressed', 'true');
+    expect(pile1).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('selecting pile 1 then clicking pile 0 (offset=1) dispatches a move', async () => {
     // Same rank 2 on pile 0 and 1 for a valid move
     mockExec.mockResolvedValue({
@@ -460,7 +474,7 @@ describe('AccordionPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /3: ♠ 9 — 左3へマージ可/ })).toBeInTheDocument());
     const status = screen.getByTestId('ac-selection-status');
     expect(status).toHaveAttribute('role', 'status');
-    expect(status).toHaveTextContent('パイル3を選択中。マージ可能な手が1通り');
+    expect(status).toHaveTextContent('パイル3を選択中。統合先: パイル0（マージ可能な手が1通り）');
   });
 
   it('lists both merge offsets joined by the localized separator when both are legal', async () => {
@@ -480,7 +494,9 @@ describe('AccordionPage', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /3: ♠ 9 — 左1へマージ可、左3へマージ可/ })).toBeInTheDocument(),
     );
-    expect(screen.getByTestId('ac-selection-status')).toHaveTextContent('パイル3を選択中。マージ可能な手が2通り');
+    expect(screen.getByTestId('ac-selection-status')).toHaveTextContent(
+      'パイル3を選択中。統合先: パイル2、パイル0（マージ可能な手が2通り）',
+    );
   });
 
   it('announces when a selected pile has no legal merge', async () => {

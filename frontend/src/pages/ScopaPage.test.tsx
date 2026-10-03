@@ -68,6 +68,14 @@ describe('ScopaPage', () => {
     renderWithProviders(<ScopaPage />);
     await waitFor(() => expect(screen.getByTestId('table-card-0')).toBeInTheDocument());
     expect(screen.getByTestId('table-card-1')).toBeInTheDocument();
+    expect(screen.getByTestId('sc-remaining-deck')).toHaveTextContent('残り山札: 30枚');
+  });
+
+  it('shows an empty deck at round end', async () => {
+    mockExec.mockResolvedValue(makeState({ remainingDeck: 0, phase: 'roundEnd' }));
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('sc-round-end-banner')).toBeInTheDocument());
+    expect(screen.getByTestId('sc-remaining-deck')).toHaveTextContent('残り山札: 0枚');
   });
 
   it('renders the latest human and CPU actions using the CUI wording rules', async () => {
@@ -213,6 +221,30 @@ describe('ScopaPage', () => {
     fireEvent.click(screen.getByTestId('hand-card-0'));
     fireEvent.click(screen.getByTestId('lay-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('p', { handIndex: 0, tableIndices: [] }));
+  });
+
+  it('disables hand and table selection while a play request is pending', async () => {
+    let resolvePlay!: (state: ScopaResponse) => void;
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolvePlay = resolve;
+        }),
+    );
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('lay-button'));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('p', { handIndex: 0, tableIndices: [] }));
+    expect(screen.getByTestId('hand-card-0')).toBeDisabled();
+    expect(screen.getByTestId('table-card-0')).toBeDisabled();
+
+    resolvePlay(makeState());
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).not.toBeDisabled());
+    expect(screen.getByTestId('table-card-0')).not.toBeDisabled();
   });
 
   it('disables actions when it is not the human turn', async () => {

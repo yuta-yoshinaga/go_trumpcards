@@ -53,6 +53,12 @@
   "selectContractPrompt": "あなたが親です — このディールのコントラクトを選んでください。",
   "selectContractCpu": "CPU {{id}} がコントラクトを選んでいます…",
   "selectTrumpPrompt": "キング（切り札）の切り札スートを選んでください。",
+  "trumpSuit": {
+    "1": "スペード",
+    "2": "クラブ",
+    "3": "ハート",
+    "4": "ダイヤ"
+  },
   "selectButton": "選択",
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
@@ -73,7 +79,10 @@
     "gained": "{{name}}: {{points}}点",
     "contractLine": "契約: {{name}}",
     "contractLineTrump": "契約: {{name}}（切り札: {{suit}}）",
-    "basis": "失点根拠: {{desc}}"
+    "basis": "失点根拠: {{desc}}",
+    "historyTitle": "ディール得点履歴",
+    "historyDeal": "ディール{{n}} — {{name}}",
+    "historyTrump": "ディール{{n}} — {{name}}（切り札: {{suit}}）"
   },
   "hintAvailable": "ヒント",
   "hint": {

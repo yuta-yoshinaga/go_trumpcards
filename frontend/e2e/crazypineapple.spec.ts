@@ -14,7 +14,7 @@ test.describe('Crazy Pineapple Poker E2E', () => {
     await expect(page.getByText('あなたの手札')).toBeVisible({ timeout: 10_000 });
 
     const checkButton = page.getByRole('button', { name: 'チェック', exact: true });
-    const callButton = page.getByRole('button', { name: 'コール', exact: true });
+    const callButton = page.getByRole('button', { name: /^コール(?:\s|$)/ });
     const foldButton = page.getByRole('button', { name: 'フォールド' });
     const discardControls = page.getByTestId('discard-controls');
 

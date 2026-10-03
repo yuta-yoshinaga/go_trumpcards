@@ -22,6 +22,7 @@
   "cpu": "CPU {{id}}",
   "currentTrick": "現在のトリック",
   "declarerBadge": "宣言者",
+  "dealerBadge": "ディーラー",
   "declarerLine": "宣言者: {{name}} — {{contract}}",
   "hint": {
     "lead_low": "低い札でリードして温存することを推奨",

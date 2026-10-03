@@ -1,5 +1,6 @@
 {
   "currentTrick": "Current trick",
+  "trickWinnerBadge": "Winner",
   "title": "Put (プット)",
   "subtitle": "South American / Spanish bluffing trick-taking — raise the stakes",
   "header": {
@@ -38,6 +39,10 @@
     "cpuWin": "CPU wins ({{p0}}-{{p1}})"
   },
   "respondPrompt": "{{name}} called {{level}}. Respond.",
+  "respondOutcome": {
+    "accept": "Accept: the stake becomes {{stake}} points",
+    "decline": "Decline: the caller wins the current {{stake}} points"
+  },
   "hintReason": {
     "leadStrong": "Lead with a strong card",
     "leadLow": "Lead low to save your strong cards",

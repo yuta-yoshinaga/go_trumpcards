@@ -17,6 +17,15 @@ export interface CanastaMeldData {
   rank: number;
 }
 
+/** Server-calculated breakdown of a player's score for the completed round. */
+export interface CanastaScoreBreakdown {
+  meldCards: number;
+  canastaBonus: number;
+  red3Bonus: number;
+  goOutBonus: number;
+  handPenalty: number;
+}
+
 /** Canasta player data with melds and red 3s. */
 export interface CanastaPlayerData {
   id: number;
@@ -28,12 +37,15 @@ export interface CanastaPlayerData {
   red3s: Card[];
   roundScore: number;
   cumulativeScore: number;
+  scoreBreakdown: CanastaScoreBreakdown;
   hasCanasta: boolean;
   hasInitMeld: boolean;
 }
 
 /** Full Canasta game state returned from the API. */
 export interface CanastaResponse extends BaseGameResponse {
+  /** Server-calculated minimum for the human player’s initial meld. */
+  minMeld: number;
   players: CanastaPlayerData[];
   phase: number;
   roundNumber: number;

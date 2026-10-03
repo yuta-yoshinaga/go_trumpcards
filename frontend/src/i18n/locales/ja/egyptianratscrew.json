@@ -18,6 +18,7 @@
     "chanceRemaining": "残りチャンス: {{count}}"
   },
   "chanceResponder": "応答: {{player}}",
+  "chanceTimeRemaining": "残り{{seconds}}秒",
   "settings": {
     "cpuDifficulty": "CPU難易度",
     "difficulty": {
@@ -31,6 +32,8 @@
     "stepAnnounceCpu": "場札{{count}}枚。{{player}}のターンです。",
     "slap": "スラップ！",
     "slappable": "ペア/サンドイッチ！叩け！",
+    "slappableStarted": "{{reason}}が成立しました。スラップできます。",
+    "slappableEnded": "スラップ可能状態が解除されました。",
     "chanceBattle": "チャンスバトル中",
     "slapReason": {
       "pair": "ペア",

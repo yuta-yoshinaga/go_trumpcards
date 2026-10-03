@@ -12,7 +12,8 @@
     "targetRounds": "ラウンド数",
     "easy": "Easy",
     "normal": "Normal",
-    "hard": "Hard"
+    "hard": "Hard",
+    "targetRoundsGuide": "4以上の4の倍数を指定してください。"
   },
   "round": "ラウンド {{n}}",
   "trick": "トリック {{n}}",
@@ -36,6 +37,8 @@
   "nextRound": "次のラウンド",
   "roundResult": {
     "title": "ラウンド結果",
+    "breakdownTitle": "ラウンド得点内訳",
+    "breakdown": "チーム{{team}}: トリック {{tricks}} / 最終トリック +{{lastTrickBonus}} / スカルト +{{scartoBonus}} / 計 {{total}}",
     "tricks": "{{name}} トリック: {{count}}",
     "lastTrick": "最終トリックボーナス: チーム{{team}} に +{{bonus}}",
     "scarto": "スカルト加点: チーム{{team}}（ディーラー側）に +{{count}}"

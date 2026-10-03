@@ -111,20 +111,22 @@ function CribbageSquaresPageContent() {
     onSuccess: (result, [command, row, col]) => {
       if (command !== 'place' || typeof row !== 'number' || typeof col !== 'number') return;
       if (!result.board[row]?.[col]?.card) return;
-      const rowScore =
-        result.phase === CribbageSquaresPhase.COMPLETE
-          ? result.rowScores[row]
-          : (result.rowPartialDetails[row]?.total ?? 0);
-      const colScore =
-        result.phase === CribbageSquaresPhase.COMPLETE
-          ? result.colScores[col]
-          : (result.colPartialDetails[col]?.total ?? 0);
+      const isComplete = result.phase === CribbageSquaresPhase.COMPLETE;
+      const rowDetail = isComplete ? result.rowDetails[row] : result.rowPartialDetails[row];
+      const colDetail = isComplete ? result.colDetails[col] : result.colPartialDetails[col];
+      const breakdownLabel = (key: string, n: number) => t(`part.${key}`, { n });
+      const rowParts = cribbageBreakdownParts(rowDetail, breakdownLabel).join(t('listSeparator')) || t('noScoredParts');
+      const colParts = cribbageBreakdownParts(colDetail, breakdownLabel).join(t('listSeparator')) || t('noScoredParts');
+      const rowScore = rowDetail.total;
+      const colScore = colDetail.total;
       setPlacementAnnouncement(
-        t('placementAnnouncement', {
+        t(isComplete ? 'placementAnnouncement' : 'placementAnnouncementPartial', {
           rowNo: row + 1,
           rowScore,
+          rowParts,
           colNo: col + 1,
           colScore,
+          colParts,
           total: rowScore + colScore,
         }),
       );
@@ -290,7 +292,11 @@ function CribbageSquaresPageContent() {
                                 data-cross-hover={inCross ? 'true' : undefined}
                                 aria-label={
                                   cell.card
-                                    ? cardAlt(cell.card)
+                                    ? t('label.placedCell', {
+                                        card: cardAlt(cell.card),
+                                        rowNo: rowIdx + 1,
+                                        colNo: colIdx + 1,
+                                      })
                                     : // **どの行・列に効くかは色でしか出ていなかった。**空きマスは
                                       // 影響する 2 つの役の現在点を読み上げにも載せる。
                                       //

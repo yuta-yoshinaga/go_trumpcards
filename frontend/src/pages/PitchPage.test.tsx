@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pitchApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { CardDesign, PitchResponse } from '../types/card';
 import { PitchPhase } from '../types/phases';
@@ -127,6 +128,18 @@ describe('PitchPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /出す/ })).toBeInTheDocument());
   });
 
+  it('announces selected hand cards as pressed and toggles them off', async () => {
+    mockApi.mockResolvedValue(playState);
+    renderWithProviders(<PitchPage />);
+    const cards = await screen.findAllByRole('button', { name: /^[♠♥]/ });
+
+    expect(cards[0]).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(cards[0]);
+    expect(cards[0]).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(cards[0]);
+    expect(cards[0]).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('bid phase: pressing "p" passes and "2" bids two', async () => {
     mockApi.mockResolvedValue(bidState);
     renderWithProviders(<PitchPage />);
@@ -160,6 +173,24 @@ describe('PitchPage', () => {
     fireEvent.keyDown(document.body, { key: 'Enter' });
     // No selection means handlePlay early-returns; no play command is sent.
     await waitFor(() => expect(mockApi).not.toHaveBeenCalled());
+  });
+
+  it('explains why an invalid card cannot be played while keeping it focusable', async () => {
+    mockApi.mockResolvedValue({ ...playState, validPlayIndices: [0] });
+    renderWithProviders(<PitchPage />);
+    const cards = await screen.findAllByRole('button', { name: /^[♠♥]/ });
+
+    expect(cards[0]).not.toHaveAttribute('aria-disabled', 'true');
+    expect(cards[1]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[1]).not.toBeDisabled();
+    expect(cards[1]).toHaveAttribute('aria-describedby', 'pitch-invalid-play-reason');
+    expect(screen.getByText('リードスートか切り札を出してください')).toHaveClass('sr-only');
+
+    mockApi.mockClear();
+    fireEvent.click(cards[1]);
+    await flushPendingDispatch();
+    expect(cards[1]).toHaveAttribute('aria-pressed', 'false');
+    expect(mockApi).not.toHaveBeenCalled();
   });
 
   it('advertises the bid keyboard shortcut on the pass button', async () => {

@@ -127,6 +127,24 @@ describe('DeuceToSevenPage', () => {
     await waitFor(() => expect(screen.getByText('あなたの勝ちです。')).toBeInTheDocument());
   });
 
+  it('shows each player hand and winnings in the showdown results', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: DeuceToSevenPhase.SHOWDOWN,
+        roundResults: [
+          { playerIdx: 0, handRank: 0, handName: 'Seven Low', wonAmount: 40 },
+          { playerIdx: 1, handRank: 1, handName: 'One Pair', wonAmount: 0 },
+        ],
+      }),
+    );
+    renderWithProviders(<DeuceToSevenPage />);
+
+    const results = await screen.findByTestId('round-results-visible');
+    expect(results).toHaveTextContent('あなた: Seven Low');
+    expect(results).toHaveTextContent('+40チップ');
+    expect(results).toHaveTextContent('CPU 1: One Pair');
+  });
+
   it('renders the human hand name translated for the current locale', async () => {
     mockExec.mockResolvedValue(
       baseState({
@@ -170,6 +188,59 @@ describe('DeuceToSevenPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /チェック/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check', undefined, undefined, undefined, 0));
+  });
+
+  it('shows the call amount and pot odds when facing a bet', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: DeuceToSevenPhase.BET,
+        pot: 100,
+        lastBet: 30,
+        players: [humanPlayer({ currentBet: 10 }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+      }),
+    );
+    renderWithProviders(<DeuceToSevenPage />);
+
+    expect(await screen.findByText('(20 · ポットオッズ 16.7%)')).toBeInTheDocument();
+  });
+
+  it.each([
+    ['CPU turn', { currentTurn: 1 }],
+    ['human folded', { players: [humanPlayer({ folded: true }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)] }],
+    ['human all-in', { players: [humanPlayer({ allIn: true }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)] }],
+  ])('does not show pot odds when the human cannot act (%s)', async (_label, overrides) => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: DeuceToSevenPhase.BET,
+        pot: 100,
+        lastBet: 30,
+        players: [humanPlayer({ currentBet: 10 }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+        ...overrides,
+      }),
+    );
+    renderWithProviders(<DeuceToSevenPage />);
+
+    await waitFor(() => expect(screen.getByText('ポット:')).toBeInTheDocument());
+    expect(screen.queryByText(/ポットオッズ/)).not.toBeInTheDocument();
+  });
+
+  it.each([
+    [
+      'no outstanding bet during betting',
+      {
+        phase: DeuceToSevenPhase.BET,
+        pot: 100,
+        lastBet: 20,
+        players: [humanPlayer({ currentBet: 20 }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+      },
+    ],
+    ['missing pot', { phase: DeuceToSevenPhase.BET, pot: undefined, lastBet: 30 }],
+  ])('does not show pot odds for %s', async (_label, overrides) => {
+    mockExec.mockResolvedValue(baseState(overrides as Partial<DeuceToSevenResponse>));
+    renderWithProviders(<DeuceToSevenPage />);
+
+    await waitFor(() => expect(screen.getByText('ポット:')).toBeInTheDocument());
+    expect(screen.queryByText(/ポットオッズ/)).not.toBeInTheDocument();
   });
 
   it.each([

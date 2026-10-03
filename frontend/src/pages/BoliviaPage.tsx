@@ -31,7 +31,7 @@ import type { BoliviaResponse, Card } from '../types/card';
 import { BOLIVIA_MELD_KIND } from '../types/games/bolivia';
 import { BoliviaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { boliviaMinMeld, boliviaSelectionPoints } from '../utils/boliviaScore';
+import { canastaFamilySelectionPoints } from '../utils/canastaFamilyScore';
 import { cardAlt } from '../utils/cardAlt';
 import { BOLIVIA_HELP, parseBoliviaCommand } from '../utils/cli/commands/boliviaCommands';
 import { formatBoliviaState } from '../utils/cli/formatters/boliviaFormatter';
@@ -82,11 +82,14 @@ function BoliviaPageContent() {
     boliviaConfig,
     handleConfigChange,
     selectedCardIndices,
+    meldGroups,
     toggleCard,
     clearSelection,
     handleDrawStock,
     handleDrawDiscard,
     handleMeldSelected,
+    handleAddMeldGroup,
+    handleRemoveMeldGroup,
     handleSkipMeld,
     handleDiscard,
     handleGoOut,
@@ -103,6 +106,7 @@ function BoliviaPageContent() {
 
   const humanPlayer = state?.players.find((p) => p.isHuman);
   const humanCardCount = humanPlayer?.cards?.length ?? 0;
+  const groupedIndices = new Set(meldGroups.flat());
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('bolivia');
   const cliConfig: CliGameConfig<BoliviaResponse, Parameters<typeof boliviaApi.exec>> = useMemo(
@@ -139,12 +143,14 @@ function BoliviaPageContent() {
   // selected cards' running point total so the player can tell if they qualify.
   const meldPointInfo = useMemo(() => {
     if (!isMeldPhase || !humanPlayer) return null;
-    const selectedCards = selectedCardIndices.map((i) => humanPlayer.cards[i]).filter((c): c is Card => Boolean(c));
-    const selectedPoints = boliviaSelectionPoints(selectedCards);
+    const selectedCards = [...meldGroups.flat(), ...selectedCardIndices]
+      .map((i) => humanPlayer.cards[i])
+      .filter((c): c is Card => Boolean(c));
+    const selectedPoints = canastaFamilySelectionPoints(selectedCards);
     const needInitial = !humanPlayer.hasInitMeld;
-    const minMeld = boliviaMinMeld(humanPlayer.cumulativeScore);
+    const minMeld = state.minMeld;
     return { selectedPoints, needInitial, minMeld, below: needInitial && selectedPoints < minMeld };
-  }, [isMeldPhase, humanPlayer, selectedCardIndices]);
+  }, [isMeldPhase, humanPlayer, meldGroups, selectedCardIndices, state?.minMeld]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -163,7 +169,9 @@ function BoliviaPageContent() {
 
   useCardKeyboardNav({
     cardCount: humanCardCount,
-    onToggle: toggleCard,
+    onToggle: (idx) => {
+      if (!groupedIndices.has(idx)) toggleCard(idx);
+    },
     onConfirm: kbdConfirmAction,
     onClear: clearSelection,
     enabled: !!isHumanTurn && !loading,
@@ -385,7 +393,7 @@ function BoliviaPageContent() {
                       {p.red3s.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
                           <span
-                            className={`text-xs self-center mr-1 ${!teamMelded ? 'text-ds-warning font-semibold' : 'text-ds-error'}`}
+                            className={`text-xs self-center mr-1 ${!teamMelded ? 'text-ds-warning font-semibold' : 'text-ds-error-text'}`}
                           >
                             {t('red3s')}
                           </span>
@@ -432,6 +440,49 @@ function BoliviaPageContent() {
                           <td className="text-center">{p.cumulativeScore}</td>
                         </tr>
                       ))}
+                      {(isRoundEnd || isGameEnd) &&
+                        state.players
+                          .filter((p, i, players) => players.findIndex((candidate) => candidate.team === p.team) === i)
+                          .map((p) => (
+                            <tr key={`breakdown-${p.team}`} data-testid={`bo-score-breakdown-${p.team}`}>
+                              <td colSpan={4} className="py-1 pl-2">
+                                <div className="mb-1 font-semibold">
+                                  {t('teamLabel', { n: p.team })}
+                                  {state.players.some((member) => member.team === p.team && member.isHuman) &&
+                                    ` (${t('yourTeam')})`}
+                                </div>
+                                <div className="grid grid-cols-2 gap-x-2 text-xs sm:grid-cols-3">
+                                  {(
+                                    [
+                                      'cardPoints',
+                                      'naturalCanastaBonus',
+                                      'mixedCanastaBonus',
+                                      'escaleraBonus',
+                                      'boliviaBonus',
+                                      'red3Bonus',
+                                      'red3Penalty',
+                                      'goOutBonus',
+                                      'handPenalty',
+                                    ] as const
+                                  ).map((key) => {
+                                    const value = p.scoreBreakdown[key];
+                                    return (
+                                      <span key={key} className="flex justify-between gap-2">
+                                        <span>{t(`scoreBreakdown.${key}`)}</span>
+                                        <span>
+                                          {key === 'red3Penalty' || key === 'handPenalty'
+                                            ? value === 0
+                                              ? 0
+                                              : `−${value}`
+                                            : value}
+                                        </span>
+                                      </span>
+                                    );
+                                  })}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
                     </tbody>
                   </table>
                 </div>
@@ -484,10 +535,17 @@ function BoliviaPageContent() {
                   <button
                     type="button"
                     key={`${card.design}-${card.value}-${idx}`}
-                    onClick={() => toggleCard(idx)}
-                    aria-label={cardAlt(card)}
+                    onClick={() => {
+                      if (!groupedIndices.has(idx)) toggleCard(idx);
+                    }}
+                    aria-label={
+                      groupedIndices.has(idx)
+                        ? `${cardAlt(card)} (${t('inMeldGroup', { n: meldGroups.findIndex((group) => group.includes(idx)) + 1 })})`
+                        : cardAlt(card)
+                    }
                     aria-pressed={selectedCardIndices.includes(idx)}
-                    className={`transition-transform ${focusRingCard}`}
+                    aria-disabled={groupedIndices.has(idx) || undefined}
+                    className={`transition-transform aria-disabled:opacity-50 aria-disabled:cursor-not-allowed ${focusRingCard}`}
                     style={{
                       background: 'none',
                       padding: 0,
@@ -535,6 +593,22 @@ function BoliviaPageContent() {
               )}
               {isMeldPhase && isHumanTurn && (
                 <>
+                  {meldGroups.length > 0 && (
+                    <div className="w-full flex flex-wrap gap-2" data-testid="sa-meld-groups">
+                      {meldGroups.map((group, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          className={btnOutline}
+                          onClick={() => handleRemoveMeldGroup(index)}
+                          disabled={loading}
+                          aria-label={t('removeMeldGroup', { n: index + 1, count: group.length })}
+                        >
+                          {t('meldGroup', { n: index + 1, count: group.length })} ×
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   {meldPointInfo && (
                     <div
                       id="sa-meld-points"
@@ -553,10 +627,22 @@ function BoliviaPageContent() {
                     type="button"
                     className={btnPrimary}
                     onClick={handleMeldSelected}
-                    disabled={loading || selectedCardIndices.length < 3}
+                    disabled={
+                      loading ||
+                      (meldGroups.length === 0 && selectedCardIndices.length < 3) ||
+                      (selectedCardIndices.length > 0 && selectedCardIndices.length < 3)
+                    }
                     aria-describedby={meldPointInfo?.below ? 'sa-meld-points' : undefined}
                   >
                     {t('meldButton')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnOutline}
+                    onClick={handleAddMeldGroup}
+                    disabled={loading || selectedCardIndices.length < 3}
+                  >
+                    {t('addMeldGroupButton')}
                   </button>
                   <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
                     {t('skipMeldButton')}

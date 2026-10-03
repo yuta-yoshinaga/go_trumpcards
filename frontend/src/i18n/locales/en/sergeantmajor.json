@@ -18,6 +18,7 @@
     "score": "total {{n}}",
     "dealer": "[dealer / target 8]",
     "you": "You",
+    "currentTurn": "Current turn",
     "cpu": "CPU{{idx}}",
     "kittyBadge": "kitty",
     "kittyAria": "came in from the kitty",
@@ -40,6 +41,8 @@
     "tie": "It's a tie."
   },
   "roundEnd": {
+    "seatSurplus": "surplus {{n}}",
+    "exchangeRule": "For each trick short, a seat gives its best card and receives the worst card from a seat that exceeded its target.",
     "forfeitWarn": "You fell {{n}} trick(s) short. Next round your {{n}} best card(s) are taken, and you get their worst in return.",
     "forfeitGain": "You are {{n}} trick(s) over. Next round you take {{n}} of the best card(s) from a seat that fell short."
   },

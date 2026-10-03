@@ -85,6 +85,23 @@ describe('BeziquePage', () => {
     expect(breakdown).toHaveTextContent('4');
   });
 
+  it('shows who received the last-trick bonus in the deal result and omits it when absent', async () => {
+    mockExec.mockResolvedValue(
+      makeBeziqueState({ phase: 2, dealPoints: [10, 30], dealMeldPoints: [0, 0], lastTrickBonus: [0, 10] }),
+    );
+    renderWithProviders(<BeziquePage />);
+    expect(await screen.findByTestId('bezique-last-trick-bonus-1')).toHaveTextContent('（うち最終トリック加点 10点）');
+    expect(screen.queryByTestId('bezique-last-trick-bonus-0')).not.toBeInTheDocument();
+  });
+
+  it('does not show a last-trick bonus line when no bonus was scored', async () => {
+    mockExec.mockResolvedValue(makeBeziqueState({ phase: 2, lastTrickBonus: [0, 0] }));
+    renderWithProviders(<BeziquePage />);
+    expect(await screen.findByText('ディール結果（獲得ポイント）')).toBeInTheDocument();
+    expect(screen.queryByTestId('bezique-last-trick-bonus-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('bezique-last-trick-bonus-1')).not.toBeInTheDocument();
+  });
+
   it('shows the literal trick point table', async () => {
     mockExec.mockResolvedValue(makeBeziqueState());
     renderWithProviders(<BeziquePage />);
@@ -144,7 +161,7 @@ describe('BeziquePage', () => {
     const { container } = renderWithProviders(<BeziquePage />);
 
     const live = await waitFor(() => {
-      const element = container.querySelector('[role="status"][aria-live="polite"][aria-atomic="true"]');
+      const element = container.querySelector('[data-testid="bezique-meld-live"][role="status"][aria-live="polite"]');
       expect(element).not.toBeNull();
       return element;
     });
@@ -215,6 +232,38 @@ describe('BeziquePage', () => {
     mockExec.mockResolvedValue(endgameState);
     renderWithProviders(<BeziquePage />);
     await waitFor(() => expect(screen.getByText(/フェーズ2/)).toBeInTheDocument());
+  });
+
+  it('announces the endgame once when the stock runs out, but not on the initial render', async () => {
+    mockExec.mockResolvedValueOnce(playPhaseState).mockResolvedValue(endgameState);
+    renderWithProviders(<BeziquePage />);
+
+    const live = await screen.findByTestId('bezique-endgame-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toBeEmptyDOMElement();
+
+    fireEvent.click(await screen.findByAltText('♠ Q'));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+
+    await waitFor(() => expect(screen.getByTestId('bezique-endgame-live')).toHaveTextContent('エンドゲーム開始'));
+    const announced = screen.getByTestId('bezique-endgame-live');
+    expect(announced).toHaveTextContent('マストフォロー');
+    expect(announced).toHaveTextContent('メルドは宣言できません');
+    expect(announced).toHaveTextContent('最終トリックは+10点');
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(endgameState);
+    fireEvent.click(screen.getByAltText('♠ Q'));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
+    expect(screen.getByTestId('bezique-endgame-live')).toHaveTextContent('エンドゲーム開始');
+  });
+
+  it('does not announce the endgame on the initial render when the stock is empty', async () => {
+    mockExec.mockResolvedValue(endgameState);
+    renderWithProviders(<BeziquePage />);
+    expect(await screen.findByTestId('bezique-endgame-live')).toBeEmptyDOMElement();
   });
 
   it('rings only the legal cards during an endgame follow turn', async () => {

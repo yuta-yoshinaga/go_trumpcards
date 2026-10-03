@@ -21,6 +21,7 @@ func setupConquianWebMock(phase domain.ConquianPhase, ended bool, winner, roundW
 	m := new(interfaces.MockConquianGame)
 	players := makeConquianPlayers()
 	m.On("GetRoundNumber").Return(1)
+	m.On("GetRoundHistory").Return([]int{})
 	m.On("GetExtendableMeldIndices", mock.Anything, mock.Anything).Return(([]int)(nil)).Maybe()
 	m.On("GetDrawPileCount").Return(20)
 	m.On("GetDiscardTop").Return((*domain.Card)(nil))
@@ -85,10 +86,21 @@ func TestConquianWebPresenter_Output(t *testing.T) {
 		var parsed controller.ConquianWebOutput
 		require.NoError(t, json.Unmarshal([]byte(out), &parsed))
 		assert.Equal(t, 0, parsed.Phase)
+		assert.NotNil(t, parsed.RoundHistory)
+		assert.Empty(t, parsed.RoundHistory)
 		assert.Len(t, parsed.Players, 2)
 		assert.Len(t, parsed.Players[0].Melds, 1)
 		// CPU hand hidden during play
 		assert.Empty(t, parsed.Players[1].Cards)
+	})
+
+	t.Run("includes round history", func(t *testing.T) {
+		m, _ := setupConquianWebMock(domain.ConquianPhaseDraw, false, -1, -1)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundHistory")
+		m.On("GetRoundHistory").Return([]int{1, -1, 0})
+		var parsed controller.ConquianWebOutput
+		require.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &parsed))
+		assert.Equal(t, []int{1, -1, 0}, parsed.RoundHistory)
 	})
 
 	t.Run("reveals CPU hand at round end", func(t *testing.T) {

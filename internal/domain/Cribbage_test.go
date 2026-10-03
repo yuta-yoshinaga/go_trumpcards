@@ -3,6 +3,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,6 +17,52 @@ func newTestCribbage() *Cribbage {
 		NewCribbagePlayer(false), // CPU (index 1)
 	}
 	return NewCribbage(NewTrumpCards(0), players, config)
+}
+
+func TestCribbage_UnmarshalJSON_PegPlayedBy(t *testing.T) {
+	t.Run("legacy JSON restores owners", func(t *testing.T) {
+		g := newTestCribbage()
+		g.pegPlayedCards = []*Card{cCard(CardDesignSpade, 1), cCard(CardDesignHeart, 2)}
+		g.playerPeggedCards = [CribbagePlayerCnt][]*Card{
+			{cCard(CardDesignSpade, 1)},
+			{cCard(CardDesignHeart, 2)},
+		}
+		data, err := json.Marshal(g)
+		require.NoError(t, err)
+		var fields map[string]json.RawMessage
+		require.NoError(t, json.Unmarshal(data, &fields))
+		delete(fields, "pb")
+		data, err = json.Marshal(fields)
+		require.NoError(t, err)
+
+		var restored Cribbage
+		require.NoError(t, json.Unmarshal(data, &restored))
+		assert.Equal(t, []int{0, 1}, restored.GetPegPlayedBy())
+	})
+
+	t.Run("round trip retains owners", func(t *testing.T) {
+		g := newTestCribbage()
+		g.pegPlayedCards = []*Card{cCard(CardDesignSpade, 1), cCard(CardDesignHeart, 2)}
+		g.pegPlayedBy = []int{1, 0}
+		data, err := json.Marshal(g)
+		require.NoError(t, err)
+
+		var restored Cribbage
+		require.NoError(t, json.Unmarshal(data, &restored))
+		assert.Equal(t, []int{1, 0}, restored.GetPegPlayedBy())
+	})
+
+	t.Run("unmatched card clears both histories", func(t *testing.T) {
+		g := newTestCribbage()
+		g.pegPlayedCards = []*Card{cCard(CardDesignSpade, 1)}
+		data, err := json.Marshal(g)
+		require.NoError(t, err)
+
+		var restored Cribbage
+		require.NoError(t, json.Unmarshal(data, &restored))
+		assert.Empty(t, restored.GetPegPlayedCards())
+		assert.Empty(t, restored.GetPegPlayedBy())
+	})
 }
 
 func newTestCribbageWithDifficulty(d CribbageCpuDifficulty) *Cribbage {
@@ -196,6 +243,17 @@ func TestCribbage_BothDiscard_TransitionsToCut(t *testing.T) {
 	assert.NotNil(t, g.GetStarter())
 }
 
+func TestCribbage_DoCut_ClearsPeggingHistory(t *testing.T) {
+	g := newTestCribbage()
+	g.pegPlayedCards = []*Card{cCard(CardDesignSpade, 1)}
+	g.pegPlayedBy = []int{0}
+
+	g.doCut()
+
+	assert.Nil(t, g.pegPlayedCards)
+	assert.Nil(t, g.pegPlayedBy)
+}
+
 func TestCribbage_PlayerCut_WrongPhase(t *testing.T) {
 	g := newTestCribbage()
 	g.SetPhase(CribbagePhaseDiscard)
@@ -242,6 +300,7 @@ func TestCribbage_PlayerPeg_Success(t *testing.T) {
 	err := g.PlayerPeg(0)
 	assert.NoError(t, err)
 	assert.Equal(t, 3, g.players[0].GetCardsSize())
+	assert.Equal(t, []int{0}, g.GetPegPlayedBy())
 }
 
 func TestCribbage_PlayerPeg_WrongPhase(t *testing.T) {
@@ -278,6 +337,47 @@ func TestCribbage_PlayerGo_Success(t *testing.T) {
 
 	err := g.PlayerGo()
 	assert.NoError(t, err)
+}
+
+func TestCribbagePegScoreEventsIncludeGoAndLastCard(t *testing.T) {
+	t.Run("go", func(t *testing.T) {
+		g := newTestCribbage()
+		setupPeggingPhase(g)
+		g.pegCount = 25
+		g.lastPegPlayer = 1
+		g.players[0].Reset()
+		g.players[0].AddCard(cCard(CardDesignSpade, 10))
+		g.players[1].Reset()
+		g.players[1].AddCard(cCard(CardDesignHeart, 10))
+		g.pegScoreEvents = nil
+		require.NoError(t, g.doGo(0))
+		assert.Equal(t, []CribbagePeggingScoreEvent{{PlayerIdx: 1, Detail: CribbagePeggingScoreDetail{Go: 1, Total: 1}}}, g.GetPegScoreEvents())
+	})
+	t.Run("last card", func(t *testing.T) {
+		g := newTestCribbage()
+		setupPeggingPhase(g)
+		g.players[0].Reset()
+		g.players[1].Reset()
+		g.pegCount = 20
+		g.lastPegPlayer = 1
+		g.advancePegging()
+		assert.Equal(t, []CribbagePeggingScoreEvent{{PlayerIdx: 1, Detail: CribbagePeggingScoreDetail{LastCard: 1, Total: 1}}}, g.GetPegScoreEvents())
+	})
+}
+
+func TestCribbagePegScoreEventsIncludeCpuScoreAfterHumanAction(t *testing.T) {
+	g := newTestCribbageWithDifficulty(CribbageCpuDifficultyEasy)
+	setupPeggingPhase(g)
+	g.players[0].Reset()
+	g.players[0].AddCard(cCard(CardDesignSpade, 10))
+	g.players[1].Reset()
+	g.players[1].AddCard(cCard(CardDesignHeart, 5))
+	require.NoError(t, g.PlayerPeg(0))
+	g.CpuPlay()
+	assert.Equal(t, []CribbagePeggingScoreEvent{
+		{PlayerIdx: 1, Detail: CribbagePeggingScoreDetail{Fifteen: 2, Total: 2}},
+		{PlayerIdx: 1, Detail: CribbagePeggingScoreDetail{LastCard: 1, Total: 1}},
+	}, g.GetPegScoreEvents())
 }
 
 func TestCribbage_PlayerGo_CanStillPlay(t *testing.T) {

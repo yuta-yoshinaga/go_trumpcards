@@ -33,6 +33,7 @@ const antePhaseState: MississippiStudResponse = {
   antePayout: 0,
   streetPayouts: [0, 0, 0],
   totalPayout: 0,
+  netChange: 0,
   message: '',
 };
 
@@ -83,6 +84,7 @@ const endPhaseWin: MississippiStudResponse = {
   antePayout: 200,
   streetPayouts: [600, 200, 200],
   totalPayout: 1200,
+  netChange: 600,
   message: 'Player wins!',
   messageCode: 'mississippistud.result.playerWins',
 };
@@ -96,6 +98,7 @@ const endPhaseLoss: MississippiStudResponse = {
   antePayout: 0,
   streetPayouts: [0, 0, 0],
   totalPayout: 0,
+  netChange: -600,
   message: 'Player loses.',
   messageCode: 'mississippistud.result.playerLoses',
 };
@@ -107,6 +110,7 @@ const endPhaseFold: MississippiStudResponse = {
   streetMultipliers: [0, 0, 0],
   folded: true,
   totalBet: 100,
+  netChange: -100,
 };
 
 beforeEach(() => {
@@ -135,6 +139,22 @@ describe('MississippiStudPage', () => {
     renderWithProviders(<MississippiStudPage />);
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'アンティ' })).toBeInTheDocument();
+  });
+
+  it('announces changed chips but stays quiet when the balance is unchanged', async () => {
+    mockApi.mockResolvedValueOnce(antePhaseState);
+    renderWithProviders(<MississippiStudPage />);
+    const liveRegion = await screen.findByTestId('ms-chips-live');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    mockApi.mockResolvedValueOnce({ ...antePhaseState, chips: 900 });
+    fireEvent.click(await screen.findByRole('button', { name: 'アンティ' }));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('チップが 900 に変わりました'));
+
+    mockApi.mockResolvedValueOnce({ ...antePhaseState, chips: 900 });
+    fireEvent.click(await screen.findByRole('button', { name: 'アンティ' }));
+    expect(liveRegion).toHaveTextContent('チップが 900 に変わりました');
   });
 
   it('shows payout reference panel in ante phase', async () => {
@@ -288,6 +308,7 @@ describe('MississippiStudPage', () => {
     renderWithProviders(<MississippiStudPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
     expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('合計配当: 1200');
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('差引損益: +600');
   });
 
   it('shows hand rank label in end phase', async () => {
@@ -302,6 +323,14 @@ describe('MississippiStudPage', () => {
     renderWithProviders(<MississippiStudPage />);
     await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
     expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('合計配当: 0');
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('差引損益: -600');
+  });
+
+  it('shows the net loss after folding based on total bet and payout', async () => {
+    mockApi.mockResolvedValue(endPhaseFold);
+    renderWithProviders(<MississippiStudPage />);
+    await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('差引損益: -100');
   });
 
   it('reset button fires reset without confirm dialog', async () => {

@@ -47,6 +47,8 @@ export interface SambaPlayerData {
 
 /** Full Samba game state returned from the API. */
 export interface SambaResponse extends BaseGameResponse {
+  /** Server-calculated minimum for the human player’s initial meld. */
+  minMeld: number;
   players: SambaPlayerData[];
   teamScores: number[];
   phase: number;

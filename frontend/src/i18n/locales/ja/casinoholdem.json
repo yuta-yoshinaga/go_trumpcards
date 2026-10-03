@@ -6,6 +6,7 @@
   "board": "ボード",
   "dealerQualified": "ディーラークオリファイ",
   "dealerDoesNotQualify": "ディーラーノークオリファイ",
+  "dealerQualifyRule": "ディーラーはツーペア以上、または4以上のペアでクオリファイします",
   "betError": "アンテは10以上、ベットは10単位で、残高以内で指定してください",
   "label": {
     "chips": "チップ",
@@ -36,7 +37,9 @@
     "ante": "アンテ",
     "call": "コール",
     "bonus": "AAボーナス",
-    "total": "合計"
+    "total": "合計",
+    "netChange": "純増減",
+    "noNetChange": "増減なし"
   },
   "handRank": {
     "0": "ハイカード",

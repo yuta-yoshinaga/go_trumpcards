@@ -67,8 +67,15 @@ type FollowTheQueenWebOutputResult struct {
 
 // FollowTheQueenWebOutputSidePot フォロー・ザ・クイーンサイドポット
 type FollowTheQueenWebOutputSidePot struct {
-	Amount          int   `json:"amount"`
-	EligiblePlayers []int `json:"eligiblePlayers"`
+	Amount          int                                `json:"amount"`
+	EligiblePlayers []int                              `json:"eligiblePlayers"`
+	Winners         []*FollowTheQueenWebOutputPotAward `json:"winners"`
+}
+
+// FollowTheQueenWebOutputPotAward is one player's share of a pot.
+type FollowTheQueenWebOutputPotAward struct {
+	PlayerIdx int `json:"playerIdx"`
+	Amount    int `json:"amount"`
 }
 
 // FollowTheQueenWebOutputMetaAI メタAI情報

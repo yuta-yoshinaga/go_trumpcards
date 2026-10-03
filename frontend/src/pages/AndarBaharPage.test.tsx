@@ -48,6 +48,7 @@ const betState: AndarBaharResponse = {
   mainPayout: 0,
   sidePayout: 0,
   history: [],
+  roundHistory: [],
   message: '',
 };
 
@@ -84,6 +85,21 @@ beforeEach(() => {
 });
 
 describe('AndarBaharPage', () => {
+  it('shows settled round history in response order with original values', async () => {
+    mockApi.mockResolvedValue({
+      ...betState,
+      roundHistory: [
+        { bet: 150, payout: 190, chips: 1040 },
+        { bet: 100, payout: 0, chips: 940 },
+      ],
+    });
+    renderWithProviders(<AndarBaharPage />);
+    const table = await screen.findByTestId('andarbahar-round-history');
+    expect(table).toHaveTextContent('150');
+    expect(table).toHaveTextContent('190');
+    expect(table).toHaveTextContent('1040');
+    expect(table.textContent?.indexOf('1040')).toBeLessThan(table.textContent?.indexOf('940') ?? 0);
+  });
   it('exposes localized names and counts for each road result', async () => {
     mockApi.mockResolvedValue({
       ...betState,
@@ -153,6 +169,83 @@ describe('AndarBaharPage', () => {
     await waitFor(() =>
       expect(mockApi).toHaveBeenCalledWith('bet', 100, AndarBaharColumn.ANDAR, 50, AndarBaharSideBand.SIX_TO_TEN),
     );
+  });
+
+  it('does not submit a stake that exceeds the updated chip balance', async () => {
+    mockApi
+      .mockResolvedValueOnce({ ...betState, chips: 200 })
+      .mockResolvedValueOnce({ ...andarWinState, chips: 50 })
+      .mockResolvedValueOnce({ ...betState, chips: 100 });
+    renderWithProviders(<AndarBaharPage />);
+
+    const mainInput = (await screen.findByLabelText('ベット額')) as HTMLInputElement;
+    fireEvent.change(mainInput, { target: { value: '150' } });
+    fireEvent.click(screen.getByRole('button', { name: /アンダーに賭ける/ }));
+    await screen.findByTestId('payout-result');
+
+    fireEvent.click(screen.getByRole('button', { name: /次のゲーム/ }));
+    await waitFor(() => expect(screen.getByText(/チップ/)).toHaveTextContent('100'));
+    expect(screen.getByLabelText('ベット額')).toHaveValue('150');
+    const andarButton = screen.getByRole('button', { name: /アンダーに賭ける/ });
+    await waitFor(() => expect(andarButton).toBeEnabled());
+    fireEvent.click(andarButton);
+    // The API call is dispatched asynchronously; let it run before asserting it never happened.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(mockApi).toHaveBeenNthCalledWith(1, 'reset');
+    expect(mockApi).toHaveBeenNthCalledWith(2, 'bet', 150, AndarBaharColumn.ANDAR, 0, AndarBaharSideBand.NONE);
+    expect(mockApi).toHaveBeenNthCalledWith(3, 'reset');
+    expect(mockApi).toHaveBeenCalledTimes(3);
+  });
+
+  it('removes a selected side stake when switching back to NONE', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<AndarBaharPage />);
+    const bandSelect = await screen.findByLabelText('サイドベット');
+
+    fireEvent.change(bandSelect, { target: { value: String(AndarBaharSideBand.SIX_TO_TEN) } });
+    const sideInput = await screen.findByLabelText('サイドベット額');
+    fireEvent.change(sideInput, { target: { value: '50' } });
+    fireEvent.change(bandSelect, { target: { value: String(AndarBaharSideBand.NONE) } });
+
+    expect(screen.queryByLabelText('サイドベット額')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /アンダーに賭ける/ }));
+    await waitFor(() =>
+      expect(mockApi).toHaveBeenCalledWith('bet', 100, AndarBaharColumn.ANDAR, 0, AndarBaharSideBand.NONE),
+    );
+  });
+
+  it('limits both stakes by the remaining chips and never submits an over-budget pair', async () => {
+    mockApi.mockResolvedValue({ ...betState, chips: 200 });
+    renderWithProviders(<AndarBaharPage />);
+
+    const mainInput = (await screen.findByLabelText('ベット額')) as HTMLInputElement;
+    expect(mainInput.max).toBe('200');
+    fireEvent.change(mainInput, { target: { value: '150' } });
+    fireEvent.change(screen.getByLabelText('サイドベット'), {
+      target: { value: String(AndarBaharSideBand.SIX_TO_TEN) },
+    });
+
+    const sideInput = (await screen.findByLabelText('サイドベット額')) as HTMLInputElement;
+    expect(sideInput.max).toBe('50');
+    fireEvent.change(sideInput, { target: { value: '100' } });
+    expect(sideInput).toHaveValue('50');
+
+    fireEvent.change(mainInput, { target: { value: '180' } });
+    expect(mainInput).toHaveValue('150');
+    expect(sideInput).toHaveValue('50');
+    fireEvent.click(screen.getByRole('button', { name: /アンダーに賭ける/ }));
+    await waitFor(() =>
+      expect(mockApi).toHaveBeenCalledWith('bet', 150, AndarBaharColumn.ANDAR, 50, AndarBaharSideBand.SIX_TO_TEN),
+    );
+  });
+
+  it('uses the full chip balance for the main stake when no side bet is selected', async () => {
+    mockApi.mockResolvedValue({ ...betState, chips: 200 });
+    renderWithProviders(<AndarBaharPage />);
+    const mainInput = (await screen.findByLabelText('ベット額')) as HTMLInputElement;
+    expect(mainInput.max).toBe('200');
+    expect(screen.queryByLabelText('サイドベット額')).not.toBeInTheDocument();
   });
 
   it('shows server-provided side-band probabilities beside payouts', async () => {

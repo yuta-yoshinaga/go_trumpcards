@@ -26,6 +26,9 @@ func TestTrenteEtQuaranteWebPresenter_Output(t *testing.T) {
 	assert.Contains(t, decoded, "rougeRow")
 	assert.Contains(t, decoded, "chips")
 	assert.Contains(t, decoded, "config")
+	session := decoded["session"].(map[string]any)
+	assert.Equal(t, float64(domain.TrenteEtQuaranteDefaultChips), session["startingChips"])
+	assert.Equal(t, float64(0), session["net"])
 }
 
 func TestTrenteEtQuaranteWebPresenter_Error(t *testing.T) {
@@ -52,6 +55,8 @@ func TestTrenteEtQuaranteWebPresenter_Result(t *testing.T) {
 	assert.Contains(t, decoded, "winningRow")
 	assert.Contains(t, decoded, "payout")
 	assert.Contains(t, decoded, "currentBet")
+	session := decoded["session"].(map[string]any)
+	assert.Equal(t, float64(1), session["wins"].(float64)+session["losses"].(float64)+session["draws"].(float64)+session["refaits"].(float64))
 }
 
 func TestTrenteEtQuaranteWebPresenter_HintOutput(t *testing.T) {

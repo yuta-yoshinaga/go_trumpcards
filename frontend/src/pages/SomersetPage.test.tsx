@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { somersetApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { SOMERSET_STATS_KEY } from '../hooks/useSomersetStats';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, SomersetResponse, SomersetTableauCard } from '../types/card';
@@ -46,6 +47,7 @@ const playingState: SomersetResponse = {
     [],
   ]),
   foundation: [[card('SPADE', 1)], [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
+  totalCardCount: 52,
   phase: 0,
   moveCount: 3,
   canUndo: false,
@@ -85,7 +87,7 @@ describe('SomersetPage', () => {
 
   it('keeps move targets focusable and explains that a source must be selected', async () => {
     renderWithProviders(<SomersetPage />);
-    const target = await screen.findByRole('button', { name: '空のタブロー列 3' });
+    const target = await screen.findByRole('button', { name: '空のタブロー列 2' });
     expect(target).not.toBeDisabled();
     expect(target).toHaveAttribute('aria-disabled', 'true');
     const hintId = target.getAttribute('aria-describedby');
@@ -107,7 +109,51 @@ describe('SomersetPage', () => {
   it('renders 4 foundation suits', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<SomersetPage />);
-    await waitFor(() => expect(screen.getAllByLabelText(/組札 1枚/).length).toBe(4));
+    await waitFor(() => expect(screen.getAllByLabelText(/全体 4 \/ 52 枚/).length).toBe(4));
+  });
+
+  it('separates a foundation pile count from overall progress in accessible names', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [
+        [card('SPADE', 1), card('SPADE', 2), card('SPADE', 3)],
+        [card('CLOVER', 1), card('CLOVER', 2), card('CLOVER', 3)],
+        [card('HEART', 1), card('HEART', 2), card('HEART', 3), card('HEART', 4)],
+        [],
+      ],
+    });
+    renderWithProviders(<SomersetPage />);
+    expect(await screen.findByText('組札 10 / 52 枚')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 組札 3枚（全体 10 / 52 枚）' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札 (♦)（全体 10 / 52 枚）' })).toBeInTheDocument();
+  });
+
+  it('uses local and overall counts in English foundation names', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [
+        [card('SPADE', 1), card('SPADE', 2), card('SPADE', 3)],
+        [card('CLOVER', 1), card('CLOVER', 2), card('CLOVER', 3)],
+        [card('HEART', 1), card('HEART', 2), card('HEART', 3), card('HEART', 4)],
+        [],
+      ],
+    });
+    renderWithProviders(<SomersetPage />);
+    expect(
+      await screen.findByRole('button', { name: '♠ foundation 3 cards (overall 10 / 52 cards)' }),
+    ).toBeInTheDocument();
+    await i18n.changeLanguage('ja');
+  });
+
+  it('renders the English empty foundation accessible name as translated text', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue({ ...playingState, foundation: [[], [], [], []] });
+    renderWithProviders(<SomersetPage />);
+    expect(
+      await screen.findByRole('button', { name: 'Empty foundation (♠) (overall 0 / 52 cards)' }),
+    ).toBeInTheDocument();
+    await i18n.changeLanguage('ja');
   });
 
   it('labels all ten tableau columns with their 0-based index (matching hint text)', async () => {
@@ -138,19 +184,29 @@ describe('SomersetPage', () => {
       tableau: customTableau,
     });
     renderWithProviders(<SomersetPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '♦ 9' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '♣ 10' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: '♦ 9、列8・位置0' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♣ 10、列9・位置0' })).toBeInTheDocument();
   });
 
   it('gives each empty tableau column a distinct column-numbered aria-label', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<SomersetPage />);
-    // Columns 3 and 8 (1-based) are empty and each reads distinctly, unlike the
+    // Columns 2 and 7 (zero-based) are empty and each reads distinctly, unlike the
     // previous shared "empty" text.
-    await waitFor(() => expect(screen.getByRole('button', { name: '空のタブロー列 3' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '空のタブロー列 8' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: '空のタブロー列 2' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '空のタブロー列 7' })).toBeInTheDocument();
     // The two filled columns (1, 2) are not rendered as empty-column buttons.
-    expect(screen.queryByRole('button', { name: '空のタブロー列 1' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '空のタブロー列 0' })).not.toBeInTheDocument();
+  });
+
+  it('includes zero-based tableau column and card position in each card accessible name', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<SomersetPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ K、列0・位置0' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♠ 5、列0・位置1' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 6、列1・位置0' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空のタブロー列 2' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 組札 1枚（全体 4 / 52 枚）' })).toBeInTheDocument();
   });
 
   it('renders giveup button when playing', async () => {
@@ -222,6 +278,14 @@ describe('SomersetPage', () => {
     expect(summary).toHaveTextContent('8%');
   });
 
+  it('uses the server total to calculate game-over progress', async () => {
+    mockExec.mockResolvedValue({ ...gameOverState, totalCardCount: 52 });
+    renderWithProviders(<SomersetPage />);
+    const summary = await screen.findByTestId('somerset-gameover-summary');
+    expect(summary).toHaveTextContent('4/52');
+    expect(summary).toHaveTextContent('8%');
+  });
+
   it('does not show the progress summary on game clear', async () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<SomersetPage />);
@@ -266,7 +330,7 @@ describe('SomersetPage', () => {
   it('selecting a tableau card marks it as selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<SomersetPage />);
-    const sourceBtn = await screen.findByRole('button', { name: '♠ 5' });
+    const sourceBtn = await screen.findByRole('button', { name: '♠ 5、列0・位置1' });
     fireEvent.click(sourceBtn);
     await waitFor(() => expect(sourceBtn).toHaveAttribute('aria-pressed', 'true'));
   });
@@ -283,7 +347,7 @@ describe('SomersetPage', () => {
     it('marks nothing until a card is selected', async () => {
       mockExec.mockResolvedValue(playingState);
       renderWithProviders(<SomersetPage />);
-      await screen.findByRole('button', { name: '♠ 5' });
+      await screen.findByRole('button', { name: '♠ 5、列0・位置1' });
       expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(0);
     });
 
@@ -292,7 +356,7 @@ describe('SomersetPage', () => {
     it('marks the ranks-down column and every empty column, but not the source column', async () => {
       mockExec.mockResolvedValue(playingState);
       renderWithProviders(<SomersetPage />);
-      fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
+      fireEvent.click(await screen.findByRole('button', { name: '♠ 5、列0・位置1' }));
       await waitFor(() => expect(markedColumns()).toContain('#1'));
       expect(markedColumns().sort()).toEqual(['#1', '#2', '#3', '#4', '#5', '#6', '#7', '#8', '#9']);
     });
@@ -306,11 +370,11 @@ describe('SomersetPage', () => {
         foundation: [[], [], [], []],
       });
       renderWithProviders(<SomersetPage />);
-      fireEvent.click(await screen.findByRole('button', { name: '♠ A' }));
+      fireEvent.click(await screen.findByRole('button', { name: '♠ A、列0・位置0' }));
 
       await waitFor(() =>
         expect(
-          screen.getByRole('button', { name: '空の組札 (♠)' }).closest('[data-legal-target="true"]'),
+          screen.getByRole('button', { name: '空の組札 (♠)（全体 0 / 52 枚）' }).closest('[data-legal-target="true"]'),
         ).not.toBeNull(),
       );
       // 組札 4 つ + 空き列 9 つ。組札側が 0 なら 9 で止まる。
@@ -321,7 +385,7 @@ describe('SomersetPage', () => {
     it('marks a foundation only for the card that continues it', async () => {
       mockExec.mockResolvedValue(playingState);
       const { unmount } = renderWithProviders(<SomersetPage />);
-      fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
+      fireEvent.click(await screen.findByRole('button', { name: '♠ 5、列0・位置1' }));
       await waitFor(() => expect(markedColumns()).toContain('#1'));
       expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(9);
       unmount();
@@ -331,7 +395,7 @@ describe('SomersetPage', () => {
         tableau: makeTableau([[{ card: card('SPADE', 2), faceUp: true }]]),
       });
       renderWithProviders(<SomersetPage />);
-      fireEvent.click(await screen.findByRole('button', { name: '♠ 2' }));
+      fireEvent.click(await screen.findByRole('button', { name: '♠ 2、列0・位置0' }));
       await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]').length).toBeGreaterThan(9));
     });
   });
@@ -386,7 +450,7 @@ describe('SomersetPage destination preview', () => {
   const render = async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<SomersetPage />);
-    return screen.findByRole('button', { name: '♠ 5' });
+    return screen.findByRole('button', { name: '♠ 5、列0・位置1' });
   };
   const targets = () => document.querySelectorAll('[data-legal-target="true"]');
   const previews = () => document.querySelectorAll('[data-preview-target="true"]');

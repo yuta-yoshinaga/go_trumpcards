@@ -166,6 +166,7 @@ function ScoponePageContent() {
   const isRoundEnd = state.phase === 'roundEnd';
   const humanTeam = human.team;
   const humanWon = isGameEnd && state.winnerTeam === humanTeam;
+  const lastCapturer = isRoundEnd ? state.players.find((p) => p.id === state.lastCaptureIdx) : undefined;
   const takeCandidateIndices =
     handIndex !== null && isHumanTurn ? captureCandidateIndices(state.handCaptures, handIndex) : new Set<number>();
   const canTake = isHumanTurn && handIndex !== null && tableIndices.length > 0;
@@ -205,7 +206,7 @@ function ScoponePageContent() {
         <>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             {error && (
-              <button type="button" onClick={retry} className="text-ds-error underline">
+              <button type="button" onClick={retry} className="text-ds-error-text underline">
                 {error}
               </button>
             )}
@@ -219,6 +220,15 @@ function ScoponePageContent() {
                 </span>
               ))}
             </div>
+
+            {lastCapturer && (
+              <div className="text-center text-xs text-ds-text-muted" data-testid="last-capturer">
+                {t('label.lastCapture', {
+                  player: lastCapturer.isHuman ? tc('player.you') : tc('player.cpu', { id: lastCapturer.id }),
+                  team: t('label.team', { team: lastCapturer.team }),
+                })}
+              </div>
+            )}
 
             <div
               className="mx-auto max-w-xl rounded-lg bg-black/20 px-3 py-2 text-xs text-ds-text-muted"
@@ -283,7 +293,7 @@ function ScoponePageContent() {
                     selection.sum === selection.target
                       ? 'text-ds-success'
                       : selection.sum > selection.target
-                        ? 'text-ds-error'
+                        ? 'text-ds-error-text'
                         : 'text-ds-text-muted'
                   }`}
                 >
@@ -301,6 +311,7 @@ function ScoponePageContent() {
                       <button
                         key={i}
                         type="button"
+                        aria-pressed={tableIndices.includes(i)}
                         onClick={() => isHumanTurn && toggleTable(i)}
                         disabled={!isHumanTurn}
                         className={`rounded transition-all ${
@@ -336,6 +347,7 @@ function ScoponePageContent() {
                   <button
                     key={i}
                     type="button"
+                    aria-pressed={handIndex === i}
                     onClick={() => isHumanTurn && setHandIndex(handIndex === i ? null : i)}
                     disabled={!isHumanTurn}
                     className={`rounded transition-all ${

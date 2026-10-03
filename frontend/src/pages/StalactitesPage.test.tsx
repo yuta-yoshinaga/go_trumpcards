@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, stalactitesApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { STALACTITE_STATS_KEY } from '../hooks/useStalactiteStats';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, StalactitesResponse } from '../types/card';
@@ -175,11 +176,13 @@ describe('StalactitesPage', () => {
     expect(screen.getByText('♦')).toBeInTheDocument();
   });
 
-  it('renders empty foundation with A placeholder', async () => {
+  it('renders the base-rank placeholder and announces the starting rank on empty foundations', async () => {
+    mockExec.mockResolvedValue({ ...playingState, baseRank: 7 });
     renderWithProviders(<StalactitesPage />);
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
-    const aElements = screen.getAllByText('A');
-    expect(aElements.length).toBeGreaterThanOrEqual(1);
+    const sevenElements = screen.getAllByText('7');
+    expect(sevenElements.length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByRole('button', { name: '♠ 組札 (空、7から開始)' })).toBeInTheDocument();
   });
 
   it('renders foundation with cards', async () => {
@@ -749,12 +752,23 @@ describe('StalactitesPage', () => {
 
   // --- Foundation aria labels ---
 
-  it('empty foundation buttons have aria-label', async () => {
+  it('empty foundation buttons have aria-label with the base rank', async () => {
     renderWithProviders(<StalactitesPage />);
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
     for (const suit of ['♠', '♣', '♥', '♦']) {
-      expect(screen.getByRole('button', { name: `${suit} 組札 (空)` })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: `${suit} 組札 (空、Aから開始)` })).toBeInTheDocument();
+    }
+  });
+
+  it('announces the empty foundation starting rank in English', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue({ ...playingState, baseRank: 7 });
+      renderWithProviders(<StalactitesPage />);
+      expect(await screen.findByRole('button', { name: '♠ Foundation (empty, starts at 7)' })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
     }
   });
 
@@ -765,8 +779,8 @@ describe('StalactitesPage', () => {
 
     expect(screen.getByRole('button', { name: '♠ 組札 (1枚)' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '♥ 組札 (2枚)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♣ 組札 (空)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♦ 組札 (空)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♣ 組札 (空、Aから開始)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ 組札 (空、Aから開始)' })).toBeInTheDocument();
   });
 
   // --- Stalactites aria labels ---
@@ -1104,6 +1118,32 @@ describe('StalactitesPage', () => {
 // 経由地に使えないぶん低い)。ページは一般式 (1 + 空きセル) * 2^空き列 で計算し
 // 直していたので、空き列宛ての束を「動かせる」と見せてサーバーに弾かれていた。
 describe('StalactitesPage empty-column move limit', () => {
+  it('announces domain move limits when a stack is selected and deselected', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[card('SPADE', 13), card('HEART', 12), card('CLOVER', 11)], [], [], [], [], [], [], []],
+      maxMovableCards: 8,
+      maxMovableCardsToEmptyColumn: 2,
+    });
+    renderWithProviders(<StalactitesPage />);
+
+    const live = await screen.findByTestId('stalactites-move-limit-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toBeEmptyDOMElement();
+
+    const source = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
+    fireEvent.click(source);
+    await waitFor(() => expect(live).toHaveTextContent('3枚の束を選択中'));
+    expect(live).toHaveTextContent('通常の移動上限は8枚');
+    expect(live).toHaveTextContent('空き列への上限は2枚');
+
+    fireEvent.click(source);
+    await waitFor(() => expect(live).toHaveTextContent('束の選択を解除'));
+    expect(live).toHaveTextContent('通常の移動上限は8枚');
+    expect(live).toHaveTextContent('空き列への上限は2枚');
+  });
+
   it('shows the server limits instead of recomputing them', async () => {
     // 一般式なら (1 + 4) * 2^6 = 320。サーバーは 8 と言っている。
     mockExec.mockResolvedValue({ ...playingState, maxMovableCards: 8, maxMovableCardsToEmptyColumn: 4 });

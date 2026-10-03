@@ -25,13 +25,16 @@
     "undecided": "参加するか降りるかを選んでください。未決定: {{count}}人。"
   },
   "currentTrick": "現在のトリック",
+  "lastTrick": "直前のトリック",
+  "lastTrickWinner": "勝者: {{name}}",
   "actions": {
     "playIn": "参加する",
     "passOut": "降りる",
     "nextRound": "次のラウンドへ",
     "reset": "リセット",
     "giveUp": "投了",
-    "playAria": "{{card}} を出す"
+    "playAria": "{{card}} を出す",
+    "playableAria": "{{card}} を出す（プレイ可能）"
   },
   "watching": "このラウンドは降りています。決着まで見ています。",
   "result": {

@@ -12,7 +12,8 @@
     "targetRounds": "Rounds",
     "easy": "Easy",
     "normal": "Normal",
-    "hard": "Hard"
+    "hard": "Hard",
+    "targetRoundsGuide": "Enter a multiple of 4 that is at least 4."
   },
   "round": "Round {{n}}",
   "trick": "Trick {{n}}",
@@ -36,6 +37,8 @@
   "nextRound": "Next Round",
   "roundResult": {
     "title": "Round Result",
+    "breakdownTitle": "Round score breakdown",
+    "breakdown": "Team {{team}}: tricks {{tricks}} / last trick +{{lastTrickBonus}} / scarto +{{scartoBonus}} / total {{total}}",
     "tricks": "{{name}} tricks: {{count}}",
     "lastTrick": "Last-trick bonus: +{{bonus}} to Team {{team}}",
     "scarto": "Scarto: +{{count}} to Team {{team}} (the dealer side)"

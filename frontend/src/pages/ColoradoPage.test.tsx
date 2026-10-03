@@ -118,6 +118,39 @@ describe('ColoradoPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 
+  it('describes the draw button with the current stock count, including zero', async () => {
+    mockExec.mockResolvedValueOnce(makeState({ stockCount: 71 })).mockResolvedValueOnce(makeState({ stockCount: 70 }));
+    const { unmount } = renderWithProviders(<ColoradoPage />);
+    const drawButton = await screen.findByTestId('co-draw-button');
+    const stockCount = screen.getByTestId('co-stock-count');
+    expect(stockCount).toHaveTextContent('71枚');
+    expect(drawButton).toHaveAttribute('aria-describedby', 'co-stock-count');
+    expect(drawButton).toHaveAccessibleDescription('71枚');
+
+    fireEvent.click(drawButton);
+    await waitFor(() => expect(stockCount).toHaveTextContent('70枚'));
+    expect(drawButton).toHaveAccessibleDescription('70枚');
+
+    unmount();
+    mockExec.mockResolvedValue(makeState({ stockCount: 0 }));
+    renderWithProviders(<ColoradoPage />);
+    expect(await screen.findByTestId('co-stock-count')).toHaveTextContent('0枚');
+    expect(screen.getByTestId('co-draw-button')).toHaveAccessibleDescription('0枚');
+  });
+
+  it('shows the waste count, including zero, and describes it for screen readers', async () => {
+    mockExec.mockResolvedValue(makeState({ waste: [card('HEART', 6), card('CLOVER', 9), card('DIAMOND', 2)] }));
+    const { unmount } = renderWithProviders(<ColoradoPage />);
+    await waitFor(() => expect(screen.getByTestId('co-waste-count')).toHaveTextContent('3枚'));
+    expect(screen.getByTestId('co-waste-button')).toHaveAttribute('aria-describedby', 'co-waste-count');
+
+    unmount();
+    mockExec.mockResolvedValue(makeState({ waste: [] }));
+    renderWithProviders(<ColoradoPage />);
+    await waitFor(() => expect(screen.getByTestId('co-waste-count')).toHaveTextContent('0枚'));
+    expect(screen.getByTestId('co-waste-button')).toHaveAccessibleDescription('0枚');
+  });
+
   it('disables the draw button once the stock is empty', async () => {
     mockExec.mockResolvedValue(makeState({ stockCount: 0 }));
     renderWithProviders(<ColoradoPage />);

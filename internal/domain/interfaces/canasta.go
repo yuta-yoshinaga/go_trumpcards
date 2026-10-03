@@ -31,6 +31,8 @@ type CanastaGame interface {
 	// SetConfig ゲーム設定をセットする
 	SetConfig(cfg domain.CanastaConfig)
 
+	// GetMinimumMeldValue 初回メルドに要する最低点を取得する
+	GetMinimumMeldValue(playerIdx int) int
 	// GetGameEndFlag ゲーム終了フラグを取得する
 	GetGameEndFlag() bool
 	// GetPhase 現在のフェーズを取得する
@@ -63,6 +65,7 @@ type CanastaGame interface {
 	GetPlayer(i int) *domain.CanastaPlayer
 	// GetDrewFromDiscard 捨て札から引いたかを返す
 	GetDrewFromDiscard() bool
+	GetDrawnCard() *domain.Card
 	// GetHint 現在手番に対する推奨アクションを返す
 	GetHint() *domain.CanastaHint
 }

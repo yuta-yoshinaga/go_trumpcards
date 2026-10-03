@@ -78,6 +78,12 @@ describe('BraidPage', () => {
     expect(mockExec.mock.calls[0]?.[0]).toBe('reset');
   });
 
+  it('shows the action log button during play', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BraidPage />);
+    expect(await screen.findByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
+  });
+
   it('renders heading, base rank, direction and move count', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BraidPage />);
@@ -86,6 +92,13 @@ describe('BraidPage', () => {
     expect(screen.getByText(/開始ランク: 5/)).toBeInTheDocument();
     expect(screen.getByText(/向き: 昇順/)).toBeInTheDocument();
     expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
+  });
+
+  it('shows the number of cards in the waste', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('HEART', 2), card('SPADE', 6)] });
+    renderWithProviders(<BraidPage />);
+    expect(await screen.findByText('2枚')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 6' })).toHaveAccessibleDescription('2枚');
   });
 
   it('renders eight foundations, four fields and eight helpers', async () => {

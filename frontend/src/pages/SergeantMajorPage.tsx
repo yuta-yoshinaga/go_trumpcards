@@ -28,6 +28,7 @@ import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { parseSergeantMajorCommand, SERGEANTMAJOR_HELP } from '../utils/cli/commands/sergeantmajorCommands';
 import { formatSergeantMajorState } from '../utils/cli/formatters/sergeantmajorFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** The four suits, in the order the trump buttons are offered. */
@@ -229,17 +230,36 @@ function SergeantMajorPageContent() {
               {state.players.map((p) => (
                 <div
                   key={p.id}
-                  className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                  className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
+                    isHumanTurn && p.id === state.currentPlayerIdx ? 'ring-2 ring-ds-accent' : ''
+                  }`}
                   data-testid={`sm-seat-${p.id.toString()}`}
                 >
                   <span className="text-ds-text-primary">
                     {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
                   </span>
+                  {isHumanTurn && p.id === state.currentPlayerIdx && (
+                    <span
+                      className="ml-1 text-ds-accent"
+                      aria-current="step"
+                      data-testid={`sm-turn-${p.id.toString()}`}
+                    >
+                      {t('header.currentTurn')}
+                    </span>
+                  )}
                   {p.id === state.dealerIdx && <span className="ml-1 text-ds-accent">{t('header.dealer')}</span>}
                   {': '}
                   <span className="text-ds-accent">
                     {t('header.target', { target: String(p.target), took: String(p.trickCount) })}
                   </span>
+                  {isRoundEnd && !isGameEnd && (
+                    <>
+                      {' / '}
+                      <span className="text-ds-text-primary" data-testid={`sm-round-surplus-${p.id.toString()}`}>
+                        {t('roundEnd.seatSurplus', { n: String(formatSignedDelta(p.surplus)) })}
+                      </span>
+                    </>
+                  )}
                   {' / '}
                   {t('header.score', { n: String(p.score) })}
                 </div>
@@ -374,6 +394,11 @@ function SergeantMajorPageContent() {
                     ? t('roundEnd.forfeitWarn', { n: String(-human.surplus) })
                     : t('roundEnd.forfeitGain', { n: String(human.surplus) })}
                 </div>
+              )}
+              {isRoundEnd && !isGameEnd && (
+                <p className="w-full text-center mb-2 text-sm text-ds-text-muted" data-testid="sm-round-exchange-rule">
+                  {t('roundEnd.exchangeRule')}
+                </p>
               )}
               {isRoundEnd && !isGameEnd && (
                 <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>

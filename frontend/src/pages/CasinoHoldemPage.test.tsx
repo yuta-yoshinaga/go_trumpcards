@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { casinoholdemApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, CasinoHoldemResponse } from '../types/card';
@@ -31,6 +32,7 @@ const betPhaseState: CasinoHoldemResponse = {
   callPayout: 0,
   bonusPayout: 0,
   totalPayout: 0,
+  netChange: 0,
   playerHandRank: 0,
   dealerHandRank: 0,
   message: '',
@@ -142,6 +144,23 @@ describe('CasinoHoldemPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /コール/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByTestId('ch-flop-call-bet')).toHaveTextContent('コール額: 200');
+    expect(screen.getByTestId('ch-dealer-qualify-rule')).toHaveTextContent(
+      'ディーラーはツーペア以上、または4以上のペアでクオリファイします',
+    );
+  });
+
+  it('shows the dealer qualification rule in English during the flop', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockApi.mockResolvedValue(flopState);
+      renderWithProviders(<CasinoHoldemPage />);
+      expect(await screen.findByTestId('ch-dealer-qualify-rule')).toHaveTextContent(
+        'The dealer qualifies with two pair or better, or a pair of fours or better',
+      );
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('shows the server-provided call amount for a different ante', async () => {
@@ -171,6 +190,28 @@ describe('CasinoHoldemPage', () => {
     await waitFor(() => expect(screen.getByText('勝利！')).toBeInTheDocument());
     expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument();
     expect(screen.getByText('ディーラークオリファイ')).toBeInTheDocument();
+  });
+
+  it.each([
+    ['increase', { ...endPlayerWins, netChange: 10200 }, '+10200'],
+    ['decrease', { ...endDealerWins, netChange: -300 }, '-300'],
+    ['no wager', { ...betPhaseState, phase: 3, netChange: 0 }, '増減なし'],
+  ])('shows net chip change for %s', async (_name, state, expected) => {
+    mockApi.mockResolvedValue(state);
+    renderWithProviders(<CasinoHoldemPage />);
+    expect(await screen.findByTestId('net-change')).toHaveTextContent(expected);
+  });
+
+  it('shows localized net chip change in English', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockApi.mockResolvedValue({ ...betPhaseState, phase: 3, netChange: 0 });
+      renderWithProviders(<CasinoHoldemPage />);
+      expect(await screen.findByTestId('net-change')).toHaveTextContent('Net change: No net change');
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('shows end phase with dealer wins', async () => {
@@ -221,7 +262,7 @@ describe('CasinoHoldemPage', () => {
     fireEvent.change(screen.getByLabelText('AAボーナス'), { target: { value: '20' } });
     expect(preview).toHaveTextContent('必要チップ合計（アンテ・ボーナス・コール）: 380');
     expect(preview).toHaveTextContent('チップ不足: 30');
-    expect(preview).toHaveClass('text-ds-error');
+    expect(preview).toHaveClass('text-ds-error-text');
   });
 
   it('shows a validation error and disables Bet for a non-multiple-of-10 ante', async () => {

@@ -1,5 +1,5 @@
 import type { cariocaApi } from '../../../api/gameApi';
-import { parseIntArg, parseIntSlice, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, parseIntSlice, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type CariocaArgs = Parameters<typeof cariocaApi.exec>;
@@ -95,11 +95,8 @@ export function parseCariocaCommand(input: string): CliParseResult<CariocaArgs> 
     case 'r':
     case 'reset':
       return { args: ['reset'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

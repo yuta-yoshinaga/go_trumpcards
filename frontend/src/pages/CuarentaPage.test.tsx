@@ -118,6 +118,32 @@ describe('CuarentaPage', () => {
     renderWithProviders(<CuarentaPage />);
     await waitFor(() => expect(screen.getByText(/チームA: 12 \/ 40点/)).toBeInTheDocument());
     expect(screen.getByText(/チームB: 8 \/ 40点/)).toBeInTheDocument();
+    const announce = screen.getByTestId('cuarenta-team-update-announce');
+    expect(announce).toHaveAttribute('aria-live', 'polite');
+    expect(announce).toBeEmptyDOMElement();
+  });
+
+  it('announces increased team scores and captured totals, but not reset decreases', async () => {
+    renderWithProviders(<CuarentaPage />);
+    const cardBtn = await screen.findByTestId('hand-card-0');
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        teamScores: [14, 8],
+        players: [
+          makePlayer({ id: 0, team: 0, isHuman: true, capturedCount: 2 }),
+          makePlayer({ id: 1, team: 1 }),
+          makePlayer({ id: 2, team: 0, capturedCount: 1 }),
+          makePlayer({ id: 3, team: 1 }),
+        ],
+      }),
+    );
+    fireEvent.click(cardBtn);
+    await waitFor(() =>
+      expect(screen.getByTestId('cuarenta-team-update-announce')).toHaveTextContent(
+        'チームAの得点は14点、捕獲枚数は3枚',
+      ),
+    );
+    expect(screen.getByTestId('cuarenta-team-update-announce')).toHaveAttribute('role', 'status');
   });
 
   it('renders the players list with captured counts', async () => {
@@ -200,12 +226,24 @@ describe('CuarentaPage', () => {
 
     fireEvent.focus(handCard);
     await waitFor(() => expect(screen.getByTestId('cuarenta-table-card-0')).toHaveAttribute('data-capturable', 'true'));
+    expect(screen.getByTestId('cuarenta-capture-preview')).toHaveTextContent('この札で捕獲できます: ♣ 7');
+    expect(screen.getByTestId('cuarenta-capture-preview')).toHaveAttribute('aria-live', 'polite');
     expect(screen.getByTestId('cuarenta-table-card-0').className).toContain('ring-ds-success');
     // The non-matching table card stays un-ringed.
     expect(screen.getByTestId('cuarenta-table-card-1')).not.toHaveAttribute('data-capturable');
 
     fireEvent.blur(handCard);
     await waitFor(() => expect(screen.getByTestId('cuarenta-table-card-0')).not.toHaveAttribute('data-capturable'));
+    expect(screen.getByTestId('cuarenta-capture-preview')).toBeEmptyDOMElement();
+  });
+
+  it('explains that a hand card with no matches will be laid on the table', async () => {
+    renderWithProviders(<CuarentaPage />);
+    const handCard = await screen.findByTestId('hand-card-0');
+    fireEvent.focus(handCard);
+    expect(screen.getByTestId('cuarenta-capture-preview')).toHaveTextContent(
+      '捕獲できる札はありません。場に出します。',
+    );
   });
 
   it('does not ring any table card when it is not the human turn', async () => {

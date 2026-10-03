@@ -29,7 +29,13 @@ const mockUseCliMode = vi.mocked(useCliMode);
 
 const card = (design: string, value: number): Card => ({ design, value }) as Card;
 
-const seat = (name: string, chips: number, hiddenCount: number, best?: Card) => ({ name, chips, hiddenCount, best });
+const seat = (name: string, chips: number, hiddenCount: number, best?: Card) => ({
+  name,
+  chips,
+  chipChange: 0,
+  hiddenCount,
+  best,
+});
 
 const base: SpeculationResponse = {
   phase: SpeculationPhase.FLIP,
@@ -86,6 +92,23 @@ beforeEach(() => {
 });
 
 describe('SpeculationPage', () => {
+  it('結果画面に各席のチップ増減を表示する', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: SpeculationPhase.RESULT,
+        winnerSeat: 0,
+        seats: [
+          { ...seat('You', 220, 0), chipChange: 20 },
+          { ...seat('CPU1', 180, 0), chipChange: -10 },
+          seat('CPU2', 190, 0),
+        ],
+      }),
+    );
+    renderWithProviders(<SpeculationPage />);
+    expect(await screen.findByTestId('sp-chip-change-0')).toHaveTextContent('あなた: チップ増減 +20');
+    expect(screen.getByTestId('sp-chip-change-1')).toHaveTextContent('CPU1: チップ増減 -10');
+  });
+
   it('マウント時に reset を呼ぶ', async () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<SpeculationPage />);

@@ -85,6 +85,30 @@ func TestBaccaratCuiPresenter_Output_History(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "履歴: P B T")
 		assert.Contains(t, result, "集計: P:1 B:1 T:1")
+		assert.Contains(t, result, "直近（タイを除く）: 2 件 P:50% B:50%")
+	})
+
+	t.Run("recent split uses the last 12 non-tie results", func(t *testing.T) {
+		history := []int{domain.BaccaratResultPlayer}
+		for i := 0; i < 12; i++ {
+			history = append(history, domain.BaccaratResultTie)
+		}
+		history = append(history,
+			domain.BaccaratResultBanker,
+			domain.BaccaratResultPlayer,
+			domain.BaccaratResultBanker,
+			domain.BaccaratResultPlayer,
+			domain.BaccaratResultPlayer,
+			domain.BaccaratResultPlayer,
+			domain.BaccaratResultPlayer,
+			domain.BaccaratResultPlayer,
+			domain.BaccaratResultPlayer,
+			domain.BaccaratResultPlayer,
+			domain.BaccaratResultPlayer,
+			domain.BaccaratResultPlayer,
+		)
+		m := baccaratStreakMock(t, history)
+		assert.Contains(t, p.Output(m, nil), "直近（タイを除く）: 12 件 P:83% B:17%")
 	})
 
 	// **Web の ShoeStatsPanel は連勝数も出しているのに CUI には無かった (#4688)。**

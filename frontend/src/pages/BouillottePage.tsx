@@ -36,6 +36,7 @@ import { computeBouillottePotOdds } from '../utils/bouillottePotOdds';
 import { BOUILLOTTE_HELP, parseBouillotteCommand } from '../utils/cli/commands/bouillotteCommands';
 import { formatBouillotteState } from '../utils/cli/formatters/bouillotteFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { raiseAvailability, raiseCost } from '../utils/raiseAvailability';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -136,10 +137,18 @@ function BouillottePageContent() {
   };
   const raiseBlock = raiseAvailability(raiseInput);
   const raiseNeeded = raiseCost(raiseInput);
-  const humanIdx = state.players.findIndex((p) => p.isHuman);
+  const raiseStatusText =
+    raiseBlock === 'cap'
+      ? t('raiseCapReached', { max: state.maxRaises })
+      : raiseBlock === 'chips'
+        ? t('raiseNoChips', { cost: raiseNeeded })
+        : t('raiseCount', { count: state.raiseCount, max: state.maxRaises });
 
   // Pot odds and chip costs facing the human at the Call/Raise/Fold decision.
   const humanRoundBet = humanPlayer?.roundBet ?? 0;
+  const humanPayout = humanPlayer?.roundPayout ?? 0;
+  const humanNet = humanPlayer?.netChange ?? 0;
+  const humanIdx = state.players.findIndex((p) => p.isHuman);
   const potOdds = computeBouillottePotOdds(state.pot, state.currentBet, humanRoundBet);
 
   // Which of the human's cards share the retourne's rank, and any combo it completes.
@@ -186,6 +195,9 @@ function BouillottePageContent() {
         </>
       }
     >
+      <div className="sr-only" role="status" aria-live="polite" data-testid="bouillotte-raise-announcement">
+        {raiseStatusText}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -304,6 +316,13 @@ function BouillottePageContent() {
                     pot: state.pot,
                   })}
                 </div>
+                <div data-testid="bouillotte-human-round-result">
+                  {t('roundResult.personal', {
+                    bet: humanRoundBet,
+                    payout: humanPayout,
+                    net: formatSignedDelta(humanNet),
+                  })}
+                </div>
               </div>
             )}
 
@@ -379,11 +398,7 @@ function BouillottePageContent() {
                   {/* **レイズが消えた理由を書く。**回数上限とチップ不足を
                       区別できないと、突然選択肢を奪われたように見える (#4924)。 */}
                   <span className="text-ds-text-muted text-xs" data-testid="bouillotte-raise-count">
-                    {raiseBlock === 'cap'
-                      ? t('raiseCapReached', { max: state.maxRaises })
-                      : raiseBlock === 'chips'
-                        ? t('raiseNoChips', { cost: raiseNeeded })
-                        : t('raiseCount', { count: state.raiseCount, max: state.maxRaises })}
+                    {raiseStatusText}
                   </span>
                   {state.canRaise && (
                     <button type="button" className={btnSuccess} onClick={handleRaise} disabled={loading}>

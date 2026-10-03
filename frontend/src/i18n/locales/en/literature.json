@@ -1,4 +1,5 @@
 {
+  "listSeparator": ", ",
   "you": "You",
   "cpu": "CPU {{id}}",
   "seat": "Seat {{n}}",
@@ -33,6 +34,9 @@
   "claimWonLine": "{{name}} went to team {{team}}",
   "claimCancelledLine": "{{name}} was CANCELLED (the placement was wrong; it does NOT go to the opponents)",
   "claimLostLine": "{{name}} went to the opponents (team {{team}})",
+  "claimHistoryTitle": "Claim history",
+  "claimHistoryMore_one": "{{count}} older claim (expand to see all)",
+  "claimHistoryMore_other": "{{count}} older claims (expand to see all)",
   "lastClaimTitle": "Last claim",
   "settings": {
     "title": "Settings"
@@ -60,5 +64,5 @@
     "literatureMustClaim": "Every half-suit you hold is settled — a claim is all that is left"
   },
   "claimConfirmTitle": "Confirm the claim",
-  "claimConfirmMessage": "A single wrong seat voids the set or hands it to the opposing team. Claim with these answers?"
+  "claimConfirmMessage": "A single wrong seat voids the set or hands it to the opposing team. Placements: {{placements}}. Claim with these answers?"
 }

@@ -5,6 +5,8 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 // SpiteAndMaliceGame Spite & Malice ゲームインタフェース
 type SpiteAndMaliceGame interface {
 	BaseGame
+	CanUndo() bool
+	Undo() error
 	// GetGameEndFlag reports whether the game has left the playing phase.
 	GetGameEndFlag() bool
 	// Reset ゲームを初期化する

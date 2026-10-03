@@ -253,6 +253,12 @@ function DragonTigerPageContent() {
                   {state.history.slice(-HISTORY_MAX_SHOWN).map((r, i) => {
                     const label =
                       r === DragonTigerHistoryResult.DRAGON ? 'D' : r === DragonTigerHistoryResult.TIGER ? 'T' : '=';
+                    const resultLabel =
+                      r === DragonTigerHistoryResult.DRAGON
+                        ? t('result.dragonWins')
+                        : r === DragonTigerHistoryResult.TIGER
+                          ? t('result.tigerWins')
+                          : t('result.tie');
                     const tone =
                       r === DragonTigerHistoryResult.DRAGON
                         ? 'bg-ds-error text-white'
@@ -263,6 +269,11 @@ function DragonTigerPageContent() {
                       <span
                         key={`bigroad-${i}-${r}`}
                         data-testid="bigroad-badge"
+                        role="img"
+                        aria-label={t('label.historyMarker', {
+                          round: state.history.length - Math.min(state.history.length, HISTORY_MAX_SHOWN) + i + 1,
+                          result: resultLabel,
+                        })}
                         className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${tone}`}
                       >
                         {label}
@@ -276,13 +287,14 @@ function DragonTigerPageContent() {
             {isEndPhase && (
               <div className="text-ds-text-primary text-center text-sm mb-2 space-y-1" data-testid="payout-breakdown">
                 <div data-testid="payout-result">{t(`result.${resultKey}`)}</div>
+                <div data-testid="payout-bet-amount">{t('payout.betAmount', { amount: state.betAmount })}</div>
                 <div>
                   <span className="inline-block rounded-full bg-ds-surface-elevated px-2 py-0.5 text-xs font-medium">
                     {t('payout.oddsBadge', { type: betTypeName, odds })}
                   </span>
                 </div>
                 <div
-                  className={`font-medium ${isProfit ? 'text-ds-success' : 'text-ds-error'}`}
+                  className={`font-medium ${isProfit ? 'text-ds-success' : 'text-ds-error-text'}`}
                   data-testid="payout-diff"
                 >
                   {isProfit ? t('payout.win', { amount: profit }) : t('payout.loss', { amount: Math.abs(profit) })}

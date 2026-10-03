@@ -25,11 +25,13 @@
     "keepLabel": "残す札",
     "previewHand": "暫定役",
     "candidateHand": "この札も捨てると",
+    "candidateWithStrength": "{{hand}}（比較札: {{strength}}）",
+    "previewWithStrength": "{{hand}}（比較札: {{strength}}）",
     "recommended": "おすすめ",
     "limitReached": "選択できるのは{{count}}枚までです。先に選択を解除してください",
     "limitDescription": "ディスカードで選択できるのは最大{{count}}枚です",
     "previewAria": "残す2枚: {{cards}}",
-    "previewAriaWithHand": "残す2枚: {{cards}}。成立する役: {{hand}}",
+    "previewAriaWithHand": "残す2枚: {{cards}}。成立する役: {{hand}}。強さ比較に使った札: {{strength}}",
     "playableHand": "プレイに使う手札",
     "playableHandAria": "プレイに使う手札は{{cards}}です"
   },
@@ -79,6 +81,10 @@
     "minusEV": "-EV (期待値マイナス)",
     "handOdds": "ハンドオッズ"
   },
+  "bettingInfo": {
+    "title": "ベット判断の情報",
+    "description": "エクイティとポットオッズを確認できます。値は利用可能な場合に表示されます。"
+  },
   "settings": {
     "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"
   },
@@ -88,7 +94,7 @@
     "actionButtons": "ベット・コール・レイズ・フォールドなどのアクションを選びます。",
     "potDisplay": "現在のポットとブラインドレベルが表示されます。",
     "cpuArea": "CPU対戦相手の情報です。ショーダウン時にカードが公開されます。",
-    "learningMode": "ラーニングモードでエクイティやポットオッズを確認できます。",
+    "learningMode": "ベット判断の情報パネルでエクイティとポットオッズを確認できます。",
     "resetButton": "リセットボタンで新しいゲームを始められます。",
     "discardPhase": "ディスカードフェーズです。フロップベッティング後、4枚の手札から2枚選んで捨てます。"
   },

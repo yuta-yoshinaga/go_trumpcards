@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { killeApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { KillePlayer, KilleResponse } from '../types/card';
@@ -160,6 +161,38 @@ describe('KillePage', () => {
     expect(showdown).toHaveTextContent('最弱で脱落');
   });
 
+  it('summarizes showdown losers and announces the game winner at game end', async () => {
+    const showdownState = makeState({
+      phase: KillePhase.SHOWDOWN,
+      winnerIdx: 2,
+      pot: 17,
+      loserIdxs: [1, 3],
+      players: [seat(0, true), seat(1, false, { isOut: true }), seat(2, false), seat(3, false, { isOut: true })],
+    });
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<KillePage />);
+    const showdown = await screen.findByTestId('kille-showdown');
+    expect(showdown).toHaveAttribute('role', 'status');
+    expect(showdown).toHaveAttribute('aria-live', 'polite');
+    expect(showdown).toHaveTextContent('このショーダウンで CPU 1、CPU 3 が脱落しました。');
+    expect(showdown).toHaveTextContent('CPU 1 が脱落しました');
+    expect(showdown).not.toHaveTextContent('勝ちです');
+
+    mockExec.mockResolvedValue(
+      makeState({
+        ...showdownState,
+        phase: KillePhase.GAME_END,
+        gameEndFlag: true,
+        winnerIdx: 2,
+        pot: 0,
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: /次のラウンドへ/ }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+    await waitFor(() => expect(showdown).toHaveTextContent('CPU 2 の勝ちです。'));
+    expect(showdown).not.toHaveTextContent('ポット');
+  });
+
   it('offers the buy-back at its current price', async () => {
     mockExec.mockResolvedValue(
       makeState({
@@ -199,6 +232,36 @@ describe('KillePage', () => {
     renderWithProviders(<KillePage />);
     await waitFor(() => expect(screen.getByTestId('kille-reenter-exhausted')).toBeInTheDocument());
     expect(screen.queryByTestId('kille-reenter-button')).not.toBeInTheDocument();
+  });
+
+  it('shows remaining buy-backs for every player, including after game end', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: KillePhase.GAME_END,
+        gameEndFlag: true,
+        winnerIdx: 1,
+        players: [
+          seat(0, true, { reentries: 0 }),
+          seat(1, false, { reentries: 1 }),
+          seat(2, false, { reentries: 2 }),
+          seat(3, false, { reentries: 3 }),
+        ],
+      }),
+    );
+    renderWithProviders(<KillePage />);
+
+    const players = await screen.findAllByTestId('kille-player');
+    expect(players[0]).toHaveTextContent('買い戻し残り 3回');
+    expect(players[1]).toHaveTextContent('買い戻し残り 2回');
+    expect(players[2]).toHaveTextContent('買い戻し残り 1回');
+    expect(players[3]).toHaveTextContent('買い戻し残り 0回');
+
+    await i18n.changeLanguage('en');
+    expect(players[0]).toHaveTextContent('3 buy-backs remaining');
+    expect(players[1]).toHaveTextContent('2 buy-backs remaining');
+    expect(players[2]).toHaveTextContent('1 buy-back remaining');
+    expect(players[3]).toHaveTextContent('0 buy-backs remaining');
+    await i18n.changeLanguage('ja');
   });
 
   it('advances to the next round', async () => {

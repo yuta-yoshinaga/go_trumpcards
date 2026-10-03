@@ -38,6 +38,8 @@ func setupSevenBridgeWebMockWithPlayers() (*interfaces.MockSevenBridgeGame, []*d
 	m.On("GetPlayerCnt").Return(2)
 	m.On("GetPlayer", 0).Return(players[0])
 	m.On("GetPlayer", 1).Return(players[1])
+	m.On("GetScoreBreakdown", 0).Return(domain.SevenBridgeScoreBreakdown{}).Maybe()
+	m.On("GetScoreBreakdown", 1).Return(domain.SevenBridgeScoreBreakdown{}).Maybe()
 	return m, players
 }
 
@@ -158,6 +160,19 @@ func TestSevenBridgeWebPresenter_Output(t *testing.T) {
 		assert.Len(t, out.Players[0].Melds, 1)
 		assert.Len(t, out.Players[0].Melds[0].Cards, 3)
 	})
+}
+
+func TestSevenBridgeWebPresenter_IncludesScoreBreakdown(t *testing.T) {
+	p := new(presenter.SevenBridgeWebPresenter)
+	m, _ := setupSevenBridgeWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetScoreBreakdown")
+	want := domain.SevenBridgeScoreBreakdown{Ace: 1, Number: 5, Face: 10, Seven: 50}
+	m.On("GetScoreBreakdown", 0).Return(want)
+	m.On("GetScoreBreakdown", 1).Return(domain.SevenBridgeScoreBreakdown{})
+
+	out := unmarshalSevenBridge(t, p.Output(m, nil))
+	assert.Equal(t, want, out.Players[0].ScoreBreakdown)
+	assert.Equal(t, 66, out.Players[0].ScoreBreakdown.Total())
 }
 
 func TestSevenBridgeWebPresenter_ActionLogOutput(t *testing.T) {

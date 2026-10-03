@@ -11,6 +11,7 @@
   "trick": "Trick {{n}}",
   "highestBid": "Highest bid: {{bid}} ({{bidder}})",
   "playerBid": "Last bid: {{bid}}",
+  "cpuHandAriaLabel": "{{player}}'s hand, {{count}} cards remaining",
   "bidSuit": "{{tricks}}{{suit}} ({{value}} pts)",
   "bidNoTrump": "{{tricks}}NT ({{value}} pts)",
   "bidMisere": "Misere ({{value}} pts)",
@@ -34,7 +35,8 @@
   "selectTricks": "Select tricks (6-10):",
   "bidCondition": {
     "suit": "To make this contract, take at least {{tricks}} tricks.",
-    "misere": "To make this contract, take no tricks."
+    "misere": "To make this contract, take no tricks.",
+    "underbid": "This bid does not beat the current highest bid."
   },
   "misereButton": "Misere",
   "openMisereButton": "Open Misere",

@@ -84,7 +84,7 @@ test.describe('Tutorial → Game Playability', () => {
       }
 
       // Step 3: After tutorial ends, verify the tutorial overlay is gone
-      const tutorialDialog = page.locator('[role="dialog"][aria-label="Tutorial"]');
+      const tutorialDialog = page.locator('[role="dialog"][aria-label="チュートリアル"]');
       await expect(tutorialDialog).toBeHidden({ timeout: TIMEOUT_TRANSITION });
 
       // Step 4: Verify the game is still playable — at least one interactive button exists

@@ -14,7 +14,11 @@
   "dealerHand": "Dealer Hand",
   "score": "Score",
   "playerHand": "Player Hand",
+  "hitAnnouncement": "Drew {{card}}. Current score: {{score}}.",
+  "dealerFinalScore": "The dealer's final score is {{score}}.",
+  "dealerBust": "The dealer busted.",
   "hand": "Hand {{idx}}",
+  "currentHand": "Current Hand",
   "insurance": "Insurance:",
   "suggestion": "Suggested:",
   "suggest": {
@@ -136,5 +140,11 @@
     "cards": "Double down is available only with two cards.",
     "chips": "You do not have enough chips for the additional bet.",
     "split": "Double down after a split is not allowed because DAS is disabled."
+  },
+  "handResult": {
+    "win": "Win",
+    "lose": "Loss",
+    "push": "Push",
+    "chips": "chips"
   }
 }

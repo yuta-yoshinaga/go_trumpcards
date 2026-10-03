@@ -47,6 +47,7 @@ function makeState(overrides?: Partial<SjavsResponse>): SjavsResponse {
     trumpIndices: [],
     teamPoints: [0, 0],
     remaining: [24, 24],
+    rubberPoints: 24,
     crosses: [0, 0],
     carryOver: 0,
     gameEndFlag: false,
@@ -92,6 +93,7 @@ describe('SjavsPage', () => {
       makeState({
         phase: SjavsPhase.HAND_END,
         teamPoints: [8, 4],
+        remaining: [20, 24],
         handResult: {
           declarerTeam: 0,
           declarerPoints: 60,
@@ -105,6 +107,11 @@ describe('SjavsPage', () => {
     renderWithProviders(<SjavsPage />);
     await waitFor(() => expect(screen.getByText('今ハンド: チーム0 8 / チーム1 4（合計120）')).toBeInTheDocument());
     expect(screen.getByTestId('sjavs-hand-result')).toHaveTextContent('チーム0');
+    expect(
+      screen
+        .getAllByRole('status')
+        .some((status) => status.textContent?.includes('ラウンド終了。チーム0: +4 (合計 4)、チーム1: +0 (合計 0)')),
+    ).toBe(true);
   });
 
   it('shows the trump as undecided while bidding and the count once it is fixed', async () => {
@@ -115,6 +122,33 @@ describe('SjavsPage', () => {
     renderWithProviders(<SjavsPage />);
     // 13 はサーバーが数える。クライアントが切札スートだけ数えると必ず足りない。
     await waitFor(() => expect(screen.getAllByText(/切札13枚/).length).toBeGreaterThan(0));
+  });
+
+  it('labels each trick card with its player visually and accessibly', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: SjavsPhase.PLAY,
+        trick: [
+          { playerIdx: 1, card: card('SPADE', 7) },
+          { playerIdx: 2, card: card('HEART', 9) },
+        ],
+      }),
+    );
+    renderWithProviders(<SjavsPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.getByText('CPU 1')).toBeInTheDocument();
+    expect(screen.getByText('CPU 2')).toBeInTheDocument();
+    expect(screen.getByAltText('CPU 1: ♠ 7')).toBeInTheDocument();
+    expect(screen.getByAltText('CPU 2: ♥ 9')).toBeInTheDocument();
+  });
+
+  it('shows no player labels when the trick is empty', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: SjavsPhase.PLAY, trick: [] }));
+    renderWithProviders(<SjavsPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.queryByText('CPU 1')).not.toBeInTheDocument();
   });
 
   it('offers only the bid lengths the rules allow', async () => {
@@ -192,6 +226,9 @@ describe('SjavsPage', () => {
     );
     renderWithProviders(<SjavsPage />);
     await waitFor(() => expect(screen.getByTestId('sjavs-hand-result')).toHaveTextContent(/60-60/));
+    expect(
+      screen.getAllByRole('status').some((status) => status.textContent?.includes('ラウンド終了。チーム0: +0')),
+    ).toBe(true);
     expect(screen.getByRole('button', { name: '次のハンドへ' })).toBeInTheDocument();
   });
 

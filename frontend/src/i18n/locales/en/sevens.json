@@ -5,6 +5,7 @@
   "actionPlayedJoker": "{{name}} played: {{design}} {{value}} → {{targetSuit}} {{targetValue}}",
   "board": "Board",
   "cardCount": "{{count}} cards",
+  "cardDisabledReason": "This card cannot be played now",
   "cellEmptyAria": "{{suit}} {{value}} empty",
   "cellPlacedAria": "{{suit}} {{value}} placed",
   "clickPlayable": "Click a playable card",
@@ -33,6 +34,7 @@
     "passLimitWarning": "Almost out of passes — be careful"
   },
   "jokerSelectHint": "Select placement",
+  "jokerPlacedAnnouncement": "{{card}} placed at {{suit}} {{value}}",
   "keyHints": "Number keys: play the matching card",
   "mustPass": "No playable cards — please pass",
   "passCount": "Pass: {{used}}/{{max}}",

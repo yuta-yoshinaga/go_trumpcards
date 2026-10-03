@@ -17,6 +17,7 @@ export interface Rummy500PlayerData {
 /** A meld (set or run) laid by a player in Rummy 500. */
 export interface Rummy500Meld {
   cards: Card[];
+  score: number;
 }
 
 /** Rummy 500 game configuration. */

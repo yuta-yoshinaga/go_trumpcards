@@ -65,6 +65,53 @@ beforeEach(() => {
 });
 
 describe('MichiganPage', () => {
+  it('announces a new sequence and the current suit and high value in a live region', async () => {
+    mockExec.mockResolvedValueOnce(
+      makeMichiganState({
+        phase: 1,
+        isHumanTurn: true,
+        needNewSequence: true,
+        seqSuit: 0,
+      }),
+    );
+    const { unmount } = renderWithProviders(<MichiganPage />);
+    const liveRegion = await screen.findByTestId('michigan-sequence-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toHaveTextContent('新しいシーケンスを始めてください。');
+    expect(liveRegion).toHaveClass('sr-only');
+    const visibleSequence = screen
+      .getAllByText('新しいシーケンスを始めてください。', { exact: true })
+      .find((element) => !element.classList.contains('sr-only'));
+    expect(visibleSequence).toHaveAttribute('aria-hidden', 'true');
+    unmount();
+
+    mockExec.mockResolvedValueOnce(playState);
+    renderWithProviders(<MichiganPage />);
+    expect(await screen.findByTestId('michigan-sequence-live')).toHaveTextContent('シーケンス: ハート 3 まで');
+  });
+
+  it('shows each boodle collected and its chip amount in the round result', async () => {
+    mockExec.mockResolvedValue(
+      makeMichiganState({
+        ...resultState,
+        roundBoodleWins: [
+          { card: { design: 'HEART', value: 1 }, seat: 0, amount: 12 },
+          { card: { design: 'CLOVER', value: 13 }, seat: 1, amount: 0 },
+        ],
+      }),
+    );
+    renderWithProviders(<MichiganPage />);
+    expect(await screen.findByText(/♥ A: あなた が 12 チップ獲得/)).toBeInTheDocument();
+    expect(screen.getByText(/♣ K: CPU 1 が 0 チップ獲得/)).toBeInTheDocument();
+  });
+
+  it('says clearly when no boodles were collected', async () => {
+    mockExec.mockResolvedValue(makeMichiganState({ ...resultState, roundBoodleWins: [] }));
+    renderWithProviders(<MichiganPage />);
+    expect(await screen.findByText('今回獲得されたブードルはありません。')).toBeInTheDocument();
+  });
+
   it('shows the configured target rounds', async () => {
     for (const { targetRounds, text } of [
       { targetRounds: 4, text: 'ラウンド 1 / 4' },

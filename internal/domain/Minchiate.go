@@ -28,6 +28,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"slices"
 	"sort"
 	"strconv"
 )
@@ -185,6 +186,14 @@ func minchiateTrickWinnerOf(trick []*TrickCard, led int) int {
 	return winIdx
 }
 
+// MinchiateTeamRoundBreakdown はチーム別のラウンド得点内訳。
+type MinchiateTeamRoundBreakdown struct {
+	Tricks         int `json:"tricks"`
+	LastTrickBonus int `json:"lastTrickBonus"`
+	ScartoBonus    int `json:"scartoBonus"`
+	Total          int `json:"total"`
+}
+
 // Minchiate ミンキアーテのゲーム本体。
 type Minchiate struct {
 	players          []*MinchiatePlayer
@@ -203,6 +212,7 @@ type Minchiate struct {
 	lastTrickWinner  int
 	teamScores       [minchiateTeamCnt]int
 	roundTricks      [MinchiatePlayerCnt]int
+	roundBreakdown   [minchiateTeamCnt]MinchiateTeamRoundBreakdown
 	gameEndFlag      bool
 	winnerTeam       int // -1 = 未確定 (同点)
 	actionLogBase
@@ -267,6 +277,7 @@ func (g *Minchiate) startRound() {
 	g.lastTrickWinner = -1
 	g.scarto = nil
 	g.roundTricks = [MinchiatePlayerCnt]int{}
+	g.roundBreakdown = [minchiateTeamCnt]MinchiateTeamRoundBreakdown{}
 	for _, p := range g.players {
 		p.ResetRound()
 	}
@@ -426,7 +437,7 @@ func (g *Minchiate) PlayerScarto(cardIndices []int) error {
 			return NewDomainErrorCode(ErrInvalidIndices, "minchiate.errDuplicateScarto", nil)
 		}
 		seen[idx] = true
-		if !minchiateContainsIdx(allowed, idx) {
+		if !slices.Contains(allowed, idx) {
 			return NewDomainErrorCode(ErrInvalidPlay, "minchiate.errCannotDiscardTrumpOrMatto", nil)
 		}
 	}
@@ -560,24 +571,11 @@ func (g *Minchiate) PlayerPlay(cardIndex int) error {
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
 		return NewDomainErrorCode(ErrInvalidCard, "minchiate.errCardIndexOutOfRange", nil)
 	}
-	if !minchiateContains(g.GetValidPlayIndices(g.currentPlayerIdx), cardIndex) {
+	if !slices.Contains(g.GetValidPlayIndices(g.currentPlayerIdx), cardIndex) {
 		return NewDomainErrorCode(ErrInvalidPlay, "minchiate.errFollowLeadSuit", nil)
 	}
 	g.playCard(g.currentPlayerIdx, player.RemoveCard(cardIndex))
 	return nil
-}
-
-// minchiateContainsIdx 許可集合に位置が含まれるか。
-func minchiateContainsIdx(xs []int, v int) bool { return minchiateContains(xs, v) }
-
-// minchiateContains slice に値が含まれるか。
-func minchiateContains(xs []int, v int) bool {
-	for _, x := range xs {
-		if x == v {
-			return true
-		}
-	}
-	return false
 }
 
 // CpuPlay 現在の手番が CPU の場合に 1 枚出す。
@@ -698,14 +696,18 @@ const MinchiateLastTrickBonus = 3
 // 加点する慣習があり、終盤に高位の切札を温存する動機になる。
 func (g *Minchiate) settleRound() {
 	g.phase = MinchiatePhaseRoundEnd
+	g.roundBreakdown = [minchiateTeamCnt]MinchiateTeamRoundBreakdown{}
 	for seat, n := range g.roundTricks {
-		g.teamScores[MinchiateTeamOf(seat)] += n
+		g.roundBreakdown[MinchiateTeamOf(seat)].Tricks += n
 	}
 	if g.lastTrickWinner >= 0 {
-		g.teamScores[MinchiateTeamOf(g.lastTrickWinner)] += MinchiateLastTrickBonus
+		g.roundBreakdown[MinchiateTeamOf(g.lastTrickWinner)].LastTrickBonus = MinchiateLastTrickBonus
 	}
-	if len(g.scarto) > 0 {
-		g.teamScores[MinchiateTeamOf(g.dealerIdx)] += len(g.scarto)
+	g.roundBreakdown[MinchiateTeamOf(g.dealerIdx)].ScartoBonus = len(g.scarto)
+	for team, breakdown := range g.roundBreakdown {
+		breakdown.Total = breakdown.Tricks + breakdown.LastTrickBonus + breakdown.ScartoBonus
+		g.roundBreakdown[team] = breakdown
+		g.teamScores[team] += breakdown.Total
 	}
 	g.appendLog(-1, "settle", "minchiate.log.settle", map[string]string{"round": strconv.Itoa(g.roundNumber)}, nil)
 }
@@ -760,6 +762,11 @@ func (g *Minchiate) GetTeamScores() [minchiateTeamCnt]int { return g.teamScores 
 
 // GetRoundTricks 現ラウンドの席別獲得トリック数。
 func (g *Minchiate) GetRoundTricks() [MinchiatePlayerCnt]int { return g.roundTricks }
+
+// GetRoundBreakdown returns each team's score breakdown for the current round.
+func (g *Minchiate) GetRoundBreakdown() [minchiateTeamCnt]MinchiateTeamRoundBreakdown {
+	return g.roundBreakdown
+}
 
 // GetGameEndFlag ゲーム終了フラグ。
 func (g *Minchiate) GetGameEndFlag() bool { return g.gameEndFlag }
@@ -834,22 +841,23 @@ func (g *Minchiate) playHintReason(playerIdx, chosenIdx int) string {
 // Worker のセッション復元が空のゲームを返し、リクエストのたびに手札も得点も消える
 // (Ganjifa #4661 / Vira #4660 で実際に起きた)。
 type minchiateJSON struct {
-	Players          []*MinchiatePlayer      `json:"pl"`
-	Config           MinchiateConfig         `json:"cfg"`
-	Phase            MinchiatePhase          `json:"ph"`
-	RoundNumber      int                     `json:"rn"`
-	TrickNumber      int                     `json:"tn"`
-	CurrentPlayerIdx int                     `json:"cpi"`
-	CurrentTrick     []*TrickCard            `json:"ct"`
-	LeadPlayerIdx    int                     `json:"lpi"`
-	DealerIdx        int                     `json:"di"`
-	Scarto           []*Card                 `json:"sc"`
-	LastTrickWinner  int                     `json:"ltw"`
-	TeamScores       [minchiateTeamCnt]int   `json:"ts"`
-	RoundTricks      [MinchiatePlayerCnt]int `json:"rt"`
-	GameEndFlag      bool                    `json:"gef"`
-	WinnerTeam       int                     `json:"wt"`
-	ActionLog        []*ActionLogEntry       `json:"al"`
+	Players          []*MinchiatePlayer                            `json:"pl"`
+	Config           MinchiateConfig                               `json:"cfg"`
+	Phase            MinchiatePhase                                `json:"ph"`
+	RoundNumber      int                                           `json:"rn"`
+	TrickNumber      int                                           `json:"tn"`
+	CurrentPlayerIdx int                                           `json:"cpi"`
+	CurrentTrick     []*TrickCard                                  `json:"ct"`
+	LeadPlayerIdx    int                                           `json:"lpi"`
+	DealerIdx        int                                           `json:"di"`
+	Scarto           []*Card                                       `json:"sc"`
+	LastTrickWinner  int                                           `json:"ltw"`
+	TeamScores       [minchiateTeamCnt]int                         `json:"ts"`
+	RoundTricks      [MinchiatePlayerCnt]int                       `json:"rt"`
+	RoundBreakdown   [minchiateTeamCnt]MinchiateTeamRoundBreakdown `json:"rb"`
+	GameEndFlag      bool                                          `json:"gef"`
+	WinnerTeam       int                                           `json:"wt"`
+	ActionLog        []*ActionLogEntry                             `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -868,6 +876,7 @@ func (g *Minchiate) MarshalJSON() ([]byte, error) {
 		LastTrickWinner:  g.lastTrickWinner,
 		TeamScores:       g.teamScores,
 		RoundTricks:      g.roundTricks,
+		RoundBreakdown:   g.roundBreakdown,
 		GameEndFlag:      g.gameEndFlag,
 		WinnerTeam:       g.winnerTeam,
 		ActionLog:        g.actionLog,
@@ -943,6 +952,7 @@ func (g *Minchiate) UnmarshalJSON(data []byte) error {
 	g.lastTrickWinner = j.LastTrickWinner
 	g.teamScores = j.TeamScores
 	g.roundTricks = j.RoundTricks
+	g.roundBreakdown = j.RoundBreakdown
 	g.gameEndFlag = j.GameEndFlag
 	g.winnerTeam = j.WinnerTeam
 	g.actionLog = j.ActionLog

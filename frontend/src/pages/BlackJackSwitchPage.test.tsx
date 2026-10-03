@@ -135,6 +135,19 @@ describe('BlackJackSwitchPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', expect.any(Number)));
   });
 
+  it('updates the two-hand required amount and shows when it exceeds chips', async () => {
+    mockApi.mockResolvedValue({ ...betState, chips: 100 });
+    renderWithProviders(<BlackJackSwitchPage />);
+    await screen.findByRole('button', { name: /Place Bet|ベットする/ });
+
+    const summary = screen.getByTestId('bjswitch-bet-total');
+    expect(screen.getByTestId('bjswitch-bet-insufficient')).toBeInTheDocument();
+    expect(summary).toHaveTextContent('200（所持チップ 100）');
+    fireEvent.change(screen.getByLabelText('ベット'), { target: { value: '50' } });
+    expect(summary).toHaveTextContent('100（所持チップ 100）');
+    expect(screen.queryByTestId('bjswitch-bet-insufficient')).not.toBeInTheDocument();
+  });
+
   it('shows the rules summary during the bet phase', async () => {
     mockApi.mockResolvedValue(betState);
     renderWithProviders(<BlackJackSwitchPage />);
@@ -329,7 +342,7 @@ describe('BlackJackSwitchPage', () => {
     fireEvent.mouseEnter(btn);
     const preview = screen.getByTestId('hand-0-preview');
     expect(preview).toHaveTextContent('25');
-    expect(preview.className).toContain('text-ds-error');
+    expect(preview.className).toContain('text-ds-error-text');
   });
 
   it('paints the neutral path when the post-swap score is unchanged', async () => {
@@ -445,6 +458,16 @@ describe('BlackJackSwitchPage', () => {
     renderWithProviders(<BlackJackSwitchPage />);
     expect(await screen.findByTestId('hand-0-bj-badge')).toHaveTextContent('BJ');
     expect(screen.queryByTestId('hand-1-bj-badge')).not.toBeInTheDocument();
+  });
+
+  it('shows a doubled badge only on the doubled hand', async () => {
+    mockApi.mockResolvedValue({
+      ...actionState,
+      hands: [{ ...actionState.hands[0], doubled: true }, actionState.hands[1]],
+    });
+    renderWithProviders(<BlackJackSwitchPage />);
+    expect(await screen.findByTestId('hand-0-doubled-badge')).toHaveTextContent('ダブルダウン済み');
+    expect(screen.queryByTestId('hand-1-doubled-badge')).not.toBeInTheDocument();
   });
 
   it('marks the acting hand with a badge in ACTION phase', async () => {

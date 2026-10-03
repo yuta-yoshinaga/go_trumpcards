@@ -26,8 +26,9 @@
   "hintReasonOffset3": "選択肢を温存できる重要な手",
   "listSeparator": "、",
   "mergeOffsetAvailable": "左{{offset}}へマージ可",
+  "mergeTargetColumn": "パイル{{col}}",
   "noMergeAvailable": "マージ可能な手なし",
-  "selectionMoves": "パイル{{idx}}を選択中。マージ可能な手が{{count}}通り",
+  "selectionMoves": "パイル{{idx}}を選択中。統合先: {{targets}}（マージ可能な手が{{count}}通り）",
   "selectionNoMoves": "パイル{{idx}}を選択中。マージ可能な手なし",
   "landscapeBanner": "横画面での表示を推奨します",
   "frontendHint": {

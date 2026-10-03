@@ -67,6 +67,7 @@ function SnapPageContent() {
   const { hint, hintEnabled, setHintEnabled } = useGameHint('snap', state);
   const [playerCnt, setPlayerCnt] = useState(2);
   const [difficulty, setDifficulty] = useState(1);
+  const [clockNow, setClockNow] = useState(() => Date.now());
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('snap');
   const cliConfig: CliGameConfig<SnapResponse, Parameters<typeof snapApi.exec>> = useMemo(
@@ -88,6 +89,12 @@ function SnapPageContent() {
   // ので、「CPU の手番だけ」に絞ると CPU が永久に宣言しなくなる。
   const isCpuPending = state !== null && state.pendingKind !== SnapPendingKind.NONE;
   const isRunning = state !== null && !state.gameEndFlag;
+  useEffect(() => {
+    if (!isCpuPending) return;
+    setClockNow(Date.now());
+    const id = window.setInterval(() => setClockNow(Date.now()), 250);
+    return () => window.clearInterval(id);
+  }, [isCpuPending]);
   useEffect(() => {
     if (!isRunning || !isCpuPending) return;
     const id = window.setInterval(() => {
@@ -118,6 +125,7 @@ function SnapPageContent() {
   }
 
   const isGameEnd = state.phase === SnapPhase.GAME_END || state.gameEndFlag;
+  const pendingSeconds = Math.max(0, Math.ceil((state.pendingDeadlineMs - clockNow) / 1000));
 
   const eventLine = (() => {
     const name =
@@ -172,6 +180,24 @@ function SnapPageContent() {
               {t('header.rule')}
             </div>
 
+            <div className="sr-only" role="status" aria-live="polite" data-testid="sp-pending-announcement">
+              {isCpuPending && !isGameEnd
+                ? state.pendingKind === SnapPendingKind.SNAP
+                  ? t('header.pendingSnapStart')
+                  : t('header.pendingStepStart')
+                : ''}
+            </div>
+            {isCpuPending && !isGameEnd && (
+              <div
+                className="mb-3 rounded bg-ds-surface px-3 py-2 text-ds-text-primary text-center"
+                data-testid="sp-pending"
+              >
+                {state.pendingKind === SnapPendingKind.SNAP
+                  ? t('header.pendingSnap', { seconds: pendingSeconds })
+                  : t('header.pendingStep', { seconds: pendingSeconds })}
+              </div>
+            )}
+
             <div className="text-center mb-3" data-testid="sp-pile" data-tutorial="sp-pile">
               <div className="text-ds-text-muted text-sm mb-1">
                 {state.centerPileSize > 0
@@ -189,16 +215,16 @@ function SnapPageContent() {
               )}
             </div>
 
-            <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="sp-seats">
+            <ul className="flex flex-wrap justify-center gap-2 mb-4 list-none p-0" data-tutorial="sp-seats">
               {state.players.map((p) => (
-                <div
+                <li
                   key={p.id}
                   className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
                   data-testid={`sp-seat-${p.id.toString()}`}
                 >
-                  <span className="text-ds-text-primary">
+                  <h2 className="m-0 inline font-normal text-ds-text-primary">
                     {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                  </span>
+                  </h2>
                   {p.stockSize === 0 && (
                     <span className="ml-1 text-ds-text-muted" data-testid={`sp-out-${p.id.toString()}`}>
                       {t('header.outOfCards')}
@@ -209,9 +235,9 @@ function SnapPageContent() {
                   )}
                   {': '}
                   {t('header.stock', { n: String(p.stockSize) })}
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
 
             {/* **直近に何が起きたかを出す。** 盤面だけでは誰が取ったのか読めない。 */}
             {eventLine && (

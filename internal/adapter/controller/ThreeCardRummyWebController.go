@@ -30,6 +30,7 @@ type ThreeCardRummyWebOutput struct {
 	AnteBonusPayout int              `json:"anteBonusPayout"`
 	LowBonusPayout  int              `json:"lowBonusPayout"`
 	TotalPayout     int              `json:"totalPayout"`
+	NetChange       int              `json:"netChange"`
 	DealerQualified bool             `json:"dealerQualified"`
 	// **点数であって役位ではない。低いほど強い。** 0 は「役」(同ランク3枚 /
 	// 同スート連番3枚) で、このゲームの最強手 —— 「手が無い」でも「未計算」でも

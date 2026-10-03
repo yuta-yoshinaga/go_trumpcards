@@ -52,7 +52,7 @@ type ContractStatus = 'made' | 'failed' | 'progress';
 /** Tailwind text color per contract status (made=success, in-progress=warning, failed=error). */
 const CONTRACT_STATUS_COLOR: Readonly<Record<ContractStatus, string>> = {
   made: 'text-ds-success',
-  failed: 'text-ds-error',
+  failed: 'text-ds-error-text',
   progress: 'text-ds-warning',
 };
 
@@ -322,6 +322,8 @@ function PreferencePageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  winnerIdx={isTrickEnd ? state.leadPlayerIdx : undefined}
+                  winnerLabel={t('trickWinner')}
                   dataTutorial="preference-trick-display"
                 />
               </div>
@@ -383,6 +385,13 @@ function PreferencePageContent() {
                           name: playerName(p.id, p.isHuman),
                           count: state.roundTricks[p.id] ?? 0,
                         })}
+                        <div className="pl-3 text-xs" data-testid={`preference-score-breakdown-${p.id}`}>
+                          {t('roundResult.declarerContract')}:{' '}
+                          {formatBreakdownScore(state.scoreBreakdown[p.id]?.declarerContract ?? 0)}
+                          {' · '}
+                          {t('roundResult.defendingContract')}:{' '}
+                          {formatBreakdownScore(state.scoreBreakdown[p.id]?.defendingContract ?? 0)}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -518,4 +527,8 @@ function PreferencePageContent() {
       )}
     </GamePageShell>
   );
+}
+
+function formatBreakdownScore(score: number): string {
+  return score < 0 ? `−${Math.abs(score)}` : String(score);
 }

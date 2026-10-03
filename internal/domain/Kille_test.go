@@ -51,7 +51,7 @@ func TestKilleDeckIsTwentyOneByTwo(t *testing.T) {
 	pictures, numbers, lows := 0, 0, 0
 	for r := KilleMask; r <= KilleHarlequin; r++ {
 		switch {
-		case KilleIsPicture(r):
+		case r >= KilleInn:
 			pictures++
 		case r >= KilleNum1 && r <= KilleNum12:
 			numbers++

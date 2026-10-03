@@ -70,7 +70,7 @@ describe('formatBaccaratBanqueState', () => {
     expect(out).toContain('Settlement (banker 6)');
     expect(out).toContain('Right tableau: banker wins (50)');
     expect(out).toContain('Left tableau: punter wins (-50)');
-    expect(out).toContain('Banker net: 0');
+    expect(out).toContain('Banker net: ±0');
   });
 
   it('distinguishes retiring from the bank ending any other way', () => {

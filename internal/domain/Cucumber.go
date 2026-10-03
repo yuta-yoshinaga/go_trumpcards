@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 )
 
 // CucumberPhase はゲームフェーズ。
@@ -278,7 +279,7 @@ func (c *Cucumber) play(playerIdx, cardIndex int) error {
 		return fmt.Errorf("いまは席 %d の番ではありません", playerIdx)
 	}
 	valid := c.GetValidPlayIndices(playerIdx)
-	if !cucumberContains(valid, cardIndex) {
+	if !slices.Contains(valid, cardIndex) {
 		p := c.players[playerIdx]
 		if cardIndex < 0 || cardIndex >= p.GetCardsSize() {
 			return fmt.Errorf("手札の位置が範囲外です: %d", cardIndex)
@@ -463,19 +464,6 @@ func (c *Cucumber) GetHint() *CucumberHint {
 		reason = "cucumberLead"
 	}
 	return &CucumberHint{CardIndex: &idx, Reason: reason}
-}
-
-// cucumberContains は xs に v が含まれるかを返す。
-//
-// **他ゲームのヘルパは使えません。** 近いものは別のビルドタグの中にあり、
-// ホストビルドだけ通って Worker が落ちます。
-func cucumberContains(xs []int, v int) bool {
-	for _, x := range xs {
-		if x == v {
-			return true
-		}
-	}
-	return false
 }
 
 // addLog は棋譜に 1 行足す。

@@ -812,22 +812,6 @@ func (g *Rikken) cpuChooseCard(idx int) int {
 	return pickHighest(p, valid, rikkenRank)
 }
 
-// rikkenSuitName はスート名を返す。
-func rikkenSuitName(suit int) string {
-	switch suit {
-	case CardDesignSpade:
-		return "spade"
-	case CardDesignClover:
-		return "clover"
-	case CardDesignHeart:
-		return "heart"
-	case CardDesignDiamond:
-		return "diamond"
-	default:
-		return "notrump"
-	}
-}
-
 // GetHint は人間への助言を返す。
 func (g *Rikken) GetHint() *RikkenHint {
 	if g.gameEndFlag || g.currentTurn != 0 || !g.players[0].GetIsHuman() {

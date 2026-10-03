@@ -15,6 +15,7 @@
     "out": "[out]",
     "noticed": "[noticed {{order}}]",
     "chosen": "[chosen]",
+    "signalling": "[signalling]",
     "you": "You",
     "cpu": "CPU{{idx}}"
   },

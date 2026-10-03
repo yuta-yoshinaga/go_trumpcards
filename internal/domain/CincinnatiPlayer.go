@@ -23,10 +23,11 @@ type CincinnatiPlayer struct {
 	ChipHolder
 	bettingPlayerBase
 
-	isHuman  bool
-	name     string
-	handRank int
-	bestHand []*Card
+	isHuman        bool
+	name           string
+	handRank       int
+	bestHand       []*Card
+	handStartChips int
 }
 
 // NewCincinnatiPlayer は CincinnatiPlayer を構築する。
@@ -67,6 +68,15 @@ func (p *CincinnatiPlayer) GetHandRank() int { return p.handRank }
 
 // GetBestHand は選ばれた最良の 5 枚を返す。
 func (p *CincinnatiPlayer) GetBestHand() []*Card { return p.bestHand }
+
+// GetHandStartChips returns the stack before the current hand's ante.
+func (p *CincinnatiPlayer) GetHandStartChips() int { return p.handStartChips }
+
+// GetHandNetChange はハンド開始からのチップ増減を返す。
+func (p *CincinnatiPlayer) GetHandNetChange() int { return p.GetChips() - p.handStartChips }
+
+// SetHandStartChips records the stack before the current hand begins.
+func (p *CincinnatiPlayer) SetHandStartChips(chips int) { p.handStartChips = chips }
 
 // EvaluateBest は手札 5 枚 + コミュニティ 5 枚から最良の 5 枚を選ぶ。
 //
@@ -111,22 +121,24 @@ func (p *CincinnatiPlayer) ResetForHand() {
 
 // cincinnatiPlayerJSON は CincinnatiPlayer の JSON 表現。
 type cincinnatiPlayerJSON struct {
-	Chips      int     `json:"c"`
-	CurrentBet int     `json:"b"`
-	IsHuman    bool    `json:"h"`
-	Name       string  `json:"n"`
-	Folded     bool    `json:"f"`
-	AllIn      bool    `json:"a"`
-	Cards      []*Card `json:"cd"`
-	HandRank   int     `json:"hr"`
-	BestHand   []*Card `json:"bh"`
+	HandStartChips *int    `json:"hs"`
+	Chips          int     `json:"c"`
+	CurrentBet     int     `json:"b"`
+	IsHuman        bool    `json:"h"`
+	Name           string  `json:"n"`
+	Folded         bool    `json:"f"`
+	AllIn          bool    `json:"a"`
+	Cards          []*Card `json:"cd"`
+	HandRank       int     `json:"hr"`
+	BestHand       []*Card `json:"bh"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (p *CincinnatiPlayer) MarshalJSON() ([]byte, error) {
 	return json.Marshal(cincinnatiPlayerJSON{
 		Chips: p.GetChips(), CurrentBet: p.GetCurrentBet(),
-		IsHuman: p.isHuman, Name: p.name,
+		HandStartChips: &p.handStartChips,
+		IsHuman:        p.isHuman, Name: p.name,
 		Folded: p.GetFolded(), AllIn: p.GetAllIn(),
 		Cards: p.cards, HandRank: p.handRank, BestHand: p.bestHand,
 	})
@@ -151,6 +163,13 @@ func (p *CincinnatiPlayer) UnmarshalJSON(data []byte) error {
 		return errCincinnatiHandSize
 	}
 	p.SetChips(j.Chips)
+	if j.HandStartChips == nil {
+		// Older snapshots have no baseline. Treat the restored stack as the
+		// baseline so they never display a fabricated hand result.
+		p.handStartChips = j.Chips
+	} else {
+		p.handStartChips = *j.HandStartChips
+	}
 	p.SetCurrentBet(j.CurrentBet)
 	p.isHuman = j.IsHuman
 	p.name = j.Name

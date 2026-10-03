@@ -30,6 +30,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { PitchResponse } from '../types/card';
 import { PitchPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { PITCH_HELP, parsePitchCommand } from '../utils/cli/commands/pitchCommands';
 import { formatPitchState } from '../utils/cli/formatters/pitchFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -91,13 +92,6 @@ const SUIT_LABELS: Readonly<Record<number, string>> = {
   4: '♦',
 };
 
-const SUIT_DESIGNS: Readonly<Record<string, string>> = {
-  SPADE: '♠',
-  CLOVER: '♣',
-  HEART: '♥',
-  DIAMOND: '♦',
-};
-
 /** Maps the numeric `trumpSuit` (1–4) to the matching card `design` string. */
 const SUIT_NUM_TO_DESIGN: Readonly<Record<number, string>> = {
   1: 'SPADE',
@@ -112,11 +106,6 @@ const VALUE_LABELS: Readonly<Record<number, string>> = {
   12: 'Q',
   13: 'K',
 };
-
-function cardLabel(c: { design: string; value: number }): string {
-  const v = VALUE_LABELS[c.value] ?? String(c.value);
-  return `${SUIT_DESIGNS[c.design] ?? c.design}${v}`;
-}
 
 function valueLabel(value: number): string {
   return VALUE_LABELS[value] ?? String(value);
@@ -497,6 +486,11 @@ function PitchPageContent() {
                     )}
                   </span>
                 </div>
+                {isHumanPlayTurn && (
+                  <span id="pitch-invalid-play-reason" className="sr-only">
+                    {t('invalidPlayReason')}
+                  </span>
+                )}
                 <div className="flex flex-wrap gap-2">
                   {human.cards.map((c, idx) => {
                     const isValid = state.validPlayIndices.includes(idx);
@@ -506,9 +500,14 @@ function PitchPageContent() {
                       <button
                         key={`${c.design}-${c.value}-${idx}`}
                         type="button"
-                        onClick={() => canSelect && setSelectedCardIdx(idx)}
-                        disabled={!canSelect}
-                        aria-label={cardLabel(c)}
+                        onClick={() => canSelect && setSelectedCardIdx(isSelected ? null : idx)}
+                        disabled={!isHumanPlayTurn || loading}
+                        aria-disabled={isHumanPlayTurn && !loading && !isValid ? true : undefined}
+                        aria-describedby={
+                          isHumanPlayTurn && !loading && !isValid ? 'pitch-invalid-play-reason' : undefined
+                        }
+                        aria-label={cardAlt(c)}
+                        aria-pressed={isSelected}
                         className={`min-w-[44px] min-h-[44px] rounded transition-all
                           ${isSelected ? 'ring-2 ring-ds-accent' : ''}
                           ${canSelect ? 'opacity-100' : 'opacity-50 cursor-not-allowed'}
@@ -574,7 +573,7 @@ function PitchPageContent() {
                 {dealerMustBid && (
                   <p
                     role="alert"
-                    className="text-ds-error text-sm basis-full text-center"
+                    className="text-ds-error-text text-sm basis-full text-center"
                     data-testid="pitch-pass-restriction"
                   >
                     {t('dealerMustBid')}

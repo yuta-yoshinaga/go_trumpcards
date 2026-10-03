@@ -6,11 +6,25 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
+
+func removeThreeCardMockCall(calls []*mock.Call, method string) []*mock.Call {
+	result := make([]*mock.Call, 0, len(calls))
+	found := false
+	for _, call := range calls {
+		if !found && call.Method == method {
+			found = true
+			continue
+		}
+		result = append(result, call)
+	}
+	return result
+}
 
 func setupThreeCardWebMockDefaults(m *interfaces.MockThreeCardGame) {
 	m.On("GetChips").Return(1000).Maybe()
@@ -27,6 +41,7 @@ func setupThreeCardWebMockDefaults(m *interfaces.MockThreeCardGame) {
 	m.On("GetAnteBonusPayout").Return(0).Maybe()
 	m.On("GetPairPlusPayout").Return(0).Maybe()
 	m.On("GetTotalPayout").Return(0).Maybe()
+	m.On("GetNetChange").Return(0).Maybe()
 	m.On("GetDealerQualified").Return(false).Maybe()
 	m.On("GetPlayerHandRank").Return(0).Maybe()
 	m.On("GetDealerHandRank").Return(0).Maybe()
@@ -49,9 +64,45 @@ func TestThreeCardWebPresenter_Output_BetPhase(t *testing.T) {
 	result := parseThreeCardOutput(t, p.Output(m, nil))
 	assert.Equal(t, domain.ThreeCardPhaseBet, result.Phase)
 	assert.Equal(t, 1000, result.Chips)
+	assert.Equal(t, 0, result.NetChange)
 	assert.Empty(t, result.PlayerHand)
 	assert.Empty(t, result.DealerHand)
 	assert.Empty(t, result.Message)
+}
+
+func TestThreeCardWebPresenter_Output_HidesDealerHandDuringActionPhase(t *testing.T) {
+	p := new(ThreeCardWebPresenter)
+	m := new(interfaces.MockThreeCardGame)
+	setupThreeCardWebMockDefaults(m)
+	m.ExpectedCalls = removeThreeCardMockCall(m.ExpectedCalls, "GetPhase")
+	m.ExpectedCalls = removeThreeCardMockCall(m.ExpectedCalls, "GetDealerHand")
+	m.On("GetPhase").Return(domain.ThreeCardPhaseAction).Maybe()
+	m.On("GetDealerHand").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+		domain.NewCard(domain.CardDesignHeart, 6, false),
+		domain.NewCard(domain.CardDesignDiamond, 7, false),
+	}).Maybe()
+
+	result := parseThreeCardOutput(t, p.Output(m, nil))
+	assert.Empty(t, result.DealerHand)
+}
+
+func TestThreeCardWebPresenter_Output_ShowsDealerHandAfterActionPhase(t *testing.T) {
+	p := new(ThreeCardWebPresenter)
+	m := new(interfaces.MockThreeCardGame)
+	setupThreeCardWebMockDefaults(m)
+	m.ExpectedCalls = removeThreeCardMockCall(m.ExpectedCalls, "GetPhase")
+	m.ExpectedCalls = removeThreeCardMockCall(m.ExpectedCalls, "GetDealerHand")
+	m.On("GetPhase").Return(domain.ThreeCardPhaseEnd).Maybe()
+	hand := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+		domain.NewCard(domain.CardDesignHeart, 6, false),
+		domain.NewCard(domain.CardDesignDiamond, 7, false),
+	}
+	m.On("GetDealerHand").Return(hand).Maybe()
+
+	result := parseThreeCardOutput(t, p.Output(m, nil))
+	assert.Len(t, result.DealerHand, 3)
 }
 
 func TestThreeCardWebPresenter_HintOutput(t *testing.T) {
@@ -102,6 +153,7 @@ func TestThreeCardWebPresenter_Output_PlayerWins(t *testing.T) {
 	m.On("GetAnteBonusPayout").Return(0).Maybe()
 	m.On("GetPairPlusPayout").Return(0).Maybe()
 	m.On("GetTotalPayout").Return(400).Maybe()
+	m.On("GetNetChange").Return(200).Maybe()
 	m.On("GetDealerQualified").Return(true).Maybe()
 	m.On("GetPlayerHandRank").Return(1).Maybe()
 	m.On("GetDealerHandRank").Return(1).Maybe()
@@ -129,6 +181,7 @@ func TestThreeCardWebPresenter_Output_DealerWins(t *testing.T) {
 	m.On("GetAnteBonusPayout").Return(0).Maybe()
 	m.On("GetPairPlusPayout").Return(0).Maybe()
 	m.On("GetTotalPayout").Return(0).Maybe()
+	m.On("GetNetChange").Return(-200).Maybe()
 	m.On("GetDealerQualified").Return(true).Maybe()
 	m.On("GetPlayerHandRank").Return(1).Maybe()
 	m.On("GetDealerHandRank").Return(1).Maybe()
@@ -156,6 +209,7 @@ func TestThreeCardWebPresenter_Output_Fold(t *testing.T) {
 	m.On("GetAnteBonusPayout").Return(0).Maybe()
 	m.On("GetPairPlusPayout").Return(0).Maybe()
 	m.On("GetTotalPayout").Return(0).Maybe()
+	m.On("GetNetChange").Return(-100).Maybe()
 	m.On("GetDealerQualified").Return(false).Maybe()
 	m.On("GetPlayerHandRank").Return(1).Maybe()
 	m.On("GetDealerHandRank").Return(1).Maybe()
@@ -183,6 +237,7 @@ func TestThreeCardWebPresenter_Output_Push(t *testing.T) {
 	m.On("GetAnteBonusPayout").Return(0).Maybe()
 	m.On("GetPairPlusPayout").Return(0).Maybe()
 	m.On("GetTotalPayout").Return(200).Maybe()
+	m.On("GetNetChange").Return(0).Maybe()
 	m.On("GetDealerQualified").Return(true).Maybe()
 	m.On("GetPlayerHandRank").Return(1).Maybe()
 	m.On("GetDealerHandRank").Return(1).Maybe()
@@ -210,6 +265,7 @@ func TestThreeCardWebPresenter_Output_DealerNotQualified(t *testing.T) {
 	m.On("GetAnteBonusPayout").Return(0).Maybe()
 	m.On("GetPairPlusPayout").Return(0).Maybe()
 	m.On("GetTotalPayout").Return(300).Maybe()
+	m.On("GetNetChange").Return(100).Maybe()
 	m.On("GetDealerQualified").Return(false).Maybe()
 	m.On("GetPlayerHandRank").Return(1).Maybe()
 	m.On("GetDealerHandRank").Return(1).Maybe()

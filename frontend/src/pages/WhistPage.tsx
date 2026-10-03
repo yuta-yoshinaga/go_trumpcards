@@ -33,6 +33,7 @@ import type { WhistResponse } from '../types/card';
 import { WhistPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { suitName } from '../utils/cardUtils';
 import { parseWhistCommand, WHIST_HELP } from '../utils/cli/commands/whistCommands';
 import { formatWhistState } from '../utils/cli/formatters/whistFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -97,7 +98,7 @@ function teamBadgeClass(team: number): string {
   // bg-ds-surface + a coloured border (not an opacity-multiplied fill) keeps the
   // contrast ratio stable over the felt table — see DESIGN.md's opacity rule.
   const base = 'inline-block rounded border px-1.5 py-0.5 text-xs font-medium bg-ds-surface';
-  return team === 0 ? `${base} border-ds-info text-ds-info` : `${base} border-ds-error text-ds-error`;
+  return team === 0 ? `${base} border-ds-info text-ds-info` : `${base} border-ds-error text-ds-error-text`;
 }
 
 export const WhistPage = withTutorial(WhistPageContent, 'whist', WH_TUTORIAL_STEPS);
@@ -193,6 +194,14 @@ function WhistPageContent() {
     return <GameSkeleton gameKey="whist" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
+  const trumpDesign = suitName(state.trumpSuit);
+  const trumpIndices =
+    humanPlayer && trumpDesign
+      ? humanPlayer.cards.reduce<number[]>((indices, card, index) => {
+          if (card.design === trumpDesign) indices.push(index);
+          return indices;
+        }, [])
+      : [];
   const isPlayPhase = state.phase === WhistPhase.PLAY;
   const isTrickEnd = state.phase === WhistPhase.TRICK_END;
   const isRoundEnd = state.phase === WhistPhase.ROUND_END;
@@ -326,7 +335,7 @@ function WhistPageContent() {
                     open={isRoundEnd || isGameEnd || undefined}
                   >
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
-                      {t('teamScores')}
+                      {t('teamScores')} · {t('targetScore', { score: state.config.pointLimit })}
                     </summary>
                     <div className="overflow-x-auto -mx-2 px-2">
                       <table className="w-full text-sm text-ds-text-muted min-w-[240px] mt-1">
@@ -358,7 +367,9 @@ function WhistPageContent() {
                   </details>
                 ) : (
                   <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="wh-score-table">
-                    <div className="text-ds-text-muted text-sm mb-1">{t('teamScores')}</div>
+                    <div className="text-ds-text-muted text-sm mb-1">
+                      {t('teamScores')} · {t('targetScore', { score: state.config.pointLimit })}
+                    </div>
                     <div className="overflow-x-auto -mx-2 px-2">
                       <table className="w-full text-sm text-ds-text-muted min-w-[240px]">
                         <thead>
@@ -444,6 +455,8 @@ function WhistPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="wh"
+                trumpIndices={trumpIndices}
+                trumpAccessibleLabel={t('trumpCardDescription')}
                 highlightIndices={isHumanTurn && hint?.cardIndex !== undefined ? [hint.cardIndex] : undefined}
                 validIndices={isHumanTurn ? state.validPlayIndices : undefined}
                 restrictedTooltip={t('restrictedCard')}

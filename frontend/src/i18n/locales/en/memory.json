@@ -30,6 +30,7 @@
   "visitedMark": "Already seen",
   "knownMatchMark": "you have seen the matching card here",
   "scoreLine": "{{name}}: {{count}}",
+  "remainingPairs": "{{remaining}} / {{total}} pairs remaining",
   "capturedPairs": "Captured Pairs",
   "noCapturedPairs": "None",
   "nextButton": "Next",
@@ -38,8 +39,8 @@
   "matched": "It's a match!",
   "mismatched": "No match",
   "announce": {
-    "match": "{{first}} / {{second}} — match",
-    "mismatch": "{{first}} / {{second}} — no match"
+    "match": "{{first}} at position {{firstPosition}} / {{second}} at position {{secondPosition}} — match",
+    "mismatch": "{{first}} at position {{firstPosition}} / {{second}} at position {{secondPosition}} — no match"
   },
   "tutorial": {
     "scoreTable": "Each player's pair count is shown here. The player with the most pairs wins.",

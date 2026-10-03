@@ -20,11 +20,6 @@ type GoFishConfig struct {
 	CpuDifficulty GoFishCpuDifficulty
 }
 
-// DefaultGoFishConfig デフォルト設定を返す
-func DefaultGoFishConfig() GoFishConfig {
-	return GoFishConfig{CpuDifficulty: GoFishCpuDifficultyNormal}
-}
-
 // Validate 設定値のドメインバリデーション
 func (c GoFishConfig) Validate() error {
 	return ValidateRange("CPU difficulty", int(c.CpuDifficulty), int(GoFishCpuDifficultyEasy), int(GoFishCpuDifficultyHard))

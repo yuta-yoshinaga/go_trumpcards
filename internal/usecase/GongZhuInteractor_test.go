@@ -116,6 +116,7 @@ func TestGongZhuInteractor_Play(t *testing.T) {
 	gameMock.On("IsHumanTurn").Return(true)
 	gameMock.On("PlayerPlay", 3).Return(nil)
 	gameMock.On("GetPhase").Return(domain.GongZhuPhaseTrickEnd)
+	gameMock.On("ResolveTrick").Return()
 
 	gi := usecase.NewGongZhuInteractor(gameMock, gpMock)
 	assert.Equal(t, gzMockOutput, gi.Play(3))
@@ -132,6 +133,32 @@ func TestGongZhuInteractor_PlayNotHumanTurn(t *testing.T) {
 	gi := usecase.NewGongZhuInteractor(gameMock, gpMock)
 	assert.Equal(t, gzMockOutput, gi.Play(0))
 	gameMock.AssertNotCalled(t, "PlayerPlay", mock.Anything)
+}
+
+func TestGongZhuInteractor_PlayLastCardResolvesTrick(t *testing.T) {
+	g := domain.NewDefaultGongZhu()
+	g.Reset()
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		g.GetPlayer(i).Reset()
+	}
+	// Players 1, 2, and 3 have played. Seat 0 wins with the highest spade.
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 2, false)},
+		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 3, false)},
+		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 4, false)},
+	})
+	g.SetCurrentPlayerIdx(0)
+	g.SetPhase(domain.GongZhuPhasePlay)
+	g.SetTrickNumber(1)
+	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+
+	p := new(presenter.MockGongZhuPresenter)
+	p.On("Output", mock.Anything, mock.Anything).Return(gzMockOutput)
+	gi := usecase.NewGongZhuInteractor(g, p)
+	gi.Play(0)
+
+	assert.Equal(t, domain.GongZhuPhaseTrickEnd, g.GetPhase())
+	assert.Equal(t, 1, g.GetPlayer(0).GetTrickCount())
 }
 
 func TestGongZhuInteractor_NextTrick(t *testing.T) {

@@ -17,6 +17,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { RoundResults } from '../components/RoundResults';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
@@ -157,6 +158,11 @@ function DeuceToSevenPageContent() {
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isBettingPhase && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
+  const callAmount = state?.lastBet != null && humanPlayer ? state.lastBet - humanPlayer.currentBet : undefined;
+  const potOddsPercentage =
+    canAct && hasOutstandingBet && callAmount != null && state?.pot != null && state.pot >= 0
+      ? (callAmount / (state.pot + callAmount)) * 100
+      : undefined;
   const minRaise = state?.minRaise ?? 10;
   const cardCount = humanPlayer?.cards?.length ?? 0;
   const cpuPlayers = useMemo(() => state?.players?.filter((p) => !p.isHuman) ?? [], [state?.players]);
@@ -298,7 +304,9 @@ function DeuceToSevenPageContent() {
                       {tc('betting.currentBet')} {humanPlayer.currentBet}
                     </span>
                   )}
-                  {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
+                  {humanPlayer.folded && (
+                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
+                  )}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                   {isEnd && !humanPlayer.folded && humanPlayer.handName && (
                     <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
@@ -357,6 +365,8 @@ function DeuceToSevenPageContent() {
               />
             </div>
 
+            {isHandOver && <RoundResults results={state.roundResults} players={state.players} />}
+
             {/* Action log */}
             <ActionLogSection
               isEndPhase={!!state?.gameEndFlag}
@@ -381,6 +391,11 @@ function DeuceToSevenPageContent() {
                   maxBetAmount={state?.maxBetAmount}
                   potSize={state?.pot}
                   hasOutstandingBet={hasOutstandingBet}
+                  callAmountLabel={
+                    potOddsPercentage != null && callAmount != null
+                      ? ` ${t('callPotOdds', { amount: callAmount, percentage: potOddsPercentage.toFixed(1) })}`
+                      : undefined
+                  }
                   loading={loading}
                   onCall={() => execAction('call', undefined, undefined, undefined, getElapsed())}
                   onRaise={() => execAction('raise', undefined, betAmount, undefined, getElapsed())}

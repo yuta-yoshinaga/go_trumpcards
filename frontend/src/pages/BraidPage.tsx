@@ -247,7 +247,7 @@ function BraidPageContent() {
             }}
             onDragLeave={() => setInvalidFieldHover(null)}
             style={{ width: dims.cw, height: dims.ch }}
-            className={`rounded border-2 border-dashed text-game-text-muted text-xs flex flex-col items-center justify-center cursor-not-allowed ${invalidFieldHover === idx ? 'border-ds-error text-ds-error ring-2 ring-ds-error' : 'border-white/20'}`}
+            className={`rounded border-2 border-dashed text-game-text-muted text-xs flex flex-col items-center justify-center cursor-not-allowed ${invalidFieldHover === idx ? 'border-ds-error text-ds-error-text ring-2 ring-ds-error' : 'border-white/20'}`}
           >
             {t('empty')}
             <span className="text-[10px]">{t('autoRefill')}</span>
@@ -439,12 +439,16 @@ function BraidPageContent() {
                 </div>
                 <div className="text-center">
                   <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
+                  <div id="braid-waste-count" className="text-game-text-muted text-xs mb-1">
+                    {t('wasteCount', { count: state.waste.length })}
+                  </div>
                   {wasteTop ? (
                     <button
                       type="button"
                       onClick={() => game.handleSelectSource(wasteZone)}
                       disabled={!isPlaying || loading}
                       aria-label={cardAlt(wasteTop)}
+                      aria-describedby="braid-waste-count"
                       aria-pressed={isSourceSelected('waste', undefined)}
                       draggable={isPlaying && !loading}
                       onDragStart={dnd.handleDragStart(wasteZone)}
@@ -549,6 +553,7 @@ function BraidPageContent() {
 
             <ActionLogSection
               isEndPhase={isEnded}
+              availableDuringPlay
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}

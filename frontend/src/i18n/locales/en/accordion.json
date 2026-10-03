@@ -26,8 +26,10 @@
   "hintReasonOffset3": "an important move that preserves your options",
   "listSeparator": ", ",
   "mergeOffsetAvailable": "can merge {{offset}} to the left",
+  "mergeTargetColumn": "pile {{col}}",
   "noMergeAvailable": "no merge available",
-  "selectionMoves": "Pile {{idx}} selected. {{count}} merge(s) available",
+  "selectionMoves_one": "Pile {{idx}} selected. Merge target: {{targets}}. {{count}} merge available",
+  "selectionMoves_other": "Pile {{idx}} selected. Merge targets: {{targets}}. {{count}} merges available",
   "selectionNoMoves": "Pile {{idx}} selected. No merge available",
   "landscapeBanner": "Landscape mode recommended",
   "frontendHint": {

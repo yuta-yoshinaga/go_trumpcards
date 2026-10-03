@@ -54,14 +54,7 @@ func (li *LingerLongerInteractor) ResetWithConfig(cfg domain.LingerLongerConfig)
 
 // Play カードをプレイ
 func (li *LingerLongerInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(li.Game, li.sp); blocked {
-		return out
-	}
-	if err := li.Game.PlayerPlay(cardIndex); err != nil {
-		return li.sp.Output(li.Game, err)
-	}
-	li.advance()
-	return li.sp.Output(li.Game, nil)
+	return humanAction(li.Game, li.sp, func() error { return li.Game.PlayerPlay(cardIndex) }, li.advance)
 }
 
 // GiveUp 投了する

@@ -9,6 +9,11 @@
   "label.layout": "Layout",
   "label.gate": "Gate",
   "label.net": "Net",
+  "label.sessionWins_one": "Session wins: {{count}}",
+  "label.sessionWins_other": "Session wins: {{count}}",
+  "label.sessionLosses_one": "Session losses: {{count}}",
+  "label.sessionLosses_other": "Session losses: {{count}}",
+  "label.sessionNet": "Session net: {{net}}",
   "label.suitCount": "{{count}} of this suit",
   "label.even": "even",
   "label.against": "against you",
@@ -29,5 +34,7 @@
   "frontendHint.monteBankLoneSuit": "only one of this suit is showing, so 3:1 makes it an even bet",
   "frontendHint.monteBankAllDuplicated": "every suit is showing at least twice, so no bet here is even",
   "label.remainingOfSuit": "{{count}} left in the deck",
+  "label.nextGateProbability": "Next gate match probability {{probability}}",
+  "label.probabilityUnavailable": "—",
   "selection.changed": "Deselected {{prev}}, selected {{card}}"
 }

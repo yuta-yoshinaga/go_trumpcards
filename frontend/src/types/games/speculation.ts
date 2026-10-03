@@ -35,6 +35,8 @@ export const SPECULATION_NO_SUIT = -1;
 export interface SpeculationSeat {
   name: string;
   chips: number;
+  /** Net change in chips since this round began. */
+  chipChange: number;
   /** How many cards this seat has still to turn up. */
   hiddenCount: number;
   /** The best trump this seat currently holds, or absent when it holds none. */

@@ -65,6 +65,9 @@ func TestSheepshead_ResetDealsHandsAndBlind(t *testing.T) {
 	if g.GetPickerIdx() != -1 || g.GetWinnerIdx() != -1 {
 		t.Errorf("picker/winner should be -1 at start")
 	}
+	if g.GetLastTrickWinner() != -1 || g.GetCompletedTrickCount() != 0 {
+		t.Errorf("trick winner/count at deal start = %d/%d, want -1/0", g.GetLastTrickWinner(), g.GetCompletedTrickCount())
+	}
 }
 
 func TestSheepshead_CardClassification(t *testing.T) {
@@ -433,6 +436,9 @@ func TestSheepshead_ResolveAndNextTrick(t *testing.T) {
 		{PlayerIdx: 4, Card: ssCard(CardDesignClover, 8)},
 	})
 	g.ResolveTrick()
+	if g.GetLastTrickWinner() != 0 || g.GetCompletedTrickCount() != 1 {
+		t.Fatalf("trick result winner/count = %d/%d, want 0/1", g.GetLastTrickWinner(), g.GetCompletedTrickCount())
+	}
 	if g.GetPlayer(0).GetTrickCount() != 1 {
 		t.Errorf("winner should have 1 trick")
 	}
@@ -654,6 +660,8 @@ func TestSheepshead_GetPlayableIndices(t *testing.T) {
 func TestSheepshead_JSONRoundTrip(t *testing.T) {
 	g := newSSGame(true)
 	g.Reset()
+	g.lastTrickWinner = 3
+	g.completedTrickCount = 2
 	g.SetCurrentPlayerIdx(0)
 	g.SetLeadPlayerIdx(0)
 	_ = g.PlayerPick(true)
@@ -667,6 +675,9 @@ func TestSheepshead_JSONRoundTrip(t *testing.T) {
 	}
 	if g2.GetPickerIdx() != g.GetPickerIdx() || g2.GetPhase() != g.GetPhase() {
 		t.Errorf("round trip mismatch")
+	}
+	if g2.GetLastTrickWinner() != 3 || g2.GetCompletedTrickCount() != 2 {
+		t.Errorf("trick result round trip = %d/%d, want 3/2", g2.GetLastTrickWinner(), g2.GetCompletedTrickCount())
 	}
 	if g2.GetPlayerCnt() != SheepsheadPlayerCnt {
 		t.Errorf("players lost in round trip")

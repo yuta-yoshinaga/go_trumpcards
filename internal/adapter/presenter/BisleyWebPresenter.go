@@ -48,6 +48,7 @@ func (p *BisleyWebPresenter) Output(b interfaces.BisleyGame, lastErr error) stri
 	// 基礎札（昇順・降順）
 	resObj.AceFoundations = bisleyFoundationsToOutput(b.GetAceFoundations())
 	resObj.KingFoundations = bisleyFoundationsToOutput(b.GetKingFoundations())
+	resObj.FoundationSize = b.GetFoundationSize()
 
 	// メッセージ
 	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`

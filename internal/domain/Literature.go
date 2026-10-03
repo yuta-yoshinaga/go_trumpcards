@@ -860,14 +860,6 @@ func literatureClaimLogCode(outcome LiteratureClaimOutcome) string {
 	return map[LiteratureClaimOutcome]string{LiteratureClaimWon: "literature.log.claimWon", LiteratureClaimCancelled: "literature.log.claimCancelled", LiteratureClaimLost: "literature.log.claimLost"}[outcome]
 }
 
-// literatureCardName は札の内部名を返す (棋譜用)。
-func literatureCardName(c *Card) string {
-	if c == nil {
-		return "-"
-	}
-	return strconv.Itoa(c.GetDesign()) + "-" + strconv.Itoa(c.GetValue())
-}
-
 // ---- テスト用 ----
 
 // ---- JSON ----

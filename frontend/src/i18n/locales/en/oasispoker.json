@@ -12,6 +12,8 @@
   },
   "button": {
     "bet": "Bet",
+    "minimum": "Minimum",
+    "maximum": "Maximum",
     "exchange": "Exchange",
     "stand": "Stand",
     "play": "Call",
@@ -56,6 +58,7 @@
   "betGuide": "Place an Ante and an optional Jackpot side bet",
   "exchangeGuide": "Tap cards to select them, then press Exchange or Stand",
   "exchangeFeeInfo": "Fee: ante × {{ante}} per card = {{fee}}",
+  "exchangeSelectionAnnouncement": "Selected: {{count}} cards. Fee: ante × {{ante}} per card = {{fee}}",
   "exchangeFeeHighRisk": "High-cost warning",
   "exchangeSelected": "Selected: {{count}}",
   "payoutRef": {

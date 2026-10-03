@@ -156,6 +156,24 @@ describe('ZwickerPage', () => {
     );
   });
 
+  it('shows selected capture targets and lets each target be deselected there', async () => {
+    renderWithProviders(<ZwickerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.queryByTestId('zwicker-capture-selection')).not.toBeInTheDocument();
+    fireEvent.click(screen.getAllByTestId('zwicker-table-card')[0]);
+    fireEvent.click(screen.getAllByTestId('zwicker-build')[0]);
+
+    const selection = screen.getByTestId('zwicker-capture-selection');
+    expect(selection).toHaveTextContent('場札 0');
+    expect(selection).toHaveTextContent('ビルド 0');
+    fireEvent.click(screen.getByRole('button', { name: '場札 0 を選択解除' }));
+    expect(selection).not.toHaveTextContent('場札 0');
+    expect(selection).toHaveTextContent('ビルド 0');
+    fireEvent.click(screen.getByRole('button', { name: 'ビルド 0 を選択解除' }));
+    expect(screen.queryByTestId('zwicker-capture-selection')).not.toBeInTheDocument();
+  });
+
   it('will not capture nothing', async () => {
     renderWithProviders(<ZwickerPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
@@ -308,10 +326,15 @@ describe('ZwickerPage', () => {
     await waitFor(() => expect(screen.getByTestId('zwicker-turn-announce')).toHaveTextContent('あなたの手番です'));
   });
 
-  // **変わり目だけを読む。**自分の手番で開いただけの盤で読み上げると、
-  // フェーズ表示が既に言っていることを毎回繰り返すことになる。
-  it('stays silent when the page opens already on the human turn', async () => {
+  it('announces the human turn on the initial state', async () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 0 }));
+    renderWithProviders(<ZwickerPage />);
+    const live = await screen.findByTestId('zwicker-turn-announce');
+    await waitFor(() => expect(live).toHaveTextContent('あなたの手番です'));
+  });
+
+  it('stays silent when the initial state is not the human turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
     renderWithProviders(<ZwickerPage />);
     const live = await screen.findByTestId('zwicker-turn-announce');
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());

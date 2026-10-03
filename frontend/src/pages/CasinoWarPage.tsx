@@ -36,6 +36,7 @@ import { CASINOWAR_HELP, parseCasinowarCommand } from '../utils/cli/commands/cas
 import { formatCasinowarState } from '../utils/cli/formatters/casinowarFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const CW_TUTORIAL_STEPS: TutorialStep[] = [
@@ -86,23 +87,24 @@ function CasinoWarPageContent() {
   const isEndPhase = state?.phase === CasinoWarPhase.END;
 
   // Client-side win/loss history persisted in localStorage.
-  const { history, tally, recordOutcome, clearHistory } = useCasinoWarStats();
+  const { history, tally, cumulativeNetChange, recordOutcome, clearHistory } = useCasinoWarStats();
   // Record each finished round exactly once. The guard keys on the END-phase
   // episode: it flips true when the round resolves and resets whenever the phase
   // leaves END (a new round begins), so re-renders at END never double-count.
   const recordedRef = useRef(false);
   const phase = state?.phase;
   const result = state?.result;
+  const netChange = state?.netChange;
   useEffect(() => {
     if (phase === CasinoWarPhase.END) {
-      if (!recordedRef.current && result !== undefined) {
+      if (!recordedRef.current && result !== undefined && netChange !== undefined) {
         recordedRef.current = true;
-        recordOutcome(outcomeFromResult(result));
+        recordOutcome(outcomeFromResult(result), netChange);
       }
     } else {
       recordedRef.current = false;
     }
-  }, [phase, result, recordOutcome]);
+  }, [phase, result, netChange, recordOutcome]);
 
   const handleBet = useCallback(() => {
     setLastBetAmount(betAmount);
@@ -246,6 +248,9 @@ function CasinoWarPageContent() {
                 <div className="font-bold">
                   {t('payout.total')}: {state.totalPayout}
                 </div>
+                <div data-testid="net-change" className="font-bold">
+                  {t('payout.netChange')}: {formatSignedDelta(state.netChange)}
+                </div>
               </div>
             )}
 
@@ -300,6 +305,9 @@ function CasinoWarPageContent() {
                   >
                     {t('trend.clear')}
                   </button>
+                </div>
+                <div className="mt-1 text-center text-sm text-ds-text-primary" data-testid="cw-cumulative-net-change">
+                  {t('trend.cumulativeNetChange')}: {formatSignedDelta(cumulativeNetChange)}
                 </div>
               </div>
             )}
@@ -362,7 +370,7 @@ function CasinoWarPageContent() {
                   {t('warCost', { amount: state.ante })}
                 </span>
                 {state.chips < state.ante && (
-                  <p role="alert" data-testid="war-insufficient" className="text-ds-error text-xs">
+                  <p role="alert" data-testid="war-insufficient" className="text-ds-error-text text-xs">
                     {t('insufficientChips')}
                   </p>
                 )}

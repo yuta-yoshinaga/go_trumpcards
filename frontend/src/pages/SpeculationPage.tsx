@@ -33,6 +33,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseSpeculationCommand, SPECULATION_CLI_HELP } from '../utils/cli/commands/speculationCommands';
 import { formatSpeculationState } from '../utils/cli/formatters/speculationFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { speculationDisplayRound } from '../utils/speculationRound';
 
@@ -262,6 +263,18 @@ function SpeculationPageContent() {
                     })}
                   </div>
                 )}
+                {state.seats.map((seat, index) => (
+                  <div
+                    key={`chip-change-${index}`}
+                    className="text-ds-text-muted text-sm"
+                    data-testid={`sp-chip-change-${index}`}
+                  >
+                    {t('result.chipChange', {
+                      name: index === SPECULATION_HUMAN_SEAT ? t('label.you') : seat.name,
+                      change: formatSignedDelta(seat.chipChange),
+                    })}
+                  </div>
+                ))}
                 {gameOver && (
                   <div className="text-ds-text-muted text-sm" data-testid="sp-final-chips">
                     {t('result.finalChips', { chips: human?.chips ?? 0 })}

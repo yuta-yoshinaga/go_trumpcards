@@ -63,29 +63,6 @@ type SchnapsenHint struct {
 	IsMarriage bool   // 推奨アクションがマリアージュ宣言かどうか
 }
 
-// SchnapsenCardPoints カードの得点を返す (A=11,10=10,K=4,Q=3,J=2; その他=0)。
-// switch 実装はパッケージ初期化時のグローバルマップを避け、全 Cloudflare
-// Worker WASM バイナリ (classic は 1 MB gzip 上限) のサイズを抑える。
-func SchnapsenCardPoints(c *Card) int {
-	if c == nil {
-		return 0
-	}
-	switch c.GetValue() {
-	case 1: // Ace
-		return 11
-	case 10: // Ten
-		return 10
-	case 13: // King
-		return 4
-	case 12: // Queen
-		return 3
-	case 11: // Jack
-		return 2
-	default:
-		return 0
-	}
-}
-
 // SchnapsenRankOrder カードのスート内順位を返す (大きいほど強い; A>10>K>Q>J)。
 func SchnapsenRankOrder(c *Card) int {
 	if c == nil {
@@ -256,7 +233,7 @@ func (s *Schnapsen) ResolveTrick() {
 	trickPoints := 0
 	for i, tc := range s.currentTrick {
 		trickCards[i] = tc.Card
-		trickPoints += SchnapsenCardPoints(tc.Card)
+		trickPoints += AceTenCardPoints(tc.Card)
 	}
 
 	s.players[winnerIdx].AddTrick(trickCards)
@@ -727,19 +704,6 @@ func (s *Schnapsen) determineWinner() int {
 	}
 }
 
-// SchnapsenDetermineWinner 66 点ルールでの勝者を返す公開ヘルパー。
-// どちらも 66 未満なら lastTrickWinner を勝者とする。
-func SchnapsenDetermineWinner(p0, p1, lastTrickWinner int) int {
-	switch {
-	case p0 >= SchnapsenWinThreshold:
-		return 0
-	case p1 >= SchnapsenWinThreshold:
-		return 1
-	default:
-		return lastTrickWinner
-	}
-}
-
 // sortAllHands 全プレイヤーの手札をソートする
 func (s *Schnapsen) sortAllHands() {
 	sortEachHand(s.players, s.sortHand)
@@ -764,7 +728,7 @@ func (s *Schnapsen) sortHand(p *SchnapsenPlayer) {
 // playHintReason ヒント理由キーを判定する
 func (s *Schnapsen) playHintReason(playerIdx, chosenIdx int) string {
 	card := s.players[playerIdx].GetCard(chosenIdx)
-	pts := SchnapsenCardPoints(card)
+	pts := AceTenCardPoints(card)
 	if len(s.currentTrick) == 0 {
 		if card.GetDesign() == s.trumpSuit {
 			return "lead_trump"
@@ -846,7 +810,7 @@ func (s *Schnapsen) cpuLead(playerIdx int, legal []int) int {
 
 // schnapsenLeadScore 値が小さいほど「リードに適している」(トランプ・高得点札を温存する)
 func schnapsenLeadScore(c *Card, trumpSuit int) int {
-	score := SchnapsenCardPoints(c)*10 + SchnapsenRankOrder(c)
+	score := AceTenCardPoints(c)*10 + SchnapsenRankOrder(c)
 	if c.GetDesign() == trumpSuit {
 		score += 1000
 	}
@@ -880,7 +844,7 @@ func (s *Schnapsen) cpuFollow(playerIdx int, legal []int) int {
 	}
 
 	// トリックの得点が高い、または勝てるなら奪取する価値が高い
-	if winIdx >= 0 && SchnapsenCardPoints(leadCard) >= 10 {
+	if winIdx >= 0 && AceTenCardPoints(leadCard) >= 10 {
 		return winIdx
 	}
 	if winIdx >= 0 && leadCard.GetDesign() == s.trumpSuit {
@@ -910,7 +874,7 @@ func (s *Schnapsen) legalAllowsDump(playerIdx int, legal []int) bool {
 
 // schnapsenDumpScore 値が小さいほど「失っても良い」カード
 func schnapsenDumpScore(c *Card, trumpSuit int) int {
-	score := SchnapsenCardPoints(c)*10 + SchnapsenRankOrder(c)
+	score := AceTenCardPoints(c)*10 + SchnapsenRankOrder(c)
 	if c.GetDesign() == trumpSuit {
 		score += 1000
 	}

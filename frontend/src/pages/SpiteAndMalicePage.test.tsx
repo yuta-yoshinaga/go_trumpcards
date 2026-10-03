@@ -42,11 +42,31 @@ const baseState: SpiteAndMaliceResponse = {
   goalSize: 20,
   cpuDifficulty: 1,
   canAutoComplete: false,
+  canUndo: false,
   message: '',
   messageCode: 'spiteandmalice.playing',
 };
 
 const cpuTurnState: SpiteAndMaliceResponse = { ...baseState, current: 1 };
+
+it('undoes when history exists and does not send a command without history', async () => {
+  mockExec.mockResolvedValueOnce({ ...baseState, canUndo: false });
+  renderWithProviders(<SpiteAndMalicePage />);
+  await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  const undo = screen.getByTestId('sam-undo-btn');
+  expect(undo).toHaveAttribute('aria-disabled', 'true');
+  fireEvent.click(undo);
+  expect(mockExec).toHaveBeenCalledTimes(1);
+});
+
+it('sends undo when the server reports available history', async () => {
+  mockExec.mockResolvedValue({ ...baseState, canUndo: true });
+  renderWithProviders(<SpiteAndMalicePage />);
+  const undo = await screen.findByTestId('sam-undo-btn');
+  expect(undo).toHaveAttribute('aria-disabled', 'false');
+  fireEvent.click(undo);
+  await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+});
 
 const winState: SpiteAndMaliceResponse = {
   ...baseState,
@@ -74,6 +94,15 @@ beforeEach(() => {
 
 describe('SpiteAndMalicePage', () => {
   const foundationButtons = () => screen.getAllByRole('button', { name: /組札|Foundation/ });
+
+  it('highlights the human goal pile cards remaining', async () => {
+    renderWithProviders(<SpiteAndMalicePage />);
+
+    const remainingCount = await screen.findByText('残り20枚');
+    expect(remainingCount.className).toContain('text-lg');
+    expect(remainingCount.className).toContain('font-bold');
+    expect(remainingCount.className).toContain('text-ds-accent');
+  });
 
   it('marks only matching foundations after selecting a hand, goal, or side card', async () => {
     mockExec.mockResolvedValue({

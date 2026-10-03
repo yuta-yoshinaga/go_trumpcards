@@ -32,6 +32,7 @@ export interface MarriageResponse extends BaseGameResponse {
   currentPlayerIdx: number;
   dealerIdx: number;
   discardTop: Card | null;
+  discardPile: Card[];
   drawPileCount: number;
   wildJoker: Card | null;
   wildRank: number;

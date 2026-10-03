@@ -97,7 +97,7 @@ function teamBadgeClass(team: number): string {
   // bg-ds-surface + a coloured border (not an opacity-multiplied fill) keeps the
   // contrast ratio stable over the felt table — see DESIGN.md's opacity rule.
   const base = 'inline-block rounded border px-1.5 py-0.5 text-xs font-medium bg-ds-surface';
-  return team === 0 ? `${base} border-ds-info text-ds-info` : `${base} border-ds-error text-ds-error`;
+  return team === 0 ? `${base} border-ds-info text-ds-info` : `${base} border-ds-error text-ds-error-text`;
 }
 
 export const CatchTenPage = withTutorial(CatchTenPageContent, 'catchten', CT_TUTORIAL_STEPS);
@@ -333,6 +333,9 @@ function CatchTenPageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  cardAriaLabelFor={(player, card) =>
+                    t('trickCardByPlayer', { card: cardAlt(card), name: playerName(player.id, player.isHuman) })
+                  }
                   dataTutorial="ct-trick-display"
                 />
               </div>
@@ -373,7 +376,7 @@ function CatchTenPageContent() {
                     open={isRoundEnd || isGameEnd || undefined}
                   >
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
-                      {t('teamScores')}
+                      {t('teamScores')} · {t('targetScore', { score: state.config.pointLimit })}
                     </summary>
                     <div className="overflow-x-auto -mx-2 px-2">
                       <table className="w-full text-sm text-ds-text-muted min-w-[240px] mt-1">
@@ -405,7 +408,9 @@ function CatchTenPageContent() {
                   </details>
                 ) : (
                   <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="ct-score-table">
-                    <div className="text-ds-text-muted text-sm mb-1">{t('teamScores')}</div>
+                    <div className="text-ds-text-muted text-sm mb-1">
+                      {t('teamScores')} · {t('targetScore', { score: state.config.pointLimit })}
+                    </div>
                     <div className="overflow-x-auto -mx-2 px-2">
                       <table className="w-full text-sm text-ds-text-muted min-w-[240px]">
                         <thead>

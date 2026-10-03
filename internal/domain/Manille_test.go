@@ -189,6 +189,9 @@ func TestManille_ResolveTrickPoints(t *testing.T) {
 		{PlayerIdx: 3, Card: manCard(CardDesignClover, 7)},
 	})
 	g.ResolveTrick()
+	if points := g.GetCurrentTrickPoints(); points != 12 {
+		t.Errorf("current trick points = %d, want 12", points)
+	}
 	pts := g.GetRoundCardPoints()
 	if pts[0] != 12 {
 		t.Errorf("team 0 round points = %d, want 12", pts[0])

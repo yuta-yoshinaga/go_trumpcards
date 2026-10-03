@@ -439,53 +439,54 @@ function BinokelPageContent() {
             )}
 
             {/* Melds */}
-            {(phase === BinokelPhase.MELD || phase === BinokelPhase.ROUND_END) && state.playerMelds && (
-              // biome-ignore lint/a11y/noStaticElementInteractions: panel acts as a hover-out reset for the per-badge highlight; not interactive on its own.
-              <div
-                className="mb-3 p-2 rounded bg-ds-accent/15"
-                data-tutorial="bn-meld-area"
-                onMouseLeave={() => setHighlightedMeldIdx(null)}
-              >
-                <div className="text-ds-text-primary font-bold mb-1">{t('meldScore')}:</div>
-                {state.playerMelds.map((melds: BinokelMeldData[], pIdx: number) =>
-                  melds.length > 0 ? (
-                    <div key={pIdx} className="text-ds-text-muted text-sm mb-1">
-                      <span className="font-semibold">{playerName(pIdx, state.players[pIdx]?.isHuman)}: </span>
-                      {melds.map((m: BinokelMeldData, mIdx: number) => {
-                        const isHumanMeld = pIdx === humanIdx && phase === BinokelPhase.MELD;
-                        const isActive = isHumanMeld && highlightedMeldIdx === mIdx;
-                        if (!isHumanMeld) {
+            {(phase === BinokelPhase.MELD || phase === BinokelPhase.PLAY || phase === BinokelPhase.ROUND_END) &&
+              state.playerMelds && (
+                // biome-ignore lint/a11y/noStaticElementInteractions: panel acts as a hover-out reset for the per-badge highlight; not interactive on its own.
+                <div
+                  className="mb-3 p-2 rounded bg-ds-accent/15"
+                  data-tutorial="bn-meld-area"
+                  onMouseLeave={() => setHighlightedMeldIdx(null)}
+                >
+                  <div className="text-ds-text-primary font-bold mb-1">{t('meldScore')}:</div>
+                  {state.playerMelds.map((melds: BinokelMeldData[], pIdx: number) =>
+                    melds.length > 0 ? (
+                      <div key={pIdx} className="text-ds-text-muted text-sm mb-1">
+                        <span className="font-semibold">{playerName(pIdx, state.players[pIdx]?.isHuman)}: </span>
+                        {melds.map((m: BinokelMeldData, mIdx: number) => {
+                          const isHumanMeld = pIdx === humanIdx && phase === BinokelPhase.MELD;
+                          const isActive = isHumanMeld && highlightedMeldIdx === mIdx;
+                          if (!isHumanMeld) {
+                            return (
+                              <span key={mIdx} className="mr-2">
+                                {t(`meldTypes.${m.type}`)} ({m.points})
+                              </span>
+                            );
+                          }
                           return (
-                            <span key={mIdx} className="mr-2">
+                            <button
+                              key={mIdx}
+                              type="button"
+                              onClick={() => setHighlightedMeldIdx((prev) => (prev === mIdx ? null : mIdx))}
+                              onMouseEnter={() => setHighlightedMeldIdx(mIdx)}
+                              onFocus={() => setHighlightedMeldIdx(mIdx)}
+                              data-testid={`bn-meld-badge-${mIdx}`}
+                              data-active={isActive ? 'true' : undefined}
+                              className={`mr-2 inline-block px-2 py-0.5 rounded text-xs ${
+                                isActive ? 'bg-ds-accent text-black font-bold' : 'bg-black/20 hover:bg-ds-accent/30'
+                              }`}
+                            >
                               {t(`meldTypes.${m.type}`)} ({m.points})
-                            </span>
+                            </button>
                           );
-                        }
-                        return (
-                          <button
-                            key={mIdx}
-                            type="button"
-                            onClick={() => setHighlightedMeldIdx((prev) => (prev === mIdx ? null : mIdx))}
-                            onMouseEnter={() => setHighlightedMeldIdx(mIdx)}
-                            onFocus={() => setHighlightedMeldIdx(mIdx)}
-                            data-testid={`bn-meld-badge-${mIdx}`}
-                            data-active={isActive ? 'true' : undefined}
-                            className={`mr-2 inline-block px-2 py-0.5 rounded text-xs ${
-                              isActive ? 'bg-ds-accent text-black font-bold' : 'bg-black/20 hover:bg-ds-accent/30'
-                            }`}
-                          >
-                            {t(`meldTypes.${m.type}`)} ({m.points})
-                          </button>
-                        );
-                      })}
-                    </div>
-                  ) : null,
-                )}
-                {phase === BinokelPhase.MELD && highlightedCardKeys.size > 0 && (
-                  <div className="text-ds-text-muted text-xs mt-1">{t('meldHighlightHint')}</div>
-                )}
-              </div>
-            )}
+                        })}
+                      </div>
+                    ) : null,
+                  )}
+                  {phase === BinokelPhase.MELD && highlightedCardKeys.size > 0 && (
+                    <div className="text-ds-text-muted text-xs mt-1">{t('meldHighlightHint')}</div>
+                  )}
+                </div>
+              )}
 
             <GameMessageBox
               message={state.message}
@@ -571,6 +572,10 @@ function BinokelPageContent() {
             )}
 
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
+
+            <span className="sr-only" role="status" aria-live="polite" data-testid="bn-dabb-selection-live">
+              {isDabbTurn ? t('dabbSelectionCount', { count: selectedCardIndices.length }) : ''}
+            </span>
 
             {/* Server hint result */}
             <div data-testid="binokel-hint-live" role="status" aria-live="polite">

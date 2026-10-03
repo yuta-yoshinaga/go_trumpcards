@@ -25,6 +25,8 @@
   "team0": "チーム 0（あなた & CPU 2）",
   "team1": "チーム 1（CPU 1 & CPU 3）",
   "teamScore": "チーム得点: {{score}}",
+  "teamScoreUpdated": "{{team}} の得点: {{score}}点",
+  "listSeparator": "、",
   "progressLabel": "進捗: {{score}} / {{target}}",
   "marriageAvailable": "マリッジ可能: {{list}}（同スートのK・Qを両方持ち、リードで出すと成立）",
   "marriageHistory": "今ラウンドの結婚履歴",
@@ -43,6 +45,10 @@
   "score": "得点: {{score}}",
   "playerScore": "{{name}}: {{score}}点",
   "playButton": "出す",
+  "restrictionReason": {
+    "followLeadSuit": "リードスートに従ってください",
+    "playTrump": "切り札を出してください"
+  },
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",
   "playPhase": {

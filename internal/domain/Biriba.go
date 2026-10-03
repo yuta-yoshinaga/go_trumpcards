@@ -69,14 +69,6 @@ func DefaultBiribaConfig() CanastaConfig {
 	return cfg
 }
 
-// NewBiribaPlayer はビリバプレイヤーを生成する（CanastaPlayer と同一）。
-func NewBiribaPlayer(isHuman bool) *CanastaPlayer { return NewCanastaPlayer(isHuman) }
-
-// NewBiriba はビリバゲームを生成する（ポゼット有効の Canasta）。
-func NewBiriba(trumpCards *TrumpCards, players []*CanastaPlayer, config CanastaConfig) *Canasta {
-	return NewCanasta(trumpCards, players, config)
-}
-
 // NewDefaultBiriba は標準的な2人ビリバ（人間1 + CPU1, 108枚デッキ）を生成する。
 func NewDefaultBiriba() *Canasta {
 	players := []*CanastaPlayer{

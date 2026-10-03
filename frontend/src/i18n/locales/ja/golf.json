@@ -7,6 +7,7 @@
   "title": "ゴルフ",
   "stock": "山札",
   "waste": "捨て札",
+  "wasteCount": "{{count}}枚",
   "moveCount": "手数",
   "combo": "コンボ ×{{count}}",
   "draw": "引く",
@@ -18,6 +19,7 @@
   "stalemate": "手詰まりです",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
+  "remainingCards": "残りカード数: {{count}}枚",
   "noHint": "ヒントはありません",
   "hintAvailable": "ヒントがあります",
   "hintType": {

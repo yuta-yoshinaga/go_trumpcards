@@ -1,4 +1,5 @@
 {
+  "dealerBadge": "Dealer",
   "phase": {
     "play": "Play",
     "trickEnd": "Trick End",
@@ -14,6 +15,7 @@
     "hard": "Hard"
   },
   "round": "Round {{n}}",
+  "listSeparator": ", ",
   "trick": "Trick {{n}}",
   "handSize": "Hand {{n}}",
   "playerHandCount": {

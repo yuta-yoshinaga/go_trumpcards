@@ -17,12 +17,16 @@
     "tableCards": "場札",
     "score": "スコア",
     "hand": "手札",
+    "handCardPosition": "{{card}}、手札の位置{{pos}}",
+    "tableCardPosition": "{{card}}、場札の位置{{pos}}",
     "selectCard": "カードを選択",
     "stopCalled": "ストップ宣言済み",
     "yourTurn": "あなたのターン",
     "cpuTurn": "CPU{{id}}のターン",
     "suitScores": "スート別合計",
     "suitBadge": "{{score}}/{{max}}",
+    "suitBadgeAria": "{{suit}}、{{badge}}",
+    "suitBadgeAriaHighest": "{{suit}}、{{badge}}、最高得点",
     "stopCalledBy": "ストップ宣言中（{{name}}）— 残り1巡が最終ラウンドです"
   },
   "settings": {

@@ -6,6 +6,7 @@
   "board": "Board",
   "dealerQualified": "Dealer qualifies",
   "dealerDoesNotQualify": "Dealer does not qualify",
+  "dealerQualifyRule": "The dealer qualifies with two pair or better, or a pair of fours or better",
   "betError": "Ante must be at least 10, bets in steps of 10, and within your balance",
   "label": {
     "chips": "Chips",
@@ -36,7 +37,9 @@
     "ante": "Ante",
     "call": "Call",
     "bonus": "AA Bonus",
-    "total": "Total"
+    "total": "Total",
+    "netChange": "Net change",
+    "noNetChange": "No net change"
   },
   "handRank": {
     "0": "High Card",

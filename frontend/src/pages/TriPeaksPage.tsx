@@ -314,6 +314,7 @@ function TriPeaksPageContent() {
               {peakRemaining.map((n, i) => (
                 <span key={`peak-${i.toString()}`} className="flex items-center">
                   {i > 0 && <span className="text-game-text-muted mx-0.5">/</span>}
+                  <span className="sr-only">{t(['leftPeak', 'middlePeak', 'rightPeak'][i])}</span>
                   <span
                     title={n === 0 ? t('peakCleared') : undefined}
                     className={`font-bold ${n === 0 ? 'text-ds-success' : ''}`}
@@ -428,9 +429,15 @@ function TriPeaksPageContent() {
               </div>
 
               <div className="text-center">
-                <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
+                <div className="text-game-text-muted text-xs mb-1">
+                  {t('waste')} <span id="tripeaks-waste-count">{t('wasteCount', { count: state.waste.length })}</span>
+                </div>
                 {state.waste.length > 0 ? (
-                  <AnimatedCard card={state.waste[state.waste.length - 1]} width={effectiveCardWidth} />
+                  <AnimatedCard
+                    card={state.waste[state.waste.length - 1]}
+                    width={effectiveCardWidth}
+                    ariaDescribedBy="tripeaks-waste-count"
+                  />
                 ) : (
                   <div
                     style={{ width: effectiveCardWidth, height: cardHeight }}

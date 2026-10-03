@@ -1,5 +1,5 @@
 import type { macauApi } from '../../../api/gameApi';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import { STANDARD_SUIT_MAP as SUIT_MAP } from '../suitMaps';
 import type { CliParseResult } from '../types';
 
@@ -60,11 +60,8 @@ export function parseMacauCommand(input: string): CliParseResult<MacauArgs> {
     case 'h':
     case 'hint':
       return { args: ['hint'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

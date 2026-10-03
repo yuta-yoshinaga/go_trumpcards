@@ -833,6 +833,14 @@ func (s *Ramsch) GetPlayer(i int) *RamschPlayer {
 // GetLeadPlayerIdx returns the lead player index.
 func (s *Ramsch) GetLeadPlayerIdx() int { return s.round.leadPlayerIdx }
 
+// GetTrickWinnerIdx returns the winner of the visible trick, or -1 when no full trick exists.
+func (s *Ramsch) GetTrickWinnerIdx() int {
+	if len(s.round.currentTrick) != RamschPlayerCnt {
+		return -1
+	}
+	return s.trickWinner()
+}
+
 // GetConfig returns the config.
 func (s *Ramsch) GetConfig() RamschConfig { return s.config }
 

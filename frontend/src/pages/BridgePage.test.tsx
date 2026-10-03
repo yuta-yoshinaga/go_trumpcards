@@ -179,6 +179,23 @@ beforeEach(() => {
 });
 
 describe('BridgePage', () => {
+  it('shows declarer team contract progress using completed tricks only', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      players: playPhaseState.players.map((player) => ({
+        ...player,
+        trickCount: player.team === 0 ? 1 : 0,
+      })),
+      currentTrick: [
+        { playerIdx: 0, card: { design: 'SPADE', value: 1 } },
+        { playerIdx: 1, card: { design: 'HEART', value: 5 } },
+      ],
+    });
+    renderWithProviders(<BridgePage />);
+
+    expect(await screen.findByText('チーム 0 の獲得トリック: 2 / 7（残り 5）')).toBeInTheDocument();
+  });
+
   it('shows the resolved winner badge at the lead player seat', async () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<BridgePage />);
@@ -482,6 +499,45 @@ describe('BridgePage', () => {
     await waitFor(() => {
       expect(screen.getByText('\u30c0\u30df\u30fc\u306e\u624b\u672d')).toBeInTheDocument();
     });
+  });
+
+  it('lets a human declarer select and play a card from dummy', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, currentPlayerIdx: 2 });
+    renderWithProviders(<BridgePage />);
+
+    const dummyCard = await screen.findByRole('button', { name: '♦ 10' });
+    fireEvent.click(dummyCard);
+    expect(dummyCard).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+  });
+
+  it('uses dummy hand indices for keyboard card selection and confirmation', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, currentPlayerIdx: 2 });
+    renderWithProviders(<BridgePage />);
+
+    await screen.findByRole('button', { name: '♦ 10' });
+    fireEvent.keyDown(document, { key: '1' });
+    expect(screen.getByRole('button', { name: '♦ 10' })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.keyDown(document, { key: 'Enter' });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+  });
+
+  it('does not expose human card controls on dummy turn when CPU is declarer', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      players: playPhaseState.players.map((player) => ({ ...player, isHuman: player.id === 1 })),
+      declarerIdx: 0,
+      dummyIdx: 2,
+      currentPlayerIdx: 2,
+    });
+    renderWithProviders(<BridgePage />);
+
+    await waitFor(() => expect(screen.getByTestId('bridge-dummy-area')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: '♦ 10' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
   });
 
   // オープニングリード完了後に公開されたダミーの手札がある場合のみダミー領域を表示する。

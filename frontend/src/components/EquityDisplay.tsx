@@ -46,7 +46,7 @@ export function EquityDisplay({ equity, potOdds, lowProbability }: EquityDisplay
 
       <div className="flex items-center gap-2 mb-1">
         <span
-          className={`text-sm font-bold ${isPositiveEV ? 'text-ds-success' : 'text-ds-error'}`}
+          className={`text-sm font-bold ${isPositiveEV ? 'text-ds-success' : 'text-ds-error-text'}`}
           data-testid="ev-indicator"
         >
           {isPositiveEV ? t('learning.plusEV') : t('learning.minusEV')}

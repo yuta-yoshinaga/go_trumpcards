@@ -33,6 +33,8 @@ func setupTarocchiniCuiMock() *interfaces.MockTarocchiniGame {
 	m.On("GetHint").Return(nil).Maybe()
 	m.On("GetLastTrickWinner").Return(-1).Maybe()
 	m.On("GetScartoSize").Return(0).Maybe()
+	m.On("GetRoundBreakdown").Return([2]domain.TarocchiniTeamRoundBreakdown{}).Maybe()
+
 	return m
 }
 
@@ -226,7 +228,12 @@ func TestTarocchiniCuiPresenter_ShowsTheRoundBreakdown(t *testing.T) {
 
 	// 席 1 が最終トリック → チーム1 に +2。ディーラーは席 0 (チーム0) でスカルト 2 枚。
 	t.Run("names who took the last trick and where the scarto went", func(t *testing.T) {
-		out := p.Output(atRoundEnd(1, 2, 0), nil)
+		m := atRoundEnd(1, 2, 0)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundBreakdown")
+		m.On("GetRoundBreakdown").Return([2]domain.TarocchiniTeamRoundBreakdown{{Tricks: 7, ScartoBonus: 2, Total: 9}, {Tricks: 8, LastTrickBonus: 2, Total: 10}})
+		out := p.Output(m, nil)
+		assert.Contains(t, out, i18n.Tf("tarocchini.roundEndBreakdown", "team", i18n.Tf("tarocchini.teamName", "n", "0"), "tricks", "7", "lastTrickBonus", "0", "scartoBonus", "2", "total", "9"))
+		assert.Contains(t, out, i18n.Tf("tarocchini.roundEndBreakdown", "team", i18n.Tf("tarocchini.teamName", "n", "1"), "tricks", "8", "lastTrickBonus", "2", "scartoBonus", "0", "total", "10"))
 
 		assert.Contains(t, out, i18n.Tf("tarocchini.roundEndLastTrick",
 			"team", i18n.Tf("tarocchini.teamName", "n", "1"),

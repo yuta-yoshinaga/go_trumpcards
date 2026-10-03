@@ -26,10 +26,10 @@ func setupCrescentCuiMockDefaults(cg *interfaces.MockCrescentGame) {
 
 	var foundation [domain.CrescentFoundationCnt][]*domain.Card
 	for i := range domain.CrescentAscendingFoundationCnt {
-		foundation[i] = []*domain.Card{domain.NewCard(domain.CrescentFoundationSuit(i), 1, false)}
+		foundation[i] = []*domain.Card{domain.NewCard(testCrescentFoundationSuit(i), 1, false)}
 	}
 	for i := domain.CrescentAscendingFoundationCnt; i < domain.CrescentFoundationCnt; i++ {
-		foundation[i] = []*domain.Card{domain.NewCard(domain.CrescentFoundationSuit(i), domain.CardValueMax, false)}
+		foundation[i] = []*domain.Card{domain.NewCard(testCrescentFoundationSuit(i), domain.CardValueMax, false)}
 	}
 	cg.On("GetFoundation").Return(foundation).Maybe()
 }
@@ -80,7 +80,7 @@ func crescentFoundationWithCount(count int) [domain.CrescentFoundationCnt][]*dom
 	for i := 0; i < count; i++ {
 		foundation[i%domain.CrescentFoundationCnt] = append(
 			foundation[i%domain.CrescentFoundationCnt],
-			domain.NewCard(domain.CrescentFoundationSuit(i%domain.CrescentFoundationCnt), 1, false),
+			domain.NewCard(testCrescentFoundationSuit(i%domain.CrescentFoundationCnt), 1, false),
 		)
 	}
 	return foundation

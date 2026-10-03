@@ -1,4 +1,6 @@
 {
+  "callAmount": "({{amount}})",
+  "callPotOdds": "必要ポットオッズ: {{percent}}%",
   "phase": {
     "thirdStreet": "サードストリート",
     "fourthStreet": "フォースストリート",
@@ -15,6 +17,7 @@
   "yourHand": "あなたの手札",
   "currentHand": "現在の役",
   "currentLow": "現在のロー: {{low}}",
+  "opponentPublicLow": "公開ロー候補: {{low}}",
   "anteBringIn": "アンティ/ブリングイン",
   "bringIn": "ブリングイン",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
@@ -79,6 +82,7 @@
     "straightFlush": "ストレートフラッシュ",
     "royalFlush": "ロイヤルフラッシュ"
   },
+  "listSeparator": "、",
   "hiLo": {
     "title": "ハイ／ローの内訳",
     "hi": "ハイ",

@@ -20,8 +20,8 @@ const mockExec = vi.mocked(paigowApi.exec);
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
 /** The 7 SET_HANDS fixture card buttons, in deal order, located by their cardAlt names. */
-const getCardButtons = () =>
-  setHandsPhaseState.playerCards.map((c) => screen.getByRole('button', { name: cardAlt(c) }));
+const getCardButtons = (cards: Card[] = setHandsPhaseState.playerCards) =>
+  cards.map((c) => screen.getByRole('button', { name: cardAlt(c) }));
 
 const betPhaseState: PaiGowResponse = {
   playerCards: [],
@@ -48,6 +48,7 @@ const betPhaseState: PaiGowResponse = {
 const setHandsPhaseState: PaiGowResponse = {
   ...betPhaseState,
   phase: 2,
+  hint: { lowIdx0: 0, lowIdx1: 1, lowIsPair: false, reason: 'house_way' },
   playerCards: [
     card('SPADE', 10),
     card('HEART', 11),
@@ -230,7 +231,7 @@ describe('PaiGowPage', () => {
     expect(cardButtons[1]).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('disables the auto-set button when a joker is present', async () => {
+  it('enables the auto-set button for a joker hand when the server supplies a split', async () => {
     mockExec.mockResolvedValue({
       ...setHandsPhaseState,
       playerCards: [
@@ -242,10 +243,40 @@ describe('PaiGowPage', () => {
         card('SPADE', 5),
         card('HEART', 7),
       ],
+      hint: { lowIdx0: 2, lowIdx1: 4, lowIsPair: false, reason: 'house_way' },
     });
     renderWithProviders(<PaiGowPage />);
     await waitFor(() => expect(screen.getByTestId('auto-set-button')).toBeInTheDocument());
+    expect(screen.getByTestId('auto-set-button')).toBeEnabled();
+    fireEvent.click(screen.getByTestId('auto-set-button'));
+    const cardButtons = getCardButtons([
+      card('JOKER', 0),
+      card('HEART', 13),
+      card('SPADE', 2),
+      card('DIAMOND', 3),
+      card('CLOVER', 4),
+      card('SPADE', 5),
+      card('HEART', 7),
+    ]);
+    expect(cardButtons[2]).toHaveAttribute('aria-pressed', 'true');
+    expect(cardButtons[4]).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('disables auto-set when the server has no split hint', async () => {
+    mockExec.mockResolvedValue({ ...setHandsPhaseState, hint: null });
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByTestId('auto-set-button')).toBeInTheDocument());
     expect(screen.getByTestId('auto-set-button')).toBeDisabled();
+  });
+
+  it('uses the server split for the A keyboard shortcut', async () => {
+    mockExec.mockResolvedValue(setHandsPhaseState);
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByTestId('auto-set-button')).toBeInTheDocument());
+    fireEvent.keyDown(document, { key: 'a' });
+    const cardButtons = getCardButtons();
+    expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true');
+    expect(cardButtons[1]).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('blocks Set and shows a foul warning when the low hand outranks the high hand', async () => {
@@ -377,9 +408,24 @@ describe('PaiGowPage', () => {
     expect(screen.getByRole('textbox', { name: 'ベット' })).toHaveAttribute('max', '50');
     expect(screen.getByTestId('paigow-bet-guidance')).toHaveTextContent('残高: 50');
     expect(screen.getByTestId('paigow-bet-guidance')).toHaveTextContent('入力額: 100');
-    expect(screen.getByTestId('paigow-bet-guidance')).toHaveTextContent('10以上、10単位、最大10,000');
+    expect(screen.getByTestId('paigow-bet-guidance')).toHaveTextContent('10以上、10単位、最大50');
     expect(screen.getByRole('alert')).toHaveTextContent('残高を超えています');
     expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
+  });
+
+  it('rounds the maximum down to a multiple of 10 when the balance is not one', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, chips: 1234 });
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1234')).toBeInTheDocument());
+    expect(screen.getByTestId('paigow-bet-guidance')).toHaveTextContent('最大1230');
+  });
+
+  it('shows the 10,000 bet cap when the balance is at least 10,000', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, chips: 15000 });
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 15000')).toBeInTheDocument());
+    expect(screen.getByTestId('paigow-bet-guidance')).toHaveTextContent('最大10000');
+    expect(screen.getByRole('textbox', { name: 'ベット' })).toHaveAttribute('max', '10000');
   });
 
   it('resets after end phase', async () => {
@@ -441,6 +487,19 @@ describe('PaiGowPage', () => {
     renderWithProviders(<PaiGowPage />);
     // Player high (5) + player low (2) + dealer high (5) + dealer low (2) = 14
     await waitFor(() => expect(screen.getAllByRole('img').length).toBe(14));
+  });
+
+  it('shows each hand result, including a push, alongside the hands', async () => {
+    mockExec.mockResolvedValue({
+      ...endPhasePlayerWins,
+      highHandResult: 1,
+      lowHandResult: 0,
+    });
+    renderWithProviders(<PaiGowPage />);
+
+    await waitFor(() => expect(screen.getAllByText(/勝ち/).length).toBe(1));
+    expect(screen.getAllByText(/負け/).length).toBe(1);
+    expect(screen.getAllByText(/引き分け/).length).toBe(2);
   });
 
   // --- Keyboard navigation tests ---

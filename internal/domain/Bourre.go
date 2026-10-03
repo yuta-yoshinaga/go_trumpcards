@@ -40,11 +40,12 @@ const (
 
 // BourreHandResult ハンド結果 (表示用)
 type BourreHandResult struct {
-	PlayerIdx int  `json:"pi"`
-	Tricks    int  `json:"tk"`
-	WonAmount int  `json:"wa"`
-	Bourreed  bool `json:"bo"`
-	Folded    bool `json:"fd"`
+	PlayerIdx  int  `json:"pi"`
+	Tricks     int  `json:"tk"`
+	WonAmount  int  `json:"wa"`
+	PaidAmount int  `json:"pa"`
+	Bourreed   bool `json:"bo"`
+	Folded     bool `json:"fd"`
 }
 
 // Bourre ブーレゲームクラス
@@ -507,7 +508,7 @@ func (b *Bourre) resolveNoContest() {
 		b.appendLog(-1, "pot_carry", "bourre.log.potCarryAllFolded", map[string]string{"amount": strconv.Itoa(potValue)}, nil)
 	}
 	b.pot = 0
-	b.buildResults(potValue, soleWinner)
+	b.buildResults(potValue, soleWinner, nil)
 	b.finishHand()
 }
 
@@ -523,6 +524,7 @@ func (b *Bourre) scoreHand() {
 		}
 	}
 	winners := make([]int, 0, len(b.players))
+	paidAmounts := make([]int, len(b.players))
 	for i := range b.players {
 		if b.isActive(i) && b.players[i].GetTrickCount() == maxTricks {
 			winners = append(winners, i)
@@ -535,6 +537,7 @@ func (b *Bourre) scoreHand() {
 			b.players[i].SetBourreed(true)
 			pen := min(potValue, b.players[i].GetChips())
 			b.players[i].SubtractChips(pen)
+			paidAmounts[i] = pen
 			b.carryPot += pen
 			b.appendLog(i, "bourre", "bourre.log.bourre", map[string]string{"name": playerName(b.players, i), "amount": strconv.Itoa(pen)}, nil)
 		}
@@ -550,12 +553,12 @@ func (b *Bourre) scoreHand() {
 		b.appendLog(-1, "pot_carry", "bourre.log.potCarryTie", map[string]string{"amount": strconv.Itoa(potValue)}, nil)
 	}
 	b.pot = 0
-	b.buildResults(potValue, winnerIdx)
+	b.buildResults(potValue, winnerIdx, paidAmounts)
 	b.finishHand()
 }
 
 // buildResults 表示用のハンド結果を構築する
-func (b *Bourre) buildResults(potValue, winnerIdx int) {
+func (b *Bourre) buildResults(potValue, winnerIdx int, paidAmounts []int) {
 	b.lastResults = make([]*BourreHandResult, 0, len(b.players))
 	for i := range b.players {
 		p := b.players[i]
@@ -566,12 +569,17 @@ func (b *Bourre) buildResults(potValue, winnerIdx int) {
 		if i == winnerIdx {
 			won = potValue
 		}
+		paid := 0
+		if i < len(paidAmounts) {
+			paid = paidAmounts[i]
+		}
 		b.lastResults = append(b.lastResults, &BourreHandResult{
-			PlayerIdx: i,
-			Tricks:    p.GetTrickCount(),
-			WonAmount: won,
-			Bourreed:  p.GetBourreed(),
-			Folded:    p.GetFolded(),
+			PlayerIdx:  i,
+			Tricks:     p.GetTrickCount(),
+			WonAmount:  won,
+			PaidAmount: paid,
+			Bourreed:   p.GetBourreed(),
+			Folded:     p.GetFolded(),
 		})
 	}
 }

@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { jassApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, JassResponse } from '../types/card';
 import { JassPhase } from '../types/phases';
@@ -86,6 +87,29 @@ beforeEach(() => {
 });
 
 describe('JassPage', () => {
+  it('marks the dealer in the player list and above the human hand', async () => {
+    const { unmount } = renderWithProviders(<JassPage />);
+    await waitFor(() => expect(screen.getByTestId('jass-dealer-3')).toHaveTextContent('ディーラー'));
+    expect(screen.getAllByTestId(/^jass-dealer-/)).toHaveLength(1);
+
+    unmount();
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 0 }));
+    renderWithProviders(<JassPage />);
+    await waitFor(() => expect(screen.getByTestId('jass-dealer-0')).toHaveTextContent('ディーラー'));
+    expect(screen.getAllByTestId(/^jass-dealer-/)).toHaveLength(1);
+  });
+
+  it('localizes the dealer label in English', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<JassPage />);
+      await waitFor(() => expect(screen.getByTestId('jass-dealer-3')).toHaveTextContent('Dealer'));
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('calls reset on mount with default config', async () => {
     renderWithProviders(<JassPage />);
     await waitFor(() =>
@@ -191,6 +215,33 @@ describe('JassPage', () => {
     mockExec.mockResolvedValue(makeState({ phase: JassPhase.PLAY, trumpSuit: 1, teamScores: [40, 25] }));
     renderWithProviders(<JassPage />);
     await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
+  });
+
+  it('associates every score row with a row heading, including conditional rows', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: JassPhase.ROUND_END,
+        teamScores: [40, 25],
+        roundPoints: [35, 20],
+        roundWeisPoints: [20, 0],
+        roundStockPoints: [0, 5],
+        lastTrickWinner: 0,
+      }),
+    );
+    renderWithProviders(<JassPage />);
+
+    const rowHeadings = await screen.findAllByRole('rowheader');
+    expect(rowHeadings.map((heading) => heading.textContent)).toEqual([
+      '累計',
+      'ラウンド',
+      'Weis',
+      'Stöck',
+      'ラストトリック',
+    ]);
+    for (const heading of rowHeadings) {
+      expect(heading).toHaveAttribute('scope', 'row');
+      expect(heading).toHaveClass('sr-only');
+    }
   });
 
   it('shows the Weis panel with per-team totals and a counted marker when Weis is declared', async () => {

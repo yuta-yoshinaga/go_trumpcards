@@ -1,4 +1,5 @@
 {
+  "listSeparator": ", ",
   "phase": { "bid": "Bidding", "reveal": "Revealed", "gameEnd": "Finished" },
   "header": {
     "round": "Round {{n}}",
@@ -28,10 +29,14 @@
     "bidAria": "Bid {{card}}"
   },
   "status": {
+    "revealPlayer": "{{name}}: {{card}}",
+    "revealAnnouncement": "Revealed bids: {{bids}}. {{result}}",
     "bid": "{{n}} points are at stake. Choose a card to bid face down.",
     "waiting": "You have bid. Waiting for everyone else.",
     "roundEnd": "{{name}} takes {{n}} points.",
-    "tie": "A tie. Nobody takes this prize."
+    "tie": "A tie. Nobody takes this prize.",
+    "highestBid": "[Highest bid]",
+    "bidMargin": "Lead over next bid: {{n}}"
   },
   "result": {
     "you": "You win! You took the most with {{n}} points.",

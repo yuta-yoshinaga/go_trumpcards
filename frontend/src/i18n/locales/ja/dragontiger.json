@@ -7,7 +7,8 @@
     "dragon": "ドラゴン",
     "tiger": "タイガー",
     "bigRoad": "履歴 (Big Road)",
-    "historyOverflow": "+{{count}}件"
+    "historyOverflow": "+{{count}}件",
+    "historyMarker": "{{round}}ラウンド目: {{result}}"
   },
   "button": {
     "betDragon": "ドラゴン",
@@ -30,10 +31,12 @@
   "result": {
     "dragonWins": "ドラゴンの勝ち",
     "tigerWins": "タイガーの勝ち",
+    "tie": "引き分け",
     "tieWin": "タイ (タイベット的中)",
     "tieRefund": "タイ (ベット額の半分を返還)"
   },
   "payout": {
+    "betAmount": "ベット額: {{amount}}",
     "total": "払戻し",
     "dragon": "ドラゴン",
     "tiger": "タイガー",

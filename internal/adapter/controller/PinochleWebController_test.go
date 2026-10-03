@@ -94,3 +94,29 @@ func TestPinochleWebConfig_ToConfig(t *testing.T) {
 		}
 	})
 }
+
+func TestPinochleWebOutputContractMadeJSON(t *testing.T) {
+	result := true
+	data, err := json.Marshal(&controller.PinochleWebOutput{ContractMade: &result})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var body map[string]any
+	if err := json.Unmarshal(data, &body); err != nil {
+		t.Fatal(err)
+	}
+	if body["contractMade"] != true {
+		t.Fatalf("expected contractMade true in response body, got %v", body["contractMade"])
+	}
+	data, err = json.Marshal(&controller.PinochleWebOutput{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	body = nil
+	if err := json.Unmarshal(data, &body); err != nil {
+		t.Fatal(err)
+	}
+	if _, exists := body["contractMade"]; exists {
+		t.Fatal("contractMade should be omitted when unresolved")
+	}
+}

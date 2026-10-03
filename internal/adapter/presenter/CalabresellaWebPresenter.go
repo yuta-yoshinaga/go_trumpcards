@@ -43,10 +43,13 @@ func (p *CalabresellaWebPresenter) buildBase(g interfaces.CalabresellaGame) *con
 	resObj.ForehandIdx = g.GetForehandIdx()
 	resObj.SoloistIdx = g.GetSoloistIdx()
 	resObj.WinningBid = int(g.GetWinningBid())
+	resObj.HighestBid = int(g.GetHighestBid())
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerPlayer = g.GetWinnerPlayer()
 	resObj.PlayerScores = g.GetPlayerScores()
 	resObj.RoundThirds = g.GetRoundThirds()
+	resObj.RoundScoreChanges = g.GetRoundScoreChanges()
+	resObj.SoloistWon = g.GetSoloistWon()
 	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.IsHumanTurn = g.IsHumanTurn()
 

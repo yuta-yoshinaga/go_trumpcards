@@ -30,7 +30,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
-import { FIFTY_ONE_MAX_SCORE, fiftyOneBestSuit, fiftyOneSuitScores } from '../utils/fiftyOneSuitScores';
+import { FIFTY_ONE_MAX_SCORE, fiftyOneSuitScores } from '../utils/fiftyOneSuitScores';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 type FiftyOneArgs = Parameters<typeof fiftyoneApi.exec>;
@@ -166,7 +166,7 @@ function FiftyOnePageContent() {
 
   const humanCards = state?.players[0]?.cards;
   const suitTotals = useMemo(() => fiftyOneSuitScores(humanCards ?? []), [humanCards]);
-  const bestSuit = useMemo(() => fiftyOneBestSuit(suitTotals), [suitTotals]);
+  const highestSuitScore = Math.max(...Object.values(suitTotals));
 
   const isGameEnd = state ? state.gameEndFlag || state.phase === FiftyOnePhase.GAME_END : false;
   const isHumanTurn = state ? state.currentTurn === 0 && !isGameEnd : false;
@@ -231,7 +231,7 @@ function FiftyOnePageContent() {
         <>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             {error && (
-              <button type="button" onClick={retry} className="text-ds-error underline">
+              <button type="button" onClick={retry} className="text-ds-error-text underline">
                 {error}
               </button>
             )}
@@ -268,7 +268,7 @@ function FiftyOnePageContent() {
                       type="button"
                       onClick={() => isHumanTurn && setSelectedTableIdx(isSelected ? null : i)}
                       disabled={!isHumanTurn}
-                      aria-label={cardAlt(c)}
+                      aria-label={t('label.tableCardPosition', { card: cardAlt(c), pos: i })}
                       aria-pressed={isHumanTurn ? isSelected : undefined}
                       className={`rounded transition-all ${
                         isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
@@ -306,7 +306,7 @@ function FiftyOnePageContent() {
                 data-testid="suit-score-badges"
               >
                 {(['SPADE', 'CLOVER', 'HEART', 'DIAMOND'] as const).map((d) => {
-                  const isLeader = d === bestSuit && suitTotals[d] > 0;
+                  const isLeader = suitTotals[d] === highestSuitScore && highestSuitScore > 0;
                   const symbol = d === 'SPADE' ? '♠' : d === 'CLOVER' ? '♣' : d === 'HEART' ? '♥' : '♦';
                   const isRed = d === 'HEART' || d === 'DIAMOND';
                   const classes = isLeader
@@ -316,9 +316,13 @@ function FiftyOnePageContent() {
                     <li
                       key={d}
                       data-testid={`suit-badge-${d}`}
+                      aria-label={t(isLeader ? 'label.suitBadgeAriaHighest' : 'label.suitBadgeAria', {
+                        suit: symbol,
+                        badge: t('label.suitBadge', { score: suitTotals[d], max: FIFTY_ONE_MAX_SCORE }),
+                      })}
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border font-medium ${classes}`}
                     >
-                      <span className={isLeader ? '' : isRed ? 'text-ds-error' : ''}>{symbol}</span>
+                      <span className={isLeader ? '' : isRed ? 'text-ds-error-text' : ''}>{symbol}</span>
                       <span className="tabular-nums">
                         {t('label.suitBadge', { score: suitTotals[d], max: FIFTY_ONE_MAX_SCORE })}
                       </span>
@@ -335,7 +339,7 @@ function FiftyOnePageContent() {
                       type="button"
                       onClick={() => isHumanTurn && setSelectedHandIdx(isSelected ? null : i)}
                       disabled={!isHumanTurn}
-                      aria-label={cardAlt(c)}
+                      aria-label={t('label.handCardPosition', { card: cardAlt(c), pos: i })}
                       aria-pressed={isHumanTurn ? isSelected : undefined}
                       className={`rounded transition-all ${
                         isSelected ? 'ring-2 ring-ds-info -translate-y-2' : ''

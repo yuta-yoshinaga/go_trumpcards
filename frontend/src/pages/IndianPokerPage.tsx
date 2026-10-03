@@ -232,6 +232,11 @@ function IndianPokerPageContent() {
     handName: r.card ? `${r.card.design} ${r.card.value}` : '',
     wonAmount: r.wonAmount,
   }));
+  const winningPlayerIdxs = new Set(
+    state.roundResults
+      ?.filter((result) => result.wonAmount > 0 && !state.players[result.playerIdx]?.folded)
+      .map((result) => result.playerIdx) ?? [],
+  );
 
   return (
     <GamePageShell
@@ -292,20 +297,33 @@ function IndianPokerPageContent() {
                           {tc('betting.currentBet')} {p.currentBet}
                         </span>
                       )}
-                      {p.folded && <span className="ml-1 text-ds-error text-xs">[{tc('status.folded')}]</span>}
+                      {p.folded && <span className="ml-1 text-ds-error-text text-xs">[{tc('status.folded')}]</span>}
                       {p.allIn && <span className="ml-1 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                     </div>
                     <div className={isMobile ? 'flex justify-center' : 'flex flex-wrap gap-1'}>
                       {p.card ? (
-                        <AnimatedCard
-                          card={p.card}
-                          ariaLabel={t('faceUpCardAriaLabel', {
-                            name: tc('player.cpu', { id: p.id }),
-                            card: cardAlt(p.card),
-                          })}
-                          width={cardWidth}
-                          style={placeholderCardStyle}
-                        />
+                        <span
+                          className={`relative inline-flex ${winningPlayerIdxs.has(p.id) ? 'rounded ring-2 ring-ds-warning' : ''}`}
+                        >
+                          <AnimatedCard
+                            card={p.card}
+                            ariaLabel={t('faceUpCardAriaLabel', {
+                              name: tc('player.cpu', { id: p.id }),
+                              card: cardAlt(p.card),
+                            })}
+                            width={cardWidth}
+                            style={placeholderCardStyle}
+                          />
+                          {winningPlayerIdxs.has(p.id) && (
+                            <span
+                              role="img"
+                              aria-label={t('winnerCardAriaLabel')}
+                              className="absolute -right-2 -top-2 rounded-full bg-ds-warning px-1 text-xs text-ds-text-on-accent"
+                            >
+                              ★
+                            </span>
+                          )}
+                        </span>
                       ) : (
                         <AnimatedCardBack width={cardWidth} />
                       )}
@@ -346,19 +364,30 @@ function IndianPokerPageContent() {
                       {tc('betting.currentBet')} {humanPlayer.currentBet}
                     </span>
                   )}
-                  {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
+                  {humanPlayer.folded && (
+                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
+                  )}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                 </div>
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {isShowdown && humanPlayer.card ? (
                     <motion.div
                       key={revealSignature}
-                      className="[transform-style:preserve-3d]"
+                      className="relative [transform-style:preserve-3d]"
                       initial={reduced ? false : { rotateY: 180, opacity: 0.5 }}
                       animate={{ rotateY: 0, opacity: 1 }}
                       transition={flipSpring}
                       data-testid="indianpoker-own-reveal"
                     >
+                      {winningPlayerIdxs.has(humanPlayer.id) && (
+                        <span
+                          role="img"
+                          aria-label={t('winnerCardAriaLabel')}
+                          className="absolute -right-2 -top-2 z-10 rounded-full bg-ds-warning px-1 text-xs text-ds-text-on-accent"
+                        >
+                          ★
+                        </span>
+                      )}
                       <AnimatedCard
                         card={humanPlayer.card}
                         ariaLabel={t('faceUpCardAriaLabel', {

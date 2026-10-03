@@ -7,6 +7,7 @@ import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { FiveCardStudPlayerData, FiveCardStudResponse } from '../types/card';
 import { FiveCardStudPage, FiveCardStudPageContent } from './FiveCardStudPage';
+import { SokoPage } from './SokoPage';
 
 vi.mock('../api/gameApi', () => ({
   fiveCardStudApi: { exec: vi.fn() },
@@ -35,6 +36,7 @@ const humanPlayer = (overrides: Partial<FiveCardStudPlayerData> = {}): FiveCardS
   handRank: 0,
   handName: '',
   bestHand: [],
+  bestHandCore: [],
   playStyleName: '',
   totalHands: 0,
   vpip: 0,
@@ -60,6 +62,7 @@ const cpuPlayer = (id: number, overrides: Partial<FiveCardStudPlayerData> = {}):
   handRank: 0,
   handName: '',
   bestHand: [],
+  bestHandCore: [],
   playStyleName: 'タイト',
   totalHands: 0,
   vpip: 0,
@@ -133,9 +136,37 @@ const secondStreetWithBetState: FiveCardStudResponse = {
 const showdownState: FiveCardStudResponse = {
   ...baseState,
   players: [
-    humanPlayer({ handName: 'ワンペア', currentBet: 0, chips: 950 }),
-    cpuPlayer(1, { handName: 'ツーペア', folded: false, holeCards: [{ design: 'SPADE', value: 5 }] }),
-    cpuPlayer(2, { folded: true }),
+    humanPlayer({
+      handName: 'ワンペア',
+      currentBet: 0,
+      chips: 950,
+      bestHand: [{ design: 'SPADE', value: 1 }],
+      bestHandCore: [],
+    }),
+    cpuPlayer(1, {
+      handRank: 1,
+      handName: 'ワンペア',
+      folded: false,
+      holeCards: [{ design: 'SPADE', value: 5 }],
+      doorCards: [
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 2 },
+        { design: 'CLOVER', value: 7 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      bestHand: [
+        { design: 'SPADE', value: 5 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 2 },
+        { design: 'CLOVER', value: 7 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      bestHandCore: [
+        { design: 'SPADE', value: 5 },
+        { design: 'HEART', value: 5 },
+      ],
+    }),
+    cpuPlayer(2, { folded: true, doorCards: [{ design: 'HEART', value: 13 }] }),
   ],
   pot: 0,
   dealerIdx: 2,
@@ -143,7 +174,7 @@ const showdownState: FiveCardStudResponse = {
   phase: 5,
   roundResults: [
     { playerIdx: 0, handRank: 1, handName: 'ワンペア', kickers: 'A', bestHand: [], wonAmount: 0, mucked: false },
-    { playerIdx: 1, handRank: 2, handName: 'ツーペア', kickers: '8', bestHand: [], wonAmount: 200, mucked: false },
+    { playerIdx: 1, handRank: 1, handName: 'ワンペア', kickers: '8', bestHand: [], wonAmount: 200, mucked: false },
   ],
   message: 'CPU 1 の勝ち',
 };
@@ -254,6 +285,7 @@ describe('FiveCardStudPage', () => {
     expect(screen.getByAltText('♠ A')).toBeInTheDocument();
     expect(screen.getAllByText('ドアカード').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('ホールカード').length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByLabelText('♠ A、役の構成札')).not.toBeInTheDocument();
   });
 
   it('highlights the latest door card for the human and each CPU', async () => {
@@ -270,12 +302,34 @@ describe('FiveCardStudPage', () => {
     expect(screen.getByTestId('latest-door-cpu-2')).toBeInTheDocument();
   });
 
+  it('announces Soko latest door cards with their card names for the human and CPUs only', async () => {
+    mockSokoExec.mockResolvedValue(secondStreetState);
+    renderWithProviders(<SokoPage />);
+    expect(await screen.findByRole('img', { name: '♦ 7、最新' })).toBeInTheDocument();
+    expect(screen.getAllByRole('img', { name: '♣ 7、最新' }).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('keeps Five Card Stud latest door card announcements unchanged', async () => {
+    mockExec.mockResolvedValue(secondStreetState);
+    renderWithProviders(<FiveCardStudPage />);
+    expect(await screen.findByTestId('latest-door-human')).not.toHaveAttribute('role', 'img');
+    expect(screen.getByTestId('latest-door-human')).not.toHaveAttribute('aria-label');
+  });
+
   it('reveals CPU hand name and hole card during showdown and shows round results', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<FiveCardStudPage />);
-    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText('ワンペア')).toHaveLength(2));
     expect(screen.getByAltText('♠ 5')).toBeInTheDocument();
     expect(screen.getByText('結果:')).toBeInTheDocument();
+    expect(screen.getByLabelText('♠ 5、役の構成札')).toBeInTheDocument();
+    expect(screen.getByLabelText('♥ 5、役の構成札')).toBeInTheDocument();
+    expect(screen.getAllByRole('img', { name: /役の構成札/ })).toHaveLength(2);
+    expect(screen.queryByLabelText('♦ 2、役の構成札')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('♣ 7、役の構成札')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('♦ 8、役の構成札')).not.toBeInTheDocument();
+    expect(screen.getByAltText('♥ K')).toBeInTheDocument();
+    expect(screen.queryByLabelText('♥ K、役の構成札')).not.toBeInTheDocument();
   });
 
   it('shows bet/check buttons when canAct and no outstanding bet', async () => {
@@ -290,9 +344,12 @@ describe('FiveCardStudPage', () => {
   it('shows call/raise buttons when canAct and has outstanding bet', async () => {
     mockExec.mockResolvedValue(secondStreetWithBetState);
     renderWithProviders(<FiveCardStudPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
-    expect(screen.getByText('コールに必要な額: 40')).toBeInTheDocument();
+    const callStatus = screen
+      .getAllByRole('status')
+      .find((element) => element.textContent?.includes('コールに必要な額: 40'));
+    expect(callStatus).toHaveTextContent('コールに必要な額: 40、必要ポットオッズ: 57.1%');
   });
 
   it("caps the displayed call amount at the human player's remaining chips", async () => {
@@ -301,7 +358,27 @@ describe('FiveCardStudPage', () => {
       players: [humanPlayer({ chips: 15 }), ...secondStreetWithBetState.players.slice(1)],
     });
     renderWithProviders(<FiveCardStudPage />);
-    await waitFor(() => expect(screen.getByText('コールに必要な額: 15')).toHaveAttribute('role', 'status'));
+    await waitFor(() => {
+      const callStatus = screen
+        .getAllByRole('status')
+        .find((element) => element.textContent?.includes('コールに必要な額: 15'));
+      expect(callStatus).toHaveTextContent('コールに必要な額: 15、必要ポットオッズ: 33.3%');
+    });
+  });
+
+  it('shows Soko pot odds based on the call amount and resulting pot', async () => {
+    mockSokoExec.mockResolvedValue(secondStreetWithBetState);
+    renderWithProviders(
+      <TutorialWrapper gameName="soko" steps={[]}>
+        <FiveCardStudPageContent gameKey="soko" />
+      </TutorialWrapper>,
+    );
+    await waitFor(() => {
+      const callStatus = screen
+        .getAllByRole('status')
+        .find((element) => element.textContent?.includes('コールに必要な額: 40'));
+      expect(callStatus).toHaveTextContent('コールに必要な額: 40、必要ポットオッズ: 57.1%');
+    });
   });
 
   it('shows check availability instead of a call amount when no bet is outstanding', async () => {
@@ -309,6 +386,7 @@ describe('FiveCardStudPage', () => {
     renderWithProviders(<FiveCardStudPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument());
     expect(screen.getByText('チェック可能')).toBeInTheDocument();
+    expect(screen.queryByText(/必要ポットオッズ/)).not.toBeInTheDocument();
     expect(screen.queryByText(/コールに必要な額/)).not.toBeInTheDocument();
   });
 

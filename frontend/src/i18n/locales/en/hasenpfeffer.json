@@ -27,6 +27,7 @@
     "bidCapped": "The bidding has hit its ceiling ({{max}}), so nothing can beat it — pass."
   },
   "currentTrick": "Current trick",
+  "trickCardByPlayer": "{{card}} played by {{name}}",
   "handEnd": {
     "made": "Contract {{contract}}, took {{took}}: made (+{{took}}).",
     "euchred": "Contract {{contract}}, took {{took}}: euchred ({{contract}} to the other team)."
@@ -39,6 +40,7 @@
     "reset": "Reset",
     "giveUp": "Give up",
     "playAria": "Play {{card}}",
+    "playableAria": "Play {{card}} (playable)",
     "discardAria": "Choose {{card}} to discard"
   },
   "result": {

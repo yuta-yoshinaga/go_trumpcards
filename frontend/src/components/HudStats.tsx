@@ -132,7 +132,7 @@ const STYLE_ICONS: Record<PokerStyle, string> = {
 
 /**
  * tendencyClass maps a tendency to the design-system color class used for
- * the badge text. Loose / Aggressive surface as `text-ds-error` (warm
+ * the badge text. Loose / Aggressive surface as `text-ds-error-text` (warm
  * warning red — high engagement), Tight / Passive as `text-ds-info` (cool
  * blue — calm/conservative), and Normal / Balanced as `text-ds-text-muted`
  * so they recede visually. See issue #1564.
@@ -141,7 +141,7 @@ function tendencyClass(t: Tendency): string {
   switch (t) {
     case 'loose':
     case 'aggressive':
-      return 'text-ds-error';
+      return 'text-ds-error-text';
     case 'tight':
     case 'passive':
       return 'text-ds-info';

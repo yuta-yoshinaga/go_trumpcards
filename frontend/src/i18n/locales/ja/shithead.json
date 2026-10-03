@@ -23,6 +23,7 @@
     "faceUp": "表向きの場札",
     "faceDown": "裏向きの場札",
     "discardPile": "場札",
+    "wasteCount": "{{count}}枚",
     "stock": "山札",
     "currentSource": "出すソース",
     "you": "あなた",

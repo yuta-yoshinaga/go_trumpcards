@@ -230,6 +230,11 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
+  const callAmount = state && humanPlayer ? Math.min(state.lastBet - humanPlayer.currentBet, humanPlayer.chips) : 0;
+  const callPotOddsLabel =
+    hasOutstandingBet && callAmount > 0 && state && state.pot + callAmount > 0
+      ? t('callPotOdds', { percent: ((callAmount / (state.pot + callAmount)) * 100).toFixed(1) })
+      : undefined;
   const minRaise = state?.minRaise ?? 0;
   const isMuckPhase = phase === SevenCardStudPhase.SHOWDOWN && state?.muckAvailable === true;
   const isRebuyPhase =
@@ -375,7 +380,7 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                         {tc('betting.currentBet')} {p.currentBet}
                       </span>
                     )}
-                    {p.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
+                    {p.folded && <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>}
                     {p.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                     {p.id === bringInPlayerId && (
                       <span data-testid={`sevencardstud-bringin-badge-${p.id}`} className={bringInBadgeClass}>
@@ -395,6 +400,23 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                         {t('showingHand', { hand: t(`hand.${showingHandKey(p.doorCards)}`) })}
                       </span>
                     )}
+                    {state.isHiLo &&
+                      !isShowdown &&
+                      !p.isHuman &&
+                      !p.folded &&
+                      p.doorCards.some((card) => card.value <= 8) && (
+                        <span
+                          data-testid={`scs-opponent-low-${p.id}`}
+                          className="inline-block ml-2 text-xs text-ds-text-muted"
+                        >
+                          {t('opponentPublicLow', {
+                            low: [...new Set(p.doorCards.filter((card) => card.value <= 8).map((card) => card.value))]
+                              .sort((a, b) => b - a)
+                              .map(valueName)
+                              .join('-'),
+                          })}
+                        </span>
+                      )}
                   </div>
                   {/* Door cards (always visible) */}
                   <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
@@ -443,8 +465,8 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                 server marks with isHiLo rather than the page guessing from the
                 route. */}
             {isShowdown && state.isHiLo && <StudHiLoSplit results={state.roundResults} players={state.players ?? []} />}
-            {isShowdown && state.isChicago && (
-              <StudChicagoSplit results={state.roundResults} players={state.players ?? []} />
+            {state.isChicago && (
+              <StudChicagoSplit results={isShowdown ? state.roundResults : undefined} players={state.players ?? []} />
             )}
 
             {/* Action log */}
@@ -527,7 +549,9 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                       {tc('betting.currentBet')} {humanPlayer.currentBet}
                     </span>
                   )}
-                  {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
+                  {humanPlayer.folded && (
+                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
+                  )}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                   {humanPlayer.id === bringInPlayerId && (
                     <span data-testid={`sevencardstud-bringin-badge-${humanPlayer.id}`} className={bringInBadgeClass}>
@@ -702,7 +726,7 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
             {/* Betting controls */}
-            {canAct && (
+            {canAct && state && humanPlayer && (
               <div data-tutorial="scs-action-buttons">
                 <BettingControls
                   inputId="sevenCardStudBetAmount"
@@ -712,6 +736,8 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                   maxBetAmount={state?.maxBetAmount}
                   potSize={state?.pot}
                   hasOutstandingBet={hasOutstandingBet}
+                  callAmountLabel={` ${t('callAmount', { amount: callAmount })}`}
+                  callPotOddsLabel={callPotOddsLabel}
                   loading={loading}
                   onCall={() => execApi('call', undefined, undefined, getElapsed())}
                   onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}

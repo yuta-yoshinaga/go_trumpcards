@@ -1,5 +1,6 @@
 import type { BaccaratBanquePlayer, BaccaratBanqueResponse } from '../../../types/card';
 import { BACCARAT_BANQUE_PHASE } from '../../../types/games/baccaratbanque';
+import { formatSignedDelta } from '../../formatSignedDelta';
 import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<string, string> = {
@@ -53,7 +54,7 @@ export function formatBaccaratBanqueState(state: BaccaratBanqueResponse): string
       lines.push(`  ${ROLE_NAMES[role]}: ${OUTCOME_NAMES[s.outcome] ?? s.outcome} (${s.delta})`);
     }
     const net = state.lastResult.bankerDelta;
-    lines.push(`  Banker net: ${net > 0 ? `+${net}` : `${net}`}`);
+    lines.push(`  Banker net: ${formatSignedDelta(net)}`);
   }
 
   if (state.gameEndFlag) {

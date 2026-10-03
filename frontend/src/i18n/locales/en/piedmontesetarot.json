@@ -23,6 +23,13 @@
   "points": "{{points}} pts",
   "score": "Score: {{score}}",
   "currentTrick": "Current trick",
+  "trickHistory": {
+    "title": "Trick history",
+    "empty": "No completed tricks yet",
+    "trickTitle": "Trick {{n}}",
+    "lead": "Lead: {{name}}",
+    "winner": "Winner: {{name}}"
+  },
   "players": "Players",
   "you": "You",
   "cpu": "CPU {{id}}",
@@ -45,6 +52,7 @@
   "outcomeLoss": "Below average",
   "roundResult": {
     "title": "Deal result",
+    "scartoCards": "Scarto (discard)",
     "outcome": "Your result: {{outcome}}",
     "playerLine": "{{name}}: {{delta}} (total {{score}})",
     "total": "Card points on the table: {{total}} (of 78)",

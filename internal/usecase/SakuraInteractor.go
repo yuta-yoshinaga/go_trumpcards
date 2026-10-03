@@ -54,14 +54,7 @@ func (si *SakuraInteractor) ResetWithConfig(cfg domain.SakuraConfig) string {
 
 // Play 手札を出す。
 func (si *SakuraInteractor) Play(handIdx, fieldIdx int) string {
-	if out, blocked := guardNotPlayable(si.Game, si.cp); blocked {
-		return out
-	}
-	if err := si.Game.PlayerPlay(handIdx, fieldIdx); err != nil {
-		return si.cp.Output(si.Game, err)
-	}
-	si.advance()
-	return si.cp.Output(si.Game, nil)
+	return humanAction(si.Game, si.cp, func() error { return si.Game.PlayerPlay(handIdx, fieldIdx) }, si.advance)
 }
 
 // NextRound 次のラウンドを開始する。

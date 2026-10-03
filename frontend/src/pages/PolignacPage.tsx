@@ -152,6 +152,8 @@ function PolignacPageContent() {
 
   // 出せる札に緑の枠を足すだけで、押せなくはしない（サーバが必ず検証する）。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
+  const takenJackSuits = new Set(state.players.flatMap((player) => player.takenJackSuits ?? []));
+  const unclaimedJackSuits = isRoundEnd || isGameEnd ? [] : [1, 2, 3, 4].filter((suit) => !takenJackSuits.has(suit));
 
   const resultBanner = (() => {
     if (!isGameEnd) return null;
@@ -203,7 +205,7 @@ function PolignacPageContent() {
             {/* capot 宣言中は全員の狙いが変わる。 */}
             {state.capotIdx >= 0 && !isGameEnd && (
               <div
-                className="mb-3 rounded bg-black/30 border border-ds-warning px-3 py-2 text-ds-text-primary text-sm text-center"
+                className="mb-3 rounded bg-ds-surface border border-ds-warning px-3 py-2 text-ds-text-primary text-sm text-center"
                 role="status"
                 data-testid="pg-capot-banner"
               >
@@ -236,7 +238,7 @@ function PolignacPageContent() {
                       {p.takenJackSuits?.map((suit) => (
                         <span
                           key={`${p.id.toString()}-jack-${suit.toString()}`}
-                          className={suit === SPADE_DESIGN ? 'ml-1 font-bold text-ds-error' : 'ml-1'}
+                          className={suit === SPADE_DESIGN ? 'ml-1 font-bold text-ds-error-text' : 'ml-1'}
                         >
                           <span aria-hidden="true">
                             {suit === SPADE_DESIGN
@@ -257,6 +259,26 @@ function PolignacPageContent() {
                 </div>
               ))}
             </div>
+            {!isRoundEnd && !isGameEnd && unclaimedJackSuits.length > 0 && (
+              <div className="mb-4 text-center text-sm text-ds-text-muted" data-testid="pg-unclaimed-jacks">
+                <span>{t('jacks.unclaimedLabel')}:</span>{' '}
+                {unclaimedJackSuits.map((suit) => (
+                  <span
+                    key={`unclaimed-jack-${suit}`}
+                    className={suit === SPADE_DESIGN ? 'ml-2 font-bold text-ds-error-text' : 'ml-2'}
+                  >
+                    <span aria-hidden="true">
+                      {suit === SPADE_DESIGN ? t('jacks.spade') : t('jacks.other', { suit: suitSymbolAt(suit, '') })}
+                    </span>
+                    <span className="sr-only">
+                      {suit === SPADE_DESIGN
+                        ? t('jacks.spadeAria')
+                        : t('jacks.otherAria', { suitName: t(`jacks.suitName.${SUIT_ARIA_KEYS[suit]}`) })}
+                    </span>
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div data-tutorial="polignac-trick">
               <TrickDisplay
@@ -292,7 +314,9 @@ function PolignacPageContent() {
                       type="button"
                       onClick={() => handlePlay(idx)}
                       disabled={loading || !isHumanTurn}
-                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
+                      aria-label={t(legalRing.has(idx) ? 'actions.playableAria' : 'actions.playAria', {
+                        card: cardAlt(card),
+                      })}
                       className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
                     >
                       <CardImage card={card} width={cardWidth} />

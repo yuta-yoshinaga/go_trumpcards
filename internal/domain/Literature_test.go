@@ -642,9 +642,6 @@ func TestLiteratureAccessors(t *testing.T) {
 	if p.GetTeam(0) != p.GetTeam(2) || p.GetTeam(0) == p.GetTeam(1) {
 		t.Error("seats 0/2 are teammates and 0/1 are opponents")
 	}
-	if literatureCardName(nil) != "-" {
-		t.Error("a nil card has no name")
-	}
 }
 
 // **誰の手札にも無い札は所在不明として扱う。**決着済みの組を参照したときに

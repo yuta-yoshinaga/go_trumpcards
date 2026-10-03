@@ -25,7 +25,15 @@
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",
   "scoresRound": "ラウンド",
+  "scoresBreakdown": "内訳",
   "scoresTotal": "累計",
+  "scoreHistory": "得点履歴",
+  "scoreHistoryRound": "ラウンド",
+  "listSeparator": "、",
+  "scoreKnocker": "デッドウッド（ノック時）: {{breakdown}} = {{score}}点",
+  "scoreAfterLayoff": "デッドウッド（レイオフ後）: {{breakdown}} = {{score}}点",
+  "scoreDeadwood": "デッドウッド: {{breakdown}} = {{score}}点",
+  "scoreChinchon": "チンチョン勝利: 0点",
   "drawStockButton": "山札から引く",
   "drawDiscardButton": "捨て札から引く",
   "discardButton": "捨てる",
@@ -60,5 +68,6 @@
     "chinchonTakeDiscard": "捨て札が手札と繋がります。拾いましょう",
     "chinchonDrawStock": "捨て札は手札と繋がりません。山から引きましょう",
     "chinchonDiscardHeavy": "繋がっていない札のうち一番重い札です。点は手に残った札の合計です"
-  }
+  },
+  "noDeadwood": "なし"
 }

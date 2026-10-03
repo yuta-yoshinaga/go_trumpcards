@@ -1,6 +1,7 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { laughandliedownApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, LaughAndLieDownPlayer, LaughAndLieDownResponse } from '../types/card';
@@ -25,6 +26,7 @@ function human(overrides?: Partial<LaughAndLieDownPlayer>): LaughAndLieDownPlaye
     wonCount: 4,
     laidDown: false,
     score: 0,
+    runningScore: 0,
     hidden: false,
     ...overrides,
   };
@@ -39,6 +41,7 @@ function cpu(id: number, overrides?: Partial<LaughAndLieDownPlayer>): LaughAndLi
     wonCount: 2,
     laidDown: false,
     score: 0,
+    runningScore: 0,
     hidden: true,
     ...overrides,
   };
@@ -71,6 +74,66 @@ describe('LaughAndLieDownPage', () => {
   it('resets on mount', async () => {
     renderWithProviders(<LaughAndLieDownPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('announces each later human-turn response and clears on game end', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeState())
+      .mockResolvedValueOnce(makeState())
+      .mockResolvedValueOnce(makeState())
+      .mockResolvedValueOnce(makeState({ phase: LaughAndLieDownPhase.GAME_END, gameEndFlag: true }));
+    renderWithProviders(<LaughAndLieDownPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const initialStatus = screen.getByRole('status');
+    expect(initialStatus).toHaveAttribute('aria-live', 'polite');
+    expect(initialStatus).toHaveClass('sr-only');
+    expect(initialStatus).toBeEmptyDOMElement();
+
+    const playButton = () => {
+      const button = screen.getAllByRole('button').find((candidate) => candidate.dataset.hintAction === 'play');
+      if (!button) throw new Error('Expected a playable hand card');
+      return button;
+    };
+    fireEvent.click(playButton());
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('あなたの番です'));
+
+    const firstAnnouncement = screen.getByRole('status');
+    fireEvent.click(playButton());
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('あなたの番です'));
+    expect(screen.getByRole('status')).not.toBe(firstAnnouncement);
+
+    fireEvent.click(playButton());
+    await waitFor(() => expect(screen.getByRole('status')).toBeEmptyDOMElement());
+    expect(mockExec).toHaveBeenCalledTimes(4);
+  });
+
+  it('does not repeat the turn announcement when the language changes without a new state', async () => {
+    mockExec.mockResolvedValueOnce(makeState()).mockResolvedValueOnce(makeState());
+    renderWithProviders(<LaughAndLieDownPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+
+    const playButton = screen.getAllByRole('button').find((candidate) => candidate.dataset.hintAction === 'play');
+    if (!playButton) throw new Error('Expected a playable hand card');
+    fireEvent.click(playButton);
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('あなたの番です'));
+
+    const announcement = screen.getByRole('status');
+    expect(mockExec).toHaveBeenCalledTimes(2);
+
+    try {
+      await act(async () => {
+        await i18n.changeLanguage('en');
+      });
+
+      expect(screen.getByRole('status')).toBe(announcement);
+      expect(screen.getByRole('status')).toHaveTextContent('あなたの番です');
+      expect(mockExec).toHaveBeenCalledTimes(2);
+    } finally {
+      await act(async () => {
+        await i18n.changeLanguage('ja');
+      });
+    }
   });
 
   it('shows the pot, the dealer and both rules permanently', async () => {
@@ -204,6 +267,40 @@ describe('LaughAndLieDownPage', () => {
       renderWithProviders(<LaughAndLieDownPage />);
       await waitFor(() => expect(screen.getAllByText(text).length).toBeGreaterThan(0));
     }
+  });
+
+  it('shows running scores during play and final scores after the game ends', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: LaughAndLieDownPhase.PLAY,
+        players: [
+          human({ score: -20, runningScore: -2 }),
+          cpu(1, { score: 10, runningScore: 1 }),
+          cpu(2, { score: 30, runningScore: 3 }),
+          cpu(3),
+          cpu(4),
+        ],
+      }),
+    );
+    renderWithProviders(<LaughAndLieDownPage />);
+    await waitFor(() => expect(document.body.textContent).toContain('暫定収支 -2'));
+    const renderedText = document.body.textContent ?? '';
+    expect(renderedText).toContain('暫定収支 1');
+    expect(renderedText).toContain('暫定収支 3');
+    expect(renderedText.match(/暫定収支 0/g)).toHaveLength(2);
+    expect(renderedText).not.toContain('収支 -20');
+
+    cleanup();
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: LaughAndLieDownPhase.GAME_END,
+        gameEndFlag: true,
+        players: [human({ score: -2, runningScore: -2 }), cpu(1, { score: 1, runningScore: 1 })],
+      }),
+    );
+    renderWithProviders(<LaughAndLieDownPage />);
+    await waitFor(() => expect(document.body.textContent).toContain('収支 -2'));
+    expect(document.body.textContent).not.toContain('暫定収支');
   });
 
   // #5576: 訳文 (`lastIn`) もサーバのデータ (`lastInIdx`) も既にあったのに、

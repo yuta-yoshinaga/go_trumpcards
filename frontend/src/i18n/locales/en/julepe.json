@@ -25,13 +25,16 @@
     "undecided": "Choose whether to play or drop out. Undecided: {{count}}."
   },
   "currentTrick": "Current trick",
+  "lastTrick": "Previous trick",
+  "lastTrickWinner": "Winner: {{name}}",
   "actions": {
     "playIn": "Play this round",
     "passOut": "Drop out",
     "nextRound": "Next round",
     "reset": "Reset",
     "giveUp": "Give up",
-    "playAria": "Play {{card}}"
+    "playAria": "Play {{card}}",
+    "playableAria": "Play {{card}} (playable)"
   },
   "watching": "You dropped out of this round. Watching it play out.",
   "result": {

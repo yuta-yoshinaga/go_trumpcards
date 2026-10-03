@@ -37,6 +37,30 @@ func (cp *CaribbeanDrawCuiPresenter) Output(cs interfaces.CaribbeanDrawGame, las
 	// 賭け終わった後は出さない -- もう選べないものの説明は場所を取るだけ。
 	if phase == domain.CaribbeanDrawPhaseBet {
 		sb.WriteString(i18n.T("caribbeandraw.jackpotHelp") + "\n")
+		sb.WriteString(i18n.T("caribbeandraw.payoutTablePlayTitle") + "\n")
+		for _, row := range []struct {
+			hand       string
+			multiplier int
+		}{
+			{"payoutPair", domain.CaribbeanDrawPayPair}, {"payoutTwoPair", domain.CaribbeanDrawPayTwoPair},
+			{"payoutThreeOfAKind", domain.CaribbeanDrawPayThreeOfAKind}, {"payoutStraight", domain.CaribbeanDrawPayStraight},
+			{"payoutFlush", domain.CaribbeanDrawPayFlush}, {"payoutFullHouse", domain.CaribbeanDrawPayFullHouse},
+			{"payoutFourOfAKind", domain.CaribbeanDrawPayFourOfAKind}, {"payoutStraightFlush", domain.CaribbeanDrawPayStraightFlush},
+			{"payoutRoyalFlush", domain.CaribbeanDrawPayRoyalFlush},
+		} {
+			sb.WriteString(i18n.Tf("caribbeandraw.payoutTableLine", "hand", i18n.T("caribbeandraw."+row.hand), "multiplier", strconv.Itoa(row.multiplier)) + "\n")
+		}
+		sb.WriteString(i18n.T("caribbeandraw.payoutTableJackpotTitle") + "\n")
+		for _, row := range []struct {
+			hand       string
+			multiplier int
+		}{
+			{"payoutFlush", domain.CaribbeanDrawJackpotFlush}, {"payoutFullHouse", domain.CaribbeanDrawJackpotFullHouse},
+			{"payoutFourOfAKind", domain.CaribbeanDrawJackpotFourOfAKind}, {"payoutStraightFlush", domain.CaribbeanDrawJackpotStraightFlush},
+			{"payoutRoyalFlush", domain.CaribbeanDrawJackpotRoyalFlush},
+		} {
+			sb.WriteString(i18n.Tf("caribbeandraw.payoutTableLine", "hand", i18n.T("caribbeandraw."+row.hand), "multiplier", strconv.Itoa(row.multiplier)) + "\n")
+		}
 	}
 	// **交換できるのはこの一瞬だけ。** 手数料が要ることも併せて出さないと、
 	// 引いてから残高が減っていることに気付くことになる。

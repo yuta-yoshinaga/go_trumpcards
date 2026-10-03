@@ -126,6 +126,15 @@ func (_m *MockPiedmonteseTarotGame) GetScartoThirds() int { return _m.Called().I
 // GetLastTrickWinner モック
 func (_m *MockPiedmonteseTarotGame) GetLastTrickWinner() int { return _m.Called().Int(0) }
 
+// GetCompletedTricks モック
+func (_m *MockPiedmonteseTarotGame) GetCompletedTricks() []*domain.PiedmonteseTarotCompletedTrick {
+	ret := _m.Called()
+	if v, ok := ret.Get(0).([]*domain.PiedmonteseTarotCompletedTrick); ok {
+		return v
+	}
+	return nil
+}
+
 // GetOutcome モック
 func (_m *MockPiedmonteseTarotGame) GetOutcome() domain.PiedmonteseTarotOutcome {
 	return _m.Called().Get(0).(domain.PiedmonteseTarotOutcome)
@@ -164,6 +173,15 @@ func (_m *MockPiedmonteseTarotGame) GetPlayableIndices(playerIdx int) []int {
 func (_m *MockPiedmonteseTarotGame) GetDiscardableIndices() []int {
 	ret := _m.Called()
 	if v, ok := ret.Get(0).([]int); ok {
+		return v
+	}
+	return nil
+}
+
+// GetScarto モック
+func (_m *MockPiedmonteseTarotGame) GetScarto() []*domain.Card {
+	ret := _m.Called()
+	if v, ok := ret.Get(0).([]*domain.Card); ok {
 		return v
 	}
 	return nil

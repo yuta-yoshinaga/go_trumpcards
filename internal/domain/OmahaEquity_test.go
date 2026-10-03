@@ -16,7 +16,7 @@ func TestCalcOmahaEquity(t *testing.T) {
 			NewCard(CardDesignHeart, 13, false),
 		}
 		rng := rand.New(rand.NewSource(42))
-		result := CalcOmahaEquity(humanCards, nil, 1, 5000, rng)
+		result := calcOmahaEquityWithHoleCount(humanCards, nil, 1, 5000, rng, 4)
 		// Double suited AA-KK is very strong in Omaha
 		assert.Greater(t, result.Equity, 0.50)
 		assert.Less(t, result.Equity, 0.95)
@@ -38,7 +38,7 @@ func TestCalcOmahaEquity(t *testing.T) {
 			NewCard(CardDesignClover, 6, false),
 		}
 		rng := rand.New(rand.NewSource(42))
-		result := CalcOmahaEquity(humanCards, communityCards, 1, 5000, rng)
+		result := calcOmahaEquityWithHoleCount(humanCards, communityCards, 1, 5000, rng, 4)
 		// AA-KK two pair on low board — in Omaha equity runs closer than Holdem
 		assert.Greater(t, result.Equity, 0.30)
 	})
@@ -51,7 +51,7 @@ func TestCalcOmahaEquity(t *testing.T) {
 			NewCard(CardDesignDiamond, 13, false),
 		}
 		rng := rand.New(rand.NewSource(42))
-		result := CalcOmahaEquity(humanCards, nil, 0, 5000, rng)
+		result := calcOmahaEquityWithHoleCount(humanCards, nil, 0, 5000, rng, 4)
 		assert.Equal(t, 1.0, result.Equity)
 	})
 
@@ -63,7 +63,7 @@ func TestCalcOmahaEquity(t *testing.T) {
 			NewCard(CardDesignDiamond, 13, false),
 		}
 		rng := rand.New(rand.NewSource(42))
-		result := CalcOmahaEquity(humanCards, nil, 1, 0, rng)
+		result := calcOmahaEquityWithHoleCount(humanCards, nil, 1, 0, rng, 4)
 		assert.Equal(t, 0.0, result.Equity)
 	})
 
@@ -80,7 +80,7 @@ func TestCalcOmahaEquity(t *testing.T) {
 			NewCard(CardDesignSpade, 9, false),
 		}
 		rng := rand.New(rand.NewSource(42))
-		result := CalcOmahaEquity(humanCards, communityCards, 1, 5000, rng)
+		result := calcOmahaEquityWithHoleCount(humanCards, communityCards, 1, 5000, rng, 4)
 		sum := 0.0
 		for _, h := range result.HandOdds {
 			sum += h.Probability
@@ -95,7 +95,7 @@ func TestCalcOmahaEquity(t *testing.T) {
 			NewCard(CardDesignClover, 13, false),
 			NewCard(CardDesignDiamond, 13, false),
 		}
-		result := CalcOmahaEquity(humanCards, nil, 1, 100, nil)
+		result := calcOmahaEquityWithHoleCount(humanCards, nil, 1, 100, nil, 4)
 		assert.Greater(t, result.Equity, 0.0)
 	})
 }
@@ -114,7 +114,7 @@ func TestCalcOmahaEquity_HandOdds(t *testing.T) {
 			NewCard(CardDesignSpade, 9, false),
 		}
 		rng := rand.New(rand.NewSource(42))
-		result := CalcOmahaEquity(humanCards, communityCards, 1, 1000, rng)
+		result := calcOmahaEquityWithHoleCount(humanCards, communityCards, 1, 1000, rng, 4)
 
 		assert.Len(t, result.HandOdds, len(PokerHandNames))
 		for i, ho := range result.HandOdds {
@@ -144,7 +144,7 @@ func TestCalcOmahaEquity_NeededCardsExceedsPool(t *testing.T) {
 			NewCard(CardDesignClover, 6, false),
 		}
 		rng := rand.New(rand.NewSource(42))
-		result := CalcOmahaEquity(humanCards, communityCards, 12, 100, rng)
+		result := calcOmahaEquityWithHoleCount(humanCards, communityCards, 12, 100, rng, 4)
 		// All simulations skipped → wins=0 → equity=0
 		assert.Equal(t, 0.0, result.Equity)
 	})
@@ -167,7 +167,7 @@ func TestCalcOmahaEquity_RiverExact(t *testing.T) {
 			NewCard(CardDesignClover, 5, false),
 		}
 		rng := rand.New(rand.NewSource(42))
-		result := CalcOmahaEquity(humanCards, communityCards, 1, 5000, rng)
+		result := calcOmahaEquityWithHoleCount(humanCards, communityCards, 1, 5000, rng, 4)
 		assert.Equal(t, 1.0, result.Equity)
 	})
 }
@@ -186,7 +186,7 @@ func TestCalcOmahaEquity_ParallelResultsInExpectedRange(t *testing.T) {
 			NewCard(CardDesignSpade, 9, false),
 		}
 		rng := rand.New(rand.NewSource(42))
-		result := CalcOmahaEquity(humanCards, communityCards, 1, 50000, rng)
+		result := calcOmahaEquityWithHoleCount(humanCards, communityCards, 1, 50000, rng, 4)
 		// AA-KK double suited on a low flop should have reasonable equity
 		assert.Greater(t, result.Equity, 0.30)
 		assert.Less(t, result.Equity, 0.99)
@@ -209,10 +209,10 @@ func TestCalcOmahaEquity_DeterministicWithSeededRng(t *testing.T) {
 			NewCard(CardDesignDiamond, 13, false),
 		}
 		rng1 := rand.New(rand.NewSource(123))
-		result1 := CalcOmahaEquity(humanCards, nil, 1, 1000, rng1)
+		result1 := calcOmahaEquityWithHoleCount(humanCards, nil, 1, 1000, rng1, 4)
 
 		rng2 := rand.New(rand.NewSource(123))
-		result2 := CalcOmahaEquity(humanCards, nil, 1, 1000, rng2)
+		result2 := calcOmahaEquityWithHoleCount(humanCards, nil, 1, 1000, rng2, 4)
 
 		assert.Equal(t, result1.Equity, result2.Equity)
 		for i := range result1.HandOdds {
@@ -242,8 +242,8 @@ func TestCalcOmahaHiLoEquity(t *testing.T) {
 		rng1 := rand.New(rand.NewSource(42))
 		rng2 := rand.New(rand.NewSource(42))
 
-		hiResult := CalcOmahaEquity(humanCards, communityCards, 1, 500, rng1)
-		hiloResult := CalcOmahaHiLoEquity(humanCards, communityCards, 1, 500, rng2)
+		hiResult := calcOmahaEquityWithHoleCount(humanCards, communityCards, 1, 500, rng1, 4)
+		hiloResult := calcOmahaHiLoEquityWithHoleCount(humanCards, communityCards, 1, 500, rng2, 4)
 
 		assert.Equal(t, 1.0, hiResult.Equity)
 		assert.Equal(t, hiResult.Equity, hiloResult.Equity)
@@ -257,7 +257,7 @@ func TestCalcOmahaHiLoEquity(t *testing.T) {
 			NewCard(CardDesignClover, 3, false),
 			NewCard(CardDesignDiamond, 4, false),
 		}
-		result := CalcOmahaHiLoEquity(humanCards, nil, 0, 500, nil)
+		result := calcOmahaHiLoEquityWithHoleCount(humanCards, nil, 0, 500, nil, 4)
 		assert.Equal(t, 1.0, result.Equity)
 		assert.Len(t, result.HandOdds, len(PokerHandNames))
 	})
@@ -269,7 +269,7 @@ func TestCalcOmahaHiLoEquity(t *testing.T) {
 			NewCard(CardDesignClover, 3, false),
 			NewCard(CardDesignDiamond, 4, false),
 		}
-		result := CalcOmahaHiLoEquity(humanCards, nil, 1, 0, nil)
+		result := calcOmahaHiLoEquityWithHoleCount(humanCards, nil, 1, 0, nil, 4)
 		assert.Equal(t, 0.0, result.Equity)
 		assert.Len(t, result.HandOdds, len(PokerHandNames))
 	})
@@ -292,7 +292,7 @@ func TestCalcOmahaHiLoEquity(t *testing.T) {
 			NewCard(CardDesignSpade, 12, false),
 		}
 		rng := rand.New(rand.NewSource(42))
-		result := CalcOmahaHiLoEquity(humanCards, communityCards, 1, 2000, rng)
+		result := calcOmahaHiLoEquityWithHoleCount(humanCards, communityCards, 1, 2000, rng, 4)
 
 		// Low half share: nut low wins almost every time (or ties with another A-2)
 		assert.Greater(t, result.LowProbability, 0.60)
@@ -321,7 +321,7 @@ func TestCalcOmahaHiLoEquity(t *testing.T) {
 			NewCard(CardDesignClover, 12, false),
 		}
 		rng := rand.New(rand.NewSource(42))
-		result := CalcOmahaHiLoEquity(humanCards, communityCards, 1, 2000, rng)
+		result := calcOmahaHiLoEquityWithHoleCount(humanCards, communityCards, 1, 2000, rng, 4)
 
 		assert.Greater(t, result.Equity, 0.95)
 		assert.LessOrEqual(t, result.Equity, 1.0)
@@ -342,7 +342,7 @@ func TestCalcOmahaHiLoEquity(t *testing.T) {
 			NewCard(CardDesignSpade, 9, false),
 		}
 		rng := rand.New(rand.NewSource(42))
-		result := CalcOmahaHiLoEquity(humanCards, communityCards, 12, 100, rng)
+		result := calcOmahaHiLoEquityWithHoleCount(humanCards, communityCards, 12, 100, rng, 4)
 		assert.Equal(t, 0.0, result.Equity)
 	})
 
@@ -359,7 +359,7 @@ func TestCalcOmahaHiLoEquity(t *testing.T) {
 			NewCard(CardDesignSpade, 9, false),
 		}
 		rng := rand.New(rand.NewSource(42))
-		result := CalcOmahaHiLoEquity(humanCards, communityCards, 1, 1000, rng)
+		result := calcOmahaHiLoEquityWithHoleCount(humanCards, communityCards, 1, 1000, rng, 4)
 
 		sum := 0.0
 		for _, h := range result.HandOdds {
@@ -384,6 +384,6 @@ func BenchmarkCalcOmahaEquity(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		rng := rand.New(rand.NewSource(int64(i)))
-		CalcOmahaEquity(humanCards, communityCards, 1, 50000, rng)
+		calcOmahaEquityWithHoleCount(humanCards, communityCards, 1, 50000, rng, 4)
 	}
 }

@@ -48,6 +48,7 @@ type ConquianWebOutput struct {
 	LayoffTargets    [][]int        `json:"layoffTargets"`
 	Phase            int            `json:"phase"`
 	RoundNumber      int            `json:"roundNumber"`
+	RoundHistory     []int          `json:"roundHistory"`
 	CurrentPlayerIdx int            `json:"currentPlayerIdx"`
 	DiscardTop       *WebOutputCard `json:"discardTop"`
 	DrawPileCount    int            `json:"drawPileCount"`
@@ -88,6 +89,7 @@ var NewConquianWebController, NewConquianWebControllerWithProvider = webControll
 func newConquianDefaultOutput(msg string) *ConquianWebOutput {
 	return &ConquianWebOutput{
 		Players:       make([]*ConquianWebOutputPlayer, 0),
+		RoundHistory:  make([]int, 0),
 		WinnerIdx:     -1,
 		WebOutputBase: WebOutputBase{Message: msg},
 	}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { stealingbundlesApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -72,6 +72,28 @@ function StealingBundlesPageContent() {
   const [playerCnt, setPlayerCnt] = useState(4);
   const [selected, setSelected] = useState<number | null>(null);
   const [actionAnnouncement, setActionAnnouncement] = useState('');
+  const [turnAnnouncement, setTurnAnnouncement] = useState('');
+  const [turnAnnouncementNonce, setTurnAnnouncementNonce] = useState(0);
+  const previousState = useRef<StealingBundlesResponse | null>(null);
+  const resetPending = useRef(false);
+
+  useEffect(() => {
+    if (!state) return;
+    const previous = previousState.current;
+    previousState.current = state;
+    if (previous === null || resetPending.current) {
+      resetPending.current = false;
+      setTurnAnnouncement('');
+      return;
+    }
+    const inProgress = state.phase !== StealingBundlesPhase.GAME_END && !state.gameEndFlag;
+    if (inProgress && state.players[state.currentPlayerIdx]?.isHuman) {
+      setTurnAnnouncement(t('status.turnYou'));
+      setTurnAnnouncementNonce((nonce) => nonce + 1);
+    } else {
+      setTurnAnnouncement('');
+    }
+  }, [state, t]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('stealingbundles');
   const cliConfig: CliGameConfig<StealingBundlesResponse, Parameters<typeof stealingbundlesApi.exec>> = useMemo(
@@ -92,6 +114,7 @@ function StealingBundlesPageContent() {
   const handleReset = useCallback(() => {
     hideActionLog();
     setSelected(null);
+    resetPending.current = true;
     void dispatch('reset', undefined, undefined, { playerCnt });
   }, [dispatch, hideActionLog, playerCnt]);
 
@@ -132,6 +155,8 @@ function StealingBundlesPageContent() {
   const human = state.players.find((p) => p.isHuman);
   const isGameEnd = state.phase === StealingBundlesPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = !isGameEnd && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const maxBundleSize = Math.max(0, ...state.players.map((player) => player.bundleSize));
+  const leadersCount = state.players.filter((player) => player.bundleSize === maxBundleSize).length;
 
   const seatName = (idx: number) => (idx === 0 ? t('header.you') : t('header.cpu', { idx: String(idx) }));
 
@@ -183,6 +208,15 @@ function StealingBundlesPageContent() {
         <>
           <div className="sr-only" role="status" aria-live="polite" data-testid="sb-action-announcement">
             {actionAnnouncement}
+          </div>
+          <div
+            key={turnAnnouncementNonce}
+            className="sr-only"
+            role="status"
+            aria-live="polite"
+            data-testid="sb-turn-announcement"
+          >
+            {turnAnnouncement}
           </div>
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
             <div className="text-ds-text-primary text-center mb-2" data-testid="sb-header">
@@ -237,6 +271,14 @@ function StealingBundlesPageContent() {
                   <span>{t('header.cards', { n: String(p.cardCount) })}</span>
                   {' / '}
                   <span className="text-ds-accent">{t('header.bundle', { n: String(p.bundleSize) })}</span>
+                  {' / '}
+                  <span data-testid={`sb-bundle-gap-${p.id.toString()}`}>
+                    {p.bundleSize === maxBundleSize
+                      ? leadersCount > 1
+                        ? t('header.tiedLead')
+                        : t('header.lead')
+                      : t('header.bundleGap', { count: maxBundleSize - p.bundleSize })}
+                  </span>
                   {' / '}
                   <span>
                     {t('header.bundleTop')}:{' '}

@@ -71,6 +71,7 @@ type RamschWebOutput struct {
 	DurchmarschIdx int                  `json:"durchmarschIdx"`
 	GameEndFlag    bool                 `json:"gameEndFlag"`
 	LeadPlayerIdx  int                  `json:"leadPlayerIdx"`
+	TrickWinnerIdx int                  `json:"trickWinnerIdx"`
 	Hint           *RamschWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 	Config RamschWebOutputConfig `json:"config"`

@@ -43,14 +43,16 @@ func (p PrimeroWebInput) ToConfig() domain.PrimeroConfig {
 
 // PrimeroWebOutputPlayer は 1 プレイヤーの出力。
 type PrimeroWebOutputPlayer struct {
-	ID        int              `json:"id"`
-	IsHuman   bool             `json:"isHuman"`
-	Chips     int              `json:"chips"`
-	RoundBet  int              `json:"roundBet"`
-	Folded    bool             `json:"folded"`
-	Out       bool             `json:"out"`
-	CardCount int              `json:"cardCount"`
-	Cards     []*WebOutputCard `json:"cards"`
+	ID          int              `json:"id"`
+	IsHuman     bool             `json:"isHuman"`
+	Chips       int              `json:"chips"`
+	RoundBet    int              `json:"roundBet"`
+	RoundPayout int              `json:"roundPayout"`
+	NetChange   int              `json:"netChange"`
+	Folded      bool             `json:"folded"`
+	Out         bool             `json:"out"`
+	CardCount   int              `json:"cardCount"`
+	Cards       []*WebOutputCard `json:"cards"`
 	// HandName は公開された手の役名キー ("fluxus"/"supremus"/"primero"/"numerus"、非公開時は空文字)。
 	HandName string `json:"handName,omitempty"`
 	IsWinner bool   `json:"isWinner"`

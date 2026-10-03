@@ -33,7 +33,7 @@
   "redeal": "再配り",
   "redealUnavailable": "残り再配り回数がありません",
   "redealsLeft": "残り再配り回数: {{count}}",
-  "selectionMoves": "選択中のカードを置ける場所が{{count}}箇所あります",
+  "selectionMovesWithTargets": "選択中のカードを置ける場所が{{count}}箇所あります: {{destinations}}",
   "selectionNoMoves": "選択中のカードを置ける場所はありません",
   "stalemate": "手詰まり",
   "stalemateAlert": "手詰まりです。アンドゥ {{count}} 回で脱出できます",
@@ -54,5 +54,12 @@
     "bottom": "下の4列 — A段(昇順)へのみ送れます"
   },
   "restrictionsActive": "初回の配り: 上4列→K段のみ / 下4列→A段のみ / 横4列→どちらでも",
-  "restrictionsLifted": "送り先の制限は解けています"
+  "restrictionsLifted": "送り先の制限は解けています",
+  "listSeparator": "、",
+  "foundationDestination": "{{suit}}の{{direction}}組札",
+  "tableauDestination": "列{{col}}",
+  "destinationDirection": {
+    "asc": "昇順",
+    "desc": "降順"
+  }
 }

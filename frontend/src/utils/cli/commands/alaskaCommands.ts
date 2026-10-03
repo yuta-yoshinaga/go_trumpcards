@@ -1,5 +1,5 @@
 import type { alaskaHintApi } from '../../../api/gameApi';
-import { splitCommand, suggestCommand } from '../commandParserBase';
+import { splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type AlaskaArgs = Parameters<typeof alaskaHintApi.exec>;
@@ -45,11 +45,8 @@ export function parseAlaskaCommand(input: string): CliParseResult<AlaskaArgs> {
       }
       return { error: 'Usage: m <fromCol> [cardIdx] <toCol>' };
     }
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

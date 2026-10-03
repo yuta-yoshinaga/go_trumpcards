@@ -76,7 +76,7 @@ describe('ChipBetInput', () => {
     expect(input.className).toContain('bg-ds-surface');
     expect(input.className).toContain('border-ds-error');
     // Foreground is text-ds-text-primary (10.1:1 AAA on surface). Pairing
-    // text-ds-error with bg-ds-surface only hits ~2.7:1 — fails AA — so the
+    // text-ds-error-text with bg-ds-surface only hits ~2.7:1 — fails AA — so the
     // error semantic comes from the coloured border, not the text colour.
     expect(input.className).toContain('text-ds-text-primary');
     expect(input).toHaveAttribute('aria-invalid', 'true');
@@ -86,6 +86,27 @@ describe('ChipBetInput', () => {
     render(<ChipBetInput id="bet" label="Bet" value={5} onChange={() => {}} max={50} describedBy="bet-help" />);
     const input = screen.getByLabelText('Bet');
     expect(input).toHaveAttribute('aria-describedby', 'bet-help');
+  });
+
+  it('keeps an aria-disabled input focusable and ignores edits', () => {
+    const onChange = vi.fn();
+    render(
+      <ChipBetInput
+        id="bet"
+        label="Bet"
+        value={50}
+        onChange={onChange}
+        max={500}
+        ariaDisabled
+        describedBy="bet-help"
+      />,
+    );
+    const input = screen.getByLabelText('Bet');
+    expect(input).toHaveAttribute('aria-disabled', 'true');
+    expect(input).toHaveAttribute('aria-describedby', 'bet-help');
+    expect(input).not.toBeDisabled();
+    fireEvent.change(input, { target: { value: '60' } });
+    expect(onChange).not.toHaveBeenCalled();
   });
 
   it('clamps to min when max is omitted (no-limit mode with autoClamp=true)', () => {
@@ -157,6 +178,30 @@ describe('ChipBetInput', () => {
       expect(onChange).toHaveBeenLastCalledWith(60);
       fireEvent.click(screen.getByRole('button', { name: 'Bet −10' }));
       expect(onChange).toHaveBeenLastCalledWith(40);
+    });
+
+    it('does not change the value when aria-disabled', () => {
+      const onChange = vi.fn();
+      render(
+        <ChipBetInput
+          id="bet"
+          label="Bet"
+          value={50}
+          onChange={onChange}
+          min={10}
+          max={500}
+          step={10}
+          ariaDisabled
+          showSteppers
+        />,
+      );
+      const minus = screen.getByRole('button', { name: 'Bet −10' });
+      const plus = screen.getByRole('button', { name: 'Bet +10' });
+      expect(minus).toHaveAttribute('aria-disabled', 'true');
+      expect(plus).toHaveAttribute('aria-disabled', 'true');
+      fireEvent.click(minus);
+      fireEvent.click(plus);
+      expect(onChange).not.toHaveBeenCalled();
     });
 
     it('disables the minus button at min and the plus button at max', () => {

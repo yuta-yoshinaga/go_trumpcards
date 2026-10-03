@@ -10,9 +10,15 @@
     "rebuy": "Rebuy/Addon"
   },
   "doorCards": "Door Cards",
+  "latestDoorCard": "{{card}}, latest",
   "holeCards": "Hole Cards",
   "yourHand": "Your Hand",
   "anteBringIn": "Ante/Bring-in",
+  "callPotOdds": ", required pot odds: {{percent}}%",
+  "betting": {
+    "callAmount": "Call amount: {{amount}}",
+    "checkAvailable": "Check available"
+  },
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",

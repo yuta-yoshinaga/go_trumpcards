@@ -83,6 +83,18 @@ describe('AmericanToadPage', () => {
     expect(screen.getByText(/山札の通し: 1\/2/)).toBeInTheDocument();
   });
 
+  it('shows and announces the total number of waste cards', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      waste: [card('HEART', 8), card('SPADE', 3)],
+    });
+    renderWithProviders(<AmericanToadPage />);
+
+    expect(await screen.findByText('2枚')).toBeInTheDocument();
+    const wasteCard = screen.getByRole('button', { name: '捨て札 ♠ 3' });
+    expect(wasteCard).toHaveAccessibleDescription('2枚');
+  });
+
   it('keeps a move target focusable and explains why selection is needed', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<AmericanToadPage />);
@@ -165,7 +177,7 @@ describe('AmericanToadPage', () => {
     const open = await screen.findByRole('button', { name: '空のタブロー列 2 (捨て札から埋められます)' });
     expect(screen.getAllByText('捨て札から補充').length).toBeGreaterThan(0);
     // The reserve is empty here, so this target is aria-disabled only until a source is selected.
-    fireEvent.click(screen.getByRole('button', { name: '♥ 8' }));
+    fireEvent.click(screen.getByRole('button', { name: '捨て札 ♥ 8' }));
     await waitFor(() => expect(open).toBeEnabled());
 
     mockExec.mockClear();

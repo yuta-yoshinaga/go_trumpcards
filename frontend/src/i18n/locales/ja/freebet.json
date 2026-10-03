@@ -1,6 +1,12 @@
 {
   "title": "フリーベット・ブラックジャック",
   "betGuide": "アンティを決めてください",
+  "betSummary": {
+    "balance": "現在の残高: {{amount}}",
+    "ante": "アンティ: {{amount}}",
+    "remaining": "賭け後の残高: {{amount}}",
+    "freeBets": "無料ダブル・無料スプリットの追加分はハウス負担です"
+  },
   "playGuide": "ヒット・スタンドのほか、条件を満たせば無料でダブル・スプリットできます",
   "freeNotice": "※ 無料ダブル・無料スプリットの上乗せぶんはハウス持ち。負けても失いません",
   "dealer22Notice": "ディーラーが22でバスト。残った手札はすべて引き分けです",
@@ -10,6 +16,7 @@
   "label.dealer": "ディーラー",
   "label.upCard": "アップカード",
   "label.yourHands": "あなたの手札",
+  "label.activeHand": "操作対象の手札",
   "label.hand": "手札{{idx}}",
   "label.score": "点",
   "label.hidden": "伏せ札",

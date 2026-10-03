@@ -39,17 +39,20 @@ func (m *MockMinibridgeGame) GetPhase() domain.MinibridgePhase {
 	return m.Called().Get(0).(domain.MinibridgePhase)
 }
 
-func (m *MockMinibridgeGame) IsHumanTurn() bool           { return m.Called().Bool(0) }
-func (m *MockMinibridgeGame) IsHumanContractTurn() bool   { return m.Called().Bool(0) }
-func (m *MockMinibridgeGame) GetRoundNumber() int         { return m.Called().Int(0) }
-func (m *MockMinibridgeGame) GetTrickNumber() int         { return m.Called().Int(0) }
-func (m *MockMinibridgeGame) GetContractLevel() int       { return m.Called().Int(0) }
-func (m *MockMinibridgeGame) GetContractSuit() int        { return m.Called().Int(0) }
-func (m *MockMinibridgeGame) RequiredTricks() int         { return m.Called().Int(0) }
-func (m *MockMinibridgeGame) GetDeclarerIdx() int         { return m.Called().Int(0) }
-func (m *MockMinibridgeGame) GetDummyIdx() int            { return m.Called().Int(0) }
-func (m *MockMinibridgeGame) GetLastMade() bool           { return m.Called().Bool(0) }
-func (m *MockMinibridgeGame) GetLastTricks() int          { return m.Called().Int(0) }
+func (m *MockMinibridgeGame) IsHumanTurn() bool         { return m.Called().Bool(0) }
+func (m *MockMinibridgeGame) IsHumanContractTurn() bool { return m.Called().Bool(0) }
+func (m *MockMinibridgeGame) GetRoundNumber() int       { return m.Called().Int(0) }
+func (m *MockMinibridgeGame) GetTrickNumber() int       { return m.Called().Int(0) }
+func (m *MockMinibridgeGame) GetContractLevel() int     { return m.Called().Int(0) }
+func (m *MockMinibridgeGame) GetContractSuit() int      { return m.Called().Int(0) }
+func (m *MockMinibridgeGame) RequiredTricks() int       { return m.Called().Int(0) }
+func (m *MockMinibridgeGame) GetDeclarerIdx() int       { return m.Called().Int(0) }
+func (m *MockMinibridgeGame) GetDummyIdx() int          { return m.Called().Int(0) }
+func (m *MockMinibridgeGame) GetLastMade() bool         { return m.Called().Bool(0) }
+func (m *MockMinibridgeGame) GetLastTricks() int        { return m.Called().Int(0) }
+func (m *MockMinibridgeGame) GetRoundDelta() [domain.MinibridgeTeamCnt]int {
+	return m.Called().Get(0).([domain.MinibridgeTeamCnt]int)
+}
 func (m *MockMinibridgeGame) GetCurrentPlayerIdx() int    { return m.Called().Int(0) }
 func (m *MockMinibridgeGame) GetLeadPlayerIdx() int       { return m.Called().Int(0) }
 func (m *MockMinibridgeGame) GetDealerIdx() int           { return m.Called().Int(0) }

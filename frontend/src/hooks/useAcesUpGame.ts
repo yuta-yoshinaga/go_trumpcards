@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { acesupApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { AcesUpCard, AcesUpHint, AcesUpResponse } from '../types/card';
+import { describeApiFailure } from '../utils/describeApiFailure';
 import { useGameApi } from './useGameApi';
 import { useIsMounted } from './useIsMounted';
 
@@ -54,9 +54,9 @@ export function useAcesUpGame() {
       if (!isMounted()) return;
       setHint(res.hint ?? null);
       setHintError(null);
-    } catch {
+    } catch (error) {
       if (!isMounted()) return;
-      setHintError(NETWORK_ERROR_MESSAGE());
+      setHintError(describeApiFailure(error).message);
     }
   }, [isMounted]);
 

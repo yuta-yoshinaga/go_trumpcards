@@ -1,5 +1,5 @@
 import type { bhabhiApi } from '../../../api/gameApi';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type BhabhiArgs = Parameters<typeof bhabhiApi.exec>;
@@ -31,11 +31,8 @@ export function parseBhabhiCommand(input: string): CliParseResult<BhabhiArgs> {
     case 'r':
     case 'reset':
       return { args: ['reset'] as BhabhiArgs };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

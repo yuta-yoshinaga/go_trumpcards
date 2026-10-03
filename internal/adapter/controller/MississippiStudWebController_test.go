@@ -21,6 +21,7 @@ func mustMississippiStudOutputJSON(msg string) string {
 		CommunityRevealed: make([]bool, 0),
 		StreetMultipliers: make([]int, 0),
 		StreetPayouts:     make([]int, 0),
+		NetChange:         0,
 		WebOutputBase:     controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

@@ -94,6 +94,20 @@ describe('NapoleonsSquarePage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/組札\d+ 1枚/).length).toBe(8));
   });
 
+  it('announces the next rank on empty, built, and complete foundations', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[], [card('SPADE', 1), card('SPADE', 2)], [card('HEART', 13)], ...aces.slice(3)],
+    });
+    renderWithProviders(<NapoleonsSquarePage />);
+
+    expect(await screen.findByRole('button', { name: '空の組札0 (♠)、次に必要なランク A' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♣ 組札1 2枚、次に必要なランク 3' })).toBeInTheDocument();
+    const completeFoundation = screen.getByRole('button', { name: '♥ 組札2 1枚' });
+    expect(completeFoundation).toBeInTheDocument();
+    expect(completeFoundation).not.toHaveAccessibleName(/次に必要なランク/);
+  });
+
   it('keeps an empty tableau target focusable and explains that a source is needed', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<NapoleonsSquarePage />);
@@ -109,6 +123,22 @@ describe('NapoleonsSquarePage', () => {
     fireEvent.click(target);
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
+  it('highlights only legal tableau destinations and clears candidates when selection is canceled', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<NapoleonsSquarePage />);
+    const source = await screen.findByRole('button', { name: /列0・上から2枚目/ });
+    const emptyColumn = screen.getByRole('button', { name: '空のタブロー列 2' });
+    const incompatibleColumn = screen.getByRole('button', { name: /列1・上から1枚目/ });
+
+    fireEvent.click(source);
+    expect(emptyColumn).toHaveClass('ring-ds-success');
+    expect(incompatibleColumn.closest('[role="presentation"]')).not.toHaveClass('ring-ds-success');
+    expect(screen.getByRole('button', { name: /♠ 組札0/ })).not.toHaveClass('ring-ds-success');
+
+    fireEvent.click(source);
+    expect(emptyColumn).not.toHaveClass('ring-ds-success');
   });
 
   it('labels all twelve tableau columns with their 0-based index', async () => {
@@ -290,7 +320,7 @@ describe('NapoleonsSquarePage waste, hints and CLI mode', () => {
     mockExec.mockClear();
 
     // Foundation 3 is the diamond pile of the first deck.
-    fireEvent.click(screen.getByRole('button', { name: '♦ 組札3 1枚' }));
+    fireEvent.click(screen.getByRole('button', { name: '♦ 組札3 1枚、次に必要なランク 2' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'foundation', col: 3 }),
     );

@@ -12,21 +12,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-func popeJoanCardListStr(cards []*domain.Card, indexed bool) string {
-	if len(cards) == 0 {
-		return "-"
-	}
-	parts := make([]string, 0, len(cards))
-	for i, c := range cards {
-		if indexed {
-			parts = append(parts, "["+strconv.Itoa(i)+"]"+cuiCardStr(c))
-			continue
-		}
-		parts = append(parts, cuiCardStr(c))
-	}
-	return strings.Join(parts, " ")
-}
-
 // popeJoanCompartmentLabel は区画の表示名を返す。
 func popeJoanCompartmentLabel(c domain.PopeJoanCompartment) string {
 	return i18n.T("popejoan.compartment." + c.String())
@@ -73,7 +58,7 @@ func (p *PopeJoanCuiPresenter) Output(c interfaces.PopeJoanGame, lastErr error) 
 		}
 
 		if pile := c.GetPlayedPile(); len(pile) > 0 {
-			sb.WriteString(i18n.Tf("popejoan.pileLine", "cards", popeJoanCardListStr(pile, false)) + "\n")
+			sb.WriteString(i18n.Tf("popejoan.pileLine", "cards", cuiIndexedCardSliceStr(pile, false)) + "\n")
 		}
 
 		for i, player := range c.GetPlayers() {
@@ -101,7 +86,7 @@ func (p *PopeJoanCuiPresenter) Output(c interfaces.PopeJoanGame, lastErr error) 
 				for j := range player.GetCardsSize() {
 					hand = append(hand, player.GetCard(j))
 				}
-				sb.WriteString("  " + popeJoanCardListStr(hand, true) + "\n")
+				sb.WriteString("  " + cuiIndexedCardSliceStr(hand, true) + "\n")
 			}
 		}
 

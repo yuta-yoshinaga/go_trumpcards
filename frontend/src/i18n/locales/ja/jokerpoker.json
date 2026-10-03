@@ -4,6 +4,7 @@
     "chips": "チップ: {{chips}}",
     "bet": "ベット: {{bet}}コイン",
     "payout": "配当: {{payout}}",
+    "netChange": "純増減: {{net}}",
     "betAmount": "コイン数",
     "autoHold": "自動ホールド",
     "betMax": "最大ベット"
@@ -67,6 +68,7 @@
     "drawAll": "ホールドなし — 全て交換"
   },
   "card": "カード {{index}}",
+  "listSeparator": "、",
   "dealGuide": "コイン数を選んでディールしてゲーム開始",
   "a11y": {
     "holdOn": "カード{{index}}をホールド",

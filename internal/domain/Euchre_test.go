@@ -537,6 +537,22 @@ func TestEuchre_TrickWinner_HighestLeadSuit(t *testing.T) {
 	assert.Equal(t, 1, e.GetPlayer(1).GetTrickCount())
 }
 
+func TestEuchre_GetCurrentTrickWinner(t *testing.T) {
+	e := newTestEuchre()
+	e.SetTrumpSuit(domain.CardDesignHeart)
+	e.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 9, false)},
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 13, false)},
+		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 10, false)},
+		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignDiamond, 1, false)},
+	})
+	e.SetPhase(domain.EuchrePhaseTrickEnd)
+
+	assert.Equal(t, 1, e.GetCurrentTrickWinner())
+	e.SetPhase(domain.EuchrePhasePlay)
+	assert.Equal(t, -1, e.GetCurrentTrickWinner())
+}
+
 func TestEuchre_TrickWinner_TrumpBeatsLeadSuit(t *testing.T) {
 	e := newTestEuchre()
 	e.Reset()

@@ -55,6 +55,18 @@ beforeEach(() => {
 });
 
 describe('CanfieldPage', () => {
+  it('advertises and runs the shared draw shortcut', async () => {
+    renderWithProviders(<CanfieldPage />);
+    const shortcuts = await screen.findByTestId('canfield-kbd-shortcuts');
+    fireEvent.click(within(shortcuts).getByText('キーボードショートカット'));
+    expect(within(shortcuts).getByText('山札をめくる')).toBeInTheDocument();
+    mockExec.mockClear();
+
+    fireEvent.keyDown(document, { key: 'd' });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<CanfieldPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -380,6 +392,109 @@ describe('CanfieldPage', () => {
         { zone: 'tableau', col: 1 },
       ),
     );
+  });
+
+  it('selects a tableau card and moves it to a chosen column while retaining existing column actions', async () => {
+    const selectedState = {
+      ...playingState,
+      tableau: [
+        [{ card: card('SPADE', 7) }, { card: card('DIAMOND', 2) }],
+        playingState.tableau[1],
+        ...playingState.tableau.slice(2),
+      ],
+    };
+    mockExec.mockResolvedValueOnce(selectedState).mockResolvedValueOnce({ ...selectedState, moveCount: 1 });
+    renderWithProviders(<CanfieldPage />);
+    const source = (await screen.findByAltText('♦ 2')).closest('button') as HTMLButtonElement;
+    fireEvent.click(source);
+    expect(source).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('♦ 2を選択中。移動先を選んでください')).toBeInTheDocument();
+
+    expect(screen.getByText('捨→1')).toBeInTheDocument();
+    expect(screen.getByText('予→1')).toBeInTheDocument();
+    expect(screen.getAllByText('→組').length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByTestId('cf-selected-move-to-tableau-1'));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 0, cardIndex: 1 },
+        { zone: 'tableau', col: 1 },
+      ),
+    );
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'false'));
+  });
+
+  it('moves a selected top tableau card to the foundation', async () => {
+    renderWithProviders(<CanfieldPage />);
+    const source = (await screen.findAllByAltText('♠ 7'))[0].closest('button') as HTMLButtonElement;
+    fireEvent.click(source);
+    mockExec.mockResolvedValue({ ...playingState, moveCount: 1 });
+    fireEvent.click(await screen.findByTestId('cf-selected-move-to-foundation'));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0, cardIndex: 0 }, { zone: 'foundation' }),
+    );
+  });
+
+  it('clears tableau selection on Escape', async () => {
+    renderWithProviders(<CanfieldPage />);
+    const source = (await screen.findAllByAltText('♠ 7')).at(-1)?.closest('button') as HTMLButtonElement;
+    fireEvent.click(source);
+    expect(source).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.keyDown(source, { key: 'Escape' });
+    expect(source).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('toggles a tableau card selection off when clicking the selected card again', async () => {
+    renderWithProviders(<CanfieldPage />);
+    const source = (await screen.findAllByAltText('♠ 7')).at(-1)?.closest('button') as HTMLButtonElement;
+
+    fireEvent.click(source);
+    expect(source).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('♠ 7を選択中。移動先を選んでください')).toBeInTheDocument();
+
+    fireEvent.click(source);
+    expect(source).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByText('', { selector: '#cf-tableau-selection-status' })).toBeInTheDocument();
+    expect(screen.queryByTestId('cf-selected-move-to-tableau-1')).not.toBeInTheDocument();
+  });
+
+  it('hides the selected-card move controls when a reset response removes the card without changing moveCount', async () => {
+    const resetState: CanfieldResponse = {
+      ...playingState,
+      tableau: [[], ...playingState.tableau.slice(1)],
+    };
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce(resetState);
+    renderWithProviders(<CanfieldPage />);
+    const source = (await screen.findAllByAltText('♠ 7')).at(-1)?.closest('button') as HTMLButtonElement;
+    fireEvent.click(source);
+    expect(screen.getByTestId('cf-selected-move-to-tableau-1')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: '確認' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(screen.queryByTestId('cf-selected-move-to-tableau-1')).not.toBeInTheDocument());
+    expect(screen.queryByTestId('cf-selected-move-to-foundation')).not.toBeInTheDocument();
+    expect(screen.getByText('', { selector: '#cf-tableau-selection-status' })).toBeInTheDocument();
+  });
+
+  it('keeps the tableau selection after an invalid move response', async () => {
+    renderWithProviders(<CanfieldPage />);
+    const source = (await screen.findAllByAltText('♠ 7')).at(-1)?.closest('button') as HTMLButtonElement;
+    fireEvent.click(source);
+    mockExec.mockResolvedValue({ ...playingState, message: 'invalid move', messageCode: '' });
+    const targetActions = screen.queryByTestId('cf-col-actions-1');
+    if (targetActions) (targetActions as HTMLDetailsElement).open = true;
+    fireEvent.click(screen.getByTestId('cf-selected-move-to-tableau-1'));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 0, cardIndex: 0 },
+        { zone: 'tableau', col: 1 },
+      ),
+    );
+    expect(screen.getByAltText('♠ 7').closest('button') as HTMLButtonElement).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('♠ 7を選択中。移動先を選んでください')).toBeInTheDocument();
   });
 
   describe('drag and drop', () => {

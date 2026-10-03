@@ -32,6 +32,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseThreecardCommand, THREECARD_HELP } from '../utils/cli/commands/threecardCommands';
 import { formatThreecardState } from '../utils/cli/formatters/threecardFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 
 /** Three Card Poker tutorial step definitions. */
 const TC_TUTORIAL_STEPS: TutorialStep[] = [
@@ -286,9 +287,9 @@ function ThreeCardPageContent() {
             )}
 
             {/* Dealer Hand */}
-            {state.dealerHand.length > 0 && (
+            {!isActionPhase && state.dealerHand.length > 0 && (
               <div className="mb-4">
-                <div className="text-ds-error font-bold text-center mb-1">
+                <div className="text-ds-error-text font-bold text-center mb-1">
                   <span aria-hidden="true">🔴</span> {t('dealer')}
                   {isEndPhase && state.dealerHandRank > 0 && (
                     <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank])})</span>
@@ -330,8 +331,14 @@ function ThreeCardPageContent() {
                     {t('payout.pairPlus')}: {state.pairPlusPayout}
                   </div>
                 )}
+                <div>
+                  {t('payout.totalBet')}: {state.anteBet + state.pairPlusBet + state.playBet}
+                </div>
                 <div className="font-bold mt-1">
                   {t('payout.total')}: {state.totalPayout}
+                </div>
+                <div className="font-bold">
+                  {t('payout.netChange')}: {formatSignedDelta(state.netChange)}
                 </div>
               </div>
             )}

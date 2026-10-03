@@ -76,6 +76,39 @@ beforeEach(() => {
 });
 
 describe('MonteBankPage', () => {
+  it('ラウンド結果を通算勝敗と累計純収支に一度だけ加算し、resetで初期化する', async () => {
+    mockApi.mockImplementation(async (command) => {
+      if (command === 'bet') {
+        return withState({
+          phase: MonteBankPhase.RESULT,
+          bet: 50,
+          payout: 200,
+          result: MONTE_BANK_RESULT.win,
+          roundNumber: 1,
+        });
+      }
+      return base;
+    });
+    renderWithProviders(<MonteBankPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '賭ける' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: '賭ける' }));
+    await waitFor(() => expect(screen.getByTestId('mb-session-line')).toHaveTextContent('通算勝ち1'));
+    expect(screen.getByTestId('mb-session-line')).toHaveTextContent('通算負け0');
+    expect(screen.getByTestId('mb-session-line')).toHaveTextContent('累計純収支150');
+    expect(screen.getByTestId('mb-result')).toHaveTextContent('収支 150');
+
+    fireEvent.click(screen.getByRole('button', { name: '次のラウンドへ' }));
+    await waitFor(() => expect(screen.getByTestId('mb-session-line')).toHaveTextContent('通算勝ち1'));
+    expect(screen.getByTestId('mb-session-line')).toHaveTextContent('累計純収支150');
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(screen.getByTestId('mb-session-line')).toHaveTextContent('通算勝ち0'));
+    expect(screen.getByTestId('mb-session-line')).toHaveTextContent('通算負け0');
+    expect(screen.getByTestId('mb-session-line')).toHaveTextContent('累計純収支0');
+  });
+
   it('マウント時に reset を呼ぶ', async () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<MonteBankPage />);
@@ -134,6 +167,43 @@ describe('MonteBankPage', () => {
     expect(screen.getByTestId('mb-remaining-1')).toHaveTextContent('11');
     // 場の枚数の表示は残っている（受け入れ条件3）。
     expect(screen.getByTestId('mb-count-0')).toHaveTextContent('2');
+  });
+
+  it('各場札に現在の山残り枚数から計算した次ゲートの確率を出す', async () => {
+    mockApi.mockResolvedValue({
+      ...base,
+      remainingCards: 36,
+      layout: [entry({ remainingOfSuit: 9 }), entry({ card: card('HEART', 5), remainingOfSuit: 6 })],
+    });
+    renderWithProviders(<MonteBankPage />);
+
+    await waitFor(() => expect(screen.getByTestId('mb-probability-0')).toBeInTheDocument());
+    expect(screen.getByTestId('mb-probability-0')).toHaveTextContent('25.0%');
+    expect(screen.getByTestId('mb-probability-1')).toHaveTextContent('16.7%');
+
+    fireEvent.click(screen.getByTestId('mb-layout-1'));
+    expect(screen.getByTestId('mb-layout-1')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('mb-probability-1')).toHaveTextContent('16.7%');
+  });
+
+  it('山の同スート残り枚数以下の分母で確率が100%を超えない', async () => {
+    mockApi.mockResolvedValue({
+      ...base,
+      remainingCards: 8,
+      layout: [entry({ remainingOfSuit: 8 }), entry({ card: card('HEART', 5), remainingOfSuit: 7 })],
+    });
+    renderWithProviders(<MonteBankPage />);
+
+    await waitFor(() => expect(screen.getByTestId('mb-probability-0')).toHaveTextContent('100.0%'));
+    expect(screen.getByTestId('mb-probability-1')).toHaveTextContent('87.5%');
+  });
+
+  it('山札が空なら確率の代わりに定義済みの値を表示する', async () => {
+    mockApi.mockResolvedValue(withState({ remainingCards: 0 }));
+    renderWithProviders(<MonteBankPage />);
+
+    await waitFor(() => expect(screen.getByTestId('mb-probability-0')).toBeInTheDocument());
+    expect(screen.getByTestId('mb-probability-0')).toHaveTextContent('—');
   });
 
   // **選んだ位置は 0 始まりでそのまま送る。** 0 は正当な値。

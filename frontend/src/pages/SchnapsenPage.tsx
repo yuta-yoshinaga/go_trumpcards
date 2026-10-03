@@ -272,6 +272,11 @@ function SchnapsenPageContent() {
                     {t('endgameRuleGuide')}
                   </div>
                 )}
+                {showLegalGuide && (
+                  <span id="schnapsen-illegal-play-reason" className="sr-only">
+                    {t('actions.illegalPlayReason')}
+                  </span>
+                )}
                 <div className="flex flex-wrap gap-2">
                   {human.cards.map((card, idx) => {
                     const legal = legalRing.has(idx);
@@ -280,14 +285,19 @@ function SchnapsenPageContent() {
                       <div key={`${card.design}-${card.value}-${idx}`} className="flex flex-col items-center gap-1">
                         <button
                           type="button"
-                          onClick={() => handlePlay(idx)}
+                          onClick={() => {
+                            if (showLegalGuide && !legal) return;
+                            handlePlay(idx);
+                          }}
                           disabled={loading || !isHumanTurn}
+                          aria-disabled={showLegalGuide && !legal ? 'true' : undefined}
+                          aria-describedby={showLegalGuide && !legal ? 'schnapsen-illegal-play-reason' : undefined}
                           aria-label={
                             showLegalGuide
                               ? t(legal ? 'actions.playLegalAria' : 'actions.playIllegalAria', { card: cardAlt(card) })
                               : t('actions.playAria', { card: cardAlt(card) })
                           }
-                          className={`disabled:opacity-50 ${legal ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                          className={`disabled:opacity-50 aria-disabled:opacity-50 aria-disabled:cursor-not-allowed ${legal ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
                         >
                           <CardImage card={card} width={cardWidth} />
                         </button>
@@ -350,6 +360,7 @@ function SchnapsenPageContent() {
 
           <ActionLogSection
             isEndPhase={isGameEnd}
+            availableDuringPlay
             actionLog={actionLog}
             showActionLog={showActionLog}
             hideActionLog={hideActionLog}

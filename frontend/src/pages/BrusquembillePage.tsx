@@ -110,9 +110,16 @@ function BrusquembillePageContent() {
 
   const handlePlay = useCallback(
     (idx: number) => {
+      if (
+        loading ||
+        state?.phase !== BrusquembillePhase.PLAY ||
+        state.players[state.currentPlayerIdx]?.isHuman !== true ||
+        (state.followRequired && !(state.validIndices ?? []).includes(idx))
+      )
+        return;
       void dispatch('play', idx);
     },
-    [dispatch],
+    [dispatch, loading, state],
   );
 
   const handleNext = useCallback(() => {
@@ -331,6 +338,18 @@ function BrusquembillePageContent() {
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
         <ErrorAlert message={error} onRetry={retry} />
 
+        <div role="status" aria-live="polite" aria-atomic="true">
+          {state.followRequired && isHumanTurn && (
+            <p
+              id="brusquembille-follow-guidance"
+              className="my-2 rounded bg-ds-surface p-2 text-sm text-ds-text-primary"
+              data-testid="brusquembille-follow-guidance"
+            >
+              {t('accessibility.followRequired')}
+            </p>
+          )}
+        </div>
+
         {/* Human hand */}
         {human && human.cards.length > 0 && (
           <div className="mt-4" data-tutorial="brusquembille-hand">
@@ -347,10 +366,15 @@ function BrusquembillePageContent() {
                   // 手札に出せない札が生まれる。押せるように見せて実行時にだけ
                   // 拒否すると、プレイヤーには理由の無いエラーに見える。
                   // 合法かどうかはバックエンドが決める (validIndices)。
-                  disabled={loading || !isHumanTurn || !isPlayable(idx)}
+                  aria-disabled={loading || !isHumanTurn || !isPlayable(idx) ? 'true' : undefined}
+                  aria-describedby={
+                    state.followRequired && isHumanTurn && !isPlayable(idx)
+                      ? 'brusquembille-follow-guidance'
+                      : undefined
+                  }
                   aria-label={tc('card.play', { card: cardAlt(card) })}
                   aria-pressed={selectedIdx === idx}
-                  className={`rounded disabled:opacity-50 ${
+                  className={`rounded ${loading || !isHumanTurn || !isPlayable(idx) ? 'opacity-50' : ''} ${
                     selectedIdx === idx ? 'ring-2 ring-ds-accent -translate-y-1 transition-transform' : ''
                   }`}
                 >

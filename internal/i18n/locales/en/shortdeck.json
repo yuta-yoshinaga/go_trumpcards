@@ -25,6 +25,7 @@
   "playerAllIn": " [ALL-IN]",
   "playerBet": " bet:{{bet}}",
   "humanHand": "  hand: {{cards}}",
+  "humanCurrentHand": "  Current hand: {{hand}}",
   "cpuActionsHeader": "[CPU actions]",
   "cpuActionLine": "  {{name}}: {{action}}",
   "cpuActionAmount": " ({{amount}})",

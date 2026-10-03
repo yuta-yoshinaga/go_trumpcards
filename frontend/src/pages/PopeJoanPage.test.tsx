@@ -70,6 +70,7 @@ describe('PopeJoanPage', () => {
 
   it('resets on mount', async () => {
     renderWithProviders(<PopeJoanPage />);
+    expect(screen.getByTestId('popejoan-live')).toHaveAttribute('aria-live', 'polite');
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
@@ -85,6 +86,28 @@ describe('PopeJoanPage', () => {
     expect(screen.getByText('ディール終了')).toBeInTheDocument();
     expect(screen.getByText('CPU1: チップ-15')).toBeInTheDocument();
     expect(screen.queryByRole('img', { name: /CPU1 の手札/ })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('popejoan-final-standings')).not.toBeInTheDocument();
+  });
+
+  it('shows final chip standings with shared ranks for ties only after the game ends', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: PopeJoanPhase.GAME_END,
+        players: [
+          seat(0, true, { chips: 12 }),
+          seat(1, false, { chips: 20 }),
+          seat(2, false, { chips: 20 }),
+          seat(3, false, { chips: -3 }),
+        ],
+      }),
+    );
+    renderWithProviders(<PopeJoanPage />);
+
+    const standings = await screen.findByTestId('popejoan-final-standings');
+    expect(standings).toHaveTextContent('1位 CPU1: チップ20');
+    expect(standings).toHaveTextContent('1位 CPU2: チップ20');
+    expect(standings).toHaveTextContent('3位 あなた: チップ12');
+    expect(standings).toHaveTextContent('4位 CPU3: チップ-3');
   });
 
   it('shows both rules permanently', async () => {
@@ -134,6 +157,61 @@ describe('PopeJoanPage', () => {
     mockExec.mockResolvedValue(makeState({ awards: [{ compartment: 'pope', player: 0, chips: 6, byTurnUp: true }] }));
     renderWithProviders(<PopeJoanPage />);
     await waitFor(() => expect(screen.getByTestId('popejoan-awards')).toHaveTextContent('めくり札'));
+    await waitFor(() =>
+      expect(screen.getByTestId('popejoan-live')).toHaveTextContent('席0 がめくり札で ポープ を獲得（6）'),
+    );
+  });
+
+  it('announces only awards added by each response', async () => {
+    const first = { compartment: 'pope' as const, player: 0, chips: 6, byTurnUp: false };
+    const second = { compartment: 'ace' as const, player: 1, chips: 3, byTurnUp: false };
+    const third = { compartment: 'king' as const, player: 2, chips: 4, byTurnUp: false };
+    renderWithProviders(<PopeJoanPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    mockExec.mockResolvedValueOnce(makeState({ awards: [first] }));
+    pickHand(0);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(screen.getByTestId('popejoan-live')).toHaveTextContent('席0 が ポープ を獲得（6）'));
+
+    mockExec.mockResolvedValueOnce(makeState({ awards: [first, second] }));
+    pickHand(0);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(screen.getByTestId('popejoan-live')).toHaveTextContent('席1 が A を獲得（3）'));
+    expect(screen.getByTestId('popejoan-live')).not.toHaveTextContent('ポープ');
+
+    mockExec.mockResolvedValueOnce(makeState({ awards: [first, second, third, { ...third, player: 3 }] }));
+    pickHand(0);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() =>
+      expect(screen.getByTestId('popejoan-live')).toHaveTextContent('席2 が K を獲得（4）、席3 が K を獲得（4）'),
+    );
+    expect(screen.getByTestId('popejoan-live')).not.toHaveTextContent('ポープ');
+  });
+
+  it('announces the deal result through the live region', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: PopeJoanPhase.DEAL_END, dealWinner: 2 }));
+    renderWithProviders(<PopeJoanPage />);
+    await waitFor(() => expect(screen.getByTestId('popejoan-live')).toHaveTextContent('席2 が出し切りました'));
+  });
+
+  it('announces new awards and the deal result from the same response', async () => {
+    renderWithProviders(<PopeJoanPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        phase: PopeJoanPhase.DEAL_END,
+        awards: [{ compartment: 'pope', player: 0, chips: 6, byTurnUp: false }],
+        dealWinner: 2,
+      }),
+    );
+    pickHand(0);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('popejoan-live')).toHaveTextContent('席0 が ポープ を獲得（6）、席2 が出し切りました');
+    });
   });
 
   it('plays exactly one card', async () => {

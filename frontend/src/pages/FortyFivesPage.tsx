@@ -186,7 +186,11 @@ function FortyFivesPageContent() {
         : 'needMore';
   const contractRemaining = Math.max(0, state.contract - declarerPoints);
   const contractStatusColor =
-    contractStatus === 'made' ? 'text-ds-success' : contractStatus === 'failed' ? 'text-ds-error' : 'text-ds-warning';
+    contractStatus === 'made'
+      ? 'text-ds-success'
+      : contractStatus === 'failed'
+        ? 'text-ds-error-text'
+        : 'text-ds-warning';
 
   const handleManualReset = () => {
     hideActionLog();
@@ -275,10 +279,8 @@ function FortyFivesPageContent() {
               {/* Right: info sidebar */}
               <div>
                 {state.trumpSuit > 0 && (
-                  <details className="mb-2 p-2 rounded bg-black/30" data-testid="ff-trump-legend">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
-                      {t('trumpLegend.title')}
-                    </summary>
+                  <section className="mb-2 p-2 rounded bg-black/30" data-testid="ff-trump-legend">
+                    <h2 className="text-ds-text-muted text-sm">{t('trumpLegend.title')}</h2>
                     <div className="mt-1 text-ds-text-muted text-xs">
                       <div className="mb-1">{t('trumpLegend.caption')}</div>
                       <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5">
@@ -292,7 +294,7 @@ function FortyFivesPageContent() {
                         ))}
                       </div>
                     </div>
-                  </details>
+                  </section>
                 )}
 
                 {/* Team match scores */}
@@ -419,19 +421,17 @@ function FortyFivesPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            {isBidPhase && (
-              <div className="text-xs text-ds-text-muted mb-2" data-testid="ff-bid-history">
-                <span className="font-semibold mr-1">{t('bidHistoryTitle')}:</span>
-                <span>
-                  {state.players
-                    .map(
-                      (p, i) =>
-                        `${playerName(p.id, p.isHuman)}=${state.bidDone[i] ? bidName(state.bids[i]) : t('bidNotYet')}`,
-                    )
-                    .join(', ')}
-                </span>
-              </div>
-            )}
+            <div className="text-xs text-ds-text-muted mb-2" data-testid="ff-bid-history">
+              <span className="font-semibold mr-1">{t('bidHistoryTitle')}:</span>
+              <span>
+                {state.players
+                  .map(
+                    (p, i) =>
+                      `${playerName(p.id, p.isHuman)}=${state.bidDone[i] ? bidName(state.bids[i]) : t('bidNotYet')}`,
+                  )
+                  .join(t('listSeparator'))}
+              </span>
+            </div>
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="fortyfives-action-buttons">
               {isBidPhase && isHumanBidTurn && (

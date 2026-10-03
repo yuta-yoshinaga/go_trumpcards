@@ -45,6 +45,7 @@ const baseState: RamschResponse = {
   durchmarschIdx: -1,
   gameEndFlag: false,
   leadPlayerIdx: 0,
+  trickWinnerIdx: -1,
   config: { cpuDifficulty: 1, targetScore: 500 },
   message: '',
 } as RamschResponse;
@@ -113,6 +114,27 @@ describe('RamschPage', () => {
     expect(screen.queryByTestId('ramsch-loser-0')).not.toBeInTheDocument();
   });
 
+  it('shows each round score and cumulative change only after the round ends', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      phase: RamschPhase.ROUND_END,
+      players: [
+        player(0, { roundScore: 12, cumulativeScore: 12 }),
+        player(1, { roundScore: -78, cumulativeScore: -78 }),
+        player(2, { roundScore: 0, cumulativeScore: 0 }),
+      ],
+    });
+    renderWithProviders(<RamschPage />);
+    await waitFor(() => expect(screen.getByTestId('ramsch-round-score-1')).toHaveTextContent('-78'));
+    expect(screen.getByTestId('ramsch-cumulative-change-1')).toHaveTextContent('-78');
+    expect(screen.getByTestId('ramsch-cumulative-change-0')).toHaveTextContent('+12');
+    expect(screen.getByTestId('ramsch-cumulative-change-2')).toHaveTextContent(/^±0$/);
+
+    mockExec.mockResolvedValue({ ...baseState, phase: RamschPhase.PLAY });
+    fireEvent.click(screen.getByRole('button', { name: '次のラウンド' }));
+    await waitFor(() => expect(screen.queryByTestId('ramsch-round-score-1')).not.toBeInTheDocument());
+  });
+
   // Durchmarsch は別の印。敗者の印を出すと、総取りした人が負けたように読める。
   it('marks a Durchmarsch instead of a loser', async () => {
     mockExec.mockResolvedValue({
@@ -149,6 +171,37 @@ describe('RamschPage', () => {
     renderWithProviders(<RamschPage />);
     fireEvent.click(await screen.findByRole('button', { name: '次のトリック' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
+  });
+
+  it('highlights only the winning card after the trick ends, even when the winner differs from the leader', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      phase: RamschPhase.TRICK_END,
+      leadPlayerIdx: 1,
+      trickWinnerIdx: 2,
+      currentTrick: [
+        { playerIdx: 1, card: card('SPADE', 7) },
+        { playerIdx: 0, card: card('HEART', 10) },
+        { playerIdx: 2, card: card('SPADE', 1) },
+      ],
+    });
+    renderWithProviders(<RamschPage />);
+    await screen.findByRole('button', { name: '次のトリック' });
+    const cards = screen.getAllByTestId('trick-display-cards')[0].children;
+    expect(cards[0]).not.toHaveAttribute('data-trick-winner');
+    expect(cards[1]).not.toHaveAttribute('data-trick-winner');
+    expect(cards[2]).toHaveAttribute('data-trick-winner', 'true');
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('獲得者');
+  });
+
+  it('does not show a winner while a trick is in progress', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      currentTrick: [{ playerIdx: 0, card: card('SPADE', 7) }],
+    });
+    renderWithProviders(<RamschPage />);
+    await screen.findByTestId('trick-display-cards');
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
   });
 
   it('advances the round', async () => {

@@ -22,6 +22,7 @@
   "trumpUnset": "未確定",
   "turnUp": "めくり札: {{card}}",
   "cards": "{{count}}枚",
+  "unplayableCardReason": "リードスートを持っている場合は、そのスートか切り札を出してください。",
   "currentTrick": "現在のトリック",
   "trickUnplayed": "まだカードが出ていません",
   "trickComplete": "トリックが終了しました",

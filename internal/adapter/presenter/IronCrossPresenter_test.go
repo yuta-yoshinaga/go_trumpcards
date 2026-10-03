@@ -244,10 +244,11 @@ func TestIronCrossWebPresenter_ShowsEveryHandAtShowdown(t *testing.T) {
 
 	var got struct {
 		Seats []struct {
-			Cards    []json.RawMessage `json:"cards"`
-			BestHand []json.RawMessage `json:"bestHand"`
-			Line     int               `json:"line"`
-			Folded   bool              `json:"folded"`
+			Cards     []json.RawMessage `json:"cards"`
+			BestHand  []json.RawMessage `json:"bestHand"`
+			Line      int               `json:"line"`
+			NetChange int               `json:"netChange"`
+			Folded    bool              `json:"folded"`
 		} `json:"seats"`
 		RevealedCount int  `json:"revealedCount"`
 		Pot           int  `json:"pot"`
@@ -260,6 +261,7 @@ func TestIronCrossWebPresenter_ShowsEveryHandAtShowdown(t *testing.T) {
 	assert.Zero(t, got.Pot, "決着後にポットが残っている")
 	assert.False(t, got.IsChoosing)
 	for i, s := range got.Seats {
+		assert.Equal(t, g.GetResults()[i].NetChange, s.NetChange, "席 %d の純増減が載っていない", i)
 		assert.Len(t, s.Cards, domain.IronCrossHoleCards, "席 %d の手札が開いていない", i)
 		if !s.Folded {
 			assert.Len(t, s.BestHand, domain.IronCrossHandSize, "席 %d の最良 5 枚が載っていない", i)

@@ -64,6 +64,14 @@ func TestCincinnati_RoundTrip(t *testing.T) {
 	}
 }
 
+func TestCincinnatiPlayer_LegacySnapshotUsesCurrentChipsAsBaseline(t *testing.T) {
+	t.Parallel()
+	var player CincinnatiPlayer
+	require.NoError(t, json.Unmarshal([]byte(`{"c":725,"b":0,"h":true,"n":"YOU","f":false,"a":false,"cd":[],"hr":0,"bh":[]}`), &player))
+	assert.Equal(t, 725, player.GetHandStartChips())
+	assert.Zero(t, player.GetHandNetChange())
+}
+
 // **毎手ごとに往復させる。** 書き込み側の違反は局面を進めた後でしか出ない。
 func TestCincinnati_RoundTripEveryMove(t *testing.T) {
 	t.Parallel()

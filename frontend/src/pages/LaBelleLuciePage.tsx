@@ -120,6 +120,8 @@ function LaBelleLuciePageContent() {
   const isOver = state.phase === LaBelleLuciePhase.GAME_OVER;
   const isEnd = isClear || isOver;
   const canAct = !isEnd;
+  const foundationCardCount = state.foundation.reduce((total, pile) => total + pile.length, 0);
+  const remainingCardCount = 52 - foundationCardCount;
 
   // **どの扇が動かせるかは、ヒント (4秒で消える) を押さないと分からなかった** (#5678)。
   // 同バッチの他ゲームと同じく「押す前に分かる」形にする。ヒントの強調とは別の
@@ -195,7 +197,12 @@ function LaBelleLuciePageContent() {
           ? t('movableFan')
           : '';
     const ariaLabel = topCard
-      ? t('fanAriaLabel', { index: idx + 1, card: cardAlt(topCard), state: fanState })
+      ? t('fanAriaLabel', {
+          index: idx + 1,
+          card: cardAlt(topCard),
+          cardCount: t('fanCardCount', { count: fan.length }),
+          state: fanState,
+        })
       : t('emptyFanAriaLabel', { index: idx + 1 });
     // **リングは 1 つだけ選ぶ。** Tailwind の ring-* は同じ box-shadow 変数を
     // 共有するので重ねられない —— 連結すると、生成された CSS の順序で
@@ -310,6 +317,11 @@ function LaBelleLuciePageContent() {
         </div>
 
         <div className="mt-2 text-ds-text-muted text-xs">
+          <span data-testid="ll-progress">
+            {t('foundationProgress', { count: foundationCardCount })} ·{' '}
+            {t('remainingCards', { count: remainingCardCount })}
+          </span>
+          {' · '}
           {t('redealsLeft', { count: state.redealsLeft })} · {t('moveCount', { count: state.moveCount })}
         </div>
         {stuck && (
@@ -326,7 +338,7 @@ function LaBelleLuciePageContent() {
         )}
         {deadlocked && (
           <div
-            className="mt-1 flex items-center gap-2 text-ds-error text-sm font-medium"
+            className="mt-1 flex items-center gap-2 text-ds-error-text text-sm font-medium"
             role="status"
             data-testid="ll-deadlock-banner"
           >

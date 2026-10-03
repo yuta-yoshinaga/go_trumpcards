@@ -61,10 +61,11 @@ const mixedHandState = makeDoppelkopfState({
       trickCount: 0,
       chips: 20,
       isRe: false,
+      teamKnown: true,
     },
-    { id: 1, isHuman: false, cardCount: 5, cards: [], trickCount: 0, chips: 20, isRe: false },
-    { id: 2, isHuman: false, cardCount: 5, cards: [], trickCount: 0, chips: 20, isRe: false },
-    { id: 3, isHuman: false, cardCount: 5, cards: [], trickCount: 0, chips: 20, isRe: false },
+    { id: 1, isHuman: false, cardCount: 5, cards: [], trickCount: 0, chips: 20, isRe: false, teamKnown: false },
+    { id: 2, isHuman: false, cardCount: 5, cards: [], trickCount: 0, chips: 20, isRe: false, teamKnown: false },
+    { id: 3, isHuman: false, cardCount: 5, cards: [], trickCount: 0, chips: 20, isRe: false, teamKnown: false },
   ],
   playableIndices: [0, 1, 2, 3, 4],
 });
@@ -75,6 +76,23 @@ beforeEach(() => {
 });
 
 describe('DoppelkopfPage', () => {
+  it('shows a known team label before the teams are fully revealed', async () => {
+    mockExec.mockResolvedValue(
+      makeDoppelkopfState({
+        players: [
+          { id: 0, isHuman: true, cardCount: 12, cards: [], trickCount: 0, chips: 20, isRe: true, teamKnown: true },
+          { id: 1, isHuman: false, cardCount: 12, cards: [], trickCount: 0, chips: 20, isRe: true, teamKnown: true },
+          { id: 2, isHuman: false, cardCount: 12, cards: [], trickCount: 0, chips: 20, isRe: false, teamKnown: false },
+          { id: 3, isHuman: false, cardCount: 12, cards: [], trickCount: 0, chips: 20, isRe: false, teamKnown: false },
+        ],
+        teamsRevealed: false,
+      }),
+    );
+    renderWithProviders(<DoppelkopfPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1 \[Re\]/)).toBeInTheDocument());
+    expect(screen.queryByText(/CPU 2 \[Kontra\]/)).not.toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<DoppelkopfPage />);
@@ -198,11 +216,15 @@ describe('DoppelkopfPage', () => {
     await screen.findByAltText('♥ 10');
     // Trumps: ♥10 (Dulle), ♦K, ♣Q.
     for (const alt of ['♥ 10', '♦ K', '♣ Q']) {
-      expect(screen.getByAltText(alt).closest('button')).toHaveAttribute('data-trump', 'true');
+      const button = screen.getByAltText(alt).closest('button');
+      expect(button).toHaveAttribute('data-trump', 'true');
+      expect(button).toHaveAccessibleName(`${alt} (切り札)`);
     }
     // Fail cards: ♠A, ♣10.
     for (const alt of ['♠ A', '♣ 10']) {
-      expect(screen.getByAltText(alt).closest('button')).not.toHaveAttribute('data-trump');
+      const button = screen.getByAltText(alt).closest('button');
+      expect(button).not.toHaveAttribute('data-trump');
+      expect(button).toHaveAccessibleName(alt);
     }
   });
 

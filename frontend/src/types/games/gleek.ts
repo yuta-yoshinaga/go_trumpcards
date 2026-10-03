@@ -58,6 +58,14 @@ export interface GleekConfig {
   targetRounds: number;
 }
 
+/** Per-seat score changes for each scoring stage of the current deal. */
+export interface GleekRoundBreakdown {
+  bid: number[];
+  ruff: number[];
+  meld: number[];
+  trick: number[];
+}
+
 /** A suggested hint for Gleek, computed by the backend. */
 export interface GleekHint {
   cardIndices: number[];
@@ -100,6 +108,8 @@ export interface GleekResponse extends BaseGameResponse {
   playerScores: number[];
   /** Net score change per player for the current deal (index = player seat). */
   roundDelta: number[];
+  /** Per-seat changes by stage: auction, ruff, meld, then trick settlement. */
+  roundBreakdown: GleekRoundBreakdown;
   /** How many cards the buyer must throw (seven). */
   discardCount: number;
   /** Seat that won the ruff; -1 until it is scored. */

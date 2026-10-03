@@ -52,6 +52,8 @@ type SevenTwentySevenGame interface {
 	GetPlayer(i int) *domain.SevenTwentySevenPlayer
 	// GetChips 人間 (seat 0) の保有チップを取得する
 	GetChips() int
+	// GetRoundNetChange は指定席のラウンド開始時からのチップ差を取得する。
+	GetRoundNetChange(i int) int
 	// GetHint ヒントを取得する
 	GetHint() *domain.SevenTwentySevenHint
 }

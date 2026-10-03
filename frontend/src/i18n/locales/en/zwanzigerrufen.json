@@ -29,10 +29,18 @@
   "rolePartner": "(partner)",
   "you": "You",
   "cpu": "CPU{{n}}",
+  "turnAction": {
+    "bid": "bidding",
+    "talon": "talon exchange",
+    "play": "card play"
+  },
+  "turnAnnouncement": "{{name}}'s turn for {{action}}",
   "cards": "{{count}} cards",
   "points": "{{points}} pts this deal",
   "score": "total {{score}}",
   "currentTrick": "Current trick",
+  "leadSuit": "Led suit",
+  "leadTarock": "Tarock (trump)",
   "trickWinner": "WIN",
   "restricted": "You must follow the led suit",
   "bidRufer": "Call the XX",

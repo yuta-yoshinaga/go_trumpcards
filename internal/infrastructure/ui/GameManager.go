@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
@@ -17,8 +18,9 @@ import (
 // Description lives on games.Game (issue #1459 SSoT); use Description() to
 // look it up for a given entry.
 type GameRegistryEntry struct {
-	Name   string
-	NewCui func() cuiGame
+	Name     string
+	TitleKey string
+	NewCui   func() cuiGame
 }
 
 // Description returns the display description for this entry, sourced from
@@ -59,7 +61,8 @@ func BindCuiFor[I any, C CuiExecer](
 	spec CuiHelpSpec,
 ) GameRegistryEntry {
 	return GameRegistryEntry{
-		Name: name,
+		Name:     name,
+		TitleKey: spec.TitleKey,
 		NewCui: func() cuiGame {
 			return cuiEntry(newCtrl(newInteractor()), spec)
 		},
@@ -1451,6 +1454,7 @@ var gameRegistry = []GameRegistryEntry{
 				"trash.helpDraw",
 				"trash.helpPlace",
 				"trash.helpCpu",
+				"trash.helpUndo",
 				"trash.helpHint",
 				"trash.helpLog",
 			},
@@ -1770,6 +1774,7 @@ var gameRegistry = []GameRegistryEntry{
 				"spiteandmalice.helpPlaySide",
 				"spiteandmalice.helpDiscard",
 				"spiteandmalice.helpCpu",
+				"spiteandmalice.helpUndo",
 				"spiteandmalice.helpHint", "spiteandmalice.helpAutoPlay",
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
@@ -7451,6 +7456,55 @@ func GameDescriptions() map[string]string {
 	return games.Descriptions()
 }
 
+// GameTitle returns the localized help title used as a game's display name.
+// When a locale has no title, it falls back to the legacy game description.
+func GameTitle(name string) string {
+	return GameTitleKey(gameTitleKey(name))
+}
+
+var gameTitleKeysOnce sync.Once
+var gameTitleKeys map[string]string
+
+func gameTitleKey(name string) string {
+	gameTitleKeysOnce.Do(func() {
+		gameTitleKeys = make(map[string]string, len(gameRegistry))
+		for _, entry := range gameRegistry {
+			if entry.TitleKey != "" {
+				gameTitleKeys[entry.Name] = entry.TitleKey
+			}
+		}
+	})
+	if key, ok := gameTitleKeys[name]; ok {
+		return key
+	}
+	return name + ".helpTitle"
+}
+
+// GameTitleKey resolves a help title key and falls back to the game's legacy
+// description when the ordinary helpTitle translation is missing.
+func GameTitleKey(key string) string {
+	return resolveGameTitle(key, i18n.Lang())
+}
+
+func resolveGameTitle(key, lang string) string {
+	name := strings.TrimSuffix(key, ".helpTitle")
+	if title := i18n.TForLang(lang, key); title != key {
+		return title
+	}
+	if name != key {
+		if description := games.Description(name); description != "" {
+			return description
+		}
+	}
+	return key
+}
+
+// GameTitleForLang returns the display title for lang without changing the
+// active locale. This lets games search remain stable across CLI languages.
+func GameTitleForLang(name, lang string) string {
+	return resolveGameTitle(gameTitleKey(name), lang)
+}
+
 // GameAliases maps short alias names to their canonical game names.
 // Aliases are not shown in help or game lists.
 var GameAliases = map[string]string{
@@ -7638,8 +7692,8 @@ func (m *GameManager) ArgumentCandidates(cmd string) []string {
 // helper in cmd/trumpcards/main.go added in #1555 so a typo of an alias (e.g.
 // "gni" for "gin") recovers the alias in interactive mode the same way it does
 // at the top-level CLI. The local `add` closure matches the style used by
-// helpSuggestionCandidates / suggestionCandidates(commands) in main.go so
-// future readers see one dedup pattern instead of two. See issues #1602, #1625.
+// helpSuggestionCandidates in cmd/trumpcards/main.go follows the same dedup
+// pattern for CLI unknown-name suggestions. See issues #1602, #1625.
 func (m *GameManager) suggestionCandidates() []string {
 	capacity := len(m.gameOrder) + len(GameAliases)
 	seen := make(map[string]struct{}, capacity)

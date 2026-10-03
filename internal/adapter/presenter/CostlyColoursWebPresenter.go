@@ -53,6 +53,12 @@ func (p *CostlyColoursWebPresenter) buildBase(g interfaces.CostlyColoursGame) *c
 	}
 	resObj.Pile = cardsToOutput(g.GetPile())
 	resObj.Total = g.GetTotal()
+	resObj.RecentPlays = make([]*controller.CostlyColoursWebOutputRecentPlay, 0)
+	for _, play := range g.GetRecentPlays() {
+		resObj.RecentPlays = append(resObj.RecentPlays, &controller.CostlyColoursWebOutputRecentPlay{
+			Seat: play.Seat, Card: cardToOutput(play.Card), Total: play.Total, Points: play.Points,
+		})
+	}
 	resObj.WentOut = g.GetWentOut()
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerIdx = g.GetWinnerIdx()

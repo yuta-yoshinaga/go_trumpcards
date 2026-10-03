@@ -20,6 +20,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { PiquetDeclaration, PiquetPlayerData, PiquetResponse } from '../types/card';
 import { PiquetDeclarationKind, PiquetExchangeTurn, PiquetPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { isRequestedHint } from '../utils/hintRequest';
 import { type DeclarationHighlight, declarationHighlight } from '../utils/piquetDeclarationHighlight';
 
@@ -210,6 +211,11 @@ function PiquetPageContent() {
                     key={`hand-${i}-${c.design}-${c.value}`}
                     type="button"
                     aria-pressed={humanCanExchange ? selected : undefined}
+                    aria-label={
+                      humanCanPlay
+                        ? t(isPlayable(i) ? 'playableAria' : 'notPlayableAria', { card: cardAlt(c) })
+                        : undefined
+                    }
                     data-hint-action={humanCanExchange ? 'discard' : 'play'}
                     className={`rounded ${restricted ? 'opacity-50 cursor-not-allowed' : ''}`}
                     onClick={restricted ? undefined : handleClick}
@@ -358,6 +364,9 @@ function PlayerCard({ label, player, carteBlanche }: PlayerCardProps) {
         {t('playerStats', {
           hand: player.cardCount,
           tricks: player.trickCount,
+          declaration: player.declScore,
+          trickScore: player.trickScore,
+          bonus: player.bonusScore,
           round: player.roundScore,
           match: player.matchScore,
         })}

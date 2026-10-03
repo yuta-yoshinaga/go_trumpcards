@@ -141,16 +141,6 @@ func NewHorse(config HorseConfig) *Horse {
 // NewDefaultHorse は既定の卓を構築する。
 func NewDefaultHorse() *Horse { return NewHorse(DefaultHorseConfig()) }
 
-// NewEightGame は Eight-Game Mix の卓を構築する。
-//
-// **オーケストレータは H.O.R.S.E. と同じもの。** 違うのは回す種目の並びだけで、
-// チップの持ち回しも精算も 1 つの実装が担当する ── 8 種目ぶんの進行を別に
-// 書くと、同じ規則を 2 か所で保つことになる。
-func NewEightGame(config HorseConfig) *Horse {
-	config.Variant = HorseVariantEightGame
-	return NewHorse(config)
-}
-
 // NewDefaultEightGame は既定の Eight-Game Mix 卓を構築する。
 func NewDefaultEightGame() *Horse { return NewHorse(DefaultEightGameConfig()) }
 
@@ -800,6 +790,44 @@ func (g *Horse) GetSeatCards(seat int) []*Card {
 		return all
 	}
 	return up
+}
+
+// GetSeatHandName はショーダウンで確定した役名を返す。未確定・フォールド時は空文字。
+func (g *Horse) GetSeatHandName(seat int) string {
+	if g.table == nil || seat < 0 || seat >= len(g.seats) || g.GetSeatFolded(seat) {
+		return ""
+	}
+	ti := g.horseTableIdx(seat)
+	if ti < 0 {
+		return ""
+	}
+	switch t := g.table.(type) {
+	case *Holdem:
+		for _, r := range t.GetRoundResults() {
+			if r.PlayerIdx == ti {
+				return r.HandName
+			}
+		}
+	case *Omaha:
+		for _, r := range t.GetRoundResults() {
+			if r.PlayerIdx == ti {
+				return r.HandName
+			}
+		}
+	case *SevenCardStud:
+		for _, r := range t.GetRoundResults() {
+			if r.PlayerIdx == ti {
+				return r.HandName
+			}
+		}
+	case *DeuceToSeven:
+		for _, r := range t.GetRoundResults() {
+			if r.PlayerIdx == ti {
+				return r.HandName
+			}
+		}
+	}
+	return ""
 }
 
 // GetCommunityCards はいまの種目の共有札を返す。スタッド系には無いので空。

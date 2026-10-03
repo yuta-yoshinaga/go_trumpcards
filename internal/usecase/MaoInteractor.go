@@ -150,12 +150,7 @@ func (ci *MaoInteractor) DeclareWord(word string) string {
 // NextRound ラウンドをスコアリングして次のラウンドへ進む
 func (ci *MaoInteractor) NextRound() string {
 	ci.Game.ScoreRound()
-	if out, blocked := guardGameEnd(ci.Game, ci.gp); blocked {
-		return out
-	}
-	ci.Game.NextRound()
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return advanceRound(ci.Game, ci.gp, ci.runCpuTurns)
 }
 
 // GetConfig 現在の設定を取得

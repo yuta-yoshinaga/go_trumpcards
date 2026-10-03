@@ -58,12 +58,12 @@ const flip2State: MemoryResponse = {
 const resultMatchState: MemoryResponse = {
   ...flip1State,
   phase: 2,
-  firstFlipPos: 0,
-  secondFlipPos: 1,
+  firstFlipPos: 2,
+  secondFlipPos: 10,
   lastMatchResult: true,
   board: makeBoard({
-    0: { faceUp: true, card: { design: 'SPADE' as const, value: 1 } },
-    1: { faceUp: true, card: { design: 'HEART' as const, value: 1 } },
+    2: { faceUp: true, card: { design: 'SPADE' as const, value: 1 } },
+    10: { faceUp: true, card: { design: 'HEART' as const, value: 1 } },
   }),
 };
 
@@ -111,6 +111,20 @@ describe('MemoryPage', () => {
     expect(screen.getByText(/CPU 1: 2/)).toBeInTheDocument();
     expect(screen.getByText(/CPU 2: 1/)).toBeInTheDocument();
     expect(screen.getByText(/CPU 3: 0/)).toBeInTheDocument();
+  });
+
+  it('shows remaining and total pairs from the server board when config differs', async () => {
+    const boardState: MemoryResponse = {
+      ...flip1State,
+      board: Array.from({ length: 8 }, (_, index) => ({
+        card: null,
+        faceUp: false,
+        taken: index < 2,
+      })),
+    };
+    mockExec.mockResolvedValue(boardState);
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText('残り 3 / 4 ペア')).toBeInTheDocument());
   });
 
   it('score section has role="status" for accessibility', async () => {
@@ -706,7 +720,7 @@ describe('MemoryPage', () => {
     const region = await screen.findByTestId('mem-flip-announce');
     expect(region).toHaveAttribute('aria-live', 'polite');
     expect(region).toHaveAttribute('role', 'status');
-    await waitFor(() => expect(region).toHaveTextContent('♠ A / ♥ A — 一致'));
+    await waitFor(() => expect(region).toHaveTextContent('3枚目の♠ A / 11枚目の♥ A — 一致'));
   });
 
   it('announces a mismatch result in the polite live region', async () => {
@@ -714,13 +728,13 @@ describe('MemoryPage', () => {
       ...resultMatchState,
       lastMatchResult: false,
       board: makeBoard({
-        0: { faceUp: true, card: { design: 'SPADE' as const, value: 1 } },
-        1: { faceUp: true, card: { design: 'HEART' as const, value: 5 } },
+        2: { faceUp: true, card: { design: 'SPADE' as const, value: 1 } },
+        10: { faceUp: true, card: { design: 'HEART' as const, value: 5 } },
       }),
     });
     renderWithProviders(<MemoryPage />);
     const region = await screen.findByTestId('mem-flip-announce');
-    await waitFor(() => expect(region).toHaveTextContent('♠ A / ♥ 5 — 不一致'));
+    await waitFor(() => expect(region).toHaveTextContent('3枚目の♠ A / 11枚目の♥ 5 — 不一致'));
   });
 
   it('keeps the live region empty outside the result phase', async () => {

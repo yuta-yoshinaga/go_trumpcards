@@ -873,11 +873,6 @@ func TestNewTrumpCardsWithSuits(t *testing.T) {
 	})
 }
 
-func TestDefaultSpiderConfig(t *testing.T) {
-	cfg := DefaultSpiderConfig()
-	assert.Equal(t, SpiderDifficulty1Suit, cfg.Difficulty)
-}
-
 func TestSpiderStalemateCheckNotPlayingPhase(t *testing.T) {
 	tc := NewTrumpCardsWithSuits(SpiderTotalCards, []int{CardDesignSpade})
 	s := NewSpider(tc)

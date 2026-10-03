@@ -21,6 +21,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { ANTE_OPTIONS, STARTING_CHIPS_OPTIONS, useTeenPattiGame } from '../hooks/useTeenPattiGame';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -162,6 +163,7 @@ function TeenPattiPageContent() {
   const isGameEnd = state.phase === TeenPattiPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = state.isHumanTurn;
   const isHumanBetTurn = isBettingPhase && isHumanTurn;
+  const humanCallCost = state.humanCallCost;
   // The human is being asked to accept/decline a pending Side Show.
   const isHumanSideShowTarget = isSideShowPhase && state.sideShowTarget === humanIdx;
 
@@ -249,6 +251,11 @@ function TeenPattiPageContent() {
                   >
                     {playerLabel(p.id, p.isHuman)} — {t('chips', { amount: p.chips })} ·{' '}
                     {t('roundBet', { amount: p.roundBet })} · [{badge}]{p.handName ? ` · ${handName(p.handName)}` : ''}
+                    {p.id === state.dealerIdx && (
+                      <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
+                        {t('dealerBadge')}
+                      </span>
+                    )}
                   </div>
                 );
               })}
@@ -428,13 +435,16 @@ function TeenPattiPageContent() {
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="teenpatti-action-buttons">
               {isHumanBetTurn && (
                 <>
+                  <div className="w-full text-ds-text-muted text-sm">
+                    {t(humanPlayer?.seen ? 'callCost.seen' : 'callCost.blind', { amount: humanCallCost })}
+                  </div>
                   {!humanPlayer?.seen && (
                     <button type="button" className={btnSecondary} onClick={handleSee} disabled={loading}>
                       {t('seeButton')}
                     </button>
                   )}
                   <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
-                    {t('betButton', { amount: state.stake })}
+                    {t('betButton', { amount: humanCallCost })}
                   </button>
                   <div className="flex items-center gap-1">
                     <button

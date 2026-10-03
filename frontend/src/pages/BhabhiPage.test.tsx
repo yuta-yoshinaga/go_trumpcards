@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bhabhiApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BhabhiResponse, Card } from '../types/card';
@@ -61,6 +62,25 @@ beforeEach(() => {
 });
 
 describe('BhabhiPage', () => {
+  it('includes the card and player in pile card accessible names in Japanese and English', async () => {
+    const previousLanguage = i18n.language;
+    const pile = [{ playerIdx: 1, card: card('HEART', 5) }];
+    mockExec.mockResolvedValue(makeState({ pile, leadSuit: 3 } as unknown as Partial<BhabhiResponse>));
+
+    try {
+      await i18n.changeLanguage('ja');
+      const { unmount } = renderWithProviders(<BhabhiPage />);
+      expect(await screen.findByRole('img', { name: 'CPU 1が出した♥ 5' })).toBeInTheDocument();
+      unmount();
+
+      await i18n.changeLanguage('en');
+      renderWithProviders(<BhabhiPage />);
+      expect(await screen.findByRole('img', { name: '♥ 5 played by CPU 1' })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<BhabhiPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -119,11 +139,27 @@ describe('BhabhiPage', () => {
     renderWithProviders(<BhabhiPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
-    const cards = await screen.findAllByRole('button', { name: /を出す/ });
+    const cards = await screen.findAllByRole('button', { name: /出せる札/ });
     mockExec.mockClear();
     fireEvent.click(cards[2]);
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 2));
+  });
+
+  it('announces legal status and prevents playing an illegal card', async () => {
+    mockExec.mockResolvedValue(makeState({ validPlays: [0] }));
+    renderWithProviders(<BhabhiPage />);
+    const playable = await screen.findByRole('button', { name: /出せる札/ });
+    const unplayable = screen.getAllByRole('button', { name: /出せない札/ })[0];
+    expect(playable).not.toHaveAttribute('aria-disabled');
+    expect(unplayable).toHaveAttribute('aria-disabled', 'true');
+    expect(document.getElementById(unplayable.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
+      'この札は現在出せません',
+    );
+    mockExec.mockClear();
+    fireEvent.click(unplayable);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
   });
 
   // **直前の引き取りは盤面に痕跡が残らない。**
@@ -293,8 +329,9 @@ describe('BhabhiPage', () => {
   it('disables the hand while it is a CPU turn', async () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
     renderWithProviders(<BhabhiPage />);
-    const cards = await screen.findAllByRole('button', { name: /を出す/ });
+    const cards = await screen.findAllByRole('button', { name: /♠|♥|♦|♣/ });
     expect(cards[0]).toBeDisabled();
+    expect(cards[0]).toHaveAccessibleName(/を出す$/);
   });
 
   it('shows the hint when one is enabled', async () => {

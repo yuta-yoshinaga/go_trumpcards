@@ -53,7 +53,8 @@
 | `--accent-hover` | `#E0B86A` | Accent hover state |
 | `--success` | `#4CAF7D` | Active status, win states |
 | `--warning` | `#E8923A` | Waiting status, insurance (shifted orange to distinguish from gold accent) |
-| `--error` | `#B83A3A` | Bust, fold, out states (WCAG AA 5.2:1 on white text) |
+| `--error` | `#B83A3A` | Error backgrounds only; pair with white text (WCAG AA 5.2:1) |
+| `--error-text` | `#F28B82` | Loss, elimination, negative values, and errors as text on dark backgrounds |
 | `--info` | `#5B8FB9` | Tips, informational |
 | `--border` | `rgba(212, 168, 83, 0.15)` | Accent-tinted borders |
 | `--border-subtle` | `rgba(139, 154, 175, 0.12)` | Subtle structural borders |
@@ -107,6 +108,10 @@ These use design system tokens for game UX color-coding. They are scoped to poke
 | Muted text on background | 6.2:1 | AA (intentional — secondary/decorative text) |
 | Accent on background | 7.4:1 | AA |
 | Primary text on surface | 10.1:1 | AAA |
+| Error text `#F28B82` on `ds-bg` `#0F1419` | 7.75:1 | AAA |
+| Error text `#F28B82` on `ds-surface` `#1A2332` | 6.61:1 | AA |
+| Error text `#F28B82` on `ds-surface-elevated` `#212D3F` | 5.81:1 | AA |
+| Error text `#F28B82` on felt `#1E4D2B` | 4.09:1 | Large text / opaque panel only |
 
 ### Contrast ratios (light mode)
 | Combination | Ratio | WCAG |
@@ -128,6 +133,8 @@ Allowed uses of opacity suffixes:
 - Glassmorphism overlays (`--glass-bg`)
 - Decorative shadows / tints / hover scrims (where text contrast is unaffected)
 - Animated pulses and rings around active turn indicators (the underlying text is opaque)
+
+Existing informational-panel `bg-black/NN` uses are frozen by a count ratchet in `frontend/scripts/check-design-tokens.mjs`; do not add new ones.
 
 ## Spacing
 - **Base unit:** 4px

@@ -33,10 +33,34 @@ func TestChemindeFerWebPresenter_ArraysAreNeverNull(t *testing.T) {
 	for _, key := range []string{"bankerHand", "punterHand"} {
 		assert.Equal(t, "[]", string(out[key]), "%s が配列で返っていない", key)
 	}
+	assert.Equal(t, "[]", string(out["roundNetHistory"]), "履歴なしは空配列で返る")
 	// 席はいつでも 6 つ揃っている (空配列で返るのは既定出力のときだけ)。
 	var seats []json.RawMessage
 	require.NoError(t, json.Unmarshal(out["players"], &seats))
 	assert.Len(t, seats, domain.ChemindeFerSeatCnt)
+}
+
+func TestChemindeFerWebPresenter_IncludesRoundNetHistory(t *testing.T) {
+	cp := new(ChemindeFerWebPresenter)
+	g := newChemindeFerForPresenter(t)
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var snapshot map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &snapshot))
+	snapshot["rnh"] = json.RawMessage(`[{"roundNumber":3,"deltas":[10,-10,0,0,0,0]}]`)
+	data, err = json.Marshal(snapshot)
+	require.NoError(t, err)
+	require.NoError(t, json.Unmarshal(data, g))
+
+	out := chemindeFerWebDecode(t, cp.Output(g, nil))
+	var history []struct {
+		RoundNumber int   `json:"roundNumber"`
+		Deltas      []int `json:"deltas"`
+	}
+	require.NoError(t, json.Unmarshal(out["roundNetHistory"], &history))
+	require.Len(t, history, 1)
+	assert.Equal(t, 3, history[0].RoundNumber)
+	assert.Equal(t, []int{10, -10, 0, 0, 0, 0}, history[0].Deltas)
 }
 
 func TestChemindeFerWebPresenter_CarriesTheTable(t *testing.T) {

@@ -3,6 +3,7 @@
   "betGuide": "Place a bet; two cards are dealt to you (the child) and two to the banker.",
   "drawGuide": "Draw a third card, or stand and settle against the banker.",
   "previousBet": "Use last bet ({{amount}})",
+  "maxBetDescription": "The current maximum bet is {{amount}} chips",
   "label": {
     "chips": "Chips",
     "bet": "Bet",
@@ -30,7 +31,9 @@
     "push": "Push"
   },
   "payout": {
-    "total": "Total payout"
+    "total": "Total payout",
+    "bet": "Bet",
+    "netProfit": "Net profit"
   },
   "dealerPolicy": {
     "label": "Banker draw rule",

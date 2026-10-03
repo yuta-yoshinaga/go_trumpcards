@@ -52,7 +52,7 @@ type ContractStatus = 'made' | 'failed' | 'progress';
 /** Tailwind text color per contract status (made=success, in-progress=warning, failed=error). */
 const CONTRACT_STATUS_COLOR: Readonly<Record<ContractStatus, string>> = {
   made: 'text-ds-success',
-  failed: 'text-ds-error',
+  failed: 'text-ds-error-text',
   progress: 'text-ds-warning',
 };
 
@@ -253,6 +253,14 @@ function SoloWhistPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <span data-testid="solowhist-highest-bid-live" className="sr-only" role="status" aria-live="polite">
+        {highestBid > 0
+          ? t('bidHighest', {
+              bid: highestBidLabelKey ? t(highestBidLabelKey) : highestBid,
+              player: highestBidderName,
+            })
+          : t('bidNone')}
+      </span>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -376,6 +384,11 @@ function SoloWhistPageContent() {
                         <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                           {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                           {t('tricks', { count: p.trickCount })}
+                          {p.id === state.dealerIdx && (
+                            <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
+                              {t('dealerBadge')}
+                            </span>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -386,6 +399,11 @@ function SoloWhistPageContent() {
                       <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                         {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                         {t('tricks', { count: p.trickCount })}
+                        {p.id === state.dealerIdx && (
+                          <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
+                            {t('dealerBadge')}
+                          </span>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -470,7 +488,11 @@ function SoloWhistPageContent() {
               {isBidPhase && isHumanBidTurn && (
                 <>
                   <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
-                  <span className="text-xs text-ds-text-muted self-center mr-1" data-testid="sw-highest-bid">
+                  <span
+                    className="text-xs text-ds-text-muted self-center mr-1"
+                    data-testid="sw-highest-bid"
+                    aria-hidden="true"
+                  >
                     {highestBid > 0
                       ? t('bidHighest', {
                           bid: highestBidLabelKey ? t(highestBidLabelKey) : highestBid,

@@ -2,6 +2,7 @@
   "settings": {
     "cpuDifficulty": "CPU Difficulty",
     "startChips": "Starting chips",
+    "betAmount": "Bet amount",
     "difficulty": { "0": "Easy", "1": "Normal", "2": "Hard" }
   },
   "title": "Baccarat Banque",
@@ -23,6 +24,7 @@
   "outcome.punterWin": "punter wins",
   "outcome.tie": "tie",
   "result.title": "Settlement (banker {{total}})",
+  "result.sideLine": "{{role}}: {{outcome}} (stake: {{bet}}, net change: {{delta}})",
   "result.bankerDelta": "Banker net: {{n}}",
   "button.draw": "Draw",
   "button.stand": "Stand",

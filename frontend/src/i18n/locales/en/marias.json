@@ -46,6 +46,7 @@
   "lastTrickBonus": "Last trick +10",
   "roundResult": {
     "title": "Round Result",
+    "progressTitle": "Round Progress (confirmed)",
     "cardPoints": "{{name}} card points: {{points}}",
     "marriage": "{{name}} marriage: {{points}}",
     "soloistTotal": "Soloist: {{points}} pts",

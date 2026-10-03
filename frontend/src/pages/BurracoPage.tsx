@@ -31,17 +31,14 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BurracoResponse, Card } from '../types/card';
 import { BurracoPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import {
-  type BurracoSortMode,
-  loadBurracoSortMode,
-  saveBurracoSortMode,
-  sortedBurracoHand,
-} from '../utils/burracoSort';
+import { burracoMeldSelectionStatus } from '../utils/burracoMeld';
+import { type BurracoSortMode, loadBurracoSortMode, saveBurracoSortMode } from '../utils/burracoSort';
 import { canastaDrawDiscardProblem } from '../utils/canastaDrawDiscard';
 import { cardAlt } from '../utils/cardAlt';
 import { BURRACO_HELP, parseBurracoCommand } from '../utils/cli/commands/burracoCommands';
 import { formatBurracoState } from '../utils/cli/formatters/burracoFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { sortedHandForDisplay } from '../utils/handDisplaySort';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -152,6 +149,21 @@ function BurracoPageContent() {
     return drawDiscardProblem === null ? '' : t(`drawDiscardReason.${drawDiscardProblem}`);
   }, [isDrawPhase, state?.isFrozen, drawDiscardProblem, t]);
 
+  const meldSelectionStatus = useMemo(() => {
+    if (!humanPlayer) return 'select' as const;
+    const selected = selectedCardIndices
+      .map((i) => humanPlayer.cards[i])
+      .filter((card): card is Card => card !== undefined);
+    return burracoMeldSelectionStatus(selected, humanPlayer.melds);
+  }, [selectedCardIndices, humanPlayer]);
+
+  const meldSelectionReason =
+    meldSelectionStatus === 'select'
+      ? t('meldSelectionReason.select')
+      : meldSelectionStatus === 'valid'
+        ? t(humanPlayer?.hasInitMeld ? 'meldSelectionReason.valid' : 'meldSelectionReason.validInitial')
+        : t('meldSelectionReason.invalid');
+
   const handleManualReset = useCallback(() => {
     hideActionLog();
     void gameExec('reset', undefined, {
@@ -174,6 +186,7 @@ function BurracoPageContent() {
   }, []);
 
   const [pozzettoBanner, setPozzettoBanner] = useState<string | null>(null);
+  const [scoreAnnouncement, setScoreAnnouncement] = useState('');
   const [pulsingScoreIds, setPulsingScoreIds] = useState<Set<number>>(new Set());
   const prevPozzettoRef = useRef<boolean[]>([]);
   const prevScoresRef = useRef<number[]>([]);
@@ -196,6 +209,7 @@ function BurracoPageContent() {
     const changedScoreIds = state.players
       .filter((p, i) => prevScores[i] !== undefined && prevScores[i] !== p.roundScore)
       .map((p) => p.id);
+    const changedScores = state.players.filter((p, i) => prevScores[i] !== undefined && prevScores[i] !== p.roundScore);
     prevPozzettoRef.current = state.players.map((p) => p.tookPozzetto);
     prevScoresRef.current = state.players.map((p) => p.roundScore);
 
@@ -207,10 +221,15 @@ function BurracoPageContent() {
     }
     if (changedScoreIds.length > 0) {
       setPulsingScoreIds(new Set(changedScoreIds));
+      setScoreAnnouncement(
+        changedScores
+          .map((p) => t('score.update', { player: playerName(p.id, p.isHuman), score: p.roundScore }))
+          .join(t('listSeparator')),
+      );
       clearTimeout(pulseTimerRef.current ?? undefined);
       pulseTimerRef.current = setTimeout(() => setPulsingScoreIds(new Set()), 1000);
     }
-  }, [state, tc, playSound]);
+  }, [state, tc, playSound, t]);
 
   const kbdConfirmAction = useCallback(() => {
     if (isDiscardPhase) handleDiscard();
@@ -248,6 +267,9 @@ function BurracoPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div role="status" aria-live="polite" className="sr-only" data-testid="bu-score-announcement">
+        {scoreAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -403,7 +425,7 @@ function BurracoPageContent() {
                       ))}
                       {p.red3s.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
-                          <span className="text-xs text-ds-error self-center mr-1">{t('red3s')}</span>
+                          <span className="text-xs text-ds-error-text self-center mr-1">{t('red3s')}</span>
                           {p.red3s.map((card, ri) => (
                             <AnimatedCard key={`red3-${pi}-${ri}`} card={card} width={cardWidth * 0.6} />
                           ))}
@@ -506,7 +528,7 @@ function BurracoPageContent() {
             )}
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ca-player-hand">
-                {sortedBurracoHand(humanPlayer.cards, sortMode).map(({ card, index: idx }) => (
+                {sortedHandForDisplay(humanPlayer.cards, sortMode).map(({ card, index: idx }) => (
                   <button
                     type="button"
                     key={`${card.design}-${card.value}-${idx}`}
@@ -577,12 +599,20 @@ function BurracoPageContent() {
                     className={btnPrimary}
                     onClick={handleMeldSelected}
                     disabled={loading || selectedCardIndices.length < 3}
+                    aria-describedby="bu-meld-selection-reason"
                   >
                     {t('meldButton')}
                   </button>
                   <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
                     {t('skipMeldButton')}
                   </button>
+                  <span
+                    id="bu-meld-selection-reason"
+                    data-testid="bu-meld-selection-reason"
+                    className="text-xs text-ds-text-muted"
+                  >
+                    {meldSelectionReason}
+                  </span>
                 </>
               )}
               {isDiscardPhase && isHumanTurn && (

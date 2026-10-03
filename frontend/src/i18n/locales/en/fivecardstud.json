@@ -11,12 +11,14 @@
   },
   "doorCards": "Door Cards",
   "holeCards": "Hole Cards",
+  "bestHandCard": "part of the best hand",
   "yourHand": "Your Hand",
   "anteBringIn": "Ante/Bring-in",
   "betting": {
     "callAmount": "Amount to call: {{amount}}",
     "checkAvailable": "You can check"
   },
+  "callPotOdds": ", required pot odds: {{percent}}%",
   "handNumber": "Hand #{{count}} (Ante level {{anteLevel}}; next level in {{remaining}} hands; level up: every {{level}} hands)",
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",

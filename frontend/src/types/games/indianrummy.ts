@@ -32,6 +32,8 @@ export interface IndianRummyResponse extends BaseGameResponse {
   currentPlayerIdx: number;
   dealerIdx: number;
   discardTop: Card | null;
+  /** Discard pile ordered from oldest to newest. */
+  discardPile: Card[];
   drawPileCount: number;
   wildJoker: Card | null;
   wildRank: number;

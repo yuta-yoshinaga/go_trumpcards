@@ -248,6 +248,26 @@ describe('BeggarMyNeighbourPage', () => {
     expect(region).toHaveTextContent('フェーズ: プレイ中');
   });
 
+  it('announces central pile count changes in a polite live region', async () => {
+    mockExec.mockReset().mockResolvedValueOnce(baseState).mockResolvedValueOnce(penaltyState);
+    renderWithProviders(<BeggarMyNeighbourPage />);
+    const region = await screen.findByTestId('bmn-pile-announce');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toBeEmptyDOMElement();
+
+    fireEvent.click(await screen.findByTestId('step-button'));
+    await waitFor(() => expect(region).toHaveTextContent('場の山は 3 枚'));
+  });
+
+  it('announces when the central pile is collected', async () => {
+    mockExec.mockReset().mockResolvedValueOnce(collectState).mockResolvedValueOnce(gameEndState);
+    renderWithProviders(<BeggarMyNeighbourPage />);
+    const region = await screen.findByTestId('bmn-pile-announce');
+    fireEvent.click(await screen.findByTestId('step-button'));
+    await waitFor(() => expect(region).toHaveTextContent('場の山を獲得しました'));
+  });
+
   it('announces the penalty countdown during PAY_PENALTY', async () => {
     mockExec.mockResolvedValueOnce(penaltyState);
     renderWithProviders(<BeggarMyNeighbourPage />);

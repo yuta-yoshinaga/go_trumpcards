@@ -21,6 +21,8 @@
   "losing": "Losing card (bank collects)",
   "winning": "Winning card (pays 1:1)",
   "split": "Split (bank takes half)",
+  "noSplit": "no split",
+  "dealResultAnnouncement": "Losing card {{losing}}, winning card {{winning}}, {{split}}",
   "callTitle": "Call (predict the order of the last 3 — pays 4:1)",
   "callHint": "Choose the order the three remaining ranks will appear.",
   "callButton": "Make the call",

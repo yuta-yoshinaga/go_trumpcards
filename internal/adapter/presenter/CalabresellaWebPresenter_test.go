@@ -31,8 +31,11 @@ func setupCalabresellaWebMock() *interfaces.MockCalabresellaGame {
 	m.On("GetForehandIdx").Return(1)
 	m.On("GetSoloistIdx").Return(0)
 	m.On("GetWinningBid").Return(domain.CalabresellaBidChiamo)
+	m.On("GetHighestBid").Return(domain.CalabresellaBidSolo)
 	m.On("GetPlayerScores").Return([domain.CalabresellaPlayerCnt]int{0, 0, 0})
 	m.On("GetRoundThirds").Return([domain.CalabresellaPlayerCnt]int{0, 0, 0})
+	m.On("GetRoundScoreChanges").Return([domain.CalabresellaPlayerCnt]int{0, 0, 0})
+	m.On("GetSoloistWon").Return(false)
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetPlayableIndices", 0).Return([]int{0})
 	m.On("IsHumanTurn").Return(true)
@@ -60,6 +63,10 @@ func TestCalabresellaWebPresenter_Output(t *testing.T) {
 
 	t.Run("initial state play phase lead", func(t *testing.T) {
 		m, players := setupCalabresellaWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundScoreChanges")
+		m.On("GetRoundScoreChanges").Return([domain.CalabresellaPlayerCnt]int{2, -1, -1})
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetSoloistWon")
+		m.On("GetSoloistWon").Return(true)
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
 
@@ -79,6 +86,9 @@ func TestCalabresellaWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 0, resObj.SoloistIdx)
 		assert.Equal(t, 1, resObj.ForehandIdx)
 		assert.Equal(t, int(domain.CalabresellaBidChiamo), resObj.WinningBid)
+		assert.Equal(t, int(domain.CalabresellaBidSolo), resObj.HighestBid)
+		assert.Equal(t, [domain.CalabresellaPlayerCnt]int{2, -1, -1}, resObj.RoundScoreChanges)
+		assert.True(t, resObj.SoloistWon)
 		assert.True(t, resObj.IsHumanTurn)
 	})
 

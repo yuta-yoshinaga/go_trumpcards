@@ -43,11 +43,12 @@ type OldMaidWebOutputCpuAction struct {
 
 // OldMaidWebOutputDrawHistoryEntry ゲーム全体の引き履歴エントリ
 type OldMaidWebOutputDrawHistoryEntry struct {
-	DrawPlayerIdx  int  `json:"drawPlayerIdx"`
-	DrawFromIdx    int  `json:"drawFromIdx"`
-	DiscardedPairs int  `json:"discardedPairs"`
-	DrawerFinished bool `json:"drawerFinished"`
-	TargetFinished bool `json:"targetFinished"`
+	DrawPlayerIdx  int              `json:"drawPlayerIdx"`
+	DrawFromIdx    int              `json:"drawFromIdx"`
+	DiscardedPairs int              `json:"discardedPairs"`
+	DiscardedCards []*WebOutputCard `json:"discardedCards"`
+	DrawerFinished bool             `json:"drawerFinished"`
+	TargetFinished bool             `json:"targetFinished"`
 }
 
 // OldMaidWebOutput ババ抜きWebアウトプット

@@ -61,7 +61,8 @@
   },
   "roundResult": {
     "title": "Deal Result",
-    "winner": "{{name}} wins the pot of {{pot}}."
+    "winner": "{{name}} wins the pot of {{pot}}.",
+    "share": "{{name}} receives {{amount}}."
   },
   "matchWinner": "{{name}} wins the match!",
   "hintAvailable": "Hint",

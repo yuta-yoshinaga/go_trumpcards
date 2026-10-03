@@ -26,15 +26,16 @@ type SpadesWebConfig struct {
 
 // SpadesWebOutputPlayer スペードWebアウトプットプレイヤー
 type SpadesWebOutputPlayer struct {
-	ID              int              `json:"id"`
-	IsHuman         bool             `json:"isHuman"`
-	CardCount       int              `json:"cardCount"`
-	Cards           []*WebOutputCard `json:"cards"`
-	Bid             int              `json:"bid"`
-	RoundScore      int              `json:"roundScore"`
-	CumulativeScore int              `json:"cumulativeScore"`
-	TrickCount      int              `json:"trickCount"`
-	Bags            int              `json:"bags"`
+	ID              int                         `json:"id"`
+	IsHuman         bool                        `json:"isHuman"`
+	CardCount       int                         `json:"cardCount"`
+	Cards           []*WebOutputCard            `json:"cards"`
+	Bid             int                         `json:"bid"`
+	RoundScore      int                         `json:"roundScore"`
+	CumulativeScore int                         `json:"cumulativeScore"`
+	TrickCount      int                         `json:"trickCount"`
+	Bags            int                         `json:"bags"`
+	ScoreBreakdown  domain.SpadesScoreBreakdown `json:"scoreBreakdown"`
 }
 
 // SpadesWebOutputHint ヒント出力

@@ -53,6 +53,8 @@
     "number": "数字順",
     "label": "手札の並べ替え"
   },
+  "listSeparator": "、",
+  "tablePlayAnnouncement": "場に出されたカード: {{cards}}。役: {{playType}}",
   "tablePlayLabel": "場の役",
   "selectedPlayLabel": "選択中",
   "actionPlayed": "{{name}}が出しました: {{cards}}",

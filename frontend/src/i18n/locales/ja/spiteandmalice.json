@@ -27,6 +27,9 @@
   "discardNeedHand": "先に手札のカードを選択してください",
   "discardReady": "手札を選択済みです。ディスカードできます",
   "autoComplete": "自動完成",
+  "undo": "取り消す",
+  "undoAvailableHint": "直前の操作を取り消せます",
+  "undoUnavailableHint": "取り消せる操作がありません",
   "autoCompleteHint": "組札に出せるカードを連続して自動でプレイします。手がなくなったら手動に戻り、ディスカードしてターンを終えてください。",
   "selectSource": "出すカードを選んでください",
   "selectFoundation": "出す組札を選んでください",
@@ -36,6 +39,7 @@
   "win": "あなたの勝ち！ 手数: {{moveCount}}",
   "lose": "CPUの勝ち 手数: {{moveCount}}",
   "playing": "プレイ中",
+  "goalRemaining": "残り{{count}}枚",
   "noHint": "ヒントはありません",
   "hintAvailable": "ヒントがあります",
   "settings": {

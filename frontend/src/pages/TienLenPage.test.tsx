@@ -65,10 +65,22 @@ describe('TienLenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  it('shows play and pass buttons on the human turn', async () => {
+  it('disables passing on an empty table during the human lead', async () => {
     renderWithProviders(<TienLenPage />);
-    expect(await screen.findByTestId('pass-button')).toBeEnabled();
+    const passButton = await screen.findByTestId('pass-button');
+    expect(passButton).toHaveAttribute('aria-disabled', 'true');
+    expect(passButton).toHaveAttribute('aria-describedby', 'tl-pass-unavailable');
+    expect(passButton).toHaveClass('aria-disabled:opacity-40', 'aria-disabled:cursor-not-allowed');
+    expect(screen.getByText('場にカードがないためパスできません')).toBeInTheDocument();
     expect(screen.getByTestId('play-button')).toBeDisabled(); // nothing selected yet
+  });
+
+  it('allows passing when cards are on the table during the human turn', async () => {
+    mockExec.mockResolvedValue(makeState({ tableCards: [card('SPADE', 4)] }));
+    renderWithProviders(<TienLenPage />);
+    const passButton = await screen.findByTestId('pass-button');
+    expect(passButton).not.toHaveAttribute('aria-disabled');
+    expect(passButton).toHaveClass('aria-disabled:opacity-40', 'aria-disabled:cursor-not-allowed');
   });
 
   it('exposes hand card names, selection state, and unavailable turn state', async () => {
@@ -95,6 +107,44 @@ describe('TienLenPage', () => {
     expect(playBtn).toBeEnabled();
     fireEvent.click(playBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0]));
+  });
+
+  it.each([
+    ['typeMismatch', '場の役と種類が違います', [card('SPADE', 5), card('HEART', 5)], 2, undefined, [0]],
+    [
+      'countMismatch',
+      '枚数が違います',
+      [card('SPADE', 3), card('HEART', 4), card('DIAMOND', 5)],
+      4,
+      [card('SPADE', 5), card('HEART', 6), card('DIAMOND', 7), card('CLOVER', 8)],
+      [0, 1, 2, 3],
+    ],
+    ['tooWeak', '場の役より弱いです', [card('SPADE', 4)], 1, undefined, [0]],
+  ])(
+    'explains %s and prevents sending an unplayable selection',
+    async (_reason, message, tableCards, tablePlayType, hand, indices) => {
+      const state = makeState({ tableCards, tablePlayType });
+      if (hand) state.players[0].cards = hand;
+      mockExec.mockResolvedValue(state);
+      renderWithProviders(<TienLenPage />);
+      for (const index of indices) fireEvent.click(await screen.findByTestId(`hand-card-${index}`));
+      const button = screen.getByTestId('play-button');
+      expect(screen.getByTestId('tl-unplayable-reason')).toHaveTextContent(message);
+      expect(button).toBeDisabled();
+      expect(button).toHaveAttribute('aria-disabled', 'true');
+      fireEvent.click(button);
+      expect(mockExec).toHaveBeenCalledTimes(1); // reset only
+    },
+  );
+
+  it('allows sending a stronger play that beats the table', async () => {
+    mockExec.mockResolvedValue(makeState({ tableCards: [card('SPADE', 4)], tablePlayType: 1 }));
+    renderWithProviders(<TienLenPage />);
+    fireEvent.click(await screen.findByTestId('hand-card-1')); // ♥5 beats ♠4
+    const button = screen.getByTestId('play-button');
+    expect(button).toBeEnabled();
+    fireEvent.click(button);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [1]));
   });
 
   it('disables play and shows a reason for an invalid combination', async () => {
@@ -201,9 +251,18 @@ describe('TienLenPage', () => {
   });
 
   it('passes when the pass button is clicked', async () => {
+    mockExec.mockResolvedValue(makeState({ tableCards: [card('SPADE', 4)] }));
     renderWithProviders(<TienLenPage />);
     fireEvent.click(await screen.findByTestId('pass-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', []));
+  });
+
+  it('does not send a pass when the table is empty', async () => {
+    renderWithProviders(<TienLenPage />);
+    const passButton = await screen.findByTestId('pass-button');
+    fireEvent.click(passButton);
+    expect(mockExec).toHaveBeenCalledTimes(1); // reset only
+    expect(passButton).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('toggles card selection on and off', async () => {
@@ -223,6 +282,7 @@ describe('TienLenPage', () => {
   });
 
   it('shows a retry button when an action fails', async () => {
+    mockExec.mockResolvedValue(makeState({ tableCards: [card('SPADE', 4)] }));
     renderWithProviders(<TienLenPage />);
     const passBtn = await screen.findByTestId('pass-button');
     mockExec.mockRejectedValueOnce(new Error('boom'));

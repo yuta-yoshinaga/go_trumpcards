@@ -49,6 +49,10 @@ const drawPhaseState: MarriageResponse = {
   currentPlayerIdx: 0,
   dealerIdx: 0,
   discardTop: { design: 'HEART', value: 7 },
+  discardPile: [
+    { design: 'SPADE', value: 4 },
+    { design: 'HEART', value: 7 },
+  ],
   drawPileCount: 40,
   wildJoker: { design: 'CLOVER', value: 5 },
   wildRank: 5,
@@ -350,6 +354,18 @@ describe('MarriagePage', () => {
     });
   });
 
+  it('opens discard history and marks the current top card', async () => {
+    renderWithProviders(<MarriagePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '捨て札の履歴を表示' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '捨て札の履歴を表示' }));
+
+    expect(screen.getByTestId('marriage-discard-history')).toBeInTheDocument();
+    expect(screen.getByText('捨て札の履歴')).toBeInTheDocument();
+    expect(screen.getByAltText('♠ 4')).toBeInTheDocument();
+    expect(screen.getByText('現在のトップ')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '捨て札の履歴を非表示' })).toBeInTheDocument();
+  });
+
   it('draw discard button disabled when no discard top', async () => {
     mockExec.mockResolvedValue(noDiscardState);
     renderWithProviders(<MarriagePage />);
@@ -437,6 +453,11 @@ describe('MarriagePage', () => {
     expect(preview).toBeInTheDocument();
     expect(screen.getByTestId('marriage-declare-preview-valid')).toBeInTheDocument();
     expect(screen.queryByTestId('marriage-declare-preview-invalid')).not.toBeInTheDocument();
+    expect(screen.getAllByTestId('marriage-declare-meld')).toHaveLength(7);
+    const meldCard = screen.getByRole('button', { name: /♠ 3.*純シーケンス1/ });
+    expect(meldCard).toBeInTheDocument();
+    expect(meldCard).toHaveAccessibleName(/純シーケンス1/);
+    expect(meldCard.querySelector('[aria-hidden="true"]')).toHaveTextContent('1');
     // Declare button is never blocked by the preview.
     expect(screen.getByRole('button', { name: '宣言' })).not.toBeDisabled();
   });

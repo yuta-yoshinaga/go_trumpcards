@@ -1,4 +1,5 @@
 {
+  "dealerBadge": "Dealer",
   "phase": {
     "bid": "Bid",
     "trumpDeclaration": "Trump",
@@ -19,6 +20,11 @@
   "passed": "pass",
   "currentTrick": "Current trick",
   "trickEmpty": "(no cards yet)",
+  "announcement": {
+    "listSeparator": ", ",
+    "cardPlayed": "{{name}} played {{card}}",
+    "trickWon": "{{name}} won the trick"
+  },
   "tricksLabel": "Target tricks",
   "selectTricks": "Select tricks (1-7):",
   "dirUptown": "Uptown",

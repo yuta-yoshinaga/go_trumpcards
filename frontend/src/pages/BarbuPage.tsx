@@ -29,6 +29,7 @@ import {
   parseBarbuCommand,
 } from '../utils/cli/commands/barbuCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const DIFFICULTY_OPTIONS = [
@@ -182,7 +183,7 @@ function BarbuPageContent() {
         <>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             {error && (
-              <button type="button" onClick={retry} className="text-ds-error underline">
+              <button type="button" onClick={retry} className="text-ds-error-text underline">
                 {error}
               </button>
             )}
@@ -350,7 +351,7 @@ function BarbuPageContent() {
                       type="button"
                       onClick={() => isHumanPlay && setHandIndex(handIndex === i ? null : i)}
                       disabled={!isHumanPlay || !playable}
-                      className={`rounded border-2 transition-all ${isTrump ? 'border-ds-accent' : 'border-transparent'} ${
+                      className={`relative rounded border-2 transition-all ${isTrump ? 'border-ds-accent' : 'border-transparent'} ${
                         handIndex === i ? 'ring-2 ring-ds-info -translate-y-2' : ''
                       } ${isHumanPlay && playable ? 'cursor-pointer hover:opacity-90' : 'opacity-50 cursor-default'}`}
                       data-testid={`hand-card-${i}`}
@@ -358,6 +359,15 @@ function BarbuPageContent() {
                       aria-label={isTrump ? `${cardAlt(c)} (${t('label.trumpCard')})` : cardAlt(c)}
                     >
                       <AnimatedCard card={c} width={cardWidth} />
+                      {isTrump && (
+                        <span
+                          data-testid="trump-card-badge"
+                          aria-hidden="true"
+                          className="pointer-events-none absolute left-1 top-1 z-10 rounded border border-ds-accent bg-ds-surface px-1 py-0.5 text-xs font-bold leading-tight text-ds-text-primary"
+                        >
+                          {t('label.trumpBadge')}
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -371,52 +381,59 @@ function BarbuPageContent() {
             />
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            {/* Deal × player score matrix (completed deals only) */}
-            {(isDealEnd || isGameEnd) && state.dealHistory.length > 0 && (
-              <div className="overflow-x-auto" data-testid="bb-score-matrix">
-                <table className="w-full text-xs text-ds-text-muted border-collapse">
-                  <caption className="mb-1 text-xs text-ds-text-muted">{t('history.caption')}</caption>
-                  <thead>
-                    <tr>
-                      <th scope="col" className="px-2 py-1 text-center">
-                        {t('history.deal')}
-                      </th>
-                      <th scope="col" className="px-2 py-1 text-left">
-                        {t('history.contract')}
-                      </th>
-                      {state.players.map((p) => (
-                        <th key={p.id} scope="col" className="px-2 py-1 text-center">
-                          {p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id })}
+            {/* Completed deal score history, available throughout the game. */}
+            {state.dealHistory.length > 0 && (
+              <details className="mb-2" data-testid="bb-deal-history" open={isDealEnd || isGameEnd ? true : undefined}>
+                <summary className="min-h-[44px] cursor-pointer py-2 text-sm text-ds-text-muted">
+                  {t('history.toggle')}
+                </summary>
+                <div className="overflow-x-auto" data-testid="bb-score-matrix">
+                  <table className="w-full text-xs text-ds-text-muted border-collapse">
+                    <caption className="mb-1 text-xs text-ds-text-muted">{t('history.caption')}</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col" className="px-2 py-1 text-center">
+                          {t('history.deal')}
                         </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {state.dealHistory.map((d, i) => (
-                      <tr key={i} className="border-t border-white/10">
-                        <td className="px-2 py-1 text-center">{i + 1}</td>
-                        <td className="px-2 py-1 whitespace-nowrap text-ds-text-primary">
-                          {t(`contract.${d.contract}`)}
-                          {d.contract === CONTRACT_TRUMPS && d.trumpSuit >= 1 && ` (${suitSymbolAt(d.trumpSuit, '')})`}
-                        </td>
-                        {state.players.map((p) => {
-                          const gained = d.gained[p.id] ?? 0;
-                          return (
-                            <td
-                              key={p.id}
-                              className={`px-2 py-1 text-center ${
-                                gained > 0 ? 'text-ds-success' : gained < 0 ? 'text-ds-error' : ''
-                              }`}
-                            >
-                              {gained > 0 ? `+${gained}` : gained}
-                            </td>
-                          );
-                        })}
+                        <th scope="col" className="px-2 py-1 text-left">
+                          {t('history.contract')}
+                        </th>
+                        {state.players.map((p) => (
+                          <th key={p.id} scope="col" className="px-2 py-1 text-center">
+                            {p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id })}
+                          </th>
+                        ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {state.dealHistory.map((d, i) => (
+                        <tr key={i} className="border-t border-white/10">
+                          <td className="px-2 py-1 text-center">{i + 1}</td>
+                          <td className="px-2 py-1 whitespace-nowrap text-ds-text-primary">
+                            {t(`contract.${d.contract}`)}
+                            {d.contract === CONTRACT_TRUMPS &&
+                              d.trumpSuit >= 1 &&
+                              ` (${suitSymbolAt(d.trumpSuit, '')})`}
+                          </td>
+                          {state.players.map((p) => {
+                            const gained = d.gained[p.id] ?? 0;
+                            return (
+                              <td
+                                key={p.id}
+                                className={`px-2 py-1 text-center ${
+                                  gained > 0 ? 'text-ds-success' : gained < 0 ? 'text-ds-error-text' : ''
+                                }`}
+                              >
+                                {formatSignedDelta(gained)}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </details>
             )}
           </div>
 

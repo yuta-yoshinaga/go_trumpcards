@@ -54,6 +54,32 @@ func TestLingerLonger_ResetStartsInPlay(t *testing.T) {
 	assert.NotEmpty(t, l.GetValidPlayIndices(0))
 }
 
+func TestLingerLonger_KeepsMostRecentlyResolvedTrick(t *testing.T) {
+	l := newTestLingerLonger(t)
+	l.SetLeadPlayerIdxForTest(0)
+	l.SetCurrentPlayerIdxForTest(0)
+	for i := range l.GetPlayerCnt() {
+		l.GiveHandForTest(i, NewCard(CardDesignSpade, 7+i, false), NewCard(CardDesignHeart, 2+i, false))
+	}
+	for i := range l.GetPlayerCnt() {
+		require.NoError(t, l.PlayForTest(i, 0))
+	}
+	require.Len(t, l.GetLastTrick(), 4)
+	for i, play := range l.GetLastTrick() {
+		assert.Equal(t, i, play.PlayerIdx)
+		assert.Equal(t, CardDesignSpade, play.Card.GetDesign())
+	}
+	assert.Empty(t, l.GetCurrentTrick())
+
+	validState := newTestLingerLonger(t)
+	validState.SetLastTrickForTest(l.GetLastTrick())
+	snapshot, err := json.Marshal(validState)
+	require.NoError(t, err)
+	restored := new(LingerLonger)
+	require.NoError(t, json.Unmarshal(snapshot, restored))
+	assert.Equal(t, validState.GetLastTrick(), restored.GetLastTrick())
+}
+
 // **フォローできる札があるなら、それしか出せない。**
 func TestLingerLonger_FollowSuitIsCompulsory(t *testing.T) {
 	l := newTestLingerLonger(t)

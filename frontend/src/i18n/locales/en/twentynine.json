@@ -49,10 +49,22 @@
   "nextTrick": "Next Trick",
   "nextRound": "Next Round",
   "target": "Target: {{points}} game pts",
+  "strengthReference": {
+    "title": "Card Strength and Points",
+    "trump": "Trump cards",
+    "plain": "Plain cards",
+    "order": "Strength: J > 9 > A > 10 > K > Q > 8 > 7",
+    "points": "Card points: J: 3, 9: 2, A: 1, 10: 1, K/Q/8/7: 0"
+  },
   "bidPrompt": "Place a bid (only a higher bid is allowed):",
   "bidHighest": "Highest bid: {{bid}} ({{player}})",
   "bidNone": "No bids yet",
   "bidDisabledReason": "Must exceed the current highest bid of {{currentBid}}",
+  "bidHistory": {
+    "title": "Bid history",
+    "player": "Seat {{seat}} {{player}} ({{team}})",
+    "pending": "Not yet bid"
+  },
   "bid": {
     "pass": "Pass",
     "sixteen": "16",

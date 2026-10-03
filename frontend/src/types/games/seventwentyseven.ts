@@ -12,6 +12,8 @@ export interface SevenTwentySevenPlayer {
   isHuman: boolean;
   /** Remaining chips. */
   chips: number;
+  /** Net chip change since the server-recorded start of this round. */
+  netChange: number;
   /** Whether this player has said "no more cards" for the round. */
   standing: boolean;
   /** Whether the player has been eliminated (busted) from the match. */

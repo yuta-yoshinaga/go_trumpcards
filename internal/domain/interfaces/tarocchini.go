@@ -59,6 +59,8 @@ type TarocchiniGame interface {
 	GetTeamScores() [2]int
 	// GetRoundTricks 現ラウンドの席別獲得トリック数を取得する
 	GetRoundTricks() [domain.TarocchiniPlayerCnt]int
+	// GetRoundBreakdown 現ラウンドのチーム別得点内訳を取得する
+	GetRoundBreakdown() [2]domain.TarocchiniTeamRoundBreakdown
 	// GetWinnerTeam 勝利チームを取得する (-1=未確定/同点)
 	GetWinnerTeam() int
 	// GetPlayerCnt プレイヤー数を取得する

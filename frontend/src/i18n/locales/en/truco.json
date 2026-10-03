@@ -1,5 +1,6 @@
 {
   "currentTrick": "Current baza",
+  "listSeparator": ", ",
   "title": "Truco (トゥルコ)",
   "subtitle": "South American / Spanish bluffing trick-taking — raise the stakes",
   "header": {
@@ -47,6 +48,10 @@
     "baza": "Baza {{number}}",
     "winner": "{{name}} wins",
     "parda": "Parda (tie)"
+  },
+  "trickResult": {
+    "winner": "Baza {{number}}: {{name}} wins",
+    "tie": "Baza {{number}}: Parda (tie)"
   },
   "hintReason": {
     "leadStrong": "Lead with a strong card",

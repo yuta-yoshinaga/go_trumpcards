@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 
 /** One player's line in a round-result table. */
 export interface RoundResultEntry {
@@ -12,7 +13,7 @@ export interface RoundResultEntry {
 /** Props for {@link RoundResults}. */
 export interface RoundResultsProps {
   results: RoundResultEntry[] | undefined;
-  players: { isHuman: boolean }[];
+  players: { isHuman: boolean; netChange?: number }[];
 }
 
 /**
@@ -66,16 +67,26 @@ export function RoundResults({ results, players }: RoundResultsProps) {
     <>
       <div data-testid="round-results-visible" className="bg-black/30 rounded p-2 mb-3 text-white text-xs">
         <div className="font-bold mb-1">{t('label.result')}</div>
-        {results.map((r) => (
-          <div key={r.playerIdx}>
-            {players[r.playerIdx]?.isHuman ? t('player.you') : `CPU ${r.playerIdx}`}
-            {r.mucked ? `: ${t('label.mucked')}` : r.handName && `: ${r.handName}`}
-            {!r.mucked && r.kickers && ` (${t('label.kicker', { kickers: r.kickers })})`}
-            {r.wonAmount > 0 && (
-              <span className="text-ds-warning ml-1"> {t('label.chipsWon', { amount: r.wonAmount })}</span>
-            )}
-          </div>
-        ))}
+        {results.map((r) => {
+          const net = players[r.playerIdx]?.netChange;
+          return (
+            <div key={r.playerIdx}>
+              {players[r.playerIdx]?.isHuman ? t('player.you') : `CPU ${r.playerIdx}`}
+              {r.mucked ? `: ${t('label.mucked')}` : r.handName && `: ${r.handName}`}
+              {!r.mucked && r.kickers && ` (${t('label.kicker', { kickers: r.kickers })})`}
+              {r.wonAmount > 0 && (
+                <span className="text-ds-warning ml-1"> {t('label.chipsWon', { amount: r.wonAmount })}</span>
+              )}
+              {net !== undefined && (
+                <span className="ml-1">
+                  {t('label.netChange', {
+                    amount: formatSignedDelta(net),
+                  })}
+                </span>
+              )}
+            </div>
+          );
+        })}
       </div>
       <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
         {t('roundResultsAnnouncement.message', { details: announcement })}

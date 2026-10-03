@@ -230,6 +230,12 @@ function SpiteAndMalicePageContent() {
     void apiCall('autocomplete');
   }, [apiCall]);
 
+  const handleUndo = useCallback(() => {
+    if (!state?.canUndo || loading) return;
+    setSelection(null);
+    void apiCall('undo');
+  }, [apiCall, loading, state?.canUndo]);
+
   const isHumanTurn = state ? state.current === 0 : false;
   const isGameOver = state ? state.phase === SpiteAndMalicePhase.GAME_OVER : false;
 
@@ -398,6 +404,7 @@ function SpiteAndMalicePageContent() {
                 label={t('label.goal')}
                 ariaTop={(card, count) => t('aria.goalTop', { label: t('label.goal'), card, count })}
                 ariaEmpty={t('aria.goalEmpty', { label: t('label.goal') })}
+                remainingLabel={(count) => t('goalRemaining', { count })}
                 playable={
                   isHumanTurn && !isGameOver && isGoalTopPlayableToFoundation(human.goalTop, state.foundationTops)
                 }
@@ -461,6 +468,19 @@ function SpiteAndMalicePageContent() {
 
               {!isGameOver && isHumanTurn && (
                 <div className="flex flex-col items-center">
+                  <button
+                    type="button"
+                    className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+                    onClick={handleUndo}
+                    aria-disabled={!state.canUndo || loading}
+                    aria-describedby="sam-undo-hint"
+                    data-testid="sam-undo-btn"
+                  >
+                    {t('undo')}
+                  </button>
+                  <p id="sam-undo-hint" className="mt-1 text-xs text-ds-text-muted">
+                    {state.canUndo ? t('undoAvailableHint') : t('undoUnavailableHint')}
+                  </p>
                   <button
                     type="button"
                     className={btnPrimary}
@@ -624,6 +644,7 @@ function GoalPile({
   playable,
   ariaTop,
   ariaEmpty,
+  remainingLabel,
 }: {
   top?: Card;
   size: number;
@@ -636,6 +657,7 @@ function GoalPile({
    *  解決済みの文字列（や、それを組む関数）を prop で受ける形で揃えている。 */
   ariaTop: (card: string, count: number) => string;
   ariaEmpty: string;
+  remainingLabel: (count: number) => string;
 }) {
   // Selection ring wins (the user explicitly chose this pile); otherwise the
   // playable affordance pulses a warning-colored glow so the strategically
@@ -655,9 +677,8 @@ function GoalPile({
       disabled={size === 0}
       aria-label={top ? ariaTop(cardAlt(top), size) : ariaEmpty}
     >
-      <span className="text-xs text-ds-text-muted mb-1">
-        {label} ({size})
-      </span>
+      <span className="text-xs text-ds-text-muted">{label}</span>
+      <span className="mb-1 text-lg font-bold tabular-nums text-ds-accent">{remainingLabel(size)}</span>
       {top ? <AnimatedCard card={top} width={cardWidth} /> : <FaceDownSlot label={label} width={cardWidth} />}
     </button>
   );

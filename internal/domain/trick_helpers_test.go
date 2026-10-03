@@ -7,6 +7,15 @@ import (
 	"testing"
 )
 
+func TestTeamName(t *testing.T) {
+	if got := TeamName(0); got != "A" {
+		t.Fatalf("TeamName(0) = %q, want A", got)
+	}
+	if got := TeamName(1); got != "B" {
+		t.Fatalf("TeamName(1) = %q, want B", got)
+	}
+}
+
 func tc(playerIdx, design, value int) *TrickCard {
 	return &TrickCard{PlayerIdx: playerIdx, Card: NewCard(design, value, false)}
 }

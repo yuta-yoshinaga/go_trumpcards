@@ -17,6 +17,16 @@
   "emptyFoundationAriaLabel": "Empty foundation {{idx}} (starts on an ace, any suit)",
   "emptyPileAriaLabel": "Column {{pile}} is not open yet (a king opens it)",
   "bareKingPileAriaLabel": "Column {{pile}} holds just its king; any card may be placed here",
+  "legalDestination": "A legal destination candidate",
+  "notLegalDestination": "Not a legal destination candidate",
+  "selectionMoves_one": "The selected card has {{count}} legal destination: {{destinations}}",
+  "selectionMoves_other": "The selected card has {{count}} legal destinations: {{destinations}}",
+  "selectionNoMoves": "The selected card has no legal destinations",
+  "destination": {
+    "foundation": "foundation {{idx}}",
+    "tableau": "column {{idx}}"
+  },
+  "listSeparator": ", ",
   "queensAriaLabel": "{{count}} queens taken out of play; decoration only, not movable",
   "stockAriaLabel": "Stock, {{count}} cards left",
   "emptyStockAriaLabel": "The stock is empty (there is no redeal)",

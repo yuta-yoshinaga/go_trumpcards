@@ -499,21 +499,6 @@ func TestDoubleAttack_GetHint(t *testing.T) {
 
 // --- 名前と設定 ---
 
-func TestDoubleAttackNames(t *testing.T) {
-	t.Parallel()
-
-	assert.Equal(t, "bet", DoubleAttackPhaseName(DoubleAttackPhaseBet))
-	assert.Equal(t, "attack", DoubleAttackPhaseName(DoubleAttackPhaseAttack))
-	assert.Equal(t, "play", DoubleAttackPhaseName(DoubleAttackPhasePlay))
-	assert.Equal(t, "result", DoubleAttackPhaseName(DoubleAttackPhaseResult))
-
-	assert.Equal(t, "win", DoubleAttackResultName(DoubleAttackResultWin))
-	assert.Equal(t, "lose", DoubleAttackResultName(DoubleAttackResultLose))
-	assert.Equal(t, "push", DoubleAttackResultName(DoubleAttackResultPush))
-	assert.Equal(t, "blackjack", DoubleAttackResultName(DoubleAttackResultBlackjack))
-	assert.Equal(t, "none", DoubleAttackResultName(DoubleAttackResultNone))
-}
-
 func TestDoubleAttackConfig_Validate(t *testing.T) {
 	t.Parallel()
 

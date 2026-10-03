@@ -46,6 +46,7 @@ const betState: OichoKabuResponse = {
   bet: 0,
   result: 0,
   totalPayout: 0,
+  netChange: 0,
   message: '',
 };
 
@@ -59,6 +60,7 @@ const drawState: OichoKabuResponse = {
   bet: 100,
   result: 0,
   totalPayout: 0,
+  netChange: 0,
   message: '',
 };
 
@@ -72,6 +74,7 @@ const winState: OichoKabuResponse = {
   bet: 100,
   result: 1,
   totalPayout: 200,
+  netChange: 100,
   message: 'You win!',
 };
 
@@ -81,6 +84,7 @@ const bankerDrewState: OichoKabuResponse = {
   bankerRank: 9,
   result: -1,
   totalPayout: 0,
+  netChange: -100,
   message: 'You lose',
 };
 
@@ -99,6 +103,19 @@ describe('OichoKabuPage', () => {
     mockApi.mockResolvedValue(betState);
     renderWithProviders(<OichoKabuPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /ベット/ })).toBeInTheDocument());
+  });
+
+  it('describes the current maximum bet and updates it when the chip balance changes', async () => {
+    mockApi.mockResolvedValueOnce(winState).mockResolvedValueOnce({ ...betState, chips: 650 });
+    renderWithProviders(<OichoKabuPage />);
+    const reset = await screen.findByRole('button', { name: /次のゲーム/ });
+    fireEvent.click(reset);
+
+    const betInput = await screen.findByLabelText('賭け金');
+    const descriptionId = betInput.getAttribute('aria-describedby');
+    expect(descriptionId).toBe('oichokabu-bet-max');
+    expect(document.getElementById('oichokabu-bet-max')).toHaveTextContent('現在の最大ベット額は650チップです');
+    expect(betInput).toHaveAttribute('max', '650');
   });
 
   it('triggers bet action with current amount', async () => {
@@ -158,8 +175,23 @@ describe('OichoKabuPage', () => {
     renderWithProviders(<OichoKabuPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
     expect(screen.getByText(/親 — カブ/)).toBeInTheDocument();
-    expect(screen.getByText(/200/)).toBeInTheDocument();
-    expect(screen.queryByText('賭け金: 100')).not.toBeInTheDocument();
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('合計配当: 200');
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('賭け金: 100');
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('純損益: +100');
+  });
+
+  it.each([
+    ['win', winState, '純損益: +100'],
+    ['loss', { ...bankerDrewState, chips: 900 }, '純損益: -100'],
+    ['push', { ...winState, result: 0, chips: 1000, totalPayout: 100, netChange: 0, message: 'Push.' }, '純損益: ±0'],
+  ])('shows signed net profit for a %s', async (name, state, expected) => {
+    mockApi.mockResolvedValue(state);
+    renderWithProviders(<OichoKabuPage />);
+    const payout = await screen.findByTestId('payout-breakdown');
+    expect(payout).toHaveTextContent(expected);
+    if (name === 'loss') {
+      expect(payout).not.toHaveTextContent('純損益: +-100');
+    }
   });
 
   it('exposes each hand rank by name and the result as a live region', async () => {

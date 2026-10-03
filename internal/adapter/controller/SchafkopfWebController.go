@@ -43,6 +43,7 @@ type SchafkopfWebOutputPlayer struct {
 	Cards      []*WebOutputCard `json:"cards"`
 	TrickCount int              `json:"trickCount"`
 	Chips      int              `json:"chips"`
+	ChipDelta  int              `json:"chipDelta"`
 }
 
 // SchafkopfWebOutputHint ヒント出力
@@ -70,19 +71,21 @@ type SchafkopfWebOutput struct {
 	SoloSuit int `json:"soloSuit"`
 	// BeatableContracts は今この席が宣言できる契約。押せるのに必ず拒否
 	// されるボタンを描かないために要る。
-	BeatableContracts []int                   `json:"beatableContracts"`
-	PartnerIdx        int                     `json:"partnerIdx"`
-	CalledSuit        int                     `json:"calledSuit"`
-	PartnerRevealed   bool                    `json:"partnerRevealed"`
-	PassCount         int                     `json:"passCount"`
-	CallableSuits     []int                   `json:"callableSuits"`
-	PlayableIndices   []int                   `json:"playableIndices"`
-	RoundPickerPoints int                     `json:"roundPickerPoints"`
-	RoundMultiplier   int                     `json:"roundMultiplier"`
-	RoundPickerWon    bool                    `json:"roundPickerWon"`
-	GameEndFlag       bool                    `json:"gameEndFlag"`
-	WinnerIdx         int                     `json:"winnerIdx"`
-	Hint              *SchafkopfWebOutputHint `json:"hint,omitempty"`
+	BeatableContracts          []int                   `json:"beatableContracts"`
+	PartnerIdx                 int                     `json:"partnerIdx"`
+	CalledSuit                 int                     `json:"calledSuit"`
+	PartnerRevealed            bool                    `json:"partnerRevealed"`
+	PassCount                  int                     `json:"passCount"`
+	CallableSuits              []int                   `json:"callableSuits"`
+	PlayableIndices            []int                   `json:"playableIndices"`
+	RoundPickerPoints          int                     `json:"roundPickerPoints"`
+	RoundPickerPointsTeamTotal bool                    `json:"roundPickerPointsTeamTotal"`
+	PickerTargetPoints         int                     `json:"pickerTargetPoints"`
+	RoundMultiplier            int                     `json:"roundMultiplier"`
+	RoundPickerWon             bool                    `json:"roundPickerWon"`
+	GameEndFlag                bool                    `json:"gameEndFlag"`
+	WinnerIdx                  int                     `json:"winnerIdx"`
+	Hint                       *SchafkopfWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 	Config SchafkopfWebOutputConfig `json:"config"`
 }

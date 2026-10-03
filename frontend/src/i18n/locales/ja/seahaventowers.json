@@ -20,6 +20,7 @@
   "foundationAriaLabel": "{{suit}} 組札 ({{cardCount}}枚)",
   "emptyFoundationAriaLabel": "{{suit}} 組札 (空)",
   "emptyReservedAriaLabel": "リザーブセル {{idx}} (空)",
+  "emptyColumnAriaLabel": "空きタブロー列 {{idx}}（キングのみ配置できます）",
   "supermoveLimitTooltip": "一度に動かせるのは{{limit}}枚までです",
   "tutorial": {
     "reservedCells": "リザーブセル (タワー)。一時的にカードを置ける2つのスペースです。フリーセルより1つ少なく難易度が高くなっています。",

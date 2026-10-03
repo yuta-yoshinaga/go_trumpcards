@@ -120,6 +120,12 @@ func (_m *MockEgyptianRatscrewGame) IsSlappable() bool {
 	return ret.Bool(0)
 }
 
+// GetSlappableReason モック
+func (_m *MockEgyptianRatscrewGame) GetSlappableReason() domain.EgyptianRatscrewSlapReason {
+	ret := _m.Called()
+	return ret.Get(0).(domain.EgyptianRatscrewSlapReason)
+}
+
 // GetChanceRemaining モック
 func (_m *MockEgyptianRatscrewGame) GetChanceRemaining() int {
 	ret := _m.Called()

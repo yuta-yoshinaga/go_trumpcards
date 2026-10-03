@@ -17,12 +17,16 @@
     "tableCards": "Table Cards",
     "score": "Score",
     "hand": "Hand",
+    "handCardPosition": "{{card}}, hand position {{pos}}",
+    "tableCardPosition": "{{card}}, table position {{pos}}",
     "selectCard": "Select a card",
     "stopCalled": "Stop called",
     "yourTurn": "Your turn",
     "cpuTurn": "CPU {{id}}'s turn",
     "suitScores": "Suit totals",
     "suitBadge": "{{score}}/{{max}}",
+    "suitBadgeAria": "{{suit}}, {{badge}}",
+    "suitBadgeAriaHighest": "{{suit}}, {{badge}}, highest score",
     "stopCalledBy": "Stop is in effect ({{name}}) — this is the final round"
   },
   "settings": {

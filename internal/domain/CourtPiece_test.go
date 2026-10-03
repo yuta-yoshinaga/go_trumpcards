@@ -184,6 +184,9 @@ func TestCourtPiece_ScoreRoundSarAndCallerRotation(t *testing.T) {
 	c.ScoreRound()
 	assert.Equal(t, 1, c.GetTeamScore(1))
 	assert.Equal(t, 0, c.GetTeamScore(0))
+	breakdown := c.GetScoreBreakdown()
+	assert.Equal(t, 1, breakdown[1].Total())
+	assert.Equal(t, 0, breakdown[0].Total())
 	assert.Equal(t, 1, c.GetLastWinnerTeam())
 	assert.Equal(t, 1, c.GetCallerIdx()) // rotated since caller team lost
 }
@@ -206,6 +209,8 @@ func TestCourtPiece_ScoreRoundCourtConsecutive(t *testing.T) {
 	c.SetPhase(domain.CourtPiecePhaseRoundEnd)
 	c.ScoreRound()
 	assert.Equal(t, 3, c.GetTeamScore(0)) // 1 + 2 (court)
+	assert.Equal(t, (domain.CourtPieceScoreBreakdown{Sar: 1, CourtBonus: 1}), c.GetScoreBreakdown()[0])
+	assert.Equal(t, 2, c.GetScoreBreakdown()[0].Total())
 	assert.True(t, c.IsLastRoundCourt())
 	assert.GreaterOrEqual(t, c.GetConsecutiveWins(), 2)
 }
@@ -217,6 +222,7 @@ func TestCourtPiece_ScoreRoundCleanSweepIsCourt(t *testing.T) {
 	c.SetPhase(domain.CourtPiecePhaseRoundEnd)
 	c.ScoreRound()
 	assert.Equal(t, 2, c.GetTeamScore(0))
+	assert.Equal(t, 2, c.GetScoreBreakdown()[0].Total())
 	assert.True(t, c.IsLastRoundCourt())
 }
 

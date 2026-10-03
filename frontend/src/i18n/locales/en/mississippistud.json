@@ -1,12 +1,14 @@
 {
   "title": "Mississippi Stud",
   "player": "Player",
+  "chipsChanged": "Chips changed to {{chips}}",
   "label": {
     "chips": "Chips",
     "ante": "Ante",
     "totalBet": "Total Bet",
     "totalAfterBet": "Total after bet",
     "totalPayout": "Total Payout",
+    "netProfit": "Net Profit",
     "hand": "Hand",
     "community": "Community Cards",
     "communityStatus": "Revealed: {{revealed}} / {{total}}",

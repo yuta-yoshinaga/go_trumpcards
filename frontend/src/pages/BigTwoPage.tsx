@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BigTwoAction, BigTwoResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { type BigTwoSortMode, bigTwoPlayTypeKey, classifyBigTwoPlay, sortedBigTwoHand } from '../utils/bigTwoSort';
+import { cardAlt } from '../utils/cardAlt';
 import { cardLabel } from '../utils/cardUtils';
 import {
   BIGTWO_HELP,
@@ -116,6 +117,14 @@ function BigTwoPageContent() {
   );
   const { handleCommand } = useCliGame(callApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
+  const tablePlayAnnouncement = useMemo(() => {
+    if (!state || state.tableCards.length === 0) return '';
+    const playTypeKey = bigTwoPlayTypeKey(state.tablePlayType);
+    if (!playTypeKey) return '';
+    const cards = state.tableCards.map(cardAlt).join(t('listSeparator'));
+    return t('tablePlayAnnouncement', { cards, playType: t(`playType.${playTypeKey}`) });
+  }, [state, t]);
+
   const onReset = useCallback(() => handleResetWithConfig(), [handleResetWithConfig]);
 
   const difficultyOptions = useMemo(
@@ -160,7 +169,7 @@ function BigTwoPageContent() {
     if (!action.playedCards || action.playedCards.length === 0) {
       return t('actionPassed', { name: findPlayerName(players, action.playerIdx) });
     }
-    const cards = action.playedCards.map(cardLabel).join(', ');
+    const cards = action.playedCards.map(cardLabel).join(t('listSeparator'));
     return t('actionPlayed', { name: findPlayerName(players, action.playerIdx), cards });
   };
 
@@ -183,6 +192,9 @@ function BigTwoPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          <span data-testid="bt-table-play-announcement" aria-live="polite" aria-atomic="true" className="sr-only">
+            {tablePlayAnnouncement}
+          </span>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             <ErrorAlert message={error} onRetry={retry} />
 
@@ -305,6 +317,7 @@ function BigTwoPageContent() {
                     type="button"
                     onClick={() => isHumanTurn && toggleCardSelection(index)}
                     disabled={!isHumanTurn}
+                    aria-pressed={selectedIndices.includes(index)}
                     className={`rounded transition-all ${
                       selectedIndices.includes(index) ? 'ring-2 ring-ds-info -translate-y-2' : ''
                     } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}

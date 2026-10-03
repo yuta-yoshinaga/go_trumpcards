@@ -31,6 +31,7 @@ func setupPreferenceWebMock() *interfaces.MockPreferenceGame {
 	m.On("GetBids").Return([domain.PreferencePlayerCnt]domain.PreferenceBid{domain.PreferenceBidSix, domain.PreferenceBidPass, domain.PreferenceBidPass})
 	m.On("GetBidDone").Return([domain.PreferencePlayerCnt]bool{true, false, true})
 	m.On("GetPlayerScores").Return([domain.PreferencePlayerCnt]int{0, 0, 0})
+	m.On("GetScoreBreakdown").Return([domain.PreferencePlayerCnt]domain.PreferenceScoreBreakdown{})
 	m.On("GetRoundTricks").Return([domain.PreferencePlayerCnt]int{0, 0, 0})
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetPlayableIndices", 0).Return([]int{0})
@@ -79,6 +80,7 @@ func TestPreferenceWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, int(domain.PreferenceBidSix), resObj.Contract)
 		assert.Equal(t, int(domain.PreferenceBidSix), resObj.Bids[0])
 		assert.Equal(t, [domain.PreferencePlayerCnt]bool{true, false, true}, resObj.BidDone)
+		assert.Equal(t, [domain.PreferencePlayerCnt]domain.PreferenceScoreBreakdown{}, resObj.ScoreBreakdown)
 	})
 
 	t.Run("config values", func(t *testing.T) {

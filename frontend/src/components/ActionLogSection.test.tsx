@@ -34,6 +34,32 @@ describe('ActionLogSection', () => {
     expect(screen.queryByTestId('action-log-panel')).not.toBeInTheDocument();
   });
 
+  it('renders button during play when availableDuringPlay=true', () => {
+    render(
+      <ActionLogSection
+        isEndPhase={false}
+        availableDuringPlay={true}
+        actionLog={null}
+        showActionLog={vi.fn()}
+        hideActionLog={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
+  });
+
+  it('renders nothing during play when availableDuringPlay=false', () => {
+    const { container } = render(
+      <ActionLogSection
+        isEndPhase={false}
+        availableDuringPlay={false}
+        actionLog={null}
+        showActionLog={vi.fn()}
+        hideActionLog={vi.fn()}
+      />,
+    );
+    expect(container.innerHTML).toBe('');
+  });
+
   it('calls showActionLog on button click', () => {
     const showActionLog = vi.fn();
     render(

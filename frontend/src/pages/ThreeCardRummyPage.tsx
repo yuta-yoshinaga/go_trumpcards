@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useId, useMemo, useState } from 'react';
 import { threecardrummyApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -34,6 +34,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseThreecardrummyCommand, THREECARDRUMMY_HELP } from '../utils/cli/commands/threecardrummyCommands';
 import { formatThreecardrummyState } from '../utils/cli/formatters/threecardrummyFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 
 /** Three Card Rummy tutorial step definitions. */
 const TCR_TUTORIAL_STEPS: TutorialStep[] = [
@@ -61,6 +62,7 @@ const TCR_TUTORIAL_STEPS: TutorialStep[] = [
 export const ThreeCardRummyPage = withTutorial(ThreeCardRummyPageContent, 'threecardrummy', TCR_TUTORIAL_STEPS);
 /** Inner content of the Three Card Rummy page, wrapped by TutorialProvider. */
 function ThreeCardRummyPageContent() {
+  const foldConsequenceId = useId();
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('threecardrummy');
 
@@ -248,7 +250,7 @@ function ThreeCardRummyPageContent() {
             {/* Dealer Hand */}
             {state.dealerHand.length > 0 && (
               <div className="mb-4">
-                <div className="text-ds-error font-bold text-center mb-1">
+                <div className="text-ds-error-text font-bold text-center mb-1">
                   <span aria-hidden="true">🔴</span> {t('dealer')}
                   <span className="ml-2 text-sm">
                     {t('label.score')}: {isEndPhase ? scoreText(state.dealerScore) : t('score.hidden')}
@@ -300,6 +302,9 @@ function ThreeCardRummyPageContent() {
                 )}
                 <div className="font-bold mt-1">
                   {t('payout.total')}: {state.totalPayout}
+                </div>
+                <div className="font-bold" data-testid="net-change">
+                  {t('payout.netChange')}: {formatSignedDelta(state.netChange)}
                 </div>
               </div>
             )}
@@ -358,13 +363,30 @@ function ThreeCardRummyPageContent() {
               </div>
             )}
             {isActionPhase && (
-              <div className="flex justify-center gap-2 pb-2" data-tutorial="tcr-action-buttons">
-                <button type="button" className={btnSuccess} onClick={handlePlay} disabled={loading}>
-                  {t('button.play')}
-                </button>
-                <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
-                  {t('button.fold')}
-                </button>
+              <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="tcr-action-buttons">
+                <div className="flex justify-center gap-2">
+                  <button type="button" className={btnSuccess} onClick={handlePlay} disabled={loading}>
+                    {t('button.play')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnDanger}
+                    onClick={handleFold}
+                    disabled={loading}
+                    aria-describedby={foldConsequenceId}
+                  >
+                    {t('button.fold')}
+                  </button>
+                </div>
+                <p
+                  id={foldConsequenceId}
+                  className="text-ds-text-muted text-sm text-center"
+                  data-testid="tcr-fold-consequence"
+                >
+                  {state.lowBonusBet > 0
+                    ? t('foldConsequence', { ante: state.anteBet, lowBonus: state.lowBonusBet })
+                    : t('foldConsequenceNoLowBonus', { ante: state.anteBet })}
+                </p>
               </div>
             )}
             {isEndPhase && (

@@ -45,7 +45,7 @@ func TestGoFishInteractor_Reset(t *testing.T) {
 	gi := usecase.NewGoFishInteractor(newTestGoFishGame(), gfpMock)
 
 	t.Run("success with default config", func(t *testing.T) {
-		result := gi.Reset(domain.DefaultGoFishConfig())
+		result := gi.Reset(domain.GoFishConfig{CpuDifficulty: domain.GoFishCpuDifficultyNormal})
 		assert.Equal(t, mockOutput, result)
 	})
 	t.Run("invalid config returns error output", func(t *testing.T) {
@@ -69,12 +69,12 @@ func TestGoFishInteractor_MockGame(t *testing.T) {
 	gameMock.On("IsHumanTurn").Return(true)
 	gameMock.On("CpuAsk").Return(nil)
 	gameMock.On("PlayerAsk", mock.Anything, mock.Anything).Return(nil)
-	gameMock.On("GetConfig").Return(domain.DefaultGoFishConfig())
+	gameMock.On("GetConfig").Return(domain.GoFishConfig{CpuDifficulty: domain.GoFishCpuDifficultyNormal})
 
 	gi := usecase.NewGoFishInteractor(gameMock, gfpMock)
 
 	t.Run("Reset calls SetConfig and game.Reset", func(t *testing.T) {
-		result := gi.Reset(domain.DefaultGoFishConfig())
+		result := gi.Reset(domain.GoFishConfig{CpuDifficulty: domain.GoFishCpuDifficultyNormal})
 		assert.Equal(t, mockOutput, result)
 		gameMock.AssertCalled(t, "SetConfig", mock.Anything)
 		gameMock.AssertCalled(t, "Reset")
@@ -88,7 +88,7 @@ func TestGoFishInteractor_MockGame(t *testing.T) {
 
 	t.Run("GetConfig returns game config", func(t *testing.T) {
 		cfg := gi.GetConfig()
-		assert.Equal(t, domain.DefaultGoFishConfig(), cfg)
+		assert.Equal(t, domain.GoFishConfig{CpuDifficulty: domain.GoFishCpuDifficultyNormal}, cfg)
 	})
 
 	t.Run("ActionLog returns action log output", func(t *testing.T) {

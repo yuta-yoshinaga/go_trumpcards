@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { flowerGardenApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, FlowerGardenResponse, FlowerGardenTableauCard } from '../types/card';
@@ -78,6 +79,44 @@ describe('FlowerGardenPage', () => {
     renderWithProviders(<FlowerGardenPage />);
     await waitFor(() => expect(screen.getByText(/フラワーガーデン/)).toBeInTheDocument());
     expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
+  });
+
+  it('announces move count changes but stays silent on the initial render', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({ ...playingState, moveCount: 4 });
+    renderWithProviders(<FlowerGardenPage />);
+    const liveRegion = await screen.findByTestId('fg-move-count-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByRole('button', { name: '♥ 5、列0・位置1' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ 6、列1・位置0' }));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('手数: 4'));
+  });
+
+  it('renders the announced move count in the current language', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({ ...playingState, moveCount: 4 });
+    renderWithProviders(<FlowerGardenPage />);
+    const liveRegion = await screen.findByTestId('fg-move-count-live');
+
+    fireEvent.click(screen.getByRole('button', { name: '♥ 5、列0・位置1' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ 6、列1・位置0' }));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('手数: 4'));
+
+    try {
+      await i18n.changeLanguage('en');
+      await waitFor(() => expect(liveRegion).toHaveTextContent('Moves: 4'));
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
+  it('labels tableau cards with their zero-based column and position', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<FlowerGardenPage />);
+    expect(await screen.findByRole('button', { name: '♠ K、列0・位置0' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 5、列0・位置1' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♣ 6、列1・位置0' })).toBeInTheDocument();
   });
 
   it('keeps move targets focusable and explains that a source must be selected first', async () => {
@@ -276,9 +315,11 @@ describe('FlowerGardenPage', () => {
     expect(document.querySelectorAll('[data-target-candidate]')).toHaveLength(0);
 
     // ♥5 (列0の最上段) を選ぶ。置けるのは ♣6 (1つ上のランク) と空き列 (列2〜5)。
-    fireEvent.click(screen.getByRole('button', { name: '♥ 5' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: '♣ 6' })).toHaveAttribute('data-target-candidate'));
-    expect(screen.getByRole('button', { name: '♣ 6' })).toHaveClass('ring-2', 'ring-ds-success');
+    fireEvent.click(screen.getByRole('button', { name: '♥ 5、列0・位置1' }));
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '♣ 6、列1・位置0' })).toHaveAttribute('data-target-candidate'),
+    );
+    expect(screen.getByRole('button', { name: '♣ 6、列1・位置0' })).toHaveClass('ring-2', 'ring-ds-success');
 
     // ♥5 は組札 (♥1 の上) には置けない ── 2 ではないので。
     for (const f of screen.getAllByLabelText(/組札/)) {
@@ -286,7 +327,7 @@ describe('FlowerGardenPage', () => {
       expect(f).not.toHaveClass('ring-ds-success');
     }
     // 自分の下の札 (♠13) も自分自身の列も候補ではない。
-    expect(screen.getByRole('button', { name: '♠ K' })).not.toHaveAttribute('data-target-candidate');
+    expect(screen.getByRole('button', { name: '♠ K、列0・位置0' })).not.toHaveAttribute('data-target-candidate');
     // 空き列 4 本 + ♣6 = 5 箇所ちょうど。
     expect(document.querySelectorAll('[data-target-candidate]')).toHaveLength(5);
   });
@@ -312,17 +353,17 @@ describe('FlowerGardenPage', () => {
       expect(rungFoundation[0]).toHaveClass('ring-2', 'ring-ds-success');
     });
     // 列0 (♠8) と列1 (♠7) には ♦2 は置けないので候補にならない
-    expect(screen.getByRole('button', { name: '♠ 8' })).not.toHaveAttribute('data-target-candidate');
-    expect(screen.getByRole('button', { name: '♠ 7' })).not.toHaveAttribute('data-target-candidate');
+    expect(screen.getByRole('button', { name: '♠ 8、列0・位置0' })).not.toHaveAttribute('data-target-candidate');
+    expect(screen.getByRole('button', { name: '♠ 7、列1・位置0' })).not.toHaveAttribute('data-target-candidate');
 
     // reserve #1 (♠7) を選択 → 列0 (♠8: 同スート・同色) と 空き列 4本 (列2〜5) が候補
     fireEvent.click(screen.getByRole('button', { name: /^♠ 7（リザーブ枠/ }));
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: '♠ 8' })).toHaveAttribute('data-target-candidate');
-      expect(screen.getByRole('button', { name: '♠ 8' })).toHaveClass('ring-2', 'ring-ds-success');
+      expect(screen.getByRole('button', { name: '♠ 8、列0・位置0' })).toHaveAttribute('data-target-candidate');
+      expect(screen.getByRole('button', { name: '♠ 8、列0・位置0' })).toHaveClass('ring-2', 'ring-ds-success');
     });
     // 列1 (♠7) は同ランクなので置けない
-    expect(screen.getByRole('button', { name: '♠ 7' })).not.toHaveAttribute('data-target-candidate');
+    expect(screen.getByRole('button', { name: '♠ 7、列1・位置0' })).not.toHaveAttribute('data-target-candidate');
   });
 });
 

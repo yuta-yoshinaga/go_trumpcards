@@ -429,13 +429,43 @@ export const workerUrl: Record<string, string> = {
   tongits: WORKER_EXTRA5,
 };
 
+/** HTTP failure returned by a game API, including an optional server diagnostic. */
+export class ApiError extends Error {
+  readonly status: number;
+  /** Kept for diagnostics; never displayed in the UI. */
+  readonly serverMessage?: string;
+
+  constructor(status: number, serverMessage?: string) {
+    super(`HTTP error: ${status}`);
+    this.name = 'ApiError';
+    this.status = status;
+    this.serverMessage = serverMessage;
+  }
+}
+
 export async function postJson<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+  if (!res.ok) {
+    let serverMessage: string | undefined;
+    try {
+      const payload: unknown = await res.json();
+      if (
+        typeof payload === 'object' &&
+        payload !== null &&
+        'message' in payload &&
+        typeof payload.message === 'string'
+      ) {
+        serverMessage = payload.message;
+      }
+    } catch {
+      // Proxies such as Cloudflare can return HTML instead of JSON.
+    }
+    throw new ApiError(res.status, serverMessage);
+  }
   return res.json() as Promise<T>;
 }
 

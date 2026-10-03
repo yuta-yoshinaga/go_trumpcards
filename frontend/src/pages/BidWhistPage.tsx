@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -21,6 +21,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BidWhistResponse } from '../types/card';
 import { BidWhistDirection, BidWhistPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import {
   BID_WHIST_HELP,
   type BidWhistCliArgs,
@@ -113,6 +114,35 @@ function BidWhistPageContent() {
   } = useGameHint('bidwhist', state);
 
   const [bidTricks, setBidTricks] = useState(1);
+  const [trickAnnouncement, setTrickAnnouncement] = useState('');
+  const previousTrickState = useRef<BidWhistResponse | null>(null);
+
+  useEffect(() => {
+    if (!state) return;
+    const previous = previousTrickState.current;
+    if (!previous) {
+      previousTrickState.current = state;
+      return;
+    }
+    const winnerIdx = state.players.findIndex(
+      (player, index) => player.trickCount > previous.players[index].trickCount,
+    );
+    const announcements: string[] = [];
+    if (winnerIdx >= 0) {
+      const name = winnerIdx === 0 ? tc('player.you') : tc('player.cpu', { id: winnerIdx });
+      announcements.push(t('announcement.trickWon', { name }));
+    }
+    const isNewTrick = state.currentTrick.length < previous.currentTrick.length;
+    const newCards = isNewTrick ? state.currentTrick : state.currentTrick.slice(previous.currentTrick.length);
+    for (const played of newCards) {
+      const name = played.playerIdx === 0 ? tc('player.you') : tc('player.cpu', { id: played.playerIdx });
+      announcements.push(t('announcement.cardPlayed', { name, card: cardAlt(played.card) }));
+    }
+    if (announcements.length > 0) {
+      setTrickAnnouncement(announcements.join(t('announcement.listSeparator')));
+    }
+    previousTrickState.current = state;
+  }, [state, t, tc]);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('bidwhist');
@@ -200,13 +230,16 @@ function BidWhistPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div role="status" aria-live="polite" className="sr-only">
+        {trickAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             {error && (
-              <button type="button" onClick={retry} className="text-ds-error underline">
+              <button type="button" onClick={retry} className="text-ds-error-text underline">
                 {error}
               </button>
             )}
@@ -245,6 +278,11 @@ function BidWhistPageContent() {
                       <span>
                         ({t('teamShort', { team: p.team })}) {p.trickCount}🂠
                       </span>
+                      {state.dealerIdx === p.id && (
+                        <span className="text-ds-accent" data-testid="bidwhist-dealer-badge">
+                          [{t('dealerBadge')}]
+                        </span>
+                      )}
                       {p.isDeclarer && <span className="font-bold text-ds-warning">★</span>}
                       {p.passed && <span className="opacity-60">{t('passed')}</span>}
                     </div>
@@ -309,6 +347,12 @@ function BidWhistPageContent() {
             <div className="text-center" data-tutorial="bw-hand">
               <div className="text-xs text-ds-text-muted mb-1">
                 {tc('player.you')} ({t('teamShort', { team: human.team })}) · {human.trickCount}🂠
+                {state.dealerIdx === human.id && (
+                  <span className="text-ds-accent" data-testid="bidwhist-dealer-badge">
+                    {' '}
+                    [{t('dealerBadge')}]
+                  </span>
+                )}
                 {human.isDeclarer && <span className="font-bold text-ds-warning"> ★</span>}
               </div>
               {isHumanExchange && kittyIndexSet.size > 0 && (

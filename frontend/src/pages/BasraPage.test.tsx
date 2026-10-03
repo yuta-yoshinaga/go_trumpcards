@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { basraApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeBasraState } from '../test/stateFactories';
 import * as basraCaptures from '../utils/basraCaptures';
@@ -31,10 +32,10 @@ const gameEndState = makeBasraState({
   gameEndFlag: true,
   winners: [0],
   players: [
-    { id: 0, isHuman: true, cardCount: 0, cards: [], capturedCount: 30, basraCount: 2, score: 27 },
-    { id: 1, isHuman: false, cardCount: 0, cards: [], capturedCount: 10, basraCount: 0, score: 5 },
-    { id: 2, isHuman: false, cardCount: 0, cards: [], capturedCount: 8, basraCount: 0, score: 4 },
-    { id: 3, isHuman: false, cardCount: 0, cards: [], capturedCount: 4, basraCount: 0, score: 1 },
+    { id: 0, isHuman: true, cardCount: 0, cards: [], capturedCount: 30, capturedCards: [], basraCount: 2, score: 27 },
+    { id: 1, isHuman: false, cardCount: 0, cards: [], capturedCount: 10, capturedCards: [], basraCount: 0, score: 5 },
+    { id: 2, isHuman: false, cardCount: 0, cards: [], capturedCount: 8, capturedCards: [], basraCount: 0, score: 4 },
+    { id: 3, isHuman: false, cardCount: 0, cards: [], capturedCount: 4, capturedCards: [], basraCount: 0, score: 1 },
   ],
   lastDealDetail: endDealDetail,
 });
@@ -63,6 +64,25 @@ describe('BasraPage', () => {
       expect(screen.getByTestId('hand-card-0')).toBeInTheDocument();
       expect(screen.getByTestId('table-card-0')).toBeInTheDocument();
     });
+  });
+
+  it('shows captured card faces alongside the captured count', async () => {
+    const card = { design: 'HEART' as const, value: 5 };
+    mockExec.mockResolvedValue(
+      makeBasraState({
+        players: [
+          { ...playPhaseState.players[0], capturedCount: 1, capturedCards: [card] },
+          { ...playPhaseState.players[1], capturedCount: 1, capturedCards: [card] },
+          ...playPhaseState.players.slice(2),
+        ],
+      }),
+    );
+    renderWithProviders(<BasraPage />);
+    const captured = await screen.findByTestId('basra-captured-0');
+    expect(captured.querySelector('[aria-label="♥ 5"]')).toBeInTheDocument();
+    expect(captured).toHaveAttribute('data-captured-count', '1');
+    expect(captured.querySelectorAll('[aria-label]')).toHaveLength(1);
+    expect(screen.getByTestId('basra-captured-1').querySelector('[aria-label="♥ 5"]')).toBeInTheDocument();
   });
 
   it('labels hand cards and exposes their selection state', async () => {
@@ -114,8 +134,11 @@ describe('BasraPage', () => {
 
   it('previews the capture set and shows the captured count on the button', async () => {
     renderWithProviders(<BasraPage />);
+    const handCard = await screen.findByTestId('hand-card-0');
+    expect(screen.getByTestId('basra-capture-preview')).toBeEmptyDOMElement();
     // Selecting hand card 0 (♥5) previews table card 0 (♠5, same rank) as capturable.
-    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    fireEvent.click(handCard);
+    expect(screen.getByTestId('basra-capture-preview')).toHaveTextContent('捕獲候補: 1枚');
     expect(screen.getByTestId('table-card-0')).toHaveAttribute('data-capture-candidate', 'true');
     expect(screen.getByTestId('table-card-1')).not.toHaveAttribute('data-capture-candidate');
     // Selecting it makes the action button report the captured count.
@@ -185,6 +208,7 @@ describe('BasraPage', () => {
     fireEvent.click(await screen.findByTestId('hand-card-1'));
     expect(screen.getByTestId('table-card-0')).toHaveAttribute('data-capture-candidate', 'true');
     expect(screen.getByTestId('table-card-1')).toHaveAttribute('data-capture-candidate', 'true');
+    expect(screen.getByTestId('basra-capture-preview')).toHaveTextContent('捕獲候補: 2枚');
     expect(screen.getByRole('button', { name: '2枚捕獲' })).toBeInTheDocument();
   });
 
@@ -192,9 +216,26 @@ describe('BasraPage', () => {
     renderWithProviders(<BasraPage />);
     // Hand card 3 (♣3) captures nothing: no candidates highlighted, trail button only.
     fireEvent.click(await screen.findByTestId('hand-card-3'));
+    expect(screen.getByTestId('basra-capture-preview')).toHaveTextContent('捕獲候補なし。トレイルになります。');
     expect(screen.getByTestId('table-card-0')).not.toHaveAttribute('data-capture-candidate');
     expect(screen.getByRole('button', { name: 'トレイル' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /捕獲/ })).not.toBeInTheDocument();
+  });
+
+  it('shows the capture preview in English', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<BasraPage />);
+      fireEvent.click(await screen.findByTestId('hand-card-0'));
+      expect(screen.getByTestId('basra-capture-preview')).toHaveTextContent('Capture candidates: 1');
+      fireEvent.click(screen.getByTestId('hand-card-3'));
+      expect(screen.getByTestId('basra-capture-preview')).toHaveTextContent(
+        'No capture candidates. This card will trail.',
+      );
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('does not show the play button on a CPU turn', async () => {

@@ -159,6 +159,14 @@ describe('CegoPage', () => {
     );
   });
 
+  it('renders CPU difficulty as a select and match length as a number input', async () => {
+    renderWithProviders(<CegoPage />);
+    fireEvent.click(await screen.findByText('設定'));
+
+    expect(screen.getByRole('combobox', { name: 'CPU難易度' })).toBeInTheDocument();
+    expect(screen.getByRole('spinbutton', { name: 'マッチのディール数' })).toBeInTheDocument();
+  });
+
   it('renders the play phase with the human cards and the declarer badge', async () => {
     renderWithProviders(<CegoPage />);
     await waitFor(() => {
@@ -352,6 +360,9 @@ describe('CegoPage', () => {
     renderWithProviders(<CegoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のディール' })).toBeInTheDocument());
     expect(screen.getByTestId('cego-result')).toBeInTheDocument();
+    expect(screen.getByTestId('cego-result')).toHaveTextContent('成功ライン到達: 成功');
+    expect(screen.getByTestId('cego-result')).toHaveTextContent('成功ライン: 54 / 106 点');
+    expect(screen.getByTestId('cego-success-line')).toHaveTextContent('成功ライン: 54 / 106 点');
   });
 
   it('renders the game end message', async () => {
@@ -383,15 +394,17 @@ describe('CegoPage', () => {
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
   });
 
-  it('changing the CPU difficulty and target-deals selects updates the config', async () => {
+  it('accepts any positive integer target deal count', async () => {
     renderWithProviders(<CegoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'K ♥' })).toBeInTheDocument());
     const difficulty = screen.getByLabelText('CPU難易度') as HTMLSelectElement;
     fireEvent.change(difficulty, { target: { value: '2' } });
     expect(difficulty.value).toBe('2');
-    const deals = screen.getByLabelText('マッチのディール数') as HTMLSelectElement;
-    fireEvent.change(deals, { target: { value: '3' } });
-    expect(deals.value).toBe('3');
+    const deals = screen.getByLabelText('マッチのディール数') as HTMLInputElement;
+    expect(deals).toHaveAttribute('min', '1');
+    expect(screen.getByText('1以上の整数を指定してください。')).toBeInTheDocument();
+    fireEvent.change(deals, { target: { value: '9' } });
+    expect(deals.value).toBe('9');
   });
 
   it('renders the backend hint banner with its card indices', async () => {

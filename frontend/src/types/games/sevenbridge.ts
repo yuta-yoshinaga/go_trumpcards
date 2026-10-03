@@ -8,6 +8,14 @@ export interface SevenBridgeMeld {
   cards: Card[];
 }
 
+/** Penalty points by card category, supplied by the game server. */
+export interface SevenBridgeScoreBreakdown {
+  ace: number;
+  number: number;
+  face: number;
+  seven: number;
+}
+
 /** Seven Bridge player data with hand, melds and scores. */
 export interface SevenBridgePlayerData {
   id: number;
@@ -17,6 +25,7 @@ export interface SevenBridgePlayerData {
   melds: SevenBridgeMeld[];
   roundScore: number;
   cumulativeScore: number;
+  scoreBreakdown: SevenBridgeScoreBreakdown;
 }
 
 /** Seven Bridge game configuration. */

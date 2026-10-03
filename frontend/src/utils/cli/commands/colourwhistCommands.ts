@@ -1,6 +1,6 @@
 import type { colourwhistApi } from '../../../api/gameApi';
 import { ColourWhistContract } from '../../../types/phases';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type ColourWhistArgs = Parameters<typeof colourwhistApi.exec>;
@@ -103,11 +103,8 @@ export function parseColourWhistCommand(input: string): CliParseResult<ColourWhi
     case 'r':
     case 'reset':
       return { args: ['reset'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

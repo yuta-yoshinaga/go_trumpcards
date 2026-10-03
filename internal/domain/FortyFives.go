@@ -119,14 +119,6 @@ func NewDefaultFortyFives() *FortyFives {
 // FortyFivesTeamOf プレイヤーが属するチーム (0 = 席0&2, 1 = 席1&3)
 func FortyFivesTeamOf(playerIdx int) int { return playerIdx % FortyFivesTeamCnt }
 
-// fortyFivesTeamName チーム番号を表示名 (A/B) に変換する (casino ワーカーで自己完結)。
-func fortyFivesTeamName(team int) string {
-	if team == 0 {
-		return "A"
-	}
-	return "B"
-}
-
 // Reset ゲーム初期化
 func (g *FortyFives) Reset() {
 	g.gameEndFlag = false
@@ -264,7 +256,7 @@ func (g *FortyFives) resolveBidding() {
 	g.declarerIdx = idx
 	g.contract = bid
 	g.trumpSuit = g.longestSuit(idx)
-	g.appendLog(idx, "contract", "fortyfives.log.contract", map[string]string{"name": playerName(g.players, idx), "team": fortyFivesTeamName(FortyFivesTeamOf(idx)), "bid": strconv.Itoa(int(bid)), "trump": strconv.Itoa(g.trumpSuit)}, nil)
+	g.appendLog(idx, "contract", "fortyfives.log.contract", map[string]string{"name": playerName(g.players, idx), "team": TeamName(FortyFivesTeamOf(idx)), "bid": strconv.Itoa(int(bid)), "trump": strconv.Itoa(g.trumpSuit)}, nil)
 	g.leadPlayerIdx = idx // declarer leads
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = FortyFivesPhasePlay
@@ -403,14 +395,14 @@ func (g *FortyFives) ScoreRound() {
 		} else {
 			g.teamScores[bidTeam] -= bidVal
 		}
-		g.appendLog(-1, "round_score", "fortyfives.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "team": fortyFivesTeamName(bidTeam), "bid": strconv.Itoa(bidVal), "got": strconv.Itoa(g.roundTeamPts[bidTeam]), "otherTeam": fortyFivesTeamName(otherTeam), "otherGot": strconv.Itoa(g.roundTeamPts[otherTeam])}, nil)
+		g.appendLog(-1, "round_score", "fortyfives.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "team": TeamName(bidTeam), "bid": strconv.Itoa(bidVal), "got": strconv.Itoa(g.roundTeamPts[bidTeam]), "otherTeam": TeamName(otherTeam), "otherGot": strconv.Itoa(g.roundTeamPts[otherTeam])}, nil)
 
 		if jink {
 			// Jink: 25 を宣言して全トリック → 即勝利。
 			g.gameEndFlag = true
 			g.winnerTeam = bidTeam
 			g.phase = FortyFivesPhaseGameEnd
-			g.appendLog(-1, "jink", "fortyfives.log.jink", map[string]string{"team": fortyFivesTeamName(bidTeam)}, nil)
+			g.appendLog(-1, "jink", "fortyfives.log.jink", map[string]string{"team": TeamName(bidTeam)}, nil)
 			return
 		}
 		g.checkGameEnd()
@@ -441,7 +433,7 @@ func (g *FortyFives) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerTeam = leader
 		g.phase = FortyFivesPhaseGameEnd
-		g.appendLog(-1, "game_end", "fortyfives.log.gameEnd", map[string]string{"team": fortyFivesTeamName(leader)}, nil)
+		g.appendLog(-1, "game_end", "fortyfives.log.gameEnd", map[string]string{"team": TeamName(leader)}, nil)
 	}
 }
 

@@ -57,6 +57,8 @@ func (p *SchafkopfWebPresenter) buildBase(g interfaces.SchafkopfGame) *controlle
 	resObj.CalledSuit = g.GetCalledSuit()
 	resObj.PartnerRevealed = g.IsPartnerRevealed()
 	resObj.RoundPickerPoints = g.GetRoundPickerPoints()
+	resObj.RoundPickerPointsTeamTotal = g.IsRoundPickerPointsTeamTotal()
+	resObj.PickerTargetPoints = domain.SchafkopfPickerTargetPoints
 	resObj.RoundMultiplier = g.GetRoundMultiplier()
 	resObj.RoundPickerWon = g.GetRoundPickerWon()
 
@@ -123,6 +125,7 @@ func (p *SchafkopfWebPresenter) buildPlayersOutput(g interfaces.SchafkopfGame) [
 			Cards:      playerCardsToOutput(player, player.GetIsHuman()),
 			TrickCount: player.GetTrickCount(),
 			Chips:      player.GetChips(),
+			ChipDelta:  g.GetLastDealChipDelta(i),
 		})
 	}
 	return out

@@ -4,6 +4,7 @@
     "round": "ラウンド",
     "moveCount": "手数",
     "score": "スコア",
+    "listSeparator": "、",
     "scoreBarAria": "{{player}}: {{score}} / {{target}}点",
     "you": "あなた",
     "cpu": "CPU",
@@ -11,6 +12,7 @@
     "tableau": "タブロー",
     "waste": "ウェイスト",
     "stock": "ストック",
+    "stockDrawAria": "ストックを引く、残り{{count}}枚",
     "foundation": "組札",
     "foundationN": "組札{{n}}（{{size}}/{{max}}枚）",
     "remaining": "残り",
@@ -65,6 +67,9 @@
     "human": "組札{{foundation}}にあなたが配置",
     "cpu": "組札{{foundation}}にCPUが配置",
     "collision": "組札{{foundation}}への移動が失敗"
+  },
+  "scoreAnnounce": {
+    "cpu": "{{player}} の得点 {{delta}}（計 {{score}}）"
   },
   "zones": {
     "nertz": "ナッツ",

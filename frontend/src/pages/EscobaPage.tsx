@@ -215,6 +215,12 @@ function EscobaPageContent() {
     handIndex !== null && isHumanTurn ? matchedCaptureCandidate(state.handCaptures, handIndex, tableIndices) : null;
   const phaseName = isGameEnd ? t('phase.gameEnd') : t(`phase.${state.phase}`, t('phase.play'));
   const detail = state.lastRoundDetail;
+  const lastCapturer = isRoundEnd ? state.players[state.lastCaptureIdx] : undefined;
+  const lastCapturerName = lastCapturer
+    ? lastCapturer.isHuman
+      ? tc('player.you')
+      : tc('player.cpu', { id: lastCapturer.id })
+    : '';
 
   return (
     <GamePageShell
@@ -237,7 +243,7 @@ function EscobaPageContent() {
         <>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             {error && (
-              <button type="button" onClick={retry} className="text-ds-error underline">
+              <button type="button" onClick={retry} className="text-ds-error-text underline">
                 {error}
               </button>
             )}
@@ -301,7 +307,7 @@ function EscobaPageContent() {
                     selectionSum === 15 && matchedCandidate !== null
                       ? 'text-ds-success'
                       : selectionSum > 15
-                        ? 'text-ds-error'
+                        ? 'text-ds-error-text'
                         : 'text-ds-text-muted'
                   }`}
                 >
@@ -339,6 +345,7 @@ function EscobaPageContent() {
                         type="button"
                         onClick={() => isHumanTurn && toggleTable(i)}
                         disabled={!isHumanTurn}
+                        aria-pressed={tableIndices.includes(i)}
                         className={`relative rounded transition-all ${
                           isMatchedCard
                             ? `ring-4 ring-offset-2 ring-offset-ds-surface ${matchColor.ring}`
@@ -385,6 +392,7 @@ function EscobaPageContent() {
                     type="button"
                     onClick={() => isHumanTurn && setHandIndex(handIndex === i ? null : i)}
                     disabled={!isHumanTurn}
+                    aria-pressed={handIndex === i}
                     className={`rounded transition-all ${
                       handIndex === i ? 'ring-2 ring-ds-info -translate-y-2' : ''
                     } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
@@ -464,6 +472,12 @@ function EscobaPageContent() {
                     </tr>
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            {lastCapturer && (
+              <div className="text-center text-sm font-semibold" data-testid="last-capture">
+                {t('roundDetail.lastCapture', { player: lastCapturerName })}
               </div>
             )}
 

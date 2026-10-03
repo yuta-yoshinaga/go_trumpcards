@@ -33,6 +33,8 @@
   "leftBowerBadge": "L",
   "rightBowerTitle": "Right Bower (Jack of trump — highest card)",
   "leftBowerTitle": "Left Bower (Jack of same-color suit — counts as trump)",
+  "rightBowerCardLabel": "{{card}}, right bower",
+  "leftBowerCardLabel": "{{card}}, left bower",
   "currentTrick": "Current Trick",
   "partnership": "Partner: {{partner}}",
   "trickCount": "Tricks: {{count}}",

@@ -7,6 +7,8 @@
   "title": "Pyramid",
   "stock": "Stock",
   "waste": "Waste",
+  "wasteCount_one": "{{count}} card",
+  "wasteCount_other": "{{count}} cards",
   "moveCount": "Moves",
   "draw": "Draw",
   "drawStock": "Draw ({{count}} cards remaining in stock)",
@@ -47,6 +49,7 @@
     "drawFromStock": "No immediate matches — try drawing from the stock"
   },
   "a11y": {
+    "position": "(row {{row}}, column {{col}})",
     "blocked": "(blocked)",
     "selected": "(selected)",
     "pairCandidate": "(pairs to 13)",

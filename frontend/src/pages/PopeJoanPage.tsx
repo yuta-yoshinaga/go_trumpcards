@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { popejoanApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
@@ -49,6 +49,9 @@ function PopeJoanPageContent() {
   const { state, loading, error, retry } = game;
 
   const [handIdx, setHandIdx] = useState<number | null>(null);
+  const [announcement, setAnnouncement] = useState('');
+  const announcedAwardCount = useRef(0);
+  const announcedDeal = useRef('');
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('popejoan');
   const cliConfig: CliGameConfig<PopeJoanResponse, Parameters<typeof popejoanApi.exec>> = useMemo(
@@ -68,8 +71,53 @@ function PopeJoanPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('popejoan', state);
 
+  useEffect(() => {
+    if (!state) return;
+
+    if (state.awards.length < announcedAwardCount.current) {
+      announcedAwardCount.current = 0;
+    }
+    const parts: string[] = [];
+    if (state.awards.length > announcedAwardCount.current) {
+      const newAwards = state.awards.slice(announcedAwardCount.current);
+      announcedAwardCount.current = state.awards.length;
+      parts.push(
+        ...newAwards.map((a) =>
+          a.byTurnUp
+            ? t('awardTurnUpLine', {
+                player: a.player,
+                compartment: t(`compartment.${a.compartment}`),
+                chips: a.chips,
+              })
+            : t('awardLine', {
+                player: a.player,
+                compartment: t(`compartment.${a.compartment}`),
+                chips: a.chips,
+              }),
+        ),
+      );
+    }
+
+    if (state.phase === PopeJoanPhase.DEAL_END && state.dealWinner >= 0) {
+      const dealKey = `${state.dealNo}:${state.dealWinner}`;
+      if (dealKey !== announcedDeal.current) {
+        announcedDeal.current = dealKey;
+        parts.push(t('dealResult', { n: state.dealWinner }));
+      }
+    }
+
+    if (parts.length > 0) setAnnouncement(parts.join(t('listSeparator')));
+  }, [state, t]);
+
   if (!state) {
-    return <GameSkeleton gameKey="popejoan" layout={{ kind: 'tableau', topRow: 3, tableau: 4 }} />;
+    return (
+      <>
+        <div className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="popejoan-live">
+          {announcement}
+        </div>
+        <GameSkeleton gameKey="popejoan" layout={{ kind: 'tableau', topRow: 3, tableau: 4 }} />
+      </>
+    );
   }
 
   const ended = state.phase === PopeJoanPhase.GAME_END;
@@ -77,6 +125,17 @@ function PopeJoanPageContent() {
   const playing = state.phase === PopeJoanPhase.PLAY;
   const human = state.players.find((p) => p.isHuman);
   const opponents = state.players.filter((p) => !p.isHuman);
+  const finalStandings = ended
+    ? [...state.players]
+        .sort((a, b) => b.chips - a.chips)
+        .map((player, index, players) => ({
+          player,
+          rank:
+            index > 0 && player.chips === players[index - 1]?.chips
+              ? players.findIndex((candidate) => candidate.chips === player.chips) + 1
+              : index + 1,
+        }))
+    : [];
   const isHumanTurn = !ended && playing && state.currentPlayerIdx === 0;
 
   const phaseName = ended ? t('phase.end') : dealOver ? t('phase.dealEnd') : t('phase.play');
@@ -104,6 +163,9 @@ function PopeJoanPageContent() {
         </>
       }
     >
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="popejoan-live">
+        {announcement}
+      </div>
       <LandscapeBanner message={t('landscapeBanner')} />
 
       <SettingsPanel
@@ -175,6 +237,23 @@ function PopeJoanPageContent() {
                   </div>
                 ))}
               </div>
+            )}
+
+            {ended && (
+              <section className="text-center mb-3" data-testid="popejoan-final-standings">
+                <h2 className="text-sm font-medium mb-1">{t('finalStandings')}</h2>
+                <ol className="inline-flex flex-col text-sm">
+                  {finalStandings.map(({ player, rank }) => (
+                    <li key={`standing-${player.id.toString()}`}>
+                      {t('finalStanding', {
+                        rank,
+                        name: player.isHuman ? t('you') : `CPU${player.id.toString()}`,
+                        chips: player.chips,
+                      })}
+                    </li>
+                  ))}
+                </ol>
+              </section>
             )}
 
             <div className="flex justify-center gap-4 mb-3 flex-wrap">

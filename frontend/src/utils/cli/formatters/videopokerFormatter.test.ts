@@ -24,7 +24,7 @@ function makeState(overrides?: Partial<VideoPokerResponse>): VideoPokerResponse 
 
 describe('formatVideopokerState', () => {
   it('shows zero-valued session stats', () => {
-    expect(formatVideopokerState(makeState())).toContain('hands: 0  win: 0%  net: +0');
+    expect(formatVideopokerState(makeState())).toContain('hands: 0  win: 0%  net: ±0');
   });
 
   it('shows a negative net with its sign', () => {

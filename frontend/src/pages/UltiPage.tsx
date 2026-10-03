@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseUltiCommand, ULTI_HELP } from '../utils/cli/commands/ultiCommands';
 import { formatUltiState } from '../utils/cli/formatters/ultiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { isRequestedHint } from '../utils/hintRequest';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -87,11 +88,6 @@ const SUIT_KEYS = ['suitNone', 'suitSpade', 'suitClub', 'suitHeart', 'suitDiamon
 
 /** Outcome i18n keys indexed by outcome value (0=none, 1=Win/made, 2=Loss/failed). */
 const OUTCOME_KEYS = ['outcomeNone', 'outcomeWin', 'outcomeLoss'] as const;
-
-/** Format a coin delta with an explicit sign so it reads without relying on color alone (e.g. "+2", "-1"). */
-function signedCoins(delta: number): string {
-  return delta > 0 ? `+${delta}` : `${delta}`;
-}
 
 /** Number of talon cards the declarer must discard in the Discard phase (matches `UltiDiscardSize` in `internal/domain/Ulti.go`). */
 const DISCARD_COUNT = 2;
@@ -275,8 +271,15 @@ function UltiPageContent() {
               <span className="mr-4">{t('contract', { contract: contractLabel })}</span>
               <span>{t('trump', { suit: trumpLabel })}</span>
             </div>
+            <div className="sr-only" role="status" aria-live="polite" data-testid="ulti-contract-progress-live">
+              {contractProgress}
+            </div>
             {contractProgress && (
-              <div className="text-ds-text-muted text-sm text-center mb-2" data-testid="ulti-contract-progress">
+              <div
+                className="text-ds-text-muted text-sm text-center mb-2"
+                data-testid="ulti-contract-progress"
+                aria-hidden="true"
+              >
                 {contractProgress}
               </div>
             )}
@@ -310,10 +313,10 @@ function UltiPageContent() {
                       </span>
                       {(isRoundEnd || isGameEnd) && coinDeltas && coinDeltas[i] !== 0 && (
                         <span
-                          className={`text-xs font-semibold ${coinDeltas[i] > 0 ? 'text-ds-success' : 'text-ds-error'}`}
+                          className={`text-xs font-semibold ${coinDeltas[i] > 0 ? 'text-ds-success' : 'text-ds-error-text'}`}
                           data-testid={`ulti-coin-delta-${p.id}`}
                         >
-                          {t('coinDelta', { delta: signedCoins(coinDeltas[i]) })}
+                          {t('coinDelta', { delta: formatSignedDelta(coinDeltas[i]) })}
                         </span>
                       )}
                       {p.isDeclarer && (
@@ -369,10 +372,14 @@ function UltiPageContent() {
                     {(isRoundEnd || isGameEnd) && coinDeltas && humanIdx >= 0 && (
                       <div
                         className={
-                          coinDeltas[humanIdx] > 0 ? 'text-ds-success' : coinDeltas[humanIdx] < 0 ? 'text-ds-error' : ''
+                          coinDeltas[humanIdx] > 0
+                            ? 'text-ds-success'
+                            : coinDeltas[humanIdx] < 0
+                              ? 'text-ds-error-text'
+                              : ''
                         }
                       >
-                        {t('roundResult.yourCoins', { delta: signedCoins(coinDeltas[humanIdx] ?? 0) })}
+                        {t('roundResult.yourCoins', { delta: formatSignedDelta(coinDeltas[humanIdx] ?? 0) })}
                       </div>
                     )}
                   </div>
@@ -461,20 +468,22 @@ function UltiPageContent() {
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="ulti-action-buttons">
               {canBid && (
                 <>
-                  <span className="text-ds-text-muted text-sm">{t('chooseTrump')}:</span>
-                  {TRUMP_CHOICES.map((c) => (
-                    <button
-                      key={c.code}
-                      type="button"
-                      className={selectedTrump === c.code ? btnPrimary : btnSecondary}
-                      onClick={() => setSelectedTrump(c.code)}
-                      disabled={loading}
-                      aria-label={t(SUIT_KEYS[c.code])}
-                      aria-pressed={selectedTrump === c.code}
-                    >
-                      {c.symbol}
-                    </button>
-                  ))}
+                  <fieldset className="flex items-center gap-2 border-0 p-0 m-0 min-w-0">
+                    <legend className="text-ds-text-muted text-sm">{t('chooseTrump')}</legend>
+                    {TRUMP_CHOICES.map((c) => (
+                      <button
+                        key={c.code}
+                        type="button"
+                        className={selectedTrump === c.code ? btnPrimary : btnSecondary}
+                        onClick={() => setSelectedTrump(c.code)}
+                        disabled={loading}
+                        aria-label={t(SUIT_KEYS[c.code])}
+                        aria-pressed={selectedTrump === c.code}
+                      >
+                        {c.symbol}
+                      </button>
+                    ))}
+                  </fieldset>
                   <button
                     type="button"
                     className={btnPrimary}

@@ -226,6 +226,18 @@ func (_m *MockQuadrilleGame) GetCurrentBidderIdx() int {
 	return ret.Get(0).(int)
 }
 
+// GetBids モック
+func (_m *MockQuadrilleGame) GetBids() [domain.QuadrillePlayerCnt]domain.QuadrilleBid {
+	ret := _m.Called()
+	return ret.Get(0).([domain.QuadrillePlayerCnt]domain.QuadrilleBid)
+}
+
+// GetBidActed モック
+func (_m *MockQuadrilleGame) GetBidActed() [domain.QuadrillePlayerCnt]bool {
+	ret := _m.Called()
+	return ret.Get(0).([domain.QuadrillePlayerCnt]bool)
+}
+
 // GetPlayerScores モック
 func (_m *MockQuadrilleGame) GetPlayerScores() [domain.QuadrillePlayerCnt]int {
 	ret := _m.Called()

@@ -158,7 +158,9 @@ function OhHellPageContent() {
 
   useCardKeyboardNav({
     cardCount: humanCardCountForKbd,
-    onToggle: toggleCard,
+    onToggle: (idx) => {
+      if (state?.validPlayIndices.includes(idx)) toggleCard(idx);
+    },
     onConfirm: confirmAction,
     onClear: clearSelection,
     enabled: !!isHumanTurnForKbd && !loading,
@@ -479,7 +481,10 @@ function OhHellPageContent() {
                 <RoundScoreAnnouncement
                   active={isRoundEnd || isGameEnd}
                   entries={state.players.map((p) => ({
-                    name: playerName(p.id, p.isHuman),
+                    name: `${playerName(p.id, p.isHuman)} ${t('scoreAnnouncementDetails', {
+                      bid: p.bid >= 0 ? p.bid : t('bidNone'),
+                      tricks: p.trickCount,
+                    })}`,
                     roundScore: p.roundScore,
                     cumulativeScore: p.cumulativeScore,
                   }))}
@@ -507,6 +512,9 @@ function OhHellPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.ohhell.footer} px-4 py-2.5`}>
+            <span id="ohhell-illegal-card-description" className="sr-only">
+              {t('illegalCardStatus')}
+            </span>
             {/* Human cards */}
             {humanPlayer &&
               (isMobile ? (
@@ -516,33 +524,51 @@ function OhHellPageContent() {
                   onToggle={toggleCard}
                   cardWidth={cardWidth}
                   dataTutorial="oh-player-hand"
+                  legalIndices={isHumanTurn ? state.validPlayIndices : undefined}
+                  validIndices={isHumanTurn ? state.validPlayIndices : undefined}
+                  cardStatusFor={(idx) =>
+                    isHumanTurn
+                      ? state.validPlayIndices.includes(idx)
+                        ? t('legalCardStatus')
+                        : t('illegalCardStatus')
+                      : undefined
+                  }
                 />
               ) : (
                 <div className="flex flex-wrap gap-1 mb-2" data-tutorial="oh-player-hand">
-                  {humanPlayer.cards.map((card, idx) => (
-                    <button
-                      type="button"
-                      key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
-                      aria-label={cardAlt(card)}
-                      aria-pressed={selectedCardIndices.includes(idx)}
-                      // プレイヒントの [N] もテキストだけだった。TwoTenJack と
-                      // 同じく、該当する札を光らせる。
-                      className={`transition-transform ${focusRingCard}${
-                        isHumanTurn && hint?.cardIndex === idx ? ' rounded-lg ring-2 ring-ds-warning' : ''
-                      }`}
-                      data-hint-suggested={isHumanTurn && hint?.cardIndex === idx ? 'true' : undefined}
-                      style={{
-                        background: 'none',
-                        padding: 0,
-                        borderRadius: 8,
-                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} />
-                    </button>
-                  ))}
+                  {humanPlayer.cards.map((card, idx) => {
+                    const legal = !isHumanTurn || state.validPlayIndices.includes(idx);
+                    return (
+                      <button
+                        type="button"
+                        key={`${card.design}-${card.value}-${idx}`}
+                        onClick={() => {
+                          if (legal) toggleCard(idx);
+                        }}
+                        aria-label={`${cardAlt(card)}${isHumanTurn ? ` (${legal ? t('legalCardStatus') : t('illegalCardStatus')})` : ''}`}
+                        aria-disabled={!legal || undefined}
+                        aria-describedby={!legal ? 'ohhell-illegal-card-description' : undefined}
+                        aria-pressed={selectedCardIndices.includes(idx)}
+                        // プレイヒントの [N] もテキストだけだった。TwoTenJack と
+                        // 同じく、該当する札を光らせる。
+                        className={`transition-transform ${focusRingCard}${
+                          isHumanTurn && legal ? ' rounded-lg ring-2 ring-ds-success' : ''
+                        }${isHumanTurn && !legal ? ' opacity-50 cursor-not-allowed' : ''}${
+                          isHumanTurn && hint?.cardIndex === idx ? ' rounded-lg ring-2 ring-ds-warning' : ''
+                        }`}
+                        data-hint-suggested={isHumanTurn && hint?.cardIndex === idx ? 'true' : undefined}
+                        style={{
+                          background: 'none',
+                          padding: 0,
+                          borderRadius: 8,
+                          ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} />
+                      </button>
+                    );
+                  })}
                 </div>
               ))}
 

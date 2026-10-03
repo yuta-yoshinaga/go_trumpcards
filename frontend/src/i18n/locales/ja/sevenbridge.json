@@ -23,6 +23,13 @@
   "scoresPlayer": "プレイヤー",
   "scoresRound": "ラウンド",
   "scoresTotal": "累計",
+  "scoreBreakdown": {
+    "title": "ラウンド得点内訳",
+    "ace": "エース",
+    "number": "数字",
+    "face": "絵札",
+    "seven": "セブン"
+  },
   "target": "目標: {{points}}点",
   "drawStockButton": "山札から引く",
   "ponButton": "ポン",
@@ -32,6 +39,7 @@
   "ponChiSelectionProgress": "ポン／チー選択: {{selected}}／{{required}}枚",
   "requireThree": "カードを3枚以上選択してください",
   "requirementMet": "選択枚数を満たしました。実行できます",
+  "discardRequireOne": "カードを1枚だけ選択してください",
   "discardButton": "捨てる",
   "layoffButton": "レイオフ",
   "layoffTarget": "追加先",

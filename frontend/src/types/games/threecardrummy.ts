@@ -23,6 +23,7 @@ export interface ThreeCardRummyResponse extends BaseGameResponse {
   anteBonusPayout: number;
   lowBonusPayout: number;
   totalPayout: number;
+  netChange: number;
   dealerQualified: boolean;
   playerScore: number;
   dealerScore: number;

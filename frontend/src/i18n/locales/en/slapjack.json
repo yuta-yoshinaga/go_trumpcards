@@ -13,6 +13,7 @@
   },
   "label": {
     "stock": "Stock",
+    "stockProgressAria": "{{player}} stock remaining: {{count}} cards",
     "pileCount": "Pile: {{count}}"
   },
   "settings": {
@@ -26,6 +27,17 @@
   "slapjack": {
     "slap": "Slap!",
     "jackOnTop": "JACK! Slap fast!",
+    "pending": {
+      "stepStart_one": "Waiting for the CPU to flip",
+      "stepStart_other": "Waiting for the CPU to flip",
+      "slapStart_one": "Waiting for the CPU to slap",
+      "slapStart_other": "Waiting for the CPU to slap",
+      "step_one": "CPU flip pending (about {{count}} second remaining)",
+      "step_other": "CPU flip pending (about {{count}} seconds remaining)",
+      "slap_one": "CPU slap pending (about {{count}} second remaining)",
+      "slap_other": "CPU slap pending (about {{count}} seconds remaining)",
+      "progress": "Progress until CPU action"
+    },
     "slapAvailableAnnounce": "Slapping is available",
     "slapUnavailableAnnounce": "Slapping is no longer available",
     "burst": {

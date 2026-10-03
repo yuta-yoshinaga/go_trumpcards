@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { thirtyoneApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, ThirtyOneResponse } from '../types/card';
@@ -58,6 +59,21 @@ describe('ThirtyOnePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('offers 1–10 initial lives and passes the selected value to reset', async () => {
+    renderWithProviders(<ThirtyOnePage />);
+    const select = await screen.findByLabelText('初期ライフ');
+    expect(Array.from((select as HTMLSelectElement).options).map((option) => option.value)).toEqual(
+      Array.from({ length: 10 }, (_, index) => String(index + 1)),
+    );
+
+    fireEvent.change(select, { target: { value: '10' } });
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenLastCalledWith('reset', undefined, { cpuDifficulty: 1, initialLives: 10 }),
+    );
+  });
+
   it('shows draw and knock actions during the draw phase', async () => {
     renderWithProviders(<ThirtyOnePage />);
     expect(await screen.findByTestId('draw-stock-button')).toBeEnabled();
@@ -69,6 +85,33 @@ describe('ThirtyOnePage', () => {
     renderWithProviders(<ThirtyOnePage />);
     expect(await screen.findByRole('img', { name: '山札、残り39枚' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: '捨て札: ♥ 2' })).toBeInTheDocument();
+  });
+
+  it('announces lives and elimination in Japanese while preserving the heart count', async () => {
+    const state = makeState();
+    state.players[0].lives = 2;
+    state.players[1].isEliminated = true;
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<ThirtyOnePage />);
+
+    expect(await screen.findByRole('img', { name: '残り2ライフ' })).toHaveTextContent('❤❤');
+    expect(screen.getByRole('img', { name: '脱落' })).toHaveTextContent('💀');
+  });
+
+  it('announces lives and elimination in English', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      const state = makeState();
+      state.players[0].lives = 2;
+      state.players[1].isEliminated = true;
+      mockExec.mockResolvedValue(state);
+      renderWithProviders(<ThirtyOnePage />);
+
+      expect(await screen.findByRole('img', { name: '2 lives remaining' })).toHaveTextContent('❤❤');
+      expect(screen.getByRole('img', { name: 'OUT' })).toHaveTextContent('💀');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('explains an empty stock and discard pile', async () => {
@@ -150,7 +193,7 @@ describe('ThirtyOnePage', () => {
     renderWithProviders(<ThirtyOnePage />);
     await screen.findByTestId('draw-stock-button');
     // Human + 3 CPU each render a lives indicator (❤ or 💀).
-    expect(screen.getAllByLabelText(/lives-/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByLabelText(/残り\d+ライフ/).length).toBeGreaterThanOrEqual(1);
   });
 
   it('toggles card selection on and off in the discard phase', async () => {
@@ -204,7 +247,7 @@ describe('ThirtyOnePage', () => {
   it('hides the knock countdown banner at game end', async () => {
     mockExec.mockResolvedValue(makeState({ phase: ThirtyOnePhase.GAME_END, gameEndFlag: true, knockerIdx: 1 }));
     renderWithProviders(<ThirtyOnePage />);
-    await waitFor(() => expect(screen.getAllByLabelText(/lives-|out/).length).toBeGreaterThan(0));
+    await waitFor(() => expect(screen.getAllByLabelText(/残り\d+ライフ|脱落/).length).toBeGreaterThan(0));
     expect(screen.queryByTestId('knock-countdown-banner')).not.toBeInTheDocument();
   });
 
@@ -279,8 +322,8 @@ describe('ThirtyOnePage', () => {
     );
     renderWithProviders(<ThirtyOnePage />);
     await screen.findByTestId('draw-stock-button');
-    expect(screen.getByLabelText('out')).toBeInTheDocument(); // 💀 for eliminated
-    expect(screen.getByLabelText('lives-0')).toBeInTheDocument(); // · fallback
+    expect(screen.getByLabelText('脱落')).toBeInTheDocument(); // 💀 for eliminated
+    expect(screen.getByLabelText('残り0ライフ')).toHaveTextContent('·'); // fallback
   });
 
   it('renders the CLI terminal when CLI mode is enabled', async () => {

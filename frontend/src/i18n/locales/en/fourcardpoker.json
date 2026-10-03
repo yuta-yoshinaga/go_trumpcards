@@ -4,6 +4,8 @@
   "dealer": "Dealer",
   "dealerUpcard": "Upcard only",
   "hiddenCard": "Hidden card",
+  "bestCardIncluded": "{{card}}, included in the best hand",
+  "bestCardExcluded": "{{card}}, not included in the best hand",
   "label": {
     "chips": "Chips",
     "ante": "Ante",
@@ -49,6 +51,7 @@
     "title": "Settings"
   },
   "betGuide": "Place ante and optional Aces Up side bet",
+  "foldWarning": "Folding forfeits your {{amount}} ante",
   "betError": "Ante must be at least 10, bets in steps of 10, and within your balance",
   "payoutRef": {
     "title": "Paytable",

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { tongitsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
@@ -12,6 +12,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TongitsOnDealCelebration } from '../components/TongitsOnDealCelebration';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -111,6 +112,23 @@ function TongitsPageContent() {
     handleChallenge,
     handleNextRound,
   } = useTongitsGame();
+  const [drawPileAnnouncement, setDrawPileAnnouncement] = useState('');
+  const pendingStockDrawRef = useRef(false);
+  const previousDrawPileCountRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!state) return;
+    if (previousDrawPileCountRef.current !== null && pendingStockDrawRef.current) {
+      if (state.drawPileCount !== previousDrawPileCountRef.current) {
+        setDrawPileAnnouncement(t('drawPileAnnouncement', { count: state.drawPileCount }));
+      }
+      pendingStockDrawRef.current = false;
+    }
+    previousDrawPileCountRef.current = state.drawPileCount;
+  }, [state, t]);
+  const announceStockDraw = useCallback(() => {
+    pendingStockDrawRef.current = true;
+    handleDrawStock();
+  }, [handleDrawStock]);
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -202,6 +220,17 @@ function TongitsPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div data-testid="tongits-round-score-announcement">
+        <RoundScoreAnnouncement
+          active={isRoundEnd || isGameEnd}
+          entries={state.players.map((p) => ({
+            name: playerName(p.id, p.isHuman),
+            roundScore: p.roundScore,
+            cumulativeScore: p.cumulativeScore,
+          }))}
+          separator={t('listSeparator')}
+        />
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -237,6 +266,15 @@ function TongitsPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            <div
+              className="sr-only"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              data-testid="tongits-draw-pile-announcement"
+            >
+              {drawPileAnnouncement && <span>{drawPileAnnouncement}</span>}
+            </div>
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span>{t('drawPile', { count: state.drawPileCount })}</span>
@@ -416,7 +454,7 @@ function TongitsPageContent() {
             <div className="flex gap-2 items-center flex-wrap">
               {isDrawPhase && isHumanTurn && (
                 <div className="flex gap-2" data-tutorial="tongits-draw-area">
-                  <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                  <button type="button" className={btnPrimary} onClick={announceStockDraw} disabled={loading}>
                     {t('drawStockButton')}
                   </button>
                   <button

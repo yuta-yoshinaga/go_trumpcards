@@ -13,6 +13,9 @@
     "lead": "You lead (any card is legal)",
     "cards": "{{n}} cards",
     "penalty": "{{n}} penalty",
+    "targetRemaining_one": "{{count}} penalty point until target",
+    "targetRemaining_other": "{{count}} penalty points until target",
+    "targetReached": "Target reached",
     "lastTrick": "[took the last trick for {{n}}]",
     "you": "You",
     "cpu": "CPU{{idx}}"
@@ -36,6 +39,7 @@
     "forced": "You cannot beat it, so your lowest card is the only legal play.",
     "finalTrick": "This is the final trick. Only its winner scores penalty points.",
     "waiting": "Waiting for the other players.",
+    "yourTurn": "Your turn",
     "roundEnd": "{{name}} took the last trick and scored {{n}} penalty points."
   },
   "result": {

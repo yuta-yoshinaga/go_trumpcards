@@ -324,7 +324,7 @@ func (g *Jass) ResolveTrick() {
 	trickPoints := 0
 	for i, tc := range g.currentTrick {
 		trickCards[i] = tc.Card
-		trickPoints += jassCardPoints(tc.Card, g.trumpSuit)
+		trickPoints += JassFamilyCardPoints(tc.Card, g.trumpSuit)
 	}
 
 	g.players[winnerIdx].AddTrick(trickCards)
@@ -567,45 +567,6 @@ func jassNonTrumpRank(value int) int {
 		return 2
 	case 6:
 		return 1
-	}
-	return 0
-}
-
-// jassCardPoints トランプスートを踏まえたカード点数を返す
-// 切り札: J=20, 9=14, A=11, 10=10, K=4, Q=3, 8/7/6=0
-// 非切り札: A=11, 10=10, K=4, Q=3, J=2, 9/8/7/6=0
-func jassCardPoints(c *Card, trumpSuit int) int {
-	if c == nil {
-		return 0
-	}
-	if c.GetDesign() == trumpSuit {
-		switch c.GetValue() {
-		case 11: // J
-			return 20
-		case 9:
-			return 14
-		case 1: // A
-			return 11
-		case 10:
-			return 10
-		case 13: // K
-			return 4
-		case 12: // Q
-			return 3
-		}
-		return 0
-	}
-	switch c.GetValue() {
-	case 1: // A
-		return 11
-	case 10:
-		return 10
-	case 13: // K
-		return 4
-	case 12: // Q
-		return 3
-	case 11: // J
-		return 2
 	}
 	return 0
 }
@@ -1197,7 +1158,7 @@ func (g *Jass) cpuPlayChoose(playerIdx int, valid []int) int {
 		best := valid[0]
 		bestPts := -1
 		for _, idx := range valid {
-			pts := jassCardPoints(player.GetCard(idx), g.trumpSuit)
+			pts := JassFamilyCardPoints(player.GetCard(idx), g.trumpSuit)
 			if pts > bestPts {
 				bestPts = pts
 				best = idx
@@ -1225,7 +1186,7 @@ func (g *Jass) cpuPlayChoose(playerIdx int, valid []int) int {
 	worst := valid[0]
 	worstPts := 9999
 	for _, idx := range valid {
-		pts := jassCardPoints(player.GetCard(idx), g.trumpSuit)
+		pts := JassFamilyCardPoints(player.GetCard(idx), g.trumpSuit)
 		if pts < worstPts {
 			worstPts = pts
 			worst = idx

@@ -11,6 +11,7 @@
   "trick": "トリック {{n}}",
   "highestBid": "最高ビッド: {{bid}}（{{bidder}}）",
   "playerBid": "直近のビッド: {{bid}}",
+  "cpuHandAriaLabel": "{{player}}の手札 残り{{count}}枚",
   "bidSuit": "{{tricks}}{{suit}} ({{value}}点)",
   "bidNoTrump": "{{tricks}}NT ({{value}}点)",
   "bidMisere": "ミゼール ({{value}}点)",
@@ -34,7 +35,8 @@
   "selectTricks": "トリック数を選択 (6-10):",
   "bidCondition": {
     "suit": "成立には{{tricks}}トリック以上取る必要があります。",
-    "misere": "成立には1トリックも取らない必要があります。"
+    "misere": "成立には1トリックも取らない必要があります。",
+    "underbid": "現在の最高ビッドを上回らないため入札できません。"
   },
   "misereButton": "ミゼール",
   "openMisereButton": "オープンミゼール",

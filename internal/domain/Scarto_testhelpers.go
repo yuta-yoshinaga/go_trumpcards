@@ -30,3 +30,6 @@ func ScartoDiscardablePublic(c *Card) bool { return scartoDiscardable(c) }
 
 // BuildScartoDeckPublic は 78 枚デッキを構築する (テスト用)。
 func BuildScartoDeckPublic() []*Card { return buildScartoDeck() }
+
+// ScartoSettleDeal はディール精算をテストから検査する。
+func ScartoSettleDeal(half [ScartoPlayerCnt]int) [ScartoPlayerCnt]int { return scartoSettleDeal(half) }

@@ -59,6 +59,23 @@ beforeEach(() => {
 });
 
 describe('WhistPage', () => {
+  it('announces trump beside its card name while preserving other card names', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpSuit: 1 }));
+    renderWithProviders(<WhistPage />);
+
+    expect(await screen.findByRole('button', { name: '♠ A (切り札)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 5' })).toBeInTheDocument();
+  });
+
+  it('shows the configured target score alongside the team scores', async () => {
+    mockExec.mockResolvedValue(makeState({ teamScores: [12, 8], config: { cpuDifficulty: 1, pointLimit: 37 } }));
+    renderWithProviders(<WhistPage />);
+
+    expect(await screen.findByText(/目標スコア: 37/)).toHaveTextContent('チームスコア · 目標スコア: 37');
+    expect(screen.getByText('12')).toBeInTheDocument();
+    expect(screen.getByText('8')).toBeInTheDocument();
+  });
+
   it('shows the previous trick, its player and winner after advancing', async () => {
     const previous = [{ playerIdx: 0, card: card('SPADE', 1) }];
     mockExec.mockResolvedValue(makeState({ lastTrick: previous, lastTrickWinner: 0 }));
@@ -189,7 +206,7 @@ describe('WhistPage', () => {
     await waitFor(() => expect(screen.getAllByText('チーム 0').length).toBeGreaterThan(0));
     // Score-table cells render the team label inside a colored chip span.
     const team0Chips = screen.getAllByText('チーム 0').filter((el) => el.className.includes('text-ds-info'));
-    const team1Chips = screen.getAllByText('チーム 1').filter((el) => el.className.includes('text-ds-error'));
+    const team1Chips = screen.getAllByText('チーム 1').filter((el) => el.className.includes('text-ds-error-text'));
     expect(team0Chips.length).toBeGreaterThan(0);
     expect(team1Chips.length).toBeGreaterThan(0);
   });

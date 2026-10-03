@@ -52,9 +52,6 @@ type Tehonbiki struct {
 	turnNumber  int
 }
 
-func NewTehonbiki(_ *TrumpCards, p *TehonbikiPlayer, c TehonbikiConfig) *Tehonbiki {
-	return NewDefaultTehonbikiWithPlayer(p, c)
-}
 func NewDefaultTehonbiki() *Tehonbiki {
 	c := DefaultTehonbikiConfig()
 	return NewDefaultTehonbikiWithPlayer(NewTehonbikiPlayer(c.InitialChips), c)

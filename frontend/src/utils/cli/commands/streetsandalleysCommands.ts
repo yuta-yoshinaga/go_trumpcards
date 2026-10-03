@@ -1,5 +1,5 @@
 import type { streetsAndAlleysApi } from '../../../api/gameApi';
-import { splitCommand, suggestCommand } from '../commandParserBase';
+import { splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type StreetsAndAlleysArgs = Parameters<typeof streetsAndAlleysApi.exec>;
@@ -47,11 +47,8 @@ export function parseStreetsAndAlleysCommand(input: string): CliParseResult<Stre
     case 'r':
     case 'reset':
       return { args: ['reset'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

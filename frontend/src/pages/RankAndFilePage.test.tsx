@@ -322,6 +322,48 @@ describe('RankAndFilePage', () => {
     await waitFor(() => expect(wasteButton.className).toContain('ring-2'));
   });
 
+  it('announces legal destination columns and types after source selection', async () => {
+    renderWithProviders(<RankAndFilePage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    const live = screen.getByTestId('rf-move-target-announcement');
+    expect(live).toBeEmptyDOMElement();
+    const wasteButton = screen.getByAltText('♣ 3').closest('button') as HTMLButtonElement;
+    fireEvent.click(wasteButton);
+    await waitFor(() =>
+      expect(live).toHaveTextContent('場札列2、場札列3、場札列4、場札列5、場札列6、場札列7、場札列8、場札列9'),
+    );
+    const emptyTarget = screen.getAllByRole('button').find((button) => button.textContent === '空');
+    if (!emptyTarget) throw new Error('Expected an empty tableau target');
+    fireEvent.click(emptyTarget);
+    await waitFor(() => expect(live).toBeEmptyDOMElement());
+  });
+
+  it('announces legal destinations for a selected tableau card', async () => {
+    renderWithProviders(<RankAndFilePage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('rf-tableau-top-0'));
+    expect(await screen.findByTestId('rf-move-target-announcement')).toHaveTextContent(
+      '場札列2、場札列3、場札列4、場札列5、場札列6、場札列7、場札列8、場札列9',
+    );
+  });
+
+  it('announces when a selected source has no legal destinations', async () => {
+    const blockedState: RankAndFileResponse = {
+      ...playingState,
+      tableau: makeTableau(
+        Array.from({ length: 10 }, (_, col) =>
+          col === 0 ? [{ card: card('SPADE', 13), faceUp: true }] : [{ card: card('SPADE', 13), faceUp: true }],
+        ),
+      ),
+      foundation: Array.from({ length: 8 }, () => [card('HEART', 13)]),
+    };
+    mockExec.mockResolvedValue(blockedState);
+    renderWithProviders(<RankAndFilePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('rf-tableau-top-0'));
+    expect(await screen.findByTestId('rf-move-target-announcement')).toHaveTextContent('移動先の候補はありません');
+  });
+
   it('waste card button has aria-pressed false initially', async () => {
     renderWithProviders(<RankAndFilePage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());

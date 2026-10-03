@@ -30,13 +30,13 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, SambaResponse } from '../types/card';
 import { SambaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { canastaFamilySelectionPoints } from '../utils/canastaFamilyScore';
 import { cardAlt } from '../utils/cardAlt';
 import { parseSambaCommand, SAMBA_HELP } from '../utils/cli/commands/sambaCommands';
 import { formatSambaState } from '../utils/cli/formatters/sambaFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
-import { sambaMinMeld, sambaSelectionPoints } from '../utils/sambaScore';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /**
@@ -142,12 +142,12 @@ function SambaPageContent() {
   const meldPointInfo = useMemo(() => {
     if (!isMeldPhase || !humanPlayer) return null;
     const selectedCards = selectedCardIndices.map((i) => humanPlayer.cards[i]).filter((c): c is Card => Boolean(c));
-    const selectedPoints = sambaSelectionPoints(selectedCards);
+    const selectedPoints = canastaFamilySelectionPoints(selectedCards);
     const needInitial = !humanPlayer.hasInitMeld;
-    const minMeld = sambaMinMeld(humanPlayer.cumulativeScore);
+    const minMeld = state.minMeld;
     const shortfall = Math.max(0, minMeld - selectedPoints);
     return { selectedPoints, needInitial, minMeld, shortfall, below: needInitial && shortfall > 0 };
-  }, [isMeldPhase, humanPlayer, selectedCardIndices]);
+  }, [isMeldPhase, humanPlayer, selectedCardIndices, state?.minMeld]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -158,6 +158,48 @@ function SambaPageContent() {
   }, [gameExec, hideActionLog, sambaConfig.cpuDifficulty, sambaConfig.pointLimit]);
   const isHumanTurn =
     (isDrawPhase || isMeldPhase || isDiscardPhase) && state?.players[state.currentPlayerIdx]?.isHuman === true;
+
+  const [meldProgressMsg, setMeldProgressMsg] = useState('');
+  const [teamScoreAnnouncement, setTeamScoreAnnouncement] = useState('');
+  const previousTeamScores = useRef<[number, number] | null>(null);
+  useEffect(() => {
+    if (!state) return;
+    const scores: [number, number] = [state.teamScores[0] ?? 0, state.teamScores[1] ?? 0];
+    const previousScores = previousTeamScores.current;
+    previousTeamScores.current = scores;
+    if (!previousScores) return;
+
+    const updates = scores.flatMap((score, team) =>
+      score !== previousScores[team] ? [t('teamScoreAnnouncement', { team: t('teamLabel', { n: team }), score })] : [],
+    );
+    if (updates.length > 0) {
+      setTeamScoreAnnouncement(updates.join(t('listSeparator')));
+    }
+  }, [state, t]);
+
+  const previousHumanTeamMelds = useRef<Map<string, number> | null>(null);
+  useEffect(() => {
+    if (!state || !humanPlayer) return;
+    const teamMelds = state.players
+      .filter((player) => player.team === humanPlayer.team)
+      .flatMap((player) => player.melds.map((meld, index) => ({ key: `${player.id}-${index}`, meld })));
+    const currentLengths = new Map(teamMelds.map(({ key, meld }) => [key, meld.cards.length]));
+    const previousLengths = previousHumanTeamMelds.current;
+    previousHumanTeamMelds.current = currentLengths;
+    if (!previousLengths) return;
+
+    const updates = teamMelds
+      .filter(({ key, meld }) => meld.cards.length > (previousLengths.get(key) ?? 0))
+      .map(({ meld }) => {
+        const remaining = SAMBA_CANASTA_SIZE - meld.cards.length;
+        return remaining <= 0
+          ? t(meld.kind === 1 ? 'meldProgress.sambaComplete' : 'meldProgress.canastaComplete')
+          : t(meld.kind === 1 ? 'meldProgress.toSamba' : 'meldProgress.toCanasta', { n: remaining });
+      });
+    if (updates.length > 0) {
+      setMeldProgressMsg(t('meldProgressAnnouncement', { updates: updates.join(t('listSeparator')) }));
+    }
+  }, [state, humanPlayer, t]);
 
   const kbdConfirmAction = useCallback(() => {
     if (isDiscardPhase) handleDiscard();
@@ -257,6 +299,12 @@ function SambaPageContent() {
               <span className="sr-only" role="status" aria-live="polite" data-testid="sa-frozen-announce">
                 {frozenMsg}
               </span>
+              <span className="sr-only" role="status" aria-live="polite" data-testid="sa-meld-progress-announce">
+                {meldProgressMsg}
+              </span>
+              <span className="sr-only" role="status" aria-live="polite" data-testid="sa-team-score-announce">
+                {teamScoreAnnouncement}
+              </span>
             </div>
             <div className="text-ds-text-muted text-center mb-2 text-sm" data-testid="sa-team-scores">
               {t('teamScores', { a: state.teamScores[0] ?? 0, b: state.teamScores[1] ?? 0 })}
@@ -340,7 +388,7 @@ function SambaPageContent() {
                       })}
                       {p.red3s.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
-                          <span className="text-xs text-ds-error self-center mr-1">{t('red3s')}</span>
+                          <span className="text-xs text-ds-error-text self-center mr-1">{t('red3s')}</span>
                           {p.red3s.map((card, ri) => (
                             <AnimatedCard key={`red3-${pi}-${ri}`} card={card} width={cardWidth * 0.6} />
                           ))}

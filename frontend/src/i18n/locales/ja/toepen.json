@@ -2,6 +2,7 @@
   "cpu": "CPU{{n}}",
   "cpuHand": "CPU{{n}}: {{count}}枚",
   "cpuHandAriaLabel": "CPU{{n}} の手札 {{count}} 枚（裏向き）",
+  "cpuHandRevealedAriaLabel": "CPU{{n}} の手札（公開）",
   "fold": "降りる（{{cost}}点）",
   "foldCost": "降りると{{cost}}点の失点で済みます（吊り上げ前の賭け点）",
   "folded": "[降参]",
@@ -33,5 +34,6 @@
   "you": "あなた",
   "yourHand": "あなたの手札",
   "toepedBy": "{{name}} が toep を宣言（賭け点{{stake}}）",
+  "currentTrickWinner": "暫定勝ち札",
   "lastTrickWinner": "最終トリック勝者: {{name}}"
 }

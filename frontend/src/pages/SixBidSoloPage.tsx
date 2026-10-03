@@ -261,6 +261,27 @@ function SixBidSoloPageContent() {
                   {!p.isHuman && p.cards.length === 0 && <span>{t('hiddenHand', { count: p.cardCount })}</span>}
                 </div>
               ))}
+              {isBid && (
+                <div className="mt-2 border-t border-ds-border-subtle pt-2" data-testid="sixbidsolo-bid-history">
+                  <div className="mb-1 text-ds-text-primary text-sm">{t('bidHistoryTitle')}</div>
+                  {state.bids.length > 0 ? (
+                    <ol className="list-decimal list-inside text-sm text-ds-text-muted">
+                      {state.bids.map((bid, i) => {
+                        const player = state.players.find((p) => p.id === bid.player);
+                        return (
+                          <li key={`bid-${i}`}>
+                            {playerLabel(bid.player, player?.isHuman ?? false)}: {bidLabel(bid.kind)}
+                          </li>
+                        );
+                      })}
+                    </ol>
+                  ) : (
+                    <div className="text-sm text-ds-text-muted" data-testid="sixbidsolo-bid-history-empty">
+                      {t('bidHistoryEmpty')}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Trick */}
@@ -331,6 +352,7 @@ function SixBidSoloPageContent() {
                     key={`hand-${c.design}-${c.value}-${i}`}
                     type="button"
                     data-hint-action="play"
+                    aria-pressed={selected === i}
                     onClick={() => setSelected(i)}
                     disabled={loading || (isPlay && !canPlay(i))}
                     className={`rounded ${selected === i ? 'ring-2 ring-ds-accent' : ''} ${

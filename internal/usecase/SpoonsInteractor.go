@@ -62,14 +62,7 @@ func (si *SpoonsInteractor) ResetWithConfig(cfg domain.SpoonsConfig) string {
 
 // Pass 人間が手札の 1 枚を次へ渡す
 func (si *SpoonsInteractor) Pass(cardIndex int) string {
-	if out, blocked := guardNotPlayable(si.Game, si.sp); blocked {
-		return out
-	}
-	if err := si.Game.PlayerPass(cardIndex); err != nil {
-		return si.sp.Output(si.Game, err)
-	}
-	si.advanceCpu()
-	return si.sp.Output(si.Game, nil)
+	return humanAction(si.Game, si.sp, func() error { return si.Game.PlayerPass(cardIndex) }, si.advanceCpu)
 }
 
 // Grab 人間がスプーンを掴む

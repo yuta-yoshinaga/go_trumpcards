@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { allfoursApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
@@ -128,6 +128,7 @@ function cardLabel(c: { design: string; value: number }): string {
 export const AllFoursPage = withTutorial(AllFoursPageContent, 'allfours', AF_TUTORIAL_STEPS);
 
 function AllFoursPageContent() {
+  const unplayableCardHintId = useId();
   const { t } = useTranslation('allfours');
   const { tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('allfours');
@@ -378,13 +379,16 @@ function AllFoursPageContent() {
                     const isValid = state.validPlayIndices.includes(idx);
                     const isSelected = selectedCardIdx === idx;
                     const canSelect = isHumanPlayTurn && isValid && !loading;
+                    const isUnplayable = isHumanPlayTurn && !isValid;
                     return (
                       <button
                         key={`${c.design}-${c.value}-${idx}`}
                         type="button"
                         onClick={() => canSelect && setSelectedCardIdx(idx)}
-                        disabled={!canSelect}
+                        aria-disabled={!canSelect || undefined}
+                        aria-describedby={isUnplayable ? unplayableCardHintId : undefined}
                         aria-label={cardLabel(c)}
+                        aria-pressed={isSelected}
                         className={`min-w-[44px] min-h-[44px] rounded transition-all
                           ${isSelected ? 'ring-2 ring-ds-accent' : ''}
                           ${canSelect ? 'opacity-100' : 'opacity-50 cursor-not-allowed'}
@@ -395,6 +399,11 @@ function AllFoursPageContent() {
                     );
                   })}
                 </div>
+                {state.currentTrick.length > 0 && (
+                  <span id={unplayableCardHintId} className="sr-only">
+                    {t('unplayableCardReason')}
+                  </span>
+                )}
               </div>
             )}
 

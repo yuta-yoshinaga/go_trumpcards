@@ -55,6 +55,10 @@ type CribbageGame interface {
 	GetPegCount() int
 	// GetPegPlayedCards ペギングで出されたカードを取得する
 	GetPegPlayedCards() []*domain.Card
+	// GetPegPlayedBy ペギングで各カードを出したプレイヤーのインデックスを取得する
+	GetPegPlayedBy() []int
+	// GetPegScoreEvents returns score reasons from the latest pegging action.
+	GetPegScoreEvents() []domain.CribbagePeggingScoreEvent
 	// GetShowPhaseStep ショーフェーズのステップを取得する
 	GetShowPhaseStep() int
 	// GetHandScoreDetails ハンドスコア詳細を取得する

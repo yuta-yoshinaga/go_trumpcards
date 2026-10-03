@@ -53,6 +53,7 @@ const baseState: EgyptianRatscrewResponse = {
   isHumanTurn: true,
   isTopFaceCard: false,
   isSlappable: false,
+  slappableReason: EgyptianRatscrewSlapReason.NONE,
   centerPileSize: 0,
   topCard: null,
   players: [
@@ -117,6 +118,19 @@ beforeEach(() => {
 });
 
 describe('EgyptianRatscrewPage', () => {
+  it('shows the chance deadline countdown and clears it when the chance ends', async () => {
+    mockExec
+      .mockResolvedValueOnce({ ...chanceState, isHumanTurn: true, pendingDeadlineMs: Date.now() + 2_000 })
+      .mockResolvedValueOnce(baseState);
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('er-chance-row')).toHaveTextContent('残り2秒'));
+    await new Promise((resolve) => setTimeout(resolve, 1_100));
+    expect(screen.getByTestId('er-chance-row')).toHaveTextContent('残り1秒');
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() => expect(screen.queryByTestId('er-chance-row')).not.toBeInTheDocument());
+    expect(screen.getByText('場に0枚')).toBeInTheDocument();
+  });
+
   it('renders the GameSkeleton while state is null and does not render raw Loading…', () => {
     // Keep exec pending so `state` stays null and the loading guard renders.
     mockExec.mockReturnValue(new Promise(() => {}));
@@ -163,6 +177,41 @@ describe('EgyptianRatscrewPage', () => {
       expect(live).toHaveTextContent('CPU');
       expect(live).toHaveTextContent('場札1枚。CPU 1のターンです。');
     });
+  });
+
+  it('announces slappable state transitions and the pair or sandwich reason', async () => {
+    mockExec
+      .mockResolvedValueOnce(baseState)
+      .mockResolvedValueOnce({
+        ...slappableState,
+        slappableReason: EgyptianRatscrewSlapReason.PAIR,
+        lastEventKind: EgyptianRatscrewEventKind.STEP,
+        lastSlapReason: EgyptianRatscrewSlapReason.NONE,
+      })
+      .mockResolvedValueOnce(baseState);
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() => expect(screen.getByTestId('er-slappable-announce')).toHaveTextContent('ペアが成立しました'));
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() =>
+      expect(screen.getByTestId('er-slappable-announce')).toHaveTextContent('スラップ可能状態が解除されました'),
+    );
+  });
+
+  it('announces the current sandwich reason from a step response without a slap event', async () => {
+    mockExec.mockResolvedValueOnce(baseState).mockResolvedValueOnce({
+      ...slappableState,
+      slappableReason: EgyptianRatscrewSlapReason.SANDWICH,
+      lastEventKind: EgyptianRatscrewEventKind.STEP,
+      lastSlapReason: EgyptianRatscrewSlapReason.NONE,
+    });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() =>
+      expect(screen.getByTestId('er-slappable-announce')).toHaveTextContent('サンドイッチが成立しました'),
+    );
   });
 
   it('announces the human turn without a possessive in English', async () => {
@@ -290,13 +339,13 @@ describe('EgyptianRatscrewPage', () => {
   });
 
   it('shows a pair slap-reason badge while slappable', async () => {
-    mockExec.mockResolvedValueOnce({ ...slappableState, lastSlapReason: EgyptianRatscrewSlapReason.PAIR });
+    mockExec.mockResolvedValueOnce({ ...slappableState, slappableReason: EgyptianRatscrewSlapReason.PAIR });
     renderWithProviders(<EgyptianRatscrewPage />);
     await waitFor(() => expect(screen.getByTestId('er-slap-reason')).toHaveTextContent('ペア'));
   });
 
   it('labels the slap-reason badge as a sandwich when applicable', async () => {
-    mockExec.mockResolvedValueOnce({ ...slappableState, lastSlapReason: EgyptianRatscrewSlapReason.SANDWICH });
+    mockExec.mockResolvedValueOnce({ ...slappableState, slappableReason: EgyptianRatscrewSlapReason.SANDWICH });
     renderWithProviders(<EgyptianRatscrewPage />);
     await waitFor(() => expect(screen.getByTestId('er-slap-reason')).toHaveTextContent('サンドイッチ'));
   });

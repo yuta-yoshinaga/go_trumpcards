@@ -360,6 +360,7 @@ function CoinchePageContent() {
           <table className="w-full text-sm text-ds-text-muted">
             <thead>
               <tr>
+                <th scope="col" />
                 <th scope="col" className="text-left">
                   {t('team', { n: 0 })}
                 </th>
@@ -370,10 +371,16 @@ function CoinchePageContent() {
             </thead>
             <tbody>
               <tr>
+                <th scope="row" className="text-left font-normal">
+                  {t('cumulativeScoreLabel')}
+                </th>
                 <td className="text-ds-accent">{state.teamScores[0]}</td>
                 <td className="text-center">{state.teamScores[1]}</td>
               </tr>
               <tr>
+                <th scope="row" className="text-left font-normal">
+                  {t('roundScoreLabel')}
+                </th>
                 <td className="text-xs">{t('roundPoints', { points: state.roundPoints[0] })}</td>
                 <td className="text-center text-xs">{t('roundPoints', { points: state.roundPoints[1] })}</td>
               </tr>
@@ -454,7 +461,11 @@ function CoinchePageContent() {
 
         <div className="flex gap-2 items-center flex-wrap" data-tutorial="be-play-button">
           {isHumanBidTurn && (
-            <span data-tutorial="be-bid-controls" className="flex gap-2 flex-wrap items-center">
+            <fieldset
+              data-tutorial="be-bid-controls"
+              className="flex gap-2 flex-wrap items-center border-0 p-0 m-0 min-w-0"
+            >
+              <legend className="sr-only">{t('bidControlsGroup')}</legend>
               <select
                 className="rounded bg-black/40 px-2 py-1 text-ds-text-primary"
                 value={selectedPoints ?? ''}
@@ -486,11 +497,12 @@ function CoinchePageContent() {
               <button type="button" className={btnSuccess} onClick={handlePass} disabled={loading}>
                 {t('passButton')}
               </button>
-            </span>
+            </fieldset>
           )}
 
           {isHumanDoubleTurn && (
-            <span data-tutorial="be-bid-controls" className="flex gap-2 flex-wrap">
+            <fieldset data-tutorial="be-bid-controls" className="flex gap-2 flex-wrap border-0 p-0 m-0 min-w-0">
+              <legend className="sr-only">{t('doubleControlsGroup')}</legend>
               {canCoinche && (
                 <button type="button" className={btnPrimary} onClick={handleCoinche} disabled={loading}>
                   {t('coincheButton')}
@@ -504,7 +516,7 @@ function CoinchePageContent() {
               <button type="button" className={btnSuccess} onClick={handleDeclineDouble} disabled={loading}>
                 {t('declineDoubleButton')}
               </button>
-            </span>
+            </fieldset>
           )}
 
           {(isHumanTurn || isHumanBidTurn) && (

@@ -122,6 +122,33 @@ describe('BaccaratPage', () => {
     expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
   });
 
+  it('shows the chip change from the latest reset balance through betting and reset', async () => {
+    mockExec
+      .mockResolvedValueOnce(betPhaseState)
+      .mockResolvedValueOnce({ ...endPhaseBankerWins, chips: 900 })
+      .mockResolvedValueOnce({ ...betPhaseState, chips: 1200 });
+    renderWithProviders(<BaccaratPage />);
+
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    expect(screen.getByText('増減: ±0')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByText('増減: -100')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    await waitFor(() => expect(screen.getByText('チップ: 1200')).toBeInTheDocument());
+    expect(screen.getByText('増減: ±0')).toBeInTheDocument();
+  });
+
+  it('shows positive chip changes with an explicit plus sign', async () => {
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(endPhasePlayerWins);
+    renderWithProviders(<BaccaratPage />);
+
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByText('増減: +100')).toBeInTheDocument());
+  });
+
   it('renders the side-bet inputs inside a collapsed details section', async () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderWithProviders(<BaccaratPage />);

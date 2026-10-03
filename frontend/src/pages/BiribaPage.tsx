@@ -31,12 +31,14 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BiribaResponse, Card } from '../types/card';
 import { BiribaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { type BiribaSortMode, loadBiribaSortMode, saveBiribaSortMode, sortedBiribaHand } from '../utils/biribaSort';
+import { evaluateBiribaMeld } from '../utils/biribaMeld';
+import { type BiribaSortMode, loadBiribaSortMode, saveBiribaSortMode } from '../utils/biribaSort';
 import { canastaDrawDiscardProblem } from '../utils/canastaDrawDiscard';
 import { cardAlt } from '../utils/cardAlt';
 import { BIRIBA_HELP, parseBiribaCommand } from '../utils/cli/commands/biribaCommands';
 import { formatBiribaState } from '../utils/cli/formatters/biribaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { sortedHandForDisplay } from '../utils/handDisplaySort';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -104,6 +106,17 @@ function BiribaPageContent() {
   } = useGameHint('biriba', state);
 
   const humanPlayer = state?.players.find((p) => p.isHuman);
+  const selectedMeldCards = humanPlayer?.cards.filter((_, index) => selectedCardIndices.includes(index)) ?? [];
+  const meldStatus =
+    state && humanPlayer
+      ? evaluateBiribaMeld(selectedMeldCards, humanPlayer.melds, {
+          hasInitMeld: humanPlayer.hasInitMeld,
+          minMeld: state.minMeld,
+          drewFromDiscard: state.drewFromDiscard,
+          includesDrawnCard: selectedCardIndices.includes(state.drawnCardIndex),
+        })
+      : { ok: false as const, reason: 'selectCards' as const };
+  const meldReason = meldStatus.reason ? t(`meldReason.${meldStatus.reason}`, { min: state?.minMeld }) : '';
   // ヒントが無効なとき・サーバがヒントを返さない場面 (CPU の手番など) では空。
   // **useGameHint が無効時に null を返す**ので、ここで再度フラグを見ない
   // (見ると、条件が二重になって片方が死ぬ)。
@@ -127,6 +140,18 @@ function BiribaPageContent() {
   const isDiscardPhase = state?.phase === BiribaPhase.DISCARD;
   const isRoundEnd = state?.phase === BiribaPhase.ROUND_END;
   const isGameEnd = state?.phase === BiribaPhase.GAME_END || !!state?.gameEndFlag;
+  const [discardPileViewerOpen, setDiscardPileViewerOpen] = useState(false);
+  const previousPhaseRef = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    if (!state) return;
+    if (state.phase === BiribaPhase.DRAW && previousPhaseRef.current !== BiribaPhase.DRAW) {
+      setDiscardPileViewerOpen(true);
+    } else if (state.phase !== BiribaPhase.DRAW && previousPhaseRef.current === BiribaPhase.DRAW) {
+      setDiscardPileViewerOpen(false);
+    }
+    previousPhaseRef.current = state.phase;
+  }, [state]);
 
   // Biriba uses the Canasta discard-pile mechanism: two natural cards matching
   // the top card are required to take the pile.
@@ -335,7 +360,8 @@ function BiribaPageContent() {
                 <details
                   className="my-3 rounded bg-black/30 p-2"
                   data-testid="ca-discard-pile-viewer"
-                  open={isDrawPhase}
+                  open={discardPileViewerOpen}
+                  onToggle={(event) => setDiscardPileViewerOpen(event.currentTarget.open)}
                 >
                   <summary className="cursor-pointer select-none text-sm text-ds-text-muted">
                     {t('discardPileViewer', { count: state.discardPile.length })}
@@ -384,7 +410,7 @@ function BiribaPageContent() {
                       ))}
                       {p.red3s.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
-                          <span className="text-xs text-ds-error self-center mr-1">{t('red3s')}</span>
+                          <span className="text-xs text-ds-error-text self-center mr-1">{t('red3s')}</span>
                           {p.red3s.map((card, ri) => (
                             <AnimatedCard key={`red3-${pi}-${ri}`} card={card} width={cardWidth * 0.6} />
                           ))}
@@ -487,7 +513,7 @@ function BiribaPageContent() {
             )}
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ca-player-hand">
-                {sortedBiribaHand(humanPlayer.cards, sortMode).map(({ card, index: idx }) => (
+                {sortedHandForDisplay(humanPlayer.cards, sortMode).map(({ card, index: idx }) => (
                   <button
                     type="button"
                     key={`${card.design}-${card.value}-${idx}`}
@@ -553,14 +579,30 @@ function BiribaPageContent() {
               )}
               {isMeldPhase && isHumanTurn && (
                 <>
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    data-testid="biriba-meld-status"
+                    className="text-xs text-ds-text-muted"
+                  >
+                    {meldStatus.ok ? t('meldStatus.valid') : meldReason}
+                  </div>
                   <button
                     type="button"
                     className={btnPrimary}
-                    onClick={handleMeldSelected}
-                    disabled={loading || selectedCardIndices.length < 3}
+                    onClick={() => {
+                      if (!loading && meldStatus.ok) handleMeldSelected();
+                    }}
+                    aria-disabled={!meldStatus.ok}
+                    aria-describedby={meldReason ? 'biriba-meld-reason' : undefined}
                   >
                     {t('meldButton')}
                   </button>
+                  {meldReason && (
+                    <span id="biriba-meld-reason" className="sr-only">
+                      {meldReason}
+                    </span>
+                  )}
                   <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
                     {t('skipMeldButton')}
                   </button>

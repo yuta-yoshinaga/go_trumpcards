@@ -27,6 +27,7 @@ func makeSambaPlayers() []*domain.SambaPlayer {
 
 func setupSambaWebMock() *interfaces.MockSambaGame {
 	m := new(interfaces.MockSambaGame)
+	m.On("GetMinimumMeldValue", 0).Return(50)
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetDrawPileCount").Return(80)
 	m.On("GetDiscardPileCount").Return(0)
@@ -67,6 +68,7 @@ func TestSambaWebPresenter_Output(t *testing.T) {
 		require := assert.New(t)
 		require.NoError(json.Unmarshal([]byte(result), &resObj))
 		require.Equal(4, len(resObj.Players))
+		require.Equal(50, resObj.MinMeld)
 		require.False(resObj.GameEndFlag)
 		require.Equal(0, resObj.Phase)
 		require.Equal(80, resObj.DrawPileCount)
@@ -223,6 +225,15 @@ func TestSambaWebPresenter_Output(t *testing.T) {
 			assert.Equal(t, c.code, resObj.MessageCode)
 		}
 	})
+	t.Run("minimum meld reflects the 90 point band", func(t *testing.T) {
+		m, _ := setupSambaWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetMinimumMeldValue")
+		m.On("GetMinimumMeldValue", 0).Return(90)
+		var resObj controller.SambaWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &resObj))
+		assert.Equal(t, 90, resObj.MinMeld)
+	})
+
 }
 
 func TestSambaWebPresenter_ActionLogOutput(t *testing.T) {

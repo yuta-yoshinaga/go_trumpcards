@@ -1,9 +1,11 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { toepenApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, ToepenPlayer, ToepenResponse } from '../types/card';
+import { ToepenPhase } from '../types/phases';
+import { cardAlt } from '../utils/cardAlt';
 import { ToepenPage } from './ToepenPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -52,6 +54,7 @@ function makeState(overrides?: Partial<ToepenResponse>): ToepenResponse {
     leadPlayerIdx: 0,
     dealerIdx: 0,
     currentTrick: [],
+    currentTrickWinnerIdx: -1,
     leadSuit: -1,
     trickNumber: 0,
     handNumber: 1,
@@ -93,6 +96,28 @@ describe('ToepenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     const handButtons = screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'play');
     expect(handButtons).toHaveLength(3);
+    const cpuHand = screen.getByRole('img', { name: /CPU1 .*手札/ });
+    expect(cpuHand.querySelectorAll('img[src="/images/z01.png"]')).toHaveLength(3);
+    expect(within(cpuHand).queryByRole('img', { name: cardAlt(card('HEART', 11)) })).not.toBeInTheDocument();
+  });
+
+  it('reveals the CPU hands only after the game ends', async () => {
+    const cpuCards = [card('HEART', 12), card('DIAMOND', 13), card('SPADE', 1)];
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        phase: ToepenPhase.GAME_END,
+        gameEndFlag: true,
+        players: [human(), cpu(1, { cards: cpuCards, hidden: false }), cpu(2), cpu(3)],
+      }),
+    );
+    renderWithProviders(<ToepenPage />);
+
+    const cpuHand = await screen.findByRole('group', { name: 'CPU1 の手札（公開）' });
+    for (const revealedCard of cpuCards) {
+      expect(within(cpuHand).getByRole('img', { name: cardAlt(revealedCard) })).toBeInTheDocument();
+    }
+    expect(cpuHand.querySelectorAll('img[src^="/images/"]')).toHaveLength(3);
+    expect(cpuHand.querySelector('img[src="/images/z01.png"]')).not.toBeInTheDocument();
   });
 
   it('labels each trick card with its player and marks folded players in text', async () => {
@@ -112,6 +137,23 @@ describe('ToepenPage', () => {
     expect(trick).toHaveTextContent('CPU2');
     expect(trick).toHaveTextContent('[降参]');
     expect(trick.querySelectorAll('[data-testid="toepen-trick-card"]')).toHaveLength(2);
+  });
+
+  it('visually marks and announces the server-reported current trick winner', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        currentTrick: [
+          { playerIdx: 0, card: card('SPADE', 10) },
+          { playerIdx: 2, card: card('HEART', 11) },
+        ],
+        currentTrickWinnerIdx: 2,
+      }),
+    );
+    renderWithProviders(<ToepenPage />);
+    const cards = await screen.findAllByTestId('toepen-trick-card');
+    expect(cards[0]).toHaveAttribute('data-winning', 'false');
+    expect(cards[1]).toHaveAttribute('data-winning', 'true');
+    expect(cards[1].firstElementChild).toHaveAttribute('aria-label', expect.stringContaining('暫定勝ち札'));
   });
 
   it('only plays the cards the server marked legal', async () => {

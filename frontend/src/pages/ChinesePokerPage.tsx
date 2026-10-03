@@ -292,6 +292,11 @@ function ChinesePokerPageContent() {
           <span>
             {t('label.chips')}: {state.chips}
           </span>
+          {state.bet > 0 && (
+            <span data-testid="cp-current-bet">
+              {t('label.currentBet')}: {state.bet}
+            </span>
+          )}
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }
@@ -412,7 +417,7 @@ function ChinesePokerPageContent() {
               <div data-tutorial="cp-results">
                 {/* Player hands */}
                 <HandSection
-                  label={`${t('label.front')}`}
+                  label={`${t('label.player')}: ${t('label.front')}`}
                   cards={state.playerFront}
                   rankKey={FRONT_RANK_KEYS[state.playerFrontRank]}
                   result={state.frontResult}
@@ -421,7 +426,7 @@ function ChinesePokerPageContent() {
                   isPlayer
                 />
                 <HandSection
-                  label={`${t('label.middle')}`}
+                  label={`${t('label.player')}: ${t('label.middle')}`}
                   cards={state.playerMiddle}
                   rankKey={FIVE_CARD_RANK_KEYS[state.playerMiddleRank]}
                   result={state.middleResult}
@@ -430,7 +435,7 @@ function ChinesePokerPageContent() {
                   isPlayer
                 />
                 <HandSection
-                  label={`${t('label.back')}`}
+                  label={`${t('label.player')}: ${t('label.back')}`}
                   cards={state.playerBack}
                   rankKey={FIVE_CARD_RANK_KEYS[state.playerBackRank]}
                   result={state.backResult}
@@ -441,7 +446,7 @@ function ChinesePokerPageContent() {
 
                 {/* Dealer hands */}
                 <HandSection
-                  label={`${t('label.front')}`}
+                  label={`${t('label.dealer')}: ${t('label.front')}`}
                   cards={state.dealerFront}
                   rankKey={FRONT_RANK_KEYS[state.dealerFrontRank]}
                   result={state.frontResult}
@@ -450,7 +455,7 @@ function ChinesePokerPageContent() {
                   isPlayer={false}
                 />
                 <HandSection
-                  label={`${t('label.middle')}`}
+                  label={`${t('label.dealer')}: ${t('label.middle')}`}
                   cards={state.dealerMiddle}
                   rankKey={FIVE_CARD_RANK_KEYS[state.dealerMiddleRank]}
                   result={state.middleResult}
@@ -459,7 +464,7 @@ function ChinesePokerPageContent() {
                   isPlayer={false}
                 />
                 <HandSection
-                  label={`${t('label.back')}`}
+                  label={`${t('label.dealer')}: ${t('label.back')}`}
                   cards={state.dealerBack}
                   rankKey={FIVE_CARD_RANK_KEYS[state.dealerBackRank]}
                   result={state.backResult}
@@ -530,7 +535,7 @@ function ChinesePokerPageContent() {
                   describedBy={betInvalid ? 'cp-bet-error' : undefined}
                 />
                 {betInvalid && (
-                  <p id="cp-bet-error" role="alert" className="text-ds-error text-xs">
+                  <p id="cp-bet-error" role="alert" className="text-ds-error-text text-xs">
                     {t('betError')}
                   </p>
                 )}
@@ -593,17 +598,17 @@ function HandSection({
   isPlayer: boolean;
 }) {
   if (!cards || cards.length === 0) return null;
-  const colorClass = isPlayer ? 'text-ds-warning' : 'text-ds-error';
+  const colorClass = isPlayer ? 'text-ds-warning' : 'text-ds-error-text';
   const icon = isPlayer ? '🟡' : '🔴';
   const resultIcon = isPlayer ? (result > 0 ? '✅' : '❌') : result > 0 ? '❌' : '✅';
 
   return (
     <div className="mb-3">
-      <div className={`${colorClass} font-bold text-center text-sm mb-1`}>
+      <h2 className={`${colorClass} font-bold text-center text-sm mb-1`}>
         <span aria-hidden="true">{icon}</span> {label}
         {rankKey && <span className="ml-1 text-xs font-normal">({t(rankKey)})</span>}
         <span className="ml-1">{resultIcon}</span>
-      </div>
+      </h2>
       <div className="flex justify-center gap-1">
         {cards.map((card, i) => (
           <AnimatedCard

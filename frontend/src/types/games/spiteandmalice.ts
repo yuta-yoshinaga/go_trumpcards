@@ -36,6 +36,8 @@ export interface SpiteAndMaliceResponse extends BaseGameResponse {
   cpuDifficulty: number;
   /** True when the human can auto-complete at least one foundation move on their turn. */
   canAutoComplete: boolean;
+  /** Whether a previous human action can be undone. */
+  canUndo: boolean;
   hint?: SpiteAndMaliceHint;
 }
 

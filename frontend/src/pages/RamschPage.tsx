@@ -30,6 +30,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseRamschCommand, RAMSCH_HELP } from '../utils/cli/commands/ramschCommands';
 import { formatRamschState } from '../utils/cli/formatters/ramschFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Ramsch tutorial step definitions. */
@@ -201,6 +202,8 @@ function RamschPageContent() {
               players={state.players.map((p) => ({ id: p.id, isHuman: p.isHuman }))}
               cardWidth={cardWidth}
               label={t('currentTrick')}
+              winnerIdx={isTrickEnd ? state.trickWinnerIdx : undefined}
+              winnerLabel={t('trickWinnerBadge')}
               dataTutorial="sk-trick-display"
             />
 
@@ -238,7 +241,9 @@ function RamschPageContent() {
                     <th className="text-left">{t('player')}</th>
                     <th className="text-right">{t('tricks')}</th>
                     <th className="text-right">{t('cardPoints')}</th>
+                    {isRoundEnd && <th className="text-right">{t('roundScore')}</th>}
                     <th className="text-right">{t('total')}</th>
+                    {isRoundEnd && <th className="text-right">{t('cumulativeChange')}</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -258,14 +263,24 @@ function RamschPageContent() {
                             だけを見ると、実際には複数人が失点したラウンドが画面上
                             「誰も負けていない」ように見える。**失点した本人の点で判定する。** */}
                         {isRoundEnd && !state.durchmarsch && p.roundScore < 0 && (
-                          <span className="ml-1 text-ds-error" data-testid={`ramsch-loser-${p.id}`}>
+                          <span className="ml-1 text-ds-error-text" data-testid={`ramsch-loser-${p.id}`}>
                             ({t('loserBadge')})
                           </span>
                         )}
                       </td>
                       <td className="text-right">{p.trickCount}</td>
                       <td className="text-right">{p.cardPoints}</td>
+                      {isRoundEnd && (
+                        <td className="text-right" data-testid={`ramsch-round-score-${p.id}`}>
+                          {p.roundScore}
+                        </td>
+                      )}
                       <td className="text-right">{p.cumulativeScore}</td>
+                      {isRoundEnd && (
+                        <td className="text-right" data-testid={`ramsch-cumulative-change-${p.id}`}>
+                          {formatSignedDelta(p.roundScore)}
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

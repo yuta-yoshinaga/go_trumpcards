@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 )
 
@@ -56,6 +57,7 @@ type LingerLonger struct {
 	actionLogBase
 
 	currentTrick     []*TrickCard
+	lastTrick        []*TrickCard
 	currentPlayerIdx int
 	leadPlayerIdx    int
 	trickNumber      int
@@ -113,6 +115,7 @@ func (l *LingerLonger) Reset() {
 	}
 	l.phase = LingerLongerPhasePlay
 	l.currentTrick = nil
+	l.lastTrick = nil
 	l.trickNumber = 0
 	l.eliminatedCnt = 0
 	l.lastDrawIdx = -1
@@ -222,7 +225,7 @@ func (l *LingerLonger) play(playerIdx, cardIndex int) error {
 	if playerIdx != l.currentPlayerIdx {
 		return ErrNotHumanTurn
 	}
-	if !lingerLongerContains(l.GetValidPlayIndices(playerIdx), cardIndex) {
+	if !slices.Contains(l.GetValidPlayIndices(playerIdx), cardIndex) {
 		if cardIndex < 0 || cardIndex >= l.players[playerIdx].GetCardsSize() {
 			return NewDomainErrorCode(ErrInvalidCard, "lingerlonger.errCardIndexOutOfRange", nil)
 		}
@@ -273,6 +276,7 @@ func (l *LingerLonger) resolveTrick() {
 	}
 	l.players[winner].AddTrickWon()
 	l.addLog(winner, "trick", "lingerlonger.log.trick", nil, cards)
+	l.lastTrick = append([]*TrickCard(nil), l.currentTrick...)
 	l.discarded += len(cards)
 	l.currentTrick = nil
 	l.trickNumber++
@@ -333,16 +337,6 @@ func (l *LingerLonger) trickWinner() int {
 		}
 	}
 	return best.PlayerIdx
-}
-
-// lingerLongerContains は xs が v を含むかを返す。
-func lingerLongerContains(xs []int, v int) bool {
-	for _, x := range xs {
-		if x == v {
-			return true
-		}
-	}
-	return false
 }
 
 // 勝因。**このゲームの主題は「持ちこたえる」ことなので、勝因を取り違えると
@@ -541,6 +535,9 @@ func (l *LingerLonger) GetStockSize() int {
 // GetCurrentTrick は現在のトリックを返す。
 func (l *LingerLonger) GetCurrentTrick() []*TrickCard { return l.currentTrick }
 
+// GetLastTrick は直近に解決したトリックを返す。
+func (l *LingerLonger) GetLastTrick() []*TrickCard { return l.lastTrick }
+
 // GetCurrentPlayerIdx は現在の手番を返す。
 func (l *LingerLonger) GetCurrentPlayerIdx() int { return l.currentPlayerIdx }
 
@@ -580,6 +577,7 @@ type lingerLongerJSON struct {
 	Config           LingerLongerConfig    `json:"cf"`
 	Phase            LingerLongerPhase     `json:"ph"`
 	CurrentTrick     []*TrickCard          `json:"ct"`
+	LastTrick        []*TrickCard          `json:"lt"`
 	CurrentPlayerIdx int                   `json:"ci"`
 	LeadPlayerIdx    int                   `json:"li"`
 	TrickNumber      int                   `json:"tn"`
@@ -599,7 +597,7 @@ type lingerLongerJSON struct {
 func (l *LingerLonger) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&lingerLongerJSON{
 		TrumpCards: l.trumpCards, Players: l.players, Config: l.config, Phase: l.phase,
-		CurrentTrick: l.currentTrick, CurrentPlayerIdx: l.currentPlayerIdx,
+		CurrentTrick: l.currentTrick, LastTrick: l.lastTrick, CurrentPlayerIdx: l.currentPlayerIdx,
 		LeadPlayerIdx: l.leadPlayerIdx, TrickNumber: l.trickNumber,
 		EliminatedCnt: l.eliminatedCnt, Discarded: l.discarded, LastDrawIdx: l.lastDrawIdx,
 		GameEndFlag: l.gameEndFlag, WinnerIdx: l.winnerIdx, WinReason: l.winReason,
@@ -669,10 +667,18 @@ func (l *LingerLonger) UnmarshalJSON(data []byte) error {
 	if len(j.CurrentTrick) > j.Config.PlayerCnt {
 		return fmt.Errorf("current trick holds %d cards", len(j.CurrentTrick))
 	}
+	if len(j.LastTrick) > j.Config.PlayerCnt {
+		return fmt.Errorf("last trick holds %d cards", len(j.LastTrick))
+	}
 	// **枚数だけでなく中身も見る (#5310 の再発防止)。**
 	for _, tc := range j.CurrentTrick {
 		if tc == nil || tc.Card == nil || tc.PlayerIdx < 0 || tc.PlayerIdx >= j.Config.PlayerCnt {
 			return errors.New("invalid current trick entry")
+		}
+	}
+	for _, tc := range j.LastTrick {
+		if tc == nil || tc.Card == nil || tc.PlayerIdx < 0 || tc.PlayerIdx >= j.Config.PlayerCnt {
+			return errors.New("invalid last trick entry")
 		}
 	}
 	if len(j.ActionLog) > lingerLongerMaxSliceLen {
@@ -732,6 +738,7 @@ func (l *LingerLonger) UnmarshalJSON(data []byte) error {
 	l.trumpCards = j.TrumpCards
 	l.players, l.config, l.phase = j.Players, j.Config, j.Phase
 	l.currentTrick, l.currentPlayerIdx = j.CurrentTrick, j.CurrentPlayerIdx
+	l.lastTrick = j.LastTrick
 	l.leadPlayerIdx, l.trickNumber = j.LeadPlayerIdx, j.TrickNumber
 	l.eliminatedCnt, l.lastDrawIdx = j.EliminatedCnt, j.LastDrawIdx
 	l.discarded = j.Discarded

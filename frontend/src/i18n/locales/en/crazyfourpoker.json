@@ -51,5 +51,12 @@
   "frontendHint.crazyFourPokerFold": "not even king high — folding is the better play",
   "label.queensUpPayouts": "Queens Up payouts",
   "label.superBonusPayouts": "Super Bonus payouts",
-  "label.payoutOdds": "{{n}}:1"
+  "label.payoutOdds": "{{n}}:1",
+  "wagerSummary.title": "Planned wager",
+  "wagerSummary.ante": "Ante: {{amount}}",
+  "wagerSummary.superBonus": "Required Super Bonus: {{amount}}",
+  "wagerSummary.optional": "Optional Queens Up: {{amount}}",
+  "wagerSummary.required": "Required total: {{amount}}",
+  "wagerSummary.total": "Total: {{amount}}",
+  "wagerSummary.playChoice": "Additional play bet: {{playBet}} · Total wager: {{total}}"
 }

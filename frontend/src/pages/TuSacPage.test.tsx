@@ -84,6 +84,24 @@ beforeEach(() => {
 });
 
 describe('TuSacPage', () => {
+  it('現在手番の席にだけ手番ラベルを表示する', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        seats: [
+          seat({ isTurn: false }),
+          seat({ name: 'CPU1', isHuman: false, cards: [], handCount: 20, isTurn: true }),
+        ],
+        turnSeat: 1,
+        isHumanTurn: false,
+      }),
+    );
+    renderWithProviders(<TuSacPage />);
+
+    await screen.findByTestId('tusac-seat-1');
+    expect(screen.getByTestId('tusac-seat-1')).toHaveTextContent('手番中');
+    expect(screen.getByTestId('tusac-seat-0')).not.toHaveTextContent('手番中');
+  });
+
   // **5 枚の卒を揃える価値は、狙う前に知りたい** (#5784)。点数はサーバの
   // meldPointsByKind から出す。
   it('組み合わせの点数早見表を出す', async () => {
@@ -236,11 +254,19 @@ describe('TuSacPage', () => {
 
     fireEvent.click(screen.getByTestId('tusac-card-1'));
     expect(live).toHaveTextContent('1');
+    expect(live).toHaveTextContent('車');
+    expect(screen.getByTestId('tusac-card-1')).toHaveAttribute('aria-pressed', 'true');
     fireEvent.click(screen.getByTestId('tusac-card-3'));
     expect(live).toHaveTextContent('2');
+    expect(live.textContent).toContain('、');
+    expect(screen.getByTestId('tusac-card-3')).toHaveAttribute('aria-pressed', 'true');
     // 解除でも更新される。
     fireEvent.click(screen.getByTestId('tusac-card-3'));
     expect(live).toHaveTextContent('1');
+    expect(screen.getByTestId('tusac-card-3')).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(screen.getByTestId('tusac-card-1'));
+    expect(live).toHaveTextContent('選択を解除しました');
+    expect(screen.getByTestId('tusac-card-1')).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('選んだ位置をそのまま送る', async () => {
@@ -286,7 +312,21 @@ describe('TuSacPage', () => {
     expect(screen.getByTestId('tusac-card-0')).toHaveAttribute('aria-pressed', 'true');
     fireEvent.click(screen.getByTestId('tusac-card-0'));
     expect(screen.getByTestId('tusac-card-0')).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.queryByTestId('tusac-selected')).not.toBeInTheDocument();
+    expect(screen.getByTestId('tusac-selected')).toHaveTextContent('選択を解除しました');
+  });
+
+  it('メルドで選択を消した後は読み上げを空にする', async () => {
+    mockApi.mockResolvedValue(withState({ phase: TuSacPhase.DISCARD }));
+    renderWithProviders(<TuSacPage />);
+    await waitFor(() => expect(screen.getByTestId('tusac-card-0')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('tusac-card-0'));
+    fireEvent.click(screen.getByTestId('tusac-card-1'));
+    fireEvent.click(screen.getByTestId('tusac-card-2'));
+    expect(screen.getByTestId('tusac-selected')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('tusac-meld'));
+    await waitFor(() => expect(screen.getByRole('status')).toBeEmptyDOMElement());
   });
 
   it('ラウンドと山の残りを出す', async () => {

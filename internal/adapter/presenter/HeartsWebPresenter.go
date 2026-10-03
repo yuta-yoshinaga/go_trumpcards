@@ -52,6 +52,7 @@ func (p *HeartsWebPresenter) buildBase(h interfaces.HeartsGame) *controller.Hear
 	}
 
 	resObj.CurrentTrick = trickCardsToOutput(h.GetCurrentTrick())
+	resObj.TrickPoints = h.CurrentTrickPoints()
 	resObj.Players = p.buildPlayersOutput(h)
 	return resObj
 }

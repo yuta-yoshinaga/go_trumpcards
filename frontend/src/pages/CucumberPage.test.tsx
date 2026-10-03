@@ -65,6 +65,33 @@ describe('CucumberPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('announces every human turn response and clears the announcement at game end', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeState())
+      .mockResolvedValueOnce(makeState())
+      .mockResolvedValueOnce(makeState({ trickNumber: 3 }))
+      .mockResolvedValueOnce(makeState({ phase: 2, gameEndFlag: true }));
+    renderWithProviders(<CucumberPage />);
+
+    const announcement = await screen.findByTestId('cu-turn-announcement');
+    expect(announcement).toBeEmptyDOMElement();
+
+    fireEvent.click((await screen.findAllByRole('button', { name: /を出す/ }))[1]);
+    await waitFor(() => expect(screen.getByTestId('cu-turn-announcement')).toHaveTextContent('あなたの番です'));
+
+    const previousAnnouncement = screen.getByTestId('cu-turn-announcement');
+    fireEvent.click((await screen.findAllByRole('button', { name: /を出す/ }))[1]);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(screen.getByTestId('cu-turn-announcement')).toHaveTextContent('あなたの番です'));
+    const repeatedAnnouncement = screen.getByTestId('cu-turn-announcement');
+    expect(repeatedAnnouncement).not.toBe(previousAnnouncement);
+
+    fireEvent.click(screen.getByRole('button', { name: '投了' }));
+    await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('giveup'));
+    await waitFor(() => expect(screen.getByTestId('cu-turn-announcement')).toBeEmptyDOMElement());
+    expect(mockExec).toHaveBeenCalledTimes(4);
+  });
+
   // **スート無関係・失点は最終トリックだけ、が規則そのもの。**
   // **失点が出るのは最終トリックだけ** (#5768)。あと何回で失点判定かが
   // ヘッダーから読めなければ、番号だけ出しても意味がない。
@@ -128,6 +155,19 @@ describe('CucumberPage', () => {
     const s0 = await screen.findByTestId('cu-seat-0');
     expect(s0).toHaveTextContent('手札7枚');
     expect(s0).toHaveTextContent('失点12点');
+  });
+
+  it('shows penalty points remaining to the target and marks reached seats', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [seat(0, { penalty: 12 }), seat(1, { penalty: 30 }), seat(2, { penalty: 35 }), seat(3)],
+      }),
+    );
+    renderWithProviders(<CucumberPage />);
+
+    expect(await screen.findByTestId('cu-seat-0')).toHaveTextContent('目標まで残り18点');
+    expect(screen.getByTestId('cu-seat-1')).toHaveTextContent('目標到達');
+    expect(screen.getByTestId('cu-seat-2')).toHaveTextContent('目標到達');
   });
 
   // **CPU 同士の手番中、誰が考えているのかが画面のどこにも無かった。**

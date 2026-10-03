@@ -58,7 +58,8 @@
   "target": "目標: {{points}}点",
   "roundResult": {
     "title": "ディール結果（獲得ポイント）",
-    "line": "{{name}}: {{points}}点"
+    "line": "{{name}}: {{points}}点（トリック {{tricks}}点 / キングボーナス {{kingBonus}}点）",
+    "winnerAnnouncement": "{{name}}がこのディールで{{points}}点を獲得しました"
   },
   "hintAvailable": "ヒント",
   "hint": {

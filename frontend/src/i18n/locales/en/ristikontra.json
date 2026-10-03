@@ -6,7 +6,7 @@
   "captured": "captured {{count}}",
   "finalScore": "{{score}} cards",
   "provisional": "Provisional {{score}} cards",
-  "provisionalNote": "The provisional score includes only locked-in Pişti bonuses and the most-cards +3. Card points (A, J, 2♣, 10♦) are not yet counted, so final scores will be higher.",
+  "provisionalNote": "The provisional score is the total number of cards captured by each team.",
   "pile": "Pile",
   "pileTop": "Pile top",
   "pileCount": "{{count}} cards",
@@ -38,7 +38,9 @@
     "resetButton": "Use this button to reset the game at any time."
   },
   "playCardAria": "Play {{card}}",
-  "captureHint": "can capture the pile",
+  "captureHint": "can capture the current pile",
+  "counterHint": "can steal the bundle taken by the previous capture",
+  "counterAndCaptureHint": "can steal the bundle taken by the previous capture and capture the current pile",
   "frontendHint": {
     "ristikontraCounter": "You hold the rank that just captured — playing it now steals the whole bundle",
     "ristikontraCapture": "Matches the top card — you take the pile",

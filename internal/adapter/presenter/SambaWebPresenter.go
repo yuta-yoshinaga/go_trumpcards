@@ -14,6 +14,7 @@ type SambaWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *SambaWebPresenter) Output(g interfaces.SambaGame, lastErr error) string {
 	resObj := new(controller.SambaWebOutput)
+	resObj.MinMeld = g.GetMinimumMeldValue(0)
 	resObj.Phase = int(g.GetPhase())
 	resObj.RoundNumber = g.GetRoundNumber()
 	resObj.CurrentPlayerIdx = g.GetCurrentPlayerIdx()

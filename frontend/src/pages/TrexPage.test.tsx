@@ -1,6 +1,7 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { trexApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, TrexPlayer, TrexResponse } from '../types/card';
@@ -161,6 +162,43 @@ describe('TrexPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, 2));
   });
 
+  it('describes unavailable hand cards and leaves playable cards without that description', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: TrexPhase.PLAY, contract: TrexContract.QUEENS, validIndices: [2] }));
+    renderWithProviders(<TrexPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const handButtons = screen.getAllByRole('button').filter((button) => button.dataset.hintAction === 'play');
+    expect(handButtons[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(handButtons[0]).toHaveAccessibleDescription('この札は現在の合法手ではありません');
+    const cardName = handButtons[0].querySelector('img')?.getAttribute('alt');
+    expect(cardName).toBeTruthy();
+    expect(screen.getByRole('button', { name: cardName ?? '' })).toBe(handButtons[0]);
+    expect(handButtons[0]).not.toHaveAccessibleName(`${cardName} この札は現在の合法手ではありません`);
+    expect(handButtons[2]).toHaveAttribute('aria-disabled', 'false');
+    expect(handButtons[2]).not.toHaveAttribute('aria-describedby');
+
+    mockExec.mockClear();
+    fireEvent.click(handButtons[0]);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('explains when hand cards cannot be played during contract selection or another seat turn', async () => {
+    renderWithProviders(<TrexPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    let handButtons = screen.getAllByRole('button').filter((button) => button.dataset.hintAction === 'play');
+    expect(handButtons[0]).toHaveAccessibleDescription('契約を選んでいる間は手札を出せません');
+
+    cleanup();
+    mockExec.mockResolvedValue(
+      makeState({ phase: TrexPhase.PLAY, currentPlayerIdx: 2, contract: TrexContract.QUEENS, validIndices: [0] }),
+    );
+    renderWithProviders(<TrexPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(2));
+    handButtons = screen.getAllByRole('button').filter((button) => button.dataset.hintAction === 'play');
+    expect(handButtons[0]).toHaveAccessibleDescription('あなたの手番ではありません');
+  });
+
   it('shows the four runs during the dominoes and the trick otherwise', async () => {
     mockExec.mockResolvedValue(
       makeState({
@@ -240,6 +278,21 @@ describe('TrexPage', () => {
       mockExec.mockResolvedValue(withTrick(TrexContract.KING_OF_HEARTS));
       renderWithProviders(<TrexPage />);
       await waitFor(() => expect(screen.getAllByTestId('trex-penalty-card')).toHaveLength(1));
+      expect(screen.getByAltText('♥ K、失点 -75 点')).toBeInTheDocument();
+      expect(screen.getByAltText('♦ 5')).toBeInTheDocument();
+    });
+
+    it('announces penalty points in English', async () => {
+      await i18n.changeLanguage('en');
+      try {
+        mockExec.mockResolvedValue(withTrick(TrexContract.KING_OF_HEARTS));
+        renderWithProviders(<TrexPage />);
+        await waitFor(() => expect(screen.getAllByTestId('trex-penalty-card')).toHaveLength(1));
+        expect(screen.getByAltText('♥ K, penalty -75 points')).toBeInTheDocument();
+        expect(screen.getByAltText('♦ 5')).toBeInTheDocument();
+      } finally {
+        await i18n.changeLanguage('ja');
+      }
     });
 
     // **クイーンはスートを問わない。**♥Q だけ見ると 3 枚見落とす。
@@ -294,6 +347,7 @@ describe('TrexPage', () => {
       const penaltyCard = screen.getByTestId('trex-hand-penalty-card');
       expect(penaltyCard.className).toContain('ring-2 ring-ds-error');
       expect(penaltyCard).toHaveAttribute('title', '失点札（-75点）');
+      expect(penaltyCard).toHaveAccessibleDescription('この札は現在の合法手ではありません 失点札（-75点）');
       expect(penaltyCard.getAttribute('title')).not.toContain('penaltyCardWithPoints');
       expect(screen.queryByText(/penaltyCardWithPoints/)).not.toBeInTheDocument();
     });

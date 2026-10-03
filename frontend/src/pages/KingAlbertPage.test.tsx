@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { kingAlbertApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, KingAlbertResponse, KingAlbertTableauCard } from '../types/card';
@@ -80,6 +81,35 @@ describe('KingAlbertPage', () => {
     expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
   });
 
+  it('announces move count changes but not the initial count', async () => {
+    mockExec.mockResolvedValue({ ...playingState, canUndo: true });
+    renderWithProviders(<KingAlbertPage />);
+    const liveRegion = await screen.findByTestId('ka-move-count-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toHaveClass('sr-only');
+    expect(liveRegion).toBeEmptyDOMElement();
+    mockExec.mockResolvedValue({ ...playingState, moveCount: 4, canUndo: true });
+    fireEvent.click(screen.getByRole('button', { name: '元に戻す' }));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('手数: 4'));
+  });
+
+  it('renders the announcement in the current language', async () => {
+    mockExec.mockResolvedValue({ ...playingState, canUndo: true });
+    renderWithProviders(<KingAlbertPage />);
+    const liveRegion = await screen.findByTestId('ka-move-count-live');
+    mockExec.mockResolvedValue({ ...playingState, moveCount: 5, canUndo: true });
+    fireEvent.click(screen.getByRole('button', { name: '元に戻す' }));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('手数: 5'));
+
+    try {
+      await i18n.changeLanguage('en');
+      expect(liveRegion).toHaveTextContent('Moves: 5');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('renders 4 foundation suits', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<KingAlbertPage />);
@@ -106,6 +136,14 @@ describe('KingAlbertPage', () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<KingAlbertPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '♦ 7（リザーブ枠 0）' })).toBeInTheDocument());
+  });
+
+  it('includes zero-based tableau column and position in each card accessible name', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<KingAlbertPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ K、列0・位置0' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♥ 5、列0・位置1' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♣ 6、列1・位置0' })).toBeInTheDocument();
   });
 
   it('includes the card name and slot number in reserve card accessible names', async () => {
@@ -212,15 +250,17 @@ describe('KingAlbertPage', () => {
     expect(document.querySelectorAll('[data-target-candidate]')).toHaveLength(0);
 
     // ♥5 (列0の最上段) を選ぶ。置けるのは ♣6 (交互の色で1つ上) と空き列だけ。
-    fireEvent.click(screen.getByRole('button', { name: '♥ 5' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: '♣ 6' })).toHaveAttribute('data-target-candidate'));
+    fireEvent.click(screen.getByRole('button', { name: '♥ 5、列0・位置1' }));
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '♣ 6、列1・位置0' })).toHaveAttribute('data-target-candidate'),
+    );
 
     // ♥5 は組札 (♥A の上) には置けない ── 2 でないので。
     for (const f of screen.getAllByLabelText(/組札/)) {
       expect(f).not.toHaveAttribute('data-target-candidate');
     }
     // 自分の下の札も、自分自身の列も候補ではない。
-    expect(screen.getByRole('button', { name: '♠ K' })).not.toHaveAttribute('data-target-candidate');
+    expect(screen.getByRole('button', { name: '♠ K、列0・位置0' })).not.toHaveAttribute('data-target-candidate');
     // 空き列 7 本 + ♣6 = 8 箇所ちょうど。
     expect(document.querySelectorAll('[data-target-candidate]')).toHaveLength(8);
   });

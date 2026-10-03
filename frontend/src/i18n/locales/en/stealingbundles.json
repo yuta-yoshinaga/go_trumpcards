@@ -12,6 +12,10 @@
     "table": "Table",
     "tableEmpty": "(empty)",
     "bundle": "bundle {{n}}",
+    "bundleGap_one": "{{count}} card behind",
+    "bundleGap_other": "{{count}} cards behind",
+    "lead": "Leader",
+    "tiedLead": "Tied for lead",
     "bundleTop": "top",
     "bundleEmpty": "none",
     "cards": "{{n}} cards",
@@ -38,7 +42,8 @@
     "availableActions": "Available actions with {{card}}: {{actions}}.",
     "noActions": "No actions are available",
     "deselected": "Card selection cleared.",
-    "turnEnded": "Your turn has ended."
+    "turnEnded": "Your turn has ended.",
+    "turnYou": "Your turn."
   },
   "result": {
     "you": "You win! You collected the most with {{n}} cards.",

@@ -23,6 +23,7 @@
   "bidEntrar": "Entrar",
   "bidSolo": "Solo",
   "bidPass": "Pass",
+  "bidMustExceedWinningBid": "The bid must exceed the current winning bid.",
   "bidPhase": "Bidding — first choose your bid (entrar / solo / pass), then pick a trump suit.",
   "chooseTrump": "Trump",
   "chooseBidType": "Choose bid",
@@ -66,7 +67,9 @@
   "roundResult": {
     "title": "Deal Result",
     "outcome": "Outcome: {{outcome}}",
-    "ombre": "Ombre: {{name}}"
+    "ombre": "Ombre: {{name}}",
+    "scoreChanges": "Score changes this deal",
+    "scoreChange": "{{name}}: {{delta}}"
   },
   "requestHint": "Show hint",
   "hintMessage": "Suggested: {{cards}} — {{reason}}",

@@ -29,6 +29,9 @@ func setupBiribaWebMock() *interfaces.MockBiribaGame {
 	m.On("GetDiscardTop").Return((*domain.Card)(nil))
 	m.On("GetDiscardPile").Return(([]*domain.Card)(nil))
 	m.On("GetGameEndFlag").Return(false)
+	m.On("GetMinimumMeldValue", 0).Return(50)
+	m.On("GetDrewFromDiscard").Return(false)
+	m.On("GetDrawnCard").Return((*domain.Card)(nil))
 	m.On("GetPhase").Return(domain.BiribaPhaseDraw)
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetWinnerIdx").Return(-1)
@@ -39,8 +42,8 @@ func setupBiribaWebMock() *interfaces.MockBiribaGame {
 
 func makeBiribaPlayers() []*domain.BiribaPlayer {
 	return []*domain.BiribaPlayer{
-		domain.NewBiribaPlayer(true),
-		domain.NewBiribaPlayer(false),
+		domain.NewCanastaPlayer(true),
+		domain.NewCanastaPlayer(false),
 	}
 }
 

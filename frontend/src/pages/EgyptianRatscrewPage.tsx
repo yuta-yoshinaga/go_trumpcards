@@ -76,6 +76,7 @@ function EgyptianRatscrewPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('egyptianratscrew');
   const [stepAnnounce, setStepAnnounce] = useState('');
+  const [clockNow, setClockNow] = useState(() => Date.now());
   const {
     state,
     loading,
@@ -118,6 +119,35 @@ function EgyptianRatscrewPageContent() {
     label: '',
   });
   const [slapAnnounce, setSlapAnnounce] = useState('');
+  const [slappableAnnounce, setSlappableAnnounce] = useState('');
+  const prevSlappableRef = useRef<boolean | undefined>(undefined);
+  useEffect(() => {
+    if (!state) {
+      prevSlappableRef.current = undefined;
+      setSlappableAnnounce('');
+      return;
+    }
+    const previous = prevSlappableRef.current;
+    prevSlappableRef.current = state.isSlappable;
+    if (previous === undefined || previous === state.isSlappable) return;
+    // The slap outcome region describes the result when the pile changes as
+    // part of a slap. Avoid announcing the same transition twice.
+    if (
+      state.lastEventKind === EgyptianRatscrewEventKind.SLAP_CORRECT ||
+      state.lastEventKind === EgyptianRatscrewEventKind.SLAP_WRONG ||
+      state.lastEventKind === EgyptianRatscrewEventKind.CHANCE_WIN
+    )
+      return;
+    if (!state.isSlappable) {
+      setSlappableAnnounce(t('egyptianratscrew.slappableEnded'));
+      return;
+    }
+    const reason =
+      state.slappableReason === EgyptianRatscrewSlapReason.SANDWICH
+        ? t('egyptianratscrew.slapReason.sandwich')
+        : t('egyptianratscrew.slapReason.pair');
+    setSlappableAnnounce(t('egyptianratscrew.slappableStarted', { reason }));
+  }, [state, t]);
   const prevSlapEventRef = useRef<{ kind: number; player: number }>({ kind: -1, player: -1 });
   useEffect(() => {
     if (!state) {
@@ -192,6 +222,14 @@ function EgyptianRatscrewPageContent() {
     return () => window.clearInterval(id);
   }, [isGameRunning, isCpuPending, execApi]);
 
+  const isChanceActive = (state?.chanceRemaining ?? 0) > 0;
+  useEffect(() => {
+    if (!isChanceActive) return;
+    setClockNow(Date.now());
+    const id = window.setInterval(() => setClockNow(Date.now()), 250);
+    return () => window.clearInterval(id);
+  }, [isChanceActive]);
+
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('egyptianratscrew');
   const cliConfig: CliGameConfig<EgyptianRatscrewResponse, EgyptianRatscrewArgs> = useMemo(
@@ -249,6 +287,7 @@ function EgyptianRatscrewPageContent() {
         ? t('phase.chance')
         : t('phase.play');
   const lastEvent = state.lastEventKind;
+  const chanceSeconds = Math.max(0, Math.ceil((state.pendingDeadlineMs - clockNow) / 1000));
 
   return (
     <GamePageShell
@@ -271,7 +310,7 @@ function EgyptianRatscrewPageContent() {
         <>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             {error && (
-              <button type="button" onClick={retry} className="text-ds-error underline">
+              <button type="button" onClick={retry} className="text-ds-error-text underline">
                 {error}
               </button>
             )}
@@ -337,6 +376,15 @@ function EgyptianRatscrewPageContent() {
               >
                 {stepAnnounce}
               </div>
+              <div
+                className="sr-only"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+                data-testid="er-slappable-announce"
+              >
+                {slappableAnnounce}
+              </div>
               <div className="text-center">
                 <div className="text-sm text-ds-text-primary font-semibold">
                   {t('label.pileCount', { count: state.centerPileSize })}
@@ -360,6 +408,7 @@ function EgyptianRatscrewPageContent() {
                       {t('chanceResponder', {
                         player: state.isHumanTurn ? tc('player.you') : tc('player.cpu', { id: state.currentTurnIdx }),
                       })}
+                      {chanceSeconds > 0 && <> — {t('chanceTimeRemaining', { seconds: chanceSeconds })}</>}
                     </div>
                   </div>
                 )}
@@ -378,12 +427,12 @@ function EgyptianRatscrewPageContent() {
                     {t('egyptianratscrew.slappable')}
                   </div>
                 )}
-                {state.isSlappable && state.lastSlapReason !== EgyptianRatscrewSlapReason.NONE && (
+                {state.isSlappable && state.slappableReason !== EgyptianRatscrewSlapReason.NONE && (
                   <div
                     data-testid="er-slap-reason"
                     className={`mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${badgeWarningColors}`}
                   >
-                    {state.lastSlapReason === EgyptianRatscrewSlapReason.PAIR
+                    {state.slappableReason === EgyptianRatscrewSlapReason.PAIR
                       ? `👯 ${t('egyptianratscrew.slapReason.pair')}`
                       : `🥪 ${t('egyptianratscrew.slapReason.sandwich')}`}
                   </div>

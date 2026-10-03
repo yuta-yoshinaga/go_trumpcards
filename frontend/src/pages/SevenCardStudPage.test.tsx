@@ -175,6 +175,14 @@ beforeEach(() => {
 });
 
 describe('SevenCardStudPage', () => {
+  it('keeps the Chicago result live region mounted before showdown', async () => {
+    vi.mocked(chicagoApi.exec).mockResolvedValueOnce({ ...thirdStreetState, isChicago: true } as SevenCardStudResponse);
+    renderWithProviders(<ChicagoPage />);
+    const liveRegion = await screen.findByTestId('studchicago-live-region');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SevenCardStudPage />);
@@ -378,10 +386,65 @@ describe('SevenCardStudPage', () => {
   it('shows call/raise buttons when canAct and has outstanding bet', async () => {
     mockExec.mockResolvedValue(thirdStreetWithBetState);
     renderWithProviders(<SevenCardStudPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
+  });
+
+  it('shows the chips needed to call on the call button', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetWithBetState,
+      players: [humanPlayer({ currentBet: 10 }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+    });
+    renderWithProviders(<SevenCardStudPage />);
+    const callButton = await screen.findByRole('button', { name: /^コール(?:\s|$)/ });
+    expect(callButton).toHaveTextContent('コール (30)');
+  });
+
+  it('caps the displayed call amount at the human player chips', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetWithBetState,
+      players: [humanPlayer({ chips: 20 }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+    });
+    renderWithProviders(<SevenCardStudPage />);
+    const callButton = await screen.findByRole('button', { name: /^コール(?:\s|$)/ });
+    expect(callButton).toHaveTextContent('コール (20)');
+  });
+
+  it('shows pot odds based on the call amount and resulting pot', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetWithBetState,
+      players: [humanPlayer({ currentBet: 10 }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+    });
+    renderWithProviders(<SevenCardStudPage />);
+    expect(await screen.findByText('必要ポットオッズ: 50.0%')).toBeInTheDocument();
+  });
+
+  it('shows pot odds for another game sharing this page', async () => {
+    vi.mocked(chicagoApi.exec).mockResolvedValue({
+      ...thirdStreetWithBetState,
+      isChicago: true,
+    } as SevenCardStudResponse);
+    renderWithProviders(<ChicagoPage />);
+    expect(await screen.findByText('必要ポットオッズ: 57.1%')).toBeInTheDocument();
+  });
+
+  it('does not show pot odds when there is nothing to call or calling is unavailable', async () => {
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument());
+    expect(screen.queryByText(/必要ポットオッズ/)).not.toBeInTheDocument();
+  });
+
+  it('does not show pot odds for a zero call amount', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetWithBetState,
+      players: [humanPlayer({ chips: 0 }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+    });
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール/ })).toBeInTheDocument());
+    expect(screen.queryByText(/必要ポットオッズ/)).not.toBeInTheDocument();
   });
 
   it('hides betting controls when not active phase', async () => {

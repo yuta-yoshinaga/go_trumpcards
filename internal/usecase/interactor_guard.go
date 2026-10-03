@@ -58,6 +58,20 @@ func advanceRound[G roundAdvancer](game G, p outputPresenter[G], runCpu func()) 
 	return p.Output(game, nil)
 }
 
+// humanAction runs one human move: bail out when the human cannot act,
+// present a rejected move without letting the CPUs play, otherwise let the
+// CPUs respond and present.
+func humanAction[G playableGame](game G, p outputPresenter[G], act func() error, runCpu func()) string {
+	if out, blocked := guardNotPlayable(game, p); blocked {
+		return out
+	}
+	if err := act(); err != nil {
+		return p.Output(game, err)
+	}
+	runCpu()
+	return p.Output(game, nil)
+}
+
 // MaxCpuIterations は CPU ターンを回すループの反復上限。
 //
 // **ドメインが局を終わらせないと、上限の無いループは戻らない。** CLI ならプロンプトが

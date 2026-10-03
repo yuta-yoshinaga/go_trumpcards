@@ -20,9 +20,6 @@ export const CPU_DIFFICULTY_OPTIONS = [
   { value: 2, label: 'Hard' },
 ] as const;
 
-/** Available target deal-count options (match length; highest cumulative score wins). */
-export const TARGET_DEALS_OPTIONS = [3, 5, 7] as const;
-
 /**
  * Hook that manages Scarto (スカルト) game state and its player actions: perform
  * the dealer's scarto (bury three low pip cards), play a card, and trick/round
@@ -44,6 +41,7 @@ export function useScartoGame() {
 
   /** Resets the game, applying the current config. */
   const reset = useCallback(() => {
+    if (!Number.isInteger(config.targetDeals) || config.targetDeals < 1 || config.targetDeals > 100) return;
     void exec('reset', { config });
   }, [exec, config]);
 

@@ -34,14 +34,15 @@ type PageOneWebOutputPlayer struct {
 
 // PageOneWebOutput ページワンWebアウトプット
 type PageOneWebOutput struct {
-	Players          []*PageOneWebOutputPlayer `json:"players"`
-	Phase            int                       `json:"phase"`
-	RoundNumber      int                       `json:"roundNumber"`
-	CurrentPlayerIdx int                       `json:"currentPlayerIdx"`
-	DiscardTop       *WebOutputCard            `json:"discardTop"`
-	DrawPileCount    int                       `json:"drawPileCount"`
-	GameEndFlag      bool                      `json:"gameEndFlag"`
-	WinnerIdx        int                       `json:"winnerIdx"`
+	RoundHistory     []domain.PageOneRoundScore `json:"roundHistory"`
+	Players          []*PageOneWebOutputPlayer  `json:"players"`
+	Phase            int                        `json:"phase"`
+	RoundNumber      int                        `json:"roundNumber"`
+	CurrentPlayerIdx int                        `json:"currentPlayerIdx"`
+	DiscardTop       *WebOutputCard             `json:"discardTop"`
+	DrawPileCount    int                        `json:"drawPileCount"`
+	GameEndFlag      bool                       `json:"gameEndFlag"`
+	WinnerIdx        int                        `json:"winnerIdx"`
 	WebOutputBase
 	Config PageOneWebOutputConfig `json:"config"`
 }

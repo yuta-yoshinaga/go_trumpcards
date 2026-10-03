@@ -31,6 +31,7 @@ import { parseSetteEMezzoCommand, SETTEMEZZO_HELP } from '../utils/cli/commands/
 import { formatSetteEMezzoState } from '../utils/cli/formatters/settemezzoFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 
 const BET_OPTIONS = [10, 50, 100, 500];
 
@@ -167,6 +168,9 @@ function SetteEMezzoPageContent() {
           <span className="text-sm text-ds-text-muted">
             {t('chips')}: {state.chips}
           </span>
+          <span className="text-sm text-ds-text-muted" data-testid="settemezzo-draw-pile-count">
+            {t('drawPileCount')}: {state.drawPileCount}
+          </span>
           <span className="text-sm text-ds-text-muted">
             {t('banker')}: {bankerName}
           </span>
@@ -226,9 +230,9 @@ function SetteEMezzoPageContent() {
                       <div className="text-game-text-muted text-xs mt-1">
                         {t('bet')}: {seat.hand.bet}
                         {ended && seat.hand.payout !== 0 && (
-                          <span className={seat.hand.payout > 0 ? ' text-ds-success' : ' text-ds-error'}>
+                          <span className={seat.hand.payout > 0 ? ' text-ds-success' : ' text-ds-error-text'}>
                             {' '}
-                            {seat.hand.payout > 0 ? `+${seat.hand.payout}` : seat.hand.payout}
+                            {formatSignedDelta(seat.hand.payout)}
                           </span>
                         )}
                       </div>
@@ -246,6 +250,7 @@ function SetteEMezzoPageContent() {
 
             <ActionLogSection
               isEndPhase={ended}
+              availableDuringPlay
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}

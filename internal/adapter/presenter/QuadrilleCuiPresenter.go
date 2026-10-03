@@ -135,6 +135,18 @@ func (p *QuadrilleCuiPresenter) Output(g interfaces.QuadrilleGame, lastErr error
 		switch g.GetPhase() {
 		case domain.QuadrillePhaseBid:
 			bidderIdx := g.GetCurrentBidderIdx()
+			bids, acted := g.GetBids(), g.GetBidActed()
+			for i := 0; i < g.GetPlayerCnt(); i++ {
+				label := i18n.T("quadrille.bidNotDeclared")
+				if acted[i] {
+					if bids[i] == domain.QuadrilleBidNone {
+						label = i18n.T("quadrille.bidPass")
+					} else {
+						label = quadrilleBidLabel(bids[i])
+					}
+				}
+				b.WriteString(i18n.Tf("quadrille.auctionSeat", "name", cuiPlayerName(g.GetPlayer(i), i), "bid", label) + "\n")
+			}
 			b.WriteString(i18n.Tf("quadrille.promptBid",
 				"bid", quadrilleBidLabel(g.GetHighestBid()),
 				"name", cuiPlayerName(g.GetPlayer(bidderIdx), bidderIdx)) + "\n")

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 )
 
@@ -447,7 +448,7 @@ func (g *TeenDoPaanch) play(playerIdx, cardIndex int) error {
 	if cardIndex < 0 || cardIndex >= p.GetCardsSize() {
 		return fmt.Errorf("invalid card index: %d", cardIndex)
 	}
-	if !teenDoPaanchContains(g.GetValidPlayIndices(playerIdx), cardIndex) {
+	if !slices.Contains(g.GetValidPlayIndices(playerIdx), cardIndex) {
 		return errors.New("must follow the led suit")
 	}
 
@@ -622,16 +623,6 @@ func (g *TeenDoPaanch) GetHint() *TeenDoPaanchHint {
 		reason = "teendopaanchWinTrick"
 	}
 	return &TeenDoPaanchHint{CardIndex: &idx, Reason: reason}
-}
-
-// teenDoPaanchContains は xs が v を含むかを返す。
-func teenDoPaanchContains(xs []int, v int) bool {
-	for _, x := range xs {
-		if x == v {
-			return true
-		}
-	}
-	return false
 }
 
 // addLog は棋譜に 1 行足す。

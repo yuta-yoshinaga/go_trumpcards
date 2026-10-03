@@ -82,6 +82,9 @@ func (ci *CallBreakInteractor) Play(cardIndex int) string {
 	if err != nil {
 		return ci.sp.Output(ci.Game, err)
 	}
+	if ci.Game.GetPhase() == domain.CallBreakPhaseTrickEnd {
+		ci.Game.ResolveTrick()
+	}
 	ci.runCpuTurns()
 	return ci.sp.Output(ci.Game, nil)
 }
@@ -96,12 +99,7 @@ func (ci *CallBreakInteractor) NextTrick() string {
 // NextRound ラウンドをスコアリングして次のラウンドへ進む
 func (ci *CallBreakInteractor) NextRound() string {
 	ci.Game.ScoreRound()
-	if out, blocked := guardGameEnd(ci.Game, ci.sp); blocked {
-		return out
-	}
-	ci.Game.NextRound()
-	ci.runCpuBids()
-	return ci.sp.Output(ci.Game, nil)
+	return advanceRound(ci.Game, ci.sp, ci.runCpuBids)
 }
 
 // GetConfig 現在の設定を取得

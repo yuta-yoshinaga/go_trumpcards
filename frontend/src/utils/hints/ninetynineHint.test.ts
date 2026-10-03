@@ -78,6 +78,7 @@ function makeState(overrides: Partial<NinetyNineResponse> = {}): NinetyNineRespo
     dealerIdx: 2,
     trumpSuit: 1,
     currentTrick: [],
+    validPlayIndices: [],
     gameEndFlag: false,
     winnerIdx: -1,
     leadPlayerIdx: 0,

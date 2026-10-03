@@ -53,7 +53,8 @@ func (m *MockRamschGame) GetMiddlehandIdx() int { return m.Called().Int(0) }
 func (m *MockRamschGame) GetRearhandIdx() int   { return m.Called().Int(0) }
 func (m *MockRamschGame) GetDealerIdx() int     { return m.Called().Int(0) }
 
-func (m *MockRamschGame) GetLeadPlayerIdx() int { return m.Called().Int(0) }
+func (m *MockRamschGame) GetLeadPlayerIdx() int  { return m.Called().Int(0) }
+func (m *MockRamschGame) GetTrickWinnerIdx() int { return m.Called().Int(0) }
 
 func (m *MockRamschGame) GetPlayerCnt() int { return m.Called().Int(0) }
 func (m *MockRamschGame) GetPlayer(i int) *domain.RamschPlayer {

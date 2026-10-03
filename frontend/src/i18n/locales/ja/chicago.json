@@ -1,4 +1,6 @@
 {
+  "callAmount": "({{amount}})",
+  "callPotOdds": "必要ポットオッズ: {{percent}}%",
   "phase": {
     "thirdStreet": "サードストリート",
     "fourthStreet": "フォースストリート",

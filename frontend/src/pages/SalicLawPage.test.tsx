@@ -93,6 +93,44 @@ describe('SalicLawPage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
+  it('announces legal destinations and describes candidates after selecting a source, then clears on deselection', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('HEART', 8)], ...playingState.foundation.slice(1)],
+    });
+    renderWithProviders(<SalicLawPage />);
+    const source = await screen.findByRole('button', { name: /♠ 9/ });
+    fireEvent.click(source);
+
+    const live = screen.getByTestId('sl-destination-live');
+    expect(live).toHaveTextContent('選択した札の合法な移動先は 2 か所です: 組札0、列2');
+    const bareKing = screen.getByTestId('sl-bare-king-2');
+    expect(document.getElementById(bareKing.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
+      '移動先の候補です',
+    );
+    const unopenedFoundation = screen.getByRole('button', { name: /空の組札3/ });
+    expect(document.getElementById(unopenedFoundation.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
+      '移動先の候補ではありません',
+    );
+
+    fireEvent.click(source);
+    expect(live).toHaveTextContent('');
+  });
+
+  it('announces when a selected card has no legal destinations', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([
+        [card('SPADE', 13), card('SPADE', 9)],
+        [card('HEART', 13), card('CLOVER', 2)],
+        [card('DIAMOND', 13), card('DIAMOND', 5)],
+      ]),
+    });
+    renderWithProviders(<SalicLawPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /♠ 9/ }));
+    expect(screen.getByTestId('sl-destination-live')).toHaveTextContent('選択した札に合法な移動先はありません');
+  });
+
   it('calls reset on initial render', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<SalicLawPage />);
@@ -296,13 +334,16 @@ describe('SalicLawPage', () => {
     await waitFor(() => expect(ace).toHaveAttribute('aria-pressed', 'true'));
     const foundation = screen.getByRole('button', { name: /空の組札1/ });
     expect(foundation).not.toHaveAttribute('aria-disabled');
-    expect(foundation).not.toHaveAttribute('aria-describedby');
+    expect(document.getElementById(foundation.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
+      '移動先の候補です',
+    );
     mockExec.mockClear();
 
     fireEvent.click(foundation);
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 1 }, { zone: 'foundation', col: 1 }),
     );
+    expect(screen.getByTestId('sl-destination-live')).toHaveTextContent('');
   });
 
   it('disables the stock once it runs out', async () => {

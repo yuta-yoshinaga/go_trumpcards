@@ -344,6 +344,9 @@ func TestConquian_Discard_IndexOutOfRange(t *testing.T) {
 
 func TestConquian_GoOutWins(t *testing.T) {
 	g := newTestConquian()
+	cfg := domain.DefaultConquianConfig()
+	cfg.TargetWins = 2
+	g.SetConfig(cfg)
 	g.Reset()
 	// Hand of exactly one meld of 3 → melding empties the hand → win.
 	cqSetHand(g.GetPlayer(0),
@@ -355,10 +358,28 @@ func TestConquian_GoOutWins(t *testing.T) {
 	g.SetPhase(domain.ConquianPhaseMeld)
 	require.NoError(t, g.PlayerMeld([][]int{{0, 1, 2}}))
 	assert.Equal(t, 0, g.GetPlayer(0).GetCardsSize())
-	// TargetWins default = 1 → match ends.
-	assert.True(t, g.GetGameEndFlag())
-	assert.Equal(t, 0, g.GetWinnerIdx())
-	assert.Equal(t, domain.ConquianPhaseGameEnd, g.GetPhase())
+	assert.False(t, g.GetGameEndFlag())
+	assert.Equal(t, domain.ConquianPhaseRoundEnd, g.GetPhase())
+	assert.Equal(t, []int{0}, g.GetRoundHistory())
+	g.NextRound()
+	assert.Equal(t, []int{0}, g.GetRoundHistory())
+}
+
+func TestConquian_RoundHistoryDrawResetAndJSON(t *testing.T) {
+	g := newTestConquian()
+	g.Reset()
+	g.SetStock(nil)
+	require.NoError(t, g.PlayerDrawFromStock())
+	assert.Equal(t, []int{-1}, g.GetRoundHistory())
+
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var restored domain.Conquian
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Equal(t, []int{-1}, restored.GetRoundHistory())
+
+	g.Reset()
+	assert.Empty(t, g.GetRoundHistory())
 }
 
 func TestConquian_Meld_ExtendExistingMeld(t *testing.T) {

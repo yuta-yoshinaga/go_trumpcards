@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pochApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { CardDesign, PochPlayer, PochResponse } from '../types/card';
@@ -93,6 +94,23 @@ describe('PochPage', () => {
     expect(screen.getByText(/宣言ではなく同ランクの組の比べ合い/)).toBeInTheDocument();
   });
 
+  it('labels the turn-up suit as the pay suit visually and accessibly', async () => {
+    renderWithProviders(<PochPage />);
+    const paySuit = await screen.findByRole('group', { name: '支払い対象スート: スペード' });
+    expect(paySuit).toHaveTextContent('支払い対象スート: スペード');
+  });
+
+  it('localizes the pay suit label and suit name in English', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<PochPage />);
+      const paySuit = await screen.findByRole('group', { name: 'Pay suit: Spades' });
+      expect(paySuit).toHaveTextContent('Pay suit: Spades');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   // **9 区画すべてが出ていないと、持ち越しがどこに乗っているか読めない。**
   it('shows all nine pools with their chips', async () => {
     renderWithProviders(<PochPage />);
@@ -132,6 +150,48 @@ describe('PochPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 2 }));
     await waitFor(() => expect(screen.getAllByTestId('poch-pool')[0]).toHaveTextContent('6'));
     expect(screen.getByTestId('poch-pool-live')).toBeEmptyDOMElement();
+  });
+
+  it('does not announce the human turn when an action rejects and a reset succeeds', async () => {
+    renderWithProviders(<PochPage />);
+    await screen.findAllByTestId('poch-pool');
+
+    mockExec.mockRejectedValueOnce(new Error('request failed'));
+    fireEvent.click(screen.getByRole('button', { name: '賭ける' }));
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+
+    mockExec.mockResolvedValueOnce(makeState({ currentPlayerIdx: 0 }));
+    fireEvent.change(screen.getByLabelText('CPU難易度'), { target: { value: '2' } });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 2 }));
+    await waitFor(() => expect(screen.getAllByTestId('poch-pool')[0]).toBeInTheDocument());
+    expect(screen.getByTestId('poch-pool-live').textContent).not.toContain('あなたの番です');
+  });
+
+  it('announces the human turn after human actions, clears repeats while pending, and skips game end', async () => {
+    mockExec.mockResolvedValueOnce(makeState());
+    renderWithProviders(<PochPage />);
+    await screen.findAllByTestId('poch-pool');
+    expect(screen.getByTestId('poch-pool-live')).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValueOnce(makeState({ currentPlayerIdx: 0 }));
+    fireEvent.click(screen.getByRole('button', { name: '賭ける' }));
+    await waitFor(() => expect(screen.getByTestId('poch-pool-live')).toHaveTextContent('あなたの番です'));
+
+    let resolveAction!: (state: PochResponse) => void;
+    mockExec.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveAction = resolve;
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: '賭ける' }));
+    expect(screen.getByTestId('poch-pool-live').textContent).not.toContain('あなたの番です');
+    resolveAction(makeState({ currentPlayerIdx: 0 }));
+    await waitFor(() => expect(screen.getByTestId('poch-pool-live')).toHaveTextContent('あなたの番です'));
+
+    mockExec.mockResolvedValueOnce(makeState({ phase: PochPhase.GAME_END, gameEndFlag: true }));
+    fireEvent.click(screen.getByRole('button', { name: '賭ける' }));
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('終了'));
+    expect(screen.getByTestId('poch-pool-live').textContent).not.toContain('あなたの番です');
   });
 
   // 第 1 段階は自動で解決するので、結果を出さないと何が起きたのか読めない。

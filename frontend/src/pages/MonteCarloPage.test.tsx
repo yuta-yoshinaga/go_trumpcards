@@ -131,12 +131,17 @@ describe('MonteCarloPage', () => {
     });
     renderWithProviders(<MonteCarloPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const announcement = screen.getByTestId('mc-pair-announcement');
+    expect(announcement).toHaveAttribute('role', 'status');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toBeEmptyDOMElement();
     fireEvent.click(screen.getByTestId('mc-cell-0-0'));
     fireEvent.click(screen.getByTestId('mc-cell-0-1'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('remove', 0, 0, 0, 1));
     expect(screen.queryByTestId('mc-pair-toast')).not.toBeInTheDocument();
     await act(async () => resolveRemove(playingState));
-    expect(screen.getByTestId('mc-pair-toast')).toBeInTheDocument();
+    expect(screen.getByTestId('mc-pair-toast')).toHaveAttribute('aria-hidden', 'true');
+    expect(announcement).toHaveTextContent('ペアを除去しました！');
   });
 
   it('does not show the removal toast when the server rejects the pair', async () => {
@@ -148,6 +153,7 @@ describe('MonteCarloPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('remove', 0, 0, 0, 1));
     await flushPendingDispatch();
     expect(screen.queryByTestId('mc-pair-toast')).not.toBeInTheDocument();
+    expect(screen.getByTestId('mc-pair-announcement')).toBeEmptyDOMElement();
   });
 
   it('does not show the removal toast when the selected pair is locally invalid', async () => {
@@ -290,13 +296,14 @@ describe('MonteCarloPage', () => {
     renderWithProviders(<MonteCarloPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
-    expect(screen.getByTestId('mc-cell-0-1')).toHaveAttribute('aria-label', '♥ 7');
-    expect(screen.getByTestId('mc-cell-2-2')).toHaveAttribute('aria-label', '♣ 5');
+    expect(screen.getByTestId('mc-cell-0-1')).toHaveAttribute('aria-label', '♥ 7 (行0、列1)');
+    expect(screen.getByTestId('mc-cell-2-2')).toHaveAttribute('aria-label', '♣ 5 (行2、列2)');
+    expect(screen.getByTestId('mc-cell-4-4')).toHaveAttribute('aria-label', '空 (行4、列4)');
 
     fireEvent.click(screen.getByTestId('mc-cell-0-0'));
 
-    expect(screen.getByTestId('mc-cell-0-1')).toHaveAttribute('aria-label', '♥ 7 (一致候補)');
-    expect(screen.getByTestId('mc-cell-2-2')).toHaveAttribute('aria-label', '♣ 5 (対象外)');
+    expect(screen.getByTestId('mc-cell-0-1')).toHaveAttribute('aria-label', '♥ 7 (一致候補) (行0、列1)');
+    expect(screen.getByTestId('mc-cell-2-2')).toHaveAttribute('aria-label', '♣ 5 (対象外) (行2、列2)');
     expect(screen.getByTestId('mc-cell-2-2')).toBeDisabled();
   });
 
@@ -368,10 +375,13 @@ describe('MonteCarloPage', () => {
         await Promise.resolve();
       });
       expect(screen.getByTestId('mc-pair-toast')).toBeInTheDocument();
+      expect(screen.getByTestId('mc-pair-announcement')).toHaveTextContent('ペアを除去しました！');
       act(() => {
         vi.advanceTimersByTime(1000);
       });
       expect(screen.queryByTestId('mc-pair-toast')).not.toBeInTheDocument();
+      // The live region empties with the toast so the next removal is announced again.
+      expect(screen.getByTestId('mc-pair-announcement')).toBeEmptyDOMElement();
     } finally {
       vi.useRealTimers();
     }

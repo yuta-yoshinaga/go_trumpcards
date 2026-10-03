@@ -8,6 +8,8 @@
   "stock": "ストック",
   "waste": "山札（めくり）",
   "foundation": "組札",
+  "foundationAriaLabel": "組札 {{col}}",
+  "foundationTopAriaLabel": "組札 {{col}}: {{card}}",
   "tableau": "場札",
   "stockCount": "ストック残り: {{count}}",
   "stockDrawAriaLabel": "ストックをめくる、残り{{count}}枚",
@@ -26,6 +28,7 @@
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
   "playing": "プレイ中",
+  "stalemateGuidance": "手詰まりです。元に戻すか、新しいゲームを始めてください。",
   "noHint": "ヒントはありません",
   "hintAvailable": "ヒントがあります",
   "tutorial": {

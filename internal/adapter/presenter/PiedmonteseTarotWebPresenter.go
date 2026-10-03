@@ -71,6 +71,12 @@ func (p *PiedmonteseTarotWebPresenter) buildBase(g interfaces.PiedmonteseTarotGa
 	resObj.LeadPlayerIdx = g.GetLeadPlayerIdx()
 	resObj.DealerIdx = g.GetDealerIdx()
 	resObj.ScartoCount = g.GetScartoCount()
+	resObj.ScartoCards = make([]*controller.WebOutputCard, 0)
+	if g.GetPhase() == domain.PiedmonteseTarotPhaseRoundEnd || g.GetPhase() == domain.PiedmonteseTarotPhaseGameEnd {
+		for _, c := range g.GetScarto() {
+			resObj.ScartoCards = append(resObj.ScartoCards, cardToOutputWithFace(c, piedmonteseTarotFace))
+		}
+	}
 	resObj.TalonSize = g.TalonSize()
 	resObj.Outcome = int(g.GetOutcome())
 	resObj.Result = int(g.GetResult())
@@ -92,6 +98,18 @@ func (p *PiedmonteseTarotWebPresenter) buildBase(g interfaces.PiedmonteseTarotGa
 	}
 
 	resObj.CurrentTrick = trickCardsToOutputWithFace(g.GetCurrentTrick(), piedmonteseTarotFace)
+	resObj.CompletedTricks = make([]*controller.PiedmonteseTarotWebOutputCompletedTrick, 0, len(g.GetCompletedTricks()))
+	for _, ct := range g.GetCompletedTricks() {
+		if ct == nil {
+			continue
+		}
+		resObj.CompletedTricks = append(resObj.CompletedTricks, &controller.PiedmonteseTarotWebOutputCompletedTrick{
+			TrickNumber:   ct.TrickNumber,
+			LeadPlayerIdx: ct.LeadPlayer,
+			WinnerIdx:     ct.Winner,
+			Cards:         trickCardsToOutputWithFace(ct.Cards, piedmonteseTarotFace),
+		})
+	}
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }

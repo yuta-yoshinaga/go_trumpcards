@@ -67,6 +67,10 @@
   "scoresRound": "ラウンド",
   "scoresTotal": "累計",
   "scoresRole": "役割",
+  "contractResult": "必要点: {{required}} / 実得点: {{actual}} / {{result}}{{multiplier}}",
+  "contractMade": "達成",
+  "contractMissed": "未達",
+  "contractNoTrumpMultiplier": "ノートランプ: 得点2倍",
   "bidButton": "ビッド",
   "bidSelectLabel": "ビッド数を選択",
   "passButton": "パス",
@@ -80,6 +84,7 @@
   "trumpAndFriendPhase": "切り札とパートナーカードを選択してください",
   "kittyExchangePhase": "場札を手札に加えました。3枚を捨ててください",
   "kittyLabel": "場札",
+  "discardedCards": "伏せた捨て札",
   "playPhase": {
     "lead": "リードしてください",
     "follow": "カードを出してください"

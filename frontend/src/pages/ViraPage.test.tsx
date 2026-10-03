@@ -1,6 +1,7 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { viraApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeViraState } from '../test/stateFactories';
@@ -110,6 +111,29 @@ describe('ViraPage', () => {
     expect(screen.getByTestId('bid-2')).toBeInTheDocument();
     expect(screen.getByTestId('bid-3')).toBeInTheDocument();
     expect(screen.getByTestId('bid-4')).toBeInTheDocument();
+  });
+
+  it('explains Vira bid buttons, targets, ranking, and declarer roles in the tutorial', async () => {
+    localStorage.clear();
+    renderWithProviders(<ViraPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'チュートリアル' }));
+    const tutorial = await screen.findByRole('dialog');
+    fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    const actions = within(tutorial).getByRole('status');
+    expect(actions).toHaveTextContent(
+      'パス／ガスク（7トリック）／ソロ（8トリック）／ミゼール（0トリック・切り札なし）／ヴィーラ（10トリック）',
+    );
+    expect(actions).toHaveTextContent('パス＜ガスク＜ソロ＜ミゼール＜ヴィーラ');
+    expect(actions).toHaveTextContent('宣言者となり、残り2人のディフェンダーと対戦');
+    await i18n.changeLanguage('en');
+    expect(actions).toHaveTextContent(
+      'Pass / Gask (7 tricks) / Solo (8 tricks) / Misère (0 tricks, no trump) / Vira (10 tricks)',
+    );
+    expect(actions).toHaveTextContent('Pass < Gask < Solo < Misère < Vira');
+    expect(actions).toHaveTextContent('becomes the declarer and plays against the other two defenders');
+    await i18n.changeLanguage('ja');
   });
 
   it('dispatches a bid when a bid button is clicked', async () => {
@@ -277,7 +301,7 @@ describe('ViraPage', () => {
     expect(readout).toHaveTextContent('2 / 10');
     expect(readout).toHaveTextContent('あと8トリック必要');
     expect(readout).toHaveTextContent('失敗確定');
-    expect(readout).toHaveClass('text-ds-error');
+    expect(readout).toHaveClass('text-ds-error-text');
   });
 
   it('does not apply trick targets to Pass', async () => {
@@ -297,7 +321,7 @@ describe('ViraPage', () => {
     expect(readout).toHaveTextContent('目標0');
     expect(readout).toHaveTextContent('残り5トリック');
     expect(readout).toHaveTextContent('失敗確定');
-    expect(readout).toHaveClass('text-ds-error');
+    expect(readout).toHaveClass('text-ds-error-text');
   });
 
   it('does not show contract progress before a declarer is decided', async () => {
@@ -416,6 +440,30 @@ describe('ViraPage', () => {
 });
 
 describe('ViraPage pot settlement', () => {
+  it('shows the declarer, contract, and made result in settlement', async () => {
+    mockExec.mockResolvedValue(
+      makeViraState({ phase: 3, declarerIdx: 1, contract: 1, lastRoundMade: true, lastRoundPotWon: 7, pot: 0 }),
+    );
+    renderWithProviders(<ViraPage />);
+
+    expect(await screen.findByTestId('vira-contract-settlement')).toHaveTextContent('CPU 1');
+    expect(screen.getByTestId('vira-contract-settlement')).toHaveTextContent('ガスク');
+    expect(screen.getByTestId('vira-contract-settlement')).toHaveTextContent('達成');
+  });
+
+  it('shows contract failure in settlement', async () => {
+    mockExec.mockResolvedValue(makeViraState({ phase: 3, declarerIdx: 1, contract: 3, lastRoundMade: false, pot: 12 }));
+    renderWithProviders(<ViraPage />);
+    expect(await screen.findByTestId('vira-contract-settlement')).toHaveTextContent('失敗');
+  });
+
+  it('omits contract settlement after an all-pass round', async () => {
+    mockExec.mockResolvedValue(makeViraState({ phase: 3, declarerIdx: -1, contract: 0, lastRoundMade: false, pot: 3 }));
+    renderWithProviders(<ViraPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('vira-contract-settlement')).not.toBeInTheDocument();
+  });
+
   it('says the declarer swept the pot when the contract was made', async () => {
     mockExec.mockResolvedValue(makeViraState({ phase: 3, lastRoundMade: true, lastRoundPotWon: 7, pot: 0 }));
     renderWithProviders(<ViraPage />);

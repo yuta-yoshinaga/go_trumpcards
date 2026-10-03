@@ -21,6 +21,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_POINTS_OPTIONS, useSedmaGame } from '../hooks/useSedmaGame';
+import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -176,6 +177,11 @@ function SedmaPageContent() {
         </span>
         <span className="sr-only">{teamName}: </span>
         {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
+        {state.dealerIdx === p.id && (
+          <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${badgeInfoColors}`} data-testid="sedma-dealer-badge">
+            {t('dealerBadge')}
+          </span>
+        )}
       </div>
     );
   };
@@ -264,8 +270,16 @@ function SedmaPageContent() {
                   role="status"
                   aria-live="polite"
                 >
-                  <div>{t('teamScore', { team: t('team.a'), score: state.teamScores[0] ?? 0 })}</div>
-                  <div>{t('teamScore', { team: t('team.b'), score: state.teamScores[1] ?? 0 })}</div>
+                  {[0, 1].map((team) => {
+                    const score = state.teamScores[team] ?? 0;
+                    const remaining = state.config.targetPoints - score;
+                    return (
+                      <div key={team}>
+                        {t('teamScore', { team: team === 0 ? t('team.a') : t('team.b'), score })}
+                        {remaining > 0 && t('remainingPoints', { count: remaining })}
+                      </div>
+                    );
+                  })}
                   <div className="mt-1">
                     {t('yourTeam')}: {humanTeam === 0 ? t('team.a') : t('team.b')}
                   </div>

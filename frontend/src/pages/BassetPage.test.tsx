@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bassetApi } from '../api/games/basset';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card } from '../types/common';
@@ -80,6 +81,39 @@ describe('BassetPage', () => {
     expect(screen.getByText('ターン: 0/25')).toBeInTheDocument();
     expect(screen.getByText('残り: 52')).toBeInTheDocument();
     expect(screen.getByText('賭けなし')).toBeInTheDocument();
+  });
+
+  it('shows remaining cards by rank and refreshes the counts after a deal', async () => {
+    const initialCounts: number[] = Array.from({ length: 14 }, (_, i) => (i === 0 ? 0 : 4));
+    const updatedCounts = [...initialCounts];
+    updatedCounts[3] = 3;
+    mockExec
+      .mockResolvedValueOnce(makeState({ remainingByRank: initialCounts }))
+      .mockResolvedValueOnce(makeState({ phase: 2, remaining: 50, remainingByRank: updatedCounts }));
+    renderWithProviders(<BassetPage />);
+    await screen.findByText('賭けなし');
+    expect(screen.getByText('ランク別の残り札')).toBeInTheDocument();
+    expect(screen.getByText('A: 4')).toBeInTheDocument();
+    expect(screen.getByText('3: 4')).toBeInTheDocument();
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    expect(screen.getByText('Cards remaining by rank')).toBeInTheDocument();
+    expect(screen.getByText('3: 4')).toBeInTheDocument();
+    await i18n.changeLanguage(previousLanguage);
+    fireEvent.click(screen.getByRole('button', { name: '2枚めくる' }));
+    expect(await screen.findByText('3: 3')).toBeInTheDocument();
+  });
+
+  it('gives the bet amount input a translated accessible name', async () => {
+    const previousLanguage = i18n.language;
+    renderWithProviders(<BassetPage />);
+    try {
+      expect(await screen.findByRole('spinbutton', { name: '賭け金' })).toBeInTheDocument();
+      await i18n.changeLanguage('en');
+      expect(screen.getByRole('spinbutton', { name: 'Bet amount' })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('shows the reset button and waits for confirmation before resetting', async () => {

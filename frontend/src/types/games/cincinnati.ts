@@ -30,6 +30,8 @@ export interface CincinnatiSeat {
   name: string;
   isHuman: boolean;
   chips: number;
+  /** Net stack change since the ante was posted at hand start. */
+  netChange: number;
   bet: number;
   /**
    * The five hole cards.

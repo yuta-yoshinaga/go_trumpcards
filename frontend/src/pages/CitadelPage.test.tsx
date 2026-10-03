@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { citadelApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, CitadelResponse, CitadelTableauCard } from '../types/card';
@@ -117,15 +118,22 @@ describe('CitadelPage', () => {
     }
   });
 
-  it('gives each empty tableau column a distinct column-numbered aria-label', async () => {
+  it('labels empty tableau columns with the matching 0-based board number in Japanese and English', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<CitadelPage />);
-    // Columns 3 and 8 (1-based) are empty and each reads distinctly, unlike the
-    // previous shared "empty" text.
-    await waitFor(() => expect(screen.getByRole('button', { name: '空のタブロー列 3' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '空のタブロー列 8' })).toBeInTheDocument();
-    // The two filled columns (1, 2) are not rendered as empty-column buttons.
-    expect(screen.queryByRole('button', { name: '空のタブロー列 1' })).not.toBeInTheDocument();
+    // Columns 2 and 3 are empty; columns 0 and 1 are filled.
+    await waitFor(() => expect(screen.getByRole('button', { name: '空のタブロー列 2' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '空のタブロー列 3' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '空のタブロー列 0' })).not.toBeInTheDocument();
+
+    try {
+      await i18n.changeLanguage('en');
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Empty tableau column 2' })).toBeInTheDocument());
+      expect(screen.getByRole('button', { name: 'Empty tableau column 3' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Empty tableau column 0' })).not.toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('renders giveup button when playing', async () => {
@@ -451,7 +459,10 @@ describe('CitadelPage selection status announcement', () => {
 
     // ♠2 can go to ♠ foundation (top ♠1) and tableau cols 1 (♥3) and 2 (♦3) -> 3 legal destinations
     fireEvent.click(screen.getByRole('button', { name: '♠ 2' }));
-    await waitFor(() => expect(status).toHaveTextContent('選択中のカードを置ける場所が3箇所あります'));
+    await waitFor(() => expect(status).toHaveTextContent('♠ 2を列0から選択しました。置ける場所が3箇所あります'));
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ 2' }));
+    await waitFor(() => expect(status).toBeEmptyDOMElement());
   });
 
   it('announces no legal moves when selecting a card with zero destinations', async () => {
@@ -465,6 +476,24 @@ describe('CitadelPage selection status announcement', () => {
 
     // ♣9 has no legal destinations on foundations or non-empty tableau columns
     fireEvent.click(screen.getByRole('button', { name: '♣ 9' }));
-    await waitFor(() => expect(status).toHaveTextContent('選択中のカードを置ける場所はありません'));
+    await waitFor(() => expect(status).toHaveTextContent('♣ 9を列3から選択しました。置ける場所はありません'));
+  });
+
+  it('announces the selected card and 0-based source column in English', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(mixedBoardState);
+      renderWithProviders(<CitadelPage />);
+      await waitFor(() => expect(screen.getByText(/Citadel/)).toBeInTheDocument());
+
+      fireEvent.click(screen.getByRole('button', { name: '♠ 2' }));
+      await waitFor(() =>
+        expect(screen.getByTestId('bc-selection-status')).toHaveTextContent(
+          '♠ 2 selected from column 0 has 3 legal destinations',
+        ),
+      );
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 });

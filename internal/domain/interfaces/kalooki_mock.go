@@ -52,3 +52,6 @@ func (m *MockKalookiGame) GetActionLog() []*domain.ActionLogEntry {
 	return m.Called().Get(0).([]*domain.ActionLogEntry)
 }
 func (m *MockKalookiGame) GetRoundWinnerIdx() int { return m.Called().Int(0) }
+func (m *MockKalookiGame) GetRoundScoreHistory() [][]int {
+	return m.Called().Get(0).([][]int)
+}

@@ -308,6 +308,22 @@ describe('IndianPokerPage', () => {
     await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
   });
 
+  it('marks all non-folded winners cards and excludes folded result rows', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [humanPlayer({ card: { design: 'HEART', value: 7 } }), cpuPlayer(1), cpuPlayer(2, { folded: true })],
+      roundResults: [
+        { playerIdx: 0, card: { design: 'HEART', value: 7 }, cardRank: 10, wonAmount: 100 },
+        { playerIdx: 1, card: { design: 'SPADE', value: 10 }, cardRank: 10, wonAmount: 100 },
+        { playerIdx: 2, card: { design: 'DIAMOND', value: 10 }, cardRank: 10, wonAmount: 100 },
+      ],
+    });
+    renderWithProviders(<IndianPokerPage />);
+    await waitFor(() => expect(screen.getAllByRole('img', { name: '勝者のカード' })).toHaveLength(2));
+    expect(screen.getByAltText('あなたのカード: ♥ 7')).toBeInTheDocument();
+    expect(screen.getByAltText('CPU 1のカード: ♠ 10')).toBeInTheDocument();
+  });
+
   it('does not show round results when not in showdown', async () => {
     mockExec.mockResolvedValue(bettingState);
     renderWithProviders(<IndianPokerPage />);
@@ -425,7 +441,7 @@ describe('IndianPokerPage', () => {
   it('shows call/raise buttons when canAct and has outstanding bet', async () => {
     mockExec.mockResolvedValue(bettingWithBetState);
     renderWithProviders(<IndianPokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
@@ -528,11 +544,11 @@ describe('IndianPokerPage', () => {
   it('calls call command when has outstanding bet', async () => {
     mockExec.mockResolvedValue(bettingWithBetState);
     renderWithProviders(<IndianPokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(bettingState);
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', undefined, undefined, expect.any(Number)));
   });
 
@@ -897,6 +913,14 @@ describe('IndianPokerPage', () => {
     afterEach(() => {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalInnerWidth });
       window.dispatchEvent(new Event('resize'));
+    });
+
+    it('keeps CPU action live region mounted before actions arrive', async () => {
+      mockExec.mockResolvedValue(bettingState);
+      renderWithProviders(<IndianPokerPage />);
+      const region = await screen.findByTestId('cpu-action-announcement');
+      expect(region).toHaveAttribute('role', 'status');
+      expect(region).toBeEmptyDOMElement();
     });
 
     it('renders CPU cards in 3-column grid on mobile', async () => {

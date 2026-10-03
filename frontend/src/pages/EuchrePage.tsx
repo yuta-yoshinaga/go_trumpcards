@@ -320,6 +320,7 @@ function EuchrePageContent() {
                     players={state.players}
                     cardWidth={cardWidth}
                     label={t('currentTrick')}
+                    winnerIdx={isTrickEnd && state.trickWinnerIdx >= 0 ? state.trickWinnerIdx : undefined}
                     dataTutorial="eu-trick-display"
                   />
                 </section>
@@ -475,7 +476,11 @@ function EuchrePageContent() {
                       type="button"
                       key={`${card.design}-${card.value}-${idx}`}
                       onClick={() => toggleCard(idx)}
-                      aria-label={cardAlt(card)}
+                      aria-label={
+                        role
+                          ? t(role === 'right' ? 'rightBowerCardLabel' : 'leftBowerCardLabel', { card: cardAlt(card) })
+                          : cardAlt(card)
+                      }
                       aria-pressed={selectedCardIndices.includes(idx)}
                       data-legal={isLegal ? 'true' : undefined}
                       className={`relative transition-transform ${focusRingCard}`}

@@ -50,6 +50,11 @@ describe('TutorialOverlay', () => {
     document.body.appendChild(targetEl);
   });
 
+  it('uses the localized accessible name for the tutorial dialog', () => {
+    render(<TutorialOverlay {...defaultProps} />);
+    expect(screen.getByRole('dialog')).toHaveAccessibleName('チュートリアル');
+  });
+
   afterEach(() => {
     document.body.removeChild(targetEl);
   });

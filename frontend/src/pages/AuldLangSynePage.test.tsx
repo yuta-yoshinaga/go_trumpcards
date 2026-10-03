@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { auldlangsyneApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { AuldLangSyneResponse, Card, CardDesign } from '../types/card';
@@ -109,6 +110,78 @@ describe('auldlangsyneNextRank', () => {
 
   it('returns null once the pile is complete', () => {
     expect(auldlangsyneNextRank(13, 13)).toBeNull();
+  });
+});
+
+describe('Auld Lang Syne waste accessible names', () => {
+  it('announces the top card, and keeps empty wastes identified as empty', async () => {
+    const stateWithEmptyWaste = {
+      ...playingState,
+      wastes: [playingState.wastes[0]!, [], ...playingState.wastes.slice(2)],
+    };
+    mockExec.mockResolvedValue(stateWithEmptyWaste);
+    renderWithProviders(<AuldLangSynePage />);
+
+    expect(await screen.findByRole('button', { name: 'ウェイスト0: ♠ 2' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ウェイスト1: 空' })).toBeInTheDocument();
+  });
+
+  it('uses the English waste label with the top card', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(<AuldLangSynePage />);
+      expect(await screen.findByRole('button', { name: 'Waste 0: ♠ 2' })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+});
+
+describe('Auld Lang Syne foundation accessible names', () => {
+  it('announces each top card and distinguishes empty from complete foundations', async () => {
+    const stateWithFoundationVariants: AuldLangSyneResponse = {
+      ...playingState,
+      foundations: [
+        playingState.foundations[0]!,
+        [],
+        Array.from({ length: 13 }, (_, index) => card('DIAMOND', index + 1)),
+        playingState.foundations[3]!,
+      ],
+    };
+    mockExec.mockResolvedValue(stateWithFoundationVariants);
+    renderWithProviders(<AuldLangSynePage />);
+
+    expect(await screen.findByRole('button', { name: '組札 0: ♠ A。次に置くべきカード 2' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '組札 1: 空。次に置くべきカード A' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '組札 2: ♦ K。完成' })).toBeInTheDocument();
+  });
+
+  it('uses English foundation labels with the top card and distinct empty and complete guidance', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      const stateWithFoundationVariants: AuldLangSyneResponse = {
+        ...playingState,
+        foundations: [
+          playingState.foundations[0]!,
+          [],
+          Array.from({ length: 13 }, (_, index) => card('DIAMOND', index + 1)),
+          playingState.foundations[3]!,
+        ],
+      };
+      mockExec.mockResolvedValue(stateWithFoundationVariants);
+      renderWithProviders(<AuldLangSynePage />);
+
+      expect(
+        await screen.findByRole('button', { name: 'Foundation 0: ♠ A. Next required card 2' }),
+      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Foundation 1: empty. Next required card A' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Foundation 2: ♦ K. Complete' })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 });
 

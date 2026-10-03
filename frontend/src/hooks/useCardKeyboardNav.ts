@@ -9,6 +9,8 @@ export interface UseCardKeyboardNavOptions {
   onClear: () => void;
   enabled: boolean;
   onDirectPlay?: (index: number) => void;
+  /** Returns whether a card may be played directly with a number key. */
+  canDirectPlay?: (index: number) => boolean;
 }
 
 /** Hook that binds number keys to card selection and Enter/Escape to confirm/clear. */
@@ -19,6 +21,7 @@ export function useCardKeyboardNav({
   onClear,
   enabled,
   onDirectPlay,
+  canDirectPlay,
 }: UseCardKeyboardNavOptions): void {
   useEffect(() => {
     if (!enabled) return;
@@ -44,6 +47,7 @@ export function useCardKeyboardNav({
       if (index >= cardCount) return;
 
       if (onDirectPlay) {
+        if (canDirectPlay && !canDirectPlay(index)) return;
         onDirectPlay(index);
       } else {
         onToggle(index);
@@ -52,5 +56,5 @@ export function useCardKeyboardNav({
 
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [enabled, cardCount, onToggle, onConfirm, onClear, onDirectPlay]);
+  }, [enabled, cardCount, onToggle, onConfirm, onClear, onDirectPlay, canDirectPlay]);
 }

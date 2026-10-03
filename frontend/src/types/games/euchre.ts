@@ -59,6 +59,7 @@ export interface EuchreResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   winnerTeam: number;
   leadPlayerIdx: number;
+  trickWinnerIdx: number;
   config: EuchreConfig;
   hint?: EuchreHint;
 }

@@ -3,6 +3,7 @@
 package usecase
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -118,6 +119,57 @@ func TestAdvanceRound(t *testing.T) {
 			func() { order = append(order, "cpu") })
 
 		assert.Equal(t, []string{"nextRound", "cpu"}, order)
+	})
+}
+
+type actionRecordingPresenter struct {
+	order   *[]string
+	output  string
+	lastErr error
+}
+
+func (p *actionRecordingPresenter) Output(_ *mockPlayableGame, err error) string {
+	*p.order = append(*p.order, "output")
+	p.lastErr = err
+	return p.output
+}
+
+func TestHumanAction(t *testing.T) {
+	t.Run("does not act when ended or not the human turn", func(t *testing.T) {
+		for _, game := range []*mockPlayableGame{
+			{gameEnd: true, humanTurn: true},
+			{gameEnd: false, humanTurn: false},
+		} {
+			var order []string
+			p := &actionRecordingPresenter{order: &order, output: "blocked"}
+			got := humanAction(game, p, func() error { order = append(order, "act"); return nil }, func() { order = append(order, "cpu") })
+			assert.Equal(t, "blocked", got)
+			assert.Equal(t, []string{"output"}, order)
+			assert.NoError(t, p.lastErr)
+		}
+	})
+
+	t.Run("presents rejected action without running CPU", func(t *testing.T) {
+		var order []string
+		wantErr := errors.New("rejected")
+		p := &actionRecordingPresenter{order: &order, output: "rejected output"}
+		got := humanAction(&mockPlayableGame{humanTurn: true}, p,
+			func() error { order = append(order, "act"); return wantErr },
+			func() { order = append(order, "cpu") })
+		assert.Equal(t, "rejected output", got)
+		assert.Equal(t, []string{"act", "output"}, order)
+		assert.ErrorIs(t, p.lastErr, wantErr)
+	})
+
+	t.Run("runs action then CPU then presents", func(t *testing.T) {
+		var order []string
+		p := &actionRecordingPresenter{order: &order, output: "success"}
+		got := humanAction(&mockPlayableGame{humanTurn: true}, p,
+			func() error { order = append(order, "act"); return nil },
+			func() { order = append(order, "cpu") })
+		assert.Equal(t, "success", got)
+		assert.Equal(t, []string{"act", "cpu", "output"}, order)
+		assert.NoError(t, p.lastErr)
 	})
 }
 

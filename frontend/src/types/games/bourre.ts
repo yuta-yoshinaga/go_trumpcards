@@ -29,6 +29,7 @@ export interface BourreResultData {
   playerIdx: number;
   tricks: number;
   wonAmount: number;
+  paidAmount: number;
   bourreed: boolean;
   folded: boolean;
 }

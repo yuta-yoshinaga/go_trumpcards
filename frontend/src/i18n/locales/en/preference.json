@@ -21,6 +21,7 @@
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",
+  "trickWinner": "Winner",
   "trickEmpty": "(no cards yet)",
   "players": "Players",
   "you": "You",
@@ -54,7 +55,9 @@
   },
   "roundResult": {
     "title": "Round Result",
-    "tricks": "{{name}} tricks: {{count}}"
+    "tricks": "{{name}} tricks: {{count}}",
+    "declarerContract": "Declarer contract",
+    "defendingContract": "Defending contract"
   },
   "progress": {
     "line": "Declarer progress: {{won}} / {{needed}} tricks",

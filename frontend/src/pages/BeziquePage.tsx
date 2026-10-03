@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { beziqueApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -50,7 +50,7 @@ const MELD_NAME_KEYS = ['marriage', 'bezique', 'fourAces', 'fourKings', 'fourQue
  */
 const STOCK_LOW_THRESHOLD = 4;
 
-// Keep these values synchronized with domain.BeziqueCardPoints. The frontend
+// Keep these values synchronized with domain.AceTenCardPoints. The frontend
 // bundle cannot import Go domain code, so the i18n sentence receives them here.
 const BEZIQUE_TRICK_POINT_VALUES = {
   ace: 11,
@@ -109,12 +109,23 @@ function BeziquePageContent() {
     handleSkipMeld,
     handleNextRound,
   } = useBeziqueGame();
+  const previousEndgame = useRef<boolean | undefined>(undefined);
+  const [endgameAnnouncement, setEndgameAnnouncement] = useState('');
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset is stable per render of the hook; run once on mount.
   useEffect(() => {
     reset();
   }, []);
+
+  useEffect(() => {
+    if (state?.isEndgame && previousEndgame.current === false) {
+      setEndgameAnnouncement(t('endgameLive'));
+    } else if (!state?.isEndgame) {
+      setEndgameAnnouncement('');
+    }
+    if (state) previousEndgame.current = state.isEndgame;
+  }, [state, t]);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('bezique');
@@ -138,7 +149,12 @@ function BeziquePageContent() {
   const phaseNames = usePhaseNames('bezique', BEZIQUE_PHASE_KEYS);
 
   if (!state)
-    return <GameSkeleton gameKey="bezique" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 9 }} />;
+    return (
+      <>
+        <LiveAnnouncement message={endgameAnnouncement} testId="bezique-endgame-live" />
+        <GameSkeleton gameKey="bezique" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 9 }} />
+      </>
+    );
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const humanIdx = state.players.findIndex((p) => p.isHuman);
@@ -208,6 +224,7 @@ function BeziquePageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <LiveAnnouncement message={endgameAnnouncement} testId="bezique-endgame-live" />
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -328,6 +345,11 @@ function BeziquePageContent() {
                           name: p.isHuman ? t('you') : t('cpu', { id: p.id }),
                           points: state.dealPoints[p.id] ?? 0,
                         })}
+                        {state.lastTrickBonus[p.id] > 0 && (
+                          <div data-testid={`bezique-last-trick-bonus-${p.id}`}>
+                            {t('roundResult.lastTrickBonus', { points: state.lastTrickBonus[p.id] })}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

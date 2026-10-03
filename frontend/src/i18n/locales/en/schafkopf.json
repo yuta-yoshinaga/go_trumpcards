@@ -48,7 +48,12 @@
     "pickerPoints": "Picker team points: {{points}}",
     "multiplier": "Multiplier: x{{multiplier}}",
     "pickerWon": "Picker team won",
-    "pickerLost": "Picker team lost"
+    "pickerLost": "Picker team lost",
+    "chipChanges": "Chip changes"
+  },
+  "roundProgress": {
+    "pickerPoints": "Picker team points: {{points}} / points needed to win: {{target}}",
+    "pickerOnlyPoints": "Picker points (partner hidden): {{points}} / points needed to win: {{target}}"
   },
   "passCount": "Passed: {{count}}",
   "hintAvailable": "Hint",

@@ -16,12 +16,16 @@
     "cpu": "CPU{{idx}}"
   },
   "pile": "場札",
+  "trickCardByPlayer": "{{name}}が出した{{card}}",
   "lastPickup": "直前に {{name}} が {{n}} 枚引き取りました。",
   "lastFinished": "直前に {{name}} が {{rank}}番目に上がりました。",
   "actions": {
     "reset": "リセット",
     "giveUp": "投了",
-    "playAria": "{{card}} を出す"
+    "playAria": "{{card}} を出す",
+    "playableAria": "{{card}}。出せる札",
+    "notPlayableAria": "{{card}}。出せない札",
+    "notPlayableReason": "この札は現在出せません。"
   },
   "settings": {
     "playerCnt": "参加人数",

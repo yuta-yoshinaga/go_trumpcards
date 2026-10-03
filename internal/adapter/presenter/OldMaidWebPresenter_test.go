@@ -509,10 +509,20 @@ func TestOldMaidWebPresenter_DrawHistory(t *testing.T) {
 	t.Run("history set via test helper", func(t *testing.T) {
 		om, _ := setupOldMaidWebTest()
 		om.SetDrawHistory([]*domain.OldMaidDrawHistoryEntry{
-			{DrawPlayerIdx: 2, DrawFromIdx: 0, DiscardedPairs: 1, DrawerFinished: false, TargetFinished: false},
+			{DrawPlayerIdx: 2, DrawFromIdx: 0, DiscardedPairs: 1, DiscardedCards: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 5, false),
+				domain.NewCard(domain.CardDesignHeart, 5, false),
+			}, DrawerFinished: false, TargetFinished: false},
 		})
 		result := towp.Output(om, nil)
-		assert.Contains(t, result, `"drawHistory":[{"drawPlayerIdx":2,"drawFromIdx":0,"discardedPairs":1,"drawerFinished":false,"targetFinished":false}]`)
+		assert.Contains(t, result, `"drawHistory":[{"drawPlayerIdx":2,"drawFromIdx":0,"discardedPairs":1,"discardedCards":[{"design":"SPADE","value":5},{"design":"HEART","value":5}],"drawerFinished":false,"targetFinished":false}]`)
+	})
+
+	t.Run("history without discards emits empty cards", func(t *testing.T) {
+		om, _ := setupOldMaidWebTest()
+		om.SetDrawHistory([]*domain.OldMaidDrawHistoryEntry{{DrawPlayerIdx: 0, DrawFromIdx: 1}})
+		result := towp.Output(om, nil)
+		assert.Contains(t, result, `"discardedCards":[]`)
 	})
 }
 

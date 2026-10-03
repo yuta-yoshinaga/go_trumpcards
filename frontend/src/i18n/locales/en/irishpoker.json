@@ -25,11 +25,13 @@
     "keepLabel": "Keep",
     "previewHand": "Tentative hand",
     "candidateHand": "If also discarded",
+    "candidateWithStrength": "{{hand}} (comparison cards: {{strength}})",
+    "previewWithStrength": "{{hand}} (comparison cards: {{strength}})",
     "recommended": "Recommended",
     "limitReached": "You can select up to {{count}} card(s). Deselect one first.",
     "limitDescription": "You can select at most {{count}} card(s) to discard.",
     "previewAria": "Keeping: {{cards}}",
-    "previewAriaWithHand": "Keeping: {{cards}}. Hand: {{hand}}",
+    "previewAriaWithHand": "Keeping: {{cards}}. Hand: {{hand}}. Cards used to compare strength: {{strength}}",
     "playableHand": "Playable hand",
     "playableHandAria": "Your playable hand is {{cards}}"
   },
@@ -79,6 +81,10 @@
     "minusEV": "-EV (Negative Expected Value)",
     "handOdds": "Hand Odds"
   },
+  "bettingInfo": {
+    "title": "Betting decision info",
+    "description": "View equity and pot odds when they are available."
+  },
   "settings": {
     "cpuMetaAI": "Meta-AI (CPU learns your play style)"
   },
@@ -88,7 +94,7 @@
     "actionButtons": "Choose your action: Bet, Call, Raise, Fold, or All In.",
     "potDisplay": "Shows the current pot size and blind levels.",
     "cpuArea": "CPU opponent information. Cards are revealed at showdown.",
-    "learningMode": "Learning mode shows equity and pot odds to help your decisions.",
+    "learningMode": "The betting decision info panel shows equity and pot odds.",
     "resetButton": "Press the reset button to start a new game.",
     "discardPhase": "Discard phase (after the flop betting round): select two of your 4 hole cards to discard."
   },

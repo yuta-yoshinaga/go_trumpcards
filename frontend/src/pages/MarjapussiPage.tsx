@@ -151,9 +151,26 @@ function MarjapussiPageContent() {
 
   const prevRoundMarriageRef = useRef<number[]>([0, 0]);
   const prevRoundNumRef = useRef<number>(1);
+  const prevTeamScoresRef = useRef<[number, number] | null>(null);
+  const [teamScoreAnnouncement, setTeamScoreAnnouncement] = useState('');
   const [marriagesThisRound, setMarriagesThisRound] = useState<{ playerIdx: number; suit: number; points: number }[]>(
     [],
   );
+
+  useEffect(() => {
+    if (!state) return;
+    const current: [number, number] = [state.teamScores[0], state.teamScores[1]];
+    const previous = prevTeamScoresRef.current;
+    if (previous) {
+      const announcements = current.flatMap((score, team) =>
+        score !== previous[team] ? [t('teamScoreUpdated', { team: t(team === 0 ? 'team0' : 'team1'), score })] : [],
+      );
+      if (announcements.length > 0) {
+        setTeamScoreAnnouncement(announcements.join(t('listSeparator')));
+      }
+    }
+    prevTeamScoresRef.current = current;
+  }, [state, t]);
 
   useEffect(() => {
     if (!state) return;
@@ -216,8 +233,8 @@ function MarjapussiPageContent() {
 
   const pussiPoints = calculateCardPoints(state.pussi);
   const target = state.config.targetPoints;
-  const team0Score = state.teamScores[0] ?? 0;
-  const team1Score = state.teamScores[1] ?? 0;
+  const team0Score = state.teamScores[0];
+  const team1Score = state.teamScores[1];
 
   return (
     <GamePageShell
@@ -501,6 +518,9 @@ function MarjapussiPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.marjapussi.footer} px-4 py-2.5`}>
+            <div className="sr-only" role="status" aria-live="polite" data-testid="marjapussi-score-live">
+              {teamScoreAnnouncement}
+            </div>
             {/* Live region is always mounted */}
             <div data-testid="marjapussi-prompt-live" role="status" aria-live="polite">
               {isPlayPhase && (
@@ -531,6 +551,21 @@ function MarjapussiPageContent() {
                 dataTutorialPrefix="marjapussi"
                 validIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}
+                cardStatusFor={(idx) => {
+                  if (
+                    !canPlay ||
+                    state.playableIndices.includes(idx) ||
+                    state.currentTrick.length === 0 ||
+                    !humanPlayer
+                  ) {
+                    return undefined;
+                  }
+                  const leadSuit = state.currentTrick[0].card.design;
+                  if (humanPlayer.cards.some((card) => card.design === leadSuit)) {
+                    return t('restrictionReason.followLeadSuit');
+                  }
+                  return t('restrictionReason.playTrump');
+                }}
               />
             )}
 

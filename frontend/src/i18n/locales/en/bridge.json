@@ -43,6 +43,7 @@
   "contract": "Contract: {{level}}{{suit}}",
   "contractDoubled": "Contract: {{level}}{{suit}} (Doubled)",
   "contractRedoubled": "Contract: {{level}}{{suit}} (Redoubled)",
+  "contractProgress": "{{team}} tricks won: {{won}} / {{required}} ({{remaining}} remaining)",
   "vulnerability": "Vulnerability",
   "vulnerable": "Vul",
   "notVulnerable": "Non-Vul",

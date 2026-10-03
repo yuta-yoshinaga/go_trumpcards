@@ -243,6 +243,11 @@ func (g *EgyptianRatscrew) IsSlappable() bool {
 	return g.slapReason() != EgyptianRatscrewSlapReasonNone
 }
 
+// GetSlappableReason 場の現在のスラップ理由を返す。
+func (g *EgyptianRatscrew) GetSlappableReason() EgyptianRatscrewSlapReason {
+	return g.slapReason()
+}
+
 // slapReason 場のトップ列が成立させているスラップ理由を返す。
 // ペアとサンドイッチが同時に成立する場合 (例 5-5-5) はペアを優先。
 func (g *EgyptianRatscrew) slapReason() EgyptianRatscrewSlapReason {
@@ -556,18 +561,6 @@ func (g *EgyptianRatscrew) checkStuck() {
 	}
 	// 両者ストック空 + スラップ不可 + チャンスバトルなしで詰み。引き分けとする。
 	g.endGame(-1)
-}
-
-// slapReasonLabel スラップ理由のログ用ラベル
-func slapReasonLabel(r EgyptianRatscrewSlapReason) string {
-	switch r {
-	case EgyptianRatscrewSlapReasonPair:
-		return "pair"
-	case EgyptianRatscrewSlapReasonSandwich:
-		return "sandwich"
-	default:
-		return "none"
-	}
 }
 
 // --- JSON ---

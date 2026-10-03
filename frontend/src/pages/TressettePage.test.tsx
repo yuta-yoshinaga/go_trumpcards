@@ -45,6 +45,25 @@ beforeEach(() => {
 });
 
 describe('TressettePage', () => {
+  it('shows the changing card points in the current trick and labels an empty trick as zero', async () => {
+    mockExec.mockResolvedValue(
+      makeTressetteState({
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'SPADE', value: 1 } },
+          { playerIdx: 1, card: { design: 'HEART', value: 3 } },
+        ],
+        currentTrickThirds: 4,
+      }),
+    );
+    const { unmount } = renderWithProviders(<TressettePage />);
+    expect(await screen.findByTestId('tr-current-trick-points')).toHaveTextContent('このトリックのカード得点: 4/3点');
+
+    unmount();
+    mockExec.mockResolvedValue(makeTressetteState());
+    renderWithProviders(<TressettePage />);
+    expect(await screen.findByTestId('tr-current-trick-points')).toHaveTextContent('このトリックのカード得点: 0点');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<TressettePage />);
@@ -74,6 +93,17 @@ describe('TressettePage', () => {
     fireEvent.click(await screen.findByRole('button', { name: '出す' }));
     await waitFor(() => expect(screen.getByTestId('tr-target')).toHaveTextContent('目標: 31点'));
     expect(screen.getByTestId('tr-target').textContent).not.toContain('{{');
+  });
+
+  it('shows positive points remaining beside each team score', async () => {
+    mockExec.mockResolvedValue(makeTressetteState({ teamScores: [8, 22] }));
+    renderWithProviders(<TressettePage />);
+
+    expect(await screen.findByText('（残り13点）')).toBeInTheDocument();
+    expect(screen.getByText('チームA').closest('tr')).toHaveTextContent('8');
+    expect(screen.getByText('チームB').closest('tr')).toHaveTextContent('22');
+    expect(screen.getByText('チームA').closest('tr')).toHaveTextContent('残り13点');
+    expect(screen.getByText('チームB').closest('tr')).not.toHaveTextContent('残り');
   });
 
   it('renders play phase with human cards', async () => {

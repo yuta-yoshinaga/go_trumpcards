@@ -1,5 +1,5 @@
 import type { mrsMopApi } from '../../../api/gameApi';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type MrsMopArgs = Parameters<typeof mrsMopApi.exec>;
@@ -20,6 +20,7 @@ const VALID_COMMANDS = [
   'reset',
   'help',
   '?',
+  'd',
 ];
 
 /** Parse a MrsMop Solitaire CLI command into API exec arguments. */
@@ -75,11 +76,8 @@ export function parseMrsMopCommand(input: string): CliParseResult<MrsMopArgs> {
       }
       return { args: ['reset'] };
     }
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

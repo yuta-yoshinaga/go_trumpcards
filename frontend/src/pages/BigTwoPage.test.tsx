@@ -89,9 +89,12 @@ describe('BigTwoPage', () => {
   it('toggles card selection on and off', async () => {
     renderWithProviders(<BigTwoPage />);
     const card0 = await screen.findByTestId('hand-card-0');
+    expect(card0).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(card0);
+    expect(card0).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByTestId('play-button')).toBeEnabled();
     fireEvent.click(card0);
+    expect(card0).toHaveAttribute('aria-pressed', 'false');
     expect(screen.getByTestId('play-button')).toBeDisabled();
   });
 
@@ -127,7 +130,10 @@ describe('BigTwoPage', () => {
     renderWithProviders(<BigTwoPage />);
     // Select ♦7 (original index 2), then re-sort by suit (which moves ♦ to the front).
     fireEvent.click(await screen.findByTestId('hand-card-2'));
+    expect(screen.getByTestId('hand-card-2')).toHaveAttribute('aria-pressed', 'true');
     fireEvent.click(screen.getByTestId('bt-sort-suit'));
+    expect(screen.getByTestId('hand-card-2')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('hand-card-0')).toHaveAttribute('aria-pressed', 'false');
     // The play command still references the original dealt index.
     fireEvent.click(screen.getByTestId('play-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [2]));
@@ -172,6 +178,28 @@ describe('BigTwoPage', () => {
     renderWithProviders(<BigTwoPage />);
     await screen.findByTestId('hand-card-0');
     expect(screen.queryByTestId('bt-selected-playtype')).not.toBeInTheDocument();
+  });
+
+  it('announces the cards and play type currently on the table', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        tableCards: [card('SPADE', 3), card('SPADE', 5), card('SPADE', 7), card('SPADE', 9), card('SPADE', 11)],
+        tablePlayType: 5,
+        currentTurn: 1,
+      }),
+    );
+    renderWithProviders(<BigTwoPage />);
+
+    const announcement = await screen.findByTestId('bt-table-play-announcement');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toHaveTextContent('♠ 3、♠ 5、♠ 7、♠ 9、♠ J');
+    expect(announcement).toHaveTextContent('フラッシュ');
+  });
+
+  it('keeps the table-play announcement empty when the table has no cards', async () => {
+    renderWithProviders(<BigTwoPage />);
+    const announcement = await screen.findByTestId('bt-table-play-announcement');
+    expect(announcement).toBeEmptyDOMElement();
   });
 
   it('shows the table play-type label for the cards in play', async () => {

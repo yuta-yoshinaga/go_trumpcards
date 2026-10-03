@@ -43,6 +43,15 @@ func TestSpiteAndMaliceInteractor_Reset(t *testing.T) {
 	g.AssertCalled(t, "Reset")
 }
 
+func TestSpiteAndMaliceInteractor_Undo(t *testing.T) {
+	g := newMockSpiteAndMaliceGame()
+	p := newMockSpiteAndMalicePresenter()
+	i := NewSpiteAndMaliceInteractor(g, p)
+	g.On("Undo").Return(nil)
+	p.On("Output", g, nil).Return("undone")
+	assert.Equal(t, "undone", i.Undo())
+}
+
 func TestSpiteAndMaliceInteractor_PlayFromHand(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		g := newMockSpiteAndMaliceGame()

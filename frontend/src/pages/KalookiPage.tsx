@@ -31,7 +31,7 @@ import { KALOOKI_HELP, parseKalookiCommand } from '../utils/cli/commands/kalooki
 import { formatKalookiState } from '../utils/cli/formatters/kalookiFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
-import { kalookiOpeningPoints } from '../utils/kalookiScore';
+import { kalookiMeldValue, kalookiOpeningPoints } from '../utils/kalookiScore';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Phase identifiers for Kalooki (sync: internal/domain/Kalooki.go). */
@@ -439,6 +439,42 @@ function KalookiPageContent() {
               ))}
             </section>
 
+            {state.roundScoreHistory.length > 0 && (
+              <section className="px-4 py-2" aria-label={t('scoreHistoryTitle')}>
+                <h2 className="text-ds-text-primary text-sm font-semibold mb-2">{t('scoreHistoryTitle')}</h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-ds-text-primary text-sm tabular-nums">
+                    <thead>
+                      <tr>
+                        <th scope="col" className="text-left p-2">
+                          {t('roundLabel')}
+                        </th>
+                        {state.players.map((p) => (
+                          <th scope="col" key={p.id} className="text-right p-2">
+                            {p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id })}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {state.roundScoreHistory.map((round, roundIdx) => (
+                        <tr key={roundIdx} className="border-t border-ds-border">
+                          <th scope="row" className="text-left p-2">
+                            {roundIdx + 1}
+                          </th>
+                          {state.players.map((p) => (
+                            <td key={p.id} className="text-right p-2">
+                              {round.scores[p.id] ?? 0}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            )}
+
             {humanPlayer && (
               <section className="px-4 py-2" data-tutorial="kalooki-hand">
                 <div className="text-white text-sm mb-1">
@@ -495,6 +531,17 @@ function KalookiPageContent() {
                       className="flex items-center gap-2 flex-wrap p-2 rounded border border-white/30 bg-black/20"
                     >
                       <span className="text-white text-xs font-semibold">{t('groupLabel', { n: gi + 1 })}</span>
+                      {!humanPlayer.hasOpened && (
+                        <span className="text-ds-warning text-xs font-semibold">
+                          {t('groupOpeningPoints', {
+                            points: kalookiMeldValue(
+                              group
+                                .map((cardIdx) => humanPlayer.cards[cardIdx])
+                                .filter((card): card is Card => card !== undefined),
+                            ),
+                          })}
+                        </span>
+                      )}
                       <div className="flex flex-wrap gap-1">
                         {group.map((cardIdx) => {
                           const c = humanPlayer.cards[cardIdx];

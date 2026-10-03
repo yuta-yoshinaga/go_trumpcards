@@ -24,7 +24,7 @@
     "prompt": "Pick cards to exchange. Select a chosen card again to unselect it. With a keyboard, focus a card and press Enter or Space to toggle it. You can also stand pat and keep all five.",
     "exchange": "Exchange {{count}}",
     "standPat": "Stand pat",
-    "selected": "Selected: {{count}}",
+    "selected": "Selected: {{count}} / {{max}}",
     "onceOnly": "You may draw only once."
   },
   "result": {
@@ -50,12 +50,16 @@
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, used {{used}}/{{max}})",
     "accept": "Rebuy",
-    "skip": "Skip"
+    "skip": "Skip",
+    "selected": "Rebuy selected. Updated chip count: {{chips}}",
+    "skipped": "Rebuy skipped. Updated chip count: {{chips}}"
   },
   "addon": {
     "prompt": "Add-on? ({{chips}} chips)",
     "accept": "Add-on",
-    "skip": "Skip"
+    "skip": "Skip",
+    "selected": "Add-on selected. Updated chip count: {{chips}}",
+    "skipped": "Add-on skipped. Updated chip count: {{chips}}"
   },
   "muck": {
     "prompt": "Muck?",

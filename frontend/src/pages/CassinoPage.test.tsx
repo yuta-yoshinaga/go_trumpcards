@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cassinoApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -65,6 +65,85 @@ describe('CassinoPage', () => {
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
     expect(screen.getByTestId('hand-card-1')).toBeInTheDocument();
     expect(screen.getByTestId('hand-card-2')).toBeInTheDocument();
+    expect(screen.getByTestId('hand-card-0')).toHaveAccessibleName('♠ 3');
+  });
+
+  it('shows the server-provided round breakdown only when the round ends', async () => {
+    const detail = {
+      cards: { 0: 17, 1: 9, 2: 8, 3: 7 },
+      spades: { 0: 6, 1: 3, 2: 2, 3: 2 },
+      aces: { 0: 2, 1: 1, 2: 0, 3: 1 },
+      sweeps: { 0: 1, 1: 0, 2: 2, 3: 0 },
+      hasBigCasino: 2,
+      hasLittleCasino: 0,
+      gained: { 0: 8, 1: 3, 2: 12, 3: 0 },
+    };
+    const { unmount } = renderWithProviders(<CassinoPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('cs-score-breakdown')).not.toBeInTheDocument();
+
+    unmount();
+    mockExec.mockResolvedValue(makeState({ phase: 'roundEnd', lastRoundDetail: detail }));
+    renderWithProviders(<CassinoPage />);
+    const breakdown = await screen.findByTestId('cs-score-breakdown');
+    expect(within(breakdown).getByTestId('cs-breakdown-player-0')).toHaveTextContent('17');
+    expect(within(breakdown).getByTestId('cs-breakdown-player-0')).toHaveTextContent('6');
+    expect(within(breakdown).getByTestId('cs-breakdown-player-0')).toHaveTextContent('2');
+    expect(within(breakdown).getByTestId('cs-breakdown-player-0')).toHaveTextContent('1');
+    expect(within(breakdown).getByTestId('cs-breakdown-player-0')).toHaveTextContent('所持');
+    expect(within(breakdown).getByTestId('cs-breakdown-player-0')).toHaveTextContent('8');
+    expect(within(breakdown).getByTestId('cs-breakdown-player-2')).toHaveTextContent('12');
+    expect(within(breakdown).getByTestId('cs-breakdown-player-2')).toHaveTextContent('所持');
+  });
+
+  it('shows zero for score categories missing from a game-end breakdown', async () => {
+    const detail = {
+      cards: {},
+      spades: {},
+      aces: {},
+      hasBigCasino: -1,
+      hasLittleCasino: -1,
+      sweeps: {},
+      gained: {},
+    } as unknown as NonNullable<CassinoResponse['lastRoundDetail']>;
+    mockExec.mockResolvedValue(makeState({ gameEndFlag: true, lastRoundDetail: detail }));
+
+    renderWithProviders(<CassinoPage />);
+
+    const player = within(await screen.findByTestId('cs-score-breakdown')).getByTestId('cs-breakdown-player-0');
+    expect(
+      within(player)
+        .getAllByRole('cell')
+        .map((cell) => cell.textContent),
+    ).toEqual(['0', '0', '0', '0', '—', '—', '0']);
+  });
+
+  it('exposes pressed state for selectable hand, table, and build cards', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ builds: [{ cards: [card('SPADE', 2)], value: 5, ownerIdx: 0, isMulti: false }] as never }),
+    );
+    renderWithProviders(<CassinoPage />);
+    const handCard = await screen.findByTestId('hand-card-0');
+    const tableCard = screen.getByTestId('table-card-0');
+    const build = screen.getByTestId('build-0');
+
+    expect(handCard).toHaveAttribute('aria-pressed', 'false');
+    expect(tableCard).toHaveAttribute('aria-pressed', 'false');
+    expect(build).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(handCard);
+    fireEvent.click(tableCard);
+    fireEvent.click(build);
+    expect(handCard).toHaveAttribute('aria-pressed', 'true');
+    expect(tableCard).toHaveAttribute('aria-pressed', 'true');
+    expect(build).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(handCard);
+    fireEvent.click(tableCard);
+    fireEvent.click(build);
+    expect(handCard).toHaveAttribute('aria-pressed', 'false');
+    expect(tableCard).toHaveAttribute('aria-pressed', 'false');
+    expect(build).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('renders the human and CPU stat lines via i18n (no hardcoded 枚/pt)', async () => {
@@ -88,7 +167,7 @@ describe('CassinoPage', () => {
     expect(screen.getByTestId('table-card-1')).toBeInTheDocument();
   });
 
-  it('labels table cards with content, take-candidate, and selected state', async () => {
+  it('labels table cards with content and take-candidate while exposing selection as pressed state', async () => {
     renderWithProviders(<CassinoPage />);
     await waitFor(() => expect(screen.getByTestId('table-card-0')).toBeInTheDocument());
     // Base label = card content only.
@@ -98,9 +177,23 @@ describe('CassinoPage', () => {
     await waitFor(() => expect(screen.getByTestId('table-card-1')).toHaveAttribute('aria-label', '♥ 5 テイク候補'));
     // The non-matching ♠2 keeps its plain label.
     expect(screen.getByTestId('table-card-0')).toHaveAttribute('aria-label', '♠ 2');
-    // Selecting the candidate flips its label to "selected".
+    // Selecting the candidate keeps its card name and exposes selection via aria-pressed.
     fireEvent.click(screen.getByTestId('table-card-1'));
-    await waitFor(() => expect(screen.getByTestId('table-card-1')).toHaveAttribute('aria-label', '♥ 5 選択中'));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '♥ 5', pressed: true })).toBeInTheDocument();
+    });
+  });
+
+  it('keeps selected build button name and exposes selection as pressed state', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ builds: [{ cards: [card('SPADE', 2)], value: 5, ownerIdx: 0, isMulti: false }] as never }),
+    );
+    renderWithProviders(<CassinoPage />);
+    const build = await screen.findByTestId('build-0');
+    const name = build.getAttribute('aria-label');
+    expect(name).toBeTruthy();
+    fireEvent.click(build);
+    expect(screen.getByRole('button', { name: name!, pressed: true })).toBeInTheDocument();
   });
 
   it('take button is disabled until both hand and table are selected', async () => {

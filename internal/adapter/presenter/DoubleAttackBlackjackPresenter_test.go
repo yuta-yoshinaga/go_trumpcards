@@ -219,6 +219,24 @@ func TestDoubleAttackWebPresenter_HandsCarryTheirState(t *testing.T) {
 	assert.Equal(t, g.GetChips(), got.Chips)
 }
 
+func TestDoubleAttackWebPresenter_BustItPayoutsComeFromDomainRules(t *testing.T) {
+	cp := new(DoubleAttackBlackjackWebPresenter)
+	g := newDoubleAttackForPresenter(t)
+	var got struct {
+		Payouts []struct {
+			Cards      int `json:"cards"`
+			Multiplier int `json:"multiplier"`
+		} `json:"bustItPayouts"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(cp.Output(g, nil)), &got))
+	require.Len(t, got.Payouts, domain.DoubleAttackBustItMaxCards-domain.DoubleAttackBustItMinCards+1)
+	for i, row := range got.Payouts {
+		cards := i + domain.DoubleAttackBustItMinCards
+		assert.Equal(t, cards, row.Cards)
+		assert.Equal(t, domain.DoubleAttackBustItPayout(cards), row.Multiplier)
+	}
+}
+
 func TestDoubleAttackWebPresenter_ErrorAndHint(t *testing.T) {
 	cp := new(DoubleAttackBlackjackWebPresenter)
 	g := newDoubleAttackForPresenter(t)

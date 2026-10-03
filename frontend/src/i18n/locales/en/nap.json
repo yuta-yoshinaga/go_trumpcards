@@ -1,4 +1,5 @@
 {
+  "dealerBadge": "Dealer",
   "phase": {
     "bid": "Bid",
     "play": "Play",
@@ -34,6 +35,8 @@
   "declarerProgress": "Declarer ({{name}}): {{won}} / {{needed}} tricks (remaining {{remaining}})",
   "contractUnreachable": "Contract unreachable",
   "bidLabel": "Bid",
+  "bidsAfter": "Player bids",
+  "bidNotDone": "Not bid",
   "playButton": "Play",
   "nextTrick": "Next Trick",
   "nextRound": "Next Round",

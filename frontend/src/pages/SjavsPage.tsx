@@ -13,7 +13,9 @@ import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
+import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -26,9 +28,11 @@ import { gameTheme } from '../styles/gameTheme';
 import type { SjavsResponse } from '../types/card';
 import { SjavsPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseSjavsCommand, SJAVS_HELP } from '../utils/cli/commands/sjavsCommands';
 import { formatSjavsState } from '../utils/cli/formatters/sjavsFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const SJ_TUTORIAL_STEPS: TutorialStep[] = [
@@ -74,6 +78,7 @@ function SjavsPageContent() {
   const ended = state.phase === SjavsPhase.GAME_END;
   const bidding = state.phase === SjavsPhase.BID;
   const handOver = state.phase === SjavsPhase.HAND_END;
+  const handResult = state.handResult;
   const human = state.players.find((p) => p.isHuman);
   const opponents = state.players.filter((p) => !p.isHuman);
   const isHumanTurn = !ended && state.currentPlayerIdx === 0;
@@ -169,21 +174,27 @@ function SjavsPageContent() {
 
             {!bidding && (
               <div className="text-center mb-4">
-                <div className="text-game-text-muted text-xs mb-1">{t('trick')}</div>
-                <div className="flex gap-1 justify-center flex-wrap">
-                  {state.trick.length === 0 ? (
-                    <span className="text-game-text-muted text-xs">—</span>
-                  ) : (
-                    state.trick.map((tc2) => (
-                      <AnimatedCard
-                        key={`trick-${tc2.playerIdx.toString()}`}
-                        card={tc2.card}
-                        width={cardWidth}
-                        draggable={false}
-                      />
-                    ))
-                  )}
-                </div>
+                {state.trick.length === 0 ? (
+                  <>
+                    <div className="text-game-text-muted text-xs mb-1">{t('trick')}</div>
+                    <div className="flex gap-1 justify-center flex-wrap">
+                      <span className="text-game-text-muted text-xs">—</span>
+                    </div>
+                  </>
+                ) : (
+                  <TrickDisplay
+                    currentTrick={state.trick}
+                    players={state.players}
+                    cardWidth={cardWidth}
+                    label={t('trick')}
+                    cardAriaLabelFor={(player, playedCard) =>
+                      t('trickCardAriaLabel', {
+                        player: playerName(player.id, player.isHuman),
+                        card: cardAlt(playedCard),
+                      })
+                    }
+                  />
+                )}
               </div>
             )}
 
@@ -197,6 +208,16 @@ function SjavsPageContent() {
                     })}${state.handResult.vol ? t('vol') : ''}`}
               </div>
             )}
+
+            <RoundScoreAnnouncement
+              active={handOver && Boolean(handResult)}
+              entries={[0, 1].map((team) => ({
+                name: t('team', { n: team }),
+                roundScore: handResult?.scoringTeam === team ? handResult.amount : 0,
+                cumulativeScore: state.rubberPoints - state.remaining[team],
+              }))}
+              separator={t('listSeparator')}
+            />
 
             <div className="text-center" data-tutorial="sj-hand">
               <div className="text-game-text-muted text-xs mb-1">

@@ -41,6 +41,8 @@ const bidPhaseState: PinochleResponse = {
   highestBid: 0,
   highestBidder: -1,
   currentTrick: [],
+  lastTrick: [],
+  lastTrickWinner: -1,
   teamScores: [0, 0],
   gameEndFlag: false,
   winnerTeam: -1,
@@ -106,6 +108,7 @@ const trickEndState: PinochleResponse = {
 const roundEndState: PinochleResponse = {
   ...playPhaseState,
   phase: 5, // ROUND_END
+  contractMade: true,
 };
 
 const gameEndState: PinochleResponse = {
@@ -124,11 +127,53 @@ afterEach(() => {
 });
 
 describe('PinochlePage', () => {
+  it('shows bid, meld score, and server trick points separately during play', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      players: makePlayers([{ id: 0, isHuman: true, bid: 25, meldScore: 40, trickPoints: 15 }]),
+    });
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() =>
+      expect(screen.getByText(/ビッド: 25 \| メルド得点: 40 \| トリック得点: 15/)).toBeInTheDocument(),
+    );
+  });
+
+  it.each([
+    [true, '契約達成'],
+    [false, '契約未達成'],
+  ])('shows contract outcome %s at round end', async (contractMade, label) => {
+    mockExec.mockResolvedValue({ ...roundEndState, contractMade });
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByText(label)).toBeInTheDocument());
+  });
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<PinochlePage />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
     expect(screen.queryByText('考え中...')).not.toBeInTheDocument();
+  });
+
+  it('shows the previous trick and its winner while the current trick is empty', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      currentTrick: [],
+      lastTrick: [
+        { playerIdx: 0, card: { design: 'SPADE', value: 1 } },
+        { playerIdx: 1, card: { design: 'SPADE', value: 12 } },
+        { playerIdx: 2, card: { design: 'SPADE', value: 13 } },
+        { playerIdx: 3, card: { design: 'DIAMOND', value: 1 } },
+      ],
+      lastTrickWinner: 0,
+    });
+    renderWithProviders(<PinochlePage />);
+
+    await waitFor(() =>
+      expect(
+        document.querySelector('[data-tutorial="pn-trick-display"]')?.querySelectorAll('[data-testid="animated-card"]'),
+      ).toHaveLength(4),
+    );
+    const display = document.querySelector('[data-tutorial="pn-trick-display"]');
+    expect(within(display as HTMLElement).getByTestId('trick-winner-badge')).toHaveTextContent('WIN');
   });
 
   it('calls reset on mount', async () => {

@@ -59,6 +59,8 @@ type HorseGame interface {
 	WinnerSeat() int
 	// GetSeatCards 指定席から見えている札を取得する (CPU は表向きのみ)
 	GetSeatCards(seat int) []*domain.Card
+	// GetSeatHandName はショーダウンで確定した役名を返す。未確定・フォールド時は空文字。
+	GetSeatHandName(seat int) string
 	// GetCommunityCards いまの種目の共有札を取得する (スタッド系は空)
 	GetCommunityCards() []*domain.Card
 	// GetSeatLiveChips 指定席のいまの残高を取得する (ハンド中は卓の値)

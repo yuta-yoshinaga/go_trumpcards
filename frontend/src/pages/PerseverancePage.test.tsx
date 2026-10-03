@@ -96,6 +96,7 @@ const gameOverState: PerseveranceResponse = {
 describe('PerseverancePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.removeItem('trumpcards-perseverance-session-stats');
     mockPlaySound.mockReset();
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
   });
@@ -105,6 +106,8 @@ describe('PerseverancePage', () => {
     renderWithProviders(<PerseverancePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(mockExec.mock.calls[0]?.[0]).toBe('reset');
+    expect(await screen.findByText('開始数: 1')).toBeInTheDocument();
+    expect(screen.getByText('クリア率: 0%')).toBeInTheDocument();
   });
 
   it('marks the last card in a column with a dashed warning ring', async () => {
@@ -210,6 +213,16 @@ describe('PerseverancePage', () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<PerseverancePage />);
     await waitFor(() => expect(screen.queryByRole('button', { name: 'ギブアップ' })).not.toBeInTheDocument());
+  });
+
+  it('records a clear once and lets the player clear session results', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<PerseverancePage />);
+    expect(await screen.findByText('クリア回数: 1')).toBeInTheDocument();
+    expect(screen.getByText('合計手数: 3')).toBeInTheDocument();
+    expect(screen.getByText('クリア時の残り再配り回数: 2')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '成績を消去' }));
+    expect(screen.getByText('クリア回数: 0')).toBeInTheDocument();
   });
 
   it('giveup button opens a confirm dialog and only dispatches giveup after confirm', async () => {

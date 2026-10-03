@@ -43,6 +43,8 @@ const betPhaseState: HighCardFlushResponse = {
   flushBonusPayout: 0,
   straightFlushPayout: 0,
   totalPayout: 0,
+  totalBet: 0,
+  netChange: 0,
   dealerQualified: false,
   playerFlushLen: 0,
   dealerFlushLen: 0,
@@ -86,6 +88,8 @@ const endPhasePlayerWins: HighCardFlushResponse = {
   antePayout: 200,
   raisePayout: 200,
   totalPayout: 400,
+  totalBet: 200,
+  netChange: 200,
   dealerQualified: true,
   dealerFlushLen: 3,
   message: 'Player wins!',
@@ -98,6 +102,8 @@ const endPhaseFold: HighCardFlushResponse = {
   raiseBet: 0,
   result: -1,
   totalPayout: 0,
+  totalBet: 100,
+  netChange: -100,
   dealerHand: [],
   message: 'Folded',
   messageCode: 'highcardflush.result.fold',
@@ -192,7 +198,9 @@ describe('HighCardFlushPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /レイズ x1/ }));
     await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
-    expect(screen.getByText(/合計: 400/)).toBeInTheDocument();
+    expect(screen.getByText(/総配当: 400/)).toBeInTheDocument();
+    expect(screen.getByTestId('result-balance')).toHaveTextContent('合計ベット: 200');
+    expect(screen.getByTestId('result-balance')).toHaveTextContent('差引収支: +200');
   });
 
   it('shows end phase with fold', async () => {
@@ -202,6 +210,14 @@ describe('HighCardFlushPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'フォールド' }));
     await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('fold'));
+  });
+
+  it('shows a negative net result for a folded hand', async () => {
+    mockExec.mockResolvedValue(endPhaseFold);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByTestId('result-balance')).toBeInTheDocument());
+    expect(screen.getByTestId('result-balance')).toHaveTextContent('合計ベット: 100');
+    expect(screen.getByTestId('result-balance')).toHaveTextContent('差引収支: -100');
   });
 
   it('keyboard shortcut "1" triggers raise 1x during action phase', async () => {
@@ -430,6 +446,22 @@ describe('HighCardFlushPage', () => {
     expect(anteInput).toHaveAttribute('aria-describedby', 'highcardflush-balance-error');
     expect(flushBonusInput).toHaveAttribute('aria-describedby', 'highcardflush-balance-error');
     expect(straightFlushInput).toHaveAttribute('aria-describedby', 'highcardflush-balance-error');
+  });
+
+  it('announces the total bet and remaining chips, including the shortfall when over balance', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    const summary = screen.getByRole('status');
+    expect(screen.getByTestId('hcf-bet-summary')).toBe(summary.querySelector('[data-testid="hcf-bet-summary"]'));
+    expect(summary).toHaveTextContent('合計ベット: 100');
+    expect(summary).toHaveTextContent('ベット後の残高: 900');
+
+    fireEvent.change(screen.getByLabelText('フラッシュボーナス'), { target: { value: '1000' } });
+    expect(summary).toHaveTextContent('合計ベット: 1100');
+    expect(summary).toHaveTextContent('ベット後の残高: 0');
+    expect(screen.getByRole('alert')).toHaveTextContent('不足額100');
   });
 
   it('describes an invalid flush bonus bet with its translated error', async () => {

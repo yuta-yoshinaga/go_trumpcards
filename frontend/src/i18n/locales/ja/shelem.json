@@ -42,10 +42,12 @@
     "shelem": "Shelem宣言（{{value}}点）",
     "pass": "降りる",
     "discard": "切り札 {{suit}} で確定",
+    "discardAria": "切り札{{suit}}で確定",
     "nextRound": "次のラウンドへ",
     "reset": "リセット",
     "giveUp": "投了",
-    "playAria": "{{card}} を出す"
+    "playAria": "{{card}} を出す",
+    "illegalPlayReason": "この札は今出せません。"
   },
   "result": {
     "youWin": "あなたのチームの勝ち！ {{t0}} － {{t1}}",

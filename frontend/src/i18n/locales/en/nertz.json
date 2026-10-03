@@ -4,6 +4,7 @@
     "round": "Round",
     "moveCount": "Moves",
     "score": "Score",
+    "listSeparator": ", ",
     "scoreBarAria": "{{player}}: {{score}} of {{target}}",
     "you": "You",
     "cpu": "CPU",
@@ -11,6 +12,8 @@
     "tableau": "Tableau",
     "waste": "Waste",
     "stock": "Stock",
+    "stockDrawAria_one": "Draw from stock, {{count}} card remaining",
+    "stockDrawAria_other": "Draw from stock, {{count}} cards remaining",
     "foundation": "Foundation",
     "foundationN": "Foundation {{n}} ({{size}}/{{max}} cards)",
     "remaining": "left",
@@ -65,6 +68,9 @@
     "human": "You placed on foundation {{foundation}}",
     "cpu": "CPU placed on foundation {{foundation}}",
     "collision": "Move to foundation {{foundation}} rejected"
+  },
+  "scoreAnnounce": {
+    "cpu": "{{player}} score {{delta}} (total {{score}})"
   },
   "zones": {
     "nertz": "Nertz",

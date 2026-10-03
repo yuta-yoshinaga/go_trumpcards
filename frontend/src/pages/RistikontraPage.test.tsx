@@ -118,6 +118,41 @@ describe('RistikontraPage', () => {
     expect(screen.getByTestId('ristikontra-turn-notice')).toHaveAttribute('role', 'status');
   });
 
+  it('distinguishes counter cards, ordinary captures, and cards that do both', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        counterRank: 5,
+        pileTop: card('CLOVER', 7),
+        players: [
+          makePlayer({
+            id: 0,
+            isHuman: true,
+            cards: [card('SPADE', 5), card('HEART', 7), card('DIAMOND', 9)],
+          }),
+          makePlayer({ id: 1 }),
+          makePlayer({ id: 2 }),
+          makePlayer({ id: 3 }),
+        ],
+      }),
+    );
+    renderWithProviders(<RistikontraPage />);
+
+    expect(await screen.findByRole('button', { name: '♠ 5 を出す — 直前に取られた束を奪えます' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 7 を出す — 場の山を獲得できます' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ 9 を出す' })).toBeInTheDocument();
+  });
+
+  it('explains both effects when a card can counter and capture', async () => {
+    mockExec.mockResolvedValue(makeState({ counterRank: 5, pileTop: card('HEART', 5) }));
+    renderWithProviders(<RistikontraPage />);
+
+    expect(
+      await screen.findByRole('button', {
+        name: '♠ 5 を出す — 直前に取られた束を奪い、場の山も獲得できます',
+      }),
+    ).toBeInTheDocument();
+  });
+
   it('plays a hand card on the human turn', async () => {
     renderWithProviders(<RistikontraPage />);
     const cardBtn = await screen.findByTestId('hand-card-1');
@@ -453,10 +488,8 @@ describe('RistikontraPage', () => {
     expect(screen.getByTestId('hand-card-0').className).not.toContain('ring-ds-');
   });
 
-  // 途中経過は**チームの獲得枚数**。クローン元は席ごとの近似スコア
-  // (確定ボーナス + 最多捕獲 +3) を出していたが、このゲームには
-  // ボーナスもカード点も無いので、枚数がそのまま結果になる。
-  it('shows the team total during play, not the seat total', async () => {
+  // 途中経過はチームの獲得枚数合計であることを説明する。
+  it('shows the team total during play and explains it as the capture total', async () => {
     mockExec.mockResolvedValue(
       makeState({
         players: [
@@ -473,6 +506,10 @@ describe('RistikontraPage', () => {
     expect(screen.getByTestId('ristikontra-provisional-2')).toHaveTextContent('9');
     expect(screen.getByTestId('ristikontra-provisional-1')).toHaveTextContent('4');
     expect(screen.getByTestId('ristikontra-provisional-3')).toHaveTextContent('4');
+    expect(screen.getByTestId('ristikontra-provisional-note')).toHaveTextContent(
+      '暫定スコアは、各チームの獲得枚数の合計です。',
+    );
+    expect(screen.getByTestId('ristikontra-provisional-note')).not.toHaveTextContent(/Pişti|カード点/);
   });
 
   it('marks the leading team, and neither team when they are level', async () => {

@@ -227,6 +227,7 @@ function SkitgubbePageContent() {
 
             <ActionLogSection
               isEndPhase={ended}
+              availableDuringPlay
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
@@ -242,6 +243,7 @@ function SkitgubbePageContent() {
                 type="button"
                 data-hint-action="pickup"
                 aria-disabled={!state.canPickUp}
+                aria-describedby={state.canPickUp ? 'sg-pickup-hint' : undefined}
                 onClick={() => state.canPickUp && game.handlePickUp()}
                 className={[
                   'px-4 py-2 rounded font-bold min-h-11',
@@ -250,7 +252,11 @@ function SkitgubbePageContent() {
               >
                 {t('pickUp')}
               </button>
-              {state.canPickUp && <span className="text-xs text-ds-text-muted">{t('pickUpHint')}</span>}
+              {state.canPickUp && (
+                <span id="sg-pickup-hint" className="text-xs text-ds-text-muted">
+                  {t('pickUpHint')}
+                </span>
+              )}
               {/* Every hand card turns aria-disabled the moment this flips, and
                   until now that change was signalled only by colour (#4912). */}
               {state.canPickUp && (

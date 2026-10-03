@@ -26,6 +26,8 @@
   "drewCard": "{{from}} drew from {{target}}",
   "drewCardWithLabel": "{{from}} drew from {{target}} ({{card}})",
   "discardedPairs": ". Discarded {{count}} pair(s)",
+  "discardedCardNames": " ({{cards}})",
+  "listSeparator": ", ",
   "yourTurn": "Your turn! Click a card from {{target}} to draw.",
   "removedCard": "Removed Card: {{card}}",
   "history": {
@@ -63,7 +65,8 @@
   "reorder": {
     "selectCardToMove": "Select card to move: {{card}}",
     "deselectCard": "Deselect {{card}}",
-    "moveHere": "Move {{card}} to position {{to}}"
+    "moveHere": "Move {{card}} to position {{to}}",
+    "moved": "Moved {{card}} to position {{position}}"
   },
   "bubble": {
     "drewFrom": "← from {{from}}",

@@ -12,6 +12,24 @@ export function reddogWinningRanks(initial: Card[]): number[] {
   return Array.from({ length: Math.max(0, hi - lo - 1) }, (_, i) => lo + 1 + i);
 }
 
+/** Counts winning cards left among the 50 cards not dealt as the initial hand. */
+export function reddogWinningCardOdds(
+  initial: Card[],
+): { winningCards: number; remainingCards: number; probability: number } | null {
+  if (initial.length !== 2) return null;
+  const firstRank = redDogRank(initial[0]);
+  const secondRank = redDogRank(initial[1]);
+  const ranks = firstRank === secondRank ? [firstRank] : reddogWinningRanks(initial);
+  if (ranks.length === 0) return null;
+
+  const winningCards = ranks.reduce(
+    (total, rank) => total + 4 - initial.filter((card) => redDogRank(card) === rank).length,
+    0,
+  );
+  const remainingCards = 50;
+  return { winningCards, remainingCards, probability: winningCards / remainingCards };
+}
+
 /** Maps a card value to Red Dog rank space (A=14, K=13, … 2=2). */
 export function redDogRank(c: Card): number {
   return c.value === 1 ? 14 : c.value;

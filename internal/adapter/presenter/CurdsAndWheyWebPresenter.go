@@ -91,10 +91,15 @@ func (p *CurdsAndWheyWebPresenter) fillBoard(resObj *controller.CurdsAndWheyWebO
 }
 
 func (p *CurdsAndWheyWebPresenter) buildBaseOutput(g interfaces.CurdsAndWheyGame) *controller.CurdsAndWheyWebOutput {
+	canUndo := g.CanUndo()
+	if g.GetPhase() != domain.CurdsAndWheyPhasePlaying {
+		logs := g.GetActionLog()
+		canUndo = g.GetPhase() == domain.CurdsAndWheyPhaseGameOver && canUndo && len(logs) > 0 && logs[len(logs)-1].ActionType == "gameover"
+	}
 	return &controller.CurdsAndWheyWebOutput{
 		Phase:          int(g.GetPhase()),
 		MoveCount:      g.GetMoveCount(),
 		CompletedSuits: g.GetCompletedSuits(),
-		CanUndo:        g.CanUndo(),
+		CanUndo:        canUndo,
 	}
 }

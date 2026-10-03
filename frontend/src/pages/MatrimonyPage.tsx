@@ -385,6 +385,12 @@ function MatrimonyPageContent() {
               </div>
             </div>
 
+            <p className="text-ds-text-muted text-xs tabular-nums text-center" data-testid="redeals-remaining">
+              {state.redealCount >= state.maxRedeals
+                ? t('redealsExhausted')
+                : t('redealsRemaining', { count: state.maxRedeals - state.redealCount })}
+            </p>
+
             <div
               className="grid gap-1 sm:gap-2 justify-center"
               style={{ gridTemplateColumns: `repeat(${SLOTS_PER_ROW}, minmax(0, 1fr))` }}
@@ -406,6 +412,18 @@ function MatrimonyPageContent() {
                   {formatHintZone(t, hint.toZone, hint.toIdx)}
                 </div>
               )}
+            </div>
+            <div className="sr-only" data-testid="source-move-live" role="status" aria-live="polite">
+              {selectedSource && (selectedSource.zone === 'stock' || selectedSource.zone === 'waste')
+                ? selectedSource.zone === 'waste'
+                  ? t('wasteMoveAnnouncement')
+                  : t(
+                      state.tableau.some((card) => card === null)
+                        ? 'sourceMoveAnnouncement'
+                        : 'sourceMoveNoDestination',
+                      { source: t(selectedSource.zone) },
+                    )
+                : ''}
             </div>
             <div className="sr-only" data-testid="auto-complete-status" role="status" aria-live="polite">
               {autoCompleteStatus}
@@ -454,7 +472,7 @@ function MatrimonyPageContent() {
                     disabled={
                       loading ||
                       isAutoCompleting ||
-                      (state.stockCount === 0 && (state.waste.length === 0 || state.redealCount >= 3))
+                      (state.stockCount === 0 && (state.waste.length === 0 || state.redealCount >= state.maxRedeals))
                     }
                   >
                     {t('draw')}

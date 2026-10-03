@@ -40,6 +40,7 @@ function makeState(overrides: Partial<YanivResponse> = {}): YanivResponse {
     asafWinnerIdx: -1,
     isAsaf: false,
     roundScores: [],
+    roundScoreHistory: [],
     message: '',
     config: { cpuDifficulty: 1, scoreLimit: 200 },
     ...overrides,
@@ -53,6 +54,35 @@ beforeEach(() => {
 });
 
 describe('YanivPage', () => {
+  it('shows per-round penalties from server state', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        roundScoreHistory: [
+          [0, 4, 8, 2],
+          [3, 0, 1, 5],
+        ],
+      }),
+    );
+    renderWithProviders(<YanivPage />);
+    expect(await screen.findByRole('heading', { name: 'ラウンド別の失点' })).toBeInTheDocument();
+    const rows = screen.getByRole('table').querySelectorAll('tbody tr');
+    expect(rows[0]).toHaveTextContent('10482');
+    expect(rows[1]).toHaveTextContent('23015');
+  });
+
+  it('indexes round penalties by player position', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [player(3, true, []), player(2, false, []), player(1, false, []), player(0, false, [])],
+        roundScoreHistory: [[11, 22, 33, 44]],
+      }),
+    );
+    renderWithProviders(<YanivPage />);
+    await screen.findByRole('heading', { name: 'ラウンド別の失点' });
+    const row = screen.getByRole('table').querySelector('tbody tr');
+    expect(row).toHaveTextContent('111223344');
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<YanivPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -119,6 +149,34 @@ describe('YanivPage', () => {
     const yanivBtn = screen.getByTestId('yaniv-button');
     expect(yanivBtn.className).toContain('ring-ds-success');
     expect(yanivBtn.className).toContain('animate-pulse');
+  });
+
+  it('shows the hand total, Yaniv threshold, and current availability beside the button', async () => {
+    renderWithProviders(<YanivPage />);
+    const guidance = await screen.findByTestId('yaniv-guidance');
+    expect(guidance).toHaveTextContent('手札合計: 3');
+    expect(guidance).toHaveTextContent('5以下で宣言可能');
+    expect(guidance).toHaveTextContent('宣言できます');
+    expect(screen.getByTestId('yaniv-button').parentElement?.parentElement).toContainElement(guidance);
+  });
+
+  it('shows Yaniv as unavailable when the hand total exceeds 5', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ players: [player(0, true, [card('SPADE', 8)], { handTotal: 8 }), ...makeState().players.slice(1)] }),
+    );
+    renderWithProviders(<YanivPage />);
+    const guidance = await screen.findByTestId('yaniv-guidance');
+    expect(guidance).toHaveTextContent('手札合計: 8');
+    expect(guidance).toHaveTextContent('5以下で宣言可能');
+    expect(guidance).toHaveTextContent('合計が5を超えているため宣言できません。');
+  });
+
+  it('explains that Yaniv can only be declared on the human discard turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+    renderWithProviders(<YanivPage />);
+    const guidance = await screen.findByTestId('yaniv-guidance');
+    expect(guidance).toHaveTextContent('手札合計: 3');
+    expect(guidance).toHaveTextContent('自分の捨て札フェーズで宣言できます。');
   });
 
   it('explains the Yaniv threshold on the hand-total badge via a tooltip', async () => {

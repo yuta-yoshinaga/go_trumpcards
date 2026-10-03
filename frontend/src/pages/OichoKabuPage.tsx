@@ -33,6 +33,7 @@ import { OICHOKABU_HELP, parseOichokabuCommand } from '../utils/cli/commands/oic
 import { formatOichokabuState } from '../utils/cli/formatters/oichokabuFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { oichokabuDealerPolicy } from '../utils/oichokabuDealerPolicy';
 
 const OK_TUTORIAL_STEPS: TutorialStep[] = [
@@ -224,6 +225,12 @@ function OichoKabuPageContent() {
                 <div className="font-bold">
                   {t('payout.total')}: {state.totalPayout}
                 </div>
+                <div>
+                  {t('payout.bet')}: {state.bet}
+                </div>
+                <div className="font-bold">
+                  {t('payout.netProfit')}: {formatSignedDelta(state.netChange)}
+                </div>
                 {(() => {
                   const policy = oichokabuDealerPolicy(state.bankerHand.length, state.bankerRank);
                   return (
@@ -249,7 +256,11 @@ function OichoKabuPageContent() {
                   value={betAmount}
                   onChange={setBetAmount}
                   max={state.chips}
+                  describedBy="oichokabu-bet-max"
                 />
+                <span id="oichokabu-bet-max" className="sr-only">
+                  {t('maxBetDescription', { amount: state.chips })}
+                </span>
                 {canRebet && lastBetAmount !== null && lastBetAmount !== betAmount && (
                   <button
                     type="button"

@@ -101,6 +101,12 @@ describe('PasurPage', () => {
     expect(screen.getByTestId('ps-seat-3')).toBeInTheDocument();
   });
 
+  it('marks the current human seat', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<PasurPage />);
+    expect(await screen.findByTestId('ps-turn-0')).toHaveAttribute('aria-current', 'step');
+  });
+
   // **場に残った札の行き先が読めること。**
   it('marks the last capturer only once someone has captured', async () => {
     const { unmount } = renderWithProviders(<PasurPage />);
@@ -205,6 +211,71 @@ describe('PasurPage', () => {
       const { unmount } = renderWithProviders(<PasurPage />);
       expect(await screen.findByTestId('ps-result')).toHaveTextContent(expected);
       unmount();
+    }
+  });
+
+  it('shows every seat score breakdown beside the final result', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        gameEndFlag: true,
+        phase: 1,
+        winners: [1],
+        players: [
+          seat(0, { capturedCount: 8, soors: 1, score: 11 }),
+          seat(1, { capturedCount: 12, soors: 3, score: 18 }),
+          seat(2, { capturedCount: 6, soors: 0, score: 4 }),
+          seat(3, { capturedCount: 7, soors: 2, score: 9 }),
+        ],
+        captureScores: [
+          [{ normal: 7, soorBonus: 4 }],
+          [{ normal: 10, soorBonus: 8 }],
+          [{ normal: 4, soorBonus: 0 }],
+          [{ normal: 5, soorBonus: 4 }],
+        ],
+      }),
+    );
+
+    renderWithProviders(<PasurPage />);
+
+    const finalResult = await screen.findByTestId('ps-final-result');
+    expect(finalResult).toHaveTextContent('CPU1 の勝ちです。');
+    expect(screen.getByTestId('ps-result')).toHaveAttribute('role', 'status');
+    expect(screen.getByTestId('ps-result')).toHaveTextContent('CPU1 の勝ちです。');
+    expect(finalResult).toHaveTextContent('最終得点内訳');
+    expect(screen.getByTestId('ps-final-score-0')).toHaveTextContent('札点 7点');
+    expect(screen.getByTestId('ps-final-score-0')).toHaveTextContent('スール加点 4点');
+    expect(screen.getByTestId('ps-final-score-0')).toHaveTextContent('最終得点 11点');
+    expect(screen.getByTestId('ps-final-score-0')).toHaveTextContent('捕獲 8枚');
+    expect(screen.getByTestId('ps-final-score-0')).toHaveTextContent('スール 1回');
+    expect(screen.getByTestId('ps-final-score-1')).toHaveTextContent('最終得点 18点');
+    expect(screen.getByTestId('ps-final-score-1')).toHaveTextContent('札点 10点');
+    expect(screen.getByTestId('ps-final-score-1')).toHaveTextContent('スール加点 8点');
+    expect(screen.getByTestId('ps-final-score-3')).toHaveTextContent('スール 2回');
+  });
+
+  it('localizes the final score breakdown in English', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(
+        makeState({
+          gameEndFlag: true,
+          phase: 1,
+          winners: [0],
+          players: [seat(0, { score: 5, capturedCount: 4, soors: 1 }), seat(1), seat(2), seat(3)],
+          captureScores: [[{ normal: 3, soorBonus: 2 }], [], [], []],
+        }),
+      );
+      renderWithProviders(<PasurPage />);
+      const finalResult = await screen.findByTestId('ps-final-result');
+      expect(finalResult).toHaveTextContent('You win!');
+      expect(finalResult).toHaveTextContent('Final score breakdown');
+      expect(screen.getByTestId('ps-final-score-0')).toHaveTextContent('Card points: 3 points');
+      expect(screen.getByTestId('ps-final-score-0')).toHaveTextContent('Soor bonus: 2 points');
+      expect(screen.getByTestId('ps-final-score-0')).toHaveTextContent('Final score: 5 points');
+      expect(screen.getByTestId('ps-final-score-0')).toHaveTextContent('Captured: 4 cards');
+      expect(screen.getByTestId('ps-final-score-0')).toHaveTextContent('Soors: 1');
+    } finally {
+      await i18n.changeLanguage('ja');
     }
   });
 

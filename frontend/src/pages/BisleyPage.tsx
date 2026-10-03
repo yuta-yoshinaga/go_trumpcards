@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { bisleyApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -100,6 +100,17 @@ function BisleyPageContent() {
   } = useGamePageSetup('bisley');
   const game = useBisleyGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
+  const wasAutoCompleting = useRef(false);
+  const [autoCompleteAnnouncement, setAutoCompleteAnnouncement] = useState('');
+
+  useEffect(() => {
+    if (isAutoCompleting) {
+      setAutoCompleteAnnouncement('autoCompleteStarted');
+    } else if (wasAutoCompleting.current) {
+      setAutoCompleteAnnouncement('autoCompleteCompleted');
+    }
+    wasAutoCompleting.current = isAutoCompleting;
+  }, [isAutoCompleting]);
 
   const {
     hint: frontendHint,
@@ -318,15 +329,17 @@ function BisleyPageContent() {
         <div className="flex gap-1 sm:gap-2">
           {FOUNDATION_SUITS.map((suit, idx) => {
             const pile = piles[idx] ?? [];
+            const suitCount = (state.aceFoundations[idx]?.length ?? 0) + (state.kingFoundations[idx]?.length ?? 0);
+            const progress = t('foundationProgress', { count: suitCount, total: state.foundationSize });
             const top = pile[pile.length - 1];
-            const suitCardsPlaced =
-              (state.aceFoundations[idx]?.length ?? 0) + (state.kingFoundations[idx]?.length ?? 0);
+            const suitCardsPlaced = suitCount;
             const nextRank = bisleyNextRank(top?.value, suitCardsPlaced, direction);
             const nextRankLabel = nextRank !== null ? valueName(nextRank) : null;
             const foundationZone: BisleyMoveZone = { zone: kind, col: idx };
             return (
               <div key={`${kind}-${suit}`} className="text-center">
                 <div className="text-game-text-muted text-xs mb-1">{suit}</div>
+                {kind === 'ace' && <div className="text-game-text-muted text-xs mb-1">{progress}</div>}
                 <DropZone
                   className="relative"
                   isDropTarget={dnd.isDropTarget(foundationZone)}
@@ -343,10 +356,16 @@ function BisleyPageContent() {
                       aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                       aria-label={
                         nextRankLabel
-                          ? t(labelKey, { suit, count: pile.length, rank: nextRankLabel })
+                          ? t(labelKey, {
+                              suit,
+                              progress,
+                              count: pile.length,
+                              total: state.foundationSize,
+                              rank: nextRankLabel,
+                            })
                           : t(kind === 'ace' ? 'completeAceFoundationAriaLabel' : 'completeKingFoundationAriaLabel', {
                               suit,
-                              count: pile.length,
+                              progress,
                             })
                       }
                       className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
@@ -367,8 +386,8 @@ function BisleyPageContent() {
                       aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                       aria-label={
                         nextRankLabel
-                          ? t(emptyLabelKey, { suit, rank: nextRankLabel })
-                          : t(completeEmptyLabelKey, { suit })
+                          ? t(emptyLabelKey, { suit, progress, rank: nextRankLabel })
+                          : t(completeEmptyLabelKey, { suit, progress })
                       }
                       style={{ width: dims.cw, height: dims.ch }}
                       className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
@@ -448,6 +467,9 @@ function BisleyPageContent() {
                   {formatHintZone(t, hint.toZone, hint.toIdx)}
                 </div>
               )}
+            </div>
+            <div className="sr-only" data-testid="bisley-autocomplete-live" role="status" aria-live="polite">
+              {autoCompleteAnnouncement && t(autoCompleteAnnouncement)}
             </div>
             <div className="flex justify-center">
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />

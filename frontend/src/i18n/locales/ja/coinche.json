@@ -21,6 +21,8 @@
   "trick": "トリック {{n}}",
   "cards": "{{count}}枚",
   "teamScores": "チームスコア",
+  "cumulativeScoreLabel": "累計得点",
+  "roundScoreLabel": "ラウンド得点",
   "team": "チーム{{n}}",
   "teamYou": "チーム{{n}} (あなた)",
   "trumpSuit": "切り札: {{suit}}",
@@ -92,5 +94,7 @@
   "declineDoubleButton": "そのまま進む",
   "hintBid": "おすすめ: {{points}}点を{{suit}}で宣言",
   "bidPhase": "目標点と切り札を宣言するか、パスしてください",
-  "doublePhase": "相手の契約を倍にしますか？"
+  "doublePhase": "相手の契約を倍にしますか？",
+  "bidControlsGroup": "目標点と切り札の宣言",
+  "doubleControlsGroup": "コワンシュへの応答"
 }

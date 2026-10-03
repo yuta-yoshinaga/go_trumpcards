@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type AgnesMoveZone, agnesApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -132,7 +132,22 @@ function AgnesPageContent() {
   // Aces Up / Spiderette sequential-driver pattern (#4193). The ref guard blocks
   // a second concurrent loop and `isAutoCompleting` gates the page controls.
   const [isAutoCompleting, setIsAutoCompleting] = useState(false);
+  const [autoCompleteAnnouncement, setAutoCompleteAnnouncement] = useState('');
   const autoCompletingRef = useRef(false);
+  const wasAutoCompleting = useRef(false);
+  const announcedMoveCount = useRef(state?.moveCount);
+  useEffect(() => {
+    if (isAutoCompleting && !wasAutoCompleting.current) {
+      setAutoCompleteAnnouncement(t('autoCompleteStarted'));
+      announcedMoveCount.current = state?.moveCount;
+    } else if (isAutoCompleting && state?.moveCount !== announcedMoveCount.current) {
+      setAutoCompleteAnnouncement(t('autoCompleteProgress', { count: state?.moveCount ?? 0 }));
+      announcedMoveCount.current = state?.moveCount;
+    } else if (!isAutoCompleting && wasAutoCompleting.current) {
+      setAutoCompleteAnnouncement(t('autoCompleteCompleted'));
+    }
+    wasAutoCompleting.current = isAutoCompleting;
+  }, [isAutoCompleting, state?.moveCount, t]);
   const stateRef = useRef(state);
   stateRef.current = state;
   const handleAutoComplete = useCallback(async () => {
@@ -260,6 +275,20 @@ function AgnesPageContent() {
           </span>
           <span className="text-sm text-ds-text-muted">
             {t('moveCount')}: {state.moveCount}
+          </span>
+          <span className="sr-only" role="status" aria-live="polite" data-testid="agnes-drag-target-status">
+            {dnd.isDragging && draggedCard !== null
+              ? state.tableau
+                  .flatMap((col, idx) =>
+                    idx !== dnd.dragSource?.col && agnesCanPlaceOnTableau(draggedCard, col)
+                      ? [t('dragTargetColumn', { col: idx })]
+                      : [],
+                  )
+                  .join(t('listSeparator'))
+              : ''}
+          </span>
+          <span className="sr-only" role="status" aria-live="polite" data-testid="agnes-autocomplete-status">
+            {autoCompleteAnnouncement}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
@@ -451,7 +480,7 @@ function AgnesPageContent() {
 
             {isStalemate && (
               <div
-                className="mt-1 flex flex-wrap items-center gap-2 text-ds-error text-sm font-medium"
+                className="mt-1 flex flex-wrap items-center gap-2 text-ds-error-text text-sm font-medium"
                 role="status"
                 data-testid="ag-stalemate-banner"
               >

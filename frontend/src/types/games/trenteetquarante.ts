@@ -21,6 +21,8 @@ export interface TrenteEtQuaranteResponse extends BaseGameResponse {
   roundNumber: number;
   /** Player's remaining chip stack. */
   chips: number;
+  /** Server persisted session totals. */
+  session: { startingChips: number; net: number; wins: number; losses: number; draws: number; refaits: number };
   /** Selected bet: 0=Noir, 1=Rouge, 2=Couleur, 3=Inverse. */
   currentBet: TrenteEtQuaranteBetTypeValue;
   /** Amount wagered on the current round. */

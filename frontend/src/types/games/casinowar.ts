@@ -22,6 +22,8 @@ export interface CasinoWarResponse extends BaseGameResponse {
   warBet: number;
   result: number;
   totalPayout: number;
+  /** Net chip change for the completed round, after subtracting all bets. */
+  netChange: number;
 }
 
 // --- Oicho-Kabu (おいちょかぶ) ---

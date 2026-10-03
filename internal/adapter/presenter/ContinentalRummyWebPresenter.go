@@ -44,12 +44,25 @@ func (p *ContinentalRummyWebPresenter) buildBase(g interfaces.ContinentalRummyGa
 	// **1 回だけ解いて回す (レビュー指摘)。** 呼び出しごとに解き直すと、
 	// 同じ分割探索が 1 レスポンス中で何度も走るうえ、いつか食い違う。
 	resObj.GoOutIdx = -1
+	resObj.GoOutGroups = make([][]int, 0)
 	if idx, ok := g.CanGoOut(); ok {
 		resObj.GoOutIdx = idx
+		if hand := g.GetPlayer(domain.ContinentalRummyHumanIdx).GetHand(); len(hand) > 0 {
+			if discardIdx, groups, found := domain.FindContinentalRummyDiscardGroups(hand); found && discardIdx == idx {
+				resObj.GoOutGroups = groups
+			}
+		}
 	}
 	// 引く前に、配られた 15 枚のまま上がれるならそれも伝える。
 	resObj.CanGoOutOnDeal = g.CanGoOutOnTheDeal()
 	resObj.LastResult = p.lastResult(g)
+	resObj.RoundScoreHistory = make([]controller.ContinentalRummyWebOutputRoundScore, 0)
+	for _, entry := range g.GetRoundScoreHistory() {
+		resObj.RoundScoreHistory = append(resObj.RoundScoreHistory, controller.ContinentalRummyWebOutputRoundScore{
+			RoundNumber: entry.RoundNumber,
+			Scores:      append([]int(nil), entry.Scores...),
+		})
+	}
 
 	cfg := g.GetConfig()
 	resObj.TotalRounds = cfg.TotalRounds

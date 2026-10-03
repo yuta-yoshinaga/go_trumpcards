@@ -25,6 +25,7 @@
   "scoresPlayer": "Player",
   "scoresRound": "Round",
   "scoresTotal": "Total",
+  "historyRound": "Round",
   "target": "Target: {{points}} pts",
   "playButton": "Play",
   "drawButton": "Draw",
@@ -55,5 +56,7 @@
     "drawCard": "No playable card — draw one from the pile",
     "declare": "Only 1 card left — declare 'Page One!' to avoid the 2-card penalty"
   },
-  "playableAria": "playable"
+  "playableAria": "playable",
+  "handCardAria": "{{card}}, position {{position}}",
+  "handCardPlayableAria": "{{card}} ({{playable}}), position {{position}}"
 }

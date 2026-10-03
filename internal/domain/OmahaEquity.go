@@ -6,22 +6,6 @@ import (
 	"math/rand"
 )
 
-// CalcOmahaEquity モンテカルロシミュレーションによるオマハエクイティ計算
-// humanCards: 人間の手札(4枚), communityCards: コミュニティカード,
-// activePlayers: アクティブ相手プレイヤー数, simulations: シミュレーション回数,
-// rng: 乱数生成器 (nilの場合はグローバルrand使用)
-func CalcOmahaEquity(humanCards, communityCards []*Card, activePlayers, simulations int, rng *rand.Rand) HoldemEquityResult {
-	return calcOmahaEquityWithHoleCount(humanCards, communityCards, activePlayers, simulations, rng, 4)
-}
-
-// CalcOmahaHiLoEquity モンテカルロシミュレーションによるオマハ Hi-Lo エクイティ計算
-// humanCards: 人間の手札(4枚), communityCards: コミュニティカード,
-// activePlayers: アクティブ相手プレイヤー数, simulations: シミュレーション回数,
-// rng: 乱数生成器 (nilの場合はグローバルrand使用)
-func CalcOmahaHiLoEquity(humanCards, communityCards []*Card, activePlayers, simulations int, rng *rand.Rand) HoldemEquityResult {
-	return calcOmahaHiLoEquityWithHoleCount(humanCards, communityCards, activePlayers, simulations, rng, 4)
-}
-
 // calcOmahaHiLoEquityWithHoleCount calculates Omaha Hi-Lo equity as the
 // human player's expected share of the whole pot. LowProbability is the
 // expected share of the low half, before its 50% pot weighting is applied.
@@ -165,7 +149,7 @@ func bestQualifyingOmahaLow(holeCards, communityCards []*Card) []*Card {
 
 // calcOmahaEquityWithHoleCount はオマハ系エクイティ計算の共通実装。
 // holeCardCount で相手プレイヤーに配布するホールカード枚数を指定する
-// (オマハ=4, Big O=5)。CalcOmahaEquity は4枚版の薄いラッパー。
+// (オマハ=4, Big O=5)。
 func calcOmahaEquityWithHoleCount(humanCards, communityCards []*Card, activePlayers, simulations int, rng *rand.Rand, holeCardCount int) HoldemEquityResult {
 	omahaEval := func(holeCards, simCommunity []*Card) (int, []*Card) {
 		return evalBestFromOmaha(holeCards, simCommunity)

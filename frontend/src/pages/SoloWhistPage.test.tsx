@@ -12,6 +12,15 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(soloWhistApi.exec);
+const mobileFlag = { value: false };
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileFlag.value }),
+  };
+});
 
 // Default fixture: a human bid turn (bid phase).
 const bidPhaseState = makeSoloWhistState();
@@ -83,11 +92,27 @@ function makeProgressState(contract: number, won: number, cardCount: number) {
 
 beforeEach(() => {
   localStorage.clear();
+  mobileFlag.value = false;
   mockExec.mockReset();
   mockExec.mockResolvedValue(bidPhaseState);
 });
 
 describe('SoloWhistPage', () => {
+  it('shows the dealer badge only beside the dealer seat', async () => {
+    renderWithProviders(<SoloWhistPage />);
+    const badge = await screen.findByText('ディーラー', { selector: 'span' });
+    expect(badge.parentElement).toHaveTextContent('CPU 3');
+    expect(screen.getAllByText('ディーラー', { selector: 'span' })).toHaveLength(1);
+  });
+
+  it('shows the dealer badge only beside the dealer seat on mobile', async () => {
+    mobileFlag.value = true;
+    renderWithProviders(<SoloWhistPage />);
+    const badge = await screen.findByText('ディーラー', { selector: 'span' });
+    expect(badge.parentElement).toHaveTextContent('CPU 3');
+    expect(screen.getAllByText('ディーラー', { selector: 'span' })).toHaveLength(1);
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SoloWhistPage />);
@@ -145,6 +170,47 @@ describe('SoloWhistPage', () => {
     mockExec.mockResolvedValue(makeSoloWhistState({ bids: [0, 0, 0, 0] }));
     renderWithProviders(<SoloWhistPage />);
     await waitFor(() => expect(screen.getByTestId('sw-highest-bid')).toHaveTextContent('まだ入札なし'));
+  });
+
+  it('keeps a polite live region mounted for the highest bid and bidder', async () => {
+    mockExec.mockResolvedValue(makeSoloWhistState({ bids: [0, 0, 0, 0] }));
+    const firstRender = renderWithProviders(<SoloWhistPage />);
+    const liveRegion = await screen.findByTestId('solowhist-highest-bid-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toHaveTextContent('まだ入札なし');
+
+    firstRender.unmount();
+    mockExec.mockResolvedValue(makeSoloWhistState({ bids: [2, 0, 0, 0] }));
+    renderWithProviders(<SoloWhistPage />);
+    await waitFor(() =>
+      expect(screen.getByTestId('solowhist-highest-bid-live')).toHaveTextContent('現在の最高ビッド: ミゼール'),
+    );
+    expect(screen.getByTestId('solowhist-highest-bid-live')).toHaveTextContent('あなた');
+    expect(screen.getByTestId('solowhist-highest-bid-live')).toHaveClass('sr-only');
+  });
+
+  it('updates the highest-bid live region after a bid response without unmounting', async () => {
+    mockExec.mockResolvedValue(makeSoloWhistState({ bids: [0, 0, 0, 0] }));
+    renderWithProviders(<SoloWhistPage />);
+    const liveRegion = await screen.findByTestId('solowhist-highest-bid-live');
+    expect(liveRegion).toHaveTextContent('まだ入札なし');
+    expect(screen.getByTestId('sw-highest-bid')).toHaveAttribute('aria-hidden', 'true');
+
+    mockExec.mockResolvedValue(makeSoloWhistState({ bids: [2, 0, 0, 0] }));
+    fireEvent.click(screen.getByTestId('bid-1'));
+
+    await waitFor(() => expect(liveRegion).toHaveTextContent('現在の最高ビッド: ミゼール'));
+    expect(liveRegion).toHaveTextContent('あなた');
+  });
+
+  it('announces a numeric highest bid when it has no label key', async () => {
+    mockExec.mockResolvedValue(makeSoloWhistState({ bids: [4, 0, 0, 0] }));
+    renderWithProviders(<SoloWhistPage />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId('solowhist-highest-bid-live')).toHaveTextContent('現在の最高ビッド: 4'),
+    );
   });
 
   it('exposes the declarer line as a polite live region', async () => {
@@ -252,7 +318,7 @@ describe('SoloWhistPage', () => {
     renderWithProviders(<SoloWhistPage />);
     const line = await screen.findByTestId('solowhist-contract-progress');
     expect(line).toHaveTextContent('失敗確定');
-    expect(line.className).toContain('text-ds-error');
+    expect(line.className).toContain('text-ds-error-text');
   });
 
   it('fails the Misère contract the instant a trick is won', async () => {
@@ -262,7 +328,7 @@ describe('SoloWhistPage', () => {
     const line = await screen.findByTestId('solowhist-contract-progress');
     expect(line).toHaveTextContent('宣言者の進捗: 1 トリック（ミゼール・目標0）');
     expect(line).toHaveTextContent('失敗確定');
-    expect(line.className).toContain('text-ds-error');
+    expect(line.className).toContain('text-ds-error-text');
   });
 
   it('keeps a clean Misère in progress while no trick is won', async () => {

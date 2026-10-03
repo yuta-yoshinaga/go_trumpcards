@@ -53,6 +53,12 @@
   "selectContractPrompt": "You are the dealer — choose this deal's contract.",
   "selectContractCpu": "CPU {{id}} is choosing a contract…",
   "selectTrumpPrompt": "Choose the trump suit for King (Trump).",
+  "trumpSuit": {
+    "1": "Spades",
+    "2": "Clubs",
+    "3": "Hearts",
+    "4": "Diamonds"
+  },
   "selectButton": "Select",
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
@@ -73,7 +79,10 @@
     "gained": "{{name}}: {{points}} pts",
     "contractLine": "Contract: {{name}}",
     "contractLineTrump": "Contract: {{name}} (trump: {{suit}})",
-    "basis": "Basis: {{desc}}"
+    "basis": "Basis: {{desc}}",
+    "historyTitle": "Deal score history",
+    "historyDeal": "Deal {{n}} — {{name}}",
+    "historyTrump": "Deal {{n}} — {{name}} (trump: {{suit}})"
   },
   "hintAvailable": "Hint",
   "hint": {

@@ -32,6 +32,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { CALABRESELLA_HELP, parseCalabresellaCommand } from '../utils/cli/commands/calabresellaCommands';
 import { formatCalabresellaState } from '../utils/cli/formatters/calabresellaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { isRequestedHint } from '../utils/hintRequest';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -146,6 +147,10 @@ function CalabresellaPageContent() {
   const isGameEnd = state.phase === CalabresellaPhase.GAME_END || state.gameEndFlag;
 
   const canBid = isBidPhase && state.currentBidderIdx === humanIdx;
+  const canSubmitBid = (bid: number) => bid > state.highestBid;
+  const submitBid = (bid: number) => {
+    if (bid === 0 || canSubmitBid(bid)) handleBid(bid);
+  };
   const canDiscard = isDiscardPhase && state.soloistIdx === humanIdx;
   const canPlay = isPlayPhase && isHumanTurn;
   // The soloist takes the 4-card monte (16 cards) and discards down to the regulation
@@ -307,6 +312,19 @@ function CalabresellaPageContent() {
                         })}
                       </div>
                     ))}
+                    <div>{t(state.soloistWon ? 'roundResult.soloistWon' : 'roundResult.soloistLost')}</div>
+                    {state.players.map((p) => {
+                      const change = state.roundScoreChanges[p.id];
+                      const signedChange = formatSignedDelta(change);
+                      return (
+                        <div key={`settlement-${p.id}`}>
+                          {t('roundResult.settlement', {
+                            name: playerName(p.id, p.isHuman),
+                            change: signedChange,
+                          })}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -392,13 +410,30 @@ function CalabresellaPageContent() {
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="calabresella-action-buttons">
               {canBid && (
                 <>
-                  <button type="button" className={btnPrimary} onClick={() => handleBid(1)} disabled={loading}>
+                  <span id="calabresella-bid-unavailable-reason" className="sr-only">
+                    {t('bidUnavailable')}
+                  </span>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={() => submitBid(1)}
+                    disabled={loading}
+                    aria-disabled={!canSubmitBid(1)}
+                    aria-describedby={!canSubmitBid(1) ? 'calabresella-bid-unavailable-reason' : undefined}
+                  >
                     {t('bidChiamo')}
                   </button>
-                  <button type="button" className={btnPrimary} onClick={() => handleBid(2)} disabled={loading}>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={() => submitBid(2)}
+                    disabled={loading}
+                    aria-disabled={!canSubmitBid(2)}
+                    aria-describedby={!canSubmitBid(2) ? 'calabresella-bid-unavailable-reason' : undefined}
+                  >
                     {t('bidSolo')}
                   </button>
-                  <button type="button" className={btnSecondary} onClick={() => handleBid(0)} disabled={loading}>
+                  <button type="button" className={btnSecondary} onClick={() => submitBid(0)} disabled={loading}>
                     {t('bidPass')}
                   </button>
                 </>

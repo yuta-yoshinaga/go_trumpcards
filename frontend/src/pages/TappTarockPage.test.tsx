@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tapptarockApi } from '../api/gameApi';
+import enTappTarock from '../i18n/locales/en/tapptarock.json';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeTappTarockState } from '../test/stateFactories';
 import { TappTarockPage } from './TappTarockPage';
@@ -60,6 +61,12 @@ beforeEach(() => {
 });
 
 describe('TappTarockPage', () => {
+  it('explains the 16-card hand and the six-card talon exchange in English', () => {
+    expect(enTappTarock.tutorial.playerHand).toContain('16 cards');
+    expect(enTappTarock.tutorial.playerHand).toContain('six-card talon');
+    expect(enTappTarock.tutorial.playerHand).toContain('bury six');
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<TappTarockPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -258,7 +265,7 @@ describe('TappTarockPage', () => {
 
     const result = await screen.findByTestId('zw-round-result');
     const message = result.querySelector('[data-result="lost"]');
-    expect(message).toHaveClass('text-ds-error');
+    expect(message).toHaveClass('text-ds-error-text');
     expect(message).not.toHaveClass('text-ds-success');
     expect(message).toHaveTextContent('失敗');
   });
@@ -290,7 +297,7 @@ describe('TappTarockPage', () => {
     const result = await screen.findByTestId('zw-round-result');
     const message = result.querySelector('[data-result="trischaken"]');
     expect(message).not.toHaveClass('text-ds-success');
-    expect(message).not.toHaveClass('text-ds-error');
+    expect(message).not.toHaveClass('text-ds-error-text');
     expect(message).toHaveTextContent('CPU2');
     expect(message).toHaveTextContent('33');
   });
@@ -338,10 +345,23 @@ describe('TappTarockPage', () => {
     );
   });
 
-  it('reports a tied match', async () => {
+  it('styles a tied match neutrally', async () => {
     mockExec.mockResolvedValue(makeTappTarockState({ ...playState, phase: 5, gameEndFlag: true, winnerPlayer: -1 }));
     renderWithProviders(<TappTarockPage />);
-    expect(await screen.findByTestId('zw-result')).toHaveTextContent('引き分け');
+    const result = await screen.findByTestId('zw-result');
+    const message = result.children[1];
+    expect(message).toHaveTextContent('引き分け');
+    expect(message).toHaveClass('text-ds-text-muted');
+    expect(message).not.toHaveClass('text-ds-success');
+  });
+
+  it('styles a match with a winner using the success color', async () => {
+    mockExec.mockResolvedValue(makeTappTarockState({ ...playState, phase: 5, gameEndFlag: true, winnerPlayer: 0 }));
+    renderWithProviders(<TappTarockPage />);
+    const result = await screen.findByTestId('zw-result');
+    const message = result.children[1];
+    expect(message).toHaveTextContent('勝者: あなた');
+    expect(message).toHaveClass('text-ds-success');
   });
 
   it('surfaces an API error raised after the board is up', async () => {

@@ -40,6 +40,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { MRSMOP_HELP, parseMrsMopCommand } from '../utils/cli/commands/mrsMopCommands';
 import { formatMrsMopState } from '../utils/cli/formatters/mrsMopFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { mrsMopLegalTargets } from '../utils/mrsMopLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 // **同スート降順の並び判定は Spider と同一の規則。**共有ヘルパをそのまま使う
 // (クローンが `mrsMopMovableRun` という存在しない名前に書き換えていた)。
@@ -198,6 +199,13 @@ function MrsMopPageContent() {
   const currentPhase = state?.phase;
   const currentScore = state?.score;
   const currentMoves = state?.moveCount;
+  const legalTargets = useMemo(
+    () =>
+      state && selectedSource?.zone === 'tableau'
+        ? mrsMopLegalTargets(state.tableau, selectedSource.col, selectedSource.cardIndex)
+        : [],
+    [state, selectedSource],
+  );
   useEffect(() => {
     const ended = currentPhase === MrsMopPhase.GAME_CLEAR || currentPhase === MrsMopPhase.GAME_OVER;
     if (!ended) {
@@ -457,9 +465,23 @@ function MrsMopPageContent() {
             <div data-testid="mrsMop-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t('tableau')} {hint.fromCol} [{hint.cardIndex}] → {t('tableau')} {hint.toCol}
+                  {t('hintMove', {
+                    fromCol: hint.fromCol,
+                    cardIndex: hint.cardIndex,
+                    toCol: hint.toCol,
+                  })}
                 </div>
               )}
+            </div>
+            <div className="sr-only" data-testid="mrsMop-selection-status" role="status" aria-live="polite">
+              {selectedSource
+                ? legalTargets.length > 0
+                  ? t('selectionTargets', {
+                      count: legalTargets.length,
+                      targets: legalTargets.map((col) => t('tableauColumn', { col })).join(t('listSeparator')),
+                    })
+                  : t('selectionNoTargets')
+                : ''}
             </div>
             <div className="flex justify-center">
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />

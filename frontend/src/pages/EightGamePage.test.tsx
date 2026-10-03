@@ -47,6 +47,48 @@ describe('EightGamePage', () => {
     expect(info).toHaveTextContent('テキサスホールデム');
   });
 
+  it('highlights and announces a discipline change with its updated rules', async () => {
+    mockExec
+      .mockResolvedValueOnce(eightGameState)
+      .mockResolvedValueOnce(
+        makeHorseState({ variant: 1, discipline: 1, disciplineLetter: 'O', disciplineName: 'omahaHiLo' }),
+      );
+    renderWithProviders(<EightGamePage />);
+    expect(await screen.findByTestId('ho-discipline')).toHaveTextContent('テキサスホールデム');
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+
+    fireEvent.click(await screen.findByRole('button', { name: 'フォールド' }));
+
+    const status = await screen.findByRole('status');
+    expect(status).toHaveAttribute('role', 'status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+    expect(status).toHaveTextContent('オマハ ハイロー');
+    expect(status).toHaveTextContent('手札から必ず2枚');
+    expect(screen.getByTestId('ho-discipline')).toHaveAttribute('data-discipline-changed', 'true');
+    expect(
+      screen.getByText(
+        (_, element) => element?.tagName === 'P' && Boolean(element.textContent?.includes('手札から必ず2枚')),
+      ),
+    ).toHaveClass('border-ds-accent');
+  });
+
+  it.each([
+    ['holdem', '手札2枚と場の5枚'],
+    ['omahaHiLo', '手札から必ず2枚'],
+    ['razz', '最も弱い5枚役'],
+    ['stud', '場札のないゲーム'],
+    ['studHiLo', '7枚から強い役と条件を満たす弱い役'],
+    ['nlHoldem', 'チップの残りまで自由に賭けられます'],
+    ['plOmaha', '現在のポット額'],
+    ['tripleDraw', '最大3回交換できます'],
+  ])('shows a rules overview for %s', async (disciplineName, overview) => {
+    mockExec.mockResolvedValue(makeHorseState({ variant: 1, disciplineName }));
+    renderWithProviders(<EightGamePage />);
+    expect(
+      await screen.findByText((_, element) => element?.tagName === 'P' && element.textContent?.includes(overview)),
+    ).toBeInTheDocument();
+  });
+
   // **8 種目のほうは 4 人卓しか作れない。** 6 を選べると、6 種目目で理由も
   // 出さずにマッチが終わる卓が作れてしまう。
   it('offers four seats only', async () => {
@@ -61,12 +103,12 @@ describe('EightGamePage', () => {
     mockExec.mockResolvedValue(drawState);
     renderWithProviders(<EightGamePage />);
     expect(await screen.findByTestId('ho-draw')).toHaveTextContent('引き直し 2 回目');
-    expect(screen.queryByRole('button', { name: 'コール' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^コール(?:\s|$)/ })).not.toBeInTheDocument();
   });
 
   it('keeps the betting controls when no draw is pending', async () => {
     renderWithProviders(<EightGamePage />);
-    expect(await screen.findByRole('button', { name: 'コール' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument();
     expect(screen.queryByTestId('ho-draw')).not.toBeInTheDocument();
   });
 

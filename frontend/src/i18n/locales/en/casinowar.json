@@ -39,7 +39,8 @@
     "surrender": "Surrendered"
   },
   "payout": {
-    "total": "Total payout"
+    "total": "Total payout",
+    "netChange": "Net change"
   },
   "trend": {
     "title": "Win/loss trend",
@@ -49,6 +50,7 @@
     "lossShort": "L",
     "tieShort": "T",
     "tally": "{{wins}}W {{losses}}L {{ties}}T",
+    "cumulativeNetChange": "Cumulative net change",
     "clear": "Clear history"
   },
   "tutorial": {

@@ -41,8 +41,8 @@
     "points": "{{points}} pts — instant win",
     "winner": "{{name}} wins"
   },
-  "knockerMelds": "Knocker's melds",
-  "knockerDeadwood": "Knocker's deadwood",
+  "knockerMelds": "{{name}} (knocker) melds",
+  "knockerDeadwood": "{{name}} deadwood",
   "result": {
     "humanWin": "You win!",
     "cpuWin": "CPU {{cpuId}} wins!",
@@ -68,6 +68,6 @@
     "knockable": "Can knock",
     "notKnockable": "Cannot knock (needs {{threshold}} or less)"
   },
-  "opponentMelds": "Opponent melds",
-  "opponentDeadwood": "Opponent deadwood"
+  "opponentMelds": "{{name}} melds",
+  "opponentDeadwood": "{{name}} deadwood"
 }

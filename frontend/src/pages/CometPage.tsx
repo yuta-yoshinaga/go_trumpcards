@@ -37,6 +37,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { COMET_HELP, parseCometCommand } from '../utils/cli/commands/cometCommands';
 import { formatCometState } from '../utils/cli/formatters/cometFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -148,6 +149,7 @@ function CometPageContent() {
   const playable = canPlay ? state.playableIdxs : [];
   const mustPass = canPlay && playable.length === 0;
   const shownPile = state.pile.slice(-PILE_TAIL);
+  const omittedPileCount = state.pile.length - shownPile.length;
 
   const handleManualReset = () => {
     hideActionLog();
@@ -225,6 +227,11 @@ function CometPageContent() {
                   className="mb-2 p-2 rounded bg-black/30 flex flex-wrap gap-1 items-center"
                   data-testid="comet-pile"
                 >
+                  {omittedPileCount > 0 && (
+                    <span className="text-ds-text-muted text-sm" data-testid="comet-pile-omitted">
+                      {t('pileOmitted', { count: omittedPileCount })}
+                    </span>
+                  )}
                   {shownPile.length === 0 ? (
                     <span className="text-ds-text-muted text-sm">{t('pileEmpty')}</span>
                   ) : (
@@ -286,9 +293,18 @@ function CometPageContent() {
                         })}
                       </div>
                     ))}
+                    {state.players.map((p, idx) => (
+                      <div key={p.id} data-testid={`comet-round-score-${idx}`}>
+                        {t('roundScore', {
+                          name: playerName(p.id, p.isHuman),
+                          gained: formatSignedDelta(lastResult.gained[idx]),
+                          total: p.score,
+                        })}
+                      </div>
+                    ))}
                     <div>{t('unplayedKings', { n: lastResult.unplayedKings })}</div>
                     {lastResult.heldWildIdx >= 0 && (
-                      <div className="text-ds-error" data-testid="comet-held-wild">
+                      <div className="text-ds-error-text" data-testid="comet-held-wild">
                         {t('heldWild', {
                           name: playerName(lastResult.heldWildIdx, lastResult.heldWildIdx === 0),
                         })}

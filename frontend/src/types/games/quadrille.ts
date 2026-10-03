@@ -61,6 +61,10 @@ export interface QuadrilleResponse extends BaseGameResponse {
   currentPlayerIdx: number;
   /** Seat index of the player whose turn it is to bid. */
   currentBidderIdx: number;
+  /** Declaration value for each seat: 0 pass, 1 entrar, 2 solo. */
+  bids: number[];
+  /** Whether each seat has acted in the current auction. */
+  bidActed: boolean[];
   leadPlayerIdx: number;
   dealerIdx: number;
   /** Seat index of the forehand (first to bid / lead). */

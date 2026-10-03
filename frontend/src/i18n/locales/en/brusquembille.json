@@ -2,7 +2,7 @@
   "currentTrick": "Current trick",
   "trickWinnerBadge": "WON",
   "title": "Brusquembille",
-  "subtitle": "Italian classic trick-taking — 40-card deck, no must-follow",
+  "subtitle": "Italian classic trick-taking — 32-card deck, no must-follow",
   "header": {
     "trick": "Trick",
     "stock": "Stock",
@@ -49,12 +49,15 @@
   "tutorial": {
     "trump": "The card laid sideways under the stock is the trump (brusquembille). Its suit beats every other suit.",
     "trick": "Cards played to the table. Win with a higher card of the same suit, or any trump (no must-follow).",
-    "hand": "Your hand — click a card to play it. Brusquembille scores differently: A = 11, 3 = 10.",
+    "hand": "Your hand — click a card to play it. Brusquembille scores differently: A = 11, 10 = 10.",
     "score": "Tricks, stock left, and points. The deck totals 120 points; reach 61 to win."
   },
   "hintRequested": "Hint available",
   "noHint": "No hint available",
   "settings": {
     "playerCount": "Players"
+  },
+  "accessibility": {
+    "followRequired": "The stock is empty. If you have a card in the suit led, you must play that suit. Unplayable cards appear dimmed."
   }
 }

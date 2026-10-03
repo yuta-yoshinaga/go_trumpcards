@@ -54,6 +54,8 @@ type PiedmonteseTarotGame interface {
 	GetDealerIdx() int
 	// GetScartoCount 親が捨てた札の枚数を取得する
 	GetScartoCount() int
+	// GetScarto 親が捨てた札を取得する
+	GetScarto() []*domain.Card
 	// TalonSize タロン (親が捨てる枚数) を取得する
 	TalonSize() int
 	// HandSize 1 人の手札枚数を取得する
@@ -68,6 +70,8 @@ type PiedmonteseTarotGame interface {
 	GetScartoThirds() int
 	// GetLastTrickWinner 最後のトリックを取った席を取得する
 	GetLastTrickWinner() int
+	// GetCompletedTricks 完了したトリック履歴を取得する
+	GetCompletedTricks() []*domain.PiedmonteseTarotCompletedTrick
 	// GetOutcome 直近ディールの結果を取得する
 	GetOutcome() domain.PiedmonteseTarotOutcome
 	// GetResult 人間視点のマッチ結果を取得する

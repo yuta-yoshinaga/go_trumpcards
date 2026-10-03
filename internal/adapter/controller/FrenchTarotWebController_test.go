@@ -18,6 +18,8 @@ func mustFrenchTarotOutputJSON(msg string) string {
 	out := &controller.FrenchTarotWebOutput{
 		Players:         []*controller.FrenchTarotWebOutputPlayer{},
 		CurrentTrick:    []*controller.WebOutputTrickCard{},
+		TrickHalfPoints: 0,
+		TrickBouts:      0,
 		Chien:           []*controller.WebOutputCard{},
 		PlayableIndices: []int{},
 		DeclarerIdx:     -1,
@@ -124,7 +126,7 @@ func TestFrenchTarotWebController_Method(t *testing.T) {
 }
 
 func TestFrenchTarotWebController_ResetWithConfig(t *testing.T) {
-	mockOutput := `{"players":[],"currentTrick":[]}`
+	mockOutput := `{"players":[],"currentTrick":[],"trickHalfPoints":0,"trickBouts":0}`
 
 	t.Run("custom config passed through", func(t *testing.T) {
 		diff := 2

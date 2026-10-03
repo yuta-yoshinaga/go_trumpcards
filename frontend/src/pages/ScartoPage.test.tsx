@@ -165,6 +165,14 @@ describe('ScartoPage', () => {
     );
   });
 
+  it('renders CPU difficulty as a select and match length as a number input', async () => {
+    renderWithProviders(<ScartoPage />);
+    fireEvent.click(await screen.findByText('設定'));
+
+    expect(screen.getByRole('combobox', { name: 'CPU難易度' })).toBeInTheDocument();
+    expect(screen.getByRole('spinbutton', { name: 'マッチのディール数' })).toBeInTheDocument();
+  });
+
   it('renders the play phase with the human cards and a dealer badge', async () => {
     renderWithProviders(<ScartoPage />);
     await waitFor(() => {
@@ -309,7 +317,26 @@ describe('ScartoPage', () => {
     expect(provisional).toHaveTextContent('暫定（ディール進行中）');
     expect(screen.getByTestId('scarto-provisional-breakdown')).toHaveTextContent('全体平均: 0.3点');
     expect(screen.getByTestId('scarto-provisional-breakdown')).toHaveTextContent('平均差 +0.7');
+    expect(screen.getByTestId('scarto-provisional-breakdown')).toHaveTextContent('平均より上');
+    expect(screen.getByTestId('scarto-provisional-breakdown')).toHaveTextContent('平均より下');
     expect(screen.queryByTestId('scarto-result')).not.toBeInTheDocument();
+  });
+
+  it('labels players exactly at the average as tied during play', async () => {
+    mockExec.mockResolvedValue(
+      makeScartoState({
+        phase: 1,
+        players: [
+          { id: 0, isHuman: true, cardCount: 20, cards: [], trickCount: 0, cardPoints: 4, score: 0, isDealer: false },
+          { id: 1, isHuman: false, cardCount: 20, cards: [], trickCount: 0, cardPoints: 4, score: 0, isDealer: false },
+          { id: 2, isHuman: false, cardCount: 20, cards: [], trickCount: 0, cardPoints: 4, score: 0, isDealer: true },
+        ],
+      }),
+    );
+    renderWithProviders(<ScartoPage />);
+    const breakdown = await screen.findByTestId('scarto-provisional-breakdown');
+
+    expect(breakdown).toHaveTextContent('平均と同点');
   });
 
   // 上段の dealScores と内訳の平均差が N 倍で結び付くことを固定する (#4930)。
@@ -358,15 +385,18 @@ describe('ScartoPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', expect.anything()));
   });
 
-  it('changing the CPU difficulty and target-deals selects updates the config', async () => {
+  it('accepts target deal counts from 1 through 100', async () => {
     renderWithProviders(<ScartoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'D ♥' })).toBeInTheDocument());
     const difficulty = screen.getByLabelText('CPU難易度') as HTMLSelectElement;
     fireEvent.change(difficulty, { target: { value: '2' } });
     expect(difficulty.value).toBe('2');
-    const deals = screen.getByLabelText('マッチのディール数') as HTMLSelectElement;
-    fireEvent.change(deals, { target: { value: '3' } });
-    expect(deals.value).toBe('3');
+    const deals = screen.getByLabelText('マッチのディール数') as HTMLInputElement;
+    expect(deals).toHaveAttribute('min', '1');
+    expect(deals).toHaveAttribute('max', '100');
+    expect(screen.getByText('1〜100の整数を指定してください。')).toBeInTheDocument();
+    fireEvent.change(deals, { target: { value: '100' } });
+    expect(deals.value).toBe('100');
   });
 
   it('renders the backend hint banner with its card indices', async () => {

@@ -39,7 +39,8 @@
     "surrender": "サレンダー"
   },
   "payout": {
-    "total": "合計配当"
+    "total": "合計配当",
+    "netChange": "純損益"
   },
   "trend": {
     "title": "勝敗トレンド",
@@ -49,6 +50,7 @@
     "lossShort": "負",
     "tieShort": "分",
     "tally": "{{wins}}勝 {{losses}}敗 {{ties}}分",
+    "cumulativeNetChange": "累積純損益",
     "clear": "履歴をクリア"
   },
   "tutorial": {

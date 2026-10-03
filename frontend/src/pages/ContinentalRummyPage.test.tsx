@@ -27,6 +27,36 @@ beforeEach(() => {
 });
 
 describe('ContinentalRummyPage', () => {
+  it('shows completed round score gains in a round by player table', async () => {
+    mockExec.mockResolvedValue(
+      makeContinentalRummyState({
+        roundScoreHistory: [
+          { roundNumber: 1, scores: [0, 54, 0, 0] },
+          { roundNumber: 2, scores: [42, 0, 0, 0] },
+        ],
+      }),
+    );
+    renderWithProviders(<ContinentalRummyPage />);
+    const history = await screen.findByTestId('cont-score-history');
+    expect(history).toHaveTextContent('得点履歴');
+    expect(history.querySelectorAll('thead th')).toHaveLength(5);
+    expect(history.querySelectorAll('tbody tr')).toHaveLength(2);
+    expect(Array.from(history.querySelectorAll('tbody tr')[0].children).map((cell) => cell.textContent)).toEqual([
+      '1',
+      '0',
+      '54',
+      '0',
+      '0',
+    ]);
+    expect(Array.from(history.querySelectorAll('tbody tr')[1].children).map((cell) => cell.textContent)).toEqual([
+      '2',
+      '42',
+      '0',
+      '0',
+      '0',
+    ]);
+  });
+
   it('sends selected difficulty and rounds when resetting', async () => {
     mockExec.mockResolvedValue(makeContinentalRummyState({ gameEndFlag: true, phase: 'gameEnd' }));
     renderWithProviders(<ContinentalRummyPage />);
@@ -52,6 +82,33 @@ describe('ContinentalRummyPage', () => {
     expect(layouts).toHaveTextContent('5+4+3+3');
     expect(layouts).not.toHaveTextContent('5+5+5');
     expect(screen.getByTestId('cont-nosets')).toHaveTextContent('セット');
+  });
+
+  it('highlights the server supplied run cards only when a go-out exists', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<ContinentalRummyPage />);
+    await screen.findByTestId('cont-goout');
+    const hand = document.querySelector('[data-tutorial="continentalrummy-player-hand"]');
+    expect(hand).toBeInTheDocument();
+    expect(hand?.querySelectorAll('.ring-ds-success').length).toBeGreaterThanOrEqual(15);
+    for (let runIndex = 1; runIndex <= 5; runIndex++) {
+      expect(screen.getAllByRole('button', { name: new RegExp(`連番${runIndex}`) })).toHaveLength(3);
+    }
+    expect(screen.getByRole('button', { name: /捨てる札/ })).toBeInTheDocument();
+  });
+
+  it('shows no run markers when the hand cannot go out', async () => {
+    mockExec.mockResolvedValue(makeContinentalRummyState({ goOutIdx: -1, goOutGroups: [] }));
+    renderWithProviders(<ContinentalRummyPage />);
+    await screen.findByTestId('cont-discard-notice');
+    expect(screen.queryByRole('button', { name: /連番[1-5]/ })).not.toBeInTheDocument();
+  });
+
+  it('does not show a zero run marker for an uncovered hand index', async () => {
+    mockExec.mockResolvedValue(makeContinentalRummyState({ goOutIdx: 0, goOutGroups: [] }));
+    renderWithProviders(<ContinentalRummyPage />);
+    await screen.findByTestId('cont-goout');
+    expect(screen.queryByRole('button', { name: /連番0/ })).not.toBeInTheDocument();
   });
 
   it('shows the stock, the discard top and every seat', async () => {

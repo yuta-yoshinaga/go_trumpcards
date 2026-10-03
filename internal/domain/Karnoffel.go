@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"math/rand"
+	"slices"
 	"strconv"
 )
 
@@ -125,14 +126,6 @@ var karnoffelChosenOrder = []int{
 	KarnoffelUnterstecher,  // 4
 	KarnoffelFarbenstecher, // 5
 	13, 12, 10, 9, 8,       // 特権の無い切札
-}
-
-// karnoffelChosenRank は選ばれたスートの札の役職序列を返す。
-func karnoffelChosenRank(c *Card) int {
-	if c == nil {
-		return 0
-	}
-	return karnoffelChosenRankOf(c.GetValue())
 }
 
 // karnoffelPartialBeats は部分切札 (3/4/5) が相手札に勝てるかを返す。
@@ -470,7 +463,7 @@ func (k *Karnoffel) PlayCard(player, idx int) error {
 	if p == nil || idx < 0 || idx >= p.GetCardsSize() {
 		return errors.New("there is no such card")
 	}
-	if !karnoffelContains(k.KarnoffelValidPlays(player), idx) {
+	if !slices.Contains(k.KarnoffelValidPlays(player), idx) {
 		return errors.New("the devil cannot lead the first trick")
 	}
 	c := p.GetCard(idx)
@@ -524,16 +517,6 @@ func (k *Karnoffel) resolveTrick() {
 		k.trickNumber >= KarnoffelTricks {
 		k.finishHand()
 	}
-}
-
-// karnoffelContains は s に v が含まれるかを返す。
-func karnoffelContains(s []int, v int) bool {
-	for _, x := range s {
-		if x == v {
-			return true
-		}
-	}
-	return false
 }
 
 // KarnoffelTeamTricks はチームが取ったトリック数を返す。

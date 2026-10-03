@@ -92,6 +92,34 @@ beforeEach(() => {
 });
 
 describe('FreeBetPage', () => {
+  it('操作対象の手札を読み上げ、activeHand の変更に追従する', async () => {
+    mockApi.mockResolvedValueOnce(playing({ hands: [hand(), hand()], activeHand: 0 }));
+    mockApi.mockResolvedValueOnce(playing({ hands: [hand(), hand()], activeHand: 1 }));
+    renderWithProviders(<FreeBetPage />);
+
+    const firstHand = await screen.findByTestId('fb-hand-0');
+    const secondHand = screen.getByTestId('fb-hand-1');
+    expect(firstHand).toHaveAttribute('aria-current', 'true');
+    expect(firstHand).toHaveTextContent('操作対象の手札');
+    expect(secondHand).not.toHaveAttribute('aria-current');
+
+    fireEvent.click(screen.getByRole('button', { name: 'ヒット' }));
+    await waitFor(() => expect(secondHand).toHaveAttribute('aria-current', 'true'));
+    expect(secondHand).toHaveTextContent('操作対象の手札');
+    expect(firstHand).not.toHaveAttribute('aria-current');
+  });
+
+  it('プレイ中以外は手札を操作対象として示さない', async () => {
+    mockApi.mockResolvedValue(withState({ hands: [hand(), hand()], activeHand: 1 }));
+    renderWithProviders(<FreeBetPage />);
+
+    const firstHand = await screen.findByTestId('fb-hand-0');
+    const secondHand = screen.getByTestId('fb-hand-1');
+    expect(firstHand).not.toHaveAttribute('aria-current');
+    expect(secondHand).not.toHaveAttribute('aria-current');
+    expect(screen.queryByText('操作対象の手札')).not.toBeInTheDocument();
+  });
+
   it('プレイ中はディーラーの点数を隠し、伏せ札を表示する', async () => {
     mockApi.mockResolvedValue(playing());
     renderWithProviders(<FreeBetPage />);
@@ -126,6 +154,20 @@ describe('FreeBetPage', () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<FreeBetPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '配る' })).toBeInTheDocument());
+  });
+
+  it('賭けフェーズで残高・選択中のアンティ・差し引き後の残高を表示し、入力に追従する', async () => {
+    mockApi.mockResolvedValue(withState({ chips: 240 }));
+    renderWithProviders(<FreeBetPage />);
+    const summary = await screen.findByTestId('fb-bet-summary');
+    expect(summary).toHaveTextContent('現在の残高: 240');
+    expect(summary).toHaveTextContent('アンティ: 50');
+    expect(summary).toHaveTextContent('賭け後の残高: 190');
+
+    fireEvent.change(screen.getByLabelText('アンティ'), { target: { value: '80' } });
+    expect(summary).toHaveTextContent('アンティ: 80');
+    expect(summary).toHaveTextContent('賭け後の残高: 160');
+    expect(summary).toHaveTextContent('無料ダブル・無料スプリットの追加分はハウス負担です');
   });
 
   it('配るはアンティを送る', async () => {

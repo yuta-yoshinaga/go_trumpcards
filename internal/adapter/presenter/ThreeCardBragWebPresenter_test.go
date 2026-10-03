@@ -25,6 +25,7 @@ func tcbSetupWebMock() *interfaces.MockThreeCardBragGame {
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetDealerIdx").Return(0)
 	m.On("GetRoundWinnerIdx").Return(-1)
+	m.On("GetRoundPayouts").Return([]int(nil))
 	m.On("GetMatchWinnerIdx").Return(-1)
 	m.On("IsShowdown").Return(false)
 	m.On("CanShow").Return(false)

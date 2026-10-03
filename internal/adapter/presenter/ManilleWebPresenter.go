@@ -55,6 +55,7 @@ func (p *ManilleWebPresenter) buildBase(g interfaces.ManilleGame) *controller.Ma
 	}
 
 	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
+	resObj.TrickCardPoints = g.GetCurrentTrickPoints()
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }

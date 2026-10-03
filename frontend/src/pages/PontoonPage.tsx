@@ -31,6 +31,7 @@ import { PONTOON_HELP, parsePontoonCommand } from '../utils/cli/commands/pontoon
 import { formatPontoonState } from '../utils/cli/formatters/pontoonFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { PONTOON_MIN_BET, pontoonBuyChoices, pontoonClampBuy, pontoonMaxBuy } from '../utils/pontoonBet';
 
 const BET_OPTIONS = [10, 50, 100, 500];
@@ -136,7 +137,16 @@ function PontoonPageContent() {
         <div
           className="flex gap-1 justify-center"
           role="img"
-          aria-label={hide ? label : t('seatAriaLabel', { name: label, total: hand.total })}
+          aria-label={
+            hide
+              ? label
+              : rankKey
+                ? t('rankedHandAriaLabel', {
+                    name: t('seatAriaLabel', { name: label, total: hand.total }),
+                    rank: t(rankKey),
+                  })
+                : t('seatAriaLabel', { name: label, total: hand.total })
+          }
         >
           {hand.cards.map((card, i) =>
             hide || !card ? (
@@ -194,6 +204,10 @@ function PontoonPageContent() {
       ) : (
         <>
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+            <div className="text-center mb-2 text-sm text-ds-text-muted">
+              {t('drawPileCount')}: {state.drawPileCount}
+            </div>
+
             <div className="text-center mb-4" data-tutorial="pt-banker">
               <div className="text-game-text-muted text-xs mb-1">{t('bankerHand')}</div>
               {state.bankerHand ? (
@@ -236,13 +250,13 @@ function PontoonPageContent() {
                                     hand.payout > 0
                                       ? ' text-ds-success'
                                       : hand.payout < 0
-                                        ? ' text-ds-error'
+                                        ? ' text-ds-error-text'
                                         : ' text-ds-text-muted'
                                   }
                                 >
                                   {' '}
                                   {t('payout', {
-                                    payout: hand.payout > 0 ? `+${hand.payout}` : hand.payout,
+                                    payout: formatSignedDelta(hand.payout),
                                   })}
                                 </span>
                               )}

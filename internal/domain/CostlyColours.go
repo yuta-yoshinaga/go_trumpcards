@@ -52,6 +52,14 @@ type CostlyColoursDealResult struct {
 	Combos [CostlyColoursPlayerCnt]string
 }
 
+// CostlyColoursRecentPlay は直近の応答で出された 1 枚の記録。
+type CostlyColoursRecentPlay struct {
+	Seat   int   `json:"seat"`
+	Card   *Card `json:"card"`
+	Total  int   `json:"total"`
+	Points int   `json:"points"`
+}
+
 // CostlyColours はコストリー・カラーズの状態を保持する集約ルート。
 type CostlyColours struct {
 	deck    []*Card
@@ -63,7 +71,8 @@ type CostlyColours struct {
 	// pile は今の数え上げに出た札。
 	pile []*Card
 	// total は今の数え上げの累計。**31 を超えられない。**
-	total int
+	total       int
+	recentPlays []CostlyColoursRecentPlay
 	// wentOut は「ゴー」を宣言した席 (-1 = 誰も宣言していない)。
 	wentOut     int
 	phase       string
@@ -104,6 +113,7 @@ func NewDefaultCostlyColours() *CostlyColours {
 // **親を席 1 にして席 0 から打たせる。** 非親 (エルダー) が先に打ち、交換を
 // 持ちかけるのも非親なので、親を 0 にすると人間は最初の選択を持てない。
 func (c *CostlyColours) Reset() {
+	c.ClearRecentPlays()
 	for _, p := range c.players {
 		p.ResetDeal()
 		p.ResetScore()
@@ -129,6 +139,7 @@ func (c *CostlyColours) NextDeal() {
 
 // startDeal は 3 枚ずつ配り、次の 1 枚を表に返す。
 func (c *CostlyColours) startDeal() {
+	c.ClearRecentPlays()
 	for _, p := range c.players {
 		p.ResetDeal()
 	}
@@ -327,6 +338,7 @@ func (c *CostlyColours) applyPlay(seat, handIdx int) error {
 	c.total += CostlyCardValue(card)
 
 	pts, reasons := CostlyPlayScore(c.pile, c.total)
+	c.recentPlays = append(c.recentPlays, CostlyColoursRecentPlay{Seat: seat, Card: card, Total: c.total, Points: pts})
 	if pts > 0 {
 		p.AddScore(pts)
 		c.appendLog(seat, "peg", "costlycolours.log.peg", map[string]string{"player": fmt.Sprint(seat), "points": fmt.Sprint(pts), "reasons": fmt.Sprint(reasons)}, []*Card{card})
@@ -557,6 +569,12 @@ func (c *CostlyColours) GetPile() []*Card { return c.pile }
 
 // GetTotal は今の数え上げの累計を返す。
 func (c *CostlyColours) GetTotal() int { return c.total }
+
+// GetRecentPlays returns the plays made during the latest command.
+func (c *CostlyColours) GetRecentPlays() []CostlyColoursRecentPlay { return c.recentPlays }
+
+// ClearRecentPlays clears the per-command play history.
+func (c *CostlyColours) ClearRecentPlays() { c.recentPlays = make([]CostlyColoursRecentPlay, 0) }
 
 // GetWentOut は「ゴー」を宣言した席を返す (-1 = なし)。
 func (c *CostlyColours) GetWentOut() int { return c.wentOut }

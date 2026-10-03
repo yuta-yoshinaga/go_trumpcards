@@ -106,7 +106,6 @@ function ConquianPageContent() {
     handleDiscard,
     handleNextRound,
   } = useConquianGame();
-
   const { cardWidth } = useCardDimensions();
   const phaseNames = usePhaseNames('conquian', CONQUIAN_PHASE_KEYS);
 
@@ -298,7 +297,14 @@ function ConquianPageContent() {
                             key={`meld-${p.id}-${mi}`}
                             type="button"
                             disabled={!canLayoff}
-                            aria-label={canLayoff ? t('layoffToMeld', { n: mi + 1 }) : undefined}
+                            aria-label={
+                              canLayoff
+                                ? t('layoffToMeld', {
+                                    n: mi + 1,
+                                    cards: m.cards.map(cardAlt).join(t('listSeparator')),
+                                  })
+                                : undefined
+                            }
                             data-layoff-target={canLayoff ? mi : undefined}
                             onClick={() => canLayoff && handleMeldSelected(mi)}
                             className={[
@@ -383,6 +389,25 @@ function ConquianPageContent() {
                   ? t('roundWinnerDraw')
                   : t('roundWinner', { name: findPlayerName(state.players, state.roundWinnerIdx) })}
               </div>
+            )}
+
+            {state.roundHistory.length > 0 && (
+              <section className="my-2 text-sm" aria-label={t('roundHistory')} data-testid="conquian-round-history">
+                <h3 className="text-ds-text-muted mb-1">{t('roundHistory')}</h3>
+                <ol className="text-ds-text-primary">
+                  {state.roundHistory.map((winnerIdx, i) => (
+                    <li key={i}>
+                      {t('roundHistoryEntry', {
+                        round: i + 1,
+                        result:
+                          winnerIdx < 0
+                            ? t('roundWinnerDraw')
+                            : t('roundWinner', { name: findPlayerName(state.players, winnerIdx) }),
+                      })}
+                    </li>
+                  ))}
+                </ol>
+              </section>
             )}
 
             <GameMessageBox

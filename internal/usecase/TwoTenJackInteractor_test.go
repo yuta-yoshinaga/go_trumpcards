@@ -168,6 +168,31 @@ func TestTwoTenJackInteractor_Play_Success(t *testing.T) {
 	assert.Equal(t, mockOutput, result)
 }
 
+func TestTwoTenJackInteractor_PlayLastCardResolvesTrick(t *testing.T) {
+	g := domain.NewDefaultTwoTenJack()
+	g.Reset()
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		g.GetPlayer(i).Reset()
+	}
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 2, false)},
+		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 3, false)},
+		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 4, false)},
+	})
+	g.SetCurrentPlayerIdx(0)
+	g.SetPhase(domain.TwoTenJackPhasePlay)
+	g.SetTrickNumber(1)
+	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+
+	p := new(presenter.MockTwoTenJackPresenter)
+	p.On("Output", mock.Anything, mock.Anything).Return(`{}`)
+	ti := usecase.NewTwoTenJackInteractor(g, p)
+	ti.Play(0)
+
+	assert.Equal(t, domain.TwoTenJackPhaseTrickEnd, g.GetPhase())
+	assert.Equal(t, 1, g.GetPlayer(0).GetTrickCount())
+}
+
 func TestTwoTenJackInteractor_Play_Error(t *testing.T) {
 	mockOutput := `{"err":1}`
 	playErr := errors.New("bad")

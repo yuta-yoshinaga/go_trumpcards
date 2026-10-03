@@ -173,6 +173,8 @@ function TwoTenJackPageContent() {
   const isPlayPhase = state.phase === TwoTenJackPhase.PLAY;
   const isTrickEnd = state.phase === TwoTenJackPhase.TRICK_END;
   const isRoundEnd = state.phase === TwoTenJackPhase.ROUND_END;
+  const trickWinner =
+    (isTrickEnd || isRoundEnd) && state.leadPlayerIdx >= 0 ? state.players[state.leadPlayerIdx] : undefined;
   const isGameEnd = state.phase === TwoTenJackPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanDeclarer = isDeclarePhase && state.players[state.declarerIdx]?.isHuman === true;
@@ -265,6 +267,9 @@ function TwoTenJackPageContent() {
                   label={t('currentTrick')}
                   dataTutorial="tt-trick-display"
                 />
+                <div role="status" aria-live="polite" className="sr-only" data-testid="twotenjack-trick-winner-live">
+                  {trickWinner ? t('trickWinner', { name: playerName(trickWinner.id, trickWinner.isHuman) }) : ''}
+                </div>
               </div>
 
               <div>
@@ -307,7 +312,13 @@ function TwoTenJackPageContent() {
                     data-tutorial="tt-score-table"
                     open={isRoundEnd || isGameEnd || undefined}
                   >
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
+                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                      <span>{t('scores')}</span>
+                      <span className="ml-2 inline-flex flex-wrap gap-x-3 tabular-nums text-ds-text-primary">
+                        <span>{t('cumulativeTeamScore', { team: t('team0'), score: team0Total })}</span>
+                        <span>{t('cumulativeTeamScore', { team: t('team1'), score: team1Total })}</span>
+                      </span>
+                    </summary>
                     <div className="overflow-x-auto -mx-2 px-2">
                       <table className="w-full text-sm text-ds-text-muted min-w-[320px] mt-1">
                         <caption className="sr-only">{t('scoresCaption')}</caption>

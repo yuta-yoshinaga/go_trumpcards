@@ -45,16 +45,29 @@ describe('BettingControls', () => {
     render(<BettingControls {...makeProps()} />);
     expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'コール' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^コール(?:\s|$)/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'レイズ' })).not.toBeInTheDocument();
   });
 
   it('renders call/raise buttons when there is an outstanding bet', () => {
     render(<BettingControls {...makeProps({ hasOutstandingBet: true })} />);
-    expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'ベット' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'チェック' })).not.toBeInTheDocument();
+  });
+
+  it('includes the displayed call amount in the call button accessible name', () => {
+    render(<BettingControls {...makeProps({ hasOutstandingBet: true, callAmountLabel: '25 チップ' })} />);
+
+    const callButton = screen.getByRole('button', { name: 'コール 25 チップ' });
+    expect(callButton).toHaveTextContent('25 チップ');
+  });
+
+  it('uses a single separator when the call amount label has surrounding whitespace', () => {
+    render(<BettingControls {...makeProps({ hasOutstandingBet: true, callAmountLabel: ' 25 チップ ' })} />);
+
+    expect(screen.getByRole('button', { name: 'コール 25 チップ' })).toBeInTheDocument();
   });
 
   it('renders the call/raise key-hint line and per-button aria-keyshortcuts (outstanding bet)', () => {
@@ -62,12 +75,12 @@ describe('BettingControls', () => {
     const hints = screen.getByTestId('betting-key-hints');
     expect(hints).toHaveTextContent('C: コール');
     expect(hints).not.toHaveTextContent('K: チェック'); // check isn't available now
-    expect(screen.getByRole('button', { name: 'コール' })).toHaveAttribute('aria-keyshortcuts', 'c');
+    expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toHaveAttribute('aria-keyshortcuts', 'c');
     expect(screen.getByRole('button', { name: 'レイズ' })).toHaveAttribute('aria-keyshortcuts', 'r');
     expect(screen.getByRole('button', { name: 'フォールド' })).toHaveAttribute('aria-keyshortcuts', 'f');
     expect(screen.getByRole('button', { name: 'オールイン' })).toHaveAttribute('aria-keyshortcuts', 'a');
     // Desktop: each button also carries a visible <kbd> key chip (aria-hidden, so the name is unchanged).
-    expect(screen.getByRole('button', { name: 'コール' }).querySelector('kbd')).toHaveTextContent('C');
+    expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ }).querySelector('kbd')).toHaveTextContent('C');
     expect(screen.getByRole('button', { name: 'フォールド' }).querySelector('kbd')).toHaveTextContent('F');
   });
 
@@ -88,7 +101,7 @@ describe('BettingControls', () => {
 
   it('applies poker-themed styles to action buttons', () => {
     render(<BettingControls {...makeProps({ hasOutstandingBet: true })} />);
-    expect(screen.getByRole('button', { name: 'コール' }).className).toContain('bg-poker-call');
+    expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ }).className).toContain('bg-poker-call');
     expect(screen.getByRole('button', { name: 'レイズ' }).className).toContain('bg-poker-raise');
     expect(screen.getByRole('button', { name: 'フォールド' }).className).toContain('bg-poker-fold');
     expect(screen.getByRole('button', { name: 'オールイン' }).className).toContain('bg-poker-allin');
@@ -132,7 +145,7 @@ describe('BettingControls', () => {
   it('calls onCall when call button clicked', () => {
     const onCall = vi.fn();
     render(<BettingControls {...makeProps({ hasOutstandingBet: true, onCall })} />);
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     expect(onCall).toHaveBeenCalled();
   });
 
@@ -232,7 +245,7 @@ describe('BettingControls', () => {
     render(<BettingControls {...makeProps({ betAmount: 80, maxBetAmount: 50 })} />);
     const input = screen.getByLabelText('ベット額:');
     // Background stays on surface; text stays on text-ds-text-primary (10.1:1 AAA).
-    // Pairing text-ds-error with bg-ds-surface only hits ~2.7:1 — fails AA — so
+    // Pairing text-ds-error-text with bg-ds-surface only hits ~2.7:1 — fails AA — so
     // the error semantic comes from the coloured border, not the text colour.
     // See `fixup(a11y): keep error/info badge text on text-ds-text-primary for AAA`.
     expect(input.className).toContain('bg-ds-surface');
@@ -265,7 +278,7 @@ describe('BettingControls', () => {
 
   it('does not disable check/call/fold/all-in when out of range', () => {
     render(<BettingControls {...makeProps({ betAmount: 5, hasOutstandingBet: true })} />);
-    expect(screen.getByRole('button', { name: 'コール' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).not.toBeDisabled();
     expect(screen.getByRole('button', { name: 'フォールド' })).not.toBeDisabled();
     expect(screen.getByRole('button', { name: 'オールイン' })).not.toBeDisabled();
   });

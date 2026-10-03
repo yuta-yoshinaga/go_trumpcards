@@ -64,74 +64,32 @@ func (ci *SevenBridgeInteractor) ResetWithConfig(cfg domain.SevenBridgeConfig) s
 
 // DrawFromStock 山札からカードを引く
 func (ci *SevenBridgeInteractor) DrawFromStock() string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerDrawFromStock(); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerDrawFromStock() }, ci.runCpuTurns)
 }
 
 // ClaimPon ポンで捨て札を取得する
 func (ci *SevenBridgeInteractor) ClaimPon(cardIndices []int) string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerClaimPon(cardIndices); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerClaimPon(cardIndices) }, ci.runCpuTurns)
 }
 
 // ClaimChi チーで捨て札を取得する
 func (ci *SevenBridgeInteractor) ClaimChi(cardIndices []int) string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerClaimChi(cardIndices); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerClaimChi(cardIndices) }, ci.runCpuTurns)
 }
 
 // Meld メルドを場に出す
 func (ci *SevenBridgeInteractor) Meld(cardIndices []int) string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerMeld(cardIndices); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerMeld(cardIndices) }, ci.runCpuTurns)
 }
 
 // Layoff 既存メルドにカードを 1 枚追加する
 func (ci *SevenBridgeInteractor) Layoff(targetPlayerIdx, meldIdx, cardIndex int) string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerLayoff(targetPlayerIdx, meldIdx, cardIndex); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerLayoff(targetPlayerIdx, meldIdx, cardIndex) }, ci.runCpuTurns)
 }
 
 // Discard カードを捨てる
 func (ci *SevenBridgeInteractor) Discard(cardIndex int) string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerDiscard(cardIndex); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerDiscard(cardIndex) }, ci.runCpuTurns)
 }
 
 // NextRound 次のラウンドへ進む

@@ -95,6 +95,7 @@
   },
   "cardUsed": "Used",
   "cardUnused": "Unused",
+  "cardUsedAria": "Card used in your best hand: {{card}}",
   "potAwards": {
     "mainPot": "Main pot",
     "sidePot": "Side pot {{n}}",
@@ -102,5 +103,6 @@
     "winners": "Winners",
     "low": "Low"
   },
-  "listSeparator": ", "
+  "listSeparator": ", ",
+  "communityCardsRevealed": "Community cards revealed: {{cards}}"
 }

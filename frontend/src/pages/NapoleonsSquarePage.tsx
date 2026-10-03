@@ -31,6 +31,7 @@ import type { NapoleonsSquareMoveZone, NapoleonsSquareResponse } from '../types/
 import { NapoleonsSquarePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { valueName } from '../utils/cardUtils';
 import { NAPOLEONSSQUARE_HELP, parseNapoleonsSquareCommand } from '../utils/cli/commands/napoleonssquareCommands';
 import { formatNapoleonsSquareState } from '../utils/cli/formatters/napoleonssquareFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -88,7 +89,7 @@ function NapoleonsSquarePageContent() {
     cancelGiveUp,
   } = useGamePageSetup('napoleonssquare');
   const game = useNapoleonsSquareGame();
-  const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
+  const { state, loading, error, retry, hintError, selectedSource, legalTargets, hint, isAutoCompleting } = game;
   const selectSourceHintId = useId();
 
   const {
@@ -176,11 +177,13 @@ function NapoleonsSquarePageContent() {
   // past that — that is when auto-complete is worth pulsing.
   const autoCompleteReady = state.foundation.some((pile) => pile.length > 1);
 
-  const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
-    selectedSource !== null &&
-    selectedSource.zone === zone &&
-    selectedSource.col === col &&
-    selectedSource.cardIndex === cardIndex;
+  const isSourceSelected = (zone: string, col?: number, cardIndex?: number) => {
+    if (!selectedSource || selectedSource.zone !== zone) return false;
+    if (selectedSource.zone === 'waste') return col === undefined && cardIndex === undefined;
+    return selectedSource.col === col && selectedSource.cardIndex === cardIndex;
+  };
+  const isLegalTarget = (zone: NapoleonsSquareMoveZone) =>
+    legalTargets.some((target) => target.zone === zone.zone && target.col === zone.col);
 
   const renderTableauColumn = (colIdx: number) => {
     const col = state.tableau[colIdx] ?? [];
@@ -195,7 +198,7 @@ function NapoleonsSquarePageContent() {
           onDragOver={dnd.handleDragOver(tableauColZone)}
           onDrop={dnd.handleDrop(tableauColZone)}
           onDragLeave={dnd.handleDragLeave}
-          className="relative block"
+          className={`relative block ${isLegalTarget(tableauColZone) ? 'rounded ring-2 ring-ds-success' : ''}`}
         >
           <div className="relative" style={{ minHeight: dims.ch }}>
             {col.length === 0 ? (
@@ -207,7 +210,7 @@ function NapoleonsSquarePageContent() {
                 aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                 aria-label={t('emptyColumnAriaLabel', { col: colIdx })}
                 style={{ height: dims.ch }}
-                className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite}`}
+                className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite} ${isLegalTarget(tableauColZone) ? 'ring-2 ring-ds-success' : ''}`}
               >
                 {t('empty')}
               </button>
@@ -317,6 +320,8 @@ function NapoleonsSquarePageContent() {
               <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="ns-foundation">
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: NapoleonsSquareMoveZone = { zone: 'foundation', col: idx };
+                  const nextRank = (pile[pile.length - 1]?.value ?? 0) + 1;
+                  const nextRankLabel = nextRank <= 13 ? valueName(nextRank) : null;
                   return (
                     <div key={`f-${idx.toString()}`} className="text-center">
                       <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
@@ -337,8 +342,9 @@ function NapoleonsSquarePageContent() {
                               suit: FOUNDATION_SUITS[idx],
                               idx,
                               count: pile.length,
+                              nextRank: nextRankLabel ? t('nextRankAria', { rank: nextRankLabel }) : '',
                             })}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isLegalTarget(foundationZone) ? 'ring-2 ring-ds-success' : ''}`}
                           >
                             <AnimatedCard
                               card={pile[pile.length - 1]}
@@ -357,9 +363,10 @@ function NapoleonsSquarePageContent() {
                             aria-label={t('emptyFoundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
                               idx,
+                              nextRank: t('nextRankAria', { rank: valueName(1) }),
                             })}
                             style={{ width: dims.cw, height: dims.ch }}
-                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${isLegalTarget(foundationZone) ? 'ring-2 ring-ds-success' : ''}`}
                           >
                             A
                           </button>

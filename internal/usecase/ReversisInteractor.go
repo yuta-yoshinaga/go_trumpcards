@@ -56,14 +56,7 @@ func (ri *ReversisInteractor) ResetWithConfig(cfg domain.ReversisConfig) string 
 
 // Play カードをプレイ
 func (ri *ReversisInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(ri.Game, ri.rp); blocked {
-		return out
-	}
-	if err := ri.Game.PlayerPlay(cardIndex); err != nil {
-		return ri.rp.Output(ri.Game, err)
-	}
-	ri.runCpuTurns()
-	return ri.rp.Output(ri.Game, nil)
+	return humanAction(ri.Game, ri.rp, func() error { return ri.Game.PlayerPlay(cardIndex) }, ri.runCpuTurns)
 }
 
 // NextRound 次のラウンドへ進む

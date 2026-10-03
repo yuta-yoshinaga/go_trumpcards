@@ -176,7 +176,13 @@ const flopState: OmahaResponse = {
 /** SHOWDOWN (phase 5) */
 const showdownState: OmahaResponse = {
   players: [
-    humanPlayer({ handName: '\u30ef\u30f3\u30da\u30a2', currentBet: 0, chips: 950 }),
+    humanPlayer({
+      handName: '\u30ef\u30f3\u30da\u30a2',
+      currentBet: 0,
+      chips: 950,
+      liveBestHandHoleIndices: [0, 1],
+      liveBestHandBoardIndices: [0, 1, 2],
+    }),
     cpuPlayer(1, {
       handName: '\u30c4\u30fc\u30da\u30a2',
       folded: false,
@@ -375,6 +381,25 @@ describe('BigOHiLoPage', () => {
     expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(3);
   });
 
+  it('highlights the server-selected Hi cards during play', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      phase: 4,
+      players: [
+        humanPlayer({
+          cards: [...humanPlayer().cards, { design: 'HEART', value: 7 }],
+          liveBestHandHoleIndices: [1, 4],
+          liveBestHandBoardIndices: [0, 2, 4],
+        }),
+        ...showdownState.players.slice(1),
+      ],
+    });
+    const { container } = renderWithProviders(<BigOHiLoPage />);
+    await waitFor(() => expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(2));
+    expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(3);
+    expect(container.querySelectorAll('[data-best5-hole] .sr-only, [data-best5-board] .sr-only')).toHaveLength(5);
+  });
+
   it('shows green Hi and blue Lo split badges (Lo omitted when none qualifies)', async () => {
     const splitState: OmahaResponse = {
       ...showdownState,
@@ -424,6 +449,8 @@ describe('BigOHiLoPage', () => {
       players: [
         humanPlayer({
           handName: 'フラッシュ',
+          liveBestHandHoleIndices: [0, 1],
+          liveBestHandBoardIndices: [0, 1, 2],
           cards: [
             { design: 'SPADE', value: 1 },
             { design: 'SPADE', value: 2 },
@@ -809,7 +836,7 @@ describe('BigOHiLoPage', () => {
   it('shows call/raise buttons when canAct and has outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<BigOHiLoPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
@@ -912,11 +939,11 @@ describe('BigOHiLoPage', () => {
   it('calls call command when has outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<BigOHiLoPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', undefined, undefined, 0));
   });
 
@@ -1403,7 +1430,7 @@ describe('BigOHiLoPage', () => {
     it('pressing c triggers call when canAct and hasOutstandingBet', async () => {
       mockExec.mockResolvedValue(preFlopWithBetState);
       renderWithProviders(<BigOHiLoPage />);
-      await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
       mockExec.mockClear();
       mockExec.mockResolvedValue(preFlopWithBetState);
@@ -1518,7 +1545,7 @@ describe('BigOHiLoPage', () => {
     it('pressing k is ignored when hasOutstandingBet', async () => {
       mockExec.mockResolvedValue(preFlopWithBetState);
       renderWithProviders(<BigOHiLoPage />);
-      await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
 
       mockExec.mockClear();
 
@@ -1696,6 +1723,8 @@ describe('BigOHiLoPage', () => {
       players: [
         humanPlayer({
           handName: 'フラッシュ',
+          liveBestHandHoleIndices: [0, 1],
+          liveBestHandBoardIndices: [0, 1, 2],
           cards: [
             { design: 'SPADE', value: 1 },
             { design: 'SPADE', value: 2 },

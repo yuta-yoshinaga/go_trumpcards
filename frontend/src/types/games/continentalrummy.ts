@@ -58,6 +58,12 @@ export interface ContinentalRummyResult {
   total: number;
 }
 
+/** Score gained by each seat in one completed round. */
+export interface ContinentalRummyRoundScore {
+  roundNumber: number;
+  scores: number[];
+}
+
 /** Continental Rummy game settings. */
 export interface ContinentalRummyConfig {
   cpuDifficulty: number;
@@ -84,6 +90,8 @@ export interface ContinentalRummyResponse extends BaseGameResponse {
    */
   layouts: number[][];
   lastResult?: ContinentalRummyResult;
+  /** Completed round gains, retained by the server for the whole game. */
+  roundScoreHistory: ContinentalRummyRoundScore[];
   gameEndFlag: boolean;
   winnerIdx: number;
   isHumanTurn: boolean;
@@ -94,6 +102,8 @@ export interface ContinentalRummyResponse extends BaseGameResponse {
    * page would put the rule in a second place and let the two disagree.
    */
   goOutIdx: number;
+  /** Hand indices grouped into legal runs when a go-out discard exists. */
+  goOutGroups: number[][];
   /**
    * Whether the dealt fifteen already go out, before drawing.
    *

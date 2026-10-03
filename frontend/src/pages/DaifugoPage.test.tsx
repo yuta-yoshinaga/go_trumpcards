@@ -116,6 +116,23 @@ beforeEach(() => {
 });
 
 describe('DaifugoPage', () => {
+  it.each([
+    ['sevenPass', '【7渡し】CPU 1にカードを1枚渡してください'],
+    ['tenDiscard', '【10捨て】捨てるカードを1枚選択してください'],
+    ['queenBomber', '【12ボンバー】除去するカードの数字を選択してください'],
+  ] as const)('announces %s instructions, including the target or selection', async (pendingAction, instruction) => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      pendingAction,
+      pendingActionTarget: 1,
+    });
+    renderWithProviders(<DaifugoPage />);
+
+    const announcement = await screen.findByTestId('daifugo-pending-announcement');
+    expect(announcement).toHaveTextContent(instruction);
+    expect(announcement).toHaveClass('sr-only');
+  });
+
   it('shows the player who leads after the field clears', async () => {
     mockExec.mockResolvedValue({ ...humanTurnState, fieldClearedLeader: 2 });
     renderWithProviders(<DaifugoPage />);
@@ -774,7 +791,7 @@ describe('DaifugoPage', () => {
     } as DaifugoResponse;
     mockExec.mockResolvedValue(sevenPassState);
     renderWithProviders(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByText(/【7渡し】/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('daifugo-pending-banner')).toHaveTextContent(/【7渡し】/));
     expect(screen.getByRole('button', { name: '渡す' })).toBeInTheDocument();
     // Pass button is disabled when pending action is active
     expect(screen.getByRole('button', { name: 'パス' })).toBeDisabled();
@@ -788,7 +805,7 @@ describe('DaifugoPage', () => {
     } as DaifugoResponse;
     mockExec.mockResolvedValue(tenDiscardState);
     renderWithProviders(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByText(/【10捨て】/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('daifugo-pending-banner')).toHaveTextContent(/【10捨て】/));
     expect(screen.getByRole('button', { name: '捨てる' })).toBeInTheDocument();
   });
 
@@ -800,7 +817,7 @@ describe('DaifugoPage', () => {
     } as DaifugoResponse;
     mockExec.mockResolvedValue(queenBomberState);
     renderWithProviders(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByText(/【12ボンバー】/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('daifugo-pending-banner')).toHaveTextContent(/【12ボンバー】/));
     // Number buttons A,2-10,J,Q,K should be visible
     expect(screen.getByRole('button', { name: 'A' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'K' })).toBeInTheDocument();
@@ -834,7 +851,7 @@ describe('DaifugoPage', () => {
     } as DaifugoResponse;
     mockExec.mockResolvedValue(queenBomberCpuTurn);
     renderWithProviders(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByText(/【12ボンバー】/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('daifugo-pending-banner')).toHaveTextContent(/【12ボンバー】/));
     // Number buttons should NOT be visible (CPU turn)
     expect(screen.queryByRole('button', { name: 'A' })).not.toBeInTheDocument();
   });

@@ -35,6 +35,8 @@ const (
 type SutdaHandResult struct {
 	// Winners は勝った席 (同点なら複数)。
 	Winners []int
+	// Shares は Winners と同じ順序で各勝者が受け取ったチップ額。
+	Shares []int
 	// Pot はその席が分け合った総額。
 	Pot int
 	// Hands は席ごとの役 (降りた席も含む)。
@@ -351,6 +353,7 @@ func (s *Sutda) showdown() {
 	}
 
 	// **同点はポットを分ける。** 席順で決めると、同じ役なのに座席で負ける。
+	shares := make([]int, 0, len(winners))
 	if len(winners) > 0 {
 		share := s.pot / len(winners)
 		rest := s.pot - share*len(winners)
@@ -359,11 +362,12 @@ func (s *Sutda) showdown() {
 			if n < rest {
 				amount++ // 割り切れない端数は先に配る
 			}
+			shares = append(shares, amount)
 			s.players[w].AddChips(amount)
 		}
 	}
 
-	s.lastResult = &SutdaHandResult{Winners: winners, Pot: s.pot, Hands: hands, Folded: folded}
+	s.lastResult = &SutdaHandResult{Winners: winners, Shares: shares, Pot: s.pot, Hands: hands, Folded: folded}
 	s.appendLog(-1, "showdown", "sutda.log.showdown", map[string]string{"hand": strconv.Itoa(s.handNumber), "pot": strconv.Itoa(s.pot), "winners": fmt.Sprint(winners)}, nil)
 	// **配り終えたポットは 0 に戻す。** 残したままだと、勝者のチップと場の
 	// 両方に同じ額が乗って合計が増える ── 卓からチップが湧く。勝った額は
@@ -639,6 +643,7 @@ func (s *Sutda) UnmarshalJSON(data []byte) error {
 // sutdaHandResultJSON is the JSON wire format for SutdaHandResult.
 type sutdaHandResultJSON struct {
 	Winners []int       `json:"w"`
+	Shares  []int       `json:"s"`
 	Pot     int         `json:"p"`
 	Hands   []SutdaHand `json:"h"`
 	Folded  []bool      `json:"f"`
@@ -646,7 +651,7 @@ type sutdaHandResultJSON struct {
 
 // MarshalJSON implements json.Marshaler.
 func (r *SutdaHandResult) MarshalJSON() ([]byte, error) {
-	return json.Marshal(sutdaHandResultJSON{Winners: r.Winners, Pot: r.Pot, Hands: r.Hands, Folded: r.Folded})
+	return json.Marshal(sutdaHandResultJSON{Winners: r.Winners, Shares: r.Shares, Pot: r.Pot, Hands: r.Hands, Folded: r.Folded})
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
@@ -656,6 +661,7 @@ func (r *SutdaHandResult) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	r.Winners = j.Winners
+	r.Shares = j.Shares
 	r.Pot = j.Pot
 	r.Hands = j.Hands
 	r.Folded = j.Folded

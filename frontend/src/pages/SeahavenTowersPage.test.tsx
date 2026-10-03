@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { seahaventowersApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, SeahavenTowersResponse } from '../types/card';
@@ -86,6 +87,22 @@ describe('SeahavenTowersPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     const kElements = screen.getAllByText('K');
     expect(kElements.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('labels empty tableau columns with their zero-based index and King-only rule', async () => {
+    const originalLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    renderWithProviders(<SeahavenTowersPage />);
+    expect(await screen.findByRole('button', { name: 'Empty tableau column 2 (Kings only)' })).toBeInTheDocument();
+    await i18n.changeLanguage(originalLanguage);
+  });
+
+  it('labels empty tableau columns in Japanese', async () => {
+    await i18n.changeLanguage('ja');
+    renderWithProviders(<SeahavenTowersPage />);
+    expect(
+      await screen.findByRole('button', { name: '空きタブロー列 2（キングのみ配置できます）' }),
+    ).toBeInTheDocument();
   });
 
   it('keeps move targets focusable and explains that a source must be selected', async () => {
@@ -232,7 +249,28 @@ describe('SeahavenTowersPage', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
     // Zone identifiers render as localized names (ja), matching the CUI terminology.
-    await waitFor(() => expect(screen.getByText(/リザーブセル 1.*→.*組札/)).toBeInTheDocument());
+    const liveRegion = screen.getByTestId('seahaventowers-hint-live');
+    await waitFor(() => expect(liveRegion).toHaveTextContent(/リザーブセル 1.*→.*組札/));
+    expect(liveRegion).not.toHaveTextContent(/[♠♥♦♣]/);
+  });
+
+  it('announces the hinted card name with the move in Japanese and English', async () => {
+    const originalLanguage = i18n.language;
+    try {
+      await i18n.changeLanguage('ja');
+      renderWithProviders(<SeahavenTowersPage />);
+      await screen.findByRole('button', { name: 'ヒント' });
+      mockExec.mockResolvedValueOnce(withHintState);
+      fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+      expect(await screen.findByText(/♠ K.*タブロー 0.*タブロー 2/)).toBeInTheDocument();
+
+      await i18n.changeLanguage('en');
+      mockExec.mockResolvedValueOnce(withHintState);
+      fireEvent.click(screen.getByRole('button', { name: 'Hint' }));
+      expect(await screen.findByText(/♠ K.*Tableau 0.*Tableau 2/)).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(originalLanguage);
+    }
   });
 
   it('hint display omits column when col is negative and localizes both zones', async () => {

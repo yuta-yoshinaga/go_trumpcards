@@ -87,6 +87,10 @@ type CegoGame interface {
 	GetPlayerScores() [domain.CegoPlayerCnt]int
 	// GetCardPoints プレイヤー i の獲得カードポイントを取得する
 	GetCardPoints(i int) int
+	// GetDeclarerTargetPoints 成功に必要なデクレアラーの獲得カードポイントを取得する
+	GetDeclarerTargetPoints() int
+	// GetTotalCardPoints デッキの総カードポイントを取得する
+	GetTotalCardPoints() int
 	// GetOutcome 直近ディールの結果を取得する
 	GetOutcome() domain.CegoOutcome
 	// GetResult 人間視点のマッチ結果を取得する

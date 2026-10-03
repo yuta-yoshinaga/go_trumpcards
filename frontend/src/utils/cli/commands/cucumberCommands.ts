@@ -1,5 +1,5 @@
 import type { cucumberApi } from '../../../api/gameApi';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type CucumberArgs = Parameters<typeof cucumberApi.exec>;
@@ -32,11 +32,8 @@ export function parseCucumberCommand(input: string): CliParseResult<CucumberArgs
     case 'r':
     case 'reset':
       return { args: ['reset'] as CucumberArgs };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

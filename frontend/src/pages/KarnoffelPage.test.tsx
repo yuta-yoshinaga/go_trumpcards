@@ -320,4 +320,28 @@ describe('KarnoffelPage', () => {
     renderWithProviders(<KarnoffelPage />);
     expect(await screen.findByTestId('karnoffel-trick')).toBeInTheDocument();
   });
+
+  it('shows the zero-based player seat above each trick card as the trick grows', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ trick: [card('HEART', 7), card('SPADE', 6), card('CLOVER', 5)], trickLeaderIdx: 2 }),
+    );
+    renderWithProviders(<KarnoffelPage />);
+
+    const trick = await screen.findByTestId('karnoffel-trick');
+    expect(trick).toHaveTextContent('席2: CPU 2');
+    expect(trick).toHaveTextContent('席3: CPU 3');
+    expect(trick).toHaveTextContent('席0: あなた');
+    expect(screen.getByRole('img', { name: '席2: CPU 2、♥ 7、悪魔（リード）' })).toBeInTheDocument();
+  });
+
+  it('shows effective title badges and includes them in trick card accessible names', async () => {
+    mockExec.mockResolvedValue(makeState({ trick: [card('HEART', 11), card('HEART', 7)] }));
+    renderWithProviders(<KarnoffelPage />);
+
+    const trick = await screen.findByTestId('karnoffel-trick');
+    expect(trick.querySelector('[data-testid="karnoffel-trick-rank-0"]')).toHaveTextContent('カルニッフェル');
+    expect(trick.querySelector('[data-testid="karnoffel-trick-rank-1"]')).toHaveTextContent('悪魔（追随・最弱）');
+    expect(screen.getByRole('img', { name: '席0: あなた、♥ J、カルニッフェル' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '席1: CPU 1、♥ 7、悪魔（追随・最弱）' })).toBeInTheDocument();
+  });
 });

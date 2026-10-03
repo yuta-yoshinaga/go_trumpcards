@@ -34,6 +34,7 @@ import { isRequestedHint } from '../utils/hintRequest';
 import {
   evaluateFiveCardHand,
   evaluatePartialHand,
+  PokerHand,
   pokerHandKey,
   pokerSquaresRankToScore,
 } from '../utils/pokerSquaresUtils';
@@ -43,6 +44,11 @@ const POKER_SQUARES_PHASE_KEYS: Readonly<Record<number, string>> = {
   [PokerSquaresPhase.PLAYING]: 'playing',
   [PokerSquaresPhase.COMPLETE]: 'complete',
 };
+
+/** Reports whether a Poker Squares row or column contains five cards. */
+function isLineComplete(board: PokerSquaresResponse['board'], kind: 'row' | 'col', idx: number): boolean {
+  return kind === 'row' ? board[idx].every((cell) => cell.card != null) : board.every((row) => row[idx].card != null);
+}
 
 /** Poker Squares tutorial step definitions. */
 const POKERSQUARES_TUTORIAL_STEPS: TutorialStep[] = [
@@ -90,7 +96,40 @@ function PokerSquaresPageContent() {
         Math.min(CARD_DIMENSIONS.desktop.cardWidth, Math.floor((windowWidth - PS_BOARD_CHROME_PX) / 5)),
       )
     : baseCardWidth;
-  const { state, loading, error, exec: execApi, retry } = useGameApi(pokersquaresApi.exec);
+  const [confirmedAnnouncement, setConfirmedAnnouncement] = useState('');
+  const previousStateRef = useRef<PokerSquaresResponse | null>(null);
+  const {
+    state,
+    loading,
+    error,
+    exec: execApi,
+    retry,
+  } = useGameApi(pokersquaresApi.exec, {
+    onSuccess: (result, args) => {
+      const previous = previousStateRef.current;
+      previousStateRef.current = result;
+      if (args[0] !== 'place' || !previous) {
+        setConfirmedAnnouncement('');
+        return;
+      }
+      const lines: string[] = [];
+      result.rowScores.forEach((score, row) => {
+        const completedNow = isLineComplete(result.board, 'row', row);
+        const wasComplete = isLineComplete(previous.board, 'row', row);
+        if (completedNow && !wasComplete) lines.push(t('confirmedRowScore', { row, score }));
+      });
+      result.colScores.forEach((score, col) => {
+        const completedNow = isLineComplete(result.board, 'col', col);
+        const wasComplete = isLineComplete(previous.board, 'col', col);
+        if (completedNow && !wasComplete) lines.push(t('confirmedColScore', { col, score }));
+      });
+      setConfirmedAnnouncement(
+        lines.length
+          ? t('confirmedScoreAnnounce', { lines: lines.join(t('listSeparator')), total: result.totalScore })
+          : '',
+      );
+    },
+  });
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -279,6 +318,9 @@ function PokerSquaresPageContent() {
           <div className="sr-only" role="status" aria-live="polite" data-testid="ps-preview-live">
             {previewAnnouncement}
           </div>
+          <div className="sr-only" role="status" aria-live="polite" data-testid="ps-confirmed-live">
+            {confirmedAnnouncement}
+          </div>
           <SettingsPanel
             title={t('settings.title')}
             groups={[
@@ -287,6 +329,38 @@ function PokerSquaresPageContent() {
               },
             ]}
           />
+
+          {isPlaying && (
+            <details className="px-4 pt-2">
+              <summary className="text-ds-text-primary text-sm cursor-pointer select-none inline-flex items-center gap-1.5 hover:text-ds-accent transition-colors py-1">
+                {t('scoreReference.title')}
+              </summary>
+              <div className="glass-panel rounded-lg p-3 mt-1 text-sm text-ds-text-primary overflow-x-auto">
+                <table data-testid="ps-score-table" className="w-full text-left">
+                  <thead>
+                    <tr>
+                      <th scope="col" className="pb-1 pr-4 font-semibold">
+                        {t('scoreReference.hand')}
+                      </th>
+                      <th scope="col" className="pb-1 text-right font-semibold">
+                        {t('scoreReference.score')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.values(PokerHand).map((rank) => (
+                      <tr key={rank}>
+                        <th scope="row" className="py-0.5 pr-4 font-normal">
+                          {t(`hand.${pokerHandKey(rank)}`)}
+                        </th>
+                        <td className="py-0.5 text-right tabular-nums">{pokerSquaresRankToScore(rank)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          )}
 
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
             {state && (

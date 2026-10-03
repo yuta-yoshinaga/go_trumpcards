@@ -206,6 +206,19 @@ describe('RazzPage', () => {
     await waitFor(() => expect(screen.getByText('サードストリート')).toBeInTheDocument());
   });
 
+  it('shows the call amount and pot odds only when a call is required', async () => {
+    mockExec.mockResolvedValue(thirdStreetWithBetState);
+    renderWithProviders(<RazzPage />);
+    expect(await screen.findByTestId('razz-call-pot-odds')).toHaveTextContent('コール必要額 40 · ポットオッズ 57.1%');
+  });
+
+  it('does not show call pot odds when no call is required', async () => {
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<RazzPage />);
+    await screen.findByText('サードストリート');
+    expect(screen.queryByTestId('razz-call-pot-odds')).not.toBeInTheDocument();
+  });
+
   it('shows the current best low for the human from 3rd street', async () => {
     // Human cards A,K,10 + 5,8,3,7 → five lowest distinct = A,3,5,7,8.
     mockExec.mockResolvedValue(thirdStreetState);
@@ -407,7 +420,7 @@ describe('RazzPage', () => {
   it('shows call/raise buttons when canAct and has outstanding bet', async () => {
     mockExec.mockResolvedValue(thirdStreetWithBetState);
     renderWithProviders(<RazzPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();

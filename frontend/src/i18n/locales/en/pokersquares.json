@@ -47,10 +47,19 @@
     "straightFlush": "Straight Flush",
     "royalFlush": "Royal Flush"
   },
+  "scoreReference": {
+    "title": "Hands and scores",
+    "hand": "Hand",
+    "score": "Score"
+  },
   "previewRowAnnounce": "Row {{row}} completes {{hand}} for {{delta}} points",
   "previewColAnnounce": "Column {{col}} completes {{hand}} for {{delta}} points",
   "previewPartialPrefix": "~",
   "previewRowPartialAnnounce": "Row {{row}} is developing {{hand}}",
   "previewColPartialAnnounce": "Column {{col}} is developing {{hand}}",
+  "listSeparator": ", ",
+  "confirmedRowScore": "Row {{row}}: {{score}} points",
+  "confirmedColScore": "Column {{col}}: {{score}} points",
+  "confirmedScoreAnnounce": "{{lines}}. Total {{total}} points",
   "touchPlaceHint": "Tap again to confirm"
 }

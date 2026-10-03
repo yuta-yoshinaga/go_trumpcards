@@ -59,6 +59,31 @@ beforeEach(() => {
 });
 
 describe('UltiPage', () => {
+  it('keeps an empty persistent live region when no contract progress exists', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<UltiPage />);
+
+    const live = await screen.findByTestId('ulti-contract-progress-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toBeEmptyDOMElement();
+  });
+
+  it('announces the active contract progress in the persistent live region', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      contractRequirement: 61,
+      players: playPhaseState.players.map((player, index) => ({
+        ...player,
+        cardPoints: index === 0 ? 42 : 20,
+      })),
+    });
+    renderWithProviders(<UltiPage />);
+
+    expect(await screen.findByTestId('ulti-contract-progress-live')).toHaveTextContent('42/61');
+    expect(screen.getByTestId('ulti-contract-progress-live')).toHaveClass('sr-only');
+  });
+
   it('shows the declarer progress for the active contract without assigning it to the coalition', async () => {
     mockExec.mockResolvedValue({
       ...playPhaseState,
@@ -72,7 +97,36 @@ describe('UltiPage', () => {
     renderWithProviders(<UltiPage />);
 
     expect(await screen.findByTestId('ulti-contract-progress')).toHaveTextContent('42/61');
+    expect(screen.getByTestId('ulti-contract-progress')).toHaveAttribute('aria-hidden', 'true');
     expect(screen.getAllByTestId('ulti-contract-progress')).toHaveLength(1);
+  });
+
+  it('updates the live region when contract progress changes without remounting', async () => {
+    const initialState = {
+      ...playPhaseState,
+      contractRequirement: 61,
+      players: playPhaseState.players.map((player, index) => ({
+        ...player,
+        cardPoints: index === 0 ? 42 : 20,
+      })),
+    };
+    const updatedState = {
+      ...initialState,
+      players: initialState.players.map((player, index) => ({
+        ...player,
+        cardPoints: index === 0 ? 55 : 7,
+      })),
+    };
+    mockExec.mockResolvedValueOnce(initialState).mockResolvedValueOnce(updatedState);
+    renderWithProviders(<UltiPage />);
+
+    const live = await screen.findByTestId('ulti-contract-progress-live');
+    expect(live).toHaveTextContent('42/61');
+    fireEvent.click(screen.getByAltText('♥ Q'));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+
+    await waitFor(() => expect(live).toHaveTextContent('55/61'));
+    expect(screen.getByTestId('ulti-contract-progress')).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('describes Betli without showing a normal target count', async () => {
@@ -121,6 +175,20 @@ describe('UltiPage', () => {
     expect(screen.getByRole('button', { name: 'ウルティ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'ベトリ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'ドゥルマルス' })).toBeInTheDocument();
+  });
+
+  it('names the trump suit group and preserves suit state and contract descriptions', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<UltiPage />);
+
+    const trumpGroup = await screen.findByRole('group', { name: '切り札' });
+    const spadeButton = screen.getByRole('button', { name: 'スペード' });
+    expect(trumpGroup).toContainElement(spadeButton);
+    expect(spadeButton).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(spadeButton);
+    expect(spadeButton).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'パルティ' })).toHaveAttribute('aria-describedby', 'ulti-bid-desc-party');
   });
 
   it('Ulti is disabled until a trump suit is picked, then dispatches bid with the suit', async () => {
@@ -258,6 +326,18 @@ describe('UltiPage', () => {
     expect(panel).toHaveAttribute('role', 'status');
     expect(panel).toHaveAttribute('aria-live', 'polite');
     expect(panel).toHaveTextContent('あなた: +2コイン');
+  });
+
+  it('formats a zero human coin delta as ±0 in the round result', async () => {
+    const settledState = makeUltiState({
+      phase: 4,
+      isHumanTurn: false,
+      outcome: 1,
+      lastDealCoins: [0, 3, -3],
+    });
+    mockExec.mockResolvedValue(settledState);
+    renderWithProviders(<UltiPage />);
+    expect(await screen.findByTestId('ulti-round-result')).toHaveTextContent('あなた: ±0コイン');
   });
 
   it('shows coin deltas on the final round even though the backend jumps to GAME_END', async () => {

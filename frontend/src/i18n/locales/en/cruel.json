@@ -27,6 +27,7 @@
   "stalemateWithEscape": "Stalemate — undo {{count}} move(s) to escape",
   "foundationAriaLabel": "{{suit}} foundation, {{count}} cards",
   "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
+  "tableauCardAriaLabel": "{{card}}, column {{col}}",
   "frontendHint": {
     "moveToFoundation": "A card is ready to move to the foundation",
     "moveToTableau": "A tableau-to-tableau move is available",
@@ -65,5 +66,6 @@
     "winRate": "Win rate {{rate}}%",
     "fewestMoves": "{{moves}} moves",
     "newBest": "New personal best!"
-  }
+  },
+  "emptyColumnRule": "Cards cannot be moved to empty columns"
 }

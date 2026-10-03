@@ -154,15 +154,12 @@ def main() -> None:
         if apply:
             dst.parent.mkdir(parents=True, exist_ok=True)
             data = src.read_bytes()
-            crlf = b"\r\n" in data
             text = rename(data.decode("utf-8"), s_key, d_key, s_type, d_type)
             if jp:
                 text = text.replace(jp[0], jp[1])
             if en:
                 text = text.replace(en[0], en[1])
             dst.write_bytes(text.encode("utf-8"))
-            if crlf and b"\r\n" not in text.encode("utf-8"):
-                raise SystemExit(f"CRLF lost writing {dst}")
 
     print(f"\nshared files needing MANUAL ordered insertion ({len(shared)}):")
     for f in shared:

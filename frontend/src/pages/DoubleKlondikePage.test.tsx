@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { doubleklondikeApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, DoubleKlondikeResponse } from '../types/card';
 import { DoubleKlondikePhase } from '../types/phases';
@@ -53,11 +54,59 @@ describe('DoubleKlondikePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('shows stalemate guidance and announces it through a persistent live region', async () => {
+    mockExec.mockResolvedValue(makeState({ isStalemate: true }));
+    renderWithProviders(<DoubleKlondikePage />);
+
+    await screen.findByTestId('column-0');
+    const announcement = screen.getByRole('status');
+    expect(announcement).toBeInTheDocument();
+    expect(announcement).toHaveTextContent('手詰まりです。元に戻すか、新しいゲームを始めてください。');
+    expect(screen.getAllByText('手詰まりです。元に戻すか、新しいゲームを始めてください。')).toHaveLength(2);
+  });
+
+  it('keeps the stalemate live region empty when play can continue', async () => {
+    renderWithProviders(<DoubleKlondikePage />);
+
+    await screen.findByTestId('column-0');
+    expect(await screen.findByRole('status')).toBeEmptyDOMElement();
+  });
+
   it('renders the 9 tableau columns and 8 foundations', async () => {
     renderWithProviders(<DoubleKlondikePage />);
     await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
     expect(screen.getByTestId('column-8')).toBeInTheDocument();
     expect(screen.getByTestId('foundation-7')).toBeInTheDocument();
+  });
+
+  it('gives each foundation a distinct localized 0-based accessible name', async () => {
+    renderWithProviders(<DoubleKlondikePage />);
+    await screen.findByTestId('foundation-0');
+
+    const names = Array.from({ length: 8 }, (_, col) =>
+      screen.getByTestId(`foundation-${col}`).getAttribute('aria-label'),
+    );
+    expect(names).toEqual(Array.from({ length: 8 }, (_, col) => `組札 ${col}`));
+    expect(new Set(names).size).toBe(8);
+
+    await i18n.changeLanguage('en');
+    try {
+      expect(
+        Array.from({ length: 8 }, (_, col) => screen.getByTestId(`foundation-${col}`).getAttribute('aria-label')),
+      ).toEqual(Array.from({ length: 8 }, (_, col) => `Foundation ${col}`));
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
+  it('keeps the top card in a non-empty foundation name', async () => {
+    const foundation: Card[][] = Array.from({ length: 8 }, () => []);
+    foundation[3] = [card('SPADE', 1), card('SPADE', 2)];
+    mockExec.mockResolvedValue(makeState({ foundation }));
+    renderWithProviders(<DoubleKlondikePage />);
+
+    expect(await screen.findByTestId('foundation-3')).toHaveAttribute('aria-label', '組札 3: ♠ 2');
+    expect(screen.getByTestId('foundation-0')).toHaveAttribute('aria-label', '組札 0');
   });
 
   // #7339: 9 列 104 枚の長いソリティアなのに、組札にいま何枚乗ったかが

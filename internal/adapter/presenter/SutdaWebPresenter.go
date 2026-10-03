@@ -114,8 +114,11 @@ func (p *SutdaWebPresenter) lastResult(g interfaces.SutdaGame) *controller.Sutda
 	copy(folded, res.Folded)
 	winners := make([]int, len(res.Winners))
 	copy(winners, res.Winners)
+	shares := make([]int, len(res.Shares))
+	copy(shares, res.Shares)
 	return &controller.SutdaWebOutputResult{
 		Winners:   winners,
+		Shares:    shares,
 		Pot:       res.Pot,
 		HandNames: names,
 		Folded:    folded,

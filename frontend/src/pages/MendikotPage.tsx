@@ -158,7 +158,7 @@ function MendikotPageContent() {
                 手番はハンド全体を左右する一度きりの選択なのに、警告が無かった。 */}
             {state.willSetTrump && (
               <div
-                className="mb-3 rounded bg-black/30 border border-ds-warning px-3 py-2 text-ds-text-primary text-center"
+                className="mb-3 rounded bg-ds-surface border border-ds-warning px-3 py-2 text-ds-text-primary text-center"
                 role="status"
                 data-testid="md-sets-trump-warning"
               >
@@ -235,6 +235,12 @@ function MendikotPageContent() {
                 cardWidth={cardWidth}
                 label={t('currentTrick')}
                 lastTrickWinner={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
+                cardAriaLabelFor={(player, card) =>
+                  t('trickCardByPlayer', {
+                    card: cardAlt(card),
+                    name: player.isHuman ? t('header.you') : t('header.cpu', { idx: String(player.id) }),
+                  })
+                }
               />
             </div>
 
@@ -270,7 +276,9 @@ function MendikotPageContent() {
                       type="button"
                       onClick={() => handlePlay(idx)}
                       disabled={loading || !isHumanTurn}
-                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
+                      aria-label={t(legalRing.has(idx) ? 'actions.playableAria' : 'actions.playAria', {
+                        card: cardAlt(card),
+                      })}
                       className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
                     >
                       <CardImage card={card} width={cardWidth} />

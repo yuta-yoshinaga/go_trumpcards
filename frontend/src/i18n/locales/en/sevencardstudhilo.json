@@ -1,4 +1,6 @@
 {
+  "callAmount": "({{amount}})",
+  "callPotOdds": "Required pot odds: {{percent}}%",
   "phase": {
     "thirdStreet": "Third Street",
     "fourthStreet": "Fourth Street",
@@ -15,6 +17,7 @@
   "yourHand": "Your Hand",
   "currentHand": "Current Hand",
   "currentLow": "Current low: {{low}}",
+  "opponentPublicLow": "Exposed low ranks: {{low}}",
   "anteBringIn": "Ante/Bring-in",
   "bringIn": "Bring-in",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
@@ -79,6 +82,7 @@
     "straightFlush": "Straight Flush",
     "royalFlush": "Royal Flush"
   },
+  "listSeparator": ", ",
   "hiLo": {
     "title": "Hi / Lo split",
     "hi": "Hi",

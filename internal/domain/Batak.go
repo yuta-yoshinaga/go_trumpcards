@@ -112,6 +112,7 @@ func (cb *Batak) Reset() {
 	for _, p := range cb.players {
 		p.bid = -1
 		p.SetRoundScore(0)
+		p.scoreBreakdown = BatakScoreBreakdown{}
 		p.ResetTricks()
 		p.Reset()
 		p.SetIsFinished(false)
@@ -331,16 +332,17 @@ func (cb *Batak) ScoreRound() {
 		tricks := p.GetTrickCount()
 		bid := p.GetBid()
 
-		var score int
+		p.scoreBreakdown = BatakScoreBreakdown{}
 		if i == cb.declarerIdx {
 			if tricks >= bid {
-				score = bid
+				p.scoreBreakdown.DeclarerBidPoints = bid
 			} else {
-				score = -bid
+				p.scoreBreakdown.DeclarerBidPenalty = bid
 			}
 		} else {
-			score = tricks
+			p.scoreBreakdown.DefenderTricks = tricks
 		}
+		score := p.scoreBreakdown.Total()
 		p.SetRoundScore(score)
 
 		cb.appendLog(i, "round_score", "batak.log.roundScore", map[string]string{"name": playerName(cb.players, i), "bid": fmt.Sprintf("%d", bid), "tricks": fmt.Sprintf("%d", tricks), "round": fmt.Sprintf("%d", score)}, nil)
@@ -360,6 +362,14 @@ func (cb *Batak) ScoreRound() {
 }
 
 // --- State getters ---
+
+// GetScoreBreakdown 指定プレイヤーの直近ラウンド得点内訳を取得する
+func (cb *Batak) GetScoreBreakdown(playerIdx int) BatakScoreBreakdown {
+	if playerIdx < 0 || playerIdx >= len(cb.players) || cb.players[playerIdx] == nil {
+		return BatakScoreBreakdown{}
+	}
+	return cb.players[playerIdx].GetScoreBreakdown()
+}
 
 // GetPhase 現在のフェーズ取得
 func (cb *Batak) GetPhase() BatakPhase { return cb.phase }

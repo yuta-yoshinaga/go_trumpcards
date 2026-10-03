@@ -11,6 +11,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -189,10 +190,19 @@ function PresidentPageContent() {
   const describeAction = (action: PresidentAction): string => {
     const name = action.playerIdx === 0 ? tc('player.you') : tc('player.cpu', { id: action.playerIdx });
     if (!action.playedCards || action.playedCards.length === 0) return t('actionPassed', { name });
-    return t('actionPlayed', { name, cards: action.playedCards.map(cardLabel).join(', ') });
+    return t('actionPlayed', { name, cards: action.playedCards.map(cardLabel).join(t('listSeparator')) });
   };
-  const actionHistory = [...(state.humanAction ? [state.humanAction] : []), ...(state.cpuActions ?? [])].map(
-    describeAction,
+  const actionHistory = [...(state.humanAction ? [state.humanAction] : []), ...(state.cpuActions ?? [])].flatMap(
+    (action) => [
+      describeAction(action),
+      ...(action.fieldFlushed
+        ? [
+            t('actionFieldFlushed', {
+              name: action.leadPlayerIdx === 0 ? tc('player.you') : tc('player.cpu', { id: action.leadPlayerIdx }),
+            }),
+          ]
+        : []),
+    ],
   );
   const canPlay = isHumanTurn && selectedIndices.length > 0;
   const phaseName = isGameEnd ? t('phase.end') : t('phase.play');
@@ -212,6 +222,10 @@ function PresidentPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <LiveAnnouncement
+        testId="president-revolution-live"
+        message={state.revolutionActive ? t('flash.revolutionStart') : ''}
+      />
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -238,7 +252,7 @@ function PresidentPageContent() {
           )}
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             {error && (
-              <button type="button" onClick={retry} className="text-ds-error underline">
+              <button type="button" onClick={retry} className="text-ds-error-text underline">
                 {error}
               </button>
             )}

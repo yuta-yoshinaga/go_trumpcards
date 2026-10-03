@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import type { BlackJackBetOptions, BlackJackConfigInput } from '../api/gameApi';
 import { blackjackApi, doubleexposureApi, spanish21Api } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
@@ -48,9 +48,11 @@ import type { BlackJackResponse } from '../types/card';
 import { BjDoubleDownBlock, BjPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { BLACKJACK_SIDE_BET_PAYOUTS } from '../utils/blackjackSideBetPayouts';
+import { cardAlt } from '../utils/cardAlt';
 import { BLACKJACK_HELP, parseBlackjackCommand } from '../utils/cli/commands/blackjackCommands';
 import { formatBlackjackState } from '../utils/cli/formatters/blackjackFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 
 const BJ_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -194,6 +196,9 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
 
   const { cardWidth, isMobile } = useCardDimensions();
   const [message, setMessage] = useState('');
+  const [hitAnnouncement, setHitAnnouncement] = useState('');
+  const [endAnnouncement, setEndAnnouncement] = useState('');
+  const previousStateRef = useRef<BlackJackResponse | null>(null);
   const [betAmount, setBetAmount] = useState(10);
   const [dealerHitsSoft17, setDealerHitsSoft17] = useState(false);
   const [countingEnabled, setCountingEnabled] = useState(false);
@@ -207,17 +212,40 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
   const [surrenderRule, setSurrenderRule] = useState(0);
   const [autoAdvance, setAutoAdvance] = useState(0);
 
-  const onSuccess = useCallback((res: BlackJackResponse) => {
-    setMessage(res.message);
-    setDealerHitsSoft17(res.dealerHitsSoft17);
-    setCountingEnabled(res.countingEnabled);
-    setCpuPlayerCount(res.cpuPlayerCount);
-    setDoubleAfterSplit(res.doubleAfterSplit);
-    setCountingSystem(res.countingSystem);
-    setDeckPenetration(res.deckPenetration);
-    setSurrenderRule(res.surrenderRule);
-  }, []);
+  const onSuccess = useCallback(
+    (res: BlackJackResponse, args: Parameters<typeof apiClient.exec>) => {
+      setMessage(res.message);
+      const previous = previousStateRef.current;
+      if (res.phase === BjPhase.END && previous?.phase !== BjPhase.END) {
+        const dealerFinalScore = res.dealer.score ?? 0;
+        const dealerScoreAnnouncement = t('dealerFinalScore', { score: dealerFinalScore });
+        setEndAnnouncement(
+          dealerFinalScore > 21 ? `${dealerScoreAnnouncement} ${t('dealerBust')}` : dealerScoreAnnouncement,
+        );
+      } else if (res.phase !== BjPhase.END) {
+        setEndAnnouncement('');
+      }
+      if (args[0] === 'hit') {
+        const previousHandIndex = previous?.currentHandIdx ?? 0;
+        const previousHand = previous?.hands?.[previousHandIndex];
+        const updatedHand = res.hands?.[previousHandIndex];
+        if (previousHand && updatedHand && updatedHand.cards.length > previousHand.cards.length) {
+          const drawnCard = updatedHand.cards[updatedHand.cards.length - 1];
+          setHitAnnouncement(t('hitAnnouncement', { card: cardAlt(drawnCard), score: updatedHand.score }));
+        }
+      }
+      setDealerHitsSoft17(res.dealerHitsSoft17);
+      setCountingEnabled(res.countingEnabled);
+      setCpuPlayerCount(res.cpuPlayerCount);
+      setDoubleAfterSplit(res.doubleAfterSplit);
+      setCountingSystem(res.countingSystem);
+      setDeckPenetration(res.deckPenetration);
+      setSurrenderRule(res.surrenderRule);
+    },
+    [t],
+  );
   const { state, loading, error, exec, retry } = useGameApi(apiClient.exec, { onSuccess });
+  previousStateRef.current = state;
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode(variant);
@@ -512,35 +540,60 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
             {/* Player hands */}
             {phase !== BjPhase.BET && hands.length > 0 && (
               <div className="mb-2" data-tutorial="bj-player-hand">
-                {hands.map((hand, handIndex) => (
-                  <div key={`hand-${handIndex}`} className="mb-2">
-                    <h2 className="text-ds-text-primary mt-0 mb-0.5">
-                      {hands.length > 1 ? t('hand', { idx: handIndex + 1 }) : t('playerHand')}
-                      {handIndex === currentHandIdx &&
-                        (phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER) &&
-                        ' (*)'}
-                      <HandStatusBadges
-                        busted={hand.busted}
-                        doubled={hand.doubled}
-                        isBlackJack={hand.isBlackJack}
-                        surrendered={hand.surrendered}
-                      />
-                    </h2>
-                    <p className="text-ds-text-primary mt-0 mb-0.5">
-                      {t('score')} {hand.score} / {tc('betting.currentBet')} {hand.bet}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {hand.cards.map((card, cardIdx) => (
-                        <AnimatedCard
-                          key={`hand-${handIndex}-${cardIdx}-${card.design}-${card.value}`}
-                          card={card}
-                          width={cardWidth}
-                          dealDelay={cardIdx * 0.12}
+                {hands.map((hand, handIndex) => {
+                  const isCurrentHand =
+                    handIndex === currentHandIdx && (phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER);
+
+                  return (
+                    <div key={`hand-${handIndex}`} className="mb-2">
+                      <h2 className="text-ds-text-primary mt-0 mb-0.5">
+                        {hands.length > 1 ? t('hand', { idx: handIndex + 1 }) : t('playerHand')}
+                        {isCurrentHand && <span className="ml-2 text-ds-accent font-medium">{t('currentHand')}</span>}
+                        <HandStatusBadges
+                          busted={hand.busted}
+                          doubled={hand.doubled}
+                          isBlackJack={hand.isBlackJack}
+                          surrendered={hand.surrendered}
                         />
-                      ))}
+                      </h2>
+                      {phase === BjPhase.END && hand.result !== undefined && (
+                        <p className="text-sm text-ds-text-primary" data-testid={`hand-result-${handIndex}`}>
+                          {t(
+                            hand.result > 0
+                              ? 'handResult.win'
+                              : hand.result < 0
+                                ? 'handResult.lose'
+                                : 'handResult.push',
+                          )}{' '}
+                          {hand.netChange !== undefined && (
+                            <>
+                              {' '}
+                              · {formatSignedDelta(hand.netChange)} {t('handResult.chips')}
+                            </>
+                          )}
+                        </p>
+                      )}
+                      {variant === 'spanish21' && phase === BjPhase.END && hand.bonusKey && (
+                        <p className="text-ds-warning text-sm font-bold" data-testid={`hand-bonus-${handIndex}`}>
+                          {t('bonusAward', { bonus: t(bonusBadgeKey(hand.bonusKey)), amount: hand.bonusAmount })}
+                        </p>
+                      )}
+                      <p className="text-ds-text-primary mt-0 mb-0.5">
+                        {t('score')} {hand.score} / {tc('betting.currentBet')} {hand.bet}
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {hand.cards.map((card, cardIdx) => (
+                          <AnimatedCard
+                            key={`hand-${handIndex}-${cardIdx}-${card.design}-${card.value}`}
+                            card={card}
+                            width={cardWidth}
+                            dealDelay={cardIdx * 0.12}
+                          />
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
@@ -602,6 +655,38 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                 ))}
               </div>
             )}
+
+            <div
+              className="sr-only"
+              data-testid="bj-bonus-announcement"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {variant === 'spanish21' && phase === BjPhase.END
+                ? state?.bonuses?.map((key, i) => <span key={`${key}-${i}`}>{t(bonusBadgeKey(key))}</span>)
+                : null}
+            </div>
+
+            <div
+              className="sr-only"
+              data-testid="bj-hit-announcement"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {hitAnnouncement}
+            </div>
+
+            <div
+              className="sr-only"
+              data-testid="bj-end-announcement"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {endAnnouncement}
+            </div>
 
             {/* Variant bonus badges (Spanish 21): 7-7-7 / 6-7-8 / 5+card 21 achievements. */}
             {phase === BjPhase.END && (state?.bonuses?.length ?? 0) > 0 && (

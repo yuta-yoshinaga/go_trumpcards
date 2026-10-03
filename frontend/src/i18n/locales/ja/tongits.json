@@ -15,6 +15,7 @@
   },
   "round": "ラウンド {{n}}",
   "drawPile": "山札: {{count}}枚",
+  "drawPileAnnouncement": "山札の残りは{{count}}枚です",
   "discardTop": "捨て札",
   "cards": "{{count}}枚",
   "cumulativeScore": "累計: {{score}}",
@@ -41,6 +42,7 @@
   "roundEndReasonLine": "終了理由: {{reason}}",
   "roundWinnerLine": "勝者: {{name}}",
   "cpuName": "CPU {{id}}",
+  "listSeparator": "、",
   "tongitsOnDeal": "配牌Tongits成立！即勝利です",
   "tongitsOnDealBanner": {
     "title": "TONGITS!",

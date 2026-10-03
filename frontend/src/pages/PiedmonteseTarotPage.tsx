@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { piedmonteseTarotApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -33,9 +34,11 @@ import { gameTheme } from '../styles/gameTheme';
 import type { PiedmonteseTarotResponse } from '../types/card';
 import { PiedmonteseTarotPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { PIEDMONTESE_TAROT_HELP, parsePiedmonteseTarotCommand } from '../utils/cli/commands/piedmonteseTarotCommands';
 import { formatPiedmonteseTarotState } from '../utils/cli/formatters/piedmonteseTarotFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 // **捨てられない理由の判定は共有。** スカルト (捨て札) の規則は 3 人版と同じで、
@@ -87,11 +90,6 @@ const PIEDMONTESE_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 /** Outcome i18n keys indexed by outcome value (0=none, 1=above average, 2=below). */
 const OUTCOME_KEYS = ['outcomeNone', 'outcomeWin', 'outcomeLoss'] as const;
-
-/** Formats a signed settlement, prefixing a leading `+` for positive values. */
-function formatSigned(n: number): string {
-  return n > 0 ? `+${n}` : String(n);
-}
 
 /** Formats thirds as whole points with an optional one-third remainder. */
 function formatThirds(thirds: number): string {
@@ -287,6 +285,76 @@ function PiedmonteseTarotPageContent() {
                   winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
                   dataTutorial="piedmontesetarot-trick-display"
                 />
+
+                {/* Completed trick history: lets players review past tricks and cards */}
+                <details
+                  className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                  data-testid="piedmontesetarot-trick-history"
+                >
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm font-semibold">
+                    {t('trickHistory.title')}
+                  </summary>
+                  <div className="mt-2">
+                    {state.completedTricks.length === 0 ? (
+                      <div className="text-ds-text-muted text-xs">{t('trickHistory.empty')}</div>
+                    ) : (
+                      <div className="space-y-3">
+                        {state.completedTricks.map((trick) => (
+                          <div
+                            key={trick.trickNumber}
+                            className="border-t border-ds-border-subtle pt-2 first:border-0 first:pt-0"
+                            data-testid={`piedmontesetarot-completed-trick-${trick.trickNumber}`}
+                          >
+                            <div className="flex flex-wrap gap-x-3 gap-y-1 items-center mb-1 text-xs">
+                              <span className="font-semibold text-ds-text-primary">
+                                {t('trickHistory.trickTitle', { n: trick.trickNumber })}
+                              </span>
+                              <span>
+                                {t('trickHistory.lead', {
+                                  name: playerName(
+                                    trick.leadPlayerIdx,
+                                    state.players[trick.leadPlayerIdx]?.isHuman ?? false,
+                                  ),
+                                })}
+                              </span>
+                              <span className="text-ds-warning font-semibold">
+                                {t('trickHistory.winner', {
+                                  name: playerName(trick.winnerIdx, state.players[trick.winnerIdx]?.isHuman ?? false),
+                                })}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {trick.cards.map((tc, cardIdx) => {
+                                const p = state.players[tc.playerIdx];
+                                const isWinner = tc.playerIdx === trick.winnerIdx;
+                                return (
+                                  <div
+                                    key={cardIdx}
+                                    className={`text-center p-1 rounded ${isWinner ? 'ring-1 ring-ds-warning' : ''}`}
+                                    data-testid={`piedmontesetarot-history-card-${trick.trickNumber}-${tc.playerIdx}`}
+                                  >
+                                    <CardImage
+                                      card={tc.card}
+                                      width={Math.round(cardWidth * 0.6)}
+                                      ariaLabel={cardAlt(tc.card)}
+                                    />
+                                    <div
+                                      className={`text-xs mt-0.5 ${
+                                        isWinner ? 'text-ds-warning font-semibold' : 'text-ds-text-muted'
+                                      }`}
+                                    >
+                                      {playerName(tc.playerIdx, p?.isHuman ?? false)}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </details>
               </div>
 
               {/* Right: info sidebar */}
@@ -336,13 +404,28 @@ function PiedmonteseTarotPageContent() {
                   >
                     <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
                     <div>{t('roundResult.outcome', { outcome: t(OUTCOME_KEYS[state.outcome] ?? 'outcomeNone') })}</div>
+                    {state.scartoCards.length > 0 && (
+                      <div className="mt-1" data-testid="piedmontesetarot-scarto-cards">
+                        <div>{t('roundResult.scartoCards')}</div>
+                        <div className="flex flex-wrap gap-1">
+                          {state.scartoCards.map((card, i) => (
+                            <CardImage
+                              key={`${card.design}-${card.value}-${i}`}
+                              card={card}
+                              ariaLabel={cardAlt(card)}
+                              width={42}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     {state.players.map((p, i) => {
                       const delta = state.dealScores[i] ?? 0;
                       return (
                         <div key={p.id}>
                           {t('roundResult.playerLine', {
                             name: playerName(p.id, p.isHuman),
-                            delta: formatSigned(delta),
+                            delta: formatSignedDelta(delta),
                             score: p.score,
                           })}
                         </div>
@@ -361,7 +444,7 @@ function PiedmonteseTarotPageContent() {
                             {t('roundResult.earnedLine', {
                               name: playerName(p.id, p.isHuman),
                               points: p.cardPoints,
-                              scaled: formatSigned(state.dealScores[i] ?? 0),
+                              scaled: formatSignedDelta(state.dealScores[i] ?? 0),
                             })}
                           </div>
                           <div>

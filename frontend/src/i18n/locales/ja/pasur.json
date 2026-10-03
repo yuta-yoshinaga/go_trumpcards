@@ -14,6 +14,7 @@
     "score": "得点{{n}}",
     "lastCapture": "[最後に捕獲]",
     "you": "あなた",
+    "currentTurn": "手番中",
     "cpu": "CPU{{idx}}"
   },
   "actions": {
@@ -32,7 +33,17 @@
   "result": {
     "you": "あなたの勝ち！",
     "cpu": "{{name}} の勝ちです。",
-    "tie": "{{n}} 人が同点です。"
+    "tie": "{{n}} 人が同点です。",
+    "breakdownTitle": "最終得点内訳",
+    "cardPointsLabel": "札点",
+    "soorPointsLabel": "スール加点",
+    "pointsCount": "{{n}}点",
+    "finalScoreLabel": "最終得点",
+    "finalScoreCount": "{{n}}点",
+    "capturedLabel": "捕獲",
+    "capturedCount": "{{n}}枚",
+    "soorsLabel": "スール",
+    "soorsCount": "{{n}}回"
   },
   "hint": {
     "pasurSoor": "場を空にできます。この捕獲は得点が2倍になります。",

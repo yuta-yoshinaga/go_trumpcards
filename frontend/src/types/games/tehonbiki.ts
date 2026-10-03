@@ -17,5 +17,7 @@ export interface TehonbikiResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   payoutNum: number;
   payoutDen: number;
+  minBet: number;
+  maxBet: number;
   config?: { initialChips: number; defaultBet: number };
 }

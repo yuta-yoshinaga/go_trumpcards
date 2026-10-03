@@ -16,7 +16,6 @@ import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardSelection } from '../hooks/useCardSelection';
 import { useCliGame } from '../hooks/useCliGame';
@@ -36,6 +35,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { NINETYNINE_HELP, parseNinetynineCommand } from '../utils/cli/commands/ninetynineCommands';
 import { formatNinetynineState } from '../utils/cli/formatters/ninetynineFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { describeApiFailure } from '../utils/describeApiFailure';
 import { ninetynineDeclaredTricks } from '../utils/hints/ninetynineHint';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -175,8 +175,8 @@ function NinetyNinePageContent() {
       const res = await ninetyNineApi.exec('hint');
       setServerHint(res.hint ?? null);
       setHintError(null);
-    } catch {
-      setHintError(NETWORK_ERROR_MESSAGE());
+    } catch (error) {
+      setHintError(describeApiFailure(error).message);
     } finally {
       setHintLoading(false);
     }
@@ -214,6 +214,9 @@ function NinetyNinePageContent() {
   const isRoundEnd = state.phase === NinetyNinePhase.ROUND_END;
   const isGameEnd = state.phase === NinetyNinePhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const legalPlayIndices = state.validPlayIndices;
+  const legalPlaySet = new Set(legalPlayIndices);
+  const playCardStatus = (idx: number) => t(legalPlaySet.has(idx) ? 'legalPlay' : 'followSuitRequired');
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
   // Bury-selection progress. Selection is not capped, so the player can pick
   // more than BURY_COUNT; clamp both directions so neither the remaining nor
@@ -406,8 +409,15 @@ function NinetyNinePageContent() {
                 </div>
                 <RoundScoreAnnouncement
                   active={isRoundEnd || isGameEnd}
+                  separator={t('listSeparator')}
                   entries={state.players.map((p) => ({
-                    name: playerName(p.id, p.isHuman),
+                    name: t('roundScoreAnnouncementName', {
+                      name: playerName(p.id, p.isHuman),
+                      result:
+                        p.bid >= 0
+                          ? t('roundScoreAnnouncementResult', { bid: p.bid, tricks: p.trickCount })
+                          : t('roundScoreAnnouncementResultNoBid', { tricks: p.trickCount }),
+                    }),
                     roundScore: p.roundScore,
                     cumulativeScore: p.cumulativeScore,
                   }))}
@@ -440,6 +450,8 @@ function NinetyNinePageContent() {
                   onToggle={toggleCard}
                   cardWidth={cardWidth}
                   dataTutorial="nn-player-hand"
+                  legalIndices={isHumanTurn ? legalPlayIndices : undefined}
+                  cardStatusFor={isHumanTurn ? playCardStatus : undefined}
                 />
               ) : (
                 <div className="flex flex-wrap gap-1 mb-2" data-tutorial="nn-player-hand">
@@ -448,9 +460,10 @@ function NinetyNinePageContent() {
                       type="button"
                       key={`${card.design}-${card.value}-${idx}`}
                       onClick={() => toggleCard(idx)}
-                      aria-label={cardAlt(card)}
+                      aria-label={`${cardAlt(card)}${isHumanTurn ? ` (${playCardStatus(idx)})` : ''}`}
                       aria-pressed={selectedCardIndices.includes(idx)}
-                      className={`transition-transform ${focusRingCard}`}
+                      data-legal={isHumanTurn && legalPlaySet.has(idx) ? 'true' : undefined}
+                      className={`transition-transform ${focusRingCard} ${isHumanTurn && legalPlaySet.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
                       style={{
                         background: 'none',
                         padding: 0,

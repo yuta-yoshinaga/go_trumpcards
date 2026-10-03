@@ -104,12 +104,7 @@ func (ci *CinchInteractor) Play(cardIndex int) string {
 // NextRound ディールをスコアリングして次のディールへ進む。
 func (ci *CinchInteractor) NextRound() string {
 	ci.Game.ScoreRound()
-	if out, blocked := guardGameEnd(ci.Game, ci.cp); blocked {
-		return out
-	}
-	ci.Game.NextRound()
-	ci.advance()
-	return ci.cp.Output(ci.Game, nil)
+	return advanceRound(ci.Game, ci.cp, ci.advance)
 }
 
 // GetConfig 現在の設定を返す。

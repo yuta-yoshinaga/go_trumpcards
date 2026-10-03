@@ -6,6 +6,8 @@
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpSetTarget": "  st <n>               target points (default 21)",
   "round": "Round: {{round}}  Trick: {{trick}}",
+  "currentTrickPoints": "Card points in this trick: {{thirds}}/3",
+  "resolvedTrickPoints": "Team {{team}} won this trick: {{thirds}}/3 points",
   "teamScores": "Team A: {{a}} pts (this round {{athird}}/3)   Team B: {{b}} pts (this round {{bthird}}/3)",
   "thirdsRule": "Thirds: card points are counted in thirds; every 3 thirds convert to 1 point (the remainder carries over)",
   "playerLine": "{{name}} [Team {{team}}]: {{cards}} cards, {{tricks}} tricks",

@@ -13,7 +13,11 @@
   "dealerHand": "Dealer Hand",
   "score": "Score",
   "playerHand": "Player Hand",
+  "hitAnnouncement": "Drew {{card}}. Current score: {{score}}.",
+  "dealerFinalScore": "The dealer's final score is {{score}}.",
+  "dealerBust": "The dealer busted.",
   "hand": "Hand {{idx}}",
+  "currentHand": "Current Hand",
   "insurance": "Insurance:",
   "suggestion": "Suggested:",
   "suggest": {
@@ -143,5 +147,12 @@
       "samesuit": "7-7-7 (same suit)",
       "spade": "7-7-7 (all spades)"
     }
+  },
+  "bonusAward": "{{bonus}} +{{amount}} bonus",
+  "handResult": {
+    "win": "Win",
+    "lose": "Loss",
+    "push": "Push",
+    "chips": "chips"
   }
 }

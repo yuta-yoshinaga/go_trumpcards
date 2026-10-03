@@ -360,6 +360,28 @@ func TestCaribbeanDrawCuiPresenter_Output_JackpotIsExplainedBeforeBetting(t *tes
 		i18n.T("caribbeandraw.jackpotHelp"))
 }
 
+func TestCaribbeanDrawCuiPresenter_Output_PayoutTablesBeforeBetting(t *testing.T) {
+	t.Cleanup(func() { i18n.SetLang("ja") })
+	p := new(CaribbeanDrawCuiPresenter)
+	m := new(interfaces.MockCaribbeanDrawGame)
+	m.On("GetPhase").Return(domain.CaribbeanDrawPhaseBet)
+	setupCaribbeanDrawCuiMockDefaults(m)
+
+	i18n.SetLang("ja")
+	ja := p.Output(m, nil)
+	assert.Contains(t, ja, "プレイベット配当倍率")
+	assert.Contains(t, ja, "ロイヤルフラッシュ: 50倍")
+	assert.Contains(t, ja, "ジャックポット配当倍率")
+	assert.Contains(t, ja, "ロイヤルフラッシュ: 10000倍")
+
+	i18n.SetLang("en")
+	en := p.Output(m, nil)
+	assert.Contains(t, en, "Play bet payout multipliers")
+	assert.Contains(t, en, "Royal flush: 50x")
+	assert.Contains(t, en, "Jackpot payout multipliers")
+	assert.Contains(t, en, "Royal flush: 10000x")
+}
+
 // **当たった側注も名前で言う (#6606)。** Web はラウンド終了時に payout.jackpot を
 // 出しているのに、CUI は合計しか出さないので、任意で賭けたジャックポットが
 // 当たった事実も金額も画面から消えていた。

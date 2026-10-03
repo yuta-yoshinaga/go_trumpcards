@@ -49,6 +49,7 @@ type SutdaWebOutputPlayer struct {
 // SutdaWebOutputResult は 1 ハンドの結果。
 type SutdaWebOutputResult struct {
 	Winners []int `json:"winners"`
+	Shares  []int `json:"shares"`
 	Pot     int   `json:"pot"`
 	// HandNames は席ごとの役の識別子。
 	HandNames []string `json:"handNames"`

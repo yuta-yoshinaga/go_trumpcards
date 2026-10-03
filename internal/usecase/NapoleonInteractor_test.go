@@ -244,6 +244,22 @@ func TestNapoleonInteractor_Play(t *testing.T) {
 		assert.Equal(t, mockOutput, result)
 	})
 
+	t.Run("resolves a trick completed by the human before responding", func(t *testing.T) {
+		npMock := new(presenter.MockNapoleonPresenter)
+		npMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
+		gameMock := new(interfaces.MockNapoleonGame)
+		gameMock.On("GetGameEndFlag").Return(false)
+		gameMock.On("IsHumanTurn").Return(true)
+		gameMock.On("PlayerPlay", 3).Return(nil)
+		gameMock.On("GetPhase").Return(domain.NapoleonPhaseTrickEnd).Once()
+		gameMock.On("ResolveTrick").Return().Once()
+		gameMock.On("GetPhase").Return(domain.NapoleonPhaseTrickEnd).Once()
+
+		ni := usecase.NewNapoleonInteractor(gameMock, npMock)
+		assert.Equal(t, mockOutput, ni.Play(3))
+		gameMock.AssertCalled(t, "ResolveTrick")
+	})
+
 	t.Run("play error", func(t *testing.T) {
 		npMock := new(presenter.MockNapoleonPresenter)
 		npMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)

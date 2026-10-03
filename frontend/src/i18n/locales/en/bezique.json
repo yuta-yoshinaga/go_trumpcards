@@ -21,6 +21,7 @@
   "noTrump": "undeclared",
   "stockLowWarning": "Endgame approaching ({{count}} left in stock) — declare your melds soon.",
   "endgameNotice": "Phase 2 (endgame) — strict must-follow. No melds. Last trick scores +10.",
+  "endgameLive": "Endgame has begun. Strict must-follow is now in effect. Melds can no longer be declared. The last trick scores +10.",
   "currentTrick": "Current Trick",
   "you": "You",
   "cpu": "CPU {{id}}",
@@ -51,7 +52,8 @@
   },
   "roundResult": {
     "title": "Deal Result (points won)",
-    "line": "{{name}}: {{points}} pts"
+    "line": "{{name}}: {{points}} pts",
+    "lastTrickBonus": "(including the {{points}}-point last-trick bonus)"
   },
   "hintAvailable": "Hint",
   "hint": {

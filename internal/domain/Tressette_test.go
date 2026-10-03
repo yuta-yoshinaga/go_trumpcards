@@ -428,3 +428,14 @@ func TestTressetteUnmarshalInvalid(t *testing.T) {
 	var g domain.Tressette
 	assert.Error(t, json.Unmarshal([]byte("not json"), &g))
 }
+
+func TestTressetteCurrentTrickThirds(t *testing.T) {
+	g := newTestTressette()
+	assert.Equal(t, 0, g.CurrentTrickThirds())
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: trCard(domain.CardDesignSpade, 1)},
+		{PlayerIdx: 1, Card: trCard(domain.CardDesignHeart, 2)},
+		{PlayerIdx: 2, Card: trCard(domain.CardDesignClover, 4)},
+	})
+	assert.Equal(t, 4, g.CurrentTrickThirds())
+}

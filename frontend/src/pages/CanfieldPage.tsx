@@ -1,6 +1,7 @@
-import { type DragEvent, useCallback, useMemo } from 'react';
+import { type DragEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type CanfieldMoveZone, canfieldApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { AutoCompleteReadyBadge } from '../components/AutoCompleteReadyBadge';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -16,6 +17,7 @@ import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -108,6 +110,15 @@ function CanfieldPageContent() {
     cancelGiveUp,
   } = useGamePageSetup('canfield');
   const { state, loading, error, exec: execApi, retry } = useGameApi(canfieldApi.exec);
+  const [selectedTableauCard, setSelectedTableauCard] = useState<{ col: number; cardIndex: number } | null>(null);
+  const previousMoveCount = useRef<number | null>(null);
+  useEffect(() => {
+    if (!state) return;
+    if (previousMoveCount.current !== null && previousMoveCount.current !== state.moveCount) {
+      setSelectedTableauCard(null);
+    }
+    previousMoveCount.current = state.moveCount;
+  }, [state]);
   const { cardWidth, cardHeight, isMobile } = useCardDimensions();
   const {
     hint: frontendHint,
@@ -152,6 +163,20 @@ function CanfieldPageContent() {
   const handleAutoComplete = useCallback(() => execApi('autocomplete'), [execApi]);
   const handleUndo = useCallback(() => execApi('undo'), [execApi]);
 
+  const actionBindings = useMemo(
+    () => [
+      { key: 'd', action: handleDraw, label: 'draw' },
+      { key: 'h', action: handleHint, label: 'hint' },
+      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
+      { key: 'z', action: handleUndo, label: 'undo', enabled: !!state?.canUndo },
+    ],
+    [handleDraw, handleHint, confirmGiveUpAction, handleUndo, state?.canUndo],
+  );
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: state?.phase === CanfieldPhase.PLAYING && !loading && !actionLog && !confirmOpen && !giveUpConfirmOpen,
+  });
+
   const handleMoveReserveToFoundation = useCallback(
     () => execApi('move', { zone: 'reserve' }, { zone: 'foundation' }),
     [execApi],
@@ -177,11 +202,39 @@ function CanfieldPageContent() {
       execApi('move', { zone: 'tableau', col: fromCol, cardIndex }, { zone: 'tableau', col: toCol }),
     [execApi],
   );
-
+  const handleMoveSelectedToTableau = useCallback(
+    (toCol: number) => {
+      if (!selectedTableauCard) return;
+      void execApi(
+        'move',
+        { zone: 'tableau', col: selectedTableauCard.col, cardIndex: selectedTableauCard.cardIndex },
+        { zone: 'tableau', col: toCol },
+      );
+    },
+    [execApi, selectedTableauCard],
+  );
+  const handleMoveSelectedToFoundation = useCallback(() => {
+    if (!selectedTableauCard) return;
+    void execApi(
+      'move',
+      { zone: 'tableau', col: selectedTableauCard.col, cardIndex: selectedTableauCard.cardIndex },
+      { zone: 'foundation' },
+    );
+  }, [execApi, selectedTableauCard]);
+  const handleClearTableauSelection = useCallback(() => setSelectedTableauCard(null), []);
+  const escapeBindings = useMemo(
+    () => [{ key: 'Escape', action: handleClearTableauSelection, enabled: !!selectedTableauCard }],
+    [handleClearTableauSelection, selectedTableauCard],
+  );
   const theme = useMemo(() => gameTheme.canfield, []);
 
   const phase = state?.phase ?? CanfieldPhase.PLAYING;
   const isPlaying = phase === CanfieldPhase.PLAYING;
+  const selected =
+    selectedTableauCard && isPlaying && state?.tableau[selectedTableauCard.col]?.[selectedTableauCard.cardIndex]
+      ? selectedTableauCard
+      : null;
+  useActionKeyboardNav({ bindings: escapeBindings, enabled: isPlaying && !loading });
 
   // Drag-and-drop: dispatches the same move command as button-based interaction.
   const dispatchMove = useCallback(
@@ -321,6 +374,20 @@ function CanfieldPageContent() {
                 );
               })}
             </div>
+            {isPlaying && selected && selected.cardIndex === (state.tableau[selected.col]?.length ?? 0) - 1 && (
+              <button
+                type="button"
+                data-testid="cf-selected-move-to-foundation"
+                className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px] ring-2 ring-ds-accent`}
+                aria-label={t('selectedMoveToFoundationAriaLabel')}
+                aria-disabled={loading}
+                onClick={() => {
+                  if (!loading) handleMoveSelectedToFoundation();
+                }}
+              >
+                {t('moveToFoundation')}
+              </button>
+            )}
 
             {/* Stock / Waste / Reserve */}
             <div className="mb-3 flex gap-3" data-tutorial="cf-stock-waste">
@@ -437,14 +504,28 @@ function CanfieldPageContent() {
                         ) : (
                           col.map((tc, j) => {
                             const cardZone: CanfieldMoveZone = { zone: 'tableau', col: i, cardIndex: j };
+                            const isSelected = selected?.col === i && selected.cardIndex === j;
                             return (
                               <div key={`t-${i}-${j}`} className="absolute" style={{ top: j * 24, left: 0 }}>
                                 <button
                                   type="button"
+                                  aria-label={t('tableauCardAriaLabel', {
+                                    card: cardAlt(tc.card),
+                                    col: i,
+                                    index: j,
+                                  })}
+                                  aria-pressed={isSelected}
+                                  onClick={() => {
+                                    if (isSelected) {
+                                      setSelectedTableauCard(null);
+                                    } else {
+                                      setSelectedTableauCard({ col: i, cardIndex: j });
+                                    }
+                                  }}
                                   draggable={isPlaying && !loading}
                                   onDragStart={dnd.handleDragStart(cardZone)}
                                   onDragEnd={dnd.handleDragEnd}
-                                  className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isHintFromTableau(i, j) ? HINT_RING : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                  className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isHintFromTableau(i, j) ? HINT_RING : ''} ${isSelected ? 'ring-2 ring-ds-accent' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                                 >
                                   <AnimatedCard card={tc.card} width={cardWidth} draggable={false} />
                                 </button>
@@ -454,6 +535,22 @@ function CanfieldPageContent() {
                         )}
                       </div>
                     </DropZone>
+                    {selected && i !== selected.col && (
+                      <button
+                        type="button"
+                        data-testid={`cf-selected-move-to-tableau-${i}`}
+                        aria-label={t('selectedMoveToColAriaLabel', { col: i })}
+                        aria-disabled={loading}
+                        onClick={() => {
+                          if (!loading) {
+                            handleMoveSelectedToTableau(i);
+                          }
+                        }}
+                        className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px] ring-2 ring-ds-accent aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+                      >
+                        {t('moveToCol', { col: i })}
+                      </button>
+                    )}
                     {isPlaying &&
                       (() => {
                         const actionButtons = (
@@ -525,6 +622,13 @@ function CanfieldPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+            <div id="cf-tableau-selection-status" aria-live="polite" className="sr-only">
+              {selected
+                ? t('tableauCardSelected', {
+                    card: cardAlt(state?.tableau[selected.col]?.[selected.cardIndex]?.card),
+                  })
+                : ''}
+            </div>
             {/* Server hint display: a visible source → target line plus a screen-reader
                 announcement, mirroring CanfieldCuiPresenter.HintOutput. The hinted cards
                 are also ring-highlighted above. Clears automatically once the move is
@@ -625,6 +729,7 @@ function CanfieldPageContent() {
                 className={focusRingWhite}
               />
             </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="canfield-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

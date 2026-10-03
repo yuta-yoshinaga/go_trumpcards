@@ -15,6 +15,10 @@ export interface BettingControlsProps {
   /** Current pot size; when positive, 1/2 Pot and Pot preset buttons are rendered. Max additionally requires a positive maxBetAmount. */
   potSize?: number;
   hasOutstandingBet: boolean;
+  /** Optional game-specific display of the chips needed to call. */
+  callAmountLabel?: string;
+  /** Optional game-specific pot odds shown beside the betting actions. */
+  callPotOddsLabel?: string;
   loading: boolean;
   onCall: () => void;
   onRaise: () => void;
@@ -37,6 +41,8 @@ export function BettingControls({
   maxBetAmount,
   potSize,
   hasOutstandingBet,
+  callAmountLabel,
+  callPotOddsLabel,
   loading,
   onCall,
   onRaise,
@@ -91,7 +97,7 @@ export function BettingControls({
           describedBy={isOutOfRange ? `${inputId}-range` : undefined}
         />
         {isOutOfRange && (
-          <p id={`${inputId}-range`} className="text-ds-error text-xs" role="alert">
+          <p id={`${inputId}-range`} className="text-ds-error-text text-xs" role="alert">
             {t('betting.rangeHint', { min: minRaise, max: hasMax ? max : '∞' })}
           </p>
         )}
@@ -136,6 +142,7 @@ export function BettingControls({
             aria-keyshortcuts="c"
           >
             {t('action.call')}
+            {callAmountLabel && <span> {callAmountLabel.trim()}</span>}
             {kbd('C')}
           </button>
           <button
@@ -204,6 +211,7 @@ export function BettingControls({
         {t('action.allIn')}
         {kbd('A')}
       </button>
+      {hasOutstandingBet && callPotOddsLabel && <p className="text-ds-text-muted text-xs mt-1">{callPotOddsLabel}</p>}
       {/* Keyboard shortcut hint. BettingControls only renders while the human can
           act, so the shortcuts are always live here. Show only the actions that are
           actually on screen (call/raise vs check/bet) to avoid advertising the

@@ -1,5 +1,5 @@
 import type { fourseasonsApi } from '../../../api/gameApi';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type FourSeasonsArgs = Parameters<typeof fourseasonsApi.exec>;
@@ -84,6 +84,6 @@ export function parseFourSeasonsCommand(input: string): CliParseResult<FourSeaso
       return { error: 'Usage: m w|t ...' };
     }
     default:
-      return { error: suggestCommand(cmd, VALID_COMMANDS) ?? `Unknown command: ${cmd}` };
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }

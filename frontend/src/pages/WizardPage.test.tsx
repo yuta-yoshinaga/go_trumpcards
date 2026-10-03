@@ -163,6 +163,73 @@ const followSuitState: WizardResponse = {
 };
 
 describe('WizardPage', () => {
+  it('announces cards added to the current trick without announcing a result during play', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<WizardPage />);
+    const liveRegion = await screen.findByTestId('wizard-trick-live');
+    const resultRegion = screen.getByTestId('wizard-trick-result-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
+    expect(resultRegion).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValueOnce({
+      ...playPhaseState,
+      currentTrick: [
+        { playerIdx: 0, card: { design: 'SPADE', value: 1 } },
+        { playerIdx: 1, card: { design: 'HEART', value: 5 } },
+      ],
+    });
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+
+    await waitFor(() => expect(liveRegion).toHaveTextContent('あなた: ♠ A、CPU 1: ♥ 5'));
+    expect(resultRegion).toBeEmptyDOMElement();
+    expect(liveRegion).toHaveClass('sr-only');
+  });
+
+  it('announces the server-reported trick winner and counts only during trick end', async () => {
+    mockExec.mockResolvedValueOnce(playPhaseState).mockResolvedValueOnce({
+      ...trickEndState,
+      leadPlayerIdx: 2,
+      players: playPhaseState.players.map((player, index) => ({ ...player, trickCount: [0, 1, 3, 0][index] })),
+    });
+    renderWithProviders(<WizardPage />);
+    const resultRegion = await screen.findByTestId('wizard-trick-result-live');
+    expect(resultRegion).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() =>
+      expect(resultRegion).toHaveTextContent(
+        'CPU 2がトリックを獲得しました。獲得トリック数: あなた 0トリック、CPU 1 1トリック、CPU 2 3トリック、CPU 3 0トリック',
+      ),
+    );
+    expect(resultRegion).toHaveAttribute('role', 'status');
+    expect(resultRegion).toHaveAttribute('aria-live', 'polite');
+    expect(resultRegion).toHaveClass('sr-only');
+  });
+
+  it('clears the trick result announcement on the next play response', async () => {
+    mockExec
+      .mockResolvedValueOnce(playPhaseState)
+      .mockResolvedValueOnce({ ...trickEndState, leadPlayerIdx: 1 })
+      .mockResolvedValueOnce(playPhaseState);
+    renderWithProviders(<WizardPage />);
+    const resultRegion = await screen.findByTestId('wizard-trick-result-live');
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(resultRegion).toHaveTextContent('CPU 1がトリックを獲得しました'));
+    fireEvent.click(screen.getByRole('button', { name: '次のトリック' }));
+    await waitFor(() => expect(resultRegion).toBeEmptyDOMElement());
+  });
+
+  it('keeps the trick result announcement empty on the initial bid phase', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<WizardPage />);
+    expect(await screen.findByTestId('wizard-trick-result-live')).toBeEmptyDOMElement();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<WizardPage />);

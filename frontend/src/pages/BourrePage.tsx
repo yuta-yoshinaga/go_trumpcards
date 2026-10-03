@@ -300,7 +300,7 @@ function BourrePageContent() {
           <span className="text-xs opacity-75" data-testid="bourre-trump">
             {t('label.trump')}:{' '}
             {isSuitDesign(state.trumpSuit) ? (
-              <span className={isRedSuitDesign(state.trumpSuit) ? 'text-ds-error' : undefined}>
+              <span className={isRedSuitDesign(state.trumpSuit) ? 'text-ds-error-text' : undefined}>
                 {suitSymbol(state.trumpSuit)}
               </span>
             ) : (
@@ -420,6 +420,7 @@ function BourrePageContent() {
                     <button
                       key={`hand-${c.design}-${c.value}-${i}`}
                       type="button"
+                      aria-pressed={phase === 'draw' ? isSelected : undefined}
                       className={
                         isSelected
                           ? 'transition-transform -translate-y-2 ring-2 ring-ds-warning rounded'
@@ -456,9 +457,17 @@ function BourrePageContent() {
                   {playerName(r.playerIdx, r.playerIdx === humanIdx)}: {r.tricks} {t('label.tricks')}
                   {r.folded ? ` (${t('label.folded')})` : ''}
                   {r.bourreed ? ` (${t('label.bourreed')})` : ''}
-                  {r.wonAmount > 0 ? ` +${r.wonAmount}` : ''}
+                  {r.paidAmount > 0
+                    ? ` — ${r.bourreed ? t('result.bourrePayment', { amount: r.paidAmount }) : t('result.paid', { amount: r.paidAmount })}`
+                    : ''}
+                  {r.wonAmount > 0 ? ` — ${t('result.won', { amount: r.wonAmount })}` : ''}
                 </div>
               ))}
+              {state.carryPot > 0 ? (
+                <div className="text-sm text-ds-text-muted">{t('result.potCarried', { amount: state.carryPot })}</div>
+              ) : state.results.some((r) => r.wonAmount > 0) ? (
+                <div className="text-sm text-ds-text-muted">{t('result.potAwarded')}</div>
+              ) : null}
             </div>
           )}
 

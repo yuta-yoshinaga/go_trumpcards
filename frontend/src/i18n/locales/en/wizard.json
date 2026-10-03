@@ -47,6 +47,11 @@
     "under": "{{delta}} under"
   },
   "currentTrick": "Current Trick",
+  "trickAnnouncementEntry": "{{player}}: {{card}}",
+  "trickResultAnnouncement": "{{winner}} won the trick. Trick totals: {{counts}}",
+  "trickCountAnnouncementEntry_one": "{{player}}: {{count}} trick",
+  "trickCountAnnouncementEntry_other": "{{player}}: {{count}} tricks",
+  "listSeparator": ", ",
   "scores": "Scores",
   "scoresPlayer": "Player",
   "scoresBid": "Bid",

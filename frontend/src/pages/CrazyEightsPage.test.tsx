@@ -926,6 +926,8 @@ describe('CrazyEightsPage', () => {
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
     const shown = await screen.findByTestId('ce-server-hint');
+    expect(shown).toHaveAttribute('role', 'status');
+    expect(shown).toHaveAttribute('aria-live', 'polite');
     expect(shown).toHaveTextContent('1');
     expect(shown).toHaveTextContent('スートが合う');
   });
@@ -941,12 +943,14 @@ describe('CrazyEightsPage', () => {
     expect(shown).toHaveTextContent('手札に一番多いスート');
   });
 
-  // 要求する前は出さない。常時表示だとフロント完結のツールチップと二重になる。
-  it('shows no server hint before the button is pressed', async () => {
+  it('keeps an empty polite live region before the button is pressed', async () => {
     renderWithProviders(<CrazyEightsPage />);
 
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    expect(screen.queryByTestId('ce-server-hint')).not.toBeInTheDocument();
+    const region = screen.getByTestId('ce-server-hint');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toBeEmptyDOMElement();
   });
 });
 
@@ -1013,6 +1017,19 @@ describe('CrazyEightsPage winner highlight', () => {
     expect(line.textContent).toContain('CPU 2');
   });
 
+  it('shows remaining points to the limit in every player row', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      players: playPhaseState.players.map((p) => ({ ...p, cumulativeScore: p.cumulativeScore + 5 })),
+    });
+    renderWithProviders(<CrazyEightsPage />);
+
+    expect(await screen.findByTestId('ce-score-row-0')).toHaveTextContent('残り 195 点');
+    expect(screen.getByTestId('ce-score-row-1')).toHaveTextContent('残り 185 点');
+    expect(screen.getByTestId('ce-score-row-2')).toHaveTextContent('残り 175 点');
+    expect(screen.getByTestId('ce-score-row-3')).toHaveTextContent('残り 190 点');
+  });
+
   it('omits the limit line when no point limit is set', async () => {
     mockExec.mockResolvedValue({
       ...playPhaseState,
@@ -1021,5 +1038,6 @@ describe('CrazyEightsPage winner highlight', () => {
     renderWithProviders(<CrazyEightsPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('ce-limit-progress')).not.toBeInTheDocument();
+    expect(screen.getByTestId('ce-score-row-0')).not.toHaveTextContent('残り');
   });
 });

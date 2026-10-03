@@ -42,27 +42,30 @@ type CalabresellaWebOutputPlayer struct {
 
 // CalabresellaWebOutput カラブレセッラのWebアウトプット
 type CalabresellaWebOutput struct {
-	Players          []*CalabresellaWebOutputPlayer    `json:"players"`
-	Phase            int                               `json:"phase"`
-	RoundNumber      int                               `json:"roundNumber"`
-	TrickNumber      int                               `json:"trickNumber"`
-	CurrentPlayerIdx int                               `json:"currentPlayerIdx"`
-	CurrentBidderIdx int                               `json:"currentBidderIdx"`
-	LeadPlayerIdx    int                               `json:"leadPlayerIdx"`
-	DealerIdx        int                               `json:"dealerIdx"`
-	ForehandIdx      int                               `json:"forehandIdx"`
-	SoloistIdx       int                               `json:"soloistIdx"`
-	WinningBid       int                               `json:"winningBid"`
-	CurrentTrick     []*WebOutputTrickCard             `json:"currentTrick"`
-	Monte            []*WebOutputCard                  `json:"monte,omitempty"`
-	PlayerScores     [domain.CalabresellaPlayerCnt]int `json:"playerScores"`
-	RoundThirds      [domain.CalabresellaPlayerCnt]int `json:"roundThirds"`
-	LastTrickWinner  int                               `json:"lastTrickWinner"`
-	PlayableIndices  []int                             `json:"playableIndices"`
-	GameEndFlag      bool                              `json:"gameEndFlag"`
-	WinnerPlayer     int                               `json:"winnerPlayer"`
-	IsHumanTurn      bool                              `json:"isHumanTurn"`
-	Hint             *WebOutputCardHint                `json:"hint,omitempty"`
+	Players           []*CalabresellaWebOutputPlayer    `json:"players"`
+	Phase             int                               `json:"phase"`
+	RoundNumber       int                               `json:"roundNumber"`
+	TrickNumber       int                               `json:"trickNumber"`
+	CurrentPlayerIdx  int                               `json:"currentPlayerIdx"`
+	CurrentBidderIdx  int                               `json:"currentBidderIdx"`
+	LeadPlayerIdx     int                               `json:"leadPlayerIdx"`
+	DealerIdx         int                               `json:"dealerIdx"`
+	ForehandIdx       int                               `json:"forehandIdx"`
+	SoloistIdx        int                               `json:"soloistIdx"`
+	WinningBid        int                               `json:"winningBid"`
+	HighestBid        int                               `json:"highestBid"`
+	CurrentTrick      []*WebOutputTrickCard             `json:"currentTrick"`
+	Monte             []*WebOutputCard                  `json:"monte,omitempty"`
+	PlayerScores      [domain.CalabresellaPlayerCnt]int `json:"playerScores"`
+	RoundThirds       [domain.CalabresellaPlayerCnt]int `json:"roundThirds"`
+	RoundScoreChanges [domain.CalabresellaPlayerCnt]int `json:"roundScoreChanges"`
+	SoloistWon        bool                              `json:"soloistWon"`
+	LastTrickWinner   int                               `json:"lastTrickWinner"`
+	PlayableIndices   []int                             `json:"playableIndices"`
+	GameEndFlag       bool                              `json:"gameEndFlag"`
+	WinnerPlayer      int                               `json:"winnerPlayer"`
+	IsHumanTurn       bool                              `json:"isHumanTurn"`
+	Hint              *WebOutputCardHint                `json:"hint,omitempty"`
 	WebOutputBase
 	Config CalabresellaWebOutputConfig `json:"config"`
 }

@@ -11,6 +11,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
+import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -26,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { VintResponse } from '../types/card';
 import { VintPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseVintCommand, VINT_HELP } from '../utils/cli/commands/vintCommands';
 import { formatVintState } from '../utils/cli/formatters/vintFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
@@ -146,6 +148,9 @@ function VintPageContent() {
   const humanWon = isGameEnd && state.winnerTeam === 0;
   const isHumanBid = isBid && state.bidPlayerIdx === 0 && !isGameEnd;
   const isHumanPlay = isPlay && state.currentPlayerIdx === 0 && !isGameEnd;
+  const declarer = state.declarerIdx >= 0 ? state.players[state.declarerIdx] : undefined;
+  const declarerTricks = declarer ? state.teamTricks[declarer.team] : undefined;
+  const contractTricks = state.highBid ? state.highBid.level + 6 : undefined;
 
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
   const denomLabel = (denom: number): string => t(`denom.${denom}`);
@@ -206,6 +211,15 @@ function VintPageContent() {
                 </span>
               )}
             </div>
+
+            {isPlay && declarerTricks !== undefined && contractTricks !== undefined && (
+              <div
+                className="text-center mb-2 text-sm font-semibold text-ds-warning"
+                data-testid="vint-contract-progress"
+              >
+                {t('progress.line', { won: declarerTricks, needed: contractTricks })}
+              </div>
+            )}
 
             {/* No dummy — the rule that separates this from bridge. */}
             <div className="mb-2 text-center text-ds-text-muted text-xs" data-testid="vint-no-dummy">
@@ -286,10 +300,22 @@ function VintPageContent() {
             {/* Trick */}
             {state.trick.length > 0 && (
               <div className="mb-2 flex items-center gap-2" data-testid="vint-trick">
-                <span className="text-ds-text-muted text-sm">{t('trick')}</span>
-                {state.trick.map((c, i) => (
-                  <CardImage key={`trick-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />
-                ))}
+                <TrickDisplay
+                  currentTrick={state.trick.map((card, i) => ({
+                    playerIdx: (state.trickLeaderIdx + i) % state.players.length,
+                    card,
+                  }))}
+                  players={state.players.map((player) => ({
+                    id: player.id,
+                    isHuman: player.isHuman,
+                    team: player.team,
+                  }))}
+                  cardWidth={cardWidth}
+                  label={t('trick')}
+                  cardAriaLabelFor={(player, card) =>
+                    t('trickCardLabel', { card: cardAlt(card), name: playerLabel(player.id, player.isHuman) })
+                  }
+                />
               </div>
             )}
 

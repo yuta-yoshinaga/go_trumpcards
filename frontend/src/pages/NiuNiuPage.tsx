@@ -30,6 +30,7 @@ import { NIUNIU_HELP, parseNiuNiuCommand } from '../utils/cli/commands/niuniuCom
 import { formatNiuNiuState } from '../utils/cli/formatters/niuniuFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { niuniuMultiplier, niuniuRankText } from '../utils/niuniuRankText';
 
 const BET_OPTIONS = [10, 50, 100, 500];
@@ -150,6 +151,9 @@ function NiuNiuPageContent() {
           <span className="text-sm text-ds-text-muted">
             {t('chips')}: {state.chips}
           </span>
+          <span className="text-sm text-ds-text-muted">
+            {t('drawPileCount')}: {state.drawPileCount}
+          </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }
@@ -190,9 +194,9 @@ function NiuNiuPageContent() {
                     <div className="text-game-text-muted text-xs mt-1">
                       {t('bet')}: {seat.hand.bet}
                       {ended && seat.hand.payout !== 0 && (
-                        <span className={seat.hand.payout > 0 ? ' text-ds-success' : ' text-ds-error'}>
+                        <span className={seat.hand.payout > 0 ? ' text-ds-success' : ' text-ds-error-text'}>
                           {' '}
-                          {seat.hand.payout > 0 ? `+${seat.hand.payout}` : seat.hand.payout}
+                          {formatSignedDelta(seat.hand.payout)}
                         </span>
                       )}
                     </div>
@@ -252,28 +256,33 @@ function NiuNiuPageContent() {
                   </details>
                   <div className="flex gap-2 items-center flex-wrap justify-center">
                     <span className="text-sm text-ds-text-muted">{t('betLabel')}</span>
-                    {BET_OPTIONS.map((amount) => (
-                      <button
-                        key={`bet-${amount.toString()}`}
-                        type="button"
-                        className={btnPrimary}
-                        onClick={() => game.handleBet(amount)}
-                        // The loss can be `maxMultiplier` times the stake, so the
-                        // stack has to cover that, not just the stake itself — and
-                        // greying the button out never said so (#4908).
-                        disabled={loading || amount * state.maxMultiplier > state.chips}
-                        title={
-                          amount * state.maxMultiplier > state.chips
-                            ? t('betTooHigh', {
-                                multiplier: state.maxMultiplier,
-                                needed: amount * state.maxMultiplier,
-                              })
-                            : undefined
-                        }
-                      >
-                        {t('betAmount', { amount })}
-                      </button>
-                    ))}
+                    {BET_OPTIONS.map((amount) => {
+                      const betTooHigh = amount * state.maxMultiplier > state.chips;
+                      const reason = betTooHigh
+                        ? t('betTooHigh', {
+                            multiplier: state.maxMultiplier,
+                            needed: amount * state.maxMultiplier,
+                          })
+                        : undefined;
+
+                      return (
+                        <div key={`bet-${amount.toString()}`} className="flex flex-col items-center gap-1">
+                          <button
+                            type="button"
+                            className={btnPrimary}
+                            onClick={() => game.handleBet(amount)}
+                            // The loss can be `maxMultiplier` times the stake, so the
+                            // stack has to cover that, not just the stake itself — and
+                            // greying the button out never said so (#4908).
+                            disabled={loading || betTooHigh}
+                            title={reason}
+                          >
+                            {t('betAmount', { amount })}
+                          </button>
+                          {reason && <span className="text-sm text-ds-warning">{reason}</span>}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}

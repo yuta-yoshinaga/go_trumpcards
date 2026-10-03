@@ -51,6 +51,10 @@ type PinochleGame interface {
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// GetLastTrick 直近に解決したトリックを取得する
+	GetLastTrick() []*domain.TrickCard
+	// GetLastTrickWinner 直近に解決したトリックの勝者を取得する
+	GetLastTrickWinner() int
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する
 	GetLeadPlayerIdx() int
 	// GetBidPlayerIdx ビッドプレイヤーインデックスを取得する
@@ -63,6 +67,8 @@ type PinochleGame interface {
 	GetHighestBid() int
 	// GetHighestBidder 最高ビッダーインデックスを取得する
 	GetHighestBidder() int
+	// GetLastContractMade returns the last round's contract result and whether it is known.
+	GetLastContractMade() (made bool, ok bool)
 	// GetTeamScore チームスコアを取得する
 	GetTeamScore(team int) int
 	// GetWinnerTeam 勝利チームを取得する

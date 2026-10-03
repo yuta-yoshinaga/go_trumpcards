@@ -131,9 +131,9 @@ func (p *DehlaPakadWebPresenter) buildPlayersOutput(g interfaces.DehlaPakadGame)
 		if player == nil {
 			continue
 		}
-		gathered := 0
+		gatheredCards := make([]*domain.Card, 0)
 		for _, trick := range player.GetTricksTaken() {
-			gathered += len(trick)
+			gatheredCards = append(gatheredCards, trick...)
 		}
 		out = append(out, &controller.DehlaPakadWebOutputPlayer{
 			ID:             i,
@@ -141,7 +141,8 @@ func (p *DehlaPakadWebPresenter) buildPlayersOutput(g interfaces.DehlaPakadGame)
 			Team:           domain.DehlaPakadTeamOf(i),
 			CardCount:      player.GetCardsSize(),
 			Cards:          playerCardsToOutput(player, player.GetIsHuman()),
-			GatheredCount:  gathered,
+			GatheredCount:  len(gatheredCards),
+			GatheredCards:  cardsToOutput(gatheredCards),
 			IsDealer:       i == dealer,
 			IsTrumpChooser: i == chooser,
 		})

@@ -59,7 +59,7 @@ type ContractStatus = 'made' | 'failed' | 'progress';
 /** Tailwind text color per contract status (made=success, in-progress=warning, failed=error). */
 const CONTRACT_STATUS_COLOR: Readonly<Record<ContractStatus, string>> = {
   made: 'text-ds-success',
-  failed: 'text-ds-error',
+  failed: 'text-ds-error-text',
   progress: 'text-ds-warning',
 };
 
@@ -231,6 +231,10 @@ function ViraPageContent() {
     reset();
   };
 
+  // The settlement line names a declarer only when there was a contract (PASS has none).
+  const settlementDeclarer = state.contract !== ViraContract.PASS ? state.players[state.declarerIdx] : undefined;
+  const settlementContractKey = settlementDeclarer ? CONTRACT_KEYS[state.contract] : undefined;
+
   return (
     <GamePageShell
       title={tc('nav.vira')}
@@ -395,6 +399,14 @@ function ViraPageContent() {
                         })}
                       </div>
                     ))}
+                    {settlementDeclarer && settlementContractKey && (
+                      <div className="mt-1 text-ds-text-primary" data-testid="vira-contract-settlement">
+                        {t(state.lastRoundMade ? 'roundResult.contractMade' : 'roundResult.contractFailed', {
+                          name: playerName(state.declarerIdx, settlementDeclarer.isHuman),
+                          contract: t(`contractName.${settlementContractKey}`),
+                        })}
+                      </div>
+                    )}
                     {/* 達成側は `pot` ではなく `lastRoundPotWon` を読む ── 精算が
                         `pot` を 0 に潰すので、取った額はそこには残っていない。 */}
                     <div className="mt-1 text-ds-text-primary" data-testid="vira-pot-settlement">

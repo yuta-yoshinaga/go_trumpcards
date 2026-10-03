@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { FlowerGardenMoveZone, flowerGardenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -100,6 +100,20 @@ function FlowerGardenPageContent() {
   } = useGamePageSetup('flowergarden');
   const game = useFlowerGardenGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
+  const moveCount = state?.moveCount;
+  const previousMoveCount = useRef<number | null>(null);
+  const [announcedMoveCount, setAnnouncedMoveCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (previousMoveCount.current === null) {
+      previousMoveCount.current = moveCount ?? null;
+      return;
+    }
+    if (moveCount !== undefined && moveCount !== previousMoveCount.current) {
+      previousMoveCount.current = moveCount;
+      setAnnouncedMoveCount(moveCount);
+    }
+  }, [moveCount]);
 
   const {
     hint: frontendHint,
@@ -265,7 +279,11 @@ function FlowerGardenPageContent() {
                           }
                         }}
                         disabled={!isPlaying || loading || (!isTop && !selectedSource)}
-                        aria-label={cardAlt(tc.card)}
+                        aria-label={t('tableauCardAriaLabel', {
+                          card: cardAlt(tc.card),
+                          col: colIdx,
+                          pos: cardIdx,
+                        })}
                         aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
                         draggable={isPlaying && !loading && isTop}
                         onDragStart={dnd.handleDragStart(cardZone)}
@@ -353,6 +371,9 @@ function FlowerGardenPageContent() {
         </>
       }
     >
+      <div data-testid="fg-move-count-live" className="sr-only" role="status" aria-live="polite">
+        {announcedMoveCount === null ? '' : t('moveCountAnnouncement', { count: announcedMoveCount })}
+      </div>
       <span id={selectSourceHintId} className="sr-only">
         {tc('label.selectSourceFirst')}
       </span>

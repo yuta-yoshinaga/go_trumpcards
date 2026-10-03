@@ -48,6 +48,25 @@ describe('TarocchiniPage', () => {
     );
   });
 
+  it('renders CPU difficulty as a select and match length as a number input', async () => {
+    renderWithProviders(<TarocchiniPage />);
+    fireEvent.click(await screen.findByText('設定'));
+
+    expect(screen.getByRole('combobox', { name: 'CPU難易度' })).toBeInTheDocument();
+    expect(screen.getByRole('spinbutton', { name: 'ラウンド数' })).toBeInTheDocument();
+  });
+
+  it('accepts multiples of four for the target rounds', async () => {
+    renderWithProviders(<TarocchiniPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Re ♠' })).toBeInTheDocument());
+    const rounds = screen.getByLabelText('ラウンド数') as HTMLInputElement;
+    expect(rounds).toHaveAttribute('min', '4');
+    expect(rounds).toHaveAttribute('step', '4');
+    expect(screen.getByText('4以上の4の倍数を指定してください。')).toBeInTheDocument();
+    fireEvent.change(rounds, { target: { value: '16' } });
+    expect(rounds.value).toBe('16');
+  });
+
   // 後出し優先は手札からは読めない唯一の情報なので、常時表示されている必要がある。
   it('always states the papi rule', async () => {
     renderWithProviders(<TarocchiniPage />);
@@ -96,6 +115,10 @@ describe('TarocchiniPage', () => {
         lastTrickWinner: 1, // 席1 = チーム1
         dealerIdx: 0, // 席0 = チーム0
         scartoCount: 2,
+        roundBreakdown: [
+          { tricks: 8, lastTrickBonus: 0, scartoBonus: 2, total: 10 },
+          { tricks: 5, lastTrickBonus: 2, scartoBonus: 0, total: 7 },
+        ],
       }),
     );
     renderWithProviders(<TarocchiniPage />);
@@ -106,6 +129,12 @@ describe('TarocchiniPage', () => {
     const scarto = screen.getByTestId('tarocchini-scarto-bonus');
     expect(scarto).toHaveTextContent('チーム0');
     expect(scarto).toHaveTextContent('+2');
+    expect(screen.getByTestId('tarocchini-team-round-breakdown-0')).toHaveTextContent(
+      'チーム0: トリック 8 / 最終トリック +0 / スカルト +2 / 計 10',
+    );
+    expect(screen.getByTestId('tarocchini-team-round-breakdown-1')).toHaveTextContent(
+      'チーム1: トリック 5 / 最終トリック +2 / スカルト +0 / 計 7',
+    );
   });
 
   it('omits the breakdown lines that do not apply', async () => {

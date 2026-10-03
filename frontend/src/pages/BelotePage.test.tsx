@@ -117,6 +117,17 @@ describe('BelotePage', () => {
     );
   });
 
+  it('explains card points and round bonuses beside the score table', async () => {
+    renderWithProviders(<BelotePage />);
+    const explanation = await screen.findByTestId('belote-scoring-explanation');
+    expect(explanation).toHaveTextContent('カード点合計152');
+    expect(explanation).toHaveTextContent('切り札はJ=20、9=14');
+    expect(explanation).toHaveTextContent('最終トリックは+10点');
+    expect(explanation).toHaveTextContent('切り札のKとQでベロート／レベロート+20点');
+    expect(screen.getByTestId('belote-target-score')).toBeInTheDocument();
+    expect(screen.getByRole('table')).toHaveTextContent('0');
+  });
+
   it('shows the configured target score beside the team scores', async () => {
     const state = makeState({ config: { ...initialState.config, targetScore: 750 } });
     mockExec.mockResolvedValue(state);
@@ -234,6 +245,17 @@ describe('BelotePage', () => {
     );
     renderWithProviders(<BelotePage />);
     await waitFor(() => expect(screen.getByTestId('belote-rebelote-badge')).toHaveAttribute('data-active', 'true'));
+  });
+
+  it('identifies the team and points awarded Belote/Rebelote in the tracker and score table', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: BelotePhase.PLAY, trumpSuit: 1, makerTeam: 0, roundBeloteBonus: [0, 20] }),
+    );
+    const { container } = renderWithProviders(<BelotePage />);
+    expect(await screen.findByTestId('belote-rebelote-badge')).toHaveTextContent('チーム1に20点');
+    const scoreTable = container.querySelector('[data-tutorial="be-score-table"]');
+    expect(scoreTable).not.toBeNull();
+    expect(scoreTable).toHaveTextContent('チーム1に20点');
   });
 
   it('chimes and shows a confirmation banner when the belote bonus is freshly earned', async () => {

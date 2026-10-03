@@ -1,5 +1,6 @@
 {
   "title": "グリーク",
+  "listSeparator": "、",
   "phase": {
     "bid": "競り",
     "discard": "捨て札",
@@ -42,6 +43,8 @@
   "cpu": "CPU {{id}}",
   "buyerBadge": "落札者",
   "bidTurn": "入札手番",
+  "playerBid": "入札額: {{bid}}",
+  "playerPassed": "降り",
   "score": "得点: {{score}}",
   "bidPhase": "競り中 — 最高額 {{bid}}。競り上げるか降りてください。",
   "discardPhase": "ストックを取り込みました — {{count}}枚選んでください（選択中 {{selected}}枚）",
@@ -64,7 +67,9 @@
   "roundResult": {
     "title": "ディール結果",
     "par": "この配りの点: {{total}}  基準点: {{par}}（各席は自分の札点との差を受け取ります）",
-    "delta": "{{name}}: {{delta}}"
+    "delta": "{{name}}: {{delta}}",
+    "stages": ["競り", "ラフ", "メルド", "トリック精算"],
+    "breakdown": "内訳: {{stages}}"
   },
   "hintAvailable": "ヒント",
   "hint": {

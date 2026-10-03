@@ -58,6 +58,7 @@ describe('DesktopSidebar', () => {
     renderSidebar();
     const sidebar = screen.getByRole('complementary');
     expect(sidebar).toBeInTheDocument();
+    expect(sidebar).toHaveAccessibleName('ゲームナビゲーション');
   });
 
   it('renders site name link pointing to home', () => {

@@ -27,6 +27,10 @@
   "bidNone": "ビッドなし",
   "buried": "埋めた枚数: {{count}}",
   "bidProgress": "ビッド: {{bid}} / 獲得: {{won}}",
+  "roundScoreAnnouncementName": "{{name}}（{{result}}）",
+  "roundScoreAnnouncementResult": "ビッド {{bid}}、獲得 {{tricks}} トリック",
+  "roundScoreAnnouncementResultNoBid": "ビッドなし、獲得 {{tricks}} トリック",
+  "listSeparator": "、",
   "buryRemaining": "あと {{count}} 枚選択してください",
   "buryReady": "3枚選択しました。埋めるボタンで確定できます",
   "buryTooMany": "{{count}} 枚多く選択されています。ちょうど3枚にしてください",
@@ -90,5 +94,7 @@
   },
   "hintRequested": "ヒントがあります",
   "noHint": "ヒントはありません",
-  "trickWinnerBadge": "勝ち"
+  "trickWinnerBadge": "勝ち",
+  "legalPlay": "プレイできます",
+  "followSuitRequired": "リードスートに従う必要があります"
 }

@@ -30,10 +30,10 @@ const gameEndState = makeTablanetState({
   gameEndFlag: true,
   winners: [0],
   players: [
-    { id: 0, isHuman: true, cardCount: 0, cards: [], capturedCount: 30, tablaCount: 2, score: 27 },
-    { id: 1, isHuman: false, cardCount: 0, cards: [], capturedCount: 10, tablaCount: 0, score: 5 },
-    { id: 2, isHuman: false, cardCount: 0, cards: [], capturedCount: 8, tablaCount: 0, score: 4 },
-    { id: 3, isHuman: false, cardCount: 0, cards: [], capturedCount: 4, tablaCount: 0, score: 1 },
+    { id: 0, isHuman: true, cardCount: 0, cards: [], capturedCount: 30, capturedCards: [], tablaCount: 2, score: 27 },
+    { id: 1, isHuman: false, cardCount: 0, cards: [], capturedCount: 10, capturedCards: [], tablaCount: 0, score: 5 },
+    { id: 2, isHuman: false, cardCount: 0, cards: [], capturedCount: 8, capturedCards: [], tablaCount: 0, score: 4 },
+    { id: 3, isHuman: false, cardCount: 0, cards: [], capturedCount: 4, capturedCards: [], tablaCount: 0, score: 1 },
   ],
   lastDealDetail: {
     cards: { 0: 30, 1: 10, 2: 8, 3: 4 },
@@ -62,6 +62,43 @@ beforeEach(() => {
 });
 
 describe('TablanetPage', () => {
+  it('shows each player captured cards with rank and suit matching the captured count', async () => {
+    const captured = [
+      { design: 'HEART' as const, value: 1 },
+      { design: 'SPADE' as const, value: 13 },
+    ];
+    mockExec.mockResolvedValue(
+      makeTablanetState({
+        players: playPhaseState.players.map((p, i) =>
+          i === 0 ? { ...p, capturedCount: captured.length, capturedCards: captured } : p,
+        ),
+      }),
+    );
+    renderWithProviders(<TablanetPage />);
+    const pile = await screen.findByTestId('tablanet-captured-0');
+    expect(pile.querySelectorAll('img')).toHaveLength(2);
+    expect(pile.querySelector('img[alt="♥ A"]')).toBeInTheDocument();
+    expect(pile.querySelector('img[alt="♠ K"]')).toBeInTheDocument();
+  });
+
+  it('shows captured cards for CPU 1', async () => {
+    const captured = [
+      { design: 'HEART' as const, value: 1 },
+      { design: 'SPADE' as const, value: 13 },
+    ];
+    mockExec.mockResolvedValue(
+      makeTablanetState({
+        players: playPhaseState.players.map((p, i) =>
+          i === 1 ? { ...p, capturedCount: captured.length, capturedCards: captured } : p,
+        ),
+      }),
+    );
+    renderWithProviders(<TablanetPage />);
+    const pile = await screen.findByTestId('tablanet-captured-1');
+    expect(pile.querySelectorAll('img')).toHaveLength(2);
+    expect(pile.querySelector('img[alt="♥ A"]')).toBeInTheDocument();
+    expect(pile.querySelector('img[alt="♠ K"]')).toBeInTheDocument();
+  });
   it('renders the score breakdown from lastDealDetail', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<TablanetPage />);
@@ -86,6 +123,22 @@ describe('TablanetPage', () => {
       expect(screen.getByTestId('hand-card-0')).toBeInTheDocument();
       expect(screen.getByTestId('table-card-0')).toBeInTheDocument();
     });
+  });
+
+  it('exposes the selected hand card with aria-pressed', async () => {
+    renderWithProviders(<TablanetPage />);
+    const firstCard = await screen.findByTestId('hand-card-0');
+    const secondCard = screen.getByTestId('hand-card-1');
+
+    expect(firstCard).toHaveAttribute('aria-pressed', 'false');
+    expect(secondCard).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(firstCard);
+    expect(firstCard).toHaveAttribute('aria-pressed', 'true');
+    expect(secondCard).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(firstCard);
+    expect(firstCard).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('shows the selected table-card rank total and updates it as cards are toggled', async () => {

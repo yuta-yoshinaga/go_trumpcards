@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fiveHundredApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeFiveHundredState } from '../test/stateFactories';
 import type { Card, FiveHundredResponse } from '../types/card';
@@ -76,17 +77,78 @@ beforeEach(() => {
 });
 
 describe('FiveHundredPage', () => {
+  it('marks suit and no-trump bids that do not beat the highest bid and blocks submission', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        highestBid: { kind: FiveHundredContract.SUIT, tricks: 7, suit: 1, value: 140, order: 140 },
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+    const underbid = await screen.findByTestId('fh-bid-suit-1');
+    expect(underbid).toHaveAttribute('aria-disabled', 'true');
+    expect(underbid).toHaveAttribute('aria-describedby', 'fh-underbid-reason');
+    expect(screen.getByText('現在の最高ビッドを上回らないため入札できません。')).toBeInTheDocument();
+    fireEvent.click(underbid);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith(expect.objectContaining({ command: 'bid' }));
+    fireEvent.change(screen.getByLabelText('トリック数を選択 (6-10):'), { target: { value: '8' } });
+    expect(screen.getByTestId('fh-bid-nt')).toHaveAttribute('aria-disabled', 'false');
+  });
+  it('blocks a no-trump bid that does not beat the highest bid', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        highestBid: { kind: FiveHundredContract.SUIT, tricks: 7, suit: 1, value: 140, order: 140 },
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+
+    const noTrumpBid = await screen.findByTestId('fh-bid-nt');
+    expect(noTrumpBid).toHaveAttribute('aria-disabled', 'true');
+    expect(noTrumpBid).toHaveAttribute('aria-describedby', 'fh-underbid-reason');
+    fireEvent.click(noTrumpBid);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('bid', { bidKind: 2, bidTricks: 6 });
+  });
+  it('announces each CPU hand name and remaining card count while hiding decorative backs', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player(0, true, [card('SPADE', 5)]),
+          player(1, false, [], { cardCount: 3 }),
+          player(2, false, [], { cardCount: 2 }),
+          player(3, false, [], { cardCount: 1 }),
+        ],
+      }),
+    );
+
+    renderWithProviders(<FiveHundredPage />);
+
+    expect(await screen.findByRole('group', { name: 'CPU 1の手札 残り3枚' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'CPU 2の手札 残り2枚' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'CPU 3の手札 残り1枚' })).toBeInTheDocument();
+    expect(screen.getAllByTestId('animated-card-back')).toHaveLength(6);
+    for (const back of screen.getAllByTestId('animated-card-back')) {
+      expect(back.closest('[aria-hidden="true"]')).not.toBeNull();
+    }
+  });
+
   it('renders every bid format and the player bid branches', async () => {
     const base = makeFiveHundredState();
     mockExec.mockResolvedValue(
       makeFiveHundredState({
-        highestBid: { kind: FiveHundredContract.SUIT, tricks: 7, suit: 1, value: 140 },
+        highestBid: { kind: FiveHundredContract.SUIT, tricks: 7, suit: 1, value: 140, order: 140 },
         highestBidder: 1,
         players: [
           base.players[0],
           { ...base.players[1], passed: true },
-          { ...base.players[2], bid: { kind: FiveHundredContract.NO_TRUMP, tricks: 8, suit: -1, value: 240 } },
-          { ...base.players[3], bid: { kind: FiveHundredContract.MISERE, tricks: 0, suit: -1, value: 250 } },
+          {
+            ...base.players[2],
+            bid: { kind: FiveHundredContract.NO_TRUMP, tricks: 8, suit: -1, value: 240, order: 240 },
+          },
+          {
+            ...base.players[3],
+            bid: { kind: FiveHundredContract.MISERE, tricks: 0, suit: -1, value: 250, order: 250 },
+          },
         ],
       }),
     );
@@ -115,7 +177,7 @@ describe('FiveHundredPage', () => {
   it('renders an open misere bid', async () => {
     mockExec.mockResolvedValue(
       makeFiveHundredState({
-        highestBid: { kind: FiveHundredContract.OPEN_MISERE, tricks: 0, suit: -1, value: 520 },
+        highestBid: { kind: FiveHundredContract.OPEN_MISERE, tricks: 0, suit: -1, value: 520, order: 530 },
         highestBidder: 1,
       }),
     );
@@ -128,7 +190,7 @@ describe('FiveHundredPage', () => {
     mockExec.mockResolvedValue(
       makeFiveHundredState({
         // 99 is intentionally outside the contract-kind enum to exercise the default branch.
-        highestBid: { kind: 99, tricks: 0, suit: -1, value: 999 },
+        highestBid: { kind: 99, tricks: 0, suit: -1, value: 999, order: 999 },
         highestBidder: 1,
       }),
     );
@@ -230,12 +292,14 @@ describe('FiveHundredPage', () => {
   it('describes the highest bid, bidder, and each CPU bid', async () => {
     mockExec.mockResolvedValue(
       makeState({
-        highestBid: { kind: FiveHundredContract.SUIT, tricks: 6, suit: 1, value: 40 },
+        highestBid: { kind: FiveHundredContract.SUIT, tricks: 6, suit: 1, value: 40, order: 40 },
         highestBidder: 1,
         players: [
           player(0, true, [card('SPADE', 5)]),
-          player(1, false, [], { bid: { kind: FiveHundredContract.SUIT, tricks: 6, suit: 1, value: 40 } }),
-          player(2, false, [], { bid: { kind: FiveHundredContract.MISERE, tricks: 0, suit: -1, value: 250 } }),
+          player(1, false, [], { bid: { kind: FiveHundredContract.SUIT, tricks: 6, suit: 1, value: 40, order: 40 } }),
+          player(2, false, [], {
+            bid: { kind: FiveHundredContract.MISERE, tricks: 0, suit: -1, value: 250, order: 250 },
+          }),
           player(3, false, []),
         ],
       }),

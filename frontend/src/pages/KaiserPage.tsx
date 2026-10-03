@@ -26,6 +26,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { KaiserResponse } from '../types/card';
 import { KaiserPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { KAISER_HELP, parseKaiserCommand } from '../utils/cli/commands/kaiserCommands';
 import { formatKaiserState } from '../utils/cli/formatters/kaiserFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -136,6 +137,9 @@ function KaiserPageContent() {
   const isPlay = state.phase === KaiserPhase.PLAY;
   const isHandEnd = state.phase === KaiserPhase.HAND_END;
   const isGameEnd = state.phase === KaiserPhase.GAME_END || state.gameEndFlag;
+  const declarerTeam = state.declarerIdx >= 0 ? state.declarerIdx % 2 : -1;
+  const declarerPoints = declarerTeam >= 0 ? state.teamHandPoints[declarerTeam] : 0;
+  const contractMade = state.highBid !== null && declarerPoints >= state.highBid.value;
   // 人間は席 0 = チーム 0。勝敗はチームで判定する。
   const humanWon = isGameEnd && state.winnerTeam === 0;
   const isHumanBid = isBid && state.bidPlayerIdx === 0 && !isGameEnd;
@@ -248,7 +252,7 @@ function KaiserPageContent() {
               <div className="mb-1 text-ds-text-primary">{t('specialTitle')}</div>
               <div className="flex flex-wrap gap-x-3">
                 <span className="text-ds-success font-semibold">{t('heartFive')}</span>
-                <span className="text-ds-error font-semibold">{t('spadeThree')}</span>
+                <span className="text-ds-error-text font-semibold">{t('spadeThree')}</span>
               </div>
               <div className="mt-1 text-ds-text-muted">{t('specialNote')}</div>
               {state.heartFiveBy >= 0 && (
@@ -268,6 +272,20 @@ function KaiserPageContent() {
               <div className="mb-1 text-ds-text-primary">{t('scoreTitle')}</div>
               <div>{t('gameScores', { t0: state.teamScores[0], t1: state.teamScores[1] })}</div>
               <div>{t('handPoints', { t0: state.teamHandPoints[0], t1: state.teamHandPoints[1] })}</div>
+              {isPlay && state.highBid && declarerTeam >= 0 && (
+                <div
+                  className={`mt-1 font-semibold ${contractMade ? 'text-ds-success' : 'text-ds-warning'}`}
+                  data-testid="kaiser-contract-progress"
+                >
+                  {contractMade
+                    ? t('contractProgressMade', { got: declarerPoints, contract: state.highBid.value })
+                    : t('contractProgressNeed', {
+                        got: declarerPoints,
+                        contract: state.highBid.value,
+                        remaining: state.highBid.value - declarerPoints,
+                      })}
+                </div>
+              )}
             </div>
 
             {/* Players */}
@@ -294,9 +312,19 @@ function KaiserPageContent() {
             {state.trick.length > 0 && (
               <div className="mb-2 flex items-center gap-2" data-testid="kaiser-trick">
                 <span className="text-ds-text-muted text-sm">{t('trick')}</span>
-                {state.trick.map((c, i) => (
-                  <CardImage key={`trick-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />
-                ))}
+                {state.trick.map((c, i) => {
+                  const playerIdx = (state.trickLeaderIdx + i) % state.players.length;
+                  const player = state.players[playerIdx];
+                  const name = playerLabel(playerIdx, player.isHuman);
+                  return (
+                    <div key={`trick-${c.design}-${c.value}-${i}`} className="flex flex-col items-center gap-1">
+                      <CardImage card={c} width={cardWidth} ariaLabel={`${name}${t('listSeparator')}${cardAlt(c)}`} />
+                      <span aria-hidden="true" className="text-ds-text-muted text-xs">
+                        {name}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             )}
 

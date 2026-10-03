@@ -1,10 +1,10 @@
 import type { mushiApi } from '../../../api/gameApi';
-import { splitCommand, suggestCommand } from '../commandParserBase';
+import { splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type MushiArgs = Parameters<typeof mushiApi.exec>;
 
-const VALID_COMMANDS = ['p', 'play', 's', 'select', 'n', 'next', 'log', 'r', 'reset', 'help', '?'];
+const VALID_COMMANDS = ['p', 'play', 's', 'select', 'n', 'next', 'log', 'r', 'reset', 'help', '?', 'h', 'hint'];
 
 /** Parse a Mushi CLI command into API exec arguments. */
 export function parseMushiCommand(input: string): CliParseResult<MushiArgs> {
@@ -41,11 +41,8 @@ export function parseMushiCommand(input: string): CliParseResult<MushiArgs> {
     case 'h':
     case 'hint':
       return { args: ['hint'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

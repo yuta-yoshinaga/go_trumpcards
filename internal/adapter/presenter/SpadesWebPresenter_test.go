@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -374,6 +375,23 @@ func TestSpadesWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 100, resObj.Config.NilBonus)
 		assert.Equal(t, 10, resObj.Config.BagPenaltyThreshold)
 	})
+}
+
+func TestSpadesWebPresenter_OutputsScoreBreakdown(t *testing.T) {
+	game := domain.NewDefaultSpades()
+	game.Reset()
+	game.SetPhase(domain.SpadesPhaseRoundEnd)
+	player := game.GetPlayer(0)
+	player.SetBid(3)
+	for i := 0; i < 5; i++ {
+		player.AddTrick(nil)
+	}
+	game.ScoreRound()
+
+	var response controller.SpadesWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.SpadesWebPresenter).Output(game, nil)), &response))
+	assert.Equal(t, domain.SpadesScoreBreakdown{BidScore: 30, OvertrickScore: 2}, response.Players[0].ScoreBreakdown)
+	assert.Equal(t, response.Players[0].RoundScore, response.Players[0].ScoreBreakdown.Total())
 }
 
 func TestSpadesWebPresenter_ActionLogOutput(t *testing.T) {

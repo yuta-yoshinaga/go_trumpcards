@@ -191,7 +191,7 @@ function ScopaPageContent() {
         <>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             {error && (
-              <button type="button" onClick={retry} className="text-ds-error underline">
+              <button type="button" onClick={retry} className="text-ds-error-text underline">
                 {error}
               </button>
             )}
@@ -220,7 +220,10 @@ function ScopaPageContent() {
               <div className="sr-only" role="status" aria-live="polite" data-testid="sc-take-candidate-live">
                 {takeCandidateAnnounce}
               </div>
-              <div className="text-center text-xs text-ds-text-muted mb-2">{t('label.tableCards')}</div>
+              <div className="flex justify-center items-center gap-3 text-xs text-ds-text-muted mb-2">
+                <span>{t('label.tableCards')}</span>
+                <span data-testid="sc-remaining-deck">{t('label.remainingDeck', { count: state.remainingDeck })}</span>
+              </div>
               <div className="flex justify-center gap-2 min-h-[60px] flex-wrap">
                 {state.tableCards.length === 0 ? (
                   <span className="text-ds-text-muted text-sm self-center">{t('label.tableEmpty')}</span>
@@ -232,7 +235,7 @@ function ScopaPageContent() {
                         key={i}
                         type="button"
                         onClick={() => isHumanTurn && toggleTable(i)}
-                        disabled={!isHumanTurn}
+                        disabled={loading || !isHumanTurn}
                         aria-pressed={tableIndices.includes(i)}
                         aria-label={`${cardAlt(c)}${
                           tableIndices.includes(i)
@@ -276,7 +279,7 @@ function ScopaPageContent() {
                     key={i}
                     type="button"
                     onClick={() => isHumanTurn && setHandIndex(handIndex === i ? null : i)}
-                    disabled={!isHumanTurn}
+                    disabled={loading || !isHumanTurn}
                     // 場札と同じ形。中身は AnimatedCard だけで、それ自体は
                     // alt も aria-label も持たないので、これが無いと自分が
                     // 何を持っているかすら読み上げられない (#6415)。

@@ -37,18 +37,19 @@ type YanivWebOutputPlayer struct {
 
 // YanivWebOutput Yaniv Webアウトプット
 type YanivWebOutput struct {
-	Players          []*YanivWebOutputPlayer `json:"players"`
-	Phase            int                     `json:"phase"`
-	RoundNumber      int                     `json:"roundNumber"`
-	CurrentPlayerIdx int                     `json:"currentPlayerIdx"`
-	PickupCards      []*WebOutputCard        `json:"pickupCards"`
-	DrawPileCount    int                     `json:"drawPileCount"`
-	GameEndFlag      bool                    `json:"gameEndFlag"`
-	WinnerIdx        int                     `json:"winnerIdx"`
-	CallerIdx        int                     `json:"callerIdx"`
-	AsafWinnerIdx    int                     `json:"asafWinnerIdx"`
-	IsAsaf           bool                    `json:"isAsaf"`
-	RoundScores      []int                   `json:"roundScores"`
+	Players           []*YanivWebOutputPlayer `json:"players"`
+	Phase             int                     `json:"phase"`
+	RoundNumber       int                     `json:"roundNumber"`
+	CurrentPlayerIdx  int                     `json:"currentPlayerIdx"`
+	PickupCards       []*WebOutputCard        `json:"pickupCards"`
+	DrawPileCount     int                     `json:"drawPileCount"`
+	GameEndFlag       bool                    `json:"gameEndFlag"`
+	WinnerIdx         int                     `json:"winnerIdx"`
+	CallerIdx         int                     `json:"callerIdx"`
+	AsafWinnerIdx     int                     `json:"asafWinnerIdx"`
+	IsAsaf            bool                    `json:"isAsaf"`
+	RoundScores       []int                   `json:"roundScores"`
+	RoundScoreHistory [][]int                 `json:"roundScoreHistory"`
 	WebOutputBase
 	Config YanivWebOutputConfig `json:"config"`
 }
@@ -83,13 +84,14 @@ var NewYanivWebController, NewYanivWebControllerWithProvider = webControllerPair
 
 func newYanivDefaultOutput(msg string) *YanivWebOutput {
 	return &YanivWebOutput{
-		Players:       make([]*YanivWebOutputPlayer, 0),
-		PickupCards:   make([]*WebOutputCard, 0),
-		WinnerIdx:     -1,
-		CallerIdx:     -1,
-		AsafWinnerIdx: -1,
-		RoundScores:   make([]int, 0),
-		WebOutputBase: WebOutputBase{Message: msg},
+		Players:           make([]*YanivWebOutputPlayer, 0),
+		PickupCards:       make([]*WebOutputCard, 0),
+		WinnerIdx:         -1,
+		CallerIdx:         -1,
+		AsafWinnerIdx:     -1,
+		RoundScores:       make([]int, 0),
+		RoundScoreHistory: make([][]int, 0),
+		WebOutputBase:     WebOutputBase{Message: msg},
 	}
 }
 

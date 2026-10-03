@@ -166,8 +166,19 @@ function TonkPageContent() {
   const isRoundEnd = state.phase === TonkPhase.ROUND_END;
   const isGameEnd = state.phase === TonkPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = (isDrawPhase || isDiscardPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const knocker = state.knockerIdx >= 0 ? state.players[state.knockerIdx] : undefined;
+  const opponent = state.knockerIdx >= 0 ? state.players[1 - state.knockerIdx] : undefined;
+  const knockerName = knocker ? playerName(knocker.id, knocker.isHuman) : '';
+  const opponentName = opponent ? playerName(opponent.id, opponent.isHuman) : '';
   const knockerDeadwoodScore = calcTonkDeadwoodValue(state.knockerDeadwood);
   const opponentDeadwoodScore = calcTonkDeadwoodValue(state.opponentDeadwood);
+  const discardCandidateValues =
+    humanPlayer && isDiscardPhase && isHumanTurn
+      ? humanPlayer.cards.map((_, idx) =>
+          calcTonkDeadwoodValue(humanPlayer.cards.filter((__, cardIdx) => cardIdx !== idx)),
+        )
+      : [];
+  const bestDiscardCandidateValue = discardCandidateValues.length > 0 ? Math.min(...discardCandidateValues) : -1;
 
   // When exactly one card is selected to discard, highlight which of the remaining
   // four cards already form a meld (set or run) so the player can knock with confidence.
@@ -282,7 +293,7 @@ function TonkPageContent() {
 
                 {state.knockerMelds.length > 0 && (
                   <div className="my-3 p-2 rounded bg-black/30">
-                    <div className="text-ds-text-muted text-sm mb-1">{t('knockerMelds')}</div>
+                    <div className="text-ds-text-muted text-sm mb-1">{t('knockerMelds', { name: knockerName })}</div>
                     {state.knockerMelds.map((meld, meldIdx) => (
                       <div key={`meld-${meldIdx}`} className="flex flex-wrap gap-1 mb-1">
                         {meld.cards.map((card, cardIdx) => (
@@ -302,7 +313,8 @@ function TonkPageContent() {
                 {(state.knockerDeadwood.length > 0 || (isRoundEnd && state.knockerIdx >= 0)) && (
                   <div className="my-3 p-2 rounded bg-black/30" data-testid="tonk-knocker-deadwood">
                     <div className="text-ds-text-muted text-sm mb-1">
-                      {t('knockerDeadwood')} — {t('deadwood.score', { value: knockerDeadwoodScore })}
+                      {t('knockerDeadwood', { name: knockerName })} —{' '}
+                      {t('deadwood.score', { value: knockerDeadwoodScore })}
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {state.knockerDeadwood.map((card, cardIdx) => (
@@ -318,7 +330,7 @@ function TonkPageContent() {
 
                 {state.opponentMelds.length > 0 && (
                   <div className="my-3 p-2 rounded bg-black/30" data-testid="tonk-opponent-melds">
-                    <div className="text-ds-text-muted text-sm mb-1">{t('opponentMelds')}</div>
+                    <div className="text-ds-text-muted text-sm mb-1">{t('opponentMelds', { name: opponentName })}</div>
                     {state.opponentMelds.map((meld, meldIdx) => (
                       <div key={`opp-meld-${meldIdx}`} className="flex flex-wrap gap-1 mb-1">
                         {meld.cards.map((card, cardIdx) => (
@@ -336,7 +348,8 @@ function TonkPageContent() {
                 {(state.opponentDeadwood.length > 0 || (isRoundEnd && state.knockerIdx >= 0)) && (
                   <div className="my-3 p-2 rounded bg-black/30" data-testid="tonk-opponent-deadwood">
                     <div className="text-ds-text-muted text-sm mb-1">
-                      {t('opponentDeadwood')} — {t('deadwood.score', { value: opponentDeadwoodScore })}
+                      {t('opponentDeadwood', { name: opponentName })} —{' '}
+                      {t('deadwood.score', { value: opponentDeadwoodScore })}
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {state.opponentDeadwood.map((card, cardIdx) => (
@@ -430,31 +443,50 @@ function TonkPageContent() {
                 {humanPlayer.cards.map((card, idx) => {
                   const isCardSelected = selectedCardIndices.includes(idx);
                   const isMeldCard = !isCardSelected && meldHighlight.has(idx);
+                  const candidateValue = discardCandidateValues[idx];
+                  const candidateKnockable = candidateValue <= state.knockThreshold;
                   return (
-                    <button
-                      type="button"
-                      key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
-                      aria-label={cardAlt(card)}
-                      aria-pressed={isCardSelected}
-                      data-meld={isMeldCard ? 'true' : undefined}
-                      data-testid={`tonk-hand-${idx.toString()}`}
-                      className={`transition-transform ${focusRingCard}`}
-                      style={{
-                        background: 'none',
-                        padding: 0,
-                        borderRadius: 8,
-                        // Selection wins; otherwise green-highlight cards that already form a meld.
-                        ...(isCardSelected
-                          ? selectedCardStyle(true)
-                          : isMeldCard
-                            ? playableCardStyle(true)
-                            : selectedCardStyle(false)),
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} />
-                    </button>
+                    <div key={`${card.design}-${card.value}-${idx}`} className="flex flex-col items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => toggleCard(idx)}
+                        aria-label={cardAlt(card)}
+                        aria-pressed={isCardSelected}
+                        data-meld={isMeldCard ? 'true' : undefined}
+                        data-testid={`tonk-hand-${idx.toString()}`}
+                        className={`transition-transform ${focusRingCard}`}
+                        style={{
+                          background: 'none',
+                          padding: 0,
+                          borderRadius: 8,
+                          // Selection wins; otherwise green-highlight cards that already form a meld.
+                          ...(isCardSelected
+                            ? selectedCardStyle(true)
+                            : isMeldCard
+                              ? playableCardStyle(true)
+                              : selectedCardStyle(false)),
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} />
+                      </button>
+                      {candidateValue !== undefined && (
+                        <span
+                          className={`text-xs text-center ${
+                            candidateKnockable ? 'text-ds-success' : 'text-ds-text-muted'
+                          } ${candidateValue === bestDiscardCandidateValue ? 'font-bold' : ''}`}
+                          data-testid={`tonk-discard-candidate-${idx.toString()}`}
+                          data-best={candidateValue === bestDiscardCandidateValue ? 'true' : undefined}
+                          data-knockable={candidateKnockable ? 'true' : undefined}
+                        >
+                          {t('deadwood.score', { value: candidateValue })}
+                          <br />
+                          {candidateKnockable
+                            ? t('deadwood.knockable')
+                            : t('deadwood.notKnockable', { threshold: state.knockThreshold })}
+                        </span>
+                      )}
+                    </div>
                   );
                 })}
               </div>

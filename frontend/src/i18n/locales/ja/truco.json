@@ -1,5 +1,6 @@
 {
   "currentTrick": "現在のバサ",
+  "listSeparator": "、",
   "title": "Truco (トゥルコ)",
   "subtitle": "南米・スペインの心理戦トリックテイキング — 賭け点を釣り上げるブラフ",
   "header": {
@@ -47,6 +48,10 @@
     "baza": "{{number}}バサ",
     "winner": "{{name}}の勝ち",
     "parda": "パルダ（引き分け）"
+  },
+  "trickResult": {
+    "winner": "{{number}}バサ: {{name}}の勝ち",
+    "tie": "{{number}}バサ: パルダ（引き分け）"
   },
   "hintReason": {
     "leadStrong": "強いカードでリードしましょう",

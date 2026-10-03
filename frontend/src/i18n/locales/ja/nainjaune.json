@@ -9,6 +9,7 @@
   "box.king": "♥K",
   "box.dwarf": "♦7 黄色い小人",
   "awardLine": "席{{player}} が {{box}} を獲得（{{chips}}）",
+  "listSeparator": "、",
   "seat": "{{name}}: チップ{{chips}} 手札{{n}}枚（{{pts}}点）",
   "opponentHandAriaLabel": "{{name}} の手札 {{n}} 枚（裏向き）",
   "played": "場に出た札",
@@ -23,7 +24,6 @@
   "dealResult": "席{{n}} が出し切りました",
   "announceYourTurn": "あなたの手番です",
   "announceDealEnd": "ディールが終了しました",
-  "announceAward": "区画が払い出されました",
   "landscapeBanner": "横画面での表示を推奨します",
   "phase.play": "出す",
   "phase.dealEnd": "ディール終了",
@@ -36,5 +36,9 @@
   "tutorial.carryOver": "取られなかった区画のチップは次のディールへ持ち越されます。♦7 は毎ディール5枚ずつ積まれるので、放置されると一気に大きくなります",
   "tutorial.points": "出し切られたとき、残った手札の【点数】を払います。枚数ではありません。A=1、数札は額面、J・Q・K は各10点です",
   "awardLineYou": "あなたが {{box}} を獲得（{{chips}}）",
-  "dealResultYou": "あなたが出し切りました"
+  "dealResultYou": "あなたが出し切りました",
+  "finalStandings": "最終チップ順位",
+  "rankLabel": "{{rank}}位",
+  "you": "あなた",
+  "finalStandingRow": "{{rank}}：{{name}} チップ{{chips}}"
 }

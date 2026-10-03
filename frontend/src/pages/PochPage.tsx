@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { pochApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
@@ -44,7 +44,20 @@ export const PochPage = withTutorial(PochPageContent, 'poch', PC_TUTORIAL_STEPS)
 function PochPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('poch');
-  const game = usePochGame();
+  const [turnAnnouncement, setTurnAnnouncement] = useState('');
+  const onSuccess = useCallback(
+    (response: PochResponse, [command]: Parameters<typeof pochApi.exec>) => {
+      if (
+        command !== 'reset' &&
+        (response.phase === PochPhase.POCHEN || response.phase === PochPhase.STOPS) &&
+        response.currentPlayerIdx === 0
+      ) {
+        setTurnAnnouncement(t('yourTurnAnnouncement'));
+      }
+    },
+    [t],
+  );
+  const game = usePochGame({ onSuccess });
   const { state, loading, error, retry } = game;
   const difficultyOptions = useMemo(
     () => [
@@ -58,6 +71,11 @@ function PochPageContent() {
   const [handIdx, setHandIdx] = useState<number | null>(null);
   const previousPools = useRef<PochResponse['pools'] | null>(null);
   const [poolAnnouncement, setPoolAnnouncement] = useState('');
+  const execHumanAction = (...args: Parameters<typeof game.exec>) => {
+    if (args[0] === 'reset') return game.exec(...args);
+    setTurnAnnouncement('');
+    return game.exec(...args);
+  };
 
   const resetWithQuietPoolBaseline = (reset: () => void) => {
     previousPools.current = null;
@@ -90,7 +108,7 @@ function PochPageContent() {
     }),
     [],
   );
-  const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+  const { handleCommand } = useCliGame(execHumanAction, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardWidth } = useCardDimensions();
   const {
     hint: frontendHint,
@@ -141,7 +159,7 @@ function PochPageContent() {
       <LandscapeBanner message={t('landscapeBanner')} />
 
       <div role="status" aria-live="polite" className="sr-only" data-testid="poch-pool-live">
-        {poolAnnouncement}
+        {[poolAnnouncement, turnAnnouncement].filter(Boolean).join(t('listSeparator'))}
       </div>
 
       <SettingsPanel
@@ -177,11 +195,19 @@ function PochPageContent() {
             </div>
 
             <div className="text-center mb-3">
-              <div className="text-game-text-muted text-xs mb-1">{t('turnUp')}</div>
+              <div className="text-ds-text-muted text-xs mb-1">{t('turnUp')}</div>
               {state.turnUp ? (
-                <div className="flex justify-center">
-                  <AnimatedCard card={state.turnUp} width={cardWidth} draggable={false} />
-                </div>
+                <fieldset
+                  aria-label={t('paySuitAriaLabel', { suit: t(`suit.${state.turnUp.design}`) })}
+                  className="border-0 p-0 m-0 min-w-0 flex flex-col items-center gap-1"
+                >
+                  <div className="flex justify-center">
+                    <AnimatedCard card={state.turnUp} width={cardWidth} draggable={false} />
+                  </div>
+                  <span className="text-ds-text-primary text-xs font-medium">
+                    {t('paySuit', { suit: t(`suit.${state.turnUp.design}`) })}
+                  </span>
+                </fieldset>
               ) : (
                 <span className="text-game-text-muted text-xs">—</span>
               )}
@@ -351,7 +377,7 @@ function PochPageContent() {
                     type="button"
                     data-hint-action="bet"
                     className={`${btnPrimary} min-h-11`}
-                    onClick={game.handleBet}
+                    onClick={() => execHumanAction('bet')}
                   >
                     {t('bet')}
                   </button>
@@ -359,7 +385,7 @@ function PochPageContent() {
                     type="button"
                     data-hint-action="fold"
                     className={`${btnSecondary} min-h-11`}
-                    onClick={game.handleFold}
+                    onClick={() => execHumanAction('fold')}
                   >
                     {t('fold')}
                   </button>
@@ -372,7 +398,7 @@ function PochPageContent() {
                   disabled={handIdx === null}
                   onClick={() => {
                     if (handIdx !== null) {
-                      game.handlePlay(handIdx);
+                      execHumanAction('play', handIdx);
                       setHandIdx(null);
                     }
                   }}
@@ -381,7 +407,7 @@ function PochPageContent() {
                 </button>
               )}
               {dealOver && !ended && (
-                <button type="button" className={`${btnPrimary} min-h-11`} onClick={game.handleNextDeal}>
+                <button type="button" className={`${btnPrimary} min-h-11`} onClick={() => execHumanAction('next')}>
                   {t('nextDeal')}
                 </button>
               )}

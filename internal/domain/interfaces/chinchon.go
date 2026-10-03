@@ -37,6 +37,8 @@ type ChinchonGame interface {
 	IsHumanTurn() bool
 	// GetRoundNumber 現在のラウンド番号を取得する
 	GetRoundNumber() int
+	// GetRoundScoreHistory returns completed round scores by round and player.
+	GetRoundScoreHistory() [][]int
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
 	GetCurrentPlayerIdx() int
 	// GetDiscardTop 捨て札の一番上のカードを取得する
@@ -59,6 +61,10 @@ type ChinchonGame interface {
 	GetKnockerIdx() int
 	// GetKnockerMelds ノッカーのメルドを取得する
 	GetKnockerMelds() [][]*domain.Card
+	// GetRoundDeadwood ラウンドスコアの根拠となった各プレイヤーのデッドウッドを取得する
+	GetRoundDeadwood() [][]*domain.Card
+	// GetWonByChinchon チンチョンによる勝利かどうかを取得する
+	GetWonByChinchon() bool
 	// GetLayoffableIndices レイオフ可能な現在プレイヤーの手札インデックスを取得する
 	GetLayoffableIndices() []int
 }

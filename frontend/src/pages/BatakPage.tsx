@@ -91,8 +91,43 @@ const BATAK_PHASE_KEYS: Readonly<Record<number, string>> = {
 function getRoundScorePresentation(roundScore: number) {
   if (roundScore > 0) return { className: 'text-ds-success', sign: 'positive' };
   // Color is supplemental; the numeric sign remains readable without relying on it.
-  if (roundScore < 0) return { className: 'text-ds-error', sign: 'negative' };
+  if (roundScore < 0) return { className: 'text-ds-error-text', sign: 'negative' };
   return { className: '', sign: 'zero' };
+}
+
+function BatakScoreBreakdownLines({
+  players,
+  title,
+  bidPointsLabel,
+  bidPenaltyLabel,
+  defenderTricksLabel,
+}: {
+  players: BatakResponse['players'];
+  title: string;
+  bidPointsLabel: string;
+  bidPenaltyLabel: string;
+  defenderTricksLabel: string;
+}) {
+  return (
+    <div className="mt-2 space-y-1" data-testid="batak-score-breakdown">
+      <div>{title}</div>
+      {players.map((p) => (
+        <div key={p.id}>
+          <span>{playerName(p.id, p.isHuman)}: </span>
+          <span>
+            {bidPointsLabel} {p.scoreBreakdown.declarerBidPoints},{' '}
+          </span>
+          <span>
+            {bidPenaltyLabel}{' '}
+            {p.scoreBreakdown.declarerBidPenalty > 0 ? `−${p.scoreBreakdown.declarerBidPenalty}` : '0'},{' '}
+          </span>
+          <span>
+            {defenderTricksLabel} {p.scoreBreakdown.defenderTricks}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 /** Renders the Batak game page with bidding, trick play, and scoring. */
@@ -279,6 +314,8 @@ function BatakPageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  winnerIdx={isTrickEnd ? state.leadPlayerIdx : undefined}
+                  winnerLabel={t('trickWinnerBadge')}
                   dataTutorial="batak-trick-display"
                 />
               </div>
@@ -383,6 +420,15 @@ function BatakPageContent() {
                         </tbody>
                       </table>
                     </div>
+                    {(isRoundEnd || isGameEnd) && (
+                      <BatakScoreBreakdownLines
+                        players={state.players}
+                        title={t('scoreBreakdown')}
+                        bidPointsLabel={t('scoreBreakdownBidPoints')}
+                        bidPenaltyLabel={t('scoreBreakdownBidPenalty')}
+                        defenderTricksLabel={t('scoreBreakdownDefenderTricks')}
+                      />
+                    )}
                     <ScrollFadeHint />
                   </details>
                 ) : (
@@ -422,6 +468,15 @@ function BatakPageContent() {
                         </tbody>
                       </table>
                     </div>
+                    {(isRoundEnd || isGameEnd) && (
+                      <BatakScoreBreakdownLines
+                        players={state.players}
+                        title={t('scoreBreakdown')}
+                        bidPointsLabel={t('scoreBreakdownBidPoints')}
+                        bidPenaltyLabel={t('scoreBreakdownBidPenalty')}
+                        defenderTricksLabel={t('scoreBreakdownDefenderTricks')}
+                      />
+                    )}
                   </div>
                 )}
                 <RoundScoreAnnouncement

@@ -34,12 +34,11 @@
   "partnership": "パートナー: {{partner}}",
   "trickCount": "獲得トリック: {{count}}",
   "roundPoints": "ラウンド: {{points}}点",
-  "beloteRebelote": "ベロート/レベロート +20",
   "tracker": {
     "dixDeDer": "最終トリック +{{points}}",
     "beloteKing": "切り札 K",
     "beloteQueen": "切り札 Q",
-    "beloteBonus": "+20",
+    "beloteAwarded": "{{team}}に{{points}}点",
     "beloteConfirmed": "ベロート・レベロート確定！ +20"
   },
   "orderUpButton": "取る",
@@ -89,5 +88,6 @@
     "scoreTable": "チームスコア。先に{{target}}点に到達したチームの勝ちです。",
     "teamInfo": "向かいのプレイヤーはあなたのパートナーです。",
     "resetButton": "リセットボタンで新しいゲームを開始します。"
-  }
+  },
+  "scoringExplanation": "カード点: 切り札はJ=20、9=14、A=11、10=10、K=4、Q=3。その他のスートはA=11、10=10、K=4、Q=3、J=2（カード点合計152）。最終トリックは+{{dixDeDer}}点（既定10点）。設定時は切り札のKとQでベロート／レベロート+20点。メイカーが契約を達成すると各チームが獲得点を累計に加算し、失敗するとカード点は守備側に入り、ベロート点は宣言したチームに残ります。全8トリックを取ると+90点。"
 }

@@ -105,6 +105,16 @@ describe('MissMilliganPage', () => {
     expect(screen.getByRole('button', { name: '配り足す' })).toHaveAttribute('title');
   });
 
+  it('shows the number of cards in the waived area', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      stockCount: 0,
+      waived: [card('HEART', 8), card('SPADE', 7), card('CLOVER', 6)],
+    });
+    renderWithProviders(<MissMilliganPage />);
+    expect(await screen.findByTestId('mm-waived-count')).toHaveTextContent('3枚');
+  });
+
   it('labels an empty column as Kings-only', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<MissMilliganPage />);
@@ -285,6 +295,16 @@ describe('MissMilliganPage', () => {
     renderWithProviders(<MissMilliganPage />);
     const summary = await screen.findByTestId('mm-gameover-summary');
     expect(summary).toHaveTextContent('1/104');
+  });
+
+  it('shows foundation progress while playing', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('SPADE', 1), card('SPADE', 2)], [card('CLOVER', 1)], [], [], [], [], [], []],
+    });
+    renderWithProviders(<MissMilliganPage />);
+    expect(await screen.findByTestId('mm-foundation-progress')).toHaveTextContent('3/104');
+    expect(screen.getByTestId('mm-foundation-progress')).toHaveTextContent('3%');
   });
 
   it('does not show the progress summary on game clear', async () => {

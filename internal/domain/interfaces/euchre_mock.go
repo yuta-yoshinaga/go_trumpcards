@@ -102,6 +102,11 @@ func (m *MockEuchreGame) GetCurrentTrick() []*domain.TrickCard {
 	return nil
 }
 
+func (m *MockEuchreGame) GetCurrentTrickWinner() int {
+	args := m.Called()
+	return args.Int(0)
+}
+
 func (m *MockEuchreGame) GetLeadPlayerIdx() int {
 	args := m.Called()
 	return args.Int(0)

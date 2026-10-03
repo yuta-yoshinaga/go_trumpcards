@@ -4,6 +4,7 @@
     "end": "精算"
   },
   "chips": "チップ",
+  "drawPileCount": "山札の残り",
   "banker": "親",
   "bankerHand": "親の手",
   "bet": "賭け金",

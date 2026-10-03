@@ -23,6 +23,13 @@
   "points": "{{points}}点",
   "score": "得点: {{score}}",
   "currentTrick": "現在のトリック",
+  "trickHistory": {
+    "title": "トリック履歴",
+    "empty": "完了したトリックはありません",
+    "trickTitle": "トリック {{n}}",
+    "lead": "リード: {{name}}",
+    "winner": "勝者: {{name}}"
+  },
   "players": "プレイヤー",
   "you": "あなた",
   "cpu": "CPU {{id}}",
@@ -45,6 +52,7 @@
   "outcomeLoss": "平均より下",
   "roundResult": {
     "title": "ディール結果",
+    "scartoCards": "スカルト（捨て札）",
     "outcome": "あなたの結果: {{outcome}}",
     "playerLine": "{{name}}: {{delta}}（累計 {{score}}）",
     "total": "卓のカード点合計: {{total}}点（78点）",

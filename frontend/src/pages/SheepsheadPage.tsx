@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { sheepsheadApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -139,6 +139,24 @@ function SheepsheadPageContent() {
   } = useGameHint('sheepshead', state);
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('sheepshead', SHEEPSHEAD_PHASE_KEYS);
+  const [trickAnnouncement, setTrickAnnouncement] = useState('');
+  const previousCompletedTrickCount = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!state) return;
+    if (previousCompletedTrickCount.current === null) {
+      previousCompletedTrickCount.current = state.completedTrickCount;
+      return;
+    }
+    if (state.completedTrickCount > previousCompletedTrickCount.current && state.lastTrickWinner >= 0) {
+      setTrickAnnouncement(
+        t('trickWonAnnouncement', {
+          name: playerName(state.lastTrickWinner, state.players[state.lastTrickWinner]?.isHuman ?? false),
+        }),
+      );
+    }
+    previousCompletedTrickCount.current = state.completedTrickCount;
+  }, [state, t]);
 
   // Keyboard hand navigation: number keys toggle a card, Enter confirms,
   // Escape clears. BURY needs two cards and PLAY needs one; both handlers
@@ -209,6 +227,9 @@ function SheepsheadPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div className="sr-only" role="status" aria-live="polite" data-testid="sheepshead-trick-live">
+        {trickAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -272,6 +293,12 @@ function SheepsheadPageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="sh-trick-display"
+                  cardDetailFor={(_card, trickCard) => {
+                    return t('trickCardDetail', {
+                      points: trickCard.points,
+                      trump: t(trickCard.isTrump ? 'trump' : 'notTrump'),
+                    });
+                  }}
                 />
                 {isTrickEnd && state.leadPlayerIdx >= 0 && (
                   <div

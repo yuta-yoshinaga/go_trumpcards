@@ -118,6 +118,9 @@ func (si *SkatInteractor) Play(cardIndex int) string {
 	if err := si.Game.PlayerPlay(cardIndex); err != nil {
 		return si.sp.Output(si.Game, err)
 	}
+	if si.Game.GetPhase() == domain.SkatPhaseTrickEnd {
+		si.Game.ResolveTrick()
+	}
 	si.runCpuTurns()
 	return si.sp.Output(si.Game, nil)
 }
@@ -135,12 +138,7 @@ func (si *SkatInteractor) NextTrick() string {
 // NextRound scores the round and starts the next.
 func (si *SkatInteractor) NextRound() string {
 	si.Game.ScoreRound()
-	if out, blocked := guardGameEnd(si.Game, si.sp); blocked {
-		return out
-	}
-	si.Game.NextRound()
-	si.runCpuAutoPhases()
-	return si.sp.Output(si.Game, nil)
+	return advanceRound(si.Game, si.sp, si.runCpuAutoPhases)
 }
 
 // GetConfig returns the current configuration.

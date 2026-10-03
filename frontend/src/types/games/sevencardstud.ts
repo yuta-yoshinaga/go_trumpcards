@@ -10,6 +10,8 @@ export interface SevenCardStudPlayerData {
   holeCards: Card[];
   doorCards: Card[];
   chips: number;
+  /** Server-calculated net chip change for the current hand. */
+  netChange?: number;
   currentBet: number;
   folded: boolean;
   allIn: boolean;

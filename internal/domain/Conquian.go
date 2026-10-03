@@ -89,6 +89,7 @@ type Conquian struct {
 	winnerIdx        int // ラウンド勝者 (-1 = 未確定/引き分け)
 	matchWinnerIdx   int // マッチ全体の勝者 (-1 = 未確定)
 	roundNumber      int
+	roundHistory     []int
 	actionLogBase
 	tookDiscard bool // 今ターン、捨て札を取って必ずメルドに使う必要があるか
 	pendingCard *Card
@@ -117,6 +118,7 @@ func NewDefaultConquian() *Conquian {
 
 // Reset ゲーム初期化
 func (g *Conquian) Reset() {
+	g.roundHistory = make([]int, 0)
 	g.gameEndFlag = false
 	g.winnerIdx = -1
 	g.matchWinnerIdx = -1
@@ -777,6 +779,7 @@ func conquianFindMeld(cards []*Card) []*Card {
 // winRound はプレイヤーがラウンドに勝利した処理を行う。
 func (g *Conquian) winRound(playerIdx int) {
 	g.winnerIdx = playerIdx
+	g.recordRoundResult(playerIdx)
 	g.players[playerIdx].AddWin()
 	g.players[playerIdx].SetIsFinished(true)
 	g.appendLog(playerIdx, "round_win", "conquian.log.roundWin", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
@@ -789,10 +792,18 @@ func (g *Conquian) winRound(playerIdx int) {
 // endRoundDraw 山札切れによる引き分け (勝者なし)
 func (g *Conquian) endRoundDraw() {
 	g.winnerIdx = -1
+	g.recordRoundResult(-1)
 	g.appendLog(-1, "draw", "conquian.log.draw", nil, nil)
 	// 引き分けはマッチ勝利数に影響しないが、ゲームは必ず終了させる必要がある。
 	// 引き分けが起きたらマッチを終了する (累積勝利数が最大のプレイヤーが勝者、同数なら引き分け)。
 	g.endMatchOnDraw()
+}
+
+// recordRoundResult stores the outcome for the current round exactly once.
+func (g *Conquian) recordRoundResult(winnerIdx int) {
+	if len(g.roundHistory) < g.roundNumber {
+		g.roundHistory = append(g.roundHistory, winnerIdx)
+	}
 }
 
 // endMatchOnDraw は山札切れの引き分けでマッチを終了させる。
@@ -855,6 +866,9 @@ func (g *Conquian) SetPhase(phase ConquianPhase) { g.phase = phase }
 
 // GetRoundNumber 現在のラウンド番号取得
 func (g *Conquian) GetRoundNumber() int { return g.roundNumber }
+
+// GetRoundHistory returns round winners in round-number order (-1 means a draw).
+func (g *Conquian) GetRoundHistory() []int { return append([]int{}, g.roundHistory...) }
 
 // SetRoundNumber ラウンド番号設定 (テスト用)
 func (g *Conquian) SetRoundNumber(n int) { g.roundNumber = n }
@@ -963,6 +977,7 @@ type conquianJSON struct {
 	WinnerIdx        int               `json:"wi"`
 	MatchWinnerIdx   int               `json:"mw"`
 	RoundNumber      int               `json:"rn"`
+	RoundHistory     []int             `json:"rh"`
 	ActionLog        []*ActionLogEntry `json:"al"`
 	TookDiscard      bool              `json:"td"`
 }
@@ -980,6 +995,7 @@ func (g *Conquian) MarshalJSON() ([]byte, error) {
 		WinnerIdx:        g.winnerIdx,
 		MatchWinnerIdx:   g.matchWinnerIdx,
 		RoundNumber:      g.roundNumber,
+		RoundHistory:     g.roundHistory,
 		ActionLog:        g.actionLog,
 		TookDiscard:      g.tookDiscard,
 	})
@@ -1011,7 +1027,7 @@ func (g *Conquian) UnmarshalJSON(data []byte) error {
 		}
 	}
 	if len(j.DiscardPile) > conquianMaxSliceLen || len(j.DrawPile) > conquianMaxSliceLen ||
-		len(j.ActionLog) > conquianMaxSliceLen {
+		len(j.ActionLog) > conquianMaxSliceLen || len(j.RoundHistory) > conquianMaxSliceLen {
 		return errConquianInvalidState
 	}
 	if j.Phase < ConquianPhaseDraw || j.Phase > ConquianPhaseGameEnd {
@@ -1040,6 +1056,10 @@ func (g *Conquian) UnmarshalJSON(data []byte) error {
 	g.winnerIdx = j.WinnerIdx
 	g.matchWinnerIdx = j.MatchWinnerIdx
 	g.roundNumber = j.RoundNumber
+	g.roundHistory = j.RoundHistory
+	if g.roundHistory == nil {
+		g.roundHistory = make([]int, 0)
+	}
 	g.actionLog = j.ActionLog
 	if g.actionLog == nil {
 		g.actionLog = make([]*ActionLogEntry, 0)

@@ -24,7 +24,8 @@
     "nextRound": "次のラウンドへ",
     "reset": "リセット",
     "giveUp": "投了",
-    "playAria": "{{card}} を出す"
+    "playAria": "{{card}} を出す",
+    "playableAria": "{{card}} を出す（プレイ可能）"
   },
   "result": {
     "youWin": "あなたの勝ち！ 失点 {{score}}",
@@ -46,6 +47,7 @@
   },
   "jacks": {
     "label": "取ったJ",
+    "unclaimedLabel": "未獲得",
     "spade": "♠J",
     "other": "{{suit}}J",
     "spadeAria": "スペードのジャック（2失点）",

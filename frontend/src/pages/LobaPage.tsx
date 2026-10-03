@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { lobaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
@@ -13,6 +13,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -52,6 +53,12 @@ function LobaPageContent() {
   // selection has to be explicit rather than click-to-play.
   const [selected, setSelected] = useState<number[]>([]);
   const [meldTarget, setMeldTarget] = useState<number | null>(null);
+
+  useEffect(() => {
+    const drawnIndex = game.drawnDiscardIndex;
+    if (drawnIndex !== null)
+      setSelected((previous) => (previous.includes(drawnIndex) ? previous : [...previous, drawnIndex]));
+  }, [game.drawnDiscardIndex]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('loba');
   const cliConfig: CliGameConfig<LobaResponse, Parameters<typeof lobaApi.exec>> = useMemo(
@@ -272,6 +279,15 @@ function LobaPageContent() {
               message={state.message}
               messageCode={state.messageCode}
               messageParams={state.messageParams}
+            />
+
+            <RoundScoreAnnouncement
+              active={roundOver || ended}
+              entries={state.players.map((p) => ({
+                name: playerName(p.id, p.isHuman),
+                roundScore: p.roundScore,
+                cumulativeScore: p.score,
+              }))}
             />
 
             <ActionLogSection

@@ -1,6 +1,8 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ecarteApi } from '../api/gameApi';
+import i18n from '../i18n';
+import en from '../i18n/locales/en/ecarte.json';
 import ja from '../i18n/locales/ja/ecarte.json';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeEcarteState } from '../test/stateFactories';
@@ -23,7 +25,11 @@ const discardState = makeEcarteState({ phase: 0, negStep: 2, currentPlayerIdx: 0
 const playPhaseState = makeEcarteState({ phase: 1, currentPlayerIdx: 0 });
 // A CPU turn.
 const cpuTurnState = makeEcarteState({ phase: 1, currentPlayerIdx: 1 });
-const roundEndState = makeEcarteState({ phase: 2, dealPoints: [1, 0] });
+const roundEndState = makeEcarteState({
+  phase: 2,
+  dealPoints: [1, 0],
+  players: makeEcarteState().players.map((player) => (player.id === 0 ? { ...player, trickCount: 3 } : player)),
+});
 const gameEndState = makeEcarteState({
   phase: 3,
   gameEndFlag: true,
@@ -303,6 +309,68 @@ describe('EcartePage', () => {
     renderWithProviders(<EcartePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のディール' })).toBeInTheDocument());
     expect(screen.getByText('ディール結果（獲得ポイント）')).toBeInTheDocument();
+  });
+
+  it('keeps the deal-winner live region mounted before the end phase and announces the winner in Japanese', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<EcartePage />);
+
+    const status = await screen.findByTestId('ecarte-winner-live');
+    expect(status).toHaveAttribute('role', 'status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+    expect(status).toHaveTextContent('');
+
+    fireEvent.click(await screen.findByAltText('♠ K'));
+    mockExec.mockResolvedValue(roundEndState);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(status).toHaveTextContent('あなたがこのディールで1点を獲得しました'));
+  });
+
+  it('announces the deal winner in English', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(
+        makeEcarteState({
+          phase: 2,
+          dealPoints: [0, 2],
+          players: makeEcarteState().players.map((player) => (player.id === 1 ? { ...player, trickCount: 3 } : player)),
+        }),
+      );
+      renderWithProviders(<EcartePage />);
+      expect(await screen.findByTestId('ecarte-winner-live')).toHaveTextContent(
+        en.roundResult.winnerAnnouncement.replace('{{name}}', 'CPU 1').replace('{{points}}', '2'),
+      );
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
+  it('announces the player with three tricks when deal points are tied', async () => {
+    mockExec.mockResolvedValue(
+      makeEcarteState({
+        phase: 2,
+        dealPoints: [1, 1],
+        players: makeEcarteState().players.map((player) => (player.id === 1 ? { ...player, trickCount: 3 } : player)),
+      }),
+    );
+    renderWithProviders(<EcartePage />);
+
+    expect(await screen.findByTestId('ecarte-winner-live')).toHaveTextContent('CPU 1がこのディールで1点を獲得しました');
+  });
+
+  it('shows deal points split into trick points and king bonus, including zero bonus', async () => {
+    mockExec.mockResolvedValue(
+      makeEcarteState({
+        phase: 2,
+        dealPoints: [1, 0],
+        dealTrickPoints: [1, 0],
+        dealKingBonus: [0, 0],
+      }),
+    );
+    renderWithProviders(<EcartePage />);
+    expect(await screen.findByText('あなた: 1点（トリック 1点 / キングボーナス 0点）')).toBeInTheDocument();
+    expect(screen.getByText('CPU 1: 0点（トリック 0点 / キングボーナス 0点）')).toBeInTheDocument();
   });
 
   it('renders the game end message', async () => {

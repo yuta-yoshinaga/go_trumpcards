@@ -39,6 +39,7 @@ function makeState(overrides: Partial<LingerLongerResponse> = {}): LingerLongerR
     validPlays: [0, 1],
     stockSize: 30,
     currentTrick: [],
+    lastTrick: [],
     currentPlayerIdx: 0,
     leadPlayerIdx: 0,
     trickNumber: 2,
@@ -79,6 +80,37 @@ describe('LingerLongerPage', () => {
     });
     expect(live).toHaveAttribute('aria-live', 'polite');
     expect(live).toHaveAttribute('aria-atomic', 'true');
+  });
+
+  it('announces cards added to the trick and when a trick resolves', async () => {
+    const initial = makeState();
+    const played = makeState({
+      currentPlayerIdx: 0,
+      currentTrick: [
+        { playerIdx: 0, card: hand[0] },
+        { playerIdx: 1, card: card('HEART', 10) },
+      ],
+    });
+    const resolved = makeState({
+      trickNumber: 3,
+      currentTrick: [{ playerIdx: 2, card: card('DIAMOND', 8) }],
+      lastTrick: [
+        { playerIdx: 0, card: hand[0] },
+        { playerIdx: 1, card: card('HEART', 10) },
+        { playerIdx: 2, card: card('CLOVER', 6) },
+        { playerIdx: 3, card: card('DIAMOND', 8) },
+      ],
+    });
+    mockExec.mockResolvedValueOnce(initial).mockResolvedValueOnce(played).mockResolvedValueOnce(resolved);
+    renderWithProviders(<LingerLongerPage />);
+
+    const live = await screen.findByTestId('ll-trick-announcement');
+    expect(live).toHaveClass('sr-only');
+
+    fireEvent.click(screen.getAllByRole('button', { name: /を出す$/ })[0]);
+    await waitFor(() => expect(live).toHaveTextContent('あなた: ♠ 9、CPU1: ♥ 10'));
+    fireEvent.click(screen.getAllByRole('button', { name: /を出す$/ })[0]);
+    await waitFor(() => expect(live).toHaveTextContent(/トリックが解決しました、CPU2: ♦ 8/));
   });
 
   // **取っても得点にならず、補充できるだけ。** 直感と逆なので毎回出す。
@@ -161,6 +193,17 @@ describe('LingerLongerPage', () => {
     expect(s0).toHaveTextContent('手札7枚');
     expect(s0).toHaveTextContent('獲得3回');
     expect(screen.getByTestId('ll-seat-3')).toBeInTheDocument();
+  });
+
+  it('groups seat summaries in a list with a heading for each seat', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<LingerLongerPage />);
+
+    const list = await screen.findByRole('list');
+    expect(list).toHaveClass('list-none');
+    expect(within(list).getAllByRole('listitem')).toHaveLength(4);
+    expect(within(list).getByRole('heading', { name: 'あなた' })).toBeInTheDocument();
+    expect(within(list).getByRole('heading', { name: 'CPU1' })).toBeInTheDocument();
   });
 
   // **補充した席と脱落した席は盤面に痕跡が残らない。**

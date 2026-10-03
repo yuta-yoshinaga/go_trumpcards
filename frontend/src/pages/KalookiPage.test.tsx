@@ -64,6 +64,7 @@ const drawState: KalookiResponse = {
   gameEndFlag: false,
   winnerIdx: -1,
   roundWinnerIdx: -1,
+  roundScoreHistory: [],
   config: { cpuDifficulty: 1, playerCount: 3, openingThreshold: 51 },
   message: '',
 };
@@ -395,6 +396,19 @@ describe('KalookiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
   });
 
+  it('shows completed round penalty scores in a player-by-round table', async () => {
+    mockExec.mockResolvedValue({
+      ...roundEndState,
+      roundScoreHistory: [{ scores: [0, 24, 51] }],
+    });
+    renderWithProviders(<KalookiPage />);
+    await waitFor(() => expect(screen.getByRole('table')).toBeInTheDocument());
+    expect(screen.getAllByRole('row')).toHaveLength(2);
+    expect(screen.getAllByRole('columnheader')).toHaveLength(4);
+    expect(screen.getByRole('cell', { name: '24' })).toBeInTheDocument();
+    expect(screen.getByRole('cell', { name: '51' })).toBeInTheDocument();
+  });
+
   it('keeps CPU hands hidden during the draw phase', async () => {
     // drawState (from beforeEach) is phase 0 — CPU faces must not be revealed.
     renderWithProviders(<KalookiPage />);
@@ -512,10 +526,26 @@ describe('KalookiPage', () => {
 
     stageGroup(0, 3); // three 5s = 15
     expect(screen.getByTestId('kalooki-opening-progress')).toHaveTextContent('15 / 51');
+    expect(screen.getByTestId('kalooki-staged-group-0')).toHaveTextContent('グループ1開設点に15点加算');
 
     stageGroup(3, 3); // three kings = 30, so 45 — still short of 51
     const progress = screen.getByTestId('kalooki-opening-progress');
     expect(progress).toHaveTextContent('45 / 51');
+    expect(screen.getByTestId('kalooki-staged-group-1')).toHaveTextContent('グループ2開設点に30点加算');
     expect(progress.className).not.toContain('text-ds-success');
+  });
+
+  it('hides staged-group opening points after the human has opened', async () => {
+    mockExec.mockResolvedValue({
+      ...meldState,
+      players: [{ ...drawState.players[0], hasOpened: true }, cpu(1), cpu(2)],
+    });
+    renderWithProviders(<KalookiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /Add group|グループに追加/ })).toBeInTheDocument());
+
+    stageGroup(0, 3);
+
+    expect(screen.getByTestId('kalooki-staged-group-0')).toHaveTextContent('グループ1');
+    expect(screen.getByTestId('kalooki-staged-group-0')).not.toHaveTextContent('開設点に15点加算');
   });
 });

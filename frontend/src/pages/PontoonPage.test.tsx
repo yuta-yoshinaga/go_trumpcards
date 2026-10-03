@@ -40,6 +40,7 @@ function makeState(overrides?: Partial<PontoonResponse>): PontoonResponse {
     bankerIdx: 1,
     isHumanBanker: false,
     chips: 900,
+    drawPileCount: 24,
     activeSeat: 0,
     activeHand: 0,
     nextBanker: -1,
@@ -68,6 +69,12 @@ describe('PontoonPage', () => {
     renderWithProviders(<PontoonPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(mockExec.mock.calls[0]?.[0]).toBe('reset');
+  });
+
+  it('shows the undealt cards remaining in the round', async () => {
+    mockExec.mockResolvedValue(makeState({ drawPileCount: 24 }));
+    renderWithProviders(<PontoonPage />);
+    await waitFor(() => expect(screen.getByText('山札の残り: 24')).toBeInTheDocument());
   });
 
   it('renders chips and the banker', async () => {
@@ -215,6 +222,19 @@ describe('PontoonPage', () => {
     await waitFor(() => expect(screen.getAllByText('ポンツーン')).toHaveLength(2));
     expect(screen.getByText('ファイブカード・トリック')).toBeInTheDocument();
     expect(screen.getByText(/\+200/)).toBeInTheDocument();
+    expect(screen.getByLabelText('あなた の手 合計21、ポンツーン')).toBeInTheDocument();
+    expect(screen.getByLabelText('CPU2 の手 合計19、ファイブカード・トリック')).toBeInTheDocument();
+  });
+
+  it('does not expose a hidden hand total or rank in its accessible label', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        bankerHand: hand({ hidden: true, cards: [null, null], total: 21, rank: 3 }),
+      }),
+    );
+    renderWithProviders(<PontoonPage />);
+    await waitFor(() => expect(screen.getByLabelText('親の手は伏せられています')).toBeInTheDocument());
+    expect(screen.queryByLabelText(/親の手.*(?:合計|ポンツーン|ファイブカード|バースト)/)).not.toBeInTheDocument();
   });
 
   it('marks a losing payout as an error after the round', async () => {
@@ -230,7 +250,7 @@ describe('PontoonPage', () => {
     );
     renderWithProviders(<PontoonPage />);
     const payout = await screen.findByText('収支: -100');
-    expect(payout).toHaveClass('text-ds-error');
+    expect(payout).toHaveClass('text-ds-error-text');
     expect(payout).not.toHaveClass('text-ds-success');
   });
 
@@ -246,7 +266,7 @@ describe('PontoonPage', () => {
       }),
     );
     renderWithProviders(<PontoonPage />);
-    const payout = await screen.findByText('収支: 0');
+    const payout = await screen.findByText('収支: ±0');
     expect(payout).toHaveClass('text-ds-text-muted');
   });
 

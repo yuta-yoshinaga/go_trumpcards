@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, sultanApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -120,6 +120,8 @@ describe('SultanPage', () => {
     expect(screen.getByAltText('♥ A').closest('button')).toHaveClass('ring-2', 'ring-ds-success');
     expect(screen.getByAltText('♣ 2').closest('button')).not.toHaveAttribute('data-playable');
     expect(screen.getByAltText('♣ 2').closest('button')).not.toHaveClass('ring-ds-success');
+    expect(screen.getByAltText('♥ A').closest('button')).toHaveAccessibleName(/配置できます/);
+    expect(screen.getByAltText('♣ 2').closest('button')).toHaveAccessibleName(/配置できません/);
   });
 
   it('renders skeleton when no state', () => {
@@ -143,8 +145,10 @@ describe('SultanPage', () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<SultanPage />);
 
-    await waitFor(() => expect(screen.getByRole('button', { name: 'ディヴァン枠 0 ♣ 3' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'ディヴァン枠 2 ♥ 5' })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'ディヴァン枠 0 ♣ 3、配置できません' })).toBeInTheDocument(),
+    );
+    expect(screen.getByRole('button', { name: 'ディヴァン枠 2 ♥ 5、配置できません' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: '空のディヴァン枠 1' })).toBeInTheDocument();
   });
 
@@ -379,6 +383,31 @@ describe('SultanPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '自動完成' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
+  it('announces auto-complete start and completion in a separate permanent live region', async () => {
+    vi.useFakeTimers();
+    try {
+      const readyState: SultanResponse = { ...playingState, stockCount: 0, waste: [] };
+      mockExec.mockResolvedValue(readyState);
+      renderWithProviders(<SultanPage />);
+      await vi.waitFor(() => expect(screen.getByRole('button', { name: '自動完成' })).toBeInTheDocument());
+
+      const region = screen.getByTestId('sultan-autocomplete-live');
+      expect(region).toHaveAttribute('role', 'status');
+      expect(region).toHaveAttribute('aria-live', 'polite');
+      expect(region).toHaveClass('sr-only');
+      expect(region.textContent).toBe('');
+
+      fireEvent.click(screen.getByRole('button', { name: '自動完成' }));
+      expect(region.textContent).toBe('自動完成を開始しました');
+      expect(screen.getByTestId('sultan-hint-live').textContent).toBe('');
+
+      await act(async () => vi.advanceTimersByTimeAsync(3000));
+      expect(region.textContent).toBe('自動完成が完了しました');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('auto complete button is disabled while stock or waste has cards', async () => {

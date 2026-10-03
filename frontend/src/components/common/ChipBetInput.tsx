@@ -20,6 +20,8 @@ export interface ChipBetInputProps {
   step?: number;
   /** Disable the input. */
   disabled?: boolean;
+  /** Mark the input unavailable while keeping it focusable for an explanation. */
+  ariaDisabled?: boolean;
   /** Tailwind width class for the input. Defaults to "w-24". */
   widthClass?: string;
   /**
@@ -53,6 +55,7 @@ export function ChipBetInput({
   min = 10,
   step = 10,
   disabled,
+  ariaDisabled,
   widthClass = 'w-24',
   autoClamp = true,
   invalid,
@@ -60,11 +63,14 @@ export function ChipBetInput({
   showSteppers = false,
 }: ChipBetInputProps) {
   // Foreground stays text-ds-text-primary (10.1:1 AAA on surface) — pairing
-  // text-ds-error with bg-ds-surface only hits ~2.7:1, well below WCAG AA.
+  // text-ds-error-text with bg-ds-surface only hits ~2.7:1, well below WCAG AA.
   // The error semantic is carried entirely by the coloured border.
   const errorClasses = invalid ? 'bg-ds-surface border-ds-error text-ds-text-primary' : '';
   const upperBound = max ?? Number.POSITIVE_INFINITY;
-  const stepBy = (delta: number) => onChange(Math.max(min, Math.min(value + delta, upperBound)));
+  const stepBy = (delta: number) => {
+    if (ariaDisabled) return;
+    onChange(Math.max(min, Math.min(value + delta, upperBound)));
+  };
   const stepperClass =
     'min-h-[44px] min-w-[44px] rounded bg-ds-surface-elevated px-3 font-bold text-ds-text-primary text-lg disabled:opacity-40 disabled:cursor-not-allowed';
   return (
@@ -79,6 +85,7 @@ export function ChipBetInput({
           className={stepperClass}
           onClick={() => stepBy(-step)}
           disabled={disabled || value <= min}
+          aria-disabled={ariaDisabled || undefined}
         >
           −
         </button>
@@ -97,6 +104,7 @@ export function ChipBetInput({
         aria-invalid={invalid || undefined}
         aria-describedby={describedBy}
         onChange={(e) => {
+          if (ariaDisabled) return;
           const raw = e.target.value;
           const cleaned = raw.replace(/[^0-9]/g, '');
           // User typed only non-digit chars: reject (mirrors prior type=number rejection of NaN input).
@@ -111,7 +119,8 @@ export function ChipBetInput({
         }}
         onWheel={(e) => e.currentTarget.blur()}
         disabled={disabled}
-        className={`${widthClass} px-3 py-2 rounded text-base min-h-[44px] ${errorClasses}`}
+        aria-disabled={ariaDisabled || undefined}
+        className={`${widthClass} px-3 py-2 rounded text-base min-h-[44px] ${ariaDisabled ? 'opacity-40 cursor-not-allowed' : ''} ${errorClasses}`}
       />
       {showSteppers && (
         <button
@@ -120,6 +129,7 @@ export function ChipBetInput({
           className={stepperClass}
           onClick={() => stepBy(step)}
           disabled={disabled || (max != null && value >= max)}
+          aria-disabled={ariaDisabled || undefined}
         >
           ＋
         </button>

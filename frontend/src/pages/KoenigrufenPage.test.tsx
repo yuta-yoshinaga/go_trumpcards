@@ -256,6 +256,7 @@ describe('KoenigrufenPage', () => {
     );
     renderWithProviders(<KoenigrufenPage />);
     await waitFor(() => expect(screen.getByTestId('koenigrufen-result')).toHaveTextContent('宣言者側の獲得点: 70 点'));
+    expect(screen.getByTestId('koenigrufen-result')).toHaveTextContent('成功に必要な点: 54 点');
   });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
@@ -395,6 +396,10 @@ describe('KoenigrufenPage', () => {
     renderWithProviders(<KoenigrufenPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
     expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('CPU 1 が獲得');
+    const status = screen.getByTestId('koenigrufen-trick-winner-status');
+    expect(status).toHaveAttribute('role', 'status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+    expect(status).toHaveTextContent('CPU 1 が獲得');
   });
 
   it('does not render a winner badge while a trick is in progress', async () => {
@@ -408,6 +413,7 @@ describe('KoenigrufenPage', () => {
     renderWithProviders(<KoenigrufenPage />);
     await waitFor(() => expect(screen.getByTestId('trick-display-cards')).toBeInTheDocument());
     expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
+    expect(screen.getByTestId('koenigrufen-trick-winner-status')).toBeEmptyDOMElement();
   });
 
   it('renders round end with the next deal button, the deal result, and the revealed partner', async () => {

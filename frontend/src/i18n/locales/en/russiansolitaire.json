@@ -12,6 +12,7 @@
   "hint": "Hint",
   "autoComplete": "Auto Complete",
   "autoCompleteNotReady": "Available once every card is face up",
+  "autoCompleteReady": "Auto Complete is ready",
   "undo": "Undo",
   "empty": "Empty",
   "gameClear": "Game Clear! Moves: {{moveCount}}",

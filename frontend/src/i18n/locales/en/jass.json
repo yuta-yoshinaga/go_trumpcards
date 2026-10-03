@@ -23,10 +23,17 @@
   "cardNotPlayable": "Not playable",
   "teamScores": "Team Scores",
   "team": "Team {{n}}",
+  "scoreRows": {
+    "cumulative": "Cumulative score",
+    "round": "Round points",
+    "weis": "Weis points",
+    "stock": "Stöck points",
+    "lastTrick": "Last trick bonus"
+  },
   "teamYou": "Team {{n}} (You)",
   "trumpSuit": "Trump: {{suit}}",
   "noTrump": "Trump not set",
-  "dealer": "Dealer",
+  "dealerBadge": "Dealer",
   "maker": "Maker: Team {{team}}",
   "currentTrick": "Current Trick",
   "previousTrick": "Previous Trick",

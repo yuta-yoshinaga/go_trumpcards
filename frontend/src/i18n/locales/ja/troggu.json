@@ -32,6 +32,8 @@
   "points": "今局{{points}}点",
   "score": "通算{{score}}",
   "currentTrick": "現在のトリック",
+  "previousTrick": "直前のトリック",
+  "previousTrickWinner": "勝者: {{name}}",
   "trickWinner": "勝ち",
   "restricted": "リードスートに従う必要があります",
   "bid": "入札",
@@ -41,6 +43,7 @@
   "newGame": "新しいゲーム",
   "roundResult": {
     "title": "ディール結果",
+    "declarer": "宣言者: {{name}}",
     "thrownIn": "全員パスのため流局しました。得点は動きません。",
     "wonPoints": "成功！ {{got}}点（必要 {{target}}点）",
     "lostPoints": "失敗。{{got}}点（必要 {{target}}点）",

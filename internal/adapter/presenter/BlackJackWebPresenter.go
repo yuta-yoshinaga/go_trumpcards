@@ -90,7 +90,15 @@ func (bjp *BlackJackWebPresenter) buildHandsOutput(bj interfaces.BlackJackGame) 
 		h.IsBlackJack = hand.IsBlackJack()
 		h.CanSplit = hand.CanSplit()
 		h.Surrendered = hand.IsSurrendered()
+		h.BonusKey = hand.GetBonusKey()
+		h.BonusAmount = hand.GetBonusAmount()
 		h.CanSurrender = bj.CanSurrenderHand(i)
+		if bj.GetPhase() == domain.BJPhaseEnd {
+			result := int(hand.GetResult())
+			h.Result = &result
+			netChange := hand.GetNetChange()
+			h.NetChange = &netChange
+		}
 		out[i] = h
 	}
 	return out

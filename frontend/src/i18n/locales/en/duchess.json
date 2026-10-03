@@ -13,7 +13,7 @@
   "emptyFanAriaLabel": "Reserve fan {{idx}} is empty",
   "emptyFoundationAriaLabel": "Empty foundation {{idx}} ({{suit}})",
   "emptyWasteAriaLabel": "The waste is empty",
-  "fanTopAriaLabel": "{{card}} (top of fan {{idx}})",
+  "fanTopAriaLabel": "{{card}} (top of fan {{idx}}, {{count}} remaining)",
   "foundation": "Foundation",
   "foundationAriaLabel": "{{suit}} foundation {{idx}}, {{count}} cards",
   "frontendHint": {

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { Fragment, useCallback, useMemo } from 'react';
 import type { canastaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
@@ -31,7 +31,7 @@ import type { CanastaResponse, Card } from '../types/card';
 import { CanastaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { canastaDrawDiscardProblem } from '../utils/canastaDrawDiscard';
-import { canastaMinMeld, canastaSelectionPoints } from '../utils/canastaScore';
+import { canastaFamilySelectionPoints } from '../utils/canastaFamilyScore';
 import { cardAlt } from '../utils/cardAlt';
 import { CANASTA_HELP, parseCanastaCommand } from '../utils/cli/commands/canastaCommands';
 import { formatCanastaState } from '../utils/cli/formatters/canastaFormatter';
@@ -151,11 +151,11 @@ function CanastaPageContent() {
       return { selectedPoints: 0, needInitial: false, minMeld: 0, below: false };
     }
     const selectedCards = selectedCardIndices.map((i) => humanPlayer.cards[i]).filter((c): c is Card => Boolean(c));
-    const selectedPoints = canastaSelectionPoints(selectedCards);
+    const selectedPoints = canastaFamilySelectionPoints(selectedCards);
     const needInitial = !humanPlayer.hasInitMeld;
-    const minMeld = canastaMinMeld(humanPlayer.cumulativeScore);
+    const minMeld = state.minMeld;
     return { selectedPoints, needInitial, minMeld, below: needInitial && selectedPoints < minMeld };
-  }, [isMeldPhase, humanPlayer, selectedCardIndices]);
+  }, [isMeldPhase, humanPlayer, selectedCardIndices, state?.minMeld]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -206,6 +206,22 @@ function CanastaPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+        data-testid="ca-meld-points-announcement"
+      >
+        {isMeldPhase && isHumanTurn
+          ? meldPointInfo.needInitial
+            ? t('meldPoints.initial', {
+                min: meldPointInfo.minMeld,
+                points: meldPointInfo.selectedPoints,
+              })
+            : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })
+          : ''}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -334,7 +350,7 @@ function CanastaPageContent() {
                       })}
                       {p.red3s.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
-                          <span className="text-xs text-ds-error self-center mr-1">{t('red3s')}</span>
+                          <span className="text-xs text-ds-error-text self-center mr-1">{t('red3s')}</span>
                           {p.red3s.map((card, ri) => (
                             <AnimatedCard key={`red3-${pi}-${ri}`} card={card} width={cardWidth * 0.6} />
                           ))}
@@ -361,11 +377,31 @@ function CanastaPageContent() {
                     </thead>
                     <tbody>
                       {state.players.map((p) => (
-                        <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                          <td>{playerName(p.id, p.isHuman)}</td>
-                          <td className="text-center">{p.roundScore}</td>
-                          <td className="text-center">{p.cumulativeScore}</td>
-                        </tr>
+                        <Fragment key={p.id}>
+                          <tr className={p.isHuman ? 'text-ds-accent' : ''}>
+                            <td>{playerName(p.id, p.isHuman)}</td>
+                            <td className="text-center">{p.roundScore}</td>
+                            <td className="text-center">{p.cumulativeScore}</td>
+                          </tr>
+                          {(isRoundEnd || isGameEnd) && (
+                            <tr>
+                              <td colSpan={3} className="pb-2">
+                                <dl className="grid grid-cols-2 gap-x-2 text-xs">
+                                  <dt>{t('score.meldCards')}</dt>
+                                  <dd className="text-right">{p.scoreBreakdown.meldCards}</dd>
+                                  <dt>{t('score.canastaBonus')}</dt>
+                                  <dd className="text-right">{p.scoreBreakdown.canastaBonus}</dd>
+                                  <dt>{t('score.red3Bonus')}</dt>
+                                  <dd className="text-right">{p.scoreBreakdown.red3Bonus}</dd>
+                                  <dt>{t('score.goOutBonus')}</dt>
+                                  <dd className="text-right">{p.scoreBreakdown.goOutBonus}</dd>
+                                  <dt>{t('score.handPenalty')}</dt>
+                                  <dd className="text-right">−{p.scoreBreakdown.handPenalty}</dd>
+                                </dl>
+                              </td>
+                            </tr>
+                          )}
+                        </Fragment>
                       ))}
                     </tbody>
                   </table>

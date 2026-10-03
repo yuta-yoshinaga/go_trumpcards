@@ -17,6 +17,11 @@
   "landscapeBanner": "横画面での表示を推奨します",
   "hint": "ヒント",
   "autoComplete": "自動完成",
+  "autoCompleteStatus": {
+    "inProgress": "自動完成中です",
+    "finished": "自動完成が完了しました",
+    "interrupted": "自動完成が中断されました"
+  },
   "undo": "元に戻す",
   "stalemate": "手詰まりです",
   "playing": "カードを移動してください",
@@ -26,7 +31,7 @@
   "noHint": "ヒントはありません",
   "destinationStatusLabel": "移動先",
   "listSeparator": "、",
-  "destinationAnnouncement": "移動可能なタブロー列: {{tableau}}。組札の移動先: {{foundation}}。",
+  "destinationAnnouncement": "移動元のカード: {{card}}。移動可能なタブロー列: {{tableau}}。組札の移動先: {{foundation}}。",
   "noDestination": "なし",
   "tutorial": {
     "foundation": "4つの組札に同じスートのカードをA→Kの順に積み上げます。",

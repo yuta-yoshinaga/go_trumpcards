@@ -19,6 +19,7 @@
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",
+  "currentTrickPoints": "Card points in this trick: {{points}}",
   "players": "Players",
   "you": "You",
   "cpu": "CPU {{id}}",
@@ -32,7 +33,7 @@
     "a": "Team A",
     "b": "Team B"
   },
-  "teamScore": "{{team}}: {{score}} pts",
+  "teamScoreWithTarget": "{{team}}: {{score}} / target {{target}} pts",
   "playButton": "Play",
   "playRestriction": {
     "followSuit": "Follow the led suit",

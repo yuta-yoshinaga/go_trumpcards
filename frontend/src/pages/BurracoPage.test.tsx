@@ -168,6 +168,24 @@ describe('BurracoPage', () => {
     expect(screen.getByRole('button', { name: 'スキップ' })).toBeInTheDocument();
   });
 
+  it('describes whether the selected cards form a meld and links the explanation to the button', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<BurracoPage />);
+    const meldButton = await screen.findByRole('button', { name: 'メルドする' });
+    const explanation = screen.getByTestId('bu-meld-selection-reason');
+    expect(explanation).toHaveTextContent('メルドするカードを選択してください');
+    expect(meldButton).toHaveAttribute('aria-describedby', explanation.id);
+
+    const cards = screen.getAllByTestId(/^bu-hand-card-/);
+    fireEvent.click(cards[0]);
+    fireEvent.click(cards[1]);
+    fireEvent.click(cards[2]);
+    expect(explanation).toHaveTextContent('組み合わせとしては成立します。初回メルドは最低点が必要です');
+
+    fireEvent.click(cards[3]);
+    expect(explanation).toHaveTextContent('選択したカードではメルドできません');
+  });
+
   it('calls skipmeld command when skip button clicked', async () => {
     mockExec.mockResolvedValue(meldPhaseState);
     renderWithProviders(<BurracoPage />);
@@ -383,6 +401,36 @@ describe('BurracoPage', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
     await waitFor(() => expect(screen.getByTestId('bu-round-score-0')).toHaveClass('motion-safe:animate-pulse'));
+  });
+
+  it('announces changed round scores but stays silent on initial and unchanged renders', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<BurracoPage />);
+    const status = await screen.findByTestId('bu-score-announcement');
+    expect(status).toHaveAttribute('role', 'status');
+    expect(status).toHaveClass('sr-only');
+    expect(status).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValue({
+      ...roundEndState,
+      players: [
+        { ...basePlayers[0], roundScore: 120 },
+        { ...basePlayers[1], roundScore: 80 },
+      ],
+    });
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    await waitFor(() => expect(status).toHaveTextContent('あなたのラウンド得点は120点、CPU 1のラウンド得点は80点'));
+
+    mockExec.mockResolvedValue({
+      ...roundEndState,
+      players: [
+        { ...basePlayers[0], roundScore: 120 },
+        { ...basePlayers[1], roundScore: 80 },
+      ],
+    });
+    fireEvent.click(screen.getByRole('button', { name: '次のラウンド' }));
+    await waitFor(() => expect(screen.getByTestId('bu-round-score-0')).toHaveTextContent('120'));
+    expect(status).toHaveTextContent('あなたのラウンド得点は120点、CPU 1のラウンド得点は80点');
   });
 
   it('reorders the displayed hand when the suit-sort toggle is pressed', async () => {

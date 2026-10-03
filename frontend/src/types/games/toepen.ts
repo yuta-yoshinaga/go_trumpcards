@@ -43,6 +43,8 @@ export interface ToepenResponse extends BaseGameResponse {
   leadPlayerIdx: number;
   dealerIdx: number;
   currentTrick: ToepenTrickCard[];
+  /** Seat currently winning the trick, or -1 when no card is winning yet. */
+  currentTrickWinnerIdx: number;
   /** -1 before anything is led. */
   leadSuit: number;
   trickNumber: number;

@@ -66,6 +66,7 @@ const base: ChemindeFerResponse = {
   punterDrew: false,
   result: 0,
   roundNumber: 1,
+  roundNetHistory: [],
   remainingCards: 312,
   isHumanTurn: true,
   gameEndFlag: false,
@@ -214,6 +215,23 @@ describe('ChemindeFerPage', () => {
     expect(net.className).toContain('text-ds-success');
   });
 
+  it('完了した各ラウンドのプレイヤー別チップ増減を表示する', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: ChemindeFerPhase.ROUND_END,
+        result: 2,
+        isHumanTurn: false,
+        roundNetHistory: [{ roundNumber: 1, deltas: [100, -100, 0, 0, 0, 0] }],
+      }),
+    );
+    renderWithProviders(<ChemindeFerPage />);
+    const history = await screen.findByTestId('cdf-round-history');
+    expect(history).toHaveTextContent('ラウンド別チップ増減');
+    expect(history).toHaveTextContent('ラウンド 1');
+    expect(history).toHaveTextContent('あなた: +100');
+    expect(history).toHaveTextContent('CPU1: -100');
+  });
+
   it('負けた回は赤で、賭けていない回は増減なしと出す', async () => {
     mockApi.mockResolvedValue(
       withState({
@@ -226,7 +244,7 @@ describe('ChemindeFerPage', () => {
     const { unmount } = renderWithProviders(<ChemindeFerPage />);
     const lost = await screen.findByTestId('cdf-net');
     expect(lost).toHaveTextContent('-50');
-    expect(lost.className).toContain('text-ds-error');
+    expect(lost.className).toContain('text-ds-error-text');
     unmount();
 
     // **賭けていない回に行ごと消すと、勝ったのか賭けていないのかが読めない。**
@@ -269,6 +287,33 @@ describe('ChemindeFerPage', () => {
     expect(screen.getByTestId('cdf-seat-0')).toHaveTextContent('★');
     expect(screen.getByTestId('cdf-seat-1')).toHaveTextContent('950');
     expect(screen.getByTestId('cdf-seat-1')).toHaveTextContent('50');
+  });
+
+  it('BET中の賭け額0はパス扱いにせず、BET終了後はパスと表示する', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: ChemindeFerPhase.BET,
+        stake: 200,
+        players: [seat(0, { isBanker: true }), seat(1, { bet: 50, isBanker: false }), seat(2, { isBanker: false })],
+      }),
+    );
+    const { unmount } = renderWithProviders(<ChemindeFerPage />);
+    await screen.findByTestId('cdf-seat-0');
+    expect(screen.getByTestId('cdf-seat-0')).not.toHaveTextContent('パス');
+    expect(screen.getByTestId('cdf-seat-2')).not.toHaveTextContent('パス');
+    unmount();
+
+    mockApi.mockResolvedValue(
+      withState({
+        phase: ChemindeFerPhase.PUNTER_DRAW,
+        stake: 200,
+        players: [seat(0, { isBanker: true }), seat(1, { bet: 50, isBanker: false }), seat(2, { isBanker: false })],
+      }),
+    );
+    renderWithProviders(<ChemindeFerPage />);
+    expect(await screen.findByTestId('cdf-seat-0')).not.toHaveTextContent('パス');
+    expect(screen.getByTestId('cdf-seat-2')).toHaveTextContent('パス');
+    expect(screen.getByTestId('cdf-seat-1')).not.toHaveTextContent('パス');
   });
 
   // **CPU 名だけサーバ製の英語が混ざっていた。**ラベルとボタンは全部翻訳される

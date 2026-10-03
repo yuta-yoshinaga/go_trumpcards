@@ -19,6 +19,10 @@ export interface PrimeroPlayer {
   chips: number;
   /** Chips this player has wagered into the pot this round. */
   roundBet: number;
+  /** Chips returned to this player when the round settled. */
+  roundPayout: number;
+  /** Net chips gained or lost this round. */
+  netChange: number;
   /** Whether the player has folded out of the current round. */
   folded: boolean;
   /** Whether the player has been eliminated (busted) from the match. */

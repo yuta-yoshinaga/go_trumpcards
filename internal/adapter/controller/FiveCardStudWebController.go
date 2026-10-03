@@ -39,6 +39,7 @@ type FiveCardStudWebOutputPlayer struct {
 	HandRank      int              `json:"handRank"`
 	HandName      string           `json:"handName"`
 	BestHand      []*WebOutputCard `json:"bestHand"`
+	BestHandCore  []*WebOutputCard `json:"bestHandCore"`
 	PlayStyleName string           `json:"playStyleName"`
 	TotalHands    int              `json:"totalHands"`
 	VPIP          int              `json:"vpip"`

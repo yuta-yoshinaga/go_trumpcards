@@ -76,7 +76,10 @@ type SpiteAndMalice struct {
 	moveCount   int
 	winner      int
 	actionLogBase
-	config SpiteAndMaliceConfig
+	config                 SpiteAndMaliceConfig
+	history                []*spiteAndMaliceSnapshot
+	coalescingSnapshots    bool
+	coalescedSnapshotTaken bool
 }
 
 // NewSpiteAndMalice コンストラクタ
@@ -104,6 +107,7 @@ func (s *SpiteAndMalice) Reset() {
 	s.moveCount = 0
 	s.winner = -1
 	s.actionLog = nil
+	s.history = nil
 	s.completed = nil
 	for i := range SpiteAndMaliceFoundationCnt {
 		s.foundations[i] = nil
@@ -158,6 +162,7 @@ func (s *SpiteAndMalice) PlayFromHand(handIdx, foundationIdx int) error {
 	if !s.canPlaceOnFoundation(card, foundationIdx) {
 		return errors.New("cannot place card on foundation")
 	}
+	s.takeSnapshot()
 	p.RemoveFromHand(handIdx)
 	s.appendToFoundation(foundationIdx, card)
 	s.moveCount++
@@ -182,6 +187,7 @@ func (s *SpiteAndMalice) PlayFromGoal(foundationIdx int) error {
 	if !s.canPlaceOnFoundation(top, foundationIdx) {
 		return errors.New("cannot place card on foundation")
 	}
+	s.takeSnapshot()
 	card := p.PopGoal()
 	s.appendToFoundation(foundationIdx, card)
 	s.moveCount++
@@ -215,6 +221,7 @@ func (s *SpiteAndMalice) PlayFromSide(sideIdx, foundationIdx int) error {
 	if !s.canPlaceOnFoundation(top, foundationIdx) {
 		return errors.New("cannot place card on foundation")
 	}
+	s.takeSnapshot()
 	card := p.PopSide(sideIdx)
 	s.appendToFoundation(foundationIdx, card)
 	s.moveCount++
@@ -237,6 +244,7 @@ func (s *SpiteAndMalice) Discard(handIdx, sideIdx int) error {
 		return errors.New("invalid side index")
 	}
 	card := hand[handIdx]
+	s.takeSnapshot()
 	p.RemoveFromHand(handIdx)
 	p.PushSide(sideIdx, card)
 	s.moveCount++
@@ -291,6 +299,12 @@ func (s *SpiteAndMalice) AutoComplete() error {
 	if s.IsCpuTurn() {
 		return errors.New("not human turn")
 	}
+	s.coalescingSnapshots = true
+	s.coalescedSnapshotTaken = false
+	defer func() {
+		s.coalescingSnapshots = false
+		s.coalescedSnapshotTaken = false
+	}()
 	// Bounded loop: AutoComplete only ever processes the human's piles, but
 	// completed foundations refill from the shared stock so a single call can
 	// chain more moves than CardCnt * 2 in pathological end-game states. Use
@@ -710,23 +724,71 @@ type spiteAndMaliceJSON struct {
 	Winner      int                                            `json:"wn"`
 	ActionLog   []*ActionLogEntry                              `json:"al"`
 	Config      SpiteAndMaliceConfig                           `json:"cf"`
+	History     []*spiteAndMaliceSnapshot                      `json:"hi,omitempty"`
+}
+
+type spiteAndMaliceSnapshot struct {
+	State []byte `json:"st"`
+}
+
+func (s *SpiteAndMalice) boardJSON() spiteAndMaliceJSON {
+	return spiteAndMaliceJSON{TrumpCards: s.trumpCards, Stock: s.stock, Completed: s.completed, Foundations: s.foundations, Players: s.players, Current: s.current, Phase: s.phase, MoveCount: s.moveCount, Winner: s.winner, ActionLog: s.actionLog, Config: s.config}
+}
+
+func (s *SpiteAndMalice) takeSnapshot() {
+	if s.current != SpiteAndMaliceHumanIdx || s.phase != SpiteAndMalicePhasePlaying {
+		return
+	}
+	if s.coalescingSnapshots && s.coalescedSnapshotTaken {
+		return
+	}
+	b, err := json.Marshal(s.boardJSON())
+	if err != nil {
+		// Continue the operation without recording a snapshot.
+		return
+	}
+	if s.coalescingSnapshots {
+		s.coalescedSnapshotTaken = true
+	}
+	s.history = appendSnapshot(s.history, &spiteAndMaliceSnapshot{State: b})
+}
+
+// CanUndo reports whether a prior human action can be restored.
+func (s *SpiteAndMalice) CanUndo() bool {
+	return len(s.history) > 0 && s.phase == SpiteAndMalicePhasePlaying
+}
+
+// Undo restores the state immediately before the latest human action.
+func (s *SpiteAndMalice) Undo() error {
+	if !s.CanUndo() {
+		return NewDomainErrorCode(ErrInvalidPlay, "spiteandmalice.errNothingToUndo", nil)
+	}
+	history := s.history
+	snap := history[len(history)-1]
+	restored := &SpiteAndMalice{}
+	if err := json.Unmarshal(snap.State, restored); err != nil {
+		return err
+	}
+	s.trumpCards = restored.trumpCards
+	s.stock = restored.stock
+	s.completed = restored.completed
+	s.foundations = restored.foundations
+	s.players = restored.players
+	s.current = restored.current
+	s.phase = restored.phase
+	s.moveCount = restored.moveCount
+	s.winner = restored.winner
+	s.actionLog = restored.actionLog
+	s.config = restored.config
+	s.history = history[:len(history)-1]
+	return nil
 }
 
 // MarshalJSON implements json.Marshaler.
 func (s *SpiteAndMalice) MarshalJSON() ([]byte, error) {
-	return json.Marshal(spiteAndMaliceJSON{
-		TrumpCards:  s.trumpCards,
-		Stock:       s.stock,
-		Completed:   s.completed,
-		Foundations: s.foundations,
-		Players:     s.players,
-		Current:     s.current,
-		Phase:       s.phase,
-		MoveCount:   s.moveCount,
-		Winner:      s.winner,
-		ActionLog:   s.actionLog,
-		Config:      s.config,
-	})
+	j := s.boardJSON()
+	j.History = s.history
+	return json.Marshal(j)
 }
 
 // spiteAndMaliceMaxSliceLen caps slice sizes during deserialisation.
@@ -742,6 +804,14 @@ func (s *SpiteAndMalice) UnmarshalJSON(data []byte) error {
 		len(j.Completed) > spiteAndMaliceMaxSliceLen ||
 		len(j.ActionLog) > spiteAndMaliceMaxSliceLen {
 		return fmt.Errorf("spiteandmalice: input array exceeds maximum allowed size")
+	}
+	if len(j.History) > MaxUndoHistory {
+		return fmt.Errorf("spiteandmalice: undo history exceeds maximum allowed size")
+	}
+	for i, snapshot := range j.History {
+		if snapshot == nil {
+			return fmt.Errorf("spiteandmalice: undo history entry %d is invalid", i)
+		}
 	}
 	for i := range SpiteAndMaliceFoundationCnt {
 		if len(j.Foundations[i]) > spiteAndMaliceMaxSliceLen {
@@ -785,6 +855,7 @@ func (s *SpiteAndMalice) UnmarshalJSON(data []byte) error {
 		s.actionLog = make([]*ActionLogEntry, 0)
 	}
 	s.config = j.Config
+	s.history = j.History
 	if err := s.config.Validate(); err != nil {
 		s.config = DefaultSpiteAndMaliceConfig()
 	}

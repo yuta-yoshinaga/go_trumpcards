@@ -66,27 +66,6 @@ const (
 	SjavsPhaseGameEnd
 )
 
-// SjavsCardPoints は 1 枚の点数を返す。
-func SjavsCardPoints(c *Card) int {
-	if c == nil {
-		return 0
-	}
-	switch c.GetValue() {
-	case 1:
-		return 11
-	case 10:
-		return 10
-	case 13:
-		return 4
-	case 12:
-		return 3
-	case 11:
-		return 2
-	default:
-		return 0
-	}
-}
-
 // sjavsPermanentTrumps は常時切札を強い順に並べたもの。
 //
 // **切札スートが何であってもこの 6 枚が最強**で、しかもこの順序は動かない。
@@ -567,7 +546,7 @@ func (s *Sjavs) resolveTrick() {
 	pts := 0
 	cards := make([]*Card, 0, len(s.trick))
 	for _, tc := range s.trick {
-		pts += SjavsCardPoints(tc.Card)
+		pts += AceTenCardPoints(tc.Card)
 		cards = append(cards, tc.Card)
 	}
 	s.tricksWon[winner]++
@@ -769,7 +748,7 @@ func (s *Sjavs) cheapestOf(idx int, candidates []int) int {
 	best, bestPts, bestRank := candidates[0], 99, 99
 	for _, i := range candidates {
 		c := p.GetCard(i)
-		pts := SjavsCardPoints(c)
+		pts := AceTenCardPoints(c)
 		rank := sjavsPlainRank(c)
 		if pts < bestPts || (pts == bestPts && rank < bestRank) {
 			best, bestPts, bestRank = i, pts, rank
@@ -830,6 +809,9 @@ func (s *Sjavs) GetRemaining(team int) int {
 	}
 	return s.remaining[team]
 }
+
+// GetRubberPoints は 1 ラバーの点数を返す。
+func (s *Sjavs) GetRubberPoints() int { return SjavsRubber }
 
 // GetCrosses は team のラバー勝利数を返す。
 func (s *Sjavs) GetCrosses(team int) int {

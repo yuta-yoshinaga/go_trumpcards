@@ -69,7 +69,7 @@ func TestMarias_StrengthAndPoints(t *testing.T) {
 	cases := map[int]int{1: 11, 10: 10, 13: 4, 12: 3, 11: 2, 9: 0, 8: 0, 7: 0}
 	total := 0
 	for v, want := range cases {
-		if got := mariasCardPoints(marCard(CardDesignSpade, v)); got != want {
+		if got := AceTenCardPoints(marCard(CardDesignSpade, v)); got != want {
 			t.Errorf("points(%d) = %d, want %d", v, got, want)
 		}
 		total += want

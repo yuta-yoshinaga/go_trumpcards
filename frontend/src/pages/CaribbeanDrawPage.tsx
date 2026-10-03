@@ -37,6 +37,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { CARIBBEANDRAW_HELP, parseCaribbeandrawCommand } from '../utils/cli/commands/caribbeandrawCommands';
 import { formatCaribbeandrawState } from '../utils/cli/formatters/caribbeandrawFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Most cards that may be exchanged in one draw (sync: internal/domain/CaribbeanDraw.go). */
@@ -122,6 +123,9 @@ function CaribbeanDrawPageContent() {
   const isDrawPhase = state?.phase === CaribbeanDrawPhase.DRAW;
   const isActionPhase = state?.phase === CaribbeanDrawPhase.ACTION;
   const isEndPhase = state?.phase === CaribbeanDrawPhase.END;
+  const totalBetAmount = anteAmount + jackpotAmount;
+  const chipShortfall = Math.max(0, totalBetAmount - (state?.chips ?? 0));
+  const betUnaffordable = chipShortfall > 0;
   // The exchange fee equals the ante (CaribbeanDrawExchangeCostRatio = 1). It is
   // charged the moment the draw is confirmed, so the player has to see it first.
   const drawFee = state?.anteBet ?? 0;
@@ -171,7 +175,12 @@ function CaribbeanDrawPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'b', action: () => execApi('bet', anteAmount, jackpotAmount), enabled: isBetPhase, label: 'bet' },
+      {
+        key: 'b',
+        action: () => execApi('bet', anteAmount, jackpotAmount),
+        enabled: isBetPhase && !betUnaffordable,
+        label: 'bet',
+      },
       {
         key: 'd',
         action: () => execApi('draw', undefined, undefined, selectedIndices),
@@ -188,7 +197,17 @@ function CaribbeanDrawPageContent() {
       { key: 'f', action: () => execApi('fold'), enabled: isActionPhase, label: 'fold' },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, label: 'reset' },
     ],
-    [execApi, anteAmount, jackpotAmount, selectedIndices, isBetPhase, isDrawPhase, isActionPhase, isEndPhase],
+    [
+      execApi,
+      anteAmount,
+      jackpotAmount,
+      selectedIndices,
+      isBetPhase,
+      isDrawPhase,
+      isActionPhase,
+      isEndPhase,
+      betUnaffordable,
+    ],
   );
 
   useActionKeyboardNav({
@@ -199,6 +218,7 @@ function CaribbeanDrawPageContent() {
   if (!state) return <GameSkeleton gameKey="caribbeandraw" layout={{ kind: 'casino-table', sections: [5, 5] }} />;
 
   const handleBet = () => {
+    if (loading || betUnaffordable) return;
     execApi('bet', anteAmount, jackpotAmount);
   };
 
@@ -290,11 +310,11 @@ function CaribbeanDrawPageContent() {
                       tally.net > 0
                         ? 'font-bold text-ds-success'
                         : tally.net < 0
-                          ? 'font-bold text-ds-error'
+                          ? 'font-bold text-ds-error-text'
                           : 'font-bold text-ds-text-muted'
                     }
                   >
-                    {t('session.net')}: {tally.net > 0 ? `+${tally.net}` : tally.net}
+                    {t('session.net')}: {formatSignedDelta(tally.net)}
                   </span>
                 </div>
                 <div className="mt-1 flex items-center justify-center gap-3 text-xs text-ds-text-muted">
@@ -422,7 +442,7 @@ function CaribbeanDrawPageContent() {
 
             {state.dealerHand.length > 0 && (
               <div className="mb-4">
-                <div className="text-ds-error font-bold text-center mb-1">
+                <div className="text-ds-error-text font-bold text-center mb-1">
                   <span aria-hidden="true">🔴</span> {t('dealer')}
                   {isEndPhase && HAND_RANK_KEYS[state.dealerHandRank] && (
                     <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank])})</span>
@@ -516,11 +536,33 @@ function CaribbeanDrawPageContent() {
                   disabled={loading}
                   showSteppers
                 />
+                <div
+                  data-testid="cd-bet-total-preview"
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                  className={`text-sm text-center ${betUnaffordable ? 'text-ds-error-text font-bold' : 'text-ds-text-primary'}`}
+                >
+                  <p>{t('betPreview.required', { amount: totalBetAmount })}</p>
+                  {betUnaffordable && <p>{t('betPreview.shortfall', { amount: chipShortfall })}</p>}
+                </div>
+                {betUnaffordable && (
+                  <p id="cd-bet-error" role="alert" className="text-ds-error-text text-xs">
+                    {t('betError')}
+                  </p>
+                )}
                 <details data-testid="jackpot-help" className="text-xs text-ds-text-muted max-w-xs">
                   <summary className="cursor-pointer text-ds-info">{t('jackpotHelpTitle')}</summary>
                   <p className="pt-1">{t('jackpotHelp')}</p>
                 </details>
-                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+                <button
+                  type="button"
+                  className={`${btnPrimary} aria-disabled:opacity-70 aria-disabled:cursor-not-allowed aria-disabled:saturate-50`}
+                  onClick={handleBet}
+                  disabled={loading}
+                  aria-disabled={betUnaffordable || undefined}
+                  aria-describedby={betUnaffordable ? 'cd-bet-error' : undefined}
+                >
                   {t('button.bet')}
                 </button>
               </div>

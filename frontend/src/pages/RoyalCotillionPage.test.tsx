@@ -1,7 +1,8 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { royalcotillionApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, RoyalCotillionResponse } from '../types/card';
@@ -82,6 +83,40 @@ describe('RoyalCotillionPage', () => {
     for (let i = 0; i < 8; i++) {
       expect(screen.getByText(`#${i}`)).toBeInTheDocument();
     }
+  });
+
+  it('shows the waste count and describes the waste card for assistive technology', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('DIAMOND', 4), card('HEART', 8)] });
+    renderWithProviders(<RoyalCotillionPage />);
+
+    const wasteCount = await screen.findByText('2枚');
+    expect(wasteCount).toHaveAttribute('id', 'royal-cotillion-waste-count');
+    expect(screen.getByRole('button', { name: '♥ 8' })).toHaveAttribute(
+      'aria-describedby',
+      'royal-cotillion-waste-count',
+    );
+  });
+
+  it('shows zero cards when the waste is empty', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<RoyalCotillionPage />);
+
+    expect(await screen.findByText('0枚')).toHaveAttribute('id', 'royal-cotillion-waste-count');
+    expect(screen.getByRole('img', { name: '捨て札は空です' })).toHaveAttribute(
+      'aria-describedby',
+      'royal-cotillion-waste-count',
+    );
+  });
+
+  it('uses English plural forms for the waste count', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('DIAMOND', 4)] });
+    renderWithProviders(<RoyalCotillionPage />);
+
+    expect(await screen.findByText('1 card')).toHaveAttribute('id', 'royal-cotillion-waste-count');
+
+    await i18n.changeLanguage(previousLanguage);
   });
 
   it('draws from the stock', async () => {
@@ -362,6 +397,29 @@ describe('RoyalCotillionPage', () => {
     });
     renderWithProviders(<RoyalCotillionPage />);
     await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
+  });
+
+  it('announces auto-complete start and completion in its own live region', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('SPADE', 1)], [], [], [], [], [], [], []],
+    });
+    renderWithProviders(<RoyalCotillionPage />);
+    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
+    const liveRegion = screen.getByTestId('autocomplete-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toHaveClass('sr-only');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByTestId('autocomplete-button'));
+    expect(liveRegion).toHaveTextContent('自動完成を開始しました');
+    expect(screen.getByTestId('cg-hint-live')).toBeInTheDocument();
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 3050));
+    });
+    expect(liveRegion).toHaveTextContent('自動完成の処理が終わりました');
   });
 
   it('shows StalemateEscapeButton when the stalemate flag is set', async () => {

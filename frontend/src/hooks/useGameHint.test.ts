@@ -639,6 +639,7 @@ describe('useGameHint', () => {
       red3s: [],
       roundScore: 0,
       cumulativeScore: 0,
+      scoreBreakdown: { meldCards: 0, canastaBonus: 0, red3Bonus: 0, goOutBonus: 0, handPenalty: 0 },
       hasCanasta: false,
       hasInitMeld: false,
     };
@@ -857,6 +858,7 @@ describe('useGameHint', () => {
       suggestedWildSlot: -1,
       moveCount: 0,
       winner: -1,
+      canUndo: false,
       message: '',
     };
     const { result } = renderHook(() => useGameHint('trash', state));
@@ -1045,6 +1047,7 @@ describe('useGameHint', () => {
       warBet: 0,
       result: 0,
       totalPayout: 0,
+      netChange: 0,
       message: '',
     };
     const { result } = renderHook(() => useGameHint('casinowar', state));
@@ -1062,6 +1065,7 @@ describe('useGameHint', () => {
       warBet: 0,
       result: 0,
       totalPayout: 0,
+      netChange: 0,
       message: '',
     };
     const { result } = renderHook(() => useGameHint('casinowar', state));

@@ -19,6 +19,7 @@
   "exchangeCount": "Drew: {{count}}",
   "cardSelected": "(selected to exchange)",
   "raiseLimitReached": "The maximum number of raises for this round has been reached.",
+  "callPotOdds": "({{amount}} · pot odds {{percentage}}%)",
   "settings": {
     "title": "Settings",
     "cpuMetaAI": "Meta-AI (CPUs learn your style)"

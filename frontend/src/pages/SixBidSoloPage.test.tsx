@@ -121,6 +121,19 @@ describe('SixBidSoloPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 1 }));
   });
 
+  it('announces hand-card selection and deselection', async () => {
+    renderWithProviders(<SixBidSoloPage />);
+    await waitFor(() => expect(handButtons()).toHaveLength(3));
+
+    const hand = handButtons();
+    expect(hand[0]).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(hand[0]);
+    expect(hand[0]).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(hand[1]);
+    expect(hand[0]).toHaveAttribute('aria-pressed', 'false');
+    expect(hand[1]).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('shows each trick card with the player who played it', async () => {
     mockExec.mockResolvedValue(
       makeState({
@@ -321,6 +334,33 @@ describe('SixBidSoloPage', () => {
     mockExec.mockResolvedValue(makeState({ highBid: null }));
     renderWithProviders(<SixBidSoloPage />);
     await waitFor(() => expect(screen.queryByTestId('sixbidsolo-contract')).not.toBeInTheDocument());
+  });
+
+  it('shows ordered bids and passes during the bidding phase', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: SixBidSoloPhase.BID,
+        bids: [
+          { player: 0, kind: 0 },
+          { player: 1, kind: 2 },
+        ],
+      }),
+    );
+    renderWithProviders(<SixBidSoloPage />);
+
+    const history = await screen.findByTestId('sixbidsolo-bid-history');
+    expect(history.querySelectorAll('li')).toHaveLength(2);
+    expect(history.querySelectorAll('li')[0]).toHaveTextContent('あなた');
+    expect(history.querySelectorAll('li')[0]).toHaveTextContent('パス');
+    expect(history.querySelectorAll('li')[1]).toHaveTextContent('CPU 1');
+    expect(history.querySelectorAll('li')[1]).toHaveTextContent('ハート・ソロ');
+  });
+
+  it('distinguishes an empty bid history from an unrecorded player bid', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: SixBidSoloPhase.BID, bids: [] }));
+    renderWithProviders(<SixBidSoloPage />);
+
+    expect(await screen.findByTestId('sixbidsolo-bid-history-empty')).toHaveTextContent('まだ入札はありません');
   });
 
   // **コール・ソロで指名された札が表示される。**

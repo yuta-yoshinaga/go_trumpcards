@@ -193,7 +193,7 @@ describe('CongressPage', () => {
 
     mockExec.mockResolvedValue({ ...playingState, waste: [card('DIAMOND', 4)] });
     renderWithProviders(<CongressPage />);
-    const wasteCard = await screen.findByRole('button', { name: '♦ 4' });
+    const wasteCard = await screen.findByRole('button', { name: '捨て札、♦ 4' });
     mockExec.mockClear();
 
     const dataTransfer = buildDataTransfer();
@@ -273,6 +273,33 @@ describe('CongressPage', () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<CongressPage />);
     await waitFor(() => expect(screen.getByLabelText('捨て札は空です')).toBeInTheDocument());
+  });
+
+  it('includes the waste area and card name while describing the count', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      waste: [card('DIAMOND', 4), card('CLOVER', 7)],
+    });
+    renderWithProviders(<CongressPage />);
+
+    const count = await screen.findByText('2枚');
+    expect(count).toHaveAttribute('id', 'congress-waste-count');
+    const wasteCard = screen.getByRole('button', { name: '捨て札、♣ 7' });
+    expect(wasteCard).toHaveAttribute('aria-describedby', 'congress-waste-count');
+  });
+
+  it('selects the top waste card as a move source', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      waste: [card('DIAMOND', 4), card('CLOVER', 7)],
+    });
+    renderWithProviders(<CongressPage />);
+
+    const wasteCard = await screen.findByRole('button', { name: /♣.*7/ });
+    fireEvent.click(wasteCard);
+
+    await waitFor(() => expect(wasteCard).toHaveAttribute('aria-pressed', 'true'));
+    expect(wasteCard).toHaveClass('ring-ds-warning');
   });
 
   it('disables the stock once it runs out', async () => {

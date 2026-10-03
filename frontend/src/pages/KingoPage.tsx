@@ -107,9 +107,11 @@ function KingoPageContent() {
   const human = state.seats[state.humanSeat];
   const humanWon = gameOver && state.winnerSeat === state.humanSeat;
   const minBet = state.config?.minBet ?? 10;
+  const chipBalance = human?.chips ?? 0;
+  const canBet = chipBalance >= minBet;
   // **初期値も卓の最低額に合わせる。** 下限を入力欄に渡しても、一度も触らずに
   // 「賭ける」を押した人は既定の 10 を送ってしまい、サーバに弾かれる。
-  const betAmount = Math.max(amount, minBet);
+  const betAmount = canBet ? Math.min(Math.max(amount, minBet), chipBalance) : minBet;
 
   return (
     <GamePageShell
@@ -159,6 +161,9 @@ function KingoPageContent() {
             <p className="text-ds-text-muted text-center text-xs mb-1" data-testid="kingo-payouts">
               {t('label.payouts', { arashi: state.payoutArashi, pair: state.payoutPair })}
             </p>
+            <p className="text-ds-text-muted text-center text-xs mb-1" data-testid="kingo-payout-meaning">
+              {t('label.payoutMeaning')}
+            </p>
             <p className="text-ds-text-muted text-center text-xs mb-3" data-testid="kingo-notice">
               {t('notice')}
             </p>
@@ -182,7 +187,7 @@ function KingoPageContent() {
                     {seat.wonAmount !== 0 && (
                       <span
                         data-testid={`kingo-won-${i}`}
-                        className={seat.wonAmount > 0 ? 'text-ds-success' : 'text-ds-error'}
+                        className={seat.wonAmount > 0 ? 'text-ds-success' : 'text-ds-error-text'}
                       >
                         {' · '}
                         {t('label.won', { amount: seat.wonAmount })}
@@ -268,15 +273,25 @@ function KingoPageContent() {
                 ) : (
                   <>
                     <p className="text-ds-text-muted text-sm" data-testid="kingo-bet-guide">
-                      {t('label.betPrompt', { min: minBet })}
+                      {canBet ? (
+                        t('label.betPrompt', { min: minBet })
+                      ) : (
+                        <span id="kingo-bet-unavailable" data-testid="kingo-bet-unavailable">
+                          {t('label.betUnavailable', { min: minBet })}
+                        </span>
+                      )}
                     </p>
                     <button
                       type="button"
-                      className={btnSuccess}
                       data-testid="kingo-bet"
                       data-hint-action="bet"
-                      onClick={() => handleBet(betAmount)}
+                      aria-disabled={!canBet || undefined}
+                      aria-describedby={!canBet ? 'kingo-bet-unavailable' : undefined}
+                      onClick={() => {
+                        if (canBet) handleBet(betAmount);
+                      }}
                       disabled={loading}
+                      className={`${btnSuccess} aria-disabled:opacity-40 aria-disabled:cursor-not-allowed`}
                     >
                       {t('button.bet')}
                     </button>
@@ -289,7 +304,9 @@ function KingoPageContent() {
                       value={betAmount}
                       onChange={setAmount}
                       min={minBet}
-                      max={human?.chips ?? 0}
+                      max={chipBalance}
+                      ariaDisabled={!canBet}
+                      describedBy={!canBet ? 'kingo-bet-unavailable' : undefined}
                     />
                   </>
                 ))}

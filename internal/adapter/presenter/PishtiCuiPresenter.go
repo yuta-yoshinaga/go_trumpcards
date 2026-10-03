@@ -34,6 +34,12 @@ func (p *PishtiCuiPresenter) Output(pg interfaces.PishtiGame, lastErr error) str
 				}
 				line := i18n.Tf("pishti.provisional",
 					"name", cuiPlayerName(pl, i), "score", strconv.Itoa(prov[i]))
+				most := 0
+				if i == leader {
+					most = domain.PishtiScoreMostCards
+				}
+				cardPoints := prov[i] - pl.GetPistiBonus() - most
+				line += i18n.Tf("pishti.scoreBreakdown", "cards", strconv.Itoa(cardPoints), "pisti", strconv.Itoa(pl.GetPistiBonus()), "most", strconv.Itoa(most))
 				if i == leader {
 					line = color.Yellow(line)
 				}

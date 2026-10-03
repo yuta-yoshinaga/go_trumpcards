@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { NERTZ_HELP, parseNertzCommand } from '../utils/cli/commands/nertzCommands';
 import { formatNertzState } from '../utils/cli/formatters/nertzFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 
 /** CPU cadence presets — faster ticks make the CPUs harder to out-race. */
 type NertzCpuSpeed = 'slow' | 'normal' | 'fast';
@@ -222,6 +223,7 @@ function NertzPageContent() {
   );
   const placementFlashTimersRef = useRef<Map<number, number>>(new Map());
   const prevFoundationSizesRef = useRef<number[]>([]);
+  const prevCpuScoresRef = useRef<{ roundNumber: number; scores: number[] } | null>(null);
   const flashKeyRef = useRef(0);
   // `isCollisionError` flags that the current `error` from useGameApi was
   // attributed to a foundation collision (already conveyed via the shake
@@ -260,6 +262,22 @@ function NertzPageContent() {
       const oldSize = prev[idx] ?? 0;
       if (newSize > oldSize) grown.push(idx);
     }
+    const previousScores = prevCpuScoresRef.current;
+    const scoreChanges =
+      previousScores?.roundNumber === state.roundNumber
+        ? state.players.flatMap((player, idx) => {
+            const delta = player.score - (previousScores.scores[idx] ?? player.score);
+            if (player.isHuman || delta === 0) return [];
+            return [
+              t('scoreAnnounce.cpu', {
+                player: player.name,
+                delta: formatSignedDelta(delta),
+                score: player.score,
+              }),
+            ];
+          })
+        : [];
+    const announcements = [...scoreChanges];
     if (grown.length > 0) {
       const humanIdx = pendingFoundationRef.current;
       setPlacedFlashes((current) => {
@@ -273,7 +291,7 @@ function NertzPageContent() {
       // Prefer announcing the human's own placement when it grew this tick, so a
       // simultaneous CPU growth never drowns out the player's own action.
       const announceIdx = humanIdx !== null && grown.includes(humanIdx) ? humanIdx : grown[grown.length - 1];
-      setFoundationAnnounce(
+      announcements.push(
         t(announceIdx === humanIdx ? 'foundationAnnounce.human' : 'foundationAnnounce.cpu', {
           foundation: announceIdx + 1,
         }),
@@ -295,7 +313,14 @@ function NertzPageContent() {
         placementFlashTimersRef.current.set(idx, timerId);
       }
     }
+    if (announcements.length > 0) {
+      setFoundationAnnounce(announcements.join(t('listSeparator')));
+    }
     prevFoundationSizesRef.current = state.foundations.map((f) => f.size);
+    prevCpuScoresRef.current = {
+      roundNumber: state.roundNumber,
+      scores: state.players.map((player) => player.score),
+    };
     pendingFoundationRef.current = null;
   }, [state, t]);
 
@@ -603,6 +628,7 @@ function NertzPageContent() {
                   <div className="text-xs uppercase tracking-wide text-ds-text-muted">{t('labels.stock')}</div>
                   <button
                     type="button"
+                    aria-label={t('labels.stockDrawAria', { count: human.stockSize })}
                     onClick={handleDrawStock}
                     disabled={!isHumanTurn || loading}
                     className={`${btnSecondary} min-w-[3rem]`}

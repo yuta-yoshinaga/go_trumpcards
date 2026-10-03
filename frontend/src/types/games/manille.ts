@@ -48,6 +48,8 @@ export interface ManilleResponse extends BaseGameResponse {
   /** Trump suit (1=♠ 2=♣ 3=♥ 4=♦). */
   trumpSuit: number;
   currentTrick: ManilleTrickCard[];
+  /** Card points in the retained current/just-completed trick. */
+  trickCardPoints: number;
   /** Cumulative match scores per team — [team0, team1]. */
   teamScores: number[];
   /** Card points captured per team this round — [team0, team1]. */

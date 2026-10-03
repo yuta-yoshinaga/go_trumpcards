@@ -73,14 +73,7 @@ func (hi *HokmInteractor) DeclareTrump(suit int) string {
 
 // Play カードをプレイ
 func (hi *HokmInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(hi.Game, hi.hp); blocked {
-		return out
-	}
-	if err := hi.Game.PlayerPlay(cardIndex); err != nil {
-		return hi.hp.Output(hi.Game, err)
-	}
-	hi.runCpuTurns()
-	return hi.hp.Output(hi.Game, nil)
+	return humanAction(hi.Game, hi.hp, func() error { return hi.Game.PlayerPlay(cardIndex) }, hi.runCpuTurns)
 }
 
 // NextHand 次のハンドへ進む

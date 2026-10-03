@@ -82,6 +82,7 @@ func TestCasinoWarWebPresenter_Output_PlayerWins(t *testing.T) {
 	assert.NotNil(t, r.PlayerCard)
 	assert.NotNil(t, r.DealerCard)
 	assert.Equal(t, 200, r.TotalPayout)
+	assert.Equal(t, 100, r.NetChange)
 }
 
 func TestCasinoWarWebPresenter_Output_DealerWins(t *testing.T) {
@@ -104,6 +105,7 @@ func TestCasinoWarWebPresenter_Output_DealerWins(t *testing.T) {
 	r := parseCasinoWarOutput(t, p.Output(m, nil))
 	assert.Empty(t, r.Message)
 	assert.Equal(t, "casinowar.result.dealerWins", r.MessageCode)
+	assert.Equal(t, 0-100-0, r.NetChange)
 }
 
 func TestCasinoWarWebPresenter_Output_Surrender(t *testing.T) {
@@ -126,6 +128,7 @@ func TestCasinoWarWebPresenter_Output_Surrender(t *testing.T) {
 	r := parseCasinoWarOutput(t, p.Output(m, nil))
 	assert.Empty(t, r.Message)
 	assert.Equal(t, "casinowar.result.surrender", r.MessageCode)
+	assert.Equal(t, -50, r.NetChange)
 }
 
 func TestCasinoWarWebPresenter_Output_WarWin(t *testing.T) {
@@ -147,6 +150,7 @@ func TestCasinoWarWebPresenter_Output_WarWin(t *testing.T) {
 	m.On("GetTotalPayout").Return(300)
 	r := parseCasinoWarOutput(t, p.Output(m, nil))
 	assert.Equal(t, "casinowar.result.warWin", r.MessageCode)
+	assert.Equal(t, 300-100-100, r.NetChange)
 }
 
 func TestCasinoWarWebPresenter_Output_WarTieWin(t *testing.T) {

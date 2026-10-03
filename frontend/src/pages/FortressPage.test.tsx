@@ -93,6 +93,17 @@ describe('FortressPage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/組札 1枚/).length).toBe(4));
   });
 
+  it('includes the top card in a non-empty foundation label and keeps suit on empty foundations', async () => {
+    mockExec.mockResolvedValueOnce(playingState);
+    const { unmount } = renderWithProviders(<FortressPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 組札 1枚、最上位の札 ♠ A' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValueOnce({ ...playingState, foundation: [[], [], [], []] });
+    unmount();
+    renderWithProviders(<FortressPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '空の組札 (♠)' })).toBeInTheDocument());
+  });
+
   it('labels all ten tableau columns with their 0-based index (matching hint text)', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<FortressPage />);
@@ -121,19 +132,45 @@ describe('FortressPage', () => {
     };
     mockExec.mockResolvedValue(stateWithCardsInCol8And9);
     renderWithProviders(<FortressPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '♥ 8' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '♦ 9' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: '♥ 8、列8・位置0' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♦ 9、列9・位置0' })).toBeInTheDocument();
+  });
+
+  it('includes 0-based column and position in every tableau card label, including buried cards', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<FortressPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ K、列0・位置0' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♠ 5、列0・位置1' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 6、列1・位置0' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空のタブロー列 2' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 組札 1枚、最上位の札 ♠ A' })).toBeInTheDocument();
+  });
+
+  it('uses the same 0-based number for a tableau card and its column when empty', async () => {
+    mockExec.mockResolvedValueOnce(playingState);
+    const { unmount } = renderWithProviders(<FortressPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ K、列0・位置0' })).toBeInTheDocument());
+
+    const stateWithEmptyFirstColumn: FortressResponse = {
+      ...playingState,
+      tableau: makeTableau([[], playingState.tableau[1] ?? []]),
+    };
+    mockExec.mockResolvedValue(stateWithEmptyFirstColumn);
+    unmount();
+    renderWithProviders(<FortressPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '空のタブロー列 0' })).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: '空のタブロー列 1' })).not.toBeInTheDocument();
   });
 
   it('gives each empty tableau column a distinct column-numbered aria-label', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<FortressPage />);
-    // Columns 3 and 10 (1-based) are empty and each reads distinctly, unlike the
+    // Columns 2 and 9 (0-based) are empty and each reads distinctly, unlike the
     // previous shared "empty" text.
-    await waitFor(() => expect(screen.getByRole('button', { name: '空のタブロー列 3' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '空のタブロー列 10' })).toBeInTheDocument();
-    // The two filled columns (1, 2) are not rendered as empty-column buttons.
-    expect(screen.queryByRole('button', { name: '空のタブロー列 1' })).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: '空のタブロー列 2' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '空のタブロー列 9' })).toBeInTheDocument();
+    // The two filled columns (0, 1) are not rendered as empty-column buttons.
+    expect(screen.queryByRole('button', { name: '空のタブロー列 0' })).not.toBeInTheDocument();
   });
 
   it('renders giveup button when playing', async () => {
@@ -220,7 +257,7 @@ describe('FortressPage', () => {
   it('selecting a tableau card marks it as selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<FortressPage />);
-    const sourceBtn = await screen.findByRole('button', { name: '♠ 5' });
+    const sourceBtn = await screen.findByRole('button', { name: /^♠ 5、/ });
     fireEvent.click(sourceBtn);
     await waitFor(() => expect(sourceBtn).toHaveAttribute('aria-pressed', 'true'));
   });
@@ -228,7 +265,7 @@ describe('FortressPage', () => {
   it('keeps an empty tableau target focusable and explains that a source must be selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<FortressPage />);
-    const btn = await screen.findByRole('button', { name: '空のタブロー列 3' });
+    const btn = await screen.findByRole('button', { name: '空のタブロー列 2' });
     expect(btn).not.toBeDisabled();
     expect(btn).toHaveAttribute('aria-disabled', 'true');
     const describedBy = btn.getAttribute('aria-describedby');
@@ -253,7 +290,7 @@ describe('FortressPage', () => {
     it('marks nothing until a card is selected', async () => {
       mockExec.mockResolvedValue(playingState);
       renderWithProviders(<FortressPage />);
-      await screen.findByRole('button', { name: '♠ 5' });
+      await screen.findByRole('button', { name: /^♠ 5、/ });
       expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(0);
     });
 
@@ -262,7 +299,7 @@ describe('FortressPage', () => {
     it('marks the ranks-down column and every empty column, but not the source column', async () => {
       mockExec.mockResolvedValue(playingState);
       renderWithProviders(<FortressPage />);
-      fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
+      fireEvent.click(await screen.findByRole('button', { name: /^♠ 5、/ }));
       await waitFor(() => expect(markedColumns()).toContain('#1'));
       expect(markedColumns().sort()).toEqual(['#1', '#2', '#3', '#4', '#5', '#6', '#7', '#8', '#9']);
     });
@@ -276,7 +313,7 @@ describe('FortressPage', () => {
         foundation: [[], [], [], []],
       });
       renderWithProviders(<FortressPage />);
-      fireEvent.click(await screen.findByRole('button', { name: '♠ A' }));
+      fireEvent.click(await screen.findByRole('button', { name: /^♠ A、/ }));
 
       await waitFor(() =>
         expect(
@@ -291,7 +328,7 @@ describe('FortressPage', () => {
     it('marks a foundation only for the card that continues it', async () => {
       mockExec.mockResolvedValue(playingState);
       const { unmount } = renderWithProviders(<FortressPage />);
-      fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
+      fireEvent.click(await screen.findByRole('button', { name: /^♠ 5、/ }));
       await waitFor(() => expect(markedColumns()).toContain('#1'));
       expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(9);
       unmount();
@@ -301,7 +338,7 @@ describe('FortressPage', () => {
         tableau: makeTableau([[{ card: card('SPADE', 2), faceUp: true }]]),
       });
       renderWithProviders(<FortressPage />);
-      fireEvent.click(await screen.findByRole('button', { name: '♠ 2' }));
+      fireEvent.click(await screen.findByRole('button', { name: /^♠ 2、/ }));
       await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]').length).toBeGreaterThan(9));
     });
   });
@@ -356,7 +393,7 @@ describe('FortressPage destination preview', () => {
   const render = async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<FortressPage />);
-    return screen.findByRole('button', { name: '♠ 5' });
+    return screen.findByRole('button', { name: /^♠ 5、/ });
   };
   const targets = () => document.querySelectorAll('[data-legal-target="true"]');
   const previews = () => document.querySelectorAll('[data-preview-target="true"]');
@@ -425,7 +462,7 @@ describe('FortressPage destination preview', () => {
     const renderHintedState = async () => {
       mockExec.mockResolvedValue(playingState);
       renderWithProviders(<FortressPage />);
-      await screen.findByRole('button', { name: '♠ 5' });
+      await screen.findByRole('button', { name: /^♠ 5、/ });
       mockExec.mockResolvedValue(hintedState);
       fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
       await waitFor(() => expect(screen.getByTestId('fortress-hint-live')).toHaveTextContent(/→/));
@@ -434,8 +471,8 @@ describe('FortressPage destination preview', () => {
     it('marks the hinted source card and the last card in the hinted tableau destination', async () => {
       await renderHintedState();
 
-      const source = await screen.findByRole('button', { name: '♠ 5' });
-      const destination = screen.getByRole('button', { name: '♠ 6' });
+      const source = await screen.findByRole('button', { name: /^♠ 5、/ });
+      const destination = screen.getByRole('button', { name: /^♠ 6、/ });
       expect(source.closest('[data-hint-from="true"]')).not.toBeNull();
       expect(destination.closest('[data-hint-to="true"]')).not.toBeNull();
     });
@@ -444,15 +481,15 @@ describe('FortressPage destination preview', () => {
       mockExec.mockResolvedValue(playingState);
       renderWithProviders(<FortressPage />);
 
-      await screen.findByRole('button', { name: '♠ 5' });
+      await screen.findByRole('button', { name: /^♠ 5、/ });
       expect(document.querySelectorAll('[data-hint-from], [data-hint-to]')).toHaveLength(0);
     });
 
     it('does not mark cards that are not part of the hinted move', async () => {
       await renderHintedState();
 
-      const source = await screen.findByRole('button', { name: '♠ 5' });
-      const unrelated = screen.getByRole('button', { name: '♠ K' });
+      const source = await screen.findByRole('button', { name: /^♠ 5、/ });
+      const unrelated = screen.getByRole('button', { name: /^♠ K、/ });
       expect(source.closest('[data-hint-from="true"]')).not.toBeNull();
       expect(unrelated).not.toHaveAttribute('data-hint-from');
       expect(unrelated).not.toHaveAttribute('data-hint-to');
@@ -461,7 +498,7 @@ describe('FortressPage destination preview', () => {
     it('keeps the selected ring and hint ring visible together', async () => {
       await renderHintedState();
 
-      const source = await screen.findByRole('button', { name: '♠ 5' });
+      const source = await screen.findByRole('button', { name: /^♠ 5、/ });
       fireEvent.click(source);
       await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
       expect(source.className).toContain('ring-ds-warning');

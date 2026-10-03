@@ -268,12 +268,23 @@ function HoneymoonBridgePageContent() {
               {state.players.map((p) => (
                 <div
                   key={p.id}
-                  className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                  className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
+                    (isHumanBidTurn || isHumanTurn) && p.id === state.currentPlayerIdx ? 'ring-2 ring-ds-accent' : ''
+                  }`}
                   data-testid={`hb-seat-${p.id.toString()}`}
                 >
                   <span className="text-ds-text-primary">
                     {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
                   </span>
+                  {(isHumanBidTurn || isHumanTurn) && p.id === state.currentPlayerIdx && (
+                    <span
+                      className="ml-1 text-ds-accent"
+                      aria-current="step"
+                      data-testid={`hb-turn-${p.id.toString()}`}
+                    >
+                      {t('header.currentTurn')}
+                    </span>
+                  )}
                   {/* **親は NextRound ごとに交代し、引き合いの最初のリードを決める。**
                       落札者とは別の役なので、色を変えて並べる。 */}
                   {p.id === state.dealerIdx && (
@@ -292,6 +303,12 @@ function HoneymoonBridgePageContent() {
                   {t('header.took', { n: String(p.trickCount) })}
                   {' / '}
                   {t('header.score', { n: String(p.score) })}
+                  {(isDraw || state.phase === HoneymoonBridgePhase.PLAY) && (
+                    <>
+                      {' / '}
+                      {t('header.handCount', { n: String(p.cardCount) })}
+                    </>
+                  )}
                 </div>
               ))}
             </div>

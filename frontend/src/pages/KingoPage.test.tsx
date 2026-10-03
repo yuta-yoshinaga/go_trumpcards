@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { kingoApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, KingoResponse } from '../types/card';
 import { KingoPhase } from '../types/phases';
@@ -220,6 +221,45 @@ describe('KingoPage', () => {
     await waitFor(() => expect(screen.getByTestId('kingo-bet-guide')).toHaveTextContent('25'));
     // 案内文だけでなく入力欄も 25。既定の 10 のままなら落ちる。
     expect(screen.getByLabelText('張り')).toHaveAttribute('min', '25');
+    expect(screen.getByLabelText('張り')).toHaveAttribute('max', '1000');
+  });
+
+  it('最低額を払えないときは理由を示し、張り操作を抑止する', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        config: { seats: 4, initialChips: 1000, minBet: 25, rounds: 10 },
+        seats: [seat({ chips: 20 }), ...base.seats.slice(1)],
+      }),
+    );
+    renderWithProviders(<KingoPage />);
+
+    const button = await screen.findByTestId('kingo-bet');
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByTestId('kingo-bet-guide')).toHaveTextContent('最低額');
+    expect(screen.getByLabelText('張り')).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByLabelText('張り')).toHaveAttribute('aria-describedby', 'kingo-bet-unavailable');
+    expect(screen.getByTestId('kingo-bet-unavailable')).toHaveTextContent('25');
+
+    mockApi.mockClear();
+    fireEvent.click(button);
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalledWith('bet', expect.anything());
+  });
+
+  it('残高が最低額と同じなら最低額から残高まで張れる', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        config: { seats: 4, initialChips: 1000, minBet: 25, rounds: 10 },
+        seats: [seat({ chips: 25 }), ...base.seats.slice(1)],
+      }),
+    );
+    renderWithProviders(<KingoPage />);
+
+    const input = await screen.findByLabelText('張り');
+    expect(input).toHaveAttribute('min', '25');
+    expect(input).toHaveAttribute('max', '25');
+    expect(screen.getByTestId('kingo-bet')).not.toHaveAttribute('aria-disabled');
+    expect(screen.queryByTestId('kingo-bet-unavailable')).not.toBeInTheDocument();
   });
 
   // **一度も触らずに押した人が肝心。** 下限を入力欄に渡しても、初期値が 10 のままだと
@@ -299,6 +339,15 @@ describe('KingoPage', () => {
     renderWithProviders(<KingoPage />);
     await waitFor(() => expect(screen.getByTestId('kingo-payouts')).toHaveTextContent('7'));
     expect(screen.getByTestId('kingo-payouts')).toHaveTextContent('2');
+  });
+
+  it('張りの前に倍率と勝ち額の意味を説明する', async () => {
+    mockApi.mockResolvedValue(base);
+    renderWithProviders(<KingoPage />);
+    await waitFor(() => expect(screen.getByTestId('kingo-payouts')).toBeInTheDocument());
+    expect(screen.getByTestId('kingo-payout-meaning')).toHaveTextContent(
+      '倍率は張り額に掛かります（張り10・倍率3なら30）。勝てばその額を受け取り、負ければ親の役の倍率で支払います。勝ち額は決着時のチップ増減です。',
+    );
   });
 
   it('ラウンドと親を出す', async () => {

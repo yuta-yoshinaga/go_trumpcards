@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { StreetsAndAlleysMoveZone, streetsAndAlleysApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -92,7 +92,16 @@ function StreetsAndAlleysPageContent() {
     cancelGiveUp,
   } = useGamePageSetup('streetsandalleys');
   const game = useStreetsAndAlleysGame();
+  const previousMoveCount = useRef(game.state?.moveCount);
+  const [announcedMoveCount, setAnnouncedMoveCount] = useState<number | null>(null);
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
+  useEffect(() => {
+    if (!state) return;
+    if (previousMoveCount.current !== undefined && previousMoveCount.current !== state.moveCount) {
+      setAnnouncedMoveCount(state.moveCount);
+    }
+    previousMoveCount.current = state.moveCount;
+  }, [state]);
   const selectSourceHintId = useId();
 
   const {
@@ -206,6 +215,7 @@ function StreetsAndAlleysPageContent() {
       : undefined;
   // 以前は選択中なら全列の一番上を無条件で光らせていた。ドメインは値差 -1 を要求する。
   const legalTargets = streetsAndAlleysLegalTargets(state.tableau, state.foundation, previewedCard);
+  const selectedTargetCount = selectedSource ? legalTargets.tableau.size + legalTargets.foundation.size : null;
   /** Ring for a legal destination: softer while it is only a hover preview. */
   const targetRing = preview.isPreview
     ? ' rounded ring-1 ring-ds-info/70 motion-safe:hover:ring-2 focus:ring-2'
@@ -327,6 +337,16 @@ function StreetsAndAlleysPageContent() {
       <span id={selectSourceHintId} className="sr-only">
         {tc('label.selectSourceFirst')}
       </span>
+      <div role="status" aria-live="polite" className="sr-only" data-testid="sa-destination-announcement">
+        {selectedTargetCount === null
+          ? ''
+          : t(selectedTargetCount === 0 ? 'noLegalDestinations' : 'legalDestinationCount', {
+              count: selectedTargetCount,
+            })}
+      </div>
+      <div role="status" aria-live="polite" className="sr-only" data-testid="sa-move-count-announcement">
+        {announcedMoveCount === null ? '' : t('moveCountAnnouncement', { count: announcedMoveCount })}
+      </div>
 
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />

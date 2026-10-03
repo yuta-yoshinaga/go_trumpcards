@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { montebankApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -55,7 +55,36 @@ function MonteBankPageContent() {
   const [selected, setSelected] = useState(0);
   const [selectionAnnouncement, setSelectionAnnouncement] = useState('');
   const { cardWidth } = useCardDimensions();
-  const { state, loading, error, exec: execApi, retry } = useGameApi(montebankApi.exec);
+  const [session, setSession] = useState({ wins: 0, losses: 0, net: 0 });
+  const sessionRoundRef = useRef<number | null>(null);
+  const {
+    state,
+    loading,
+    error,
+    exec: execApi,
+    retry,
+  } = useGameApi(montebankApi.exec, {
+    onSuccess: (response, [command]) => {
+      if (command === 'reset') {
+        sessionRoundRef.current = null;
+        setSession({ wins: 0, losses: 0, net: 0 });
+        return;
+      }
+      if (
+        response.phase !== MonteBankPhase.RESULT ||
+        (response.result !== MONTE_BANK_RESULT.win && response.result !== MONTE_BANK_RESULT.lose) ||
+        sessionRoundRef.current === response.roundNumber
+      ) {
+        return;
+      }
+      sessionRoundRef.current = response.roundNumber;
+      setSession((current) => ({
+        wins: current.wins + (response.result === MONTE_BANK_RESULT.win ? 1 : 0),
+        losses: current.losses + (response.result === MONTE_BANK_RESULT.lose ? 1 : 0),
+        net: current.net + response.payout - response.bet,
+      }));
+    },
+  });
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('montebank');
   const cliConfig: CliGameConfig<MonteBankResponse, Parameters<typeof montebankApi.exec>> = useMemo(
@@ -153,6 +182,13 @@ function MonteBankPageContent() {
               {' · '}
               {t('label.payout', { mult: state.payoutMultiplier })}
             </div>
+            <div className="text-ds-text-muted text-center text-xs mb-2" data-testid="mb-session-line">
+              {t('label.sessionWins', { count: session.wins })}
+              {' · '}
+              {t('label.sessionLosses', { count: session.losses })}
+              {' · '}
+              {t('label.sessionNet', { net: session.net })}
+            </div>
             <p className="text-ds-text-muted text-center text-xs mb-2">{t('suitNotice')}</p>
 
             <div role="status" aria-live="polite" aria-atomic="true">
@@ -190,7 +226,7 @@ function MonteBankPageContent() {
                   {/* **賭けの良し悪しはサーバの値をそのまま出す。** 数え直さない。 */}
                   <span
                     data-testid={`mb-note-${i}`}
-                    className={`text-xs mt-1 ${entry.isEven ? 'text-ds-success' : 'text-ds-error'}`}
+                    className={`text-xs mt-1 ${entry.isEven ? 'text-ds-success' : 'text-ds-error-text'}`}
                   >
                     {entry.isEven ? t('label.even') : t('label.against')}
                   </span>
@@ -201,6 +237,14 @@ function MonteBankPageContent() {
                       山残りはサーバが計算済みで、型にもあるのに出していなかった。 */}
                   <span className="text-ds-text-muted text-xs" data-testid={`mb-remaining-${i}`}>
                     {t('label.remainingOfSuit', { count: entry.remainingOfSuit })}
+                  </span>
+                  <span className="text-ds-text-primary text-xs" data-testid={`mb-probability-${i}`}>
+                    {t('label.nextGateProbability', {
+                      probability:
+                        state.remainingCards === 0
+                          ? t('label.probabilityUnavailable')
+                          : `${((entry.remainingOfSuit / state.remainingCards) * 100).toFixed(1)}%`,
+                    })}
                   </span>
                 </button>
               ))}
@@ -217,7 +261,7 @@ function MonteBankPageContent() {
 
             {isResultPhase && (
               <div className="text-center mb-2" data-testid="mb-result">
-                <div className={`text-sm font-medium ${net >= 0 ? 'text-ds-success' : 'text-ds-error'}`}>
+                <div className={`text-sm font-medium ${net >= 0 ? 'text-ds-success' : 'text-ds-error-text'}`}>
                   {t(`result.${resultKeyOf(state.result)}`)} · {t('label.net')} {net}
                 </div>
               </div>

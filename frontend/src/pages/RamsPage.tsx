@@ -141,7 +141,7 @@ function RamsPageContent() {
         ? t('phase.decide')
         : t('phase.play');
 
-  // 出せる札に緑の枠を足すだけで、押せなくはしない（サーバが必ず検証する）。
+  // 手番中は合法札だけを選べるようにする。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
 
   /** Whether a seat is in, out, or has yet to choose. */
@@ -238,7 +238,7 @@ function RamsPageContent() {
                     if (!movement) return null;
                     const delta = movement.payout - movement.penalty;
                     return (
-                      <span className={delta >= 0 ? 'ml-1 text-ds-success' : 'ml-1 text-ds-error'}>
+                      <span className={delta >= 0 ? 'ml-1 text-ds-success' : 'ml-1 text-ds-error-text'}>
                         {t('header.roundDelta', { delta })}
                       </span>
                     );
@@ -286,19 +286,35 @@ function RamsPageContent() {
                   {t('header.you')}: {human.cardCount}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {human.cards.map((card, idx) => (
-                    <button
-                      key={`${card.design}-${card.value}-${idx}`}
-                      type="button"
-                      onClick={() => handlePlayCard(idx)}
-                      disabled={loading || !isHumanTurn}
-                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                      className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
-                    >
-                      <CardImage card={card} width={cardWidth} />
-                    </button>
-                  ))}
+                  {human.cards.map((card, idx) => {
+                    const playable = legalRing.has(idx);
+                    return (
+                      <button
+                        key={`${card.design}-${card.value}-${idx}`}
+                        type="button"
+                        onClick={() => {
+                          if (playable) handlePlayCard(idx);
+                        }}
+                        disabled={loading || !isHumanTurn}
+                        aria-disabled={isHumanTurn && !playable ? 'true' : undefined}
+                        aria-describedby={isHumanTurn && !playable ? 'rm-unplayable-reason' : undefined}
+                        aria-label={
+                          isHumanTurn
+                            ? t(legalRing.has(idx) ? 'actions.playAriaPlayable' : 'actions.playAriaUnplayable', {
+                                card: cardAlt(card),
+                              })
+                            : t('actions.playAria', { card: cardAlt(card) })
+                        }
+                        className={`disabled:opacity-50 aria-disabled:opacity-50 aria-disabled:cursor-not-allowed ${playable ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                      >
+                        <CardImage card={card} width={cardWidth} />
+                      </button>
+                    );
+                  })}
                 </div>
+                <span id="rm-unplayable-reason" className="sr-only">
+                  {t('actions.unplayableReason')}
+                </span>
               </div>
             )}
 

@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { callBreakApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeCallBreakState } from '../test/stateFactories';
 import type { CallBreakResponse } from '../types/card';
@@ -78,6 +79,15 @@ describe('fmtScore', () => {
 });
 
 describe('CallBreakPage', () => {
+  it('explains bags without claiming the game always has five rounds', async () => {
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    const bagsInfo = i18n.t('tutorial.bagsInfo', { ns: 'callbreak' });
+    expect(bagsInfo).toContain('超過 1 トリック毎に +0.1 点');
+    expect(bagsInfo).toContain('バッグペナルティはなく');
+    expect(bagsInfo).not.toContain('5 ラウンド固定');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<CallBreakPage />);
@@ -301,6 +311,23 @@ describe('CallBreakPage', () => {
     expect(screen.getAllByTestId('trick-display-cards')[0].querySelectorAll('[data-trick-winner="true"]')).toHaveLength(
       1,
     );
+    const winnerStatus = screen.getByTestId('callbreak-trick-winner-status');
+    expect(winnerStatus).toHaveAttribute('role', 'status');
+    expect(winnerStatus).toHaveAttribute('aria-live', 'polite');
+    expect(winnerStatus).toHaveClass('sr-only');
+    expect(winnerStatus).toHaveTextContent('CPU 2がトリックを獲得');
+    expect(winnerStatus.textContent).toBe('CPU 2がトリックを獲得');
+  });
+
+  it('clears the trick winner announcement after moving to the next trick', async () => {
+    mockExec.mockResolvedValueOnce(trickEndState).mockResolvedValueOnce(playPhaseState);
+    renderWithProviders(<CallBreakPage />);
+    const winnerStatus = await screen.findByTestId('callbreak-trick-winner-status');
+    await waitFor(() => expect(winnerStatus).toHaveTextContent('CPU 2がトリックを獲得'));
+
+    fireEvent.click(screen.getByRole('button', { name: '次のトリック' }));
+    await waitFor(() => expect(winnerStatus).toBeEmptyDOMElement());
+    expect(winnerStatus).toHaveAttribute('aria-live', 'polite');
   });
 
   it('shows next round button on round end', async () => {

@@ -51,6 +51,7 @@ export interface BoliviaPlayerData {
   red3Count: number;
   red3s: Card[];
   roundScore: number;
+  scoreBreakdown: BoliviaScoreBreakdown;
   cumulativeScore: number;
   hasCanasta: boolean;
   /** Holds a completed escalera. **This is what going out requires.** */
@@ -60,8 +61,23 @@ export interface BoliviaPlayerData {
   hasInitMeld: boolean;
 }
 
+/** Server-calculated components of a Bolivia team's round score. Penalties are positive values. */
+export interface BoliviaScoreBreakdown {
+  cardPoints: number;
+  naturalCanastaBonus: number;
+  mixedCanastaBonus: number;
+  escaleraBonus: number;
+  boliviaBonus: number;
+  red3Bonus: number;
+  red3Penalty: number;
+  goOutBonus: number;
+  handPenalty: number;
+}
+
 /** Full Bolivia game state returned from the API. */
 export interface BoliviaResponse extends BaseGameResponse {
+  /** Server-calculated minimum for the human player’s initial meld. */
+  minMeld: number;
   players: BoliviaPlayerData[];
   teamScores: number[];
   phase: number;

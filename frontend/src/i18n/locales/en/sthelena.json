@@ -33,7 +33,8 @@
   "redeal": "Redeal",
   "redealUnavailable": "No redeals remaining",
   "redealsLeft": "Redeals left: {{count}}",
-  "selectionMoves": "Selected card has {{count}} legal destination(s)",
+  "selectionMovesWithTargets_one": "Selected card has {{count}} legal destination: {{destinations}}",
+  "selectionMovesWithTargets_other": "Selected card has {{count}} legal destinations: {{destinations}}",
   "selectionNoMoves": "Selected card has no legal destination",
   "stalemate": "Stalemate",
   "stalemateAlert": "Stalemate. Undo {{count}} time(s) to escape.",
@@ -54,5 +55,12 @@
     "bottom": "Bottom four - reach the ace row only"
   },
   "restrictionsActive": "First deal: top 4 reach the king row, bottom 4 the ace row, sides either",
-  "restrictionsLifted": "The destination restriction has been lifted"
+  "restrictionsLifted": "The destination restriction has been lifted",
+  "listSeparator": ", ",
+  "foundationDestination": "{{suit}} {{direction}} foundation",
+  "tableauDestination": "tableau column {{col}}",
+  "destinationDirection": {
+    "asc": "ascending",
+    "desc": "descending"
+  }
 }

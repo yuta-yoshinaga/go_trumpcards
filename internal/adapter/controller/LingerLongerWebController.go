@@ -48,6 +48,7 @@ type LingerLongerWebOutput struct {
 	// StockSize は山札の残り。**0 になると誰も補充できず、脱落が一気に進みます。**
 	StockSize        int                   `json:"stockSize"`
 	CurrentTrick     []*WebOutputTrickCard `json:"currentTrick"`
+	LastTrick        []*WebOutputTrickCard `json:"lastTrick"`
 	CurrentPlayerIdx int                   `json:"currentPlayerIdx"`
 	LeadPlayerIdx    int                   `json:"leadPlayerIdx"`
 	TrickNumber      int                   `json:"trickNumber"`
@@ -97,6 +98,7 @@ func newLingerLongerDefaultOutput(msg string) *LingerLongerWebOutput {
 		Players:       make([]*LingerLongerWebOutputPlayer, 0),
 		ValidPlays:    make([]int, 0),
 		CurrentTrick:  make([]*WebOutputTrickCard, 0),
+		LastTrick:     make([]*WebOutputTrickCard, 0),
 		LastDrawIdx:   -1,
 		WinnerIdx:     -1,
 		WebOutputBase: WebOutputBase{Message: msg},

@@ -70,14 +70,7 @@ func (mi *MinibridgeInteractor) Contract(level, suit int) string {
 
 // Play カードをプレイ
 func (mi *MinibridgeInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(mi.Game, mi.sp); blocked {
-		return out
-	}
-	if err := mi.Game.PlayerPlay(cardIndex); err != nil {
-		return mi.sp.Output(mi.Game, err)
-	}
-	mi.advance()
-	return mi.sp.Output(mi.Game, nil)
+	return humanAction(mi.Game, mi.sp, func() error { return mi.Game.PlayerPlay(cardIndex) }, mi.advance)
 }
 
 // NextRound 次のディールへ進む

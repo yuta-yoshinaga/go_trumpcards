@@ -17,7 +17,7 @@ import (
 func mustSheepsheadOutputJSON(msg string) string {
 	out := &controller.SheepsheadWebOutput{
 		Players:            []*controller.SheepsheadWebOutputPlayer{},
-		CurrentTrick:       []*controller.WebOutputTrickCard{},
+		CurrentTrick:       []*controller.SheepsheadWebOutputTrickCard{},
 		Buried:             []*controller.WebOutputCard{},
 		CallableSuits:      []int{},
 		PlayableIndices:    []int{},
@@ -26,6 +26,7 @@ func mustSheepsheadOutputJSON(msg string) string {
 		PickerIdx:          -1,
 		PartnerIdx:         -1,
 		WinnerIdx:          -1,
+		LastTrickWinner:    -1,
 		WebOutputBase:      controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

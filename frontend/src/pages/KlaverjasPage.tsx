@@ -271,6 +271,14 @@ function KlaverjasPageContent() {
                   label={t('currentTrick')}
                   dataTutorial="klaverjas-trick-display"
                 />
+                {isPlayPhase && state.currentTrick.length > 0 && (
+                  <div
+                    className="my-2 text-center text-sm text-ds-text-primary"
+                    data-testid="klaverjas-current-trick-points"
+                  >
+                    {t('currentTrickPoints', { points: state.currentTrickPoints })}
+                  </div>
+                )}
                 {/* Show the resolved trick result until the next trick starts. */}
                 {showLastTrickResult && state.lastTrickTeam >= 0 && (
                   <div
@@ -292,8 +300,20 @@ function KlaverjasPageContent() {
               <div data-tutorial="klaverjas-info">
                 {/* Team match scores */}
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                  <div>{t('teamScore', { team: t('team.a'), score: state.teamScores[0] ?? 0 })}</div>
-                  <div>{t('teamScore', { team: t('team.b'), score: state.teamScores[1] ?? 0 })}</div>
+                  <div>
+                    {t('teamScoreWithTarget', {
+                      team: t('team.a'),
+                      score: state.teamScores[0],
+                      target: state.config.targetPoints,
+                    })}
+                  </div>
+                  <div>
+                    {t('teamScoreWithTarget', {
+                      team: t('team.b'),
+                      score: state.teamScores[1],
+                      target: state.config.targetPoints,
+                    })}
+                  </div>
                   <div className="mt-1">
                     {t('yourTeam')}: {humanTeam === 0 ? t('team.a') : t('team.b')}
                   </div>

@@ -211,6 +211,9 @@ function DoubleAttackPageContent() {
                     </div>
                     <div className="text-ds-text-primary text-center text-sm mt-1">
                       {state.hands.length > 1 && `${t('label.hand', { idx: i + 1 })} · `}
+                      {isPlayPhase && state.hands.length > 1 && i === state.activeHand && (
+                        <span>{t('label.activeHand')} · </span>
+                      )}
                       {h.score} {t('label.score')} · {t('label.bet')} {h.bet}
                       {isResultPhase && ` · ${t(`result.${resultKeyOf(h.result)}`)}`}
                     </div>
@@ -221,7 +224,7 @@ function DoubleAttackPageContent() {
 
             {isResultPhase && (
               <div className="text-center mb-2" data-testid="da-result">
-                <div className={`text-sm font-medium ${net >= 0 ? 'text-ds-success' : 'text-ds-error'}`}>
+                <div className={`text-sm font-medium ${net >= 0 ? 'text-ds-success' : 'text-ds-error-text'}`}>
                   {t('label.net')}: {net}
                 </div>
                 {/* **賭けたのに結果が見えない状態をなくす** (#5776)。合計収支だけ
@@ -266,6 +269,19 @@ function DoubleAttackPageContent() {
                     onChange={setBustIt}
                     max={Math.max(0, state.chips - ante)}
                   />
+                  <div className="text-ds-text-primary text-sm tabular-nums" data-testid="da-bustit-payouts">
+                    <p className="font-medium">{t('bustItPayoutTitle')}</p>
+                    <ul>
+                      {state.bustItPayouts.map(({ cards, multiplier }, index) => (
+                        <li key={cards}>
+                          {t(index === state.bustItPayouts.length - 1 ? 'bustItPayoutRowOrMore' : 'bustItPayoutRow', {
+                            cards,
+                            payout: `${multiplier}:1`,
+                          })}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                   <button type="button" className={btnPrimary} onClick={handleDeal} disabled={loading}>
                     {t('button.deal')}
                   </button>

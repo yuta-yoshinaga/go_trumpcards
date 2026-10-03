@@ -1,5 +1,5 @@
 import type { sevensApi } from '../../../api/gameApi';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import { STANDARD_SUIT_MAP as SUIT_MAP } from '../suitMaps';
 import type { CliParseResult } from '../types';
 
@@ -32,11 +32,8 @@ export function parseSevensCommand(input: string): CliParseResult<SevensArgs> {
     case 'r':
     case 'reset':
       return { args: ['reset'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

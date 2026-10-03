@@ -33,9 +33,11 @@ import {
   TrenteEtQuaranteWinningRow,
 } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseTrenteEtQuaranteCommand, TRENTEETQUARANTE_HELP } from '../utils/cli/commands/trenteetquaranteCommands';
 import { formatTrenteEtQuaranteState } from '../utils/cli/formatters/trenteetquaranteFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { buildTrenteEtQuaranteRow } from '../utils/trenteEtQuaranteRow';
 
 const TEQ_TUTORIAL_STEPS: TutorialStep[] = [
@@ -171,6 +173,22 @@ function TrenteEtQuarantePageContent() {
               messageParams={state.messageParams}
             />
 
+            <section className="mb-3 rounded-lg bg-ds-surface p-3 text-sm" data-testid="teq-session-stats">
+              <h2 className="mb-2 font-semibold">{t('session.title')}</h2>
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-1">
+                <dt>{t('session.net')}</dt>
+                <dd>{formatSignedDelta(state.session.net)}</dd>
+                <dt>{t('session.wins')}</dt>
+                <dd>{state.session.wins}</dd>
+                <dt>{t('session.losses')}</dt>
+                <dd>{state.session.losses}</dd>
+                <dt>{t('session.draws')}</dt>
+                <dd>{state.session.draws}</dd>
+                <dt>{t('session.refaits')}</dt>
+                <dd>{state.session.refaits}</dd>
+              </dl>
+            </section>
+
             <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mb-2 cursor-pointer min-h-[44px]">
               <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
               {tc('hint.toggle', { ns: 'tutorial' })}
@@ -192,6 +210,7 @@ function TrenteEtQuarantePageContent() {
                   cards={state.noirRow}
                   cardWidth={cardWidth}
                   crossingLabel={t('label.crossing')}
+                  crossingAriaLabel={(total, card) => t('label.crossingAria', { total, card: cardAlt(card) })}
                   highlight={isResultPhase && !state.refait && state.winningRow === TrenteEtQuaranteWinningRow.NOIR}
                 />
                 <CardRow
@@ -200,6 +219,7 @@ function TrenteEtQuarantePageContent() {
                   cards={state.rougeRow}
                   cardWidth={cardWidth}
                   crossingLabel={t('label.crossing')}
+                  crossingAriaLabel={(total, card) => t('label.crossingAria', { total, card: cardAlt(card) })}
                   highlight={isResultPhase && !state.refait && state.winningRow === TrenteEtQuaranteWinningRow.ROUGE}
                 />
               </div>
@@ -392,6 +412,7 @@ function CardRow({
   cards,
   cardWidth,
   crossingLabel,
+  crossingAriaLabel,
   highlight,
 }: {
   testId: string;
@@ -399,6 +420,7 @@ function CardRow({
   cards: Card[];
   cardWidth: number;
   crossingLabel: string;
+  crossingAriaLabel: (total: number, card: Card) => string;
   highlight: boolean;
 }) {
   const steps = buildTrenteEtQuaranteRow(cards);
@@ -419,7 +441,13 @@ function CardRow({
             >
               {step.cumulative}
               {step.crossing && (
-                <span className="ml-0.5" data-testid={`teq-crossing-${testId}`} title={crossingLabel}>
+                <span
+                  className="ml-0.5"
+                  data-testid={`teq-crossing-${testId}`}
+                  role="img"
+                  title={crossingLabel}
+                  aria-label={crossingAriaLabel(step.cumulative, step.card)}
+                >
                   ▲
                 </span>
               )}

@@ -33,6 +33,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseSchafkopfCommand, SCHAFKOPF_HELP } from '../utils/cli/commands/schafkopfCommands';
 import { formatSchafkopfState } from '../utils/cli/formatters/schafkopfFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -274,6 +275,15 @@ function SchafkopfPageContent() {
               <span>{t('contractLabel', { contract: contractLabel })}</span>
             </div>
 
+            {(isPlayPhase || isTrickEnd) && (
+              <div className="mb-2 text-center text-sm text-ds-text-muted" data-testid="schafkopf-round-points">
+                {t(state.roundPickerPointsTeamTotal ? 'roundProgress.pickerPoints' : 'roundProgress.pickerOnlyPoints', {
+                  points: state.roundPickerPoints,
+                  target: state.pickerTargetPoints,
+                })}
+              </div>
+            )}
+
             <div className={lgTwoColGrid}>
               {/* Left: play area */}
               <div>
@@ -338,6 +348,16 @@ function SchafkopfPageContent() {
                     <div>{t('roundResult.pickerPoints', { points: state.roundPickerPoints })}</div>
                     <div>{t('roundResult.multiplier', { multiplier: state.roundMultiplier })}</div>
                     <div>{state.roundPickerWon ? t('roundResult.pickerWon') : t('roundResult.pickerLost')}</div>
+                    <div className="mt-1">{t('roundResult.chipChanges')}</div>
+                    {state.players.map((p) => {
+                      const delta = p.chipDelta;
+                      const formatted = formatSignedDelta(delta);
+                      return (
+                        <div key={p.id}>
+                          {playerName(p.id, p.isHuman)}: {formatted}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

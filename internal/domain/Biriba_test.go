@@ -17,10 +17,10 @@ import (
 
 func newTestBiriba() *domain.Biriba {
 	players := []*domain.BiribaPlayer{
-		domain.NewBiribaPlayer(true),
-		domain.NewBiribaPlayer(false),
+		domain.NewCanastaPlayer(true),
+		domain.NewCanastaPlayer(false),
 	}
-	return domain.NewBiriba(domain.NewTrumpCardsWithDecks(2, 4), players, domain.DefaultBiribaConfig())
+	return domain.NewCanasta(domain.NewTrumpCardsWithDecks(2, 4), players, domain.DefaultBiribaConfig())
 }
 
 func TestNewDefaultBiriba(t *testing.T) {
@@ -322,7 +322,7 @@ func TestBiriba_JSON_RoundTrip_PreservesPozzetti(t *testing.T) {
 }
 
 func TestBiribaPlayer_TookPozzetto_JSON(t *testing.T) {
-	p := domain.NewBiribaPlayer(true)
+	p := domain.NewCanastaPlayer(true)
 	p.SetTookPozzetto(true)
 
 	data, err := json.Marshal(p)
@@ -346,7 +346,7 @@ func TestBiribaMeld_IsBiriba(t *testing.T) {
 }
 
 func TestBiribaPlayer_HasBiriba(t *testing.T) {
-	player := domain.NewBiribaPlayer(true)
+	player := domain.NewCanastaPlayer(true)
 	assert.False(t, player.HasBiriba())
 
 	cards := make([]*domain.Card, 7)

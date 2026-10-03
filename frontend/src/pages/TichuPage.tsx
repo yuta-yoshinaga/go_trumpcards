@@ -33,7 +33,7 @@ import { playerName } from '../utils/playerUtils';
 import { resolveMessageCode } from '../utils/resolveMessageCode';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { tichuBombIndices } from '../utils/tichuBomb';
-import { classifyTichuCombo } from '../utils/tichuCombo';
+import { classifyTichuCombo, compareTichuCombos } from '../utils/tichuCombo';
 
 type ApiArgs = {
   command: string;
@@ -164,15 +164,21 @@ function TichuPageContent() {
 
   // Additive combo-type preview for the current selection (warn-only; the backend
   // remains the source of truth and rejects any truly-illegal play — see #3392).
-  const selectedCombo = useMemo(() => {
+  const selectedComboCards = useMemo(() => {
     const cards = humanPlayer?.cards ?? [];
-    const picked = Array.from(selectedCards)
+    return Array.from(selectedCards)
       .sort((a, b) => a - b)
       .map((i) => cards[i])
       .filter((c): c is NonNullable<typeof c> => c != null);
-    if (picked.length === 0) return null;
-    return classifyTichuCombo(picked);
   }, [humanPlayer?.cards, selectedCards]);
+  const selectedCombo = useMemo(
+    () => (selectedComboCards.length > 0 ? classifyTichuCombo(selectedComboCards) : null),
+    [selectedComboCards],
+  );
+  const comparison = useMemo(
+    () => (state?.tableCards.length ? compareTichuCombos(selectedComboCards, state.tableCards) : null),
+    [selectedComboCards, state?.tableCards],
+  );
 
   const handleDeclare = useCallback(
     (value: number) => {
@@ -316,6 +322,14 @@ function TichuPageContent() {
                   <AnimatedCard key={`table-${c.design}-${c.value}`} card={c} width={cardWidth * 0.8} />
                 ))}
                 <span className="text-ds-text-primary text-xs ml-2">{state.tableCombo}</span>
+                {state.players[state.lastPlayIdx] && (
+                  <span data-testid="tichu-table-owner" className="text-ds-text-muted text-xs ml-2">
+                    {t('label.playedBy', {
+                      player: playerName(state.players[state.lastPlayIdx].id, state.players[state.lastPlayIdx].isHuman),
+                      team: state.players[state.lastPlayIdx].team,
+                    })}
+                  </span>
+                )}
               </>
             ) : (
               <span className="text-ds-text-muted text-sm">{t('label.table')}: ---</span>
@@ -389,6 +403,11 @@ function TichuPageContent() {
                       {selectedCombo.type === 'dog' && (
                         <span className="ml-1 text-ds-text-muted" data-testid="tichu-dog-note">
                           ({t('dogLeadNote')})
+                        </span>
+                      )}
+                      {comparison && comparison !== 'unknown' && (
+                        <span className="ml-1 text-ds-text-muted" data-testid="tichu-combo-comparison">
+                          {t(`comparison.${comparison}`)}
                         </span>
                       )}
                     </span>

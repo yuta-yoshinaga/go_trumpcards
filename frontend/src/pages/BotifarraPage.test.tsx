@@ -6,6 +6,7 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { BotifarraResponse, Card } from '../types/card';
 import { BOTIFARRA_NO_TRUMP } from '../types/games/botifarra';
 import { BotifarraPhase } from '../types/phases';
+import { cardAlt } from '../utils/cardAlt';
 import { BotifarraPage } from './BotifarraPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -85,6 +86,13 @@ beforeEach(() => {
 });
 
 describe('BotifarraPage', () => {
+  it('uses localized card names for hand buttons', async () => {
+    mockApi.mockResolvedValue(playState);
+    renderWithProviders(<BotifarraPage />);
+    const handButtons = await screen.findByTestId('botifarra-hand').then((el) => el.querySelectorAll('button'));
+    expect(handButtons[0]).toHaveAttribute('aria-label', cardAlt({ design: 'SPADE', value: 1 }));
+  });
+
   it('resets on mount', async () => {
     mockApi.mockResolvedValue(declareState);
     renderWithProviders(<BotifarraPage />);
@@ -188,6 +196,7 @@ describe('BotifarraPage', () => {
     const score = await screen.findByTestId('botifarra-score');
     expect(score).toHaveTextContent('あなた 3');
     expect(score).toHaveTextContent('相手 8');
+    expect(score).toHaveTextContent('上がり点: 101');
     expect(screen.getByTestId('botifarra-round-points')).toHaveTextContent('あなた 40');
     expect(screen.getByTestId('botifarra-round-points')).toHaveTextContent('相手 32');
   });

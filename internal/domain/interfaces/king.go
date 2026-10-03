@@ -51,6 +51,8 @@ type KingGame interface {
 	GetUsedContracts() [domain.KingContractCnt]bool
 	// GetLastDealDetail 直前ディールの得点内訳を取得する
 	GetLastDealDetail() *domain.KingDealDetail
+	// GetDealHistory 完了した全ディールの得点内訳を取得する
+	GetDealHistory() []*domain.KingDealDetail
 	// GetRoundWinners ゲーム終了時の最高得点プレイヤーを取得する
 	GetRoundWinners() []int
 	// GetPlayerCnt プレイヤー数を取得する

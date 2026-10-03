@@ -31,6 +31,9 @@ func TestSevenTwentySevenWebPresenter_Output_BaseState(t *testing.T) {
 	assert.Equal(t, -1, out.LowWinner, "ラウンド途中で勝者が決まっている")
 	assert.Equal(t, -1, out.HighWinner)
 	assert.Len(t, out.Players, g.GetPlayerCnt())
+	for i, pl := range out.Players {
+		assert.Equal(t, g.GetRoundNetChange(i), pl.NetChange)
+	}
 
 	// **自分の手札と得点だけが見える。** 相手の得点は手札そのものなので、
 	// 出すと配りが丸見えになる。

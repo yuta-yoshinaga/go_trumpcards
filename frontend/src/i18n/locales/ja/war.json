@@ -18,8 +18,11 @@
     "lastBurialCount": "（{{count}}枚伏せました）",
     "rounds": "ラウンド",
     "roundProgress": "ラウンド: {{played}} / {{max}}（上限で保有枚数の多い方が勝ち）",
+    "roundLimitWarningAnnouncement": "上限ラウンドに近づいています。現在{{played}}ラウンド、上限{{max}}ラウンドです。",
     "maxRounds": "最大ラウンド"
   },
+  "listSeparator": "、",
+  "cardsRevealed": "あなたのカードは{{playerCard}}{{separator}}CPUのカードは{{cpuCard}}",
   "settings": {
     "maxRounds": "最大ラウンド数",
     "maxRoundsHelp": "戦争（引き分け）の連鎖で理論上ゲームが無限に続くのを防ぐための上限です。どちらかの手札が尽きるか、最大ラウンドに到達するとゲーム終了です。",

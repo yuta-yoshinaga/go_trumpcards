@@ -194,7 +194,9 @@ describe('FortyAndEightPage', () => {
     mockExec.mockResolvedValue(withFoundationState);
     renderWithProviders(<FortyAndEightPage />);
     // idx 0 = ♠ foundation pile 1 with 1 card; idx 1 = the still-empty ♠ pile 2.
-    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 組札 1 1枚' })).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '♠ 組札 1 1枚、トップ: ♠ A · あと12枚' })).toBeInTheDocument(),
+    );
     expect(screen.getByRole('button', { name: '空の組札 ♠ 2' })).toBeInTheDocument();
   });
 
@@ -466,9 +468,32 @@ describe('FortyAndEightPage', () => {
     await waitFor(() => expect(container.querySelectorAll('[data-eligible-foundation="true"]')).toHaveLength(1));
 
     const highlighted = container.querySelector('[data-eligible-foundation="true"]') as HTMLElement;
-    expect(highlighted.getAttribute('aria-label')).toBe('♠ 組札 1 1枚、ここに置けます');
+    expect(highlighted.getAttribute('aria-label')).toBe('♠ 組札 1 1枚、トップ: ♠ A · あと12枚、ここに置けます');
     // 置けない 7 つには付かない ── リングと読み上げが同じ集合を指す。
     expect(screen.getAllByLabelText(/ここに置けます/)).toHaveLength(1);
+  });
+
+  it('shows each foundation top rank, cards remaining, and a named completed state', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [
+        [card('SPADE', 1)],
+        [card('SPADE', 13)],
+        [card('CLOVER', 2)],
+        [card('CLOVER', 3)],
+        [card('HEART', 4)],
+        [card('HEART', 5)],
+        [card('DIAMOND', 6)],
+        Array.from({ length: 13 }, (_, index) => card('DIAMOND', index + 1)),
+      ],
+    });
+    const { container } = renderWithProviders(<FortyAndEightPage />);
+    await waitFor(() => expect(container.querySelectorAll('[data-tutorial="f8-foundation"] button')).toHaveLength(8));
+    expect(screen.getByRole('button', { name: '♠ 組札 1 1枚、トップ: ♠ A · あと12枚' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 組札 2 1枚、トップ: ♠ K · あと12枚' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ 組札 2 13枚、トップ: ♦ K · 完成' })).toBeInTheDocument();
+    expect(container.querySelector('[data-tutorial="f8-foundation"]')).toHaveTextContent('トップ: ♠ A');
+    expect(container.querySelector('[data-tutorial="f8-foundation"]')).toHaveTextContent('完成');
   });
 
   it('labels the empty foundations an ace can start', async () => {
@@ -519,9 +544,11 @@ describe('FortyAndEightPage', () => {
     const spadeJackButton = screen.getByAltText('♠ J').closest('button') as HTMLButtonElement;
 
     expect(spadeKingButton).toHaveAttribute('data-eligible-tableau', 'true');
+    expect(spadeKingButton).toHaveAccessibleName(/選択したカードの移動先候補/);
     expect(spadeKingButton.className).toContain('ring-ds-info');
 
     expect(cloverSevenButton).not.toHaveAttribute('data-eligible-tableau');
+    expect(cloverSevenButton).not.toHaveAccessibleName(/移動先候補/);
     expect(cloverSevenButton.className).not.toContain('ring-ds-info');
 
     expect(heartQueenButton).not.toHaveAttribute('data-eligible-tableau');

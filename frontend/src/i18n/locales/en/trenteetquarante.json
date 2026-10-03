@@ -11,7 +11,16 @@
     "rougeRow": "Rouge",
     "total": "Total",
     "winner": "Winner",
-    "crossing": "Reaches 31"
+    "crossing": "Reaches 31",
+    "crossingAria": "Cumulative {{total}}, reaches 31 on {{card}}"
+  },
+  "session": {
+    "title": "Session summary",
+    "net": "Net change",
+    "wins": "Wins",
+    "losses": "Losses",
+    "draws": "Draws",
+    "refaits": "31 tie (Refait)"
   },
   "betType": {
     "noir": "Noir",

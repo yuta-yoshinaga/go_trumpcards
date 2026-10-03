@@ -5,7 +5,7 @@ test.describe('Flower Garden E2E', () => {
   test('navigates, resets, and triggers basic actions', async ({ page }) => {
     await navigateTo(page, '/flowergarden');
 
-    await expect(page.getByText(/手数/)).toBeVisible();
+    await expect(page.getByTestId('phase-indicator').getByText(/手数/)).toBeVisible();
 
     const hintButton = page.getByRole('button', { name: 'ヒント' });
     await expect(hintButton).toBeVisible();
@@ -17,7 +17,7 @@ test.describe('Flower Garden E2E', () => {
     await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
-    await expect(page.getByText(/手数/)).toBeVisible();
+    await expect(page.getByTestId('phase-indicator').getByText(/手数/)).toBeVisible();
   });
 
   test('give up ends the game', async ({ page }) => {

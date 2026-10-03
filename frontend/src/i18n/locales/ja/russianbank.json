@@ -45,5 +45,5 @@
     "russianbankToFoundation": "この札を台札へ上げられます",
     "russianbankToTableau": "この札を別の列へ移せます"
   },
-  "stopAvailable": "CPU が強制手を取りこぼしています。「ストップ」で咎められます"
+  "stopAvailable": "CPU が強制手を取りこぼしています。ストップするとあなたの stop が 1 増え、両者のリザーブ残数が同じで停滞した場合の勝敗判定に使われます。"
 }

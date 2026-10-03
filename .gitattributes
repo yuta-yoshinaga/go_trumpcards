@@ -1,0 +1,6 @@
+# Normalise every text file to LF in the repository and the working tree.
+# api/openapi.yaml, Dockerfile, .dockerignore and .repomixignore were CRLF by
+# accident (no attributes when they were first committed); editors and
+# delegated tools kept breaking their endings. Binary files are left alone
+# by text=auto.
+* text=auto eol=lf

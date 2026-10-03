@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { lingerlongerApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -61,6 +61,8 @@ function LingerLongerPageContent() {
     retry,
   } = useGameApi<LingerLongerResponse, Parameters<typeof lingerlongerApi.exec>>(lingerlongerApi.exec);
   const { cardWidth } = useCardDimensions();
+  const previousTrickState = useRef<LingerLongerResponse | null>(null);
+  const [trickAnnouncement, setTrickAnnouncement] = useState('');
   const { hint, hintEnabled, setHintEnabled } = useGameHint('lingerlonger', state);
   const [playerCnt, setPlayerCnt] = useState(4);
 
@@ -79,6 +81,32 @@ function LingerLongerPageContent() {
   useEffect(() => {
     void dispatch('reset');
   }, [dispatch]);
+
+  useEffect(() => {
+    if (!state) return;
+    const previous = previousTrickState.current;
+    previousTrickState.current = state;
+    if (!previous || state.trickNumber < previous.trickNumber) return;
+
+    const trickAdvancedBy = state.trickNumber - previous.trickNumber;
+    const newCards =
+      trickAdvancedBy === 0 ? state.currentTrick.slice(previous.currentTrick.length) : state.currentTrick;
+    const toAnnouncement = (plays: typeof state.currentTrick) =>
+      plays.map(({ playerIdx, card }) => {
+        const player = state.players[playerIdx];
+        const name = player?.isHuman ? t('header.you') : t('header.cpu', { idx: String(player?.id ?? playerIdx) });
+        return t('announcement.cardPlayed', { name, card: cardAlt(card) });
+      });
+    const announcements =
+      trickAdvancedBy === 1
+        ? [
+            ...toAnnouncement(state.lastTrick.slice(previous.currentTrick.length)),
+            t('announcement.trickResolved'),
+            ...toAnnouncement(newCards),
+          ]
+        : toAnnouncement(newCards);
+    if (announcements.length > 0) setTrickAnnouncement(announcements.join(t('listSeparator')));
+  }, [state, t]);
 
   const handleReset = useCallback(() => {
     hideActionLog();
@@ -184,16 +212,16 @@ function LingerLongerPageContent() {
             )}
 
             {/* **手札の枚数が生死そのもの。** 得点表示は無い。 */}
-            <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="ll-seats">
+            <ul className="flex flex-wrap justify-center gap-2 mb-4 list-none p-0" data-tutorial="ll-seats">
               {state.players.map((p) => (
-                <div
+                <li
                   key={p.id}
                   className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
                   data-testid={`ll-seat-${p.id.toString()}`}
                 >
-                  <span className="text-ds-text-primary">
+                  <h2 className="m-0 inline text-ds-text-primary">
                     {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                  </span>
+                  </h2>
                   {p.eliminatedAt > 0 && (
                     <span className="ml-1 text-ds-accent">
                       {t('header.eliminated', { rank: String(p.eliminatedAt) })}
@@ -206,9 +234,9 @@ function LingerLongerPageContent() {
                   <span className="text-ds-accent">{t('header.cards', { n: String(p.cardCount) })}</span>
                   {' / '}
                   {t('header.tricks', { n: String(p.tricksWon) })}
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
 
             <div data-tutorial="ll-trick">
               <TrickDisplay
@@ -243,6 +271,7 @@ function LingerLongerPageContent() {
               </div>
             )}
             <LiveAnnouncement message={isEliminated ? t('result.eliminated') : ''} />
+            <LiveAnnouncement message={trickAnnouncement} testId="ll-trick-announcement" />
 
             {human && human.cards.length > 0 && (
               <div className="mt-4" data-tutorial="ll-hand">

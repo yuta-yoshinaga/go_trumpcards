@@ -15,6 +15,14 @@ export interface BlackJackHand {
   canSplit: boolean;
   surrendered: boolean;
   canSurrender: boolean;
+  /** Settled outcome: 1 win, 0 push, -1 loss; omitted until settlement. */
+  result?: number;
+  /** Settled net chip change after this hand's wager. */
+  netChange?: number;
+  /** Fully qualified Spanish 21 bonus key applied during settlement. */
+  bonusKey?: string;
+  /** Extra chips credited by the bonus beyond a regular win. */
+  bonusAmount?: number;
 }
 
 /** BlackJack player (dealer or human) with chips and cards. */

@@ -54,6 +54,7 @@ type RollingStoneWebOutput struct {
 	LeadSuit         int                   `json:"leadSuit"`
 	ValidPlays       []int                 `json:"validPlays"`
 	CurrentTrick     []*WebOutputTrickCard `json:"currentTrick"`
+	LastTrick        []*WebOutputTrickCard `json:"lastTrick"`
 	CurrentPlayerIdx int                   `json:"currentPlayerIdx"`
 	LeadPlayerIdx    int                   `json:"leadPlayerIdx"`
 	TrickNumber      int                   `json:"trickNumber"`
@@ -103,6 +104,7 @@ func newRollingStoneDefaultOutput(msg string) *RollingStoneWebOutput {
 		Players:       make([]*RollingStoneWebOutputPlayer, 0),
 		ValidPlays:    make([]int, 0),
 		CurrentTrick:  make([]*WebOutputTrickCard, 0),
+		LastTrick:     make([]*WebOutputTrickCard, 0),
 		LastPickupIdx: -1,
 		WinnerIdx:     -1,
 		WebOutputBase: WebOutputBase{Message: msg},

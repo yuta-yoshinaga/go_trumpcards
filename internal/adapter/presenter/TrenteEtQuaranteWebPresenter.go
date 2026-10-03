@@ -55,6 +55,10 @@ func (p *TrenteEtQuaranteWebPresenter) buildBase(g interfaces.TrenteEtQuaranteGa
 	resObj.Payout = g.GetPayout()
 	resObj.RemainingDeck = g.GetRemainingDeck()
 	resObj.GameEndFlag = g.GetGameEndFlag()
+	resObj.Session = controller.TrenteEtQuaranteSessionOutput{
+		StartingChips: g.GetStartingChips(), Net: g.GetNet(), Wins: g.GetWins(),
+		Losses: g.GetLosses(), Draws: g.GetDraws(), Refaits: g.GetRefaits(),
+	}
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.TrenteEtQuaranteWebConfigOutput{

@@ -18,6 +18,7 @@ export interface ThreeCardResponse extends BaseGameResponse {
   anteBonusPayout: number;
   pairPlusPayout: number;
   totalPayout: number;
+  netChange: number;
   dealerQualified: boolean;
   playerHandRank: number;
   dealerHandRank: number;

@@ -87,6 +87,49 @@ describe('CostlyColoursPage', () => {
     expect(await screen.findByTestId('costlycolours-total')).toHaveTextContent('24');
   });
 
+  it('announces recent plays, including scoring milestones, in its own permanent live region', async () => {
+    const card = { design: 'SPADE', value: 7 } as const;
+    mockExec.mockResolvedValue(
+      makeCostlyColoursState({
+        phase: 'play',
+        recentPlays: [
+          { seat: 0, card, total: 31, points: 2 },
+          { seat: 1, card: { design: 'HEART', value: 4 }, total: 9, points: 0 },
+        ],
+      }),
+    );
+    renderWithProviders(<CostlyColoursPage />);
+    const live = await screen.findByTestId('costlycolours-play-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveTextContent('あなた: ♠ 7、累計 31、2 点獲得（31 到達）');
+    expect(live).toHaveTextContent('CPU 1: ♥ 4、累計 9');
+    expect(live).toHaveClass('sr-only');
+    const recent = screen.getByTestId('costlycolours-recent-plays');
+    expect(recent).toHaveTextContent('あなた: ♠ 7、累計 31、2 点獲得（31 到達）');
+    expect(recent).toHaveTextContent('CPU 1: ♥ 4、累計 9');
+    expect(screen.getByTestId('costlycolours-hint-live')).toBeInTheDocument();
+  });
+
+  it('announces a 15 point and an ordinary count without adding points', async () => {
+    mockExec.mockResolvedValue(
+      makeCostlyColoursState({
+        phase: 'play',
+        recentPlays: [
+          { seat: 0, card: { design: 'SPADE', value: 7 }, total: 15, points: 2 },
+          { seat: 1, card: { design: 'HEART', value: 10 }, total: 25, points: 2 },
+          { seat: 0, card: { design: 'HEART', value: 4 }, total: 19, points: 0 },
+        ],
+      }),
+    );
+    renderWithProviders(<CostlyColoursPage />);
+    const live = await screen.findByTestId('costlycolours-play-live');
+    expect(live).toHaveTextContent('累計 15、2 点獲得（15 到達）');
+    expect(live).toHaveTextContent('累計 25、2 点獲得（25 到達）');
+    expect(live).toHaveTextContent('累計 19');
+    expect(live).not.toHaveTextContent('累計 19、');
+  });
+
   // **応じる／断るは別のボタン。** 断ると相手に 1 点入るので、片方を既定にしない。
   it('offers both sides of the exchange, and sends each explicitly', async () => {
     renderWithProviders(<CostlyColoursPage />);

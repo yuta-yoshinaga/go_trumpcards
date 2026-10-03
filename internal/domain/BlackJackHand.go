@@ -19,6 +19,10 @@ type BlackJackHand struct {
 	busted      bool
 	surrendered bool
 	fromSplit   bool
+	result      GameResult
+	netChange   int
+	bonusKey    string
+	bonusAmount int
 }
 
 // NewBlackJackHand コンストラクタ
@@ -179,6 +183,30 @@ func (h *BlackJackHand) SetFromSplit(fromSplit bool) {
 	h.fromSplit = fromSplit
 }
 
+// GetResult returns the settled outcome for this hand (zero while unsettled).
+func (h *BlackJackHand) GetResult() GameResult { return h.result }
+
+// SetResult stores the settled outcome for this hand.
+func (h *BlackJackHand) SetResult(result GameResult) { h.result = result }
+
+// GetNetChange returns the hand's payout minus its total wager.
+func (h *BlackJackHand) GetNetChange() int { return h.netChange }
+
+// SetNetChange stores the hand's payout minus its total wager.
+func (h *BlackJackHand) SetNetChange(netChange int) { h.netChange = netChange }
+
+// GetBonusKey returns the settled variant bonus key for this hand, if any.
+func (h *BlackJackHand) GetBonusKey() string { return h.bonusKey }
+
+// SetBonusKey stores the settled variant bonus key for this hand.
+func (h *BlackJackHand) SetBonusKey(key string) { h.bonusKey = key }
+
+// GetBonusAmount returns the extra amount credited by this hand's bonus.
+func (h *BlackJackHand) GetBonusAmount() int { return h.bonusAmount }
+
+// SetBonusAmount stores the extra amount credited by this hand's bonus.
+func (h *BlackJackHand) SetBonusAmount(amount int) { h.bonusAmount = amount }
+
 // CanSurrender サレンダー可能か（2枚でスタンド/バースト/サレンダー前）
 func (h *BlackJackHand) CanSurrender() bool {
 	return len(h.cards) == 2 && !h.stood && !h.busted && !h.surrendered
@@ -198,17 +226,25 @@ func (h *BlackJackHand) Reset() {
 	h.busted = false
 	h.surrendered = false
 	h.fromSplit = false
+	h.result = GameResultDraw
+	h.netChange = 0
+	h.bonusKey = ""
+	h.bonusAmount = 0
 }
 
 // blackJackHandJSON is the JSON wire format for BlackJackHand.
 type blackJackHandJSON struct {
-	Cards       []*Card `json:"c"`
-	Bet         int     `json:"b"`
-	Stood       bool    `json:"st"`
-	Doubled     bool    `json:"db"`
-	Busted      bool    `json:"bu"`
-	Surrendered bool    `json:"sr"`
-	FromSplit   bool    `json:"fs"`
+	Cards       []*Card    `json:"c"`
+	Bet         int        `json:"b"`
+	Stood       bool       `json:"st"`
+	Doubled     bool       `json:"db"`
+	Busted      bool       `json:"bu"`
+	Surrendered bool       `json:"sr"`
+	FromSplit   bool       `json:"fs"`
+	Result      GameResult `json:"r,omitempty"`
+	NetChange   int        `json:"nc,omitempty"`
+	BonusKey    string     `json:"bk,omitempty"`
+	BonusAmount int        `json:"ba,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -221,6 +257,10 @@ func (h *BlackJackHand) MarshalJSON() ([]byte, error) {
 		Busted:      h.busted,
 		Surrendered: h.surrendered,
 		FromSplit:   h.fromSplit,
+		Result:      h.result,
+		NetChange:   h.netChange,
+		BonusKey:    h.bonusKey,
+		BonusAmount: h.bonusAmount,
 	})
 }
 
@@ -240,5 +280,9 @@ func (h *BlackJackHand) UnmarshalJSON(data []byte) error {
 	h.busted = j.Busted
 	h.surrendered = j.Surrendered
 	h.fromSplit = j.FromSplit
+	h.result = j.Result
+	h.netChange = j.NetChange
+	h.bonusKey = j.BonusKey
+	h.bonusAmount = j.BonusAmount
 	return nil
 }

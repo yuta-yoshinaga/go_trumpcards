@@ -33,6 +33,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { CHEMINDEFER_CLI_HELP, parseChemindeFerCommand } from '../utils/cli/commands/chemindeferCommands';
 import { formatChemindeFerState } from '../utils/cli/formatters/chemindeferFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const CDF_TUTORIAL_STEPS: TutorialStep[] = [
@@ -97,6 +98,10 @@ function ChemindeFerPageContent() {
   const canPunterDecide = isMyTurn && phase === ChemindeFerPhase.PUNTER_DRAW && !!state?.punterMayChoose;
   const canBankerDecide = isMyTurn && phase === ChemindeFerPhase.BANKER_DRAW;
   const isRoundEnd = phase === ChemindeFerPhase.ROUND_END;
+  const betsAreComplete =
+    phase === ChemindeFerPhase.PUNTER_DRAW ||
+    phase === ChemindeFerPhase.BANKER_DRAW ||
+    phase === ChemindeFerPhase.ROUND_END;
   const gameOver = !!state?.gameEndFlag;
 
   const handleStake = useCallback(() => execApi('stake', { stake: stakeAmount }), [execApi, stakeAmount]);
@@ -235,13 +240,33 @@ function ChemindeFerPageContent() {
               </div>
             )}
 
+            <section aria-label={t('roundHistory.title')} data-testid="cdf-round-history" className="mb-3">
+              <h2 className="text-ds-text-primary text-sm font-bold">{t('roundHistory.title')}</h2>
+              {state.roundNetHistory.map((round) => (
+                <div key={round.roundNumber} className="rounded border border-ds-border px-2 py-1 text-xs mt-1">
+                  <span className="text-ds-text-primary">{t('roundHistory.round', { n: round.roundNumber })}</span>
+                  <ul className="flex flex-wrap gap-x-3 text-ds-text-muted">
+                    {state.players.map((player) => {
+                      const delta = round.deltas[player.id];
+                      return (
+                        <li key={player.id}>
+                          {player.isHuman ? t('label.you') : t('label.cpu', { idx: player.id })}:{' '}
+                          {formatSignedDelta(delta)}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </section>
+
             {/* **卓の結果と自分の損益は別の情報** (#5774)。banker/punter/tie だけ
                 では、自分の賭けが勝ったのか負けたのかはチップの数字を前後で
                 見比べるしかなかった。 */}
             {resultName && (
               <div
                 className={`text-center text-sm font-medium mb-2 ${
-                  humanNet > 0 ? 'text-ds-success' : humanNet < 0 ? 'text-ds-error' : 'text-ds-text-muted'
+                  humanNet > 0 ? 'text-ds-success' : humanNet < 0 ? 'text-ds-error-text' : 'text-ds-text-muted'
                 }`}
                 data-testid="cdf-net"
               >
@@ -272,6 +297,7 @@ function ChemindeFerPageContent() {
                   <div className="text-ds-text-muted">
                     {t('label.chips')}: {p.chips}
                     {p.bet > 0 && ` (${t('label.bet')}: ${p.bet})`}
+                    {betsAreComplete && !p.isBanker && p.bet === 0 && ` (${t('label.passed')})`}
                   </div>
                 </div>
               ))}

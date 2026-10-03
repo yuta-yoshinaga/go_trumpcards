@@ -93,6 +93,37 @@ beforeEach(() => {
 });
 
 describe('AllFoursPage', () => {
+  it('keeps an unplayable card focusable and describes the follow-suit rule', async () => {
+    mockExec.mockResolvedValue({
+      ...playState,
+      currentTrick: [{ playerIdx: 1, card: { design: 'HEART', value: 7 } }],
+      players: [
+        {
+          ...baseState.players[0],
+          cards: [
+            { design: 'HEART', value: 5 },
+            { design: 'SPADE', value: 6 },
+          ],
+        },
+        baseState.players[1],
+      ],
+      validPlayIndices: [0],
+    });
+    renderWithProviders(<AllFoursPage />);
+
+    const allowed = (await screen.findByAltText('♥ 5')).closest('button') as HTMLButtonElement;
+    const blocked = screen.getByAltText('♠ 6').closest('button') as HTMLButtonElement;
+    expect(allowed).not.toHaveAttribute('aria-disabled');
+    expect(blocked).toHaveAttribute('aria-disabled', 'true');
+    expect(blocked).not.toBeDisabled();
+    expect(document.getElementById(blocked.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
+      'リードスートを持っている場合は、そのスートか切り札を出してください。',
+    );
+
+    fireEvent.click(blocked);
+    expect(screen.getByRole('button', { name: '出す' })).toBeDisabled();
+  });
+
   it('announces an unplayed trick separately from a completed trick', async () => {
     mockExec.mockResolvedValue(playState);
     const { unmount } = renderWithProviders(<AllFoursPage />);
@@ -198,6 +229,38 @@ describe('AllFoursPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '♥5' }));
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, undefined, 0));
+  });
+
+  it('announces which hand card is selected and updates when selection changes', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...playState,
+      players: [
+        {
+          ...playState.players[0],
+          cards: [
+            { design: 'HEART', value: 5 },
+            { design: 'SPADE', value: 3 },
+          ],
+        },
+        playState.players[1],
+      ],
+      validPlayIndices: [0, 1],
+    });
+    renderWithProviders(<AllFoursPage />);
+
+    const firstCard = await screen.findByRole('button', { name: '♥5' });
+    const secondCard = screen.getByRole('button', { name: '♠3' });
+    expect(firstCard).toHaveAttribute('aria-label', '♥5');
+    expect(firstCard).toHaveAttribute('aria-pressed', 'false');
+    expect(secondCard).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(firstCard);
+    expect(firstCard).toHaveAttribute('aria-pressed', 'true');
+    expect(secondCard).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(secondCard);
+    expect(firstCard).toHaveAttribute('aria-pressed', 'false');
+    expect(secondCard).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('reads out the trump suit and turn-up by name', async () => {

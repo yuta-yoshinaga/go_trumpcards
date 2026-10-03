@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { mississippiStudApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -28,6 +28,7 @@ import type { Card } from '../types/card';
 import { isMaskedCard } from '../types/card';
 import { MississippiStudPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { evaluateMississippiStudMadeHand } from '../utils/mississippiStudMadeHand';
 
 const TUTORIAL_STEPS: TutorialStep[] = [
@@ -80,6 +81,8 @@ function MississippiStudPageContent() {
     useGamePageSetup('mississippistud');
 
   const [anteAmount, setAnteAmount] = useState(100);
+  const previousChips = useRef<number | null>(null);
+  const [chipsAnnouncement, setChipsAnnouncement] = useState('');
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(mississippiStudApi.exec);
@@ -90,6 +93,14 @@ function MississippiStudPageContent() {
   } = useGameHint('mississippistud', state);
 
   useMountReset(execApi);
+
+  useEffect(() => {
+    if (!state) return;
+    if (previousChips.current !== null && previousChips.current !== state.chips) {
+      setChipsAnnouncement(t('chipsChanged', { chips: state.chips }));
+    }
+    previousChips.current = state.chips;
+  }, [state, t]);
 
   const isAntePhase = state?.phase === MississippiStudPhase.ANTE;
   const isStreetPhase =
@@ -175,6 +186,9 @@ function MississippiStudPageContent() {
         </span>
       }
     >
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="ms-chips-live">
+        {chipsAnnouncement}
+      </div>
       <div
         data-testid="card-area"
         className={[`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`, !isAntePhase && 'flex-1']
@@ -293,6 +307,9 @@ function MississippiStudPageContent() {
           <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
             <div className="font-bold mt-1">
               {t('label.totalPayout')}: {state.totalPayout}
+            </div>
+            <div className="font-bold mt-1">
+              {t('label.netProfit')}: {formatSignedDelta(state.netChange)}
             </div>
           </div>
         )}

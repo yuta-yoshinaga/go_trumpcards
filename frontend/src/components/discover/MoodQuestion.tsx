@@ -14,7 +14,7 @@ export interface MoodQuestionProps {
   readonly onSelect: (optionIndex: number) => void;
   /** Called when the user skips this question. */
   readonly onSkip: () => void;
-  /** Total question count for the SR label (e.g. "Question 3 of 8"). */
+  /** Total question count for the SR label (ja: "全 8 問中 3 問目", en: "Question 3 of 8"). */
   readonly questionNumber: number;
   /** Total question count. */
   readonly totalQuestions: number;

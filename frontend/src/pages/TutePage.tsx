@@ -236,12 +236,38 @@ function TutePageContent() {
               <div data-tutorial="tute-info">
                 {/* Team scores */}
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                  <div>{t('teamScore', { team: t('team.a'), score: state.teamScores[0] ?? 0 })}</div>
-                  <div>{t('teamScore', { team: t('team.b'), score: state.teamScores[1] ?? 0 })}</div>
+                  <div>
+                    {t('teamScore', {
+                      team: t('team.a'),
+                      score: state.teamScores[0],
+                      target: state.config.targetPoints,
+                    })}
+                  </div>
+                  <div>
+                    {t('teamScore', {
+                      team: t('team.b'),
+                      score: state.teamScores[1],
+                      target: state.config.targetPoints,
+                    })}
+                  </div>
                   <div className="mt-1">
                     {t('yourTeam')}: {humanTeam === 0 ? t('team.a') : t('team.b')}
                   </div>
                 </div>
+
+                <details className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                  <summary className="cursor-pointer select-none min-h-[44px] flex items-center text-ds-text-primary">
+                    {t('scoringReference.title')}
+                  </summary>
+                  <div className="mt-1">
+                    <div>{t('scoringReference.ace')}</div>
+                    <div>{t('scoringReference.three')}</div>
+                    <div>{t('scoringReference.king')}</div>
+                    <div>{t('scoringReference.queen')}</div>
+                    <div>{t('scoringReference.jack')}</div>
+                    <div className="mt-1">{t('scoringReference.lastTrick')}</div>
+                  </div>
+                </details>
 
                 {/* Declared marriage suits (persistent readout of state.declaredSuits) */}
                 <div

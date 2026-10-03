@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { streetsAndAlleysApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, StreetsAndAlleysResponse, StreetsAndAlleysTableauCard } from '../types/card';
@@ -109,6 +110,33 @@ describe('StreetsAndAlleysPage', () => {
     expect(screen.getByRole('button', { name: /^♥ 6/ }).className).toContain('ring-ds-info');
     // The selected source card itself is not a target candidate.
     expect(screen.getByRole('button', { name: /^♠ 5/ })).not.toHaveAttribute('data-target-candidate');
+  });
+
+  it('announces legal destination count after source selection and clears it on deselection', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+    const announcement = await screen.findByTestId('sa-destination-announcement');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement.textContent).toBe('');
+    fireEvent.click(await screen.findByRole('button', { name: /^♠ 5/ }));
+    await waitFor(() => expect(announcement).toHaveTextContent('7件'));
+    fireEvent.click(screen.getByRole('button', { name: /^♠ 5/ }));
+    await waitFor(() => expect(announcement.textContent).toBe(''));
+  });
+
+  it('announces when a selected card has no legal destinations', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([
+        [{ card: card('SPADE', 5), faceUp: true }],
+        ...Array.from({ length: 7 }, () => [{ card: card('HEART', 3), faceUp: true }]),
+      ]),
+    });
+    renderWithProviders(<StreetsAndAlleysPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /^♠ 5/ }));
+    await waitFor(() =>
+      expect(screen.getByTestId('sa-destination-announcement')).toHaveTextContent('候補はありません'),
+    );
   });
 
   it('preserves destination rings for empty tableau, tableau cards, and foundations', async () => {
@@ -223,6 +251,28 @@ describe('StreetsAndAlleysPage', () => {
     renderWithProviders(<StreetsAndAlleysPage />);
     await waitFor(() => expect(screen.getByText(/ストリート・アンド・アレイズ/)).toBeInTheDocument());
     expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
+  });
+
+  it('announces only move count changes after the initial render', async () => {
+    mockExec.mockImplementation(async (command) =>
+      command === 'move' ? { ...playingState, moveCount: 4 } : playingState,
+    );
+    renderWithProviders(<StreetsAndAlleysPage />);
+    const announcement = await screen.findByTestId('sa-move-count-announcement');
+    expect(announcement).toHaveAttribute('role', 'status');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toBeEmptyDOMElement();
+
+    fireEvent.click(await screen.findByRole('button', { name: /^♠ 5/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^♥ 6/ }));
+    await waitFor(() => expect(announcement).toHaveTextContent('手数: 4'));
+
+    try {
+      await i18n.changeLanguage('en');
+      await waitFor(() => expect(announcement).toHaveTextContent('Moves: 4'));
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('renders 4 foundation suits', async () => {

@@ -49,6 +49,8 @@ func primeroResultGame(humanWins bool) *domain.Primero {
 	for i := 2; i < g.GetPlayerCnt(); i++ {
 		g.GetPlayer(i).SetFolded(true)
 	}
+	g.GetPlayer(0).SetRoundBet(20)
+	g.GetPlayer(1).SetRoundBet(30)
 	g.SetPot(100)
 	g.ResolveForTest()
 	return g
@@ -101,6 +103,8 @@ func TestPrimeroWebPresenter_ResultHumanLose(t *testing.T) {
 	// The human's own hand name is populated too (revealed cards).
 	human := players[0].(map[string]any)
 	assert.Equal(t, "numerus", human["handName"])
+	assert.Equal(t, float64(0), human["roundPayout"])
+	assert.Equal(t, float64(-20), human["netChange"])
 }
 
 func TestPrimeroWebPresenter_ResultHumanWin(t *testing.T) {
@@ -112,6 +116,10 @@ func TestPrimeroWebPresenter_ResultHumanWin(t *testing.T) {
 	require.NoError(t, json.Unmarshal([]byte(out), &decoded))
 	assert.Equal(t, "primero.roundEndHumanWin", decoded["messageCode"])
 	assert.Equal(t, float64(0), decoded["winnerIdx"])
+	players := decoded["players"].([]any)
+	human := players[0].(map[string]any)
+	assert.Equal(t, float64(100), human["roundPayout"])
+	assert.Equal(t, float64(80), human["netChange"])
 }
 
 func TestPrimeroWebPresenter_GameEnd(t *testing.T) {

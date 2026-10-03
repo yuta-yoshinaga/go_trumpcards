@@ -10,6 +10,7 @@ Go implementations of 383 trump card game algorithms (blackjack, poker, hearts, 
 | [Node.js](https://nodejs.org/) | 24.x |
 | [Bun](https://bun.sh/) | 1.3.10 |
 | [jq](https://jqlang.github.io/jq/) | any (required by the `.claude/settings.json` commit-gate hooks — they silently no-op without it) |
+| [Python](https://www.python.org/) | 3.x (required by the `.claude/settings.json` command guards — they silently no-op without it) |
 
 ## Package Manager Rule
 
@@ -45,6 +46,7 @@ go run ./cmd/server                # Start REST API + web GUI server (direct)
 # Test
 go test -tags test ./...                                              # Run all Go tests
 go test -tags test -coverprofile=coverage.out -covermode=set ./...    # Coverage report
+for t in .claude/hooks/*.test.sh; do bash "$t" || echo "FAIL $t"; done  # Hook/guard self-tests (CI-gating; run after editing .claude/)
 
 # Format
 goimports -w .               # Format and organize imports (use goimports, not gofmt; `./...` is a go tool pattern goimports does not accept)
@@ -220,7 +222,7 @@ do the one thing it exists for. The read-only helpers (`coverage-gate`, `flake-l
 Key routing rules:
 - Product ideas, "is this worth building", brainstorming → invoke office-hours
 - Bugs, errors, "why is this broken", 500 errors → invoke investigate
-- Ship, deploy, push, create PR → invoke ship
+- Push a change and open its PR → follow improve-issue step 5 (or commit-commands:commit-push-pr). Not gstack `ship`: it bumps VERSION/CHANGELOG, which this repo does not have — versions are bumped by the master release workflow
 - QA, test the site, find bugs → invoke qa
 - Code review, check my diff → invoke review
 - Update docs after shipping → invoke document-release
@@ -228,7 +230,7 @@ Key routing rules:
 - Design system, brand → invoke design-consultation
 - Visual audit, design polish → invoke design-review
 - Architecture review → invoke plan-eng-review
-- Save progress, checkpoint, resume → invoke checkpoint
+- Save progress, checkpoint, resume → invoke context-save / context-restore
 - Code quality, health check → invoke health
 - Per-game improvement proposals → GitHub issues ("各ゲームの改善提案", "全ゲームのissueを作って") → invoke game-improve
 - New-game candidates → GitHub issues ("追加した方が良いゲームを提案", "新規ゲーム候補をissueに") → invoke propose-games
@@ -236,8 +238,11 @@ Key routing rules:
 - Merge a PR ("マージして", "land it", "merge #NNNN") → invoke land-pr (`/land-pr <#>`) — a green tick alone is not the gate; it also checks the head SHA still matches and that the checks actually ran
 - Docs out of sync with the code ("ドキュメントの乖離", "docs are stale") → invoke doc-drift-check (`/doc-drift-check [--fix]`)
 - Coverage of only this branch's changes, before pushing → invoke coverage-gate
+- Untaken branches on changed frontend lines (what codecov/patch counts as misses), before pushing or when codecov/patch fails → invoke patch-branch-gaps
+- Prove a test fails when the code it guards is broken, before claiming "verified by mutation" → invoke mutation-proof
 - A test failed and you suspect a flake → invoke flake-ledger
 - Move a game between worker size buckets → invoke rebucket-game
 - DRY/KISS/YAGNI 観点のソース解析を issue 化 → invoke make-issue; CUI 側だけなら invoke make-issue-cli, Web GUI 側だけなら invoke make-issue-web
 - Implement a single GitHub issue end-to-end ("issueに着手して", "#NNNN を対応して", "implement issue #N") → invoke improve-issue (`/improve-issue <#>`)
 - Clear a whole batch of improvement issues, lowest-effort first ("issueバッチを片付けて", "#NNNN〜#MMMM を全部対応", "残りの改善issueを全部やって") → invoke improve-batch (explicit `/improve-batch <range>`)
+- Running batch issues concurrently in worktree lanes (setup, delegate, gate, ship, drain) → use the batch-lanes scripts (`.claude/skills/batch-lanes/`), not ad-hoc copies

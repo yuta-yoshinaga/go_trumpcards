@@ -98,6 +98,16 @@ describe('LooPage', () => {
     expect(passing).toHaveAttribute('aria-label', expect.stringContaining('降り'));
   });
 
+  it('marks the dealer in the player list with an accessible label', async () => {
+    mockExec.mockResolvedValue(makeLooState({ dealerIdx: 2 }));
+    renderWithProviders(<LooPage />);
+
+    const dealer = await screen.findByTestId('loo-dealer-2');
+    expect(dealer).toHaveTextContent('ディーラー');
+    expect(dealer).toHaveAttribute('aria-label', 'ディーラー');
+    expect(screen.queryByTestId('loo-dealer-1')).not.toBeInTheDocument();
+  });
+
   // #5693: ルーの罰金 (looed = ポット全額) には下限が無いので、チップ残高は
   // 実際に赤字になる。色だけに頼らず、記号と aria-label でも警告する。
   it('warns when a chip balance has gone negative', async () => {
@@ -114,15 +124,15 @@ describe('LooPage', () => {
     renderWithProviders(<LooPage />);
 
     const inDebt = await screen.findByTestId('loo-chips-0');
-    expect(inDebt).toHaveClass('text-ds-error');
+    expect(inDebt).toHaveClass('text-ds-error-text');
     expect(inDebt).toHaveTextContent('▼');
     expect(within(inDebt).getByRole('img')).toHaveAccessibleName('赤字');
 
     // 0 と正の残高は現状どおり中立。
-    expect(screen.getByTestId('loo-chips-1')).not.toHaveClass('text-ds-error');
+    expect(screen.getByTestId('loo-chips-1')).not.toHaveClass('text-ds-error-text');
     expect(screen.getByTestId('loo-chips-1')).not.toHaveTextContent('▼');
-    expect(screen.getByTestId('loo-chips-2')).not.toHaveClass('text-ds-error');
-    expect(screen.getByTestId('loo-chips-3')).toHaveClass('text-ds-error');
+    expect(screen.getByTestId('loo-chips-2')).not.toHaveClass('text-ds-error-text');
+    expect(screen.getByTestId('loo-chips-3')).toHaveClass('text-ds-error-text');
   });
 
   it('renders the decide phase with play and pass buttons', async () => {
@@ -131,6 +141,38 @@ describe('LooPage', () => {
     await waitFor(() => expect(screen.getByTestId('loo-decide-prompt')).toBeInTheDocument());
     expect(screen.getByRole('button', { name: '参加' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '降りる' })).toBeInTheDocument();
+  });
+
+  it('shows current play, pass, and undecided totals only during the decide phase', async () => {
+    mockExec.mockResolvedValue(
+      makeLooState({
+        phase: LooPhase.DECIDE,
+        dealerIdx: 3,
+        decidePlayerIdx: 0,
+        players: [
+          { ...makeLooState().players[0], playing: false },
+          { ...makeLooState().players[1], playing: false },
+          { ...makeLooState().players[2], playing: true },
+          { ...makeLooState().players[3], playing: true },
+        ],
+      }),
+    );
+    renderWithProviders(<LooPage />);
+    expect(await screen.findByTestId('loo-decision-counts')).toHaveTextContent('参加: 0人');
+    expect(screen.getByTestId('loo-decision-counts')).toHaveTextContent('降り: 0人');
+    expect(screen.getByTestId('loo-decision-counts')).toHaveTextContent('未決定: 4人');
+
+    mockExec.mockResolvedValue(
+      makeLooState({
+        phase: LooPhase.DECIDE,
+        dealerIdx: 3,
+        decidePlayerIdx: 1,
+        players: [{ ...makeLooState().players[0], playing: true }, ...makeLooState().players.slice(1)],
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: '参加' }));
+    await waitFor(() => expect(screen.getByTestId('loo-decision-counts')).toHaveTextContent('参加: 1人'));
+    expect(screen.getByTestId('loo-decision-counts')).toHaveTextContent('未決定: 3人');
   });
 
   it('deciding to play dispatches decide with play=true', async () => {
@@ -187,6 +229,7 @@ describe('LooPage', () => {
     renderWithProviders(<LooPage />);
     await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
     expect(screen.queryByTestId('loo-pot-risk')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('loo-decision-counts')).not.toBeInTheDocument();
   });
 
   it('shows a CPU decide notice on a CPU decide turn', async () => {

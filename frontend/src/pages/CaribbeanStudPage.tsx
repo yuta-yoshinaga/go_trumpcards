@@ -35,6 +35,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { CARIBBEANSTUD_HELP, parseCaribbeanstudCommand } from '../utils/cli/commands/caribbeanstudCommands';
 import { formatCaribbeanstudState } from '../utils/cli/formatters/caribbeanstudFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Caribbean Stud Poker tutorial step definitions. */
@@ -72,6 +73,9 @@ const HAND_RANK_KEYS: Record<number, string> = {
   8: 'handRank.8',
   9: 'handRank.9',
 };
+
+/** Chips required per ante for ante plus the 2× ante play bet (see internal/domain/CaribbeanStud.go:Play). */
+const ANTE_AND_PLAY_BET_MULTIPLIER = 3;
 
 /** Renders the Caribbean Stud Poker game page with betting, action, and result display. */
 export const CaribbeanStudPage = withTutorial(CaribbeanStudPageContent, 'caribbeanstud', CSP_TUTORIAL_STEPS);
@@ -151,6 +155,13 @@ function CaribbeanStudPageContent() {
     execApi('bet', anteAmount, jackpotAmount);
   };
 
+  const maxAnteAmount = Math.max(
+    0,
+    Math.floor((state.chips - jackpotAmount) / (ANTE_AND_PLAY_BET_MULTIPLIER * 10)) * 10,
+  );
+  const maxJackpotAmount = Math.max(0, state.chips - anteAmount * ANTE_AND_PLAY_BET_MULTIPLIER);
+  const betExceedsChips = anteAmount * ANTE_AND_PLAY_BET_MULTIPLIER + jackpotAmount > state.chips;
+
   const handlePlay = () => {
     execApi('play');
   };
@@ -225,11 +236,11 @@ function CaribbeanStudPageContent() {
                       tally.net > 0
                         ? 'font-bold text-ds-success'
                         : tally.net < 0
-                          ? 'font-bold text-ds-error'
+                          ? 'font-bold text-ds-error-text'
                           : 'font-bold text-ds-text-muted'
                     }
                   >
-                    {t('session.net')}: {tally.net > 0 ? `+${tally.net}` : tally.net}
+                    {t('session.net')}: {formatSignedDelta(tally.net)}
                   </span>
                 </div>
                 <div className="mt-1 flex items-center justify-center gap-3 text-xs text-ds-text-muted">
@@ -316,7 +327,7 @@ function CaribbeanStudPageContent() {
 
             {state.dealerHand.length > 0 && (
               <div className="mb-4">
-                <div className="text-ds-error font-bold text-center mb-1">
+                <div className="text-ds-error-text font-bold text-center mb-1">
                   <span aria-hidden="true">🔴</span> {t('dealer')}
                   {isEndPhase && HAND_RANK_KEYS[state.dealerHandRank] && (
                     <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank])})</span>
@@ -350,21 +361,27 @@ function CaribbeanStudPageContent() {
 
             {isEndPhase && (
               <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
-                {state.antePayout !== 0 && (
-                  <div>
-                    {t('payout.ante')}: {state.antePayout}
-                  </div>
-                )}
-                {state.playPayout !== 0 && (
-                  <div>
-                    {t('payout.play')}: {state.playPayout}
-                  </div>
-                )}
-                {state.jackpotPayout !== 0 && (
-                  <div>
-                    {t('payout.jackpot')}: {state.jackpotPayout}
-                  </div>
-                )}
+                <div>
+                  {t('payout.line', {
+                    bet: t('payout.ante'),
+                    betAmount: state.anteBet,
+                    payoutAmount: state.antePayout,
+                  })}
+                </div>
+                <div>
+                  {t('payout.line', {
+                    bet: t('payout.play'),
+                    betAmount: state.playBet,
+                    payoutAmount: state.playPayout,
+                  })}
+                </div>
+                <div>
+                  {t('payout.line', {
+                    bet: t('payout.jackpot'),
+                    betAmount: state.jackpotBet,
+                    payoutAmount: state.jackpotPayout,
+                  })}
+                </div>
                 <div className="font-bold mt-1">
                   {t('payout.total')}: {state.totalPayout}
                 </div>
@@ -392,7 +409,7 @@ function CaribbeanStudPageContent() {
                   value={anteAmount}
                   onChange={setAnteAmount}
                   min={10}
-                  max={state.chips}
+                  max={maxAnteAmount}
                   step={10}
                   disabled={loading}
                   showSteppers
@@ -403,7 +420,7 @@ function CaribbeanStudPageContent() {
                   value={jackpotAmount}
                   onChange={setJackpotAmount}
                   min={0}
-                  max={state.chips}
+                  max={maxJackpotAmount}
                   step={10}
                   disabled={loading}
                   showSteppers
@@ -416,7 +433,7 @@ function CaribbeanStudPageContent() {
                   <summary className="cursor-pointer text-ds-info">{t('dealerQualifyHelpTitle')}</summary>
                   <p className="pt-1">{t('dealerQualifyHelp')}</p>
                 </details>
-                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading || betExceedsChips}>
                   {t('button.bet')}
                 </button>
               </div>

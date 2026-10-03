@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { skitgubbeApi } from '../api/gameApi';
+import { actionLogApi, skitgubbeApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, SkitgubbePlayer, SkitgubbeResponse } from '../types/card';
@@ -12,6 +12,7 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(skitgubbeApi.exec);
+const mockActionLog = vi.mocked(actionLogApi.skitgubbe);
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
@@ -70,6 +71,18 @@ describe('SkitgubbePage', () => {
   it('resets on mount', async () => {
     renderWithProviders(<SkitgubbePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('lets players open the action log during play', async () => {
+    renderWithProviders(<SkitgubbePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const viewLog = screen.getByRole('button', { name: '棋譜を見る' });
+    mockActionLog.mockResolvedValueOnce({ entries: [] });
+    fireEvent.click(viewLog);
+
+    await waitFor(() => expect(mockActionLog).toHaveBeenCalled());
+    expect(screen.getByRole('button', { name: '閉じる' })).toBeInTheDocument();
   });
 
   it('shows the collecting objective and rule without the shedding rule', async () => {
@@ -165,6 +178,8 @@ describe('SkitgubbePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
 
     const pickUp = screen.getByRole('button', { name: '引き取る' });
+    expect(pickUp).not.toHaveAttribute('aria-describedby');
+    expect(screen.queryByText('上回れる札がありません')).not.toBeInTheDocument();
     mockExec.mockClear();
     fireEvent.click(pickUp);
     await flushPendingDispatch();
@@ -176,8 +191,11 @@ describe('SkitgubbePage', () => {
     renderWithProviders(<SkitgubbePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
 
+    const pickUp = screen.getByRole('button', { name: '引き取る' });
+    expect(pickUp).toHaveAttribute('aria-describedby', 'sg-pickup-hint');
+    expect(document.getElementById('sg-pickup-hint')).toHaveTextContent('上回れる札がありません');
     mockExec.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: '引き取る' }));
+    fireEvent.click(pickUp);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pickup'));
   });
 

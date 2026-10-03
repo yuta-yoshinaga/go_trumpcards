@@ -93,7 +93,7 @@ the lowest-effort still-open issue from the batch the user names.
   job builds first). `gh run view --job <id> --log-failed`. Common tsc-only
   errors `bun run check` misses: optional-index (`obj[maybeUndef]`), a
   `HintResult` test mock missing `targetAction`, missing union members.
-- **Long E2E failure (~15–20 min) with `Target page, context or browser has
+- **Long E2E failure (late in the run) with `Target page, context or browser has
   been closed`** = a possible runner issue. Record it with the `flake-ledger`
   skill before re-running; a single sighting is UNCONFIRMED and gets investigated
   like a real failure.

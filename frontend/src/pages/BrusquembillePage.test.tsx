@@ -1,6 +1,8 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { brusquembilleApi } from '../api/gameApi';
+import en from '../i18n/locales/en/brusquembille.json';
+import ja from '../i18n/locales/ja/brusquembille.json';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BrusquembilleResponse, Card } from '../types/card';
@@ -57,6 +59,15 @@ beforeEach(() => {
 });
 
 describe('BrusquembillePage', () => {
+  it('describes the 32-card deck and card points in both tutorials', () => {
+    for (const locale of [en, ja]) {
+      expect(locale.subtitle).toMatch(/32/);
+      expect(locale.subtitle).not.toMatch(/40/);
+      expect(locale.tutorial.hand).toMatch(/10\s*=\s*10/);
+      expect(locale.tutorial.hand).not.toMatch(/3\s*=\s*10/);
+    }
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<BrusquembillePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { playerCnt: 2 }));
@@ -294,12 +305,12 @@ describe('BrusquembillePage', () => {
     await waitFor(() => expect(screen.getByText(/トランプ: 使い切り/)).toBeInTheDocument());
   });
 
-  it('disables play buttons when it is not the human turn', async () => {
+  it('marks play buttons unavailable when it is not the human turn', async () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
     renderWithProviders(<BrusquembillePage />);
     await waitFor(() => {
       const btn = screen.getByRole('button', { name: '♠ A を出す' });
-      expect(btn).toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     });
   });
 
@@ -385,15 +396,26 @@ describe('BrusquembillePage', () => {
 // 合法かどうかはバックエンドが決める (validIndices) —— ここで規則を
 // 書き直すと二重管理になる。
 describe('BrusquembillePage legal moves', () => {
-  it('disables the cards the backend says are illegal', async () => {
-    mockExec.mockResolvedValue(makeState({ validIndices: [1], followRequired: true }));
+  it('explains the follow-suit rule and keeps illegal cards focusable with an accessible reason', async () => {
+    mockExec.mockResolvedValue(makeState({ stockRemaining: 0, validIndices: [1], followRequired: true }));
     renderWithProviders(<BrusquembillePage />);
     await waitFor(() => expect(screen.getAllByRole('button', { name: /を出す/ }).length).toBeGreaterThan(0));
 
     const cards = screen.getAllByRole('button', { name: /を出す/ });
-    expect(cards[0]).toBeDisabled();
-    expect(cards[1]).toBeEnabled();
-    expect(cards[2]).toBeDisabled();
+    const explanation = screen.getByRole('status');
+    expect(explanation).toHaveTextContent(
+      '山札がなくなったため、場と同じスートのカードを持っている場合はそのスートを出してください。',
+    );
+    expect(cards[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[0]).toHaveAttribute('aria-describedby');
+    expect(cards[1]).not.toHaveAttribute('aria-disabled', 'true');
+    expect(cards[2]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[0]).toBeEnabled();
+
+    mockExec.mockClear();
+    fireEvent.click(cards[0]);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('play', 0);
   });
 
   it('leaves every card playable while the stock lasts', async () => {
@@ -403,7 +425,9 @@ describe('BrusquembillePage legal moves', () => {
 
     for (const card of screen.getAllByRole('button', { name: /を出す/ })) {
       expect(card).toBeEnabled();
+      expect(card).not.toHaveAttribute('aria-disabled', 'true');
     }
+    expect(screen.queryByTestId('brusquembille-follow-guidance')).not.toBeInTheDocument();
   });
 });
 

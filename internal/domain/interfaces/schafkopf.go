@@ -67,10 +67,14 @@ type SchafkopfGame interface {
 	GetPassCount() int
 	// GetRoundPickerPoints 直近ラウンドのピッカー組得点を取得する
 	GetRoundPickerPoints() int
+	// IsRoundPickerPointsTeamTotal reports whether round picker points include the partner's points.
+	IsRoundPickerPointsTeamTotal() bool
 	// GetRoundMultiplier 直近ラウンドの倍率を取得する
 	GetRoundMultiplier() int
 	// GetRoundPickerWon 直近ラウンドでピッカー組が勝ったかを取得する
 	GetRoundPickerWon() bool
+	// GetLastDealChipDelta returns the most recent deal's chip change for a seat.
+	GetLastDealChipDelta(i int) int
 	// GetWinnerIdx 勝者インデックスを取得する
 	GetWinnerIdx() int
 	// GetPlayerCnt プレイヤー数を取得する

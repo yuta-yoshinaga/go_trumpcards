@@ -58,6 +58,7 @@ func (p *MichiganWebPresenter) buildBase(g interfaces.MichiganGame) *controller.
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.Players = p.buildPlayersOutput(g)
 	resObj.Boodles = p.buildBoodlesOutput(g)
+	resObj.RoundBoodleWins = p.buildRoundBoodleWinsOutput(g)
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.MichiganWebOutputConfig{
@@ -67,6 +68,19 @@ func (p *MichiganWebPresenter) buildBase(g interfaces.MichiganGame) *controller.
 		TargetRounds:  cfg.TargetRounds,
 	}
 	return resObj
+}
+
+// buildRoundBoodleWinsOutput は直近ラウンドの獲得履歴を構築する。
+func (p *MichiganWebPresenter) buildRoundBoodleWinsOutput(g interfaces.MichiganGame) []*controller.MichiganWebOutputBoodleWin {
+	wins := g.GetRoundBoodleWins()
+	out := make([]*controller.MichiganWebOutputBoodleWin, 0, len(wins))
+	for _, win := range wins {
+		if win == nil {
+			continue
+		}
+		out = append(out, &controller.MichiganWebOutputBoodleWin{Card: cardToOutput(win.Card), Seat: win.Seat, Amount: win.Amount})
+	}
+	return out
 }
 
 // michiganIntsOrEmpty は nil を空スライスに変換する。

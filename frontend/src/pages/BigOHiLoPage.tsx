@@ -27,17 +27,17 @@ import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCommunityPokerGame } from '../hooks/useCommunityPokerGame';
 import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
-import { placeholderCardStyle } from '../styles/cardStyles';
+import { highlightCardStyle, placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { OmahaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
 import { omahaLivePreviewKey } from '../utils/livePokerPreview';
-import { omahaBestFive } from '../utils/omahaBestFive';
 import { hiLoRingStyle } from '../utils/omahaHiLoRing';
 import { lowCardIndexSets } from '../utils/omahaLowCards';
 import { findPlayerName } from '../utils/playerUtils';
@@ -158,14 +158,15 @@ function BigOHiLoPageContent() {
     cli: { parseCommand: parseOmahaCommand, formatResponse: formatOmahaState, helpText: OMAHA_HELP },
   });
 
-  // At showdown, highlight the human's winning 5 cards under the must-use-2 rule.
-  const showdownBest5 = useMemo(() => {
+  // The server evaluates the human's current Hi best hand and returns positions.
+  const liveBest5 = useMemo(() => {
     const empty = { holeSet: new Set<number>(), boardSet: new Set<number>() };
-    if (!isShowdown || !humanPlayer || humanPlayer.folded) return empty;
-    const best = omahaBestFive(humanPlayer.cards ?? [], state?.communityCards ?? []);
-    if (!best) return empty;
-    return { holeSet: new Set(best.holeIdx), boardSet: new Set(best.boardIdx) };
-  }, [isShowdown, humanPlayer, state?.communityCards]);
+    if (!humanPlayer || humanPlayer.folded) return empty;
+    return {
+      holeSet: new Set(humanPlayer.liveBestHandHoleIndices ?? []),
+      boardSet: new Set(humanPlayer.liveBestHandBoardIndices ?? []),
+    };
+  }, [humanPlayer]);
   // Separately highlight the human's qualifying low cards (blue), distinct from
   // the Hi best-5 (green) — the Hi and Lo hole cards can differ.
   const humanLowBestHand = isShowdown
@@ -246,9 +247,9 @@ function BigOHiLoPageContent() {
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
                       ? state.communityCards.map((card, idx) => {
-                          const inBest = showdownBest5.boardSet.has(idx);
+                          const inBest = liveBest5.boardSet.has(idx);
                           const inLo = lowSets.loBoardSet.has(idx);
-                          const dim = showdownBest5.boardSet.size > 0 && !inBest && !inLo;
+                          const dim = liveBest5.boardSet.size > 0 && !inBest && !inLo;
                           const { category, ring } = hiLoRingStyle(inBest, inLo);
                           return (
                             <div
@@ -258,7 +259,12 @@ function BigOHiLoPageContent() {
                               data-hilo={category === 'none' ? undefined : category}
                               data-testid={inLo ? 'bigohilo-lo-card' : undefined}
                             >
-                              <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                              <AnimatedCard
+                                card={card}
+                                width={cardWidth}
+                                style={inBest ? highlightCardStyle() : placeholderCardStyle}
+                              />
+                              {inBest && <span className="sr-only">{t('cardUsedAria', { card: cardAlt(card) })}</span>}
                               {category !== 'none' && (
                                 <span
                                   data-hilo-usage={category}
@@ -442,7 +448,9 @@ function BigOHiLoPageContent() {
                       {tc('betting.currentBet')} {humanPlayer.currentBet}
                     </span>
                   )}
-                  {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
+                  {humanPlayer.folded && (
+                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
+                  )}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                   {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
                     <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
@@ -472,9 +480,9 @@ function BigOHiLoPageContent() {
                 <div className="flex flex-wrap gap-1.5 mb-2" data-tutorial="bohl-combination-rule">
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card, idx) => {
-                        const inBest = showdownBest5.holeSet.has(idx);
+                        const inBest = liveBest5.holeSet.has(idx);
                         const inLo = lowSets.loHoleSet.has(idx);
-                        const dim = showdownBest5.holeSet.size > 0 && !inBest && !inLo;
+                        const dim = liveBest5.holeSet.size > 0 && !inBest && !inLo;
                         const { category, ring } = hiLoRingStyle(inBest, inLo);
                         return (
                           <div
@@ -484,7 +492,12 @@ function BigOHiLoPageContent() {
                             data-hilo={category === 'none' ? undefined : category}
                             data-testid={inLo ? 'bigohilo-lo-card' : undefined}
                           >
-                            <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                            <AnimatedCard
+                              card={card}
+                              width={cardWidth}
+                              style={inBest ? highlightCardStyle() : placeholderCardStyle}
+                            />
+                            {inBest && <span className="sr-only">{t('cardUsedAria', { card: cardAlt(card) })}</span>}
                             {category !== 'none' && (
                               <span
                                 data-hilo-usage={category}

@@ -573,18 +573,20 @@ func TestEgyptianRatscrew_SlapReason_PairBeforeSandwich(t *testing.T) {
 	// 5-5-5 → ペア (上 2 枚が同じ) としてカウントされる
 	g.centerPile = []*Card{card(5), card(5), card(5)}
 	assert.Equal(t, EgyptianRatscrewSlapReasonPair, g.slapReason())
+	assert.Equal(t, EgyptianRatscrewSlapReasonPair, g.GetSlappableReason())
 }
 
 func TestEgyptianRatscrew_SlapReason_None(t *testing.T) {
 	g, _ := setupEgyptianRatscrewWithStocks(t, []*Card{}, []*Card{})
 	g.centerPile = []*Card{card(2)}
 	assert.Equal(t, EgyptianRatscrewSlapReasonNone, g.slapReason())
+	assert.Equal(t, EgyptianRatscrewSlapReasonNone, g.GetSlappableReason())
 	g.centerPile = []*Card{card(2), card(3), card(4)}
 	assert.Equal(t, EgyptianRatscrewSlapReasonNone, g.slapReason())
 }
 
-func TestEgyptianRatscrew_SlapReasonLabel(t *testing.T) {
-	assert.Equal(t, "pair", slapReasonLabel(EgyptianRatscrewSlapReasonPair))
-	assert.Equal(t, "sandwich", slapReasonLabel(EgyptianRatscrewSlapReasonSandwich))
-	assert.Equal(t, "none", slapReasonLabel(EgyptianRatscrewSlapReasonNone))
+func TestEgyptianRatscrew_GetSlappableReason_Sandwich(t *testing.T) {
+	g, _ := setupEgyptianRatscrewWithStocks(t, []*Card{}, []*Card{})
+	g.centerPile = []*Card{card(5), card(9), card(5)}
+	assert.Equal(t, EgyptianRatscrewSlapReasonSandwich, g.GetSlappableReason())
 }

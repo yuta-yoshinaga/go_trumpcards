@@ -37,6 +37,7 @@ const betState: CasinoWarResponse = {
   warBet: 0,
   result: 0,
   totalPayout: 0,
+  netChange: 0,
   message: '',
 };
 
@@ -50,6 +51,7 @@ const tieState: CasinoWarResponse = {
   warBet: 0,
   result: 0,
   totalPayout: 0,
+  netChange: 0,
   message: '',
 };
 
@@ -63,6 +65,7 @@ const winState: CasinoWarResponse = {
   warBet: 0,
   result: 1,
   totalPayout: 200,
+  netChange: 100,
   message: 'You win!',
 };
 
@@ -198,6 +201,7 @@ describe('CasinoWarPage', () => {
       warBet: 0,
       result: 0,
       totalPayout: 0,
+      netChange: 0,
       message: '',
     };
     mockApi.mockResolvedValue(initialDealtState);
@@ -218,6 +222,7 @@ describe('CasinoWarPage', () => {
       warBet: 100,
       result: 0,
       totalPayout: 0,
+      netChange: 0,
       message: '',
     };
     mockApi.mockResolvedValue(warDealtState);
@@ -345,6 +350,7 @@ describe('CasinoWarPage', () => {
     expect(screen.getByTestId('cw-trend-bar')).toBeInTheDocument();
     expect(screen.getAllByTestId('cw-history-pip')).toHaveLength(1);
     expect(screen.getByTestId('cw-tally')).toHaveTextContent('1勝 0敗 0分');
+    expect(screen.getByTestId('cw-cumulative-net-change')).toHaveTextContent('+100');
   });
 
   it('does not double-count the same round when the END phase re-renders', async () => {
@@ -380,6 +386,7 @@ describe('CasinoWarPage', () => {
     await waitFor(() => expect(screen.getByTestId('cw-history')).toBeInTheDocument());
     expect(screen.getAllByTestId('cw-history-pip')).toHaveLength(3);
     expect(screen.getByTestId('cw-tally')).toHaveTextContent('2勝 1敗 0分');
+    expect(screen.getByTestId('cw-cumulative-net-change')).toHaveTextContent('累積純損益: ±0');
   });
 
   it('renders the i18n skeleton instead of a hardcoded Loading label before state loads', () => {
@@ -394,6 +401,17 @@ describe('CasinoWarPage', () => {
     mockApi.mockResolvedValue(winState);
     renderWithProviders(<CasinoWarPage />);
     await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
+    expect(screen.getByTestId('net-change')).toHaveTextContent('+100');
+  });
+
+  it.each([
+    ['loss', { ...winState, chips: 800, result: -1, totalPayout: 0, netChange: -100 }],
+    ['surrender', { ...winState, chips: 950, result: -1, totalPayout: 50, netChange: -50 }],
+    ['war loss', { ...winState, chips: 800, warBet: 100, result: -1, totalPayout: 0, netChange: -200 }],
+  ])('shows correct net change for %s', async (_name, state) => {
+    mockApi.mockResolvedValue(state as CasinoWarResponse);
+    renderWithProviders(<CasinoWarPage />);
+    expect(await screen.findByTestId('net-change')).toHaveTextContent(String(state.netChange));
   });
 
   // ベットフェーズなど決着前は配当内訳を表示しない。
