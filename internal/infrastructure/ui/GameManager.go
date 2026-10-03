@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
@@ -7461,11 +7462,20 @@ func GameTitle(name string) string {
 	return GameTitleKey(gameTitleKey(name))
 }
 
+var gameTitleKeysOnce sync.Once
+var gameTitleKeys map[string]string
+
 func gameTitleKey(name string) string {
-	for _, entry := range gameRegistry {
-		if entry.Name == name && entry.TitleKey != "" {
-			return entry.TitleKey
+	gameTitleKeysOnce.Do(func() {
+		gameTitleKeys = make(map[string]string, len(gameRegistry))
+		for _, entry := range gameRegistry {
+			if entry.TitleKey != "" {
+				gameTitleKeys[entry.Name] = entry.TitleKey
+			}
 		}
+	})
+	if key, ok := gameTitleKeys[name]; ok {
+		return key
 	}
 	return name + ".helpTitle"
 }
@@ -7473,8 +7483,12 @@ func gameTitleKey(name string) string {
 // GameTitleKey resolves a help title key and falls back to the game's legacy
 // description when the ordinary helpTitle translation is missing.
 func GameTitleKey(key string) string {
+	return resolveGameTitle(key, i18n.Lang())
+}
+
+func resolveGameTitle(key, lang string) string {
 	name := strings.TrimSuffix(key, ".helpTitle")
-	if title := i18n.T(key); title != key {
+	if title := i18n.TForLang(lang, key); title != key {
 		return title
 	}
 	if name != key {
@@ -7488,11 +7502,7 @@ func GameTitleKey(key string) string {
 // GameTitleForLang returns the display title for lang without changing the
 // active locale. This lets games search remain stable across CLI languages.
 func GameTitleForLang(name, lang string) string {
-	key := gameTitleKey(name)
-	if title := i18n.TForLang(lang, key); title != key {
-		return title
-	}
-	return games.Description(name)
+	return resolveGameTitle(gameTitleKey(name), lang)
 }
 
 // GameAliases maps short alias names to their canonical game names.

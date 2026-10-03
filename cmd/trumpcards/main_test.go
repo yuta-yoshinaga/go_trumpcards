@@ -1580,6 +1580,8 @@ func TestGamesSearchMatchesEnglishHelpTitlesRegardlessOfLocale(t *testing.T) {
 		i18n.SetLang(lang)
 		assert.True(t, gameMatchesSearch("bigohilo", "8 or better", nil))
 	}
+	i18n.SetLang("en")
+	assert.True(t, gameMatchesSearch("dramaha", "オマハ役とドロー役でポット二分", nil))
 }
 
 func TestGamesSearchShortMatchesAlias(t *testing.T) {
