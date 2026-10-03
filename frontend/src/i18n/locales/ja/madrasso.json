@@ -22,6 +22,7 @@
   "tricks": "{{count}}トリック",
   "currentTrick": "現在のトリック",
   "currentTrickPoints": "このトリックのカード点: {{points}}点",
+  "cardPoints": "{{points}}点",
   "wonTrickPoints": "チーム{{team}}が獲得: {{points}}点",
   "previousTrick": "前のトリック",
   "previousTrickEmpty": "このラウンドにはまだ前のトリックがありません",
