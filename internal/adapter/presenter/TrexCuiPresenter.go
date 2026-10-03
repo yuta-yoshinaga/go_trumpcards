@@ -38,21 +38,6 @@ func trexPenaltyMarkedStr(cards []*domain.Card, contract domain.TrexContract) st
 	return strings.Join(parts, " ")
 }
 
-func trexCardListStr(cards []*domain.Card, indexed bool) string {
-	if len(cards) == 0 {
-		return "-"
-	}
-	parts := make([]string, 0, len(cards))
-	for i, c := range cards {
-		if indexed {
-			parts = append(parts, "["+strconv.Itoa(i)+"]"+cuiCardStr(c))
-			continue
-		}
-		parts = append(parts, cuiCardStr(c))
-	}
-	return strings.Join(parts, " ")
-}
-
 // trexContractKeys は契約番号から i18n キーへの対応。
 var trexContractKeys = map[domain.TrexContract]string{
 	domain.TrexContractKingOfHearts: "trex.contractKingOfHearts",
@@ -105,7 +90,7 @@ func (p *TrexCuiPresenter) Output(c interfaces.TrexGame, lastErr error) string {
 				for j := range player.GetCardsSize() {
 					hand = append(hand, player.GetCard(j))
 				}
-				sb.WriteString("  " + trexCardListStr(hand, true) + "\n")
+				sb.WriteString("  " + cuiIndexedCardSliceStr(hand, true) + "\n")
 			}
 		}
 

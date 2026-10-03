@@ -12,21 +12,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-func skitgubbeCardListStr(cards []*domain.Card, indexed bool) string {
-	if len(cards) == 0 {
-		return "-"
-	}
-	parts := make([]string, 0, len(cards))
-	for i, c := range cards {
-		if indexed {
-			parts = append(parts, "["+strconv.Itoa(i)+"]"+cuiCardStr(c))
-			continue
-		}
-		parts = append(parts, cuiCardStr(c))
-	}
-	return strings.Join(parts, " ")
-}
-
 // skitgubbeTrumpStr は切札を描く。山札から最後に引かれるまでは未確定。
 func skitgubbeTrumpStr(suit int) string {
 	if suit < 0 {
@@ -54,10 +39,10 @@ func (p *SkitgubbeCuiPresenter) Output(c interfaces.SkitgubbeGame, lastErr error
 
 		if collect {
 			sb.WriteString(i18n.Tf("skitgubbe.duelLine",
-				"cards", skitgubbeCardListStr(c.GetDuel(), false)) + "\n")
+				"cards", cuiIndexedCardSliceStr(c.GetDuel(), false)) + "\n")
 		} else {
 			sb.WriteString(i18n.Tf("skitgubbe.pileLine",
-				"cards", skitgubbeCardListStr(c.GetPile(), false)) + "\n")
+				"cards", cuiIndexedCardSliceStr(c.GetPile(), false)) + "\n")
 		}
 
 		for i, player := range c.GetPlayers() {
@@ -76,7 +61,7 @@ func (p *SkitgubbeCuiPresenter) Output(c interfaces.SkitgubbeGame, lastErr error
 				for j := range player.GetCardsSize() {
 					hand = append(hand, player.GetCard(j))
 				}
-				sb.WriteString("  " + skitgubbeCardListStr(hand, true) + "\n")
+				sb.WriteString("  " + cuiIndexedCardSliceStr(hand, true) + "\n")
 			}
 		}
 

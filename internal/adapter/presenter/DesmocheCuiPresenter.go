@@ -12,21 +12,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-func desmocheCardListStr(cards []*domain.Card, indexed bool) string {
-	if len(cards) == 0 {
-		return "-"
-	}
-	parts := make([]string, 0, len(cards))
-	for i, c := range cards {
-		if indexed {
-			parts = append(parts, "["+strconv.Itoa(i)+"]"+cuiCardStr(c))
-			continue
-		}
-		parts = append(parts, cuiCardStr(c))
-	}
-	return strings.Join(parts, " ")
-}
-
 // desmocheMeldKindName はメルド種別の名前を返す。
 func desmocheMeldKindName(k domain.DesmocheMeldKind) string {
 	if k == domain.DesmocheMeldSet {
@@ -64,7 +49,7 @@ func (p *DesmocheCuiPresenter) Output(c interfaces.DesmocheGame, lastErr error) 
 				"idx", strconv.Itoa(i),
 				"kind", desmocheMeldKindName(m.Kind),
 				"owner", strconv.Itoa(m.Owner),
-				"cards", desmocheCardListStr(m.Cards, false)) + "\n")
+				"cards", cuiIndexedCardSliceStr(m.Cards, false)) + "\n")
 		}
 
 		for i, player := range c.GetPlayers() {
@@ -82,7 +67,7 @@ func (p *DesmocheCuiPresenter) Output(c interfaces.DesmocheGame, lastErr error) 
 				for j := range player.GetCardsSize() {
 					hand = append(hand, player.GetCard(j))
 				}
-				sb.WriteString("  " + desmocheCardListStr(hand, true) + "\n")
+				sb.WriteString("  " + cuiIndexedCardSliceStr(hand, true) + "\n")
 			}
 		}
 

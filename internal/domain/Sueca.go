@@ -263,7 +263,7 @@ func (g *Sueca) ScoreRound() {
 		g.gameEndFlag = true
 		g.winnerTeam = leader
 		g.phase = SuecaPhaseGameEnd
-		g.appendLogCode(-1, "game_end", "sueca.log.gameEnd", map[string]string{"team": teamName(leader)}, nil)
+		g.appendLogCode(-1, "game_end", "sueca.log.gameEnd", map[string]string{"team": TeamName(leader)}, nil)
 	}
 }
 

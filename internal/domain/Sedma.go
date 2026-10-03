@@ -94,14 +94,6 @@ func NewDefaultSedma() *Sedma {
 // SedmaTeamOf プレイヤーが属するチーム (0 = 席0&2, 1 = 席1&3)
 func SedmaTeamOf(playerIdx int) int { return playerIdx % SedmaTeamCnt }
 
-// SedmaTeamName チーム番号を表示名 (A/B) に変換する (classic ワーカーで自己完結)。
-func SedmaTeamName(team int) string {
-	if team == 0 {
-		return "A"
-	}
-	return "B"
-}
-
 // Reset ゲーム初期化
 func (g *Sedma) Reset() {
 	g.gameEndFlag = false

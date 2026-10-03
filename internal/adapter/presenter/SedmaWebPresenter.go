@@ -143,7 +143,7 @@ func (p *SedmaWebPresenter) winnerMessage(g interfaces.SedmaGame) (string, strin
 	if humanTeam >= 0 && winnerTeam == humanTeam {
 		return "ゲーム終了！ あなたのチームの勝ち！", "sedma.result.humanWin", nil
 	}
-	teamName := domain.SedmaTeamName(winnerTeam)
+	teamName := domain.TeamName(winnerTeam)
 	params := map[string]string{"team": teamName}
 	return fmt.Sprintf("ゲーム終了！ チーム%sの勝ち！", teamName), "sedma.result.cpuWin", params
 }

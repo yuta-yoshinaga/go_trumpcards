@@ -12,21 +12,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-func nainJauneCardListStr(cards []*domain.Card, indexed bool) string {
-	if len(cards) == 0 {
-		return "-"
-	}
-	parts := make([]string, 0, len(cards))
-	for i, c := range cards {
-		if indexed {
-			parts = append(parts, "["+strconv.Itoa(i)+"]"+cuiCardStr(c))
-			continue
-		}
-		parts = append(parts, cuiCardStr(c))
-	}
-	return strings.Join(parts, " ")
-}
-
 // nainJauneBoxLabel は区画の表示名を返す。
 func nainJauneBoxLabel(b domain.NainJauneBox) string {
 	return i18n.T("nainjaune.box." + b.String())
@@ -65,7 +50,7 @@ func (p *NainJauneCuiPresenter) Output(c interfaces.NainJauneGame, lastErr error
 		}
 
 		if pile := c.GetPlayedPile(); len(pile) > 0 {
-			sb.WriteString(i18n.Tf("nainjaune.pileLine", "cards", nainJauneCardListStr(pile, false)) + "\n")
+			sb.WriteString(i18n.Tf("nainjaune.pileLine", "cards", cuiIndexedCardSliceStr(pile, false)) + "\n")
 		}
 
 		for i, player := range c.GetPlayers() {
@@ -86,7 +71,7 @@ func (p *NainJauneCuiPresenter) Output(c interfaces.NainJauneGame, lastErr error
 				for j := range player.GetCardsSize() {
 					hand = append(hand, player.GetCard(j))
 				}
-				sb.WriteString("  " + nainJauneCardListStr(hand, true) + "\n")
+				sb.WriteString("  " + cuiIndexedCardSliceStr(hand, true) + "\n")
 			}
 		}
 

@@ -443,7 +443,7 @@ func (g *Mus) resolveBet(action, amount int) error {
 		if g.pendingStake > 0 {
 			return NewDomainErrorCode(ErrInvalidPlay, "mus.errCannotPass", nil)
 		}
-		g.appendLog(-1, "paso", "mus.log.paso", map[string]string{"team": teamName(g.betTeam)}, nil)
+		g.appendLog(-1, "paso", "mus.log.paso", map[string]string{"team": TeamName(g.betTeam)}, nil)
 		if g.firstActorPaso {
 			// 両チーム・パソ → 流局 (showdown で +1)。
 			g.results[ri] = MusRoundResult{Kind: MusResultDeferred, Stake: 1, Team: -1}
@@ -466,13 +466,13 @@ func (g *Mus) resolveBet(action, amount int) error {
 		}
 		g.pendingStake = amount
 		g.lastBettorTeam = g.betTeam
-		g.appendLog(-1, "envido", "mus.log.envido", map[string]string{"team": teamName(g.betTeam), "amount": strconv.Itoa(amount)}, nil)
+		g.appendLog(-1, "envido", "mus.log.envido", map[string]string{"team": TeamName(g.betTeam), "amount": strconv.Itoa(amount)}, nil)
 		g.betTeam = 1 - g.betTeam
 		return nil
 	case MusActionOrdago:
 		g.pendingStake = -1 // sentinel: ordago
 		g.lastBettorTeam = g.betTeam
-		g.appendLog(-1, "ordago", "mus.log.ordago", map[string]string{"team": teamName(g.betTeam)}, nil)
+		g.appendLog(-1, "ordago", "mus.log.ordago", map[string]string{"team": TeamName(g.betTeam)}, nil)
 		g.betTeam = 1 - g.betTeam
 		return nil
 	case MusActionQuiero:
@@ -485,7 +485,7 @@ func (g *Mus) resolveBet(action, amount int) error {
 			return nil
 		}
 		g.results[ri] = MusRoundResult{Kind: MusResultAccepted, Stake: g.pendingStake, Team: -1}
-		g.appendLog(-1, "quiero", "mus.log.quiero", map[string]string{"team": teamName(g.betTeam), "amount": strconv.Itoa(g.pendingStake)}, nil)
+		g.appendLog(-1, "quiero", "mus.log.quiero", map[string]string{"team": TeamName(g.betTeam), "amount": strconv.Itoa(g.pendingStake)}, nil)
 		g.advanceRound()
 		return nil
 	case MusActionNoQuiero:
@@ -496,7 +496,7 @@ func (g *Mus) resolveBet(action, amount int) error {
 		win := g.lastBettorTeam
 		g.results[ri] = MusRoundResult{Kind: MusResultAwarded, Stake: 1, Team: win}
 		g.amarrakos[win]++
-		g.appendLog(-1, "no_quiero", "mus.log.noQuiero", map[string]string{"team": teamName(g.betTeam), "winTeam": teamName(win)}, nil)
+		g.appendLog(-1, "no_quiero", "mus.log.noQuiero", map[string]string{"team": TeamName(g.betTeam), "winTeam": TeamName(win)}, nil)
 		g.checkGameEnd()
 		if g.gameEndFlag {
 			return nil
@@ -515,7 +515,7 @@ func (g *Mus) resolveOrdago(ri int) {
 	g.gameEndFlag = true
 	g.winnerTeam = win
 	g.phase = MusPhaseGameEnd
-	g.appendLog(-1, "ordago_result", "mus.log.ordagoResult", map[string]string{"team": teamName(win)}, nil)
+	g.appendLog(-1, "ordago_result", "mus.log.ordagoResult", map[string]string{"team": TeamName(win)}, nil)
 }
 
 // advanceRound 次の賭けラウンドへ進む。Juego の後は showdown。
@@ -549,7 +549,7 @@ func (g *Mus) Showdown() {
 		win := g.roundWinner(ri)
 		r.Team = win
 		g.amarrakos[win] += r.Stake
-		g.appendLog(-1, "showdown", "mus.log.showdown", map[string]string{"roundKey": musRoundKey(ri), "team": teamName(win), "stake": strconv.Itoa(r.Stake)}, nil)
+		g.appendLog(-1, "showdown", "mus.log.showdown", map[string]string{"roundKey": musRoundKey(ri), "team": TeamName(win), "stake": strconv.Itoa(r.Stake)}, nil)
 		if g.checkGameEnd() {
 			return
 		}
@@ -564,7 +564,7 @@ func (g *Mus) checkGameEnd() bool {
 			g.gameEndFlag = true
 			g.winnerTeam = t
 			g.phase = MusPhaseGameEnd
-			g.appendLog(-1, "game_end", "mus.log.gameEnd", map[string]string{"team": teamName(t)}, nil)
+			g.appendLog(-1, "game_end", "mus.log.gameEnd", map[string]string{"team": TeamName(t)}, nil)
 			return true
 		}
 	}
