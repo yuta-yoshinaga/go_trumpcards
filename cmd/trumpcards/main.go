@@ -253,6 +253,52 @@ func flagSetVisited(fs *flag.FlagSet, names ...string) bool {
 	return seen
 }
 
+// localizeFlagError translates the three error forms returned by Go's flag
+// package. Candidates come only from the FlagSet involved in the parse.
+func localizeFlagError(err error, cmd string, fs *flag.FlagSet) string {
+	msg := err.Error()
+	context := ""
+	if cmd != "" {
+		context = "trumpcards " + cmd + ": "
+	}
+	flagName := ""
+	kind, value := "", ""
+	if strings.HasPrefix(msg, "flag provided but not defined: -") {
+		kind, flagName = "cliFlagUnknown", strings.TrimPrefix(msg, "flag provided but not defined: -")
+	} else if strings.HasPrefix(msg, "flag needs an argument: -") {
+		kind, flagName = "cliFlagNeedsValue", strings.TrimPrefix(msg, "flag needs an argument: -")
+	} else if strings.HasPrefix(msg, "invalid value ") {
+		rest := strings.TrimPrefix(msg, "invalid value ")
+		if end := strings.Index(rest, " for flag -"); end >= 0 {
+			kind, value = "cliFlagBadValue", strings.Trim(rest[:end], "\"")
+			rest = rest[end+len(" for flag -"):]
+			if colon := strings.Index(rest, ":"); colon >= 0 {
+				flagName = rest[:colon]
+			}
+		}
+	}
+	if kind == "" {
+		return i18n.Tf("cliFlagError", "context", context, "err", msg)
+	}
+	name := formatFlagName(flagName)
+	line := i18n.Tf(kind, "context", context, "flag", name, "value", value)
+	if kind == "cliFlagUnknown" && fs != nil {
+		candidates := []string{}
+		fs.VisitAll(func(f *flag.Flag) { candidates = append(candidates, f.Name) })
+		if suggestion := cuiutil.SuggestCommand(flagName, candidates, 2); suggestion != "" {
+			line += "\n  " + i18n.Tf("didYouMean", "name", formatFlagName(suggestion))
+		}
+	}
+	return line
+}
+
+func formatFlagName(name string) string {
+	if len(name) == 1 {
+		return "-" + name
+	}
+	return "--" + name
+}
+
 func main() {
 	os.Exit(run())
 }
@@ -294,7 +340,7 @@ func run() int {
 		// could not see. The other two usage-error paths already settled on
 		// this: the unknown-game path uses cliUnknownGameHint (#4305) and
 		// parseSubFlagsTo uses cliTryHelp (#4307). See issue #5180.
-		_, _ = fmt.Fprintln(os.Stderr, i18n.Tf("cliFlagError", "err", err.Error()))
+		_, _ = fmt.Fprintln(os.Stderr, localizeFlagError(err, "", flag.CommandLine))
 		_, _ = fmt.Fprintln(os.Stderr, i18n.T("cliTryHelpTop"))
 		return 2
 	}
@@ -914,7 +960,7 @@ func parseSubFlagsTo(name string, args []string, setup func(*flag.FlagSet), stdo
 				printHelp()
 				return false, 0
 			}
-			_, _ = fmt.Fprintln(stderr, i18n.Tf("cliSubcommandFlagError", "cmd", name, "err", err.Error()))
+			_, _ = fmt.Fprintln(stderr, localizeFlagError(err, name, fs))
 			_, _ = fmt.Fprintln(stderr, i18n.Tf("cliTryHelp", "cmd", name))
 			return false, 2
 		}

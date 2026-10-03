@@ -673,6 +673,60 @@ func TestParseSubFlagsToNoHelpDumpOnFlagError(t *testing.T) {
 	}
 }
 
+func TestLocalizeFlagErrorShortFlagFormattingAndContext(t *testing.T) {
+	originalLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(originalLang) })
+	i18n.SetLang("en")
+
+	for _, tc := range []struct {
+		name, flagArg, value string
+	}{
+		{name: "missing value", flagArg: "-p"},
+		{name: "invalid value", flagArg: "-p", value: "abc"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			fs := flag.NewFlagSet("web", flag.ContinueOnError)
+			fs.SetOutput(io.Discard)
+			var port int
+			fs.IntVar(&port, "p", 0, "")
+			args := []string{tc.flagArg}
+			if tc.value != "" {
+				args = append(args, tc.value)
+			}
+			err := fs.Parse(args)
+			if err == nil {
+				t.Fatal("expected flag parse error")
+			}
+			got := localizeFlagError(err, "web", fs)
+			if !strings.Contains(got, "trumpcards web:") || !strings.Contains(got, "-p") {
+				t.Errorf("localized error should include command context and -p: %q", got)
+			}
+			if strings.Contains(got, "---") {
+				t.Errorf("localized error must not contain triple hyphen: %q", got)
+			}
+		})
+	}
+
+	fs := flag.NewFlagSet("version", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+	var short bool
+	fs.BoolVar(&short, "short", false, "")
+	err := fs.Parse([]string{"--shrot"})
+	if err == nil {
+		t.Fatal("expected unknown flag parse error")
+	}
+	got := localizeFlagError(err, "version", fs)
+	if !strings.Contains(got, `Did you mean "--short"?`) {
+		t.Errorf("suggestion should use the long flag spelling: %q", got)
+	}
+
+	err = errors.New("unrecognized flag parser error")
+	got = localizeFlagError(err, "version", fs)
+	if !strings.Contains(got, "trumpcards version:") {
+		t.Errorf("fallback error should retain command context: %q", got)
+	}
+}
+
 // TestParseSubFlagsToPrintsHelpOnceOnHelpFlag verifies that `-h` prints the
 // subcommand help to stdout exactly once (not twice, as it did when Usage
 // duplicated the explicit ErrHelp-branch print). See issue #4307.
@@ -1040,19 +1094,19 @@ func TestRunUnknownTopLevelFlagIsI18nError(t *testing.T) {
 		wantHint    string
 	}{
 		{
-			name:        "ja locale wraps error in cliFlagError",
+			name:        "ja locale localizes unknown flag",
 			args:        []string{"trumpcards", "--lang", "ja", "--bogus"},
 			wantExit:    2,
 			wantPrefix:  "エラー: 不明なオプション",
-			wantInclude: "-bogus",
+			wantInclude: "--bogus",
 			wantHint:    "trumpcards --help",
 		},
 		{
-			name:        "en locale wraps error in cliFlagError",
+			name:        "en locale localizes unknown flag",
 			args:        []string{"trumpcards", "--lang", "en", "--bogus"},
 			wantExit:    2,
-			wantPrefix:  "Error: invalid option",
-			wantInclude: "-bogus",
+			wantPrefix:  "Error: unknown option",
+			wantInclude: "--bogus",
 			wantHint:    "trumpcards --help",
 		},
 	}

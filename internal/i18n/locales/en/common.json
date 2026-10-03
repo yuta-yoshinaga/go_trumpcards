@@ -59,10 +59,9 @@
   "cliInvalidCategory": "Error: invalid category \"{{category}}\" (supported: {{categories}})",
   "cliGamesJSONError": "Error: failed to encode games as JSON: {{err}}",
   "cliGamesJSONIgnoredFlags": "Warning: --short / --aliases are ignored in --json mode (the JSON schema is fixed)",
-  "cliSubcommandFlagError": "Error: trumpcards {{cmd}}: {{err}}",
   "cliTryHelp": "Run 'trumpcards help {{cmd}}' for usage.",
   "cliTryHelpTop": "Run 'trumpcards --help' for usage.",
-  "cliFlagError": "Error: invalid option ({{err}})",
+  "cliFlagError": "Error: {{context}}invalid option ({{err}})",
   "cliInvalidColorMode": "Error: invalid --color mode \"{{mode}}\" (supported: auto, always, never)",
   "metaAIRequired": "Meta-AI setting is required (0=off, 1=on).",
   "invalidMetaAI": "Invalid value: {{val}}. Please enter 0 or 1.",
@@ -641,5 +640,8 @@
   "common.suit.diamond": "Diamond",
   "common.suit.notrump": "No trump",
   "common.suit.unknown": "Unknown",
-  "cliGamesNoMatches": "No games match your search"
+  "cliGamesNoMatches": "No games match your search",
+  "cliFlagUnknown": "Error: {{context}}unknown option {{flag}}",
+  "cliFlagNeedsValue": "Error: {{context}}{{flag}} requires a value",
+  "cliFlagBadValue": "Error: {{context}}invalid value \"{{value}}\" for {{flag}}"
 }
