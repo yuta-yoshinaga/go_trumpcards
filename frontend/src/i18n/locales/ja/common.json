@@ -401,6 +401,7 @@
   "watten.log.dealScore": "チーム {{team}} がディールを獲得 +{{stake}}（マッチ {{team0}}-{{team1}}）",
   "watten.log.gameEnd": "チーム {{team}} がマッチに勝利しました！",
   "nav": {
+    "sidebar": "ゲームナビゲーション",
     "accordion": "アコーディオン",
     "acesup": "四つ葉のクローバー",
     "addFavorite": "お気に入りに追加",
@@ -1060,6 +1061,7 @@
     "play": "{{card}} を出す"
   },
   "label": {
+    "tutorial": "チュートリアル",
     "result": "結果:",
     "cpuAction": "CPU行動:",
     "cpuActionLog": "CPUプレイヤーの行動ログ",
