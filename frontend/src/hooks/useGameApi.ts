@@ -1,7 +1,10 @@
 import { useMutation } from '@tanstack/react-query';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useOptionalSound } from '../providers/SoundProvider';
+import { describeApiFailure } from '../utils/describeApiFailure';
+
+/** Retry callback metadata consumed by ErrorAlert. */
+export type GameApiRetry = (() => Promise<void>) & { retryable?: boolean };
 
 /**
  * Central sound tap (see the sound-centralization design):
@@ -50,11 +53,12 @@ export function useGameApi<TState, TArgs extends unknown[]>(
   loading: boolean;
   error: string | null;
   exec: (...args: TArgs) => Promise<void>;
-  retry: () => Promise<void>;
+  retry: GameApiRetry;
 } {
   const [state, setState] = useState<TState | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [retryable, setRetryable] = useState(true);
   // `exec` awaits the request before setting state, so a component that unmounts
   // mid-flight would otherwise still be written to on resolve. React treats that as
   // a silent no-op, which is exactly why it went unnoticed: it only breaks once the
@@ -95,6 +99,7 @@ export function useGameApi<TState, TArgs extends unknown[]>(
     setLoading(true);
     try {
       setError(null);
+      setRetryable(true);
       const res = await mutateAsyncRef.current(args);
       // Everything past this point touches the component or its side effects, so a
       // gone component gets none of it — no state write, no sound, no onSuccess.
@@ -112,9 +117,11 @@ export function useGameApi<TState, TArgs extends unknown[]>(
         // never let sound failures reach game state
       }
       await onSuccessRef.current?.(res, args);
-    } catch {
+    } catch (e) {
       if (!mountedRef.current) return;
-      setError(NETWORK_ERROR_MESSAGE());
+      const failure = describeApiFailure(e);
+      setError(failure.message);
+      setRetryable(failure.retryable);
       try {
         soundRef.current?.consumeExecClaim?.();
       } catch {
@@ -125,11 +132,15 @@ export function useGameApi<TState, TArgs extends unknown[]>(
     }
   }, []);
 
-  const retry = useCallback(async () => {
+  const retryRequest = useCallback(async () => {
     if (lastArgsRef.current) {
       await execFn(...lastArgsRef.current);
     }
   }, [execFn]);
 
+  const retry = useMemo<GameApiRetry>(
+    () => Object.assign(() => retryRequest(), { retryable }),
+    [retryRequest, retryable],
+  );
   return { state, setState, loading, error, exec: execFn, retry };
 }

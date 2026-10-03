@@ -16,7 +16,6 @@ import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardSelection } from '../hooks/useCardSelection';
 import { useCliGame } from '../hooks/useCliGame';
@@ -36,6 +35,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { NINETYNINE_HELP, parseNinetynineCommand } from '../utils/cli/commands/ninetynineCommands';
 import { formatNinetynineState } from '../utils/cli/formatters/ninetynineFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { describeApiFailure } from '../utils/describeApiFailure';
 import { ninetynineDeclaredTricks } from '../utils/hints/ninetynineHint';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -175,8 +175,8 @@ function NinetyNinePageContent() {
       const res = await ninetyNineApi.exec('hint');
       setServerHint(res.hint ?? null);
       setHintError(null);
-    } catch {
-      setHintError(NETWORK_ERROR_MESSAGE());
+    } catch (error) {
+      setHintError(describeApiFailure(error).message);
     } finally {
       setHintLoading(false);
     }
