@@ -7,6 +7,21 @@ import { AXES } from '../../constants/discoverAxes';
 import { MoodQuestion } from './MoodQuestion';
 
 describe('MoodQuestion', () => {
+  it('uses Japanese for the accessible question number', () => {
+    render(
+      <MoodQuestion
+        axis={AXES.mood}
+        questionIndex={0}
+        selected={null}
+        onSelect={() => {}}
+        onSkip={() => {}}
+        questionNumber={1}
+        totalQuestions={5}
+      />,
+    );
+    expect(screen.getByLabelText('全 5 問中 1 問目')).toBeInTheDocument();
+  });
+
   it('renders all options for the selected sub-question', () => {
     render(
       <MoodQuestion

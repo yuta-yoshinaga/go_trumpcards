@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 /**
  * Layout-preserving skeleton shown while the lazy `discover` i18n bundle
  * loads. Renders an 8-card deck progress placeholder, a question-text
@@ -5,11 +7,12 @@
  * the real content swaps in (DR-3).
  */
 export function DiscoverSkeleton() {
+  const { t } = useTranslation('common');
   return (
     <div
       role="status"
       aria-busy="true"
-      aria-label="Loading"
+      aria-label={t('skeleton.loading')}
       className="flex-1 min-h-0 flex flex-col items-center justify-start px-4 py-8 gap-6"
     >
       <ul aria-hidden="true" className="flex gap-1.5 items-end justify-center">

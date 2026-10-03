@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import type { TutorialStep } from '../../types/tutorial';
@@ -67,6 +68,7 @@ function getTooltipStyle(rect: SpotlightRect | null, placement: TutorialStep['pl
 
 /** Renders a full-screen overlay with a spotlight cutout and tooltip for the tutorial. */
 export function TutorialOverlay({ step, stepIndex, totalSteps, onNext, onSkip, reducedMotion }: TutorialOverlayProps) {
+  const { t } = useTranslation('common');
   const maskId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -163,7 +165,7 @@ export function TutorialOverlay({ step, stepIndex, totalSteps, onNext, onSkip, r
       ref={dialogRef}
       role="dialog"
       aria-modal="true"
-      aria-label="Tutorial"
+      aria-label={t('label.tutorial')}
       className="fixed inset-0 z-50"
       onKeyDown={handleKeyDown}
       style={transitionStyle}

@@ -29,7 +29,7 @@ export function DesktopSidebar() {
   return (
     <aside
       className="hidden lg:flex lg:flex-col lg:w-60 lg:shrink-0 glass-panel--dark overflow-y-auto pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)]"
-      aria-label={t('nav.sidebar', { defaultValue: 'Game navigation' })}
+      aria-label={t('nav.sidebar')}
     >
       {/* Site name */}
       <div className="px-3 py-3 border-b border-ds-border-subtle">
