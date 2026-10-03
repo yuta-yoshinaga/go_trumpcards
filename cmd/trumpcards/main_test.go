@@ -209,9 +209,11 @@ func TestRunHelpCommandHelpFlagsAfterGame(t *testing.T) {
 			if stdout.Len() == 0 {
 				t.Error("expected blackjack help on stdout")
 			}
-			if got := stderr.String(); tc.want == "" && got != "" {
+			got := stderr.String()
+			if tc.want == "" && got != "" {
 				t.Errorf("stderr = %q, want empty", got)
-			} else if tc.want != "" && !strings.Contains(got, tc.want) {
+			}
+			if tc.want != "" && !strings.Contains(got, tc.want) {
 				t.Errorf("stderr = %q, want rendered warning %q", got, tc.want)
 			}
 		})
