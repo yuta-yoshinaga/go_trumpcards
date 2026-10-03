@@ -86,7 +86,7 @@ deliberately does not repeat it. A second hand-maintained copy is how this secti
 describe three workers and 93 of 233 games long after the other three shipped -- the duplicate,
 not the wording, was the defect.
 
-The frontend routes requests to the correct Worker via `workerUrl` mapping in `frontend/src/api/gameApi.ts`. When `VITE_WORKER_*_URL` env vars are unset, requests fall back to relative URLs (Docker deployment).
+The frontend routes requests to the correct Worker via `workerUrl` mapping in `frontend/src/api/gameExec.ts` (re-exported by `gameApi.ts`). When `VITE_WORKER_*_URL` env vars are unset, requests fall back to relative URLs (Docker deployment).
 
 ### Session persistence
 
@@ -111,7 +111,7 @@ games.RegisterKVGame("<game>", games.Category<Bucket>,
 ```
 
 The bucket named here must match the game's `Category` in `registry.go` and the `WORKER_*`
-constant in `frontend/src/api/gameApi.ts`. For the full set of registration points, see
+constant in `frontend/src/api/gameExec.ts`. For the full set of registration points, see
 [`docs/new-game-checklist.md`](new-game-checklist.md).
 
 ### TinyGo constraints
