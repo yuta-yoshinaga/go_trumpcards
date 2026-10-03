@@ -21,6 +21,8 @@
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",
+  "currentTrickPoints": "Card points in this trick: {{thirds}}/3",
+  "resolvedTrickPoints": "Team {{team}} won this trick: {{thirds}}/3 points",
   "previousTrick": "Previous Trick",
   "previousTrickEmpty": "No previous trick yet this round",
   "previousTrickWinner": "Won by {{name}}",

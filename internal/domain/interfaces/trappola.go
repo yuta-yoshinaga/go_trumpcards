@@ -41,6 +41,8 @@ type TrappolaGame interface {
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	GetCurrentTrickThirds() int
+	GetLastTrickThirds() int
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する
 	GetLeadPlayerIdx() int
 	// GetTeamScores チーム別累積点を取得する

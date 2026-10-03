@@ -54,6 +54,8 @@ func (p *TrappolaWebPresenter) buildBase(g interfaces.TrappolaGame) *controller.
 	}
 
 	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
+	resObj.CurrentTrickThirds = g.GetCurrentTrickThirds()
+	resObj.LastTrickThirds = g.GetLastTrickThirds()
 	resObj.LastTrick, resObj.LastTrickWinner = p.buildLastTrickOutput(g)
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj

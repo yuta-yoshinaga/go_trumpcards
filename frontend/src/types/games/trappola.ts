@@ -41,6 +41,8 @@ export interface TrappolaResponse extends BaseGameResponse {
   currentTrick: TrappolaTrickCard[];
   lastTrick: TrappolaTrickCard[];
   lastTrickWinner: number;
+  currentTrickThirds: number;
+  lastTrickThirds: number;
   leadPlayerIdx: number;
   teamScores: number[];
   teamRoundThirds: number[];

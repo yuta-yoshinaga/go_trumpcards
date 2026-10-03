@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { trappolaApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -85,6 +85,30 @@ describe('TrappolaPage', () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<TrappolaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+  });
+
+  it('shows the domain supplied current and resolved trick points with the winning team', async () => {
+    mockExec.mockResolvedValue(
+      makeTrappolaState({
+        currentTrick: [{ playerIdx: 0, card: { design: 'SPADE', value: 1 } }],
+        currentTrickThirds: 3,
+      }),
+    );
+    renderWithProviders(<TrappolaPage />);
+    expect(await screen.findByText('場札の得点: 3/3点')).toBeInTheDocument();
+
+    cleanup();
+    mockExec.mockResolvedValue(
+      makeTrappolaState({
+        phase: 1,
+        trickNumber: 2,
+        lastTrick: [{ playerIdx: 2, card: { design: 'SPADE', value: 1 } }],
+        lastTrickWinner: 2,
+        lastTrickThirds: 3,
+      }),
+    );
+    renderWithProviders(<TrappolaPage />);
+    expect(await screen.findByText('チームAがこのトリックで獲得: 3/3点')).toBeInTheDocument();
   });
 
   it('renders round end with next round button', async () => {

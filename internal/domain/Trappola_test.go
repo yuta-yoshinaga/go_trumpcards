@@ -219,6 +219,57 @@ func TestTrappolaResolveTrickGuards(t *testing.T) {
 	assert.Equal(t, domain.TrappolaPhasePlay, g.GetPhase()) // unchanged
 }
 
+func TestTrappolaTrickThirdsTrackPlayAndResolution(t *testing.T) {
+	g := newTestTrappola()
+	trapSetHand(g.GetPlayer(0), trapCard(domain.CardDesignSpade, 1))
+	trapSetHand(g.GetPlayer(1), trapCard(domain.CardDesignSpade, 13))
+	trapSetHand(g.GetPlayer(2), trapCard(domain.CardDesignSpade, 4))
+	trapSetHand(g.GetPlayer(3), trapCard(domain.CardDesignSpade, 3))
+	g.SetPhase(domain.TrappolaPhasePlay)
+	g.SetCurrentPlayerIdx(0)
+	require.NoError(t, g.PlayerPlay(0))
+	assert.Equal(t, 3, g.GetCurrentTrickThirds())
+	g.CpuPlay()
+	assert.Equal(t, 4, g.GetCurrentTrickThirds())
+	g.CpuPlay()
+	g.CpuPlay()
+	g.ResolveTrick()
+	assert.Equal(t, 4, g.GetLastTrickThirds())
+	g.NextTrick()
+	assert.Zero(t, g.GetCurrentTrickThirds())
+}
+
+func TestTrappolaLegacySnapshotResolvesAllTrickCardPoints(t *testing.T) {
+	g := newTestTrappola()
+	g.SetPhase(domain.TrappolaPhasePlay)
+	g.SetCurrentPlayerIdx(0)
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 2, Card: trapCard(domain.CardDesignSpade, 3)},
+		{PlayerIdx: 3, Card: trapCard(domain.CardDesignSpade, 13)},
+	})
+	trapSetHand(g.GetPlayer(0), trapCard(domain.CardDesignSpade, 1))
+	trapSetHand(g.GetPlayer(1), trapCard(domain.CardDesignSpade, 12))
+
+	// Emulate a persisted snapshot from before the lT field existed.
+	snapshot, err := json.Marshal(g)
+	require.NoError(t, err)
+	var legacy map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(snapshot, &legacy))
+	delete(legacy, "lT")
+	snapshot, err = json.Marshal(legacy)
+	require.NoError(t, err)
+	var restored domain.Trappola
+	require.NoError(t, json.Unmarshal(snapshot, &restored))
+	assert.Equal(t, 1, restored.GetCurrentTrickThirds())
+	assert.Zero(t, restored.GetLastTrickThirds())
+
+	require.NoError(t, restored.PlayerPlay(0))
+	restored.CpuPlay()
+	restored.ResolveTrick()
+	assert.Equal(t, 5, restored.GetLastTrickThirds())
+	assert.Equal(t, [domain.TrappolaTeamCnt]int{5, 0}, restored.GetTeamRoundThirds())
+}
+
 // --- scoring ---
 
 func TestTrappolaScoreRoundThirdsToPoints(t *testing.T) {
