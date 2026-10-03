@@ -214,6 +214,8 @@ func (b *BlackJack) resolvePayouts() {
 	}
 
 	for i, hand := range b.playerHands {
+		hand.SetBonusKey("")
+		hand.SetBonusAmount(0)
 		if hand.IsSurrendered() {
 			// サレンダー: 半額返却済み（PlayerSurrender内で処理）
 			hand.SetResult(GameResultLose)
@@ -228,6 +230,8 @@ func (b *BlackJack) resolvePayouts() {
 		bonus := b.payoutHandWithVariant(b.player, hand, hand.IsFromSplit(), result)
 		hand.SetNetChange(b.player.GetChips() - chipsBefore - hand.GetBet())
 		if bonus != nil {
+			hand.SetBonusKey(bonus.NameKey)
+			hand.SetBonusAmount(hand.GetNetChange() - hand.GetBet())
 			b.appendLog(i, "bonus", bonus.NameKey, nil, nil)
 			b.bonusKeys = append(b.bonusKeys, bonus.NameKey)
 		}

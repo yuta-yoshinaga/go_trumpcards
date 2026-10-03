@@ -11,6 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestBlackJackWebPresenters_Method(t *testing.T) {
@@ -29,6 +30,18 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 		assert.Equal(t, 0, len(result.Dealer.Cards))
 		assert.Equal(t, 1, len(result.Hands))
 		assert.Equal(t, 0, result.Hands[0].Score)
+	})
+	t.Run("outputs per-hand bonus details", func(t *testing.T) {
+		bj := domain.NewSpanish21BlackJack()
+		bj.Reset()
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBonusKey("spanish21.bonus.fivecard21")
+		hand.SetBonusAmount(50)
+		output := tbp.Output(bj, nil)
+		var result controller.BlackJackWebOutput
+		require.NoError(t, json.Unmarshal([]byte(output), &result))
+		assert.Equal(t, "spanish21.bonus.fivecard21", result.Hands[0].BonusKey)
+		assert.Equal(t, 50, result.Hands[0].BonusAmount)
 	})
 	t.Run("success Output action phase", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -58,6 +71,8 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 		assert.Equal(t, domain.BJPhaseAction, result.Phase)
 		assert.Equal(t, 1, len(result.Hands))
 		assert.Equal(t, 100, result.Hands[0].Bet)
+		assert.Empty(t, result.Hands[0].BonusKey)
+		assert.Zero(t, result.Hands[0].BonusAmount)
 	})
 	t.Run("success Output end phase lose", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)

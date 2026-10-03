@@ -109,6 +109,24 @@ func TestSpanish21BonusPayout5Card21(t *testing.T) {
 	assert.Equal(t, "spanish21.bonus.fivecard21", bonus.NameKey)
 	// 100 * 3/2 = 150 利益、+ベット返却100 = 250
 	assert.Equal(t, 900+250, bj.GetPlayer().GetChips())
+	bj.playerHands = []*BlackJackHand{hand}
+	bj.dealer.AddCard(NewCard(CardDesignClover, 10, false))
+	bj.dealer.AddCard(NewCard(CardDesignDiamond, 7, false))
+	bj.resolvePayouts()
+	assert.Equal(t, 50, hand.GetBonusAmount())
+	encoded, err := json.Marshal(hand)
+	require.NoError(t, err)
+	var restored BlackJackHand
+	require.NoError(t, json.Unmarshal(encoded, &restored))
+	assert.Equal(t, "spanish21.bonus.fivecard21", restored.GetBonusKey())
+	assert.Equal(t, 50, restored.GetBonusAmount())
+	var legacy BlackJackHand
+	require.NoError(t, json.Unmarshal([]byte(`{"c":[],"b":100}`), &legacy))
+	assert.Empty(t, legacy.GetBonusKey())
+	assert.Zero(t, legacy.GetBonusAmount())
+	hand.Reset()
+	assert.Empty(t, hand.GetBonusKey())
+	assert.Zero(t, hand.GetBonusAmount())
 }
 
 // TestSpanish21BonusPayoutSuited777 はスペード7-7-7のスーパーボーナス3:1を検証する
@@ -185,6 +203,8 @@ func TestSpanish21BonusFallsThroughOnNonQualifyingWin(t *testing.T) {
 	assert.Nil(t, bonus, "non-qualifying 21 must not receive bonus")
 	// 通常の 2x 配当 = 200
 	assert.Equal(t, 900+200, bj.GetPlayer().GetChips())
+	assert.Empty(t, hand.GetBonusKey())
+	assert.Zero(t, hand.GetBonusAmount())
 }
 
 // TestStandardBlackJackNoBonusPayout は標準BJでボーナスが発動しないことを検証する
@@ -234,6 +254,66 @@ func TestSpanish21SetConfigSwitchesVariant(t *testing.T) {
 	assert.True(t, bj.deckCountChanged, "variant change should trigger deck rebuild")
 }
 
+// TestSpanish21BonusAmountByYaku verifies recorded bonus deltas against each bonus payout tier.
+func TestSpanish21BonusAmountByYaku(t *testing.T) {
+	tests := []struct {
+		name   string
+		cards  []*Card
+		key    string
+		amount int
+	}{
+		{"five card 21", []*Card{NewCard(CardDesignSpade, 2, false), NewCard(CardDesignClover, 3, false), NewCard(CardDesignHeart, 4, false), NewCard(CardDesignDiamond, 5, false), NewCard(CardDesignSpade, 7, false)}, "spanish21.bonus.fivecard21", 50},
+		{"six card 21", []*Card{NewCard(CardDesignSpade, 2, false), NewCard(CardDesignClover, 2, false), NewCard(CardDesignHeart, 3, false), NewCard(CardDesignDiamond, 4, false), NewCard(CardDesignSpade, 5, false), NewCard(CardDesignClover, 5, false)}, "spanish21.bonus.sixcard21", 100},
+		{"seven card 21", []*Card{NewCard(CardDesignSpade, 2, false), NewCard(CardDesignClover, 2, false), NewCard(CardDesignHeart, 3, false), NewCard(CardDesignDiamond, 3, false), NewCard(CardDesignSpade, 3, false), NewCard(CardDesignClover, 4, false), NewCard(CardDesignHeart, 4, false)}, "spanish21.bonus.sevencard21", 200},
+		{"6-7-8", []*Card{NewCard(CardDesignSpade, 6, false), NewCard(CardDesignClover, 7, false), NewCard(CardDesignHeart, 8, false)}, "spanish21.bonus.678.mixed", 50},
+		{"spade 7-7-7", []*Card{NewCard(CardDesignSpade, 7, false), NewCard(CardDesignSpade, 7, false), NewCard(CardDesignSpade, 7, false)}, "spanish21.bonus.777.spade", 200},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			bj := NewSpanish21BlackJack()
+			bj.GetPlayer().SetChips(900)
+			hand := NewBlackJackHand()
+			for _, card := range tt.cards {
+				hand.AddCard(card)
+			}
+			hand.SetBet(100)
+			bj.playerHands = []*BlackJackHand{hand}
+			bj.dealer.AddCard(NewCard(CardDesignClover, 10, false))
+			bj.dealer.AddCard(NewCard(CardDesignDiamond, 7, false))
+			bj.resolvePayouts()
+			assert.Equal(t, tt.key, hand.GetBonusKey())
+			assert.Equal(t, tt.amount, hand.GetBonusAmount())
+			assert.Equal(t, hand.GetNetChange()-hand.GetBet(), hand.GetBonusAmount())
+			assert.GreaterOrEqual(t, hand.GetBonusAmount(), 0)
+		})
+	}
+
+	t.Run("fractional 3:2 payout follows credited chips", func(t *testing.T) {
+		bj := NewSpanish21BlackJack()
+		bj.GetPlayer().SetChips(985)
+		hand := NewBlackJackHand()
+		for _, card := range []*Card{
+			NewCard(CardDesignSpade, 2, false),
+			NewCard(CardDesignClover, 3, false),
+			NewCard(CardDesignHeart, 4, false),
+			NewCard(CardDesignDiamond, 5, false),
+			NewCard(CardDesignSpade, 7, false),
+		} {
+			hand.AddCard(card)
+		}
+		hand.SetBet(15)
+		bj.playerHands = []*BlackJackHand{hand}
+		bj.dealer.AddCard(NewCard(CardDesignClover, 10, false))
+		bj.dealer.AddCard(NewCard(CardDesignDiamond, 7, false))
+
+		bj.resolvePayouts()
+
+		assert.Equal(t, 22, hand.GetNetChange())
+		assert.Equal(t, 7, hand.GetBonusAmount())
+		assert.Equal(t, hand.GetNetChange()-hand.GetBet(), hand.GetBonusAmount())
+	})
+}
+
 // TestSpanish21BonusKeysCapturedOnResolve は resolvePayouts がボーナス成立時に
 // GetBonusKeys へキーを記録すること、およびボーナスなしの再精算でクリアされることを検証する。
 func TestSpanish21BonusKeysCapturedOnResolve(t *testing.T) {
@@ -254,6 +334,8 @@ func TestSpanish21BonusKeysCapturedOnResolve(t *testing.T) {
 
 	bj.resolvePayouts()
 	assert.Equal(t, []string{"spanish21.bonus.fivecard21"}, bj.GetBonusKeys())
+	assert.Equal(t, "spanish21.bonus.fivecard21", hand.GetBonusKey())
+	assert.Equal(t, 50, hand.GetBonusAmount())
 
 	// ボーナスなしの通常ハンドで再精算 → クリアされる
 	plain := NewBlackJackHand()
@@ -263,6 +345,8 @@ func TestSpanish21BonusKeysCapturedOnResolve(t *testing.T) {
 	bj.playerHands = []*BlackJackHand{plain}
 	bj.resolvePayouts()
 	assert.Empty(t, bj.GetBonusKeys())
+	assert.Empty(t, plain.GetBonusKey())
+	assert.Zero(t, plain.GetBonusAmount())
 }
 
 // TestBlackJack_SetBonusKeys は SetBonusKeys が成立ボーナスキーを設定し

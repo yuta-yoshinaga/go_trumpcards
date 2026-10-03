@@ -58,6 +58,8 @@ const endPhaseWithBonus: BlackJackResponse = {
       canSplit: false,
       surrendered: false,
       canSurrender: false,
+      bonusKey: 'spanish21.bonus.777.spade',
+      bonusAmount: 200,
     },
   ],
   phase: 5,
@@ -89,6 +91,7 @@ describe('Spanish21Page', () => {
     expect(announcement).toHaveAttribute('role', 'status');
     expect(announcement).toHaveAttribute('aria-live', 'polite');
     expect(announcement).toHaveTextContent('7-7-7 (全スペード)');
+    expect(await screen.findByTestId('hand-bonus-0')).toHaveTextContent('7-7-7 (全スペード) ボーナス +200');
   });
 
   it('keeps the bonus announcement empty when the round has no bonuses', async () => {

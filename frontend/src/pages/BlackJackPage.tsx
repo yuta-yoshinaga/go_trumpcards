@@ -573,6 +573,11 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                           )}
                         </p>
                       )}
+                      {variant === 'spanish21' && phase === BjPhase.END && hand.bonusKey && (
+                        <p className="text-ds-warning text-sm font-bold" data-testid={`hand-bonus-${handIndex}`}>
+                          {t('bonusAward', { bonus: t(bonusBadgeKey(hand.bonusKey)), amount: hand.bonusAmount })}
+                        </p>
+                      )}
                       <p className="text-ds-text-primary mt-0 mb-0.5">
                         {t('score')} {hand.score} / {tc('betting.currentBet')} {hand.bet}
                       </p>
