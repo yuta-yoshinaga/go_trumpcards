@@ -222,7 +222,7 @@ do the one thing it exists for. The read-only helpers (`coverage-gate`, `flake-l
 Key routing rules:
 - Product ideas, "is this worth building", brainstorming → invoke office-hours
 - Bugs, errors, "why is this broken", 500 errors → invoke investigate
-- Push a change and open its PR → follow improve-issue steps 5–6 (or commit-commands:commit-push-pr). Not gstack `ship`: it bumps VERSION/CHANGELOG, which this repo does not have — versions are bumped by the master release workflow
+- Push a change and open its PR → follow improve-issue step 5 (or commit-commands:commit-push-pr). Not gstack `ship`: it bumps VERSION/CHANGELOG, which this repo does not have — versions are bumped by the master release workflow
 - QA, test the site, find bugs → invoke qa
 - Code review, check my diff → invoke review
 - Update docs after shipping → invoke document-release
