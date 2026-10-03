@@ -23,6 +23,9 @@ run block 'combined pkill flags' 'pkill -fx worker'
 run block 'pgrep output piped to kill' 'pgrep -f worker | xargs kill'
 run block 'pgrep command substitution to kill' 'kill $(pgrep -f worker)'
 run block 'killall regex' 'killall -r worker.*'
+run block 'newline command separator' $'echo start\npkill -f worker'
+run block 'bash -c command' "bash -c 'pkill -f x'"
+run block 'sh -c command' 'sh -c "pkill -f x"'
 run pass 'pkill exact' 'pkill -x worker'
 run pass 'pkill plain pattern' 'pkill worker'
 run pass 'kill PID' 'kill 1234'
@@ -31,5 +34,9 @@ run pass 'pgrep display only' 'pgrep -f worker'
 run pass 'grep phrase' "grep 'pkill -f' file"
 run pass 'echo phrase' 'echo "pkill -f"'
 run pass 'heredoc phrase' $'cat <<EOF\npkill -f worker\nEOF'
+run pass 'quoted heredoc phrase' $"git commit -F - <<'EOF'\npkill -f worker\nEOF"
+run pass 'tab stripped heredoc' $'cat <<-EOF\n\tpkill -f worker\n\tEOF'
+run pass 'ssh command is out of scope' "ssh host 'pkill -f x'"
+run pass 'xargs command string is out of scope' "printf '%s' 'pkill -f x' | xargs sh -c"
 [ "$fail" -eq 0 ] || exit 1
 echo 'proc-kill-guard: all cases passed'

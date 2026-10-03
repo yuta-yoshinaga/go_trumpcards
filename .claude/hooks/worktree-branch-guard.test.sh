@@ -33,9 +33,17 @@ run block 'branch force other worktree branch' 'git branch -f shared origin/shar
 run block 'branch long force' 'git branch --force shared'
 run block 'update-ref other worktree branch' 'git update-ref refs/heads/shared HEAD'
 run block 'fetch refspec other worktree branch' 'git fetch origin feature:shared'
+run block 'later git after &&' 'git fetch origin && git checkout -B shared origin/shared'
+run block 'later git after semicolon' 'echo start; git checkout -B shared'
+run block 'git -c option' 'git -c color.ui=always checkout -B shared'
+run block 'git global path options' "git --git-dir='$TMP/main/.git' --work-tree='$TMP/main' checkout -B shared"
+run block 'combined checkout force option' 'git checkout -Bshared'
+run block 'combined branch force option' 'git branch -fshared'
 run block 'git -C current worktree syntax' "git -C '$TMP/main' checkout -B shared"
 run pass 'unoccupied branch' 'git checkout -B free origin/free'
 run pass 'current worktree branch' 'git checkout -B main'
+ln -s "$TMP/main" "$TMP/main-link"
+run pass 'current worktree symlink path' "git -C '$TMP/main-link' checkout -B main"
 run pass 'detach checkout' 'git checkout shared --detach'
 run pass 'fetch without destination' 'git fetch origin develop'
 [ "$fail" -eq 0 ] || exit 1

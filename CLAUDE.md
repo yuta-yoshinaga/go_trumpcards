@@ -10,6 +10,7 @@ Go implementations of 383 trump card game algorithms (blackjack, poker, hearts, 
 | [Node.js](https://nodejs.org/) | 24.x |
 | [Bun](https://bun.sh/) | 1.3.10 |
 | [jq](https://jqlang.github.io/jq/) | any (required by the `.claude/settings.json` commit-gate hooks — they silently no-op without it) |
+| [Python](https://www.python.org/) | 3.x (required by the `.claude/settings.json` command guards — they silently no-op without it) |
 
 ## Package Manager Rule
 
