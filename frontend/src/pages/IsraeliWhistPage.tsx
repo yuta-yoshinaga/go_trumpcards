@@ -292,7 +292,7 @@ function IsraeliWhistPageContent() {
                 ログを開かないと、点が普段の倍動いた理由が分からなかった。 */}
             {isRoundEnd && state.doubled === true && (
               <div
-                className="my-3 rounded bg-black/30 border border-ds-warning px-3 py-2 text-center text-ds-text-primary"
+                className="my-3 rounded bg-ds-surface border border-ds-warning px-3 py-2 text-center text-ds-text-primary"
                 role="status"
                 data-testid="iw-doubled-banner"
               >

@@ -358,7 +358,7 @@ function SevensPageContent() {
                 state.config.jokerReclaimEnabled ||
                 state.config.endStopEnabled ||
                 state.config.jokerConsecutiveBanned) && (
-                <div className="bg-black/30 rounded-lg text-ds-warning py-1.5 px-3 mb-2 text-xs">
+                <div className="bg-ds-surface rounded-lg text-ds-warning py-1.5 px-3 mb-2 text-xs">
                   {t('rules.title')}
                   {state.config.tunnelEnabled && ` ${t('rules.tunnelTag')}`}
                   {state.config.tunnelSkipWidth >= 2 &&

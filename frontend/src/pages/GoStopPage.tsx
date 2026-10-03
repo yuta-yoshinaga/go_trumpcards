@@ -315,7 +315,7 @@ function GoStopPageContent() {
             {/* Go / Stop decision */}
             {isDecisionPhase && !isGameEnd && (
               <div
-                className="my-2 p-3 rounded-lg bg-black/40 text-center border border-ds-warning/60"
+                className="my-2 p-3 rounded-lg bg-ds-surface text-center border border-ds-warning/60"
                 data-testid="gostop-decision"
               >
                 <div className="text-ds-text-primary font-semibold mb-1">{t('decision.title')}</div>

@@ -201,7 +201,7 @@ function SlobberhannesPageContent() {
             {/* ♣Q が場に出ている間は、位置の警告と並べて出す。 */}
             {!isGameEnd && !isRoundEnd && queenOnTable && (
               <div
-                className="mb-3 rounded bg-black/30 border border-ds-error px-3 py-2 text-ds-text-primary text-sm text-center"
+                className="mb-3 rounded bg-ds-surface border border-ds-error px-3 py-2 text-ds-text-primary text-sm text-center"
                 role="status"
                 data-testid="sh-queen-warning"
               >
@@ -222,7 +222,7 @@ function SlobberhannesPageContent() {
             {/* 最初と最後のトリックは中身に関係なく罰点対象。盤面には出ない情報。 */}
             {!isGameEnd && !isRoundEnd && (isFirstTrick || isLastTrick) && (
               <div
-                className="mb-3 rounded bg-black/30 border border-ds-warning px-3 py-2 text-ds-text-primary text-sm text-center"
+                className="mb-3 rounded bg-ds-surface border border-ds-warning px-3 py-2 text-ds-text-primary text-sm text-center"
                 role="status"
                 data-testid="sh-position-warning"
               >

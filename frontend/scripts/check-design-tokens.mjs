@@ -7,6 +7,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findBadgeContrastViolations } from './lib/badge-contrast.mjs';
+import { addBgBlackRatchetViolation, countBgBlackUtilities } from './lib/bg-black-ratchet.mjs';
 import { collectDesignTokens, findUndefinedDesignUtilities } from './lib/design-token-utilities.mjs';
 import { findErrorTextTokenViolations } from './lib/error-text-token.mjs';
 import { assertFloor } from './lib/floor.mjs';
@@ -48,6 +49,19 @@ async function walk(dir) {
 const files = await walk(SRC_DIR);
 const violations = [];
 const signedDeltaViolations = [];
+
+// Issue #9418: freeze the existing bg-black/N usage in game components/pages.
+// Lower the ceiling when intentional migrations reduce the count.
+const GAME_UI_DIRS = ['components', 'pages'];
+const BG_BLACK_CEILING = 881;
+let bgBlackCount = 0;
+for (const dir of GAME_UI_DIRS) {
+  for (const file of await walk(join(SRC_DIR, dir))) {
+    if (!file.endsWith('.tsx')) continue;
+    bgBlackCount += countBgBlackUtilities(await readFile(file, 'utf8'));
+  }
+}
+addBgBlackRatchetViolation(violations, bgBlackCount, BG_BLACK_CEILING);
 
 for (const file of files) {
   const text = await readFile(file, 'utf8');
@@ -91,7 +105,8 @@ assertFloor('signed-delta', files.length, 1200, 'source files scanned');
 if (violations.length > 0) {
   console.error('\nDesign-token policy violations:\n');
   for (const v of violations) {
-    console.error(`  ${v.file}:${v.line}  [${v.match}]  ${v.message}`);
+    const location = v.line === undefined ? v.file : `${v.file}:${v.line}`;
+    console.error(`  ${location}  [${v.match}]  ${v.message}`);
   }
   console.error(`\n${violations.length} violation(s). See DESIGN.md and issue #1411.`);
   process.exit(1);

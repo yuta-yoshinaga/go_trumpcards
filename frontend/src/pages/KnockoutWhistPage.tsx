@@ -276,7 +276,7 @@ function KnockoutWhistPageContent() {
               <div
                 role="status"
                 data-testid="kw-spectator-banner"
-                className="mb-3 p-2 rounded border border-ds-warning/50 bg-black/30 text-ds-warning text-center text-sm font-medium"
+                className="mb-3 p-2 rounded border border-ds-warning/50 bg-ds-surface text-ds-warning text-center text-sm font-medium"
               >
                 {t('spectatorBanner', { n: state.activeCount })}
               </div>
