@@ -35,7 +35,8 @@ Issues may be implemented concurrently in separate worktree lanes (the batch-lan
 scripts); what stays serial is landing them on `develop`:
 
 - Every lane branches from freshly fetched `develop`. When `develop` moves under an
-  open PR, update the branch (`gh pr update-branch`) before landing it.
+  open PR, update the branch (`gh pr update-branch`) before landing it — that changes
+  the head SHA, so land-pr re-runs its gate on the new commit.
 - Land one PR at a time through `land-pr`, and after each merge run `go build ./...`
   on `develop`: two PRs can each add the same symbol, and each is green on its own.
 - CI here runs one workflow at a time, so more open PRs queue CI rather than speed
@@ -72,7 +73,7 @@ scripts); what stays serial is landing them on `develop`:
 
 4. **For each issue, run `improve-issue`** end-to-end (branch → … → merge →
    sync). With lanes, start the next issue in a free lane once the current one is
-   pushed; land PRs in the order they turn green.
+   pushed (or closed as a false positive); land PRs in the order they turn green.
 
 5. **Maintain a running tally** in the batch memory file (reuse the existing
    `memory/project_issues_*.md` for this batch, or start a new
