@@ -308,6 +308,25 @@ function UnsunKarutaPageContent() {
                         b: teamTricks[1 - state.humanTeam] ?? 0,
                       })}
                     </div>
+                    <div className="mt-2" data-testid="unsunkaruta-captured-cards">
+                      {[state.humanTeam, 1 - state.humanTeam].map((team) => (
+                        <section key={team} className="mt-2">
+                          <h3 className="text-ds-text-primary">{t('roundResult.capturedTeam', { team })}</h3>
+                          {state.teamCapturedTricks[team].map((trick, index) => (
+                            <div key={`${team}-${index}`} className="mt-1 flex flex-wrap items-center gap-1">
+                              <span>{t('roundResult.trickPoint', { n: index + 1 })}</span>
+                              {trick.map((card, cardIndex) => (
+                                <CardImage
+                                  key={`${team}-${index}-${cardIndex}`}
+                                  card={card}
+                                  width={Math.round(cardWidth * 0.45)}
+                                />
+                              ))}
+                            </div>
+                          ))}
+                        </section>
+                      ))}
+                    </div>
                     {isGameEnd && (
                       <div className="text-ds-text-primary" data-testid="unsunkaruta-winner">
                         {state.winnerTeam < 0

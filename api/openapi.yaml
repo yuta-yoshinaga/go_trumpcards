@@ -82086,6 +82086,15 @@ components:
           type: array
           items:
             type: integer
+        teamCapturedTricks:
+          type: array
+          description: Captured cards grouped by team and trick; each trick scores one ko.
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Card'
         lastTrickWinner:
           type: integer
         result:

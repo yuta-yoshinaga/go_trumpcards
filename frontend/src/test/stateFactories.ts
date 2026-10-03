@@ -5155,6 +5155,7 @@ const baseUnsunKarutaState: UnsunKarutaResponse = {
   currentTrick: [],
   teamTricks: [0, 0],
   teamScores: [0, 0],
+  teamCapturedTricks: [[], []],
   lastTrickWinner: -1,
   result: 0,
   playableIndices: [0, 1, 2, 3],

@@ -64,17 +64,19 @@ type UnsunKarutaWebOutput struct {
 	// Declared はこのトリックで宣言が行われたか。
 	Declared bool `json:"declared"`
 	// CanDeclare は人間がいま宣言できるか (リードの手番か)。
-	CanDeclare      bool                  `json:"canDeclare"`
-	CurrentTrick    []*WebOutputTrickCard `json:"currentTrick"`
-	TeamTricks      []int                 `json:"teamTricks"`
-	TeamScores      []int                 `json:"teamScores"`
-	LastTrickWinner int                   `json:"lastTrickWinner"`
-	Result          int                   `json:"result"`
-	PlayableIndices []int                 `json:"playableIndices"`
-	GameEndFlag     bool                  `json:"gameEndFlag"`
-	WinnerTeam      int                   `json:"winnerTeam"`
-	IsHumanTurn     bool                  `json:"isHumanTurn"`
-	Hint            *WebOutputCardHint    `json:"hint,omitempty"`
+	CanDeclare   bool                  `json:"canDeclare"`
+	CurrentTrick []*WebOutputTrickCard `json:"currentTrick"`
+	TeamTricks   []int                 `json:"teamTricks"`
+	TeamScores   []int                 `json:"teamScores"`
+	// TeamCapturedTricks はチームごとの獲得トリック (各トリック8枚)。
+	TeamCapturedTricks [][][]*WebOutputCard `json:"teamCapturedTricks"`
+	LastTrickWinner    int                  `json:"lastTrickWinner"`
+	Result             int                  `json:"result"`
+	PlayableIndices    []int                `json:"playableIndices"`
+	GameEndFlag        bool                 `json:"gameEndFlag"`
+	WinnerTeam         int                  `json:"winnerTeam"`
+	IsHumanTurn        bool                 `json:"isHumanTurn"`
+	Hint               *WebOutputCardHint   `json:"hint,omitempty"`
 	WebOutputBase
 	Config UnsunKarutaWebOutputConfig `json:"config"`
 }
