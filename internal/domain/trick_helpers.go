@@ -82,7 +82,7 @@ func indexOfPlayerInTrick(trick []*TrickCard, playerIdx int) int {
 	return -1
 }
 
-// TeamName returns the label for one of two teams.
+// TeamName returns "A" for team 0 and "B" for every other team.
 func TeamName(team int) string {
 	if team == 0 {
 		return "A"

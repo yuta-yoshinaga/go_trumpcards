@@ -451,10 +451,6 @@ func madrassoSortHand(p *MadrassoPlayer) {
 	})
 }
 
-//
-// **クローン元の teamName は共有できない。** あちら (Tressette.go) は casino
-// タグ、こちらは extra3 なので、extra3 のビルドでは定義ごと消える。
-
 // --- Card helpers ---
 
 // madrassoStrength トリックの強さ。3 が最強 (9)、4 が最弱 (0)。

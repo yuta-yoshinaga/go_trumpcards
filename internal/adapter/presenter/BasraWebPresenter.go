@@ -109,11 +109,11 @@ func (p *BasraWebPresenter) buildBase(g interfaces.BasraGame) *controller.BasraW
 // encodeScoresParam は最終得点を "0:12,1:3" 形式の文字列に詰める。
 func (p *BasraWebPresenter) encodeScoresParam(g interfaces.BasraGame) string {
 	return encodeIndexedScores(g.GetPlayerCnt(), func(i int) (int, bool) {
-		p := g.GetPlayer(i)
-		if p == nil {
+		player := g.GetPlayer(i)
+		if player == nil {
 			return 0, false
 		}
-		return p.GetScore(), true
+		return player.GetScore(), true
 	})
 }
 

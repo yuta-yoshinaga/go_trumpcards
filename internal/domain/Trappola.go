@@ -511,11 +511,6 @@ func trappolaSortHand(p *TrappolaPlayer) {
 
 // --- Card helpers ---
 
-//
-// **クローン元の teamName は共有できない。** あちら (Tressette.go) は casino
-// タグ、こちらは extra2 なので、extra2 のビルドでは定義ごと消えて
-// stranded symbol になる。名前を分けて自前で持つ。
-
 // trappolaStrength は札位の強さを返す。**順は A-K-Q-J-7-6-5-4-3。**
 //
 // クローン元のトレセッテは 3-2-A-K-Q-J-7-6-5-4 で、**3 と 2 が最強**という

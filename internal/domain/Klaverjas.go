@@ -101,9 +101,6 @@ func NewDefaultKlaverjas() *Klaverjas {
 // KlaverjasTeamOf プレイヤーが属するチーム (0 = 席0&2, 1 = 席1&3)
 func KlaverjasTeamOf(playerIdx int) int { return playerIdx % KlaverjasTeamCnt }
 
-// (共有ヘルパー teamName は casino ワーカー専用ファイル定義のため、classic
-// ワーカーでコンパイルできるよう Klaverjas 内に持つ)
-
 // Reset ゲーム初期化
 func (g *Klaverjas) Reset() {
 	g.gameEndFlag = false
