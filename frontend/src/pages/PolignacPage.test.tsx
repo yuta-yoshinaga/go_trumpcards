@@ -265,7 +265,7 @@ describe('PolignacPage jack breakdown', () => {
     renderWithProviders(<PolignacPage />);
     const jacks = await screen.findByTestId('pg-jacks-0');
     const emphasised = Array.from(jacks.querySelectorAll('span')).filter((el) =>
-      el.className.includes('text-ds-error'),
+      el.className.includes('text-ds-error-text'),
     );
     expect(emphasised).toHaveLength(1);
     expect(emphasised[0]).toHaveTextContent('♠J');

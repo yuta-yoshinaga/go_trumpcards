@@ -439,7 +439,7 @@ function DaifugoPageContent() {
 
             <div className="text-center" data-tutorial="df-play-pass">
               {countMismatch && (
-                <p className="mb-1.5 text-xs text-ds-error" role="alert" data-testid="daifugo-count-warning">
+                <p className="mb-1.5 text-xs text-ds-error-text" role="alert" data-testid="daifugo-count-warning">
                   {t('countMismatch', { count: tableCount })}
                 </p>
               )}

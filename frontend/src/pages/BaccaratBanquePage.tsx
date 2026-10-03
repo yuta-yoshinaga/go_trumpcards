@@ -250,7 +250,7 @@ function BaccaratBanquePageContent() {
                     state.lastResult.bankerDelta > 0
                       ? 'text-ds-success'
                       : state.lastResult.bankerDelta < 0
-                        ? 'text-ds-error'
+                        ? 'text-ds-error-text'
                         : 'text-ds-text-muted'
                   }`}
                   data-testid="banque-net"

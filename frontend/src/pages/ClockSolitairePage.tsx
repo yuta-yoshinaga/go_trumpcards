@@ -81,7 +81,7 @@ function ClockPileFaceUpSuits({ pile, testId }: { pile: ClockSolitaireCard[]; te
           key={`${card.design}-${card.value.toString()}`}
           role="img"
           aria-label={cardAlt(card)}
-          className={isRedSuitDesign(card.design) ? 'text-ds-error' : 'text-ds-text-primary'}
+          className={isRedSuitDesign(card.design) ? 'text-ds-error-text' : 'text-ds-text-primary'}
         >
           {suitSymbol(card.design)}
         </span>

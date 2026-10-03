@@ -435,7 +435,7 @@ function DurakPageContent() {
                       <div className="text-ds-text-primary text-sm font-bold">
                         {playerName(player.id, false)}
                         {state.attackerIdx === player.id && (
-                          <span className="text-ds-error text-xs ml-1">({t('attacker')})</span>
+                          <span className="text-ds-error-text text-xs ml-1">({t('attacker')})</span>
                         )}
                         {state.defenderIdx === player.id && (
                           <span className="text-ds-info text-xs ml-1">({t('defender')})</span>
@@ -465,7 +465,7 @@ function DurakPageContent() {
               <div className="mb-2" data-tutorial="dk-player-hand">
                 <div className="text-ds-text-primary font-bold text-sm mb-1">
                   {humanPlayer.cardCount}
-                  {isAttacker && <span className="text-ds-error text-xs ml-2">({t('attacker')})</span>}
+                  {isAttacker && <span className="text-ds-error-text text-xs ml-2">({t('attacker')})</span>}
                   {isDefender && <span className="text-ds-info text-xs ml-2">({t('defender')})</span>}
                   {isHumanTurn && <span className="text-ds-success text-xs ml-2">{t('selectCard')}</span>}
                 </div>

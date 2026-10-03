@@ -297,7 +297,7 @@ function IndianPokerPageContent() {
                           {tc('betting.currentBet')} {p.currentBet}
                         </span>
                       )}
-                      {p.folded && <span className="ml-1 text-ds-error text-xs">[{tc('status.folded')}]</span>}
+                      {p.folded && <span className="ml-1 text-ds-error-text text-xs">[{tc('status.folded')}]</span>}
                       {p.allIn && <span className="ml-1 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                     </div>
                     <div className={isMobile ? 'flex justify-center' : 'flex flex-wrap gap-1'}>
@@ -364,7 +364,9 @@ function IndianPokerPageContent() {
                       {tc('betting.currentBet')} {humanPlayer.currentBet}
                     </span>
                   )}
-                  {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
+                  {humanPlayer.folded && (
+                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
+                  )}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                 </div>
                 <div className="flex flex-wrap gap-1.5 mb-2">

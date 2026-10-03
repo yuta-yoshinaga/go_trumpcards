@@ -293,7 +293,7 @@ function GapsPageContent() {
                             <span
                               aria-hidden="true"
                               data-testid={`gaps-ghost-${rIdx}-${cIdx}`}
-                              className={`text-base font-semibold opacity-30 ${RED_DESIGNS.has(ghost.design) ? 'text-ds-error' : 'text-ds-text-primary'}`}
+                              className={`text-base font-semibold opacity-30 ${RED_DESIGNS.has(ghost.design) ? 'text-ds-error-text' : 'text-ds-text-primary'}`}
                             >
                               {isSuitDesign(ghost.design) ? suitSymbol(ghost.design) : undefined}
                               {valueName(ghost.value)}

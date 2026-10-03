@@ -332,7 +332,9 @@ function BadugiPageContent() {
                       {tc('betting.currentBet')} {humanPlayer.currentBet}
                     </span>
                   )}
-                  {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
+                  {humanPlayer.folded && (
+                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
+                  )}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                   {isEnd && !humanPlayer.folded && humanPlayer.handSize > 0 && (
                     <span

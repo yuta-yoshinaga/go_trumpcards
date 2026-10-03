@@ -319,7 +319,7 @@ function FourteenOutPageContent() {
                 role="status"
                 aria-live="polite"
                 data-testid="mc-invalid-pair"
-                className="mb-2 text-center text-ds-error text-sm font-medium"
+                className="mb-2 text-center text-ds-error-text text-sm font-medium"
               >
                 {t('label.invalidPair', {
                   first: t('label.column', { n: invalidPairColumns[0] }),

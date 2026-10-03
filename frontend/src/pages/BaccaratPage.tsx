@@ -232,7 +232,7 @@ function ShoeStatsPanel({
     <div className="mb-2 text-xs text-ds-text-primary" data-testid="baccarat-shoe-stats">
       <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
         <span className="text-ds-info">{t('stats.player', { n: stats.playerCount, pct: stats.playerPct })}</span>
-        <span className="text-ds-error">{t('stats.banker', { n: stats.bankerCount, pct: stats.bankerPct })}</span>
+        <span className="text-ds-error-text">{t('stats.banker', { n: stats.bankerCount, pct: stats.bankerPct })}</span>
         <span className="text-ds-success">{t('stats.tie', { n: stats.tieCount, pct: stats.tiePct })}</span>
         {streakLabel && (
           <span className="font-bold text-ds-warning">
@@ -469,7 +469,7 @@ function BaccaratPageContent() {
             {/* Banker Hand — staged reveal hides the 3rd card until step 3 */}
             {state.bankerHand.length > 0 && (
               <div className="mb-4" data-tutorial="bac-banker-hand">
-                <div className="text-ds-error font-bold text-center mb-1">
+                <div className="text-ds-error-text font-bold text-center mb-1">
                   <span aria-hidden="true">🔴</span> {t('banker')}{' '}
                   {t('label.value', { value: isEndPhase ? visibleBankerValue : state.bankerHandValue })}
                 </div>

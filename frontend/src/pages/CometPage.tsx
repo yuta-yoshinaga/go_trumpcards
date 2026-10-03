@@ -303,7 +303,7 @@ function CometPageContent() {
                     ))}
                     <div>{t('unplayedKings', { n: lastResult.unplayedKings })}</div>
                     {lastResult.heldWildIdx >= 0 && (
-                      <div className="text-ds-error" data-testid="comet-held-wild">
+                      <div className="text-ds-error-text" data-testid="comet-held-wild">
                         {t('heldWild', {
                           name: playerName(lastResult.heldWildIdx, lastResult.heldWildIdx === 0),
                         })}

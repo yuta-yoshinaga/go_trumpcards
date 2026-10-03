@@ -182,7 +182,7 @@ function BarbuPageContent() {
         <>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             {error && (
-              <button type="button" onClick={retry} className="text-ds-error underline">
+              <button type="button" onClick={retry} className="text-ds-error-text underline">
                 {error}
               </button>
             )}
@@ -420,7 +420,7 @@ function BarbuPageContent() {
                               <td
                                 key={p.id}
                                 className={`px-2 py-1 text-center ${
-                                  gained > 0 ? 'text-ds-success' : gained < 0 ? 'text-ds-error' : ''
+                                  gained > 0 ? 'text-ds-success' : gained < 0 ? 'text-ds-error-text' : ''
                                 }`}
                               >
                                 {gained > 0 ? `+${gained}` : gained}

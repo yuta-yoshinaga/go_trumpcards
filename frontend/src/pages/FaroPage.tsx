@@ -353,7 +353,7 @@ function FaroPageContent() {
                       >
                         {left}
                       </span>
-                      {(depleted || !canAfford) && <span className="text-[10px] text-ds-error">{status}</span>}
+                      {(depleted || !canAfford) && <span className="text-[10px] text-ds-error-text">{status}</span>}
                     </div>
                   );
                 })}
@@ -396,7 +396,7 @@ function FaroPageContent() {
                 <div className="text-ds-text-muted text-xs mb-2">{t('lastTurnTitle')}</div>
                 <div className="flex justify-center gap-6">
                   <div className="flex flex-col items-center gap-1">
-                    <span className="text-ds-error text-xs">{t('losing')}</span>
+                    <span className="text-ds-error-text text-xs">{t('losing')}</span>
                     {state.losingCard && <CardImage card={state.losingCard} width={cardWidth} />}
                   </div>
                   <div className="flex flex-col items-center gap-1">

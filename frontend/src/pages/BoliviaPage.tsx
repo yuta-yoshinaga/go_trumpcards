@@ -393,7 +393,7 @@ function BoliviaPageContent() {
                       {p.red3s.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
                           <span
-                            className={`text-xs self-center mr-1 ${!teamMelded ? 'text-ds-warning font-semibold' : 'text-ds-error'}`}
+                            className={`text-xs self-center mr-1 ${!teamMelded ? 'text-ds-warning font-semibold' : 'text-ds-error-text'}`}
                           >
                             {t('red3s')}
                           </span>

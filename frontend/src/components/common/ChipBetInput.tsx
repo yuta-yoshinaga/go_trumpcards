@@ -63,7 +63,7 @@ export function ChipBetInput({
   showSteppers = false,
 }: ChipBetInputProps) {
   // Foreground stays text-ds-text-primary (10.1:1 AAA on surface) — pairing
-  // text-ds-error with bg-ds-surface only hits ~2.7:1, well below WCAG AA.
+  // text-ds-error-text with bg-ds-surface only hits ~2.7:1, well below WCAG AA.
   // The error semantic is carried entirely by the coloured border.
   const errorClasses = invalid ? 'bg-ds-surface border-ds-error text-ds-text-primary' : '';
   const upperBound = max ?? Number.POSITIVE_INFINITY;

@@ -636,7 +636,7 @@ function CariocaPageContent() {
                     <span
                       data-testid="ca-layoff-acceptance"
                       data-accepts={String(layoffTargetAccepts)}
-                      className={`ml-1 ${layoffTargetAccepts ? 'text-ds-success' : 'text-ds-error'}`}
+                      className={`ml-1 ${layoffTargetAccepts ? 'text-ds-success' : 'text-ds-error-text'}`}
                     >
                       {layoffTargetAccepts ? t('layoffAcceptable') : t('layoffNotAcceptable')}
                     </span>

@@ -300,7 +300,7 @@ function BourrePageContent() {
           <span className="text-xs opacity-75" data-testid="bourre-trump">
             {t('label.trump')}:{' '}
             {isSuitDesign(state.trumpSuit) ? (
-              <span className={isRedSuitDesign(state.trumpSuit) ? 'text-ds-error' : undefined}>
+              <span className={isRedSuitDesign(state.trumpSuit) ? 'text-ds-error-text' : undefined}>
                 {suitSymbol(state.trumpSuit)}
               </span>
             ) : (

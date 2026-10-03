@@ -262,7 +262,7 @@ describe('CasinoHoldemPage', () => {
     fireEvent.change(screen.getByLabelText('AAボーナス'), { target: { value: '20' } });
     expect(preview).toHaveTextContent('必要チップ合計（アンテ・ボーナス・コール）: 380');
     expect(preview).toHaveTextContent('チップ不足: 30');
-    expect(preview).toHaveClass('text-ds-error');
+    expect(preview).toHaveClass('text-ds-error-text');
   });
 
   it('shows a validation error and disables Bet for a non-multiple-of-10 ante', async () => {

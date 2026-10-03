@@ -370,7 +370,7 @@ function OasisPokerPageContent() {
 
             {state.dealerHand.length > 0 && (
               <div className="mb-4">
-                <div className="text-ds-error font-bold text-center mb-1">
+                <div className="text-ds-error-text font-bold text-center mb-1">
                   <span aria-hidden="true">🔴</span> {t('dealer')}
                   {isEndPhase && (
                     <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank] ?? 'handRank.0')})</span>
@@ -540,7 +540,7 @@ function OasisPokerPageContent() {
                   data-testid="oasis-exchange-fee-line"
                   className={
                     selectedIndices.length >= 4
-                      ? 'font-semibold text-ds-error'
+                      ? 'font-semibold text-ds-error-text'
                       : selectedIndices.length >= 2
                         ? 'font-semibold text-ds-warning'
                         : 'text-ds-text-primary'

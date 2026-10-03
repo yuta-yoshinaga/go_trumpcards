@@ -52,7 +52,7 @@ type ContractStatus = 'made' | 'failed' | 'progress';
 /** Tailwind text color per contract status (made=success, in-progress=warning, failed=error). */
 const CONTRACT_STATUS_COLOR: Readonly<Record<ContractStatus, string>> = {
   made: 'text-ds-success',
-  failed: 'text-ds-error',
+  failed: 'text-ds-error-text',
   progress: 'text-ds-warning',
 };
 

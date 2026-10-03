@@ -238,7 +238,7 @@ function RamsPageContent() {
                     if (!movement) return null;
                     const delta = movement.payout - movement.penalty;
                     return (
-                      <span className={delta >= 0 ? 'ml-1 text-ds-success' : 'ml-1 text-ds-error'}>
+                      <span className={delta >= 0 ? 'ml-1 text-ds-success' : 'ml-1 text-ds-error-text'}>
                         {t('header.roundDelta', { delta })}
                       </span>
                     );

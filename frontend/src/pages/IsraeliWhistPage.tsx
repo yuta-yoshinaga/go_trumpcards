@@ -269,7 +269,7 @@ function IsraeliWhistPageContent() {
                   {t('header.total', { n: String(p.totalScore) })}
                   {isRoundEnd && (
                     <span
-                      className={`ml-2 ${p.roundScore < 0 ? 'text-ds-error' : 'text-ds-success'}`}
+                      className={`ml-2 ${p.roundScore < 0 ? 'text-ds-error-text' : 'text-ds-success'}`}
                       data-testid={`iw-round-delta-${p.id.toString()}`}
                     >
                       {t('header.roundDelta', { delta: formatSignedDelta(p.roundScore) })}

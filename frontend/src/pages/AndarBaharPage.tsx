@@ -284,7 +284,7 @@ function AndarBaharPageContent() {
                   {state.winner === AndarBaharColumn.ANDAR ? t('result.andarWins') : t('result.baharWins')}
                 </div>
                 <div
-                  className={`font-medium ${isProfit ? 'text-ds-success' : 'text-ds-error'}`}
+                  className={`font-medium ${isProfit ? 'text-ds-success' : 'text-ds-error-text'}`}
                   data-testid="payout-diff"
                 >
                   {isProfit ? t('payout.win', { amount: profit }) : t('payout.loss', { amount: Math.abs(profit) })}

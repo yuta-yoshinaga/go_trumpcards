@@ -226,7 +226,7 @@ function MonteBankPageContent() {
                   {/* **賭けの良し悪しはサーバの値をそのまま出す。** 数え直さない。 */}
                   <span
                     data-testid={`mb-note-${i}`}
-                    className={`text-xs mt-1 ${entry.isEven ? 'text-ds-success' : 'text-ds-error'}`}
+                    className={`text-xs mt-1 ${entry.isEven ? 'text-ds-success' : 'text-ds-error-text'}`}
                   >
                     {entry.isEven ? t('label.even') : t('label.against')}
                   </span>
@@ -261,7 +261,7 @@ function MonteBankPageContent() {
 
             {isResultPhase && (
               <div className="text-center mb-2" data-testid="mb-result">
-                <div className={`text-sm font-medium ${net >= 0 ? 'text-ds-success' : 'text-ds-error'}`}>
+                <div className={`text-sm font-medium ${net >= 0 ? 'text-ds-success' : 'text-ds-error-text'}`}>
                   {t(`result.${resultKeyOf(state.result)}`)} · {t('label.net')} {net}
                 </div>
               </div>

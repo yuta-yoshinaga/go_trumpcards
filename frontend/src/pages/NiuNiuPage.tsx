@@ -193,7 +193,7 @@ function NiuNiuPageContent() {
                     <div className="text-game-text-muted text-xs mt-1">
                       {t('bet')}: {seat.hand.bet}
                       {ended && seat.hand.payout !== 0 && (
-                        <span className={seat.hand.payout > 0 ? ' text-ds-success' : ' text-ds-error'}>
+                        <span className={seat.hand.payout > 0 ? ' text-ds-success' : ' text-ds-error-text'}>
                           {' '}
                           {seat.hand.payout > 0 ? `+${seat.hand.payout}` : seat.hand.payout}
                         </span>

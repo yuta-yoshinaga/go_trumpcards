@@ -206,7 +206,7 @@ describe('WhistPage', () => {
     await waitFor(() => expect(screen.getAllByText('チーム 0').length).toBeGreaterThan(0));
     // Score-table cells render the team label inside a colored chip span.
     const team0Chips = screen.getAllByText('チーム 0').filter((el) => el.className.includes('text-ds-info'));
-    const team1Chips = screen.getAllByText('チーム 1').filter((el) => el.className.includes('text-ds-error'));
+    const team1Chips = screen.getAllByText('チーム 1').filter((el) => el.className.includes('text-ds-error-text'));
     expect(team0Chips.length).toBeGreaterThan(0);
     expect(team1Chips.length).toBeGreaterThan(0);
   });

@@ -469,7 +469,7 @@ function MaoPageContent() {
                   {t('compliance', { count: state.correctCount, total: HINT_THRESHOLD })}
                 </span>
                 {state.rulePenalty && (
-                  <span className="text-ds-error font-semibold" role="status" data-testid="rule-penalty">
+                  <span className="text-ds-error-text font-semibold" role="status" data-testid="rule-penalty">
                     {t('rulePenalty')}
                   </span>
                 )}
@@ -544,7 +544,7 @@ function MaoPageContent() {
                         <span className="text-ds-text-primary font-medium">“{attempt.word}”</span>
                         {attempt.board && <span className="text-ds-text-muted">{cardAlt(attempt.board)}</span>}
                         <span
-                          className={`font-semibold ${attempt.penalty ? 'text-ds-error' : 'text-ds-success'}`}
+                          className={`font-semibold ${attempt.penalty ? 'text-ds-error-text' : 'text-ds-success'}`}
                           data-testid={attempt.penalty ? 'sayword-outcome-penalty' : 'sayword-outcome-correct'}
                         >
                           {attempt.penalty ? t('sayWordHistory.penalty') : t('sayWordHistory.correct')}
@@ -601,7 +601,7 @@ function MaoPageContent() {
                         aria-hidden="true"
                         data-testid={`suit-symbol-${suit}`}
                         className={`text-lg leading-none ${
-                          RED_SUITS.has(suit) ? 'text-ds-error' : 'text-ds-text-primary'
+                          RED_SUITS.has(suit) ? 'text-ds-error-text' : 'text-ds-text-primary'
                         }`}
                       >
                         {suitSymbolAt(suit, '')}

@@ -206,7 +206,7 @@ describe('RussianPokerPage', () => {
     const line = screen.getByTestId('russian-exchange-fee-line');
     expect(line).toHaveTextContent('選択中: 4枚');
     expect(within(line).getByText(/⚠/)).toBeInTheDocument();
-    expect(line.querySelector('.text-ds-error')).not.toBeNull();
+    expect(line.querySelector('.text-ds-error-text')).not.toBeNull();
   });
 
   it('toggles exchange selection with number keys in the action phase', async () => {

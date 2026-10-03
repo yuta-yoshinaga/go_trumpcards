@@ -108,21 +108,21 @@ describe('BourrePage', () => {
     mockExec.mockResolvedValue(makeState({ trumpSuit: 'HEART' }));
     renderWithProviders(<BourrePage />);
     const trump = await screen.findByTestId('bourre-trump');
-    expect(within(trump).getByText('♥')).toHaveClass('text-ds-error');
+    expect(within(trump).getByText('♥')).toHaveClass('text-ds-error-text');
   });
 
   it('header colors a red trump suit (diamonds) with the error token', async () => {
     mockExec.mockResolvedValue(makeState({ trumpSuit: 'DIAMOND' }));
     renderWithProviders(<BourrePage />);
     const trump = await screen.findByTestId('bourre-trump');
-    expect(within(trump).getByText('♦')).toHaveClass('text-ds-error');
+    expect(within(trump).getByText('♦')).toHaveClass('text-ds-error-text');
   });
 
   it('header does not color a black trump suit (clubs) with the error token', async () => {
     mockExec.mockResolvedValue(makeState({ trumpSuit: 'CLOVER' }));
     renderWithProviders(<BourrePage />);
     const trump = await screen.findByTestId('bourre-trump');
-    expect(within(trump).getByText('♣')).not.toHaveClass('text-ds-error');
+    expect(within(trump).getByText('♣')).not.toHaveClass('text-ds-error-text');
   });
 
   it('header shows a dash when the trump suit is unset', async () => {

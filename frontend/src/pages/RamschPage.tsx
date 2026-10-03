@@ -262,7 +262,7 @@ function RamschPageContent() {
                             だけを見ると、実際には複数人が失点したラウンドが画面上
                             「誰も負けていない」ように見える。**失点した本人の点で判定する。** */}
                         {isRoundEnd && !state.durchmarsch && p.roundScore < 0 && (
-                          <span className="ml-1 text-ds-error" data-testid={`ramsch-loser-${p.id}`}>
+                          <span className="ml-1 text-ds-error-text" data-testid={`ramsch-loser-${p.id}`}>
                             ({t('loserBadge')})
                           </span>
                         )}

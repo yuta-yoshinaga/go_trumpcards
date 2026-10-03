@@ -238,7 +238,7 @@ function PolignacPageContent() {
                       {p.takenJackSuits?.map((suit) => (
                         <span
                           key={`${p.id.toString()}-jack-${suit.toString()}`}
-                          className={suit === SPADE_DESIGN ? 'ml-1 font-bold text-ds-error' : 'ml-1'}
+                          className={suit === SPADE_DESIGN ? 'ml-1 font-bold text-ds-error-text' : 'ml-1'}
                         >
                           <span aria-hidden="true">
                             {suit === SPADE_DESIGN
@@ -265,7 +265,7 @@ function PolignacPageContent() {
                 {unclaimedJackSuits.map((suit) => (
                   <span
                     key={`unclaimed-jack-${suit}`}
-                    className={suit === SPADE_DESIGN ? 'ml-2 font-bold text-ds-error' : 'ml-2'}
+                    className={suit === SPADE_DESIGN ? 'ml-2 font-bold text-ds-error-text' : 'ml-2'}
                   >
                     <span aria-hidden="true">
                       {suit === SPADE_DESIGN ? t('jacks.spade') : t('jacks.other', { suit: suitSymbolAt(suit, '') })}

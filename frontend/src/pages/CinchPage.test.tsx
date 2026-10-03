@@ -230,9 +230,9 @@ describe('CinchPage', () => {
     mockExec.mockResolvedValue(nameTrumpState);
     renderWithProviders(<CinchPage />);
     const diamondBtn = await screen.findByRole('button', { name: 'ダイヤ' });
-    expect(diamondBtn.querySelector('span')?.className).toContain('text-ds-error');
+    expect(diamondBtn.querySelector('span')?.className).toContain('text-ds-error-text');
     const spadeBtn = screen.getByRole('button', { name: 'スペード' });
-    expect(spadeBtn.querySelector('span')?.className ?? '').not.toContain('text-ds-error');
+    expect(spadeBtn.querySelector('span')?.className ?? '').not.toContain('text-ds-error-text');
   });
 
   it('shows the trump suit name and a red symbol in the header when declared', async () => {
@@ -241,7 +241,7 @@ describe('CinchPage', () => {
     const header = await screen.findByTestId('cinch-trump-header');
     expect(header).toHaveTextContent('ハート');
     // The ♥ symbol is wrapped in a red span.
-    expect(header.querySelector('.text-ds-error')?.textContent).toBe('♥');
+    expect(header.querySelector('.text-ds-error-text')?.textContent).toBe('♥');
   });
 
   it('selecting a card then playing dispatches play', async () => {
@@ -267,7 +267,7 @@ describe('CinchPage', () => {
     renderWithProviders(<CinchPage />);
     const detail = await screen.findByTestId('cinch-bidder-detail');
     // Made-bid detail is not styled with the danger color and no set-back row is present.
-    expect(detail).not.toHaveClass('text-ds-error');
+    expect(detail).not.toHaveClass('text-ds-error-text');
     expect(screen.queryByTestId('cinch-setback-row')).not.toBeInTheDocument();
   });
 
@@ -276,7 +276,7 @@ describe('CinchPage', () => {
     renderWithProviders(<CinchPage />);
     const detail = await screen.findByTestId('cinch-bidder-detail');
     // Set-back bidder detail is emphasized with the danger color.
-    expect(detail).toHaveClass('text-ds-error');
+    expect(detail).toHaveClass('text-ds-error-text');
     // The bidder's gained row is highlighted as a set-back row.
     expect(screen.getByTestId('cinch-setback-row')).toBeInTheDocument();
   });

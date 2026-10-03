@@ -320,7 +320,7 @@ function FourCardPokerPageContent() {
             {/* Dealer Hand */}
             {state.dealerHand.length > 0 && (
               <div className="mb-4">
-                <div className="text-ds-error font-bold text-center mb-1">
+                <div className="text-ds-error-text font-bold text-center mb-1">
                   <span aria-hidden="true">🔴</span> {t('dealer')}
                   {isActionPhase && <span className="ml-2 text-xs">({t('dealerUpcard')})</span>}
                   {isEndPhase && state.dealerHandRank > 0 && (
@@ -429,7 +429,7 @@ function FourCardPokerPageContent() {
                   describedBy={betInvalid ? 'fcp-bet-error' : undefined}
                 />
                 {betInvalid && (
-                  <p id="fcp-bet-error" role="alert" className="text-ds-error text-xs">
+                  <p id="fcp-bet-error" role="alert" className="text-ds-error-text text-xs">
                     {t('betError')}
                   </p>
                 )}

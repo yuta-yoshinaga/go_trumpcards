@@ -445,7 +445,7 @@ function BakersDozenPageContent() {
                                   <div
                                     data-testid={`bd-empty-column-warn-${colIdx}`}
                                     role="alert"
-                                    className="absolute inset-0 flex items-center justify-center pointer-events-none text-xs text-ds-error font-bold text-center px-1 motion-safe:animate-pulse"
+                                    className="absolute inset-0 flex items-center justify-center pointer-events-none text-xs text-ds-error-text font-bold text-center px-1 motion-safe:animate-pulse"
                                   >
                                     🚫 {t('lastCardWarning')}
                                   </div>

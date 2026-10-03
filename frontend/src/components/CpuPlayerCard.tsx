@@ -103,7 +103,7 @@ export function CpuPlayerCard({
             {t('betting.currentBet')} {player.currentBet}
           </span>
         )}
-        {player.folded && <span className="ml-2 text-ds-error text-xs">[{t('status.folded')}]</span>}
+        {player.folded && <span className="ml-2 text-ds-error-text text-xs">[{t('status.folded')}]</span>}
         {player.allIn && <span className="ml-2 text-ds-warning text-xs">[{t('status.allIn')}]</span>}
         {showHandName && !player.folded && player.handName && (
           <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>

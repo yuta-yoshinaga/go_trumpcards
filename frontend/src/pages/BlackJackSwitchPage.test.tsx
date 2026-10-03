@@ -342,7 +342,7 @@ describe('BlackJackSwitchPage', () => {
     fireEvent.mouseEnter(btn);
     const preview = screen.getByTestId('hand-0-preview');
     expect(preview).toHaveTextContent('25');
-    expect(preview.className).toContain('text-ds-error');
+    expect(preview.className).toContain('text-ds-error-text');
   });
 
   it('paints the neutral path when the post-swap score is unchanged', async () => {

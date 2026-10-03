@@ -66,7 +66,7 @@ export function OldMaidDrawHistory({
           const fromName = findPlayerName(players, entry.drawPlayerIdx);
           const targetName = findPlayerName(players, entry.drawFromIdx);
           const targetIsSuspect = suspectPins?.has(targetPlayer?.id ?? -1) ?? false;
-          const arrowClass = targetIsSuspect ? 'text-ds-error font-bold' : 'text-ds-text-muted';
+          const arrowClass = targetIsSuspect ? 'text-ds-error-text font-bold' : 'text-ds-text-muted';
           return (
             <div
               key={i}

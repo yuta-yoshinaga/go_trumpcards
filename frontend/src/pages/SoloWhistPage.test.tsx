@@ -318,7 +318,7 @@ describe('SoloWhistPage', () => {
     renderWithProviders(<SoloWhistPage />);
     const line = await screen.findByTestId('solowhist-contract-progress');
     expect(line).toHaveTextContent('失敗確定');
-    expect(line.className).toContain('text-ds-error');
+    expect(line.className).toContain('text-ds-error-text');
   });
 
   it('fails the Misère contract the instant a trick is won', async () => {
@@ -328,7 +328,7 @@ describe('SoloWhistPage', () => {
     const line = await screen.findByTestId('solowhist-contract-progress');
     expect(line).toHaveTextContent('宣言者の進捗: 1 トリック（ミゼール・目標0）');
     expect(line).toHaveTextContent('失敗確定');
-    expect(line.className).toContain('text-ds-error');
+    expect(line.className).toContain('text-ds-error-text');
   });
 
   it('keeps a clean Misère in progress while no trick is won', async () => {

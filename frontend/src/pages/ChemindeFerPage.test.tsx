@@ -244,7 +244,7 @@ describe('ChemindeFerPage', () => {
     const { unmount } = renderWithProviders(<ChemindeFerPage />);
     const lost = await screen.findByTestId('cdf-net');
     expect(lost).toHaveTextContent('-50');
-    expect(lost.className).toContain('text-ds-error');
+    expect(lost.className).toContain('text-ds-error-text');
     unmount();
 
     // **賭けていない回に行ごと消すと、勝ったのか賭けていないのかが読めない。**

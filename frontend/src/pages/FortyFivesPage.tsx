@@ -186,7 +186,11 @@ function FortyFivesPageContent() {
         : 'needMore';
   const contractRemaining = Math.max(0, state.contract - declarerPoints);
   const contractStatusColor =
-    contractStatus === 'made' ? 'text-ds-success' : contractStatus === 'failed' ? 'text-ds-error' : 'text-ds-warning';
+    contractStatus === 'made'
+      ? 'text-ds-success'
+      : contractStatus === 'failed'
+        ? 'text-ds-error-text'
+        : 'text-ds-warning';
 
   const handleManualReset = () => {
     hideActionLog();

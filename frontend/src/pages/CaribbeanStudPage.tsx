@@ -235,7 +235,7 @@ function CaribbeanStudPageContent() {
                       tally.net > 0
                         ? 'font-bold text-ds-success'
                         : tally.net < 0
-                          ? 'font-bold text-ds-error'
+                          ? 'font-bold text-ds-error-text'
                           : 'font-bold text-ds-text-muted'
                     }
                   >
@@ -326,7 +326,7 @@ function CaribbeanStudPageContent() {
 
             {state.dealerHand.length > 0 && (
               <div className="mb-4">
-                <div className="text-ds-error font-bold text-center mb-1">
+                <div className="text-ds-error-text font-bold text-center mb-1">
                   <span aria-hidden="true">🔴</span> {t('dealer')}
                   {isEndPhase && HAND_RANK_KEYS[state.dealerHandRank] && (
                     <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank])})</span>

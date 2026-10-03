@@ -124,15 +124,15 @@ describe('LooPage', () => {
     renderWithProviders(<LooPage />);
 
     const inDebt = await screen.findByTestId('loo-chips-0');
-    expect(inDebt).toHaveClass('text-ds-error');
+    expect(inDebt).toHaveClass('text-ds-error-text');
     expect(inDebt).toHaveTextContent('▼');
     expect(within(inDebt).getByRole('img')).toHaveAccessibleName('赤字');
 
     // 0 と正の残高は現状どおり中立。
-    expect(screen.getByTestId('loo-chips-1')).not.toHaveClass('text-ds-error');
+    expect(screen.getByTestId('loo-chips-1')).not.toHaveClass('text-ds-error-text');
     expect(screen.getByTestId('loo-chips-1')).not.toHaveTextContent('▼');
-    expect(screen.getByTestId('loo-chips-2')).not.toHaveClass('text-ds-error');
-    expect(screen.getByTestId('loo-chips-3')).toHaveClass('text-ds-error');
+    expect(screen.getByTestId('loo-chips-2')).not.toHaveClass('text-ds-error-text');
+    expect(screen.getByTestId('loo-chips-3')).toHaveClass('text-ds-error-text');
   });
 
   it('renders the decide phase with play and pass buttons', async () => {

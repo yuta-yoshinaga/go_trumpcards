@@ -291,7 +291,7 @@ function HighCardFlushPageContent() {
             {/* Dealer Hand */}
             {state.dealerHand.length > 0 && (
               <div className="mb-4">
-                <div className="text-ds-error font-bold text-center mb-1">
+                <div className="text-ds-error-text font-bold text-center mb-1">
                   <span aria-hidden="true">🔴</span> {t('dealer')}
                   {isEndPhase && state.dealerFlushLen > 0 && (
                     <span className="ml-2 text-sm">({t('flushLine', { count: state.dealerFlushLen })})</span>
@@ -462,7 +462,7 @@ function HighCardFlushPageContent() {
                         : undefined
                   }
                 />
-                <div role="alert" className="text-ds-error text-xs">
+                <div role="alert" className="text-ds-error-text text-xs">
                   {anteInvalid && <p id="highcardflush-ante-error">{t('betError.ante')}</p>}
                   {flushBonusInvalid && (
                     <p id="highcardflush-flush-bonus-error">{t('betError.bonus', { label: t('label.flushBonus') })}</p>

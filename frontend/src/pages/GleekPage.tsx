@@ -326,7 +326,7 @@ function GleekPageContent() {
                       return (
                         <div
                           key={p.id}
-                          className={`py-0.5 ${delta > 0 ? 'text-ds-success' : delta < 0 ? 'text-ds-error' : ''}`}
+                          className={`py-0.5 ${delta > 0 ? 'text-ds-success' : delta < 0 ? 'text-ds-error-text' : ''}`}
                           data-testid={`gleek-round-delta-${p.id.toString()}`}
                         >
                           {t('roundResult.delta', {

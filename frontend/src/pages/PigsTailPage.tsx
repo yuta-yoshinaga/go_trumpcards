@@ -264,7 +264,7 @@ function PigsTailPageContent() {
                     <AnimatedCard card={state.lastDrawCard} width={48} silent />
                   </div>
                 </div>
-                <div className={`text-sm font-medium ${state.lastPenalty ? 'text-ds-error' : 'text-ds-success'}`}>
+                <div className={`text-sm font-medium ${state.lastPenalty ? 'text-ds-error-text' : 'text-ds-success'}`}>
                   {state.lastPenalty ? t('label.penalty') : t('label.safe')}
                 </div>
               </div>

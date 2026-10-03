@@ -249,7 +249,7 @@ function PontoonPageContent() {
                                     hand.payout > 0
                                       ? ' text-ds-success'
                                       : hand.payout < 0
-                                        ? ' text-ds-error'
+                                        ? ' text-ds-error-text'
                                         : ' text-ds-text-muted'
                                   }
                                 >

@@ -209,7 +209,7 @@ function AnacondaPageContent() {
       : selectionDiff > 0
         ? {
             text: t('selectionOver', { n: selectionDiff, selected: selected.length, required: requiredSelection }),
-            cls: 'text-ds-error',
+            cls: 'text-ds-error-text',
           }
         : {
             text: t('selectionReady', { selected: selected.length, required: requiredSelection }),

@@ -211,7 +211,7 @@ function PigPageContent() {
                   {state.phase === PigPhase.SIGNAL && p.id === state.signallerIdx && (
                     <span className="ml-1 text-ds-warning">{t('header.signalling')}</span>
                   )}
-                  {p.eliminated && <span className="ml-1 text-ds-error">{t('header.out')}</span>}
+                  {p.eliminated && <span className="ml-1 text-ds-error-text">{t('header.out')}</span>}
                   {!p.eliminated && p.noticedOrder > 0 && (
                     <span className="ml-1 text-ds-success">
                       {t('header.noticed', { order: String(p.noticedOrder) })}

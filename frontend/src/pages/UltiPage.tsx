@@ -317,7 +317,7 @@ function UltiPageContent() {
                       </span>
                       {(isRoundEnd || isGameEnd) && coinDeltas && coinDeltas[i] !== 0 && (
                         <span
-                          className={`text-xs font-semibold ${coinDeltas[i] > 0 ? 'text-ds-success' : 'text-ds-error'}`}
+                          className={`text-xs font-semibold ${coinDeltas[i] > 0 ? 'text-ds-success' : 'text-ds-error-text'}`}
                           data-testid={`ulti-coin-delta-${p.id}`}
                         >
                           {t('coinDelta', { delta: signedCoins(coinDeltas[i]) })}
@@ -376,7 +376,11 @@ function UltiPageContent() {
                     {(isRoundEnd || isGameEnd) && coinDeltas && humanIdx >= 0 && (
                       <div
                         className={
-                          coinDeltas[humanIdx] > 0 ? 'text-ds-success' : coinDeltas[humanIdx] < 0 ? 'text-ds-error' : ''
+                          coinDeltas[humanIdx] > 0
+                            ? 'text-ds-success'
+                            : coinDeltas[humanIdx] < 0
+                              ? 'text-ds-error-text'
+                              : ''
                         }
                       >
                         {t('roundResult.yourCoins', { delta: signedCoins(coinDeltas[humanIdx] ?? 0) })}
