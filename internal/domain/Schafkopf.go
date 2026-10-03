@@ -1010,9 +1010,17 @@ func (g *Schafkopf) GetPassCount() int { return g.passCount }
 // GetRoundPickerPoints 進行中は確定済みトリックのピッカー組得点、終了後は直近ラウンドの得点を返す。
 func (g *Schafkopf) GetRoundPickerPoints() int {
 	if g.phase == SchafkopfPhasePlay || g.phase == SchafkopfPhaseTrickEnd {
+		if g.partnerIdx >= 0 && !g.partnerRevealed {
+			return schafkopfTrickPoints(g.players[g.pickerIdx].GetTricksTaken())
+		}
 		return g.pickerTeamPoints()
 	}
 	return g.roundPickerPts
+}
+
+// IsRoundPickerPointsTeamTotal reports whether GetRoundPickerPoints includes partner points.
+func (g *Schafkopf) IsRoundPickerPointsTeamTotal() bool {
+	return (g.phase != SchafkopfPhasePlay && g.phase != SchafkopfPhaseTrickEnd) || g.partnerIdx < 0 || g.partnerRevealed
 }
 
 // GetRoundMultiplier 直近ラウンドの倍率取得

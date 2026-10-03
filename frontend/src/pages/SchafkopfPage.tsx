@@ -276,7 +276,10 @@ function SchafkopfPageContent() {
 
             {(isPlayPhase || isTrickEnd) && (
               <div className="mb-2 text-center text-sm text-ds-text-muted" data-testid="schafkopf-round-points">
-                {t('roundProgress.pickerPoints', { points: state.roundPickerPoints, target: state.pickerTargetPoints })}
+                {t(state.roundPickerPointsTeamTotal ? 'roundProgress.pickerPoints' : 'roundProgress.pickerOnlyPoints', {
+                  points: state.roundPickerPoints,
+                  target: state.pickerTargetPoints,
+                })}
               </div>
             )}
 

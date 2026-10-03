@@ -67620,7 +67620,10 @@ components:
           description: Hand indices the human may legally play (must-follow filtered)
         roundPickerPoints:
           type: integer
-          description: Card points taken by the declaring side this round
+          description: Running points during play; while the partner is hidden, this includes only the picker. After the round, this is the final declaring-side total.
+        roundPickerPointsTeamTotal:
+          type: boolean
+          description: Whether roundPickerPoints includes the partner's points (always true after the round).
         pickerTargetPoints:
           type: integer
           description: Card points the declaring side needs to win the round

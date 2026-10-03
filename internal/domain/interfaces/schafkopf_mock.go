@@ -183,6 +183,12 @@ func (_m *MockSchafkopfGame) GetRoundPickerPoints() int {
 	return ret.Get(0).(int)
 }
 
+// IsRoundPickerPointsTeamTotal モック
+func (_m *MockSchafkopfGame) IsRoundPickerPointsTeamTotal() bool {
+	ret := _m.Called()
+	return ret.Get(0).(bool)
+}
+
 // GetRoundMultiplier モック
 func (_m *MockSchafkopfGame) GetRoundMultiplier() int {
 	ret := _m.Called()

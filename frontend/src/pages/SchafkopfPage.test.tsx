@@ -76,10 +76,21 @@ describe('SchafkopfPage', () => {
   });
 
   it('shows the picker team points and winning threshold during play', async () => {
-    mockExec.mockResolvedValue(makeSchafkopfState({ roundPickerPoints: 35, pickerTargetPoints: 47 }));
+    mockExec.mockResolvedValue(
+      makeSchafkopfState({ roundPickerPoints: 35, roundPickerPointsTeamTotal: true, pickerTargetPoints: 47 }),
+    );
     renderWithProviders(<SchafkopfPage />);
     expect(await screen.findByTestId('schafkopf-round-points')).toHaveTextContent('35');
     expect(screen.getByTestId('schafkopf-round-points')).toHaveTextContent('47');
+    expect(screen.getByTestId('schafkopf-round-points')).toHaveTextContent('ピッカー側の獲得点');
+  });
+
+  it('labels picker-only points while the partner is hidden', async () => {
+    mockExec.mockResolvedValue(makeSchafkopfState({ roundPickerPoints: 18, roundPickerPointsTeamTotal: false }));
+    renderWithProviders(<SchafkopfPage />);
+    expect(await screen.findByTestId('schafkopf-round-points')).toHaveTextContent(
+      'ピッカーの獲得点 (パートナー未公開)',
+    );
   });
 
   it('selecting a card then playing dispatches play', async () => {

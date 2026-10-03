@@ -52,7 +52,8 @@
     "chipChanges": "チップ増減"
   },
   "roundProgress": {
-    "pickerPoints": "ピッカー側の獲得点: {{points}} / 勝利に必要な点数: {{target}}"
+    "pickerPoints": "ピッカー側の獲得点: {{points}} / 勝利に必要な点数: {{target}}",
+    "pickerOnlyPoints": "ピッカーの獲得点 (パートナー未公開): {{points}} / 勝利に必要な点数: {{target}}"
   },
   "passCount": "パス: {{count}}人",
   "hintAvailable": "ヒント",

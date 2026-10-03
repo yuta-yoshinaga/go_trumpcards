@@ -544,20 +544,49 @@ func TestSchafkopf_ScoreRoundPickerWinsAndChipsZeroSum(t *testing.T) {
 }
 
 func TestSchafkopf_GetRoundPickerPoints(t *testing.T) {
-	for _, phase := range []SchafkopfPhase{SchafkopfPhasePlay, SchafkopfPhaseTrickEnd} {
-		t.Run(map[SchafkopfPhase]string{SchafkopfPhasePlay: "play", SchafkopfPhaseTrickEnd: "trick end"}[phase], func(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		phase SchafkopfPhase
+	}{{"play", SchafkopfPhasePlay}, {"trick end", SchafkopfPhaseTrickEnd}} {
+		t.Run(tc.name, func(t *testing.T) {
 			g := newSKGame(false)
 			g.SetPickerIdx(0)
 			g.SetPartnerIdx(1)
-			g.SetPhase(phase)
+			g.SetPartnerRevealedForTest(false)
+			g.SetPhase(tc.phase)
 			g.GetPlayer(0).AddTrick([]*Card{skCard(CardDesignClover, 1), skCard(CardDesignSpade, 1)})
 			g.GetPlayer(1).AddTrick([]*Card{skCard(CardDesignHeart, 1), skCard(CardDesignDiamond, 1)})
 			g.GetPlayer(0).AddTrick([]*Card{skCard(CardDesignClover, 10), skCard(CardDesignSpade, 10)})
-			if got := g.GetRoundPickerPoints(); got != 64 {
-				t.Errorf("GetRoundPickerPoints() = %d, want confirmed trick points 64", got)
+			if got := g.GetRoundPickerPoints(); got != 42 {
+				t.Errorf("GetRoundPickerPoints() = %d, want picker-only points 42", got)
+			}
+			if g.IsRoundPickerPointsTeamTotal() {
+				t.Error("team total flag = true before partner reveal")
+			}
+			g.GetPlayer(1).AddTrick([]*Card{skCard(CardDesignSpade, 1)})
+			if got := g.GetRoundPickerPoints(); got != 42 {
+				t.Errorf("GetRoundPickerPoints() changed with hidden partner trick: %d, want 42", got)
+			}
+			g.SetPartnerRevealedForTest(true)
+			if got := g.GetRoundPickerPoints(); got != 75 {
+				t.Errorf("GetRoundPickerPoints() after reveal = %d, want team points 75", got)
+			}
+			if !g.IsRoundPickerPointsTeamTotal() {
+				t.Error("team total flag = false after partner reveal")
 			}
 		})
 	}
+	t.Run("solo", func(t *testing.T) {
+		g := newSKGame(false)
+		g.SetPickerIdx(0)
+		g.SetPartnerIdx(-1)
+		g.SetPartnerRevealedForTest(false)
+		g.SetPhase(SchafkopfPhasePlay)
+		g.GetPlayer(0).AddTrick([]*Card{skCard(CardDesignClover, 1)})
+		if got := g.GetRoundPickerPoints(); got != 11 || !g.IsRoundPickerPointsTeamTotal() {
+			t.Errorf("solo points = %d, team total = %v; want 11, true", got, g.IsRoundPickerPointsTeamTotal())
+		}
+	})
 	t.Run("round end", func(t *testing.T) {
 		g := newSKGame(false)
 		g.SetPickerIdx(0)
