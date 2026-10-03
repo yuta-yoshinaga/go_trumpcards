@@ -18,6 +18,8 @@ disable-model-invocation: true
 
 Orchestrates [`improve-issue`](../improve-issue/SKILL.md) across a set of issues.
 Runs one issue at a time through merge, in lowest-effort order.
+When processing issues concurrently in isolated worktrees, use the helper scripts in
+[`batch-lanes`](../batch-lanes/SKILL.md) for lane setup, delegation, gates, and shipping.
 
 **This skill is the *orchestrator only*.** Every per-issue mechanic — branch,
 TDD, PR, CI triage, full-review handling, squash-merge, sync — lives in
