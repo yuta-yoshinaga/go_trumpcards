@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { makePaiGowState } from '../test/stateFactories';
 import { PaiGowPhase } from '../types/phases';
-import { paiGowHouseWaySplit } from './paiGowFoul';
+import { paiGowHouseWaySplit } from './paiGowHouseWay';
 
 describe('paiGowHouseWaySplit', () => {
   it('returns null outside the set-hands phase', () => {

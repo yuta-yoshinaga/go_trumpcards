@@ -1,12 +1,4 @@
 import type { Card } from '../types/card';
-import type { PaiGowResponse } from '../types/games/paigow';
-import { PaiGowPhase } from '../types/phases';
-
-/** Return the server's house-way low-hand indices during the set-hands phase. */
-export function paiGowHouseWaySplit(state: PaiGowResponse | null | undefined): readonly [number, number] | null {
-  if (state?.phase !== PaiGowPhase.SET_HANDS || state.hint == null) return null;
-  return [state.hint.lowIdx0, state.hint.lowIdx1];
-}
 
 /** Numeric rank used for Pai Gow comparisons: Ace = 14, J/Q/K = 11/12/13, otherwise face value. */
 function paiGowValue(card: Card): number {

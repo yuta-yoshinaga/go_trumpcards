@@ -1,4 +1,4 @@
-import type { PaiGowResponse } from '../../types/card';
+import type { PaiGowHint, PaiGowResponse } from '../../types/games/paigow';
 import type { HintResult } from '../../types/hint';
 import { PaiGowPhase } from '../../types/phases';
 
@@ -22,7 +22,8 @@ export function getPaiGowHint(state: PaiGowResponse): HintResult | null {
 
   if (state.phase !== PaiGowPhase.SET_HANDS) return null;
 
-  return state.hint == null
+  const serverHint: PaiGowHint | null | undefined = state.hint;
+  return serverHint == null
     ? { targetAction: 'setHands', reason: 'frontendHint.paigowSplitByHand', confidence: 'moderate' }
     : { targetAction: 'autoSet', reason: 'frontendHint.paigowAutoSplit', confidence: 'moderate' };
 }

@@ -106,6 +106,7 @@ import type {
   WattenResponse,
   ZwanzigerrufenResponse,
 } from '../types/card';
+import type { PaiGowHint } from '../types/games/paigow';
 
 /** Creates a Pai Gow set-hands response with no server split hint by default. */
 export function makePaiGowState(overrides: Partial<PaiGowResponse> = {}): PaiGowResponse {
@@ -128,7 +129,7 @@ export function makePaiGowState(overrides: Partial<PaiGowResponse> = {}): PaiGow
     playerLowRank: 0,
     dealerHighRank: 0,
     dealerLowRank: 0,
-    hint: null,
+    hint: null satisfies PaiGowHint | null,
     message: '',
     ...overrides,
   };
