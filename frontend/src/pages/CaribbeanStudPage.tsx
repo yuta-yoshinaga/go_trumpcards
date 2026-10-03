@@ -35,6 +35,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { CARIBBEANSTUD_HELP, parseCaribbeanstudCommand } from '../utils/cli/commands/caribbeanstudCommands';
 import { formatCaribbeanstudState } from '../utils/cli/formatters/caribbeanstudFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Caribbean Stud Poker tutorial step definitions. */
@@ -239,7 +240,7 @@ function CaribbeanStudPageContent() {
                           : 'font-bold text-ds-text-muted'
                     }
                   >
-                    {t('session.net')}: {tally.net > 0 ? `+${tally.net}` : tally.net}
+                    {t('session.net')}: {formatSignedDelta(tally.net)}
                   </span>
                 </div>
                 <div className="mt-1 flex items-center justify-center gap-3 text-xs text-ds-text-muted">

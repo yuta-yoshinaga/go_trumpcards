@@ -30,6 +30,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseRamschCommand, RAMSCH_HELP } from '../utils/cli/commands/ramschCommands';
 import { formatRamschState } from '../utils/cli/formatters/ramschFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Ramsch tutorial step definitions. */
@@ -277,7 +278,7 @@ function RamschPageContent() {
                       <td className="text-right">{p.cumulativeScore}</td>
                       {isRoundEnd && (
                         <td className="text-right" data-testid={`ramsch-cumulative-change-${p.id}`}>
-                          {p.roundScore > 0 ? `+${p.roundScore}` : p.roundScore}
+                          {formatSignedDelta(p.roundScore)}
                         </td>
                       )}
                     </tr>

@@ -266,7 +266,7 @@ describe('PontoonPage', () => {
       }),
     );
     renderWithProviders(<PontoonPage />);
-    const payout = await screen.findByText('収支: 0');
+    const payout = await screen.findByText('収支: ±0');
     expect(payout).toHaveClass('text-ds-text-muted');
   });
 

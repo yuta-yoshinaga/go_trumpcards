@@ -130,14 +130,14 @@ describe('BaccaratPage', () => {
     renderWithProviders(<BaccaratPage />);
 
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
-    expect(screen.getByText('増減: 0')).toBeInTheDocument();
+    expect(screen.getByText('増減: ±0')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
     await waitFor(() => expect(screen.getByText('増減: -100')).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
     await waitFor(() => expect(screen.getByText('チップ: 1200')).toBeInTheDocument());
-    expect(screen.getByText('増減: 0')).toBeInTheDocument();
+    expect(screen.getByText('増減: ±0')).toBeInTheDocument();
   });
 
   it('shows positive chip changes with an explicit plus sign', async () => {

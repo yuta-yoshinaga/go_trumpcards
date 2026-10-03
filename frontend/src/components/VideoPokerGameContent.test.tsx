@@ -245,10 +245,10 @@ describe('VideoPokerGameContent', () => {
     }
   });
 
-  it('marks a break-even result as positive zero', async () => {
+  it('formats a break-even result as ±0', async () => {
     mockExec.mockResolvedValue({ ...resultPhaseWin, betAmount: 5, payout: 5 });
     renderContent();
-    await waitFor(() => expect(screen.getByTestId('vp-net-change')).toHaveTextContent('+0'));
+    await waitFor(() => expect(screen.getByTestId('vp-net-change')).toHaveTextContent('±0'));
   });
 
   it('translates Joker Poker net change and keeps its sign in Japanese and English', async () => {

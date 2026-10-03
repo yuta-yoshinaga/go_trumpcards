@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { findBadgeContrastViolations } from './lib/badge-contrast.mjs';
 import { collectDesignTokens, findUndefinedDesignUtilities } from './lib/design-token-utilities.mjs';
 import { assertFloor } from './lib/floor.mjs';
+import { findInlineSignedDelta } from './lib/signed-delta.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const SRC_DIR = join(ROOT, 'src');
@@ -45,9 +46,13 @@ async function walk(dir) {
 
 const files = await walk(SRC_DIR);
 const violations = [];
+const signedDeltaViolations = [];
 
 for (const file of files) {
   const text = await readFile(file, 'utf8');
+  for (const { index, match } of findInlineSignedDelta(text)) {
+    signedDeltaViolations.push({ file: relative(ROOT, file), line: text.slice(0, index).split('\n').length, match });
+  }
   const lines = text.split('\n');
   for (const { pattern, message } of RULES) {
     for (let i = 0; i < lines.length; i += 1) {
@@ -62,6 +67,16 @@ for (const file of files) {
     }
   }
 }
+
+const SIGNED_DELTA_LIMIT = 0;
+if (signedDeltaViolations.length > SIGNED_DELTA_LIMIT) {
+  console.error('\nUse formatSignedDelta() for signed numeric display:\n');
+  for (const v of signedDeltaViolations) console.error(`  ${v.file}:${v.line}  [${v.match}]`);
+  console.error(`\n${signedDeltaViolations.length} inline signed delta(s), maximum ${SIGNED_DELTA_LIMIT}.`);
+  process.exit(1);
+}
+
+assertFloor('signed-delta', files.length, 1200, 'source files scanned');
 
 if (violations.length > 0) {
   console.error('\nDesign-token policy violations:\n');
@@ -152,6 +167,9 @@ if (!focusBlock.includes('outline:') || !focusBlock.includes('!important')) {
 // seven.
 assertFloor('design-tokens', files.length, 1200, 'source files scanned');
 console.log(`design-tokens: OK (${files.length} source files scanned, test files skipped).`);
+console.log(
+  `signed-delta: OK (${files.length} source files scanned, ${signedDeltaViolations.length} inline expressions).`,
+);
 console.log('reduced-motion: OK (index.css uses the universal prefers-reduced-motion block).');
 console.log('card-focus-ring: OK (index.css defines the !important focus indicator for card buttons).');
 

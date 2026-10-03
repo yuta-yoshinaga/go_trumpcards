@@ -33,6 +33,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseSchafkopfCommand, SCHAFKOPF_HELP } from '../utils/cli/commands/schafkopfCommands';
 import { formatSchafkopfState } from '../utils/cli/formatters/schafkopfFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -350,7 +351,7 @@ function SchafkopfPageContent() {
                     <div className="mt-1">{t('roundResult.chipChanges')}</div>
                     {state.players.map((p) => {
                       const delta = p.chipDelta;
-                      const formatted = delta > 0 ? `+${delta}` : delta < 0 ? `${delta}` : '±0';
+                      const formatted = formatSignedDelta(delta);
                       return (
                         <div key={p.id}>
                           {playerName(p.id, p.isHuman)}: {formatted}

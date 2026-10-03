@@ -1,4 +1,5 @@
 import type { HachiHachiResponse } from '../../../types/card';
+import { formatSignedDelta } from '../../formatSignedDelta';
 import { formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES = ['Play', 'RoundEnd', 'GameEnd'];
@@ -33,7 +34,7 @@ export function formatHachiHachiState(state: HachiHachiResponse): string {
     for (const s of state.lastRoundResult.scores) {
       const yaku = s.yaku.length > 0 ? ` [${s.yaku.map((y) => `${y.key}:${y.points}`).join(' ')}]` : '';
       const mark = s.playerIdx === state.lastRoundResult.best ? ' *' : '';
-      const sign = s.delta >= 0 ? `+${s.delta}` : `${s.delta}`;
+      const sign = formatSignedDelta(s.delta);
       lines.push(`  P${s.playerIdx}: raw=${s.rawScore}+bonus=${s.bonus} → ${sign}${yaku}${mark}`);
     }
   }

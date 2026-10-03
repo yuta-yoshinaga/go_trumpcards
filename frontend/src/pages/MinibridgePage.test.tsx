@@ -95,7 +95,7 @@ describe('MinibridgePage', () => {
     );
     renderWithProviders(<MinibridgePage />);
     expect(await screen.findByTestId('mb-round-result')).toHaveTextContent('今回のラウンド: チーム0 +110点');
-    expect(screen.getByTestId('mb-round-result')).toHaveTextContent('今回のラウンド: チーム1 +0点');
+    expect(screen.getByTestId('mb-round-result')).toHaveTextContent('今回のラウンド: チーム1 ±0点');
   });
 
   it('shows ? for an unknown settled contract denomination', async () => {

@@ -1,4 +1,5 @@
 import type { ScartoResponse } from '../../../types/card';
+import { formatSignedDelta } from '../../formatSignedDelta';
 import {
   formatCard,
   formatHeader,
@@ -42,7 +43,7 @@ export function formatScartoState(state: ScartoResponse): string {
 
   if (state.phase === 3 && state.outcome > 0) {
     lines.push(`deal result: ${OUTCOME_NAMES[state.outcome] ?? state.outcome}`);
-    lines.push(`deal settlement: ${state.dealScores.map((s, i) => `P${i}=${s > 0 ? `+${s}` : s}`).join('  ')}`);
+    lines.push(`deal settlement: ${state.dealScores.map((s, i) => `P${i}=${formatSignedDelta(s)}`).join('  ')}`);
   }
 
   if (state.hint && isRequestedHint(state)) {

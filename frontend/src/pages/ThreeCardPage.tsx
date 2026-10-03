@@ -32,6 +32,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseThreecardCommand, THREECARD_HELP } from '../utils/cli/commands/threecardCommands';
 import { formatThreecardState } from '../utils/cli/formatters/threecardFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 
 /** Three Card Poker tutorial step definitions. */
 const TC_TUTORIAL_STEPS: TutorialStep[] = [
@@ -337,7 +338,7 @@ function ThreeCardPageContent() {
                   {t('payout.total')}: {state.totalPayout}
                 </div>
                 <div className="font-bold">
-                  {t('payout.netChange')}: {state.netChange > 0 ? `+${state.netChange}` : state.netChange}
+                  {t('payout.netChange')}: {formatSignedDelta(state.netChange)}
                 </div>
               </div>
             )}

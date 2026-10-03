@@ -32,6 +32,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { CALABRESELLA_HELP, parseCalabresellaCommand } from '../utils/cli/commands/calabresellaCommands';
 import { formatCalabresellaState } from '../utils/cli/formatters/calabresellaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { isRequestedHint } from '../utils/hintRequest';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -314,7 +315,7 @@ function CalabresellaPageContent() {
                     <div>{t(state.soloistWon ? 'roundResult.soloistWon' : 'roundResult.soloistLost')}</div>
                     {state.players.map((p) => {
                       const change = state.roundScoreChanges[p.id];
-                      const signedChange = `${change > 0 ? '+' : ''}${change}`;
+                      const signedChange = formatSignedDelta(change);
                       return (
                         <div key={`settlement-${p.id}`}>
                           {t('roundResult.settlement', {

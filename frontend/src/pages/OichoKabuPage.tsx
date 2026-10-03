@@ -33,6 +33,7 @@ import { OICHOKABU_HELP, parseOichokabuCommand } from '../utils/cli/commands/oic
 import { formatOichokabuState } from '../utils/cli/formatters/oichokabuFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { oichokabuDealerPolicy } from '../utils/oichokabuDealerPolicy';
 
 const OK_TUTORIAL_STEPS: TutorialStep[] = [
@@ -228,7 +229,7 @@ function OichoKabuPageContent() {
                   {t('payout.bet')}: {state.bet}
                 </div>
                 <div className="font-bold">
-                  {t('payout.netProfit')}: {state.netChange > 0 ? `+${state.netChange}` : state.netChange}
+                  {t('payout.netProfit')}: {formatSignedDelta(state.netChange)}
                 </div>
                 {(() => {
                   const policy = oichokabuDealerPolicy(state.bankerHand.length, state.bankerRank);

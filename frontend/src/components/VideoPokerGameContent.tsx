@@ -16,6 +16,7 @@ import type { Card, VideoPokerResponse } from '../types/card';
 import { VideoPokerPhase } from '../types/phases';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { getVideoPokerBaseHint } from '../utils/hints/videoPokerBaseHint';
 import { evaluateVideoPokerMadeHand } from '../utils/jokerPokerMadeHand';
 import {
@@ -209,7 +210,7 @@ export function VideoPokerGameContent({
     }
     const rowKey = videoPokerRowKey(state.handKey, state.handName);
     const net = state.payout - state.betAmount;
-    const netText = `${net >= 0 ? '+' : ''}${net}`;
+    const netText = formatSignedDelta(net);
     const msg =
       state.payout > 0
         ? tNs('resultAnnounce.win', {
@@ -462,7 +463,7 @@ export function VideoPokerGameContent({
             {isResultPhase && (
               <div className="text-ds-text-primary text-center font-bold mb-2" data-testid="vp-net-change">
                 {t('label.netChange', {
-                  net: `${state.payout - state.betAmount >= 0 ? '+' : ''}${state.payout - state.betAmount}`,
+                  net: formatSignedDelta(state.payout - state.betAmount),
                 })}
               </div>
             )}
@@ -545,7 +546,7 @@ export function VideoPokerGameContent({
                   : tNs('stats.summary', {
                       hands: stats.hands,
                       winRate: Math.round(videoPokerWinRate(stats) * 100),
-                      net: `${videoPokerNet(stats) >= 0 ? '+' : ''}${videoPokerNet(stats)}`,
+                      net: formatSignedDelta(videoPokerNet(stats)),
                     })}
               </span>
               {stats.hands > 0 && (

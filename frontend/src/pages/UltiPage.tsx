@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseUltiCommand, ULTI_HELP } from '../utils/cli/commands/ultiCommands';
 import { formatUltiState } from '../utils/cli/formatters/ultiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { isRequestedHint } from '../utils/hintRequest';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -89,10 +90,6 @@ const SUIT_KEYS = ['suitNone', 'suitSpade', 'suitClub', 'suitHeart', 'suitDiamon
 const OUTCOME_KEYS = ['outcomeNone', 'outcomeWin', 'outcomeLoss'] as const;
 
 /** Format a coin delta with an explicit sign so it reads without relying on color alone (e.g. "+2", "-1"). */
-function signedCoins(delta: number): string {
-  return delta > 0 ? `+${delta}` : `${delta}`;
-}
-
 /** Number of talon cards the declarer must discard in the Discard phase (matches `UltiDiscardSize` in `internal/domain/Ulti.go`). */
 const DISCARD_COUNT = 2;
 
@@ -320,7 +317,7 @@ function UltiPageContent() {
                           className={`text-xs font-semibold ${coinDeltas[i] > 0 ? 'text-ds-success' : 'text-ds-error'}`}
                           data-testid={`ulti-coin-delta-${p.id}`}
                         >
-                          {t('coinDelta', { delta: signedCoins(coinDeltas[i]) })}
+                          {t('coinDelta', { delta: formatSignedDelta(coinDeltas[i]) })}
                         </span>
                       )}
                       {p.isDeclarer && (
@@ -379,7 +376,7 @@ function UltiPageContent() {
                           coinDeltas[humanIdx] > 0 ? 'text-ds-success' : coinDeltas[humanIdx] < 0 ? 'text-ds-error' : ''
                         }
                       >
-                        {t('roundResult.yourCoins', { delta: signedCoins(coinDeltas[humanIdx] ?? 0) })}
+                        {t('roundResult.yourCoins', { delta: formatSignedDelta(coinDeltas[humanIdx] ?? 0) })}
                       </div>
                     )}
                   </div>

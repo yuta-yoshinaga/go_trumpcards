@@ -32,6 +32,7 @@ import { formatFaroState } from '../utils/cli/formatters/faroFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { FARO_RANK_COUNT, FARO_RANKS } from '../utils/faroCaseKeeper';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 
 /** Rank values on the Faro layout, A (1) through K (13). */
 const RANKS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] as const;
@@ -241,7 +242,7 @@ function FaroPageContent() {
               <span className="font-semibold text-ds-warning">{t('chips', { count: state.chips })}</span>
               <span className="text-ds-text-primary">
                 {t('payout', {
-                  amount: state.totalPayout > 0 ? `+${state.totalPayout}` : String(state.totalPayout),
+                  amount: formatSignedDelta(state.totalPayout),
                 })}
               </span>
               <span className="text-ds-text-muted">

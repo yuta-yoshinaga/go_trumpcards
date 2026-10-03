@@ -1,4 +1,5 @@
 import type { IndianPokerResponse } from '../../../types/card';
+import { formatSignedDelta } from '../../formatSignedDelta';
 import { formatCard, formatHeader, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
@@ -39,7 +40,7 @@ export function formatIndianpokerState(state: IndianPokerResponse): string {
     for (const r of state.roundResults) {
       const name = formatPlayerName(r.playerIdx, state.players[r.playerIdx]?.isHuman ?? false);
       const card = r.card ? formatCard(r.card) : '?';
-      lines.push(`  ${name}: ${card} ${r.wonAmount > 0 ? `+${r.wonAmount}` : String(r.wonAmount)}`);
+      lines.push(`  ${name}: ${card} ${formatSignedDelta(r.wonAmount)}`);
     }
   }
 

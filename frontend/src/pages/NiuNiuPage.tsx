@@ -30,6 +30,7 @@ import { NIUNIU_HELP, parseNiuNiuCommand } from '../utils/cli/commands/niuniuCom
 import { formatNiuNiuState } from '../utils/cli/formatters/niuniuFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { niuniuMultiplier, niuniuRankText } from '../utils/niuniuRankText';
 
 const BET_OPTIONS = [10, 50, 100, 500];
@@ -195,7 +196,7 @@ function NiuNiuPageContent() {
                       {ended && seat.hand.payout !== 0 && (
                         <span className={seat.hand.payout > 0 ? ' text-ds-success' : ' text-ds-error'}>
                           {' '}
-                          {seat.hand.payout > 0 ? `+${seat.hand.payout}` : seat.hand.payout}
+                          {formatSignedDelta(seat.hand.payout)}
                         </span>
                       )}
                     </div>

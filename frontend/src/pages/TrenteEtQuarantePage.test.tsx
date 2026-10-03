@@ -131,7 +131,7 @@ describe('TrenteEtQuarantePage', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(await screen.findByRole('button', { name: '確認' }));
-    await waitFor(() => expect(screen.getByTestId('teq-session-stats')).toHaveTextContent('差引収支0'));
+    await waitFor(() => expect(screen.getByTestId('teq-session-stats')).toHaveTextContent('差引収支±0'));
     expect(screen.getByTestId('teq-session-stats')).toHaveTextContent('勝ち0');
     expect(screen.getByTestId('teq-session-stats')).toHaveTextContent('31での引き分け（ルフェ）0');
   });

@@ -1,4 +1,5 @@
 import type { BaccaratResponse } from '../../../types/card';
+import { formatSignedDelta } from '../../formatSignedDelta';
 import { formatCardList, formatHeader, formatSeparator } from '../formatterBase';
 
 const BET_TYPE_NAMES: Record<number, string> = { 0: 'Player', 1: 'Banker', 2: 'Tie' };
@@ -28,7 +29,7 @@ export function formatBaccaratState(state: BaccaratResponse): string {
     lines.push(`result: ${RESULT_NAMES[state.result] ?? 'Unknown'} | payout: ${state.payout}`);
     if (state.sideBetResults.length > 0) {
       for (const sb of state.sideBetResults) {
-        lines.push(`  ${sb.resultName}: ${sb.payout > 0 ? `+${sb.payout}` : String(sb.payout)}`);
+        lines.push(`  ${sb.resultName}: ${formatSignedDelta(sb.payout)}`);
       }
     }
   }

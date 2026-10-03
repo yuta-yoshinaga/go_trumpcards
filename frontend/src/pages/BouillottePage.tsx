@@ -36,6 +36,7 @@ import { computeBouillottePotOdds } from '../utils/bouillottePotOdds';
 import { BOUILLOTTE_HELP, parseBouillotteCommand } from '../utils/cli/commands/bouillotteCommands';
 import { formatBouillotteState } from '../utils/cli/formatters/bouillotteFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { raiseAvailability, raiseCost } from '../utils/raiseAvailability';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -319,7 +320,7 @@ function BouillottePageContent() {
                   {t('roundResult.personal', {
                     bet: humanRoundBet,
                     payout: humanPayout,
-                    net: humanNet > 0 ? `+${humanNet}` : String(humanNet),
+                    net: formatSignedDelta(humanNet),
                   })}
                 </div>
               </div>

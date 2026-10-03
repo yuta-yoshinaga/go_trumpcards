@@ -244,7 +244,7 @@ describe('ThreeCardPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'プレイ' }));
     await waitFor(() => expect(screen.getByText('引き分け！')).toBeInTheDocument());
-    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('純損益: 0');
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('純損益: ±0');
   });
 
   it('shows end phase with dealer not qualified', async () => {

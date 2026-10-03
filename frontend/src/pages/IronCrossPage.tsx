@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { IRONCROSS_CLI_HELP, parseIronCrossCommand } from '../utils/cli/commands/ironcrossCommands';
 import { formatIronCrossState } from '../utils/cli/formatters/ironcrossFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const IC_TUTORIAL_STEPS: TutorialStep[] = [
@@ -307,7 +308,7 @@ function IronCrossPageContent() {
                     {showResults && (
                       <span data-testid={`ic-net-change-${i}`}>
                         {' · '}
-                        {t('label.netChange', { amount: `${seat.netChange > 0 ? '+' : ''}${seat.netChange}` })}
+                        {t('label.netChange', { amount: formatSignedDelta(seat.netChange) })}
                       </span>
                     )}
                   </span>

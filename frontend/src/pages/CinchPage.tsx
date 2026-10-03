@@ -33,6 +33,7 @@ import { estimateCinchBidStrength } from '../utils/cinchBidStrength';
 import { CINCH_HELP, parseCinchCommand } from '../utils/cli/commands/cinchCommands';
 import { formatCinchState } from '../utils/cli/formatters/cinchFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -44,7 +45,6 @@ const SUIT_KEYS: Readonly<Record<number, string>> = { 1: 'spade', 2: 'club', 3: 
 const isRedSuit = (suit: number): boolean => suit === 3 || suit === 4;
 
 /** Format a signed match-point delta for display (e.g. 6 -> "+6", -8 -> "-8", 0 -> "0"). */
-const signedDelta = (n: number): string => (n > 0 ? `+${n}` : String(n));
 
 /** Selectable trump suits named by the bid winner. */
 const TRUMP_SUITS = [1, 2, 3, 4] as const;
@@ -340,7 +340,7 @@ function CinchPageContent() {
                           name: playerName(state.lastDealDetail.bidderIdx, state.lastDealDetail.bidderIdx === humanIdx),
                           bid: state.lastDealDetail.bid,
                           captured: state.lastDealDetail.points[state.lastDealDetail.bidderIdx] ?? 0,
-                          delta: signedDelta(state.lastDealDetail.gained[state.lastDealDetail.bidderIdx] ?? 0),
+                          delta: formatSignedDelta(state.lastDealDetail.gained[state.lastDealDetail.bidderIdx] ?? 0),
                         })}
                       </div>
                     )}

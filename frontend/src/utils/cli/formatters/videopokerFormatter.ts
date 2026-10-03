@@ -1,4 +1,5 @@
 import type { VideoPokerResponse } from '../../../types/card';
+import { formatSignedDelta } from '../../formatSignedDelta';
 import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = { 1: 'BET', 2: 'DRAW', 3: 'RESULT' };
@@ -9,7 +10,7 @@ export function formatVideopokerState(state: VideoPokerResponse): string {
 
   lines.push(formatHeader(state.variantName || 'Video Poker'));
   lines.push(`chips: ${state.chips}  phase: ${PHASE_NAMES[state.phase] ?? 'UNKNOWN'}`);
-  lines.push(`hands: ${state.hands}  win: ${state.winRate}%  net: ${state.net >= 0 ? '+' : ''}${state.net}`);
+  lines.push(`hands: ${state.hands}  win: ${state.winRate}%  net: ${formatSignedDelta(state.net)}`);
   if (state.betAmount > 0) lines.push(`bet: ${state.betAmount}`);
   lines.push('');
 

@@ -386,7 +386,7 @@ describe('CasinoWarPage', () => {
     await waitFor(() => expect(screen.getByTestId('cw-history')).toBeInTheDocument());
     expect(screen.getAllByTestId('cw-history-pip')).toHaveLength(3);
     expect(screen.getByTestId('cw-tally')).toHaveTextContent('2勝 1敗 0分');
-    expect(screen.getByTestId('cw-cumulative-net-change')).toHaveTextContent('累積純損益: 0');
+    expect(screen.getByTestId('cw-cumulative-net-change')).toHaveTextContent('累積純損益: ±0');
   });
 
   it('renders the i18n skeleton instead of a hardcoded Loading label before state loads', () => {

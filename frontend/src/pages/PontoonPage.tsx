@@ -31,6 +31,7 @@ import { PONTOON_HELP, parsePontoonCommand } from '../utils/cli/commands/pontoon
 import { formatPontoonState } from '../utils/cli/formatters/pontoonFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { PONTOON_MIN_BET, pontoonBuyChoices, pontoonClampBuy, pontoonMaxBuy } from '../utils/pontoonBet';
 
 const BET_OPTIONS = [10, 50, 100, 500];
@@ -255,7 +256,7 @@ function PontoonPageContent() {
                                 >
                                   {' '}
                                   {t('payout', {
-                                    payout: hand.payout > 0 ? `+${hand.payout}` : hand.payout,
+                                    payout: formatSignedDelta(hand.payout),
                                   })}
                                 </span>
                               )}

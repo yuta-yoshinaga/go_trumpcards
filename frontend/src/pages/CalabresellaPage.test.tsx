@@ -283,7 +283,7 @@ describe('CalabresellaPage', () => {
     expect(screen.getByText('ソリストの契約達成')).toBeInTheDocument();
     expect(screen.getByText('あなた 今回の精算: +2点')).toBeInTheDocument();
     expect(screen.getByText('CPU 1 今回の精算: -1点')).toBeInTheDocument();
-    expect(screen.getByText('CPU 2 今回の精算: 0点')).toBeInTheDocument();
+    expect(screen.getByText('CPU 2 今回の精算: ±0点')).toBeInTheDocument();
   });
 
   it('shows the round result on mobile and game end layouts', async () => {

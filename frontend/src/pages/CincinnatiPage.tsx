@@ -33,6 +33,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { CINCINNATI_CLI_HELP, parseCincinnatiCommand } from '../utils/cli/commands/cincinnatiCommands';
 import { formatCincinnatiState } from '../utils/cli/formatters/cincinnatiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { type PokerHandRank, pokerHandKey } from '../utils/pokerSquaresUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -201,8 +202,7 @@ function CincinnatiPageContent() {
                     {(isShowdown || gameOver) && (
                       <span data-testid={`cin-net-change-${i}`}>
                         {' · '}
-                        {t('label.netChange')}{' '}
-                        {seat.netChange > 0 ? `+${seat.netChange}` : seat.netChange < 0 ? `${seat.netChange}` : '±0'}
+                        {t('label.netChange')} {formatSignedDelta(seat.netChange)}
                       </span>
                     )}
                     {seat.bet > 0 && ` · ${t('label.bet')} ${seat.bet}`}

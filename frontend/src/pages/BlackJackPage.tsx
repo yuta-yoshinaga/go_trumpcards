@@ -52,7 +52,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { BLACKJACK_HELP, parseBlackjackCommand } from '../utils/cli/commands/blackjackCommands';
 import { formatBlackjackState } from '../utils/cli/formatters/blackjackFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { formatSignedChips } from '../utils/formatSignedChips';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 
 const BJ_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -568,7 +568,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                           {hand.netChange !== undefined && (
                             <>
                               {' '}
-                              · {formatSignedChips(hand.netChange)} {t('handResult.chips')}
+                              · {formatSignedDelta(hand.netChange)} {t('handResult.chips')}
                             </>
                           )}
                         </p>
