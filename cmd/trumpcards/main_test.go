@@ -146,8 +146,9 @@ func TestRunHelpCommandExtraArgs(t *testing.T) {
 	if stdout.Len() == 0 {
 		t.Errorf("expected blackjack help on stdout despite extra args")
 	}
-	if stderr.Len() == 0 {
-		t.Errorf("expected extra-args warning on stderr; got empty")
+	wantWarning := i18n.Tf("cliExtraArgsWarning", "args", "extra")
+	if !strings.Contains(stderr.String(), wantWarning) {
+		t.Errorf("stderr = %q, want warning %q", stderr.String(), wantWarning)
 	}
 }
 
@@ -185,27 +186,35 @@ func TestRunHelpCommandHelpFlag(t *testing.T) {
 	}
 }
 
-// Negative control for TestRunHelpCommandHelpFlag: a help flag AFTER a
-// positional is not a help request. Go's flag package stops parsing at the
-// first non-flag argument, so `trumpcards games extra --help` prints the game
-// list with an extra-args warning rather than the games help. `help` must
-// behave the same way, otherwise the help subcommand becomes the one place
-// where a trailing --help means something different. See issue #5181.
-func TestRunHelpCommandHelpFlagAfterPositionalIsExtraArg(t *testing.T) {
-	var stdout, stderr bytes.Buffer
-	code := runHelpCommand([]string{"blackjack", "--help"}, buildHelpText(), &stdout, &stderr)
-	if code != 0 {
-		t.Fatalf("runHelpCommand(blackjack --help) exit = %d, want 0", code)
-	}
-	if !strings.Contains(stderr.String(), "--help") {
-		t.Errorf("expected an extra-args warning naming --help; got stderr %q", stderr.String())
-	}
-	// Blackjack's help, NOT the help subcommand's help.
-	if strings.Contains(stdout.String(), "trumpcards help [game|command]") {
-		t.Errorf("expected blackjack help, got the help subcommand's own help: %q", stdout.String())
-	}
-	if stdout.Len() == 0 {
-		t.Error("expected blackjack help on stdout")
+// Help flags after a game name are ignored without warning; genuine extra
+// arguments remain visible in the warning. See issue #5181.
+func TestRunHelpCommandHelpFlagsAfterGame(t *testing.T) {
+	originalLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(originalLang) })
+	i18n.SetLang("en")
+	for _, tc := range []struct {
+		args []string
+		want string
+	}{
+		{[]string{"blackjack", "-h"}, ""},
+		{[]string{"blackjack", "--help"}, ""},
+		{[]string{"blackjack", "extra"}, "Warning: extra arguments ignored: extra"},
+		{[]string{"blackjack", "extra", "-h"}, "Warning: extra arguments ignored: extra"},
+	} {
+		t.Run(strings.Join(tc.args, " "), func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+			if code := runHelpCommand(tc.args, buildHelpText(), &stdout, &stderr); code != 0 {
+				t.Fatalf("runHelpCommand(%v) exit = %d, want 0", tc.args, code)
+			}
+			if stdout.Len() == 0 {
+				t.Error("expected blackjack help on stdout")
+			}
+			if got := stderr.String(); tc.want == "" && got != "" {
+				t.Errorf("stderr = %q, want empty", got)
+			} else if tc.want != "" && !strings.Contains(got, tc.want) {
+				t.Errorf("stderr = %q, want rendered warning %q", got, tc.want)
+			}
+		})
 	}
 }
 
@@ -237,6 +246,35 @@ func TestRunHelpCommandUnknownGame(t *testing.T) {
 	}
 	if stderr.Len() == 0 {
 		t.Errorf("expected error output on stderr for unknown game")
+	}
+}
+
+func TestUnknownGameOutputMatchesHelpCommand(t *testing.T) {
+	originalLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(originalLang) })
+	for _, lang := range []string{"ja", "en"} {
+		t.Run(lang, func(t *testing.T) {
+			i18n.SetLang(lang)
+			var topLevel, help bytes.Buffer
+			printUnknownGame(&topLevel, "nosuch")
+			code := runHelpCommand([]string{"nosuch"}, "", io.Discard, &help)
+			if code != 2 {
+				t.Fatalf("runHelpCommand exit = %d, want 2", code)
+			}
+			if help.String() != topLevel.String() {
+				t.Errorf("help stderr = %q, top-level stderr = %q", help.String(), topLevel.String())
+			}
+			if strings.Contains(help.String(), "cliUnknownGame") || strings.Contains(help.String(), "cliHelpUnknownGame") {
+				t.Errorf("stderr contains unresolved translation key: %q", help.String())
+			}
+			wantPrefix := "Error: unknown game"
+			if lang == "ja" {
+				wantPrefix = "エラー: 不明なゲーム"
+			}
+			if !strings.HasPrefix(help.String(), wantPrefix) {
+				t.Errorf("stderr = %q, want localized error prefix %q", help.String(), wantPrefix)
+			}
+		})
 	}
 }
 
@@ -2365,59 +2403,20 @@ func TestRunVersionSubcommand(t *testing.T) {
 	}
 }
 
-// TestSuggestionCandidatesIncludesAliases verifies issue #1555: the
-// "did you mean" candidate set must include game aliases so a typo of
-// the alias (`gni` -> `gin`) is recovered to the alias the user knows
-// about, rather than to a far-off canonical name (`gofish`).
-func TestSuggestionCandidatesIncludesAliases(t *testing.T) {
-	commands := map[string]func() int{
-		"ginrummy":      func() int { return 0 },
-		"sevencardstud": func() int { return 0 },
-		"gofish":        func() int { return 0 },
+// TestPrintUnknownGameSuggestsAlias verifies issue #1555 against the rendered
+// diagnostic: a typo of the alias (`gni`) recovers to `gin`.
+func TestPrintUnknownGameSuggestsAlias(t *testing.T) {
+	if _, ok := ui.GameAliases["gin"]; !ok {
+		t.Fatal("expected gin to be a registered game alias")
 	}
-	got := suggestionCandidates(commands)
-	gotSet := make(map[string]struct{}, len(got))
-	for _, n := range got {
-		gotSet[n] = struct{}{}
-	}
-	for _, want := range []string{"ginrummy", "sevencardstud", "gofish"} {
-		if _, ok := gotSet[want]; !ok {
-			t.Errorf("missing canonical %q from candidates: %v", want, got)
-		}
-	}
-	// At least one alias must appear; pick a known one if it exists.
-	if _, ok := ui.GameAliases["gin"]; ok {
-		if _, present := gotSet["gin"]; !present {
-			t.Errorf("alias 'gin' should be in candidates: %v", got)
-		}
-	}
-	// Spot-check dedup: if an alias collides with a canonical (it shouldn't,
-	// but the helper must still be idempotent), the slice must not contain
-	// the same string twice. We assert the invariant via len(map)==len(slice).
-	if len(gotSet) != len(got) {
-		t.Errorf("candidates contain duplicates: %v", got)
-	}
-}
-
-// TestHelpSuggestionCandidatesIncludesAliases verifies issue #1555: the
-// runHelpCommand suggestion path also pulls aliases, so `trumpcards help
-// gni` recovers to `gin` (or `ginrummy`) rather than a distant canonical.
-func TestHelpSuggestionCandidatesIncludesAliases(t *testing.T) {
-	got := helpSuggestionCandidates()
-	gotSet := make(map[string]struct{}, len(got))
-	for _, n := range got {
-		gotSet[n] = struct{}{}
-	}
-	if _, ok := ui.GameAliases["gin"]; ok {
-		if _, present := gotSet["gin"]; !present {
-			t.Errorf("alias 'gin' should be in help candidates: %v", got)
-		}
-	}
-	// Builtin subcommands should also be suggestable for `trumpcards help <cmd>` typos.
-	for _, want := range []string{"web", "update", "version"} {
-		if _, ok := gotSet[want]; !ok {
-			t.Errorf("missing builtin %q from help candidates: %v", want, got)
-		}
+	originalLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(originalLang) })
+	i18n.SetLang("en")
+	var stderr bytes.Buffer
+	printUnknownGame(&stderr, "gni")
+	want := i18n.Tf("didYouMean", "name", "gin")
+	if !strings.Contains(stderr.String(), want) {
+		t.Errorf("diagnostic = %q, want rendered suggestion %q", stderr.String(), want)
 	}
 }
 

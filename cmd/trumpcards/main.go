@@ -621,16 +621,7 @@ func run() int {
 	}
 
 	if arg != "" {
-		fmt.Fprintln(os.Stderr, i18n.Tf("cliUnknownGame", "name", arg))
-		if suggestion := cuiutil.SuggestCommand(arg, suggestionCandidates(commands), 2); suggestion != "" {
-			fmt.Fprintf(os.Stderr, "  %s\n", i18n.Tf("didYouMean", "name", suggestion))
-		}
-		// A one-line recovery hint instead of re-dumping the full help (which
-		// buries the error). Note flag.Usage is a no-op here (SetOutput was
-		// pointed at io.Discard above), so the old flag.Usage() call rendered
-		// nothing but a stray blank line. Exit 2 (usage error) to match the
-		// `--start <unknown>` path (resolveStartGame) and the EXIT CODES table.
-		fmt.Fprintln(os.Stderr, i18n.T("cliUnknownGameHint"))
+		printUnknownGame(os.Stderr, arg)
 		return 2
 	}
 
@@ -733,16 +724,16 @@ func splitHelpLines(text string) []string {
 // HelpLines() of the matching game (resolving aliases) to stdout, or an
 // "unknown game" error with a Did-you-mean suggestion to stderr. Extra
 // positional arguments after the game name are warned about and ignored,
-// matching the behavior of other subcommands.
+// except that help flags are silently accepted.
 func runHelpCommand(args []string, helpText string, stdout, stderr io.Writer) int {
 	// `help --help` / `help -h`: the other five subcommands get this from
 	// parseSubFlagsTo's flag.ErrHelp branch, but `help` never builds a FlagSet
 	// (its argument is a name, not a flag), so the flag would otherwise be
 	// looked up as a game and rejected with "unknown game". Answer with the
 	// same text `help help` already produced. Only args[0] is inspected: Go's
-	// flag package stops parsing at the first non-flag argument, so a trailing
-	// `--help` after a positional stays an extra arg here exactly as it does
-	// for `games extra --help`. See issue #5181.
+	// flag package stops parsing at the first non-flag argument. Here, help
+	// flags after the game name are silently accepted while other trailing
+	// arguments still produce the extra-args warning. See issue #5181.
 	if len(args) > 0 && hasHelpFlag(args[:1]) {
 		if lines, ok := subcommandHelp("help"); ok {
 			for _, line := range lines {
@@ -752,7 +743,15 @@ func runHelpCommand(args []string, helpText string, stdout, stderr io.Writer) in
 		return 0
 	}
 	if len(args) > 1 {
-		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(args[1:], " ")))
+		extraArgs := make([]string, 0, len(args)-1)
+		for _, arg := range args[1:] {
+			if !hasHelpFlag([]string{arg}) {
+				extraArgs = append(extraArgs, arg)
+			}
+		}
+		if len(extraArgs) > 0 {
+			_, _ = fmt.Fprintln(stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(extraArgs, " ")))
+		}
 	}
 	if len(args) == 0 {
 		_, _ = fmt.Fprint(stdout, helpText)
@@ -777,14 +776,21 @@ func runHelpCommand(args []string, helpText string, stdout, stderr io.Writer) in
 		}
 		return 0
 	}
-	_, _ = fmt.Fprintln(stderr, i18n.Tf("cliHelpUnknownGame", "name", target))
-	if suggestion := cuiutil.SuggestCommand(target, helpSuggestionCandidates(), 2); suggestion != "" {
-		_, _ = fmt.Fprintf(stderr, "  %s\n", i18n.Tf("didYouMean", "name", suggestion))
-	}
+	printUnknownGame(stderr, target)
 	// 2, not 1: naming something that does not exist is a usage error, and every
 	// other route to it (`<unknown>`, `--start`, `--category`, `completion`)
 	// already exits 2 -- as does the top-level EXIT CODES table. See issue #4372.
 	return 2
+}
+
+// printUnknownGame writes the shared diagnostic used by top-level game
+// dispatch and `help <game>` when a name cannot be resolved.
+func printUnknownGame(stderr io.Writer, name string) {
+	_, _ = fmt.Fprintln(stderr, i18n.Tf("cliUnknownGame", "name", name))
+	if suggestion := cuiutil.SuggestCommand(name, helpSuggestionCandidates(), 2); suggestion != "" {
+		_, _ = fmt.Fprintf(stderr, "  %s\n", i18n.Tf("didYouMean", "name", suggestion))
+	}
+	_, _ = fmt.Fprintln(stderr, i18n.T("cliUnknownGameHint"))
 }
 
 // helpSuggestionCandidates returns the deduplicated set of canonical game
@@ -832,32 +838,7 @@ func gameSuggestionCandidates() []string {
 	for alias := range ui.GameAliases {
 		add(alias)
 	}
-	return out
-}
-
-// suggestionCandidates returns the deduplicated set of registered top-level
-// commands (canonical game names plus builtin subcommands such as `web` or
-// `update`) and game aliases (e.g. `gin`, `7stud`) for "did you mean"
-// suggestions on unknown game names. Aliases are useful targets here because
-// users sometimes typo the alias, not the canonical, and a canonical-only
-// candidate list returns nonsense (`gni` -> `gofish` instead of `gin`).
-// See issue #1555.
-func suggestionCandidates(commands map[string]func() int) []string {
-	seen := make(map[string]struct{}, len(commands)+len(ui.GameAliases))
-	out := make([]string, 0, len(commands)+len(ui.GameAliases))
-	add := func(name string) {
-		if _, ok := seen[name]; ok {
-			return
-		}
-		seen[name] = struct{}{}
-		out = append(out, name)
-	}
-	for k := range commands {
-		add(k)
-	}
-	for alias := range ui.GameAliases {
-		add(alias)
-	}
+	slices.Sort(out)
 	return out
 }
 
