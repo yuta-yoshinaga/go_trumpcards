@@ -7,7 +7,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findBadgeContrastViolations } from './lib/badge-contrast.mjs';
-import { checkBgBlackRatchet, countBgBlackUtilities } from './lib/bg-black-ratchet.mjs';
+import { addBgBlackRatchetViolation, countBgBlackUtilities } from './lib/bg-black-ratchet.mjs';
 import { collectDesignTokens, findUndefinedDesignUtilities } from './lib/design-token-utilities.mjs';
 import { assertFloor } from './lib/floor.mjs';
 
@@ -58,12 +58,7 @@ for (const dir of GAME_UI_DIRS) {
     bgBlackCount += countBgBlackUtilities(await readFile(file, 'utf8'));
   }
 }
-if (!checkBgBlackRatchet(bgBlackCount, BG_BLACK_CEILING)) {
-  console.error(
-    `design-tokens: found ${bgBlackCount} bg-black/N utilities under src/components and src/pages; ceiling is ${BG_BLACK_CEILING}. Do not add new uses. When existing uses are removed, lower BG_BLACK_CEILING to the new count.`,
-  );
-  process.exit(1);
-}
+addBgBlackRatchetViolation(violations, bgBlackCount, BG_BLACK_CEILING);
 
 for (const file of files) {
   const text = await readFile(file, 'utf8');
@@ -85,7 +80,8 @@ for (const file of files) {
 if (violations.length > 0) {
   console.error('\nDesign-token policy violations:\n');
   for (const v of violations) {
-    console.error(`  ${v.file}:${v.line}  [${v.match}]  ${v.message}`);
+    const location = v.line === undefined ? v.file : `${v.file}:${v.line}`;
+    console.error(`  ${location}  [${v.match}]  ${v.message}`);
   }
   console.error(`\n${violations.length} violation(s). See DESIGN.md and issue #1411.`);
   process.exit(1);
