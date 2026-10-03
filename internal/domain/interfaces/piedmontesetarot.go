@@ -70,6 +70,8 @@ type PiedmonteseTarotGame interface {
 	GetScartoThirds() int
 	// GetLastTrickWinner 最後のトリックを取った席を取得する
 	GetLastTrickWinner() int
+	// GetCompletedTricks 完了したトリック履歴を取得する
+	GetCompletedTricks() []*domain.PiedmonteseTarotCompletedTrick
 	// GetOutcome 直近ディールの結果を取得する
 	GetOutcome() domain.PiedmonteseTarotOutcome
 	// GetResult 人間視点のマッチ結果を取得する

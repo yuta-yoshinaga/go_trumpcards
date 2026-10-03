@@ -256,6 +256,41 @@ func TestPiedmonteseTarotWebPresenter_Output(t *testing.T) {
 		out := decode(t, p.ActionLogOutput(piedmonteseGame(4)))
 		assert.NotNil(t, out)
 	})
+
+	t.Run("completed tricks history in web output", func(t *testing.T) {
+		g := piedmonteseGame(4)
+		out := decode(t, p.Output(g, nil))
+		assert.Empty(t, out["completedTricks"], "初期状態は空")
+
+		g.SetPhaseForTest(domain.PiedmonteseTarotPhaseTrickEnd)
+		g.SetCurrentTrickForTest([]*domain.TrickCard{
+			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
+			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 8, false)},
+			{PlayerIdx: 2, Card: domain.NewCard(domain.Tarot78TrumpDesign, 3, false)},
+			{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},
+		})
+		g.ResolveTrick()
+
+		out = decode(t, p.Output(g, nil))
+		rawTricks, ok := out["completedTricks"].([]any)
+		require.True(t, ok, "completedTricks が配列であること")
+		require.Len(t, rawTricks, 1)
+
+		first := rawTricks[0].(map[string]any)
+		assert.Equal(t, float64(0), first["trickNumber"])
+		assert.Equal(t, float64(0), first["leadPlayerIdx"])
+		assert.Equal(t, float64(2), first["winnerIdx"])
+
+		cards := first["cards"].([]any)
+		require.Len(t, cards, 4)
+		c0 := cards[0].(map[string]any)
+		assert.Equal(t, float64(0), c0["playerIdx"])
+		card0 := c0["card"].(map[string]any)
+		assert.Equal(t, "HEART", card0["design"])
+		assert.Equal(t, float64(5), card0["value"])
+		assert.Equal(t, "♥", card0["glyph"])
+		assert.Equal(t, "tarot", card0["deck"])
+	})
 }
 
 // piedmonteseFinishedDeal は 1 ディールを打ち切った卓を返す。

@@ -2228,6 +2228,7 @@ const basePiedmonteseTarotState: PiedmonteseTarotResponse = {
   scartoCards: [],
   talonSize: 2,
   currentTrick: [],
+  completedTricks: [],
   playerScores: [0, 0, 0, 0],
   dealScores: [0, 0, 0, 0],
   lastTrickWinner: -1,

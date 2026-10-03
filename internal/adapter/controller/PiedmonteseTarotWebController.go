@@ -45,6 +45,14 @@ type PiedmonteseTarotWebOutputPlayer struct {
 	IsDealer     bool `json:"isDealer"`
 }
 
+// PiedmonteseTarotWebOutputCompletedTrick は完了した 1 トリックの Web 出力。
+type PiedmonteseTarotWebOutputCompletedTrick struct {
+	TrickNumber   int                   `json:"trickNumber"`
+	LeadPlayerIdx int                   `json:"leadPlayerIdx"`
+	WinnerIdx     int                   `json:"winnerIdx"`
+	Cards         []*WebOutputTrickCard `json:"cards"`
+}
+
 // PiedmonteseTarotWebOutput はピエモンテ・タロッコの Web アウトプット。
 type PiedmonteseTarotWebOutput struct {
 	Players          []*PiedmonteseTarotWebOutputPlayer `json:"players"`
@@ -58,14 +66,15 @@ type PiedmonteseTarotWebOutput struct {
 	ScartoCount      int                                `json:"scartoCount"`
 	ScartoCards      []*WebOutputCard                   `json:"scartoCards"`
 	// TalonSize は親が捨てる枚数 (席数で変わる: 4 人なら 2、3 人なら 3)。
-	TalonSize       int                   `json:"talonSize"`
-	CurrentTrick    []*WebOutputTrickCard `json:"currentTrick"`
-	PlayerScores    []int                 `json:"playerScores"`
-	DealScores      []int                 `json:"dealScores"`
-	LastTrickWinner int                   `json:"lastTrickWinner"`
-	Outcome         int                   `json:"outcome"`
-	Result          int                   `json:"result"`
-	PlayableIndices []int                 `json:"playableIndices"`
+	TalonSize       int                                        `json:"talonSize"`
+	CurrentTrick    []*WebOutputTrickCard                      `json:"currentTrick"`
+	CompletedTricks []*PiedmonteseTarotWebOutputCompletedTrick `json:"completedTricks"`
+	PlayerScores    []int                                      `json:"playerScores"`
+	DealScores      []int                                      `json:"dealScores"`
+	LastTrickWinner int                                        `json:"lastTrickWinner"`
+	Outcome         int                                        `json:"outcome"`
+	Result          int                                        `json:"result"`
+	PlayableIndices []int                                      `json:"playableIndices"`
 	// DiscardableIndices は親がスカルトに出せる札。**ピップが足りなければ
 	// 非オヌール切り札も含む** —— 画面側で色や値から作ると再現できない (#6236)。
 	DiscardableIndices []int              `json:"discardableIndices"`

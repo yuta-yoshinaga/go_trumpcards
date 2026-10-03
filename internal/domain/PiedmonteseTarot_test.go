@@ -757,3 +757,71 @@ func TestPiedmonteseTarot_DiscardableIndicesEmptyOutsideScarto(t *testing.T) {
 	g.phase = PiedmonteseTarotPhasePlay
 	assert.Empty(t, g.GetDiscardableIndices())
 }
+
+func TestPiedmonteseTarot_CompletedTricks(t *testing.T) {
+	g := newPiedmonteseTarotForTest(t, 4)
+	assert.Empty(t, g.GetCompletedTricks(), "初期状態は空")
+
+	// 1トリック目を構成
+	g.phase = PiedmonteseTarotPhasePlay
+	g.trickNumber = 1
+	g.leadPlayerIdx = 0
+	g.currentTrick = []*TrickCard{
+		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 5, false)},
+		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, 8, false)},
+		{PlayerIdx: 2, Card: NewCard(Tarot78TrumpDesign, 3, false)}, // 切り札
+		{PlayerIdx: 3, Card: NewCard(CardDesignHeart, 10, false)},
+	}
+	g.phase = PiedmonteseTarotPhaseTrickEnd
+
+	g.ResolveTrick()
+	tricks := g.GetCompletedTricks()
+	require.Len(t, tricks, 1, "解決後に1トリック記録される")
+	assert.Equal(t, 1, tricks[0].TrickNumber)
+	assert.Equal(t, 0, tricks[0].LeadPlayer)
+	assert.Equal(t, 2, tricks[0].Winner, "切り札を出した Player 2 が勝者")
+	require.Len(t, tricks[0].Cards, 4)
+	assert.Equal(t, 0, tricks[0].Cards[0].PlayerIdx)
+	assert.Equal(t, 5, tricks[0].Cards[0].Card.GetValue())
+
+	// 次のトリックへ
+	g.NextTrick()
+	assert.Equal(t, 2, g.GetTrickNumber())
+	assert.Equal(t, 2, g.leadPlayerIdx, "直前の勝者がリード")
+
+	// 2トリック目
+	g.currentTrick = []*TrickCard{
+		{PlayerIdx: 2, Card: NewCard(CardDesignSpade, 14, false)}, // Roi
+		{PlayerIdx: 3, Card: NewCard(CardDesignSpade, 2, false)},
+		{PlayerIdx: 0, Card: NewCard(CardDesignSpade, 7, false)},
+		{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 3, false)},
+	}
+	g.phase = PiedmonteseTarotPhaseTrickEnd
+	g.ResolveTrick()
+
+	tricks = g.GetCompletedTricks()
+	require.Len(t, tricks, 2, "2トリック目が記録される")
+	assert.Equal(t, 2, tricks[1].TrickNumber)
+	assert.Equal(t, 2, tricks[1].LeadPlayer)
+	assert.Equal(t, 2, tricks[1].Winner, "スペードのキングを出した Player 2 が勝者")
+
+	// JSON シリアライズ / デシリアライズで復元されること
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+
+	restored := newPiedmonteseTarotForTest(t, 4)
+	require.NoError(t, json.Unmarshal(data, restored))
+	restoredTricks := restored.GetCompletedTricks()
+	require.Len(t, restoredTricks, 2)
+	assert.Equal(t, tricks[0].TrickNumber, restoredTricks[0].TrickNumber)
+	assert.Equal(t, tricks[0].LeadPlayer, restoredTricks[0].LeadPlayer)
+	assert.Equal(t, tricks[0].Winner, restoredTricks[0].Winner)
+	assert.Equal(t, tricks[1].TrickNumber, restoredTricks[1].TrickNumber)
+	assert.Equal(t, tricks[1].LeadPlayer, restoredTricks[1].LeadPlayer)
+	assert.Equal(t, tricks[1].Winner, restoredTricks[1].Winner)
+
+	// 新しいディールでクリアされること
+	g.phase = PiedmonteseTarotPhaseRoundEnd
+	g.NextRound()
+	assert.Empty(t, g.GetCompletedTricks(), "次のラウンドでクリアされる")
+}

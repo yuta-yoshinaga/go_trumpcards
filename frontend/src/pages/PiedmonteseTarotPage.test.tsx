@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { piedmonteseTarotApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makePiedmonteseTarotState } from '../test/stateFactories';
 import { PiedmonteseTarotPhase } from '../types/phases';
@@ -359,5 +360,87 @@ describe('PiedmonteseTarotPage', () => {
     expect(live).toHaveAttribute('aria-live', 'polite');
     // 催促が**その領域の中**にあること。隣に置いただけの実装は属性の検査を通る。
     expect(live).toContainElement(await screen.findByTestId('piedmontesetarot-discard-prompt'));
+  });
+
+  describe('trick history', () => {
+    it('renders collapsible trick history with completed tricks', async () => {
+      const historyState = makePiedmonteseTarotState({
+        completedTricks: [
+          {
+            trickNumber: 1,
+            leadPlayerIdx: 0,
+            winnerIdx: 2,
+            cards: [
+              { playerIdx: 0, card: suit(5, 'HEART', '♥', '5') },
+              { playerIdx: 1, card: suit(8, 'HEART', '♥', '8') },
+              {
+                playerIdx: 2,
+                card: { design: 'JOKER', value: 3, glyph: '✦', label: '3', color: 'purple', deck: 'tarot' },
+              },
+              { playerIdx: 3, card: suit(10, 'HEART', '♥', '10') },
+            ],
+          },
+        ],
+      });
+      mockExec.mockResolvedValue(historyState);
+      renderWithProviders(<PiedmonteseTarotPage />);
+
+      const historySection = await screen.findByTestId('piedmontesetarot-trick-history');
+      expect(historySection).toBeInTheDocument();
+      expect(within(historySection).getByText('トリック履歴')).toBeInTheDocument();
+
+      // トリック情報
+      expect(within(historySection).getByText('トリック 1')).toBeInTheDocument();
+      expect(within(historySection).getByText('リード: あなた')).toBeInTheDocument();
+      expect(within(historySection).getByText('勝者: CPU 2')).toBeInTheDocument();
+
+      // 各出札
+      expect(within(historySection).getByTestId('piedmontesetarot-history-card-1-0')).toBeInTheDocument();
+      expect(within(historySection).getByTestId('piedmontesetarot-history-card-1-1')).toBeInTheDocument();
+      expect(within(historySection).getByTestId('piedmontesetarot-history-card-1-2')).toBeInTheDocument();
+      expect(within(historySection).getByTestId('piedmontesetarot-history-card-1-3')).toBeInTheDocument();
+    });
+
+    it('shows empty message when no tricks are completed', async () => {
+      mockExec.mockResolvedValue(makePiedmonteseTarotState({ completedTricks: [] }));
+      renderWithProviders(<PiedmonteseTarotPage />);
+
+      const historySection = await screen.findByTestId('piedmontesetarot-trick-history');
+      expect(within(historySection).getByText('完了したトリックはありません')).toBeInTheDocument();
+    });
+
+    it('renders trick history in English', async () => {
+      const historyState = makePiedmonteseTarotState({
+        completedTricks: [
+          {
+            trickNumber: 1,
+            leadPlayerIdx: 0,
+            winnerIdx: 2,
+            cards: [
+              { playerIdx: 0, card: suit(5, 'HEART', '♥', '5') },
+              { playerIdx: 1, card: suit(8, 'HEART', '♥', '8') },
+              {
+                playerIdx: 2,
+                card: { design: 'JOKER', value: 3, glyph: '✦', label: '3', color: 'purple', deck: 'tarot' },
+              },
+              { playerIdx: 3, card: suit(10, 'HEART', '♥', '10') },
+            ],
+          },
+        ],
+      });
+      await i18n.changeLanguage('en');
+      try {
+        mockExec.mockResolvedValue(historyState);
+        renderWithProviders(<PiedmonteseTarotPage />);
+
+        const historySection = await screen.findByTestId('piedmontesetarot-trick-history');
+        expect(within(historySection).getByText('Trick history')).toBeInTheDocument();
+        expect(within(historySection).getByText('Trick 1')).toBeInTheDocument();
+        expect(within(historySection).getByText('Lead: You')).toBeInTheDocument();
+        expect(within(historySection).getByText('Winner: CPU 2')).toBeInTheDocument();
+      } finally {
+        await i18n.changeLanguage('ja');
+      }
+    });
   });
 });

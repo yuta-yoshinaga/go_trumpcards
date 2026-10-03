@@ -98,6 +98,18 @@ func (p *PiedmonteseTarotWebPresenter) buildBase(g interfaces.PiedmonteseTarotGa
 	}
 
 	resObj.CurrentTrick = trickCardsToOutputWithFace(g.GetCurrentTrick(), piedmonteseTarotFace)
+	resObj.CompletedTricks = make([]*controller.PiedmonteseTarotWebOutputCompletedTrick, 0, len(g.GetCompletedTricks()))
+	for _, ct := range g.GetCompletedTricks() {
+		if ct == nil {
+			continue
+		}
+		resObj.CompletedTricks = append(resObj.CompletedTricks, &controller.PiedmonteseTarotWebOutputCompletedTrick{
+			TrickNumber:   ct.TrickNumber,
+			LeadPlayerIdx: ct.LeadPlayer,
+			WinnerIdx:     ct.Winner,
+			Cards:         trickCardsToOutputWithFace(ct.Cards, piedmonteseTarotFace),
+		})
+	}
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
