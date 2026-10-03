@@ -122,7 +122,7 @@ All exported symbols (types, interfaces, functions, components, constants, hooks
 ## Pre-commit checks
 
 ```sh
-bun run build && bun run check && bun run test
+bun run build && bun run check && bun run test   # build runs `bun run typecheck` (TS 7) first
 ```
 
 ## Guard scripts (`scripts/check-*.mjs`)
