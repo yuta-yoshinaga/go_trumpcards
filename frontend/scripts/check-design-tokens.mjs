@@ -7,6 +7,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findBadgeContrastViolations } from './lib/badge-contrast.mjs';
+import { checkBgBlackRatchet, countBgBlackUtilities } from './lib/bg-black-ratchet.mjs';
 import { collectDesignTokens, findUndefinedDesignUtilities } from './lib/design-token-utilities.mjs';
 import { assertFloor } from './lib/floor.mjs';
 
@@ -45,6 +46,24 @@ async function walk(dir) {
 
 const files = await walk(SRC_DIR);
 const violations = [];
+
+// Issue #9418: freeze the existing bg-black/N usage in game components/pages.
+// Lower the ceiling when intentional migrations reduce the count.
+const GAME_UI_DIRS = ['components', 'pages'];
+const BG_BLACK_CEILING = 881;
+let bgBlackCount = 0;
+for (const dir of GAME_UI_DIRS) {
+  for (const file of await walk(join(SRC_DIR, dir))) {
+    if (!file.endsWith('.tsx')) continue;
+    bgBlackCount += countBgBlackUtilities(await readFile(file, 'utf8'));
+  }
+}
+if (!checkBgBlackRatchet(bgBlackCount, BG_BLACK_CEILING)) {
+  console.error(
+    `design-tokens: found ${bgBlackCount} bg-black/N utilities under src/components and src/pages; ceiling is ${BG_BLACK_CEILING}. Do not add new uses. When existing uses are removed, lower BG_BLACK_CEILING to the new count.`,
+  );
+  process.exit(1);
+}
 
 for (const file of files) {
   const text = await readFile(file, 'utf8');

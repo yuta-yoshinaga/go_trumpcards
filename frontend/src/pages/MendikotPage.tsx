@@ -158,7 +158,7 @@ function MendikotPageContent() {
                 手番はハンド全体を左右する一度きりの選択なのに、警告が無かった。 */}
             {state.willSetTrump && (
               <div
-                className="mb-3 rounded bg-black/30 border border-ds-warning px-3 py-2 text-ds-text-primary text-center"
+                className="mb-3 rounded bg-ds-surface border border-ds-warning px-3 py-2 text-ds-text-primary text-center"
                 role="status"
                 data-testid="md-sets-trump-warning"
               >

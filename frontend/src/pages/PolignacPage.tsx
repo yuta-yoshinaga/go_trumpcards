@@ -205,7 +205,7 @@ function PolignacPageContent() {
             {/* capot 宣言中は全員の狙いが変わる。 */}
             {state.capotIdx >= 0 && !isGameEnd && (
               <div
-                className="mb-3 rounded bg-black/30 border border-ds-warning px-3 py-2 text-ds-text-primary text-sm text-center"
+                className="mb-3 rounded bg-ds-surface border border-ds-warning px-3 py-2 text-ds-text-primary text-sm text-center"
                 role="status"
                 data-testid="pg-capot-banner"
               >

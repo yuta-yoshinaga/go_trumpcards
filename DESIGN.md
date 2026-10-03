@@ -129,6 +129,8 @@ Allowed uses of opacity suffixes:
 - Decorative shadows / tints / hover scrims (where text contrast is unaffected)
 - Animated pulses and rings around active turn indicators (the underlying text is opaque)
 
+Existing informational-panel `bg-black/NN` uses are frozen by a count ratchet in `frontend/scripts/check-design-tokens.mjs`; do not add new ones.
+
 ## Spacing
 - **Base unit:** 4px
 - **Density:** Comfortable — card games need breathing room for board readability
