@@ -46,6 +46,7 @@ go run ./cmd/server                # Start REST API + web GUI server (direct)
 # Test
 go test -tags test ./...                                              # Run all Go tests
 go test -tags test -coverprofile=coverage.out -covermode=set ./...    # Coverage report
+for t in .claude/hooks/*.test.sh; do bash "$t" || echo "FAIL $t"; done  # Hook/guard self-tests (CI-gating; run after editing .claude/)
 
 # Format
 goimports -w .               # Format and organize imports (use goimports, not gofmt; `./...` is a go tool pattern goimports does not accept)
@@ -244,3 +245,4 @@ Key routing rules:
 - DRY/KISS/YAGNI 観点のソース解析を issue 化 → invoke make-issue; CUI 側だけなら invoke make-issue-cli, Web GUI 側だけなら invoke make-issue-web
 - Implement a single GitHub issue end-to-end ("issueに着手して", "#NNNN を対応して", "implement issue #N") → invoke improve-issue (`/improve-issue <#>`)
 - Clear a whole batch of improvement issues, lowest-effort first ("issueバッチを片付けて", "#NNNN〜#MMMM を全部対応", "残りの改善issueを全部やって") → invoke improve-batch (explicit `/improve-batch <range>`)
+- Running batch issues concurrently in worktree lanes (setup, delegate, gate, ship, drain) → use the batch-lanes scripts (`.claude/skills/batch-lanes/`), not ad-hoc copies
