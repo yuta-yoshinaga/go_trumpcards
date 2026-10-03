@@ -55,6 +55,61 @@ func TestHelpCommandTrailingLang(t *testing.T) {
 	}
 }
 
+func TestLocalizedFlagErrors(t *testing.T) {
+	tests := []struct {
+		name, lang, command string
+		args                []string
+		want                string
+	}{
+		{"top unknown ja", "ja", "", []string{"--bogus"}, "エラー: 不明なオプション --bogus です"},
+		{"top missing ja", "ja", "", []string{"--lang"}, "エラー: --lang には値が必要です"},
+		{"top invalid ja", "ja", "", []string{"--version=abc"}, "エラー: --version の値「abc」が不正です"},
+		{"web unknown ja", "ja", "web", []string{"--bogus"}, "エラー: trumpcards web: 不明なオプション --bogus です"},
+		{"web missing ja", "ja", "web", []string{"--port"}, "エラー: trumpcards web: --port には値が必要です"},
+		{"web invalid ja", "ja", "web", []string{"--port", "abc"}, "エラー: trumpcards web: --port の値「abc」が不正です"},
+		{"top unknown en", "en", "", []string{"--bogus"}, "Error: unknown option --bogus"},
+		{"top missing en", "en", "", []string{"--lang"}, "Error: --lang requires a value"},
+		{"top invalid en", "en", "", []string{"--version=abc"}, "Error: invalid value \"abc\" for --version"},
+		{"web unknown en", "en", "web", []string{"--bogus"}, "Error: trumpcards web: unknown option --bogus"},
+		{"web missing en", "en", "web", []string{"--port"}, "Error: trumpcards web: --port requires a value"},
+		{"web invalid en", "en", "web", []string{"--port", "abc"}, "Error: trumpcards web: invalid value \"abc\" for --port"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			originalLang := i18n.Lang()
+			t.Cleanup(func() { i18n.SetLang(originalLang) })
+			i18n.SetLang(tt.lang)
+			fs := flag.NewFlagSet("trumpcards", flag.ContinueOnError)
+			fs.SetOutput(io.Discard)
+			if tt.command == "" {
+				fs.String("lang", "", "")
+				fs.Bool("version", false, "")
+				fs.Bool("V", false, "")
+				fs.Bool("version-short", false, "")
+				fs.Bool("no-color", false, "")
+				fs.String("color", "auto", "")
+				fs.Bool("quiet", false, "")
+				fs.Bool("q", false, "")
+				fs.String("start", "", "")
+				fs.Bool("help", false, "")
+				fs.Bool("h", false, "")
+			} else {
+				fs = flag.NewFlagSet("web", flag.ContinueOnError)
+				fs.SetOutput(io.Discard)
+				fs.Int("port", 0, "")
+				fs.Int("p", 0, "")
+				fs.String("host", "", "")
+				fs.Bool("open", false, "")
+				fs.Bool("o", false, "")
+			}
+			err := fs.Parse(tt.args)
+			require.Error(t, err)
+			got := localizeFlagError(err, tt.command, fs)
+			assert.Equal(t, tt.want, firstLine(got))
+		})
+	}
+}
+
 func TestHasHelpFlag(t *testing.T) {
 	tests := []struct {
 		name string
@@ -714,6 +769,73 @@ func TestParseSubFlagsToNoHelpDumpOnFlagError(t *testing.T) {
 	}
 }
 
+func TestLocalizeFlagErrorShortFlagFormattingAndContext(t *testing.T) {
+	originalLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(originalLang) })
+	i18n.SetLang("en")
+
+	for _, tc := range []struct {
+		name, flagArg, value string
+	}{
+		{name: "missing value", flagArg: "-p"},
+		{name: "invalid value", flagArg: "-p", value: "abc"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			fs := flag.NewFlagSet("web", flag.ContinueOnError)
+			fs.SetOutput(io.Discard)
+			var port int
+			fs.IntVar(&port, "p", 0, "")
+			args := []string{tc.flagArg}
+			if tc.value != "" {
+				args = append(args, tc.value)
+			}
+			err := fs.Parse(args)
+			if err == nil {
+				t.Fatal("expected flag parse error")
+			}
+			got := localizeFlagError(err, "web", fs)
+			if !strings.Contains(got, "trumpcards web:") || !strings.Contains(got, "-p") {
+				t.Errorf("localized error should include command context and -p: %q", got)
+			}
+			if strings.Contains(got, "---") {
+				t.Errorf("localized error must not contain triple hyphen: %q", got)
+			}
+		})
+	}
+
+	fs := flag.NewFlagSet("version", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+	var short bool
+	fs.BoolVar(&short, "short", false, "")
+	err := fs.Parse([]string{"--shrot"})
+	if err == nil {
+		t.Fatal("expected unknown flag parse error")
+	}
+	got := localizeFlagError(err, "version", fs)
+	if !strings.Contains(got, `Did you mean "--short"?`) {
+		t.Errorf("suggestion should use the long flag spelling: %q", got)
+	}
+
+	fs = flag.NewFlagSet("web", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+	fs.Bool("p", false, "")
+	fs.Bool("q", false, "")
+	err = fs.Parse([]string{"-x"})
+	if err == nil {
+		t.Fatal("expected unknown short flag parse error")
+	}
+	got = localizeFlagError(err, "web", fs)
+	if strings.Contains(got, "Did you mean") {
+		t.Errorf("unknown one-character flag should not suggest a candidate: %q", got)
+	}
+
+	err = errors.New("unrecognized flag parser error")
+	got = localizeFlagError(err, "version", fs)
+	if !strings.Contains(got, "trumpcards version:") {
+		t.Errorf("fallback error should retain command context: %q", got)
+	}
+}
+
 // TestParseSubFlagsToPrintsHelpOnceOnHelpFlag verifies that `-h` prints the
 // subcommand help to stdout exactly once (not twice, as it did when Usage
 // duplicated the explicit ErrHelp-branch print). See issue #4307.
@@ -1081,19 +1203,19 @@ func TestRunUnknownTopLevelFlagIsI18nError(t *testing.T) {
 		wantHint    string
 	}{
 		{
-			name:        "ja locale wraps error in cliFlagError",
+			name:        "ja locale localizes unknown flag",
 			args:        []string{"trumpcards", "--lang", "ja", "--bogus"},
 			wantExit:    2,
 			wantPrefix:  "エラー: 不明なオプション",
-			wantInclude: "-bogus",
+			wantInclude: "--bogus",
 			wantHint:    "trumpcards --help",
 		},
 		{
-			name:        "en locale wraps error in cliFlagError",
+			name:        "en locale localizes unknown flag",
 			args:        []string{"trumpcards", "--lang", "en", "--bogus"},
 			wantExit:    2,
-			wantPrefix:  "Error: invalid option",
-			wantInclude: "-bogus",
+			wantPrefix:  "Error: unknown option",
+			wantInclude: "--bogus",
 			wantHint:    "trumpcards --help",
 		},
 	}
