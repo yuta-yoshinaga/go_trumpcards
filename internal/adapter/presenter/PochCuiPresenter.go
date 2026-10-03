@@ -12,21 +12,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-func pochCardListStr(cards []*domain.Card, indexed bool) string {
-	if len(cards) == 0 {
-		return "-"
-	}
-	parts := make([]string, 0, len(cards))
-	for i, c := range cards {
-		if indexed {
-			parts = append(parts, "["+strconv.Itoa(i)+"]"+cuiCardStr(c))
-			continue
-		}
-		parts = append(parts, cuiCardStr(c))
-	}
-	return strings.Join(parts, " ")
-}
-
 // pochPoolLabel はプールの表示名を返す。
 func pochPoolLabel(pool domain.PochPool) string {
 	return i18n.T("poch.pool." + pool.String())
@@ -72,7 +57,7 @@ func (p *PochCuiPresenter) Output(c interfaces.PochGame, lastErr error) string {
 		}
 
 		if pile := c.GetPlayedPile(); len(pile) > 0 {
-			sb.WriteString(i18n.Tf("poch.pileLine", "cards", pochCardListStr(pile, false)) + "\n")
+			sb.WriteString(i18n.Tf("poch.pileLine", "cards", cuiIndexedCardSliceStr(pile, false)) + "\n")
 		}
 
 		for i, player := range c.GetPlayers() {
@@ -93,7 +78,7 @@ func (p *PochCuiPresenter) Output(c interfaces.PochGame, lastErr error) string {
 				for j := range player.GetCardsSize() {
 					hand = append(hand, player.GetCard(j))
 				}
-				sb.WriteString("  " + pochCardListStr(hand, true) + "\n")
+				sb.WriteString("  " + cuiIndexedCardSliceStr(hand, true) + "\n")
 			}
 		}
 

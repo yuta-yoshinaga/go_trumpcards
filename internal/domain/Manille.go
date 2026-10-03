@@ -92,14 +92,6 @@ func NewDefaultManille() *Manille {
 // ManilleTeamOf プレイヤーが属するチーム (0 = 席0&2, 1 = 席1&3)
 func ManilleTeamOf(playerIdx int) int { return playerIdx % ManilleTeamCnt }
 
-// manilleTeamName チーム番号を表示名 (A/B) に変換する (classic ワーカーで自己完結)。
-func manilleTeamName(team int) string {
-	if team == 0 {
-		return "A"
-	}
-	return "B"
-}
-
 // Reset ゲーム初期化
 func (g *Manille) Reset() {
 	g.gameEndFlag = false
@@ -243,7 +235,7 @@ func (g *Manille) ScoreRound() {
 		g.gameEndFlag = true
 		g.winnerTeam = leader
 		g.phase = ManillePhaseGameEnd
-		g.appendLog(-1, "game_end", "manille.log.gameEnd", map[string]string{"team": manilleTeamName(leader)}, nil)
+		g.appendLog(-1, "game_end", "manille.log.gameEnd", map[string]string{"team": TeamName(leader)}, nil)
 	}
 	// 加算済みのラウンド点をクリアして二重計上を防ぐ (冪等性)。
 	g.roundCardPts = [ManilleTeamCnt]int{}

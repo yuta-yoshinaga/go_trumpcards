@@ -356,7 +356,7 @@ func (g *Trappola) ScoreRound() {
 		g.gameEndFlag = true
 		g.winnerTeam = leader
 		g.phase = TrappolaPhaseGameEnd
-		g.appendLog(-1, "game_end", "trappola.log.gameEnd", map[string]string{"team": trappolaTeamName(leader)}, nil)
+		g.appendLog(-1, "game_end", "trappola.log.gameEnd", map[string]string{"team": TeamName(leader)}, nil)
 	}
 }
 
@@ -511,17 +511,10 @@ func trappolaSortHand(p *TrappolaPlayer) {
 
 // --- Card helpers ---
 
-// trappolaTeamName チーム表示名 (0=A, 1=B)。
 //
 // **クローン元の teamName は共有できない。** あちら (Tressette.go) は casino
 // タグ、こちらは extra2 なので、extra2 のビルドでは定義ごと消えて
 // stranded symbol になる。名前を分けて自前で持つ。
-func trappolaTeamName(team int) string {
-	if team == 0 {
-		return "A"
-	}
-	return "B"
-}
 
 // trappolaStrength は札位の強さを返す。**順は A-K-Q-J-7-6-5-4-3。**
 //

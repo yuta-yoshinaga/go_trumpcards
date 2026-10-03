@@ -240,7 +240,7 @@ func (g *Tressette) ScoreRound() {
 		g.gameEndFlag = true
 		g.winnerTeam = leader
 		g.phase = TressettePhaseGameEnd
-		g.appendLog(-1, "game_end", "tressette.log.gameEnd", map[string]string{"team": teamName(leader)}, nil)
+		g.appendLog(-1, "game_end", "tressette.log.gameEnd", map[string]string{"team": TeamName(leader)}, nil)
 	}
 }
 

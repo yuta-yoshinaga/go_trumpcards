@@ -12,21 +12,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-func laughAndLieDownCardListStr(cards []*domain.Card, indexed bool) string {
-	if len(cards) == 0 {
-		return "-"
-	}
-	parts := make([]string, 0, len(cards))
-	for i, c := range cards {
-		if indexed {
-			parts = append(parts, "["+strconv.Itoa(i)+"]"+cuiCardStr(c))
-			continue
-		}
-		parts = append(parts, cuiCardStr(c))
-	}
-	return strings.Join(parts, " ")
-}
-
 // LaughAndLieDownCuiPresenter renders the Laugh and Lie Down CUI view.
 type LaughAndLieDownCuiPresenter struct{}
 
@@ -40,7 +25,7 @@ func (p *LaughAndLieDownCuiPresenter) Output(c interfaces.LaughAndLieDownGame, l
 		// 場は伏せた山ではなく広がった札。どのランクが何枚残っているかが
 		// 見えていないと 3 枚取りの判断ができないので、常に全部出す。
 		sb.WriteString(i18n.Tf("laughandliedown.layoutLine",
-			"cards", laughAndLieDownCardListStr(c.GetLayout(), false)) + "\n")
+			"cards", cuiIndexedCardSliceStr(c.GetLayout(), false)) + "\n")
 
 		for i, player := range c.GetPlayers() {
 			line := i18n.Tf("laughandliedown.playerLine",
@@ -56,7 +41,7 @@ func (p *LaughAndLieDownCuiPresenter) Output(c interfaces.LaughAndLieDownGame, l
 				for j := range player.GetCardsSize() {
 					hand = append(hand, player.GetCard(j))
 				}
-				sb.WriteString("  " + laughAndLieDownCardListStr(hand, true) + "\n")
+				sb.WriteString("  " + cuiIndexedCardSliceStr(hand, true) + "\n")
 			}
 		}
 

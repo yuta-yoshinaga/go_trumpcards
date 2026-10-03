@@ -12,21 +12,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-func lobaCardListStr(cards []*domain.Card, indexed bool) string {
-	if len(cards) == 0 {
-		return "-"
-	}
-	parts := make([]string, 0, len(cards))
-	for i, c := range cards {
-		if indexed {
-			parts = append(parts, "["+strconv.Itoa(i)+"]"+cuiCardStr(c))
-			continue
-		}
-		parts = append(parts, cuiCardStr(c))
-	}
-	return strings.Join(parts, " ")
-}
-
 // lobaMeldKindName はメルド種別の名前を返す。
 func lobaMeldKindName(k domain.LobaMeldKind) string {
 	if k == domain.LobaMeldPierna {
@@ -64,7 +49,7 @@ func (p *LobaCuiPresenter) Output(c interfaces.LobaGame, lastErr error) string {
 				"idx", strconv.Itoa(i),
 				"kind", lobaMeldKindName(m.Kind),
 				"owner", strconv.Itoa(m.Owner),
-				"cards", lobaCardListStr(m.Cards, false)) + "\n")
+				"cards", cuiIndexedCardSliceStr(m.Cards, false)) + "\n")
 		}
 
 		for i, player := range c.GetPlayers() {
@@ -81,7 +66,7 @@ func (p *LobaCuiPresenter) Output(c interfaces.LobaGame, lastErr error) string {
 				for j := range player.GetCardsSize() {
 					hand = append(hand, player.GetCard(j))
 				}
-				sb.WriteString("  " + lobaCardListStr(hand, true) + "\n")
+				sb.WriteString("  " + cuiIndexedCardSliceStr(hand, true) + "\n")
 			}
 		}
 

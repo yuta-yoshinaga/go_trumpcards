@@ -4,7 +4,6 @@ package presenter
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -167,15 +166,13 @@ func yakuToWeb(yakus []domain.KoiKoiYaku) []*controller.KoiKoiWebOutputYaku {
 
 // encodeScoresParam は累計得点を "0:12,1:3" 形式の文字列に詰める。
 func (p *KoiKoiWebPresenter) encodeScoresParam(g interfaces.KoiKoiGame) string {
-	parts := make([]string, 0, g.GetPlayerCnt())
-	for i := 0; i < g.GetPlayerCnt(); i++ {
-		player := g.GetPlayer(i)
-		if player == nil {
-			continue
+	return encodeIndexedScores(g.GetPlayerCnt(), func(i int) (int, bool) {
+		p := g.GetPlayer(i)
+		if p == nil {
+			return 0, false
 		}
-		parts = append(parts, fmt.Sprintf("%d:%d", i, player.GetScore()))
-	}
-	return strings.Join(parts, ",")
+		return p.GetScore(), true
+	})
 }
 
 // buildResultMessage はゲーム終了時のフォールバック (英語) メッセージ。

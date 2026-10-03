@@ -4,8 +4,6 @@ package presenter
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -154,11 +152,9 @@ func (p *TappTarockWebPresenter) buildMessage(g interfaces.TappTarockGame, lastE
 
 // encodeScoresParam 通算得点を "0:12,1:-4" 形式に詰める。
 func (p *TappTarockWebPresenter) encodeScoresParam(g interfaces.TappTarockGame) string {
-	parts := make([]string, 0, g.GetPlayerCnt())
-	for i := 0; i < g.GetPlayerCnt(); i++ {
-		parts = append(parts, strconv.Itoa(i)+":"+strconv.Itoa(g.GetPlayerScore(i)))
-	}
-	return strings.Join(parts, ",")
+	return encodeIndexedScores(g.GetPlayerCnt(), func(i int) (int, bool) {
+		return g.GetPlayerScore(i), true
+	})
 }
 
 // buildResultMessage 終局時のフォールバック (英語) メッセージ。

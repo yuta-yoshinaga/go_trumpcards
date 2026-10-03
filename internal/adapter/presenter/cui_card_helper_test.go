@@ -184,7 +184,7 @@ func TestCuiCardListStr(t *testing.T) {
 	}
 }
 
-func TestCuiIndexedCardListStr(t *testing.T) {
+func TestCuiIndexedCardSliceStr(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)
 	defer color.SetNoColor(origNoColor)
@@ -210,6 +210,16 @@ func TestCuiIndexedCardListStr(t *testing.T) {
 			assert.Equal(t, tt.expected, cuiIndexedCardListStr(&mockCardList{cards: tt.cards}))
 		})
 	}
+}
+
+func TestCuiIndexedCardListStr(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	t.Cleanup(func() { color.SetNoColor(origNoColor) })
+	cards := []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false), domain.NewCard(domain.CardDesignHeart, 5, false)}
+	assert.Equal(t, "-", cuiIndexedCardSliceStr(nil, false))
+	assert.Equal(t, "[0]♠1 [1]♥5", cuiIndexedCardSliceStr(cards, true))
+	assert.Equal(t, "♠1 ♥5", cuiIndexedCardSliceStr(cards, false))
 }
 
 func TestCuiCardListStrEmoji(t *testing.T) {
