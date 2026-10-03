@@ -53,7 +53,6 @@
   "cliWebOpenSkippedNonTTY": "Hint: --open targets interactive terminals; skipped because stderr is not a TTY.",
   "cliWebPortInUseHint": "Hint: try a different port (e.g. trumpcards web --port 3000)",
   "cliSupportedLangs": "Supported languages: ja, en",
-  "cliHelpUnknownGame": "Unknown game: \"{{name}}\". Run 'trumpcards games' to see available games.",
   "updateNonInteractive": "Non-interactive stdin: re-run with --yes to auto-confirm.",
   "cliLangEnvFallback": "Note: LANG=\"{{lang}}\" is not a supported language, defaulting to ja (pass --quiet/-q or set TRUMPCARDS_QUIET=1 to silence)",
   "cliInvalidCategory": "Error: invalid category \"{{category}}\" (supported: {{categories}})",

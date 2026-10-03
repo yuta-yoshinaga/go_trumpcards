@@ -53,7 +53,6 @@
   "cliWebOpenSkippedNonTTY": "ヒント: --open は対話端末専用です (stderr が TTY でないため起動をスキップしました)。",
   "cliWebPortInUseHint": "ヒント: 別のポートを指定してください (例: trumpcards web --port 3000)",
   "cliSupportedLangs": "対応している言語: ja, en",
-  "cliHelpUnknownGame": "不明なゲームです: \"{{name}}\"。'trumpcards games' でゲーム一覧を確認できます。",
   "updateNonInteractive": "標準入力が非対話モードです: --yes を付けて再実行してください。",
   "cliLangEnvFallback": "注意: LANG=\"{{lang}}\" はサポートされていない言語です。ja をデフォルトとして使用します (--quiet/-q または TRUMPCARDS_QUIET=1 で抑止可能)",
   "cliInvalidCategory": "エラー: 無効なカテゴリ「{{category}}」です (対応: {{categories}})",
