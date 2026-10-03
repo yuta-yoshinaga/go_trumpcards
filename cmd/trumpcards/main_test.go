@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"slices"
 	"sort"
 	"strconv"
@@ -2520,10 +2521,14 @@ func TestGamesHelpLocaleContent(t *testing.T) {
 		return m
 	}
 	en, ja := load("en")["sub_games"], load("ja")["sub_games"]
-	if !strings.Contains(en, "aliases lists the game's aliases ([] rather than null when there are none).") {
+	lineWrap := regexp.MustCompile(`\n\s+`)
+	normalize := func(s, separator string) string {
+		return lineWrap.ReplaceAllString(s, separator)
+	}
+	if !strings.Contains(normalize(en, " "), "aliases lists the game's aliases ([] rather than null when there are none).") {
 		t.Errorf("English games help must explain aliases contents and empty-array shape")
 	}
-	if !strings.Contains(ja, "aliases はゲームのエイリアス配列です（無い場合も null ではなく []）。") {
+	if !strings.Contains(normalize(ja, ""), "aliases はゲームのエイリアス配列です（無い場合も null ではなく []）。") {
 		t.Errorf("Japanese games help must explain aliases contents and empty-array shape")
 	}
 	example := `trumpcards games --json | jq -r '.[] | select(.category=="solo") | .name'`
@@ -2537,7 +2542,11 @@ func TestGamesHelpLocaleContent(t *testing.T) {
 		{"ja", "aliases はゲームのエイリアス配列です（無い場合も null ではなく []）。"},
 	} {
 		i18n.SetLang(tc.lang)
-		if resolved := i18n.T("cli_help.sub_games"); !strings.Contains(resolved, tc.phrase) {
+		separator := " "
+		if tc.lang == "ja" {
+			separator = ""
+		}
+		if resolved := normalize(i18n.T("cli_help.sub_games"), separator); !strings.Contains(resolved, tc.phrase) {
 			t.Errorf("resolved %s games help is missing %q", tc.lang, tc.phrase)
 		}
 	}
@@ -2548,8 +2557,24 @@ func TestGamesHelpLocaleContent(t *testing.T) {
 		}
 		return len(strings.Split(strings.TrimSuffix(section[1], "\n"), "\n"))
 	}
-	if countExamples(en, "EXAMPLES") != countExamples(ja, "例") {
-		t.Errorf("games help example line counts differ: en=%d ja=%d", countExamples(en, "EXAMPLES"), countExamples(ja, "例"))
+	enExamples, jaExamples := countExamples(en, "EXAMPLES"), countExamples(ja, "例")
+	if enExamples <= 0 {
+		t.Errorf("English games help must contain example lines, got %d", enExamples)
+	}
+	if jaExamples <= 0 {
+		t.Errorf("Japanese games help must contain example lines, got %d", jaExamples)
+	}
+	if enExamples != jaExamples {
+		t.Errorf("games help example line counts differ: en=%d ja=%d", enExamples, jaExamples)
+	}
+	for _, tc := range []struct{ lang, continuation string }{
+		{"en", "\n                           ([] rather than null when there are none)."},
+		{"ja", "\n                           （無い場合も null ではなく []）。"},
+	} {
+		content := load(tc.lang)["sub_games"]
+		if !strings.Contains(content, tc.continuation) {
+			t.Errorf("%s aliases help text should wrap onto an indented continuation line", tc.lang)
+		}
 	}
 }
 
