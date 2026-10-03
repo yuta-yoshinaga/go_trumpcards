@@ -20,8 +20,6 @@ type ConquianInteractorIF interface {
 	DrawFromStock() string
 	// DrawFromDiscard 捨て札からカードを引く
 	DrawFromDiscard() string
-	// Meld メルドを並べる/付ける
-	Meld(meldGroups [][]int) string
 	// MeldWithTargets 延長先メルドの指定つきでメルドする
 	MeldWithTargets(meldGroups [][]int, extendTargets []int) string
 	// Discard カードを捨てる
@@ -66,11 +64,6 @@ func (ci *ConquianInteractor) DrawFromStock() string {
 // DrawFromDiscard 捨て札からカードを引く
 func (ci *ConquianInteractor) DrawFromDiscard() string {
 	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerDrawFromDiscard() }, ci.runCpuTurns)
-}
-
-// Meld メルドを並べる/付ける
-func (ci *ConquianInteractor) Meld(meldGroups [][]int) string {
-	return ci.MeldWithTargets(meldGroups, nil)
 }
 
 // MeldWithTargets は延長先メルドの指定つきでメルドする。extendTargets[i] は

@@ -7692,8 +7692,8 @@ func (m *GameManager) ArgumentCandidates(cmd string) []string {
 // helper in cmd/trumpcards/main.go added in #1555 so a typo of an alias (e.g.
 // "gni" for "gin") recovers the alias in interactive mode the same way it does
 // at the top-level CLI. The local `add` closure matches the style used by
-// helpSuggestionCandidates / suggestionCandidates(commands) in main.go so
-// future readers see one dedup pattern instead of two. See issues #1602, #1625.
+// helpSuggestionCandidates in cmd/trumpcards/main.go follows the same dedup
+// pattern for CLI unknown-name suggestions. See issues #1602, #1625.
 func (m *GameManager) suggestionCandidates() []string {
 	capacity := len(m.gameOrder) + len(GameAliases)
 	seen := make(map[string]struct{}, capacity)

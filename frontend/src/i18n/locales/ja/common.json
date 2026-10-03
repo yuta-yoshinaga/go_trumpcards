@@ -401,6 +401,7 @@
   "watten.log.dealScore": "チーム {{team}} がディールを獲得 +{{stake}}（マッチ {{team0}}-{{team1}}）",
   "watten.log.gameEnd": "チーム {{team}} がマッチに勝利しました！",
   "nav": {
+    "sidebar": "ゲームナビゲーション",
     "accordion": "アコーディオン",
     "acesup": "四つ葉のクローバー",
     "addFavorite": "お気に入りに追加",
@@ -1060,6 +1061,7 @@
     "play": "{{card}} を出す"
   },
   "label": {
+    "tutorial": "チュートリアル",
     "result": "結果:",
     "cpuAction": "CPU行動:",
     "cpuActionLog": "CPUプレイヤーの行動ログ",
@@ -1069,6 +1071,8 @@
     "blinds": "SB/BB:",
     "dealer": "ディーラー:",
     "networkError": "通信エラーが発生しました。もう一度お試しください。",
+    "requestRejected": "この操作は受け付けられませんでした。",
+    "serverError": "サーバでエラーが発生しました。解決しない場合は新しいゲームを始めてください。",
     "chipsWon": "+{{amount}}チップ",
     "netChange": "差引 {{amount}} チップ",
     "kicker": "キッカー: {{kickers}}",

@@ -29,10 +29,6 @@ func (_m *MockConquianInteractor) DrawFromDiscard() string {
 	return _m.Called().String(0)
 }
 
-func (_m *MockConquianInteractor) Meld(meldGroups [][]int) string {
-	return _m.Called(meldGroups).String(0)
-}
-
 func (_m *MockConquianInteractor) MeldWithTargets(meldGroups [][]int, extendTargets []int) string {
 	return _m.Called(meldGroups, extendTargets).String(0)
 }

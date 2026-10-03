@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { describeApiFailure } from '../utils/describeApiFailure';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
@@ -136,9 +136,9 @@ export function useTrickGameBase<TState, TArgs extends unknown[], TConfig extend
       if (!isMounted()) return;
       setHint(getHint(res) ?? null);
       setHintError(null);
-    } catch {
+    } catch (error) {
       if (!isMounted()) return;
-      setHintError(NETWORK_ERROR_MESSAGE());
+      setHintError(describeApiFailure(error).message);
     } finally {
       if (isMounted()) setHintLoading(false);
     }

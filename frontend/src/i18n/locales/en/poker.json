@@ -18,7 +18,6 @@
   "standLabel": "Stand",
   "standHint": "Stand pat — play your current hand",
   "drawOdds": "Draw Odds:",
-  "oddsFetchFailed": "Failed to fetch odds.",
   "oddsRetry": "Retry",
   "cpuExchange": "CPU Exchange:",
   "cpuExchangeEntry": "Player {{idx}}: exchanged {{count}} card(s)",

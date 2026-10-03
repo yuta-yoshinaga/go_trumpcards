@@ -43,6 +43,13 @@ describe('ErrorAlert', () => {
     expect(screen.queryByRole('button', { name: retryLabel })).not.toBeInTheDocument();
   });
 
+  it('hides retry for a rejected request', () => {
+    const retry = Object.assign(vi.fn(), { retryable: false });
+    render(<ErrorAlert message="この操作は受け付けられませんでした。" onRetry={retry} />);
+    expect(screen.getByRole('alert')).toHaveTextContent('この操作は受け付けられませんでした。');
+    expect(screen.queryByRole('button', { name: retryLabel })).not.toBeInTheDocument();
+  });
+
   it('renders retry button and calls onRetry when clicked', () => {
     const onRetry = vi.fn();
     render(<ErrorAlert message="error" onRetry={onRetry} />);

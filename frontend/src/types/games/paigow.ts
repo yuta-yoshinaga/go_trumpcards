@@ -3,8 +3,18 @@
 
 import type { BaseGameResponse, Card } from '../common';
 
+/** Server-selected Pai Gow low-hand split hint. */
+export interface PaiGowHint {
+  lowIdx0: number;
+  lowIdx1: number;
+  lowIsPair: boolean;
+  reason: string;
+}
+
 /** Pai Gow Poker API response. */
 export interface PaiGowResponse extends BaseGameResponse {
+  /** Server-selected low-hand indices during the set-hands phase. */
+  hint?: PaiGowHint | null;
   playerCards: Card[];
   dealerCards: Card[];
   playerHighHand: Card[];

@@ -112,7 +112,7 @@ describe('DiscoverPage', () => {
     fireEvent.click(skipBtn);
     // After skip, question 2 (skill axis q1) is rendered. The aria-label on
     // the question section names the current question number.
-    expect(screen.getByLabelText(/Question 2 of 8/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('全 8 問中 2 問目')).toBeInTheDocument();
   });
 
   it('ignores rapid double-fire of the same option (#1898)', async () => {
@@ -128,7 +128,7 @@ describe('DiscoverPage', () => {
       fireEvent.keyDown(window, { key: '1' });
     });
     // After a single answer, we expect Q2 — not Q3.
-    expect(screen.getByLabelText(/Question 2 of 8/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('全 8 問中 2 問目')).toBeInTheDocument();
   });
 
   it('browser back walks to the previous question instead of exiting Discover (#1899)', async () => {
@@ -145,17 +145,17 @@ describe('DiscoverPage', () => {
     await act(async () => {
       fireEvent.keyDown(window, { key: '1' });
     });
-    expect(screen.getByLabelText(/Question 3 of 8/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('全 8 問中 3 問目')).toBeInTheDocument();
     // popstate walks back to Q2.
     await act(async () => {
       window.dispatchEvent(new PopStateEvent('popstate'));
     });
-    expect(screen.getByLabelText(/Question 2 of 8/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('全 8 問中 2 問目')).toBeInTheDocument();
     // popstate again walks back to Q1.
     await act(async () => {
       window.dispatchEvent(new PopStateEvent('popstate'));
     });
-    expect(screen.getByLabelText(/Question 1 of 8/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('全 8 問中 1 問目')).toBeInTheDocument();
   });
 
   it('popstate at the first question is a no-op (no exit, no negative step) (#1899)', async () => {
@@ -165,7 +165,7 @@ describe('DiscoverPage', () => {
     await act(async () => {
       window.dispatchEvent(new PopStateEvent('popstate'));
     });
-    expect(screen.getByLabelText(/Question 1 of 8/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('全 8 問中 1 問目')).toBeInTheDocument();
   });
 
   it('Backspace returns to the previous question', () => {
@@ -174,11 +174,11 @@ describe('DiscoverPage', () => {
       fireEvent.keyDown(window, { key: '1' });
     });
     // Now on question 2.
-    expect(screen.getByLabelText(/Question 2 of 8/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('全 8 問中 2 問目')).toBeInTheDocument();
     act(() => {
       fireEvent.keyDown(window, { key: 'Backspace' });
     });
     // Back to question 1.
-    expect(screen.getByLabelText(/Question 1 of 8/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('全 8 問中 1 問目')).toBeInTheDocument();
   });
 });

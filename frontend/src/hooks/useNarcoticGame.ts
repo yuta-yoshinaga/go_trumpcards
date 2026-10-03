@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { narcoticApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { NarcoticHint } from '../types/card';
+import { describeApiFailure } from '../utils/describeApiFailure';
 import { useGameApi } from './useGameApi';
 import { useIsMounted } from './useIsMounted';
 
@@ -39,9 +39,9 @@ export function useNarcoticGame() {
       if (!isMounted()) return;
       setHint(res.hint ?? null);
       setHintError(null);
-    } catch {
+    } catch (error) {
       if (!isMounted()) return;
-      setHintError(NETWORK_ERROR_MESSAGE());
+      setHintError(describeApiFailure(error).message);
     }
   }, [isMounted]);
 

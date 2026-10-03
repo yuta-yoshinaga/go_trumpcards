@@ -401,6 +401,7 @@
   "watten.log.dealScore": "Team {{team}} wins deal +{{stake}} (match {{team0}}-{{team1}})",
   "watten.log.gameEnd": "Team {{team}} wins the match!",
   "nav": {
+    "sidebar": "Game navigation",
     "accordion": "Accordion",
     "acesup": "Aces Up",
     "addFavorite": "Add to favorites",
@@ -1060,6 +1061,7 @@
     "play": "Play {{card}}"
   },
   "label": {
+    "tutorial": "Tutorial",
     "result": "Result:",
     "cpuAction": "CPU Actions:",
     "cpuActionLog": "CPU player action log",
@@ -1069,6 +1071,8 @@
     "blinds": "SB/BB:",
     "dealer": "Dealer:",
     "networkError": "A network error occurred. Please try again.",
+    "requestRejected": "This action could not be accepted.",
+    "serverError": "The server encountered an error. If it persists, start a new game.",
     "chipsWon": "+{{amount}} chips",
     "netChange": "Net: {{amount}} chips",
     "kicker": "Kicker: {{kickers}}",

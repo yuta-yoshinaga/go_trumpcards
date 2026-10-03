@@ -33,7 +33,8 @@ import { cardAlt } from '../utils/cardAlt';
 import { PAIGOW_HELP, parsePaigowCommand } from '../utils/cli/commands/paigowCommands';
 import { formatPaigowState } from '../utils/cli/formatters/paigowFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { paiGowAutoSplit, paiGowFoulCheck } from '../utils/paiGowFoul';
+import { paiGowFoulCheck } from '../utils/paiGowFoul';
+import { paiGowHouseWaySplit } from '../utils/paiGowHouseWay';
 
 /** Bet cap enforced by the domain (`PaiGowMaxBet`); bets are multiples of 10. */
 const PAIGOW_MAX_BET = 10000;
@@ -144,12 +145,7 @@ function PaiGowPageContent() {
     [isSetHandsPhase, state, selectedIndices],
   );
 
-  // House-way auto-split: the strongest legal low-hand indices, or null when it
-  // cannot be safely computed (e.g. a joker is present).
-  const autoSplit = useMemo(
-    () => (isSetHandsPhase && state ? paiGowAutoSplit(state.playerCards) : null),
-    [isSetHandsPhase, state],
-  );
+  const autoSplit = useMemo(() => paiGowHouseWaySplit(state), [state]);
 
   const handleAutoSet = useCallback(() => {
     if (autoSplit) setSelectedIndices([autoSplit[0], autoSplit[1]]);

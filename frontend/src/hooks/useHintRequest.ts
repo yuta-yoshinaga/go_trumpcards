@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { describeApiFailure } from '../utils/describeApiFailure';
 import { useIsMounted } from './useIsMounted';
 
 /** Options for {@link useHintRequest}. */
@@ -46,9 +46,9 @@ export function useHintRequest<TRes, THint>(options: UseHintRequestOptions<TRes,
       if (!isMounted()) return;
       setHint(selectHint(res) ?? null);
       setHintError(null);
-    } catch {
+    } catch (error) {
       if (!isMounted()) return;
-      setHintError(NETWORK_ERROR_MESSAGE());
+      setHintError(describeApiFailure(error).message);
     } finally {
       if (isMounted()) setHintLoading?.(false);
     }
