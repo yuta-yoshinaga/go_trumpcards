@@ -857,9 +857,31 @@ func TestAlaska_UnmarshalJSON_invalid(t *testing.T) {
 }
 
 func TestAlaska_GetHint_SkipsWholeColumnToEmpty(t *testing.T) {
-	c := setupPlayingAlaska()
-	var tab [domain.AlaskaTableauCnt][]*domain.AlaskaTableauCard
-	tab[0] = []*domain.AlaskaTableauCard{makeAlaskaTableauCard(domain.CardDesignSpade, 13, true)}
-	c.SetTableau(tab)
-	assert.Nil(t, c.GetHint())
+	t.Run("chooses a useful move", func(t *testing.T) {
+		c := setupPlayingAlaska()
+		c.Reset()
+		var tab [domain.AlaskaTableauCnt][]*domain.AlaskaTableauCard
+		tab[0] = []*domain.AlaskaTableauCard{makeAlaskaTableauCard(domain.CardDesignSpade, 13, true)}
+		tab[1] = []*domain.AlaskaTableauCard{makeAlaskaTableauCard(domain.CardDesignClover, 3, true), makeAlaskaTableauCard(domain.CardDesignHeart, 13, true), makeAlaskaTableauCard(domain.CardDesignHeart, 12, true)}
+		c.SetTableau(tab)
+		c.SetFoundation([domain.AlaskaFoundationCnt][]*domain.Card{})
+		hint := c.GetHint()
+		if assert.NotNil(t, hint) {
+			assert.Equal(t, 1, hint.FromCol)
+			assert.Equal(t, 1, hint.CardIndex)
+			assert.Equal(t, 2, hint.ToCol)
+			assert.Equal(t, "tableau", hint.ToZone)
+		}
+	})
+	t.Run("no-op moves lead to stalemate", func(t *testing.T) {
+		c := setupPlayingAlaska()
+		c.Reset()
+		var tab [domain.AlaskaTableauCnt][]*domain.AlaskaTableauCard
+		tab[0] = []*domain.AlaskaTableauCard{makeAlaskaTableauCard(domain.CardDesignSpade, 13, true)}
+		c.SetTableau(tab)
+		c.SetFoundation([domain.AlaskaFoundationCnt][]*domain.Card{})
+		assert.Nil(t, c.GetHint())
+		assert.NoError(t, c.MoveTableauToTableau(0, 0, 1))
+		assert.True(t, c.IsStalemate())
+	})
 }
