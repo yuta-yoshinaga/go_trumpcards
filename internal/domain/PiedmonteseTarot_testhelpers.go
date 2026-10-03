@@ -33,3 +33,13 @@ func (g *PiedmonteseTarot) SetGameEndForTest(winner int) {
 	g.phase = PiedmonteseTarotPhaseGameEnd
 	g.winnerPlayer = winner
 }
+
+// SetCurrentTrickForTest sets the current trick (test only).
+func (g *PiedmonteseTarot) SetCurrentTrickForTest(trick []*TrickCard) {
+	g.currentTrick = trick
+}
+
+// SetPhaseForTest sets the phase (test only).
+func (g *PiedmonteseTarot) SetPhaseForTest(phase PiedmonteseTarotPhase) {
+	g.phase = phase
+}

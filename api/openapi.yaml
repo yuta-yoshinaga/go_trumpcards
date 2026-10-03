@@ -79597,6 +79597,26 @@ components:
           type: array
           items:
             type: object
+        completedTricks:
+          type: array
+          items:
+            type: object
+            properties:
+              trickNumber:
+                type: integer
+              leadPlayerIdx:
+                type: integer
+              winnerIdx:
+                type: integer
+              cards:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    playerIdx:
+                      type: integer
+                    card:
+                      type: object
         playerScores:
           type: array
           items:

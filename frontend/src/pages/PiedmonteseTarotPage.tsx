@@ -289,6 +289,76 @@ function PiedmonteseTarotPageContent() {
                   winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
                   dataTutorial="piedmontesetarot-trick-display"
                 />
+
+                {/* Completed trick history: lets players review past tricks and cards */}
+                <details
+                  className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                  data-testid="piedmontesetarot-trick-history"
+                >
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm font-semibold">
+                    {t('trickHistory.title')}
+                  </summary>
+                  <div className="mt-2">
+                    {state.completedTricks.length === 0 ? (
+                      <div className="text-ds-text-muted text-xs">{t('trickHistory.empty')}</div>
+                    ) : (
+                      <div className="space-y-3">
+                        {state.completedTricks.map((trick) => (
+                          <div
+                            key={trick.trickNumber}
+                            className="border-t border-ds-border-subtle pt-2 first:border-0 first:pt-0"
+                            data-testid={`piedmontesetarot-completed-trick-${trick.trickNumber}`}
+                          >
+                            <div className="flex flex-wrap gap-x-3 gap-y-1 items-center mb-1 text-xs">
+                              <span className="font-semibold text-ds-text-primary">
+                                {t('trickHistory.trickTitle', { n: trick.trickNumber })}
+                              </span>
+                              <span>
+                                {t('trickHistory.lead', {
+                                  name: playerName(
+                                    trick.leadPlayerIdx,
+                                    state.players[trick.leadPlayerIdx]?.isHuman ?? false,
+                                  ),
+                                })}
+                              </span>
+                              <span className="text-ds-warning font-semibold">
+                                {t('trickHistory.winner', {
+                                  name: playerName(trick.winnerIdx, state.players[trick.winnerIdx]?.isHuman ?? false),
+                                })}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {trick.cards.map((tc, cardIdx) => {
+                                const p = state.players[tc.playerIdx];
+                                const isWinner = tc.playerIdx === trick.winnerIdx;
+                                return (
+                                  <div
+                                    key={cardIdx}
+                                    className={`text-center p-1 rounded ${isWinner ? 'ring-1 ring-ds-warning' : ''}`}
+                                    data-testid={`piedmontesetarot-history-card-${trick.trickNumber}-${tc.playerIdx}`}
+                                  >
+                                    <CardImage
+                                      card={tc.card}
+                                      width={Math.round(cardWidth * 0.6)}
+                                      ariaLabel={cardAlt(tc.card)}
+                                    />
+                                    <div
+                                      className={`text-xs mt-0.5 ${
+                                        isWinner ? 'text-ds-warning font-semibold' : 'text-ds-text-muted'
+                                      }`}
+                                    >
+                                      {playerName(tc.playerIdx, p?.isHuman ?? false)}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </details>
               </div>
 
               {/* Right: info sidebar */}

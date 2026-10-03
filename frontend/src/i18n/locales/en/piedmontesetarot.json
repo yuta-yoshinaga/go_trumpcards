@@ -23,6 +23,13 @@
   "points": "{{points}} pts",
   "score": "Score: {{score}}",
   "currentTrick": "Current trick",
+  "trickHistory": {
+    "title": "Trick history",
+    "empty": "No completed tricks yet",
+    "trickTitle": "Trick {{n}}",
+    "lead": "Lead: {{name}}",
+    "winner": "Winner: {{name}}"
+  },
   "players": "Players",
   "you": "You",
   "cpu": "CPU {{id}}",

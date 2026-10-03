@@ -96,6 +96,14 @@ type PiedmonteseTarotHint struct {
 	Reason      string
 }
 
+// PiedmonteseTarotCompletedTrick は完了した 1 トリックの記録。
+type PiedmonteseTarotCompletedTrick struct {
+	TrickNumber int          `json:"tn"`
+	LeadPlayer  int          `json:"lp"`
+	Winner      int          `json:"w"`
+	Cards       []*TrickCard `json:"c"`
+}
+
 // PiedmonteseTarot はピエモンテ・タロッコの卓。
 type PiedmonteseTarot struct {
 	deck             []*Card
@@ -107,6 +115,7 @@ type PiedmonteseTarot struct {
 	trickNumber      int
 	currentPlayerIdx int
 	currentTrick     []*TrickCard
+	completedTricks  []*PiedmonteseTarotCompletedTrick
 	leadPlayerIdx    int
 	dealerIdx        int
 	scarto           []*Card // 親が捨てた札 (親の獲得札に数える)
@@ -182,6 +191,7 @@ func (g *PiedmonteseTarot) NextRound() {
 func (g *PiedmonteseTarot) startRound() {
 	g.trickNumber = 0
 	g.currentTrick = nil
+	g.completedTricks = nil
 	g.leadPlayerIdx = -1
 	g.lastTrickWinner = -1
 	g.scarto = nil
@@ -468,6 +478,23 @@ func (g *PiedmonteseTarot) ResolveTrick() {
 		g.players[excuseOwner].AddTrick([]*Card{excuseCard})
 	}
 	g.appendLog(winnerIdx, "trick_win", "piedmontesetarot.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber)}, allCards)
+
+	lead := g.leadPlayerIdx
+	if lead < 0 && len(g.currentTrick) > 0 && g.currentTrick[0] != nil {
+		lead = g.currentTrick[0].PlayerIdx
+	}
+	trickCards := make([]*TrickCard, len(g.currentTrick))
+	for i, tc := range g.currentTrick {
+		if tc != nil {
+			trickCards[i] = &TrickCard{PlayerIdx: tc.PlayerIdx, Card: tc.Card}
+		}
+	}
+	g.completedTricks = append(g.completedTricks, &PiedmonteseTarotCompletedTrick{
+		TrickNumber: g.trickNumber,
+		LeadPlayer:  lead,
+		Winner:      winnerIdx,
+		Cards:       trickCards,
+	})
 
 	g.leadPlayerIdx = winnerIdx
 	g.lastTrickWinner = winnerIdx
@@ -971,6 +998,11 @@ func (g *PiedmonteseTarot) GetDealScores() []int { return g.dealScores }
 // GetLastTrickWinner は最後のトリックを取った席を返す。
 func (g *PiedmonteseTarot) GetLastTrickWinner() int { return g.lastTrickWinner }
 
+// GetCompletedTricks は現在のディールで完了したトリックの履歴を返す。
+func (g *PiedmonteseTarot) GetCompletedTricks() []*PiedmonteseTarotCompletedTrick {
+	return g.completedTricks
+}
+
 // GetOutcome は直近ディールの人間視点の結果を返す。
 func (g *PiedmonteseTarot) GetOutcome() PiedmonteseTarotOutcome { return g.outcome }
 
@@ -1053,27 +1085,28 @@ func piedmonteseTarotCardStr(c *Card) string {
 
 // piedmonteseTarotJSON is the JSON wire format for PiedmonteseTarot.
 type piedmonteseTarotJSON struct {
-	Deck            []*Card                   `json:"dk"`
-	DeckDrawCnt     int                       `json:"dc"`
-	Players         []*PiedmonteseTarotPlayer `json:"pl"`
-	Config          PiedmonteseTarotConfig    `json:"cf"`
-	Phase           PiedmonteseTarotPhase     `json:"ph"`
-	RoundNumber     int                       `json:"rn"`
-	TrickNumber     int                       `json:"tn"`
-	CurrentPlayer   int                       `json:"cp"`
-	CurrentTrick    []*TrickCard              `json:"ct"`
-	LeadPlayerIdx   int                       `json:"lp"`
-	DealerIdx       int                       `json:"di"`
-	Scarto          []*Card                   `json:"sc"`
-	PlayerScores    []int                     `json:"ps"`
-	DealScores      []int                     `json:"ds"`
-	LastTrickWinner int                       `json:"lw"`
-	Outcome         PiedmonteseTarotOutcome   `json:"oc"`
-	Result          PiedmonteseTarotResult    `json:"rs"`
-	Scored          bool                      `json:"sd"`
-	GameEndFlag     bool                      `json:"ge"`
-	WinnerPlayer    int                       `json:"wp"`
-	ActionLog       []*ActionLogEntry         `json:"al"`
+	Deck            []*Card                           `json:"dk"`
+	DeckDrawCnt     int                               `json:"dc"`
+	Players         []*PiedmonteseTarotPlayer         `json:"pl"`
+	Config          PiedmonteseTarotConfig            `json:"cf"`
+	Phase           PiedmonteseTarotPhase             `json:"ph"`
+	RoundNumber     int                               `json:"rn"`
+	TrickNumber     int                               `json:"tn"`
+	CurrentPlayer   int                               `json:"cp"`
+	CurrentTrick    []*TrickCard                      `json:"ct"`
+	CompletedTricks []*PiedmonteseTarotCompletedTrick `json:"ctk,omitempty"`
+	LeadPlayerIdx   int                               `json:"lp"`
+	DealerIdx       int                               `json:"di"`
+	Scarto          []*Card                           `json:"sc"`
+	PlayerScores    []int                             `json:"ps"`
+	DealScores      []int                             `json:"ds"`
+	LastTrickWinner int                               `json:"lw"`
+	Outcome         PiedmonteseTarotOutcome           `json:"oc"`
+	Result          PiedmonteseTarotResult            `json:"rs"`
+	Scored          bool                              `json:"sd"`
+	GameEndFlag     bool                              `json:"ge"`
+	WinnerPlayer    int                               `json:"wp"`
+	ActionLog       []*ActionLogEntry                 `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -1082,7 +1115,8 @@ func (g *PiedmonteseTarot) MarshalJSON() ([]byte, error) {
 		Deck: g.deck, DeckDrawCnt: g.deckDrawCnt, Players: g.players, Config: g.config,
 		Phase: g.phase, RoundNumber: g.roundNumber, TrickNumber: g.trickNumber,
 		CurrentPlayer: g.currentPlayerIdx, CurrentTrick: g.currentTrick,
-		LeadPlayerIdx: g.leadPlayerIdx, DealerIdx: g.dealerIdx, Scarto: g.scarto,
+		CompletedTricks: g.completedTricks,
+		LeadPlayerIdx:   g.leadPlayerIdx, DealerIdx: g.dealerIdx, Scarto: g.scarto,
 		PlayerScores: g.playerScores, DealScores: g.dealScores,
 		LastTrickWinner: g.lastTrickWinner, Outcome: g.outcome, Result: g.result,
 		Scored: g.scored, GameEndFlag: g.gameEndFlag, WinnerPlayer: g.winnerPlayer,
@@ -1100,7 +1134,8 @@ func (g *PiedmonteseTarot) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if len(j.Deck) > piedmonteseTarotMaxSliceLen || len(j.Players) > piedmonteseTarotMaxSliceLen ||
-		len(j.ActionLog) > piedmonteseTarotMaxSliceLen || len(j.CurrentTrick) > piedmonteseTarotMaxSliceLen {
+		len(j.ActionLog) > piedmonteseTarotMaxSliceLen || len(j.CurrentTrick) > piedmonteseTarotMaxSliceLen ||
+		len(j.CompletedTricks) > piedmonteseTarotMaxSliceLen {
 		return errors.New("piedmontesetarot: input array exceeds maximum allowed size")
 	}
 	if err := j.Config.Validate(); err != nil {
@@ -1135,6 +1170,7 @@ func (g *PiedmonteseTarot) UnmarshalJSON(data []byte) error {
 	g.trickNumber = j.TrickNumber
 	g.currentPlayerIdx = j.CurrentPlayer
 	g.currentTrick = j.CurrentTrick
+	g.completedTricks = j.CompletedTricks
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.dealerIdx = j.DealerIdx
 	g.scarto = j.Scarto
