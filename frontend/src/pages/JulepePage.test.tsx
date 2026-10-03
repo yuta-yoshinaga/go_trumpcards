@@ -47,6 +47,8 @@ function makeState(overrides: Partial<JulepeResponse> = {}): JulepeResponse {
     dealerIdx: 0,
     activeCount: 0,
     currentTrick: [],
+    lastTrick: [],
+    lastTrickWinner: -1,
     validPlays: [0, 1, 2],
     gameEndFlag: false,
     winnerIdx: -1,
@@ -72,6 +74,23 @@ beforeEach(() => {
 });
 
 describe('JulepePage', () => {
+  it('shows the previous trick cards and winner while the next trick is in progress', async () => {
+    mockExec.mockResolvedValue(
+      playing({
+        currentTrick: [{ playerIdx: 2, card: card('SPADE', 10) }],
+        lastTrick: [
+          { playerIdx: 1, card: card('HEART', 12) },
+          { playerIdx: 0, card: card('HEART', 11) },
+        ],
+        lastTrickWinner: 0,
+      }),
+    );
+    renderWithProviders(<JulepePage />);
+    expect(await screen.findByTestId('rm-last-trick-winner')).toHaveTextContent('勝者: あなた');
+    expect(screen.getByTestId('rm-last-trick')).toHaveTextContent('直前のトリック');
+    expect(screen.getByTestId('rm-last-trick')).toHaveTextContent('CPU 1');
+  });
+
   it('announces which cards are playable', async () => {
     mockExec.mockResolvedValue(playing({ validPlays: [1] }));
     renderWithProviders(<JulepePage />);

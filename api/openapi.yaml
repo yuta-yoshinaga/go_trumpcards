@@ -8426,7 +8426,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/RamsResponse'
+                  - $ref: '#/components/schemas/JulepeResponse'
                   - $ref: '#/components/schemas/ActionLogResponse'
                 description: |
                   The shape depends on the command. Ordinary commands return the game
@@ -8436,7 +8436,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RamsResponse'
+                $ref: '#/components/schemas/JulepeResponse'
   /schafkopf/exec:
     post:
       tags:
@@ -63201,6 +63201,20 @@ components:
           type: object
           additionalProperties:
             type: string
+    JulepeResponse:
+      allOf:
+        - $ref: '#/components/schemas/RamsResponse'
+        - type: object
+          description: Response payload for /julepe/exec
+          properties:
+            lastTrick:
+              type: array
+              description: Cards in the most recently completed trick; empty before the first trick.
+              items:
+                $ref: '#/components/schemas/RamsTrickCard'
+            lastTrickWinner:
+              type: integer
+              description: Seat that won the most recently completed trick, or -1 before the first trick.
     ReversisTrickCard:
       type: object
       description: A card played in the current trick

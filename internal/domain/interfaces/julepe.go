@@ -57,6 +57,10 @@ type JulepeGame interface {
 	GetActiveCount() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// GetLastTrick returns the most recently completed trick.
+	GetLastTrick() []*domain.TrickCard
+	// GetLastTrickWinner returns its winning seat, or -1 if no trick has completed.
+	GetLastTrickWinner() int
 	// GetValidPlayIndices プレイ可能なカードのインデックスリストを返す
 	GetValidPlayIndices(playerIdx int) []int
 	// GetPlayerCnt プレイヤー数を取得する
