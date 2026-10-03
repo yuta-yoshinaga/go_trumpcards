@@ -28,7 +28,7 @@ for i in $(seq 1 10); do curl -s -o /dev/null -w "%{http_code}" http://localhost
 ```sh
 mkdir -p /tmp/desktop-screenshots
 # ゲーム一覧を gameRoutes.ts から動的に取得（信頼できるソース）
-ROOT_GAME=$(grep -P "path:\s*'/'" frontend/src/constants/gameRoutes.ts | grep -oP "labelKey:\s*'nav\.\K[^']*")
+ROOT_GAME=$(grep -A1 -P "path:\s*'/'," frontend/src/constants/gameRoutes.ts | grep -oP "labelKey:\s*'nav\.\K[^']*")
 ALL_GAMES=$(grep -oP "path:\s*'/\K[^']*" frontend/src/constants/gameRoutes.ts | sed "s/^$/$ROOT_GAME/" | tr '\n' ' ' | sed 's/ $//')
 GAMES="${ARGUMENTS:-$ALL_GAMES}"
 echo "対象ゲーム: $GAMES"
