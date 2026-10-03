@@ -148,6 +148,7 @@
       "spade": "7-7-7 (全スペード)"
     }
   },
+  "bonusAward": "{{bonus}} ボーナス +{{amount}}",
   "handResult": {
     "win": "勝ち",
     "lose": "負け",

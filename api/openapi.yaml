@@ -39827,6 +39827,12 @@ components:
         netChange:
           type: integer
           description: Net chips returned for this hand minus its total wager; omitted until settlement and always included in the END phase, including as 0 for a push.
+        bonusKey:
+          type: string
+          description: Fully qualified key for the bonus applied to this hand, or an empty string when no bonus was paid.
+        bonusAmount:
+          type: integer
+          description: Extra chips credited by the bonus beyond a regular win.
 
     BlackJackResponse:
       type: object

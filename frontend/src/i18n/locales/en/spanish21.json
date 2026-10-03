@@ -148,6 +148,7 @@
       "spade": "7-7-7 (all spades)"
     }
   },
+  "bonusAward": "{{bonus}} +{{amount}} bonus",
   "handResult": {
     "win": "Win",
     "lose": "Loss",
