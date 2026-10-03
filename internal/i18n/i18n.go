@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/fs"
 	"strings"
+	"sync"
 )
 
 // QuitSentinel is the internal protocol value returned by controllers on quit.
@@ -58,6 +59,8 @@ func StripErrorPrefix(msg string) (body string, isError bool) {
 
 var currentLang = "ja"
 var translations = map[string]string{}
+var localeCache = map[string]map[string]string{}
+var localeCacheOnce sync.Once
 
 // SetLang sets the active language. Only "ja" and "en" are supported; anything else defaults to "ja".
 func SetLang(lang string) {
@@ -75,6 +78,22 @@ func Lang() string { return currentLang }
 func T(key string) string {
 	if v, ok := translations[key]; ok {
 		return v
+	}
+	return key
+}
+
+// TForLang returns a translation from a specific supported locale without
+// changing the process-wide active language.
+func TForLang(lang, key string) string {
+	if lang != "ja" && lang != "en" {
+		lang = "ja"
+	}
+	localeCacheOnce.Do(func() {
+		localeCache["ja"] = loadLocale("ja")
+		localeCache["en"] = loadLocale("en")
+	})
+	if value, ok := localeCache[lang][key]; ok {
+		return value
 	}
 	return key
 }

@@ -17,8 +17,9 @@ import (
 // Description lives on games.Game (issue #1459 SSoT); use Description() to
 // look it up for a given entry.
 type GameRegistryEntry struct {
-	Name   string
-	NewCui func() cuiGame
+	Name     string
+	TitleKey string
+	NewCui   func() cuiGame
 }
 
 // Description returns the display description for this entry, sourced from
@@ -59,7 +60,8 @@ func BindCuiFor[I any, C CuiExecer](
 	spec CuiHelpSpec,
 ) GameRegistryEntry {
 	return GameRegistryEntry{
-		Name: name,
+		Name:     name,
+		TitleKey: spec.TitleKey,
 		NewCui: func() cuiGame {
 			return cuiEntry(newCtrl(newInteractor()), spec)
 		},
@@ -7451,6 +7453,46 @@ func GameNames() []string {
 // directly.
 func GameDescriptions() map[string]string {
 	return games.Descriptions()
+}
+
+// GameTitle returns the localized help title used as a game's display name.
+// When a locale has no title, it falls back to the legacy game description.
+func GameTitle(name string) string {
+	return GameTitleKey(gameTitleKey(name))
+}
+
+func gameTitleKey(name string) string {
+	for _, entry := range gameRegistry {
+		if entry.Name == name && entry.TitleKey != "" {
+			return entry.TitleKey
+		}
+	}
+	return name + ".helpTitle"
+}
+
+// GameTitleKey resolves a help title key and falls back to the game's legacy
+// description when the ordinary helpTitle translation is missing.
+func GameTitleKey(key string) string {
+	name := strings.TrimSuffix(key, ".helpTitle")
+	if title := i18n.T(key); title != key {
+		return title
+	}
+	if name != key {
+		if description := games.Description(name); description != "" {
+			return description
+		}
+	}
+	return key
+}
+
+// GameTitleForLang returns the display title for lang without changing the
+// active locale. This lets games search remain stable across CLI languages.
+func GameTitleForLang(name, lang string) string {
+	key := gameTitleKey(name)
+	if title := i18n.TForLang(lang, key); title != key {
+		return title
+	}
+	return games.Description(name)
 }
 
 // GameAliases maps short alias names to their canonical game names.

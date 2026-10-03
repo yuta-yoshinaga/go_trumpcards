@@ -1326,7 +1326,6 @@ func printGamesShort(aliases bool, category, search string, w io.Writer) {
 // alignment. Honors the --category and --search filters.
 func printGamesLong(category, search string, w io.Writer) {
 	reverseAliases := buildReverseAliases()
-	descs := ui.GameDescriptions()
 	categoryByName := gameCategoryByName()
 
 	width := 0
@@ -1347,7 +1346,7 @@ func printGamesLong(category, search string, w io.Writer) {
 
 	sort.Strings(names)
 	for _, name := range names {
-		line := fmt.Sprintf("  %-*s %s", width, name, descs[name])
+		line := fmt.Sprintf("  %-*s %s", width, name, ui.GameTitle(name))
 		if aliasList := reverseAliases[name]; len(aliasList) > 0 {
 			line += fmt.Sprintf("  [aliases: %s]", strings.Join(aliasList, ", "))
 		}
@@ -1361,7 +1360,9 @@ func gameMatchesSearch(name, search string, reverseAliases map[string][]string) 
 		return true
 	}
 	needle := strings.ToLower(search)
-	if strings.Contains(strings.ToLower(name), needle) || strings.Contains(strings.ToLower(games.Description(name)), needle) {
+	if strings.Contains(strings.ToLower(name), needle) || strings.Contains(strings.ToLower(games.Description(name)), needle) ||
+		strings.Contains(strings.ToLower(ui.GameTitleForLang(name, "ja")), needle) ||
+		strings.Contains(strings.ToLower(ui.GameTitleForLang(name, "en")), needle) {
 		return true
 	}
 	for _, alias := range reverseAliases[name] {
@@ -1446,7 +1447,7 @@ func printGamesJSON(category, search string, w io.Writer) error {
 		out = append(out, entry{
 			Name:        g.Name,
 			Category:    cat,
-			Description: games.Description(g.Name),
+			Description: ui.GameTitle(g.Name),
 			Aliases:     al,
 		})
 	}

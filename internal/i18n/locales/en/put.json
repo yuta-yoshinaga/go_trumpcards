@@ -1,5 +1,5 @@
 {
-  "helpTitle": "Put (プット)",
+  "helpTitle": "Put",
   "helpPlay": "  p <idx>              play the card at hand position idx",
   "helpPut": "  t                    declare Put (doubles the stake)",
   "helpRespond": "  a / d                accept / decline the pending Put",

@@ -6,7 +6,7 @@
   "log.missedSpoon": "missed spoon, +1 letter (now {{letters}})",
   "log.missedSpoonEliminated": "missed spoon, eliminated (SPOONS)",
   "log.gameEnd": "game over",
-  "helpTitle": "Spoons (スプーン)",
+  "helpTitle": "Spoons",
   "helpPass": "  p <n>, pass <n>      pass hand card n to the next player",
   "helpGrab": "  g, grab              grab a spoon",
   "helpNext": "  n, next              advance to the next round",
