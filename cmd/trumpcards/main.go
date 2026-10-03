@@ -253,8 +253,8 @@ func flagSetVisited(fs *flag.FlagSet, names ...string) bool {
 	return seen
 }
 
-// localizeFlagError translates the three error forms returned by Go's flag
-// package. Candidates come only from the FlagSet involved in the parse.
+// localizeFlagError translates the error forms returned by Go's flag package.
+// Candidates come only from the FlagSet involved in the parse.
 func localizeFlagError(err error, cmd string, fs *flag.FlagSet) string {
 	msg := err.Error()
 	context := ""
@@ -267,11 +267,15 @@ func localizeFlagError(err error, cmd string, fs *flag.FlagSet) string {
 		kind, flagName = "cliFlagUnknown", strings.TrimPrefix(msg, "flag provided but not defined: -")
 	} else if strings.HasPrefix(msg, "flag needs an argument: -") {
 		kind, flagName = "cliFlagNeedsValue", strings.TrimPrefix(msg, "flag needs an argument: -")
-	} else if strings.HasPrefix(msg, "invalid value ") {
-		rest := strings.TrimPrefix(msg, "invalid value ")
-		if end := strings.Index(rest, " for flag -"); end >= 0 {
+	} else if strings.HasPrefix(msg, "invalid value ") || strings.HasPrefix(msg, "invalid boolean value ") {
+		prefix, delimiter := "invalid value ", " for flag -"
+		if strings.HasPrefix(msg, "invalid boolean value ") {
+			prefix, delimiter = "invalid boolean value ", " for -"
+		}
+		rest := strings.TrimPrefix(msg, prefix)
+		if end := strings.Index(rest, delimiter); end >= 0 {
 			kind, value = "cliFlagBadValue", strings.Trim(rest[:end], "\"")
-			rest = rest[end+len(" for flag -"):]
+			rest = rest[end+len(delimiter):]
 			if colon := strings.Index(rest, ":"); colon >= 0 {
 				flagName = rest[:colon]
 			}
@@ -282,7 +286,7 @@ func localizeFlagError(err error, cmd string, fs *flag.FlagSet) string {
 	}
 	name := formatFlagName(flagName)
 	line := i18n.Tf(kind, "context", context, "flag", name, "value", value)
-	if kind == "cliFlagUnknown" && fs != nil {
+	if kind == "cliFlagUnknown" && len(flagName) != 1 && fs != nil {
 		candidates := []string{}
 		fs.VisitAll(func(f *flag.Flag) { candidates = append(candidates, f.Name) })
 		if suggestion := cuiutil.SuggestCommand(flagName, candidates, 2); suggestion != "" {
@@ -292,6 +296,7 @@ func localizeFlagError(err error, cmd string, fs *flag.FlagSet) string {
 	return line
 }
 
+// formatFlagName returns "-x" for a one-character flag name and "--name" otherwise.
 func formatFlagName(name string) string {
 	if len(name) == 1 {
 		return "-" + name

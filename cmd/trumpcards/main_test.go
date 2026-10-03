@@ -54,6 +54,61 @@ func TestHelpCommandTrailingLang(t *testing.T) {
 	}
 }
 
+func TestLocalizedFlagErrors(t *testing.T) {
+	tests := []struct {
+		name, lang, command string
+		args                []string
+		want                string
+	}{
+		{"top unknown ja", "ja", "", []string{"--bogus"}, "エラー: 不明なオプション --bogus です"},
+		{"top missing ja", "ja", "", []string{"--lang"}, "エラー: --lang には値が必要です"},
+		{"top invalid ja", "ja", "", []string{"--version=abc"}, "エラー: --version の値「abc」が不正です"},
+		{"web unknown ja", "ja", "web", []string{"--bogus"}, "エラー: trumpcards web: 不明なオプション --bogus です"},
+		{"web missing ja", "ja", "web", []string{"--port"}, "エラー: trumpcards web: --port には値が必要です"},
+		{"web invalid ja", "ja", "web", []string{"--port", "abc"}, "エラー: trumpcards web: --port の値「abc」が不正です"},
+		{"top unknown en", "en", "", []string{"--bogus"}, "Error: unknown option --bogus"},
+		{"top missing en", "en", "", []string{"--lang"}, "Error: --lang requires a value"},
+		{"top invalid en", "en", "", []string{"--version=abc"}, "Error: invalid value \"abc\" for --version"},
+		{"web unknown en", "en", "web", []string{"--bogus"}, "Error: trumpcards web: unknown option --bogus"},
+		{"web missing en", "en", "web", []string{"--port"}, "Error: trumpcards web: --port requires a value"},
+		{"web invalid en", "en", "web", []string{"--port", "abc"}, "Error: trumpcards web: invalid value \"abc\" for --port"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			originalLang := i18n.Lang()
+			t.Cleanup(func() { i18n.SetLang(originalLang) })
+			i18n.SetLang(tt.lang)
+			fs := flag.NewFlagSet("trumpcards", flag.ContinueOnError)
+			fs.SetOutput(io.Discard)
+			if tt.command == "" {
+				fs.String("lang", "", "")
+				fs.Bool("version", false, "")
+				fs.Bool("V", false, "")
+				fs.Bool("version-short", false, "")
+				fs.Bool("no-color", false, "")
+				fs.String("color", "auto", "")
+				fs.Bool("quiet", false, "")
+				fs.Bool("q", false, "")
+				fs.String("start", "", "")
+				fs.Bool("help", false, "")
+				fs.Bool("h", false, "")
+			} else {
+				fs = flag.NewFlagSet("web", flag.ContinueOnError)
+				fs.SetOutput(io.Discard)
+				fs.Int("port", 0, "")
+				fs.Int("p", 0, "")
+				fs.String("host", "", "")
+				fs.Bool("open", false, "")
+				fs.Bool("o", false, "")
+			}
+			err := fs.Parse(tt.args)
+			require.Error(t, err)
+			got := localizeFlagError(err, tt.command, fs)
+			assert.Equal(t, tt.want, firstLine(got))
+		})
+	}
+}
+
 func TestHasHelpFlag(t *testing.T) {
 	tests := []struct {
 		name string
@@ -718,6 +773,19 @@ func TestLocalizeFlagErrorShortFlagFormattingAndContext(t *testing.T) {
 	got := localizeFlagError(err, "version", fs)
 	if !strings.Contains(got, `Did you mean "--short"?`) {
 		t.Errorf("suggestion should use the long flag spelling: %q", got)
+	}
+
+	fs = flag.NewFlagSet("web", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+	fs.Bool("p", false, "")
+	fs.Bool("q", false, "")
+	err = fs.Parse([]string{"-x"})
+	if err == nil {
+		t.Fatal("expected unknown short flag parse error")
+	}
+	got = localizeFlagError(err, "web", fs)
+	if strings.Contains(got, "Did you mean") {
+		t.Errorf("unknown one-character flag should not suggest a candidate: %q", got)
 	}
 
 	err = errors.New("unrecognized flag parser error")
