@@ -91,7 +91,6 @@ const PIEDMONTESE_PHASE_KEYS: Readonly<Record<number, string>> = {
 /** Outcome i18n keys indexed by outcome value (0=none, 1=above average, 2=below). */
 const OUTCOME_KEYS = ['outcomeNone', 'outcomeWin', 'outcomeLoss'] as const;
 
-/** Formats a signed settlement, prefixing a leading `+` for positive values. */
 /** Formats thirds as whole points with an optional one-third remainder. */
 function formatThirds(thirds: number): string {
   const whole = Math.floor(thirds / 3);

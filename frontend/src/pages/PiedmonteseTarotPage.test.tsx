@@ -138,6 +138,19 @@ describe('PiedmonteseTarotPage', () => {
     expect(within(scartoCards).getByRole('img', { name: '21 ✦' })).toBeInTheDocument();
   });
 
+  it('formats zero settlement and earned deltas as ±0', async () => {
+    const zeroState = makePiedmonteseTarotState({
+      ...roundEndState,
+      dealScores: [0, 0, 0, 0],
+      players: roundEndState.players.map((player) => ({ ...player, score: 0 })),
+    });
+    mockExec.mockResolvedValue(zeroState);
+    renderWithProviders(<PiedmonteseTarotPage />);
+    const result = await screen.findByTestId('piedmontesetarot-result');
+    expect(result).toHaveTextContent('あなた: ±0（累計 0）');
+    expect(result).toHaveTextContent('変動 ±0');
+  });
+
   it('does not show an empty buried cards list when there is no scarto', async () => {
     mockExec.mockResolvedValue(roundEndWithoutScartoState);
     renderWithProviders(<PiedmonteseTarotPage />);

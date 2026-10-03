@@ -1,4 +1,6 @@
-/** Finds inline expressions that add a plus sign to non-negative values. */
+/** Finds inline expressions that add a plus sign to non-negative values.
+ * Does not detect n < 0 ? … : '+' ordering, Math.sign, or semicolon-separated multi-line ternary chains.
+ */
 export function findInlineSignedDelta(text) {
   return [...text.matchAll(/(?:>\s*0|>=\s*0)\s*\?\s*(?:`\+\$\{|['"]\+['"])/g)]
     .filter((match) => {

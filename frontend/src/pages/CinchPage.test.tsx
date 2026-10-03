@@ -271,6 +271,24 @@ describe('CinchPage', () => {
     expect(screen.queryByTestId('cinch-setback-row')).not.toBeInTheDocument();
   });
 
+  it('formats a zero bidder delta as ±0', async () => {
+    mockExec.mockResolvedValue(
+      makeCinchState({
+        phase: 4,
+        lastDealDetail: {
+          trumpSuit: 1,
+          bidderIdx: 0,
+          bid: 6,
+          setBack: false,
+          points: { 0: 8, 1: 2, 2: 2, 3: 2 },
+          gained: { 0: 0, 1: 0, 2: 0, 3: 0 },
+        },
+      }),
+    );
+    renderWithProviders(<CinchPage />);
+    expect(await screen.findByTestId('cinch-bidder-detail')).toHaveTextContent('±0');
+  });
+
   it('emphasizes the bidder detail and set-back row when the bidder is set back', async () => {
     mockExec.mockResolvedValue(setBackState);
     renderWithProviders(<CinchPage />);

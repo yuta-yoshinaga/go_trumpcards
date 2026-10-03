@@ -89,7 +89,6 @@ const SUIT_KEYS = ['suitNone', 'suitSpade', 'suitClub', 'suitHeart', 'suitDiamon
 /** Outcome i18n keys indexed by outcome value (0=none, 1=Win/made, 2=Loss/failed). */
 const OUTCOME_KEYS = ['outcomeNone', 'outcomeWin', 'outcomeLoss'] as const;
 
-/** Format a coin delta with an explicit sign so it reads without relying on color alone (e.g. "+2", "-1"). */
 /** Number of talon cards the declarer must discard in the Discard phase (matches `UltiDiscardSize` in `internal/domain/Ulti.go`). */
 const DISCARD_COUNT = 2;
 

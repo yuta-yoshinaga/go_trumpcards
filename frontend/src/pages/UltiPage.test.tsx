@@ -328,6 +328,18 @@ describe('UltiPage', () => {
     expect(panel).toHaveTextContent('あなた: +2コイン');
   });
 
+  it('formats a zero human coin delta as ±0 in the round result', async () => {
+    const settledState = makeUltiState({
+      phase: 4,
+      isHumanTurn: false,
+      outcome: 1,
+      lastDealCoins: [0, 3, -3],
+    });
+    mockExec.mockResolvedValue(settledState);
+    renderWithProviders(<UltiPage />);
+    expect(await screen.findByTestId('ulti-round-result')).toHaveTextContent('あなた: ±0コイン');
+  });
+
   it('shows coin deltas on the final round even though the backend jumps to GAME_END', async () => {
     // The match-deciding round settles straight into GAME_END (no ROUND_END).
     const finalSettle = makeUltiState({
