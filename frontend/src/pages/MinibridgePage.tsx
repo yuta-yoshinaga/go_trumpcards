@@ -27,6 +27,7 @@ import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { MINIBRIDGE_HELP, parseMinibridgeCommand } from '../utils/cli/commands/minibridgeCommands';
 import { formatMinibridgeState } from '../utils/cli/formatters/minibridgeFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** The five denominations, in the order the contract buttons are offered. */
@@ -304,7 +305,7 @@ function MinibridgePageContent() {
                   <div key={team}>
                     {t('roundResult.delta', {
                       team: String(team),
-                      delta: `${delta >= 0 ? '+' : '−'}${Math.abs(delta)}`,
+                      delta: formatSignedDelta(delta),
                     })}
                   </div>
                 ))}

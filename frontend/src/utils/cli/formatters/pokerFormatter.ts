@@ -1,4 +1,5 @@
 import type { PokerResponse } from '../../../types/card';
+import { formatSignedDelta } from '../../formatSignedDelta';
 import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const ACTION_NAMES: Record<number, string> = {
@@ -75,7 +76,7 @@ export function formatPokerState(state: PokerResponse): string {
     lines.push('Results:');
     for (const r of state.roundResults) {
       const name = formatPlayerName(r.playerIdx, state.players[r.playerIdx]?.isHuman ?? false);
-      lines.push(`  ${name}: ${r.handName} \u2192 ${r.wonAmount > 0 ? '+' : ''}${r.wonAmount}`);
+      lines.push(`  ${name}: ${r.handName} \u2192 ${formatSignedDelta(r.wonAmount)}`);
     }
   }
 

@@ -31,6 +31,7 @@ import { parseSetteEMezzoCommand, SETTEMEZZO_HELP } from '../utils/cli/commands/
 import { formatSetteEMezzoState } from '../utils/cli/formatters/settemezzoFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 
 const BET_OPTIONS = [10, 50, 100, 500];
 
@@ -231,7 +232,7 @@ function SetteEMezzoPageContent() {
                         {ended && seat.hand.payout !== 0 && (
                           <span className={seat.hand.payout > 0 ? ' text-ds-success' : ' text-ds-error-text'}>
                             {' '}
-                            {seat.hand.payout > 0 ? `+${seat.hand.payout}` : seat.hand.payout}
+                            {formatSignedDelta(seat.hand.payout)}
                           </span>
                         )}
                       </div>

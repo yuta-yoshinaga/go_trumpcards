@@ -34,6 +34,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseThreecardrummyCommand, THREECARDRUMMY_HELP } from '../utils/cli/commands/threecardrummyCommands';
 import { formatThreecardrummyState } from '../utils/cli/formatters/threecardrummyFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 
 /** Three Card Rummy tutorial step definitions. */
 const TCR_TUTORIAL_STEPS: TutorialStep[] = [
@@ -303,8 +304,7 @@ function ThreeCardRummyPageContent() {
                   {t('payout.total')}: {state.totalPayout}
                 </div>
                 <div className="font-bold" data-testid="net-change">
-                  {t('payout.netChange')}: {state.netChange > 0 ? '+' : ''}
-                  {state.netChange}
+                  {t('payout.netChange')}: {formatSignedDelta(state.netChange)}
                 </div>
               </div>
             )}

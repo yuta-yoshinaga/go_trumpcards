@@ -37,6 +37,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseTrenteEtQuaranteCommand, TRENTEETQUARANTE_HELP } from '../utils/cli/commands/trenteetquaranteCommands';
 import { formatTrenteEtQuaranteState } from '../utils/cli/formatters/trenteetquaranteFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { buildTrenteEtQuaranteRow } from '../utils/trenteEtQuaranteRow';
 
 const TEQ_TUTORIAL_STEPS: TutorialStep[] = [
@@ -176,7 +177,7 @@ function TrenteEtQuarantePageContent() {
               <h2 className="mb-2 font-semibold">{t('session.title')}</h2>
               <dl className="grid grid-cols-2 gap-x-4 gap-y-1">
                 <dt>{t('session.net')}</dt>
-                <dd>{state.session.net > 0 ? `+${state.session.net}` : state.session.net}</dd>
+                <dd>{formatSignedDelta(state.session.net)}</dd>
                 <dt>{t('session.wins')}</dt>
                 <dd>{state.session.wins}</dd>
                 <dt>{t('session.losses')}</dt>

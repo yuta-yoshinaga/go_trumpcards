@@ -28,6 +28,7 @@ import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { parseSergeantMajorCommand, SERGEANTMAJOR_HELP } from '../utils/cli/commands/sergeantmajorCommands';
 import { formatSergeantMajorState } from '../utils/cli/formatters/sergeantmajorFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** The four suits, in the order the trump buttons are offered. */
@@ -255,7 +256,7 @@ function SergeantMajorPageContent() {
                     <>
                       {' / '}
                       <span className="text-ds-text-primary" data-testid={`sm-round-surplus-${p.id.toString()}`}>
-                        {t('roundEnd.seatSurplus', { n: String(p.surplus > 0 ? `+${p.surplus}` : p.surplus) })}
+                        {t('roundEnd.seatSurplus', { n: String(formatSignedDelta(p.surplus)) })}
                       </span>
                     </>
                   )}

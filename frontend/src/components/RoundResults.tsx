@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { formatSignedChips } from '../utils/formatSignedChips';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 
 /** One player's line in a round-result table. */
 export interface RoundResultEntry {
@@ -80,7 +80,7 @@ export function RoundResults({ results, players }: RoundResultsProps) {
               {net !== undefined && (
                 <span className="ml-1">
                   {t('label.netChange', {
-                    amount: formatSignedChips(net),
+                    amount: formatSignedDelta(net),
                   })}
                 </span>
               )}

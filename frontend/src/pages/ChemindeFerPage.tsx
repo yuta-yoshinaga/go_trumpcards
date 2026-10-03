@@ -33,6 +33,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { CHEMINDEFER_CLI_HELP, parseChemindeFerCommand } from '../utils/cli/commands/chemindeferCommands';
 import { formatChemindeFerState } from '../utils/cli/formatters/chemindeferFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const CDF_TUTORIAL_STEPS: TutorialStep[] = [
@@ -250,7 +251,7 @@ function ChemindeFerPageContent() {
                       return (
                         <li key={player.id}>
                           {player.isHuman ? t('label.you') : t('label.cpu', { idx: player.id })}:{' '}
-                          {delta > 0 ? `+${delta}` : delta}
+                          {formatSignedDelta(delta)}
                         </li>
                       );
                     })}

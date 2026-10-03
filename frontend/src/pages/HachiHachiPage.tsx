@@ -29,6 +29,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { HACHIHACHI_HELP, parseHachiHachiCommand } from '../utils/cli/commands/hachihachiCommands';
 import { formatHachiHachiState } from '../utils/cli/formatters/hachihachiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hachiHachiAction, hachiHachiPendingCandidates } from '../utils/hachihachiKeyboard';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -312,7 +313,7 @@ function HachiHachiPageContent() {
                       {state.lastRoundResult.scores.map((s) => {
                         const best = s.playerIdx === state.lastRoundResult?.best;
                         const p = state.players.find((pp) => pp.id === s.playerIdx);
-                        const sign = s.delta >= 0 ? `+${s.delta}` : `${s.delta}`;
+                        const sign = formatSignedDelta(s.delta);
                         return (
                           <tr
                             key={s.playerIdx}

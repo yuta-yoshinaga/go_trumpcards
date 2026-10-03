@@ -37,6 +37,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { COMET_HELP, parseCometCommand } from '../utils/cli/commands/cometCommands';
 import { formatCometState } from '../utils/cli/formatters/cometFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -296,7 +297,7 @@ function CometPageContent() {
                       <div key={p.id} data-testid={`comet-round-score-${idx}`}>
                         {t('roundScore', {
                           name: playerName(p.id, p.isHuman),
-                          gained: lastResult.gained[idx] > 0 ? `+${lastResult.gained[idx]}` : lastResult.gained[idx],
+                          gained: formatSignedDelta(lastResult.gained[idx]),
                           total: p.score,
                         })}
                       </div>

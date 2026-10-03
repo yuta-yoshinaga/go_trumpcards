@@ -35,6 +35,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { PRIMERO_HELP, parsePrimeroCommand } from '../utils/cli/commands/primeroCommands';
 import { formatPrimeroState } from '../utils/cli/formatters/primeroFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { raiseAvailability, raiseCost } from '../utils/raiseAvailability';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -302,7 +303,7 @@ function PrimeroPageContent() {
                     <div>{t('roundResult.payout', { amount: humanPlayer.roundPayout })}</div>
                     <div>
                       {t('roundResult.net', {
-                        amount: humanPlayer.netChange > 0 ? `+${humanPlayer.netChange}` : String(humanPlayer.netChange),
+                        amount: formatSignedDelta(humanPlayer.netChange),
                       })}
                     </div>
                   </div>

@@ -34,6 +34,7 @@ import {
   FIVEHUNDRED_OPEN_MISERE_VALUE,
   fivehundredBidValue,
 } from '../utils/fivehundredBidValue';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -64,7 +65,7 @@ const SUITS: { id: number; glyph: string; nameKey: string }[] = [
 /** Returns the glyph for a suit id, or "NT" for no-trump (-1). */
 /** 増減点に符号を付ける (宣言側の +220 と守備側の +10 で書式を揃える)。 */
 function formatDelta(delta: number): string {
-  return delta > 0 ? `+${delta}` : String(delta);
+  return formatSignedDelta(delta);
 }
 
 function suitGlyph(suit: number): string {

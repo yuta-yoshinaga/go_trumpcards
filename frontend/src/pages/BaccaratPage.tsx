@@ -35,6 +35,7 @@ import { BACCARAT_HELP, parseBaccaratCommand } from '../utils/cli/commands/bacca
 import { formatBaccaratState } from '../utils/cli/formatters/baccaratFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 
 const BET_TYPE_LABELS: Record<number, string> = {
   [BaccaratBetType.PLAYER]: 'betType.player',
@@ -415,7 +416,7 @@ function BaccaratPageContent() {
       headerExtra={
         <>
           <span>{t('label.chips', { chips: state.chips })}</span>
-          <span>{t('label.chipChange', { change: chipChange > 0 ? `+${chipChange}` : chipChange })}</span>
+          <span>{t('label.chipChange', { change: formatSignedDelta(chipChange) })}</span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }

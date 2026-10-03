@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { NERTZ_HELP, parseNertzCommand } from '../utils/cli/commands/nertzCommands';
 import { formatNertzState } from '../utils/cli/formatters/nertzFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 
 /** CPU cadence presets — faster ticks make the CPUs harder to out-race. */
 type NertzCpuSpeed = 'slow' | 'normal' | 'fast';
@@ -270,7 +271,7 @@ function NertzPageContent() {
             return [
               t('scoreAnnounce.cpu', {
                 player: player.name,
-                delta: `${delta > 0 ? '+' : ''}${delta}`,
+                delta: formatSignedDelta(delta),
                 score: player.score,
               }),
             ];

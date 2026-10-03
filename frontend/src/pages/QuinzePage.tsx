@@ -229,7 +229,7 @@ function QuinzePageContent() {
                         {ended && seat.hand.payout !== 0 && (
                           <span className={seat.hand.payout > 0 ? ' text-ds-success' : ' text-ds-error-text'}>
                             {' '}
-                            {seat.hand.payout > 0 ? `+${seat.hand.payout}` : seat.hand.payout}
+                            {formatSignedDelta(seat.hand.payout)}
                           </span>
                         )}
                       </div>

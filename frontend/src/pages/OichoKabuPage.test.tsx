@@ -183,7 +183,7 @@ describe('OichoKabuPage', () => {
   it.each([
     ['win', winState, '純損益: +100'],
     ['loss', { ...bankerDrewState, chips: 900 }, '純損益: -100'],
-    ['push', { ...winState, result: 0, chips: 1000, totalPayout: 100, netChange: 0, message: 'Push.' }, '純損益: 0'],
+    ['push', { ...winState, result: 0, chips: 1000, totalPayout: 100, netChange: 0, message: 'Push.' }, '純損益: ±0'],
   ])('shows signed net profit for a %s', async (name, state, expected) => {
     mockApi.mockResolvedValue(state);
     renderWithProviders(<OichoKabuPage />);

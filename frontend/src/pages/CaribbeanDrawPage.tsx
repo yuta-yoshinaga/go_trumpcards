@@ -37,6 +37,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { CARIBBEANDRAW_HELP, parseCaribbeandrawCommand } from '../utils/cli/commands/caribbeandrawCommands';
 import { formatCaribbeandrawState } from '../utils/cli/formatters/caribbeandrawFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Most cards that may be exchanged in one draw (sync: internal/domain/CaribbeanDraw.go). */
@@ -313,7 +314,7 @@ function CaribbeanDrawPageContent() {
                           : 'font-bold text-ds-text-muted'
                     }
                   >
-                    {t('session.net')}: {tally.net > 0 ? `+${tally.net}` : tally.net}
+                    {t('session.net')}: {formatSignedDelta(tally.net)}
                   </span>
                 </div>
                 <div className="mt-1 flex items-center justify-center gap-3 text-xs text-ds-text-muted">

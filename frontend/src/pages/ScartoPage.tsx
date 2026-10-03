@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseScartoCommand, SCARTO_HELP } from '../utils/cli/commands/scartoCommands';
 import { formatScartoState } from '../utils/cli/formatters/scartoFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { isRequestedHint } from '../utils/hintRequest';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 import { scartoUndiscardableReason } from '../utils/scartoDiscard';
@@ -81,10 +82,10 @@ function formatPoints(n: number): string {
   return Number.isInteger(n) ? String(n) : n.toFixed(1);
 }
 
-/** Formats a signed difference, prefixing a leading `+` for positive values. */
+/** Formats an average difference with the page's one-decimal precision. */
 function formatSigned(n: number): string {
-  const s = formatPoints(n);
-  return n > 0 ? `+${s}` : s;
+  const value = formatPoints(n);
+  return n > 0 ? `+${value}` : value;
 }
 
 /** Renders the Scarto (スカルト) game page: a 3-player 78-card Italian tarocchi trick-taker with a dealer scarto (discard) and trump-priority tricks — no bidding, chien, or partnership. */
@@ -361,7 +362,7 @@ function ScartoPageContent() {
                         <div key={p.id}>
                           {t('roundResult.playerLine', {
                             name: playerName(p.id, p.isHuman),
-                            delta: delta > 0 ? `+${delta}` : String(delta),
+                            delta: formatSignedDelta(delta),
                             score: p.score,
                           })}
                         </div>

@@ -38,6 +38,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { PIEDMONTESE_TAROT_HELP, parsePiedmonteseTarotCommand } from '../utils/cli/commands/piedmonteseTarotCommands';
 import { formatPiedmonteseTarotState } from '../utils/cli/formatters/piedmonteseTarotFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 // **捨てられない理由の判定は共有。** スカルト (捨て札) の規則は 3 人版と同じで、
@@ -89,11 +90,6 @@ const PIEDMONTESE_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 /** Outcome i18n keys indexed by outcome value (0=none, 1=above average, 2=below). */
 const OUTCOME_KEYS = ['outcomeNone', 'outcomeWin', 'outcomeLoss'] as const;
-
-/** Formats a signed settlement, prefixing a leading `+` for positive values. */
-function formatSigned(n: number): string {
-  return n > 0 ? `+${n}` : String(n);
-}
 
 /** Formats thirds as whole points with an optional one-third remainder. */
 function formatThirds(thirds: number): string {
@@ -429,7 +425,7 @@ function PiedmonteseTarotPageContent() {
                         <div key={p.id}>
                           {t('roundResult.playerLine', {
                             name: playerName(p.id, p.isHuman),
-                            delta: formatSigned(delta),
+                            delta: formatSignedDelta(delta),
                             score: p.score,
                           })}
                         </div>
@@ -448,7 +444,7 @@ function PiedmonteseTarotPageContent() {
                             {t('roundResult.earnedLine', {
                               name: playerName(p.id, p.isHuman),
                               points: p.cardPoints,
-                              scaled: formatSigned(state.dealScores[i] ?? 0),
+                              scaled: formatSignedDelta(state.dealScores[i] ?? 0),
                             })}
                           </div>
                           <div>

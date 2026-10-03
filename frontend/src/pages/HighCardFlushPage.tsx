@@ -34,6 +34,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { HIGHCARDFLUSH_HELP, parseHighcardflushCommand } from '../utils/cli/commands/highcardflushCommands';
 import { formatHighcardflushState } from '../utils/cli/formatters/highcardflushFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { longestFlushSuit } from '../utils/highCardFlushUtils';
 
 /** High Card Flush tutorial step definitions. */
@@ -366,7 +367,7 @@ function HighCardFlushPageContent() {
                     {t('payout.betTotal')}: {state.totalBet}
                   </div>
                   <div>
-                    {t('payout.net')}: {state.netChange > 0 ? `+${state.netChange}` : state.netChange}
+                    {t('payout.net')}: {formatSignedDelta(state.netChange)}
                   </div>
                 </div>
               </div>

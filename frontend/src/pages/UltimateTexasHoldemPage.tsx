@@ -25,6 +25,7 @@ import { gameTheme } from '../styles/gameTheme';
 import { isMaskedCard } from '../types/card';
 import { UltimateTexasHoldemPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { utHoldemBetBounds } from '../utils/utHoldemBet';
 import { utHoldemPreflopStrength } from '../utils/utHoldemPreflop';
 
@@ -367,8 +368,7 @@ function UltimateTexasHoldemPageContent() {
               {t('payout.total')}: {state.totalPayout}
             </div>
             <div className="font-bold">
-              {t('payout.netChange')}:{' '}
-              {state.netChange > 0 ? `+${state.netChange}` : state.netChange < 0 ? `${state.netChange}` : '±0'}
+              {t('payout.netChange')}: {formatSignedDelta(state.netChange)}
             </div>
           </div>
         )}

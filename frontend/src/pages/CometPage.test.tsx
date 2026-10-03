@@ -213,8 +213,8 @@ describe('CometPage', () => {
     renderWithProviders(<CometPage />);
     await screen.findByTestId('comet-round-result');
     expect(screen.getByTestId('comet-round-score-0')).toHaveTextContent('あなた: 今回 +13 点 / 累計 33 点');
-    expect(screen.getByTestId('comet-round-score-1')).toHaveTextContent('CPU 1: 今回 0 点 / 累計 10 点');
-    expect(screen.getByTestId('comet-round-score-2')).toHaveTextContent('CPU 2: 今回 0 点 / 累計 8 点');
+    expect(screen.getByTestId('comet-round-score-1')).toHaveTextContent('CPU 1: 今回 ±0 点 / 累計 10 点');
+    expect(screen.getByTestId('comet-round-score-2')).toHaveTextContent('CPU 2: 今回 ±0 点 / 累計 8 点');
     expect(screen.getByTestId('comet-round-score-3')).toHaveTextContent('CPU 3: 今回 -1 点 / 累計 3 点');
     expect(screen.getByTestId('comet-round-score-4')).toHaveTextContent('CPU 4: 今回 +7 点 / 累計 7 点');
   });

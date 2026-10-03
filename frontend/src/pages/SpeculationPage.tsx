@@ -33,6 +33,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseSpeculationCommand, SPECULATION_CLI_HELP } from '../utils/cli/commands/speculationCommands';
 import { formatSpeculationState } from '../utils/cli/formatters/speculationFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { speculationDisplayRound } from '../utils/speculationRound';
 
@@ -270,7 +271,7 @@ function SpeculationPageContent() {
                   >
                     {t('result.chipChange', {
                       name: index === SPECULATION_HUMAN_SEAT ? t('label.you') : seat.name,
-                      change: seat.chipChange > 0 ? `+${seat.chipChange}` : seat.chipChange,
+                      change: formatSignedDelta(seat.chipChange),
                     })}
                   </div>
                 ))}

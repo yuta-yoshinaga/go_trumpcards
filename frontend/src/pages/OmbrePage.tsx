@@ -32,6 +32,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { OMBRE_HELP, parseOmbreCommand } from '../utils/cli/commands/ombreCommands';
 import { formatOmbreState } from '../utils/cli/formatters/ombreFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { isRequestedHint } from '../utils/hintRequest';
 import { MATADOR_NAME_KEY, matadorRank } from '../utils/ombreMatadors';
 import { findPlayerName, playerName } from '../utils/playerUtils';
@@ -340,7 +341,7 @@ function OmbrePageContent() {
                           <div key={p.id}>
                             {t('roundResult.scoreChange', {
                               name: playerName(p.id, p.isHuman),
-                              delta: `${delta > 0 ? '+' : ''}${delta}`,
+                              delta: formatSignedDelta(delta),
                             })}
                           </div>
                         );

@@ -29,6 +29,7 @@ import {
   parseBarbuCommand,
 } from '../utils/cli/commands/barbuCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const DIFFICULTY_OPTIONS = [
@@ -423,7 +424,7 @@ function BarbuPageContent() {
                                   gained > 0 ? 'text-ds-success' : gained < 0 ? 'text-ds-error-text' : ''
                                 }`}
                               >
-                                {gained > 0 ? `+${gained}` : gained}
+                                {formatSignedDelta(gained)}
                               </td>
                             );
                           })}

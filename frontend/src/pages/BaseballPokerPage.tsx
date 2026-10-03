@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { BASEBALLPOKER_CLI_HELP, parseBaseballPokerCommand } from '../utils/cli/commands/baseballpokerCommands';
 import { formatBaseballPokerState } from '../utils/cli/formatters/baseballpokerFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { type PokerHandRank, pokerHandKey } from '../utils/pokerSquaresUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -255,7 +256,7 @@ function BaseballPokerPageContent() {
                     )}
                     {isShowdown && (
                       <span className="ml-2 text-ds-text-primary text-xs" data-testid={`bb-net-change-${i}`}>
-                        {t('label.netChange', { amount: seat.netChange > 0 ? `+${seat.netChange}` : seat.netChange })}
+                        {t('label.netChange', { amount: formatSignedDelta(seat.netChange) })}
                       </span>
                     )}
                   </span>

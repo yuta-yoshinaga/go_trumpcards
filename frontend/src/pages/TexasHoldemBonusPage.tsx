@@ -38,6 +38,7 @@ import { parseTexasholdembonusCommand, TEXASHOLDEMBONUS_HELP } from '../utils/cl
 import { formatTexasholdembonusState } from '../utils/cli/formatters/texasholdembonusFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import {
   TEXASHOLDEMBONUS_FLOP_MULTIPLIER,
   TEXASHOLDEMBONUS_RAISE_MULTIPLIER,
@@ -252,7 +253,7 @@ function TexasHoldemBonusPageContent() {
                   </span>
                   <span>{t('session.hands', { hands: tally.hands })}</span>
                   <span data-testid="thb-session-net" className="font-bold">
-                    {t('session.net')}: {tally.net > 0 ? `+${tally.net}` : tally.net}
+                    {t('session.net')}: {formatSignedDelta(tally.net)}
                   </span>
                 </div>
                 <div className="mt-1 flex items-center justify-center gap-3 text-xs text-ds-text-muted">

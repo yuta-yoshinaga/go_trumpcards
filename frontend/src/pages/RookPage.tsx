@@ -26,6 +26,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { formatRookState, parseRookCommand, ROOK_HELP, type RookCliArgs } from '../utils/cli/commands/rookCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { playerName } from '../utils/playerUtils';
 import { rookBidStatus } from '../utils/rookBidStatus';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -287,8 +288,7 @@ function RookPageContent() {
                   </div>
                   <div className={state.roundResult.made ? 'text-ds-success' : 'text-ds-error-text'}>
                     {state.roundResult.made ? t('roundResult.made') : t('roundResult.failed')} (
-                    {state.roundResult.scoreDelta >= 0 ? '+' : ''}
-                    {state.roundResult.scoreDelta})
+                    {formatSignedDelta(state.roundResult.scoreDelta)})
                   </div>
                 </div>
               )}

@@ -28,6 +28,7 @@ import type { Card } from '../types/card';
 import { isMaskedCard } from '../types/card';
 import { MississippiStudPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { evaluateMississippiStudMadeHand } from '../utils/mississippiStudMadeHand';
 
 const TUTORIAL_STEPS: TutorialStep[] = [
@@ -308,8 +309,7 @@ function MississippiStudPageContent() {
               {t('label.totalPayout')}: {state.totalPayout}
             </div>
             <div className="font-bold mt-1">
-              {t('label.netProfit')}: {state.netChange > 0 ? '+' : ''}
-              {state.netChange}
+              {t('label.netProfit')}: {formatSignedDelta(state.netChange)}
             </div>
           </div>
         )}

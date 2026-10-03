@@ -36,6 +36,7 @@ import { CASINOWAR_HELP, parseCasinowarCommand } from '../utils/cli/commands/cas
 import { formatCasinowarState } from '../utils/cli/formatters/casinowarFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const CW_TUTORIAL_STEPS: TutorialStep[] = [
@@ -248,8 +249,7 @@ function CasinoWarPageContent() {
                   {t('payout.total')}: {state.totalPayout}
                 </div>
                 <div data-testid="net-change" className="font-bold">
-                  {t('payout.netChange')}: {state.netChange > 0 ? '+' : ''}
-                  {state.netChange}
+                  {t('payout.netChange')}: {formatSignedDelta(state.netChange)}
                 </div>
               </div>
             )}
@@ -307,8 +307,7 @@ function CasinoWarPageContent() {
                   </button>
                 </div>
                 <div className="mt-1 text-center text-sm text-ds-text-primary" data-testid="cw-cumulative-net-change">
-                  {t('trend.cumulativeNetChange')}: {cumulativeNetChange > 0 ? '+' : ''}
-                  {cumulativeNetChange}
+                  {t('trend.cumulativeNetChange')}: {formatSignedDelta(cumulativeNetChange)}
                 </div>
               </div>
             )}
