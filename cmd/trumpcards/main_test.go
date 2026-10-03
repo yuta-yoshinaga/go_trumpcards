@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"slices"
 	"sort"
 	"strconv"
@@ -1395,6 +1396,7 @@ func TestPrintGamesJSONFullEmitsEveryGame(t *testing.T) {
 	if len(got) != len(ui.GameNames()) {
 		t.Errorf("entry count = %d, want %d", len(got), len(ui.GameNames()))
 	}
+	withAliases := 0
 	// Every entry must have a non-empty name and one of the three canonical categories.
 	for _, e := range got {
 		if e.Name == "" {
@@ -1410,6 +1412,12 @@ func TestPrintGamesJSONFullEmitsEveryGame(t *testing.T) {
 		if e.Aliases == nil {
 			t.Errorf("entry %q has nil aliases (want []); JSON shape must be stable", e.Name)
 		}
+		if len(e.Aliases) > 0 {
+			withAliases++
+		}
+	}
+	if withAliases == 0 {
+		t.Error("games --json must include at least one game with aliases")
 	}
 }
 
@@ -2494,6 +2502,78 @@ func TestCliHelpLocaleParity(t *testing.T) {
 	for k := range ja {
 		if _, ok := en[k]; !ok {
 			t.Errorf("en/cli_help.json is missing key %q present in ja", k)
+		}
+	}
+}
+
+func TestGamesHelpLocaleContent(t *testing.T) {
+	originalLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(originalLang) })
+	load := func(lang string) map[string]string {
+		b, err := os.ReadFile("../../internal/i18n/locales/" + lang + "/cli_help.json")
+		if err != nil {
+			t.Fatalf("read %s cli_help.json: %v", lang, err)
+		}
+		var m map[string]string
+		if err := json.Unmarshal(b, &m); err != nil {
+			t.Fatalf("parse %s cli_help.json: %v", lang, err)
+		}
+		return m
+	}
+	en, ja := load("en")["sub_games"], load("ja")["sub_games"]
+	lineWrap := regexp.MustCompile(`\n\s+`)
+	normalize := func(s, separator string) string {
+		return lineWrap.ReplaceAllString(s, separator)
+	}
+	if !strings.Contains(normalize(en, " "), "aliases lists the game's aliases ([] rather than null when there are none).") {
+		t.Errorf("English games help must explain aliases contents and empty-array shape")
+	}
+	if !strings.Contains(normalize(ja, ""), "aliases はゲームのエイリアス配列です（無い場合も null ではなく []）。") {
+		t.Errorf("Japanese games help must explain aliases contents and empty-array shape")
+	}
+	example := `trumpcards games --json | jq -r '.[] | select(.category=="solo") | .name'`
+	if !strings.Contains(ja, example) {
+		t.Errorf("Japanese games help is missing JSON category example")
+	}
+	for _, tc := range []struct {
+		lang, phrase string
+	}{
+		{"en", "aliases lists the game's aliases ([] rather than null when there are none)."},
+		{"ja", "aliases はゲームのエイリアス配列です（無い場合も null ではなく []）。"},
+	} {
+		i18n.SetLang(tc.lang)
+		separator := " "
+		if tc.lang == "ja" {
+			separator = ""
+		}
+		if resolved := normalize(i18n.T("cli_help.sub_games"), separator); !strings.Contains(resolved, tc.phrase) {
+			t.Errorf("resolved %s games help is missing %q", tc.lang, tc.phrase)
+		}
+	}
+	countExamples := func(s, heading string) int {
+		section := strings.SplitN(s, heading+":\n", 2)
+		if len(section) != 2 {
+			return -1
+		}
+		return len(strings.Split(strings.TrimSuffix(section[1], "\n"), "\n"))
+	}
+	enExamples, jaExamples := countExamples(en, "EXAMPLES"), countExamples(ja, "例")
+	if enExamples <= 0 {
+		t.Errorf("English games help must contain example lines, got %d", enExamples)
+	}
+	if jaExamples <= 0 {
+		t.Errorf("Japanese games help must contain example lines, got %d", jaExamples)
+	}
+	if enExamples != jaExamples {
+		t.Errorf("games help example line counts differ: en=%d ja=%d", enExamples, jaExamples)
+	}
+	for _, tc := range []struct{ lang, continuation string }{
+		{"en", "\n                           ([] rather than null when there are none)."},
+		{"ja", "\n                           （無い場合も null ではなく []）。"},
+	} {
+		content := load(tc.lang)["sub_games"]
+		if !strings.Contains(content, tc.continuation) {
+			t.Errorf("%s aliases help text should wrap onto an indented continuation line", tc.lang)
 		}
 	}
 }
