@@ -2,8 +2,8 @@
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 # usage: fx.sh <slot-name> <branch> — check out an existing PR branch in a fixup worktree
 wt="$WT_ROOT/wt-ib$1"; cd "$REPO"; git fetch -q origin "$2"
-[ -d $wt ] || git worktree add -q --detach $wt origin/develop
-cd $wt; test -z "$(git status --porcelain)" || { echo DIRTY; exit 1; }
+[ -d "$wt" ] || git worktree add -q --detach "$wt" origin/develop
+cd "$wt"; test -z "$(git status --porcelain)" || { echo DIRTY; exit 1; }
 while IFS= read -r other; do
   [ -n "$other" ] || continue
   [ "$other" = "$wt" ] && continue

@@ -7,6 +7,25 @@ fail() { echo "FAIL: $*" >&2; exit 1; }
 for script in "$SCRIPTS"/*.sh; do bash -n "$script" || fail "bash -n $script"; done
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
+# Regression checks for review findings in the batch lane helpers.
+for script in ship.sh fixpush.sh; do
+  grep -q 'PIPESTATUS' "$SCRIPTS/$script" || fail "$script does not preserve push status"
+  grep -q 'push_status == 0' "$SCRIPTS/$script" || fail "$script does not stop after push failure"
+  grep -q 'git diff --name-only -z HEAD' "$SCRIPTS/$script" || fail "$script does not collect paths with NUL delimiters"
+done
+! grep -R -nE 'git status --porcelain \| awk' "$SCRIPTS" || fail "status paths are parsed as whitespace fields"
+if grep -R -n '/tmp/' "$SCRIPTS" >"$tmp/tmp-paths.out" 2>&1; then
+  fail "batch scripts contain hardcoded /tmp paths: $(cat "$tmp/tmp-paths.out")"
+fi
+! grep -q 'Co-Authored-By: Claude Opus 5.5' "$SCRIPTS/ship.sh" || fail "ship.sh hardcodes co-author"
+! grep -q 'gh pr view .*codecov' "$SCRIPTS/land.sh" || fail "land.sh retains result-free codecov pipeline"
+grep -q 'CLAUDE_CO_AUTHOR' "$SCRIPTS/ship.sh" || fail "ship.sh does not support CLAUDE_CO_AUTHOR"
+grep -q 'BATCH_DELEGATED_TO' "$SCRIPTS/ship.sh" || fail "ship.sh does not support BATCH_DELEGATED_TO"
+grep -q 'Delegated-To:.*BATCH_DELEGATED_TO:-codex (dele -k edit)' "$SCRIPTS/fixpush.sh" || fail "fixpush.sh does not retain the default delegated-to metadata"
+grep -q 'gh pr merge .*>/dev/null' "$SCRIPTS/land.sh" || fail "land.sh does not suppress merge stdout"
+grep -q 'Failed to merge PR' "$SCRIPTS/land.sh" || fail "land.sh does not report merge failures"
+grep -q 'go_trumpcards 固有の規約' "$SCRIPTS/receipt.sh" || fail "receipt.sh does not explain project-specific conventions"
+grep -q 'dele' "$ROOT/.claude/skills/batch-lanes/SKILL.md" || fail "SKILL.md does not document dele"
 set +e
 grep -rnE '/tmp/claude-1000|/home/yuta|session_0' "$SCRIPTS" >"$tmp/paths.out" 2>&1
 grep_rc=$?
@@ -98,6 +117,7 @@ if PATH="$PATH" BATCH_REPO="$tmp/repo" BATCH_WT_ROOT="$tmp" \
 grep -q "$tmp/other" "$tmp/fx-dirty.out" || fail "fx.sh did not report the dirty worktree path"
 
 BATCH_TESTING=1 source "$SCRIPTS/receipt.sh"
+BATCH_STATE="$tmp/testing-state" BATCH_TESTING=1 bash "$SCRIPTS/receipt.sh" 1 || fail "receipt.sh testing mode failed when executed directly"
 [ "$(page_test_for frontend/src/pages/ExamplePage.tsx)" = "frontend/src/pages/ExamplePage.test.tsx" ] || fail "page test mapping"
 [ "$(page_test_for frontend/src/utils/cards/cardValue.ts)" = "frontend/src/utils/cards/cardValue.test.ts" ] || fail "utility test mapping"
 [ -z "$(page_test_for frontend/src/pages/ExamplePage.test.tsx)" ] || fail "test file mapped as source"

@@ -30,6 +30,10 @@ Set `BATCH_BRANCH_RE` to a regular expression matching the batch branches before
 
 ## Scripts
 
+## Prerequisites
+
+The flows require `dele`, `gh`, `jq`, `flock`, `bun`, `go`, and `golangci-lint`, in addition to Bash and Git. `dele` is used by `go.sh` and `gofx.sh`; if it is missing, the command fails, and the script records the nonzero exit status and log instead of reporting successful delegation. Install the tools used by the flow before running it.
+
 - `common.sh`: resolve repository, worktree, and shared state paths and validate required environment.
 - `setup_wt.sh`: fetch `develop` and prepare a clean issue worktree.
 - `go.sh`: run `dele` for a prompt file in an issue worktree and save a fresh per-run log.

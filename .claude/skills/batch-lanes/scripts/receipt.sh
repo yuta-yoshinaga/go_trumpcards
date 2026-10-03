@@ -1,6 +1,6 @@
 #!/bin/bash
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
-# usage: receipt.sh <slot>  -> status, diff stat, vitest on changed tests, check, typecheck
+# go_trumpcards 固有の規約: feat/<issue>- branch names and the shared-variant page list below.
 page_test_for() {
   case "$1" in
     frontend/src/pages/*Page.tsx) printf '%s\n' "${1%.tsx}.test.tsx" ;;
@@ -8,41 +8,46 @@ page_test_for() {
     *) return 1 ;;
   esac
 }
-if [[ "${BATCH_TESTING:-}" = 1 ]]; then return 0; fi
-wt="$WT_ROOT/wt-ib$1"; cd $wt || exit 1
+if [[ "${BATCH_TESTING:-}" = 1 ]]; then return 0 2>/dev/null || exit 0; fi
+slot="$1"; wt="$WT_ROOT/wt-ib$slot"; cd "$wt" || exit 1
 echo "== $(git branch --show-current)"; git status --porcelain; git diff --stat
-changed=$(git status --porcelain | awk '{print $2}')
-tests=$(printf '%s\n' "$changed" | grep -E '\.test\.tsx?$' | sed 's#^frontend/##' || true)
-while IFS= read -r file; do
+mapfile -d '' -t changed < <({ git diff --name-only -z HEAD; git ls-files -o --exclude-standard -z; } | sort -zu)
+tests=() go_files=() siblings=() components=() new_sources=() fmt=() mut_files=()
+for file in "${changed[@]}"; do
+  [[ "$file" =~ \.test\.tsx?$ ]] && tests+=("${file#frontend/}")
+  [[ "$file" =~ \.go$ ]] && go_files+=("$file")
   case "$file" in
-    frontend/src/pages/*Page.tsx|frontend/src/utils/*.ts|frontend/src/utils/**/*.ts)
-      candidate=$(page_test_for "$file")
-      [ -f "$candidate" ] && tests="${tests}${tests:+$'\n'}${candidate#frontend/}"
-      ;;
+    frontend/src/pages/*Page.tsx)
+      candidate=$(page_test_for "$file"); [[ -f "$candidate" ]] && tests+=("${candidate#frontend/}") ;;
   esac
-done <<< "$changed"
-tests=$(printf '%s\n' "$tests" | sort -u | sed '/^$/d')
-go=$(git status --porcelain | awk '{print $2}' | grep -E '\.go$')
-cd frontend
-[ -n "$tests" ] && { bunx vitest run $tests 2>&1 | grep -E 'Test Files|Tests |FAIL' | head; }
-game=$(git -C .. branch --show-current | sed -E 's#^feat/[0-9]+-##'); [ -n "$game" ] && { echo "== vitest *$game*"; bunx vitest run "$game" 2>&1 | grep -E 'Test Files|Tests |FAIL' | head -5; }
-sib=$(git -C .. status --porcelain | awk '{print $2}' | grep -E '^frontend/src/(components|hooks|utils)/.*\.tsx?$' | grep -v '\.test\.' | sed -E 's#^frontend/##; s#\.(tsx?)$#.test.\1#' | while read f; do [ -f "$f" ] && echo "$f"; done)
-[ -n "$sib" ] && { echo "== vitest shared siblings"; bunx vitest run $sib 2>&1 | grep -E 'Test Files|Tests |FAIL' | head -20; }
-git -C .. status --porcelain | grep -qE 'pages/(BlackJackPage|PineapplePage|SevenCardStudPage|HorsePage|FiveCardStudPage)\.tsx|components/VideoPokerGameContent\.tsx' && echo "NOTE SHARED-VARIANT PAGE: new t() keys must exist in every variant namespace"
-for comp in $(git -C .. status --porcelain | awk '{print $2}' | grep -E '^frontend/src/components/[A-Za-z]+\.tsx$' | sed -E 's#.*/##; s#\.tsx$##'); do
-  users=$(grep -lE "from '\.\./components/${comp}'" src/pages/*.tsx 2>/dev/null | sed 's/\.tsx$/.test.tsx/' | while read f; do [ -f "$f" ] && echo "$f"; done)
-  n=$(echo "$users" | grep -c .); if [ "$n" -gt 0 ] && [ "$n" -le 40 ]; then echo "== vitest importers of $comp ($n)"; bunx vitest run $users 2>&1 | grep -E 'Test Files|Tests |FAIL' | head -10; elif [ "$n" -gt 40 ]; then echo "NOTE $comp has $n importers (not run locally; CI covers)"; fi
+  if [[ "$file" =~ ^frontend/src/(components|hooks|utils)/.*\.tsx?$ && ! "$file" =~ \.test\. ]]; then
+    candidate="${file#frontend/}"; candidate="${candidate%.tsx}"; candidate="${candidate%.ts}"
+    [[ "$file" == *.tsx ]] && candidate+=".test.tsx" || candidate+=".test.ts"
+    [[ -f "frontend/$candidate" ]] && siblings+=("$candidate")
+  fi
+  [[ "$file" =~ ^frontend/src/components/[A-Za-z]+\.tsx$ ]] && components+=("${file##*/}")
+  [[ "$file" =~ ^frontend/src/(utils|hooks)/[^/]+\.tsx?$ && ! "$file" =~ \.test\. ]] && new_sources+=("$file")
+  [[ "$file" =~ ^frontend/.*\.(tsx?|json)$ ]] && fmt+=("${file#frontend/}")
+  [[ "$file" =~ \.(tsx?|go)$ ]] && mut_files+=("$file")
 done
-for u in $(git -C .. status --porcelain | awk '$1=="??"{print $2}' | grep -E '^frontend/src/(utils|hooks)/[^/]+\.tsx?$' | grep -v '\.test\.'); do t=$(echo "$u" | sed -E 's#^frontend/##; s#\.(tsx?)$#.test.\1#'); [ -f "$t" ] || echo "MISSING_TEST for $u"; done
-fmt=$(git -C .. status --porcelain | awk "{print \$2}" | grep -E "^frontend/.*\.(tsx?|json)$" | sed "s#^frontend/##"); [ -n "$fmt" ] && bunx biome check --write $fmt >/dev/null 2>&1
-bun run check >/tmp/ck$1.log 2>&1 && echo CHECK=ok || { echo CHECK=FAIL; tail -20 /tmp/ck$1.log; }
-flock /tmp/ib-tsc.lock bun run typecheck >/tmp/tc$1.log 2>&1 && echo TYPE=ok || { echo TYPE=FAIL; tail -20 /tmp/tc$1.log; }
+go="${go_files[*]}"
+cd frontend || exit 1
+((${#tests[@]})) && { bunx vitest run "${tests[@]}" 2>&1 | grep -E 'Test Files|Tests |FAIL' | head; }
+game=$(git -C .. branch --show-current | sed -E 's#^feat/[0-9]+-##'); [ -n "$game" ] && { echo "== vitest *$game*"; bunx vitest run "$game" 2>&1 | grep -E 'Test Files|Tests |FAIL' | head -5; }
+((${#siblings[@]})) && { echo "== vitest shared siblings"; bunx vitest run "${siblings[@]}" 2>&1 | grep -E 'Test Files|Tests |FAIL' | head -20; }
+for file in "${changed[@]}"; do [[ "$file" =~ pages/(BlackJackPage|PineapplePage|SevenCardStudPage|HorsePage|FiveCardStudPage)\.tsx|components/VideoPokerGameContent\.tsx ]] && { echo "NOTE SHARED-VARIANT PAGE: new t() keys must exist in every variant namespace"; break; }; done
+for compfile in "${components[@]}"; do comp="${compfile%.tsx}"; users=(); while IFS= read -r f; do [[ -f "$f" ]] && users+=("$f"); done < <(grep -lE "from '\.\./components/${comp}'" src/pages/*.tsx 2>/dev/null | sed 's/\.tsx$/.test.tsx/')
+  n=${#users[@]}; if ((n > 0 && n <= 40)); then echo "== vitest importers of $comp ($n)"; bunx vitest run "${users[@]}" 2>&1 | grep -E 'Test Files|Tests |FAIL' | head -10; elif ((n > 40)); then echo "NOTE $comp has $n importers (not run locally; CI covers)"; fi
+done
+for u in "${new_sources[@]}"; do t="${u#frontend/}"; t="${t%.tsx}"; t="${t%.ts}"; [[ "$u" == *.tsx ]] && t+=".test.tsx" || t+=".test.ts"; [ -f "$t" ] || echo "MISSING_TEST for $u"; done
+((${#fmt[@]})) && bunx biome check --write "${fmt[@]}" >/dev/null 2>&1
+mkdir -p "$BATCH_STATE"
+bun run check >"$BATCH_STATE/ck$slot.log" 2>&1 && echo CHECK=ok || { echo CHECK=FAIL; tail -20 "$BATCH_STATE/ck$slot.log"; }
+flock "$BATCH_STATE/tsc.lock" bun run typecheck >"$BATCH_STATE/tc$slot.log" 2>&1 && echo TYPE=ok || { echo TYPE=FAIL; tail -20 "$BATCH_STATE/tc$slot.log"; }
 cd ..
-if [ -n "$go" ] || git status --porcelain | grep -q internal/i18n/locales/; then go build ./... && echo BUILD=ok; flock /tmp/ib-gotest.lock go test -tags test ./... 2>&1 | grep -vE "^(ok|\?)" | tail -15; echo GOTEST_DONE
-elif git status --porcelain | grep -q frontend/src/i18n/locales/; then echo "GOTEST(frontend-locale guards)"; flock /tmp/ib-gotest.lock go test -tags test ./internal/infrastructure/games/ ./internal/adapter/presenter/ ./internal/i18n/... 2>&1 | grep -vE "^(ok|\?)" | tail -15; echo GOTEST_DONE; fi
-# An empty file list must not reach grep: with no operands it reads stdin and hangs forever.
-mut_files=$(git status --porcelain | awk '{print $2}' | grep -E '\.(tsx?|go)$')
-[ -n "$mut_files" ] && grep -nE '\{false &&|if \(true\)' $mut_files </dev/null 2>/dev/null && echo MUTANT_LEFT
-if [ -n "$go" ]; then export PATH=$PATH:$(go env GOPATH)/bin; gi=$(goimports -l $go); [ -n "$gi" ] && echo "GOIMPORTS: $gi"; flock /tmp/ib-lint.lock golangci-lint run --build-tags test ./internal/... 2>&1 | tail -3 | sed 's/^/LINT: /'; fi
-"$B/fieldcheck.sh" "$WT_ROOT/wt-ib$1"
-python3 "$B/e2echeck.py" "$WT_ROOT/wt-ib$1"
+if [ -n "$go" ] || printf '%s\n' "${changed[@]}" | grep -q internal/i18n/locales/; then go build ./... && echo BUILD=ok; flock "$BATCH_STATE/gotest.lock" go test -tags test ./... 2>&1 | grep -vE '^(ok|\?)' | tail -15; echo GOTEST_DONE
+elif printf '%s\n' "${changed[@]}" | grep -q frontend/src/i18n/locales/; then echo "GOTEST(frontend-locale guards)"; flock "$BATCH_STATE/gotest.lock" go test -tags test ./internal/infrastructure/games/ ./internal/adapter/presenter/ ./internal/i18n/... 2>&1 | grep -vE '^(ok|\?)' | tail -15; echo GOTEST_DONE; fi
+if ((${#mut_files[@]})); then grep -nE '\{false &&|if \(true\)' -- "${mut_files[@]}" </dev/null 2>/dev/null && echo MUTANT_LEFT; fi
+if [ -n "$go" ]; then export PATH=$PATH:"$(go env GOPATH)/bin"; gi=$(goimports -l "${go_files[@]}"); [ -n "$gi" ] && echo "GOIMPORTS: $gi"; flock "$BATCH_STATE/lint.lock" golangci-lint run --build-tags test ./internal/... 2>&1 | tail -3 | sed 's/^/LINT: /'; fi
+"$B/fieldcheck.sh" "$wt"
+python3 "$B/e2echeck.py" "$wt"

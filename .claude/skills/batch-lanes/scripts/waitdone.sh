@@ -9,7 +9,7 @@ rcg_result_is_fresh() {
   read -r result_started finished < "$result"
   [[ "$started" = "$result_started" ]] && (( finished > started ))
 }
-if [[ "${BATCH_TESTING:-}" = 1 ]]; then return 0; fi
+if [[ "${BATCH_TESTING:-}" = 1 ]]; then return 0 2>/dev/null || exit 0; fi
 while :; do
   found=0
   slots=("$@")
