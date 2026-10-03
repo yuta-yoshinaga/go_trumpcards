@@ -21,6 +21,18 @@
           },
           {
             "type": "command",
+            "command": "hook=.claude/hooks/proc-kill-guard.sh; if [ -f \"$hook\" ]; then bash \"$hook\"; else echo \"{}\"; fi",
+            "timeout": 15,
+            "statusMessage": "Checking for process-pattern commands that could kill their shell..."
+          },
+          {
+            "type": "command",
+            "command": "hook=.claude/hooks/worktree-branch-guard.sh; if [ -f \"$hook\" ]; then bash \"$hook\"; else echo \"{}\"; fi",
+            "timeout": 15,
+            "statusMessage": "Checking for branch updates affecting another worktree..."
+          },
+          {
+            "type": "command",
             "command": "cmd=$(jq -r '.tool_input.command'); if printf '%s' \"$cmd\" | grep -qE '(^|[^[:alnum:]_-])git[[:space:]]+(add[[:space:]]+(-A|--all|\\.)([[:space:]/]|$)|checkout[[:space:]]+[^[:space:]]+[[:space:]]+--[[:space:]]+\\.([[:space:]]|$))'; then printf '%s' '{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"Blocked: do not use git add -A / git add . / git checkout <ref> -- . in this worktree. It has local-only files (node_modules, vendored .claude/skills, casino/classic/solo TinyGo build dirs, public/sounds) that must never be staged. Stage specific paths instead, e.g. git add path/to/file.\"}}'; else echo '{}'; fi",
             "timeout": 5,
             "statusMessage": "Guarding against bulk git add..."
