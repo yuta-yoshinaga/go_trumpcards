@@ -245,7 +245,7 @@ function FiveHundredPageContent() {
         <>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             {error && (
-              <button type="button" onClick={retry} className="text-ds-error underline">
+              <button type="button" onClick={retry} className="text-ds-error-text underline">
                 {error}
               </button>
             )}
@@ -609,7 +609,7 @@ function FiveHundredPageContent() {
 
               {isRoundEnd && state.roundResult && (
                 <div className="w-full text-sm mb-2" role="status" aria-live="polite" data-testid="fh-round-result">
-                  <span className={state.roundResult.made ? 'text-ds-success' : 'text-ds-error'}>
+                  <span className={state.roundResult.made ? 'text-ds-success' : 'text-ds-error-text'}>
                     {t(
                       // ミゼールには「必要トリック数」が無い (0 トリックで成立)。
                       // suit 用の「取得/必要」表記を使い回すと分数として読めてしまう。

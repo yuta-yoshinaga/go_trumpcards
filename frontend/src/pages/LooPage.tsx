@@ -236,7 +236,7 @@ function LooPageContent() {
                       {/* ルーの罰金には下限が無いのでチップは負に落ちる。色だけの
                           警告にならないよう ▼ と aria-label も添える。 */}
                       <span
-                        className={p.chips < 0 ? 'text-ds-error font-semibold' : undefined}
+                        className={p.chips < 0 ? 'text-ds-error-text font-semibold' : undefined}
                         data-testid={`loo-chips-${p.id}`}
                       >
                         {p.chips < 0 && (
@@ -311,7 +311,7 @@ function LooPageContent() {
                   >
                     <div className="mb-1 text-ds-text-primary">{t('dealResult.title')}</div>
                     {state.lastDealDetail.looed.length > 0 && (
-                      <div className="text-ds-error mb-1">
+                      <div className="text-ds-error-text mb-1">
                         {t('dealResult.looed', {
                           names: state.lastDealDetail.looed
                             .map((i) => playerName(i, state.players[i]?.isHuman ?? false))
@@ -394,7 +394,7 @@ function LooPageContent() {
                     >
                       <div className="text-ds-text-muted mb-0.5">{t('potRisk.label')}</div>
                       <div className="text-ds-accent">{t('potRisk.win', { pot: maxWin, perTrick })}</div>
-                      <div className="text-ds-error">{t('potRisk.loss', { penalty: looPenalty })}</div>
+                      <div className="text-ds-error-text">{t('potRisk.loss', { penalty: looPenalty })}</div>
                     </div>
                   );
                 })()}

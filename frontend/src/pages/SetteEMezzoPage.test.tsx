@@ -259,7 +259,7 @@ describe('SetteEMezzoPage', () => {
     );
     renderWithProviders(<SetteEMezzoPage />);
     const payout = await screen.findByText('-100');
-    expect(payout).toHaveClass('text-ds-error');
+    expect(payout).toHaveClass('text-ds-error-text');
     expect(payout).not.toHaveClass('text-ds-success');
   });
 

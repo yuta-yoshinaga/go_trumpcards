@@ -8,6 +8,7 @@ import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findBadgeContrastViolations } from './lib/badge-contrast.mjs';
 import { collectDesignTokens, findUndefinedDesignUtilities } from './lib/design-token-utilities.mjs';
+import { findErrorTextTokenViolations } from './lib/error-text-token.mjs';
 import { assertFloor } from './lib/floor.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -60,6 +61,15 @@ for (const file of files) {
         });
       }
     }
+  }
+
+  for (const violation of findErrorTextTokenViolations(text)) {
+    violations.push({
+      file: relative(ROOT, file),
+      line: text.slice(0, violation.index).split('\n').length,
+      match: 'text-ds-error',
+      message: 'Use text-ds-error-text for text unless the same class string has bg-white.',
+    });
   }
 }
 

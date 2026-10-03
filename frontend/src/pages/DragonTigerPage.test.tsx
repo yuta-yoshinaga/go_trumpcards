@@ -233,7 +233,7 @@ describe('DragonTigerPage', () => {
     renderWithProviders(<DragonTigerPage />);
     const diff = await screen.findByTestId('payout-diff');
     expect(diff).toHaveTextContent('-50');
-    expect(diff).toHaveClass('text-ds-error');
+    expect(diff).toHaveClass('text-ds-error-text');
     expect(screen.getByTestId('payout-result')).toHaveTextContent('返還'); // tieRefund text
   });
 

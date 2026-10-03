@@ -129,7 +129,7 @@ export function TrickDisplay({
           const labelClass = isAlly
             ? 'text-ds-info font-semibold'
             : isFoe
-              ? 'text-ds-error font-semibold'
+              ? 'text-ds-error-text font-semibold'
               : 'text-game-text-muted';
           const badge = cardBadgeFor?.(trickCard.card);
           const cardLabel = cardAriaLabelFor?.(displayPlayer, trickCard.card) ?? cardAlt(trickCard.card);

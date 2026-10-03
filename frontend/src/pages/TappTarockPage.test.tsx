@@ -265,7 +265,7 @@ describe('TappTarockPage', () => {
 
     const result = await screen.findByTestId('zw-round-result');
     const message = result.querySelector('[data-result="lost"]');
-    expect(message).toHaveClass('text-ds-error');
+    expect(message).toHaveClass('text-ds-error-text');
     expect(message).not.toHaveClass('text-ds-success');
     expect(message).toHaveTextContent('失敗');
   });
@@ -297,7 +297,7 @@ describe('TappTarockPage', () => {
     const result = await screen.findByTestId('zw-round-result');
     const message = result.querySelector('[data-result="trischaken"]');
     expect(message).not.toHaveClass('text-ds-success');
-    expect(message).not.toHaveClass('text-ds-error');
+    expect(message).not.toHaveClass('text-ds-error-text');
     expect(message).toHaveTextContent('CPU2');
     expect(message).toHaveTextContent('33');
   });

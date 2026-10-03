@@ -411,7 +411,7 @@ describe('CaribbeanStudPage', () => {
       expect(screen.getByTestId('csp-session-tally')).toHaveTextContent('0勝 1敗 0分');
       const netEl = screen.getByTestId('csp-session-net');
       expect(netEl).toHaveTextContent('収支: -300');
-      expect(netEl).toHaveClass('text-ds-error');
+      expect(netEl).toHaveClass('text-ds-error-text');
     });
 
     it('does not double-count the same END round on re-render', async () => {

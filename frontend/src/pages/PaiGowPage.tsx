@@ -330,7 +330,7 @@ function PaiGowPageContent() {
                 {/* Dealer High Hand and Low Hand */}
                 {state.dealerHighHand.length > 0 && (
                   <div className="mb-4">
-                    <div className="text-ds-error font-bold text-center mb-1">
+                    <div className="text-ds-error-text font-bold text-center mb-1">
                       <span aria-hidden="true">🔴</span> {t('label.highHand')}{' '}
                       <span className="text-sm">({t(HAND_RESULT_KEYS[-state.highHandResult])})</span>
                       {state.dealerHighRank >= 0 && (
@@ -346,7 +346,7 @@ function PaiGowPageContent() {
                 )}
                 {state.dealerLowHand.length > 0 && (
                   <div className="mb-4">
-                    <div className="text-ds-error font-bold text-center mb-1">
+                    <div className="text-ds-error-text font-bold text-center mb-1">
                       <span aria-hidden="true">🔴</span> {t('label.lowHand')}{' '}
                       <span className="text-sm">({t(HAND_RESULT_KEYS[-state.lowHandResult])})</span>
                       {state.dealerLowRank >= 0 && (
@@ -420,7 +420,7 @@ function PaiGowPageContent() {
                   describedBy={betInvalid ? 'paigow-bet-error' : undefined}
                 />
                 {betInvalid && (
-                  <p id="paigow-bet-error" role="alert" className="text-ds-error text-xs">
+                  <p id="paigow-bet-error" role="alert" className="text-ds-error-text text-xs">
                     {t(betErrorKey)}
                   </p>
                 )}
@@ -434,7 +434,7 @@ function PaiGowPageContent() {
                 {/* Always-rendered assertive live region so both the onset and the
                     clearing of a foul are announced (an unmounted region can't
                     announce its own removal). Empty <p> collapses to no height. */}
-                <p data-testid="foul-warning" aria-live="assertive" className="text-ds-error text-sm font-medium">
+                <p data-testid="foul-warning" aria-live="assertive" className="text-ds-error-text text-sm font-medium">
                   {foul.isFoul ? t('foulWarning') : ''}
                 </p>
                 <details data-testid="foul-rule-help" className="text-xs text-ds-text-muted max-w-sm text-center">

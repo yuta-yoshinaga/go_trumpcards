@@ -83,7 +83,7 @@ describe('OldMaidDrawHistory (graphical timeline)', () => {
     render(<OldMaidDrawHistory entries={[baseEntry()]} players={players} suspectPins={suspectPins} />);
     const entry = screen.getByTestId('draw-history-entry');
     expect(entry.dataset.suspectTarget).toBe('true');
-    expect(entry.querySelector('.text-ds-error')).not.toBeNull();
+    expect(entry.querySelector('.text-ds-error-text')).not.toBeNull();
   });
 
   it('does not flag suspect when pins do not include the target', () => {

@@ -229,7 +229,7 @@ describe('NapPage', () => {
     expect(progress.closest('details')).toBeNull();
     expect(progress).toHaveAttribute('role', 'status');
     expect(progress).not.toHaveTextContent('達成不可');
-    expect(progress.className).not.toContain('text-ds-error');
+    expect(progress.className).not.toContain('text-ds-error-text');
   });
 
   it('marks the contract as unreachable once too few tricks remain', async () => {
@@ -251,7 +251,7 @@ describe('NapPage', () => {
     renderWithProviders(<NapPage />);
     const progress = await screen.findByTestId('nap-declarer-progress');
     expect(progress).toHaveTextContent('達成不可');
-    expect(progress.className).toContain('text-ds-error');
+    expect(progress.className).toContain('text-ds-error-text');
   });
 
   it('renders trick end with the next trick button', async () => {

@@ -335,7 +335,7 @@ describe('EstimationPage round delta', () => {
     expect(screen.getByTestId('est-round-delta-2')).toHaveTextContent('±0');
     expect(screen.getByTestId('est-round-delta-3')).toHaveTextContent('+14');
     // 減った席だけ赤。
-    expect(screen.getByTestId('est-round-delta-1').className).toContain('text-ds-error');
+    expect(screen.getByTestId('est-round-delta-1').className).toContain('text-ds-error-text');
     expect(screen.getByTestId('est-round-delta-0').className).toContain('text-ds-success');
   });
 

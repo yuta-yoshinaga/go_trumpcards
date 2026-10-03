@@ -241,7 +241,7 @@ function RookPageContent() {
         <>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             {error && (
-              <button type="button" onClick={retry} className="text-ds-error underline">
+              <button type="button" onClick={retry} className="text-ds-error-text underline">
                 {error}
               </button>
             )}
@@ -285,7 +285,7 @@ function RookPageContent() {
                       bid: state.roundResult.contractBid,
                     })}
                   </div>
-                  <div className={state.roundResult.made ? 'text-ds-success' : 'text-ds-error'}>
+                  <div className={state.roundResult.made ? 'text-ds-success' : 'text-ds-error-text'}>
                     {state.roundResult.made ? t('roundResult.made') : t('roundResult.failed')} (
                     {state.roundResult.scoreDelta >= 0 ? '+' : ''}
                     {state.roundResult.scoreDelta})

@@ -229,7 +229,7 @@ function FreeBetPageContent() {
 
             {isResultPhase && (
               <div className="text-center mb-2" data-testid="fb-result">
-                <div className={`text-sm font-medium ${net >= 0 ? 'text-ds-success' : 'text-ds-error'}`}>
+                <div className={`text-sm font-medium ${net >= 0 ? 'text-ds-success' : 'text-ds-error-text'}`}>
                   {t('label.net')}: {net}
                 </div>
               </div>

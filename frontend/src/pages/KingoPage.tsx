@@ -187,7 +187,7 @@ function KingoPageContent() {
                     {seat.wonAmount !== 0 && (
                       <span
                         data-testid={`kingo-won-${i}`}
-                        className={seat.wonAmount > 0 ? 'text-ds-success' : 'text-ds-error'}
+                        className={seat.wonAmount > 0 ? 'text-ds-success' : 'text-ds-error-text'}
                       >
                         {' · '}
                         {t('label.won', { amount: seat.wonAmount })}

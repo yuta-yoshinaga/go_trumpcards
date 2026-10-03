@@ -430,7 +430,9 @@ function ShortDeckPageContent() {
                       {tc('betting.currentBet')} {humanPlayer.currentBet}
                     </span>
                   )}
-                  {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
+                  {humanPlayer.folded && (
+                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
+                  )}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                   {isActive && currentBest5.rank !== null && !humanPlayer.folded && (
                     <span className="ml-2 text-xs text-ds-info" data-testid="shortdeck-current-hand">

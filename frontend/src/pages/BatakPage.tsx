@@ -91,7 +91,7 @@ const BATAK_PHASE_KEYS: Readonly<Record<number, string>> = {
 function getRoundScorePresentation(roundScore: number) {
   if (roundScore > 0) return { className: 'text-ds-success', sign: 'positive' };
   // Color is supplemental; the numeric sign remains readable without relying on it.
-  if (roundScore < 0) return { className: 'text-ds-error', sign: 'negative' };
+  if (roundScore < 0) return { className: 'text-ds-error-text', sign: 'negative' };
   return { className: '', sign: 'zero' };
 }
 

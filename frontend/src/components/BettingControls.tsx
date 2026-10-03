@@ -97,7 +97,7 @@ export function BettingControls({
           describedBy={isOutOfRange ? `${inputId}-range` : undefined}
         />
         {isOutOfRange && (
-          <p id={`${inputId}-range`} className="text-ds-error text-xs" role="alert">
+          <p id={`${inputId}-range`} className="text-ds-error-text text-xs" role="alert">
             {t('betting.rangeHint', { min: minRaise, max: hasMax ? max : '∞' })}
           </p>
         )}

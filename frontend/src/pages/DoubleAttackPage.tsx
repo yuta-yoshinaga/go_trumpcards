@@ -224,7 +224,7 @@ function DoubleAttackPageContent() {
 
             {isResultPhase && (
               <div className="text-center mb-2" data-testid="da-result">
-                <div className={`text-sm font-medium ${net >= 0 ? 'text-ds-success' : 'text-ds-error'}`}>
+                <div className={`text-sm font-medium ${net >= 0 ? 'text-ds-success' : 'text-ds-error-text'}`}>
                   {t('label.net')}: {net}
                 </div>
                 {/* **賭けたのに結果が見えない状態をなくす** (#5776)。合計収支だけ

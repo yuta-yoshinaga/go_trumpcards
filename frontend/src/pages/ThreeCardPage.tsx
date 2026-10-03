@@ -288,7 +288,7 @@ function ThreeCardPageContent() {
             {/* Dealer Hand */}
             {!isActionPhase && state.dealerHand.length > 0 && (
               <div className="mb-4">
-                <div className="text-ds-error font-bold text-center mb-1">
+                <div className="text-ds-error-text font-bold text-center mb-1">
                   <span aria-hidden="true">🔴</span> {t('dealer')}
                   {isEndPhase && state.dealerHandRank > 0 && (
                     <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank])})</span>

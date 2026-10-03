@@ -98,7 +98,7 @@ function teamBadgeClass(team: number): string {
   // bg-ds-surface + a coloured border (not an opacity-multiplied fill) keeps the
   // contrast ratio stable over the felt table — see DESIGN.md's opacity rule.
   const base = 'inline-block rounded border px-1.5 py-0.5 text-xs font-medium bg-ds-surface';
-  return team === 0 ? `${base} border-ds-info text-ds-info` : `${base} border-ds-error text-ds-error`;
+  return team === 0 ? `${base} border-ds-info text-ds-info` : `${base} border-ds-error text-ds-error-text`;
 }
 
 export const WhistPage = withTutorial(WhistPageContent, 'whist', WH_TUTORIAL_STEPS);

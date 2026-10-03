@@ -413,7 +413,7 @@ describe('EscobaPage', () => {
     fireEvent.click(screen.getByTestId('table-card-1')); // +4 => 16
     const counter = await screen.findByTestId('escoba-sum-indicator');
     expect(counter).toHaveTextContent('16 / 15');
-    expect(counter.className).toContain('text-ds-error');
+    expect(counter.className).toContain('text-ds-error-text');
   });
 
   it('does not show the escoba badge on initial load', async () => {

@@ -42,7 +42,7 @@ describe('EquityDisplay', () => {
     render(<EquityDisplay equity={lowEquity} potOdds={50.0} />);
     const indicator = screen.getByTestId('ev-indicator');
     expect(indicator).toHaveTextContent('-EV');
-    expect(indicator).toHaveClass('text-ds-error');
+    expect(indicator).toHaveClass('text-ds-error-text');
   });
 
   it('shows hand odds breakdown after toggle', () => {

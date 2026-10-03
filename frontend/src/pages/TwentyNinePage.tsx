@@ -162,7 +162,7 @@ function TwentyNinePageContent() {
     contractProgress?.status === 'made'
       ? 'text-ds-success'
       : contractProgress?.status === 'failed'
-        ? 'text-ds-error'
+        ? 'text-ds-error-text'
         : 'text-ds-warning';
   const isGameEnd = state.phase === TwentyNinePhase.GAME_END || state.gameEndFlag;
 

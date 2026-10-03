@@ -324,11 +324,11 @@ describe('GleekPage', () => {
 
     const delta1 = screen.getByTestId('gleek-round-delta-1');
     expect(delta1).toHaveTextContent('-10');
-    expect(delta1.className).toContain('text-ds-error');
+    expect(delta1.className).toContain('text-ds-error-text');
 
     const delta2 = screen.getByTestId('gleek-round-delta-2');
     expect(delta2).toHaveTextContent('-5');
-    expect(delta2.className).toContain('text-ds-error');
+    expect(delta2.className).toContain('text-ds-error-text');
     expect(screen.getByTestId('gleek-round-breakdown-0')).toHaveTextContent(
       '競り: +10、ラフ: +4、メルド: +3、トリック精算: -2',
     );

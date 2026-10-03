@@ -221,11 +221,11 @@ function BlackJackSwitchPageContent() {
                     previewScore === null
                       ? ''
                       : previewScore > 21
-                        ? 'text-ds-error'
+                        ? 'text-ds-error-text'
                         : previewDelta > 0
                           ? 'text-ds-success'
                           : previewDelta < 0
-                            ? 'text-ds-error'
+                            ? 'text-ds-error-text'
                             : 'text-ds-text-muted';
                   return (
                     <div
@@ -341,7 +341,7 @@ function BlackJackSwitchPageContent() {
                   {t('betSummary.total', { amount: betAmount * 2, chips: state.chips })}
                 </div>
                 {betAmount * 2 > state.chips && (
-                  <p className="text-ds-error text-sm" data-testid="bjswitch-bet-insufficient">
+                  <p className="text-ds-error-text text-sm" data-testid="bjswitch-bet-insufficient">
                     {t('betSummary.overBalance')}
                   </p>
                 )}

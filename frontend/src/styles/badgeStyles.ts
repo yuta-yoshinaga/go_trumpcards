@@ -51,7 +51,7 @@ export const badgeWarningColors = 'border bg-ds-surface text-ds-warning border-d
  * Opaque color tokens for an **error** state badge that needs custom sizing.
  *
  * Foreground is intentionally `text-ds-text-primary` (10.1:1 AAA on surface)
- * rather than `text-ds-error`: the error token (#B83A3A) only hits ~2.7:1 on
+ * rather than `text-ds-error-text`: the error token (#B83A3A) only hits ~2.7:1 on
  * the surface background — well below WCAG AA — so the semantic signal comes
  * entirely from the coloured border while the message stays fully readable.
  * See {@link badgeInfoColors} for usage.

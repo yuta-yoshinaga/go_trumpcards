@@ -233,7 +233,7 @@ function EstimationPageContent() {
                       終了時にだけ出す。 */}
                   {isRoundEnd && (
                     <span
-                      className={`ml-2 ${p.roundScore < 0 ? 'text-ds-error' : 'text-ds-success'}`}
+                      className={`ml-2 ${p.roundScore < 0 ? 'text-ds-error-text' : 'text-ds-success'}`}
                       data-testid={`est-round-delta-${p.id.toString()}`}
                     >
                       {t('header.roundDelta', { delta: formatSignedDelta(p.roundScore) })}

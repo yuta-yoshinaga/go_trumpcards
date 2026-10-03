@@ -290,7 +290,7 @@ function UltimateTexasHoldemPageContent() {
 
         {state.dealerHand.length > 0 && (
           <div className="mb-4">
-            <div className="text-ds-error font-bold text-center mb-1">
+            <div className="text-ds-error-text font-bold text-center mb-1">
               <span aria-hidden="true">🔴</span> {t('dealer')}
               {isEndPhase && (
                 <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank] ?? 'handRank.0')})</span>
@@ -412,7 +412,7 @@ function UltimateTexasHoldemPageContent() {
               {t('betSummary.total')}: {betBounds.total} / {state.chips}
             </div>
             {!betBounds.valid && (
-              <p id="uth-bet-error" role="alert" className="text-ds-error text-sm" data-testid="uth-bet-error">
+              <p id="uth-bet-error" role="alert" className="text-ds-error-text text-sm" data-testid="uth-bet-error">
                 {t('betSummary.overBalance')}
               </p>
             )}

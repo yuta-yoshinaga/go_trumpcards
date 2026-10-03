@@ -532,7 +532,7 @@ describe('CaribbeanDrawPage', () => {
       expect(screen.getByTestId('cd-session-tally')).toHaveTextContent('0勝 1敗 0分');
       const netEl = screen.getByTestId('cd-session-net');
       expect(netEl).toHaveTextContent('収支: -300');
-      expect(netEl).toHaveClass('text-ds-error');
+      expect(netEl).toHaveClass('text-ds-error-text');
     });
 
     it('subtracts the draw fee from the session net', async () => {
@@ -557,7 +557,7 @@ describe('CaribbeanDrawPage', () => {
       await waitFor(() => expect(screen.getByTestId('cd-session-stats')).toBeInTheDocument());
       const netEl = screen.getByTestId('cd-session-net');
       expect(netEl).toHaveTextContent('収支: -150');
-      expect(netEl).toHaveClass('text-ds-error');
+      expect(netEl).toHaveClass('text-ds-error-text');
     });
 
     it('does not double-count the same END round on re-render', async () => {

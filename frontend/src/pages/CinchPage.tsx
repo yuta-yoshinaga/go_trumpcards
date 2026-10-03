@@ -171,7 +171,7 @@ function CinchPageContent() {
   const suitLabel = (suit: number): string => (SUIT_KEYS[suit] ? t(`suit.${SUIT_KEYS[suit]}`) : '');
   /** Colored suit symbol: hearts/diamonds red, spades/clubs default. */
   const renderSuitSymbol = (suit: number) => (
-    <span className={isRedSuit(suit) ? 'text-ds-error' : undefined}>{suitSymbolAt(suit, '-')}</span>
+    <span className={isRedSuit(suit) ? 'text-ds-error-text' : undefined}>{suitSymbolAt(suit, '-')}</span>
   );
 
   const handleManualReset = () => {
@@ -333,7 +333,7 @@ function CinchPageContent() {
                     <div className="mb-1 text-ds-text-primary">{t('dealResult.title')}</div>
                     {state.lastDealDetail.bidderIdx >= 0 && (
                       <div
-                        className={`mb-1 ${state.lastDealDetail.setBack ? 'text-ds-error font-semibold' : 'text-ds-text-primary'}`}
+                        className={`mb-1 ${state.lastDealDetail.setBack ? 'text-ds-error-text font-semibold' : 'text-ds-text-primary'}`}
                         data-testid="cinch-bidder-detail"
                       >
                         {t(state.lastDealDetail.setBack ? 'dealResult.bidderSet' : 'dealResult.bidderMade', {
@@ -349,7 +349,7 @@ function CinchPageContent() {
                       return (
                         <div
                           key={p.id}
-                          className={isSetBackRow ? 'text-ds-error font-semibold' : undefined}
+                          className={isSetBackRow ? 'text-ds-error-text font-semibold' : undefined}
                           data-testid={isSetBackRow ? 'cinch-setback-row' : undefined}
                         >
                           {t('dealResult.gained', {

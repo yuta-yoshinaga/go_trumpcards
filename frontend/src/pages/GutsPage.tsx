@@ -307,7 +307,7 @@ function GutsPageContent() {
                   return (
                     <div
                       key={`matcher-${idx}`}
-                      className="text-ds-error font-semibold"
+                      className="text-ds-error-text font-semibold"
                       data-testid="guts-matcher-payment"
                     >
                       {t('roundResult.matchPayment', {
@@ -370,7 +370,7 @@ function GutsPageContent() {
                   {t('guide.tierLabel')}:{' '}
                   <span data-testid="guts-guide-tier">{t(`guide.tier.${declareGuide.tier}`)}</span>
                 </div>
-                <div className="text-ds-error text-xs" data-testid="guts-guide-risk">
+                <div className="text-ds-error-text text-xs" data-testid="guts-guide-risk">
                   {t('guide.matchRisk', { pot: state.pot })}
                 </div>
               </div>

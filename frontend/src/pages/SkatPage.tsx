@@ -215,7 +215,7 @@ function SkatPageContent() {
                     <div
                       data-testid="bid-estimate"
                       data-exceeds={exceeds ? 'true' : undefined}
-                      className={`text-xs ${exceeds ? 'text-ds-error' : 'text-ds-text-muted'}`}
+                      className={`text-xs ${exceeds ? 'text-ds-error-text' : 'text-ds-text-muted'}`}
                     >
                       {t('bidEstimate', { value: est.value, type: t(`gameTypeLabel.${est.gameType.toLowerCase()}`) })}
                       {exceeds && <span className="ml-2">⚠️ {t('bidExceedsHand')}</span>}

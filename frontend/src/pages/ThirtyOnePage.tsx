@@ -261,7 +261,7 @@ function ThirtyOnePageContent() {
         <>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             {error && (
-              <button type="button" onClick={retry} className="text-ds-error underline">
+              <button type="button" onClick={retry} className="text-ds-error-text underline">
                 {error}
               </button>
             )}
@@ -440,7 +440,7 @@ function ThirtyOnePageContent() {
                         <li
                           key={idx}
                           data-testid={`life-loss-${idx}`}
-                          className={out ? 'text-ds-error font-medium' : ''}
+                          className={out ? 'text-ds-error-text font-medium' : ''}
                         >
                           {t('roundSummary.lifeLost', { name: roundPlayerLabel(idx) })}
                           <span className="ml-1 motion-safe:animate-pulse" aria-hidden="true">

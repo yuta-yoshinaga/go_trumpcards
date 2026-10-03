@@ -375,7 +375,7 @@ describe('IsraeliWhistPage', () => {
     expect(await screen.findByTestId('iw-round-delta-0')).toHaveTextContent('今回 +59');
     expect(screen.getByTestId('iw-round-delta-1')).toHaveTextContent('今回 -20');
     expect(screen.getByTestId('iw-round-delta-2')).toHaveTextContent('今回 ±0');
-    expect(screen.getByTestId('iw-round-delta-1').className).toContain('text-ds-error');
+    expect(screen.getByTestId('iw-round-delta-1').className).toContain('text-ds-error-text');
     expect(screen.getByTestId('iw-round-delta-0').className).toContain('text-ds-success');
   });
 

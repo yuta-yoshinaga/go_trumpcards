@@ -448,7 +448,9 @@ function BigOHiLoPageContent() {
                       {tc('betting.currentBet')} {humanPlayer.currentBet}
                     </span>
                   )}
-                  {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
+                  {humanPlayer.folded && (
+                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
+                  )}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                   {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
                     <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>

@@ -37,7 +37,7 @@ export function SuitScoreBadges({
             data-testid={badgeTestId(d)}
             className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border font-medium ${classes}`}
           >
-            <span className={isLeader ? '' : isRed ? 'text-ds-error' : ''}>{symbol}</span>
+            <span className={isLeader ? '' : isRed ? 'text-ds-error-text' : ''}>{symbol}</span>
             <span className="tabular-nums">{suitTotals[d]}</span>
           </li>
         );

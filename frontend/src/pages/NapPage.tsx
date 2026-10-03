@@ -259,7 +259,7 @@ function NapPageContent() {
 
             {showDeclarerProgress && (
               <div
-                className={`text-center mb-2 text-sm ${contractUnreachable ? 'text-ds-error font-semibold' : 'text-ds-text-muted'}`}
+                className={`text-center mb-2 text-sm ${contractUnreachable ? 'text-ds-error-text font-semibold' : 'text-ds-text-muted'}`}
                 data-testid="nap-declarer-progress"
                 role="status"
                 aria-live="polite"

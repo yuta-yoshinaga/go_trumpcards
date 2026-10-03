@@ -283,7 +283,7 @@ function CrazyFourPokerPageContent() {
                 {state.queensUpBet > 0 && (
                   <div className="text-sm">{t('result.queensUp', { amount: queensUpReturn - state.queensUpBet })}</div>
                 )}
-                <div className={`text-sm font-medium ${net >= 0 ? 'text-ds-success' : 'text-ds-error'}`}>
+                <div className={`text-sm font-medium ${net >= 0 ? 'text-ds-success' : 'text-ds-error-text'}`}>
                   {t('label.net')}: {net}
                 </div>
               </div>

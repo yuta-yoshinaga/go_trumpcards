@@ -285,7 +285,7 @@ describe('PreferencePage', () => {
     const readout = await screen.findByTestId('preference-contract-progress');
     expect(readout).toHaveTextContent('2 / 8');
     expect(readout).toHaveTextContent('失敗確定');
-    expect(readout).toHaveClass('text-ds-error');
+    expect(readout).toHaveClass('text-ds-error-text');
   });
 
   it('flags Misère failure the instant the declarer wins a trick', async () => {
@@ -295,7 +295,7 @@ describe('PreferencePage', () => {
     const readout = await screen.findByTestId('preference-contract-progress');
     expect(readout).toHaveTextContent('ミゼール');
     expect(readout).toHaveTextContent('失敗確定');
-    expect(readout).toHaveClass('text-ds-error');
+    expect(readout).toHaveClass('text-ds-error-text');
   });
 
   it('does not show contract progress before a declarer is decided', async () => {

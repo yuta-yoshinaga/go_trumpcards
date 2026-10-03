@@ -301,7 +301,7 @@ describe('ViraPage', () => {
     expect(readout).toHaveTextContent('2 / 10');
     expect(readout).toHaveTextContent('あと8トリック必要');
     expect(readout).toHaveTextContent('失敗確定');
-    expect(readout).toHaveClass('text-ds-error');
+    expect(readout).toHaveClass('text-ds-error-text');
   });
 
   it('does not apply trick targets to Pass', async () => {
@@ -321,7 +321,7 @@ describe('ViraPage', () => {
     expect(readout).toHaveTextContent('目標0');
     expect(readout).toHaveTextContent('残り5トリック');
     expect(readout).toHaveTextContent('失敗確定');
-    expect(readout).toHaveClass('text-ds-error');
+    expect(readout).toHaveClass('text-ds-error-text');
   });
 
   it('does not show contract progress before a declarer is decided', async () => {

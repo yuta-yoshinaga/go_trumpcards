@@ -265,7 +265,7 @@ function ChemindeFerPageContent() {
             {resultName && (
               <div
                 className={`text-center text-sm font-medium mb-2 ${
-                  humanNet > 0 ? 'text-ds-success' : humanNet < 0 ? 'text-ds-error' : 'text-ds-text-muted'
+                  humanNet > 0 ? 'text-ds-success' : humanNet < 0 ? 'text-ds-error-text' : 'text-ds-text-muted'
                 }`}
                 data-testid="cdf-net"
               >

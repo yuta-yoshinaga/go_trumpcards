@@ -535,7 +535,7 @@ function ChinesePokerPageContent() {
                   describedBy={betInvalid ? 'cp-bet-error' : undefined}
                 />
                 {betInvalid && (
-                  <p id="cp-bet-error" role="alert" className="text-ds-error text-xs">
+                  <p id="cp-bet-error" role="alert" className="text-ds-error-text text-xs">
                     {t('betError')}
                   </p>
                 )}
@@ -598,7 +598,7 @@ function HandSection({
   isPlayer: boolean;
 }) {
   if (!cards || cards.length === 0) return null;
-  const colorClass = isPlayer ? 'text-ds-warning' : 'text-ds-error';
+  const colorClass = isPlayer ? 'text-ds-warning' : 'text-ds-error-text';
   const icon = isPlayer ? '🟡' : '🔴';
   const resultIcon = isPlayer ? (result > 0 ? '✅' : '❌') : result > 0 ? '❌' : '✅';
 

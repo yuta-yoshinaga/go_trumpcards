@@ -479,7 +479,7 @@ describe('OpenFaceChinesePage foul-risk warning', () => {
     renderWithProviders(<OpenFaceChinesePage />);
 
     const warning = await screen.findByTestId('ofc-foul-risk-warning');
-    expect(warning.className).toContain('text-ds-error');
+    expect(warning.className).toContain('text-ds-error-text');
     expect(warning.className).not.toContain('sr-only');
 
     const riskyButton = screen.getByTestId('place-front');

@@ -360,7 +360,7 @@ function OpenFaceChinesePageContent() {
                 <span className="text-ds-text-primary text-sm">{t('placePrompt')}</span>
                 {/* 反則になる段は色だけでなく文言でも知らせる (色は SR に届かない)。 */}
                 <span
-                  className={anyFoulRisk ? 'text-ds-error text-xs' : 'sr-only'}
+                  className={anyFoulRisk ? 'text-ds-error-text text-xs' : 'sr-only'}
                   role="status"
                   aria-live="polite"
                   data-testid="ofc-foul-risk-warning"
@@ -439,7 +439,7 @@ function OpenFaceChinesePageContent() {
                     <span className="text-ds-text-primary text-sm font-semibold">{playerName(p)}</span>
                     <div className="flex items-center gap-2 text-xs">
                       {p.fouled && (
-                        <span className="text-ds-error font-semibold" role="status">
+                        <span className="text-ds-error-text font-semibold" role="status">
                           {t('fouled')}
                         </span>
                       )}

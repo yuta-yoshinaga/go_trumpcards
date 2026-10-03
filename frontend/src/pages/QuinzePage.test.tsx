@@ -224,7 +224,7 @@ describe('QuinzePage', () => {
     );
     renderWithProviders(<QuinzePage />);
     const payout = await screen.findByText('-100');
-    expect(payout).toHaveClass('text-ds-error');
+    expect(payout).toHaveClass('text-ds-error-text');
     expect(payout).not.toHaveClass('text-ds-success');
     const handImage = screen.getByRole('img', { name: /あなた.*15/ });
     expect(document.getElementById(handImage.getAttribute('aria-describedby') ?? '')).toHaveTextContent(

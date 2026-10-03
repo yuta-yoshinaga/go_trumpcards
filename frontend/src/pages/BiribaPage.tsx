@@ -410,7 +410,7 @@ function BiribaPageContent() {
                       ))}
                       {p.red3s.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
-                          <span className="text-xs text-ds-error self-center mr-1">{t('red3s')}</span>
+                          <span className="text-xs text-ds-error-text self-center mr-1">{t('red3s')}</span>
                           {p.red3s.map((card, ri) => (
                             <AnimatedCard key={`red3-${pi}-${ri}`} card={card} width={cardWidth * 0.6} />
                           ))}

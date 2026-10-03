@@ -576,7 +576,7 @@ function PinochlePageContent() {
                     {t('pass')}
                   </button>
                   {bidInvalid && (
-                    <p id="pinochle-bid-error" role="alert" className="text-ds-error text-xs w-full text-center">
+                    <p id="pinochle-bid-error" role="alert" className="text-ds-error-text text-xs w-full text-center">
                       {t('bidTooLow', { min: minBid })}
                     </p>
                   )}

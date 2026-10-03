@@ -573,7 +573,7 @@ function PitchPageContent() {
                 {dealerMustBid && (
                   <p
                     role="alert"
-                    className="text-ds-error text-sm basis-full text-center"
+                    className="text-ds-error-text text-sm basis-full text-center"
                     data-testid="pitch-pass-restriction"
                   >
                     {t('dealerMustBid')}

@@ -245,7 +245,7 @@ describe('BettingControls', () => {
     render(<BettingControls {...makeProps({ betAmount: 80, maxBetAmount: 50 })} />);
     const input = screen.getByLabelText('ベット額:');
     // Background stays on surface; text stays on text-ds-text-primary (10.1:1 AAA).
-    // Pairing text-ds-error with bg-ds-surface only hits ~2.7:1 — fails AA — so
+    // Pairing text-ds-error-text with bg-ds-surface only hits ~2.7:1 — fails AA — so
     // the error semantic comes from the coloured border, not the text colour.
     // See `fixup(a11y): keep error/info badge text on text-ds-text-primary for AAA`.
     expect(input.className).toContain('bg-ds-surface');

@@ -110,7 +110,7 @@ describe('CliTerminal', () => {
     render(<CliTerminal logEntries={entries} onCommand={vi.fn()} disabled={false} />);
     const log = within(screen.getByRole('log'));
     const el = log.getByText('fail');
-    expect(el.className).toContain('text-ds-error');
+    expect(el.className).toContain('text-ds-error-text');
   });
 
   describe('a11y announcement policy (issue #1843)', () => {

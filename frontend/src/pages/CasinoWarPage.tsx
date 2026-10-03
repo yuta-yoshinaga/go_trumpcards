@@ -371,7 +371,7 @@ function CasinoWarPageContent() {
                   {t('warCost', { amount: state.ante })}
                 </span>
                 {state.chips < state.ante && (
-                  <p role="alert" data-testid="war-insufficient" className="text-ds-error text-xs">
+                  <p role="alert" data-testid="war-insufficient" className="text-ds-error-text text-xs">
                     {t('insufficientChips')}
                   </p>
                 )}

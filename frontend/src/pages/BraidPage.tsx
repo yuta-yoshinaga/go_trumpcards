@@ -247,7 +247,7 @@ function BraidPageContent() {
             }}
             onDragLeave={() => setInvalidFieldHover(null)}
             style={{ width: dims.cw, height: dims.ch }}
-            className={`rounded border-2 border-dashed text-game-text-muted text-xs flex flex-col items-center justify-center cursor-not-allowed ${invalidFieldHover === idx ? 'border-ds-error text-ds-error ring-2 ring-ds-error' : 'border-white/20'}`}
+            className={`rounded border-2 border-dashed text-game-text-muted text-xs flex flex-col items-center justify-center cursor-not-allowed ${invalidFieldHover === idx ? 'border-ds-error text-ds-error-text ring-2 ring-ds-error' : 'border-white/20'}`}
           >
             {t('empty')}
             <span className="text-[10px]">{t('autoRefill')}</span>

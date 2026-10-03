@@ -280,8 +280,8 @@ describe('MaoPage', () => {
     expect(screen.getByRole('button', { name: 'ダイヤ' })).toBeInTheDocument();
 
     // Red suits (hearts, diamonds) carry the red token; black suits use the ivory primary token.
-    expect(screen.getByTestId('suit-symbol-3').className).toContain('text-ds-error');
-    expect(screen.getByTestId('suit-symbol-4').className).toContain('text-ds-error');
+    expect(screen.getByTestId('suit-symbol-3').className).toContain('text-ds-error-text');
+    expect(screen.getByTestId('suit-symbol-4').className).toContain('text-ds-error-text');
     expect(screen.getByTestId('suit-symbol-1').className).toContain('text-ds-text-primary');
     expect(screen.getByTestId('suit-symbol-2').className).toContain('text-ds-text-primary');
   });
@@ -421,7 +421,7 @@ describe('MaoPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '発言する' }));
     const outcome = await screen.findByTestId('sayword-outcome-penalty');
     expect(outcome).toHaveTextContent('ペナルティ');
-    expect(outcome.className).toContain('text-ds-error');
+    expect(outcome.className).toContain('text-ds-error-text');
   });
 
   it('clears the say-word history on reset', async () => {
