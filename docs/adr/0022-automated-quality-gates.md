@@ -37,6 +37,8 @@ Claude Code hooks（`.claude/settings.json`）を使い、以下の自動品質�
 3. **golangci-lint**: ステージされたGoファイルがある場合、`golangci-lint run ./...`を実行。警告があればコミットをブロック
 4. **biome check**: ステージされたTS/TSXファイルがある場合、`bun run check`を実行。エラーがあればコミットをブロック
 5. **ドキュメント乖離検知**: agentフックでステージされたファイルからドキュメント更新漏れを検出。CLAUDE.mdのDocumentation Maintenanceテーブルのルールを適用
+6. **プロセス終了ガード**: `.claude/hooks/proc-kill-guard.sh`が、呼び出し元シェルにも一致し得る`pkill -f`等を拒否
+7. **worktreeブランチガード**: `.claude/hooks/worktree-branch-guard.sh`が、別worktreeでcheckout中のブランチを動かす操作を拒否
 
 ### ドキュメント・ガイドラインの強化
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Unit tests for the game-improve proposal pipeline."""
-import json, subprocess, sys, tempfile, unittest
+import json, re, subprocess, sys, tempfile, unittest
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[4]
@@ -53,10 +53,15 @@ class GameImproveTests(unittest.TestCase):
         current_path=build_one(game)["page"]
         return {"game":game,"title":"t","body":"b","premise_key":"feature-absent","needs_cpu_turn_state":False,"files_read":[],"current_state":[{"path":current_path,"line":1,"note":"current behavior"}],"absence_evidence":[{"claim":"missing thing","pattern":pattern,"paths":[path]}],**kw}
 
+    def tute_current_state_line(self):
+        path="frontend/src/pages/TutePage.tsx"
+        source=(ROOT/path).read_text()
+        return next(i for i, line in enumerate(source.splitlines(), 1) if re.search(r"trumpIndices=\{trumpIndices\}", line))
+
     def test_tute_existing_code_pattern_is_current_state_match(self):
         path="frontend/src/pages/TutePage.tsx"
         p=self.fixture("tute",r"trumpIndices=\{trumpIndices\}",path,
-            current_state=[{"path":path,"line":351,"note":"passes trumpIndices only for styling"}])
+            current_state=[{"path":path,"line":self.tute_current_state_line(),"note":"passes trumpIndices only for styling"}])
         run,clean,suspect=self.run_checker([p],[build_one("tute")])
         self.assertEqual(run.returncode,0,run.stderr); self.assertEqual(clean,[])
         reasons=[r["reason"] for r in suspect[0]["reasons"]]
@@ -64,10 +69,14 @@ class GameImproveTests(unittest.TestCase):
         self.assertIn("pattern-matches-current-state",reasons)
 
     def test_tute_absent_trump_announcement_pattern_is_clean(self):
-        path="frontend/src/pages/TutePage.tsx"
-        p=self.fixture("tute",r"a11y\.trump|trump.*aria-label|aria-label.*[Tt]rump",path,
-            current_state=[{"path":path,"line":351,"note":"passes trumpIndices only for styling"}])
-        run,clean,suspect=self.run_checker([p],[build_one("tute")])
+        with tempfile.TemporaryDirectory(dir=ROOT) as td:
+            fixture_path=Path(td)/"TutePage.tsx"
+            fixture_path.write_text("export const trumpIndices = [];\n")
+            path=fixture_path.relative_to(ROOT).as_posix()
+            game={"game":"tute","page":path,"components":[],"hooks":[],"deep":[],"locales":[]}
+            p=self.fixture("tute",r"a11y\.trump|trump.*aria-label|aria-label.*[Tt]rump",path,
+                current_state=[{"path":path,"line":1,"note":"trump indices have no announcement label"}])
+            run,clean,suspect=self.run_checker([p],[game])
         self.assertEqual(run.returncode,0,run.stderr); self.assertEqual(len(clean),1); self.assertEqual(suspect,[])
 
     def test_pcre_noncapturing_group_and_digit_escape_match(self):

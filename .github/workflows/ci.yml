@@ -42,7 +42,7 @@ jobs:
       # checking the output catches that, so run them here.
       - name: Run hook tests
         run: |
-          set -e
+          set -eo pipefail
           found=0
           for t in .claude/hooks/*.test.sh .github/scripts/*.test.sh; do
             [ -e "$t" ] || continue
