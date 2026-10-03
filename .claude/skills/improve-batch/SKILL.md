@@ -35,7 +35,7 @@ Process **one issue fully (through merge) before starting the next**:
 
 - Merges serialize on `develop` anyway, and each new branch must start from the
   just-merged tip — so **re-sync `develop` between issues** or you branch stale.
-- Each issue's CI (esp. E2E ~15–20 min) is the real wall-clock cost; running
+- Each issue's CI (E2E is the longest job) is the real wall-clock cost; running
   many at once doesn't speed merges and multiplies flake reruns.
 
 So the throughput pattern is: implement issue N → push → **while its CI runs,
@@ -96,6 +96,6 @@ deferred for a decision.
 
 ## Pacing note
 
-A full batch is a long autonomous run (each issue ≈ implement + ~20 min CI +
+A full batch is a long autonomous run (each issue ≈ implement + a full CI run +
 review fixups). It's fine to leave it running; it serializes safely and can be
 resumed from the memory tally. The user can interrupt at any merged boundary.
