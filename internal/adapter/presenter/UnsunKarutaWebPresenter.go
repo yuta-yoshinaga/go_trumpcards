@@ -86,6 +86,21 @@ func (p *UnsunKarutaWebPresenter) buildBase(g interfaces.UnsunKarutaGame) *contr
 	resObj.CanDeclare = g.CanDeclare()
 	resObj.TeamTricks = intsOrEmptySlice(g.GetTeamTricks())
 	resObj.TeamScores = intsOrEmptySlice(g.GetTeamScores())
+	resObj.TeamCapturedTricks = make([][][]*controller.WebOutputCard, domain.UnsunKarutaTeamCnt)
+	for team := range resObj.TeamCapturedTricks {
+		resObj.TeamCapturedTricks[team] = make([][]*controller.WebOutputCard, 0)
+	}
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		player := g.GetPlayer(i)
+		team := domain.UnsunKarutaTeamOf(i)
+		for _, trick := range player.GetTricksTaken() {
+			cards := make([]*controller.WebOutputCard, 0, len(trick))
+			for _, card := range trick {
+				cards = append(cards, cardToOutputWithFace(card, unsunKarutaFace))
+			}
+			resObj.TeamCapturedTricks[team] = append(resObj.TeamCapturedTricks[team], cards)
+		}
+	}
 	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.Result = int(g.GetResult())
 	resObj.GameEndFlag = g.GetGameEndFlag()
@@ -140,9 +155,6 @@ func (p *UnsunKarutaWebPresenter) buildPlayersOutput(g interfaces.UnsunKarutaGam
 	out := make([]*controller.UnsunKarutaWebOutputPlayer, 0)
 	for i := 0; i < g.GetPlayerCnt(); i++ {
 		player := g.GetPlayer(i)
-		if player == nil {
-			continue
-		}
 		out = append(out, &controller.UnsunKarutaWebOutputPlayer{
 			ID:         i,
 			IsHuman:    player.GetIsHuman(),

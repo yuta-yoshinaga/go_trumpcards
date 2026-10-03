@@ -45,6 +45,8 @@
   "nextRound": "次のディール",
   "roundResult": {
     "title": "ディール結果",
+    "capturedTeam": "組{{team}}の獲得札",
+    "trickPoint": "トリック{{n}}: 1個",
     "tricks": "味方 {{a}} 個 / 相手 {{b}} 個",
     "winner": "組{{team}} の勝ち",
     "draw": "引き分け"
