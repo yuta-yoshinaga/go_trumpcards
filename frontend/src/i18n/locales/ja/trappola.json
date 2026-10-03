@@ -21,6 +21,8 @@
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
   "currentTrick": "現在のトリック",
+  "currentTrickPoints": "場札の得点: {{thirds}}/3点",
+  "resolvedTrickPoints": "チーム{{team}}がこのトリックで獲得: {{thirds}}/3点",
   "previousTrick": "前のトリック",
   "previousTrickEmpty": "このラウンドにはまだ前のトリックがありません",
   "previousTrickWinner": "{{name}} が獲得",

@@ -15,7 +15,7 @@ import (
 )
 
 func TestPigsTailWebController_Method(t *testing.T) {
-	mockOutput := `{"players":[],"circleCount":52,"centerTop":null,"centerCount":0,"currentTurn":0,"gameEndFlag":false,"loserIdx":-1,"lastDrawCard":null,"lastPenalty":false,"cpuActions":[],"humanAction":null,"message":""}`
+	mockOutput := `{"players":[],"circleCount":52,"centerTop":null,"centerHistory":[],"centerCount":0,"currentTurn":0,"gameEndFlag":false,"loserIdx":-1,"lastDrawCard":null,"lastPenalty":false,"cpuActions":[],"humanAction":null,"message":""}`
 	ptiMock := new(usecase.MockPigsTailInteractor)
 	ptiMock.On("Reset", mock.Anything).Return(mockOutput)
 	ptiMock.On("Action", 0).Return(mockOutput)
@@ -25,7 +25,7 @@ func TestPigsTailWebController_Method(t *testing.T) {
 	towc := controller.NewPigsTailWebController(factory)
 	defer towc.Stop()
 
-	qBody := `{"players":[],"circleCount":0,"centerTop":null,"centerCount":0,"currentTurn":0,"gameEndFlag":false,"loserIdx":-1,"lastDrawCard":null,"lastPenalty":false,"cpuActions":[],"humanAction":null,"message":"bye."}`
+	qBody := `{"players":[],"circleCount":0,"centerTop":null,"centerHistory":[],"centerCount":0,"currentTurn":0,"gameEndFlag":false,"loserIdx":-1,"lastDrawCard":null,"lastPenalty":false,"cpuActions":[],"humanAction":null,"message":"bye."}`
 
 	var jsonInput controller.PigsTailWebInput
 

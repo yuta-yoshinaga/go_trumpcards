@@ -83,6 +83,8 @@ export interface UnsunKarutaResponse extends BaseGameResponse {
   teamTricks: number[];
   /** Cumulative tricks per team across the match. */
   teamScores: number[];
+  /** Captured tricks by team; each trick is worth one ko. */
+  teamCapturedTricks: Card[][][];
   /** Seat that took the last trick, or -1. */
   lastTrickWinner: number;
   /** Match result from the human's perspective (0=none/draw, 1=win, 2=lose). */

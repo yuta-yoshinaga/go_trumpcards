@@ -64,6 +64,8 @@ type JulepeWebOutput struct {
 	DealerIdx        int                   `json:"dealerIdx"`
 	ActiveCount      int                   `json:"activeCount"`
 	CurrentTrick     []*WebOutputTrickCard `json:"currentTrick"`
+	LastTrick        []*WebOutputTrickCard `json:"lastTrick"`
+	LastTrickWinner  int                   `json:"lastTrickWinner"`
 	ValidPlays       []int                 `json:"validPlays"`
 	GameEndFlag      bool                  `json:"gameEndFlag"`
 	WinnerIdx        int                   `json:"winnerIdx"`
@@ -104,11 +106,13 @@ var NewJulepeWebController, NewJulepeWebControllerWithProvider = webControllerPa
 
 func newJulepeDefaultOutput(msg string) *JulepeWebOutput {
 	return &JulepeWebOutput{
-		Players:       make([]*JulepeWebOutputPlayer, 0),
-		CurrentTrick:  make([]*WebOutputTrickCard, 0),
-		ValidPlays:    make([]int, 0),
-		WinnerIdx:     -1,
-		WebOutputBase: WebOutputBase{Message: msg},
+		Players:         make([]*JulepeWebOutputPlayer, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
+		LastTrick:       make([]*WebOutputTrickCard, 0),
+		LastTrickWinner: -1,
+		ValidPlays:      make([]int, 0),
+		WinnerIdx:       -1,
+		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }
 

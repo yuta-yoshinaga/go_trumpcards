@@ -44,28 +44,30 @@ type QuadrilleWebOutputPlayer struct {
 
 // QuadrilleWebOutput カドリールのWebアウトプット
 type QuadrilleWebOutput struct {
-	Players          []*QuadrilleWebOutputPlayer    `json:"players"`
-	Phase            int                            `json:"phase"`
-	RoundNumber      int                            `json:"roundNumber"`
-	TrickNumber      int                            `json:"trickNumber"`
-	CurrentPlayerIdx int                            `json:"currentPlayerIdx"`
-	CurrentBidderIdx int                            `json:"currentBidderIdx"`
-	LeadPlayerIdx    int                            `json:"leadPlayerIdx"`
-	DealerIdx        int                            `json:"dealerIdx"`
-	ForehandIdx      int                            `json:"forehandIdx"`
-	QuadrilleIdx     int                            `json:"quadrilleIdx"`
-	WinningBid       int                            `json:"winningBid"`
-	TrumpSuit        int                            `json:"trumpSuit"`
-	CurrentTrick     []*WebOutputTrickCard          `json:"currentTrick"`
-	PlayerScores     [domain.QuadrillePlayerCnt]int `json:"playerScores"`
-	LastTrickWinner  int                            `json:"lastTrickWinner"`
-	Outcome          int                            `json:"outcome"`
-	Result           int                            `json:"result"`
-	PlayableIndices  []int                          `json:"playableIndices"`
-	GameEndFlag      bool                           `json:"gameEndFlag"`
-	WinnerPlayer     int                            `json:"winnerPlayer"`
-	IsHumanTurn      bool                           `json:"isHumanTurn"`
-	IsHumanBidTurn   bool                           `json:"isHumanBidTurn"`
+	Players          []*QuadrilleWebOutputPlayer     `json:"players"`
+	Phase            int                             `json:"phase"`
+	RoundNumber      int                             `json:"roundNumber"`
+	TrickNumber      int                             `json:"trickNumber"`
+	CurrentPlayerIdx int                             `json:"currentPlayerIdx"`
+	CurrentBidderIdx int                             `json:"currentBidderIdx"`
+	Bids             [domain.QuadrillePlayerCnt]int  `json:"bids"`
+	BidActed         [domain.QuadrillePlayerCnt]bool `json:"bidActed"`
+	LeadPlayerIdx    int                             `json:"leadPlayerIdx"`
+	DealerIdx        int                             `json:"dealerIdx"`
+	ForehandIdx      int                             `json:"forehandIdx"`
+	QuadrilleIdx     int                             `json:"quadrilleIdx"`
+	WinningBid       int                             `json:"winningBid"`
+	TrumpSuit        int                             `json:"trumpSuit"`
+	CurrentTrick     []*WebOutputTrickCard           `json:"currentTrick"`
+	PlayerScores     [domain.QuadrillePlayerCnt]int  `json:"playerScores"`
+	LastTrickWinner  int                             `json:"lastTrickWinner"`
+	Outcome          int                             `json:"outcome"`
+	Result           int                             `json:"result"`
+	PlayableIndices  []int                           `json:"playableIndices"`
+	GameEndFlag      bool                            `json:"gameEndFlag"`
+	WinnerPlayer     int                             `json:"winnerPlayer"`
+	IsHumanTurn      bool                            `json:"isHumanTurn"`
+	IsHumanBidTurn   bool                            `json:"isHumanBidTurn"`
 	// 王呼び。CalledKingSuit は呼ばれた王のスート (-1=未指名)、PartnerIdx は
 	// **その王が場に出るまで -1** (誰が味方かは伏せる)。RoiSeul は落札者が
 	// 王 4 枚を全部持っていた単独プレイ。

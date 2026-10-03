@@ -14,6 +14,3 @@ func (g *Madrasso) SetTrumpSuitForTest(suit int) { g.trumpSuit = suit }
 
 // MadrassoStrengthForTest は札位の強さを返す (テスト用)。
 func MadrassoStrengthForTest(value int) int { return madrassoStrength(value) }
-
-// MadrassoPointsForTest はカード点を返す (テスト用)。
-func MadrassoPointsForTest(value int) int { return madrassoPoints(value) }

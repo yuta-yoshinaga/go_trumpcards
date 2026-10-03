@@ -27,6 +27,8 @@ func setupTrappolaWebMock() *interfaces.MockTrappolaGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
+	m.On("GetCurrentTrickThirds").Return(0)
+	m.On("GetLastTrickThirds").Return(0)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.TrappolaPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)

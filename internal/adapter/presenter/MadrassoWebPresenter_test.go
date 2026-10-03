@@ -78,6 +78,26 @@ func TestMadrassoWebPresenter_Output(t *testing.T) {
 		// human cards visible, cpu hidden
 		assert.Len(t, resObj.Players[0].Cards, 1)
 		assert.Len(t, resObj.Players[1].Cards, 0)
+		assert.Equal(t, domain.MadrassoCardPoints(5), *resObj.Players[0].Cards[0].Points)
+	})
+
+	t.Run("points on hand trick and action log cards", func(t *testing.T) {
+		m, players := setupMadrassoWebMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
+		trickCard := domain.NewCard(domain.CardDesignHeart, 3, false)
+		m.On("GetCurrentTrick").Return([]*domain.TrickCard{{PlayerIdx: 0, Card: trickCard}})
+		logCard := domain.NewCard(domain.CardDesignDiamond, 12, false)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetActionLog")
+		m.On("GetActionLog").Return([]*domain.ActionLogEntry{{ActionType: "play", Cards: []*domain.Card{logCard}}})
+
+		var state controller.MadrassoWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &state))
+		assert.Equal(t, domain.MadrassoCardPoints(1), *state.Players[0].Cards[0].Points)
+		assert.Equal(t, domain.MadrassoCardPoints(3), *state.CurrentTrick[0].Card.Points)
+		var actionLog controller.ActionLogWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.ActionLogOutput(m)), &actionLog))
+		assert.Equal(t, domain.MadrassoCardPoints(12), *actionLog.Entries[0].Cards[0].Points)
 	})
 
 	t.Run("config values", func(t *testing.T) {

@@ -35,6 +35,7 @@ function makeState(overrides: Partial<IndianRummyResponse> = {}): IndianRummyRes
     currentPlayerIdx: 0,
     dealerIdx: 0,
     discardTop: { design: 'CLOVER', value: 7 },
+    discardPile: [{ design: 'CLOVER', value: 7 }],
     drawPileCount: 40,
     wildJoker: { design: 'DIAMOND', value: 5 },
     wildRank: 5,

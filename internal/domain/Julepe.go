@@ -133,6 +133,8 @@ type Julepe struct {
 	upCard *Card
 
 	currentTrick     []*TrickCard
+	lastTrick        []*TrickCard
+	lastTrickWinner  int
 	currentPlayerIdx int
 	leadPlayerIdx    int
 	dealerIdx        int
@@ -145,7 +147,7 @@ type Julepe struct {
 
 // NewJulepe コンストラクタ
 func NewJulepe(trumpCards *TrumpCards, players []*JulepePlayer, config JulepeConfig) *Julepe {
-	return &Julepe{trumpCards: trumpCards, players: players, config: config, winnerIdx: -1}
+	return &Julepe{trumpCards: trumpCards, players: players, config: config, winnerIdx: -1, lastTrickWinner: -1}
 }
 
 // NewDefaultJulepe 既定構成（人間 1 + CPU 3）のコンストラクタ
@@ -186,6 +188,8 @@ func (r *Julepe) dealRound() {
 	r.phase = JulepePhaseDecide
 	r.trickNumber = 0
 	r.currentTrick = nil
+	r.lastTrick = nil
+	r.lastTrickWinner = -1
 	for i, p := range r.players {
 		p.ResetRound()
 		// **beast は倍払い。** 前ラウンドで規定トリック数に届かなかった席。
@@ -427,6 +431,8 @@ func (r *Julepe) GetValidPlayIndices(playerIdx int) []int {
 // resolveTrick トリックを解決する
 func (r *Julepe) resolveTrick() {
 	winner := r.trickWinner()
+	r.lastTrick = append([]*TrickCard(nil), r.currentTrick...)
+	r.lastTrickWinner = winner
 	cards := make([]*Card, 0, len(r.currentTrick))
 	for _, tc := range r.currentTrick {
 		cards = append(cards, tc.Card)
@@ -733,6 +739,12 @@ func (r *Julepe) GetUpCard() *Card { return r.upCard }
 // GetCurrentTrick 現在のトリック
 func (r *Julepe) GetCurrentTrick() []*TrickCard { return r.currentTrick }
 
+// GetLastTrick returns the most recently completed trick.
+func (r *Julepe) GetLastTrick() []*TrickCard { return r.lastTrick }
+
+// GetLastTrickWinner returns the winner of the most recently completed trick, or -1.
+func (r *Julepe) GetLastTrickWinner() int { return r.lastTrickWinner }
+
 // GetCurrentPlayerIdx 現在の手番
 func (r *Julepe) GetCurrentPlayerIdx() int { return r.currentPlayerIdx }
 
@@ -803,6 +815,8 @@ type julepeJSON struct {
 	TrumpSuit        int               `json:"ts"`
 	UpCard           *Card             `json:"uc"`
 	CurrentTrick     []*TrickCard      `json:"ct"`
+	LastTrick        []*TrickCard      `json:"lt"`
+	LastTrickWinner  int               `json:"lw"`
 	CurrentPlayerIdx int               `json:"cp"`
 	LeadPlayerIdx    int               `json:"lp"`
 	DealerIdx        int               `json:"di"`
@@ -825,6 +839,8 @@ func (r *Julepe) MarshalJSON() ([]byte, error) {
 		TrumpSuit:        r.trumpSuit,
 		UpCard:           r.upCard,
 		CurrentTrick:     r.currentTrick,
+		LastTrick:        r.lastTrick,
+		LastTrickWinner:  r.lastTrickWinner,
 		CurrentPlayerIdx: r.currentPlayerIdx,
 		LeadPlayerIdx:    r.leadPlayerIdx,
 		DealerIdx:        r.dealerIdx,
@@ -895,6 +911,11 @@ func (r *Julepe) UnmarshalJSON(data []byte) error {
 	r.trumpSuit = j.TrumpSuit
 	r.upCard = j.UpCard
 	r.currentTrick = j.CurrentTrick
+	r.lastTrick = j.LastTrick
+	r.lastTrickWinner = j.LastTrickWinner
+	if len(j.LastTrick) == 0 {
+		r.lastTrickWinner = -1
+	}
 	r.currentPlayerIdx = j.CurrentPlayerIdx
 	r.leadPlayerIdx = j.LeadPlayerIdx
 	r.dealerIdx = j.DealerIdx

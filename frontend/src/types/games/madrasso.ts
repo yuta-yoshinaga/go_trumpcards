@@ -8,7 +8,7 @@ export interface MadrassoPlayerData {
   id: number;
   isHuman: boolean;
   cardCount: number;
-  cards: Card[];
+  cards: Array<Card & { points: number }>;
   trickCount: number;
   teamId: number;
 }
@@ -16,7 +16,7 @@ export interface MadrassoPlayerData {
 /** A card played in a Madrasso trick. */
 export interface MadrassoTrickCard {
   playerIdx: number;
-  card: Card;
+  card: Card & { points: number };
 }
 
 /** Madrasso game configuration. */

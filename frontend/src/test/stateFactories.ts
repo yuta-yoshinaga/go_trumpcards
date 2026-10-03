@@ -63,6 +63,7 @@ import type {
   OmbreResponse,
   PiedmonteseTarotResponse,
   PigResponse,
+  PigsTailResponse,
   PinochleResponse,
   PreferenceResponse,
   PrimeroResponse,
@@ -777,8 +778,8 @@ const baseTrappolaState: TrappolaResponse = {
       isHuman: true,
       cardCount: 9,
       cards: [
-        { design: 'SPADE' as const, value: 1 },
-        { design: 'DIAMOND' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1, points: 11 },
+        { design: 'DIAMOND' as const, value: 13, points: 4 },
       ],
       trickCount: 0,
       teamId: 0,
@@ -792,8 +793,10 @@ const baseTrappolaState: TrappolaResponse = {
   trickNumber: 1,
   currentPlayerIdx: 0,
   currentTrick: [],
+  currentTrickThirds: 0,
   lastTrick: [],
   lastTrickWinner: -1,
+  lastTrickThirds: 0,
   leadPlayerIdx: 0,
   teamScores: [0, 0],
   teamRoundThirds: [0, 0],
@@ -822,8 +825,8 @@ const baseMadrassoState: MadrassoResponse = {
       isHuman: true,
       cardCount: 10,
       cards: [
-        { design: 'SPADE' as const, value: 1 },
-        { design: 'DIAMOND' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1, points: 11 },
+        { design: 'DIAMOND' as const, value: 13, points: 4 },
       ],
       trickCount: 0,
       teamId: 0,
@@ -952,6 +955,8 @@ const baseSchafkopfState: SchafkopfResponse = {
   callableSuits: [],
   playableIndices: [0, 1],
   roundPickerPoints: 0,
+  roundPickerPointsTeamTotal: true,
+  pickerTargetPoints: 61,
   roundMultiplier: 1,
   roundPickerWon: false,
   gameEndFlag: false,
@@ -1768,6 +1773,8 @@ const baseQuadrilleState: QuadrilleResponse = {
   trickNumber: 1,
   currentPlayerIdx: 0,
   currentBidderIdx: 0,
+  bids: [0, 0, 0, 0],
+  bidActed: [false, false, false, false],
   leadPlayerIdx: 0,
   dealerIdx: 3,
   forehandIdx: 0,
@@ -5151,6 +5158,7 @@ const baseUnsunKarutaState: UnsunKarutaResponse = {
   currentTrick: [],
   teamTricks: [0, 0],
   teamScores: [0, 0],
+  teamCapturedTricks: [[], []],
   lastTrickWinner: -1,
   result: 0,
   playableIndices: [0, 1, 2, 3],
@@ -6042,6 +6050,26 @@ export function makePigState(overrides?: Partial<PigResponse>): PigResponse {
     winnerIdx: -1,
     message: '',
     config: { playerCnt: 4, cpuDifficulty: 1 },
+    ...overrides,
+  };
+}
+
+/** Creates a default Pig's Tail response. */
+export function makePigsTailState(overrides?: Partial<PigsTailResponse>): PigsTailResponse {
+  return {
+    players: Array.from({ length: 4 }, (_, id) => ({ id, isHuman: id === 0, cardCount: 0, cards: [] })),
+    circleCount: 52,
+    centerTop: null,
+    centerHistory: [],
+    centerCount: 0,
+    currentTurn: 0,
+    gameEndFlag: false,
+    loserIdx: -1,
+    lastDrawCard: null,
+    lastPenalty: false,
+    cpuActions: [],
+    humanAction: null,
+    message: '',
     ...overrides,
   };
 }

@@ -20,7 +20,7 @@ describe('formatMadrassoState', () => {
   it('renders the current trick', () => {
     const out = formatMadrassoState(
       makeMadrassoState({
-        currentTrick: [{ playerIdx: 1, card: { design: 'SPADE', value: 3 } }],
+        currentTrick: [{ playerIdx: 1, card: { design: 'SPADE', value: 3, points: 10 } }],
       }),
     );
     expect(out).toContain('trick:');

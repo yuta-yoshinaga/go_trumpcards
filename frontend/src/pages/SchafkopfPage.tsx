@@ -274,6 +274,15 @@ function SchafkopfPageContent() {
               <span>{t('contractLabel', { contract: contractLabel })}</span>
             </div>
 
+            {(isPlayPhase || isTrickEnd) && (
+              <div className="mb-2 text-center text-sm text-ds-text-muted" data-testid="schafkopf-round-points">
+                {t(state.roundPickerPointsTeamTotal ? 'roundProgress.pickerPoints' : 'roundProgress.pickerOnlyPoints', {
+                  points: state.roundPickerPoints,
+                  target: state.pickerTargetPoints,
+                })}
+              </div>
+            )}
+
             <div className={lgTwoColGrid}>
               {/* Left: play area */}
               <div>

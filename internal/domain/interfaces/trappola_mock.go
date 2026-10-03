@@ -102,6 +102,12 @@ func (_m *MockTrappolaGame) GetCurrentTrick() []*domain.TrickCard {
 	return ret.Get(0).([]*domain.TrickCard)
 }
 
+// GetCurrentTrickThirds モック
+func (_m *MockTrappolaGame) GetCurrentTrickThirds() int { ret := _m.Called(); return ret.Get(0).(int) }
+
+// GetLastTrickThirds モック
+func (_m *MockTrappolaGame) GetLastTrickThirds() int { ret := _m.Called(); return ret.Get(0).(int) }
+
 // GetLeadPlayerIdx モック
 func (_m *MockTrappolaGame) GetLeadPlayerIdx() int {
 	ret := _m.Called()

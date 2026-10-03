@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tapptarockApi } from '../api/gameApi';
+import enTappTarock from '../i18n/locales/en/tapptarock.json';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeTappTarockState } from '../test/stateFactories';
 import { TappTarockPage } from './TappTarockPage';
@@ -60,6 +61,12 @@ beforeEach(() => {
 });
 
 describe('TappTarockPage', () => {
+  it('explains the 16-card hand and the six-card talon exchange in English', () => {
+    expect(enTappTarock.tutorial.playerHand).toContain('16 cards');
+    expect(enTappTarock.tutorial.playerHand).toContain('six-card talon');
+    expect(enTappTarock.tutorial.playerHand).toContain('bury six');
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<TappTarockPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

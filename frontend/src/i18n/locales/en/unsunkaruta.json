@@ -45,6 +45,8 @@
   "nextRound": "Next deal",
   "roundResult": {
     "title": "Deal result",
+    "capturedTeam": "Team {{team}} captured cards",
+    "trickPoint": "Trick {{n}}: 1 ko",
     "tricks": "yours {{a}} / theirs {{b}}",
     "winner": "Team {{team}} wins",
     "draw": "Draw"

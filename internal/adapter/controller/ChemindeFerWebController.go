@@ -40,9 +40,10 @@ type ChemindeFerWebOutputPlayer struct {
 
 // ChemindeFerWebOutput シュマン・ド・フェールWebアウトプット
 type ChemindeFerWebOutput struct {
-	Players   []*ChemindeFerWebOutputPlayer `json:"players"`
-	Phase     int                           `json:"phase"`
-	BankerIdx int                           `json:"bankerIdx"`
+	Players         []*ChemindeFerWebOutputPlayer `json:"players"`
+	RoundNetHistory []ChemindeFerRoundNet         `json:"roundNetHistory"`
+	Phase           int                           `json:"phase"`
+	BankerIdx       int                           `json:"bankerIdx"`
 	// BetTurn は次に賭ける子の席 (-1: 賭けは終わっている)。
 	BetTurn        int `json:"betTurn"`
 	Stake          int `json:"stake"`
@@ -69,6 +70,12 @@ type ChemindeFerWebOutput struct {
 	GameEndFlag     bool                  `json:"gameEndFlag"`
 	Config          *ChemindeFerWebOutCfg `json:"config,omitempty"`
 	WebOutputBase
+}
+
+// ChemindeFerRoundNet はラウンド別の席ごとのチップ純増減。
+type ChemindeFerRoundNet struct {
+	RoundNumber int   `json:"roundNumber"`
+	Deltas      []int `json:"deltas"`
 }
 
 // ChemindeFerWebOutCfg はシュマン・ド・フェールの設定

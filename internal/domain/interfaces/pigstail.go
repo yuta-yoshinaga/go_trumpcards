@@ -39,6 +39,8 @@ type PigsTailGame interface {
 	GetCenter() []*domain.Card
 	// GetCenterTopCard 場札の一番上のカードを取得する
 	GetCenterTopCard() *domain.Card
+	// GetCenterHistory 直近6枚の場札トップを古い順に取得する
+	GetCenterHistory() []*domain.Card
 	// GetConfig ゲーム設定を取得する
 	GetConfig() domain.PigsTailConfig
 }

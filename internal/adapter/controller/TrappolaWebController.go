@@ -35,21 +35,23 @@ type TrappolaWebOutputPlayer struct {
 
 // TrappolaWebOutput トラッポラのWebアウトプット
 type TrappolaWebOutput struct {
-	Players          []*TrappolaWebOutputPlayer `json:"players"`
-	Phase            int                        `json:"phase"`
-	RoundNumber      int                        `json:"roundNumber"`
-	TrickNumber      int                        `json:"trickNumber"`
-	CurrentPlayerIdx int                        `json:"currentPlayerIdx"`
-	CurrentTrick     []*WebOutputTrickCard      `json:"currentTrick"`
-	LastTrick        []*WebOutputTrickCard      `json:"lastTrick"`
-	LastTrickWinner  int                        `json:"lastTrickWinner"`
-	LeadPlayerIdx    int                        `json:"leadPlayerIdx"`
-	TeamScores       []int                      `json:"teamScores"`
-	TeamRoundThirds  []int                      `json:"teamRoundThirds"`
-	PlayableIndices  []int                      `json:"playableIndices"`
-	GameEndFlag      bool                       `json:"gameEndFlag"`
-	WinnerTeam       int                        `json:"winnerTeam"`
-	Hint             *WebOutputCardHint         `json:"hint,omitempty"`
+	Players            []*TrappolaWebOutputPlayer `json:"players"`
+	Phase              int                        `json:"phase"`
+	RoundNumber        int                        `json:"roundNumber"`
+	TrickNumber        int                        `json:"trickNumber"`
+	CurrentPlayerIdx   int                        `json:"currentPlayerIdx"`
+	CurrentTrick       []*WebOutputTrickCard      `json:"currentTrick"`
+	LastTrick          []*WebOutputTrickCard      `json:"lastTrick"`
+	LastTrickWinner    int                        `json:"lastTrickWinner"`
+	CurrentTrickThirds int                        `json:"currentTrickThirds"`
+	LastTrickThirds    int                        `json:"lastTrickThirds"`
+	LeadPlayerIdx      int                        `json:"leadPlayerIdx"`
+	TeamScores         []int                      `json:"teamScores"`
+	TeamRoundThirds    []int                      `json:"teamRoundThirds"`
+	PlayableIndices    []int                      `json:"playableIndices"`
+	GameEndFlag        bool                       `json:"gameEndFlag"`
+	WinnerTeam         int                        `json:"winnerTeam"`
+	Hint               *WebOutputCardHint         `json:"hint,omitempty"`
 	WebOutputBase
 	Config TrappolaWebOutputConfig `json:"config"`
 }

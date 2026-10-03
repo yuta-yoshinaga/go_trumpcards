@@ -24,6 +24,9 @@ func (pt *PigsTail) SetLastPenalty(v bool) { pt.lastPenalty = v }
 // SetCenter 場札設定（テスト用）
 func (pt *PigsTail) SetCenter(cards []*Card) { pt.center = cards }
 
+// SetCenterHistory 履歴設定（テスト用）
+func (pt *PigsTail) SetCenterHistory(cards []*Card) { pt.centerHistory = cards }
+
 // SetCpuActions CPU行動設定（テスト用）
 func (pt *PigsTail) SetCpuActions(actions []*PigsTailCpuAction) { pt.cpuActions = actions }
 

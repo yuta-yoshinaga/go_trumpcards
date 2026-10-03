@@ -146,8 +146,8 @@ describe('VideoPokerGameContent', () => {
       hand: [card('SPADE', 2), ...drawPhaseState.hand.slice(1)],
     };
     mockExec.mockResolvedValue(wildHand);
-    await i18n.changeLanguage('en');
     try {
+      await i18n.changeLanguage('en');
       renderContent('deuceswild');
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
       const firstCard = screen.getAllByRole('button').find((button) => button.getAttribute('aria-pressed') !== null);
@@ -249,6 +249,19 @@ describe('VideoPokerGameContent', () => {
     mockExec.mockResolvedValue({ ...resultPhaseWin, betAmount: 5, payout: 5 });
     renderContent();
     await waitFor(() => expect(screen.getByTestId('vp-net-change')).toHaveTextContent('+0'));
+  });
+
+  it('translates Joker Poker net change and keeps its sign in Japanese and English', async () => {
+    mockExec.mockResolvedValue({ ...resultPhaseWin, variantName: 'jokerpoker' });
+    renderContent('jokerpoker');
+    await waitFor(() => expect(screen.getByTestId('vp-net-change')).toHaveTextContent('純増減: +4'));
+
+    try {
+      await i18n.changeLanguage('en');
+      expect(screen.getByTestId('vp-net-change')).toHaveTextContent('Net change: +4');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('re-announces identical consecutive hand results', async () => {

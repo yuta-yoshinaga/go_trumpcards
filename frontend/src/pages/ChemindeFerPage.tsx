@@ -239,6 +239,26 @@ function ChemindeFerPageContent() {
               </div>
             )}
 
+            <section aria-label={t('roundHistory.title')} data-testid="cdf-round-history" className="mb-3">
+              <h2 className="text-ds-text-primary text-sm font-bold">{t('roundHistory.title')}</h2>
+              {state.roundNetHistory.map((round) => (
+                <div key={round.roundNumber} className="rounded border border-ds-border px-2 py-1 text-xs mt-1">
+                  <span className="text-ds-text-primary">{t('roundHistory.round', { n: round.roundNumber })}</span>
+                  <ul className="flex flex-wrap gap-x-3 text-ds-text-muted">
+                    {state.players.map((player) => {
+                      const delta = round.deltas[player.id];
+                      return (
+                        <li key={player.id}>
+                          {player.isHuman ? t('label.you') : t('label.cpu', { idx: player.id })}:{' '}
+                          {delta > 0 ? `+${delta}` : delta}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </section>
+
             {/* **卓の結果と自分の損益は別の情報** (#5774)。banker/punter/tie だけ
                 では、自分の賭けが勝ったのか負けたのかはチップの数字を前後で
                 見比べるしかなかった。 */}

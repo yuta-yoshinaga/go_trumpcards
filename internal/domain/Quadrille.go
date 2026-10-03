@@ -1399,6 +1399,12 @@ func (g *Quadrille) SetTrumpSuit(s int) { g.trumpSuit = s }
 // GetCurrentBidderIdx 現在のビッド手番インデックス取得
 func (g *Quadrille) GetCurrentBidderIdx() int { return g.currentBidderIdx }
 
+// GetBids returns each seat's declaration (0=pass, 1=entrar, 2=solo).
+func (g *Quadrille) GetBids() [QuadrillePlayerCnt]QuadrilleBid { return g.bids }
+
+// GetBidActed returns whether each seat has declared during the current auction.
+func (g *Quadrille) GetBidActed() [QuadrillePlayerCnt]bool { return g.bidActed }
+
 // GetPlayerScores プレイヤー別累積点取得
 func (g *Quadrille) GetPlayerScores() [QuadrillePlayerCnt]int { return g.playerScores }
 

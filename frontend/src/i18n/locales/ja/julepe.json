@@ -25,6 +25,8 @@
     "undecided": "参加するか降りるかを選んでください。未決定: {{count}}人。"
   },
   "currentTrick": "現在のトリック",
+  "lastTrick": "直前のトリック",
+  "lastTrickWinner": "勝者: {{name}}",
   "actions": {
     "playIn": "参加する",
     "passOut": "降りる",

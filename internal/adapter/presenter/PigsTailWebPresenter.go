@@ -16,6 +16,7 @@ func (pwp *PigsTailWebPresenter) Output(pt interfaces.PigsTailGame, lastErr erro
 	resObj.Players = make([]*controller.PigsTailWebOutputPlayer, 0)
 	resObj.CircleCount = pt.GetCircleCount()
 	resObj.CenterTop = cardToOutput(pt.GetCenterTopCard())
+	resObj.CenterHistory = cardsToOutputOrEmpty(pt.GetCenterHistory())
 	resObj.CenterCount = len(pt.GetCenter())
 	resObj.CurrentTurn = pt.GetCurrentTurn()
 	resObj.GameEndFlag = pt.GetGameEndFlag()

@@ -40,9 +40,6 @@ function centerCardLabel(card: Card): string {
   return `${isSuitDesign(card.design) ? suitSymbol(card.design) : '?'}${valueName(card.value)}`;
 }
 
-/** Max number of recent center-pile tops kept in the client-side tail strip. */
-const CENTER_HISTORY_MAX = 6;
-
 /** Default participant count (1 human + 3 CPU). Mirrors the domain default. */
 const PIGTAIL_DEFAULT_PLAYER_COUNT = 4;
 
@@ -134,10 +131,6 @@ function PigsTailPageContent() {
   // new lastDrawCard. We key on centerCount+circleCount to detect fresh draws,
   // not just spurious re-renders.
   const [penaltyFlash, setPenaltyFlash] = useState(0);
-  // Best-effort recent-center strip: the API exposes no history, so we
-  // accumulate each new center top as it appears and reset when the pile is
-  // collected (centerCount drops to 0, e.g. after a penalty).
-  const [centerHistory, setCenterHistory] = useState<Card[]>([]);
   const prevDrawSigRef = useRef<string>('');
   useEffect(() => {
     if (!state) return;
@@ -146,13 +139,6 @@ function PigsTailPageContent() {
       if (state.lastPenalty) {
         setPenaltyFlash(Date.now());
       }
-      const top = state.centerTop;
-      setCenterHistory((prev) => {
-        if (state.centerCount === 0 || !top) return [];
-        const last = prev[prev.length - 1];
-        if (last && last.design === top.design && last.value === top.value) return prev;
-        return [...prev, top].slice(-CENTER_HISTORY_MAX);
-      });
     }
     prevDrawSigRef.current = sig;
   }, [state]);
@@ -243,15 +229,15 @@ function PigsTailPageContent() {
                 >
                   {state.centerTop ? centerCardLabel(state.centerTop) : '-'}
                 </div>
-                {centerHistory.length > 0 && (
+                {state.centerHistory.length > 0 && (
                   <div className="mt-1.5">
                     <div className="text-[10px] text-ds-text-muted mb-0.5">{t('label.recentCenter')}</div>
                     <div className="flex items-center justify-center gap-1" data-testid="pt-center-history">
-                      {centerHistory.map((c, i) => (
+                      {state.centerHistory.map((c, i) => (
                         <span
                           key={`${c.design}-${c.value}-${i}`}
                           className={`px-1 py-0.5 rounded text-xs font-semibold ${
-                            i === centerHistory.length - 1
+                            i === state.centerHistory.length - 1
                               ? 'bg-ds-warning/50 text-white'
                               : 'bg-black/20 text-ds-text-muted'
                           }`}

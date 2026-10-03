@@ -293,15 +293,29 @@ function IndianRummyPageContent() {
                   </div>
                 )}
 
-                {/* Discard pile top */}
-                {state.discardTop && (
-                  <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
-                    <AnimatedCard card={state.discardTop} width={cardWidth} />
-                    <div className="text-ds-text-muted text-sm">
-                      <div>{t('discardTop')}</div>
+                {/* Discard history is ordered oldest to newest; the last card is the top. */}
+                <div data-testid="indianrummy-discard-history">
+                  {state.discardPile.length > 0 && (
+                    <div className="my-3 p-3 rounded bg-black/40">
+                      <div className="text-ds-text-muted text-sm mb-2">{t('discardHistory')}</div>
+                      <div className="flex flex-wrap gap-2 items-end">
+                        {state.discardPile.map((card, idx) => {
+                          const isLatest = idx === state.discardPile.length - 1;
+                          return (
+                            <div
+                              key={`discard-${card.design}-${card.value}-${idx}`}
+                              className={`relative ${isLatest ? 'ring-2 ring-ds-accent rounded-lg' : ''}`}
+                              data-testid={isLatest ? 'indianrummy-discard-latest' : undefined}
+                            >
+                              <AnimatedCard card={card} width={cardWidth} />
+                              {isLatest && <span className="sr-only">{t('discardLatest')}</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
 
               {/* Right: info sidebar */}
