@@ -100,10 +100,12 @@ func assertCitadelCharacterization(t *testing.T, name string, hint *CitadelHint,
 	case "stalemate":
 		require.Error(t, err)
 		assert.EqualError(t, err, "cannot place card on tableau")
-		assert.NotNil(t, hint)
+		// Swapping a lone K into an empty column only relabels the columns,
+		// so it is no hint and the position is a stalemate (#10520).
+		assert.Nil(t, hint)
 		assert.True(t, strings.Contains(moveJSON, `"mc":0`))
 		assert.True(t, strings.Contains(autoJSON, `"a":"autocomplete"`))
-		assert.False(t, stale)
+		assert.True(t, stale)
 		assert.False(t, ended)
 	case "one move clear":
 		require.NoError(t, err)
@@ -270,10 +272,12 @@ func assertFortressCharacterization(t *testing.T, name string, hint *FortressHin
 	case "stalemate":
 		require.Error(t, err)
 		assert.EqualError(t, err, "cannot place card on tableau")
-		assert.NotNil(t, hint)
+		// Swapping a lone K into an empty column only relabels the columns,
+		// so it is no hint and the position is a stalemate (#10520).
+		assert.Nil(t, hint)
 		assert.True(t, strings.Contains(moveJSON, "\"mc\":0"))
 		assert.True(t, strings.Contains(autoJSON, "\"a\":\"autocomplete\""))
-		assert.False(t, stale)
+		assert.True(t, stale)
 		assert.False(t, ended)
 	case "one move clear":
 		require.NoError(t, err)
@@ -307,15 +311,19 @@ func assertSomersetCharacterization(t *testing.T, name string, hint *SomersetHin
 		assert.Equal(t, &SomersetHint{FromCol: 0, CardIndex: 0, ToZone: "foundation", ToCol: 2}, hint)
 		assert.True(t, strings.Contains(moveJSON, "\"mc\":1"))
 		assert.True(t, strings.Contains(autoJSON, "\"mc\":1"))
-		assert.False(t, stale)
+		// Only the lone 3 is left beside empty columns: moving it just relabels
+		// the columns, so the position is a stalemate (#10520).
+		assert.True(t, stale)
 		assert.False(t, ended)
 	case "stalemate":
 		require.Error(t, err)
 		assert.EqualError(t, err, "cannot place card on tableau")
-		assert.NotNil(t, hint)
+		// Swapping a lone K into an empty column only relabels the columns,
+		// so it is no hint and the position is a stalemate (#10520).
+		assert.Nil(t, hint)
 		assert.True(t, strings.Contains(moveJSON, "\"mc\":0"))
 		assert.True(t, strings.Contains(autoJSON, "\"a\":\"autocomplete\""))
-		assert.False(t, stale)
+		assert.True(t, stale)
 		assert.False(t, ended)
 	case "one move clear":
 		require.NoError(t, err)
