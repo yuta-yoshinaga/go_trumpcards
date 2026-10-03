@@ -115,7 +115,7 @@ func TestConquianInteractor_Actions(t *testing.T) {
 		gameMock := cqGameMockPlayable()
 		gameMock.On("PlayerMeldWithTargets", mock.Anything, mock.Anything).Return(nil)
 		ci := usecase.NewConquianInteractor(gameMock, pMock)
-		assert.Equal(t, cqMockOut, ci.Meld([][]int{{0, 1, 2}}))
+		assert.Equal(t, cqMockOut, ci.MeldWithTargets([][]int{{0, 1, 2}}, nil))
 		gameMock.AssertCalled(t, "PlayerMeldWithTargets", [][]int{{0, 1, 2}}, []int(nil))
 	})
 	t.Run("Meld error", func(t *testing.T) {
@@ -123,7 +123,7 @@ func TestConquianInteractor_Actions(t *testing.T) {
 		gameMock := cqGameMockPlayable()
 		gameMock.On("PlayerMeldWithTargets", mock.Anything, mock.Anything).Return(errors.New("boom"))
 		ci := usecase.NewConquianInteractor(gameMock, pMock)
-		assert.Equal(t, cqMockOut, ci.Meld(nil))
+		assert.Equal(t, cqMockOut, ci.MeldWithTargets(nil, nil))
 	})
 	t.Run("Discard success", func(t *testing.T) {
 		pMock := cqNewPresenterMock()

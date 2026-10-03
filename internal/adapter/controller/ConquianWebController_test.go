@@ -37,7 +37,6 @@ func TestConquianWebController_Method(t *testing.T) {
 	siMock.On("ResetWithConfig", domain.DefaultConquianConfig()).Return(mockOutput)
 	siMock.On("DrawFromStock").Return(mockOutput)
 	siMock.On("DrawFromDiscard").Return(mockOutput)
-	siMock.On("Meld", mock.Anything).Return(mockOutput)
 	siMock.On("MeldWithTargets", mock.Anything, mock.Anything).Return(mockOutput)
 	siMock.On("Discard", 3).Return(mockOutput)
 	siMock.On("NextRound").Return(mockOutput)
