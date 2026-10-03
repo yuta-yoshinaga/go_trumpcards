@@ -3,6 +3,7 @@ import { pokerApi } from '../api/gameApi';
 import type { PokerOdds } from '../types/card';
 import { PokerPhase } from '../types/phases';
 import { toggleArrayItem } from '../utils/arrayUtils';
+import { describeApiFailure } from '../utils/describeApiFailure';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 
@@ -62,7 +63,7 @@ export function usePokerGame() {
         })
         .catch((err) => {
           if (gen !== oddsGenRef.current) return;
-          setOddsError('oddsFetchFailed');
+          setOddsError(describeApiFailure(err).message);
           console.error('Poker odds fetch error:', err);
         });
     }, 300);

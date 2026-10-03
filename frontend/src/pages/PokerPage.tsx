@@ -470,7 +470,7 @@ function PokerPageContent() {
                 className={`${badgeError} mb-2 flex items-center justify-between gap-2`}
                 data-testid="odds-error"
               >
-                <span>{t('oddsFetchFailed')}</span>
+                <span>{oddsError}</span>
                 <button
                   type="button"
                   onClick={retryOdds}

@@ -18,7 +18,6 @@
   "standLabel": "スタンド",
   "standHint": "交換せず今の手札で勝負します",
   "drawOdds": "ドローオッズ:",
-  "oddsFetchFailed": "オッズの取得に失敗しました。",
   "oddsRetry": "再試行",
   "cpuExchange": "CPU交換:",
   "cpuExchangeEntry": "Player {{idx}}: {{count}}枚交換",

@@ -5,6 +5,7 @@ import { useOptionalSound } from '../providers/SoundProvider';
 /** Props for {@link ErrorAlert}. */
 export interface ErrorAlertProps {
   message: string | null;
+  /** Hide retry only when retryable is false; plain callbacks always show it. */
   onRetry?: (() => void) & { retryable?: boolean };
 }
 

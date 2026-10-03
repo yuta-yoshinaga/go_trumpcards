@@ -429,6 +429,20 @@ export const workerUrl: Record<string, string> = {
   tongits: WORKER_EXTRA5,
 };
 
+/** HTTP failure returned by a game API, including an optional server diagnostic. */
+export class ApiError extends Error {
+  readonly status: number;
+  /** Kept for diagnostics; never displayed in the UI. */
+  readonly serverMessage?: string;
+
+  constructor(status: number, serverMessage?: string) {
+    super(`HTTP error: ${status}`);
+    this.name = 'ApiError';
+    this.status = status;
+    this.serverMessage = serverMessage;
+  }
+}
+
 export async function postJson<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, {
     method: 'POST',
@@ -453,19 +467,6 @@ export async function postJson<T>(url: string, body: unknown): Promise<T> {
     throw new ApiError(res.status, serverMessage);
   }
   return res.json() as Promise<T>;
-}
-
-/** HTTP failure returned by a game API, including an optional server diagnostic. */
-export class ApiError extends Error {
-  readonly status: number;
-  readonly serverMessage?: string;
-
-  constructor(status: number, serverMessage?: string) {
-    super(`HTTP error: ${status}`);
-    this.name = 'ApiError';
-    this.status = status;
-    this.serverMessage = serverMessage;
-  }
 }
 
 export function gameExec<T>(game: string, body: Record<string, unknown>): Promise<T> {

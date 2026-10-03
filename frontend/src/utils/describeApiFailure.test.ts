@@ -17,6 +17,13 @@ describe('describeApiFailure', () => {
     });
   });
 
+  it.each([408, 429])('treats HTTP %i as a retryable network failure', (status) => {
+    expect(describeApiFailure(new ApiError(status))).toEqual({
+      message: '通信エラーが発生しました。もう一度お試しください。',
+      retryable: true,
+    });
+  });
+
   it('describes server failures with retry', () => {
     expect(describeApiFailure(new ApiError(503))).toEqual({
       message: 'サーバでエラーが発生しました。解決しない場合は新しいゲームを始めてください。',
