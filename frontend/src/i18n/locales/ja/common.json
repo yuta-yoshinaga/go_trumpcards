@@ -1071,6 +1071,8 @@
     "blinds": "SB/BB:",
     "dealer": "ディーラー:",
     "networkError": "通信エラーが発生しました。もう一度お試しください。",
+    "requestRejected": "この操作は受け付けられませんでした。",
+    "serverError": "サーバでエラーが発生しました。解決しない場合は新しいゲームを始めてください。",
     "chipsWon": "+{{amount}}チップ",
     "netChange": "差引 {{amount}} チップ",
     "kicker": "キッカー: {{kickers}}",

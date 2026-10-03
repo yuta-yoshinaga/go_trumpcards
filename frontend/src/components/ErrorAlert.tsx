@@ -5,7 +5,8 @@ import { useOptionalSound } from '../providers/SoundProvider';
 /** Props for {@link ErrorAlert}. */
 export interface ErrorAlertProps {
   message: string | null;
-  onRetry?: () => void;
+  /** Hide retry only when retryable is false; plain callbacks always show it. */
+  onRetry?: (() => void) & { retryable?: boolean };
 }
 
 /** Renders an error alert banner with optional retry button, hidden when message is null. */
@@ -34,7 +35,7 @@ export function ErrorAlert({ message, onRetry }: ErrorAlertProps) {
       className="bg-ds-error text-white text-center px-4 py-2 text-sm font-bold mb-2 rounded-lg flex items-center justify-center gap-2"
     >
       <span>{message}</span>
-      {onRetry && (
+      {onRetry && onRetry.retryable !== false && (
         <button
           type="button"
           onClick={onRetry}

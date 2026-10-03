@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pokerApi } from '../api/gameApi';
+import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import type { PokerResponse } from '../types/card';
 import { PokerPhase } from '../types/phases';
@@ -288,7 +289,7 @@ describe('usePokerGame', () => {
       vi.advanceTimersByTime(300);
     });
     vi.useRealTimers();
-    await waitFor(() => expect(result.current.oddsError).toBe('oddsFetchFailed'));
+    await waitFor(() => expect(result.current.oddsError).toBe(NETWORK_ERROR_MESSAGE()));
     expect(result.current.odds).toBeNull();
 
     // Retry succeeds → error cleared

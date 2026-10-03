@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { describeApiFailure } from '../utils/describeApiFailure';
 import { useAutoCompleteState } from './useAutoCompleteState';
 import { useGameApi } from './useGameApi';
 import { useIsMounted } from './useIsMounted';
@@ -126,9 +126,9 @@ export function useSolitaireGameBase<TState, TArgs extends unknown[], THint, THi
       const value = selectHint ? selectHint(res) : (res as unknown as { hint?: THint | null }).hint;
       setHint(value ?? null);
       setHintError(null);
-    } catch {
+    } catch (error) {
       if (!isMounted()) return;
-      setHintError(NETWORK_ERROR_MESSAGE());
+      setHintError(describeApiFailure(error).message);
     }
   }, [isMounted]);
 

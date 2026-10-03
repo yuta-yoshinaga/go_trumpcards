@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { pinochleApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { PinochleConfig } from '../types/card';
+import { describeApiFailure } from '../utils/describeApiFailure';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
 import { useIsMounted } from './useIsMounted';
@@ -111,9 +111,9 @@ export function usePinochleGame() {
       const hint = res.hint as PinochleHint | undefined;
       setHint(hint?.reason ? hint : null);
       setHintError(null);
-    } catch {
+    } catch (error) {
       if (!isMounted()) return;
-      setHintError(NETWORK_ERROR_MESSAGE());
+      setHintError(describeApiFailure(error).message);
     } finally {
       if (isMounted()) setHintLoading(false);
     }
