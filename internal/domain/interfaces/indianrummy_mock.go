@@ -45,6 +45,12 @@ func (m *MockIndianRummyGame) GetDealerIdx() int        { return m.Called().Int(
 func (m *MockIndianRummyGame) GetDiscardTop() *domain.Card {
 	return m.Called().Get(0).(*domain.Card)
 }
+func (m *MockIndianRummyGame) GetDiscardPile() []*domain.Card {
+	if val, ok := m.Called().Get(0).([]*domain.Card); ok {
+		return val
+	}
+	return nil
+}
 func (m *MockIndianRummyGame) GetDrawPileCount() int { return m.Called().Int(0) }
 func (m *MockIndianRummyGame) GetWildJoker() *domain.Card {
 	return m.Called().Get(0).(*domain.Card)

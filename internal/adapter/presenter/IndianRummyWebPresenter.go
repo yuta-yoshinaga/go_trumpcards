@@ -42,6 +42,7 @@ func (p *IndianRummyWebPresenter) Output(g interfaces.IndianRummyGame, lastErr e
 	if top := g.GetDiscardTop(); top != nil {
 		resObj.DiscardTop = cardToOutput(top)
 	}
+	resObj.DiscardPile = cardsToOutputOrEmpty(g.GetDiscardPile())
 	if wj := g.GetWildJoker(); wj != nil {
 		resObj.WildJoker = cardToOutput(wj)
 	}

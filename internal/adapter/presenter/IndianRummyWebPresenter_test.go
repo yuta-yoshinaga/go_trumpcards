@@ -28,6 +28,10 @@ func setupIndianRummyWebMock(phase domain.IndianRummyPhase, gameEnd bool, curren
 	m.On("GetDrawPileCount").Return(60)
 	m.On("GetDealerIdx").Return(0)
 	m.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignHeart, 7, false))
+	m.On("GetDiscardPile").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 3, false),
+		domain.NewCard(domain.CardDesignHeart, 7, false),
+	})
 	m.On("GetWildJoker").Return(domain.NewCard(domain.CardDesignDiamond, 9, false))
 	m.On("GetWildRank").Return(9)
 	m.On("GetGameEndFlag").Return(gameEnd)
@@ -82,6 +86,9 @@ func TestIndianRummyWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 1, out.RoundNumber)
 		assert.Equal(t, 3, out.TargetRounds)
 		assert.Equal(t, 9, out.WildRank)
+		require.Len(t, out.DiscardPile, 2)
+		assert.Equal(t, 3, out.DiscardPile[0].Value)
+		assert.Equal(t, 7, out.DiscardPile[1].Value)
 		assert.NotNil(t, out.WildJoker)
 		assert.Equal(t, "indianrummy.drawPhase", out.MessageCode)
 	})

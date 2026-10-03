@@ -46,6 +46,7 @@ type IndianRummyWebOutput struct {
 	CurrentPlayerIdx   int                           `json:"currentPlayerIdx"`
 	DealerIdx          int                           `json:"dealerIdx"`
 	DiscardTop         *WebOutputCard                `json:"discardTop"`
+	DiscardPile        []*WebOutputCard              `json:"discardPile"`
 	DrawPileCount      int                           `json:"drawPileCount"`
 	WildJoker          *WebOutputCard                `json:"wildJoker"`
 	WildRank           int                           `json:"wildRank"`
