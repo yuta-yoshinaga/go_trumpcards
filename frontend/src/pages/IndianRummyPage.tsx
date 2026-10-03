@@ -303,10 +303,8 @@ function IndianRummyPageContent() {
                           const isLatest = idx === state.discardPile.length - 1;
                           return (
                             <div
-                              role="img"
                               key={`discard-${card.design}-${card.value}-${idx}`}
                               className={`relative ${isLatest ? 'ring-2 ring-ds-accent rounded-lg' : ''}`}
-                              aria-label={isLatest ? `${cardAlt(card)} ${t('discardLatest')}` : cardAlt(card)}
                               data-testid={isLatest ? 'indianrummy-discard-latest' : undefined}
                             >
                               <AnimatedCard card={card} width={cardWidth} />

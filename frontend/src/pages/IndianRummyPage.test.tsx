@@ -213,7 +213,10 @@ describe('IndianRummyPage', () => {
     const history = screen.getByTestId('indianrummy-discard-history');
     expect(history).toHaveTextContent('捨て札の履歴（古い順）');
     expect(history.querySelectorAll('img')).toHaveLength(2);
-    expect(screen.getByTestId('indianrummy-discard-latest')).toHaveAccessibleName('♥ 7 最新');
+    expect(screen.getByRole('img', { name: '♣ 5' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '♥ 7' })).toBeInTheDocument();
+    expect(screen.getAllByRole('img', { name: '♥ 7' })).toHaveLength(1);
+    expect(screen.getByTestId('indianrummy-discard-latest')).toHaveTextContent('最新');
   });
 
   it('keeps the discard history area empty without breaking when there are no discards', async () => {
