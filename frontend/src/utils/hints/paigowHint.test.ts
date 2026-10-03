@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { makePaiGowState } from '../../test/stateFactories';
 import type { Card, PaiGowResponse } from '../../types/card';
 import { PaiGowPhase } from '../../types/phases';
 import { getPaiGowHint } from './paigowHint';
@@ -20,27 +21,7 @@ const PLAIN_HAND: Card[] = [
 const JOKER_HAND: Card[] = [card('JOKER', 0), ...PLAIN_HAND.slice(1)];
 
 function base(overrides: Partial<PaiGowResponse> = {}) {
-  return {
-    playerCards: PLAIN_HAND,
-    dealerCards: [],
-    playerHighHand: [],
-    playerLowHand: [],
-    dealerHighHand: [],
-    dealerLowHand: [],
-    phase: PaiGowPhase.SET_HANDS,
-    chips: 1000,
-    bet: 10,
-    result: 0,
-    highHandResult: 0,
-    lowHandResult: 0,
-    payout: 0,
-    commission: 0,
-    playerHighRank: 0,
-    playerLowRank: 0,
-    dealerHighRank: 0,
-    dealerLowRank: 0,
-    ...overrides,
-  } as PaiGowResponse;
+  return makePaiGowState({ playerCards: PLAIN_HAND, phase: PaiGowPhase.SET_HANDS, bet: 10, ...overrides });
 }
 
 describe('getPaiGowHint', () => {
@@ -57,21 +38,21 @@ describe('getPaiGowHint', () => {
     expect(getPaiGowHint(base({ phase: PaiGowPhase.END }))).toBeNull();
   });
 
-  it('points at the auto-split button when the page can compute one', () => {
-    const hint = getPaiGowHint(base());
+  it('points at the auto-split button when the server supplies a split', () => {
+    const hint = getPaiGowHint(base({ hint: { lowIdx0: 0, lowIdx1: 1, lowIsPair: false, reason: 'house_way' } }));
     expect(hint?.targetAction).toBe('autoSet');
     expect(hint?.reason).toBe('frontendHint.paigowAutoSplit');
   });
 
-  it('explains the rule instead when the joker disables the auto split', () => {
-    // ジョーカー入りでは `paiGowAutoSplit` が null を返し、A キーのボタンも無効。
-    // ここで自動分割を勧めると、押しても何も起きないボタンを指すことになる。
-    const hint = getPaiGowHint(base({ playerCards: JOKER_HAND }));
-    expect(hint?.reason).toBe('frontendHint.paigowSplitByHand');
+  it('points at auto-split for joker hands when the server supplies a split', () => {
+    const hint = getPaiGowHint(
+      base({ playerCards: JOKER_HAND, hint: { lowIdx0: 1, lowIdx1: 2, lowIsPair: false, reason: 'house_way' } }),
+    );
+    expect(hint?.reason).toBe('frontendHint.paigowAutoSplit');
   });
 
-  it('explains the rule when fewer than seven cards have been dealt', () => {
-    // 枚数が揃っていないときも自動分割は null を返す。
-    expect(getPaiGowHint(base({ playerCards: PLAIN_HAND.slice(0, 3) }))?.reason).toBe('frontendHint.paigowSplitByHand');
+  it('explains the rule when the server has no split hint', () => {
+    const hint = getPaiGowHint(base({ hint: null }));
+    expect(hint?.reason).toBe('frontendHint.paigowSplitByHand');
   });
 });
