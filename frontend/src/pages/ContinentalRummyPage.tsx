@@ -151,7 +151,7 @@ function ContinentalRummyPageContent() {
   const legalIndices = canDiscard ? (me?.cards ?? []).map((_, i) => i) : [];
   const cumulativeScores = state.roundScoreHistory.reduce<number[][]>((totalsByRound, round) => {
     const previous = totalsByRound.at(-1) ?? state.players.map(() => 0);
-    totalsByRound.push(state.players.map((_, playerIdx) => previous[playerIdx] + (round.scores[playerIdx] ?? 0)));
+    totalsByRound.push(state.players.map((_, playerIdx) => previous[playerIdx] + round.scores[playerIdx]));
     return totalsByRound;
   }, []);
 
@@ -323,7 +323,7 @@ function ContinentalRummyPageContent() {
                         </th>
                         {state.players.map((player) => (
                           <Fragment key={player.id}>
-                            <td className="p-1">{round.scores[player.id] ?? 0}</td>
+                            <td className="p-1">{round.scores[player.id]}</td>
                             <td className="p-1">{cumulativeScores[roundIdx][player.id]}</td>
                           </Fragment>
                         ))}
