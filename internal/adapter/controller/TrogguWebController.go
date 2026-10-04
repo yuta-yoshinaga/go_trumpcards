@@ -93,6 +93,7 @@ type TrogguWebOutput struct {
 	DealerIdx        int                       `json:"dealerIdx"`
 	BidPlayerIdx     int                       `json:"bidPlayerIdx"`
 	HighestBid       int                       `json:"highestBid"`
+	HighestBidder    int                       `json:"highestBidder"`
 	DeclarerIdx      int                       `json:"declarerIdx"`
 	Contract         int                       `json:"contract"`
 	ContractName     string                    `json:"contractName"`

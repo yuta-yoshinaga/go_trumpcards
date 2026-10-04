@@ -118,6 +118,12 @@ func (_m *MockTrogguGame) GetHighestBid() domain.TrogguBid {
 	return ret.Get(0).(domain.TrogguBid)
 }
 
+// GetHighestBidder モック
+func (_m *MockTrogguGame) GetHighestBidder() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 // GetDeclarerIdx モック
 func (_m *MockTrogguGame) GetDeclarerIdx() int {
 	ret := _m.Called()
