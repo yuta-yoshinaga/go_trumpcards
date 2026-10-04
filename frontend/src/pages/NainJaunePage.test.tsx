@@ -83,6 +83,26 @@ describe('NainJaunePage', () => {
     expect(screen.getByText(/枚数ではなく【点数】/)).toBeInTheDocument();
   });
 
+  it('lets the player expand and collapse cards older than the latest ten', async () => {
+    const playedPile = Array.from({ length: 12 }, (_, i) => card('SPADE', i + 1));
+    mockExec.mockResolvedValue(makeState({ playedPile }));
+    renderWithProviders(<NainJaunePage />);
+
+    const showHistory = await screen.findByRole('button', { name: '過去の札を表示' });
+    expect(showHistory).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getByTestId('nainjaune-played-history')).toBeEmptyDOMElement();
+    expect(screen.getByTestId('nainjaune-played-recent').querySelectorAll('img')).toHaveLength(10);
+
+    fireEvent.click(showHistory);
+    expect(screen.getByRole('button', { name: '過去の札を隠す' })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByTestId('nainjaune-played-history').querySelectorAll('img')).toHaveLength(2);
+    expect(screen.getByTestId('nainjaune-played-recent').querySelectorAll('img')).toHaveLength(10);
+
+    fireEvent.click(screen.getByRole('button', { name: '過去の札を隠す' }));
+    expect(screen.getByRole('button', { name: '過去の札を表示' })).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getByTestId('nainjaune-played-recent').querySelectorAll('img')).toHaveLength(10);
+  });
+
   // **区画はスートまで一致した1枚でしか取れない。**札を出さないと判断できない。
   it('shows all five boxes with the exact card that claims each', async () => {
     renderWithProviders(<NainJaunePage />);
@@ -205,6 +225,7 @@ describe('NainJaunePage', () => {
           phase: NainJaunePhase.GAME_END,
           gameEndFlag: true,
           players: [seat(0, true, { chips: 25 }), seat(1, false, { chips: 40 }), seat(2, false, { chips: 10 })],
+          playedPile: Array.from({ length: 11 }, (_, i) => card('SPADE', i + 1)),
         }),
       );
       renderWithProviders(<NainJaunePage />);
@@ -214,6 +235,7 @@ describe('NainJaunePage', () => {
       expect(standings.children[0]).toHaveTextContent('#1: CPU1 — 40 chips');
       expect(standings.children[1]).toHaveTextContent('#2: You — 25 chips');
       expect(standings.children[2]).toHaveTextContent('#3: CPU2 — 10 chips');
+      expect(screen.getByRole('button', { name: 'Show earlier cards' })).toHaveAttribute('aria-expanded', 'false');
     } finally {
       await i18n.changeLanguage(previousLanguage);
     }
