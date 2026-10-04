@@ -179,6 +179,10 @@ function DesmochePageContent() {
                     {t('opponentHand', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
                     {' · '}
                     {t('melded', { n: o.meldedCount, goal: state.goOutSize })}
+                    {' · '}
+                    <span data-testid={`desmoche-score-${o.id.toString()}`}>
+                      {t('seatScore', { name: `CPU${o.id.toString()}`, score: o.score })}
+                    </span>
                   </div>
                   <div
                     className="flex gap-1 justify-center flex-wrap"
@@ -287,6 +291,8 @@ function DesmochePageContent() {
                 {t('yourHand')}
                 {' · '}
                 {t('melded', { n: human?.meldedCount ?? 0, goal: state.goOutSize })}
+                {' · '}
+                <span data-testid="desmoche-own-score">{t('yourScore', { score: human?.score ?? 0 })}</span>
                 {selected.length > 0 && ` · ${t('selected', { n: selected.length })}`}
               </div>
               <div className="flex gap-1 justify-center flex-wrap">

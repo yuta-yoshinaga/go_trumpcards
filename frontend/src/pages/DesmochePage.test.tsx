@@ -88,6 +88,30 @@ describe('DesmochePage', () => {
     expect(screen.getByText(/ポット40/)).toBeInTheDocument();
   });
 
+  it.each([
+    ['during a round', DesmochePhase.ACT, false],
+    ['after a round', DesmochePhase.ROUND_END, false],
+    ['after the game', DesmochePhase.GAME_END, true],
+  ])('shows cumulative scores %s', async (_label, phase, gameEndFlag) => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase,
+        gameEndFlag,
+        players: [
+          seat(0, true, { score: 25 }),
+          seat(1, false, { score: 15 }),
+          seat(2, false, { score: -5 }),
+          seat(3, false, { score: 0 }),
+        ],
+      }),
+    );
+    renderWithProviders(<DesmochePage />);
+    expect(await screen.findByTestId('desmoche-own-score')).toHaveTextContent('累計スコア: 25');
+    expect(screen.getByTestId('desmoche-score-1')).toHaveTextContent('CPU1: 累計スコア15');
+    expect(screen.getByTestId('desmoche-score-2')).toHaveTextContent('CPU2: 累計スコア-5');
+    expect(screen.getByTestId('desmoche-score-3')).toHaveTextContent('CPU3: 累計スコア0');
+  });
+
   it('offers the two draws only in the draw step', async () => {
     mockExec.mockResolvedValue(makeState({ phase: DesmochePhase.DRAW }));
     renderWithProviders(<DesmochePage />);

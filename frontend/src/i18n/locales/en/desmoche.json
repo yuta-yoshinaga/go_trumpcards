@@ -29,6 +29,8 @@
   "opponentHand": "{{name}}: {{n}} card(s)",
   "opponentHandAriaLabel": "{{name}} holds {{n}} face-down card(s)",
   "yourHand": "Your hand",
+  "seatScore": "{{name}}: cumulative score {{score}}",
+  "yourScore": "Cumulative score: {{score}}",
   "roundWinner": "Seat {{n}} melded ten and took the pot",
   "roundNoWinner": "Nobody got down to ten. The pot of {{n}} carries over",
   "landscapeBanner": "Landscape mode recommended",

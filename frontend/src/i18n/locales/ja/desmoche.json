@@ -29,6 +29,8 @@
   "opponentHand": "{{name}}: 手札{{n}}枚",
   "opponentHandAriaLabel": "{{name}} の手札 {{n}} 枚（裏向き）",
   "yourHand": "あなたの手札",
+  "seatScore": "{{name}}: 累計スコア{{score}}",
+  "yourScore": "累計スコア: {{score}}",
   "roundWinner": "席{{n}} が10枚を組んでポットを取りました",
   "roundNoWinner": "誰も10枚を組めませんでした。ポット{{n}}は次のラウンドへ持ち越します",
   "landscapeBanner": "横画面での表示を推奨します",
