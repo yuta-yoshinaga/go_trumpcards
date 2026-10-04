@@ -407,8 +407,29 @@ describe('GuandanPage', () => {
       expect(preview).toHaveAttribute('aria-hidden', 'true');
       expect(preview).toHaveTextContent('選択中: シングル（1枚）');
       expect(screen.getByTestId('guandan-combo-live')).toHaveTextContent('選択中: シングル（1枚）');
+      expect(preview.querySelector('.text-ds-accent')).toHaveClass('font-medium');
       expect(screen.queryByTestId('guandan-combo-invalid')).not.toBeInTheDocument();
       expect(screen.queryByTestId('guandan-combo-result')).not.toBeInTheDocument();
+    });
+
+    it('clears the dismissal announcement when leaving tribute phase', async () => {
+      const tributeState = makeState({
+        phase: GuandanPhase.TRIBUTE,
+        tributes: [{ from: 1, to: 0, card: card('SPADE', 2), returned: null }],
+      });
+      mockExec.mockReset();
+      mockExec.mockResolvedValueOnce(tributeState).mockResolvedValueOnce(makeState());
+      renderWithProviders(<GuandanPage />);
+      await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeEnabled());
+
+      fireEvent.click(screen.getByTestId('hand-card-0'));
+      fireEvent.click(screen.getByTestId('hand-card-0'));
+      expect(screen.getByTestId('guandan-combo-live')).toBeEmptyDOMElement();
+
+      fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+      fireEvent.click(screen.getByRole('button', { name: '確認' }));
+      await screen.findByRole('button', { name: '出す' });
+      expect(screen.getByTestId('guandan-combo-live')).toBeEmptyDOMElement();
     });
 
     it('announces when the selection is cleared', async () => {

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Trans } from 'react-i18next';
 import { guandanApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -148,6 +149,9 @@ function GuandanPageContent() {
       return wasCleared;
     });
   }, [selected]);
+  useEffect(() => {
+    if (state?.phase !== undefined) setSelectionWasCleared(false);
+  }, [state?.phase]);
   const handleToggle = (index: number) => {
     const removingSelection = selected.includes(index) && selected.length === 1;
     toggle(index);
@@ -406,11 +410,16 @@ function GuandanPageContent() {
                     </span>
                   ) : (
                     <span className="text-ds-text-muted">
-                      {t('comboAnnouncement', {
-                        preview: t('comboPreview'),
-                        kind: comboLabel(selectedCombo.kind),
-                        size: selectedCombo.size,
-                      })}
+                      <Trans
+                        i18nKey="comboPreviewAnnouncement"
+                        ns="guandan"
+                        values={{
+                          preview: t('comboPreview'),
+                          kind: comboLabel(selectedCombo.kind),
+                          size: selectedCombo.size,
+                        }}
+                        components={{ kind: <span className="font-medium text-ds-accent" /> }}
+                      />
                       {state.lastCombo && (
                         <span className="ml-1 font-medium" data-testid="guandan-combo-result">
                           {t(

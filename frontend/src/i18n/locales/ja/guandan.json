@@ -27,6 +27,7 @@
   "comboJokerBomb": "ジョーカーボム（最強）",
   "comboPreview": "選択中",
   "comboAnnouncement": "{{preview}}: {{kind}}（{{size}}枚）",
+  "comboPreviewAnnouncement": "{{preview}}: <kind>{{kind}}</kind>（{{size}}枚）",
   "listSeparator": "、",
   "comboSelectionCleared": "選択を解除しました",
   "invalidCombo": "この組み合わせは役になりません",
