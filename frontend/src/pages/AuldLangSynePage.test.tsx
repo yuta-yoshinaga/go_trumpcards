@@ -139,6 +139,18 @@ describe('Auld Lang Syne waste accessible names', () => {
   });
 });
 
+describe('Auld Lang Syne tutorial', () => {
+  it('explains selecting a waste, moving to a legal foundation, and canceling selection', async () => {
+    renderWithProviders(<AuldLangSynePage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'チュートリアル' }));
+    fireEvent.click(await screen.findByRole('button', { name: '次へ' }));
+
+    expect(await screen.findByRole('dialog')).toHaveTextContent(
+      'ウェイストの一番上のカードを選び、次の数字を置ける組札を選ぶと移動します。選択中のウェイストをもう一度選ぶか「キャンセル」を押すと選択を解除できます。',
+    );
+  });
+});
+
 describe('Auld Lang Syne foundation accessible names', () => {
   it('announces each top card and distinguishes empty from complete foundations', async () => {
     const stateWithFoundationVariants: AuldLangSyneResponse = {

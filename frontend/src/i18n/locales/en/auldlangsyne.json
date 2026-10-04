@@ -41,6 +41,7 @@
   },
   "tutorial": {
     "foundations": "The four piles on top are the foundations. All four Aces are placed for you; build each up A-2-3...K(13) one rank at a time, ignoring suit.",
+    "moveWasteToFoundation": "Select the top card of a waste, then select a foundation that accepts the next rank to move it. Select the same waste again or press Cancel to clear the selection.",
     "stockWaste": "Press Deal to put one card from the stock onto each of the four wastes. You do not choose where they land, and only the top card of each waste can be moved.",
     "controls": "Controls: deal, hint, give up, undo and more.",
     "resetButton": "Start a new game."
