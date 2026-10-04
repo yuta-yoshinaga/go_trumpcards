@@ -172,10 +172,9 @@ describe('TrashPage', () => {
   it('dispatches draw when the stock pile is clicked on the human turn', async () => {
     renderWithProviders(<TrashPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const stock = screen.getByText('🂠').closest('button');
-    expect(stock).not.toBeNull();
+    const stock = screen.getByRole('button', { name: '山札から引く、残り34枚' });
     expect(stock).not.toBeDisabled();
-    fireEvent.click(stock as HTMLElement);
+    fireEvent.click(stock);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 
@@ -192,7 +191,7 @@ describe('TrashPage', () => {
     mockExec.mockImplementation(async () => ({ ...awaitWildState, current: 0 }));
     renderWithProviders(<TrashPage />);
     await waitFor(() => expect(screen.getAllByText(/ワイルド配置/).length).toBeGreaterThan(0));
-    const stock = screen.getByText('🂠').closest('button');
+    const stock = screen.getByRole('button', { name: '山札から引く、残り34枚' });
     expect(stock).toBeDisabled();
   });
 

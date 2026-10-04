@@ -6,6 +6,8 @@
   "phase.gameOver": "Game over",
   "phase.cpuTurn": "CPU's turn",
   "button.draw": "Draw from stock",
+  "stockButtonAria_one": "Draw from stock, {{count}} card remaining",
+  "stockButtonAria_other": "Draw from stock, {{count}} cards remaining",
   "button.cpu": "Advance CPU turn",
   "button.reset": "Reset",
   "button.undo": "Undo",
