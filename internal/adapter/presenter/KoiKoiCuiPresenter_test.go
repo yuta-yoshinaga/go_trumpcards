@@ -87,8 +87,11 @@ func TestKoiKoiCuiPresenter_HintOutput(t *testing.T) {
 func TestKoiKoiCuiPresenter_ActionLog(t *testing.T) {
 	g := domain.NewDefaultKoiKoi()
 	g.Reset()
+	g.SetCurrentTurn(0)
+	require.NoError(t, g.PlayerPlay(0, -1))
 	p := new(presenter.KoiKoiCuiPresenter)
-	assert.NotNil(t, p.ActionLogOutput(g))
+	assert.Contains(t, p.ActionLogOutput(g), "あなた")
+	assert.Contains(t, p.ActionLogOutput(g), "を出しました")
 }
 
 // koikoiSankoCards は三光 (松/桜/桐の光 = 5 点) を返す。
