@@ -144,6 +144,23 @@ describe('DoubleAttackPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', { ante: 50, bustIt: 0 }));
   });
 
+  it('アンティを増やすと Bust It を残高内に切り下げ、減らしても戻さない', async () => {
+    mockApi.mockResolvedValue(withState({ chips: 200 }));
+    renderWithProviders(<DoubleAttackPage />);
+    const anteInput = await screen.findByLabelText('アンティ');
+    const bustItInput = screen.getByLabelText('Bust It');
+
+    fireEvent.change(bustItInput, { target: { value: '150' } });
+    fireEvent.change(anteInput, { target: { value: '100' } });
+    expect(bustItInput).toHaveValue('100');
+    expect(Number(anteInput.getAttribute('value')) + Number(bustItInput.getAttribute('value'))).toBeLessThanOrEqual(
+      200,
+    );
+
+    fireEvent.change(anteInput, { target: { value: '50' } });
+    expect(bustItInput).toHaveValue('100');
+  });
+
   // **追加ベットの前は 1 枚だけで、点数も出ない。**
   //
   // これは伏せているのではなく、サーバがまだ 2 枚目を持っていないため。
