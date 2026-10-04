@@ -545,6 +545,46 @@ describe('RoyalCotillionPage slot numbers in the accessible names', () => {
 });
 
 describe('RoyalCotillionPage foundation next rank badges', () => {
+  it('announces completed foundations without a null rank in both locales', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [Array.from({ length: 13 }, (_, index) => card('SPADE', index + 1)), [], [], [], [], [], [], []],
+    });
+    renderWithProviders(<RoyalCotillionPage />);
+
+    const completedJa = await screen.findByRole('button', { name: /組札0.*完成/ });
+    expect(completedJa.getAttribute('aria-label')).not.toContain('null');
+
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      const completedEn = screen.getByRole('button', { name: /foundation 0.*complete/i });
+      expect(completedEn.getAttribute('aria-label')).not.toContain('null');
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
+  it('includes the next required rank in empty and occupied foundation names in both locales', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('SPADE', 1)], [], [], [], [], [], [], []],
+    });
+    renderWithProviders(<RoyalCotillionPage />);
+
+    expect(await screen.findByRole('button', { name: /組札0.*次に必要な札.*3/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /空の組札1.*次に必要な札.*A/ })).toBeInTheDocument();
+
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      expect(screen.getByRole('button', { name: /foundation 0.*next.*3/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /empty foundation 1.*next.*A/i })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
