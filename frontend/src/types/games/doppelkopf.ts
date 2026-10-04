@@ -76,6 +76,8 @@ export interface DoppelkopfResponse extends BaseGameResponse {
   roundReWon: boolean;
   /** Game points awarded for this round. */
   roundGamePoints: number;
+  /** Completed round chip changes by round and player index. */
+  roundScoreHistory: number[][];
   gameEndFlag: boolean;
   /** Winning player index, or -1 until the game ends. */
   winnerIdx: number;

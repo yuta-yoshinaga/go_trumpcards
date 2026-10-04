@@ -38,6 +38,7 @@ func setupDoppelkopfWebMock() *interfaces.MockDoppelkopfGame {
 	m.On("GetRoundRePoints").Return(0)
 	m.On("GetRoundReWon").Return(false)
 	m.On("GetRoundGamePoints").Return(0)
+	m.On("GetRoundScoreHistory").Return([][]int{})
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("IsRe", 0).Return(false)
 	m.On("IsRe", 1).Return(false)
@@ -325,6 +326,19 @@ func TestDoppelkopfWebPresenterOutputCarriesTheHint(t *testing.T) {
 	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
 	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
 	assert.NotContains(t, result, "doppelkopf.hintRequested")
+}
+
+func TestDoppelkopfWebPresenterOutputCarriesRoundScoreHistory(t *testing.T) {
+	g := domain.NewDefaultDoppelkopf()
+	g.SetRoundNumber(1)
+	g.SetPhase(domain.DoppelkopfPhaseRoundEnd)
+	g.SetReTeam([domain.DoppelkopfPlayerCnt]bool{true, false, true, false})
+	g.ScoreRound()
+	var output controller.DoppelkopfWebOutput
+	err := json.Unmarshal([]byte(new(presenter.DoppelkopfWebPresenter).Output(g, nil)), &output)
+	assert.NoError(t, err)
+	assert.Len(t, output.RoundHistory, 1)
+	assert.Len(t, output.RoundHistory[0], domain.DoppelkopfPlayerCnt)
 }
 
 // **HintOutput は「頼んだヒント」だと分かる印を付ける。**

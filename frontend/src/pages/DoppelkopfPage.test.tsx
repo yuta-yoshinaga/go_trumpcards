@@ -76,6 +76,14 @@ beforeEach(() => {
 });
 
 describe('DoppelkopfPage', () => {
+  it('renders the server supplied round by player chip history', async () => {
+    mockExec.mockResolvedValue(makeDoppelkopfState({ roundScoreHistory: [[2, -2, 2, -2]] }));
+    renderWithProviders(<DoppelkopfPage />);
+    await waitFor(() => expect(screen.getByTestId('dk-round-history')).toBeInTheDocument());
+    expect(screen.getByTestId('dk-round-history')).toHaveTextContent('ラウンドごとのチップ増減');
+    expect(screen.getByTestId('dk-round-history')).toHaveTextContent('+2');
+    expect(screen.getByTestId('dk-round-history')).toHaveTextContent('-2');
+  });
   it('shows a known team label before the teams are fully revealed', async () => {
     mockExec.mockResolvedValue(
       makeDoppelkopfState({

@@ -67870,6 +67870,13 @@ components:
         roundGamePoints:
           type: integer
           description: Game points awarded to the winning side this round (before chip settlement)
+        roundScoreHistory:
+          type: array
+          description: Completed rounds' chip changes, indexed by round then player.
+          items:
+            type: array
+            items:
+              type: integer
         gameEndFlag:
           type: boolean
         winnerIdx:

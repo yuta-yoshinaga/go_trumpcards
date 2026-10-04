@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"errors"
+	"reflect"
 	"testing"
 )
 
@@ -317,6 +318,33 @@ func TestDoppelkopf_ScoreRoundReWinsZeroSum(t *testing.T) {
 	}
 	if !g.AreTeamsRevealed() {
 		t.Error("teams should be revealed at round end")
+	}
+}
+
+func TestDoppelkopf_RoundScoreHistoryResetAndJSON(t *testing.T) {
+	g := newDKGame(false)
+	g.SetRoundNumber(1)
+	g.SetPhase(DoppelkopfPhaseRoundEnd)
+	g.SetReTeam([DoppelkopfPlayerCnt]bool{true, false, true, false})
+	g.ScoreRound()
+	g.ScoreRound()
+	if got := g.GetRoundScoreHistory(); len(got) != 1 || len(got[0]) != DoppelkopfPlayerCnt {
+		t.Fatalf("history after settlement = %v, want one four-player row", got)
+	}
+	data, err := json.Marshal(g)
+	if err != nil {
+		t.Fatal(err)
+	}
+	restored := new(Doppelkopf)
+	if err := json.Unmarshal(data, restored); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(g.GetRoundScoreHistory(), restored.GetRoundScoreHistory()) {
+		t.Fatalf("restored history = %v, want %v", restored.GetRoundScoreHistory(), g.GetRoundScoreHistory())
+	}
+	g.Reset()
+	if got := g.GetRoundScoreHistory(); len(got) != 0 {
+		t.Fatalf("history after reset = %v, want empty", got)
 	}
 }
 
