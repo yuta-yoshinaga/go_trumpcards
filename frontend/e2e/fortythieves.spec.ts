@@ -6,7 +6,7 @@ test.describe('Forty Thieves E2E', () => {
     await navigateTo(page, '/fortythieves');
 
     // Verify stock and waste labels are visible
-    await expect(page.getByText('山札')).toBeVisible();
+    await expect(page.getByText(/^山札 \(\d+\)$/)).toBeVisible();
     await expect(page.getByText('ウェイスト')).toBeVisible();
 
     // Verify move count is displayed
@@ -37,7 +37,7 @@ test.describe('Forty Thieves E2E', () => {
     await waitForLoaded(page);
 
     // Verify game restarted
-    await expect(page.getByText('山札')).toBeVisible();
+    await expect(page.getByText(/^山札 \(\d+\)$/)).toBeVisible();
   });
 
   test('give up ends the game', async ({ page }) => {

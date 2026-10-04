@@ -166,8 +166,9 @@ function FortyThievesPageContent() {
   const ft = useResponsiveTableau(10, { maxColCards });
 
   const isPlayingForKbd = state?.phase === FortyThievesPhase.PLAYING;
-  const autoCompleteReady = !!state && state.stockCount === 0;
+  const autoCompleteReady = !!state && state.phase === FortyThievesPhase.PLAYING && state.stockCount === 0;
   const autoCompleteDisabled = loading || isAutoCompleting || !autoCompleteReady;
+  const showAutoCompleteNotReadyReason = !loading && !autoCompleteReady;
   const autoCompleteNotReadyId = useId();
   const handleAutoCompleteIfReady = useCallback(() => {
     if (autoCompleteDisabled) return;
@@ -621,9 +622,9 @@ function FortyThievesPageContent() {
                     className={`${btnSuccess}${!autoCompleteDisabled ? ' animate-pulse ring-2 ring-ds-success' : ' opacity-50 cursor-not-allowed'}`}
                     onClick={handleAutoCompleteIfReady}
                     aria-disabled={autoCompleteDisabled}
-                    aria-describedby={autoCompleteDisabled ? autoCompleteNotReadyId : undefined}
+                    aria-describedby={showAutoCompleteNotReadyReason ? autoCompleteNotReadyId : undefined}
                     data-testid="autocomplete-button"
-                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
+                    title={showAutoCompleteNotReadyReason ? t('autoCompleteNotReady') : undefined}
                   >
                     {t('autoComplete')}
                   </button>

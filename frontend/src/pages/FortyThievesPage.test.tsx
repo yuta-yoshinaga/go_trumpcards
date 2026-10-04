@@ -660,7 +660,7 @@ describe('FortyThievesPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
 
     expect(screen.queryByRole('button', { name: 'ヒント' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: '自動完成' })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('autocomplete-button')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'ギブアップ' })).not.toBeInTheDocument();
   });
 
@@ -805,4 +805,19 @@ describe('FortyThievesPage keyboard shortcuts', () => {
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
+
+  it.each([gameClearState, gameOverState])(
+    'keeps auto complete unavailable and ignores the a shortcut after the game ends',
+    async (endedState) => {
+      mockExec.mockResolvedValue({ ...endedState, stockCount: 0 });
+      renderWithProviders(<FortyThievesPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+      expect(screen.queryByTestId('autocomplete-button')).not.toBeInTheDocument();
+
+      mockExec.mockClear();
+      fireEvent.keyDown(document, { key: 'a' });
+      await flushPendingDispatch();
+      expect(mockExec).not.toHaveBeenCalledWith('autocomplete');
+    },
+  );
 });
