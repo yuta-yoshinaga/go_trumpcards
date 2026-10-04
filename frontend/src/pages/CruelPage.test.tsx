@@ -195,6 +195,28 @@ describe('CruelPage', () => {
     resolveAction(playingState);
   });
 
+  it('clears click selection when escaping a stalemate', async () => {
+    let resolveAction!: (value: CruelResponse) => void;
+    mockExec.mockImplementation((requestedCommand) =>
+      requestedCommand === 'reset'
+        ? Promise.resolve({ ...playingState, isStalemate: true, undoToEscape: 2 })
+        : new Promise<CruelResponse>((resolve) => {
+            resolveAction = resolve;
+          }),
+    );
+    renderWithProviders(<CruelPage />);
+
+    const source = await screen.findByRole('button', { name: '♠ 5、列0' });
+    fireEvent.click(source);
+    expect(source.className).toContain('ring-ds-warning');
+
+    fireEvent.click(screen.getByTestId('stalemate-escape-button'));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo_n', undefined, undefined, 2));
+    expect(source.className).not.toContain('ring-ds-warning');
+    resolveAction(playingState);
+  });
+
   it('pulses the shift button and shows a banner on stalemate', async () => {
     mockExec.mockResolvedValue({ ...playingState, isStalemate: true });
     renderWithProviders(<CruelPage />);
