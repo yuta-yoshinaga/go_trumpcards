@@ -424,7 +424,7 @@ function BakersDozenPageContent() {
                                       }
                                     }}
                                     disabled={!isPlaying || loading || (!isTop && !selectedSource)}
-                                    aria-label={cardAlt(tc.card)}
+                                    aria-label={t('tableauCardAriaLabel', { card: cardAlt(tc.card), col: colIdx })}
                                     aria-pressed={isSelected}
                                     draggable={isPlaying && !loading && isTop}
                                     onDragStart={dnd.handleDragStart(cardZone)}
