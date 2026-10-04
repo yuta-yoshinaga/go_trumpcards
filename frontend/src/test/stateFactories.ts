@@ -3293,6 +3293,8 @@ const baseTwentyNineState: TwentyNineResponse = {
   trumpRevealed: false,
   bids: [0, 0, 0, 0],
   currentTrick: [],
+  currentTrickPoints: [],
+  isLastTrick: false,
   teamScores: [0, 0],
   roundTeamPoints: [0, 0],
   playableIndices: [],

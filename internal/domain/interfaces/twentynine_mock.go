@@ -122,6 +122,18 @@ func (_m *MockTwentyNineGame) GetCurrentTrick() []*domain.TrickCard {
 	return nil
 }
 
+// GetCurrentTrickPoints モック
+func (_m *MockTwentyNineGame) GetCurrentTrickPoints() []int {
+	ret := _m.Called()
+	if v := ret.Get(0); v != nil {
+		return v.([]int)
+	}
+	return nil
+}
+
+// IsLastTrick モック
+func (_m *MockTwentyNineGame) IsLastTrick() bool { return _m.Called().Bool(0) }
+
 // GetLeadPlayerIdx モック
 func (_m *MockTwentyNineGame) GetLeadPlayerIdx() int {
 	ret := _m.Called()

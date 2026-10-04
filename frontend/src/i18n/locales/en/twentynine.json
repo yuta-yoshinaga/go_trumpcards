@@ -24,6 +24,8 @@
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",
+  "trickCardPoints": "Card points: {{points}}",
+  "lastTrickBonus": "Last-trick bonus: +1 point for the winning team",
   "leadSuit": "Current trick lead suit: {{symbol}} {{suit}}",
   "suits": {
     "spade": "Spades",

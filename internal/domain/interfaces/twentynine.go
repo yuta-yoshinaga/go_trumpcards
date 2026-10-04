@@ -47,6 +47,10 @@ type TwentyNineGame interface {
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// GetCurrentTrickPoints returns card points in current trick order.
+	GetCurrentTrickPoints() []int
+	// IsLastTrick reports whether the current trick is the round's final trick.
+	IsLastTrick() bool
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する
 	GetLeadPlayerIdx() int
 	// GetDealerIdx ディーラーインデックスを取得する

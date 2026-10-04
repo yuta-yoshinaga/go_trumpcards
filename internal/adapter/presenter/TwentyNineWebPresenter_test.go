@@ -21,6 +21,8 @@ func setupTwentyNineWebMock() *interfaces.MockTwentyNineGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
+	m.On("GetCurrentTrickPoints").Return([]int{})
+	m.On("IsLastTrick").Return(false)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.TwentyNinePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -204,6 +206,18 @@ func TestTwentyNineWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 2, resObj.Players[1].TeamScore)
 		assert.Equal(t, [domain.TwentyNineTeamCnt]int{3, 2}, resObj.TeamScores)
 	})
+}
+
+func TestTwentyNineWebPresenterIncludesTrickPointDetails(t *testing.T) {
+	m, _ := setupTwentyNineWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrickPoints")
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsLastTrick")
+	m.On("GetCurrentTrickPoints").Return([]int{3, 2, 1, 0})
+	m.On("IsLastTrick").Return(true)
+	var output controller.TwentyNineWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.TwentyNineWebPresenter).Output(m, nil)), &output))
+	assert.Equal(t, []int{3, 2, 1, 0}, output.CurrentTrickPoints)
+	assert.True(t, output.IsLastTrick)
 }
 
 func TestTwentyNineWebPresenter_HintOutput(t *testing.T) {

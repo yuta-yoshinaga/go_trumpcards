@@ -82,6 +82,21 @@ func TestTwentyNine_StrengthAndPoints(t *testing.T) {
 	}
 }
 
+func TestTwentyNine_CurrentTrickPointsAndLastTrick(t *testing.T) {
+	g := newTnGame(false)
+	g.SetCurrentTrick([]*TrickCard{
+		{PlayerIdx: 0, Card: tnCard(CardDesignSpade, 11)},
+		{PlayerIdx: 1, Card: tnCard(CardDesignHeart, 9)},
+		{PlayerIdx: 2, Card: tnCard(CardDesignClover, 10)},
+		{PlayerIdx: 3, Card: tnCard(CardDesignDiamond, 7)},
+	})
+	assert.Equal(t, []int{3, 2, 1, 0}, g.GetCurrentTrickPoints())
+	g.SetTrickNumber(TwentyNineTrickCount - 1)
+	assert.False(t, g.IsLastTrick())
+	g.SetTrickNumber(TwentyNineTrickCount)
+	assert.True(t, g.IsLastTrick())
+}
+
 func TestTwentyNine_BiddingResolvesHighestDeclarer(t *testing.T) {
 	g := newTnAllHuman()
 	g.Reset() // dealer 0, forehand P1 bids first

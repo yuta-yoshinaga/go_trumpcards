@@ -60,6 +60,8 @@ func (p *TwentyNineWebPresenter) buildBase(g interfaces.TwentyNineGame) *control
 	}
 
 	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
+	resObj.CurrentTrickPoints = g.GetCurrentTrickPoints()
+	resObj.IsLastTrick = g.IsLastTrick()
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }

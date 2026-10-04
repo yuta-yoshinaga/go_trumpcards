@@ -40,27 +40,29 @@ type TwentyNineWebOutputPlayer struct {
 
 // TwentyNineWebOutput トゥエンティナイン (29) のWebアウトプット
 type TwentyNineWebOutput struct {
-	Players          []*TwentyNineWebOutputPlayer    `json:"players"`
-	Phase            int                             `json:"phase"`
-	RoundNumber      int                             `json:"roundNumber"`
-	TrickNumber      int                             `json:"trickNumber"`
-	CurrentPlayerIdx int                             `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                             `json:"leadPlayerIdx"`
-	DealerIdx        int                             `json:"dealerIdx"`
-	DeclarerIdx      int                             `json:"declarerIdx"`
-	Contract         int                             `json:"contract"`
-	TrumpSuit        int                             `json:"trumpSuit"`
-	TrumpRevealed    bool                            `json:"trumpRevealed"`
-	Bids             [domain.TwentyNinePlayerCnt]int `json:"bids"`
-	CurrentTrick     []*WebOutputTrickCard           `json:"currentTrick"`
-	TeamScores       [domain.TwentyNineTeamCnt]int   `json:"teamScores"`
-	RoundTeamPoints  [domain.TwentyNineTeamCnt]int   `json:"roundTeamPoints"`
-	PlayableIndices  []int                           `json:"playableIndices"`
-	GameEndFlag      bool                            `json:"gameEndFlag"`
-	WinnerTeam       int                             `json:"winnerTeam"`
-	IsHumanTurn      bool                            `json:"isHumanTurn"`
-	IsHumanBidTurn   bool                            `json:"isHumanBidTurn"`
-	Hint             *WebOutputCardHint              `json:"hint,omitempty"`
+	Players            []*TwentyNineWebOutputPlayer    `json:"players"`
+	Phase              int                             `json:"phase"`
+	RoundNumber        int                             `json:"roundNumber"`
+	TrickNumber        int                             `json:"trickNumber"`
+	CurrentPlayerIdx   int                             `json:"currentPlayerIdx"`
+	LeadPlayerIdx      int                             `json:"leadPlayerIdx"`
+	DealerIdx          int                             `json:"dealerIdx"`
+	DeclarerIdx        int                             `json:"declarerIdx"`
+	Contract           int                             `json:"contract"`
+	TrumpSuit          int                             `json:"trumpSuit"`
+	TrumpRevealed      bool                            `json:"trumpRevealed"`
+	Bids               [domain.TwentyNinePlayerCnt]int `json:"bids"`
+	CurrentTrick       []*WebOutputTrickCard           `json:"currentTrick"`
+	CurrentTrickPoints []int                           `json:"currentTrickPoints"`
+	IsLastTrick        bool                            `json:"isLastTrick"`
+	TeamScores         [domain.TwentyNineTeamCnt]int   `json:"teamScores"`
+	RoundTeamPoints    [domain.TwentyNineTeamCnt]int   `json:"roundTeamPoints"`
+	PlayableIndices    []int                           `json:"playableIndices"`
+	GameEndFlag        bool                            `json:"gameEndFlag"`
+	WinnerTeam         int                             `json:"winnerTeam"`
+	IsHumanTurn        bool                            `json:"isHumanTurn"`
+	IsHumanBidTurn     bool                            `json:"isHumanBidTurn"`
+	Hint               *WebOutputCardHint              `json:"hint,omitempty"`
 	WebOutputBase
 	Config TwentyNineWebOutputConfig `json:"config"`
 }
@@ -95,12 +97,13 @@ var NewTwentyNineWebController, NewTwentyNineWebControllerWithProvider = webCont
 
 func newTwentyNineDefaultOutput(msg string) *TwentyNineWebOutput {
 	return &TwentyNineWebOutput{
-		Players:         make([]*TwentyNineWebOutputPlayer, 0),
-		CurrentTrick:    make([]*WebOutputTrickCard, 0),
-		PlayableIndices: make([]int, 0),
-		DeclarerIdx:     -1,
-		WinnerTeam:      -1,
-		WebOutputBase:   WebOutputBase{Message: msg},
+		Players:            make([]*TwentyNineWebOutputPlayer, 0),
+		CurrentTrick:       make([]*WebOutputTrickCard, 0),
+		CurrentTrickPoints: make([]int, 0),
+		PlayableIndices:    make([]int, 0),
+		DeclarerIdx:        -1,
+		WinnerTeam:         -1,
+		WebOutputBase:      WebOutputBase{Message: msg},
 	}
 }
 
