@@ -193,7 +193,7 @@ function RankAndFilePageContent() {
 
   useActionKeyboardNav({
     bindings: actionBindings,
-    enabled: !!isPlayingForKbd && !loading,
+    enabled: !!isPlayingForKbd && !loading && actionLog === null,
   });
 
   if (!state) return <GameSkeleton gameKey="rankandfile" layout={{ kind: 'tableau', topRow: 10, tableau: 10 }} />;
@@ -567,6 +567,7 @@ function RankAndFilePageContent() {
             {/* Action log */}
             <ActionLogSection
               isEndPhase={isEnded}
+              availableDuringPlay
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
