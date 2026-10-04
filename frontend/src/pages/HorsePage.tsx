@@ -240,11 +240,13 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
               <span className="mr-2 text-lg text-ds-text-primary" data-testid="ho-letter">
                 {state.disciplineLetter}
               </span>
-              <span
-                className={`mr-3 text-lg font-semibold text-ds-text-primary ${gameKey === 'eightgame' && disciplineChanged ? 'rounded-md bg-ds-surface px-2 py-1 ring-2 ring-ds-accent' : ''}`}
+              <h2
+                id={gameKey === 'eightgame' ? 'ho-current-discipline' : undefined}
+                aria-describedby={gameKey === 'eightgame' ? 'ho-discipline-rules' : undefined}
+                className={`mr-3 inline text-lg font-semibold text-ds-text-primary ${gameKey === 'eightgame' && disciplineChanged ? 'rounded-md bg-ds-surface px-2 py-1 ring-2 ring-ds-accent' : ''}`}
               >
                 {disciplineName}
-              </span>
+              </h2>
               <span className="mr-3">
                 {t('disciplineOrder', { position: state.disciplinePosition, total: state.disciplineTotal })}
               </span>
@@ -262,6 +264,7 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
 
             {gameKey === 'eightgame' && (
               <p
+                id="ho-discipline-rules"
                 className={`mx-auto max-w-3xl rounded-md bg-ds-surface px-3 py-2 text-center text-sm ${disciplineChanged ? 'border-2 border-ds-accent text-ds-text-primary' : 'text-ds-text-muted'}`}
               >
                 {t(`rules.${state.disciplineName}`)}

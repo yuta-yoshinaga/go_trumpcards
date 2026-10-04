@@ -42,6 +42,20 @@ describe('HorsePage', () => {
     expect(screen.getByTestId('ho-pot')).toHaveTextContent('30');
   });
 
+  it('exposes the current Eight-Game discipline as a heading described by its rules', async () => {
+    mockEightExec.mockResolvedValue(makeHorseState({ variant: 1 }));
+    renderWithProviders(
+      <TutorialProvider config={{ gameName: 'eightgame', steps: [] }}>
+        <HorsePageContent gameKey="eightgame" />
+      </TutorialProvider>,
+    );
+
+    const heading = await screen.findByRole('heading', { level: 2, name: 'テキサスホールデム' });
+    const rules = screen.getByText('手札2枚と場の5枚から好きな組み合わせで5枚役を作り、最も強い役を目指します。');
+    expect(heading).toHaveAttribute('aria-describedby', rules.id);
+    expect(heading.compareDocumentPosition(rules) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('puts the game, discipline, round, and action type beside the controls', async () => {
     mockExec.mockResolvedValue(makeHorseState({ tablePhase: 1 }));
     renderWithProviders(<HorsePage />);
