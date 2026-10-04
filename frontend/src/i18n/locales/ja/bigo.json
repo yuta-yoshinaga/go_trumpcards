@@ -84,6 +84,7 @@
     "weakHandRank": "弱いハンド — フォールド推奨"
   },
   "livePreview": "現在の役:",
+  "liveHandAnnouncement": "現在の役: {{hand}}",
   "hand": {
     "highCard": "ハイカード",
     "onePair": "ワンペア",
