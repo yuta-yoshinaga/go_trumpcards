@@ -192,7 +192,7 @@ function SomersetPageContent() {
 
   useActionKeyboardNav({
     bindings: actionBindings,
-    enabled: !!isPlayingForKbd && !loading,
+    enabled: !!isPlayingForKbd && !loading && actionLog === null,
   });
 
   // **フックは早期 return より前。** 下に置くと state が来た描画でだけ
@@ -478,6 +478,7 @@ function SomersetPageContent() {
 
             <ActionLogSection
               isEndPhase={isEnded}
+              availableDuringPlay
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}

@@ -108,8 +108,5 @@ func (p *SomersetCuiPresenter) HintOutput(bc interfaces.SomersetGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SomersetCuiPresenter) ActionLogOutput(bc interfaces.SomersetGame) string {
-	if bc.GetPhase() == domain.SomersetPhasePlaying {
-		return actionLogToText(nil)
-	}
 	return actionLogToText(bc.GetActionLog())
 }
