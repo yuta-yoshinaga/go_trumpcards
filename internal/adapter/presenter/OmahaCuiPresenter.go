@@ -18,7 +18,9 @@ type OmahaCuiPresenter struct{}
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *OmahaCuiPresenter) ActionLogOutput(o interfaces.OmahaGame) string {
-	return actionLogOutputTextForSeats[*domain.OmahaPlayer](o)
+	return actionLogToTextWithNames(o.GetActionLog(), func(idx int) string {
+		return cuiPlayerName(o.GetPlayer(idx), idx)
+	})
 }
 
 // omahaTitleKey は、ホールカード枚数 (4=オマハ, 5=Big O)、Hi-Lo フラグ、
