@@ -312,8 +312,13 @@ function TwentyNinePageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  cardDetailFor={(_card, trickCard) => {
+                    const index = state.currentTrick.findIndex((card) => card.playerIdx === trickCard.playerIdx);
+                    return t('trickCardPoints', { points: state.currentTrickPoints[index] ?? 0 });
+                  }}
                   dataTutorial="twentynine-trick-display"
                 />
+                {state.isLastTrick && <p className="mt-1 text-center text-sm text-ds-warning">{t('lastTrickBonus')}</p>}
               </div>
 
               {/* Right: info sidebar */}

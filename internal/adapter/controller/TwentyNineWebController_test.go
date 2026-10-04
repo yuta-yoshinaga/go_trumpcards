@@ -16,12 +16,13 @@ import (
 
 func mustTwentyNineOutputJSON(msg string) string {
 	out := &controller.TwentyNineWebOutput{
-		Players:         []*controller.TwentyNineWebOutputPlayer{},
-		CurrentTrick:    []*controller.WebOutputTrickCard{},
-		PlayableIndices: []int{},
-		DeclarerIdx:     -1,
-		WinnerTeam:      -1,
-		WebOutputBase:   controller.WebOutputBase{Message: msg},
+		Players:            []*controller.TwentyNineWebOutputPlayer{},
+		CurrentTrick:       []*controller.WebOutputTrickCard{},
+		CurrentTrickPoints: []int{},
+		PlayableIndices:    []int{},
+		DeclarerIdx:        -1,
+		WinnerTeam:         -1,
+		WebOutputBase:      controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

@@ -70242,6 +70242,14 @@ components:
                 type: integer
               card:
                 $ref: '#/components/schemas/Card'
+        currentTrickPoints:
+          type: array
+          items:
+            type: integer
+          description: Card points for currentTrick, in the same order
+        isLastTrick:
+          type: boolean
+          description: Whether the current trick is the final trick of the round
         teamScores:
           type: array
           items:

@@ -270,6 +270,46 @@ describe('TwentyNinePage', () => {
     expect(live).toHaveTextContent('7');
   });
 
+  it('shows response card points and one final-trick bonus', async () => {
+    mockExec.mockResolvedValue(
+      makeTwentyNineState({
+        phase: 1,
+        trickNumber: 8,
+        isLastTrick: true,
+        currentTrickPoints: [3, 2, 1, 0],
+        isHumanBidTurn: false,
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'HEART', value: 11 } },
+          { playerIdx: 1, card: { design: 'SPADE', value: 9 } },
+          { playerIdx: 2, card: { design: 'DIAMOND', value: 1 } },
+          { playerIdx: 3, card: { design: 'CLOVER', value: 7 } },
+        ],
+      }),
+    );
+    renderWithProviders(<TwentyNinePage />);
+
+    expect(await screen.findByText('カード点: 3')).toBeInTheDocument();
+    expect(screen.getByText('カード点: 2')).toBeInTheDocument();
+    expect(screen.getByText('カード点: 1')).toBeInTheDocument();
+    expect(screen.getByText('カード点: 0')).toBeInTheDocument();
+    expect(screen.getAllByText('最終トリックボーナス: 勝者チームに+1点')).toHaveLength(1);
+  });
+
+  it('does not show final-trick bonus when the response says it is not the last trick', async () => {
+    mockExec.mockResolvedValue(
+      makeTwentyNineState({
+        phase: 1,
+        isHumanBidTurn: false,
+        isLastTrick: false,
+        currentTrick: [{ playerIdx: 0, card: { design: 'HEART', value: 11 } }],
+        currentTrickPoints: [3],
+      }),
+    );
+    renderWithProviders(<TwentyNinePage />);
+    expect(await screen.findByText('カード点: 3')).toBeInTheDocument();
+    expect(screen.queryByText('最終トリックボーナス: 勝者チームに+1点')).not.toBeInTheDocument();
+  });
+
   it('hides the live round-points block at round end (the result block takes over)', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<TwentyNinePage />);
