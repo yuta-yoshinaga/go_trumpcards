@@ -167,11 +167,23 @@ describe('JassPage', () => {
   it('dispatches play with the selected card index during play', async () => {
     mockExec.mockResolvedValue(makeState({ phase: JassPhase.PLAY, trumpSuit: 1, currentPlayerIdx: 0 }));
     renderWithProviders(<JassPage />);
-    const cardBtn = await screen.findByRole('button', { name: '♠ J (プレイ可能)' });
+    const cardBtn = await screen.findByRole('button', { name: '♠ J (切り札) (プレイ可能)' });
     fireEvent.click(cardBtn);
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, 0));
+  });
+
+  it('marks only trump suit cards in hand during play and leaves cards unmarked before trump is set', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: JassPhase.PLAY, trumpSuit: 1, currentPlayerIdx: 0 }));
+    const { unmount } = renderWithProviders(<JassPage />);
+    expect(await screen.findByRole('button', { name: '♠ J (切り札) (プレイ可能)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 10 (プレイ可能)' })).toBeInTheDocument();
+
+    unmount();
+    mockExec.mockResolvedValue(makeState({ phase: JassPhase.PLAY, trumpSuit: 0, currentPlayerIdx: 0 }));
+    renderWithProviders(<JassPage />);
+    expect(await screen.findByRole('button', { name: '♠ J (プレイ可能)' })).toBeInTheDocument();
   });
 
   it('dims cards outside validPlayIndices on the human play turn', async () => {
