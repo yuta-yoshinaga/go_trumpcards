@@ -1604,23 +1604,19 @@ describe('SevensPage', () => {
   });
 
   it('handles action log visibility and API fetch', async () => {
-    mockExec.mockResolvedValue({
-      gameEndFlag: true,
-      currentTurn: 0,
-      players: [],
-      playerIdx: 0,
-      tablePlaced: {},
-      config: {},
-    } as unknown as SevensResponse);
+    mockExec.mockResolvedValue(humanTurnState);
 
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
 
-    vi.mocked(actionLogApi.sevens).mockResolvedValueOnce({ entries: [] });
+    vi.mocked(actionLogApi.sevens).mockResolvedValueOnce({
+      entries: [{ turnNumber: 1, playerIdx: 1, actionType: 'play', detail: 'CPUが♥7を出した' }],
+    });
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.sevens).toHaveBeenCalledTimes(1));
     expect(screen.getByText('棋譜')).toBeInTheDocument();
+    expect(screen.getByText(/CPUが♥7を出した/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('閉じる'));
     await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());

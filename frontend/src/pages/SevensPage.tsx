@@ -451,6 +451,7 @@ function SevensPageContent() {
 
             <ActionLogSection
               isEndPhase={state.gameEndFlag}
+              availableDuringPlay
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
