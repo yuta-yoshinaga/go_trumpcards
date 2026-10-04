@@ -1,7 +1,8 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tienlenApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, TienLenResponse } from '../types/card';
 import { TienLenPage } from './TienLenPage';
@@ -47,6 +48,24 @@ beforeEach(() => {
 });
 
 describe('TienLenPage', () => {
+  it('localizes CPU difficulty options in Japanese and English', async () => {
+    renderWithProviders(<TienLenPage />);
+    const difficulty = await screen.findByRole('combobox', { name: 'CPU難易度:' });
+
+    expect(within(difficulty).getByRole('option', { name: 'ノーマル' })).toHaveValue('0');
+    expect(within(difficulty).getByRole('option', { name: 'イージー' })).toHaveValue('1');
+    expect(within(difficulty).getByRole('option', { name: 'ハード' })).toHaveValue('2');
+
+    try {
+      await i18n.changeLanguage('en');
+      expect(within(difficulty).getByRole('option', { name: 'Normal' })).toHaveValue('0');
+      expect(within(difficulty).getByRole('option', { name: 'Easy' })).toHaveValue('1');
+      expect(within(difficulty).getByRole('option', { name: 'Hard' })).toHaveValue('2');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<TienLenPage />);
