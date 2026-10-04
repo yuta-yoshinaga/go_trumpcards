@@ -36,6 +36,13 @@ export function formatSevenBridgeState(state: SevenBridgeResponse): string {
   }
   lines.push('----------');
 
+  if (state.roundScoreHistory.length > 0) {
+    lines.push('Round score history:');
+    state.roundScoreHistory.forEach((scores, roundIdx) => {
+      lines.push(`round ${roundIdx + 1}: ${scores.join(', ')}`);
+    });
+  }
+
   if (!state.gameEndFlag) {
     const current = formatPlayerName(state.currentPlayerIdx, state.players[state.currentPlayerIdx]?.isHuman ?? false);
     lines.push(`turn: ${current}`);

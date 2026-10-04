@@ -93,6 +93,34 @@ describe('SevenBridgePage', () => {
     expect(screen.queryByText('ラウンド得点内訳')).not.toBeInTheDocument();
   });
 
+  it('renders round score history from the response and omits the table when empty', async () => {
+    mockExec.mockResolvedValue({
+      ...drawState,
+      roundScoreHistory: [
+        [12, 34],
+        [56, 78],
+      ],
+    });
+    const { unmount } = renderWithProviders(<SevenBridgePage />);
+    const history = await screen.findByTestId('sb-round-score-history');
+    expect(history).toHaveTextContent('ラウンド別得点履歴');
+    const rows = Array.from(history.querySelectorAll<HTMLTableRowElement>('tbody tr'));
+    expect(Array.from(history.querySelectorAll('thead th')).map((cell) => cell.textContent)).toEqual([
+      'ラウンド',
+      'あなた',
+      'CPU 1',
+    ]);
+    expect(rows.map((row) => Array.from(row.cells).map((cell) => cell.textContent))).toEqual([
+      ['1', '12', '34'],
+      ['2', '56', '78'],
+    ]);
+
+    unmount();
+    mockExec.mockResolvedValue(drawState);
+    renderWithProviders(<SevenBridgePage />);
+    await waitFor(() => expect(screen.queryByTestId('sb-round-score-history')).not.toBeInTheDocument());
+  });
+
   it('applies the shared gameTheme background instead of a hardcoded class', async () => {
     mockExec.mockResolvedValue(drawState);
     const { container } = renderWithProviders(<SevenBridgePage />);

@@ -70,4 +70,18 @@ describe('formatSevenBridgeState', () => {
     expect(out).toContain('Game Over! Winner:');
     expect(out).not.toContain('turn:');
   });
+
+  it('prints round score history values in player order', () => {
+    const out = formatSevenBridgeState({
+      ...baseState,
+      roundScoreHistory: [
+        [12, 34],
+        [56, 78],
+      ],
+    });
+    expect(out).toContain('Round score history:');
+    expect(out).toContain('round 1: 12, 34');
+    expect(out).toContain('round 2: 56, 78');
+    expect(formatSevenBridgeState(baseState)).not.toContain('Round score history:');
+  });
 });
