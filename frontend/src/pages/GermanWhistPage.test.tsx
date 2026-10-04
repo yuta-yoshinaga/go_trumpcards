@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { germanwhistApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, GermanWhistResponse } from '../types/card';
@@ -56,6 +57,22 @@ beforeEach(() => {
 });
 
 describe('GermanWhistPage', () => {
+  it('announces the localized trump suit while keeping its symbol and updating with the suit', async () => {
+    const previousLanguage = i18n.language;
+    mockExec.mockResolvedValueOnce(makeState({ trumpSuit: 3 })).mockResolvedValueOnce(makeState({ trumpSuit: 4 }));
+    renderWithProviders(<GermanWhistPage />);
+    try {
+      expect(await screen.findByRole('img', { name: 'ハート' })).toHaveTextContent('♥');
+      await i18n.changeLanguage('en');
+      expect(await screen.findByRole('img', { name: 'Heart' })).toHaveTextContent('♥');
+
+      fireEvent.click(screen.getAllByRole('button', { name: /Playable/ })[0]);
+      expect(await screen.findByRole('img', { name: 'Diamond' })).toHaveTextContent('♦');
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('shows the scoring trick win threshold', async () => {
     renderWithProviders(<GermanWhistPage />);
     expect(await screen.findByTestId('gw-trick')).toHaveTextContent('7');
