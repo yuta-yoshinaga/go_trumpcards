@@ -541,3 +541,37 @@ func TestStreetsAndAlleys_ActionLog(t *testing.T) {
 	assert.Equal(t, "streetsandalleys.log.moveTableauToFoundation", entry.DetailCode)
 	assert.Equal(t, map[string]string{"col": "0"}, entry.DetailParams)
 }
+
+func TestStreetsAndAlleys_GetHint_SkipsSingletonToEmptyColumn(t *testing.T) {
+	t.Run("chooses a useful move", func(t *testing.T) {
+		sa := setupPlayingStreetsAndAlleys()
+		sa.Reset()
+		clearSATableau(sa)
+		var tableau [domain.StreetsAndAlleysTableauCnt][]*domain.StreetsAndAlleysTableauCard
+		tableau[0] = []*domain.StreetsAndAlleysTableauCard{makeSATableauCard(domain.CardDesignSpade, 13)}
+		tableau[2] = []*domain.StreetsAndAlleysTableauCard{makeSATableauCard(domain.CardDesignHeart, 13), makeSATableauCard(domain.CardDesignHeart, 5)}
+		sa.SetTableau(tableau)
+		var foundation [domain.StreetsAndAlleysFoundationCnt][]*domain.Card
+		for i, suit := range []int{domain.CardDesignSpade, domain.CardDesignHeart, domain.CardDesignDiamond, domain.CardDesignClover} {
+			foundation[i] = []*domain.Card{makeSACard(suit, 1)}
+		}
+		sa.SetFoundation(foundation)
+		hint := sa.GetHint()
+		if assert.NotNil(t, hint) {
+			assert.Equal(t, 2, hint.FromCol)
+			assert.Equal(t, 1, hint.CardIndex)
+			assert.Equal(t, 1, hint.ToCol)
+		}
+	})
+	t.Run("no-op moves lead to stalemate", func(t *testing.T) {
+		sa := setupPlayingStreetsAndAlleys()
+		sa.Reset()
+		clearSATableau(sa)
+		var tableau [domain.StreetsAndAlleysTableauCnt][]*domain.StreetsAndAlleysTableauCard
+		tableau[0] = []*domain.StreetsAndAlleysTableauCard{makeSATableauCard(domain.CardDesignSpade, 13)}
+		sa.SetTableau(tableau)
+		assert.Nil(t, sa.GetHint())
+		require.NoError(t, sa.MoveTableauToTableau(0, 0, 1))
+		assert.True(t, sa.IsStalemate())
+	})
+}

@@ -636,3 +636,32 @@ func TestCitadel_AllFaceUp(t *testing.T) {
 	c := newTestCitadel()
 	assert.True(t, c.AllFaceUp())
 }
+
+func TestCitadel_GetHint_SkipsSingletonToEmptyColumn(t *testing.T) {
+	t.Run("chooses a useful move", func(t *testing.T) {
+		c := setupPlayingCitadel()
+		c.Reset()
+		var tab [domain.CitadelTableauCnt][]*domain.CitadelTableauCard
+		tab[0] = []*domain.CitadelTableauCard{makeCitadelTableauCard(domain.CardDesignSpade, 13)}
+		tab[1] = []*domain.CitadelTableauCard{makeCitadelTableauCard(domain.CardDesignHeart, 6), makeCitadelTableauCard(domain.CardDesignHeart, 5)}
+		c.SetTableau(tab)
+		c.SetFoundation([domain.CitadelFoundationCnt][]*domain.Card{})
+		hint := c.GetHint()
+		if assert.NotNil(t, hint) {
+			assert.Equal(t, 1, hint.FromCol)
+			assert.Equal(t, 1, hint.CardIndex)
+			assert.Equal(t, 2, hint.ToCol)
+		}
+	})
+	t.Run("no-op moves lead to stalemate", func(t *testing.T) {
+		c := setupPlayingCitadel()
+		c.Reset()
+		var tab [domain.CitadelTableauCnt][]*domain.CitadelTableauCard
+		tab[0] = []*domain.CitadelTableauCard{makeCitadelTableauCard(domain.CardDesignSpade, 13)}
+		c.SetTableau(tab)
+		c.SetFoundation([domain.CitadelFoundationCnt][]*domain.Card{})
+		assert.Nil(t, c.GetHint())
+		assert.NoError(t, c.MoveTableauToTableau(0, 0, 1))
+		assert.True(t, c.IsStalemate())
+	})
+}

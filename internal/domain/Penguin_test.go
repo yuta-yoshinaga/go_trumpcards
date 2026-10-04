@@ -1162,3 +1162,40 @@ func TestPenguin_GetMaxMovableCards(t *testing.T) {
 		assert.Equal(t, 0, board(0, PenguinTableauCnt).GetMaxMovableCardsToEmptyColumn())
 	})
 }
+
+func TestPenguinGetHintSkipsWholeColumnToEmpty(t *testing.T) {
+	for _, useful := range []bool{true, false} {
+		p := setupPlayingPenguin()
+		p.Reset()
+		p.SetBaseRank(5)
+		var tableau [PenguinTableauCnt][]*Card
+		tableau[0] = []*Card{makeCard(CardDesignSpade, 4)}
+		if useful {
+			tableau[2] = []*Card{makeCard(CardDesignClover, 3), makeCard(CardDesignHeart, 4), makeCard(CardDesignHeart, 3)}
+		}
+		p.SetTableau(tableau)
+		var cells [PenguinCellCnt]*Card
+		for i := range cells {
+			cells[i] = makeCard(CardDesignSpade, 9)
+		}
+		if useful {
+			cells[0] = nil
+		}
+		p.SetFreeCells(cells)
+		var foundation [PenguinFoundationCnt][]*Card
+		for i := range foundation {
+			foundation[i] = []*Card{makeCard(i+1, 13)}
+		}
+		p.SetFoundation(foundation)
+		hint := p.GetHint()
+		if !useful {
+			assert.Nil(t, hint)
+			continue
+		}
+		if assert.NotNil(t, hint) {
+			assert.Equal(t, 2, hint.FromCol)
+			assert.Equal(t, 1, hint.CardIndex)
+			assert.Equal(t, 1, hint.ToCol)
+		}
+	}
+}
