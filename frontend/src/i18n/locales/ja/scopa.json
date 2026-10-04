@@ -28,8 +28,8 @@
   },
   "humanActionLine": "あなたの行動: {{text}}",
   "cpuActionLine": "  {{name}}: {{text}}",
-  "actionCapture": "捕獲 played={{played}} captured={{count}}枚{{suffix}}",
-  "actionScopaSuffix": " (スコパ!)",
+  "actionCapture": "{{played}}を出して{{count}}枚を捕獲{{suffix}}",
+  "actionScopaSuffix": "（スコパ！）",
   "actionLay": "場に置く {{played}}",
   "breakdown": {
     "title": "得点内訳",
