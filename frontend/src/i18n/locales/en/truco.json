@@ -83,6 +83,7 @@
   },
   "settings": {
     "title": "Settings",
-    "matchTarget": "Match target"
+    "matchTarget": "Match target",
+    "matchTargetNextReset": "The changed match target will apply from the next reset."
   }
 }
