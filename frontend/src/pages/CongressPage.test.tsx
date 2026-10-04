@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { congressApi } from '../api/gameApi';
+import { actionLogApi, congressApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -69,6 +69,23 @@ describe('CongressPage', () => {
     renderWithProviders(<CongressPage />);
     await waitFor(() => expect(screen.getByText(/コングレス/)).toBeInTheDocument());
     expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
+  });
+
+  it('opens a populated action log during play', async () => {
+    mockExec.mockResolvedValue(playingState);
+    vi.mocked(actionLogApi.congress).mockResolvedValueOnce({
+      entries: [
+        { turnNumber: 1, playerIdx: 0, actionType: 'move', detailCode: '', detailParams: {}, detail: 'Moved ♠ 9' },
+      ],
+    });
+    renderWithProviders(<CongressPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: '棋譜を見る' }));
+    expect(await screen.findByText(/Moved ♠ 9/)).toBeInTheDocument();
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'd' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('draw');
   });
 
   it('renders eight foundations and eight piles', async () => {

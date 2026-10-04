@@ -161,11 +161,12 @@ func TestCongressCuiPresenter_HintOutput(t *testing.T) {
 }
 
 func TestCongressCuiPresenter_ActionLogOutput(t *testing.T) {
-	t.Run("playing phase returns empty", func(t *testing.T) {
+	t.Run("playing phase returns log", func(t *testing.T) {
 		g := new(interfaces.MockCongressGame)
 		g.On("GetPhase").Return(domain.CongressPhasePlaying)
+		g.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub"}})
 
-		assert.Contains(t, new(CongressCuiPresenter).ActionLogOutput(g), "棋譜はありません")
+		assert.Contains(t, new(CongressCuiPresenter).ActionLogOutput(g), "move")
 	})
 
 	t.Run("game over returns log", func(t *testing.T) {

@@ -158,7 +158,7 @@ function CongressPageContent() {
     [game, confirmGiveUpAction],
   );
 
-  useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading });
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading && !actionLog });
 
   if (!state) {
     return <GameSkeleton gameKey="congress" layout={{ kind: 'tableau', topRow: 8, tableau: TABLEAU_PILES }} />;
@@ -464,6 +464,7 @@ function CongressPageContent() {
 
             <ActionLogSection
               isEndPhase={isEnded}
+              availableDuringPlay
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
