@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { popejoanApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { CardDesign, PopeJoanPlayer, PopeJoanResponse } from '../types/card';
@@ -115,6 +116,22 @@ describe('PopeJoanPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.getByText(/トランプの札でしか取れません/)).toBeInTheDocument();
     expect(screen.getByText(/♦8 が抜いてあるので/)).toBeInTheDocument();
+    expect(screen.getByText(/めくり札がポープ.*ディーラーが対応する区画を即時に獲得/)).toBeInTheDocument();
+  });
+
+  it('explains the turn-up dealer award in English', async () => {
+    const previousLanguage = i18n.language;
+    try {
+      await i18n.changeLanguage('en');
+      renderWithProviders(<PopeJoanPage />);
+      expect(
+        await screen.findByText(
+          /when the turn-up is the Pope, ace, king, queen, or jack, the dealer immediately takes the matching compartment/i,
+        ),
+      ).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('shows which trump combinations can be targeted from the hand', async () => {
