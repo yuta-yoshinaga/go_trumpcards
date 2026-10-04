@@ -18,6 +18,8 @@
   "wheel": "Wheel {{n}}",
   "contract": "Contract: {{name}}",
   "trick": "Trick {{n}}/{{total}}",
+  "opponentHandCount_one": "{{name}}: {{count}} card remaining",
+  "opponentHandCount_other": "{{name}}: {{count}} cards remaining",
   "contractName": {
     "plus": "Plus",
     "minus": "Minus",
