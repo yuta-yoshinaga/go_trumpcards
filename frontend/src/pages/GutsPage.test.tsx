@@ -241,8 +241,20 @@ describe('GutsPage', () => {
     const guide = await screen.findByTestId('guts-declare-guide');
     expect(guide).toHaveTextContent('手役: ペア');
     expect(screen.getByTestId('guts-guide-tier')).toHaveTextContent('高い');
-    // Pot (40) match-loss risk is surfaced next to the buttons.
-    expect(screen.getByTestId('guts-guide-risk')).toHaveTextContent('ポット 40 相当');
+    // The maximum match-loss payment is the smaller of the pot and chip balance.
+    expect(screen.getByTestId('guts-guide-risk')).toHaveTextContent('敗北時の最大支払額: 40');
+  });
+
+  it('caps the declaration guide payment at the human chip balance', async () => {
+    const shortStackState = makeGutsState({
+      phase: 0,
+      pot: 75,
+      players: [{ ...declareState.players[0], isHuman: true, chips: 25 }, ...declareState.players.slice(1)],
+    });
+    mockExec.mockResolvedValue(shortStackState);
+    renderWithProviders(<GutsPage />);
+
+    expect(await screen.findByTestId('guts-guide-risk')).toHaveTextContent('敗北時の最大支払額: 25');
   });
 
   it('shows a weak (low) win-chance guideline and the high-card name for a low hand', async () => {
@@ -338,7 +350,7 @@ describe('GutsPage', () => {
       expect(liveRegion).toHaveAttribute('role', 'status');
       expect(liveRegion).toHaveTextContent('手役: ペア');
       expect(liveRegion).toHaveTextContent('高い');
-      expect(liveRegion).toHaveTextContent('ポット 40 相当');
+      expect(liveRegion).toHaveTextContent('敗北時の最大支払額: 40');
     });
   });
 });
