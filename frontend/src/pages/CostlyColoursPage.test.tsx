@@ -46,7 +46,7 @@ describe('CostlyColoursPage', () => {
     }
   });
 
-  it('marks J and 2 even during the MOG phase', async () => {
+  it('shows each held J and 2 badge with its score, including when there is no turn-up', async () => {
     mockExec.mockResolvedValue(
       makeCostlyColoursState({
         players: [
@@ -55,15 +55,41 @@ describe('CostlyColoursPage', () => {
             cards: [
               { design: 'HEART', value: 11 },
               { design: 'CLOVER', value: 2 },
+              { design: 'HEART', value: 5 },
             ],
           },
           makeCostlyColoursState().players[1],
         ],
       }),
     );
+    const page = renderWithProviders(<CostlyColoursPage />);
+    expect(await screen.findByTitle('J・2: 保持すると 4 点')).toBeInTheDocument();
+    expect(screen.getByTitle('J・2: 保持すると 2 点')).toBeInTheDocument();
+    expect(screen.getByTitle('J・2: 保持すると 4 点')).toHaveTextContent('4');
+    expect(screen.getByTitle('J・2: 保持すると 2 点')).toHaveTextContent('2');
+    expect(screen.getAllByTitle(/J・2/)).toHaveLength(2);
+    page.unmount();
+
+    const defaultState = makeCostlyColoursState();
+    mockExec.mockResolvedValue(
+      makeCostlyColoursState({
+        turnUp: null,
+        players: [
+          {
+            ...defaultState.players[0],
+            cards: [
+              { design: 'SPADE', value: 11 },
+              { design: 'HEART', value: 2 },
+            ],
+          },
+          defaultState.players[1],
+        ],
+      }),
+    );
     renderWithProviders(<CostlyColoursPage />);
-    expect(await screen.findAllByText('★')).toHaveLength(2);
-    expect(screen.getAllByTitle('J・2: 持っているだけで得点になる札')).toHaveLength(2);
+    await screen.findByTestId('costlycolours-turnup');
+    const noTurnUpBadges = await screen.findAllByTitle(/J・2: 保持すると 2 点/);
+    expect(noTurnUpBadges).toHaveLength(2);
   });
   it('calls reset on mount with the configured target', async () => {
     renderWithProviders(<CostlyColoursPage />);
