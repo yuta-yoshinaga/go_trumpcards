@@ -9,6 +9,7 @@
   "pistiCelebrationJack": "PİŞTİ +20! (J)",
   "finalScore": "{{score}} pts",
   "provisional": "Provisional {{score}}",
+  "provisionalLeader": "Provisional leader with the most captured cards",
   "provisionalScoreUpdate_one": "{{name}}'s provisional score is {{score}} point",
   "provisionalScoreUpdate_other": "{{name}}'s provisional score is {{score}} points",
   "listSeparator": ", ",

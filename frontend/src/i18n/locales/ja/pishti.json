@@ -9,6 +9,7 @@
   "pistiCelebrationJack": "PİŞTİ +20! (J)",
   "finalScore": "{{score}}点",
   "provisional": "暫定 {{score}}点",
+  "provisionalLeader": "暫定の最多捕獲者",
   "provisionalScoreUpdate": "{{name}}の暫定得点は{{score}}点です",
   "listSeparator": "、",
   "scoreBreakdown": "カード点 {{cards}} / Pişti賞 {{pisti}} / 最多捕獲 {{most}}点（暫定）",
