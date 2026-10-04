@@ -333,16 +333,38 @@ function ZwickerPageContent() {
               )}
             </div>
 
-            {roundOver && state.lastRound && (
-              <div className="text-center text-sm mb-3" data-testid="zwicker-round-result">
-                {t('roundResult', {
-                  us: state.lastRound.total[0] ?? 0,
-                  them: state.lastRound.total[1] ?? 0,
-                })}
-                {/* 同数だと 3 点が宙に浮く。黙っていると合計が合わないように見える。 */}
-                {state.lastRound.majorityTeam < 0 && ` · ${t('majorityTied')}`}
-              </div>
-            )}
+            {roundOver &&
+              state.lastRound &&
+              (() => {
+                const lr = state.lastRound;
+                return (
+                  <div className="text-center text-sm mb-3" data-testid="zwicker-round-result">
+                    <div>
+                      {t('roundResult', {
+                        us: lr.total[0] ?? 0,
+                        them: lr.total[1] ?? 0,
+                      })}
+                    </div>
+                    <div className="mt-1 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-ds-text-muted">
+                      {[0, 1].map((team) => {
+                        const key = team === 0 ? 'teamBreakdownUs' : 'teamBreakdownThem';
+                        return (
+                          <span key={team}>
+                            {t(key, {
+                              cardPoints: lr.cardPoints[team],
+                              cards: lr.cards[team],
+                              zwicks: lr.zwicks[team],
+                              total: lr.total[team],
+                            })}
+                          </span>
+                        );
+                      })}
+                    </div>
+                    {/* 同数だと 3 点が宙に浮く。黙っていると合計が合わないように見える。 */}
+                    {lr.majorityTeam < 0 && <div className="mt-1">{t('majorityTied')}</div>}
+                  </div>
+                );
+              })()}
 
             <div className="text-center" data-tutorial="zw-hand">
               <div className="text-game-text-muted text-xs mb-1">
