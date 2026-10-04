@@ -25,6 +25,7 @@
     "yourTurn": "Your turn",
     "dummyTurn": "The dummy's turn (you play it)",
     "cpuOperatedDummy": "The CPU operates this dummy hand",
+    "cpuProcessing": "CPU's turn. Processing…",
     "teamTag": "T{{team}}",
     "teamAllyAria": "your partner",
     "teamFoeAria": "the opposing team"
