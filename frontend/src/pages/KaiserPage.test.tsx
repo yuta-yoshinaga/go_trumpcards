@@ -142,6 +142,25 @@ describe('KaiserPage', () => {
     expect(made).toHaveClass('text-ds-success');
   });
 
+  it('announces team score changes without repeating unchanged scores', async () => {
+    const { unmount } = renderWithProviders(<KaiserPage />);
+    await screen.findByTestId('kaiser-scores');
+    const status = screen.getByRole('status');
+    expect(status).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValue(makeState({ teamHandPoints: [4, 2], teamScores: [10, 8] }));
+    fireEvent.click(handButtons()[0]);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(status).toHaveTextContent('得点更新。この局: 4 対 2。通算: 10 対 8'));
+
+    mockExec.mockResolvedValue(makeState({ teamHandPoints: [4, 2], teamScores: [10, 8] }));
+    fireEvent.click(handButtons()[0]);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(screen.getByTestId('kaiser-scores')).toHaveTextContent('この局: 4 対 2'));
+    expect(status).toHaveTextContent('得点更新。この局: 4 対 2。通算: 10 対 8');
+    unmount();
+  });
+
   it('does not show contract progress outside play or before a contract is awarded', async () => {
     for (const state of [
       makeState({ phase: KaiserPhase.BID, highBid: null, declarerIdx: -1 }),
