@@ -80,5 +80,6 @@
     "resetButton": "ゲームをリセットして最初からやり直します。"
   },
   "hintRequested": "ヒントがあります",
-  "noHint": "ヒントはありません"
+  "noHint": "ヒントはありません",
+  "hintTarget": "ヒント対象"
 }

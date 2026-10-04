@@ -344,6 +344,19 @@ describe('AnacondaPage', () => {
     // 未選択のあいだ潰される。印だけ見ていても気づけない。
     const ringed = document.querySelector('[data-hint-card="true"]') as HTMLElement;
     expect(ringed.style.outline).toContain('var(--color-ds-warning)');
+    expect(ringed).toHaveAttribute('aria-describedby', 'anaconda-hint-target-description');
+    expect(screen.getByText('ヒント対象', { selector: '#anaconda-hint-target-description' })).toBeInTheDocument();
+    expect(ringed).toHaveAccessibleDescription('ヒント対象');
+    expect(ringed).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('describes suggested keep cards to screen readers', async () => {
+    mockExec.mockResolvedValue(makeAnacondaState({ hint: { action: 'keep', cardIndices: [1], reason: 'keep_best' } }));
+    renderWithProviders(<AnacondaPage />);
+    fireEvent.click(await screen.findByRole('checkbox', { name: 'ヒント表示' }));
+    await waitFor(() =>
+      expect(document.querySelector('[data-hint-card="true"]')).toHaveAccessibleDescription('ヒント対象'),
+    );
   });
 
   it('rings nothing for a betting suggestion or while hints are off', async () => {
@@ -353,6 +366,7 @@ describe('AnacondaPage', () => {
     fireEvent.click(toggle);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(document.querySelectorAll('[data-hint-card="true"]')).toHaveLength(0);
+    expect(cardButtons().every((button) => !button.hasAttribute('aria-describedby'))).toBe(true);
   });
 
   // #5703: 「左隣」は脱落者を飛ばすので席番号 +1 とは限らない。CUI は受取人を
