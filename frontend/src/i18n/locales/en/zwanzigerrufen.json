@@ -36,6 +36,8 @@
   },
   "turnAnnouncement": "{{name}}'s turn for {{action}}",
   "cards": "{{count}} cards",
+  "tricks_one": "{{count}} trick won",
+  "tricks_other": "{{count}} tricks won",
   "points": "{{points}} pts this deal",
   "score": "total {{score}}",
   "currentTrick": "Current trick",
