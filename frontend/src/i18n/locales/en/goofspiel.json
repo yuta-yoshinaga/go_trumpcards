@@ -40,7 +40,9 @@
   },
   "result": {
     "you": "You win! You took the most with {{n}} points.",
-    "cpu": "{{name}} took the most with {{n}} points."
+    "cpu": "{{name}} took the most with {{n}} points.",
+    "tie": "{{players}} tied with {{n}} points.",
+    "tieBreaker": "The player in the lowest-numbered seat wins."
   },
   "hint": {
     "goofspielMatch": "This matches the prize's rank.",

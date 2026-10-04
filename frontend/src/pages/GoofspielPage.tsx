@@ -179,7 +179,20 @@ function GoofspielPageContent() {
   const resultBanner = (() => {
     if (!isGameEnd || state.winnerIdx < 0) return null;
     const n = String(state.players[state.winnerIdx]?.score ?? 0);
-    return state.winnerIdx === 0 ? t('result.you', { n }) : t('result.cpu', { name: seatName(state.winnerIdx), n });
+    const tiedPlayers = state.players.filter((player) => player.score === Number(n));
+    const winnerResult =
+      state.winnerIdx === 0 ? t('result.you', { n }) : t('result.cpu', { name: seatName(state.winnerIdx), n });
+    if (tiedPlayers.length < 2) return winnerResult;
+
+    return (
+      <>
+        {t('result.tie', {
+          players: tiedPlayers.map((player) => seatName(player.id)).join(t('listSeparator')),
+          n,
+        })}{' '}
+        {t('result.tieBreaker')}
+      </>
+    );
   })();
 
   return (
