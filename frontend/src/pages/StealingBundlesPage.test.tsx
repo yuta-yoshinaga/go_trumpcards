@@ -176,7 +176,7 @@ describe('StealingBundlesPage', () => {
     renderWithProviders(<StealingBundlesPage />);
     await waitFor(() => expect(screen.getAllByRole('button', { name: /を選ぶ$/ })).toHaveLength(4));
     selectCard(0);
-    expect(await screen.findByTestId('sb-take-btn')).toHaveTextContent('♣ 7, ♥ 7');
+    expect(await screen.findByTestId('sb-take-btn')).toHaveTextContent('♣ 7、♥ 7');
   });
   it('resets on mount', async () => {
     renderWithProviders(<StealingBundlesPage />);
