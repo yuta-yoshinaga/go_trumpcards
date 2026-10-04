@@ -242,7 +242,7 @@ function SutdaPageContent() {
               {state.players.map((p) => (
                 <section
                   key={p.id}
-                  aria-label={playerName(p.id, p.isHuman)}
+                  aria-labelledby={`sutda-player-${p.id}`}
                   className="py-2 border-b border-white/5 last:border-0"
                 >
                   <div className="text-ds-text-muted text-sm flex items-center gap-2 mb-1">
