@@ -225,6 +225,8 @@ describe('TarneebPage', () => {
     const bid9 = await screen.findByTestId('bid-option-9');
     expect(screen.queryByTestId('bid-option-6')).not.toBeInTheDocument();
     expect(screen.getByTestId('bid-option-13')).toBeInTheDocument();
+    expect(bid9).toHaveClass('h-11', 'w-11');
+    expect(bid9.closest('fieldset')).toHaveClass('grid-cols-4', 'sm:grid-cols-7');
 
     fireEvent.click(bid9);
     expect(bid9).toHaveAttribute('aria-pressed', 'true');
