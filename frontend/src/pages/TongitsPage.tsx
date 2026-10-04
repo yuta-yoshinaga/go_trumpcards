@@ -40,6 +40,11 @@ import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { tongitsMeldIndices } from '../utils/tongitsMeldIndices';
 
+/** Builds a stable public meld row key that is unique across players. */
+export function publicMeldRowKey(playerId: number, meldIdx: number): string {
+  return `opp-meld-${playerId}-${meldIdx}`;
+}
+
 const TONGITS_PHASE_KEYS: Readonly<Record<number, string>> = {
   [TongitsPhase.DRAW]: 'draw',
   [TongitsPhase.DISCARD]: 'discard',
@@ -319,7 +324,7 @@ function TongitsPageContent() {
                     {state.players
                       .flatMap((p) => p.melds.map((meld, meldIdx) => ({ p, meld, meldIdx })))
                       .map(({ p, meld, meldIdx }) => (
-                        <div key={`opp-meld-${meldIdx}`} className="flex flex-wrap gap-1 mb-1">
+                        <div key={publicMeldRowKey(p.id, meldIdx)} className="flex flex-wrap gap-1 mb-1">
                           <span className="text-ds-text-muted text-xs w-full">{playerName(p.id, p.isHuman)}</span>
                           {meld.cards.map((card, cardIdx) => (
                             <AnimatedCard
