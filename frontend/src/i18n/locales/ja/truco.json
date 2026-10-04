@@ -83,6 +83,7 @@
   },
   "settings": {
     "title": "設定",
-    "matchTarget": "マッチ目標点"
+    "matchTarget": "マッチ目標点",
+    "matchTargetNextReset": "マッチ目標点の変更は次のリセットから適用されます。"
   }
 }
