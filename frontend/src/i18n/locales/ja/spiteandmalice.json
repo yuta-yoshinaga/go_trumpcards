@@ -72,7 +72,10 @@
     "goalEmpty": "{{label}}: 空",
     "sideTop": "{{label}} {{n}} 一番上: {{card}} ({{count}}枚)",
     "sideEmpty": "{{label}} {{n}}: 空",
+    "cpuSideTop": "CPUのサイドパイル {{n}}{{listSeparator}}一番上: {{card}} ({{count}}枚)",
+    "cpuSideEmpty": "CPUのサイドパイル {{n}}: 空",
     "foundationTop": "{{label}} {{n}}: {{card}} (一番上={{top}})",
     "foundationEmpty": "{{label}} {{n}}: 空"
-  }
+  },
+  "listSeparator": "、"
 }
