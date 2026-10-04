@@ -24,6 +24,7 @@
     "rebuy": "Rebuy/Addon"
   },
   "communityCards": "Community Cards",
+  "best5Card": "part of the best hand",
   "rankOverrideReminder": "Short Deck special rule: Flush beats Full House",
   "rankWatermark": "♣♠♥♦ Flush > Full House",
   "yourHand": "Your Hand",

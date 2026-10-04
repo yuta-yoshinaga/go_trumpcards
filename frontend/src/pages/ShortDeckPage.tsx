@@ -41,6 +41,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { ShortDeckResponse } from '../types/card';
 import { HoldemPhase, HoldemRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseShortdeckCommand, SHORTDECK_HELP } from '../utils/cli/commands/shortdeckCommands';
 import { formatShortdeckState } from '../utils/cli/formatters/shortdeckFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
@@ -333,7 +334,12 @@ function ShortDeckPageContent() {
                               } ${dim ? 'opacity-50' : ''}`}
                               data-best5-board={inBest || undefined}
                             >
-                              <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                              <AnimatedCard
+                                card={card}
+                                width={cardWidth}
+                                style={placeholderCardStyle}
+                                ariaLabel={inBest ? `${cardAlt(card)} ${t('best5Card')}` : undefined}
+                              />
                             </div>
                           );
                         })
@@ -478,7 +484,12 @@ function ShortDeckPageContent() {
                             } ${dim ? 'opacity-50' : ''}`}
                             data-best5-hole={inBest || undefined}
                           >
-                            <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                            <AnimatedCard
+                              card={card}
+                              width={cardWidth}
+                              style={placeholderCardStyle}
+                              ariaLabel={inBest ? `${cardAlt(card)} ${t('best5Card')}` : undefined}
+                            />
                           </div>
                         );
                       })
