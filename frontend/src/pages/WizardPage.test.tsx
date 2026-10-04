@@ -614,6 +614,34 @@ describe('WizardPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, 0));
   });
 
+  it('prevents selecting illegal cards on the human play turn', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      currentTrick: [{ playerIdx: 3, card: { design: 'HEART', value: 4 } }],
+    });
+    renderWithProviders(<WizardPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ A' })).toBeInTheDocument());
+
+    const illegalCard = screen.getByRole('button', { name: '♠ A' });
+    const legalCard = screen.getByRole('button', { name: '♥ J' });
+    expect(illegalCard).toHaveAttribute('aria-disabled', 'true');
+    expect(legalCard).not.toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(illegalCard);
+    expect(illegalCard).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(legalCard);
+    expect(legalCard).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('keeps cards selectable off turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<WizardPage />);
+    const card = await screen.findByRole('button', { name: '♠ A' });
+
+    expect(card).not.toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(card);
+    expect(card).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('calls next when next trick button is clicked', async () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<WizardPage />);
