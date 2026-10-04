@@ -18,15 +18,16 @@ import (
 
 func mustPiedmonteseTarotOutputJSON(msg string) string {
 	out := &controller.PiedmonteseTarotWebOutput{
-		Players:         []*controller.PiedmonteseTarotWebOutputPlayer{},
-		CurrentTrick:    []*controller.WebOutputTrickCard{},
-		ScartoCards:     []*controller.WebOutputCard{},
-		PlayableIndices: []int{},
-		PlayerScores:    []int{},
-		DealScores:      []int{},
-		LastTrickWinner: -1,
-		WinnerPlayer:    -1,
-		WebOutputBase:   controller.WebOutputBase{Message: msg},
+		Players:          []*controller.PiedmonteseTarotWebOutputPlayer{},
+		CurrentTrick:     []*controller.WebOutputTrickCard{},
+		ScartoCards:      []*controller.WebOutputCard{},
+		PlayableIndices:  []int{},
+		PlayerScores:     []int{},
+		DealScores:       []int{},
+		DealScoreHistory: []controller.PiedmonteseTarotWebOutputDealScore{},
+		LastTrickWinner:  -1,
+		WinnerPlayer:     -1,
+		WebOutputBase:    controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

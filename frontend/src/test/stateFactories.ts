@@ -2314,6 +2314,7 @@ const basePiedmonteseTarotState: PiedmonteseTarotResponse = {
   completedTricks: [],
   playerScores: [0, 0, 0, 0],
   dealScores: [0, 0, 0, 0],
+  dealScoreHistory: [],
   lastTrickWinner: -1,
   outcome: 0,
   result: 0,
