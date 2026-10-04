@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sambaApi } from '../api/gameApi';
 import i18n from '../i18n';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeSambaState } from '../test/stateFactories';
 import { SambaPage } from './SambaPage';
@@ -182,7 +183,13 @@ describe('SambaPage', () => {
   });
 
   it('shows discard phase buttons', async () => {
-    mockExec.mockResolvedValue(discardPhaseState);
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        phase: 2,
+        messageCode: 'samba.discardPhase',
+        players: makeSambaState().players.map((p) => (p.isHuman ? { ...p, cards: [], cardCount: 0 } : p)),
+      }),
+    );
     renderWithProviders(<SambaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '捨てる' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: '上がる' })).toBeInTheDocument();
@@ -198,7 +205,13 @@ describe('SambaPage', () => {
     [1, '完成メルド 1/2', '上がるにはチームで完成メルドが2個必要です'],
     [2, '完成メルド 2/2', undefined],
   ] as const)('shows go-out progress for %d completed melds', async (completed, progress, title) => {
-    mockExec.mockResolvedValue(makeSambaState({ phase: 2, completedMelds: [completed, 0] }));
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        phase: 2,
+        completedMelds: [completed, 0],
+        players: makeSambaState().players.map((p) => (p.isHuman ? { ...p, cards: [], cardCount: 0 } : p)),
+      }),
+    );
     renderWithProviders(<SambaPage />);
     await waitFor(() => expect(screen.getByTestId('sa-go-out-progress')).toHaveTextContent(progress));
     const goOut = screen.getByRole('button', { name: '上がる' });
@@ -211,11 +224,60 @@ describe('SambaPage', () => {
     }
   });
 
+  it.each([
+    {
+      cards: [
+        { design: 'SPADE' as const, value: 4 },
+        { design: 'SPADE' as const, value: 5 },
+      ],
+      expected: '上がるには手札を1枚以下にしてください',
+    },
+    { cards: [{ design: 'HEART' as const, value: 3 }], expected: '赤3は捨てられないため上がれません' },
+  ])('explains why go-out is unavailable for the hand', async ({ cards, expected }) => {
+    const base = makeSambaState();
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        phase: 2,
+        completedMelds: [2, 0],
+        players: base.players.map((p) => (p.isHuman ? { ...p, cards, cardCount: cards.length } : p)),
+      }),
+    );
+    renderWithProviders(<SambaPage />);
+    const goOut = await screen.findByRole('button', { name: '上がる' });
+    expect(goOut).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByTestId('sa-go-out-guidance')).toHaveTextContent(expected);
+    mockExec.mockClear();
+    fireEvent.click(goOut);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('allows going out with no cards or one non-red-three when melds are complete', async () => {
+    const base = makeSambaState();
+    for (const cards of [[], [{ design: 'SPADE' as const, value: 4 }]]) {
+      mockExec.mockResolvedValue(
+        makeSambaState({
+          phase: 2,
+          completedMelds: [2, 0],
+          players: base.players.map((p) => (p.isHuman ? { ...p, cards, cardCount: cards.length } : p)),
+        }),
+      );
+      const { unmount } = renderWithProviders(<SambaPage />);
+      const goOut = await screen.findByRole('button', { name: '上がる' });
+      expect(goOut).toHaveAttribute('aria-disabled', 'false');
+      fireEvent.click(goOut);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('goout'));
+      unmount();
+      mockExec.mockClear();
+    }
+  });
+
   it('uses the server-provided go-out requirement for progress and tooltip', async () => {
     mockExec.mockResolvedValue(
       makeSambaState({
         phase: 2,
         completedMelds: [2, 0],
+        players: makeSambaState().players.map((p) => (p.isHuman ? { ...p, cards: [], cardCount: 0 } : p)),
         config: { ...makeSambaState().config, goOutRequiredMelds: 3 },
       }),
     );

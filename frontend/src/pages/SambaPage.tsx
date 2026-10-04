@@ -102,6 +102,11 @@ function SambaPageContent() {
 
   const humanPlayer = state?.players.find((p) => p.isHuman);
   const humanCardCount = humanPlayer?.cards?.length ?? 0;
+  const lastHandCard = humanPlayer?.cards[0];
+  const humanHasLastRed3 =
+    humanCardCount === 1 &&
+    lastHandCard?.value === 3 &&
+    (lastHandCard.design === 'HEART' || lastHandCard.design === 'DIAMOND');
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('samba');
   const cliConfig: CliGameConfig<SambaResponse, Parameters<typeof sambaApi.exec>> = useMemo(
@@ -123,7 +128,15 @@ function SambaPageContent() {
   const isGameEnd = state?.phase === SambaPhase.GAME_END || !!state?.gameEndFlag;
   const completedMelds = state && humanPlayer ? state.completedMelds[humanPlayer.team] : 0;
   const goOutRequiredMelds = state?.config.goOutRequiredMelds ?? 0;
-  const canGoOut = completedMelds >= goOutRequiredMelds;
+  const canGoOut = humanCardCount <= 1 && !humanHasLastRed3 && completedMelds >= goOutRequiredMelds;
+  const goOutUnavailableReason =
+    humanCardCount > 1
+      ? t('goOutHandTooLarge')
+      : humanHasLastRed3
+        ? t('goOutRedThree')
+        : completedMelds < goOutRequiredMelds
+          ? t('goOutUnavailable', { required: goOutRequiredMelds })
+          : '';
 
   const drawDiscardReason = useMemo(() => {
     if (!isDrawPhase) return '';
@@ -565,6 +578,13 @@ function SambaPageContent() {
                   >
                     {t('goOutProgress', { completed: completedMelds, required: goOutRequiredMelds })}
                   </div>
+                  <div
+                    id="sa-go-out-guidance"
+                    className="w-full text-xs text-ds-warning"
+                    data-testid="sa-go-out-guidance"
+                  >
+                    {goOutUnavailableReason}
+                  </div>
                   <button
                     type="button"
                     className={btnPrimary}
@@ -575,10 +595,13 @@ function SambaPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={btnSuccess}
-                    onClick={handleGoOut}
-                    disabled={loading}
-                    title={!canGoOut ? t('goOutUnavailable', { required: goOutRequiredMelds }) : undefined}
+                    className={`${btnSuccess} aria-disabled:cursor-not-allowed aria-disabled:opacity-50`}
+                    onClick={() => {
+                      if (!loading && canGoOut) handleGoOut();
+                    }}
+                    aria-disabled={loading || !canGoOut}
+                    aria-describedby={goOutUnavailableReason ? 'sa-go-out-guidance' : undefined}
+                    title={goOutUnavailableReason || undefined}
                   >
                     {t('goOutButton')}
                   </button>
