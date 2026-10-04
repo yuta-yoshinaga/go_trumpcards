@@ -6,6 +6,8 @@
   },
   "decideSummary": "ポット: {{pot}}チップ | 参加して0トリックだと罰金 {{penalty}}チップ（降りれば罰金なし）",
   "decideSummaryHelp": "「参加」して1トリックも取れないと「ブーレ」となり {{penalty}}チップを支払います。「降りる」を選べば罰金はありません。",
+  "playableAria": "{{card}}。出せる札",
+  "notPlayableAria": "{{card}}。出せない札",
   "label": {
     "pot": "ポット",
     "carry": "繰越",

@@ -25,7 +25,7 @@ import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BourreResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
-import { isRedSuitDesign, isSuitDesign, suitSymbol } from '../utils/cardAlt';
+import { cardAlt, isRedSuitDesign, isSuitDesign, suitSymbol } from '../utils/cardAlt';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
@@ -420,6 +420,11 @@ function BourrePageContent() {
                     <button
                       key={`hand-${c.design}-${c.value}-${i}`}
                       type="button"
+                      aria-label={
+                        phase === 'play' && isHumanTurn
+                          ? t(validPlays.has(i) ? 'playableAria' : 'notPlayableAria', { card: cardAlt(c) })
+                          : undefined
+                      }
                       aria-pressed={phase === 'draw' ? isSelected : undefined}
                       className={
                         isSelected
