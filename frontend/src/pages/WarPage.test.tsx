@@ -107,6 +107,41 @@ afterEach(() => {
 });
 
 describe('WarPage', () => {
+  it('shows the server final card totals and winner only after the game ends', async () => {
+    renderWithProviders(<WarPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    expect(screen.queryByTestId('war-final-result')).not.toBeInTheDocument();
+
+    mockExec.mockResolvedValueOnce(gameEndState);
+    fireEvent.click(screen.getByTestId('step-button'));
+    const result = await screen.findByTestId('war-final-result');
+    expect(result).toHaveTextContent('最終結果');
+    expect(result).toHaveTextContent('あなた: 52枚');
+    expect(result).toHaveTextContent('CPU: 0枚');
+    expect(result).toHaveTextContent('勝者: あなた');
+  });
+
+  it('shows CPU as the winner with the server final card totals when CPU wins', async () => {
+    renderWithProviders(<WarPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+
+    mockExec.mockResolvedValueOnce({
+      ...gameEndState,
+      winnerIdx: 1,
+      players: gameEndState.players.map((player, index) => ({
+        ...player,
+        totalCards: index === 0 ? 0 : 52,
+      })),
+    });
+    fireEvent.click(screen.getByTestId('step-button'));
+
+    const result = await screen.findByTestId('war-final-result');
+    expect(result).toHaveTextContent('最終結果');
+    expect(result).toHaveTextContent('あなた: 0枚');
+    expect(result).toHaveTextContent('CPU: 52枚');
+    expect(result).toHaveTextContent('勝者: CPU 1');
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<WarPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
