@@ -155,12 +155,24 @@ function FiftyOnePageContent() {
         'p <handIdx> <tableIdx> - Exchange 1 card',
         'a/all                 - Exchange all 5',
         'stop                  - Call stop',
+        t('cli.difficultyHelp'),
         'r/reset               - Reset game',
         'l/log                 - Show action log',
       ],
-      localCommand: hintLocalCommand(frontendHint),
+      localCommand: hintLocalCommand(frontendHint, (input: string) => {
+        const parts = input.trim().toLowerCase().split(/\s+/);
+        if (parts[0] === 'sd') {
+          if (parts.length !== 2 || !/^[0-2]$/.test(parts[1] ?? '')) return t('cli.difficultyUsage');
+          const difficulty = Number(parts[1]);
+          setCpuDifficulty(difficulty);
+          return t('cli.difficultySet', {
+            difficulty: t(DIFFICULTY_OPTIONS[difficulty]?.labelKey ?? 'settings.difficultyNormal'),
+          });
+        }
+        return null;
+      }),
     }),
-    [frontendHint],
+    [frontendHint, t],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
