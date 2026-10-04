@@ -67,6 +67,9 @@
     "total": "Total bet (Ante ×2 + Trips)",
     "overBalance": "Total bet exceeds your chip balance"
   },
+  "currentBets": {
+    "title": "Current bets"
+  },
   "preflopEval": {
     "strong": "Assessment: strong hand → 4× recommended",
     "moderate": "Assessment: marginal hand → 3× recommended",
