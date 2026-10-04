@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { bauernschnapsenApi } from '../api/gameApi';
+import { actionLogApi, bauernschnapsenApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BauernschnapsenResponse, Card } from '../types/card';
 import { BauernschnapsenPhase } from '../types/phases';
@@ -20,6 +20,7 @@ vi.mock('../providers/SoundProvider', () => ({
 }));
 
 const mockExec = vi.mocked(bauernschnapsenApi.exec);
+const mockActionLog = vi.mocked(actionLogApi.bauernschnapsen);
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
@@ -71,11 +72,29 @@ const gameEndState = makeState({
 
 beforeEach(() => {
   mockExec.mockReset();
+  mockActionLog.mockReset();
+  mockActionLog.mockResolvedValue({
+    entries: [
+      {
+        turnNumber: 1,
+        playerIdx: 0,
+        actionType: 'play',
+        detail: 'あなたが♠ Kを出した',
+        detailParams: { player: 'あなた', card: '♠ K' },
+        cards: [],
+      },
+    ],
+  });
   mockPlaySound.mockClear();
   mockExec.mockResolvedValue(initialState);
 });
 
 describe('BauernschnapsenPage', () => {
+  it('opens the action log during play and shows its entry', async () => {
+    renderWithProviders(<BauernschnapsenPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '棋譜を見る' }));
+    expect(await screen.findByText(/あなたが♠ Kを出した/)).toBeInTheDocument();
+  });
   it('calls reset on mount with default config', async () => {
     renderWithProviders(<BauernschnapsenPage />);
     await waitFor(() =>

@@ -132,5 +132,5 @@ func (p *BauernschnapsenWebPresenter) HintOutput(g interfaces.BauernschnapsenGam
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *BauernschnapsenWebPresenter) ActionLogOutput(g interfaces.BauernschnapsenGame) string {
-	return actionLogOutputJSON(g)
+	return actionLogToJSON(g.GetActionLog())
 }

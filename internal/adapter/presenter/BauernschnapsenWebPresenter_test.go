@@ -173,7 +173,11 @@ func TestBauernschnapsenWebPresenter_HintOutput_Nil(t *testing.T) {
 func TestBauernschnapsenWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.BauernschnapsenWebPresenter)
 	m := setupBauernschnapsenWebMock()
-	assert.NotNil(t, p.ActionLogOutput(m))
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetActionLog")
+	m.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "bauernschnapsen.log.play", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 13, false)}}})
+	var result controller.ActionLogWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(p.ActionLogOutput(m)), &result))
+	assert.Len(t, result.Entries, 1, "棋譜は対局中も出力する")
 }
 
 // **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の

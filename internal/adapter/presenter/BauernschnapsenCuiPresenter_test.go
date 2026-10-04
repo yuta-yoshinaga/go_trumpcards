@@ -174,8 +174,10 @@ func TestBauernschnapsenCuiPresenter_HintOutput(t *testing.T) {
 
 func TestBauernschnapsenCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := setupBauernschnapsenCuiMock()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetActionLog")
+	m.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, PlayerIdx: -1, ActionType: "play", DetailCode: "bauernschnapsen.log.play", DetailParams: map[string]string{"player": "CPU 1", "card": "♠13"}, Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 13, false)}}})
 	p := new(presenter.BauernschnapsenCuiPresenter)
-	assert.NotNil(t, p.ActionLogOutput(m))
+	assert.Contains(t, p.ActionLogOutput(m), "♠13", "棋譜は対局中も出力する")
 }
 
 // 切り札は**表向きの札ではなく宣言**で決まる。クローン元のガイゲルにあった
