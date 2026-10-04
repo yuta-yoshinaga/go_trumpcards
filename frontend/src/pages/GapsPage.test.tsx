@@ -71,6 +71,32 @@ beforeEach(() => {
 });
 
 describe('GapsPage', () => {
+  it('moves button focus by row and column with arrow keys using roving tab stops', async () => {
+    renderWithProviders(<GapsPage />);
+    const first = await screen.findByTestId('gaps-locked-0-0');
+    expect(first).toHaveAttribute('tabindex', '0');
+    fireEvent.keyDown(first, { key: 'ArrowRight' });
+    const rightCell = screen.getByTestId('gaps-locked-0-1');
+    expect(rightCell).toHaveFocus();
+    expect(rightCell).toHaveAttribute('tabindex', '0');
+    expect(first).toHaveAttribute('tabindex', '-1');
+    fireEvent.keyDown(rightCell, { key: 'ArrowDown' });
+    expect(screen.getByTestId('gaps-locked-1-1')).toHaveFocus();
+  });
+
+  it('keeps focus within the board edges and leaves other keys alone', async () => {
+    renderWithProviders(<GapsPage />);
+    const first = await screen.findByTestId('gaps-locked-0-0');
+    fireEvent.keyDown(first, { key: 'ArrowLeft' });
+    expect(first).toHaveFocus();
+    const lastRowCell = screen.getByTestId('gaps-locked-3-0');
+    lastRowCell.focus();
+    fireEvent.keyDown(lastRowCell, { key: 'ArrowDown' });
+    expect(lastRowCell).toHaveFocus();
+    fireEvent.keyDown(lastRowCell, { key: 'x' });
+    expect(lastRowCell).toHaveFocus();
+  });
+
   it('renders skeleton when state is null', () => {
     mockedRun.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<GapsPage />);

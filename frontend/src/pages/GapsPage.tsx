@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useState } from 'react';
+import { type KeyboardEvent as ReactKeyboardEvent, useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { type GapsMoveZone, gapsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -154,6 +154,31 @@ function GapsPageContent() {
   // Keep the existing drag path and add a click/touch/keyboard path: select a
   // movable card first, then activate the destination cell.
   const [selectedSource, setSelectedSource] = useState<GapsMoveZone | null>(null);
+  const [activeCell, setActiveCell] = useState({ row: 0, col: 0 });
+  const handleGridKeyDown = useCallback(
+    (event: ReactKeyboardEvent<HTMLButtonElement>, row: number, col: number) => {
+      const moves: Record<string, [number, number]> = {
+        ArrowLeft: [0, -1],
+        ArrowRight: [0, 1],
+        ArrowUp: [-1, 0],
+        ArrowDown: [1, 0],
+      };
+      const move = moves[event.key];
+      if (!move) return;
+      event.preventDefault();
+      const board = state?.grid;
+      if (!board?.length) return;
+      const nextRow = Math.max(0, Math.min(board.length - 1, row + move[0]));
+      const nextCol = Math.max(0, Math.min((board[nextRow]?.length ?? 1) - 1, col + move[1]));
+      setActiveCell({ row: nextRow, col: nextCol });
+      document
+        .querySelector<HTMLButtonElement>(
+          `[data-testid="gaps-cell-${nextRow}-${nextCol}"], [data-testid="gaps-locked-${nextRow}-${nextCol}"]`,
+        )
+        ?.focus();
+    },
+    [state?.grid],
+  );
   const isSameZone = useCallback(
     (left: GapsMoveZone | null, right: GapsMoveZone) =>
       left?.zone === right.zone && left?.row === right.row && left?.col === right.col,
@@ -276,6 +301,8 @@ function GapsPageContent() {
                         {/* Keep drag handlers on an enabled div: browsers do not dispatch dragover/drop to disabled form controls. */}
                         <button
                           type="button"
+                          tabIndex={activeCell.row === rIdx && activeCell.col === cIdx ? 0 : -1}
+                          onKeyDown={(event) => handleGridKeyDown(event, rIdx, cIdx)}
                           onClick={() => handleSelectTarget(zone)}
                           aria-label={gapAria}
                           data-testid={`gaps-cell-${rIdx.toString()}-${cIdx.toString()}`}
@@ -330,6 +357,8 @@ function GapsPageContent() {
                     <button
                       type="button"
                       key={`cell-${rIdx.toString()}-${cIdx.toString()}`}
+                      tabIndex={activeCell.row === rIdx && activeCell.col === cIdx ? 0 : -1}
+                      onKeyDown={(event) => handleGridKeyDown(event, rIdx, cIdx)}
                       draggable={isPlaying && !loading && !isLocked}
                       onDragStart={dnd.handleDragStart(zone)}
                       onDragEnd={dnd.handleDragEnd}
