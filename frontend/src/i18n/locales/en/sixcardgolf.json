@@ -15,6 +15,7 @@
     "cpu": "CPU {{id}}",
     "faceDown": "Face Down",
     "finalTurn": "Final Turn",
+    "currentTurn": "Current turn: {{name}}",
     "columnScore": "{{score}} pt",
     "columnScoreUncertain": "{{score}}+? pt",
     "columnScorePair": "0 pt (pair)"
@@ -44,7 +45,7 @@
   },
   "message": {
     "cpuTurn": "CPU's turn",
-    "finalTurnTriggered": "Player {{id}} revealed all cards! Final turn!"
+    "finalTurnTriggered": "{{player}} revealed all cards! Final turn!"
   },
   "result": {
     "humanWin": "Game over! You win!",

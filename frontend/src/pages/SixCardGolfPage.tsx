@@ -113,6 +113,7 @@ function SixCardGolfPageContent() {
   const isGameEnd = state?.gameEndFlag ?? false;
   const humanIdx = state?.players?.findIndex((p) => p.isHuman) ?? 0;
   const isHumanTurn = state ? state.currentPlayerIdx === humanIdx : false;
+  const isFinalTurn = state !== null && state.finalTurnTrigger >= 0 && !state.gameEndFlag;
   const humanWon = isGameEnd && state?.winnerIdx === humanIdx;
   const canDrawDiscard = phase === SCG_PHASE_PLAYER_TURN && isHumanTurn && !state?.canFlip;
 
@@ -142,6 +143,7 @@ function SixCardGolfPageContent() {
   const phaseName = useMemo(() => {
     if (!state) return '';
     if (isGameEnd) return t('phase.gameOver');
+    if (isFinalTurn) return t('label.finalTurn');
     switch (phase) {
       case SCG_PHASE_SETUP:
         return t('phase.setup');
@@ -154,10 +156,13 @@ function SixCardGolfPageContent() {
       default:
         return '';
     }
-  }, [state, phase, isGameEnd, t]);
+  }, [state, phase, isGameEnd, isFinalTurn, t]);
 
   if (!state)
     return <GameSkeleton gameKey="sixcardgolf" layout={{ kind: 'card-grid', count: 6, cols: 'grid-cols-3' }} />;
+
+  const playerName = (playerIdx: number) =>
+    state.players[playerIdx].isHuman ? t('label.human') : t('label.cpu', { id: String(playerIdx) });
 
   return (
     <GamePageShell
@@ -194,6 +199,27 @@ function SixCardGolfPageContent() {
           <div data-testid="sixcardgolf-hint-live" role="status" aria-live="polite">
             {hint && hintEnabled && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
           </div>
+          <div
+            className="sr-only"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            data-testid="sixcardgolf-final-turn-live"
+          >
+            {isFinalTurn && t('message.finalTurnTriggered', { player: playerName(state.finalTurnTrigger) })}
+          </div>
+          {isFinalTurn && (
+            <div
+              className="rounded-lg border border-ds-warning bg-ds-surface px-3 py-2 text-sm text-ds-text-primary"
+              data-testid="sixcardgolf-final-turn-status"
+            >
+              <strong>{t('label.finalTurn')}</strong>
+              <div aria-hidden="true">
+                {t('message.finalTurnTriggered', { player: playerName(state.finalTurnTrigger) })}
+              </div>
+              <div>{t('label.currentTurn', { name: playerName(state.currentPlayerIdx) })}</div>
+            </div>
+          )}
 
           {/* Score Table */}
           <div className="flex gap-2 flex-wrap" data-tutorial="scg-score">
