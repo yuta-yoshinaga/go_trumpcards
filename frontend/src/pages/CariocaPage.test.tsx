@@ -214,6 +214,28 @@ describe('CariocaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawstock'));
   });
 
+  it('blocks repeated draw requests while loading and restores the button afterward', async () => {
+    let resolveRequest!: (state: CariocaResponse) => void;
+    renderWithProviders(<CariocaPage />);
+    const drawButton = await screen.findByRole('button', { name: /Draw from stock|山札から引く/ });
+    mockExec.mockImplementationOnce(
+      () =>
+        new Promise<CariocaResponse>((resolve) => {
+          resolveRequest = resolve;
+        }),
+    );
+
+    fireEvent.click(drawButton);
+    await waitFor(() => expect(drawButton).toHaveAttribute('aria-disabled', 'true'));
+    fireEvent.click(drawButton);
+    expect(mockExec).toHaveBeenCalledTimes(2); // mount reset + one draw
+
+    resolveRequest(drawState);
+    await waitFor(() => expect(drawButton).not.toHaveAttribute('aria-disabled'));
+    fireEvent.click(drawButton);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(3));
+  });
+
   it('shows play-phase action buttons after drawing', async () => {
     mockExec.mockResolvedValue(playState);
     renderWithProviders(<CariocaPage />);

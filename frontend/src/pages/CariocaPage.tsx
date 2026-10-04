@@ -165,20 +165,22 @@ function CariocaPageContent() {
   }, []);
 
   const handleDrawStock = useCallback(() => {
+    if (loading) return;
     void execApi('drawstock');
     clearSelection();
-  }, [execApi, clearSelection]);
+  }, [loading, execApi, clearSelection]);
 
   const handleDrawDiscard = useCallback(() => {
+    if (loading) return;
     void execApi('drawdiscard');
     clearSelection();
-  }, [execApi, clearSelection]);
+  }, [loading, execApi, clearSelection]);
 
   const handleDiscard = useCallback(() => {
-    if (selectedCards.length !== 1) return;
+    if (loading || selectedCards.length !== 1) return;
     void execApi('discard', { cardIndex: selectedCards[0] });
     clearSelection();
-  }, [execApi, selectedCards, clearSelection]);
+  }, [loading, execApi, selectedCards, clearSelection]);
 
   const handleAddSlot = useCallback(() => {
     if (selectedCards.length === 0) return;
@@ -191,31 +193,32 @@ function CariocaPageContent() {
   }, []);
 
   const handleSubmitContract = useCallback(() => {
-    if (contractSlots.length === 0) return;
+    if (loading || contractSlots.length === 0) return;
     void execApi('meldcontract', { indicesPerSlot: contractSlots });
     clearSelection();
-  }, [execApi, contractSlots, clearSelection]);
+  }, [loading, execApi, contractSlots, clearSelection]);
 
   const handleMeldExtra = useCallback(() => {
-    if (selectedCards.length < 3) return;
+    if (loading || selectedCards.length < 3) return;
     void execApi('meldextra', { cardIndices: selectedCards });
     clearSelection();
-  }, [execApi, selectedCards, clearSelection]);
+  }, [loading, execApi, selectedCards, clearSelection]);
 
   const handleLayoff = useCallback(() => {
-    if (selectedCards.length !== 1 || !layoffTarget) return;
+    if (loading || selectedCards.length !== 1 || !layoffTarget) return;
     void execApi('layoff', {
       targetPlayerIdx: layoffTarget.playerIdx,
       meldIdx: layoffTarget.meldIdx,
       cardIndex: selectedCards[0],
     });
     clearSelection();
-  }, [execApi, selectedCards, layoffTarget, clearSelection]);
+  }, [loading, execApi, selectedCards, layoffTarget, clearSelection]);
 
   const handleNextRound = useCallback(() => {
+    if (loading) return;
     void execApi('nextround');
     clearSelection();
-  }, [execApi, clearSelection]);
+  }, [loading, execApi, clearSelection]);
 
   const handleReset = useCallback(() => {
     void execApi('reset');
@@ -531,11 +534,21 @@ function CariocaPageContent() {
           <section className="px-4 py-2 flex flex-wrap gap-2" data-tutorial="ca-actions">
             {isDrawPhase && (
               <>
-                <button type="button" onClick={handleDrawStock} className={btnPrimary}>
+                <button
+                  type="button"
+                  onClick={handleDrawStock}
+                  aria-disabled={loading || undefined}
+                  className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+                >
                   {t('drawStock')}
                 </button>
                 {state.discardTop && (
-                  <button type="button" onClick={handleDrawDiscard} className={btnPrimary}>
+                  <button
+                    type="button"
+                    onClick={handleDrawDiscard}
+                    aria-disabled={loading || undefined}
+                    className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+                  >
                     {t('drawDiscard')}
                   </button>
                 )}
@@ -563,7 +576,8 @@ function CariocaPageContent() {
                   type="button"
                   onClick={handleSubmitContract}
                   disabled={!allSlotsSatisfied}
-                  className={`${btnPrimary} ${allSlotsSatisfied ? 'motion-safe:animate-pulse' : ''}`}
+                  aria-disabled={loading || !allSlotsSatisfied}
+                  className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed ${allSlotsSatisfied ? 'motion-safe:animate-pulse' : ''}`}
                   data-testid="ca-submit-contract"
                 >
                   {t('submitContract')}
@@ -576,7 +590,8 @@ function CariocaPageContent() {
                   type="button"
                   onClick={handleMeldExtra}
                   disabled={selectedCards.length < 3}
-                  className={btnOutline}
+                  aria-disabled={loading || selectedCards.length < 3}
+                  className={`${btnOutline} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
                 >
                   {t('meldExtra')}
                 </button>
@@ -584,19 +599,31 @@ function CariocaPageContent() {
                   type="button"
                   onClick={handleLayoff}
                   disabled={selectedCards.length !== 1 || !layoffTarget}
-                  className={btnOutline}
+                  aria-disabled={loading || selectedCards.length !== 1 || !layoffTarget}
+                  className={`${btnOutline} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
                 >
                   {t('layoff')}
                 </button>
               </>
             )}
             {isPlayPhase && (
-              <button type="button" onClick={handleDiscard} disabled={selectedCards.length !== 1} className={btnDanger}>
+              <button
+                type="button"
+                onClick={handleDiscard}
+                disabled={selectedCards.length !== 1}
+                aria-disabled={loading || selectedCards.length !== 1}
+                className={`${btnDanger} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+              >
                 {t('discard')}
               </button>
             )}
             {isRoundEnd && (
-              <button type="button" onClick={handleNextRound} className={btnPrimary}>
+              <button
+                type="button"
+                onClick={handleNextRound}
+                aria-disabled={loading || undefined}
+                className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+              >
                 {t('nextRound')}
               </button>
             )}
