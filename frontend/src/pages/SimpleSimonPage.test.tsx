@@ -97,8 +97,10 @@ describe('SimpleSimonPage', () => {
 
   it('marks the selected source and destination columns in their numbered headings', async () => {
     renderWithProviders(<SimpleSimonPage />);
-    fireEvent.click(await screen.findByTestId('card-1-0'));
+    const sourceCard = await screen.findByTestId('card-1-0');
+    fireEvent.click(sourceCard);
 
+    expect(sourceCard).not.toHaveClass('opacity-50');
     expect(screen.getByTestId('column-label-1')).toHaveTextContent('選択元');
     expect(screen.getByTestId('column-label-0')).toHaveTextContent('移動先候補');
     expect(screen.getByTestId('column-label-1')).toHaveClass('ring-ds-warning');
@@ -148,6 +150,22 @@ describe('SimpleSimonPage', () => {
     fireEvent.keyDown(document, { key: '1' });
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 1, cardIndex: 0, toCol: 0 }));
+  });
+
+  it('does not execute a keyboard move to an illegal column', async () => {
+    const columns: Card[][] = Array.from({ length: 10 }, () => []);
+    columns[1] = [card('SPADE', 8)];
+    columns[2] = [card('SPADE', 6)];
+    mockExec.mockResolvedValue(makeState({ columns }));
+    renderWithProviders(<SimpleSimonPage />);
+    await screen.findByTestId('card-1-0');
+    mockExec.mockClear();
+
+    fireEvent.keyDown(document, { key: '2' });
+    fireEvent.keyDown(document, { key: '3' });
+
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   it('does not move to an empty column when no source is selected', async () => {

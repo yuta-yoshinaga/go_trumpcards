@@ -272,7 +272,7 @@ function SimpleSimonPageContent() {
             const grabbable = i >= runStart;
             const runStartLabel =
               i === runStart ? ` ${t('movableRunStartAria', { count: column.length - runStart })}` : '';
-            const clickable = selected ? isDestination : grabbable;
+            const clickable = selected ? isDestination || (col === selected.col && grabbable) : grabbable;
             // Highlight the movable-run boundary only while this column can be a
             // source (no selection, or the selection is here).
             const showRunHint = selected === null && grabbable;
