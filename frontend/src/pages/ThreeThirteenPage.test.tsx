@@ -83,6 +83,25 @@ describe('ThreeThirteenPage', () => {
     expect(screen.queryByTestId('threethirteen-final-round-badge')).not.toBeInTheDocument();
   });
 
+  it('identifies the CPU knocker and warns the human that this is their final turn', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, knockerIdx: 1 });
+    renderWithProviders(<ThreeThirteenPage />);
+
+    const knocker = await screen.findByTestId('threethirteen-knocker-1');
+    expect(knocker).toHaveTextContent('ノック済み');
+    expect(screen.getByTestId('threethirteen-knock-banner')).toHaveTextContent(
+      'CPU 1 がノックしました。あなたの最後のターンです。',
+    );
+  });
+
+  it('announces a knock without calling it the human final turn while a CPU has the turn', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, knockerIdx: 1, currentPlayerIdx: 1 });
+    renderWithProviders(<ThreeThirteenPage />);
+
+    expect(await screen.findByTestId('threethirteen-knock-banner')).toHaveTextContent('CPU 1 がノックしました。');
+    expect(screen.getByTestId('threethirteen-knock-banner')).not.toHaveTextContent('あなたの最後のターン');
+  });
+
   it('shows a badge on the final round', async () => {
     mockExec.mockResolvedValue({ ...drawPhaseState, round: 11 });
     renderWithProviders(<ThreeThirteenPage />);

@@ -358,6 +358,14 @@ function ThreeThirteenPageContent() {
                         {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                         {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
                         {t('roundScore', { score: p.roundScore })}
+                        {state.knockerIdx === p.id && (
+                          <span
+                            data-testid={`threethirteen-knocker-${p.id}`}
+                            className="ml-2 text-ds-warning font-semibold"
+                          >
+                            {t('knockedBadge')}
+                          </span>
+                        )}
                       </div>
                       {/* Show CPU cards during round end / game end */}
                       {(isRoundEnd || isGameEnd) && p.cards.length > 0 && (
@@ -416,6 +424,17 @@ function ThreeThirteenPageContent() {
                 </div>
               </div>
             </div>
+
+            {state.knockerIdx >= 0 && !isGameEnd && !isRoundEnd && (
+              <div
+                data-testid="threethirteen-knock-banner"
+                className={`my-3 rounded-lg border border-ds-warning px-3 py-2 text-center text-sm font-medium ${badgeWarningColors}`}
+              >
+                {t(isHumanTurn ? 'knockBannerLastTurn' : 'knockBannerActive', {
+                  knocker: playerName(state.knockerIdx, state.players[state.knockerIdx].isHuman),
+                })}
+              </div>
+            )}
 
             <GameMessageBox
               message={state.message}
