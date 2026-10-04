@@ -18,6 +18,8 @@
   "players": "Players",
   "you": "You",
   "cpu": "CPU {{id}}",
+  "cpuHand_one": "CPU {{id}}'s hand: {{count}} card",
+  "cpuHand_other": "CPU {{id}}'s hand: {{count}} cards",
   "cards": "{{count}} cards",
   "captured": "Captured: {{count}}",
   "basra": "Basra: {{count}}",

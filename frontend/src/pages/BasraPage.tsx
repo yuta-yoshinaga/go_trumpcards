@@ -231,11 +231,14 @@ function BasraPageContent() {
                         {t('basra', { count: p.basraCount })}
                       </span>
                     </div>
-                    <div className="flex gap-0.5 justify-center">
+                    <fieldset
+                      className="flex gap-0.5 justify-center border-0 p-0 m-0 min-w-0"
+                      aria-label={t('cpuHand', { id: p.id, count: p.cardCount })}
+                    >
                       {Array.from({ length: Math.min(p.cardCount, 8) }, (_, i) => (
                         <AnimatedCardBack key={i} width={cardWidth * 0.45} />
                       ))}
-                    </div>
+                    </fieldset>
                     <div className="mt-1 flex flex-wrap justify-center gap-0.5" data-testid={`basra-captured-${p.id}`}>
                       {p.capturedCards.map((c, i) => (
                         <span key={`${c.design}-${c.value}-${i}`} role="img" aria-label={cardAlt(c)}>
