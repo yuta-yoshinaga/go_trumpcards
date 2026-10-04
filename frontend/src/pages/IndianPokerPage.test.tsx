@@ -1036,3 +1036,69 @@ describe('IndianPokerPage equity source', () => {
     }
   });
 });
+
+describe('IndianPokerPage meta-AI statistics', () => {
+  it('shows measured profile statistics from the response', async () => {
+    mockExec.mockResolvedValue({
+      ...bettingState,
+      metaAI: { enabled: true, gamesPlayed: 8, bluffRate: 0.25, foldRate: 0.5, hesitationMean: 1250 },
+      profile: {
+        aggressiveByBracket: [
+          { aggressive: 0, total: 0 },
+          { aggressive: 1, total: 4 },
+          { aggressive: 0, total: 0 },
+        ],
+        foldToBetCount: 2,
+        foldToBetTotal: 4,
+        gamesPlayed: 8,
+        hesitationCount: 3,
+        hesitationMean: 1250,
+        hesitationM2: 0,
+      },
+    });
+    renderWithProviders(<IndianPokerPage />);
+    const panel = await screen.findByRole('region', { name: 'メタAIの学習状況' });
+    expect(panel).toHaveTextContent('対戦数: 8');
+    expect(panel).toHaveTextContent('ブラフ率: 25%');
+    expect(panel).toHaveTextContent('フォールド率: 50%');
+    expect(panel).toHaveTextContent('平均逡巡時間: 1250ミリ秒');
+  });
+
+  it('labels absent profile measurements as unmeasured', async () => {
+    mockExec.mockResolvedValue({
+      ...bettingState,
+    });
+    renderWithProviders(<IndianPokerPage />);
+    const panel = await screen.findByRole('region', { name: 'メタAIの学習状況' });
+    expect(panel).toHaveTextContent('対戦数: 未計測');
+    expect(panel).toHaveTextContent('ブラフ率: 未計測');
+    expect(panel).toHaveTextContent('フォールド率: 未計測');
+    expect(panel).toHaveTextContent('平均逡巡時間: 未計測');
+  });
+
+  it('labels profile metrics with empty measurement counts as unmeasured', async () => {
+    mockExec.mockResolvedValue({
+      ...bettingState,
+      metaAI: { enabled: true, gamesPlayed: 3, bluffRate: 0.5, foldRate: 0.5, hesitationMean: 0 },
+      profile: {
+        aggressiveByBracket: [
+          { aggressive: 0, total: 0 },
+          { aggressive: 0, total: 0 },
+          { aggressive: 0, total: 0 },
+        ],
+        foldToBetCount: 0,
+        foldToBetTotal: 0,
+        gamesPlayed: 3,
+        hesitationCount: 0,
+        hesitationMean: 0,
+        hesitationM2: 0,
+      },
+    });
+    renderWithProviders(<IndianPokerPage />);
+    const panel = await screen.findByRole('region', { name: 'メタAIの学習状況' });
+    expect(panel).toHaveTextContent('対戦数: 3');
+    expect(panel).toHaveTextContent('ブラフ率: 未計測');
+    expect(panel).toHaveTextContent('フォールド率: 未計測');
+    expect(panel).toHaveTextContent('平均逡巡時間: 未計測');
+  });
+});
