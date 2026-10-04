@@ -43,9 +43,8 @@ const KILLE_MAX_REENTRIES = 3;
 /**
  * The pack in descending strength, for the on-page reference.
  *
- * The numbers 11 down to 2 are elided — they sit between the Inn and the 1 in
- * the obvious order, and listing all twenty-one entries buries the six that
- * actually change what happens.
+ * Number cards are listed individually so their strength relative to effect
+ * cards is clear at a glance.
  */
 const KILLE_LADDER = [
   { label: 'Harlequin', color: 'text-ds-accent' },
@@ -54,7 +53,7 @@ const KILLE_LADDER = [
   { label: 'Pig', color: 'text-ds-warning' },
   { label: 'Cavalier', color: 'text-ds-success' },
   { label: 'Inn', color: 'text-ds-success' },
-  { label: '12 … 1', color: 'text-ds-text-muted' },
+  ...Array.from({ length: 12 }, (_, index) => ({ label: String(12 - index), color: 'text-ds-text-muted' })),
   { label: 'Wreath', color: 'text-ds-text-muted' },
   { label: 'Flowerpot', color: 'text-ds-text-muted' },
   { label: 'Mask', color: 'text-ds-text-muted' },
