@@ -377,7 +377,7 @@ function GolfPageContent() {
                           type="button"
                           onClick={() => handleSelectCard(colIdx)}
                           disabled={!isPlaying || loading || !exposed}
-                          aria-label={cardAlt(gc.card)}
+                          aria-label={isPlayable ? t('playableAria', { card: cardAlt(gc.card) }) : cardAlt(gc.card)}
                           data-testid={isPlayable ? 'golf-playable' : undefined}
                           className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
                             isHinted && exposed
