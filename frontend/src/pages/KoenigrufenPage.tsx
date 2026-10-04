@@ -455,6 +455,16 @@ function KoenigrufenPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.koenigrufen.footer} px-4 py-2.5`}>
+            {isBidPhase && (
+              <div className="mb-2 text-center text-sm text-ds-text-primary" data-testid="koenigrufen-highest-bid">
+                {state.highestBid === 1 && state.highestBidder >= 0
+                  ? t('highestBid', {
+                      contract: t(CONTRACT_KEYS[state.highestBid]),
+                      name: playerName(state.highestBidder, state.highestBidder === humanIdx),
+                    })
+                  : t('noHighestBid')}
+              </div>
+            )}
             {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
                 変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
             <div data-testid="koenigrufen-prompt-live" role="status" aria-live="polite">
