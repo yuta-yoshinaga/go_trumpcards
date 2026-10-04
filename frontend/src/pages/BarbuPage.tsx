@@ -319,6 +319,40 @@ function BarbuPageContent() {
                         })
                       )}
                     </div>
+                    {state.lastTrick.length > 0 && (
+                      <details className="mx-3 mt-3 rounded bg-ds-surface p-2" data-testid="bb-previous-trick">
+                        <summary className="min-h-[44px] cursor-pointer py-2 text-sm text-ds-text-muted">
+                          {t('label.previousTrick')}
+                        </summary>
+                        <div className="mt-1">
+                          <div className="mb-2 text-center text-sm text-ds-text-primary">
+                            {t('label.previousTrickWinner', {
+                              name: (state.players[state.lastTrickWinner] as (typeof state.players)[number]).isHuman
+                                ? tc('player.you')
+                                : tc('player.cpu', { id: state.lastTrickWinner }),
+                            })}
+                          </div>
+                          <div className="flex justify-center gap-2 flex-wrap">
+                            {state.lastTrick.map((tcard, i) => {
+                              const player = state.players[tcard.playerIdx] as (typeof state.players)[number];
+                              const isWinner = tcard.playerIdx === state.lastTrickWinner;
+                              return (
+                                <div key={i} className="text-center" data-testid="bb-previous-trick-card">
+                                  <div className={`inline-block rounded ${isWinner ? 'ring-2 ring-ds-warning' : ''}`}>
+                                    <AnimatedCard card={tcard.card} width={cardWidth * 0.65} />
+                                  </div>
+                                  <div
+                                    className={`text-xs mt-1 ${player.isHuman ? 'text-ds-accent font-semibold' : 'text-ds-text-muted'}`}
+                                  >
+                                    {player.isHuman ? tc('player.you') : tc('player.cpu', { id: player.id })}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </details>
+                    )}
                   </>
                 )}
               </div>

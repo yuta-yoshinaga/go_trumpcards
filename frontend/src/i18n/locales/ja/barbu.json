@@ -43,6 +43,8 @@
     "contract": "コントラクト",
     "trump": "切札",
     "trick": "現在のトリック",
+    "previousTrick": "前のトリック",
+    "previousTrickWinner": "{{name}} が獲得",
     "board": "場",
     "boardEmpty": "場は空です",
     "yourTricks": "トリック",
