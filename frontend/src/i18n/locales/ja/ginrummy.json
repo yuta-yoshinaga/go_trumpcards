@@ -34,6 +34,7 @@
   "drawDiscardButton": "捨て札から引く",
   "discardButton": "捨てる",
   "knockButton": "ノック",
+  "knockDisabledReason": "手札から1枚選び、捨てた後のデッドウッドがノック上限以下のときにノックできます。",
   "deadwoodLabel": "デッドウッド: {{score}}点（ノック上限 {{threshold}}）",
   "meldLegend": "メルド",
   "deadwoodLegend": "デッドウッド",
