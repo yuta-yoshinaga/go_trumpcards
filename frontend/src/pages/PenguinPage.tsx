@@ -543,7 +543,7 @@ function PenguinPageContent() {
                                         if (e.detail >= 2) return;
                                         if (selectedSource) {
                                           handleSelectTarget(tableauColZone);
-                                        } else {
+                                        } else if (!exceedsSupermove) {
                                           handleSelectSource(cardZone);
                                         }
                                       }}
