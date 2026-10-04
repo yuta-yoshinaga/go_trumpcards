@@ -36,6 +36,7 @@
     },
     "slapAvailableAnnounce": "スラップ可能です",
     "slapUnavailableAnnounce": "スラップ不可になりました",
+    "cardAnnounce": "カードが出ました。{{card}}",
     "burst": {
       "jack": "ジャック！{{count}}枚獲得",
       "miss": "ミス！"
