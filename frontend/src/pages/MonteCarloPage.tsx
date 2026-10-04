@@ -44,6 +44,12 @@ const MC_TUTORIAL_STEPS: TutorialStep[] = [
     placement: 'top',
     advanceOn: 'next',
   },
+  {
+    target: '[data-tutorial="mc-board"]',
+    messageKey: 'tutorial.remove',
+    placement: 'top',
+    advanceOn: 'next',
+  },
   { target: '[data-tutorial="mc-deal"]', messageKey: 'tutorial.deal', placement: 'top', advanceOn: 'next' },
   { target: '[data-tutorial="mc-controls"]', messageKey: 'tutorial.controls', placement: 'top', advanceOn: 'next' },
 ];
