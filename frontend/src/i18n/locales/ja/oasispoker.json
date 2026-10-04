@@ -16,7 +16,7 @@
     "maximum": "最大額",
     "exchange": "交換",
     "stand": "ステイ",
-    "play": "コール",
+    "play": "コール ({{amount}})",
     "fold": "フォールド",
     "reset": "リセット"
   },
@@ -58,6 +58,7 @@
   "betGuide": "アンテと任意のジャックポットを設定してベット",
   "exchangeGuide": "交換したいカードをタップで選択し、「交換」または「ステイ」を押してください",
   "exchangeFeeInfo": "手数料: 1枚あたりアンテ × {{ante}} = {{fee}}",
+  "callUnavailable": "チップが不足しています。フォールドのみ選択できます。",
   "exchangeSelectionAnnouncement": "選択中: {{count}}枚。手数料: 1枚あたりアンテ × {{ante}} = {{fee}}",
   "exchangeFeeHighRisk": "高コスト警告",
   "exchangeSelected": "選択中: {{count}}枚",
