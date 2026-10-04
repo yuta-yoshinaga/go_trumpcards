@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { rookApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, RookResponse } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
@@ -170,6 +171,7 @@ describe('RookPage', () => {
     renderWithProviders(<RookPage />);
     const status = await screen.findByTestId('rook-bid-status');
     expect(status).toHaveTextContent('現在最高: 80点');
+    expect(status).toHaveTextContent('CPU 2');
     expect(status).toHaveTextContent('残り入札者: 3人');
     expect(status).toHaveTextContent('パス済み: 1人');
     expect(status).toHaveTextContent('CPU 1');
@@ -180,6 +182,18 @@ describe('RookPage', () => {
     const status = await screen.findByTestId('rook-bid-status');
     expect(status).toHaveTextContent('現在最高: 未決定');
     expect(status).toHaveTextContent('残り入札者: 4人');
+  });
+
+  it('shows the highest bidder name in English', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(makeState({ highestBid: 80, highestBidder: 2 }));
+      renderWithProviders(<RookPage />);
+      expect(await screen.findByTestId('rook-bid-status')).toHaveTextContent('Highest bid: 80 (CPU 2)');
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('hides the bid status outside the bid phase', async () => {
