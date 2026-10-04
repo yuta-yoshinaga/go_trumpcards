@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { caribbeandrawApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, CaribbeanDrawResponse } from '../types/card';
@@ -156,6 +157,20 @@ describe('CaribbeanDrawPage', () => {
     expect(help).toHaveTextContent('ジャックポットとは？');
     // Native <details>/<summary> is keyboard-focusable.
     expect(help.querySelector('summary')).toBeInTheDocument();
+  });
+
+  it('shows the dealer qualification note in the payout reference in both languages', async () => {
+    const previousLanguage = i18n.language;
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<CaribbeanDrawPage />);
+    const payoutReference = (await screen.findByText('配当表')).closest('details');
+    expect(payoutReference).not.toBeNull();
+    fireEvent.click(screen.getByText('配当表'));
+    expect(await screen.findByText('ディーラーは 8 のペア以上でクオリファイします。')).toBeInTheDocument();
+
+    await i18n.changeLanguage('en');
+    expect(await screen.findByText('The dealer qualifies on a pair of 8s or better.')).toBeInTheDocument();
+    await i18n.changeLanguage(previousLanguage);
   });
 
   it('renders skeleton before state loads', () => {

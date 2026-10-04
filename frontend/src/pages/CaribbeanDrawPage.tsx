@@ -378,6 +378,7 @@ function CaribbeanDrawPageContent() {
                         ))}
                       </ul>
                     </div>
+                    <p>{t('payoutRef.qualifyNote')}</p>
                   </div>
                 </details>
               </div>
