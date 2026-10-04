@@ -54,6 +54,25 @@ beforeEach(() => {
 });
 
 describe('AccordionPage', () => {
+  it('keeps piles in one horizontal row and scrolls a keyboard-selected pile into view', async () => {
+    const originalScrollIntoView = Element.prototype.scrollIntoView;
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    try {
+      const { container } = renderWithProviders(<AccordionPage />);
+      await screen.findByRole('button', { name: /^0:/ });
+      const pileRow = container.querySelector('[data-tutorial="ac-piles"]');
+      expect(pileRow).toHaveClass('overflow-x-auto', 'flex-nowrap');
+
+      fireEvent.keyDown(document.body, { key: 'ArrowRight' });
+      const selectedPile = await screen.findByRole('button', { name: /^0:/ });
+      await waitFor(() => expect(scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({ inline: 'center' })));
+      expect(selectedPile).toHaveAttribute('aria-pressed', 'true');
+    } finally {
+      Element.prototype.scrollIntoView = originalScrollIntoView;
+    }
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<AccordionPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
