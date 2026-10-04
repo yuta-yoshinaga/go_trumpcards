@@ -39,5 +39,22 @@
   "nav": {
     "scorpion": "Scorpion"
   },
-  "hintExposes": "(uncovers a face-down card)"
+  "hintExposes": "(uncovers a face-down card)",
+  "cli": {
+    "stateSummary": "Completed suits: {{completedSuits}}/4  Stock: {{stockCount}}",
+    "tableau": "Tableau:",
+    "tableauColumn": "  Column {{col}}: {{cards}}",
+    "stateFooter": "Moves: {{moveCount}}  Phase: {{phase}}",
+    "empty": "(empty)",
+    "help": {
+      "moveTop": "m <from> <to>  Move top card between tableau columns",
+      "moveIndex": "m <from> <idx> <to>  Move a card (and everything on top) by index",
+      "deal": "d              Deal 3 stock cards to columns 0-2",
+      "giveUp": "g              Give up",
+      "hint": "h              Hint",
+      "autoComplete": "ac             Auto-complete",
+      "undo": "u              Undo",
+      "reset": "r              Reset"
+    }
+  }
 }
