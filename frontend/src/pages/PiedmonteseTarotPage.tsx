@@ -466,6 +466,26 @@ function PiedmonteseTarotPageContent() {
                     </div>
                   </div>
                 )}
+                <section
+                  className="my-3 p-2 rounded bg-ds-surface text-ds-text-muted text-sm"
+                  data-testid="piedmontesetarot-deal-score-history"
+                >
+                  <div className="mb-1 text-ds-text-primary">{t('dealScoreHistory.title')}</div>
+                  {state.dealScoreHistory.length === 0 ? (
+                    <div>{t('dealScoreHistory.empty')}</div>
+                  ) : (
+                    state.dealScoreHistory.map((deal) => (
+                      <div key={deal.roundNumber}>
+                        {t('dealScoreHistory.row', {
+                          round: deal.roundNumber,
+                          scores: deal.scores
+                            .map((score, i) => `${playerName(i, state.players[i].isHuman)} ${formatSignedDelta(score)}`)
+                            .join(t('listSeparator')),
+                        })}
+                      </div>
+                    ))
+                  )}
+                </section>
               </div>
             </div>
 

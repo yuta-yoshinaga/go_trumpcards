@@ -79657,6 +79657,18 @@ components:
           type: array
           items:
             type: integer
+        dealScoreHistory:
+          type: array
+          description: Settled score changes for each completed deal, in match order.
+          items:
+            type: object
+            properties:
+              roundNumber:
+                type: integer
+              scores:
+                type: array
+                items:
+                  type: integer
         lastTrickWinner:
           type: integer
         outcome:

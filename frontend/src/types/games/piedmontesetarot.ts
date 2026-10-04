@@ -61,6 +61,12 @@ export interface PiedmonteseTarotHint {
   reason: string;
 }
 
+/** Settled score changes for one deal. */
+export interface PiedmonteseTarotDealScore {
+  roundNumber: number;
+  scores: number[];
+}
+
 /**
  * Full Tarocco Piemontese game state returned from the API.
  *
@@ -94,6 +100,8 @@ export interface PiedmonteseTarotResponse extends BaseGameResponse {
   playerScores: number[];
   /** Signed settlement of the most recent deal per seat. */
   dealScores: number[];
+  /** Settled score changes for every completed deal in this match. */
+  dealScoreHistory: PiedmonteseTarotDealScore[];
   /** Seat index of the last trick winner, or -1. */
   lastTrickWinner: number;
   /** Deal outcome from the human's perspective (0=none, 1=above average, 2=below). */
