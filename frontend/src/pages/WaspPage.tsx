@@ -296,6 +296,12 @@ function WaspPageContent() {
   // 表向きだけで判定すると、山札が残った盤面でボタンが押せてしまい、押すと
   // "not all cards are face up" で弾かれる — #5545 が直したはずの形に戻る。
   const autoCompleteReady = (state?.stockCount ?? 0) === 0 && isTableauAllFaceUp(state?.tableau ?? []);
+  const autoCompleteNotReadyReason =
+    (state?.stockCount ?? 0) > 0
+      ? isTableauAllFaceUp(state?.tableau ?? [])
+        ? t('autoCompleteStockNotEmpty')
+        : t('autoCompleteStockAndFaceDown')
+      : t('autoCompleteFaceDown');
   const handleDealGuarded = useCallback(() => {
     if (dealBlockedByEmpty) {
       setEmptyDealAttemptKey((k) => k + 1);
@@ -628,7 +634,7 @@ function WaspPageContent() {
                     onClick={handleAutoComplete}
                     disabled={loading || !autoCompleteReady}
                     data-testid="autocomplete-button"
-                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
+                    title={autoCompleteReady ? undefined : autoCompleteNotReadyReason}
                   >
                     {t('autoComplete')}
                   </button>

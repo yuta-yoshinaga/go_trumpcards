@@ -39,6 +39,8 @@
   "nav": {
     "wasp": "Wasp"
   },
-  "autoCompleteNotReady": "Available once every card is face up",
+  "autoCompleteStockNotEmpty": "Use up the stock to auto-complete",
+  "autoCompleteFaceDown": "Turn all face-down cards face up to auto-complete",
+  "autoCompleteStockAndFaceDown": "Use up the stock and turn all face-down cards face up to auto-complete",
   "hintExposes": "(uncovers a face-down card)"
 }
