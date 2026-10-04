@@ -186,6 +186,36 @@ describe('KingAlbertPage', () => {
     await waitFor(() => expect(reserveBtn).toHaveAttribute('aria-pressed', 'true'));
   });
 
+  it('announces the selected source card and clears the announcement when deselected or moved', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<KingAlbertPage />);
+    const selectedLive = await screen.findByTestId('ka-selection-live');
+    expect(selectedLive).toHaveAttribute('aria-live', 'polite');
+    expect(selectedLive).toBeEmptyDOMElement();
+
+    const tableauCard = screen.getByRole('button', { name: '♥ 5、列0・位置1' });
+    fireEvent.click(tableauCard);
+    await waitFor(() => expect(selectedLive).toHaveTextContent('選択中: ♥ 5、列0・位置1'));
+    fireEvent.click(tableauCard);
+    await waitFor(() => expect(selectedLive).toBeEmptyDOMElement());
+
+    const reserveCard = screen.getByRole('button', { name: '♦ 7（リザーブ枠 0）' });
+    fireEvent.click(reserveCard);
+    await waitFor(() => expect(selectedLive).toHaveTextContent('選択中: ♦ 7、リザーブ枠 0'));
+    fireEvent.click(screen.getByRole('button', { name: '♥ 5、列0・位置1' }));
+    await waitFor(() => expect(selectedLive).toBeEmptyDOMElement());
+  });
+
+  it('announces selected cards in English', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<KingAlbertPage />);
+    const selectedLive = await screen.findByTestId('ka-selection-live');
+    await i18n.changeLanguage('en');
+    fireEvent.click(screen.getByRole('button', { name: '♥ 5, column 0, position 1' }));
+    await waitFor(() => expect(selectedLive).toHaveTextContent('Selected: ♥ 5, column 0, position 1'));
+    await i18n.changeLanguage('ja');
+  });
+
   it('renders giveup button when playing', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<KingAlbertPage />);
