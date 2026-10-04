@@ -54,17 +54,18 @@ type MachiavelliWebOutputPlayer struct {
 
 // MachiavelliWebOutput マキャヴェッリ Web アウトプット
 type MachiavelliWebOutput struct {
-	Players          []*MachiavelliWebOutputPlayer `json:"players"`
-	Table            []*MachiavelliWebOutputMeld   `json:"table"`
-	Phase            int                           `json:"phase"`
-	RoundNumber      int                           `json:"roundNumber"`
-	TargetRounds     int                           `json:"targetRounds"`
-	CurrentPlayerIdx int                           `json:"currentPlayerIdx"`
-	DealerIdx        int                           `json:"dealerIdx"`
-	DrawPileCount    int                           `json:"drawPileCount"`
-	GameEndFlag      bool                          `json:"gameEndFlag"`
-	WinnerIdx        int                           `json:"winnerIdx"`
-	RoundWinnerIdx   int                           `json:"roundWinnerIdx"`
+	Players           []*MachiavelliWebOutputPlayer  `json:"players"`
+	Table             []*MachiavelliWebOutputMeld    `json:"table"`
+	Phase             int                            `json:"phase"`
+	RoundNumber       int                            `json:"roundNumber"`
+	TargetRounds      int                            `json:"targetRounds"`
+	CurrentPlayerIdx  int                            `json:"currentPlayerIdx"`
+	DealerIdx         int                            `json:"dealerIdx"`
+	DrawPileCount     int                            `json:"drawPileCount"`
+	GameEndFlag       bool                           `json:"gameEndFlag"`
+	WinnerIdx         int                            `json:"winnerIdx"`
+	RoundWinnerIdx    int                            `json:"roundWinnerIdx"`
+	RoundScoreHistory []domain.MachiavelliRoundScore `json:"roundScoreHistory"`
 	WebOutputBase
 	Config MachiavelliWebOutputConfig `json:"config"`
 }
@@ -110,11 +111,12 @@ var NewMachiavelliWebController, NewMachiavelliWebControllerWithProvider = webCo
 
 func newMachiavelliDefaultOutput(msg string) *MachiavelliWebOutput {
 	return &MachiavelliWebOutput{
-		Players:        make([]*MachiavelliWebOutputPlayer, 0),
-		Table:          make([]*MachiavelliWebOutputMeld, 0),
-		WinnerIdx:      -1,
-		RoundWinnerIdx: -1,
-		WebOutputBase:  WebOutputBase{Message: msg},
+		Players:           make([]*MachiavelliWebOutputPlayer, 0),
+		Table:             make([]*MachiavelliWebOutputMeld, 0),
+		WinnerIdx:         -1,
+		RoundWinnerIdx:    -1,
+		RoundScoreHistory: make([]domain.MachiavelliRoundScore, 0),
+		WebOutputBase:     WebOutputBase{Message: msg},
 	}
 }
 

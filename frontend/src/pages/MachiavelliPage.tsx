@@ -438,6 +438,36 @@ function MachiavelliPageContent() {
                       ))}
                     </tbody>
                   </table>
+                  {state.roundScoreHistory.length > 0 && (
+                    <table className="mt-3 w-full text-sm text-ds-text-muted" aria-label={t('roundScoreHistory')}>
+                      <thead>
+                        <tr>
+                          <th scope="col" className="text-left">
+                            {t('scoresRound')}
+                          </th>
+                          {state.players.map((p) => (
+                            <th scope="col" key={p.id}>
+                              {playerName(p.id, p.isHuman)}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {state.roundScoreHistory.map((round) => (
+                          <tr key={round.roundNumber}>
+                            <th scope="row" className="text-left">
+                              {round.roundNumber}
+                            </th>
+                            {round.scores.map((score, index) => (
+                              <td className="text-center" key={index}>
+                                {score}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               </div>
             </div>

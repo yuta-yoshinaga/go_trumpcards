@@ -51,6 +51,7 @@ const defaultState: MachiavelliResponse = {
   gameEndFlag: false,
   winnerIdx: -1,
   roundWinnerIdx: -1,
+  roundScoreHistory: [],
   message: '',
   config: { playerCount: 4, targetRounds: 3 },
 };
