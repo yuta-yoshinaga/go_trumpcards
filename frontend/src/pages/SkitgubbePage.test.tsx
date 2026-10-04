@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, skitgubbeApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, SkitgubbePlayer, SkitgubbeResponse } from '../types/card';
@@ -221,6 +222,24 @@ describe('SkitgubbePage', () => {
     mockExec.mockResolvedValue(makeState({ phase: 2, gameEndFlag: true, loserIdx: 2, messageCode: 'skitgubbe.win' }));
     renderWithProviders(<SkitgubbePage />);
     expect(await screen.findByTestId('sg-loser-seat')).toHaveTextContent('敗者: CPU2（Skitgubbe）');
+  });
+
+  it('does not show a losing seat when the human is the loser', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2, gameEndFlag: true, loserIdx: 0, messageCode: 'skitgubbe.lose' }));
+    renderWithProviders(<SkitgubbePage />);
+    await waitFor(() => expect(screen.getAllByText('あなたが Skitgubbe です').length).toBeGreaterThan(0));
+    expect(screen.queryByTestId('sg-loser-seat')).not.toBeInTheDocument();
+  });
+
+  it('shows the loser seat in English', async () => {
+    try {
+      await i18n.changeLanguage('en');
+      mockExec.mockResolvedValue(makeState({ phase: 2, gameEndFlag: true, loserIdx: 2, messageCode: 'skitgubbe.win' }));
+      renderWithProviders(<SkitgubbePage />);
+      expect(await screen.findByTestId('sg-loser-seat')).toHaveTextContent('Loser: CPU2 (Skitgubbe)');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('announces that picking up has become forced', async () => {
