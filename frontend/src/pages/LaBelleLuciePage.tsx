@@ -345,11 +345,9 @@ function LaBelleLuciePageContent() {
             <span>{t('stuckDeadlock')}</span>
           </div>
         )}
-        {canAct && (
-          <div className="mt-1 text-ds-text-primary text-xs">
-            {selected === null ? t('selectSource') : t('selectDestination')}
-          </div>
-        )}
+        <div role="status" aria-live="polite" className="mt-1 text-ds-text-primary text-xs">
+          {canAct && (selected === null ? t('selectSource') : t('selectDestination'))}
+        </div>
 
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
         <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />

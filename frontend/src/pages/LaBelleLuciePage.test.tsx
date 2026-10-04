@@ -36,6 +36,18 @@ beforeEach(() => {
 });
 
 describe('LaBelleLuciePage', () => {
+  it('announces the selection instruction and its change from source to destination', async () => {
+    renderWithProviders(<LaBelleLuciePage />);
+
+    const instruction = await screen.findByText('動かす扇の上札を選んでください');
+    const liveRegion = instruction.closest('[role="status"]');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toHaveTextContent('動かす扇の上札を選んでください');
+
+    fireEvent.click(screen.getByTestId('fan-1'));
+    expect(liveRegion).toHaveTextContent('移動先（扇または組札）を選んでください');
+  });
+
   it('includes fan card counts, move state, and hint state in accessible names', async () => {
     mockExec.mockResolvedValue(
       makeState({
