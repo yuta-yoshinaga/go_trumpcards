@@ -43,6 +43,7 @@
     "reLost": "Re team lost (Kontra won)",
     "gamePoints": "Game points: {{points}}"
   },
+  "roundHistory": { "title": "Chip changes by round", "round": "Round" },
   "hintAvailable": "Hint",
   "hint": {
     "lead_low": "Lead a low card to preserve strength",

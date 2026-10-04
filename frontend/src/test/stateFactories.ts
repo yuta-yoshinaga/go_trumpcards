@@ -1208,6 +1208,7 @@ const baseDoppelkopfState: DoppelkopfResponse = {
   liveKontraPoints: 0,
   roundReWon: false,
   roundGamePoints: 0,
+  roundScoreHistory: [],
   gameEndFlag: false,
   winnerIdx: -1,
   message: '',

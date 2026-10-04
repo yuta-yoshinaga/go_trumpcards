@@ -43,6 +43,7 @@
     "reLost": "Re側の負け（Kontra側の勝ち）",
     "gamePoints": "ゲームポイント: {{points}}"
   },
+  "roundHistory": { "title": "ラウンドごとのチップ増減", "round": "ラウンド" },
   "hintAvailable": "ヒント",
   "hint": {
     "lead_low": "低い札でリードして温存することを推奨",
