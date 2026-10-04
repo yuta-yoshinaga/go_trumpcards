@@ -35,6 +35,11 @@
     "difficultyNormal": "Normal",
     "difficultyHard": "Hard"
   },
+  "cli": {
+    "difficultyHelp": "sd <0-2> - Set CPU difficulty: 0 Easy, 1 Normal, 2 Hard (applies on reset)",
+    "difficultyUsage": "Error: Usage: sd <0-2> (0 Easy, 1 Normal, 2 Hard)",
+    "difficultySet": "CPU difficulty set to {{difficulty}}. It will apply on reset."
+  },
   "hint": {
     "exchangeStrong": "A card exchange can greatly improve your score",
     "exchangeModerate": "A card exchange can slightly improve your score",

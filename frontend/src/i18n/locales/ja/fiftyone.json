@@ -35,6 +35,11 @@
     "difficultyNormal": "普通",
     "difficultyHard": "難しい"
   },
+  "cli": {
+    "difficultyHelp": "sd <0-2> - CPU難易度を設定: 0 簡単、1 普通、2 難しい（次回のリセットで適用）",
+    "difficultyUsage": "エラー: 使い方: sd <0-2>（0 簡単、1 普通、2 難しい）",
+    "difficultySet": "CPU難易度を{{difficulty}}に設定しました。次回のリセットで適用されます。"
+  },
   "hint": {
     "exchangeStrong": "スコアを大幅に改善できる交換があります",
     "exchangeModerate": "スコアを少し改善できる交換があります",
