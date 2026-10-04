@@ -29,6 +29,7 @@ import type { SuecaPlayer } from '../types/games/sueca';
 import { SuecaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
+import { suitName } from '../utils/cardUtils';
 import { parseSuecaCommand, SUECA_HELP } from '../utils/cli/commands/suecaCommands';
 import { formatSuecaState } from '../utils/cli/formatters/suecaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -166,6 +167,14 @@ function SuecaPageContent() {
   // Spoken trump: the suit name (not the ♠♣♥♦ glyph, which SRs read poorly).
   const trumpSuitName = SUIT_KEYS[state.trumpSuit] ? t(`suitName.${SUIT_KEYS[state.trumpSuit]}`) : trumpSymbol;
   const trumpAriaLabel = t('trump', { suit: trumpSuitName });
+  const trumpDesign = suitName(state.trumpSuit);
+  const trumpIndices =
+    humanPlayer && trumpDesign
+      ? humanPlayer.cards.reduce<number[]>((indices, card, index) => {
+          if (card.design === trumpDesign) indices.push(index);
+          return indices;
+        }, [])
+      : [];
 
   const handleManualReset = () => {
     hideActionLog();
@@ -447,6 +456,8 @@ function SuecaPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="sueca"
+                trumpIndices={trumpIndices}
+                trumpAccessibleLabel={trumpAriaLabel}
                 validIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}
               />
