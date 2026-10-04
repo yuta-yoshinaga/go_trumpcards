@@ -382,7 +382,8 @@ function BidWhistPageContent() {
                       onClick={() => selectable && toggleCard(i)}
                       disabled={!selectable}
                       className={cardClass}
-                      aria-label={fromKitty ? t('kittyCardLabel') : undefined}
+                      aria-label={fromKitty ? `${cardAlt(c)} ${t('kittyCardLabel')}` : undefined}
+                      aria-pressed={selected}
                       data-testid={`hand-card-${i}`}
                       data-kitty={fromKitty ? 'true' : undefined}
                     >
