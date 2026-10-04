@@ -139,6 +139,18 @@ function SpeculationPageContent() {
     }[state.phase] ?? '';
 
   const human = state.seats[SPECULATION_HUMAN_SEAT];
+  const finalRanks = new Map<number, number>();
+  let previousChips: number | undefined;
+  let previousRank = 0;
+  [...state.seats]
+    .map((seat, index) => ({ index, chips: seat.chips }))
+    .sort((a, b) => b.chips - a.chips)
+    .forEach((entry, index) => {
+      const rank = entry.chips === previousChips ? previousRank : index + 1;
+      finalRanks.set(entry.index, rank);
+      previousChips = entry.chips;
+      previousRank = rank;
+    });
   const trumpKey = SUIT_KEYS[state.trumpSuit];
   // **人間が売り手か買い手かは offerTo で決まる。** 申し出の宛先が札の持ち主。
   const humanSells = state.offerTo === SPECULATION_HUMAN_SEAT;
@@ -277,7 +289,15 @@ function SpeculationPageContent() {
                 ))}
                 {gameOver && (
                   <div className="text-ds-text-muted text-sm" data-testid="sp-final-chips">
-                    {t('result.finalChips', { chips: human?.chips ?? 0 })}
+                    {state.seats.map((seat, index) => (
+                      <div key={`final-standing-${index}`} data-testid={`sp-final-chips-${index}`}>
+                        {t('result.finalStanding', {
+                          name: index === SPECULATION_HUMAN_SEAT ? t('label.you') : seat.name,
+                          rank: finalRanks.get(index),
+                          chips: seat.chips,
+                        })}
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>

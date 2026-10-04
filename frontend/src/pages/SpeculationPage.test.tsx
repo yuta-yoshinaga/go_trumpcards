@@ -121,6 +121,7 @@ describe('SpeculationPage', () => {
     await waitFor(() => expect(screen.getByTestId('sp-seat-chips-0')).toBeInTheDocument());
     expect(screen.getByTestId('sp-seat-chips-1')).toHaveTextContent('150');
     expect(screen.getByTestId('sp-seat-chips-2')).toHaveTextContent('240');
+    expect(screen.queryByTestId('sp-final-chips')).not.toBeInTheDocument();
   });
 
   // **伏せ札の中身はこのゲームの秘密そのもの。** 出るのは枚数だけで、
@@ -287,12 +288,22 @@ describe('SpeculationPage', () => {
     expect(screen.getByTestId('sp-result')).not.toHaveTextContent('あなたがポットを取りました');
   });
 
-  it('ゲーム終了で最終チップを出す', async () => {
+  it('ゲーム終了で全席の最終チップと同額を同順位にした順位を表示する', async () => {
     mockApi.mockResolvedValue(
-      withState({ phase: SpeculationPhase.GAME_END, gameEndFlag: true, winnerSeat: 0, seats: [seat('You', 320, 0)] }),
+      withState({
+        phase: SpeculationPhase.GAME_END,
+        gameEndFlag: true,
+        winnerSeat: 0,
+        seats: [seat('You', 320, 0), seat('CPU1', 200, 0), seat('CPU2', 320, 0)],
+      }),
     );
     renderWithProviders(<SpeculationPage />);
-    await waitFor(() => expect(screen.getByTestId('sp-final-chips')).toHaveTextContent('320'));
+    expect(await screen.findByTestId('sp-final-chips')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('sp-final-chips-0')).toHaveTextContent('320'));
+    expect(screen.getByTestId('sp-final-chips-0')).toHaveTextContent('1位');
+    expect(screen.getByTestId('sp-final-chips-1')).toHaveTextContent('3位');
+    expect(screen.getByTestId('sp-final-chips-2')).toHaveTextContent('1位');
+    expect(screen.getByTestId('sp-final-chips-1')).toHaveTextContent('CPU1');
     expect(screen.queryByTestId('sp-next')).not.toBeInTheDocument();
   });
 
