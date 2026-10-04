@@ -84,6 +84,20 @@ describe('GapsPage', () => {
     expect(screen.getByTestId('gaps-locked-1-1')).toHaveFocus();
   });
 
+  it('updates the roving tab stop when a cell receives focus before moving by arrow key', async () => {
+    renderWithProviders(<GapsPage />);
+    const focusedCell = await screen.findByTestId('gaps-cell-0-12');
+    fireEvent.focus(focusedCell);
+    expect(focusedCell).toHaveAttribute('tabindex', '0');
+    expect(screen.getByTestId('gaps-locked-0-0')).toHaveAttribute('tabindex', '-1');
+
+    fireEvent.keyDown(focusedCell, { key: 'ArrowLeft' });
+    const adjacentCell = screen.getByTestId('gaps-locked-0-11');
+    expect(adjacentCell).toHaveFocus();
+    expect(adjacentCell).toHaveAttribute('tabindex', '0');
+    expect(focusedCell).toHaveAttribute('tabindex', '-1');
+  });
+
   it('keeps focus within the board edges and leaves other keys alone', async () => {
     renderWithProviders(<GapsPage />);
     const first = await screen.findByTestId('gaps-locked-0-0');

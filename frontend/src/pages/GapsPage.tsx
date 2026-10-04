@@ -302,6 +302,7 @@ function GapsPageContent() {
                         <button
                           type="button"
                           tabIndex={activeCell.row === rIdx && activeCell.col === cIdx ? 0 : -1}
+                          onFocus={() => setActiveCell({ row: rIdx, col: cIdx })}
                           onKeyDown={(event) => handleGridKeyDown(event, rIdx, cIdx)}
                           onClick={() => handleSelectTarget(zone)}
                           aria-label={gapAria}
@@ -358,6 +359,7 @@ function GapsPageContent() {
                       type="button"
                       key={`cell-${rIdx.toString()}-${cIdx.toString()}`}
                       tabIndex={activeCell.row === rIdx && activeCell.col === cIdx ? 0 : -1}
+                      onFocus={() => setActiveCell({ row: rIdx, col: cIdx })}
                       onKeyDown={(event) => handleGridKeyDown(event, rIdx, cIdx)}
                       draggable={isPlaying && !loading && !isLocked}
                       onDragStart={dnd.handleDragStart(zone)}
