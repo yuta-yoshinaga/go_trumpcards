@@ -32,6 +32,7 @@
   "yourTeam": "Your Team",
   "teamScore": "{{team}}: {{score}} pts",
   "declarerBadge": "Declarer",
+  "currentTurn": "Current turn",
   "contractUndecided": "Declarer: undecided",
   "contractLine": "Declarer: {{name}} ({{team}}) — {{contract}}",
   "playButton": "Play",

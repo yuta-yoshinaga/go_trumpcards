@@ -90,6 +90,24 @@ describe('FortyFivesPage', () => {
     expect(screen.getByTestId('bid-25')).toBeInTheDocument();
   });
 
+  it('marks the current player during bidding and play, but not between tricks', async () => {
+    mockExec.mockResolvedValue(makeFortyFivesState({ currentPlayerIdx: 1 }));
+    const { unmount } = renderWithProviders(<FortyFivesPage />);
+    const turnLabel = await screen.findByText('手番');
+    expect(turnLabel.parentElement).toHaveTextContent('CPU 1');
+    unmount();
+
+    mockExec.mockResolvedValue(makeFortyFivesState({ phase: 1, currentPlayerIdx: 1 }));
+    const playView = renderWithProviders(<FortyFivesPage />);
+    expect(await screen.findByText('手番')).toBeInTheDocument();
+    playView.unmount();
+
+    mockExec.mockResolvedValue(makeFortyFivesState({ phase: 2, currentPlayerIdx: 1 }));
+    renderWithProviders(<FortyFivesPage />);
+    expect(await screen.findByTestId('phase-indicator')).toHaveTextContent('トリック終了');
+    expect(screen.queryByText('手番')).not.toBeInTheDocument();
+  });
+
   it('dispatches a bid when a bid button is clicked', async () => {
     renderWithProviders(<FortyFivesPage />);
     const bid15 = await screen.findByTestId('bid-15');
