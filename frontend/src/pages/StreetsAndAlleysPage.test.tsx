@@ -95,6 +95,22 @@ describe('StreetsAndAlleysPage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
+  it('does not describe destinations when a source card is only hovered or focused', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+    const source = await screen.findByRole('button', { name: /^♠ 5/ });
+    const emptyColumns = screen.getAllByRole('button', { name: '空' });
+    const occupiedTarget = screen.getByRole('button', { name: '♥ 6、タブロー列1' });
+
+    fireEvent.mouseEnter(source);
+    for (const emptyColumn of emptyColumns) expect(emptyColumn).not.toHaveAttribute('aria-description');
+    expect(occupiedTarget).not.toHaveAttribute('aria-description');
+
+    fireEvent.focus(source);
+    for (const emptyColumn of emptyColumns) expect(emptyColumn).not.toHaveAttribute('aria-description');
+    expect(occupiedTarget).not.toHaveAttribute('aria-description');
+  });
+
   it('highlights column tops as drop targets once a source card is selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<StreetsAndAlleysPage />);
