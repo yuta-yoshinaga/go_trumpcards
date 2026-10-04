@@ -337,21 +337,15 @@ function LetItRidePageContent() {
 
             {isEndPhase && (
               <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
-                {state.bet1Payout !== 0 && (
-                  <div>
-                    {t('payout.bet1')}: {state.bet1Payout}
-                  </div>
-                )}
-                {state.bet2Payout !== 0 && (
-                  <div>
-                    {t('payout.bet2')}: {state.bet2Payout}
-                  </div>
-                )}
-                {state.bet3Payout !== 0 && (
-                  <div>
-                    {t('payout.bet3')}: {state.bet3Payout}
-                  </div>
-                )}
+                <div>
+                  {t('payout.bet1')}: {state.bet1Payout}
+                </div>
+                <div>
+                  {t('payout.bet2')}: {state.bet2Payout}
+                </div>
+                <div>
+                  {t('payout.bet3')}: {state.bet3Payout}
+                </div>
                 <div className="font-bold mt-1">
                   {t('payout.total')}: {state.totalPayout}
                 </div>
