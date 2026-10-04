@@ -112,6 +112,27 @@ describe('ColoradoPage', () => {
     );
   });
 
+  it('replaces the live announcement node when the same move succeeds twice', async () => {
+    mockExec.mockResolvedValue(makeState({ moveCount: 1 }));
+    renderWithProviders(<ColoradoPage />);
+    await screen.findByTestId('co-tableau-0');
+
+    const liveRegion = screen.getByTestId('colorado-hint-live');
+    const moveWasteToFoundation = () => {
+      fireEvent.click(screen.getByTestId('co-waste-button'));
+      fireEvent.click(screen.getByTestId('co-foundation-0'));
+    };
+
+    moveWasteToFoundation();
+    await waitFor(() => expect(liveRegion.textContent).toContain('捨て札から組札へ移動しました'));
+    const firstAnnouncement = liveRegion.querySelector('span');
+
+    moveWasteToFoundation();
+    await waitFor(() => expect(liveRegion.querySelector('span')).not.toBe(firstAnnouncement));
+
+    expect(liveRegion.querySelector('span')).not.toBe(firstAnnouncement);
+  });
+
   it('does not announce a rejected move or failed request', async () => {
     mockExec.mockResolvedValue(makeState({ message: 'illegal move', messageCode: '' }));
     renderWithProviders(<ColoradoPage />);
@@ -130,7 +151,7 @@ describe('ColoradoPage', () => {
     fireEvent.click(screen.getByTestId('co-waste-button'));
     fireEvent.click(screen.getByTestId('co-foundation-0'));
     await screen.findByRole('alert');
-    expect(screen.getAllByRole('status').every((region) => region.textContent === '')).toBe(true);
+    expect(screen.queryByText(/移動しました/)).not.toBeInTheDocument();
   });
 
   it('announces a successful move in English', async () => {

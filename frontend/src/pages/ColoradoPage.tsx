@@ -89,7 +89,7 @@ function ColoradoPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('colorado');
-  const [moveAnnouncement, setMoveAnnouncement] = useState('');
+  const [moveAnnouncement, setMoveAnnouncement] = useState({ text: '', id: 0 });
   const {
     state,
     loading,
@@ -103,7 +103,8 @@ function ColoradoPageContent() {
       const source =
         from.zone === 'waste' ? t('waste') : from.zone === 'stock' ? t('stock') : `${t('tableau')} ${from.idx}`;
       const destination = to.zone === 'foundation' ? t('foundation') : `${t('tableau')} ${to.idx}`;
-      setMoveAnnouncement(t('moveAnnouncement', { source, destination }));
+      const text = t('moveAnnouncement', { source, destination });
+      setMoveAnnouncement((previous) => ({ text, id: previous.id + 1 }));
     },
   });
 
@@ -223,21 +224,13 @@ function ColoradoPageContent() {
     [runApi, source],
   );
 
-  if (error)
-    return (
-      <>
-        <div className="sr-only" role="status" aria-live="polite">
-          {moveAnnouncement}
-        </div>
-        <ErrorAlert message={error} onRetry={retry} />
-      </>
-    );
+  if (error) return <ErrorAlert message={error} onRetry={retry} />;
 
   if (!state)
     return (
       <>
         <div className="sr-only" role="status" aria-live="polite">
-          {moveAnnouncement}
+          <span key={moveAnnouncement.id}>{moveAnnouncement.text}</span>
         </div>
         <GameSkeleton gameKey="colorado" layout={{ kind: 'tableau', topRow: 8, tableau: 10 }} />
       </>
@@ -498,7 +491,9 @@ function ColoradoPageContent() {
                 られないことがある (#5955)。
               */}
               <div data-testid="colorado-hint-live" role="status" aria-live="polite">
-                <span className="sr-only">{moveAnnouncement}</span>
+                <span key={moveAnnouncement.id} className="sr-only">
+                  {moveAnnouncement.text}
+                </span>
                 {requestedHint && (
                   <div className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1">
                     {t('hintAvailable')}:{' '}
