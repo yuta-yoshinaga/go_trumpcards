@@ -164,6 +164,45 @@ describe('YukonPage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
+  it('moves a selected card to an empty foundation', async () => {
+    renderWithProviders(<YukonPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ K' }));
+    const foundation = screen.getByRole('button', { name: '空の組札 (スペード)' });
+    expect(foundation).not.toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(foundation);
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 0, cardIndex: 0 },
+        { zone: 'foundation', col: 0 },
+      ),
+    );
+  });
+
+  it('moves a selected card to an empty tableau column', async () => {
+    mockExec.mockResolvedValue({ ...playingState, tableau: [[], ...playingState.tableau.slice(1)] });
+    renderWithProviders(<YukonPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+
+    fireEvent.click(screen.getByRole('button', { name: '♥ 8' }));
+    const emptyColumn = screen.getByRole('button', { name: '空 場札 0' });
+    expect(emptyColumn).not.toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(emptyColumn);
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 1, cardIndex: 1 },
+        { zone: 'tableau', col: 0 },
+      ),
+    );
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<YukonPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -304,6 +343,36 @@ describe('YukonPage', () => {
     expect(screen.getByRole('button', { name: '元に戻す' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeDisabled();
     expect(screen.getByTestId('autocomplete-button')).toBeDisabled();
+
+    const ace = screen.getByRole('button', { name: '♠ A' });
+    expect(ace).toHaveAttribute('aria-disabled', 'true');
+    const foundation = screen.getByRole('button', { name: '空の組札 (スペード)' });
+    expect(foundation).toHaveAttribute('aria-disabled', 'true');
+    // Verify the source card and move targets stay inert throughout auto-complete.
+    fireEvent.click(ace);
+    fireEvent.dragStart(ace, { dataTransfer: { setData: vi.fn(), effectAllowed: '' } });
+    fireEvent.drop(foundation, { dataTransfer: { getData: () => '' } });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+    expect(ace).toHaveAttribute('aria-label', '♠ A');
+  });
+
+  it('locks card selection and drag while an API action is pending', async () => {
+    const pendingUndo = new Promise<YukonResponse>(() => {});
+    mockExec.mockImplementation((command) =>
+      command === 'undo' ? pendingUndo : Promise.resolve({ ...playingState, canUndo: true }),
+    );
+    renderWithProviders(<YukonPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByRole('button', { name: '元に戻す' }));
+
+    const ace = screen.getByRole('button', { name: '♠ K' });
+    await waitFor(() => expect(ace).toHaveAttribute('aria-disabled', 'true'));
+    expect(ace).toHaveAttribute('draggable', 'false');
+    fireEvent.click(ace);
+    await flushPendingDispatch();
+    expect(ace).toHaveAttribute('aria-label', '♠ K');
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
   it('autocomplete button is disabled while face-down cards exist', async () => {
