@@ -272,6 +272,17 @@ func TestLaughAndLieDownCuiPresenter_ActionLogIncludesEntriesDuringPlay(t *testi
 	assert.Contains(t, new(LaughAndLieDownCuiPresenter).ActionLogOutput(l), i18n.T("laughandliedown.log.deal"))
 }
 
+func TestLaughAndLieDownCuiPresenter_ActionLogIncludesResolvedNameForSeatedPlayer(t *testing.T) {
+	g := new(interfaces.MockLaughAndLieDownGame)
+	g.On("GetPlayer", 0).Return(domain.NewLaughAndLieDownPlayer(true))
+	g.On("GetActionLog").Return([]*domain.ActionLogEntry{{
+		TurnNumber: 1, PlayerIdx: 0, ActionType: "capture",
+		DetailCode: "laughandliedown.log.capture",
+	}})
+
+	assert.Contains(t, new(LaughAndLieDownCuiPresenter).ActionLogOutput(g), "あなた")
+}
+
 // #5576: ラストインのボーナス額は CUI の精算行には出ているが Web には無く、
 // 画面は `lastInIdx` すら読んでいなかった。額は**ドメインの定数から**渡すこと ──
 // 訳文に数字を書くと、額を変えたとき片方だけ嘘になる。
