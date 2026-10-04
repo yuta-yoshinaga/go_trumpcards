@@ -196,6 +196,7 @@ function GinRummyPageContent() {
     return Number.isFinite(best) ? best : null;
   }, [state, selectedCardIndices]);
   const canKnockNow = liveDeadwood != null && liveDeadwood <= GIN_RUMMY_KNOCK_THRESHOLD;
+  const canKnockSelectedCard = selectedCardIndices.length === 1 && canKnockNow;
 
   // During DISCARD, color-code the human's hand by best meld split so the
   // player can see which cards form melds vs. which are deadwood. Shares the
@@ -567,14 +568,23 @@ function GinRummyPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={`${btnPrimary} ${canKnockNow ? 'motion-safe:animate-pulse ring-2 ring-ds-success' : ''}`}
-                    onClick={handleKnock}
-                    disabled={loading || selectedCardIndices.length !== 1}
+                    className={`${btnPrimary} aria-disabled:cursor-not-allowed aria-disabled:opacity-50 ${canKnockNow ? 'motion-safe:animate-pulse ring-2 ring-ds-success' : ''}`}
+                    onClick={() => {
+                      if (!loading && canKnockSelectedCard) handleKnock();
+                    }}
+                    disabled={loading}
+                    aria-disabled={!canKnockSelectedCard || undefined}
+                    aria-describedby={!canKnockSelectedCard ? 'ginrummy-knock-disabled-reason' : undefined}
                     data-tutorial="gr-knock-button"
                     data-testid="ginrummy-knock-button"
                   >
                     {t('knockButton')}
                   </button>
+                  {!canKnockSelectedCard && (
+                    <span id="ginrummy-knock-disabled-reason" className="sr-only">
+                      {t('knockDisabledReason')}
+                    </span>
+                  )}
                 </>
               )}
               {isLayoffPhase && isHumanTurn && (
