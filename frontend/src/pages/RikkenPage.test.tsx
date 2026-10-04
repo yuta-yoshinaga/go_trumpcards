@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { rikkenApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, RikkenResponse } from '../types/card';
 import { RIKKEN_NO_TRUMP } from '../types/games/rikken';
@@ -122,6 +123,31 @@ beforeEach(() => {
 });
 
 describe('RikkenPage', () => {
+  it('shows each seat’s trick count, including zero, in Japanese and English', async () => {
+    const previousLanguage = i18n.language;
+    mockApi.mockResolvedValue({
+      ...bidState,
+      players: bidState.players.map((player, index) => ({ ...player, trickCount: index === 1 ? 2 : 0 })),
+    });
+
+    try {
+      await i18n.changeLanguage('ja');
+      const { unmount } = renderWithProviders(<RikkenPage />);
+      const seats = await screen.findByTestId('rikken-seats');
+      expect(seats).toHaveTextContent('獲得トリック: 0');
+      expect(seats).toHaveTextContent('獲得トリック: 2');
+      unmount();
+
+      await i18n.changeLanguage('en');
+      renderWithProviders(<RikkenPage />);
+      const englishSeats = await screen.findByTestId('rikken-seats');
+      expect(englishSeats).toHaveTextContent('Tricks: 0');
+      expect(englishSeats).toHaveTextContent('Tricks: 2');
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('uses localized card names for hand buttons', async () => {
     mockApi.mockResolvedValue(playState);
     renderWithProviders(<RikkenPage />);
