@@ -131,7 +131,7 @@ func (p *BauernschnapsenCuiPresenter) HintOutput(g interfaces.BauernschnapsenGam
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BauernschnapsenCuiPresenter) ActionLogOutput(g interfaces.BauernschnapsenGame) string {
 	return actionLogToTextWithNames(g.GetActionLog(), func(idx int) string {
-		if idx < 0 || idx >= g.GetPlayerCnt() {
+		if idx >= g.GetPlayerCnt() {
 			return ""
 		}
 		return cuiPlayerName(g.GetPlayer(idx), idx)
