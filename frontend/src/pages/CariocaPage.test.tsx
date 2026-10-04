@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cariocaApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, CariocaResponse } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
@@ -94,6 +95,126 @@ beforeEach(() => {
 });
 
 describe('CariocaPage', () => {
+  describe('ignores repeated actions while loading', () => {
+    const pendingAction = () => {
+      mockExec.mockImplementationOnce(() => new Promise<CariocaResponse>(() => {}));
+    };
+
+    const loadState = async (state: CariocaResponse) => {
+      mockExec.mockResolvedValue(state);
+      renderWithProviders(<CariocaPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    };
+
+    const selectCards = (indices: number[]) => {
+      const cards = screen
+        .getAllByRole('button')
+        .filter((button) => button.querySelector('img') && !button.getAttribute('data-testid')?.startsWith('ca-meld'));
+      for (const index of indices) fireEvent.click(cards[index]);
+    };
+
+    it('ignores a second stock draw', async () => {
+      await loadState(drawState);
+      const button = screen.getByRole('button', { name: /Draw from stock|山札から引く/ });
+      pendingAction();
+      fireEvent.click(button);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(2));
+      fireEvent.click(button);
+      await flushPendingDispatch();
+      expect(mockExec).toHaveBeenCalledTimes(2);
+    });
+
+    it('ignores a second discard draw', async () => {
+      await loadState(drawState);
+      const button = screen.getByRole('button', { name: /Take discard|捨て札を取る/ });
+      pendingAction();
+      fireEvent.click(button);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(2));
+      fireEvent.click(button);
+      await flushPendingDispatch();
+      expect(mockExec).toHaveBeenCalledTimes(2);
+    });
+
+    it('ignores a second discard', async () => {
+      await loadState(playState);
+      selectCards([0]);
+      const button = screen.getByRole('button', { name: /Discard card|カードを捨てる/ });
+      pendingAction();
+      fireEvent.click(button);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(2));
+      fireEvent.click(button);
+      await flushPendingDispatch();
+      expect(mockExec).toHaveBeenCalledTimes(2);
+    });
+
+    it('ignores a second contract submission', async () => {
+      await loadState(playState);
+      selectCards([0, 1, 2]);
+      fireEvent.click(screen.getByRole('button', { name: /Add to slot|スロットに追加/ }));
+      selectCards([3, 4, 5]);
+      fireEvent.click(screen.getByRole('button', { name: /Add to slot|スロットに追加/ }));
+      const button = screen.getByRole('button', { name: /Submit contract|コントラクトを場に出す/ });
+      pendingAction();
+      fireEvent.click(button);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(2));
+      fireEvent.click(button);
+      await flushPendingDispatch();
+      expect(mockExec).toHaveBeenCalledTimes(2);
+    });
+
+    it('ignores a second extra meld', async () => {
+      const metState: CariocaResponse = {
+        ...playState,
+        players: [{ ...playState.players[0], contractMet: true }, playState.players[1], playState.players[2]],
+      };
+      await loadState(metState);
+      selectCards([0, 1, 2]);
+      const button = screen.getByRole('button', { name: /Lay extra meld|追加メルド/ });
+      pendingAction();
+      fireEvent.click(button);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(2));
+      fireEvent.click(button);
+      await flushPendingDispatch();
+      expect(mockExec).toHaveBeenCalledTimes(2);
+    });
+
+    it('ignores a second layoff', async () => {
+      const metState: CariocaResponse = {
+        ...playState,
+        players: [
+          { ...playState.players[0], contractMet: true },
+          {
+            ...playState.players[1],
+            contractMet: true,
+            melds: [{ cards: [card('SPADE', 5), card('HEART', 5), card('DIAMOND', 5)] }],
+          },
+          playState.players[2],
+        ],
+      };
+      await loadState(metState);
+      fireEvent.click(screen.getByTestId('ca-meld-1-0'));
+      selectCards([0]);
+      const button = screen.getByRole('button', { name: /Lay off|レイオフ/ });
+      pendingAction();
+      fireEvent.click(button);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(2));
+      fireEvent.click(button);
+      await flushPendingDispatch();
+      expect(mockExec).toHaveBeenCalledTimes(2);
+    });
+
+    it('ignores a second next-round action', async () => {
+      await loadState(roundEndState);
+      const button = await screen.findByRole('button', { name: /Next round|次のラウンドへ/ });
+      pendingAction();
+      fireEvent.click(button);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(2));
+      fireEvent.click(button);
+      await flushPendingDispatch();
+      expect(mockExec).toHaveBeenCalledTimes(2);
+    });
+  });
+
   it('sorts the display while preserving selected card indices for actions', async () => {
     mockExec.mockResolvedValue(playState);
     renderWithProviders(<CariocaPage />);
