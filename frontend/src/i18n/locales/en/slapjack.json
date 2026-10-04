@@ -40,6 +40,7 @@
     },
     "slapAvailableAnnounce": "Slapping is available",
     "slapUnavailableAnnounce": "Slapping is no longer available",
+    "cardAnnounce": "Card revealed: {{card}}",
     "burst": {
       "jack": "JACK! {{count}} cards won",
       "miss": "MISS!"
