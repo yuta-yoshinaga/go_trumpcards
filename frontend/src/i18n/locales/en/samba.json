@@ -21,6 +21,8 @@
   "goOutButton": "Go out",
   "goOutProgress": "Completed melds {{completed}}/{{required}}",
   "goOutUnavailable": "Your team needs {{required}} completed melds to go out",
+  "goOutHandTooLarge": "You can go out only with one or no cards in your hand",
+  "goOutRedThree": "You cannot go out because a red three cannot be discarded",
   "hint": {
     "drawStock": "Draw from the stock pile",
     "takeDiscardPile": "Consider taking the discard pile",
