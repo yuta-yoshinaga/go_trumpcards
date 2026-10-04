@@ -52,6 +52,9 @@
   },
   "breakdown": {
     "title": "Point Breakdown",
+    "item": "Scoring item",
+    "winner": "Awarded to",
+    "detail": "Details",
     "high": "High",
     "low": "Low",
     "jack": "Jack",
