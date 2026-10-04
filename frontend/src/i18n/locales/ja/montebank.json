@@ -9,6 +9,7 @@
   "label.layout": "場札",
   "label.gate": "ゲート",
   "label.net": "収支",
+  "label.payoutAmount": "払戻額",
   "label.sessionWins": "通算勝ち{{count}}",
   "label.sessionLosses": "通算負け{{count}}",
   "label.sessionNet": "累計純収支{{net}}",
