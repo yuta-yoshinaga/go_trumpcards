@@ -29,6 +29,7 @@ import type { KnockoutWhistResponse } from '../types/card';
 import { KnockoutWhistPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { suitSymbolAt } from '../utils/cardAlt';
+import { suitName } from '../utils/cardUtils';
 import { KNOCKOUT_WHIST_HELP, parseKnockoutWhistCommand } from '../utils/cli/commands/knockoutWhistCommands';
 import { formatKnockoutWhistState } from '../utils/cli/formatters/knockoutWhistFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -151,6 +152,14 @@ function KnockoutWhistPageContent() {
   const nextHandSize = Math.max(state.handSize - 1, 1);
   const isHumanEliminated = state.players[humanIdx]?.eliminated ?? false;
   const canPlay = isPlayPhase && isHumanTurn && !isHumanEliminated;
+  const trumpDesign = suitName(state.trumpSuit);
+  const trumpIndices =
+    humanPlayer && trumpDesign
+      ? humanPlayer.cards.reduce<number[]>((indices, card, index) => {
+          if (card.design === trumpDesign) indices.push(index);
+          return indices;
+        }, [])
+      : [];
   // Show a spectator banner while the human is knocked out but the match continues among the CPUs.
   const showSpectatorBanner = isHumanEliminated && !isGameEnd;
   const trumpSymbol = suitSymbolAt(state.trumpSuit, '');
@@ -381,6 +390,9 @@ function KnockoutWhistPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="knockoutwhist"
+                trumpIndices={trumpIndices}
+                trumpTitle={t('trumpCardDescription')}
+                trumpAccessibleLabel={t('trumpCardDescription')}
                 validIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}
               />
