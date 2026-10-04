@@ -73,6 +73,36 @@ describe('PasurPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('describes whether each hand card can capture using the server options', async () => {
+    renderWithProviders(<PasurPage />);
+    const cards = await screen.findAllByRole('button', { name: /を選ぶ$/ });
+
+    expect(cards[0]).toHaveAccessibleDescription('捕獲可能');
+    expect(cards[1]).toHaveAccessibleDescription('場に置く');
+  });
+
+  it('describes hand cards as lay-down when capture options are missing', async () => {
+    mockExec.mockResolvedValue(makeState({ captureOptions: [] }));
+
+    renderWithProviders(<PasurPage />);
+    const cards = await screen.findAllByRole('button', { name: /を選ぶ$/ });
+
+    expect(cards[0]).toHaveAccessibleDescription('場に置く');
+  });
+
+  it('describes capture availability in English', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<PasurPage />);
+      const cards = await screen.findAllByRole('button', { name: /Select .*$/ });
+
+      expect(cards[0]).toHaveAccessibleDescription('Capture available');
+      expect(cards[1]).toHaveAccessibleDescription('Can be laid down');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   // **11 の合計と絵札の扱いが規則そのもの。**
   it('states the capture rule', async () => {
     renderWithProviders(<PasurPage />);
