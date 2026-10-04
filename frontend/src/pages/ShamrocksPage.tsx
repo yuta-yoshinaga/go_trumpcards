@@ -37,14 +37,14 @@ const LL_TUTORIAL_STEPS: TutorialStep[] = [
   },
   { target: '[data-tutorial="ll-fans"]', messageKey: 'tutorial.fan', placement: 'top', advanceOn: 'next' },
   {
-    target: '[data-tutorial="ll-reset-button"]',
-    messageKey: 'tutorial.resetButton',
+    target: '[data-tutorial="ll-action-buttons"]',
+    messageKey: 'tutorial.actionButtons',
     placement: 'top',
     advanceOn: 'next',
   },
   {
-    target: '[data-testid="autocomplete-button"]',
-    messageKey: 'tutorial.actionButtons',
+    target: '[data-tutorial="ll-reset-button"]',
+    messageKey: 'tutorial.resetButton',
     placement: 'top',
     advanceOn: 'next',
   },
@@ -352,39 +352,41 @@ function ShamrocksPageContent() {
       <GameFooter className={`${gameTheme.shamrocks.footer} px-3 py-2.5`}>
         <ErrorAlert message={error} onRetry={retry} />
         <div className="flex flex-wrap gap-2 items-center">
-          {canAct && (
-            <button
-              type="button"
-              className={btnSuccess}
-              onClick={() => exec('ac')}
-              disabled={loading}
-              data-testid="autocomplete-button"
-            >
-              {t('autoComplete')}
-            </button>
-          )}
-          {canAct && state.canUndo && (
-            <button
-              type="button"
-              className={btnSecondary}
-              onClick={() => exec('u')}
-              disabled={loading}
-              data-testid="undo-button"
-            >
-              {t('undo')}
-            </button>
-          )}
-          {canAct && (
-            <button
-              type="button"
-              className={btnPrimary}
-              onClick={handleHint}
-              disabled={loading}
-              data-testid="hint-button"
-            >
-              {t('hint')}
-            </button>
-          )}
+          <div className="flex flex-wrap gap-2 items-center" data-tutorial="ll-action-buttons">
+            {canAct && (
+              <button
+                type="button"
+                className={btnSuccess}
+                onClick={() => exec('ac')}
+                disabled={loading}
+                data-testid="autocomplete-button"
+              >
+                {t('autoComplete')}
+              </button>
+            )}
+            {canAct && state.canUndo && (
+              <button
+                type="button"
+                className={btnSecondary}
+                onClick={() => exec('u')}
+                disabled={loading}
+                data-testid="undo-button"
+              >
+                {t('undo')}
+              </button>
+            )}
+            {canAct && (
+              <button
+                type="button"
+                className={btnPrimary}
+                onClick={handleHint}
+                disabled={loading}
+                data-testid="hint-button"
+              >
+                {t('hint')}
+              </button>
+            )}
+          </div>
           {canAct && (
             <button
               type="button"

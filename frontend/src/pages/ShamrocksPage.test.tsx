@@ -39,7 +39,7 @@ describe('ShamrocksPage', () => {
     renderWithProviders(<ShamrocksPage />);
 
     fireEvent.click(await screen.findByRole('button', { name: 'チュートリアル' }));
-    for (let index = 0; index < 3; index++) {
+    for (let index = 0; index < 2; index++) {
       fireEvent.click(await screen.findByRole('button', { name: '次へ' }));
     }
 
@@ -49,6 +49,7 @@ describe('ShamrocksPage', () => {
       ),
     ).toBeInTheDocument();
     expect(screen.queryByTestId('autocomplete-button')).not.toBeInTheDocument();
+    expect(document.querySelector('[data-tutorial="ll-action-buttons"]')).toBeInTheDocument();
 
     try {
       await i18n.changeLanguage('en');
@@ -57,10 +58,11 @@ describe('ShamrocksPage', () => {
           'Hint shows a suggested move. Auto-complete moves cards to foundations when possible, and undo takes back your last move.',
         ),
       ).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Complete' })).toBeInTheDocument();
     } finally {
       await i18n.changeLanguage('ja');
     }
+    fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    expect(await screen.findByText('新しいゲームを始めるボタンです。')).toBeInTheDocument();
   });
 
   it('records each clear once, shows the average moves, and can reset the session stats', async () => {
@@ -237,6 +239,11 @@ describe('ShamrocksPage', () => {
     mockExec.mockResolvedValue(makeState({ canUndo: true }));
     renderWithProviders(<ShamrocksPage />);
     await screen.findByTestId('autocomplete-button');
+    expect(
+      [...document.querySelector('[data-tutorial="ll-action-buttons"]')!.querySelectorAll('button')].map((button) =>
+        button.getAttribute('data-testid'),
+      ),
+    ).toEqual(['autocomplete-button', 'undo-button', 'hint-button']);
     for (const [testid, cmd] of [
       ['autocomplete-button', 'ac'],
       ['undo-button', 'u'],
