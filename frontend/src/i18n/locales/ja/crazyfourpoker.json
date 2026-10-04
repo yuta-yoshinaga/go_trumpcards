@@ -12,6 +12,8 @@
   "label.round": "ラウンド",
   "label.yourHand": "あなたの5枚",
   "label.yourBest": "最良の4枚",
+  "label.bestCardIncluded": "最良の役に含む",
+  "label.bestCardExcluded": "最良の役に含まない",
   "label.dealerHand": "ディーラーの5枚",
   "label.dealerBest": "ディーラーの最良4枚",
   "label.hidden": "決着まで伏せられています",
