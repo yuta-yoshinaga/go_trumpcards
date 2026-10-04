@@ -29,6 +29,9 @@
   "gameClear": "Game clear! Moves: {{moveCount}}",
   "gameOver": "Game over",
   "gameOverSummary": "Reached {{count}}/104 cards on the foundations ({{percent}}%)",
+  "foundationProgress_one": "{{count}}/104 card on the foundations",
+  "foundationProgress_other": "{{count}}/104 cards on the foundations",
+  "foundationProgressLabel": "Foundation progress",
   "hintAvailable": "A hint is available",
   "noHint": "No hint available",
   "tutorial": {

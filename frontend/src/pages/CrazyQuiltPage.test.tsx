@@ -64,6 +64,36 @@ describe('CrazyQuiltPage', () => {
     expect(screen.queryByTestId('cq-cell-64')).not.toBeInTheDocument();
   });
 
+  it('shows foundation progress and updates it after a card moves there', async () => {
+    const initialFoundation = Array.from({ length: 8 }, () => [] as Card[]);
+    initialFoundation[0] = [card('SPADE', 1)];
+    const movedFoundation = initialFoundation.map((pile) => [...pile]);
+    movedFoundation[0].push(card('SPADE', 2));
+    mockExec.mockResolvedValueOnce({ ...playingState, foundation: initialFoundation });
+    mockExec.mockResolvedValueOnce({ ...playingState, foundation: movedFoundation });
+
+    renderWithProviders(<CrazyQuiltPage />);
+    const progress = await screen.findByRole('progressbar', { name: '組札の完成度' });
+    expect(progress).toHaveAttribute('aria-valuemin', '0');
+    expect(progress).toHaveAttribute('aria-valuemax', '104');
+    expect(progress).toHaveAttribute('aria-valuenow', '1');
+    expect(progress).toHaveTextContent('組札 1/104枚');
+
+    fireEvent.click(screen.getByTestId('cq-cell-0'));
+    fireEvent.click(screen.getAllByRole('button', { name: /組札0/ })[0]);
+    await waitFor(() => expect(progress).toHaveAttribute('aria-valuenow', '2'));
+    expect(progress).toHaveTextContent('組札 2/104枚');
+  });
+
+  it('localizes foundation progress in English', async () => {
+    await i18n.changeLanguage('en');
+    const { unmount } = renderWithProviders(<CrazyQuiltPage />);
+    const progress = await screen.findByRole('progressbar', { name: 'Foundation progress' });
+    expect(progress).toHaveTextContent('0/104 cards on the foundations');
+    unmount();
+    await i18n.changeLanguage('ja');
+  });
+
   it('includes the zero-based cell and card in quilt card names in Japanese and English', async () => {
     await i18n.changeLanguage('ja');
     const { unmount } = renderWithProviders(<CrazyQuiltPage />);

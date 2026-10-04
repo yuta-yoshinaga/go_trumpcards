@@ -169,7 +169,7 @@ function CrazyQuiltPageContent() {
   const isGameClear = state.phase === CrazyQuiltPhase.GAME_CLEAR;
   const isGameOver = state.phase === CrazyQuiltPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
-  const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
+  const foundationCount = state.foundation.reduce((sum, pile) => sum + pile.length, 0);
   const autoCompleteReady = state.foundation.some((pile) => pile.length > 0);
 
   const isSourceSelected = (zone: string, col?: number) =>
@@ -434,6 +434,19 @@ function CrazyQuiltPageContent() {
                 </div>
               </div>
             </div>
+
+            {isPlaying && (
+              <div
+                className="text-center text-ds-text-muted text-sm mb-3"
+                role="progressbar"
+                aria-label={t('foundationProgressLabel')}
+                aria-valuemin={0}
+                aria-valuemax={TOTAL_CARDS}
+                aria-valuenow={foundationCount}
+              >
+                {t('foundationProgress', { count: foundationCount })}
+              </div>
+            )}
 
             <div
               className="grid gap-0.5 sm:gap-1 justify-center"
