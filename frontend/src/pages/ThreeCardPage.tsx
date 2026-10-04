@@ -68,6 +68,17 @@ const HAND_RANK_KEYS: Record<number, string> = {
 
 const MIN_ANTE_BET = 10;
 
+/** Calculates the largest ante allowed while preserving the matching play bet when possible. */
+function threeCardAnteMax(chips: number, pairPlus: number): number {
+  const half = Math.floor((chips - pairPlus) / 2);
+  return half >= MIN_ANTE_BET ? half : Math.min(MIN_ANTE_BET, Math.max(0, chips - pairPlus));
+}
+
+/** Calculates the largest Pair Plus bet after reserving both ante and play bets. */
+function threeCardPairPlusMax(chips: number, ante: number): number {
+  return Math.max(0, chips - 2 * ante);
+}
+
 /** Renders the Three Card Poker game page with betting, action, and result display. */
 export const ThreeCardPage = withTutorial(ThreeCardPageContent, 'threecard', TC_TUTORIAL_STEPS);
 /** Inner content of the Three Card Poker page, wrapped by TutorialProvider. */
@@ -113,8 +124,8 @@ function ThreeCardPageContent() {
 
   useEffect(() => {
     if (!state || !isBetPhase) return;
-    const nextAnte = Math.min(anteAmount, Math.max(0, Math.floor((state.chips - pairPlusAmount) / 2)));
-    const nextPairPlus = Math.min(pairPlusAmount, Math.max(0, state.chips - 2 * nextAnte));
+    const nextAnte = Math.min(anteAmount, threeCardAnteMax(state.chips, pairPlusAmount));
+    const nextPairPlus = Math.min(pairPlusAmount, threeCardPairPlusMax(state.chips, nextAnte));
     if (nextAnte !== anteAmount || nextPairPlus !== pairPlusAmount) {
       setAnteAmount(nextAnte);
       setPairPlusAmount(nextPairPlus);
@@ -124,14 +135,14 @@ function ThreeCardPageContent() {
 
   const handleAnteChange = (value: number) => {
     if (!state) return;
-    const anteMax = Math.max(0, Math.floor((state.chips - pairPlusAmount) / 2));
+    const anteMax = threeCardAnteMax(state.chips, pairPlusAmount);
     const nextAnte = Math.min(Math.max(value, MIN_ANTE_BET), anteMax);
     setAnteAmount(nextAnte);
     setBetAdjusted(nextAnte !== value);
   };
   const handlePairPlusChange = (value: number) => {
     if (!state) return;
-    const nextPairPlus = Math.min(value, Math.max(0, state.chips - 2 * anteAmount));
+    const nextPairPlus = Math.min(value, threeCardPairPlusMax(state.chips, anteAmount));
     setPairPlusAmount(nextPairPlus);
     setBetAdjusted(nextPairPlus !== value);
   };
@@ -387,7 +398,7 @@ function ThreeCardPageContent() {
                   value={anteAmount}
                   onChange={handleAnteChange}
                   min={MIN_ANTE_BET}
-                  max={Math.max(0, Math.floor((state.chips - pairPlusAmount) / 2))}
+                  max={threeCardAnteMax(state.chips, pairPlusAmount)}
                   step={10}
                   disabled={loading}
                   showSteppers
@@ -399,7 +410,7 @@ function ThreeCardPageContent() {
                   value={pairPlusAmount}
                   onChange={handlePairPlusChange}
                   min={0}
-                  max={Math.max(0, state.chips - 2 * anteAmount)}
+                  max={threeCardPairPlusMax(state.chips, anteAmount)}
                   step={10}
                   disabled={loading}
                   showSteppers

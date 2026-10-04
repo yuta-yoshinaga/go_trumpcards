@@ -305,7 +305,7 @@ describe('ThreeCardPage', () => {
     expect(screen.getByText('所持チップに合わせて賭け額を調整しました。')).toBeInTheDocument();
   });
 
-  it('limits the ante to half the chips left after pair plus, including when funds are insufficient', async () => {
+  it('limits the ante to half the chips left after pair plus, including the minimum ante when funds are insufficient', async () => {
     mockExec.mockResolvedValue({ ...betPhaseState, chips: 250 });
     renderWithProviders(<ThreeCardPage />);
     await waitFor(() => expect(screen.getByText('チップ: 250')).toBeInTheDocument());
@@ -324,6 +324,26 @@ describe('ThreeCardPage', () => {
     await waitFor(() => expect(screen.getByText('チップ: 50')).toBeInTheDocument());
     expect(anteInput).toHaveAttribute('max', '0');
     expect(anteInput).toHaveValue('0');
+  });
+
+  it('keeps the minimum ante available with 15 chips to avoid a betting soft lock', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, chips: 15 });
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 15')).toBeInTheDocument());
+
+    const anteInput = screen.getByLabelText('アンテ');
+    expect(anteInput).toHaveAttribute('max', '10');
+    expect(anteInput).toHaveValue('10');
+  });
+
+  it('reserves the play bet when calculating the ante maximum', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, chips: 100 });
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 100')).toBeInTheDocument());
+
+    fireEvent.change(screen.getByLabelText('アンテ'), { target: { value: '10' } });
+    fireEvent.change(screen.getByLabelText('ペアプラス'), { target: { value: '20' } });
+    expect(screen.getByLabelText('アンテ')).toHaveAttribute('max', '40');
   });
 
   it('adjusts the ante when the bet response leaves fewer chips', async () => {
