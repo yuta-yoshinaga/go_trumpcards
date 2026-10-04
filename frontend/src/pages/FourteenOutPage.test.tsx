@@ -71,6 +71,15 @@ describe('FourteenOutPage', () => {
     await waitFor(() => expect(screen.getByText(/0\/52/)).toBeInTheDocument());
   });
 
+  it('opens the action log during play', async () => {
+    const { actionLogApi } = await import('../api/gameApi');
+    vi.mocked(actionLogApi.fourteenout).mockResolvedValue({ entries: [] });
+    renderWithProviders(<FourteenOutPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: '棋譜を見る' }));
+    expect(await screen.findByRole('region', { name: '棋譜' })).toBeInTheDocument();
+  });
+
   // **12 列。**クローン元は 5x5 の 25 マス。
   it('renders twelve columns', async () => {
     renderWithProviders(<FourteenOutPage />);

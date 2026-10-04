@@ -190,9 +190,12 @@ func TestFourteenOutWebPresenter_ActionLog_Playing(t *testing.T) {
 	g := new(interfaces.MockFourteenOutGame)
 	g.On("GetPhase").Return(domain.FourteenOutPhasePlaying)
 	g.On("GetGameEndFlag").Return(false)
+	g.On("GetActionLog").Return([]*domain.ActionLogEntry{
+		{TurnNumber: 1, ActionType: "remove", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
+	})
 	p := &FourteenOutWebPresenter{}
 	result := p.ActionLogOutput(g)
-	assert.Contains(t, result, "entries")
+	assert.Contains(t, result, "remove")
 }
 
 func TestFourteenOutWebPresenter_ActionLog_GameOver(t *testing.T) {

@@ -162,7 +162,10 @@ func TestFourteenOutCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("playing", func(t *testing.T) {
 		g := new(interfaces.MockFourteenOutGame)
 		g.On("GetPhase").Return(domain.FourteenOutPhasePlaying)
-		assert.NotEmpty(t, new(FourteenOutCuiPresenter).ActionLogOutput(g))
+		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "remove", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
+		})
+		assert.Contains(t, new(FourteenOutCuiPresenter).ActionLogOutput(g), i18n.Tf("test.log.stub", "value", "1"))
 	})
 
 	t.Run("game over", func(t *testing.T) {
