@@ -356,7 +356,7 @@ function CitadelPageContent() {
             <span id={selectSourceHintId} className="sr-only">
               {tc('label.selectSourceFirst')}
             </span>
-            <div className="overflow-x-auto" data-testid="citadel-board-scroll">
+            <div className={isMobile ? 'overflow-x-auto p-1' : ''} data-testid="citadel-board-scroll">
               <div className={`flex gap-2 sm:gap-3 items-start ${isMobile ? 'w-max' : 'w-full'}`}>
                 <div
                   className={`flex gap-1 sm:gap-2 ${isMobile ? 'flex-none' : 'flex-1 min-w-0'}`}

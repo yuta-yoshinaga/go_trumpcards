@@ -117,6 +117,7 @@ describe('CitadelPage', () => {
       const board = await screen.findByTestId('citadel-board-scroll');
       const firstCard = screen.getByRole('button', { name: '♠ 5' });
       expect(board).toHaveClass('overflow-x-auto');
+      expect(board).toHaveClass('p-1');
       expect(firstCard).toBeInTheDocument();
       expect(board.querySelector('[data-tutorial="bc-tableau"]')?.firstElementChild).toHaveStyle({ width: '40px' });
       expect(board.querySelector('[data-tutorial="bc-foundation"]')).toBeInTheDocument();
@@ -139,6 +140,7 @@ describe('CitadelPage', () => {
     try {
       renderWithProviders(<CitadelPage />);
       const board = await screen.findByTestId('citadel-board-scroll');
+      expect(board).not.toHaveClass('overflow-x-auto');
       expect(board.firstElementChild).toHaveClass('w-full');
       expect(board.firstElementChild).not.toHaveClass('w-max');
       expect(board.querySelector('[data-tutorial="bc-tableau"]')).toHaveClass('flex-1');
