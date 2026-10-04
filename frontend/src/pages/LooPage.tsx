@@ -215,7 +215,7 @@ function LooPageContent() {
               <span className="mr-4">{t('pot', { pot: state.pot })}</span>
               <span>{t('trump', { suit: trumpSymbol })}</span>
               {state.turnUp && (
-                <span className="inline-flex items-center gap-2">
+                <span className="ml-4 inline-flex items-center gap-2">
                   <span>{t('turnUp')}</span>
                   <CardImage card={state.turnUp} width={32} />
                   <span aria-hidden="true">{cardAlt(state.turnUp)}</span>
