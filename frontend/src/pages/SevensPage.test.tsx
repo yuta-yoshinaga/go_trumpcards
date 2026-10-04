@@ -1679,6 +1679,30 @@ describe('SevensPage', () => {
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 2));
     });
 
+    it('does not play a card by keyboard while the action log is open', async () => {
+      mockExec.mockResolvedValue(humanTurnState);
+      vi.mocked(actionLogApi.sevens).mockResolvedValueOnce({ entries: [] });
+      renderWithProviders(<SevensPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ 6')).toBeInTheDocument());
+
+      // Select/play a legal card with its number key before opening the log.
+      await act(async () => {
+        fireEvent.keyDown(document, { key: '1' });
+      });
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+
+      mockExec.mockClear();
+      fireEvent.click(screen.getByText('棋譜を見る'));
+      await waitFor(() => expect(screen.getByText('棋譜')).toBeInTheDocument());
+
+      // This would dispatch play if the keyboard handler remained enabled.
+      await act(async () => {
+        fireEvent.keyDown(document, { key: '1' });
+      });
+      await flushPendingDispatch();
+      expect(mockExec).not.toHaveBeenCalled();
+    });
+
     it('keyboard is disabled when not human turn', async () => {
       mockExec.mockResolvedValue(cpuTurnState);
       renderWithProviders(<SevensPage />);
