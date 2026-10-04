@@ -19,6 +19,7 @@
   "bid": "ビッド",
   "pass": "パス",
   "declareTrump": "トランプ宣言",
+  "trumpButtonLabel": "{{suit}}を切り札にする",
   "confirmMelds": "メルド確認",
   "play": "プレイ",
   "nextTrick": "次のトリック",
