@@ -217,6 +217,18 @@ func TestPolignacCuiPresenterActionLogOutput(t *testing.T) {
 	require.NotEmpty(t, p.ActionLogOutput(g))
 }
 
+func TestPolignacCuiPresenterActionLogOutputDuringGame(t *testing.T) {
+	p := new(PolignacCuiPresenter)
+	g := newPolignacForCui(t)
+	require.False(t, g.GetGameEndFlag())
+	require.NotEmpty(t, g.GetActionLog())
+
+	out := p.ActionLogOutput(g)
+	lines := regexp.MustCompile(`\n`).Split(out, -1)
+	assert.Contains(t, out, i18n.T("cuiActionLogHeader"))
+	assert.Len(t, lines, len(g.GetActionLog())+2)
+}
+
 // **合計失点だけでは、♠J を踏んだのか他を 2 枚拾ったのかが分からない** (#5746)。
 func TestPolignacCuiPresenterShowsTheJackBreakdown(t *testing.T) {
 	p := new(PolignacCuiPresenter)

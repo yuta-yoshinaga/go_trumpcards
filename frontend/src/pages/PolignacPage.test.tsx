@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { polignacApi } from '../api/gameApi';
+import { actionLogApi, polignacApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, PolignacResponse } from '../types/card';
@@ -16,6 +16,7 @@ vi.mock('../hooks/useGameHint', () => ({
 }));
 
 const mockExec = vi.mocked(polignacApi.exec);
+const mockActionLog = vi.mocked(actionLogApi.polignac);
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
@@ -55,9 +56,31 @@ function makeState(overrides: Partial<PolignacResponse> = {}): PolignacResponse 
 beforeEach(() => {
   vi.clearAllMocks();
   mockExec.mockResolvedValue(makeState());
+  mockActionLog.mockResolvedValue({ entries: [] });
 });
 
 describe('PolignacPage', () => {
+  it('opens the action log during an unfinished game', async () => {
+    mockActionLog.mockResolvedValue({
+      entries: [
+        {
+          turnNumber: 1,
+          playerIdx: 0,
+          actionType: 'pass',
+          detailCode: 'polignac.log.pass',
+          detail: '宣言なし',
+        },
+      ],
+    });
+    renderWithProviders(<PolignacPage />);
+
+    const logButton = await screen.findByRole('button', { name: '棋譜を見る' });
+    fireEvent.click(logButton);
+
+    expect(await screen.findByRole('heading', { name: '棋譜' })).toBeInTheDocument();
+    expect(await screen.findByText(/pass: 宣言なし/)).toBeInTheDocument();
+  });
+
   it('announces playable cards while retaining each card name', async () => {
     mockExec.mockResolvedValue(makeState({ validPlays: [1] }));
     renderWithProviders(<PolignacPage />);

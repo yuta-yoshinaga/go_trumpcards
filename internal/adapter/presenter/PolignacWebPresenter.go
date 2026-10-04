@@ -111,5 +111,5 @@ func (p *PolignacWebPresenter) HintOutput(g interfaces.PolignacGame) string {
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *PolignacWebPresenter) ActionLogOutput(g interfaces.PolignacGame) string {
-	return actionLogOutputJSON(g)
+	return actionLogToJSON(g.GetActionLog())
 }
