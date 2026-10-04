@@ -188,6 +188,7 @@ describe('ThreeCardRummyPage', () => {
     expect(screen.getByTestId('tcr-bet-summary')).toHaveTextContent('合計: 260');
     expect(screen.getByTestId('tcr-bet-summary')).toHaveTextContent('不足チップ: 10');
     const betButton = screen.getByRole('button', { name: 'ベット' });
+    expect(betButton).toHaveAccessibleName('ベット');
     expect(betButton).toHaveAttribute('aria-disabled', 'true');
     fireEvent.click(betButton);
     await flushPendingDispatch();

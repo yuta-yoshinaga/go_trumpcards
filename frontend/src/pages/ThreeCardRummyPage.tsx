@@ -102,10 +102,11 @@ function ThreeCardRummyPageContent() {
   );
 
   const handleBet = useCallback(() => {
-    if (loading || !isBetPhase || anteAmount + lowBonusAmount > (state?.chips ?? 0)) return;
+    if (loading || !state || state.phase !== ThreeCardRummyPhase.BET || anteAmount + lowBonusAmount > state.chips)
+      return;
     setLastBet({ ante: anteAmount, lowBonus: lowBonusAmount });
     execApi('bet', anteAmount, lowBonusAmount);
-  }, [execApi, anteAmount, lowBonusAmount, loading, isBetPhase, state?.chips]);
+  }, [execApi, anteAmount, lowBonusAmount, loading, state]);
   const handlePlay = useCallback(() => execApi('play'), [execApi]);
   const handleFold = useCallback(() => execApi('fold'), [execApi]);
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
