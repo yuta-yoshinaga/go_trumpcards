@@ -238,6 +238,7 @@ function ZwanzigerrufenPageContent() {
                       )}
                     </div>
                     <div>{t('cards', { count: p.cardCount })}</div>
+                    <div data-testid={`zw-seat-${p.id}-tricks`}>{t('tricks', { count: p.trickCount })}</div>
                     <div data-testid={`zw-seat-${p.id}-points`}>{t('points', { points: p.cardPoints })}</div>
                     <div>{t('score', { score: p.score })}</div>
                   </div>
