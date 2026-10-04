@@ -990,12 +990,12 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                 </div>
               </details>
             )}
-            {variant !== 'irishpoker' && (
-              <details className="mb-1" data-tutorial="pn-learning-mode" open={learningMode || undefined}>
-                <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
-                  {tc('settings.title')}
-                </summary>
-                <div className="flex flex-col gap-2 py-1">
+            <details className="mb-1" data-tutorial="pn-learning-mode" open={learningMode || undefined}>
+              <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
+                {tc('settings.title')}
+              </summary>
+              <div className="flex flex-col gap-2 py-1">
+                {variant !== 'irishpoker' && (
                   <div className="flex items-center gap-2" data-testid="learning-mode-toggle">
                     <label
                       htmlFor="learningModeCheckbox"
@@ -1010,22 +1010,24 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                       />
                     </label>
                   </div>
-                  {learningMode && state?.equity && state.potOdds != null && (
-                    <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
-                  )}
-                  <div className="flex items-center gap-3">
-                    <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
-                      <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-                      {tc('hint.toggle', { ns: 'tutorial' })}
-                    </label>
+                )}
+                {variant !== 'irishpoker' && learningMode && state?.equity && state.potOdds != null && (
+                  <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
+                )}
+                <div className="flex items-center gap-3">
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
+                    <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+                    {tc('hint.toggle', { ns: 'tutorial' })}
+                  </label>
+                  {variant !== 'irishpoker' && (
                     <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
                       <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
                       {t('settings.cpuMetaAI')}
                     </label>
-                  </div>
+                  )}
                 </div>
-              </details>
-            )}
+              </div>
+            </details>
             <GameResetButton
               isGameEnd={phase === PineapplePhase.SHOWDOWN || phase === PineapplePhase.END}
               onReset={handleManualReset}
