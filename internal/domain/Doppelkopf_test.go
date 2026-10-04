@@ -327,9 +327,18 @@ func TestDoppelkopf_RoundScoreHistoryResetAndJSON(t *testing.T) {
 	g.SetPhase(DoppelkopfPhaseRoundEnd)
 	g.SetReTeam([DoppelkopfPlayerCnt]bool{true, false, true, false})
 	g.ScoreRound()
+	chipsAfterFirstScore := make([]int, g.GetPlayerCnt())
+	for i := range chipsAfterFirstScore {
+		chipsAfterFirstScore[i] = g.GetPlayer(i).GetChips()
+	}
 	g.ScoreRound()
 	if got := g.GetRoundScoreHistory(); len(got) != 1 || len(got[0]) != DoppelkopfPlayerCnt {
 		t.Fatalf("history after settlement = %v, want one four-player row", got)
+	}
+	for i, chips := range chipsAfterFirstScore {
+		if got := g.GetPlayer(i).GetChips(); got != chips {
+			t.Errorf("player %d chips after repeated settlement = %d, want %d", i, got, chips)
+		}
 	}
 	data, err := json.Marshal(g)
 	if err != nil {
@@ -342,9 +351,39 @@ func TestDoppelkopf_RoundScoreHistoryResetAndJSON(t *testing.T) {
 	if !reflect.DeepEqual(g.GetRoundScoreHistory(), restored.GetRoundScoreHistory()) {
 		t.Fatalf("restored history = %v, want %v", restored.GetRoundScoreHistory(), g.GetRoundScoreHistory())
 	}
+	restoredChips := make([]int, restored.GetPlayerCnt())
+	for i := range restoredChips {
+		restoredChips[i] = restored.GetPlayer(i).GetChips()
+	}
+	restored.ScoreRound()
+	if got := restored.GetRoundScoreHistory(); len(got) != 1 {
+		t.Fatalf("history after scoring restored game = %v, want unchanged", got)
+	}
+	for i, chips := range restoredChips {
+		if got := restored.GetPlayer(i).GetChips(); got != chips {
+			t.Errorf("restored player %d chips after repeated settlement = %d, want %d", i, got, chips)
+		}
+	}
 	g.Reset()
 	if got := g.GetRoundScoreHistory(); len(got) != 0 {
 		t.Fatalf("history after reset = %v, want empty", got)
+	}
+}
+
+func TestDoppelkopf_ScoreRoundAfterRoundNumberMovesBack(t *testing.T) {
+	g := newDKGame(false)
+	g.SetRoundNumber(1)
+	g.SetPhase(DoppelkopfPhaseRoundEnd)
+	g.SetReTeam([DoppelkopfPlayerCnt]bool{true, false, true, false})
+	g.ScoreRound()
+
+	g.NextRound()
+	g.SetRoundNumber(1)
+	g.SetPhase(DoppelkopfPhaseRoundEnd)
+	g.ScoreRound()
+
+	if got := g.GetRoundScoreHistory(); len(got) != 2 {
+		t.Fatalf("history after scoring next round with a lower number = %v, want two rows", got)
 	}
 }
 

@@ -83,7 +83,8 @@ type Doppelkopf struct {
 	roundRePts       int                       // 直近ラウンドの Re チーム得点
 	roundReWon       bool                      // 直近ラウンドで Re が勝ったか
 	roundGamePts     int                       // 直近ラウンドのゲームポイント (倍率込み)
-	roundHistory     [][]int
+	roundHistory     [][]int                   // ラウンドごとの各プレイヤーのチップ増減 (席順)
+	roundScored      bool                      // このラウンドの精算が済んだか
 	gameEndFlag      bool
 	winnerIdx        int // ゲーム勝者 (-1 = 未確定)
 	actionLogBase
@@ -113,6 +114,7 @@ func NewDefaultDoppelkopf() *Doppelkopf {
 // Reset ゲーム初期化: チップを開始値へ戻し最初のラウンドを開始する。
 func (g *Doppelkopf) Reset() {
 	g.roundHistory = nil
+	g.roundScored = false
 	g.gameEndFlag = false
 	g.winnerIdx = -1
 	g.lastTrickPoints = 0
@@ -137,6 +139,7 @@ func (g *Doppelkopf) NextRound() {
 
 // startRound 手札を配り、Re チームを割り当ててプレイフェーズを開始する。
 func (g *Doppelkopf) startRound() {
+	g.roundScored = false
 	g.trickNumber = 1
 	g.currentTrick = nil
 	g.lastTrickPoints = 0
@@ -338,10 +341,7 @@ func (g *Doppelkopf) NextTrick() {
 
 // ScoreRound ラウンドの得点を確定し、チップ精算とゲーム終了判定を行う。
 func (g *Doppelkopf) ScoreRound() {
-	if g.phase != DoppelkopfPhaseRoundEnd {
-		return
-	}
-	if g.roundNumber > 0 && len(g.roundHistory) >= g.roundNumber {
+	if g.roundScored || g.phase != DoppelkopfPhaseRoundEnd {
 		return
 	}
 	g.teamsRevealed = true
@@ -377,6 +377,7 @@ func (g *Doppelkopf) ScoreRound() {
 		g.phase = DoppelkopfPhaseGameEnd
 		g.appendLog(-1, "game_end", "doppelkopf.log.gameEnd", map[string]string{"name": playerName(g.players, w)}, nil)
 	}
+	g.roundScored = true
 }
 
 // GetRoundScoreHistory returns each completed round's chip changes by player index.
@@ -983,6 +984,7 @@ type doppelkopfJSON struct {
 	RoundReWon       bool                      `json:"rw"`
 	RoundGamePts     int                       `json:"rg"`
 	RoundHistory     [][]int                   `json:"rsh,omitempty"`
+	RoundScored      bool                      `json:"rs,omitempty"`
 	GameEndFlag      bool                      `json:"ge"`
 	WinnerIdx        int                       `json:"wi"`
 	ActionLog        []*ActionLogEntry         `json:"al"`
@@ -1013,6 +1015,7 @@ func (g *Doppelkopf) MarshalJSON() ([]byte, error) {
 		RoundReWon:       g.roundReWon,
 		RoundGamePts:     g.roundGamePts,
 		RoundHistory:     g.roundHistory,
+		RoundScored:      g.roundScored,
 		GameEndFlag:      g.gameEndFlag,
 		WinnerIdx:        g.winnerIdx,
 		ActionLog:        g.actionLog,
@@ -1071,6 +1074,7 @@ func (g *Doppelkopf) UnmarshalJSON(data []byte) error {
 	g.roundReWon = j.RoundReWon
 	g.roundGamePts = j.RoundGamePts
 	g.roundHistory = j.RoundHistory
+	g.roundScored = j.RoundScored
 	if g.roundHistory == nil {
 		g.roundHistory = make([][]int, 0)
 	}
