@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, fourcardpokerApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, FourCardPokerResponse } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
@@ -168,6 +169,22 @@ describe('FourCardPokerPage', () => {
     expect(screen.getByText('フォールドするとアンテ 100 を失います')).toBeInTheDocument();
     // The select-box multiplier control is gone.
     expect(screen.queryByLabelText(/プレイ倍率/)).not.toBeInTheDocument();
+  });
+
+  it('shows the ante and Aces Up bet during the action phase, including zero, in both languages', async () => {
+    mockExec.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<FourCardPokerPage />);
+    await waitFor(() => expect(screen.getByText('アンテ: 100、エースズアップ: 0')).toBeInTheDocument());
+
+    await i18n.changeLanguage('en');
+    expect(screen.getByText('Ante: 100, Aces Up: 0')).toBeInTheDocument();
+    await i18n.changeLanguage('ja');
+  });
+
+  it('shows a nonzero Aces Up bet during the action phase', async () => {
+    mockExec.mockResolvedValue({ ...actionPhaseState, acesUpBet: 50 });
+    renderWithProviders(<FourCardPokerPage />);
+    await waitFor(() => expect(screen.getByText('アンテ: 100、エースズアップ: 50')).toBeInTheDocument());
   });
 
   it('shows each play amount and updates it when the ante changes', async () => {
