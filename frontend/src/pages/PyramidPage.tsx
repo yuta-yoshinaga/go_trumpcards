@@ -411,7 +411,12 @@ function PyramidPageContent() {
             <div data-tutorial="py-hint-display" data-testid="py-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2 text-center">
-                  {t('hintAvailable')}: {t(`hintType.${hint.type}`)}
+                  {t(`hintAnnouncement.${hint.type}`, {
+                    row1: hint.row1,
+                    col1: hint.col1,
+                    row2: hint.row2,
+                    col2: hint.col2,
+                  })}
                 </div>
               )}
             </div>
