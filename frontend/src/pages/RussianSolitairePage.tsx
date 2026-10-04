@@ -250,8 +250,8 @@ function RussianSolitairePageContent() {
   );
 
   const handleSelectTarget = useCallback(
-    (zone: string, col: number) => {
-      if (!selectedSource) return;
+    (zone: string, col: number, isLegalTarget: boolean) => {
+      if (!selectedSource || !isLegalTarget) return;
       void apiExec('move', selectedSource, { zone, col });
       setSelectedSource(null);
     },
@@ -373,7 +373,7 @@ function RussianSolitairePageContent() {
                             ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer'
                             : ''
                       }`}
-                      onClick={() => isTarget && handleSelectTarget('foundation', i)}
+                      onClick={() => isTarget && handleSelectTarget('foundation', i, isLegalTarget)}
                       disabled={!isPlaying}
                       aria-disabled={!isTarget || undefined}
                       aria-describedby={!isTarget ? selectSourceHintId : undefined}
@@ -438,7 +438,10 @@ function RussianSolitairePageContent() {
                           selectedSource ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
                         }`}
                         style={{ width: rs.cw, height: rs.ch }}
-                        onClick={() => selectedSource && handleSelectTarget('tableau', colIdx)}
+                        onClick={() =>
+                          selectedSource &&
+                          handleSelectTarget('tableau', colIdx, legalTargets?.tableau.has(colIdx) ?? false)
+                        }
                         disabled={!isPlaying}
                         aria-disabled={!selectedSource || undefined}
                         aria-describedby={!selectedSource ? selectSourceHintId : undefined}
@@ -512,7 +515,7 @@ function RussianSolitairePageContent() {
                                         // onto its own column, which the server rejects — so the player got a
                                         // rejection message instead of a deselect. Found by #4439.
                                         if (selectedSource && !isSelected && isLast) {
-                                          handleSelectTarget('tableau', colIdx);
+                                          handleSelectTarget('tableau', colIdx, !!legalTargets?.tableau.has(colIdx));
                                         } else {
                                           handleSelectSource('tableau', colIdx, cardIdx);
                                         }

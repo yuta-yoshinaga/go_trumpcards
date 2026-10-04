@@ -111,6 +111,53 @@ describe('RussianSolitairePage', () => {
     expect(spadeFoundation).toHaveClass('ring-ds-success');
   });
 
+  it('moves by click to a legal tableau destination', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [
+        [{ card: card('SPADE', 7), faceUp: true }],
+        [{ card: card('SPADE', 8), faceUp: true }],
+        ...playingState.tableau.slice(2),
+      ],
+    });
+    renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const source = screen.getByRole('button', { name: '♠ 7' });
+    fireEvent.click(source);
+    const target = screen.getByRole('button', { name: '♠ 8' });
+    expect(target).toHaveClass('ring-ds-success');
+    fireEvent.click(target);
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 0, cardIndex: 0 },
+        { zone: 'tableau', col: 1 },
+      ),
+    );
+  });
+
+  it('does not move to illegal tableau or foundation destinations and keeps the source selected', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: playingState.tableau.map((column, index) =>
+        index === 4 ? [{ card: card('SPADE', 12), faceUp: true }] : column,
+      ),
+    });
+    renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const source = screen.getByRole('button', { name: '♠ Q' });
+    fireEvent.click(source);
+    fireEvent.click(screen.getByRole('button', { name: '♥ 8' }));
+    fireEvent.click(screen.getByRole('button', { name: '空の組札 (♠)' }));
+
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+    expect(source).toHaveClass('ring-ds-warning');
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<RussianSolitairePage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -424,24 +471,17 @@ describe('RussianSolitairePage deselect routing (#4439)', () => {
   // deselect got a rejection message. Scorpion had this same bug and had a test
   // for it, but the assertion ran before react-query's microtask could deliver the
   // call, so it passed regardless. These two pages had no such test at all.
-  // The other branch of the same condition: a DIFFERENT column's last card, while
-  // something is selected, is a move target. Neither of these two pages had any
-  // test covering a move dispatch at all before this, so the fix above changed a
-  // line that nothing exercised.
-  it("clicking another column's last card while a card is selected dispatches the move", async () => {
+  // A different column's last card is a move target only when the rules allow it.
+  it("clicking an illegal column's last card while a card is selected keeps the selection", async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<RussianSolitairePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: /\u2665 8/ }));
     fireEvent.click(screen.getByRole('button', { name: /\u2663 5/ }));
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith(
-        'move',
-        { zone: 'tableau', col: 1, cardIndex: 1 },
-        { zone: 'tableau', col: 2 },
-      ),
-    );
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+    expect(screen.getByRole('button', { name: /♥ 8/ })).toHaveClass('ring-2');
   });
 
   it('clicking the same selected card deselects it instead of moving onto itself', async () => {
