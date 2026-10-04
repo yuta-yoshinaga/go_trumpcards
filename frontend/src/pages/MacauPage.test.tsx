@@ -272,6 +272,31 @@ describe('MacauPage', () => {
     expect(screen.queryByTestId('macau-cpu-last-card-3')).not.toBeInTheDocument();
   });
 
+  it('shows a CPU declaration status only while it has one card', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      players: playPhaseState.players.map((player) =>
+        player.isHuman ? player : { ...player, cardCount: player.id === 1 ? 1 : 2, hasDeclared: player.id === 1 },
+      ),
+    });
+    const { unmount } = renderWithProviders(<MacauPage />);
+
+    const declaredStatus = await screen.findByTestId('macau-cpu-declaration-status-1');
+    expect(declaredStatus).toHaveTextContent('宣言済み');
+    expect(screen.getByTestId('macau-cpu-last-card-1')).toHaveTextContent('CPU 1は残り1枚です。');
+    expect(screen.queryByTestId('macau-cpu-declaration-status-2')).not.toBeInTheDocument();
+
+    unmount();
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      players: playPhaseState.players.map((player) =>
+        player.isHuman ? player : { ...player, cardCount: player.id === 1 ? 1 : 2, hasDeclared: false },
+      ),
+    });
+    renderWithProviders(<MacauPage />);
+    expect(await screen.findByTestId('macau-cpu-declaration-status-1')).toHaveTextContent('未宣言');
+  });
+
   it('shows discard top card', async () => {
     renderWithProviders(<MacauPage />);
     await waitFor(() => {
