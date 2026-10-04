@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { trappolaApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -68,6 +68,23 @@ describe('TrappolaPage', () => {
     expect(screen.getByRole('columnheader', { name: '得点' })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: '今ラウンド(サーズ)' })).toBeInTheDocument();
     expect(screen.getByRole('rowheader', { name: 'チームB' })).toHaveAttribute('scope', 'row');
+  });
+
+  it('shows the server target points and updates only after a reset response', async () => {
+    renderWithProviders(<TrappolaPage />);
+
+    expect(await screen.findByText('目標点: 21点')).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('目標点'), { target: { value: '31' } });
+
+    expect(screen.getByText('目標点: 21点')).toBeInTheDocument();
+    expect(screen.queryByText('目標点: 31点')).not.toBeInTheDocument();
+
+    mockExec.mockResolvedValue(makeTrappolaState({ config: { cpuDifficulty: 1, targetPoints: 31 } }));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: '確認' }));
+
+    expect(await screen.findByText('目標点: 31点')).toBeInTheDocument();
   });
 
   it('selecting a card then playing dispatches play', async () => {

@@ -27,6 +27,7 @@
   "previousTrickEmpty": "このラウンドにはまだ前のトリックがありません",
   "previousTrickWinner": "{{name}} が獲得",
   "scores": "スコア",
+  "targetPointsLabel": "目標点: {{points}}点",
   "scoresTeam": "チーム",
   "scoresPoints": "得点",
   "scoresThirds": "今ラウンド(サーズ)",

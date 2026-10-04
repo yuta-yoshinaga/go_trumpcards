@@ -27,6 +27,7 @@
   "previousTrickEmpty": "No previous trick yet this round",
   "previousTrickWinner": "Won by {{name}}",
   "scores": "Scores",
+  "targetPointsLabel": "Target: {{points}} points",
   "scoresTeam": "Team",
   "scoresPoints": "Points",
   "scoresThirds": "This round (thirds)",
