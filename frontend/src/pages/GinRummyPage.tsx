@@ -568,7 +568,7 @@ function GinRummyPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={`${btnPrimary} aria-disabled:cursor-not-allowed aria-disabled:opacity-50 ${canKnockNow ? 'motion-safe:animate-pulse ring-2 ring-ds-success' : ''}`}
+                    className={`${btnPrimary} aria-disabled:cursor-not-allowed aria-disabled:opacity-50 ${canKnockSelectedCard ? 'motion-safe:animate-pulse ring-2 ring-ds-success' : ''}`}
                     onClick={() => {
                       if (!loading && canKnockSelectedCard) handleKnock();
                     }}

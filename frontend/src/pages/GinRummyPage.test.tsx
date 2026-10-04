@@ -269,7 +269,7 @@ describe('GinRummyPage', () => {
     expect(screen.queryByTestId('ginrummy-meld-legend')).not.toBeInTheDocument();
   });
 
-  it('pulses the knock button when deadwood ≤10 during discard phase', async () => {
+  it('pulses the knock button when a knockable card is selected during discard phase', async () => {
     const lowDeadwoodHand: GinRummyResponse = {
       ...discardPhaseState,
       players: [
@@ -288,13 +288,14 @@ describe('GinRummyPage', () => {
     mockExec.mockResolvedValue(lowDeadwoodHand);
     renderWithProviders(<GinRummyPage />);
     const knockBtn = await screen.findByTestId('ginrummy-knock-button');
+    fireEvent.click(screen.getByAltText('♥ 3').closest('button') as HTMLButtonElement);
     expect(knockBtn.className).toContain('animate-pulse');
   });
 
   it('considers post-discard deadwood, not the full 11-card hand', async () => {
     // 11-card hand whose full deadwood is 11 (K + A = 11) but drops to
     // 0 once the King is discarded (♠5-6-7 run + 7♥-7♣-7♦ set + ace).
-    // The knock button must pulse because a single discard makes it ≤ 10.
+    // A single discard makes the hand knockable, though no card is selected yet.
     const eleven: GinRummyResponse = {
       ...discardPhaseState,
       players: [
@@ -321,7 +322,9 @@ describe('GinRummyPage', () => {
     mockExec.mockResolvedValue(eleven);
     renderWithProviders(<GinRummyPage />);
     const knockBtn = await screen.findByTestId('ginrummy-knock-button');
-    expect(knockBtn.className).toContain('animate-pulse');
+    expect(knockBtn).toHaveAttribute('aria-disabled', 'true');
+    expect(knockBtn.className).not.toContain('animate-pulse');
+    expect(knockBtn.className).not.toContain('ring-ds-success');
   });
 
   it('renders draw phase with human cards', async () => {
@@ -446,7 +449,8 @@ describe('GinRummyPage', () => {
     renderWithProviders(<GinRummyPage />);
     const knockBtn = await screen.findByTestId('ginrummy-knock-button');
     expect(knockBtn).toHaveAttribute('aria-disabled', 'true');
-    expect(knockBtn.className).toContain('animate-pulse');
+    expect(knockBtn.className).not.toContain('animate-pulse');
+    expect(knockBtn.className).not.toContain('ring-ds-success');
   });
 
   it('prevents knocking when the selected discard leaves deadwood above the limit', async () => {
@@ -499,7 +503,10 @@ describe('GinRummyPage', () => {
     await waitFor(() => expect(screen.getByAltText('♠ 5')).toBeInTheDocument());
 
     fireEvent.click(screen.getByAltText('♥ J').closest('button') as HTMLButtonElement);
-    expect(screen.getByTestId('ginrummy-knock-button')).not.toHaveAttribute('aria-disabled');
+    const knockBtn = screen.getByTestId('ginrummy-knock-button');
+    expect(knockBtn).not.toHaveAttribute('aria-disabled');
+    expect(knockBtn.className).toContain('animate-pulse');
+    expect(knockBtn.className).toContain('ring-ds-success');
   });
 
   it('renders layoff and skip buttons when human layoff turn', async () => {
