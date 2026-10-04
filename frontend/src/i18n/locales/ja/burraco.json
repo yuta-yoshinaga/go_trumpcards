@@ -43,6 +43,9 @@
   "skipMeldButton": "スキップ",
   "discardButton": "捨てる",
   "goOutButton": "上がる",
+  "goOutReason": "上がるには次が必要です: {{requirements}}",
+  "goOutRequirementPozzetto": "ポゼットの獲得",
+  "goOutRequirementBurraco": "ブラーコの完成",
   "nextRound": "次のラウンド",
   "selectPair": "ペアを選択してください（トップカードと同ランクの2枚）",
   "drawDiscardReason": {
