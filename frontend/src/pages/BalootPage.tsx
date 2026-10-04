@@ -240,6 +240,10 @@ function BalootPageContent() {
                   </span>
                   <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
                   {': '}
+                  <span data-testid={`bl-trick-count-${p.id.toString()}`}>
+                    {t('header.trickCount', { count: String(p.trickCount) })}
+                  </span>
+                  {' · '}
                   {/* **配られた瞬間に相手の手の内が割れるのは体験を壊す** (#5750)。
                       切り札の K か Q が実際に出る (かラウンドが終わる) まで伏せる。 */}
                   <span data-testid={`bl-baloot-${p.id.toString()}`}>

@@ -8,6 +8,7 @@
   "header": {
     "round": "Round",
     "trick": "Trick",
+    "trickCount": "Tricks won: {{count}}",
     "target": "first to {{target}}",
     "modeUndecided": "Mode undecided — declare Sun or Hokom.",
     "modeSun": "Mode: Sun, no trump (declared by {{name}})",
