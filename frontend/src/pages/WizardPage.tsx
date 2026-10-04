@@ -608,16 +608,17 @@ function WizardPageContent() {
                     // reason tooltip so the follow-suit obligation is visible before playing.
                     const legal = legalIndices == null || legalIndices.includes(idx);
                     const showLegal = legalIndices != null;
+                    const isSelected = selectedCardIndices.includes(idx);
                     return (
                       <button
                         type="button"
                         key={`${card.design}-${card.value}-${idx}`}
                         onClick={() => {
-                          if (legal) toggleCard(idx);
+                          if (legal || isSelected) toggleCard(idx);
                         }}
                         aria-label={cardAlt(card)}
-                        aria-pressed={selectedCardIndices.includes(idx)}
-                        aria-disabled={showLegal && !legal ? true : undefined}
+                        aria-pressed={isSelected}
+                        aria-disabled={showLegal && !legal && !isSelected ? true : undefined}
                         title={showLegal && !legal ? t('illegalHint') : undefined}
                         aria-describedby={showLegal && !legal ? WIZARD_ILLEGAL_REASON_ID : undefined}
                         data-legal={showLegal ? legal : undefined}

@@ -632,6 +632,32 @@ describe('WizardPage', () => {
     expect(legalCard).toHaveAttribute('aria-pressed', 'true');
   });
 
+  it('allows deselecting a selected card after it becomes illegal', async () => {
+    mockExec.mockResolvedValueOnce(playPhaseState).mockResolvedValueOnce({
+      ...followSuitState,
+      players: [
+        {
+          ...followSuitState.players[0],
+          cards: [playPhaseState.players[0].cards[0], playPhaseState.players[0].cards[1]],
+        },
+        ...followSuitState.players.slice(1),
+      ],
+    });
+    renderWithProviders(<WizardPage />);
+    const spade = await screen.findByRole('button', { name: '♠ A' });
+
+    fireEvent.click(spade);
+    expect(spade).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+
+    const illegalSelectedSpade = await screen.findByRole('button', { name: '♠ A' });
+    // Successful API actions clear selection, so this verifies the card is now
+    // illegal and remains unselected when clicked after the trick state changes.
+    expect(illegalSelectedSpade).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(illegalSelectedSpade);
+    expect(illegalSelectedSpade).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('keeps cards selectable off turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<WizardPage />);
