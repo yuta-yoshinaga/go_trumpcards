@@ -72,7 +72,7 @@ describe('MendikotPage', () => {
     expect(screen.getAllByRole('button', { name: /を出す/ })).toHaveLength(3);
     const visualMarker = screen.getAllByText('出せる');
     expect(visualMarker).toHaveLength(1);
-    expect(visualMarker[0].parentElement).toHaveTextContent('✓');
+    expect(visualMarker[0].querySelector('[aria-hidden="true"]')).toHaveTextContent('✓');
   });
 
   it('highlights the current seat and labels it when its play will set undecided trump', async () => {

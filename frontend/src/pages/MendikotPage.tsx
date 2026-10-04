@@ -279,10 +279,10 @@ function MendikotPageContent() {
                       aria-label={t(legalRing.has(idx) ? 'actions.playableAria' : 'actions.playAria', {
                         card: cardAlt(card),
                       })}
-                      className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                      className={`flex flex-col items-center disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
                     >
                       {legalRing.has(idx) && (
-                        <span className="mr-1 inline-flex items-center gap-1 text-xs font-semibold text-ds-success">
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-ds-success">
                           <span aria-hidden="true">✓</span>
                           {t('actions.playableVisual')}
                         </span>
