@@ -65,6 +65,16 @@ describe('SuecaPage', () => {
     expect(screen.getAllByRole('img', { name: '切り札: ダイヤ' }).length).toBeGreaterThanOrEqual(2);
   });
 
+  it('marks only hand cards matching the trump suit and announces them as trump', async () => {
+    mockExec.mockResolvedValue(makeSuecaState({ trumpSuit: 1 }));
+    renderWithProviders(<SuecaPage />);
+
+    const trumpCard = await screen.findByRole('button', { name: '♠ A (切り札: スペード)' });
+    expect(trumpCard).toHaveAttribute('data-trump', 'true');
+    expect(screen.getByRole('button', { name: '♥ Q' })).not.toHaveAttribute('data-trump');
+    expect(screen.getByRole('button', { name: '♥ K' })).not.toHaveAttribute('data-trump');
+  });
+
   it('falls back to the raw symbol when the trump suit is unset', async () => {
     // trumpSuit 0 has no suit-name key → the label falls back to the symbol string.
     mockExec.mockResolvedValue(makeSuecaState({ trumpSuit: 0 }));
