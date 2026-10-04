@@ -31,7 +31,7 @@
   "schmeissButton": "Throw it in",
   "schmeissAcceptButton": "Agree",
   "schmeissRefuseButton": "Refuse",
-  "callButton": "{{suit}} as trump",
+  "callButton": "{{suitName}} ({{suit}}) as trump",
   "playButton": "Play",
   "nextDeal": "Next deal",
   "pointsBreakdown": "Cards {{card}}, sequences {{sequence}}, bela {{bela}}, last trick {{lastTrick}}, total {{total}}",

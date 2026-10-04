@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { klaberjassApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { CardDesign, KlaberjassPlayer, KlaberjassResponse } from '../types/card';
@@ -163,15 +164,31 @@ describe('KlaberjassPage', () => {
       makeState({ phase: KlaberjassPhase.BID_FREE, trumpSuit: 0, turnUpCard: card('HEART', 13), makerIdx: -1 }),
     );
     renderWithProviders(<KlaberjassPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: /♠ を切札に/ })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /♠ スペード を切札に/ })).toBeInTheDocument());
 
-    expect(screen.queryByRole('button', { name: /♥ を切札に/ })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /♣ を切札に/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /♦ を切札に/ })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /♥ ハート を切札に/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /♣ クラブ を切札に/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /♦ ダイヤ を切札に/ })).toBeInTheDocument();
 
     mockExec.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: /♠ を切札に/ }));
+    fireEvent.click(screen.getByRole('button', { name: /♠ スペード を切札に/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', { suit: 1 }));
+  });
+
+  it('shows translated suit names in English free-bid buttons', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(
+        makeState({ phase: KlaberjassPhase.BID_FREE, trumpSuit: 0, turnUpCard: card('HEART', 13), makerIdx: -1 }),
+      );
+      renderWithProviders(<KlaberjassPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: /Spade \(♠\) as trump/ })).toBeInTheDocument());
+      expect(screen.getByRole('button', { name: /Club \(♣\) as trump/ })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Heart \(♥\) as trump/ })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Diamond \(♦\) as trump/ })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   // **拒否は「流さない」ではなく「相手を宣言側にする」。**案内でそう伝える。
