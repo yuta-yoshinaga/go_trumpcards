@@ -272,7 +272,7 @@ describe('BoliviaPage', () => {
     );
   });
 
-  it('explains a valid natural matching pair and allows taking the discard pile', async () => {
+  it('explains when a natural pair matches the discard top', async () => {
     mockExec.mockResolvedValue(makeBoliviaState({ discardTop: { design: 'SPADE', value: 7 } }));
     renderWithProviders(<BoliviaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument());
@@ -280,7 +280,7 @@ describe('BoliviaPage', () => {
     fireEvent.click(handCards[0]);
     fireEvent.click(handCards[1]);
     const button = screen.getByRole('button', { name: '捨て札を取る' });
-    expect(screen.getByTestId('sa-draw-discard-reason')).toHaveTextContent('取得できます');
+    expect(screen.getByTestId('sa-draw-discard-reason')).toHaveTextContent('ナチュラルカード2枚がトップと同ランクです');
     expect(button).toHaveAttribute('aria-disabled', 'false');
     mockExec.mockClear();
     fireEvent.click(button);

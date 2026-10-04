@@ -15,7 +15,7 @@
     "wild": "Wild cards cannot be used; select two natural cards",
     "frozenWild": "The pile is frozen, so both cards must be natural",
     "rankMismatch": "Both cards must match the top discard's rank",
-    "validPair": "This natural pair matches the top discard; you can take the pile"
+    "validPair": "This natural pair matches the top discard's rank"
   },
   "drawPhase": "Draw a card from the stock or pick up the discard pile.",
   "drawPile": "Stock: {{count}} cards",
