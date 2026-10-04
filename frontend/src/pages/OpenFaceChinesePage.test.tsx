@@ -156,7 +156,27 @@ describe('OpenFaceChinesePage', () => {
       }),
     );
     renderWithProviders(<OpenFaceChinesePage />);
-    expect(await screen.findByText('ファンタジーランドのラウンドです。13枚をまとめて配置します。')).toBeInTheDocument();
+    const note = await screen.findByText('ファンタジーランドのラウンドです。13枚をまとめて配置します。');
+    expect(note.tagName).toBe('P');
+    expect(note).toHaveClass('text-xs', 'mb-2');
+  });
+
+  it('shows the earned Fantasyland note at game end', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        gameEndFlag: true,
+        isHumanTurn: false,
+        players: [makePlayer({ fantasyland: true }), makePlayer({ id: 1, isHuman: false })],
+      }),
+    );
+    renderWithProviders(<OpenFaceChinesePage />);
+
+    expect(
+      await screen.findByText(
+        'ファンタジーランド獲得（トップでクイーン以上のペアまたはスリーカード）。次のラウンドは13枚まとめて配置します。',
+      ),
+    ).toHaveClass('text-xs', 'mb-2');
   });
 
   it('shows every player total during placing and refreshes scores with game state', async () => {
