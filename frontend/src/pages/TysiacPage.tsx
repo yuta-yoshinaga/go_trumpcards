@@ -265,7 +265,8 @@ function TysiacPageContent() {
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
                   {state.players.map((p) => {
                     const target = state.config.targetPoints;
-                    const pct = Math.max(0, Math.min(100, (p.score / target) * 100));
+                    const progressValue = Math.max(0, Math.min(target, p.score));
+                    const pct = (progressValue / target) * 100;
                     // Warn once a player is within striking distance of the target.
                     const isNearWin = p.score / target > NEAR_WIN_RATIO;
                     // Declarer forecast: score if this round's contract is met, marked on the bar.
@@ -306,7 +307,7 @@ function TysiacPageContent() {
                           aria-label={barLabel}
                           aria-valuemin={0}
                           aria-valuemax={target}
-                          aria-valuenow={Math.max(0, p.score)}
+                          aria-valuenow={progressValue}
                           data-testid={`tysiac-progress-${p.id}`}
                           className="relative mt-0.5 h-1.5 w-full rounded-sm bg-white/15 overflow-hidden"
                         >
