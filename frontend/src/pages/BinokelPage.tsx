@@ -700,6 +700,7 @@ function BinokelPageContent() {
                     key={suit}
                     type="button"
                     className={btnPrimary}
+                    aria-label={t('trumpButtonLabel', { suit: t(`suits.${suit}`) })}
                     onClick={() => handleCallTrump(suit)}
                     disabled={loading}
                   >

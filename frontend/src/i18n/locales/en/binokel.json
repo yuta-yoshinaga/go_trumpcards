@@ -19,6 +19,7 @@
   "bid": "Bid",
   "pass": "Pass",
   "declareTrump": "Declare Trump",
+  "trumpButtonLabel": "Declare {{suit}} as trump",
   "confirmMelds": "Confirm Melds",
   "play": "Play",
   "nextTrick": "Next Trick",

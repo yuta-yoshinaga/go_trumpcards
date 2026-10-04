@@ -182,6 +182,7 @@ beforeEach(() => {
 
 afterEach(() => {
   localStorage.clear();
+  void i18n.changeLanguage('ja');
 });
 
 describe('BinokelPage', () => {
@@ -354,21 +355,34 @@ describe('BinokelPage', () => {
     mockExec.mockResolvedValue(trumpPhaseState);
     renderWithProviders(<BinokelPage />);
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: '♠' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: '♣' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: '♥' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: '♦' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'スペードを切り札にする' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'クラブを切り札にする' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'ハートを切り札にする' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'ダイヤを切り札にする' })).toBeInTheDocument();
+    });
+  });
+
+  it('uses localized suit names in trump button labels', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue(trumpPhaseState);
+    renderWithProviders(<BinokelPage />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Declare Spades as trump' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Declare Clubs as trump' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Declare Hearts as trump' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Declare Diamonds as trump' })).toBeInTheDocument();
     });
   });
 
   it('calls trump command when suit button is clicked', async () => {
     mockExec.mockResolvedValue(trumpPhaseState);
     renderWithProviders(<BinokelPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '♠' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'スペードを切り札にする' })).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(meldPhaseState);
-    fireEvent.click(screen.getByRole('button', { name: '♠' }));
+    fireEvent.click(screen.getByRole('button', { name: 'スペードを切り札にする' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('trump', undefined, undefined, undefined, 1));
   });
 
