@@ -506,12 +506,7 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {humanPlayer.holeCards?.length
                     ? humanPlayer.holeCards.map((card) => (
-                        <AnimatedCard
-                          key={`${card.design}-${card.value}`}
-                          card={card}
-                          width={cardWidth}
-                          style={placeholderCardStyle}
-                        />
+                        <span key={`${card.design}-${card.value}`}>{renderPlayerCard(humanPlayer, card)}</span>
                       ))
                     : !humanPlayer.folded && <AnimatedCardBack width={cardWidth} />}
                 </div>
