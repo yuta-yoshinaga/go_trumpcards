@@ -333,6 +333,7 @@ function MrsMopPageContent() {
               <div className="flex gap-0.5 sm:gap-1 mb-3" data-tutorial="spd-tableau">
                 {state.tableau.map((col, colIdx) => {
                   const tableauColZone: MrsMopMoveZone = { zone: 'tableau', col: colIdx };
+                  const isLegalDestination = selectedSource !== null && legalTargets.includes(colIdx);
                   // タップ選択でのプレビュー。onMouseEnter も onFocus も発火しない
                   // タッチ端末では、選んだ札と一緒に動く連番がどこまでかを事前に
                   // 確かめる手段が無かった (#4780, Yukon の #3152 と同じ)。
@@ -346,7 +347,8 @@ function MrsMopPageContent() {
                   return (
                     <div
                       key={`col-${colIdx.toString()}`}
-                      className={`flex-1 min-w-0 rounded ${hint !== null && hint.toCol === colIdx ? HINT_TO_RING : ''}`}
+                      data-legal-target={isLegalDestination ? 'true' : undefined}
+                      className={`flex-1 min-w-0 rounded ${isLegalDestination ? 'ring-2 ring-ds-info' : ''} ${hint !== null && hint.toCol === colIdx ? HINT_TO_RING : ''}`}
                     >
                       <DropZone
                         isDropTarget={dnd.isDropTarget(tableauColZone)}
