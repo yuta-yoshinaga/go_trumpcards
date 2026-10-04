@@ -164,6 +164,7 @@ function MissMilliganPageContent() {
   const isGameOver = state.phase === MissMilliganPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
   const foundationCount = state.foundation.reduce((sum, pile) => sum + pile.length, 0);
+  const dealsRemaining = Math.ceil(state.stockCount / TABLEAU_COLS);
   const foundationPercent = Math.round((foundationCount / TOTAL_CARDS) * 100);
   const autoCompleteReady = state.foundation.some((pile) => pile.length > 0);
   const isHolding = state.waived.length > 0;
@@ -412,6 +413,9 @@ function MissMilliganPageContent() {
                   >
                     {state.stockCount}
                   </button>
+                  <div className="text-game-text-muted text-xs mt-1">
+                    {t('dealsRemaining', { count: dealsRemaining })}
+                  </div>
                 </div>
                 <div className="text-center">
                   <div className="text-game-text-muted text-xs mb-1">{t('waived')}</div>
