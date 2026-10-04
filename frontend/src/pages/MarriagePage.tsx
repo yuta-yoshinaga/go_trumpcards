@@ -418,9 +418,16 @@ function MarriagePageContent() {
                       </tr>
                     </thead>
                     <tbody>
-                      {state.players.map((p) => (
+                      {state.players.map((p, playerIdx) => (
                         <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                          <td>{playerName(p.id, p.isHuman)}</td>
+                          <td>
+                            {playerName(p.id, p.isHuman)}
+                            {playerIdx === state.dealerIdx && (
+                              <span className="ml-2 text-ds-warning" data-testid="marriage-dealer-badge">
+                                {t('dealerBadge')}
+                              </span>
+                            )}
+                          </td>
                           <td className="text-center">{p.roundScore}</td>
                           <td className="text-center">
                             {p.cumulativeScore}
