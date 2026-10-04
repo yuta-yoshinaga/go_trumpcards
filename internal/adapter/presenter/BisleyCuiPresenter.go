@@ -117,8 +117,5 @@ func (p *BisleyCuiPresenter) HintOutput(bg interfaces.BisleyGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BisleyCuiPresenter) ActionLogOutput(bg interfaces.BisleyGame) string {
-	if bg.GetPhase() == domain.BisleyPhasePlaying {
-		return actionLogToText(nil)
-	}
 	return actionLogToText(bg.GetActionLog())
 }

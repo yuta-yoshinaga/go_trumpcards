@@ -186,7 +186,7 @@ function BisleyPageContent() {
 
   useActionKeyboardNav({
     bindings: actionBindings,
-    enabled: !!isPlayingForKbd && !loading,
+    enabled: !!isPlayingForKbd && !loading && actionLog === null,
   });
 
   if (!state) return <GameSkeleton gameKey="bisley" layout={{ kind: 'tableau', topRow: 8, tableau: TABLEAU_COLS }} />;
@@ -492,6 +492,7 @@ function BisleyPageContent() {
 
             <ActionLogSection
               isEndPhase={isEnded}
+              availableDuringPlay
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
