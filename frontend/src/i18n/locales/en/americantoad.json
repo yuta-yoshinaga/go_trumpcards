@@ -47,7 +47,7 @@
   "redealAriaLabel": "Recycle the waste into the stock (one redeal left)",
   "redealAvailable": "The stock is out. You have one redeal left",
   "reserve": "Reserve",
-  "reserveAriaLabel": "Reserve, {{count}} cards left",
+  "reserveAriaLabel": "Reserve, top card {{card}}, {{count}} cards left",
   "reservedColumnLabel": "Reserved",
   "reservedColumnDescription": "Waiting for reserve refill",
   "reservedColumnAriaLabel": "Empty tableau column {{col}} (fills automatically from the reserve)",

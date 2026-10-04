@@ -148,7 +148,7 @@ describe('AmericanToadPage', () => {
   it('selects the reserve top and moves it', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<AmericanToadPage />);
-    const reserve = await screen.findByRole('button', { name: 'リザーブ 残り2枚' });
+    const reserve = await screen.findByRole('button', { name: 'リザーブの一番上: ♦ 7、残り2枚' });
     fireEvent.click(reserve);
     await waitFor(() => expect(reserve).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
@@ -445,7 +445,7 @@ describe('AmericanToadPage destination highlight', () => {
       tableau: makeTableau([[{ card: card('SPADE', 8), faceUp: true }]]),
     });
     renderWithProviders(<AmericanToadPage />);
-    const reserve = await screen.findByRole('button', { name: /リザーブ 残り/ });
+    const reserve = await screen.findByRole('button', { name: /リザーブの一番上/ });
     fireEvent.click(reserve);
     await waitFor(() => expect(document.querySelectorAll('[data-legal-target]').length).toBeGreaterThan(0));
   });
