@@ -89,6 +89,17 @@ describe('SeahavenTowersPage', () => {
     expect(kElements.length).toBeGreaterThanOrEqual(1);
   });
 
+  it('announces move count changes without announcing the initial count', async () => {
+    renderWithProviders(<SeahavenTowersPage />);
+    const liveRegion = await screen.findByTestId('seahaventowers-move-live');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValueOnce({ ...playingState, moveCount: 6 });
+    fireEvent.click(screen.getByRole('button', { name: '元に戻す' }));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('手数: 6'));
+  });
+
   it('labels empty tableau columns with their zero-based index and King-only rule', async () => {
     const originalLanguage = i18n.language;
     await i18n.changeLanguage('en');
