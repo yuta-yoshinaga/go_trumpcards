@@ -109,6 +109,14 @@ describe('MarjapussiPage', () => {
     });
   });
 
+  it('clamps team progress values to the target while preserving scores below it', async () => {
+    mockExec.mockResolvedValue(makeMarjapussiState({ teamScores: [350, 600] }));
+    renderWithProviders(<MarjapussiPage />);
+
+    expect(await screen.findByTestId('marjapussi-progress-team-0')).toHaveAttribute('aria-valuenow', '350');
+    expect(screen.getByTestId('marjapussi-progress-team-1')).toHaveAttribute('aria-valuenow', '500');
+  });
+
   // --- 必須テスト 1: 切り札が画面に出ていること ---
   it('displays the trump suit on screen (shows 未決定 when 0, and suit symbol when set)', async () => {
     // 1. 未決定のとき (trumpSuit = 0)
