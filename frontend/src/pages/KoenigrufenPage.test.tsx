@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { koenigrufenApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeKoenigrufenState } from '../test/stateFactories';
 import { KoenigrufenPage } from './KoenigrufenPage';
@@ -287,6 +288,39 @@ describe('KoenigrufenPage', () => {
     renderWithProviders(<KoenigrufenPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ルーファー' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument();
+    expect(screen.getByTestId('koenigrufen-highest-bid')).toHaveTextContent('最高入札はありません');
+  });
+
+  it('shows the highest contract and bidder during the auction', async () => {
+    mockExec.mockResolvedValue(
+      makeKoenigrufenState({
+        ...bidPhaseState,
+        highestBid: 1,
+        highestBidder: 1,
+        players: bidPhaseState.players.map((player) => ({ ...player, isHuman: player.id === 0 })),
+      }),
+    );
+    renderWithProviders(<KoenigrufenPage />);
+    expect(await screen.findByTestId('koenigrufen-highest-bid')).toHaveTextContent('最高入札: ルーファー（CPU 1）');
+  });
+
+  it('localizes the highest bid and bidder in English', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(
+        makeKoenigrufenState({
+          ...bidPhaseState,
+          highestBid: 1,
+          highestBidder: 1,
+          players: bidPhaseState.players.map((player) => ({ ...player, isHuman: player.id === 0 })),
+        }),
+      );
+      renderWithProviders(<KoenigrufenPage />);
+      expect(await screen.findByTestId('koenigrufen-highest-bid')).toHaveTextContent('Highest bid: Rufer (CPU 1)');
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('declaring Rufer dispatches bid with the contract string', async () => {
