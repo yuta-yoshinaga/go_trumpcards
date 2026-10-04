@@ -9,9 +9,9 @@
     "title": "設定",
     "cpuDifficulty": "CPU難易度",
     "targetScore": "目標点",
-    "easy": "Easy",
-    "normal": "Normal",
-    "hard": "Hard"
+    "easy": "かんたん",
+    "normal": "ふつう",
+    "hard": "むずかしい"
   },
   "round": "ラウンド {{n}}（{{target}} 点勝負）",
   "deck": "山の残り {{n}} 枚",
