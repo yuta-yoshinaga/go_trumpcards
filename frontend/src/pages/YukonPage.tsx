@@ -158,6 +158,7 @@ function YukonPageContent() {
 
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
   const windowWidth = useWindowWidth();
+  const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
 
   // Responsive card dimensions
   const yk = useMemo(() => {
@@ -182,7 +183,7 @@ function YukonPageContent() {
   const dnd = useSolitaireDragDrop<YukonMoveZone>({
     onMove: dispatchMove,
     isPlaying: state?.phase === YukonPhase.PLAYING,
-    disabled: loading,
+    disabled: loading || isAutoCompleting,
   });
 
   // Action handlers
@@ -206,8 +207,6 @@ function YukonPageContent() {
   // **自動完成は複数手が続けて動く。** その間に Undo やギブアップを押されると
   // 表示中のアニメーションとサーバ状態がずれる。兄弟のソリティア
   // (Spiderette / Terrace / Windmill) と同じ共有フックで窓を作る (#5533)。
-  const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
-
   const handleAutoComplete = useCallback(() => {
     startAutoComplete();
     void apiExec('autocomplete');
@@ -271,6 +270,7 @@ function YukonPageContent() {
   if (!state) return <GameSkeleton gameKey="yukon" layout={{ kind: 'tableau', topRow: 6, tableau: 7 }} />;
 
   const isPlaying = state.phase === YukonPhase.PLAYING;
+  const canInteract = isPlaying && !loading && !isAutoCompleting;
   const isGameClear = state.phase === YukonPhase.GAME_CLEAR;
   const isGameOver = state.phase === YukonPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
@@ -360,9 +360,9 @@ function YukonPageContent() {
                       className={`${focusRingWhite} rounded-lg transition-colors ${
                         isTarget ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
                       }`}
-                      onClick={() => isTarget && handleSelectTarget('foundation', i)}
+                      onClick={() => canInteract && isTarget && handleSelectTarget('foundation', i)}
                       disabled={!isPlaying}
-                      aria-disabled={!isTarget || undefined}
+                      aria-disabled={!canInteract || !isTarget || undefined}
                       aria-describedby={!isTarget ? selectSourceHintId : undefined}
                       aria-label={
                         topCard
@@ -418,9 +418,9 @@ function YukonPageContent() {
                           selectedSource ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
                         }`}
                         style={{ width: yk.cw, height: yk.ch }}
-                        onClick={() => selectedSource && handleSelectTarget('tableau', colIdx)}
+                        onClick={() => canInteract && selectedSource && handleSelectTarget('tableau', colIdx)}
                         disabled={!isPlaying}
-                        aria-disabled={!selectedSource || undefined}
+                        aria-disabled={!canInteract || !selectedSource || undefined}
                         aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                         aria-label={`${t('empty')} ${t('tableau')} ${colIdx}`}
                       >
@@ -475,7 +475,7 @@ function YukonPageContent() {
                                   return (
                                     <button
                                       type="button"
-                                      draggable={isPlaying}
+                                      draggable={canInteract}
                                       onDragStart={dnd.handleDragStart(zone)}
                                       onDragEnd={dnd.handleDragEnd}
                                       onMouseEnter={() => setHoveredBlock({ col: colIdx, cardIdx })}
@@ -492,6 +492,7 @@ function YukonPageContent() {
                                         inHoverBlock && !isSelected ? 'ring-2 ring-ds-accent/70' : ''
                                       } ${inSelectedBlock && !isSelected ? 'ring-2 ring-ds-info' : ''}`}
                                       onClick={() => {
+                                        if (!canInteract) return;
                                         // Clicking the selected card again deselects it, which
                                         // `handleSelectSource` implements by toggling. That has to be checked
                                         // BEFORE the isLast branch: a selected card that is also last in its
@@ -505,6 +506,7 @@ function YukonPageContent() {
                                         }
                                       }}
                                       disabled={!isPlaying}
+                                      aria-disabled={!canInteract || undefined}
                                       aria-label={`${cardAlt(tc.card as Card)}${isSelected ? ` ${t('selectedMoveCount', { count: col.length - cardIdx })}` : ''}${hintAria}`}
                                     >
                                       {tc.card && <AnimatedCard card={tc.card} width={yk.cw} />}

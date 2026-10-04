@@ -304,6 +304,36 @@ describe('YukonPage', () => {
     expect(screen.getByRole('button', { name: '元に戻す' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeDisabled();
     expect(screen.getByTestId('autocomplete-button')).toBeDisabled();
+
+    const ace = screen.getByRole('button', { name: '♠ A' });
+    expect(ace).toHaveAttribute('aria-disabled', 'true');
+    const foundation = screen.getByRole('button', { name: '空の組札 (スペード)' });
+    expect(foundation).toHaveAttribute('aria-disabled', 'true');
+    // Verify the source card and move targets stay inert throughout auto-complete.
+    fireEvent.click(ace);
+    fireEvent.dragStart(ace, { dataTransfer: { setData: vi.fn(), effectAllowed: '' } });
+    fireEvent.drop(foundation, { dataTransfer: { getData: () => '' } });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+    expect(ace).toHaveAttribute('aria-label', '♠ A');
+  });
+
+  it('locks card selection and drag while an API action is pending', async () => {
+    const pendingUndo = new Promise<YukonResponse>(() => {});
+    mockExec.mockImplementation((command) =>
+      command === 'undo' ? pendingUndo : Promise.resolve({ ...playingState, canUndo: true }),
+    );
+    renderWithProviders(<YukonPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByRole('button', { name: '元に戻す' }));
+
+    const ace = screen.getByRole('button', { name: '♠ K' });
+    await waitFor(() => expect(ace).toHaveAttribute('aria-disabled', 'true'));
+    expect(ace).toHaveAttribute('draggable', 'false');
+    fireEvent.click(ace);
+    await flushPendingDispatch();
+    expect(ace).toHaveAttribute('aria-label', '♠ K');
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
   it('autocomplete button is disabled while face-down cards exist', async () => {
