@@ -457,13 +457,10 @@ function KoenigrufenPageContent() {
           <GameFooter className={`${gameTheme.koenigrufen.footer} px-4 py-2.5`}>
             {isBidPhase && (
               <div className="mb-2 text-center text-sm text-ds-text-primary" data-testid="koenigrufen-highest-bid">
-                {state.highestBid > 0 && state.highestBidder >= 0
+                {state.highestBid === 1 && state.highestBidder >= 0
                   ? t('highestBid', {
-                      contract: t(CONTRACT_KEYS[state.highestBid] ?? 'contractNone'),
-                      name: playerName(
-                        state.highestBidder,
-                        state.players.find((p) => p.id === state.highestBidder)?.isHuman ?? false,
-                      ),
+                      contract: t(CONTRACT_KEYS[state.highestBid]),
+                      name: playerName(state.highestBidder, state.highestBidder === humanIdx),
                     })
                   : t('noHighestBid')}
               </div>
