@@ -154,6 +154,21 @@ describe('StHelenaPage', () => {
     expect(screen.getAllByText(/♠ ↓/).length).toBeGreaterThanOrEqual(1);
   });
 
+  it.each([
+    ['ja', ['昇順', '降順']],
+    ['en', ['Ascending', 'Descending']],
+  ] as const)('translates empty foundation directions in %s', async (language, directions) => {
+    await i18n.changeLanguage(language);
+    mockExec.mockResolvedValue({ ...playingState, foundation: Array.from({ length: 8 }, () => []) });
+    renderWithProviders(<StHelenaPage />);
+    const labels = await screen.findAllByRole('button', { name: /foundation|組札/i });
+    expect(labels).toHaveLength(8);
+    for (const direction of directions) {
+      expect(labels.some((button) => button.getAttribute('aria-label')?.includes(direction))).toBe(true);
+    }
+    expect(labels.every((button) => !/\basc\b|\bdesc\b/i.test(button.getAttribute('aria-label') ?? ''))).toBe(true);
+  });
+
   it('color-codes the foundation direction badges and names the top card', async () => {
     renderWithProviders(<StHelenaPage />);
     const asc = await screen.findByTestId('foundation-dir-0'); // row 0 = ascending
@@ -476,7 +491,7 @@ describe('StHelenaPage', () => {
     const source = (await screen.findByAltText('♠ A')).closest('button') as HTMLButtonElement;
     fireEvent.click(source);
     await waitFor(() => expect(source.className).toContain('ring-2'));
-    const target = screen.getByRole('button', { name: /空のasc組札/ });
+    const target = screen.getByRole('button', { name: /空の昇順組札/ });
     expect(target).not.toHaveAttribute('aria-disabled');
     expect(target).not.toHaveAttribute('aria-describedby');
     mockExec.mockClear();
