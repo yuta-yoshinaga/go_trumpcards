@@ -162,7 +162,9 @@ func TestLobaWebPresenter_MessageCodes(t *testing.T) {
 func TestLobaWebPresenter_HintOutputAndActionLog(t *testing.T) {
 	l := lbTestGame(t)
 	assert.NotNil(t, lbDecode(t, new(LobaWebPresenter).HintOutput(l))["hint"])
-	assert.NotEmpty(t, new(LobaWebPresenter).ActionLogOutput(l))
+	g := new(interfaces.MockLobaGame)
+	g.On("GetActionLog").Return([]*domain.ActionLogEntry{{ActionType: "discard", DetailCode: "loba.log.discard"}})
+	assert.Contains(t, new(LobaWebPresenter).ActionLogOutput(g), "loba.log.discard")
 }
 
 func TestLobaCuiPresenter_ShowsTheRulesAndTheDiscard(t *testing.T) {
@@ -277,5 +279,8 @@ func TestLobaCuiPresenter_HintReasonKeysAreAllMapped(t *testing.T) {
 }
 
 func TestLobaCuiPresenter_ActionLog(t *testing.T) {
-	assert.NotEmpty(t, new(LobaCuiPresenter).ActionLogOutput(lbTestGame(t)))
+	g := new(interfaces.MockLobaGame)
+	g.On("GetActionLog").Return([]*domain.ActionLogEntry{{ActionType: "discard", DetailCode: "loba.log.discard"}})
+	g.On("GetPlayer", 0).Return(domain.NewLobaPlayer(true))
+	assert.Contains(t, new(LobaCuiPresenter).ActionLogOutput(g), "捨てました")
 }
