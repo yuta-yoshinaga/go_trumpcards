@@ -127,7 +127,7 @@ func (p *LobaWebPresenter) HintOutput(c interfaces.LobaGame) string {
 
 // ActionLogOutput 棋譜を出力する
 func (p *LobaWebPresenter) ActionLogOutput(c interfaces.LobaGame) string {
-	return actionLogOutputJSON(c)
+	return actionLogToJSON(c.GetActionLog())
 }
 
 // lobaHint 人間プレイヤーへの推奨手を返す。CPU と同じ意思決定を通す。
