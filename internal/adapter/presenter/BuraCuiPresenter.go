@@ -135,7 +135,9 @@ var buraHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BuraCuiPresenter) ActionLogOutput(b interfaces.BuraGame) string {
-	return actionLogOutputTextForSeats[*domain.BuraPlayer](b)
+	return actionLogToTextWithNames(b.GetActionLog(), func(idx int) string {
+		return cuiPlayerName(b.GetPlayer(idx), idx)
+	})
 }
 
 // buraWinningCombosLine は渡された役一覧から表示行を生成する。
