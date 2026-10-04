@@ -428,6 +428,7 @@ function ThreeThirteenPageContent() {
             {state.knockerIdx >= 0 && !isGameEnd && !isRoundEnd && (
               <div
                 data-testid="threethirteen-knock-banner"
+                role="status"
                 className={`my-3 rounded-lg border border-ds-warning px-3 py-2 text-center text-sm font-medium ${badgeWarningColors}`}
               >
                 {t(isHumanTurn ? 'knockBannerLastTurn' : 'knockBannerActive', {
