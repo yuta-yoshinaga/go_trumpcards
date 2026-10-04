@@ -310,7 +310,9 @@ function PiquetPageContent() {
 
       {state.declResults.length > 0 ? <DeclarationList results={state.declResults} elderIdx={elderIdx} /> : null}
 
-      {inPlayPhase && state.currentTrick.length > 0 ? <TrickView trick={state.currentTrick} /> : null}
+      {inPlayPhase && state.currentTrick.length > 0 ? (
+        <TrickView trick={state.currentTrick} elderIdx={elderIdx} />
+      ) : null}
 
       {inGameEndPhase ? (
         <div className="text-lg font-bold px-2">
@@ -404,7 +406,7 @@ function DeclarationList({ results, elderIdx }: { results: PiquetDeclaration[]; 
   );
 }
 
-function TrickView({ trick }: { trick: PiquetResponse['currentTrick'] }) {
+function TrickView({ trick, elderIdx }: { trick: PiquetResponse['currentTrick']; elderIdx: number }) {
   const { t } = useTranslation('piquet');
   const { cardWidth } = useCardDimensions();
   return (
@@ -415,8 +417,11 @@ function TrickView({ trick }: { trick: PiquetResponse['currentTrick'] }) {
           <div
             key={`trick-${i}-${tc.playerIdx}-${tc.card.design}-${tc.card.value}`}
             className="flex flex-col items-center gap-0.5"
+            data-testid={`piquet-trick-card-${i}`}
           >
-            <span className="text-xs text-ds-text-muted">P{tc.playerIdx}</span>
+            <span className="text-xs text-ds-text-muted">
+              {t(tc.playerIdx === elderIdx ? 'roleElder' : 'roleYounger')}
+            </span>
             <AnimatedCard card={tc.card} width={cardWidth} />
           </div>
         ))}

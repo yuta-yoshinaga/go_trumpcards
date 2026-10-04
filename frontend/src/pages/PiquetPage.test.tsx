@@ -253,7 +253,38 @@ describe('PiquetPage', () => {
     renderWithProviders(<PiquetPage />);
     // Exact match isolates the TrickView header from the "トリック: 0" stats line.
     await waitFor(() => expect(screen.getByText('トリック')).toBeInTheDocument()); // trickHeader
-    expect(screen.getByText('P0')).toBeInTheDocument(); // TrickView player label (cards now render as images)
+    expect((await screen.findByTestId('piquet-trick-card-0')).textContent).toContain('エルダー');
+  });
+
+  it('maps trick players to roles when elder is player 1, in English', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: PiquetPhase.PLAY,
+        elderIdx: 1,
+        youngerIdx: 0,
+        currentTrick: [{ playerIdx: 0, card: { design: 'SPADE', value: 13 } }],
+      }),
+    );
+    renderWithProviders(<PiquetPage />);
+    expect((await screen.findByTestId('piquet-trick-card-0')).textContent).toContain('Younger');
+    await i18n.changeLanguage('ja');
+  });
+
+  it('maps trick players to roles when elder is player 0, in Japanese', async () => {
+    await i18n.changeLanguage('ja');
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: PiquetPhase.PLAY,
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'SPADE', value: 13 } },
+          { playerIdx: 1, card: { design: 'HEART', value: 1 } },
+        ],
+      }),
+    );
+    renderWithProviders(<PiquetPage />);
+    expect((await screen.findByTestId('piquet-trick-card-0')).textContent).toContain('エルダー');
+    expect(screen.getByTestId('piquet-trick-card-1').textContent).toContain('ヤンガー');
   });
 
   it('shows the meld badge in the lost palette when the opponent scores', async () => {
