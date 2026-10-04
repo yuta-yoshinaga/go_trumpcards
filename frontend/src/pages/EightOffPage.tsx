@@ -37,6 +37,7 @@ import { formatEightoffState } from '../utils/cli/formatters/eightoffFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { eightOffAutoCompleteReady } from '../utils/eightOffAutoComplete';
 import { eightOffFoundationTarget } from '../utils/eightOffFoundationTarget';
+import { eightOffFreeCellTableauTargets } from '../utils/eightOffFreeCellTableauTargets';
 import { eightOffTableauTargets } from '../utils/eightOffTableauTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -278,6 +279,20 @@ function EightOffPageContent() {
             targets: tableauTargetLabels.join(t('listSeparator')),
           })
         : t('noTableauMoveTargets', { source: (selectedSource?.col ?? 0) + 1 });
+  const freeCellCard =
+    selectedSource?.zone === 'freecell' && selectedSource.cell !== undefined
+      ? state.freeCells[selectedSource.cell]
+      : null;
+  const freeCellTargets = freeCellCard ? eightOffFreeCellTableauTargets(state.tableau, freeCellCard) : [];
+  const freeCellTargetLabels = freeCellTargets.map((column) => t('tableauColumnLabel', { column: column + 1 }));
+  if (freeCellCard && eightOffFoundationTarget(freeCellCard, state.foundation))
+    freeCellTargetLabels.push(t('foundation'));
+  const freeCellMoveGuide =
+    freeCellCard === null
+      ? ''
+      : freeCellTargetLabels.length > 0
+        ? t('freeCellMoveGuide', { targets: freeCellTargetLabels.join(t('listSeparator')) })
+        : t('noFreeCellMoveTargets');
 
   const isSourceSelected = (zone: string, col?: number, cell?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -336,7 +351,7 @@ function EightOffPageContent() {
               {tc('label.selectSourceFirst')}
             </span>
             <div role="status" aria-live="polite" data-testid="eo-move-guide" className="mb-2 text-sm text-ds-info">
-              {tableauMoveGuide}
+              {selectedSource?.zone === 'freecell' ? freeCellMoveGuide : tableauMoveGuide}
             </div>
             {/* Free cells + Foundation row */}
             <div className="flex gap-2 mb-3 items-start flex-wrap">
