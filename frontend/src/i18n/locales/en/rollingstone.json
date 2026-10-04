@@ -25,7 +25,8 @@
     "players": "Players",
     "reset": "Reset",
     "giveUp": "Give up",
-    "playAria": "Play {{card}}"
+    "playAria": "Play {{card}}",
+    "legalPlayAria": "Play {{card}} (legal move)"
   },
   "result": {
     "you": "You win! You ran out of cards first.",
