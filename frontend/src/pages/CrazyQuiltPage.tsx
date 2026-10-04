@@ -443,6 +443,7 @@ function CrazyQuiltPageContent() {
                 aria-valuemin={0}
                 aria-valuemax={TOTAL_CARDS}
                 aria-valuenow={foundationCount}
+                aria-valuetext={t('foundationProgress', { count: foundationCount })}
               >
                 {t('foundationProgress', { count: foundationCount })}
               </div>

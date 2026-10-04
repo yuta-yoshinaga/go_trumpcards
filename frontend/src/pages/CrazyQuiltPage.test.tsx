@@ -78,6 +78,7 @@ describe('CrazyQuiltPage', () => {
     expect(progress).toHaveAttribute('aria-valuemax', '104');
     expect(progress).toHaveAttribute('aria-valuenow', '1');
     expect(progress).toHaveTextContent('組札 1/104枚');
+    expect(progress).toHaveAttribute('aria-valuetext', '組札 1/104枚');
 
     fireEvent.click(screen.getByTestId('cq-cell-0'));
     fireEvent.click(screen.getAllByRole('button', { name: /組札0/ })[0]);
@@ -90,6 +91,7 @@ describe('CrazyQuiltPage', () => {
     const { unmount } = renderWithProviders(<CrazyQuiltPage />);
     const progress = await screen.findByRole('progressbar', { name: 'Foundation progress' });
     expect(progress).toHaveTextContent('0/104 cards on the foundations');
+    expect(progress).toHaveAttribute('aria-valuetext', '0/104 cards on the foundations');
     unmount();
     await i18n.changeLanguage('ja');
   });
