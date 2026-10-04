@@ -66,6 +66,23 @@ describe('BasraPage', () => {
     });
   });
 
+  it('announces each CPU hand count in Japanese and English', async () => {
+    mockExec.mockResolvedValue(
+      makeBasraState({
+        players: playPhaseState.players.map((player) => (player.id === 1 ? { ...player, cardCount: 2 } : player)),
+      }),
+    );
+    await i18n.changeLanguage('ja');
+    const { unmount } = renderWithProviders(<BasraPage />);
+    expect(await screen.findByRole('group', { name: 'CPU 1 の手札: 2枚' })).toBeInTheDocument();
+    unmount();
+
+    await i18n.changeLanguage('en');
+    renderWithProviders(<BasraPage />);
+    expect(await screen.findByRole('group', { name: "CPU 1's hand: 2 cards" })).toBeInTheDocument();
+    await i18n.changeLanguage('ja');
+  });
+
   it('shows captured card faces alongside the captured count', async () => {
     const card = { design: 'HEART' as const, value: 5 };
     mockExec.mockResolvedValue(
