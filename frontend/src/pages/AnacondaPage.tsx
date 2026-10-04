@@ -500,6 +500,7 @@ function AnacondaPageContent() {
                         onClick={() => toggle(i)}
                         className={[focusRingAccent, 'rounded'].join(' ')}
                         data-hint-card={isSuggested ? 'true' : undefined}
+                        aria-describedby={isSuggested ? 'anaconda-hint-target-description' : undefined}
                         style={{
                           background: 'none',
                           padding: 0,
@@ -518,6 +519,11 @@ function AnacondaPageContent() {
                     );
                   })}
                 </div>
+                {frontendHintEnabled && frontendHint?.targetIndices?.length ? (
+                  <span id="anaconda-hint-target-description" className="sr-only">
+                    {t('hintTarget')}
+                  </span>
+                ) : null}
               </div>
             ) : (
               <div className="text-ds-text-muted text-sm mb-2" data-tutorial="anaconda-hand">
