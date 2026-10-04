@@ -103,9 +103,10 @@ describe('CrescentPage', () => {
     const button = screen.getByTestId('autocomplete-button');
     expect(button).toBeDisabled();
     expect(button).toHaveAttribute('aria-describedby');
-    expect(document.getElementById(button.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
-      'すべての山が組札に移動可能になると有効になります',
-    );
+    const reason = document.getElementById(button.getAttribute('aria-describedby') ?? '');
+    expect(reason).toHaveTextContent('すべての山が組札に移動可能になると有効になります');
+    expect(reason).toHaveClass('basis-full');
+    expect(reason).toHaveClass('order-last');
     unmount();
 
     mockExec.mockResolvedValue({

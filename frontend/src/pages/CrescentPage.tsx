@@ -602,7 +602,7 @@ function CrescentPageContent() {
                     {t('autoComplete')}
                   </button>
                   {!autoCompleteReady && (
-                    <p id={autoCompleteNotReadyId} className="text-sm text-ds-text-muted">
+                    <p id={autoCompleteNotReadyId} className="basis-full order-last text-sm text-ds-text-muted">
                       {t('autoCompleteNotReady')}
                     </p>
                   )}
