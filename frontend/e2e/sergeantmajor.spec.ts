@@ -97,6 +97,8 @@ test.describe('Sergeant Major E2E', () => {
       .getByRole('button', { name: /^投了$|^Give up$/ })
       .first()
       .click();
+    await expect(page.getByRole('alertdialog')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+    await page.getByRole('button', { name: /^確認$|^Confirm$/ }).click();
     await expect(page.getByTestId('sm-result')).toBeVisible({ timeout: TIMEOUT_ACTION });
   });
 });
