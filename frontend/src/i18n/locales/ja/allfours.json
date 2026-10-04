@@ -52,6 +52,9 @@
   },
   "breakdown": {
     "title": "得点内訳",
+    "item": "得点項目",
+    "winner": "獲得者",
+    "detail": "詳細",
     "high": "High",
     "low": "Low",
     "jack": "Jack",
