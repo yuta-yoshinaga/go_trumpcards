@@ -594,7 +594,8 @@ function OhHellPageContent() {
                 </button>
               )}
               {isHumanBidTurn && (
-                <div className="flex flex-wrap gap-1.5">
+                <fieldset className="border-0 p-0 m-0 min-w-0 flex flex-wrap gap-1.5">
+                  <legend className="sr-only">{t('bidOptions', { max: state.handSize })}</legend>
                   {Array.from({ length: state.handSize + 1 }, (_, i) => i).map((i) => {
                     const isRestricted = state.restrictedBid === i;
                     return (
@@ -627,7 +628,7 @@ function OhHellPageContent() {
                       </button>
                     );
                   })}
-                </div>
+                </fieldset>
               )}
               {isHumanTurn && (
                 <button

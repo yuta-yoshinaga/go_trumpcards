@@ -55,6 +55,7 @@
   "nextTrick": "Next Trick",
   "nextRound": "Next Round",
   "bidPhase": "Place your bid (0-{{max}})",
+  "bidOptions": "Bid choices (0 to {{max}})",
   "playPhase": {
     "lead": "Lead a card",
     "follow": "Play a card"
