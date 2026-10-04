@@ -129,6 +129,25 @@ describe('VintPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 1 }));
   });
 
+  it('announces the selected hand card while preserving its card name', async () => {
+    renderWithProviders(<VintPage />);
+    await waitFor(() => expect(handButtons()).toHaveLength(3));
+
+    const hand = handButtons();
+    expect(hand[0]).toHaveAccessibleName('♠ A');
+    expect(hand[0]).toHaveAttribute('aria-pressed', 'false');
+    expect(hand[1]).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(hand[0]);
+    expect(hand[0]).toHaveAttribute('aria-pressed', 'true');
+    expect(hand[1]).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(hand[1]);
+    expect(hand[0]).toHaveAttribute('aria-pressed', 'false');
+    expect(hand[1]).toHaveAttribute('aria-pressed', 'true');
+    expect(hand[1]).toHaveAccessibleName('♥ 2');
+  });
+
   // **追随は強制。**サーバーが出せる札を決め、それ以外は押せない。
   it('disables cards the server did not list as playable', async () => {
     mockExec.mockResolvedValue(makeState({ validPlays: [2] }));
