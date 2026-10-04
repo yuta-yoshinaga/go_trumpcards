@@ -81,6 +81,13 @@ function captureCandidateIndices(handCaptures: number[][][], handIndex: number):
   return indices;
 }
 
+/** Returns whether the selected table cards exactly match a legal capture set. */
+function isLegalCaptureSelection(handCaptures: number[][][], handIndex: number, tableIndices: number[]): boolean {
+  return handCaptures[handIndex].some(
+    (capture) => capture.length === tableIndices.length && capture.every((idx) => tableIndices.includes(idx)),
+  );
+}
+
 /** Renders the Scopone (スコポーネ) game page. */
 export const ScoponePage = withTutorial(ScoponePageContent, 'scopone', SP_TUTORIAL_STEPS);
 function ScoponePageContent() {
@@ -169,7 +176,8 @@ function ScoponePageContent() {
   const lastCapturer = isRoundEnd ? state.players.find((p) => p.id === state.lastCaptureIdx) : undefined;
   const takeCandidateIndices =
     handIndex !== null && isHumanTurn ? captureCandidateIndices(state.handCaptures, handIndex) : new Set<number>();
-  const canTake = isHumanTurn && handIndex !== null && tableIndices.length > 0;
+  const canTake =
+    isHumanTurn && handIndex !== null && isLegalCaptureSelection(state.handCaptures, handIndex, tableIndices);
   // **取れるのに出すのは反則** (Scopone.go の applyPlay が弾く)。画面はその判定に
   // 使える handCaptures を場札のハイライトに使いながら、「出す」ボタンでは見て
   // いなかったので、押してサーバーエラーで初めて気づいた (#5661)。
