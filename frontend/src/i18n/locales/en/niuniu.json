@@ -22,6 +22,7 @@
   "tutorial": {
     "combo": "Look for **three of the five cards summing to a multiple of ten**. Find one and you have a bull — the **three cards marked ★**.",
     "rank": "**The remaining pair's last digit** is the rank. **Zero is Niu Niu**, the strongest; 1–9 are niu 1 through niu 9. No such triple at all is a **no-bull**, the weakest.",
+    "compare": "When hands have the **same rank**, compare each hand's **highest card** (K > Q > J > 10 > … > A). If those cards also match in rank, the suit breaks the tie (♠ > ♥ > ♣ > ♦).",
     "multiplier": "The payout follows the rank: **Niu Niu triples, niu 7–9 doubles**, the rest pays even. The **winner's** multiplier applies, so a banker's Niu Niu takes three times your stake.",
     "noChoice": "There are **no decisions to make**. The five cards you are dealt determine the best hand, so the round resolves the moment you bet.",
     "controls": "Buttons for the stake and the next round."

@@ -38,6 +38,7 @@ const BET_OPTIONS = [10, 50, 100, 500];
 const NN_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="nn-seats"]', messageKey: 'tutorial.combo', placement: 'top', advanceOn: 'next' },
   { target: '[data-tutorial="nn-seats"]', messageKey: 'tutorial.rank', placement: 'top', advanceOn: 'next' },
+  { target: '[data-tutorial="nn-seats"]', messageKey: 'tutorial.compare', placement: 'top', advanceOn: 'next' },
   { target: '[data-tutorial="nn-banker"]', messageKey: 'tutorial.multiplier', placement: 'bottom', advanceOn: 'next' },
   { target: '[data-tutorial="nn-controls"]', messageKey: 'tutorial.noChoice', placement: 'top', advanceOn: 'next' },
   { target: '[data-tutorial="nn-controls"]', messageKey: 'tutorial.controls', placement: 'top', advanceOn: 'next' },
