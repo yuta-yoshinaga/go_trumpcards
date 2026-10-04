@@ -23,6 +23,7 @@
   "scoreTitle": "Score",
   "handPoints": "This hand: {{t0}} to {{t1}}",
   "gameScores": "Game: {{t0}} to {{t1}}",
+  "scoreUpdateAnnouncement": "Score update. This hand: {{hand0}} to {{hand1}}. Game: {{total0}} to {{total1}}",
   "contractProgressNeed": "Declaring side: {{got}}/{{contract}}, {{remaining}} to go",
   "contractProgressMade": "Declaring side: {{got}}/{{contract}}, contract made",
   "specialTitle": "Scoring cards",
