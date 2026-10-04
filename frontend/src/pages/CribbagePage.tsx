@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { cribbageApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
@@ -514,15 +514,65 @@ function CribbagePageContent() {
                       <tbody>
                         {state.handScoreDetails.map((detail, idx) =>
                           detail ? (
-                            <tr key={idx}>
-                              <td>{scoreLabels[idx]}</td>
-                              <td className="text-center">{detail.fifteens}</td>
-                              <td className="text-center">{detail.pairs}</td>
-                              <td className="text-center">{detail.runs}</td>
-                              <td className="text-center">{detail.flush}</td>
-                              <td className="text-center">{detail.nobs}</td>
-                              <td className="text-center font-bold">{detail.total}</td>
-                            </tr>
+                            <Fragment key={idx}>
+                              <tr>
+                                <td>{scoreLabels[idx]}</td>
+                                <td className="text-center">{detail.fifteens}</td>
+                                <td className="text-center">{detail.pairs}</td>
+                                <td className="text-center">{detail.runs}</td>
+                                <td className="text-center">{detail.flush}</td>
+                                <td className="text-center">{detail.nobs}</td>
+                                <td className="text-center font-bold">{detail.total}</td>
+                              </tr>
+                              <tr>
+                                <td colSpan={7} className="text-xs">
+                                  {[
+                                    ...(detail.fifteens > 0
+                                      ? detail.fifteenCards.map((cards) =>
+                                          t('scoreDetail.evidence', {
+                                            category: t('scoreDetail.fifteens'),
+                                            cards: cards.map(cardAlt).join(t('listSeparator')),
+                                          }),
+                                        )
+                                      : []),
+                                    ...(detail.pairs > 0
+                                      ? detail.pairCards.map((cards) =>
+                                          t('scoreDetail.evidence', {
+                                            category: t('scoreDetail.pairs'),
+                                            cards: cards.map(cardAlt).join(t('listSeparator')),
+                                          }),
+                                        )
+                                      : []),
+                                    ...(detail.runs > 0
+                                      ? detail.runCards.map((cards) =>
+                                          t('scoreDetail.evidence', {
+                                            category: t('scoreDetail.runs'),
+                                            cards: cards.map(cardAlt).join(t('listSeparator')),
+                                          }),
+                                        )
+                                      : []),
+                                    ...(detail.flush > 0
+                                      ? [
+                                          t('scoreDetail.evidence', {
+                                            category: t('scoreDetail.flush'),
+                                            cards: detail.flushCards.map(cardAlt).join(t('listSeparator')),
+                                          }),
+                                        ]
+                                      : []),
+                                    ...(detail.nobs > 0
+                                      ? [
+                                          t('scoreDetail.evidence', {
+                                            category: t('scoreDetail.nobs'),
+                                            cards: detail.nobsCards.map(cardAlt).join(t('listSeparator')),
+                                          }),
+                                        ]
+                                      : []),
+                                  ].map((line, evidenceIdx) => (
+                                    <div key={evidenceIdx}>{line}</div>
+                                  ))}
+                                </td>
+                              </tr>
+                            </Fragment>
                           ) : null,
                         )}
                       </tbody>

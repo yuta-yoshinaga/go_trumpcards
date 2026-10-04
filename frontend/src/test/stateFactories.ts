@@ -23,6 +23,7 @@ import type {
   ContinentalRummyResponse,
   CostlyColoursResponse,
   CourtPieceResponse,
+  CribbageResponse,
   DehlaPakadResponse,
   DilotiResponse,
   DoppelkopfResponse,
@@ -5724,6 +5725,34 @@ const baseCometState: CometResponse = {
  */
 export function makeCometState(overrides?: Partial<CometResponse>): CometResponse {
   return { ...baseCometState, ...overrides };
+}
+
+const baseCribbageState: CribbageResponse = {
+  players: [
+    { id: 0, isHuman: true, cardCount: 0, cards: [], roundScore: 0, cumulativeScore: 0 },
+    { id: 1, isHuman: false, cardCount: 0, cards: [], roundScore: 0, cumulativeScore: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  currentPlayerIdx: 0,
+  dealerIdx: 0,
+  crib: [],
+  starter: null,
+  pegCount: 0,
+  pegPlayedCards: [],
+  pegPlayedBy: [],
+  pegScoreEvents: [],
+  showPhaseStep: 0,
+  handScoreDetails: [null, null, null],
+  gameEndFlag: false,
+  winnerIdx: -1,
+  message: '',
+  config: { cpuDifficulty: 1, pointLimit: 121 },
+};
+
+/** Creates a Cribbage API state with neutral defaults for page tests. */
+export function makeCribbageState(overrides?: Partial<CribbageResponse>): CribbageResponse {
+  return { ...baseCribbageState, ...overrides };
 }
 
 /** Face-up card helper for the Baccarat Banque factories. **Baccarat deals nothing hidden.** */
