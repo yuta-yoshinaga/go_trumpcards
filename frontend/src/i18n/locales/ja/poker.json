@@ -15,6 +15,11 @@
   "exchangeNotConfirmable": "0枚では交換確定できません。交換せず進む場合は「スタンド」を選択してください",
   "exchangeReceivedCards": "交換後に引いたカード: {{cards}}",
   "listSeparator": "、",
+  "potAwards": {
+    "mainPot": "メインポット",
+    "sidePot": "サイドポット{{n}}",
+    "eligibleLine": "{{pot}} {{amount}}: 対象 [{{players}}]"
+  },
   "standLabel": "スタンド",
   "standHint": "交換せず今の手札で勝負します",
   "drawOdds": "ドローオッズ:",
