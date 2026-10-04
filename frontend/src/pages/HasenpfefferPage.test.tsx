@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { hasenpfefferApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, HasenpfefferResponse } from '../types/card';
 import { HasenpfefferPage } from './HasenpfefferPage';
@@ -91,6 +92,24 @@ describe('HasenpfefferPage', () => {
     renderWithProviders(<HasenpfefferPage />);
     expect(await screen.findAllByRole('button', { name: /プレイ可能/ })).toHaveLength(1);
     expect(screen.getAllByRole('button', { name: /を出す/ })).toHaveLength(3);
+  });
+
+  it('blocks invalid cards during play while keeping valid cards selectable', async () => {
+    mockExec.mockResolvedValue(playing({ validPlays: [1] }));
+    renderWithProviders(<HasenpfefferPage />);
+
+    const playable = await screen.findByRole('button', { name: /プレイ可能/ });
+    const invalid = screen.getAllByRole('button', { name: /を出す/ });
+    expect(playable).not.toHaveAttribute('aria-disabled', 'true');
+    expect(playable).toHaveClass('ring-ds-success');
+    expect(invalid[0]).toHaveAttribute('aria-disabled', 'true');
+
+    fireEvent.click(invalid[0]);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
+
+    fireEvent.click(playable);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', expect.anything()));
   });
 
   it('resets on mount', async () => {
