@@ -255,7 +255,16 @@ function CatchTenPageContent() {
         </div>
         <div className="inline-flex items-center gap-1">
           <dt className="sr-only">{t('stats.round')}</dt>
-          <dd>{t('roundScore', { score: p.roundScore })}</dd>
+          <dd className="inline-flex items-center gap-2">
+            {t('roundScore', { score: p.roundScore })}
+            <span aria-hidden="true" className="opacity-40">
+              |
+            </span>
+          </dd>
+        </div>
+        <div className="inline-flex items-center gap-1">
+          <dt className="sr-only">{t('stats.tricks')}</dt>
+          <dd>{t('trickCount', { count: p.trickCount })}</dd>
         </div>
       </dl>
     </>
@@ -483,6 +492,7 @@ function CatchTenPageContent() {
               <div className="mb-1 text-ds-text-muted text-sm" data-testid="catchten-human-team">
                 {tc('label.you')}:{' '}
                 <span className={teamBadgeClass(humanPlayer.team)}>{t('team', { n: humanPlayer.team })}</span>
+                <span className="ml-2">{t('trickCount', { count: humanPlayer.trickCount })}</span>
               </div>
             )}
 
