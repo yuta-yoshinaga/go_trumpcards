@@ -50663,6 +50663,37 @@ components:
           type: integer
           description: Total points for this hand/crib
           example: 10
+        fifteenCards:
+          type: array
+          description: Card combinations that sum to 15
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        pairCards:
+          type: array
+          description: Card pairs that scored
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        runCards:
+          type: array
+          description: Card runs that scored
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        flushCards:
+          type: array
+          description: Cards that formed the flush
+          items:
+            $ref: '#/components/schemas/Card'
+        nobsCards:
+          type: array
+          description: Jack and starter cards that formed nobs
+          items:
+            $ref: '#/components/schemas/Card'
 
     CribbageResponse:
       type: object
