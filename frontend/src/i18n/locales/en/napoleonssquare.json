@@ -8,6 +8,12 @@
   "emptyFoundationAriaLabel": "Empty foundation {{idx}} ({{suit}}){{nextRank}}",
   "emptyWasteAriaLabel": "The waste is empty",
   "foundation": "Foundation",
+  "destinationAnnouncement": "Selected {{source}}. Move destinations — tableau: {{tableau}}; foundations: {{foundation}}.",
+  "destinationColumn": "column {{col}}",
+  "destinationFoundation": "foundation {{idx}}",
+  "listSeparator": ", ",
+  "noDestination": "none",
+  "selectionCleared": "Card selection cleared.",
   "foundationAriaLabel": "{{suit}} foundation {{idx}}, {{count}} cards{{nextRank}}",
   "nextRankAria": ", next rank needed: {{rank}}",
   "frontendHint": {
