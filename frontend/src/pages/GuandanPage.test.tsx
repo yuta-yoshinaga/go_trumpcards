@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { guandanApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { CardDesign, GuandanPlayer, GuandanResponse } from '../types/card';
 import { GuandanPhase } from '../types/phases';
@@ -391,6 +392,8 @@ describe('GuandanPage', () => {
       await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
 
       expect(screen.queryByTestId('guandan-combo-preview')).not.toBeInTheDocument();
+      expect(screen.getByTestId('guandan-combo-live')).toHaveAttribute('role', 'status');
+      expect(screen.getByTestId('guandan-combo-live')).toBeEmptyDOMElement();
     });
 
     it('names the combo the selection forms', async () => {
@@ -401,9 +404,40 @@ describe('GuandanPage', () => {
       fireEvent.click(screen.getByTestId('hand-card-0'));
 
       const preview = screen.getByTestId('guandan-combo-preview');
-      expect(preview).toHaveTextContent('シングル (1)');
+      expect(preview).toHaveAttribute('aria-hidden', 'true');
+      expect(preview).toHaveTextContent('選択中: シングル（1枚）');
+      expect(screen.getByTestId('guandan-combo-live')).toHaveTextContent('選択中: シングル（1枚）');
       expect(screen.queryByTestId('guandan-combo-invalid')).not.toBeInTheDocument();
       expect(screen.queryByTestId('guandan-combo-result')).not.toBeInTheDocument();
+    });
+
+    it('announces when the selection is cleared', async () => {
+      mockExec.mockResolvedValue(makeState());
+      renderWithProviders(<GuandanPage />);
+      await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByTestId('hand-card-0'));
+      fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+      fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
+      expect(screen.getByTestId('guandan-combo-live')).toHaveTextContent('選択中: シングル（1枚）');
+      fireEvent.click(screen.getByTestId('hand-card-0'));
+
+      expect(screen.getByTestId('guandan-combo-live')).toHaveTextContent('選択を解除しました');
+    });
+
+    it('announces the English preview in English', async () => {
+      await i18n.changeLanguage('en');
+      try {
+        mockExec.mockResolvedValue(makeState());
+        renderWithProviders(<GuandanPage />);
+        await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+        fireEvent.click(screen.getByTestId('hand-card-0'));
+
+        expect(screen.getByTestId('guandan-combo-live')).toHaveTextContent('Selected: single (1)');
+      } finally {
+        await i18n.changeLanguage('ja');
+      }
     });
 
     // **役にならない組はここで分かる。**出して初めてサーバに拒否される、では遅い。
@@ -417,6 +451,7 @@ describe('GuandanPage', () => {
       fireEvent.click(screen.getByTestId('hand-card-2'));
 
       expect(screen.getByTestId('guandan-combo-invalid')).toHaveTextContent('役になりません');
+      expect(screen.getByTestId('guandan-combo-live')).toHaveTextContent('この組み合わせは役になりません');
       expect(screen.getByTestId('guandan-combo-preview')).not.toHaveTextContent('選択中');
       expect(screen.queryByTestId('guandan-combo-result')).not.toBeInTheDocument();
     });
@@ -431,11 +466,11 @@ describe('GuandanPage', () => {
 
       for (const i of [0, 1, 2]) fireEvent.click(screen.getByTestId(`hand-card-${i}`));
       // 3 枚ではまだスリーカード。爆弾の強調は出ない。
-      expect(screen.getByTestId('guandan-combo-preview')).toHaveTextContent('スリーカード (3)');
+      expect(screen.getByTestId('guandan-combo-preview')).toHaveTextContent('選択中: スリーカード（3枚）');
       expect(screen.queryByTestId('guandan-combo-bomb')).not.toBeInTheDocument();
 
       fireEvent.click(screen.getByTestId('hand-card-3'));
-      expect(screen.getByTestId('guandan-combo-preview')).toHaveTextContent('ボム (4)');
+      expect(screen.getByTestId('guandan-combo-preview')).toHaveTextContent('選択中: ボム（4枚）');
       expect(screen.getByTestId('guandan-combo-bomb')).toHaveTextContent('通常役をすべて上回ります');
     });
 
@@ -447,6 +482,7 @@ describe('GuandanPage', () => {
       fireEvent.click(screen.getByTestId('hand-card-0'));
 
       expect(screen.getByTestId('guandan-combo-result')).toHaveTextContent('場の役を上回ります');
+      expect(screen.getByTestId('guandan-combo-live')).toHaveTextContent('場の役を上回ります');
     });
 
     it('shows when a valid selection cannot beat the combo on the table', async () => {
@@ -457,6 +493,7 @@ describe('GuandanPage', () => {
       fireEvent.click(screen.getByTestId('hand-card-1'));
 
       expect(screen.getByTestId('guandan-combo-result')).toHaveTextContent('場の役を上回りません');
+      expect(screen.getByTestId('guandan-combo-live')).toHaveTextContent('場の役を上回りません');
     });
 
     it('reads the level card in hearts as a wild', async () => {
@@ -475,7 +512,7 @@ describe('GuandanPage', () => {
       fireEvent.click(screen.getByTestId('hand-card-0'));
       fireEvent.click(screen.getByTestId('hand-card-1'));
 
-      expect(screen.getByTestId('guandan-combo-preview')).toHaveTextContent('ペア (2)');
+      expect(screen.getByTestId('guandan-combo-preview')).toHaveTextContent('選択中: ペア（2枚）');
     });
   });
 });
