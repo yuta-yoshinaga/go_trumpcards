@@ -233,6 +233,7 @@ describe('OasisPokerPage', () => {
     renderWithProviders(<OasisPokerPage />);
     const callButton = await screen.findByRole('button', { name: 'コール (200)' });
     expect(callButton).not.toHaveAttribute('aria-disabled', 'true');
+    expect(document.getElementById('oasispoker-call-unavailable')).toBeNull();
     fireEvent.click(callButton);
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('play'));
 

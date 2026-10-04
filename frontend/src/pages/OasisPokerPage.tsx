@@ -589,12 +589,11 @@ function OasisPokerPageContent() {
                 <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
                   {t('button.fold')}
                 </button>
-                <p
-                  id="oasispoker-call-unavailable"
-                  className={insufficientCallChips ? 'text-ds-warning text-sm self-center' : 'sr-only'}
-                >
-                  {insufficientCallChips ? t('callUnavailable') : ''}
-                </p>
+                {insufficientCallChips && (
+                  <p id="oasispoker-call-unavailable" className="text-ds-warning text-sm self-center">
+                    {t('callUnavailable')}
+                  </p>
+                )}
               </div>
             )}
             {isEndPhase && (
