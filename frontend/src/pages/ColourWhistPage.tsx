@@ -275,6 +275,9 @@ function ColourWhistPageContent() {
                   <div>
                     {t('label.score')}: {p.score} / {p.cardCount} {t('label.cards')}
                   </div>
+                  <div>
+                    {t('label.trickCount')}: {p.trickCount}
+                  </div>
                 </div>
               ))}
             </div>
