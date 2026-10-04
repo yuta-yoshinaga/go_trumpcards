@@ -36,14 +36,25 @@
   },
   "stats": {
     "vpip": "VPIP",
-    "vpipTooltip": "Voluntarily put in pot %",
+    "vpipTooltip": "VPIP (Voluntarily Put In Pot): % of hands where player voluntarily put chips in the pot",
     "pfr": "PFR",
-    "pfrTooltip": "Pre-flop raise %",
+    "pfrTooltip": "PFR (Pre-Flop Raise): % of hands where player raised pre-flop",
     "threeBet": "3Bet",
-    "threeBetTooltip": "3-bet %",
+    "threeBetTooltip": "3Bet: % of hands where player re-raised an opponent's raise",
     "af": "AF",
-    "afTooltip": "Aggression factor",
-    "playerStats": "VPIP:{{vpip}}% PFR:{{pfr}}% 3Bet:{{tb}}% AF:{{af}}"
+    "afTooltip": "AF (Aggression Factor): ratio of aggressive actions (bet/raise) to passive actions (call)"
+  },
+  "style": {
+    "tag": "TAG",
+    "tagTooltip": "Tight Aggressive: plays few hands but bets strongly when in",
+    "lag": "LAG",
+    "lagTooltip": "Loose Aggressive: plays many hands and bets strongly",
+    "tp": "TP",
+    "tpTooltip": "Tight Passive: plays few hands, mostly calls",
+    "lp": "LP",
+    "lpTooltip": "Loose Passive: plays many hands but rarely raises",
+    "balanced": "BAL",
+    "balancedTooltip": "Balanced style"
   },
   "settings": {
     "cpuMetaAI": "CPU Adaptive AI",

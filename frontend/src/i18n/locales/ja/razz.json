@@ -38,12 +38,23 @@
     "vpip": "VPIP",
     "vpipTooltip": "VPIP（ボランタリー・プット・イン・ポット）: 自発的にポットに参加した割合",
     "pfr": "PFR",
-    "pfrTooltip": "PFR（プリフロップレイズ）: 最初のラウンドでレイズした割合",
+    "pfrTooltip": "PFR（プリフロップレイズ）: プリフロップでレイズした割合",
     "threeBet": "3Bet",
     "threeBetTooltip": "3Bet（スリーベット）: 相手のレイズに対して再レイズした割合",
     "af": "AF",
-    "afTooltip": "AF（アグレッションファクター）: ベット・レイズのコールに対する比率",
-    "playerStats": "VPIP:{{vpip}}% PFR:{{pfr}}% 3Bet:{{tb}}% AF:{{af}}"
+    "afTooltip": "AF（アグレッションファクター）: ベット・レイズのコールに対する比率"
+  },
+  "style": {
+    "tag": "TAG",
+    "tagTooltip": "Tight Aggressive：参加少なめだが入ったら強気",
+    "lag": "LAG",
+    "lagTooltip": "Loose Aggressive：参加多くかつ攻め志向",
+    "tp": "TP",
+    "tpTooltip": "Tight Passive：参加少なめでコール中心",
+    "lp": "LP",
+    "lpTooltip": "Loose Passive：参加多めだがコール中心",
+    "balanced": "BAL",
+    "balancedTooltip": "バランス型のスタイル"
   },
   "settings": {
     "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）",
