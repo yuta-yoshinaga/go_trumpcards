@@ -4,6 +4,8 @@
   "you": "You",
   "opponent": "CPU",
   "field": "Field",
+  "fieldSelectable": "This field card can be selected",
+  "fieldNotSelectable": "This field card cannot be selected",
   "choosePrompt": "You played a {{card}} -- choose which card to take",
   "opponentHand": "CPU hand: {{n}} cards",
   "opponentHandAriaLabel": "CPU hand, {{n}} cards face down",

@@ -206,6 +206,7 @@ function MushiPageContent() {
                       // Kept focusable while it cannot act so the reason is
                       // announced rather than the control leaving the tab order.
                       aria-disabled={!canTake}
+                      aria-describedby={choosing ? `mushi-field-choice-${i.toString()}` : undefined}
                       onClick={() => canTake && game.handleSelect(i)}
                       className={[
                         'rounded transition-transform',
@@ -214,6 +215,11 @@ function MushiPageContent() {
                       ].join(' ')}
                     >
                       {renderCard(card, `field-c${i.toString()}`)}
+                      {choosing && (
+                        <span id={`mushi-field-choice-${i.toString()}`} className="sr-only">
+                          {t(canTake ? 'fieldSelectable' : 'fieldNotSelectable')}
+                        </span>
+                      )}
                     </button>
                   );
                 })}

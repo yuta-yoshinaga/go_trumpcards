@@ -157,6 +157,10 @@ describe('MushiPage', () => {
     const fieldButtons = screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'select');
     expect(fieldButtons).toHaveLength(2);
     for (const button of fieldButtons) expect(button).not.toBeDisabled();
+    expect(fieldButtons[0]).toHaveAttribute('aria-disabled', 'false');
+    expect(fieldButtons[1]).toHaveAttribute('aria-disabled', 'true');
+    expect(fieldButtons[0]).toHaveAccessibleDescription('この場札は選択できます');
+    expect(fieldButtons[1]).toHaveAccessibleDescription('この場札は選択できません');
 
     unmount();
     mockExec.mockResolvedValue(makeState());
