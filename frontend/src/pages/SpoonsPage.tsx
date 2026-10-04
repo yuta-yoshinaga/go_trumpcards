@@ -71,6 +71,12 @@ const SPOONS_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
   {
+    target: '[data-tutorial="spoons-players"]',
+    messageKey: 'tutorial.eliminationAndWin',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
     target: '[data-tutorial="spoons-hand"]',
     messageKey: 'tutorial.hand',
     placement: 'top',
