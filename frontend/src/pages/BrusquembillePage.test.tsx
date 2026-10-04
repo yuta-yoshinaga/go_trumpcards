@@ -63,6 +63,13 @@ describe('BrusquembillePage', () => {
     for (const locale of [en, ja]) {
       expect(locale.subtitle).toMatch(/32/);
       expect(locale.subtitle).not.toMatch(/40/);
+      if (locale === en) {
+        expect(locale.subtitle).toContain('while the stock lasts');
+        expect(locale.subtitle).toContain('then follow suit if able');
+      } else {
+        expect(locale.subtitle).toContain('山札が残っている間は自由に出せ');
+        expect(locale.subtitle).toContain('山札枯渇後は手札にあればリードスートに従');
+      }
       expect(locale.tutorial.hand).toMatch(/10\s*=\s*10/);
       expect(locale.tutorial.hand).not.toMatch(/3\s*=\s*10/);
     }
