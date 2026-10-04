@@ -124,6 +124,40 @@ describe('StreetsAndAlleysPage', () => {
     await waitFor(() => expect(announcement.textContent).toBe(''));
   });
 
+  it('describes each tableau and foundation target in Japanese and English', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+    const source = await screen.findByRole('button', { name: /^♠ 5/ });
+    fireEvent.click(source);
+
+    const tableauLegal = screen.getByRole('button', { name: '♥ 6、タブロー列1' });
+    const emptyLegal = screen.getByRole('button', { name: '空のタブロー列2' });
+    const foundationIllegal = screen.getByRole('button', { name: /♠ 組札 1枚/ });
+    await waitFor(() => expect(tableauLegal).toHaveAttribute('aria-description', '移動できます。'));
+    expect(emptyLegal).toHaveAttribute('aria-description', '移動できます。');
+    expect(foundationIllegal).toHaveAttribute('aria-description', '移動できません。');
+
+    try {
+      await i18n.changeLanguage('en');
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: '♥ 6, tableau column 1' })).toHaveAttribute(
+          'aria-description',
+          'Legal destination.',
+        ),
+      );
+      expect(screen.getByRole('button', { name: 'Empty tableau column 2' })).toHaveAttribute(
+        'aria-description',
+        'Legal destination.',
+      );
+      expect(screen.getByRole('button', { name: /♠ foundation 1 cards/ })).toHaveAttribute(
+        'aria-description',
+        'Not a legal destination.',
+      );
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('announces when a selected card has no legal destinations', async () => {
     mockExec.mockResolvedValue({
       ...playingState,

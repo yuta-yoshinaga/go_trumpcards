@@ -216,6 +216,8 @@ function StreetsAndAlleysPageContent() {
   // 以前は選択中なら全列の一番上を無条件で光らせていた。ドメインは値差 -1 を要求する。
   const legalTargets = streetsAndAlleysLegalTargets(state.tableau, state.foundation, previewedCard);
   const selectedTargetCount = selectedSource ? legalTargets.tableau.size + legalTargets.foundation.size : null;
+  const hasPreviewedSource = previewedCard !== undefined;
+  const destinationStatus = (isLegal: boolean) => t(isLegal ? 'legalDestinationStatus' : 'illegalDestinationStatus');
   /** Ring for a legal destination: softer while it is only a hover preview. */
   const targetRing = preview.isPreview
     ? ' rounded ring-1 ring-ds-info/70 motion-safe:hover:ring-2 focus:ring-2'
@@ -241,6 +243,8 @@ function StreetsAndAlleysPageContent() {
                 disabled={!isPlaying || loading}
                 aria-disabled={!selectedSource || undefined}
                 aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                aria-label={hasPreviewedSource ? t('emptyTableauAriaLabel', { col: colIdx }) : undefined}
+                aria-description={hasPreviewedSource ? destinationStatus(legalTargets.tableau.has(colIdx)) : undefined}
                 style={{ height: dims.ch }}
                 data-target-candidate={legalTargets.tableau.has(colIdx) || undefined}
                 data-preview-target={legalTargets.tableau.has(colIdx) && preview.isPreview ? 'true' : undefined}
@@ -281,6 +285,9 @@ function StreetsAndAlleysPageContent() {
                         }}
                         disabled={!isPlaying || loading || (!isTop && !selectedSource)}
                         aria-label={t('tableauCardAriaLabel', { card: cardAlt(tc.card), col: colIdx })}
+                        aria-description={
+                          hasPreviewedSource ? destinationStatus(legalTargets.tableau.has(colIdx)) : undefined
+                        }
                         aria-pressed={isSelfSource}
                         data-target-candidate={isTargetCandidate || undefined}
                         data-preview-target={isTargetCandidate && preview.isPreview ? 'true' : undefined}
@@ -381,6 +388,9 @@ function StreetsAndAlleysPageContent() {
                               suit: FOUNDATION_SUITS[idx],
                               count: pile.length,
                             })}
+                            aria-description={
+                              hasPreviewedSource ? destinationStatus(legalTargets.foundation.has(idx)) : undefined
+                            }
                             data-target-candidate={legalTargets.foundation.has(idx) || undefined}
                             data-preview-target={
                               legalTargets.foundation.has(idx) && preview.isPreview ? 'true' : undefined
@@ -404,6 +414,9 @@ function StreetsAndAlleysPageContent() {
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
+                            aria-description={
+                              hasPreviewedSource ? destinationStatus(legalTargets.foundation.has(idx)) : undefined
+                            }
                             style={{ width: dims.cw, height: dims.ch }}
                             data-target-candidate={legalTargets.foundation.has(idx) || undefined}
                             data-preview-target={
