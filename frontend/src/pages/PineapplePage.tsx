@@ -492,8 +492,8 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                 </>
               );
               const cpuPlayerCards = cpuPlayers.map((p) => {
-                const playerIdx = state?.players?.findIndex((player) => player.id === p.id) ?? -1;
-                const faceDownCount = state?.discardDone?.[playerIdx] ? 2 : (state?.initialDealCount ?? 3);
+                const playerIdx = state.players.findIndex((player) => player.id === p.id);
+                const faceDownCount = state.discardDone[playerIdx] ? 2 : state.initialDealCount;
                 return (
                   <CpuPlayerCard
                     key={p.id}
