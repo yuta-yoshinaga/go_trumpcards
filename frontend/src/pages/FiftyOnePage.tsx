@@ -40,6 +40,11 @@ const DIFFICULTY_OPTIONS = [
   { value: '1', labelKey: 'settings.difficultyNormal' },
   { value: '2', labelKey: 'settings.difficultyHard' },
 ];
+const DIFFICULTY_LABEL_KEYS: Record<0 | 1 | 2, string> = {
+  0: 'settings.difficultyEasy',
+  1: 'settings.difficultyNormal',
+  2: 'settings.difficultyHard',
+};
 
 /** Tutorial steps for the Fifty-one game. */
 const FO_TUTORIAL_STEPS: TutorialStep[] = [
@@ -160,13 +165,15 @@ function FiftyOnePageContent() {
         'l/log                 - Show action log',
       ],
       localCommand: hintLocalCommand(frontendHint, (input: string) => {
-        const parts = input.trim().toLowerCase().split(/\s+/);
+        const normalizedInput = input.trim().toLowerCase();
+        const parts = normalizedInput.split(/\s+/);
         if (parts[0] === 'sd') {
-          if (parts.length !== 2 || !/^[0-2]$/.test(parts[1] ?? '')) return t('cli.difficultyUsage');
-          const difficulty = Number(parts[1]);
+          const difficultyCommand = normalizedInput.match(/^sd\s+[0-2]$/);
+          if (!difficultyCommand) return t('cli.difficultyUsage');
+          const difficulty = Number(difficultyCommand[0].slice(-1)) as 0 | 1 | 2;
           setCpuDifficulty(difficulty);
           return t('cli.difficultySet', {
-            difficulty: t(DIFFICULTY_OPTIONS[difficulty]?.labelKey ?? 'settings.difficultyNormal'),
+            difficulty: t(DIFFICULTY_LABEL_KEYS[difficulty]),
           });
         }
         return null;

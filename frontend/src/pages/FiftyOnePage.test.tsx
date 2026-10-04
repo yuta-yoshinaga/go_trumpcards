@@ -159,6 +159,9 @@ describe('FiftyOnePage', () => {
     fireEvent.change(prompt, { target: { value: 'sd 3' } });
     fireEvent.keyDown(prompt, { key: 'Enter' });
     expect(await screen.findByRole('log')).toHaveTextContent(/使い方: sd <0-2>/);
+    fireEvent.change(prompt, { target: { value: 'unknown' } });
+    fireEvent.keyDown(prompt, { key: 'Enter' });
+    expect(await screen.findByRole('log')).toHaveTextContent('Unknown command: unknown');
     fireEvent.change(prompt, { target: { value: 'help' } });
     fireEvent.keyDown(prompt, { key: 'Enter' });
     expect(await screen.findByRole('log')).toHaveTextContent(/sd <0-2> - CPU難易度を設定/);
