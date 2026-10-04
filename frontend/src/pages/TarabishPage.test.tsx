@@ -221,8 +221,7 @@ describe('TarabishPage', () => {
     mockExec.mockResolvedValue(makeState({ scores: [220, 140], roundPoints: [35, 12] } as Partial<TarabishResponse>));
     renderWithProviders(<TarabishPage />);
     expect(await screen.findByTestId('tb-score')).toHaveTextContent('220');
-    expect(screen.getByTestId('tb-round-points')).toHaveTextContent('35');
-    expect(screen.getByTestId('tb-round-points')).toHaveTextContent('12');
+    expect(screen.getByTestId('tb-round-points')).toHaveTextContent('ラウンド得点: あなたのチーム 35 － 相手 12');
     expect(screen.getByTestId('tb-round-points')).toHaveTextContent('ラウンド得点');
   });
 
