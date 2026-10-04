@@ -75,5 +75,5 @@ func (p *PrsiWebPresenter) buildMessage(g interfaces.PrsiGame, lastErr error) (s
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *PrsiWebPresenter) ActionLogOutput(g interfaces.PrsiGame) string {
-	return actionLogOutputJSON(g)
+	return actionLogToJSON(g.GetActionLog())
 }
