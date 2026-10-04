@@ -154,7 +154,7 @@ function TerracePageContent() {
     [game, confirmGiveUpAction],
   );
 
-  useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading });
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading && !isAutoCompleting });
 
   if (!state) {
     return <GameSkeleton gameKey="terrace" layout={{ kind: 'tableau', topRow: 8, tableau: TABLEAU_PILES }} />;
