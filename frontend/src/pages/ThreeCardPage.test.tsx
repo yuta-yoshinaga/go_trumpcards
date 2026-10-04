@@ -287,21 +287,43 @@ describe('ThreeCardPage', () => {
 
     const anteInput = screen.getByLabelText('アンテ');
     const ppInput = screen.getByLabelText('ペアプラス');
-    expect(anteInput).toHaveAttribute('max', '1000');
-    expect(ppInput).toHaveAttribute('max', '900');
+    expect(anteInput).toHaveAttribute('max', '500');
+    expect(ppInput).toHaveAttribute('max', '800');
     expect(screen.getByTestId('tc-bet-summary')).toHaveTextContent('合計: 100');
     expect(screen.getByTestId('tc-bet-summary')).toHaveTextContent('残額: 900');
 
     fireEvent.change(anteInput, { target: { value: '950' } });
-    expect(ppInput).toHaveAttribute('max', '50');
-    expect(screen.getByTestId('tc-bet-summary')).toHaveTextContent('合計: 950');
-    expect(screen.getByTestId('tc-bet-summary')).toHaveTextContent('残額: 50');
+    expect(anteInput).toHaveValue('500');
+    expect(ppInput).toHaveAttribute('max', '0');
+    expect(screen.getByTestId('tc-bet-summary')).toHaveTextContent('合計: 500');
+    expect(screen.getByTestId('tc-bet-summary')).toHaveTextContent('残額: 500');
 
     fireEvent.change(ppInput, { target: { value: '100' } });
-    expect(ppInput).toHaveValue('50');
-    expect(screen.getByTestId('tc-bet-summary')).toHaveTextContent('合計: 1000');
-    expect(screen.getByTestId('tc-bet-summary')).toHaveTextContent('残額: 0');
+    expect(ppInput).toHaveValue('0');
+    expect(screen.getByTestId('tc-bet-summary')).toHaveTextContent('合計: 500');
+    expect(screen.getByTestId('tc-bet-summary')).toHaveTextContent('残額: 500');
     expect(screen.getByText('所持チップに合わせて賭け額を調整しました。')).toBeInTheDocument();
+  });
+
+  it('limits the ante to half the chips left after pair plus, including when funds are insufficient', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, chips: 250 });
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 250')).toBeInTheDocument());
+
+    const anteInput = screen.getByLabelText('アンテ');
+    const ppInput = screen.getByLabelText('ペアプラス');
+    fireEvent.change(anteInput, { target: { value: '10' } });
+    fireEvent.change(ppInput, { target: { value: '100' } });
+    expect(anteInput).toHaveAttribute('max', '75');
+    fireEvent.change(anteInput, { target: { value: '100' } });
+    expect(anteInput).toHaveValue('75');
+    expect(screen.getByTestId('tc-bet-summary')).toHaveTextContent('残額: 75');
+
+    mockExec.mockResolvedValueOnce({ ...betPhaseState, chips: 50 });
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByText('チップ: 50')).toBeInTheDocument());
+    expect(anteInput).toHaveAttribute('max', '0');
+    expect(anteInput).toHaveValue('0');
   });
 
   it('adjusts the ante when the bet response leaves fewer chips', async () => {
@@ -314,8 +336,9 @@ describe('ThreeCardPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
 
     await waitFor(() => expect(screen.getByText('チップ: 500')).toBeInTheDocument());
-    expect(screen.getByLabelText('アンテ')).toHaveValue('400');
-    expect(screen.getByLabelText('ペアプラス')).toHaveValue('100');
+    await waitFor(() => expect(screen.getByLabelText('アンテ')).toHaveValue('250'));
+    expect(screen.getByLabelText('ペアプラス')).toHaveValue('0');
+    expect(screen.getByLabelText('アンテ')).toHaveAttribute('max', '250');
     expect(screen.getByText('所持チップに合わせて賭け額を調整しました。')).toBeInTheDocument();
   });
 

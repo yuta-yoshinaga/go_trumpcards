@@ -113,8 +113,8 @@ function ThreeCardPageContent() {
 
   useEffect(() => {
     if (!state || !isBetPhase) return;
-    const nextAnte = Math.min(anteAmount, Math.max(0, state.chips - pairPlusAmount));
-    const nextPairPlus = Math.min(pairPlusAmount, Math.max(0, state.chips - nextAnte));
+    const nextAnte = Math.min(anteAmount, Math.max(0, Math.floor((state.chips - pairPlusAmount) / 2)));
+    const nextPairPlus = Math.min(pairPlusAmount, Math.max(0, state.chips - 2 * nextAnte));
     if (nextAnte !== anteAmount || nextPairPlus !== pairPlusAmount) {
       setAnteAmount(nextAnte);
       setPairPlusAmount(nextPairPlus);
@@ -124,13 +124,14 @@ function ThreeCardPageContent() {
 
   const handleAnteChange = (value: number) => {
     if (!state) return;
-    const nextAnte = Math.min(Math.max(value, MIN_ANTE_BET), Math.max(0, state.chips - pairPlusAmount));
+    const anteMax = Math.max(0, Math.floor((state.chips - pairPlusAmount) / 2));
+    const nextAnte = Math.min(Math.max(value, MIN_ANTE_BET), anteMax);
     setAnteAmount(nextAnte);
     setBetAdjusted(nextAnte !== value);
   };
   const handlePairPlusChange = (value: number) => {
     if (!state) return;
-    const nextPairPlus = Math.min(value, Math.max(0, state.chips - anteAmount));
+    const nextPairPlus = Math.min(value, Math.max(0, state.chips - 2 * anteAmount));
     setPairPlusAmount(nextPairPlus);
     setBetAdjusted(nextPairPlus !== value);
   };
@@ -386,7 +387,7 @@ function ThreeCardPageContent() {
                   value={anteAmount}
                   onChange={handleAnteChange}
                   min={MIN_ANTE_BET}
-                  max={Math.max(0, state.chips - pairPlusAmount)}
+                  max={Math.max(0, Math.floor((state.chips - pairPlusAmount) / 2))}
                   step={10}
                   disabled={loading}
                   showSteppers
@@ -398,7 +399,7 @@ function ThreeCardPageContent() {
                   value={pairPlusAmount}
                   onChange={handlePairPlusChange}
                   min={0}
-                  max={Math.max(0, state.chips - anteAmount)}
+                  max={Math.max(0, state.chips - 2 * anteAmount)}
                   step={10}
                   disabled={loading}
                   showSteppers
