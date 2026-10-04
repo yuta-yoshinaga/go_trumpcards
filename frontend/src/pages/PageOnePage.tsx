@@ -287,6 +287,7 @@ function PageOnePageContent() {
                     {t('target', { points: state.config.pointLimit })}
                   </div>
                   <table className="w-full text-sm text-ds-text-muted">
+                    <caption className="sr-only">{t('scoreTableCaption')}</caption>
                     <thead>
                       <tr>
                         <th scope="col" className="text-left">
@@ -308,6 +309,7 @@ function PageOnePageContent() {
                   </table>
                   {state.roundHistory.length > 0 && (
                     <table className="w-full text-sm text-ds-text-muted mt-3" data-testid="po-round-history">
+                      <caption className="sr-only">{t('roundHistoryCaption')}</caption>
                       <thead>
                         <tr>
                           <th scope="col">{t('historyRound')}</th>
