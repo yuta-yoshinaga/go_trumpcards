@@ -74,14 +74,6 @@ function DoubleAttackPageContent() {
   const isResultPhase = phase === DoubleAttackPhase.RESULT;
   const gameOver = !!state?.gameEndFlag;
 
-  const handleAnteChange = useCallback(
-    (nextAnte: number) => {
-      setAnte(nextAnte);
-      setBustIt((currentBustIt) => Math.min(currentBustIt, Math.max(0, (state?.chips ?? 0) - nextAnte)));
-    },
-    [state?.chips],
-  );
-
   const handleDeal = useCallback(() => execApi('bet', { ante, bustIt }), [execApi, ante, bustIt]);
   const handleAttack = useCallback(() => execApi('attack', { amount: attack }), [execApi, attack]);
   // **見送りは 0 を送ること。** 送らないのとは違う (サーバは 400 を返す)。
@@ -120,6 +112,11 @@ function DoubleAttackPageContent() {
   } = useGameHint('doubleattack', state);
 
   if (!state) return <GameSkeleton gameKey="doubleattack" layout={{ kind: 'casino-table', sections: [1, 1] }} />;
+
+  const handleAnteChange = (nextAnte: number) => {
+    setAnte(nextAnte);
+    setBustIt((currentBustIt) => Math.min(currentBustIt, Math.max(0, state.chips - nextAnte)));
+  };
 
   const phaseName =
     {
