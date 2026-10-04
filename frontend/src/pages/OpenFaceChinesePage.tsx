@@ -450,7 +450,11 @@ function OpenFaceChinesePageContent() {
                       )}
                     </div>
                   </div>
-                  {p.fantasyland && <p className="text-ds-text-primary text-xs mb-2">{t('fantasylandBenefit')}</p>}
+                  {p.fantasyland && (isPlacing || isRoundEnd || isGameEnd) && (
+                    <p className="text-ds-text-primary text-xs mb-2">
+                      {t(isPlacing ? 'fantasylandRound' : 'fantasylandEarned')}
+                    </p>
+                  )}
                   <div className="flex flex-col gap-2">
                     {renderRow(
                       t('rows.front'),
