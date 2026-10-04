@@ -9,7 +9,13 @@
     "selectTwo": "Select 2 natural cards from your hand matching the top discard",
     "frozen": "Frozen: wild cards cannot substitute for naturals",
     "selectOneMore": "Select one more card",
-    "tooMany": "Select at most 2 cards"
+    "tooMany": "Select at most 2 cards",
+    "noTop": "The discard pile has no top card to match",
+    "unusableTop": "A wild card or black 3 on top cannot be taken",
+    "wild": "Wild cards cannot be used; select two natural cards",
+    "frozenWild": "The pile is frozen, so both cards must be natural",
+    "rankMismatch": "Both cards must match the top discard's rank",
+    "validPair": "This natural pair matches the top discard's rank"
   },
   "drawPhase": "Draw a card from the stock or pick up the discard pile.",
   "drawPile": "Stock: {{count}} cards",
