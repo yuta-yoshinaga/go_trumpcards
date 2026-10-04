@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { coloradoApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, ColoradoResponse } from '../types/card';
@@ -79,6 +80,78 @@ describe('ColoradoPage', () => {
   it('resets on mount', async () => {
     renderWithProviders(<ColoradoPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('keeps a move status region in the DOM before the board loads', () => {
+    mockExec.mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<ColoradoPage />);
+    expect(screen.getAllByRole('status').length).toBeGreaterThan(0);
+  });
+
+  it.each([
+    ['waste to foundation', { zone: 'waste' }, { zone: 'foundation' }, '捨て札から組札へ移動しました'],
+    ['tableau to foundation', { zone: 'tableau', idx: 2 }, { zone: 'foundation' }, '場札 2から組札へ移動しました'],
+    ['waste to tableau', { zone: 'waste' }, { zone: 'tableau', idx: 7 }, '捨て札から場札 7へ移動しました'],
+    ['stock to tableau', { zone: 'stock' }, { zone: 'tableau', idx: 3 }, '山札から場札 3へ移動しました'],
+  ] as const)('announces successful %s', async (_name, from, to, announcement) => {
+    mockExec.mockResolvedValue(makeState({ moveCount: 1 }));
+    renderWithProviders(<ColoradoPage />);
+    await screen.findByTestId('co-tableau-0');
+    const sourceButton =
+      from.zone === 'waste'
+        ? screen.getByTestId('co-waste-button')
+        : from.zone === 'stock'
+          ? screen.getByTestId('co-stock-fill-button')
+          : screen.getByTestId(`co-tableau-${from.idx}`);
+    fireEvent.click(sourceButton);
+    const destinationButton =
+      to.zone === 'foundation' ? screen.getByTestId('co-foundation-0') : screen.getByTestId(`co-tableau-${to.idx}`);
+    fireEvent.click(destinationButton);
+    await waitFor(() =>
+      expect(screen.getAllByRole('status').some((region) => region.textContent?.includes(announcement))).toBe(true),
+    );
+  });
+
+  it('does not announce a rejected move or failed request', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'illegal move', messageCode: '' }));
+    renderWithProviders(<ColoradoPage />);
+    await screen.findByTestId('co-tableau-0');
+    fireEvent.click(screen.getByTestId('co-waste-button'));
+    fireEvent.click(screen.getByTestId('co-foundation-0'));
+    await flushPendingDispatch();
+    expect(screen.getAllByRole('status').every((region) => !region.textContent?.includes('移動しました'))).toBe(true);
+  });
+
+  it('does not announce a move when the request fails', async () => {
+    mockExec.mockResolvedValueOnce(makeState());
+    mockExec.mockRejectedValueOnce(new Error('network error'));
+    renderWithProviders(<ColoradoPage />);
+    await screen.findByTestId('co-tableau-0');
+    fireEvent.click(screen.getByTestId('co-waste-button'));
+    fireEvent.click(screen.getByTestId('co-foundation-0'));
+    await screen.findByRole('alert');
+    expect(screen.getAllByRole('status').every((region) => region.textContent === '')).toBe(true);
+  });
+
+  it('announces a successful move in English', async () => {
+    const originalLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(makeState({ moveCount: 1 }));
+      renderWithProviders(<ColoradoPage />);
+      await screen.findByTestId('co-tableau-0');
+      fireEvent.click(screen.getByTestId('co-waste-button'));
+      fireEvent.click(screen.getByTestId('co-foundation-0'));
+      await waitFor(() =>
+        expect(
+          screen
+            .getAllByRole('status')
+            .some((region) => region.textContent?.includes('Moved from Waste to Foundation')),
+        ).toBe(true),
+      );
+    } finally {
+      await i18n.changeLanguage(originalLanguage);
+    }
   });
 
   // Half the foundations run the other way, and the board is unreadable without
