@@ -80,5 +80,7 @@
   },
   "hintRequested": "ヒントがあります",
   "noHint": "ヒントはありません",
-  "bidStake": "+{{make}}/+{{fail}}"
+  "bidStake": "+{{make}}/+{{fail}}",
+  "bidStakeLegend": "ボタンの数字: 達成時に宣言者が得るチップ / 失敗時に相手それぞれが得るチップ",
+  "bidStakeAria": "{{bid}}（達成時 宣言者+{{make}} / 失敗時 相手それぞれ+{{fail}}）"
 }

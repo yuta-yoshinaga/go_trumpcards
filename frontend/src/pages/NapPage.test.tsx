@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { napApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeNapState } from '../test/stateFactories';
 import { NapPage } from './NapPage';
@@ -122,19 +123,41 @@ describe('NapPage', () => {
     expect(screen.getByTestId('bid-5')).toBeInTheDocument();
   });
 
-  // #5651: Nap 契約だけ賭け金が非対称 (達成 +10 / 失敗は相手が各 +5)。他は契約数
-  // と同じ数が動く。この差が宣言するかどうかの判断そのものなのに、ボタンには
-  // 契約名しか出ていなかった。
-  it('puts each contract stake on its bid button', async () => {
+  it('shows a stake legend, compact stake values, and accessible meanings in Japanese', async () => {
     renderWithProviders(<NapPage />);
 
-    expect(await screen.findByTestId('bid-2')).toHaveTextContent('+2/+2');
-    expect(screen.getByTestId('bid-3')).toHaveTextContent('+3/+3');
-    expect(screen.getByTestId('bid-4')).toHaveTextContent('+4/+4');
-    // ナップだけ非対称。
-    expect(screen.getByTestId('bid-5')).toHaveTextContent('+10/+5');
-    // パスは賭けないので数字を出さない。
+    expect(
+      await screen.findByText('ボタンの数字: 達成時に宣言者が得るチップ / 失敗時に相手それぞれが得るチップ'),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('bid-2')).toHaveTextContent('ツー+2/+2');
+    expect(screen.getByTestId('bid-5')).toHaveTextContent('ナップ+10/+5');
     expect(screen.getByTestId('bid-0')).not.toHaveTextContent('+');
+    expect(screen.getByTestId('bid-5')).toHaveAttribute(
+      'aria-label',
+      'ナップ（達成時 宣言者+10 / 失敗時 相手それぞれ+5）',
+    );
+  });
+
+  it('shows the stake legend, compact values, and accessible meanings in English', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<NapPage />);
+
+      expect(
+        await screen.findByText(
+          'Button numbers: chips the declarer gains if made / chips each opponent gains if failed',
+        ),
+      ).toBeInTheDocument();
+      expect(screen.getByTestId('bid-2')).toHaveTextContent('Two+2/+2');
+      expect(screen.getByTestId('bid-5')).toHaveTextContent('Nap+10/+5');
+      expect(screen.getByTestId('bid-5')).toHaveAttribute(
+        'aria-label',
+        'Nap (if made: declarer +10 / if failed: each opponent +5)',
+      );
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('reports the chips the round actually moved', async () => {
@@ -193,7 +216,10 @@ describe('NapPage', () => {
     expect(screen.getByTestId('bid-wrap-4')).not.toHaveAttribute('title');
     // The reason is also exposed to screen readers via aria-label on the disabled button.
     expect(screen.getByTestId('bid-2')).toHaveAttribute('aria-label', expect.stringContaining(tooLowWrap.title));
-    expect(screen.getByTestId('bid-4')).not.toHaveAttribute('aria-label');
+    expect(screen.getByTestId('bid-4')).toHaveAttribute(
+      'aria-label',
+      'フォー（達成時 宣言者+4 / 失敗時 相手それぞれ+4）',
+    );
   });
 
   it('shows "no bids yet" before anyone has bid', async () => {
@@ -218,6 +244,9 @@ describe('NapPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
     expect(screen.queryByTestId('bid-0')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('ボタンの数字: 達成時に宣言者が得るチップ / 失敗時に相手それぞれが得るチップ'),
+    ).not.toBeInTheDocument();
   });
 
   it('shows the declarer trick progress toward the contract during play', async () => {

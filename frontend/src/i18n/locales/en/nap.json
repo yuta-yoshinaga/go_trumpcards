@@ -80,5 +80,7 @@
   },
   "hintRequested": "Hint available",
   "noHint": "No hint available",
-  "bidStake": "+{{make}}/+{{fail}}"
+  "bidStake": "+{{make}}/+{{fail}}",
+  "bidStakeLegend": "Button numbers: chips the declarer gains if made / chips each opponent gains if failed",
+  "bidStakeAria": "{{bid}} (if made: declarer +{{make}} / if failed: each opponent +{{fail}})"
 }
