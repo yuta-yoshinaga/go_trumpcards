@@ -378,6 +378,22 @@ func TestMachiavelli_NextRound(t *testing.T) {
 	assert.Equal(t, 2, g.GetRoundNumber())
 }
 
+func TestMachiavelli_RoundScoreHistory(t *testing.T) {
+	g := newTestMachiavelli(2)
+	g.Reset()
+	g.SetCurrentPlayerIdx(0)
+	g.SetDrawPile(nil)
+	require.NoError(t, g.PlayerDraw())
+	history := g.GetRoundScoreHistory()
+	assert.Len(t, history, 1)
+	assert.Equal(t, 1, history[0].RoundNumber)
+	assert.Equal(t, []int{g.GetPlayer(0).GetRoundScore(), g.GetPlayer(1).GetRoundScore()}, history[0].Scores)
+	assert.Error(t, g.PlayerDraw())
+	assert.Len(t, g.GetRoundScoreHistory(), 1)
+	g.Reset()
+	assert.Empty(t, g.GetRoundScoreHistory())
+}
+
 func TestMachiavelli_IsHumanTurn(t *testing.T) {
 	g := newTestMachiavelli(2)
 	g.SetPhase(domain.MachiavelliPhaseTurn)
@@ -468,6 +484,14 @@ func TestMachiavelli_JSON_RoundTrip(t *testing.T) {
 	assert.Equal(t, g.GetPhase(), restored.GetPhase())
 	assert.Equal(t, g.GetPlayerCnt(), restored.GetPlayerCnt())
 	assert.Len(t, restored.GetTable(), 1)
+	g.SetCurrentPlayerIdx(0)
+	g.SetDrawPile(nil)
+	require.NoError(t, g.PlayerDraw())
+	roundTripData, err := g.MarshalJSON()
+	require.NoError(t, err)
+	restored = &domain.Machiavelli{}
+	require.NoError(t, restored.UnmarshalJSON(roundTripData))
+	assert.Equal(t, g.GetRoundScoreHistory(), restored.GetRoundScoreHistory())
 }
 
 func machiavelliJSONWith(t *testing.T, g *domain.Machiavelli, key, rawVal string) []byte {

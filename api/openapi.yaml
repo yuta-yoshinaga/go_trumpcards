@@ -78841,6 +78841,17 @@ components:
           type: integer
         roundWinnerIdx:
           type: integer
+        roundScoreHistory:
+          type: array
+          items:
+            type: object
+            properties:
+              roundNumber:
+                type: integer
+              scores:
+                type: array
+                items:
+                  type: integer
         config:
           type: object
           properties:

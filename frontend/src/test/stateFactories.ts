@@ -49,6 +49,7 @@ import type {
   KoiKoiResponse,
   LaughAndLieDownResponse,
   LooResponse,
+  MachiavelliResponse,
   MadrassoResponse,
   ManilleResponse,
   MariasResponse,
@@ -130,6 +131,30 @@ export function makePaiGowState(overrides: Partial<PaiGowResponse> = {}): PaiGow
     dealerHighRank: 0,
     dealerLowRank: 0,
     hint: null satisfies PaiGowHint | null,
+    message: '',
+    ...overrides,
+  };
+}
+
+/** Creates a Machiavelli response with an empty score history. */
+export function makeMachiavelliState(overrides: Partial<MachiavelliResponse> = {}): MachiavelliResponse {
+  return {
+    players: [
+      { id: 0, isHuman: true, cardCount: 0, cards: [], roundScore: 0, cumulativeScore: 0, deadwood: 0 },
+      { id: 1, isHuman: false, cardCount: 0, cards: [], roundScore: 0, cumulativeScore: 0, deadwood: 0 },
+    ],
+    table: [],
+    phase: 0,
+    roundNumber: 1,
+    targetRounds: 3,
+    currentPlayerIdx: 0,
+    dealerIdx: 0,
+    drawPileCount: 0,
+    gameEndFlag: false,
+    winnerIdx: -1,
+    roundWinnerIdx: -1,
+    roundScoreHistory: [],
+    config: { playerCount: 2, targetRounds: 3 },
     message: '',
     ...overrides,
   };

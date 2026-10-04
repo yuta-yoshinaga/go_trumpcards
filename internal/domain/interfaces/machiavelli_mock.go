@@ -45,7 +45,10 @@ func (m *MockMachiavelliGame) GetTable() [][]*domain.Card {
 func (m *MockMachiavelliGame) GetDrawPileCount() int  { return m.Called().Int(0) }
 func (m *MockMachiavelliGame) GetWinnerIdx() int      { return m.Called().Int(0) }
 func (m *MockMachiavelliGame) GetRoundWinnerIdx() int { return m.Called().Int(0) }
-func (m *MockMachiavelliGame) GetPlayerCnt() int      { return m.Called().Int(0) }
+func (m *MockMachiavelliGame) GetRoundScoreHistory() []domain.MachiavelliRoundScore {
+	return m.Called().Get(0).([]domain.MachiavelliRoundScore)
+}
+func (m *MockMachiavelliGame) GetPlayerCnt() int { return m.Called().Int(0) }
 func (m *MockMachiavelliGame) GetPlayer(i int) *domain.MachiavelliPlayer {
 	return m.Called(i).Get(0).(*domain.MachiavelliPlayer)
 }

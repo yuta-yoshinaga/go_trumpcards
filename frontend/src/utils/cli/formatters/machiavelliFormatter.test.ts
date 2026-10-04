@@ -46,6 +46,7 @@ function makeState(overrides: Partial<MachiavelliResponse> = {}): MachiavelliRes
     gameEndFlag: false,
     winnerIdx: -1,
     roundWinnerIdx: -1,
+    roundScoreHistory: [],
     config: { playerCount: 2, targetRounds: 5 },
     message: '',
     messageCode: '',
@@ -79,6 +80,12 @@ describe('formatMachiavelliState', () => {
     expect(out).toContain('total=12');
     expect(out).toContain('round=5');
     expect(out).toContain('cards=13');
+  });
+
+  it('prints completed round scores', () => {
+    const out = formatMachiavelliState(makeState({ roundScoreHistory: [{ roundNumber: 1, scores: [0, 12] }] }));
+    expect(out).toContain('round score history:');
+    expect(out).toContain('round 1: 0, 12');
   });
 
   it('falls back to UNKNOWN for an out-of-range phase', () => {

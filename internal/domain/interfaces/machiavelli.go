@@ -49,6 +49,7 @@ type MachiavelliGame interface {
 	GetWinnerIdx() int
 	// GetRoundWinnerIdx 直近ラウンドの勝者（-1 = 山切れ）
 	GetRoundWinnerIdx() int
+	GetRoundScoreHistory() []domain.MachiavelliRoundScore
 	// GetPlayerCnt プレイヤー数
 	GetPlayerCnt() int
 	// GetPlayer 指定インデックスのプレイヤーを取得する

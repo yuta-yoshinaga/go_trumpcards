@@ -32,6 +32,7 @@
   "scoresPlayer": "プレイヤー",
   "scoresRound": "ラウンド",
   "scoresTotal": "累計",
+  "roundScoreHistory": "ラウンド別得点",
   "drawButton": "山札から引く",
   "newMeldButton": "メルドを出す",
   "layoffButton": "レイオフ",
