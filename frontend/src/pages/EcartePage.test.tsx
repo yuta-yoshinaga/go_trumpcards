@@ -22,7 +22,7 @@ const dealerRespondState = makeEcarteState({ phase: 0, negStep: 1, currentPlayer
 // A human Exchange turn at the ElderDiscard sub-step.
 const discardState = makeEcarteState({ phase: 0, negStep: 2, currentPlayerIdx: 0 });
 // A human Play turn.
-const playPhaseState = makeEcarteState({ phase: 1, currentPlayerIdx: 0 });
+const playPhaseState = makeEcarteState({ phase: 1, currentPlayerIdx: 0, validPlays: [0, 1, 2, 3, 4] });
 // A CPU turn.
 const cpuTurnState = makeEcarteState({ phase: 1, currentPlayerIdx: 1 });
 const roundEndState = makeEcarteState({
@@ -47,6 +47,29 @@ describe('EcartePage', () => {
     mockExec.mockResolvedValue(makeEcarteState({ trumpSuit: 0 }));
     renderWithProviders(<EcartePage />);
     expect(await screen.findByText('切り札: 未宣言')).toBeInTheDocument();
+  });
+
+  it('restricts the human play hand to valid plays and highlights them', async () => {
+    mockExec.mockResolvedValue(makeEcarteState({ phase: 1, currentPlayerIdx: 0, validPlays: [0, 2] }));
+    renderWithProviders(<EcartePage />);
+
+    const card = await screen.findByAltText('♠ K');
+    const cardButtons = screen.getAllByRole('button').filter((button) => button.querySelector('img[alt]'));
+    expect(card.closest('button')).not.toHaveAttribute('aria-disabled');
+    expect(cardButtons[1]).toHaveAttribute('aria-disabled', 'true');
+    expect(cardButtons[0]).toHaveClass('ring-ds-success');
+    expect(cardButtons[1]).not.toHaveClass('ring-ds-success');
+    fireEvent.click(cardButtons[1]);
+    expect(cardButtons[1]).not.toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it.each([elderDecideState, cpuTurnState])('leaves the hand unrestricted outside a human play turn', async (state) => {
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<EcartePage />);
+
+    const card = await screen.findByAltText('♠ K');
+    expect(card.closest('button')).not.toHaveAttribute('aria-disabled');
+    expect(card.closest('button')).not.toHaveClass('ring-ds-success');
   });
 
   it('renders skeleton when no state', () => {
