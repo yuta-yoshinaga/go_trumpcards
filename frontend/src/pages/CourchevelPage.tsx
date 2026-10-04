@@ -354,6 +354,7 @@ function CourchevelPageContent() {
             {/* Action log */}
             <ActionLogSection
               isEndPhase={!!state?.gameEndFlag}
+              availableDuringPlay
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
