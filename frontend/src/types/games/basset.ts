@@ -15,6 +15,9 @@ export interface BassetResponse extends BaseGameResponse {
   bankerCard: Card | null;
   playerCard: Card | null;
   hit: boolean;
+  bankerHit: boolean;
+  playerHit: boolean;
+  payoutReceived: number;
   turnsPlayed: number;
   turnsTotal: number;
   remaining: number;

@@ -72629,6 +72629,15 @@ components:
           nullable: true
         hit:
           type: boolean
+        bankerHit:
+          type: boolean
+          description: Whether the banker card matched the player's wager on the last turn.
+        playerHit:
+          type: boolean
+          description: Whether the player card matched the player's wager on the last turn.
+        payoutReceived:
+          type: integer
+          description: Amount credited when winnings were taken after the last turn; otherwise 0.
         turnsPlayed:
           type: integer
         turnsTotal:
