@@ -143,6 +143,7 @@ function MariasPageContent() {
           `${t(`suitName.${['', 'spade', 'club', 'heart', 'diamond'][marriage.suit] ?? ''}`)}: ${marriage.points}`,
       )
       .join(', ');
+  const playerRoleLabel = (isSoloist: boolean) => t(isSoloist ? 'role.soloist' : 'role.defender');
 
   // **結婚ボーナスは配った時点で確定している。**`detectMarriages` はラウンド
   // 開始時に一度だけ走って `roundMarriage` に加点し、以後 K・Q を場に出しても
@@ -269,8 +270,8 @@ function MariasPageContent() {
                     <div className="mt-1">
                       {state.players.map((p) => (
                         <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('tricks', { count: p.trickCount })}
+                          {playerName(p.id, p.isHuman)}: {playerRoleLabel(p.isSoloist)} |{' '}
+                          {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
                         </div>
                       ))}
                     </div>
@@ -279,8 +280,8 @@ function MariasPageContent() {
                   <div className="mb-2 p-2 rounded bg-black/30">
                     {state.players.map((p) => (
                       <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('tricks', { count: p.trickCount })}
+                        {playerName(p.id, p.isHuman)}: {playerRoleLabel(p.isSoloist)} |{' '}
+                        {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
                       </div>
                     ))}
                   </div>

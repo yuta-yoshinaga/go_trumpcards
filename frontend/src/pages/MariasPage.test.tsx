@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mariasApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeMariasState } from '../test/stateFactories';
 import { MariasPage } from './MariasPage';
@@ -41,6 +42,21 @@ beforeEach(() => {
 });
 
 describe('MariasPage', () => {
+  it('renders player roles in English', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(makeMariasState());
+      renderWithProviders(<MariasPage />);
+
+      expect(await screen.findByText(/You: Soloist/)).toBeInTheDocument();
+      expect(screen.getByText(/CPU 1: Defender/)).toBeInTheDocument();
+      expect(screen.getByText(/CPU 2: Defender/)).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<MariasPage />);
@@ -64,6 +80,28 @@ describe('MariasPage', () => {
     });
     // The human (seat 0) is the default Soloist.
     expect(screen.getByText('ソリスト')).toBeInTheDocument();
+  });
+
+  it('shows each player role in the card and trick list and follows the next round Soloist', async () => {
+    const nextRoundState = makeMariasState({
+      roundNumber: 2,
+      players: [
+        { id: 0, isHuman: true, cardCount: 10, cards: [], trickCount: 0, score: 0, isSoloist: false },
+        { id: 1, isHuman: false, cardCount: 10, cards: [], trickCount: 0, score: 0, isSoloist: true },
+        { id: 2, isHuman: false, cardCount: 10, cards: [], trickCount: 0, score: 0, isSoloist: false },
+      ],
+    });
+    mockExec.mockResolvedValueOnce(roundEndState).mockResolvedValueOnce(nextRoundState);
+    renderWithProviders(<MariasPage />);
+
+    const playerList = await screen.findByText(/あなた: ソリスト/);
+    expect(playerList.parentElement).toHaveTextContent('ソリスト');
+    expect(screen.getByText(/CPU 1: ディフェンダー/).parentElement).toHaveTextContent('ディフェンダー');
+    expect(screen.getByText(/CPU 2: ディフェンダー/).parentElement).toHaveTextContent('ディフェンダー');
+
+    fireEvent.click(screen.getByRole('button', { name: '次のラウンド' }));
+    expect(await screen.findByText(/あなた: ディフェンダー/)).toHaveTextContent('ディフェンダー');
+    expect(screen.getByText(/CPU 1: ソリスト/).parentElement).toHaveTextContent('ソリスト');
   });
 
   // **結婚ボーナスは配った時点で確定している (#4759)。**以前このバナーは毎
