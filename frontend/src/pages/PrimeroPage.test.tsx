@@ -244,6 +244,8 @@ describe('PrimeroPage', () => {
     renderWithProviders(<PrimeroPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: 'レイズ（ヴィ）' })).not.toBeInTheDocument();
+    expect(screen.getByTestId('primero-player-1')).not.toHaveTextContent('払戻額:');
+    expect(screen.getByTestId('primero-player-1')).not.toHaveTextContent('差引:');
   });
 
   it('shows the next-round button at the result phase and dispatches nextround', async () => {
@@ -265,10 +267,20 @@ describe('PrimeroPage', () => {
   it('shows the human round bet, actual payout, and net result', async () => {
     mockExec.mockResolvedValue(resultState);
     renderWithProviders(<PrimeroPage />);
-    const result = await screen.findByTestId('primero-round-settlement');
-    expect(result).toHaveTextContent('自分の賭け額: 40');
+    const result = await screen.findByTestId('primero-player-0');
+    expect(result).toHaveTextContent('賭け: 40');
     expect(result).toHaveTextContent('払戻額: 137');
     expect(result).toHaveTextContent('差引: +97');
+  });
+
+  it('shows payout and net change for every player only during results', async () => {
+    mockExec.mockResolvedValue(resultState);
+    renderWithProviders(<PrimeroPage />);
+    const cpuWinner = await screen.findByTestId('primero-player-1');
+    expect(cpuWinner).toHaveTextContent('払戻額: 0');
+    expect(cpuWinner).toHaveTextContent('差引: -40');
+    expect(screen.getByTestId('primero-player-0')).toHaveTextContent('払戻額: 137');
+    expect(screen.getByTestId('primero-player-2')).toHaveTextContent('差引: -10');
   });
 
   it('shows no payout and a loss equal to the bet for a folded human', async () => {
@@ -291,8 +303,8 @@ describe('PrimeroPage', () => {
       }),
     );
     renderWithProviders(<PrimeroPage />);
-    const result = await screen.findByTestId('primero-round-settlement');
-    expect(result).toHaveTextContent('自分の賭け額: 25');
+    const result = await screen.findByTestId('primero-player-0');
+    expect(result).toHaveTextContent('賭け: 25');
     expect(result).toHaveTextContent('払戻額: 0');
     expect(result).toHaveTextContent('差引: -25');
   });
@@ -303,8 +315,8 @@ describe('PrimeroPage', () => {
     try {
       mockExec.mockResolvedValue(resultState);
       renderWithProviders(<PrimeroPage />);
-      const result = await screen.findByTestId('primero-round-settlement');
-      expect(result).toHaveTextContent('Your bet: 40');
+      const result = await screen.findByTestId('primero-player-0');
+      expect(result).toHaveTextContent('Bet: 40');
       expect(result).toHaveTextContent('Payout: 137');
       expect(result).toHaveTextContent('Net: +97');
     } finally {

@@ -260,6 +260,14 @@ function PrimeroPageContent() {
                       {playerLabel(p.id, p.isHuman)} — {t('chips', { amount: p.chips })} ·{' '}
                       {t('roundBet', { amount: p.roundBet })} · <span aria-hidden="true">{playerBadgeIcon(p)} </span>[
                       {playerBadge(p)}]{p.handName ? ` · ${handName(p.handName)}` : ''}
+                      {isResultPhase && (
+                        <>
+                          {' · '}
+                          {t('roundResult.payout', { amount: p.roundPayout })}
+                          {' · '}
+                          {t('roundResult.net', { amount: formatSignedDelta(p.netChange) })}
+                        </>
+                      )}
                     </li>
                   );
                 })}
@@ -297,17 +305,6 @@ function PrimeroPageContent() {
                     pot: state.pot,
                   })}
                 </div>
-                {humanPlayer && (
-                  <div data-testid="primero-round-settlement">
-                    <div>{t('roundResult.yourBet', { amount: humanPlayer.roundBet })}</div>
-                    <div>{t('roundResult.payout', { amount: humanPlayer.roundPayout })}</div>
-                    <div>
-                      {t('roundResult.net', {
-                        amount: formatSignedDelta(humanPlayer.netChange),
-                      })}
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 
