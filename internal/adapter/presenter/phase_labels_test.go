@@ -569,7 +569,7 @@ func TestJapaneseInlineEnglishLabels(t *testing.T) {
 		"cassino.actionTake":             "捕獲 出した札={{played}} 取った枚数={{count}}枚{{suffix}}",
 		"cassino.actionBuild":            "ビルド値{{value}} (出した札={{played}})",
 		"cuarenta.actionCapture":         "捕獲 出した札={{played}} 取った枚数={{count}}枚{{suffix}}",
-		"scopa.actionCapture":            "捕獲 出した札={{played}} 取った枚数={{count}}枚{{suffix}}",
+		"scopa.actionCapture":            "{{played}}を出して{{count}}枚を捕獲{{suffix}}",
 		"nertz.zoneTableauWithIdx":       "タブロー{{col}}(番号={{idx}})",
 	}
 	for key, want := range expected {
