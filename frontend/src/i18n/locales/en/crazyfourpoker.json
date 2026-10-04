@@ -12,6 +12,8 @@
   "label.round": "Hand",
   "label.yourHand": "Your five",
   "label.yourBest": "Best four",
+  "label.bestCardIncluded": "In best hand",
+  "label.bestCardExcluded": "Outside best hand",
   "label.dealerHand": "Dealer's five",
   "label.dealerBest": "Dealer's best four",
   "label.hidden": "Hidden until the showdown",

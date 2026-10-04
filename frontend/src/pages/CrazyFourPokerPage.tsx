@@ -25,7 +25,7 @@ import { useMountReset } from '../hooks/useMountReset';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { CrazyFourPokerResponse } from '../types/card';
+import type { Card, CrazyFourPokerResponse } from '../types/card';
 import { CRAZY_FOUR_POKER_ANTE_UNIT, CRAZY_FOUR_POKER_RESULT } from '../types/games/crazyfourpoker';
 import { CrazyFourPokerPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -40,6 +40,26 @@ const FOUR_CARD_HAND_PAIR = 2;
 const SUPER_BONUS_MIN_PAIR = 1;
 /** `CrazyFourPokerQueensUpMinPair` (CrazyFourPokerConfig.go:144) — queens or better. */
 const QUEENS_UP_MIN_PAIR = 12;
+
+/** Match best-hand cards to their positions while preserving duplicate cards. */
+function bestCardIndices(hand: readonly Card[], best: readonly Card[] | undefined): Set<number> {
+  if (!best) return new Set<number>();
+  const remaining = new Map<string, number>();
+  for (const card of best) {
+    const key = `${card.design}:${card.value}`;
+    remaining.set(key, (remaining.get(key) ?? 0) + 1);
+  }
+  const indices = new Set<number>();
+  hand.forEach((card, index) => {
+    const key = `${card.design}:${card.value}`;
+    const count = remaining.get(key) ?? 0;
+    if (count > 0) {
+      indices.add(index);
+      remaining.set(key, count - 1);
+    }
+  });
+  return indices;
+}
 
 /**
  * Whether the player's hand clears the pair minimum a side bet requires.
@@ -183,13 +203,37 @@ function CrazyFourPokerPageContent() {
   );
   const queensUpReturn = queensUpPayout ? state.queensUpBet * (queensUpPayout.multiplier + 1) : 0;
 
-  const handRow = (label: string, cards: CrazyFourPokerResponse['playerHand'], testId: string) => (
+  const playerBestIdx =
+    isDecidePhase || isResultPhase ? bestCardIndices(state.playerHand, state.playerBest) : new Set<number>();
+  const dealerBestIdx = isResultPhase ? bestCardIndices(state.dealerHand, state.dealerBest) : new Set<number>();
+
+  const handRow = (
+    label: string,
+    cards: CrazyFourPokerResponse['playerHand'],
+    testId: string,
+    bestIndices: Set<number>,
+  ) => (
     <div className="mb-2">
       <div className="text-ds-text-primary text-center text-sm font-bold mb-1">{label}</div>
       <div className="flex justify-center gap-1 flex-wrap" data-testid={testId}>
-        {cards.map((card, i) => (
-          <AnimatedCard key={`${testId}-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
-        ))}
+        {cards.map((card, i) => {
+          const inBest = bestIndices.has(i);
+          const showBest = bestIndices.size > 0;
+          return (
+            <div
+              key={`${testId}-${card.design}-${card.value}-${i}`}
+              className={`text-center transition-all ${showBest && inBest ? '-translate-y-1 ring-2 ring-ds-success rounded' : ''} ${showBest && !inBest ? 'opacity-50' : ''}`}
+              data-c4p-best={showBest ? (inBest ? 'included' : 'excluded') : undefined}
+            >
+              <AnimatedCard card={card} width={cardWidth} />
+              {showBest && (
+                <span className="block text-ds-text-primary text-xs mt-1">
+                  {t(inBest ? 'label.bestCardIncluded' : 'label.bestCardExcluded')}
+                </span>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -242,7 +286,7 @@ function CrazyFourPokerPageContent() {
 
             {state.playerHand.length > 0 && (
               <div data-tutorial="c4p-hand">
-                {handRow(t('label.yourHand'), state.playerHand, 'c4p-player-hand')}
+                {handRow(t('label.yourHand'), state.playerHand, 'c4p-player-hand', playerBestIdx)}
                 <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="c4p-player-rank">
                   {t('label.yourBest')}: {t(`rank.${state.playerHandRank}`)}
                 </div>
@@ -252,7 +296,7 @@ function CrazyFourPokerPageContent() {
             {/* **決着まではディーラーの手を出さない。** サーバも送っていない。 */}
             {isResultPhase && state.dealerHand.length > 0 ? (
               <>
-                {handRow(t('label.dealerHand'), state.dealerHand, 'c4p-dealer-hand')}
+                {handRow(t('label.dealerHand'), state.dealerHand, 'c4p-dealer-hand', dealerBestIdx)}
                 <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="c4p-dealer-rank">
                   {t('label.dealerBest')}: {t(`rank.${state.dealerHandRank}`)}
                   {!state.dealerQualifies && ` · ${t('result.dealerNotQualified')}`}

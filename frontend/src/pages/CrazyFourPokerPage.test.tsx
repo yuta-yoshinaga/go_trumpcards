@@ -240,6 +240,23 @@ describe('CrazyFourPokerPage', () => {
     expect(screen.getByTestId('c4p-dealer-hidden')).toBeInTheDocument();
   });
 
+  it('判断フェーズで配られた順を保ってプレイヤーの最良4枚を示す', async () => {
+    mockApi.mockResolvedValue(dealt());
+    renderWithProviders(<CrazyFourPokerPage />);
+    const hand = await screen.findByTestId('c4p-player-hand');
+    const cards = [...hand.querySelectorAll('[data-c4p-best]')];
+    expect(cards.map((card) => card.getAttribute('data-c4p-best'))).toEqual([
+      'included',
+      'included',
+      'included',
+      'included',
+      'excluded',
+    ]);
+    expect(hand.querySelectorAll('img[alt]').length).toBe(5);
+    expect(hand).toHaveTextContent('最良の役に含む');
+    expect(hand).toHaveTextContent('最良の役に含まない');
+  });
+
   it('決着後はディーラーの手と収支を出す', async () => {
     mockApi.mockResolvedValue(
       withState({
@@ -260,6 +277,8 @@ describe('CrazyFourPokerPage', () => {
     );
     renderWithProviders(<CrazyFourPokerPage />);
     await waitFor(() => expect(screen.getByTestId('c4p-dealer-hand')).toBeInTheDocument());
+    expect(screen.getByTestId('c4p-dealer-hand').querySelectorAll('[data-c4p-best="included"]')).toHaveLength(4);
+    expect(screen.getByTestId('c4p-dealer-hand').querySelectorAll('[data-c4p-best="excluded"]')).toHaveLength(1);
     expect(screen.queryByTestId('c4p-dealer-hidden')).not.toBeInTheDocument();
     expect(screen.getByTestId('c4p-result')).toHaveTextContent('ディーラーの勝ち');
     expect(screen.getByTestId('c4p-result')).toHaveTextContent('-100');
