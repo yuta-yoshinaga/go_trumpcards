@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, threecardrummyApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, ThreeCardRummyResponse } from '../types/card';
 import { ThreeCardRummyPage } from './ThreeCardRummyPage';
@@ -161,6 +162,36 @@ describe('ThreeCardRummyPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 200, 50));
+  });
+
+  it('shows the total and remaining chips and allows a bet within the bankroll, including zero low bonus', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, chips: 250 });
+    renderWithProviders(<ThreeCardRummyPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 250')).toBeInTheDocument());
+
+    fireEvent.change(screen.getByLabelText('アンテ'), { target: { value: '200' } });
+    expect(screen.getByTestId('tcr-bet-summary')).toHaveTextContent('合計: 200');
+    expect(screen.getByTestId('tcr-bet-summary')).toHaveTextContent('残りチップ: 50');
+    expect(screen.getByRole('button', { name: 'ベット' })).toHaveAttribute('aria-disabled', 'false');
+
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 200, 0));
+  });
+
+  it('blocks an over-budget combined bet and shows the shortfall', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, chips: 250 });
+    renderWithProviders(<ThreeCardRummyPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 250')).toBeInTheDocument());
+
+    fireEvent.change(screen.getByLabelText('アンテ'), { target: { value: '200' } });
+    fireEvent.change(screen.getByLabelText('ローボーナス'), { target: { value: '60' } });
+    expect(screen.getByTestId('tcr-bet-summary')).toHaveTextContent('合計: 260');
+    expect(screen.getByTestId('tcr-bet-summary')).toHaveTextContent('不足チップ: 10');
+    const betButton = screen.getByRole('button', { name: 'ベット' });
+    expect(betButton).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(betButton);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('bet', 200, 60);
   });
 
   // ── The player's score ────────────────────────────────────────────────────
