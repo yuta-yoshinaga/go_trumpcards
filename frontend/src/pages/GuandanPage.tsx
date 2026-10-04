@@ -1,4 +1,5 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Trans } from 'react-i18next';
 import { guandanApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -141,6 +142,22 @@ function GuandanPageContent() {
     // レベル札の扱いは局のレベル次第なので、state が来るまでは判定できない。
     return guandanEvaluate(picked, state?.level ?? GUANDAN_FALLBACK_LEVEL);
   }, [selected, state]);
+  const [selectionWasCleared, setSelectionWasCleared] = useState(false);
+  useEffect(() => {
+    setSelectionWasCleared((wasCleared) => {
+      if (selected.length > 0) return false;
+      return wasCleared;
+    });
+  }, [selected]);
+  useEffect(() => {
+    if (state?.phase !== undefined) setSelectionWasCleared(false);
+  }, [state?.phase]);
+  const handleToggle = (index: number) => {
+    const removingSelection = selected.includes(index) && selected.length === 1;
+    toggle(index);
+    if (removingSelection) setSelectionWasCleared(true);
+    else setSelectionWasCleared(false);
+  };
 
   if (!state)
     return <GameSkeleton gameKey="guandan" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 12 }} />;
@@ -163,6 +180,24 @@ function GuandanPageContent() {
   // **レベルは 2〜A。**数字のままでは J/Q/K/A が読めない。
   const levelLabel = (level: number): string => ({ 11: 'J', 12: 'Q', 13: 'K', 14: 'A' })[level] ?? String(level);
   const comboLabel = (kind: number): string => (COMBO_KEYS[kind] ? t(COMBO_KEYS[kind]) : '-');
+  const comboAnnouncement =
+    selected.length === 0
+      ? ''
+      : selectedCombo === null
+        ? t('invalidCombo')
+        : [
+            t('comboAnnouncement', {
+              preview: t('comboPreview'),
+              kind: comboLabel(selectedCombo.kind),
+              size: selectedCombo.size,
+            }),
+            state.lastCombo
+              ? t(guandanBeats(selectedCombo, state.lastCombo) ? 'comboBeatsTable' : 'comboDoesNotBeatTable')
+              : '',
+            guandanIsBomb(selectedCombo.kind) ? t('comboBeatsAll') : '',
+          ]
+            .filter(Boolean)
+            .join(t('listSeparator'));
 
   const handlePlay = () => {
     if (selected.length === 0) return;
@@ -335,6 +370,19 @@ function GuandanPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.guandan.footer} px-4 py-2.5`}>
+            <div
+              className="sr-only"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              data-testid="guandan-combo-live"
+            >
+              {isPlay && selected.length > 0
+                ? comboAnnouncement
+                : isPlay && selectionWasCleared
+                  ? t('comboSelectionCleared')
+                  : ''}
+            </div>
             <div className="mb-2" data-tutorial="guandan-hand">
               <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
               <div className="flex flex-wrap gap-1">
@@ -342,7 +390,7 @@ function GuandanPageContent() {
                   <button
                     key={`hand-${c.design}-${c.value}-${i}`}
                     type="button"
-                    onClick={() => (isPlay || isTribute) && toggle(i)}
+                    onClick={() => (isPlay || isTribute) && handleToggle(i)}
                     disabled={!isPlay && !isTribute}
                     aria-pressed={selected.includes(i)}
                     className={`rounded transition-all ${selected.includes(i) ? 'ring-2 ring-ds-info -translate-y-2' : ''} ${
@@ -355,17 +403,23 @@ function GuandanPageContent() {
                 ))}
               </div>
               {isPlay && selected.length > 0 && (
-                <div className="mt-2 text-center text-xs" data-testid="guandan-combo-preview">
+                <div className="mt-2 text-center text-xs" data-testid="guandan-combo-preview" aria-hidden="true">
                   {selectedCombo === null ? (
                     <span className="font-medium text-ds-warning" data-testid="guandan-combo-invalid">
                       {t('invalidCombo')}
                     </span>
                   ) : (
                     <span className="text-ds-text-muted">
-                      {t('comboPreview')}:{' '}
-                      <span className="font-medium text-ds-accent">
-                        {comboLabel(selectedCombo.kind)} ({selectedCombo.size})
-                      </span>
+                      <Trans
+                        i18nKey="comboPreviewAnnouncement"
+                        ns="guandan"
+                        values={{
+                          preview: t('comboPreview'),
+                          kind: comboLabel(selectedCombo.kind),
+                          size: selectedCombo.size,
+                        }}
+                        components={{ kind: <span className="font-medium text-ds-accent" /> }}
+                      />
                       {state.lastCombo && (
                         <span className="ml-1 font-medium" data-testid="guandan-combo-result">
                           {t(
