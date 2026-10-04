@@ -450,6 +450,7 @@ function OpenFaceChinesePageContent() {
                       )}
                     </div>
                   </div>
+                  {p.fantasyland && <p className="text-ds-text-primary text-xs mb-2">{t('fantasylandBenefit')}</p>}
                   <div className="flex flex-col gap-2">
                     {renderRow(
                       t('rows.front'),

@@ -43,6 +43,7 @@
   },
   "fouled": "Fouled (invalid arrangement)",
   "fantasyland": "Fantasyland reached!",
+  "fantasylandBenefit": "Qualify with a pair of queens or better, or three of a kind in the top row. You will place 13 cards next round.",
   "roundEndTitle": "Round over",
   "next": "Next round",
   "hint": {

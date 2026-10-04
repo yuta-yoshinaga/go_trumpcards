@@ -130,6 +130,19 @@ describe('OpenFaceChinesePage', () => {
     await waitFor(() => expect(screen.getByTestId('player-0')).toBeInTheDocument());
     expect(screen.getByTestId('player-1')).toBeInTheDocument();
     expect(screen.getByText(/ラウンド: 1/)).toBeInTheDocument();
+    expect(screen.queryByText(/次のラウンドは13枚/)).not.toBeInTheDocument();
+  });
+
+  it('explains Fantasyland qualification and the next round deal', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [makePlayer({ fantasyland: true }), makePlayer({ id: 1, isHuman: false })],
+      }),
+    );
+    renderWithProviders(<OpenFaceChinesePage />);
+    expect(
+      await screen.findByText('トップでクイーン以上のペアまたはスリーカードを作ると、次のラウンドは13枚で配置します。'),
+    ).toBeInTheDocument();
   });
 
   it('shows every player total during placing and refreshes scores with game state', async () => {
