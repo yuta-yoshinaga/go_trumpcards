@@ -127,6 +127,15 @@ afterEach(() => {
 });
 
 describe('PinochlePage', () => {
+  it('announces trump suit on hand cards while keeping other card labels unchanged', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<PinochlePage />);
+
+    await waitFor(() => expect(screen.getByRole('button', { name: /♠ A/ })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /♠ A/ })).toHaveAccessibleName(/切り札/);
+    expect(screen.getByRole('button', { name: '♥ J' })).toHaveAccessibleName('♥ J');
+  });
+
   it('shows bid, meld score, and server trick points separately during play', async () => {
     mockExec.mockResolvedValue({
       ...playPhaseState,
@@ -446,18 +455,18 @@ describe('PinochlePage', () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<PinochlePage />);
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: '♠ A' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /♠ A/ })).toBeInTheDocument();
     });
   });
 
   it('plays card when card button is clicked in play phase', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<PinochlePage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '♠ A' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /♠ A/ })).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
-    fireEvent.click(screen.getByRole('button', { name: '♠ A' }));
+    fireEvent.click(screen.getByRole('button', { name: /♠ A/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
   });
 
