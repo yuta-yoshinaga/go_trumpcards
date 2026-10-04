@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { teenPattiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardImage } from '../components/CardImage';
+import { CardBack, CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -423,8 +423,17 @@ function TeenPattiPageContent() {
                 dataTutorialPrefix="teenpatti"
               />
             ) : (
-              <div className="text-ds-text-muted text-sm mb-2" data-tutorial="teenpatti-player-hand">
-                {t('handLabel')} — {t('badge.blind')}
+              <div className="mb-2" data-tutorial="teenpatti-player-hand">
+                <div className="text-ds-text-muted text-sm">
+                  {t('handLabel')} — {t('badge.blind')}
+                </div>
+                {humanPlayer && !humanPlayer.seen && !state.isShowdown && humanPlayer.cardCount > 0 && (
+                  <fieldset aria-label={t('blindHandDescription')} className="border-0 p-0 m-0 min-w-0 flex gap-2 mt-2">
+                    {Array.from({ length: humanPlayer.cardCount }, (_, i) => (
+                      <CardBack key={i} width={cardWidth} />
+                    ))}
+                  </fieldset>
+                )}
               </div>
             )}
 

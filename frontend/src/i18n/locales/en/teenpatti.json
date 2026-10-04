@@ -23,6 +23,7 @@
   "roundBet": "Bet: {{amount}}",
   "cards": "{{count}} cards",
   "handLabel": "Your hand",
+  "blindHandDescription": "Your hand while blind. The cards are face down.",
   "currentTurn": "Current turn: {{name}}",
   "playersTitle": "Players",
   "dealerBadge": "Dealer",
