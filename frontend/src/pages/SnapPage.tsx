@@ -318,6 +318,7 @@ function SnapPageContent() {
                       type: 'select',
                       id: 'snap-players',
                       label: t('actions.players'),
+                      description: t('actions.nextGameNote'),
                       value: String(playerCnt),
                       options: [2, 3, 4].map((n) => ({ value: String(n), label: String(n) })),
                       onSelect: (v: string) => setPlayerCnt(Number(v)),
@@ -331,6 +332,7 @@ function SnapPageContent() {
                       // 何が変わるのか分からないので、目安の秒数まで出す。
                       // 値 (0/1/2) と挙動は変えていない。
                       tooltip: t('actions.difficultyTip'),
+                      description: t('actions.nextGameNote'),
                       value: String(difficulty),
                       options: [
                         { value: '0', label: t('actions.easyHint') },
