@@ -16,6 +16,7 @@
   "columnCardCount_other": "{{count}} cards",
   "columnSource": "Source",
   "columnDestination": "Destination",
+  "illegalDestination": "Choose an empty column or one topped by a card one rank higher",
   "selectSource": "Pick a card to move (a column top, or a same-suit descending run). Double-click to auto-move it to the best column",
   "selectDestination": "Pick a destination column",
   "noAutoMove": "No column available to move to",
