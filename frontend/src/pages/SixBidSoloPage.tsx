@@ -352,17 +352,24 @@ function SixBidSoloPageContent() {
                     key={`hand-${c.design}-${c.value}-${i}`}
                     type="button"
                     data-hint-action="play"
-                    aria-pressed={selected === i}
-                    onClick={() => setSelected(i)}
-                    disabled={loading || (isPlay && !canPlay(i))}
-                    className={`rounded ${selected === i ? 'ring-2 ring-ds-accent' : ''} ${
-                      isPlay && !canPlay(i) ? 'opacity-40' : ''
+                    aria-pressed={isHumanPlay && selected === i}
+                    aria-disabled={!isHumanPlay || !canPlay(i) || undefined}
+                    aria-describedby={!isHumanPlay || !canPlay(i) ? 'sixbidsolo-hand-selection-unavailable' : undefined}
+                    onClick={() => {
+                      if (isHumanPlay && canPlay(i)) setSelected(i);
+                    }}
+                    disabled={loading}
+                    className={`rounded ${isHumanPlay && selected === i ? 'ring-2 ring-ds-accent' : ''} ${
+                      isHumanPlay && !canPlay(i) ? 'opacity-40' : ''
                     }`}
                   >
                     <CardImage card={c} width={cardWidth} />
                   </button>
                 ))}
               </div>
+              <span id="sixbidsolo-hand-selection-unavailable" className="sr-only">
+                {t('handSelectionUnavailable')}
+              </span>
             </div>
 
             <ErrorAlert message={error} onRetry={retry} />

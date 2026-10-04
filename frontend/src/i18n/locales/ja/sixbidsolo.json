@@ -14,6 +14,7 @@
   "bidHistoryEmpty": "まだ入札はありません",
   "hiddenHand": "非公開 {{count}}枚",
   "yourHand": "あなたの手札",
+  "handSelectionUnavailable": "自分の手番に、出せる札だけ選べます。",
   "trick": "場",
   "points": "点 {{n}}",
   "tricksWon": "トリック {{n}}",
