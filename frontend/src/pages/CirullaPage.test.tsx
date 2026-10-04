@@ -41,6 +41,16 @@ describe('CirullaPage', () => {
     );
   });
 
+  it('renders CPU difficulty options with localized labels', async () => {
+    renderWithProviders(<CirullaPage />);
+    expect(await screen.findByRole('option', { name: 'かんたん' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'ふつう' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'むずかしい' })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: 'Easy' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: 'Normal' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: 'Hard' })).not.toBeInTheDocument();
+  });
+
   it('shows the round and the stock', async () => {
     renderWithProviders(<CirullaPage />);
     expect(await screen.findByText('ラウンド 1（51 点勝負）')).toBeInTheDocument();
