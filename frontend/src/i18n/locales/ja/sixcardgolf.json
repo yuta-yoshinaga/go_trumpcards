@@ -15,6 +15,7 @@
     "cpu": "CPU{{id}}",
     "faceDown": "伏せ札",
     "finalTurn": "最終ターン",
+    "currentTurn": "現在の手番: {{name}}",
     "columnScore": "{{score}}pt",
     "columnScoreUncertain": "{{score}}+? pt",
     "columnScorePair": "0pt (ペア)"
@@ -44,7 +45,7 @@
   },
   "message": {
     "cpuTurn": "CPUのターンです",
-    "finalTurnTriggered": "プレイヤー{{id}}が全カードを公開！最終ターンです"
+    "finalTurnTriggered": "{{player}}が全カードを公開！最終ターンです"
   },
   "result": {
     "humanWin": "ゲーム終了！ あなたの勝ち！",
