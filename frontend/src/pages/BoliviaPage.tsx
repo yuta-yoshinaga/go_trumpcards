@@ -128,33 +128,34 @@ function BoliviaPageContent() {
   const isGameEnd = state?.phase === BoliviaPhase.GAME_END || !!state?.gameEndFlag;
 
   const drawDiscardReason = useMemo(() => {
-    if (!isDrawPhase) return '';
+    if (!state || !isDrawPhase || !humanPlayer) return '';
     const n = selectedCardIndices.length;
     if (n > 2) return t('drawDiscardReason.tooMany');
     if (n === 2) {
-      if (!state.discardTop) return t('drawDiscardReason.noTop');
+      const discardTop = state.discardTop;
+      if (!discardTop) return t('drawDiscardReason.noTop');
       if (
-        state.discardTop.design === 'JOKER' ||
-        state.discardTop.value === 2 ||
-        (state.discardTop.value === 3 && (state.discardTop.design === 'SPADE' || state.discardTop.design === 'CLOVER'))
+        discardTop.design === 'JOKER' ||
+        discardTop.value === 2 ||
+        (discardTop.value === 3 && (discardTop.design === 'SPADE' || discardTop.design === 'CLOVER'))
       ) {
         return t('drawDiscardReason.unusableTop');
       }
-      const selectedCards = selectedCardIndices.map((idx) => humanPlayer?.cards[idx]);
-      if (selectedCards.some((card) => !card || card.design === 'JOKER' || card.value === 2)) {
+      const selectedCards = selectedCardIndices.map((idx) => humanPlayer.cards[idx]);
+      if (selectedCards.some((card) => card.design === 'JOKER' || card.value === 2)) {
         return t(state.isFrozen ? 'drawDiscardReason.frozenWild' : 'drawDiscardReason.wild');
       }
-      if (selectedCards.some((card) => card?.value !== state.discardTop?.value)) {
+      if (selectedCards.some((card) => card.value !== discardTop.value)) {
         return t('drawDiscardReason.rankMismatch');
       }
       return t('drawDiscardReason.validPair');
     }
     // Frozen takes priority while the player is still picking — the wildcard restriction
     // is the load-bearing rule players forget; surface it whether they've picked 0 or 1 cards.
-    if (state?.isFrozen) return t('drawDiscardReason.frozen');
+    if (state.isFrozen) return t('drawDiscardReason.frozen');
     if (n === 1) return t('drawDiscardReason.selectOneMore');
     return t('drawDiscardReason.selectTwo');
-  }, [isDrawPhase, selectedCardIndices, humanPlayer, state?.discardTop, state?.isFrozen, t]);
+  }, [isDrawPhase, selectedCardIndices, humanPlayer, state, t]);
   const canTakeDiscard = drawDiscardReason === t('drawDiscardReason.validPair');
 
   // Meld phase: surface the initial-meld minimum (by team score band) and the

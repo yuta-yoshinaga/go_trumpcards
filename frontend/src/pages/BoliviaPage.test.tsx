@@ -302,6 +302,67 @@ describe('BoliviaPage', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 
+  it('explains why a pair cannot take an empty or unusable discard pile', async () => {
+    const handCards = () =>
+      screen.getAllByRole('button', { pressed: false }).filter((button) => button.hasAttribute('aria-pressed'));
+
+    mockExec.mockResolvedValue(makeBoliviaState({ discardTop: null }));
+    const emptyPile = renderWithProviders(<BoliviaPage />);
+    await screen.findByRole('button', { name: '捨て札を取る' });
+    fireEvent.click(handCards()[0]);
+    fireEvent.click(handCards()[1]);
+    expect(screen.getByTestId('sa-draw-discard-reason')).toHaveTextContent('捨て札のトップがないため取得できません');
+
+    emptyPile.unmount();
+    mockExec.mockResolvedValue(makeBoliviaState({ discardTop: { design: 'SPADE', value: 2 } }));
+    renderWithProviders(<BoliviaPage />);
+    await screen.findByRole('button', { name: '捨て札を取る' });
+    fireEvent.click(handCards()[0]);
+    fireEvent.click(handCards()[1]);
+    expect(screen.getByTestId('sa-draw-discard-reason')).toHaveTextContent(
+      'トップがワイルドカードまたは黒3のため取得できません',
+    );
+  });
+
+  it.each([
+    [{ design: 'JOKER' as const, value: 0 }, 'joker top'],
+    [{ design: 'CLOVER' as const, value: 3 }, 'black three top'],
+  ])('explains why a pair cannot take a discard pile with a %s', async (discardTop, _caseName) => {
+    mockExec.mockResolvedValue(makeBoliviaState({ discardTop }));
+    renderWithProviders(<BoliviaPage />);
+    await screen.findByRole('button', { name: '捨て札を取る' });
+    const handCards = screen
+      .getAllByRole('button', { pressed: false })
+      .filter((button) => button.hasAttribute('aria-pressed'));
+    fireEvent.click(handCards[0]);
+    fireEvent.click(handCards[1]);
+    expect(screen.getByTestId('sa-draw-discard-reason')).toHaveTextContent(
+      'トップがワイルドカードまたは黒3のため取得できません',
+    );
+  });
+
+  it('explains that a wild pair cannot take an unfrozen discard pile', async () => {
+    const base = makeBoliviaState({ discardTop: { design: 'SPADE', value: 7 } });
+    const human = {
+      ...base.players[0],
+      cards: [
+        { design: 'JOKER' as const, value: 0 },
+        { design: 'SPADE' as const, value: 7 },
+      ],
+    };
+    mockExec.mockResolvedValue(makeBoliviaState({ ...base, players: [human, ...base.players.slice(1)] }));
+    renderWithProviders(<BoliviaPage />);
+    await screen.findByRole('button', { name: '捨て札を取る' });
+    const handCards = screen
+      .getAllByRole('button', { pressed: false })
+      .filter((button) => button.hasAttribute('aria-pressed'));
+    fireEvent.click(handCards[0]);
+    fireEvent.click(handCards[1]);
+    expect(screen.getByTestId('sa-draw-discard-reason')).toHaveTextContent(
+      'ワイルドカードは使えません。ナチュラルカードを2枚選択してください',
+    );
+  });
+
   it('blocks wild cards in a frozen pair and explains the frozen restriction', async () => {
     const base = makeBoliviaState({ isFrozen: true, discardTop: { design: 'SPADE', value: 7 } });
     const human = {
