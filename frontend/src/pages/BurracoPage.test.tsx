@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { burracoApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BurracoPlayerData, BurracoResponse } from '../types/card';
 import { BurracoPage } from './BurracoPage';
@@ -201,6 +202,49 @@ describe('BurracoPage', () => {
     renderWithProviders(<BurracoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '捨てる' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: '上がる' })).toBeInTheDocument();
+  });
+
+  it('explains unmet going-out requirements and prevents dispatch', async () => {
+    mockExec.mockResolvedValue({
+      ...discardPhaseState,
+      players: [{ ...basePlayers[0], hasBurraco: false, tookPozzetto: false }, basePlayers[1]],
+    });
+    renderWithProviders(<BurracoPage />);
+    const goOutButton = await screen.findByRole('button', { name: '上がる' });
+    const reason = screen.getByTestId('bu-go-out-reason');
+
+    expect(reason).toHaveTextContent('上がるには次が必要です: ポゼットの獲得、ブラーコの完成');
+    expect(goOutButton).toHaveAttribute('aria-disabled', 'true');
+    expect(goOutButton).toHaveAttribute('aria-describedby', reason.id);
+    fireEvent.click(goOutButton);
+    await flushPendingDispatch();
+    expect(mockExec).toHaveBeenCalledTimes(1);
+    expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.anything());
+  });
+
+  it.each([
+    [{ ...basePlayers[0], hasBurraco: true, tookPozzetto: false }, '上がるには次が必要です: ポゼットの獲得'],
+    [{ ...basePlayers[0], hasBurraco: false, tookPozzetto: true }, '上がるには次が必要です: ブラーコの完成'],
+  ])('shows only the unmet going-out requirement', async (humanPlayer, reasonText) => {
+    mockExec.mockResolvedValue({ ...discardPhaseState, players: [humanPlayer, basePlayers[1]] });
+    renderWithProviders(<BurracoPage />);
+    const goOutButton = await screen.findByRole('button', { name: '上がる' });
+
+    expect(screen.getByTestId('bu-go-out-reason')).toHaveTextContent(reasonText);
+    expect(goOutButton).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('allows going out when the pozzetto is taken and a burraco is complete', async () => {
+    mockExec.mockResolvedValue({
+      ...discardPhaseState,
+      players: [{ ...basePlayers[0], hasBurraco: true, tookPozzetto: true }, basePlayers[1]],
+    });
+    renderWithProviders(<BurracoPage />);
+    const goOutButton = await screen.findByRole('button', { name: '上がる' });
+
+    expect(goOutButton).not.toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(goOutButton);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('goout'));
   });
 
   it('shows next round button at round end', async () => {

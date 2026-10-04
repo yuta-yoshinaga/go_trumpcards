@@ -43,6 +43,9 @@
   "skipMeldButton": "Skip",
   "discardButton": "Discard",
   "goOutButton": "Go out",
+  "goOutReason": "To go out, you need to {{requirements}}.",
+  "goOutRequirementPozzetto": "take the pozzetto",
+  "goOutRequirementBurraco": "complete a Burraco",
   "nextRound": "Next round",
   "selectPair": "Select a pair (2 natural cards matching the top discard)",
   "drawDiscardReason": {
