@@ -20,6 +20,7 @@
   "trickResult_one": "{{name}} won the trick, taking {{points}} penalty point, and will lead next.",
   "trickResult_other": "{{name}} won the trick, taking {{points}} penalty points, and will lead next.",
   "heartsBroken": "Hearts Broken",
+  "heartsBrokenAnnouncement": "Hearts have been broken.",
   "heartsNotBroken": "Hearts Not Broken",
   "passDirection": {
     "left": "Pass Direction: Left",
