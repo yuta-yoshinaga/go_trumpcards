@@ -82,6 +82,26 @@ describe('ManillePage', () => {
     });
   });
 
+  it('highlights trump cards in the human hand and announces them accessibly', async () => {
+    mockExec.mockResolvedValue(makeManilleState({ trumpSuit: 3 }));
+    renderWithProviders(<ManillePage />);
+
+    const trumpCard = await screen.findByRole('button', { name: '♥ Q (切り札: ♥)' });
+    expect(trumpCard).toHaveAttribute('data-trump', 'true');
+    expect(trumpCard).toHaveAttribute('title', '切り札: ♥');
+    expect(screen.getByRole('button', { name: '♠ A' })).not.toHaveAttribute('data-trump');
+  });
+
+  it('renders the game state when no human hand is present', async () => {
+    mockExec.mockResolvedValue(
+      makeManilleState({ players: playPhaseState.players.map((player) => ({ ...player, isHuman: false })) }),
+    );
+    renderWithProviders(<ManillePage />);
+
+    expect(await screen.findByText('切り札: ♦')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /切り札/ })).not.toBeInTheDocument();
+  });
+
   it('selecting a card then playing dispatches play', async () => {
     renderWithProviders(<ManillePage />);
     const card = await screen.findByAltText('♥ Q');
