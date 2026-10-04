@@ -29,6 +29,7 @@
     "other": "{{name}}'s turn."
   },
   "playersTitle": "Players",
+  "dealerBadge": "Dealer",
   "badge": {
     "blind": "Blind",
     "seen": "Seen",
