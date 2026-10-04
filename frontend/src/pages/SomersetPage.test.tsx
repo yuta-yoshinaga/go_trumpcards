@@ -82,13 +82,25 @@ describe('SomersetPage', () => {
 
   it('opens the action log during play and disables game shortcuts while it is open', async () => {
     mockExec.mockResolvedValue(playingState);
+    mockActionLog.mockResolvedValue({
+      entries: [
+        {
+          turnNumber: 1,
+          playerIdx: 0,
+          actionType: 'move',
+          detail: '5 を移動しました',
+          cards: [],
+        },
+      ],
+    });
     renderWithProviders(<SomersetPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const logButton = screen.getByRole('button', { name: '棋譜を見る' });
     fireEvent.click(logButton);
     await waitFor(() => expect(mockActionLog).toHaveBeenCalled());
-    expect(await screen.findByRole('region', { name: '棋譜' })).toBeInTheDocument();
+    const actionLog = await screen.findByRole('region', { name: '棋譜' });
+    await waitFor(() => expect(actionLog).toHaveTextContent('5 を移動しました'));
 
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'h' });
