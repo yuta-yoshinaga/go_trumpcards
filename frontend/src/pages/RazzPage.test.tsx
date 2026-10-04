@@ -1061,7 +1061,7 @@ describe('RazzPage', () => {
       await screen.findByTestId('hud-stats');
       for (const [abbreviation, description] of [
         ['VPIP', 'VPIP（ボランタリー・プット・イン・ポット）: 自発的にポットに参加した割合'],
-        ['PFR', 'PFR（プリフロップレイズ）: プリフロップでレイズした割合'],
+        ['PFR', 'PFR（プリフロップレイズ）: 最初のラウンドでレイズした割合'],
         ['3Bet', '3Bet（スリーベット）: 相手のレイズに対して再レイズした割合'],
         ['AF', 'AF（アグレッションファクター）: ベット・レイズのコールに対する比率'],
       ]) {
@@ -1087,7 +1087,7 @@ describe('RazzPage', () => {
         await screen.findByTestId('hud-stats');
         for (const [abbreviation, description] of [
           ['VPIP', 'VPIP (Voluntarily Put In Pot): % of hands where player voluntarily put chips in the pot'],
-          ['PFR', 'PFR (Pre-Flop Raise): % of hands where player raised pre-flop'],
+          ['PFR', 'PFR: % of hands where the player raised in the first betting round (third street)'],
           ['3Bet', "3Bet: % of hands where player re-raised an opponent's raise"],
           ['AF', 'AF (Aggression Factor): ratio of aggressive actions (bet/raise) to passive actions (call)'],
         ]) {

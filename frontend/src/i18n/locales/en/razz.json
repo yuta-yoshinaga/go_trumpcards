@@ -38,7 +38,7 @@
     "vpip": "VPIP",
     "vpipTooltip": "VPIP (Voluntarily Put In Pot): % of hands where player voluntarily put chips in the pot",
     "pfr": "PFR",
-    "pfrTooltip": "PFR (Pre-Flop Raise): % of hands where player raised pre-flop",
+    "pfrTooltip": "PFR: % of hands where the player raised in the first betting round (third street)",
     "threeBet": "3Bet",
     "threeBetTooltip": "3Bet: % of hands where player re-raised an opponent's raise",
     "af": "AF",
