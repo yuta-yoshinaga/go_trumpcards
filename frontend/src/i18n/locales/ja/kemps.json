@@ -31,6 +31,7 @@
   "declineButton": "宣言しない",
   "nextRound": "次のラウンドへ",
   "roundResultMessage": "{{team}}のラウンド勝利：{{result}}",
+  "roundResultNoWinner": "ラウンド結果：{{result}}",
   "roundResults": {
     "0": "結果なし",
     "1": "ケムプス成功",

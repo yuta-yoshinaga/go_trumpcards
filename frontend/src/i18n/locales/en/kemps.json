@@ -31,6 +31,7 @@
   "declineButton": "Decline",
   "nextRound": "Next round",
   "roundResultMessage": "{{team}} wins the round: {{result}}",
+  "roundResultNoWinner": "Round result: {{result}}",
   "roundResults": {
     "0": "No result",
     "1": "Kemps",
