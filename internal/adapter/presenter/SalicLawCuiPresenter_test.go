@@ -179,11 +179,14 @@ func TestSalicLawCuiPresenter_HintOutput(t *testing.T) {
 }
 
 func TestSalicLawCuiPresenter_ActionLogOutput(t *testing.T) {
-	t.Run("playing phase returns empty", func(t *testing.T) {
+	t.Run("playing phase returns log", func(t *testing.T) {
 		g := new(interfaces.MockSalicLawGame)
 		g.On("GetPhase").Return(domain.SalicLawPhasePlaying)
+		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "draw", DetailCode: "saliclaw.log.draw"},
+		})
 
-		assert.Contains(t, new(SalicLawCuiPresenter).ActionLogOutput(g), "棋譜はありません")
+		assert.Contains(t, new(SalicLawCuiPresenter).ActionLogOutput(g), "draw")
 	})
 
 	t.Run("game over returns log", func(t *testing.T) {
