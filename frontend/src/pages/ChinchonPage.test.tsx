@@ -571,7 +571,7 @@ describe('ChinchonPage', () => {
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.chinchon).toHaveBeenCalledTimes(1));
-    expect(screen.getByText('棋譜')).toBeInTheDocument();
+    expect(await screen.findByText('棋譜')).toBeInTheDocument();
   });
 
   // Hand with a ♠5-6-7 run (idx 0-2) plus ♥5, ♥6 deadwood (idx 3-4).

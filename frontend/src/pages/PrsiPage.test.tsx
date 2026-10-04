@@ -519,7 +519,7 @@ describe('PrsiPage', () => {
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.prsi).toHaveBeenCalledTimes(1));
-    expect(screen.getByText('棋譜')).toBeInTheDocument();
+    expect(await screen.findByText('棋譜')).toBeInTheDocument();
   });
 
   it('renders tutorial button', async () => {
