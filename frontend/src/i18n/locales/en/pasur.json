@@ -26,6 +26,8 @@
     "reset": "Reset",
     "giveUp": "Give up",
     "selectAria": "Select {{card}}",
+    "captureAvailable": "Capture available",
+    "noCapture": "Can be laid down",
     "takeSoor": "soor",
     "takeSoorAria": "this choice empties the table, doubling the cards you take",
     "scoreBreakdown": "Base {{normal}} + soor bonus {{bonus}} = {{total}} points"
