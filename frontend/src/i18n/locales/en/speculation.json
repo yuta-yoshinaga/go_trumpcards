@@ -33,7 +33,7 @@
   "result.void": "No trump appeared. The stakes are returned",
   "result.chipChange": "{{name}}: chip change {{change}}",
   "result.trade": "{{buyer}} bought from {{seller}} for {{price}}",
-  "result.finalChips": "Final chips: {{chips}}",
+  "result.finalStanding": "{{rank}}: {{name}} — final chips {{chips}}",
   "button.flip": "Turn up",
   "button.accept": "Accept",
   "button.decline": "Decline",
