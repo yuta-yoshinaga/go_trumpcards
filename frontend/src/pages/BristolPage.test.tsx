@@ -64,6 +64,18 @@ describe('BristolPage', () => {
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
 
+  it('includes the remaining stock count in the button name and updates it after drawing', async () => {
+    mockExec.mockImplementation(async (command) =>
+      command === 'draw' ? { ...playingState, stockCount: 25, moveCount: 1 } : playingState,
+    );
+    renderWithProviders(<BristolPage />);
+    const stockButton = await screen.findByRole('button', { name: '山札（残り28枚）' });
+
+    fireEvent.click(stockButton);
+
+    await waitFor(() => expect(screen.getByRole('button', { name: '山札（残り25枚）' })).toBeInTheDocument());
+  });
+
   it('keeps a live region mounted and announces the current move count', async () => {
     mockExec.mockImplementation(async (command) =>
       command === 'draw' ? { ...playingState, moveCount: 1 } : playingState,
@@ -74,7 +86,7 @@ describe('BristolPage', () => {
     expect(liveRegion).toHaveAttribute('aria-live', 'polite');
     expect(liveRegion).toHaveTextContent('手数: 0');
 
-    fireEvent.click(screen.getByRole('button', { name: '山札' }));
+    fireEvent.click(screen.getByRole('button', { name: /^山札/ }));
     await waitFor(() => expect(liveRegion).toHaveTextContent('手数: 1'));
   });
 
@@ -88,11 +100,11 @@ describe('BristolPage', () => {
     );
     renderWithProviders(<BristolPage />);
     const liveRegion = await screen.findByTestId('br-operation-live');
-    fireEvent.click(screen.getByRole('button', { name: '山札' }));
+    fireEvent.click(screen.getByRole('button', { name: /^山札/ }));
     await waitFor(() => expect(liveRegion).toHaveTextContent('山札から配りました'));
     expect(liveRegion).toHaveTextContent('山札から配りました');
 
-    fireEvent.click(screen.getByRole('button', { name: '山札' }));
+    fireEvent.click(screen.getByRole('button', { name: /^山札/ }));
     await waitFor(() => expect(liveRegion).toBeEmptyDOMElement());
     await waitFor(() => expect(liveRegion).toHaveTextContent('山札から配りました'));
 
@@ -196,7 +208,7 @@ describe('BristolPage', () => {
   it('clicks stock to fire draw command', async () => {
     renderWithProviders(<BristolPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    screen.getByRole('button', { name: '山札' }).click();
+    screen.getByRole('button', { name: /^山札/ }).click();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 
