@@ -54,8 +54,6 @@ export function shengjiIsTrump(card: Card, level: number, trumpSuit: number): bo
   );
 }
 
-const isTrump = shengjiIsTrump;
-
 function strength(card: Card, level: number, trumpSuit: number): number {
   if (isJoker(card)) return (card.value >= 2 ? TIER_RED_JOKER : TIER_BLACK_JOKER) * 100;
   if (isLevelCard(card, level)) {
@@ -64,7 +62,7 @@ function strength(card: Card, level: number, trumpSuit: number): number {
       100
     );
   }
-  return (isTrump(card, level, trumpSuit) ? TIER_TRUMP_SUIT * 100 : TIER_PLAIN * 100) + naturalRank(card);
+  return (shengjiIsTrump(card, level, trumpSuit) ? TIER_TRUMP_SUIT * 100 : TIER_PLAIN * 100) + naturalRank(card);
 }
 
 function sequencePosition(card: Card, level: number, trumpSuit: number): number {
@@ -107,13 +105,13 @@ export function shengjiEvaluate(cards: readonly Card[], level: number, trumpSuit
   if (cards.length === 0) return null;
   const firstCard = cards[0];
   if (firstCard === undefined) return null;
-  const firstTrump = isTrump(firstCard, level, trumpSuit);
+  const firstTrump = shengjiIsTrump(firstCard, level, trumpSuit);
   const firstSuit = firstTrump ? NO_TRUMP : firstCard.design;
   if (
     cards.some(
       (card) =>
-        isTrump(card, level, trumpSuit) !== firstTrump ||
-        (isTrump(card, level, trumpSuit) ? NO_TRUMP : card.design) !== firstSuit,
+        shengjiIsTrump(card, level, trumpSuit) !== firstTrump ||
+        (shengjiIsTrump(card, level, trumpSuit) ? NO_TRUMP : card.design) !== firstSuit,
     )
   ) {
     return null;

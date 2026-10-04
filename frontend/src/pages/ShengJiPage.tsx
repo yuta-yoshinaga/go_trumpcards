@@ -136,9 +136,11 @@ function ShengJiPageContent() {
   const humanCards = state?.players.find((player) => player.isHuman)?.cards ?? [];
   const ledCombo = state?.phase === ShengJiPhase.PLAY && state.trick.length > 0 ? state.leadCombo : null;
   const ledSuit = ledCombo ? (ledCombo.trump ? 0 : ledCombo.suit) : -1;
+  const level = state?.level ?? 2;
+  const trumpSuit = state?.trumpSuit ?? 0;
   const belongsToLedSuit = (card: Card): boolean => {
-    if (ledSuit === 0) return shengjiIsTrump(card, state!.level, state!.trumpSuit);
-    return !shengjiIsTrump(card, state!.level, state!.trumpSuit) && card.design === suitName(ledSuit);
+    if (ledSuit === 0) return shengjiIsTrump(card, level, trumpSuit);
+    return !shengjiIsTrump(card, level, trumpSuit) && card.design === suitName(ledSuit);
   };
 
   const trickAnnouncement = !state
