@@ -110,5 +110,5 @@ func (p *SomersetWebPresenter) HintOutput(bc interfaces.SomersetGame) string {
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *SomersetWebPresenter) ActionLogOutput(bc interfaces.SomersetGame) string {
-	return actionLogOutputJSON(bc)
+	return actionLogToJSON(bc.GetActionLog())
 }
