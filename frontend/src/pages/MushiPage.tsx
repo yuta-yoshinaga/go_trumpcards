@@ -199,28 +199,29 @@ function MushiPageContent() {
                 {state.field.map((card, i) => {
                   const canTake = choosing && isHumanTurn && selectable.has(i);
                   return (
-                    <button
-                      key={`field-${i.toString()}`}
-                      type="button"
-                      data-hint-action="select"
-                      // Kept focusable while it cannot act so the reason is
-                      // announced rather than the control leaving the tab order.
-                      aria-disabled={!canTake}
-                      aria-describedby={choosing ? `mushi-field-choice-${i.toString()}` : undefined}
-                      onClick={() => canTake && game.handleSelect(i)}
-                      className={[
-                        'rounded transition-transform',
-                        canTake ? 'ring-2 ring-ds-accent hover:-translate-y-1' : '',
-                        choosing && !canTake ? 'opacity-50' : '',
-                      ].join(' ')}
-                    >
-                      {renderCard(card, `field-c${i.toString()}`)}
+                    <div key={`field-${i.toString()}`}>
+                      <button
+                        type="button"
+                        data-hint-action="select"
+                        // Kept focusable while it cannot act so the reason is
+                        // announced rather than the control leaving the tab order.
+                        aria-disabled={!canTake}
+                        aria-describedby={choosing ? `mushi-field-choice-${i.toString()}` : undefined}
+                        onClick={() => canTake && game.handleSelect(i)}
+                        className={[
+                          'rounded transition-transform',
+                          canTake ? 'ring-2 ring-ds-accent hover:-translate-y-1' : '',
+                          choosing && !canTake ? 'opacity-50' : '',
+                        ].join(' ')}
+                      >
+                        {renderCard(card, `field-c${i.toString()}`)}
+                      </button>
                       {choosing && (
                         <span id={`mushi-field-choice-${i.toString()}`} className="sr-only">
                           {t(canTake ? 'fieldSelectable' : 'fieldNotSelectable')}
                         </span>
                       )}
-                    </button>
+                    </div>
                   );
                 })}
               </div>

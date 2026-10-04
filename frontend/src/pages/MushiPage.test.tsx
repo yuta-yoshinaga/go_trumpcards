@@ -159,6 +159,8 @@ describe('MushiPage', () => {
     for (const button of fieldButtons) expect(button).not.toBeDisabled();
     expect(fieldButtons[0]).toHaveAttribute('aria-disabled', 'false');
     expect(fieldButtons[1]).toHaveAttribute('aria-disabled', 'true');
+    expect(fieldButtons[0]).toHaveAccessibleName('♠ 3 1 カス');
+    expect(fieldButtons[1]).toHaveAccessibleName('♠ 2 5 短冊');
     expect(fieldButtons[0]).toHaveAccessibleDescription('この場札は選択できます');
     expect(fieldButtons[1]).toHaveAccessibleDescription('この場札は選択できません');
 
@@ -168,6 +170,9 @@ describe('MushiPage', () => {
     await waitFor(() =>
       expect(screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'play')[0]).toBeEnabled(),
     );
+    const restingFieldButtons = screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'select');
+    for (const button of restingFieldButtons) expect(button).not.toHaveAttribute('aria-describedby');
+    expect(document.querySelector('[id^="mushi-field-choice-"]')).not.toBeInTheDocument();
   });
 
   it('plays a hand card', async () => {
