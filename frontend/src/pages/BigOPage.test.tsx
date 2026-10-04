@@ -1671,6 +1671,7 @@ describe('BigOPage', () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<BigOPage />);
     await waitFor(() => expect(screen.queryByTestId('bigo-live-besthand')).not.toBeInTheDocument());
+    expect(screen.getByTestId('bigo-live-besthand-announcement')).toBeEmptyDOMElement();
     expect(screen.getByTestId('bigo-rule-badge')).toBeInTheDocument();
   });
 
