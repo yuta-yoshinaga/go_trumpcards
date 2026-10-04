@@ -450,6 +450,7 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
                   // **「賭けられているか」はサーバが決める。** 固定すると、
                   // チェックできる場面でチェックが出ず、逆も起きる。
                   hasOutstandingBet={state.toCall > 0}
+                  callAmountLabel={state.toCall > 0 ? t('callAmount', { amount: state.toCall }) : undefined}
                   loading={loading}
                   onCall={() => callApi('action', { action: 'call' })}
                   onRaise={() => callApi('action', { action: 'raise', amount: betAmount })}
