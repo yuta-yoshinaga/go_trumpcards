@@ -38,6 +38,11 @@
   },
   "settings": {
     "cpuDifficulty": "CPU難易度",
+    "difficulty": {
+      "easy": "簡単",
+      "normal": "普通",
+      "hard": "難しい"
+    },
     "initialLives": "初期ライフ",
     "cpuDifficultyHelp": "CPU がノックを検討する合計点。Easy {{easy}} / Normal {{normal}} / Hard {{hard}} — 数字が低いほど CPU は早く勝負に出ます"
   },

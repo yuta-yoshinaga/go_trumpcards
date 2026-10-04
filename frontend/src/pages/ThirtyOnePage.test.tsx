@@ -402,6 +402,44 @@ describe('ThirtyOnePage', () => {
 // #5623: 難易度セレクトは Easy/Normal/Hard としか言わず、何が変わるのか
 // (CPU がノックしてくる点数) は体験からしか学べなかった。数字はサーバーが
 // 運んでくるので、説明文に書き写さない。
+describe('ThirtyOnePage difficulty options', () => {
+  it('localizes the labels while preserving the difficulty values sent to reset', async () => {
+    renderWithProviders(<ThirtyOnePage />);
+    const difficulty = await screen.findByLabelText('CPU難易度');
+    expect(
+      Array.from((difficulty as HTMLSelectElement).options).map((option) => [option.textContent, option.value]),
+    ).toEqual([
+      ['簡単', '0'],
+      ['普通', '1'],
+      ['難しい', '2'],
+    ]);
+
+    fireEvent.change(difficulty, { target: { value: '2' } });
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenLastCalledWith('reset', undefined, { cpuDifficulty: 2, initialLives: 3 }),
+    );
+  });
+
+  it('keeps Easy, Normal, and Hard labels in English', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<ThirtyOnePage />);
+      const difficulty = await screen.findByLabelText('CPU Difficulty');
+      expect(
+        Array.from((difficulty as HTMLSelectElement).options).map((option) => [option.textContent, option.value]),
+      ).toEqual([
+        ['Easy', '0'],
+        ['Normal', '1'],
+        ['Hard', '2'],
+      ]);
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+});
+
 describe('ThirtyOnePage difficulty help', () => {
   it('explains the difficulty with the thresholds the server sent', async () => {
     mockExec.mockResolvedValue(
