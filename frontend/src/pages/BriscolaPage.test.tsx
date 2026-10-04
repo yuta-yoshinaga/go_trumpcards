@@ -318,6 +318,25 @@ describe('BriscolaPage', () => {
     renderWithProviders(<BriscolaPage />);
     const hint = await screen.findByTestId('briscola-hint');
     expect(hint).toHaveTextContent('切り札でリードして主導権を握りましょう');
+    expect(hint).toHaveTextContent('♦ J');
+    expect(hint).toHaveTextContent('[2]');
+  });
+
+  it('keeps the server hint reason when no recommended card is provided', async () => {
+    mockExec.mockResolvedValue(makeState({ hint: { reason: 'lead_trump' }, messageCode: 'briscola.hintRequested' }));
+    renderWithProviders(<BriscolaPage />);
+    const hint = await screen.findByTestId('briscola-hint');
+    expect(hint).toHaveTextContent('切り札でリードして主導権を握りましょう');
+    expect(hint).not.toHaveTextContent('推奨カード');
+  });
+
+  it('shows the recommended card name in English', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue(
+      makeState({ hint: { cardIndex: 2, reason: 'lead_trump' }, messageCode: 'briscola.hintRequested' }),
+    );
+    renderWithProviders(<BriscolaPage />);
+    expect(await screen.findByTestId('briscola-hint')).toHaveTextContent('Suggested card: [2] ♦ J');
   });
 
   // **ヒントの窓口は1つ (#4753)。**バナーとツールチップはどちらも同じ
