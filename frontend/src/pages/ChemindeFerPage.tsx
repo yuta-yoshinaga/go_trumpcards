@@ -298,8 +298,8 @@ function ChemindeFerPageContent() {
                     {/* **サーバ製の "PlayerN" をそのまま出さない。** ラベルは全部
                         翻訳されるのに CPU 名だけ英語が混ざっていた。 */}
                     {p.isHuman ? t('label.you') : t('label.cpu', { idx: p.id })}
-                    {p.isBanker && ' ★'}
-                    {p.isRepresentative && ' ◆'}
+                    {p.isBanker && <span aria-hidden="true"> ★</span>}
+                    {p.isRepresentative && <span aria-hidden="true"> ◆</span>}
                   </div>
                   <div className="text-ds-text-muted">
                     {t('label.chips')}: {p.chips}

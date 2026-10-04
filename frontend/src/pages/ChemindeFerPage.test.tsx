@@ -287,8 +287,10 @@ describe('ChemindeFerPage', () => {
     await waitFor(() => expect(screen.getByTestId('cdf-seat-0')).toBeInTheDocument());
     expect(screen.getByTestId('cdf-seat-0')).toHaveTextContent('★');
     expect(screen.getByTestId('cdf-seat-0')).toHaveAccessibleName('あなた 親');
+    expect(screen.getByTestId('cdf-seat-0').querySelector('span')).toHaveAttribute('aria-hidden', 'true');
     expect(screen.getByTestId('cdf-seat-1')).toHaveTextContent('◆');
     expect(screen.getByTestId('cdf-seat-1')).toHaveAccessibleName('CPU1 子側の代表');
+    expect(screen.getByTestId('cdf-seat-1').querySelector('span')).toHaveAttribute('aria-hidden', 'true');
     expect(screen.getByTestId('cdf-seat-1')).toHaveTextContent('950');
     expect(screen.getByTestId('cdf-seat-1')).toHaveTextContent('50');
   });
