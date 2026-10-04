@@ -124,8 +124,7 @@ func TestFourSeasonsWebPresenter_HintOutput(t *testing.T) {
 
 func TestFourSeasonsWebPresenter_ActionLogOutput(t *testing.T) {
 	g := new(interfaces.MockFourSeasonsGame)
-	// actionLogOutputJSON gates on the end flag.
-	g.On("GetGameEndFlag").Return(true)
+	g.On("GetGameEndFlag").Return(false)
 	g.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, ActionType: "draw", DetailCode: "fourseasons.log.draw"},
 	})
