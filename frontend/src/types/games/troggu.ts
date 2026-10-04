@@ -78,6 +78,8 @@ export interface TrogguResponse extends BaseGameResponse {
   dealerIdx: number;
   bidPlayerIdx: number;
   highestBid: number;
+  /** Seat of the current highest bidder, or -1 when nobody has bid. */
+  highestBidder: number;
   /** Declarer seat, or -1 while undecided or after a thrown-in deal. */
   declarerIdx: number;
   contract: number;

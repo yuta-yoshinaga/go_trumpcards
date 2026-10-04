@@ -5026,6 +5026,7 @@ const baseTrogguState: TrogguResponse = {
   dealerIdx: 0,
   bidPlayerIdx: 0,
   highestBid: 0,
+  highestBidder: -1,
   declarerIdx: -1,
   contract: 0,
   contractName: 'pass',

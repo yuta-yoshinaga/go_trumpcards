@@ -60655,6 +60655,9 @@ components:
         highestBid:
           type: integer
           description: "0=pass, 1=Trois, 2=Solo, 3=Piccolo, 4=Misere"
+        highestBidder:
+          type: integer
+          description: Seat of the current highest bidder, or -1 when nobody has bid.
         declarerIdx:
           type: integer
           description: Declaring seat, or -1 for a thrown-in deal.
