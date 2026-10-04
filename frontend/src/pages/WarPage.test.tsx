@@ -107,6 +107,20 @@ afterEach(() => {
 });
 
 describe('WarPage', () => {
+  it('shows the server final card totals and winner only after the game ends', async () => {
+    renderWithProviders(<WarPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    expect(screen.queryByTestId('war-final-result')).not.toBeInTheDocument();
+
+    mockExec.mockResolvedValueOnce(gameEndState);
+    fireEvent.click(screen.getByTestId('step-button'));
+    const result = await screen.findByTestId('war-final-result');
+    expect(result).toHaveTextContent('最終結果');
+    expect(result).toHaveTextContent('あなた: 52枚');
+    expect(result).toHaveTextContent('CPU: 0枚');
+    expect(result).toHaveTextContent('勝者: あなた');
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<WarPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

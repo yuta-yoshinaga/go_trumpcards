@@ -444,6 +444,24 @@ function WarPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+            {isGameEnd && (
+              <section
+                aria-label={t('result.title')}
+                data-testid="war-final-result"
+                className="mx-auto max-w-md rounded-lg border border-ds-border-subtle bg-ds-surface-elevated p-4 text-center text-ds-text-primary"
+              >
+                <h2 className="text-lg font-semibold">{t('result.title')}</h2>
+                <p className="mt-1 font-medium">
+                  {t('result.winner', {
+                    winner: state.winnerIdx === 0 ? tc('player.you') : tc('player.cpu', { id: 1 }),
+                  })}
+                </p>
+                <div className="mt-2 flex justify-center gap-6 tabular-nums">
+                  <span>{t('result.playerTotal', { count: human.totalCards })}</span>
+                  <span>{t('result.cpuTotal', { count: cpu.totalCards })}</span>
+                </div>
+              </section>
+            )}
             <LiveAnnouncement message={revealedCardsAnnouncement} testId="war-card-announcement" />
             <LiveAnnouncement message={roundLimitAnnouncement} testId="war-round-limit-announcement" />
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />

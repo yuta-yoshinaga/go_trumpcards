@@ -23,6 +23,12 @@
   },
   "listSeparator": "、",
   "cardsRevealed": "あなたのカードは{{playerCard}}{{separator}}CPUのカードは{{cpuCard}}",
+  "result": {
+    "title": "最終結果",
+    "winner": "勝者: {{winner}}",
+    "playerTotal": "あなた: {{count}}枚",
+    "cpuTotal": "CPU: {{count}}枚"
+  },
   "settings": {
     "maxRounds": "最大ラウンド数",
     "maxRoundsHelp": "戦争（引き分け）の連鎖で理論上ゲームが無限に続くのを防ぐための上限です。どちらかの手札が尽きるか、最大ラウンドに到達するとゲーム終了です。",
