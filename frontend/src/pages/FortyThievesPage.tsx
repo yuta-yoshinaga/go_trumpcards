@@ -36,7 +36,6 @@ import { cardAlt, suitSymbol } from '../utils/cardAlt';
 import { FORTYTHIEVES_HELP, parseFortythievesCommand } from '../utils/cli/commands/fortythievesCommands';
 import { formatFortythievesState } from '../utils/cli/formatters/fortythievesFormatter';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 /**
  * Suit glyph for a foundation pile, or `null` while it is empty.
@@ -167,6 +166,14 @@ function FortyThievesPageContent() {
   const ft = useResponsiveTableau(10, { maxColCards });
 
   const isPlayingForKbd = state?.phase === FortyThievesPhase.PLAYING;
+  const autoCompleteReady = !!state && state.phase === FortyThievesPhase.PLAYING && state.stockCount === 0;
+  const autoCompleteDisabled = loading || isAutoCompleting || !autoCompleteReady;
+  const showAutoCompleteNotReadyReason = !loading && !autoCompleteReady;
+  const autoCompleteNotReadyId = useId();
+  const handleAutoCompleteIfReady = useCallback(() => {
+    if (autoCompleteDisabled) return;
+    handleAutoComplete();
+  }, [autoCompleteDisabled, handleAutoComplete]);
 
   const dispatchMove = useCallback(
     (source: FortyThievesMoveZone, target: FortyThievesMoveZone) => {
@@ -193,11 +200,11 @@ function FortyThievesPageContent() {
     () => [
       { key: 'd', action: handleDraw, label: 'draw' },
       { key: 'h', action: handleHint, label: 'hint' },
-      { key: 'a', action: handleAutoComplete, label: 'autoComplete' },
+      { key: 'a', action: handleAutoCompleteIfReady, label: 'autoComplete' },
       { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
       { key: 'z', action: handleUndo, label: 'undo' },
     ],
-    [handleDraw, handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo],
+    [handleDraw, handleHint, handleAutoCompleteIfReady, confirmGiveUpAction, handleUndo],
   );
 
   useActionKeyboardNav({
@@ -211,8 +218,6 @@ function FortyThievesPageContent() {
   const isGameClear = state.phase === FortyThievesPhase.GAME_CLEAR;
   const isGameOver = state.phase === FortyThievesPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
-  const autoCompleteReady = state.stockCount === 0 && state.waste.length === 0 && isTableauAllFaceUp(state.tableau);
-
   // Resolve the hinted card + destination so the hint can also be announced to
   // screen readers (the visible hintAvailable row is a plain div, not a live
   // region). For a waste hint only the top card is movable; for a tableau hint
@@ -614,14 +619,18 @@ function FortyThievesPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
-                    onClick={handleAutoComplete}
-                    disabled={loading || isAutoCompleting || !autoCompleteReady}
+                    className={`${btnSuccess}${!autoCompleteDisabled ? ' animate-pulse ring-2 ring-ds-success' : ' opacity-50 cursor-not-allowed'}`}
+                    onClick={handleAutoCompleteIfReady}
+                    aria-disabled={autoCompleteDisabled}
+                    aria-describedby={showAutoCompleteNotReadyReason ? autoCompleteNotReadyId : undefined}
                     data-testid="autocomplete-button"
-                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
+                    title={showAutoCompleteNotReadyReason ? t('autoCompleteNotReady') : undefined}
                   >
                     {t('autoComplete')}
                   </button>
+                  <span id={autoCompleteNotReadyId} className="sr-only">
+                    {t('autoCompleteNotReady')}
+                  </span>
                   <button
                     type="button"
                     className={btnDanger}

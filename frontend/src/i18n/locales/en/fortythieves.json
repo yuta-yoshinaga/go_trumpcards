@@ -18,7 +18,7 @@
   "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",
   "autoComplete": "Auto Complete",
-  "autoCompleteNotReady": "Available when stock and waste are empty",
+  "autoCompleteNotReady": "Available once the stock is empty",
   "autoCompleteStarted": "Auto-complete started",
   "autoCompleteFinished": "Auto-complete finished",
   "undo": "Undo",
