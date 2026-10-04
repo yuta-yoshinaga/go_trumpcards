@@ -94,6 +94,7 @@ function FortressPageContent() {
   } = useGamePageSetup('fortress');
   const game = useFortressGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
+  const hintedCard = hint ? state?.tableau[hint.fromCol]?.[hint.cardIndex]?.card : null;
 
   const {
     hint: frontendHint,
@@ -448,10 +449,13 @@ function FortressPageContent() {
               role="status"
               aria-live="polite"
             >
-              {hint && (
+              {hint && hintedCard && (
                 <div className="text-ds-warning text-sm mb-2 mt-3">
-                  {t('hintAvailable')}: {formatHintZone(t, 'tableau', hint.fromCol)} →{' '}
-                  {formatHintZone(t, hint.toZone, hint.toCol)}
+                  {t('hintAnnouncement', {
+                    card: cardAlt(hintedCard),
+                    from: formatHintZone(t, 'tableau', hint.fromCol),
+                    to: formatHintZone(t, hint.toZone, hint.toCol),
+                  })}
                 </div>
               )}
             </div>
