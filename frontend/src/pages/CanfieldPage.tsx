@@ -265,6 +265,8 @@ function CanfieldPageContent() {
   const autoCompleteReady = canfieldAutoCompleteReady(state);
 
   const topWaste = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
+  const wasteDisplay = state.waste.slice(-3);
+  const wasteFan = Math.round(cardWidth * 0.24);
   const topReserve = state.reserve.length > 0 ? state.reserve[state.reserve.length - 1] : null;
 
   // Server hint (populated by the "hint" button; cleared on the next move since
@@ -416,17 +418,38 @@ function CanfieldPageContent() {
               </div>
 
               <div className="flex flex-col items-center">
-                <div style={{ width: cardWidth, height: cardHeight }}>
-                  {topWaste ? (
-                    <button
-                      type="button"
-                      draggable={isPlaying && !loading}
-                      onDragStart={dnd.handleDragStart({ zone: 'waste' })}
-                      onDragEnd={dnd.handleDragEnd}
-                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isHintFromWaste ? HINT_RING : ''} ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`}
-                    >
-                      <AnimatedCard card={topWaste} width={cardWidth} draggable={false} />
-                    </button>
+                <div
+                  className={wasteDisplay.length > 0 ? 'relative' : ''}
+                  style={{
+                    width: cardWidth + (wasteDisplay.length - 1) * wasteFan,
+                    height: cardHeight,
+                  }}
+                >
+                  {wasteDisplay.length > 0 ? (
+                    wasteDisplay.map((card, idx) => {
+                      const isTop = idx === wasteDisplay.length - 1;
+                      return (
+                        <div
+                          key={`waste-${idx.toString()}`}
+                          className="absolute top-0"
+                          style={{ left: idx * wasteFan }}
+                        >
+                          {isTop ? (
+                            <button
+                              type="button"
+                              draggable={isPlaying && !loading}
+                              onDragStart={dnd.handleDragStart({ zone: 'waste' })}
+                              onDragEnd={dnd.handleDragEnd}
+                              className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isHintFromWaste ? HINT_RING : ''} ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`}
+                            >
+                              <AnimatedCard card={card} width={cardWidth} draggable={false} />
+                            </button>
+                          ) : (
+                            <AnimatedCard card={card} width={cardWidth} />
+                          )}
+                        </div>
+                      );
+                    })
                   ) : (
                     <div
                       className="rounded border border-dashed border-white/30"
