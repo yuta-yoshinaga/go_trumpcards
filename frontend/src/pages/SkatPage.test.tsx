@@ -187,6 +187,16 @@ beforeEach(() => {
 });
 
 describe('SkatPage', () => {
+  it.each([
+    { dealerIdx: 0, expected: 'あなた' },
+    { dealerIdx: 2, expected: 'CPU 2' },
+  ])('shows the correct dealer name for seat $dealerIdx', async ({ dealerIdx, expected }) => {
+    mockExec.mockResolvedValue({ ...bidPhaseHumanTurn, dealerIdx });
+    renderWithProviders(<SkatPage />);
+
+    expect(await screen.findByText(`ディーラー: ${expected}`, { exact: false })).toBeInTheDocument();
+  });
+
   it.each([SkatGameType.SUIT, SkatGameType.GRAND])(
     'shows card-point progress for game type %i while playing',
     async (gameType) => {
