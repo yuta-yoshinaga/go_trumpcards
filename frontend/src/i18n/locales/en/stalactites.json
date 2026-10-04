@@ -27,6 +27,8 @@
   "selectedMoveLimitAnnouncement": "{{size}}-card stack selected. The regular move limit is {{limit}} cards, and the empty-column limit is {{emptyLimit}} cards.",
   "clearedMoveLimitAnnouncement": "Stack selection cleared. The regular move limit is {{limit}} cards, and the empty-column limit is {{emptyLimit}} cards.",
   "emptyColumnAriaLabel": "Empty column {{idx}} (only K may be placed)",
+  "tableauCardAriaLabel": "{{card}}, column {{col}}",
+  "tableauCardAriaLabelWithLimit": "{{card}}, column {{col}}. {{limit}}",
   "emptyColLimitTooltip": "Only {{limit}} card(s) can move into an empty column (selected: {{size}})",
   "tutorial": {
     "cells": "Free cells. Four temporary storage slots. More empty cells allow moving more cards at once.",
