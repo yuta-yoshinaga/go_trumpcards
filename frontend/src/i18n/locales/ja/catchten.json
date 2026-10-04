@@ -18,6 +18,7 @@
   "trumpSuit": "切り札",
   "honorBadge": "名誉点: {{points}}点",
   "cards": "{{count}}枚",
+  "trickCount": "獲得トリック数: {{count}}",
   "cumulativeScore": "累計: {{score}}",
   "roundScore": "ラウンド: {{score}}",
   "currentTrick": "現在のトリック",
@@ -72,7 +73,8 @@
     "hand": "手札",
     "team": "チーム",
     "total": "累計スコア",
-    "round": "ラウンドスコア"
+    "round": "ラウンドスコア",
+    "tricks": "獲得トリック数"
   },
   "hintRequested": "ヒントがあります",
   "noHint": "ヒントはありません",
