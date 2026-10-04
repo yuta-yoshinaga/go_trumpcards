@@ -153,6 +153,7 @@
     "win": "勝ち",
     "lose": "負け",
     "push": "引き分け",
-    "chips": "チップ"
+    "chips": "チップ",
+    "roundNetChange": "ラウンド収支: {{amount}} チップ"
   }
 }

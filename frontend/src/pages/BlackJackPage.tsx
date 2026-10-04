@@ -279,6 +279,10 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
   const bjHintResult = hintEnabled && state ? getBlackjackHint(state) : null;
   const cpuPlayers = state?.cpuPlayers ?? [];
   const sideBetResults = state?.sideBetResults ?? [];
+  const roundNetChange =
+    hands.reduce((total, hand) => total + (hand.netChange ?? 0), 0) +
+    sideBetResults.reduce((total, result) => total + (result.payout > 0 ? result.payout : -result.betAmount), 0);
+  const hasHandNetChange = hands.some((hand) => hand.netChange !== undefined);
 
   const showDoubleDown =
     !!currentHand &&
@@ -594,6 +598,11 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                     </div>
                   );
                 })}
+                {phase === BjPhase.END && hasHandNetChange && (
+                  <p className="text-sm text-ds-text-primary" data-testid="round-net-change">
+                    {t('handResult.roundNetChange', { amount: formatSignedDelta(roundNetChange) })}
+                  </p>
+                )}
               </div>
             )}
 
