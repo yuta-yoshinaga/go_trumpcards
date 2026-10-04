@@ -208,6 +208,30 @@ beforeEach(() => {
 });
 
 describe('PineapplePage', () => {
+  it('allows Irish Poker hints to be toggled and persists the game-specific setting', async () => {
+    mockIrishExec.mockResolvedValue({
+      ...preFlopState,
+      initialDealCount: 4,
+      phase: PineapplePhase.DISCARD,
+      isDiscardPhase: true,
+      discardDone: [false, false, false, false],
+    });
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+
+    const hintToggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    expect(hintToggle).not.toBeChecked();
+    fireEvent.click(hintToggle);
+
+    expect(hintToggle).toBeChecked();
+    expect(localStorage.getItem('hint_enabled_irishpoker')).toBe('true');
+    expect(await screen.findByTestId('hint-tooltip')).toHaveTextContent('最も弱いカードを捨てましょう');
+
+    fireEvent.click(hintToggle);
+    expect(hintToggle).not.toBeChecked();
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+    expect(localStorage.getItem('hint_enabled_irishpoker')).toBe('false');
+  });
+
   it('shows each CPU its initial hole-card count until that CPU discards', async () => {
     mockCrazyExec.mockResolvedValue({
       ...preFlopState,
