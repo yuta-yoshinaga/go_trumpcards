@@ -36,6 +36,7 @@ import { formatBaccaratState } from '../utils/cli/formatters/baccaratFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { formatSignedDelta } from '../utils/formatSignedDelta';
+import { resolveMessageCode } from '../utils/resolveMessageCode';
 
 const BET_TYPE_LABELS: Record<number, string> = {
   [BaccaratBetType.PLAYER]: 'betType.player',
@@ -267,8 +268,22 @@ function SideBetResultsDisplay({
 
 /** Renders the Baccarat game page with betting and result display. */
 export const BaccaratPage = withTutorial(BaccaratPageContent, 'baccarat', BAC_TUTORIAL_STEPS);
-/** Inner content of the Baccarat page, wrapped by TutorialProvider. */
+/** Renders the Baccarat page with a persistent reveal announcement region. */
 function BaccaratPageContent() {
+  const [revealAnnouncement, setRevealAnnouncement] = useState('');
+
+  return (
+    <>
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="baccarat-reveal-live">
+        {revealAnnouncement}
+      </div>
+      <BaccaratPageContentInner onRevealAnnouncement={setRevealAnnouncement} />
+    </>
+  );
+}
+
+/** Inner content of the Baccarat page, wrapped by TutorialProvider. */
+function BaccaratPageContentInner({ onRevealAnnouncement }: { onRevealAnnouncement: (announcement: string) => void }) {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('baccarat');
 
@@ -394,6 +409,23 @@ function BaccaratPageContent() {
     bindings: actionBindings,
     enabled: !!state && !loading,
   });
+
+  const revealAnnouncement = !state
+    ? ''
+    : revealStep === 2
+      ? t('reveal.thirdCard', { side: t('betType.player'), value: visiblePlayerValue })
+      : revealStep === 3
+        ? t('reveal.thirdCard', { side: t('betType.banker'), value: visibleBankerValue })
+        : revealStep >= 4
+          ? t('reveal.result', {
+              result: resolveMessageCode(tc, state.messageCode, state.messageParams, state.message),
+              payout: state.payout,
+            })
+          : '';
+
+  useEffect(() => {
+    onRevealAnnouncement(revealAnnouncement);
+  }, [onRevealAnnouncement, revealAnnouncement]);
 
   if (!state) return <GameSkeleton gameKey="baccarat" layout={{ kind: 'casino-table', sections: [2, 2] }} />;
 
