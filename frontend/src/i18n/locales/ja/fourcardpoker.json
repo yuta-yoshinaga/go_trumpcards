@@ -52,6 +52,7 @@
   },
   "betGuide": "アンテと任意のエースズアップを設定してベット",
   "foldWarning": "フォールドするとアンテ {{amount}} を失います",
+  "actionBets": "アンテ: {{ante}}、エースズアップ: {{acesUp}}",
   "betError": "アンテは10以上、ベットは10単位で、残高以内で指定してください",
   "payoutRef": {
     "title": "配当表",
