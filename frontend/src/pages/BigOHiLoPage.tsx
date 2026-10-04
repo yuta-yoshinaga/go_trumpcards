@@ -645,7 +645,11 @@ function BigOHiLoPageContent() {
                   </label>
                 </div>
                 {learningMode && state?.equity && state.potOdds != null && (
-                  <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
+                  <EquityDisplay
+                    equity={state.equity}
+                    potOdds={state.potOdds}
+                    lowProbability={state.equity.lowProbability}
+                  />
                 )}
                 <div className="flex items-center gap-3">
                   <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
