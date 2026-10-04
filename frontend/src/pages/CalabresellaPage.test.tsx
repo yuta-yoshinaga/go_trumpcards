@@ -202,6 +202,14 @@ describe('CalabresellaPage', () => {
     const prompt = await screen.findByTestId('calabresella-discard-prompt');
     expect(prompt).toHaveTextContent('残り 4 枚');
     expect(screen.getByTestId('calabresella-discard-button')).toHaveTextContent('4枚を捨てる');
+
+    fireEvent.click(await screen.findByAltText('♥ Q'));
+    fireEvent.click(await screen.findByAltText('♥ K'));
+    expect(prompt).toHaveTextContent('残り 2 枚');
+
+    fireEvent.click(await screen.findByAltText('♠ A'));
+    fireEvent.click(await screen.findByAltText('♠ 2'));
+    expect(prompt).toHaveTextContent('残り 0 枚');
   });
 
   it('hides the discard prompt once the hand is down to the regulation 12', async () => {
