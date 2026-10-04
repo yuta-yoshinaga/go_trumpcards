@@ -120,5 +120,5 @@ func (p *BisleyWebPresenter) HintOutput(b interfaces.BisleyGame) string {
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *BisleyWebPresenter) ActionLogOutput(b interfaces.BisleyGame) string {
-	return actionLogOutputJSON(b)
+	return actionLogToJSON(b.GetActionLog())
 }
