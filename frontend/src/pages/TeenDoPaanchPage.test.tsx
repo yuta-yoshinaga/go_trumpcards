@@ -210,6 +210,22 @@ describe('TeenDoPaanchPage', () => {
     });
   });
 
+  it('explains that an off-suit card is blocked when the hand can follow suit', async () => {
+    mockExec.mockResolvedValue(
+      playing({
+        currentTrick: [{ playerIdx: 2, card: card('SPADE', 8) }],
+        players: [seat(0, { cards: [card('HEART', 1), card('SPADE', 9), card('CLOVER', 13)] }), seat(1), seat(2)],
+        validPlays: [1],
+      } as Partial<TeenDoPaanchResponse>),
+    );
+    renderWithProviders(<TeenDoPaanchPage />);
+
+    const cards = await screen.findAllByRole('button', { name: /を出す/ });
+    expect(cards[0]).toHaveAttribute('aria-describedby', 'td-play-unavailable');
+    expect(cards[0]).toHaveAccessibleDescription(/リードされたスート.*スペード.*従って/);
+    expect(cards[1]).not.toHaveAttribute('aria-disabled', 'true');
+  });
+
   // 切り札は未宣言と確定の両側を踏む。
   it('shows the trump once declared', async () => {
     const { unmount } = renderWithProviders(<TeenDoPaanchPage />);
