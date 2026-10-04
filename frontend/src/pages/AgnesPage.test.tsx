@@ -198,11 +198,22 @@ describe('AgnesPage', () => {
     expect(screen.getByRole('button', { name: '配る' })).toBeInTheDocument();
   });
 
+  it('names each tableau move button with its source and destination while keeping the short label', async () => {
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const foundationButtons = screen.getAllByRole('button', { name: /列\d+から組札へ移動/ });
+    expect(foundationButtons[0]).toHaveAccessibleName('列0から組札へ移動');
+    expect(foundationButtons[0]).toHaveTextContent('→組');
+    const tableauButton = screen.getAllByRole('button', { name: /列\d+から列0へ移動/ })[5];
+    expect(tableauButton).toHaveAccessibleName('列6から列0へ移動');
+    expect(tableauButton).toHaveTextContent('→0');
+  });
+
   it('per-column action button moves tableau end card to foundation', async () => {
     renderWithProviders(<AgnesPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     // Column 5 has ♥ 5, which legally moves to foundation (baseRank 5).
-    fireEvent.click(screen.getAllByRole('button', { name: '→組' })[5]);
+    fireEvent.click(screen.getAllByRole('button', { name: /列\d+から組札へ移動/ })[5]);
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 5 }, { zone: 'foundation' }),
     );
@@ -212,7 +223,7 @@ describe('AgnesPage', () => {
     renderWithProviders(<AgnesPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     // Column 6 (♣ 6) -> column 0 (♠ 7).
-    const toCol0Buttons = screen.getAllByRole('button', { name: '→0' });
+    const toCol0Buttons = screen.getAllByRole('button', { name: /列\d+から列0へ移動/ });
     const col6ToCol0 = toCol0Buttons[5];
     col6ToCol0.click();
     await waitFor(() =>
@@ -227,7 +238,7 @@ describe('AgnesPage', () => {
   it('disables moveToFoundation when the end card cannot be placed on foundation', async () => {
     renderWithProviders(<AgnesPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const foundationButtons = screen.getAllByRole('button', { name: '→組' });
+    const foundationButtons = screen.getAllByRole('button', { name: /列\d+から組札へ移動/ });
     // Column 0 (♠ 7) cannot go to foundation (pile has ♠ 5, expects ♠ 6).
     expect(foundationButtons[0]).toBeDisabled();
     // Column 5 (♥ 5) CAN go to foundation (♥ pile is empty, baseRank is 5).
@@ -241,9 +252,9 @@ describe('AgnesPage', () => {
     // - Moving to Column 0 (♠ 7): same color (black), value 6 = 7 - 1 -> ENABLED
     // - Moving to Column 1 (♥ 8): different color (black vs red) -> DISABLED
     // - Moving to Column 2 (♣ 9): same color (black), but value 6 != 9 - 1 -> DISABLED
-    const toCol0Buttons = screen.getAllByRole('button', { name: '→0' });
-    const toCol1Buttons = screen.getAllByRole('button', { name: '→1' });
-    const toCol2Buttons = screen.getAllByRole('button', { name: '→2' });
+    const toCol0Buttons = screen.getAllByRole('button', { name: /列\d+から列0へ移動/ });
+    const toCol1Buttons = screen.getAllByRole('button', { name: /列\d+から列1へ移動/ });
+    const toCol2Buttons = screen.getAllByRole('button', { name: /列\d+から列2へ移動/ });
     const col6ToCol0 = toCol0Buttons[5];
     const col6ToCol1 = toCol1Buttons[5];
     const col6ToCol2 = toCol2Buttons[5];
