@@ -34,6 +34,7 @@
   "bankPasses": "An exact 7.5 takes the bank",
   "landscapeBanner": "Landscape mode recommended",
   "seatAriaLabel": "{{name}}'s hand, total {{total}}",
+  "seatAriaLabelWithMatta": "{{name}}'s hand, total {{total}}, matta {{value}}",
   "hiddenHandAriaLabel": "{{name}}'s hand is face down, {{count}} cards",
   "bankerHandAriaLabel": "Banker's hand, total {{total}}",
   "hiddenBankerHandAriaLabel": "The banker's hand is face down, {{count}} cards",

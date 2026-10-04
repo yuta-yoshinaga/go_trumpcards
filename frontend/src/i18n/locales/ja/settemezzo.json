@@ -34,6 +34,7 @@
   "bankPasses": "ちょうど7.5で親が移りました",
   "landscapeBanner": "横画面での表示を推奨します",
   "seatAriaLabel": "{{name}} の手 合計{{total}}",
+  "seatAriaLabelWithMatta": "{{name}} の手 合計{{total}}、マッタ {{value}}",
   "hiddenHandAriaLabel": "{{name}} の手は伏せられています {{count}}枚",
   "bankerHandAriaLabel": "親の手 合計{{total}}",
   "hiddenBankerHandAriaLabel": "親の手は伏せられています {{count}}枚",
