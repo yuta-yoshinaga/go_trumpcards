@@ -29,6 +29,8 @@
   "kittyRules": "底牌に{{count}}枚埋め戻します。【得点札と切札は埋めないでください】。守備側が最終トリックを取ると、底牌の点が倍率つきで相手に入ります。",
   "buryButton": "底牌に埋める ({{selected}}/{{count}})",
   "playButton": "出す",
+  "trumpLed": "切札",
+  "followSuitRequired": "リードされたスート（{{suit}}）を出してください。",
   "nextButton": "次の局へ",
   "handHeldLine": "宣言側が守りきりました（守備側 {{points}} 点 / {{target}} 点）。チーム{{team}}が{{advance}}段階昇級です",
   "handTakenLine": "守備側が {{points}} 点を集めました（{{target}} 点以上）。宣言側が交代し、チーム{{team}}が{{advance}}段階昇級です",

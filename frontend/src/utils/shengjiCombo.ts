@@ -45,14 +45,16 @@ function trumpDesign(trumpSuit: number): Card['design'] | null {
   return ({ 1: 'SPADE', 2: 'CLOVER', 3: 'HEART', 4: 'DIAMOND' } as const)[trumpSuit as 1 | 2 | 3 | 4] ?? null;
 }
 
-/** Mirrors `ShengJiIsTrump`: all level cards and jokers are trumps too. */
-function isTrump(card: Card, level: number, trumpSuit: number): boolean {
+/** Reports whether a card is a trump under the current Sheng Ji level and suit. */
+export function shengjiIsTrump(card: Card, level: number, trumpSuit: number): boolean {
   return (
     isJoker(card) ||
     isLevelCard(card, level) ||
     (trumpDesign(trumpSuit) !== null && card.design === trumpDesign(trumpSuit))
   );
 }
+
+const isTrump = shengjiIsTrump;
 
 function strength(card: Card, level: number, trumpSuit: number): number {
   if (isJoker(card)) return (card.value >= 2 ? TIER_RED_JOKER : TIER_BLACK_JOKER) * 100;
