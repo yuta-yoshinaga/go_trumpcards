@@ -225,6 +225,7 @@ describe('BigTwoPage', () => {
 
     await screen.findByTestId('pass-button');
     const log = screen.getByText(/^\[CPUの行動\]/).parentElement;
+    expect(log).toHaveAttribute('aria-hidden', 'true');
     expect(log).toHaveTextContent('CPU 1がパスしました');
     const announcement = screen.getByTestId('bt-cpu-action-announcement');
     expect(announcement).toHaveAttribute('aria-live', 'polite');

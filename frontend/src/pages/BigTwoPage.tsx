@@ -172,7 +172,7 @@ function BigTwoPageContent() {
     const cards = action.playedCards.map(cardLabel).join(t('listSeparator'));
     return t('actionPlayed', { name: findPlayerName(players, action.playerIdx), cards });
   };
-  const cpuActionDescriptions = state.cpuActions?.map((action) => actionDescription(state.players, action)) ?? [];
+  const cpuActionDescriptions = state.cpuActions.map((action) => actionDescription(state.players, action));
 
   return (
     <GamePageShell
@@ -239,11 +239,10 @@ function BigTwoPageContent() {
             </div>
 
             {cpuActionDescriptions.length > 0 && (
-              <div
-                aria-hidden="true"
-                className="bg-black/40 rounded-lg text-ds-text-primary py-2 px-3.5 my-2 whitespace-pre-line text-xs"
-              >
-                {[tc('label.cpuActions'), ...cpuActionDescriptions].join('\n')}
+              <div aria-hidden="true">
+                <div className="bg-black/40 rounded-lg text-ds-text-primary py-2 px-3.5 my-2 whitespace-pre-line text-xs">
+                  {[tc('label.cpuActions'), ...cpuActionDescriptions].join('\n')}
+                </div>
               </div>
             )}
 
