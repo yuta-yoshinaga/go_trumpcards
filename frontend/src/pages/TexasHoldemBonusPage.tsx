@@ -481,6 +481,12 @@ function TexasHoldemBonusPageContent() {
                 <div className="font-bold mt-1">
                   {t('payout.total')}: {state.totalPayout}
                 </div>
+                <div
+                  className={`font-bold ${net > 0 ? 'text-ds-success' : net < 0 ? 'text-ds-error-text' : 'text-ds-text-muted'}`}
+                  data-testid="hand-net"
+                >
+                  {t('payout.net')}: {formatSignedDelta(net)}
+                </div>
               </div>
             )}
 
