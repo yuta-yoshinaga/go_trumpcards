@@ -138,6 +138,16 @@ describe('ScoponePage', () => {
     expect(screen.getByTestId('take-button')).not.toBeDisabled();
   });
 
+  it('keeps Take disabled when the selected hand index is missing from handCaptures', async () => {
+    mockExec.mockResolvedValue(makeScoponeState({ handCaptures: [[[0]], []] }));
+    renderWithProviders(<ScoponePage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-2')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('hand-card-2'));
+    expect(screen.getByTestId('hand-card-2')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('take-button')).toBeDisabled();
+  });
+
   it('lay button is enabled when a hand card is selected and no table card', async () => {
     renderWithProviders(<ScoponePage />);
     await waitFor(() => expect(screen.getByTestId('lay-button')).toBeInTheDocument());

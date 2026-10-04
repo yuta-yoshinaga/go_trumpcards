@@ -83,7 +83,7 @@ function captureCandidateIndices(handCaptures: number[][][], handIndex: number):
 
 /** Returns whether the selected table cards exactly match a legal capture set. */
 function isLegalCaptureSelection(handCaptures: number[][][], handIndex: number, tableIndices: number[]): boolean {
-  return handCaptures[handIndex].some(
+  return (handCaptures[handIndex] ?? []).some(
     (capture) => capture.length === tableIndices.length && capture.every((idx) => tableIndices.includes(idx)),
   );
 }
