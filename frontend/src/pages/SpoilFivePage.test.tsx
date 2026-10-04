@@ -166,6 +166,21 @@ describe('SpoilFivePage', () => {
     expect(screen.getByText('切り札 ♥')).toBeInTheDocument();
   });
 
+  it('marks the current dealer and updates the marker when state changes', async () => {
+    mockExec.mockResolvedValueOnce(makeSpoilFiveState({ dealerIdx: 0 }));
+    mockExec.mockResolvedValueOnce(makeSpoilFiveState({ dealerIdx: 2 }));
+    renderWithProviders(<SpoilFivePage />);
+
+    expect(await screen.findByTestId('sf-dealer-0')).toHaveTextContent('ディーラー');
+    expect(screen.queryByTestId('sf-dealer-2')).not.toBeInTheDocument();
+
+    fireEvent.click(await screen.findByAltText('♥ Q'));
+    fireEvent.click(await screen.findByRole('button', { name: '出す' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', expect.anything()));
+    expect(await screen.findByTestId('sf-dealer-2')).toHaveTextContent('ディーラー');
+    expect(screen.queryByTestId('sf-dealer-0')).not.toBeInTheDocument();
+  });
+
   it('renders the top-trump order legend without a duplicate trump ace when Hearts is trump', async () => {
     // Default state has trumpSuit 3 (Hearts): the ♥A is the trump ace, so it must not be duplicated.
     renderWithProviders(<SpoilFivePage />);
