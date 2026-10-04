@@ -99,7 +99,10 @@ describe('AlaskaPage', () => {
     expect(button).toHaveAttribute('aria-disabled', 'true');
     const descriptionId = button.getAttribute('aria-describedby');
     expect(descriptionId).toBeTruthy();
-    expect(document.getElementById(descriptionId ?? '')).toHaveTextContent('全カードが表向きになると利用可能です');
+    const description = document.getElementById(descriptionId ?? '');
+    expect(description).toHaveTextContent('全カードが表向きになると利用可能です');
+    expect(description).toHaveClass('basis-full');
+    expect(description).toHaveClass('order-last');
     fireEvent.click(button);
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('autocomplete');

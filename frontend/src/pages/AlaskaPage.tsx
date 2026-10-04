@@ -609,7 +609,7 @@ function AlaskaPageContent() {
                     {t('autoComplete')}
                   </button>
                   {!autoCompleteReady && (
-                    <p id="alaska-autocomplete-hint" className="text-sm text-ds-text-muted">
+                    <p id="alaska-autocomplete-hint" className="basis-full order-last text-sm text-ds-text-muted">
                       {t('autoCompleteNotReady')}
                     </p>
                   )}
