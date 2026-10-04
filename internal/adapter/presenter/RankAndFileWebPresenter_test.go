@@ -215,14 +215,17 @@ func TestRankAndFileWebPresenter_HintOutput(t *testing.T) {
 }
 
 func TestRankAndFileWebPresenter_ActionLogOutput(t *testing.T) {
-	t.Run("playing phase returns empty", func(t *testing.T) {
+	t.Run("playing phase returns log", func(t *testing.T) {
 		fg := new(interfaces.MockRankAndFileGame)
 		fg.On("GetPhase").Return(domain.RankAndFilePhasePlaying)
 
 		fg.On("GetGameEndFlag").Return(false)
+		fg.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "draw", DetailCode: "test.log.stub"},
+		})
 		p := new(RankAndFileWebPresenter)
 		result := p.ActionLogOutput(fg)
-		assert.Contains(t, result, "[]")
+		assert.Contains(t, result, "test.log.stub")
 	})
 
 	t.Run("game over returns log", func(t *testing.T) {

@@ -140,5 +140,5 @@ func (p *RankAndFileWebPresenter) TargetsOutput(ft interfaces.RankAndFileGame, _
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *RankAndFileWebPresenter) ActionLogOutput(ft interfaces.RankAndFileGame) string {
-	return actionLogOutputJSON(ft)
+	return actionLogToJSON(ft.GetActionLog())
 }

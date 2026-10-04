@@ -266,18 +266,19 @@ func TestRankAndFileCuiPresenter_HintOutput(t *testing.T) {
 }
 
 func TestRankAndFileCuiPresenter_ActionLogOutput(t *testing.T) {
-	t.Run("playing phase returns empty", func(t *testing.T) {
+	t.Run("playing phase returns log", func(t *testing.T) {
 		fg := new(interfaces.MockRankAndFileGame)
-		fg.On("GetPhase").Return(domain.RankAndFilePhasePlaying)
+		fg.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "draw", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
+		})
 
 		p := new(RankAndFileCuiPresenter)
 		result := p.ActionLogOutput(fg)
-		assert.Contains(t, result, "棋譜はありません")
+		assert.Contains(t, result, "draw")
 	})
 
 	t.Run("game over returns log", func(t *testing.T) {
 		fg := new(interfaces.MockRankAndFileGame)
-		fg.On("GetPhase").Return(domain.RankAndFilePhaseGameOver)
 		fg.On("GetActionLog").Return([]*domain.ActionLogEntry{
 			{TurnNumber: 1, ActionType: "draw", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
