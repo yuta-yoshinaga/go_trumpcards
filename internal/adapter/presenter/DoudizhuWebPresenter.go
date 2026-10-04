@@ -97,7 +97,7 @@ func (p *DoudizhuWebPresenter) Output(dg interfaces.DoudizhuGame, lastErr error)
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *DoudizhuWebPresenter) ActionLogOutput(dg interfaces.DoudizhuGame) string {
-	return actionLogOutputJSON(dg)
+	return actionLogToJSON(dg.GetActionLog())
 }
 
 func doudizhuPhaseName(phase domain.DoudizhuPhase) string {
