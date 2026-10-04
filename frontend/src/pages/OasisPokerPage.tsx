@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { oasispokerApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -117,6 +117,8 @@ function OasisPokerPageContent() {
   const isExchangePhase = state?.phase === OasisPokerPhase.EXCHANGE;
   const isActionPhase = state?.phase === OasisPokerPhase.ACTION;
   const isEndPhase = state?.phase === OasisPokerPhase.END;
+  const callCost = state ? state.anteBet * 2 : 0;
+  const insufficientCallChips = state !== null && state.chips < callCost;
 
   const toggleSelected = (idx: number) => {
     const next = selectedIndices.includes(idx)
@@ -149,9 +151,10 @@ function OasisPokerPageContent() {
     execApi('stand');
   };
 
-  const handlePlay = () => {
+  const handlePlay = useCallback(() => {
+    if (loading || insufficientCallChips) return;
     execApi('play');
-  };
+  }, [execApi, insufficientCallChips, loading]);
 
   const handleFold = () => {
     execApi('fold');
@@ -179,15 +182,17 @@ function OasisPokerPageContent() {
         enabled: isExchangePhase,
         label: 'exchange',
       },
-      { key: 'p', action: () => execApi('play'), enabled: isActionPhase, label: 'play' },
+      { key: 'p', action: handlePlay, enabled: isActionPhase && !insufficientCallChips, label: 'play' },
       { key: 'f', action: () => execApi('fold'), enabled: isActionPhase, label: 'fold' },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, label: 'reset' },
     ],
     [
       execApi,
+      handlePlay,
       isBetPhase,
       isExchangePhase,
       isActionPhase,
+      insufficientCallChips,
       isEndPhase,
       anteAmount,
       jackpotAmount,
@@ -571,12 +576,24 @@ function OasisPokerPageContent() {
             )}
             {isActionPhase && (
               <div className="flex justify-center gap-2 pb-2" data-tutorial="oasis-action-buttons">
-                <button type="button" className={btnSuccess} onClick={handlePlay} disabled={loading}>
-                  {t('button.play')}
+                <button
+                  type="button"
+                  className={`${btnSuccess} ${insufficientCallChips ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  onClick={handlePlay}
+                  disabled={loading}
+                  aria-disabled={insufficientCallChips || undefined}
+                  aria-describedby={insufficientCallChips ? 'oasispoker-call-unavailable' : undefined}
+                >
+                  {t('button.play', { amount: callCost })}
                 </button>
                 <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
                   {t('button.fold')}
                 </button>
+                {insufficientCallChips && (
+                  <p id="oasispoker-call-unavailable" className="text-ds-warning text-sm self-center">
+                    {t('callUnavailable')}
+                  </p>
+                )}
               </div>
             )}
             {isEndPhase && (
