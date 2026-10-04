@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bidEuchreApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BidEuchreHandResult, BidEuchrePlayer, BidEuchreResponse, CardDesign } from '../types/card';
@@ -108,6 +109,59 @@ describe('BidEuchrePage', () => {
   it('resets on mount', async () => {
     renderWithProviders(<BidEuchrePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('shows the bidding history in order, including passes', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: BidEuchrePhase.BID,
+        bids: [
+          { player: 0, value: 4 },
+          { player: 1, value: 0 },
+          { player: 2, value: 5 },
+        ],
+        highBid: { player: 2, value: 5 },
+        declarerIdx: -1,
+      }),
+    );
+
+    renderWithProviders(<BidEuchrePage />);
+
+    const history = await screen.findByTestId('bideuchre-bid-history');
+    expect(history).toHaveTextContent('競り履歴');
+    expect(history).toHaveTextContent('あなた: 4トリック');
+    expect(history).toHaveTextContent('CPU 1: パス');
+    expect(history).toHaveTextContent('CPU 2: 5トリック');
+    expect(Array.from(history.querySelectorAll('li')).map((item) => item.textContent)).toEqual([
+      'あなた: 4トリック',
+      'CPU 1: パス',
+      'CPU 2: 5トリック',
+    ]);
+  });
+
+  it('shows readable English names and bid actions', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(
+        makeState({
+          phase: BidEuchrePhase.BID,
+          bids: [
+            { player: 0, value: 4 },
+            { player: 1, value: 0 },
+          ],
+          highBid: { player: 0, value: 4 },
+          declarerIdx: -1,
+        }),
+      );
+      renderWithProviders(<BidEuchrePage />);
+      const history = await screen.findByTestId('bideuchre-bid-history');
+      expect(history).toHaveTextContent('Bidding history');
+      expect(history).toHaveTextContent('You: 4 tricks');
+      expect(history).toHaveTextContent('CPU 1: Pass');
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   // **24 / 4 = 6 でちょうど配り切るのでキティが無い。**常時表示する。
