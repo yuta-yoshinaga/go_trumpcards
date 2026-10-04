@@ -332,6 +332,35 @@ describe('FiveCardStudPage', () => {
     expect(screen.queryByLabelText('♥ K、役の構成札')).not.toBeInTheDocument();
   });
 
+  it('marks only human hole cards in the best hand at showdown', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [
+        humanPlayer({
+          holeCards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 8 },
+          ],
+          bestHandCore: [{ design: 'SPADE', value: 1 }],
+        }),
+        ...showdownState.players.slice(1),
+      ],
+    });
+    renderWithProviders(<FiveCardStudPage />);
+
+    expect(await screen.findByLabelText('♠ A、役の構成札')).toBeInTheDocument();
+    expect(screen.getByAltText('♥ 8')).toBeInTheDocument();
+    expect(screen.queryByLabelText('♥ 8、役の構成札')).not.toBeInTheDocument();
+  });
+
+  it('does not mark human hole cards during normal play', async () => {
+    mockExec.mockResolvedValue(secondStreetState);
+    renderWithProviders(<FiveCardStudPage />);
+
+    expect(await screen.findByAltText('♠ A')).toBeInTheDocument();
+    expect(screen.queryByLabelText('♠ A、役の構成札')).not.toBeInTheDocument();
+  });
+
   it('shows bet/check buttons when canAct and no outstanding bet', async () => {
     mockExec.mockResolvedValue(secondStreetState);
     renderWithProviders(<FiveCardStudPage />);
