@@ -351,12 +351,20 @@ function MacauPageContent() {
                         {/* Finished players have 0 cards, so cardCount === 1 excludes them automatically. */}
                         <span role="status" aria-live="polite">
                           {p.cardCount === 1 && (
-                            <span
-                              data-testid={`macau-cpu-last-card-${p.id}`}
-                              className={`ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold ${badgeWarningColors}`}
-                            >
-                              {t('cpuLastCardWarning', { name: playerName(p.id, p.isHuman) })}
-                            </span>
+                            <>
+                              <span
+                                data-testid={`macau-cpu-last-card-${p.id}`}
+                                className={`ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold ${badgeWarningColors}`}
+                              >
+                                {t('cpuLastCardWarning', { name: playerName(p.id, p.isHuman) })}
+                              </span>
+                              <span
+                                data-testid={`macau-cpu-declaration-status-${p.id}`}
+                                className={`ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold ${p.hasDeclared ? badgeInfoColors : badgeWarningColors}`}
+                              >
+                                {p.hasDeclared ? t('cpuDeclared') : t('cpuUndeclared')}
+                              </span>
+                            </>
                           )}
                         </span>
                       </div>
