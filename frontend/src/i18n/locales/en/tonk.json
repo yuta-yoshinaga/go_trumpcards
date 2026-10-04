@@ -68,6 +68,7 @@
     "knockable": "Can knock",
     "notKnockable": "Cannot knock (needs {{threshold}} or less)"
   },
+  "meldCardDescription": "The remaining hand forms a meld",
   "opponentMelds": "{{name}} melds",
   "opponentDeadwood": "{{name}} deadwood"
 }
