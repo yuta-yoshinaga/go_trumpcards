@@ -280,9 +280,16 @@ function ChemindeFerPageContent() {
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4" data-tutorial="cdf-seats">
               {state.players.map((p) => (
-                <div
+                <section
                   key={`seat-${p.id}`}
                   data-testid={`cdf-seat-${p.id}`}
+                  aria-label={[
+                    p.isHuman ? t('label.you') : t('label.cpu', { idx: p.id }),
+                    p.isBanker ? t('label.banker') : null,
+                    p.isRepresentative ? t('label.representative') : null,
+                  ]
+                    .filter((label): label is string => label !== null)
+                    .join(' ')}
                   className={`rounded border px-2 py-1 text-xs ${
                     p.isBanker ? 'border-ds-warning' : 'border-ds-border'
                   } ${p.id === state.betTurn ? 'ring-2 ring-ds-success' : ''}`}
@@ -299,7 +306,7 @@ function ChemindeFerPageContent() {
                     {p.bet > 0 && ` (${t('label.bet')}: ${p.bet})`}
                     {betsAreComplete && !p.isBanker && p.bet === 0 && ` (${t('label.passed')})`}
                   </div>
-                </div>
+                </section>
               ))}
             </div>
 
