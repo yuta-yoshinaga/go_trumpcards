@@ -396,6 +396,19 @@ describe('KalookiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
   });
 
+  it('shows the round winner by name at round end', async () => {
+    mockExec.mockResolvedValue({ ...roundEndState, roundWinnerIdx: 1 });
+    renderWithProviders(<KalookiPage />);
+    expect(await screen.findByText('CPU 1がラウンドに勝利しました')).toBeInTheDocument();
+  });
+
+  it('shows a draw instead of a player when the round has no winner', async () => {
+    mockExec.mockResolvedValue({ ...roundEndState, roundWinnerIdx: -1 });
+    renderWithProviders(<KalookiPage />);
+    expect(await screen.findByText('ラウンドは引き分けです')).toBeInTheDocument();
+    expect(screen.queryByText(/ラウンドに勝利しました/)).not.toBeInTheDocument();
+  });
+
   it('shows completed round penalty scores in a player-by-round table', async () => {
     mockExec.mockResolvedValue({
       ...roundEndState,
