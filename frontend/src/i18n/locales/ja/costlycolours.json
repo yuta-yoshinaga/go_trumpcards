@@ -47,7 +47,7 @@
   "winner": "{{name}} の勝ち！",
   "nextDeal": "次のディールへ",
   "restrictedTooltip": "31 を超えるので出せません",
-  "jackDeuceMark": "J・2: 持っているだけで得点になる札",
+  "jackDeuceMark": "J・2: 保持すると {{points}} 点",
   "hintAvailable": "ヒント",
   "hint": {
     "fifteen": "15 になって点が入ります",

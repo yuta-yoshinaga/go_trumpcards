@@ -378,7 +378,9 @@ function CostlyColoursPageContent() {
                 restrictedTooltip={t('restrictedTooltip')}
                 cardBadgeFor={(idx) => {
                   const card = humanPlayer.cards[idx];
-                  return card.value === 11 || card.value === 2 ? { glyph: '★', title: t('jackDeuceMark') } : null;
+                  if (!(card.value === 11 || card.value === 2)) return null;
+                  const points = state.turnUp?.design === card.design ? 4 : 2;
+                  return { glyph: String(points), title: t('jackDeuceMark', { points }) };
                 }}
               />
             )}
