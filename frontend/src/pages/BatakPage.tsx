@@ -571,6 +571,9 @@ function BatakPageContent() {
               )}
               {isHumanBidTurn && (
                 <div className="flex flex-col items-center gap-2">
+                  <span className="text-ds-text-primary" data-testid="batak-high-bid">
+                    {t('highBid', { n: state.highBid })}
+                  </span>
                   {minLegalBid > 0 && (
                     <>
                       <fieldset
