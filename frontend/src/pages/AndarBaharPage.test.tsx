@@ -85,6 +85,19 @@ beforeEach(() => {
 });
 
 describe('AndarBaharPage', () => {
+  it('shows the payout and win chance for both columns before betting', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<AndarBaharPage />);
+
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
+    expect(screen.getByTestId(`andarbahar-column-${AndarBaharColumn.ANDAR}`).parentElement).toHaveTextContent(
+      '先に配る列 0.9:1（51.50%）',
+    );
+    expect(screen.getByTestId(`andarbahar-column-${AndarBaharColumn.BAHAR}`).parentElement).toHaveTextContent(
+      '後に配る列 1:1（48.50%）',
+    );
+  });
+
   it('shows settled round history in response order with original values', async () => {
     mockApi.mockResolvedValue({
       ...betState,

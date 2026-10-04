@@ -135,9 +135,13 @@ function AndarBaharPageContent() {
     <div className="flex-1 min-w-0">
       <div className="flex items-center justify-center gap-2 mb-1">
         <span className="text-ds-text-primary text-sm font-bold">{label}</span>
-        {state.firstColumn === column && (
+        {state.firstColumn === column ? (
           <span className="inline-block rounded-full bg-ds-surface-elevated px-2 py-0.5 text-xs font-medium">
             {t('payout.firstColumnBadge')}
+          </span>
+        ) : (
+          <span className="inline-block rounded-full bg-ds-surface-elevated px-2 py-0.5 text-xs font-medium">
+            {t('payout.secondColumnBadge')}
           </span>
         )}
       </div>
