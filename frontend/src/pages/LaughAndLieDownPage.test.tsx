@@ -1,6 +1,6 @@
 import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { laughandliedownApi } from '../api/gameApi';
+import { actionLogApi, laughandliedownApi } from '../api/gameApi';
 import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -14,6 +14,7 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(laughandliedownApi.exec);
+const mockActionLog = vi.mocked(actionLogApi.laughandliedown);
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
@@ -69,6 +70,25 @@ describe('LaughAndLieDownPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
+  });
+
+  it('opens a populated action log during play', async () => {
+    mockActionLog.mockResolvedValue({
+      entries: [
+        {
+          turnNumber: 1,
+          playerIdx: -1,
+          actionType: 'deal',
+          detailCode: 'laughandliedown.log.deal',
+          detail: '',
+          cards: [],
+        },
+      ],
+    });
+    renderWithProviders(<LaughAndLieDownPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: '棋譜を見る' }));
+    expect(await screen.findByRole('region', { name: '棋譜' })).toHaveTextContent('カードを配りました');
   });
 
   it('resets on mount', async () => {
