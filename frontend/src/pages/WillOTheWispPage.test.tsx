@@ -94,6 +94,47 @@ beforeEach(() => {
 });
 
 describe('WillOTheWispPage', () => {
+  it('explains that the stock must be used and keeps auto-complete keyboard accessible', async () => {
+    renderWithProviders(<WillOTheWispPage />);
+    const button = await screen.findByTestId('autocomplete-button');
+
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(button).not.toBeDisabled();
+    expect(button).toHaveAccessibleDescription('自動完成するには、山札をすべて使い切ってください');
+    mockSend.mockClear();
+    fireEvent.click(button);
+    await flushPendingDispatch();
+    expect(mockSend).not.toHaveBeenCalled();
+  });
+
+  it('explains that every face-down tableau card must be turned face up', async () => {
+    const faceDownTableau = makeTableau(
+      playingState.tableau.map((col, index) =>
+        index === 0 ? [...col, { card: card('SPADE', 1), faceUp: false }] : col,
+      ),
+    );
+    mockSend.mockResolvedValue({ ...playingState, stockCount: 0, tableau: faceDownTableau });
+    renderWithProviders(<WillOTheWispPage />);
+    const button = await screen.findByTestId('autocomplete-button');
+
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(button).toHaveAccessibleDescription('自動完成するには、タブローの裏向きカードをすべて表向きにしてください');
+    mockSend.mockClear();
+    fireEvent.click(button);
+    await flushPendingDispatch();
+    expect(mockSend).not.toHaveBeenCalled();
+  });
+
+  it('does not expose an unavailable reason when auto-complete is ready', async () => {
+    mockSend.mockResolvedValue({ ...playingState, stockCount: 0 });
+    renderWithProviders(<WillOTheWispPage />);
+    const button = await screen.findByTestId('autocomplete-button');
+
+    expect(button).not.toHaveAttribute('aria-disabled');
+    expect(button).not.toHaveAttribute('aria-describedby');
+    expect(button).not.toHaveAccessibleDescription();
+  });
+
   it('includes the card name and zero-based tableau column in face-up card names', async () => {
     renderWithProviders(<WillOTheWispPage />);
     const cardButton = await screen.findByTestId('willothewisp-card-1-1');
@@ -312,7 +353,7 @@ describe('WillOTheWispPage keyboard shortcuts', () => {
     ['a', 'autocomplete'],
     ['z', 'undo'],
   ])('pressing %s dispatches %s', async (key, command) => {
-    mockSend.mockResolvedValue(playingState);
+    mockSend.mockResolvedValue(command === 'autocomplete' ? { ...playingState, stockCount: 0 } : playingState);
     renderWithProviders(<WillOTheWispPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     mockSend.mockClear();
