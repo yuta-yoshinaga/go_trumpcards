@@ -26,7 +26,7 @@
   "nextRankAria": "次に置くべきカード {{rank}}",
   "foundationCompleteAria": "完成",
   "emptyPileAria": "空き枠。配るときの置き場所になります（補充はされません）",
-  "pileCountAria": "{{count}}枚",
+  "pileTopAria": "{{count}}枚、最上札 {{card}}",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
   "gameOverSummary": "組札 {{count}}/104 枚（{{percent}}%）まで到達",

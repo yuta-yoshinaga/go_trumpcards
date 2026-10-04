@@ -25,9 +25,10 @@ import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { SlyFoxResponse } from '../types/card';
+import type { Card, SlyFoxResponse } from '../types/card';
 import { SlyFoxPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { parseSlyFoxCommand } from '../utils/cli/commands/slyfoxCommands';
 import { formatSlyFoxState } from '../utils/cli/formatters/slyfoxFormatter';
@@ -403,7 +404,7 @@ function SlyFoxPageContent() {
                       aria-label={
                         isEmpty
                           ? `${t('tableau')} ${idx} ${t('emptyPileAria')}`
-                          : `${t('tableau')} ${idx} ${t('pileCountAria', { count: pile.length })}`
+                          : `${t('tableau')} ${idx} ${t('pileTopAria', { count: pile.length, card: cardAlt(top as Card) })}`
                       }
                       className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${selected ? 'ring-2 ring-ds-warning' : ''} ${hintTableau === idx || hintTableauTarget === idx ? 'ring-2 ring-ds-success animate-pulse' : ''} ${isTarget && !selected ? 'ring-2 ring-ds-info/70' : ''}`}
                     >
