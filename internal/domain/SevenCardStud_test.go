@@ -112,6 +112,27 @@ func TestSevenCardStud_PlayerAction_Raise(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestSevenCardStud_UpdatesSidePotsDuringBetting(t *testing.T) {
+	s := setupSevenCardStudForHumanAction(SevenCardStudPhaseThirdStreet)
+	s.startingChips = []int{100, 200, 300, 300}
+	s.pot = 550
+	s.lastBet = 0
+	s.players[0].SetChips(0)
+	s.players[0].SetAllIn(true)
+	s.players[1].SetChips(50)
+	s.players[1].SetAllIn(true)
+	s.players[2].SetChips(100)
+	s.players[2].SetAllIn(true)
+	s.players[3].SetChips(200)
+
+	err := s.executeAction(1, SevenCardStudActionCheck, 0)
+	require.NoError(t, err)
+	require.Len(t, s.GetSidePots(), 3)
+	assert.Equal(t, 400, s.GetSidePots()[0].Amount)
+	assert.Equal(t, 100, s.GetSidePots()[1].Amount)
+	assert.Equal(t, 50, s.GetSidePots()[2].Amount)
+}
+
 func TestSevenCardStud_PlayerAction_Errors(t *testing.T) {
 	t.Run("game ended", func(t *testing.T) {
 		s := setupSevenCardStudForHumanAction(SevenCardStudPhaseThirdStreet)
