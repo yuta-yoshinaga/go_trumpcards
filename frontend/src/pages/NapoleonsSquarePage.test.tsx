@@ -343,6 +343,17 @@ describe('NapoleonsSquarePage waste, hints and CLI mode', () => {
     await waitFor(() => expect(screen.getByLabelText('捨て札は空です')).toBeInTheDocument());
   });
 
+  it('announces the waste source in the destination live region', async () => {
+    mockExec.mockResolvedValue(withWaste);
+    renderWithProviders(<NapoleonsSquarePage />);
+    const live = await screen.findByTestId('ns-destination-live');
+    fireEvent.click(await screen.findByRole('button', { name: '♦ 4' }));
+
+    expect(live).toHaveTextContent(
+      '捨て札を選択しました。移動先。場札: 列2、列3、列4、列5、列6、列7、列8、列9、列10、列11。組札: なし。',
+    );
+  });
+
   it('selects the waste top and sends it to a foundation', async () => {
     mockExec.mockResolvedValue(withWaste);
     renderWithProviders(<NapoleonsSquarePage />);
