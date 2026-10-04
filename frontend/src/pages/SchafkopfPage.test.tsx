@@ -12,6 +12,15 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(schafkopfApi.exec);
+const mobileFlag = { value: false };
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileFlag.value }),
+  };
+});
 
 const playPhaseState = makeSchafkopfState();
 const pickPhaseState = makeSchafkopfState({
@@ -73,6 +82,24 @@ describe('SchafkopfPage', () => {
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
       expect(screen.getByAltText('♦ K')).toBeInTheDocument();
     });
+  });
+
+  it.each([false, true])("shows each player's remaining cards in the %s layout", async (isMobile) => {
+    mobileFlag.value = isMobile;
+    mockExec.mockResolvedValue(
+      makeSchafkopfState({
+        players: makeSchafkopfState().players.map((player, index) => ({
+          ...player,
+          cardCount: 8 - index,
+        })),
+      }),
+    );
+    renderWithProviders(<SchafkopfPage />);
+    expect(await screen.findByText(/8枚/)).toBeInTheDocument();
+    expect(screen.getByText(/7枚/)).toBeInTheDocument();
+    expect(screen.getByText(/6枚/)).toBeInTheDocument();
+    expect(screen.getByText(/5枚/)).toBeInTheDocument();
+    mobileFlag.value = false;
   });
 
   it('shows the picker team points and winning threshold during play', async () => {
