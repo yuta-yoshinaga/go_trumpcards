@@ -306,7 +306,7 @@ function RussianSolitairePageContent() {
   const legalTargets =
     selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
       ? russianSolitaireLegalTargets(state, selectedSource.col, selectedSource.cardIndex)
-      : null;
+      : { tableau: new Set<number>(), foundation: new Set<number>() };
 
   return (
     <GamePageShell
@@ -355,7 +355,7 @@ function RussianSolitairePageContent() {
               {state.foundation.map((pile, i) => {
                 const topCard = pile.length > 0 ? pile[pile.length - 1] : null;
                 const isTarget = selectedSource !== null;
-                const isLegalTarget = legalTargets?.foundation.has(i) ?? false;
+                const isLegalTarget = legalTargets.foundation.has(i);
                 return (
                   <DropZone
                     key={i}
@@ -439,8 +439,7 @@ function RussianSolitairePageContent() {
                         }`}
                         style={{ width: rs.cw, height: rs.ch }}
                         onClick={() =>
-                          selectedSource &&
-                          handleSelectTarget('tableau', colIdx, legalTargets?.tableau.has(colIdx) ?? false)
+                          selectedSource && handleSelectTarget('tableau', colIdx, legalTargets.tableau.has(colIdx))
                         }
                         disabled={!isPlaying}
                         aria-disabled={!selectedSource || undefined}
@@ -457,7 +456,7 @@ function RussianSolitairePageContent() {
                         const zone: RussianSolitaireMoveZone = { zone: 'tableau', col: colIdx, cardIndex: cardIdx };
                         const isDragSrc = dnd.isDragSource(zone);
                         const isLast = cardIdx === col.length - 1;
-                        const isLegalTarget = legalTargets?.tableau.has(colIdx) && isLast;
+                        const isLegalTarget = legalTargets.tableau.has(colIdx) && isLast;
 
                         // Hint highlight (announced via the card aria-labels, no visible text panel)
                         const hintFrom =
@@ -515,7 +514,7 @@ function RussianSolitairePageContent() {
                                         // onto its own column, which the server rejects — so the player got a
                                         // rejection message instead of a deselect. Found by #4439.
                                         if (selectedSource && !isSelected && isLast) {
-                                          handleSelectTarget('tableau', colIdx, !!legalTargets?.tableau.has(colIdx));
+                                          handleSelectTarget('tableau', colIdx, legalTargets.tableau.has(colIdx));
                                         } else {
                                           handleSelectSource('tableau', colIdx, cardIdx);
                                         }

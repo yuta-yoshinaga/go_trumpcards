@@ -158,6 +158,25 @@ describe('RussianSolitairePage', () => {
     expect(source).toHaveClass('ring-ds-warning');
   });
 
+  it('keeps the source selected when an empty tableau is an illegal destination', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[{ card: card('SPADE', 12), faceUp: true }], [], ...playingState.tableau.slice(2)],
+    });
+    renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const source = screen.getByRole('button', { name: '♠ Q' });
+    fireEvent.click(source);
+    const emptyColumn = screen.getByRole('button', { name: '空 場札 1' });
+    expect(emptyColumn).toHaveAccessibleName('空 場札 1');
+    fireEvent.click(emptyColumn);
+
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+    expect(source).toHaveClass('ring-ds-warning');
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<RussianSolitairePage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
