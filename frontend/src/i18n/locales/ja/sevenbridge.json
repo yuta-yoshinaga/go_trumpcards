@@ -23,6 +23,8 @@
   "scoresPlayer": "プレイヤー",
   "scoresRound": "ラウンド",
   "scoresTotal": "累計",
+  "scoreHistory": "ラウンド別得点履歴",
+  "scoreHistoryRound": "ラウンド",
   "scoreBreakdown": {
     "title": "ラウンド得点内訳",
     "ace": "エース",

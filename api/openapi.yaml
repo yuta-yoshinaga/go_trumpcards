@@ -46639,6 +46639,13 @@ components:
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
           items:
             $ref: '#/components/schemas/ActionLogEntry'
+        roundScoreHistory:
+          type: array
+          description: Completed round scores, indexed by round and player.
+          items:
+            type: array
+            items:
+              type: integer
         players:
           type: array
           items:

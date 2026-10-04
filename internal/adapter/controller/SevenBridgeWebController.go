@@ -56,7 +56,8 @@ type SevenBridgeWebOutput struct {
 	RoundWinnerIdx   int                           `json:"roundWinnerIdx"`
 	// ClaimedThisTurn は直前ターンで捨て札をポン/チーで取得したか。
 	// メルドを見ても割り込みで取ったのか山から引いたのかは分からない (#5547)。
-	ClaimedThisTurn bool `json:"claimedThisTurn"`
+	ClaimedThisTurn   bool    `json:"claimedThisTurn"`
+	RoundScoreHistory [][]int `json:"roundScoreHistory"`
 	WebOutputBase
 	Config SevenBridgeWebOutputConfig `json:"config"`
 }
@@ -90,10 +91,11 @@ var NewSevenBridgeWebController, NewSevenBridgeWebControllerWithProvider = webCo
 
 func newSevenBridgeDefaultOutput(msg string) *SevenBridgeWebOutput {
 	return &SevenBridgeWebOutput{
-		Players:        make([]*SevenBridgeWebOutputPlayer, 0),
-		WinnerIdx:      -1,
-		RoundWinnerIdx: -1,
-		WebOutputBase:  WebOutputBase{Message: msg},
+		Players:           make([]*SevenBridgeWebOutputPlayer, 0),
+		WinnerIdx:         -1,
+		RoundWinnerIdx:    -1,
+		RoundScoreHistory: make([][]int, 0),
+		WebOutputBase:     WebOutputBase{Message: msg},
 	}
 }
 

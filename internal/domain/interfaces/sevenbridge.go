@@ -65,6 +65,8 @@ type SevenBridgeGame interface {
 	GetScoreBreakdown(playerIdx int) domain.SevenBridgeScoreBreakdown
 	// GetRoundWinnerIdx 直近ラウンドの勝者
 	GetRoundWinnerIdx() int
+	// GetRoundScoreHistory returns completed round scores by player.
+	GetRoundScoreHistory() [][]int
 	// GetClaimedThisTurn 直前ターンで claim されたか
 	GetClaimedThisTurn() bool
 }
