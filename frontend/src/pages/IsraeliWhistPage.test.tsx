@@ -110,6 +110,99 @@ describe('IsraeliWhistPage', () => {
     expect(screen.getByTestId('iw-pass-btn')).toBeInTheDocument();
   });
 
+  it('announces CPU auction bids and passes in the persistent live region', async () => {
+    const initial = makeState();
+    mockExec.mockResolvedValueOnce(initial).mockResolvedValueOnce(
+      makeState({
+        auctionPlayerIdx: 2,
+        players: [seat(0), seat(1, { auctionBid: 5, auctionSuit: 1 }), seat(2), seat(3)],
+      }),
+    );
+    renderWithProviders(<IsraeliWhistPage />);
+    const liveRegion = await screen.findByTestId('iw-cpu-bid-announcement');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
+    fireEvent.click(await screen.findByTestId('iw-pass-btn'));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('CPU1が5で入札しました'));
+  });
+
+  it('announces a CPU pass in the auction', async () => {
+    mockExec.mockResolvedValueOnce(makeState()).mockResolvedValueOnce(
+      makeState({
+        auctionPlayerIdx: 2,
+        players: [seat(0), seat(1, { passed: true }), seat(2), seat(3)],
+      }),
+    );
+    renderWithProviders(<IsraeliWhistPage />);
+    fireEvent.click(await screen.findByTestId('iw-pass-btn'));
+    await waitFor(() => expect(screen.getByTestId('iw-cpu-bid-announcement')).toHaveTextContent('CPU1が降りました'));
+  });
+
+  it('announces every CPU auction bid and pass in seat order', async () => {
+    mockExec.mockResolvedValueOnce(makeState()).mockResolvedValueOnce(
+      makeState({
+        auctionPlayerIdx: 3,
+        players: [seat(0), seat(1, { auctionBid: 5, auctionSuit: 1 }), seat(2, { passed: true }), seat(3)],
+      }),
+    );
+    renderWithProviders(<IsraeliWhistPage />);
+    fireEvent.click(await screen.findByTestId('iw-pass-btn'));
+    await waitFor(() => {
+      expect(screen.getByTestId('iw-cpu-bid-announcement')).toHaveTextContent(
+        'CPU1が5で入札しました、CPU2が降りました',
+      );
+    });
+  });
+
+  it('does not announce reset auction values when a new round starts', async () => {
+    mockExec
+      .mockResolvedValueOnce(
+        makeState({
+          roundNumber: 1,
+          players: [seat(0), seat(1, { passed: true, auctionBid: 5, auctionSuit: 1, bid: 6 }), seat(2), seat(3)],
+        }),
+      )
+      .mockResolvedValueOnce(
+        makeState({
+          roundNumber: 2,
+          players: [seat(0), seat(1), seat(2), seat(3)],
+        }),
+      );
+    renderWithProviders(<IsraeliWhistPage />);
+    const liveRegion = await screen.findByTestId('iw-cpu-bid-announcement');
+    fireEvent.click(await screen.findByTestId('iw-pass-btn'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pass'));
+    expect(liveRegion).toBeEmptyDOMElement();
+  });
+
+  it('announces a CPU declaration when the response advances from auction to calling', async () => {
+    mockExec.mockResolvedValueOnce(makeState()).mockResolvedValueOnce(
+      makeState({
+        phase: 1,
+        bidPlayerIdx: 2,
+        players: [seat(0), seat(1, { auctionBid: 5, auctionSuit: 1, bid: 6 }), seat(2), seat(3)],
+      }),
+    );
+    renderWithProviders(<IsraeliWhistPage />);
+    fireEvent.click(await screen.findByTestId('iw-pass-btn'));
+    await waitFor(() =>
+      expect(screen.getByTestId('iw-cpu-bid-announcement')).toHaveTextContent('CPU1が6トリックを宣言しました'),
+    );
+  });
+
+  it('announces a CPU target trick call', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeState({ phase: 1, bidPlayerIdx: 0 }))
+      .mockResolvedValueOnce(
+        makeState({ phase: 1, bidPlayerIdx: 2, players: [seat(0), seat(1, { bid: 6 }), seat(2), seat(3)] }),
+      );
+    renderWithProviders(<IsraeliWhistPage />);
+    fireEvent.click(await screen.findByTestId('iw-bid-0-btn'));
+    await waitFor(() =>
+      expect(screen.getByTestId('iw-cpu-bid-announcement')).toHaveTextContent('CPU1が6トリックを宣言しました'),
+    );
+  });
+
   it('includes the translated suit name in each auction button accessible name', async () => {
     renderWithProviders(<IsraeliWhistPage />);
     const suits = [
