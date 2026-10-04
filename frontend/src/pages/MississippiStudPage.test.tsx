@@ -308,6 +308,13 @@ describe('MississippiStudPage', () => {
     renderWithProviders(<MississippiStudPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
     expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('合計配当: 1200');
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('アンティ配当: 200');
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('3rd配当: 600');
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('4th配当: 200');
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('5th配当: 200');
+    expect(endPhaseWin.antePayout + endPhaseWin.streetPayouts.reduce((sum, payout) => sum + payout, 0)).toBe(
+      endPhaseWin.totalPayout,
+    );
     expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('差引損益: +600');
   });
 
