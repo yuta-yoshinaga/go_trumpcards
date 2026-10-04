@@ -256,6 +256,14 @@ describe('CariocaPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /Next round|次のラウンドへ/ })).toBeInTheDocument());
   });
 
+  it('starts the next round when requested', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<CariocaPage />);
+    const nextRound = await screen.findByRole('button', { name: /Next round|次のラウンドへ/ });
+    fireEvent.click(nextRound);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+
   // **誰が上がってラウンドが終わったかは点数表からは読めない。**サーバは
   // roundWinnerIdx を毎回送っているのに、画面が一度も読んでいなかった (#6498)。
   it('names the player who ended the round', async () => {
