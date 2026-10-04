@@ -30,6 +30,14 @@
   "counterButton": "Counter-Kemps! ({{name}})",
   "declineButton": "Decline",
   "nextRound": "Next round",
+  "roundResultMessage": "{{team}} wins the round: {{result}}",
+  "roundResults": {
+    "0": "No result",
+    "1": "Kemps",
+    "2": "Counter-Kemps",
+    "3": "Failed Counter-Kemps",
+    "4": "Missed declaration"
+  },
   "settings": {
     "title": "Settings",
     "cpuDifficulty": "CPU difficulty",

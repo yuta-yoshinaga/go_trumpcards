@@ -371,10 +371,18 @@ describe('KempsPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
   });
 
+  it('shows the round winner and result without replacing the final game result', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<KempsPage />);
+    expect(await screen.findByTestId('kemps-round-result')).toHaveTextContent('チームAのラウンド勝利：ケムプス成功');
+    expect(screen.getByRole('button', { name: '次のラウンドへ' })).toBeInTheDocument();
+  });
+
   it('shows the win message when the human team wins', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<KempsPage />);
     await waitFor(() => expect(screen.getByText('あなたのチームの勝利です！')).toBeInTheDocument());
+    expect(screen.queryByTestId('kemps-round-result')).not.toBeInTheDocument();
   });
 
   it('changes CPU difficulty via the settings panel and resets', async () => {

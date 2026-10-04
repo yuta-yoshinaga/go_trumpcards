@@ -496,9 +496,17 @@ function KempsPageContent() {
               )}
 
               {isRoundEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={() => exec('next')} disabled={loading}>
-                  {t('nextRound')}
-                </button>
+                <>
+                  <p className="text-ds-text-primary text-sm font-semibold" data-testid="kemps-round-result">
+                    {t('roundResultMessage', {
+                      team: teamLabel(state.roundWinnerTeam),
+                      result: t(`roundResults.${state.roundResult}`),
+                    })}
+                  </p>
+                  <button type="button" className={btnSuccess} onClick={() => exec('next')} disabled={loading}>
+                    {t('nextRound')}
+                  </button>
+                </>
               )}
 
               {isGameEnd && (
