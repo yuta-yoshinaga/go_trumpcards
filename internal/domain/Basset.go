@@ -40,13 +40,19 @@ type BassetBet struct {
 
 // BassetTurnResult describes the two cards dealt by the bank.
 type BassetTurnResult struct {
-	BankerCard     *Card `json:"bc"`
-	PlayerCard     *Card `json:"pc"`
-	Hit            bool  `json:"ht"`
-	Net            int   `json:"nt"`
-	BankerHit      bool  `json:"bh"`
-	PlayerHit      bool  `json:"ph"`
-	PayoutReceived int   `json:"pr"`
+	BankerCard *Card `json:"bc"`
+	PlayerCard *Card `json:"pc"`
+	// Hit is true when either the banker or player card matches the wager.
+	// It has the same value as BankerHit || PlayerHit.
+	Hit bool `json:"ht"`
+	Net int  `json:"nt"`
+	// BankerHit reports whether the banker card matched the wager. If both
+	// cards match, BankerHit takes precedence because the UI shows the parent hit.
+	BankerHit bool `json:"bh"`
+	// PlayerHit reports whether the player card matched the wager.
+	PlayerHit bool `json:"ph"`
+	// PayoutReceived is the amount credited when winnings were taken.
+	PayoutReceived int `json:"pr"`
 }
 
 // Basset is the single-player Venetian banking game.
@@ -145,12 +151,13 @@ func (b *Basset) PlayerDealTurn() error {
 	}
 	banker, player := b.trumpCards.DrawCard(), b.trumpCards.DrawCard()
 	b.turnsPlayed++
-	hit := banker.GetValue() == b.betRank || player.GetValue() == b.betRank
-	b.lastTurn = &BassetTurnResult{BankerCard: banker, PlayerCard: player, Hit: hit, BankerHit: banker.GetValue() == b.betRank, PlayerHit: player.GetValue() == b.betRank}
-	if banker.GetValue() == b.betRank {
+	bankerHit, playerHit := banker.GetValue() == b.betRank, player.GetValue() == b.betRank
+	hit := bankerHit || playerHit
+	b.lastTurn = &BassetTurnResult{BankerCard: banker, PlayerCard: player, Hit: hit, BankerHit: bankerHit, PlayerHit: playerHit}
+	if bankerHit {
 		b.totalPayout -= b.bet.Amount
 		b.bet, b.betRank = nil, 0
-	} else if player.GetValue() == b.betRank {
+	} else if playerHit {
 		b.phase = BassetPhaseDecision
 		b.appendLog(-1, "hit", "basset.log.hit", nil, []*Card{banker, player})
 		return nil

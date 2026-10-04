@@ -249,6 +249,10 @@ describe('BassetPage', () => {
   it('takes the winnings and returns to the next-deal state', async () => {
     mockExec.mockResolvedValueOnce(decisionState).mockResolvedValueOnce(roundEndState);
     renderWithProviders(<BassetPage />);
+    expect(await screen.findByTestId('basset-turn-result')).toHaveTextContent(
+      '子札が賭けたランクと一致しました。的中です。',
+    );
+    expect(screen.queryByTestId('basset-payout-received')).not.toBeInTheDocument();
     const take = await screen.findByRole('button', { name: '配当を受け取る' });
     mockExec.mockClear();
     fireEvent.click(take);

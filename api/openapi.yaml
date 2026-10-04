@@ -72599,7 +72599,7 @@ components:
           description: Whether the player card matched the player's wager on the last turn.
         payoutReceived:
           type: integer
-          description: Amount credited when winnings were taken after the last turn.
+          description: Amount credited when winnings were taken after the last turn; otherwise 0.
         turnsPlayed:
           type: integer
         turnsTotal:
