@@ -33,6 +33,36 @@ beforeEach(() => {
 });
 
 describe('ShamrocksPage', () => {
+  it('explains action buttons in both languages and advances when they are absent', async () => {
+    localStorage.clear();
+    mockExec.mockResolvedValue(makeState({ phase: 1 }));
+    renderWithProviders(<ShamrocksPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'チュートリアル' }));
+    for (let index = 0; index < 3; index++) {
+      fireEvent.click(await screen.findByRole('button', { name: '次へ' }));
+    }
+
+    expect(
+      await screen.findByText(
+        'ヒントで次の手を確認できます。自動完成は可能な組札への移動を進め、元に戻すは直前の手を取り消します。',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId('autocomplete-button')).not.toBeInTheDocument();
+
+    try {
+      await i18n.changeLanguage('en');
+      expect(
+        await screen.findByText(
+          'Hint shows a suggested move. Auto-complete moves cards to foundations when possible, and undo takes back your last move.',
+        ),
+      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Complete' })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('records each clear once, shows the average moves, and can reset the session stats', async () => {
     localStorage.clear();
     mockExec.mockResolvedValue(makeState({ phase: 1, moveCount: 12 }));

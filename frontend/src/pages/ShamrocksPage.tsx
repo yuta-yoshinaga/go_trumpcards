@@ -42,6 +42,12 @@ const LL_TUTORIAL_STEPS: TutorialStep[] = [
     placement: 'top',
     advanceOn: 'next',
   },
+  {
+    target: '[data-testid="autocomplete-button"]',
+    messageKey: 'tutorial.actionButtons',
+    placement: 'top',
+    advanceOn: 'next',
+  },
 ];
 
 /** Maps numeric Shamrocks phases to i18n phase-label keys. */
