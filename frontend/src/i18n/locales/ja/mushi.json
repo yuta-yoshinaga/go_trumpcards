@@ -4,6 +4,8 @@
   "you": "あなた",
   "opponent": "CPU",
   "field": "場",
+  "fieldSelectable": "この場札は選択できます",
+  "fieldNotSelectable": "この場札は選択できません",
   "choosePrompt": "{{card}} を出しました — 取る札を選んでください",
   "opponentHand": "CPU の手札 {{n}} 枚",
   "opponentHandAriaLabel": "CPU の手札 {{n}} 枚（裏向き）",
