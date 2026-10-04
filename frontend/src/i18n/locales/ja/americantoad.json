@@ -47,7 +47,7 @@
   "redealAriaLabel": "捨て札を山札に戻す（残り1回）",
   "redealAvailable": "山札が尽きました。めくり直しはあと1回使えます",
   "reserve": "リザーブ",
-  "reserveAriaLabel": "リザーブ 残り{{count}}枚",
+  "reserveAriaLabel": "リザーブの一番上: {{card}}、残り{{count}}枚",
   "reservedColumnLabel": "予約",
   "reservedColumnDescription": "リザーブから補充待ち",
   "reservedColumnAriaLabel": "空のタブロー列 {{col}} (リザーブから自動で埋まります)",
