@@ -217,6 +217,15 @@ describe('TarabishPage', () => {
     expect(screen.getByTestId('tb-score')).toHaveTextContent('140');
   });
 
+  it("shows this round's team points separately from running scores", async () => {
+    mockExec.mockResolvedValue(makeState({ scores: [220, 140], roundPoints: [35, 12] } as Partial<TarabishResponse>));
+    renderWithProviders(<TarabishPage />);
+    expect(await screen.findByTestId('tb-score')).toHaveTextContent('220');
+    expect(screen.getByTestId('tb-round-points')).toHaveTextContent('35');
+    expect(screen.getByTestId('tb-round-points')).toHaveTextContent('12');
+    expect(screen.getByTestId('tb-round-points')).toHaveTextContent('ラウンド得点');
+  });
+
   it('advances the round when the next-round button is pressed', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 2 }));
     renderWithProviders(<TarabishPage />);
