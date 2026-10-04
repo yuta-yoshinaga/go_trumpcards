@@ -124,6 +124,8 @@ function RamschPageContent() {
   const isGameEnd = state.phase === RamschPhase.GAME_END || state.gameEndFlag;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
+  const dealerPlayer = state.players[state.dealerIdx];
+  const dealerName = dealerPlayer?.isHuman ? t('you') : `CPU ${state.dealerIdx}`;
   const isHumanTurn = isPlay && state.players[state.currentPlayerIdx]?.isHuman === true;
 
   return (
@@ -180,7 +182,7 @@ function RamschPageContent() {
                 つもりで来た人が真っ先に取り違えるところで、無ければ盤が読めない。 */}
             <div className="bg-black/30 text-ds-text-primary p-3 rounded space-y-1 text-sm">
               <div>
-                {t('round')}: {state.roundNumber} | {t('dealer')}: CPU {state.dealerIdx}
+                {t('round')}: {state.roundNumber} | {t('dealer')}: {dealerName}
               </div>
               <div className="text-xs text-ds-text-muted" data-testid="ramsch-trump-note">
                 {t('trumpFixed')}
