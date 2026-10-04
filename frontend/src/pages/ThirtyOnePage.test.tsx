@@ -399,9 +399,6 @@ describe('ThirtyOnePage', () => {
   });
 });
 
-// #5623: 難易度セレクトは Easy/Normal/Hard としか言わず、何が変わるのか
-// (CPU がノックしてくる点数) は体験からしか学べなかった。数字はサーバーが
-// 運んでくるので、説明文に書き写さない。
 describe('ThirtyOnePage difficulty options', () => {
   it('localizes the labels while preserving the difficulty values sent to reset', async () => {
     renderWithProviders(<ThirtyOnePage />);
@@ -440,6 +437,9 @@ describe('ThirtyOnePage difficulty options', () => {
   });
 });
 
+// #5623: 難易度セレクトは Easy/Normal/Hard としか言わず、何が変わるのか
+// (CPU がノックしてくる点数) は体験からしか学べなかった。数字はサーバーが
+// 運んでくるので、説明文に書き写さない。
 describe('ThirtyOnePage difficulty help', () => {
   it('explains the difficulty with the thresholds the server sent', async () => {
     mockExec.mockResolvedValue(
@@ -455,6 +455,7 @@ describe('ThirtyOnePage difficulty help', () => {
     expect(tip).toHaveTextContent('29');
     expect(tip).toHaveTextContent('27');
     expect(tip).toHaveTextContent('25');
+    expect(tip).toHaveTextContent('簡単 29 / 普通 27 / 難しい 25');
   });
 
   // **サーバーの値を出す。**画面に焼き込んだ数字だと、定数が動いても気づけない。
