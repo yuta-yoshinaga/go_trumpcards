@@ -12,6 +12,7 @@
   "moveCount": "Moves",
   "score": "Score",
   "playableSummary": "Playable now: {{count}}",
+  "cardPlayableAria": "{{card}} — removable",
   "stockEmptyPlayable": "Stock empty: {{count}} card(s) can be removed",
   "stockEmptyNoPlayable": "Stock empty: no cards can be removed",
   "drawRecommended": "Draw recommended",

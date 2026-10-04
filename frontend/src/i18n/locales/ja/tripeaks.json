@@ -11,6 +11,7 @@
   "moveCount": "手数",
   "score": "スコア",
   "playableSummary": "今出せるカード: {{count}}枚",
+  "cardPlayableAria": "{{card}}、除去可能",
   "stockEmptyPlayable": "山札切れ: {{count}}枚除去できます",
   "stockEmptyNoPlayable": "山札切れ: 除去できるカードはありません",
   "drawRecommended": "ドロー推奨",
