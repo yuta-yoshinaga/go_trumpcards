@@ -61,12 +61,24 @@ beforeEach(() => {
 
 describe('PolignacPage', () => {
   it('opens the action log during an unfinished game', async () => {
+    mockActionLog.mockResolvedValue({
+      entries: [
+        {
+          turnNumber: 1,
+          playerIdx: 0,
+          actionType: 'pass',
+          detailCode: 'polignac.log.pass',
+          detail: '宣言なし',
+        },
+      ],
+    });
     renderWithProviders(<PolignacPage />);
 
     const logButton = await screen.findByRole('button', { name: '棋譜を見る' });
     fireEvent.click(logButton);
 
     expect(await screen.findByRole('heading', { name: '棋譜' })).toBeInTheDocument();
+    expect(await screen.findByText(/pass: 宣言なし/)).toBeInTheDocument();
   });
 
   it('announces playable cards while retaining each card name', async () => {
