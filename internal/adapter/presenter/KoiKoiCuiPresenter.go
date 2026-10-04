@@ -209,5 +209,7 @@ var koikoiHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *KoiKoiCuiPresenter) ActionLogOutput(g interfaces.KoiKoiGame) string {
-	return actionLogOutputTextForSeats[*domain.KoiKoiPlayer](g)
+	return actionLogToTextWithNames(g.GetActionLog(), func(idx int) string {
+		return cuiPlayerName(g.GetPlayer(idx), idx)
+	})
 }

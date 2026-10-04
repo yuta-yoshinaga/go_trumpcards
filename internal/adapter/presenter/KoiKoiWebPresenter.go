@@ -198,5 +198,5 @@ func (p *KoiKoiWebPresenter) HintOutput(g interfaces.KoiKoiGame) string {
 
 // ActionLogOutput は棋譜を JSON 出力する。
 func (p *KoiKoiWebPresenter) ActionLogOutput(g interfaces.KoiKoiGame) string {
-	return actionLogOutputJSON(g)
+	return actionLogToJSON(g.GetActionLog())
 }
