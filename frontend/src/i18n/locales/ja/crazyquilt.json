@@ -29,6 +29,8 @@
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
   "gameOverSummary": "組札 {{count}}/104 枚（{{percent}}%）まで到達",
+  "foundationProgress": "組札 {{count}}/104枚",
+  "foundationProgressLabel": "組札の完成度",
   "hintAvailable": "ヒントがあります",
   "noHint": "ヒントはありません",
   "tutorial": {
