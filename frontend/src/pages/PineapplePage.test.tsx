@@ -366,7 +366,7 @@ describe('PineapplePage', () => {
     await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
     const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
 
-    const group = cardButtons[0].closest('[aria-describedby]');
+    const group = cardButtons[0].parentElement?.parentElement;
     expect(group).toHaveAttribute('aria-describedby', 'pn-discard-limit-desc');
     expect(document.getElementById('pn-discard-limit-desc')).toHaveTextContent('最大1枚');
 
@@ -1246,7 +1246,13 @@ describe('PineapplePage', () => {
     mockExec.mockResolvedValue(discardState);
     renderWithProviders(<PineapplePage />);
     await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
-    expect(screen.getAllByTestId('cp-discard-candidate').length).toBeGreaterThan(0);
+    const candidates = screen.getAllByTestId('cp-discard-candidate');
+    expect(candidates.length).toBeGreaterThan(0);
+    const candidate = candidates[0];
+    const button = candidate.closest('div')?.querySelector('button');
+    expect(candidate.id).toBeTruthy();
+    expect(button).toHaveAttribute('aria-describedby', expect.stringContaining(candidate.id));
+    expect(button).toHaveAttribute('aria-describedby', expect.stringContaining('pn-discard-limit-desc'));
     expect(screen.getAllByTestId('cp-discard-recommended').length).toBeGreaterThan(0);
   });
 
@@ -1274,6 +1280,10 @@ describe('PineapplePage', () => {
     renderWithProviders(<PineapplePage variant="crazypineapple" />);
     await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
     expect(screen.queryByTestId('cp-discard-candidate')).not.toBeInTheDocument();
+    expect(screen.getByAltText('♠ A').closest('button')).not.toHaveAttribute(
+      'aria-describedby',
+      expect.stringContaining('cp-discard-candidate-'),
+    );
   });
 
   it('does not show Crazy Pineapple candidate labels outside the discard phase', async () => {

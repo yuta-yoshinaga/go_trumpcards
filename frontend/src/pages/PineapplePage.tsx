@@ -676,6 +676,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                                 canDiscard
                                   ? [
                                       'pn-discard-limit-desc',
+                                      candKey ? `cp-discard-candidate-${idx}` : null,
                                       irishCandKey ? `irishpoker-discard-candidate-${idx}` : null,
                                     ]
                                       .filter(Boolean)
@@ -691,6 +692,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                             </button>
                             {candKey && (
                               <span
+                                id={`cp-discard-candidate-${idx}`}
                                 className="mt-0.5 text-[10px] text-ds-text-muted"
                                 data-testid="cp-discard-candidate"
                               >
