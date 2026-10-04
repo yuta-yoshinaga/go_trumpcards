@@ -62,13 +62,47 @@ describe('AccordionPage', () => {
       const { container } = renderWithProviders(<AccordionPage />);
       await screen.findByRole('button', { name: /^0:/ });
       const pileRow = container.querySelector('[data-tutorial="ac-piles"]');
-      expect(pileRow).toHaveClass('overflow-x-auto', 'flex-nowrap');
+      expect(pileRow).toHaveClass('overflow-x-auto', 'flex-nowrap', 'pt-2');
+      const piles = pileRow?.querySelectorAll('button');
+      expect(piles).toHaveLength(playingState.piles.length);
+      piles?.forEach((pile) => {
+        expect(pile).toHaveClass('shrink-0');
+      });
 
       fireEvent.keyDown(document.body, { key: 'ArrowRight' });
       const selectedPile = await screen.findByRole('button', { name: /^0:/ });
-      await waitFor(() => expect(scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({ inline: 'center' })));
+      await waitFor(() =>
+        expect(scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({ inline: 'center', behavior: 'smooth' })),
+      );
       expect(selectedPile).toHaveAttribute('aria-pressed', 'true');
+
+      vi.mocked(window.matchMedia).mockReturnValue({
+        matches: true,
+        media: '(prefers-reduced-motion: reduce)',
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      });
+      fireEvent.keyDown(document.body, { key: 'ArrowRight' });
+      await waitFor(() =>
+        expect(scrollIntoView).toHaveBeenLastCalledWith(
+          expect.objectContaining({ inline: 'center', behavior: 'auto' }),
+        ),
+      );
     } finally {
+      vi.mocked(window.matchMedia).mockImplementation((query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      }));
       Element.prototype.scrollIntoView = originalScrollIntoView;
     }
   });

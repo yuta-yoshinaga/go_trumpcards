@@ -253,7 +253,8 @@ function AccordionPageContent() {
   const pileCount = state?.pileCount ?? 0;
   useEffect(() => {
     if (selectedIdx === null) return;
-    pileButtonRefs.current[selectedIdx]?.scrollIntoView?.({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    pileButtonRefs.current[selectedIdx]?.scrollIntoView?.({ inline: 'center', block: 'nearest', behavior });
   }, [selectedIdx]);
   const moveSelection = useCallback(
     (delta: number) => {
@@ -351,7 +352,7 @@ function AccordionPageContent() {
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             <div
-              className="flex flex-nowrap gap-1 sm:gap-2 w-full overflow-x-auto justify-start pb-1"
+              className="flex flex-nowrap gap-1 sm:gap-2 w-full overflow-x-auto justify-start pt-2 pb-1 px-1"
               data-tutorial="ac-piles"
             >
               {(() => {
