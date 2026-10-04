@@ -491,20 +491,24 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                   </div>
                 </>
               );
-              const cpuPlayerCards = cpuPlayers.map((p) => (
-                <CpuPlayerCard
-                  key={p.id}
-                  player={p}
-                  showCards={isShowdown}
-                  faceDownCount={2}
-                  showHandName={isShowdown}
-                  extraInfo={
-                    p.totalHands > 0 ? (
-                      <HudStats namespace={variant} vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} />
-                    ) : undefined
-                  }
-                />
-              ));
+              const cpuPlayerCards = cpuPlayers.map((p) => {
+                const playerIdx = state.players.findIndex((player) => player.id === p.id);
+                const faceDownCount = state.discardDone[playerIdx] ? 2 : state.initialDealCount;
+                return (
+                  <CpuPlayerCard
+                    key={p.id}
+                    player={p}
+                    showCards={isShowdown}
+                    faceDownCount={faceDownCount}
+                    showHandName={isShowdown}
+                    extraInfo={
+                      p.totalHands > 0 ? (
+                        <HudStats namespace={variant} vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} />
+                      ) : undefined
+                    }
+                  />
+                );
+              });
 
               if (!isMobile) {
                 return (

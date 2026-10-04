@@ -208,6 +208,48 @@ beforeEach(() => {
 });
 
 describe('PineapplePage', () => {
+  it('shows each CPU its initial hole-card count until that CPU discards', async () => {
+    mockCrazyExec.mockResolvedValue({
+      ...preFlopState,
+      initialDealCount: 3,
+      discardDone: [false, false, false, false],
+    });
+    const firstRender = renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(mockCrazyExec).toHaveBeenCalled());
+    expect(firstRender.container.querySelectorAll('img[alt="カード裏面"]').length).toBe(14);
+    firstRender.unmount();
+
+    mockCrazyExec.mockResolvedValue({
+      ...preFlopState,
+      initialDealCount: 3,
+      discardDone: [false, true, true, true],
+    });
+    const secondRender = renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(secondRender.container.querySelectorAll('img[alt="カード裏面"]').length).toBe(11));
+  });
+
+  it('shows HUD stats for CPUs with completed hands', async () => {
+    mockExec.mockResolvedValue({
+      ...preFlopState,
+      players: [humanPlayer(), cpuPlayer(1, { totalHands: 1, vpip: 40 })],
+    });
+    const { container } = renderWithProviders(<PineapplePage />);
+    const hudStats = await screen.findByTestId('hud-stats');
+    expect(hudStats).toBeInTheDocument();
+    expect(container.querySelector('[data-testid="hud-vpip-tendency"]')).toHaveAttribute('data-tendency', 'loose');
+  });
+
+  it('uses the Irish Poker initial deal count until CPU discards', async () => {
+    mockIrishExec.mockResolvedValue({
+      ...preFlopState,
+      initialDealCount: 4,
+      discardDone: [false, false, false, false],
+    });
+    const { container } = renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(mockIrishExec).toHaveBeenCalled());
+    expect(container.querySelectorAll('img[alt="カード裏面"]').length).toBe(17);
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<PineapplePage />);
