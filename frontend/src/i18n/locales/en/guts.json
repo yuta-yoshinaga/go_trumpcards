@@ -60,7 +60,7 @@
       "medium": "Medium",
       "low": "Low"
     },
-    "matchRisk": "If you stay and lose: pay ~pot ({{pot}})"
+    "matchRisk": "Maximum payment if you lose: {{amount}}"
   },
   "tutorial": {
     "info": "This shows the round number, pot, ante, and each player's chips and status. Guts is a fast pot-vying gambling game where everyone holds 2 cards and simultaneously declares In (stay) or Out (fold).",
