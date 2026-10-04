@@ -191,6 +191,19 @@ describe('HorsePage', () => {
     }
   });
 
+  it('shows the amount needed to call, but not when checking is free', async () => {
+    mockExec.mockResolvedValueOnce(makeHorseState({ toCall: 25 }));
+    const { unmount } = renderWithProviders(<HorsePage />);
+    const callButton = await screen.findByRole('button', { name: /コール/ });
+    expect(callButton).toHaveTextContent('コール （25 チップ）');
+
+    unmount();
+    mockExec.mockResolvedValueOnce(makeHorseState({ toCall: 0 }));
+    renderWithProviders(<HorsePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: /コール/ })).not.toBeInTheDocument();
+  });
+
   it('shows folded and all-in seat statuses', async () => {
     const base = makeHorseState();
     mockExec.mockResolvedValue({
@@ -209,7 +222,7 @@ describe('HorsePage', () => {
     ['オールイン', 'allin'],
   ] as const)('sends %s while a bet is outstanding', async (label, action) => {
     renderWithProviders(<HorsePage />);
-    fireEvent.click(await screen.findByRole('button', { name: label }));
+    fireEvent.click(await screen.findByRole('button', { name: label === 'コール' ? /^コール/ : label }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('action', { action }));
   });
 

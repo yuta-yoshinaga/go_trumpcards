@@ -19,6 +19,7 @@
   "disciplineOrder": "{{position}}種目目/全{{total}}種目",
   "handTotal": "通算 {{n}}",
   "pot": "ポット {{pot}}",
+  "callAmount": "（{{amount}} チップ）",
   "community": "場",
   "chips": "{{chips}} チップ",
   "you": "あなた",
