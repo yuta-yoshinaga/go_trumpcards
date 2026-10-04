@@ -386,7 +386,7 @@ describe('BakersDozenPage legal targets', () => {
     await selectSpadeFive();
     await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]').length).toBeGreaterThan(0));
     expect(screen.getByRole('status', { name: '移動先' })).toHaveTextContent(
-      '移動元のカード: ♠ 5。移動可能なタブロー列: 2',
+      '移動元のカード: ♠ 5。移動可能なタブロー列: 1',
     );
   });
 
@@ -430,14 +430,14 @@ describe('BakersDozenPage legal targets', () => {
     renderWithProviders(<BakersDozenPage />);
     fireEvent.click(await screen.findByRole('button', { name: '♠ 5、列0' }));
     expect(screen.getByRole('status', { name: '移動先' })).toHaveTextContent(
-      '移動元のカード: ♠ 5。移動可能なタブロー列: 2、3',
+      '移動元のカード: ♠ 5。移動可能なタブロー列: 1、2',
     );
   });
 
   it('clears the announced destinations after moving the selected card', async () => {
     await selectSpadeFive();
     const status = screen.getByRole('status', { name: '移動先' });
-    expect(status).toHaveTextContent('移動元のカード: ♠ 5。移動可能なタブロー列: 2');
+    expect(status).toHaveTextContent('移動元のカード: ♠ 5。移動可能なタブロー列: 1');
     fireEvent.click(screen.getByRole('button', { name: '♥ 6、列1' }));
     await waitFor(() => expect(status).toBeEmptyDOMElement());
   });
@@ -538,7 +538,7 @@ describe('BakersDozenPage destination preview', () => {
 
     fireEvent.mouseEnter(spadeFive);
     await waitFor(() => expect(targets().length).toBeGreaterThan(0));
-    expect(screen.getByTestId('bd-destination-live')).toHaveTextContent('移動可能なタブロー列: 2');
+    expect(screen.getByTestId('bd-destination-live')).toHaveTextContent('移動可能なタブロー列: 1');
     // プレビュー中は弱いリング。選択後と見分けが付く。
     expect(previews().length).toBe(targets().length);
     expect(targets()[0]?.className).toContain('ring-ds-success/70');
@@ -551,7 +551,7 @@ describe('BakersDozenPage destination preview', () => {
     const spadeFive = await render();
     fireEvent.focus(spadeFive);
     await waitFor(() => expect(previews().length).toBeGreaterThan(0));
-    expect(screen.getByTestId('bd-destination-live')).toHaveTextContent('移動可能なタブロー列: 2');
+    expect(screen.getByTestId('bd-destination-live')).toHaveTextContent('移動可能なタブロー列: 1');
     fireEvent.blur(spadeFive);
     await waitFor(() => expect(targets().length).toBe(0));
   });

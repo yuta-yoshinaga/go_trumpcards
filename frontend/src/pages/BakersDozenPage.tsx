@@ -234,7 +234,7 @@ function BakersDozenPageContent() {
   const destinationAnnouncement = previewedCard
     ? t('destinationAnnouncement', {
         card: cardAlt(previewedCard),
-        tableau: [...legalTargets.tableau].map((col) => col + 1).join(t('listSeparator')) || t('noDestination'),
+        tableau: [...legalTargets.tableau].join(t('listSeparator')) || t('noDestination'),
         foundation:
           [...legalTargets.foundation].map((idx) => FOUNDATION_SUITS[idx]).join(t('listSeparator')) ||
           t('noDestination'),
