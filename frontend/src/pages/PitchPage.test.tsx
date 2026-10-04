@@ -366,6 +366,24 @@ describe('PitchPage', () => {
     expect(screen.queryByTestId('pt-previous-trick-empty')).not.toBeInTheDocument();
   });
 
+  it('announces all cards and the winner when a trick resolves', async () => {
+    mockApi.mockResolvedValue({
+      ...playState,
+      phase: PitchPhase.TRICK_END,
+      lastTrick: [
+        { playerIdx: 0, card: makeCard('HEART', 4) },
+        { playerIdx: 1, card: makeCard('SPADE', 12) },
+      ],
+      lastTrickWinner: 1,
+    });
+    renderWithProviders(<PitchPage />);
+
+    const status = await screen.findByTestId('pt-trick-result-live');
+    expect(status).toHaveTextContent('あなたが♥ 4を出しました');
+    expect(status).toHaveTextContent('CPU 1が♠ Qを出しました');
+    expect(status).toHaveTextContent('CPU 1がトリックを獲得しました');
+  });
+
   it('previous-trick panel is empty on the round first trick', async () => {
     mockApi.mockResolvedValue(playState); // trickNumber 1, lastTrick []
     renderWithProviders(<PitchPage />);
