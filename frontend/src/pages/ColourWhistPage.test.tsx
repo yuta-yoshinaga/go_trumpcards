@@ -95,6 +95,20 @@ beforeEach(() => {
 });
 
 describe('ColourWhistPage', () => {
+  it("shows each seat's current trick count", async () => {
+    mockApi.mockResolvedValue({
+      ...playState,
+      players: bidState.players.map((player, index) => ({ ...player, trickCount: index })),
+    });
+    renderWithProviders(<ColourWhistPage />);
+
+    const seats = await screen.findByTestId('colourwhist-seats');
+    expect(seats).toHaveTextContent('獲得トリック数: 0');
+    expect(seats).toHaveTextContent('獲得トリック数: 1');
+    expect(seats).toHaveTextContent('獲得トリック数: 2');
+    expect(seats).toHaveTextContent('獲得トリック数: 3');
+  });
+
   it('shows each completed round score by player', async () => {
     mockApi.mockResolvedValue(
       makeColourWhistState({ players: bidState.players.map((p, i) => ({ ...p, roundScores: [i, -i] })) }),
