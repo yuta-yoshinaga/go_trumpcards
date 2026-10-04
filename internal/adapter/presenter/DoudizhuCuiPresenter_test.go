@@ -41,7 +41,12 @@ func TestDoudizhuCuiPresenter_Output_PlayPhase(t *testing.T) {
 	dg := newDoudizhuForPresenter()
 	dg.SetPhase(domain.DoudizhuPhasePlay)
 	dg.SetLandlordIdx(0)
-	dg.SetCurrentTurn(0)
+	for idx := 0; idx < domain.DoudizhuPlayerCnt; idx++ {
+		if dg.GetPlayer(idx).GetIsHuman() {
+			dg.SetCurrentTurn(idx)
+			break
+		}
+	}
 	dg.SetKittyCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
 	dg.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
 	dg.SetTableCombo(&domain.DoudizhuCombo{Type: domain.DoudizhuComboSingle, Rank: 10, Length: 1, Cards: []*domain.Card{domain.NewCard(domain.CardDesignHeart, 10, false)}})
@@ -59,7 +64,12 @@ func TestDoudizhuCuiPresenter_ShowsTheBidAndBombCountDuringPlay(t *testing.T) {
 	dg := newDoudizhuForPresenter()
 	dg.SetPhase(domain.DoudizhuPhasePlay)
 	dg.SetLandlordIdx(0)
-	dg.SetCurrentTurn(0)
+	for idx := 0; idx < domain.DoudizhuPlayerCnt; idx++ {
+		if dg.GetPlayer(idx).GetIsHuman() {
+			dg.SetCurrentTurn(idx)
+			break
+		}
+	}
 	dg.SetKittyCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
 
 	p := new(presenter.DoudizhuCuiPresenter)
@@ -114,9 +124,16 @@ func TestDoudizhuCuiPresenter_Output_Error(t *testing.T) {
 func TestDoudizhuCuiPresenter_ActionLogOutput(t *testing.T) {
 	dg := newDoudizhuForPresenter()
 	dg.Reset()
+	for idx := 0; idx < domain.DoudizhuPlayerCnt; idx++ {
+		if dg.GetPlayer(idx).GetIsHuman() {
+			dg.SetCurrentTurn(idx)
+			break
+		}
+	}
+	assert.NoError(t, dg.PlayerBid(1))
 
 	p := new(presenter.DoudizhuCuiPresenter)
-	assert.NotEmpty(t, p.ActionLogOutput(dg))
+	assert.Contains(t, p.ActionLogOutput(dg), "T1")
 }
 
 // #5617: 地主の行だけ `Player %d` を直接組み立てており、日本語ロケールでも
