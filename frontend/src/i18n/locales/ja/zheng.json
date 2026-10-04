@@ -11,6 +11,8 @@
   },
   "finishCards": "上がり札: {{cards}}",
   "listSeparator": "、",
+  "comboRulesTitle": "役の強さ",
+  "comboRulesHint": "役: シングル/ペア/3カード/連番(3..A)/連続ペア(3..A)。強さは 3<...<A<2<小J<大J でスートは無関係。爆弾(同ランク4枚)は通常役を切れ、ジョーカーボム(ジョーカー2枚)は全てに勝ちます。",
   "selectToPlay": "カードを選択して出す",
   "tableCards": "場のカード",
   "tableEmpty": "(なし)",
