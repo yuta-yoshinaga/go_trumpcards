@@ -359,6 +359,7 @@ function FourteenOutPageContent() {
 
             <ActionLogSection
               isEndPhase={gameEnded}
+              availableDuringPlay
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
