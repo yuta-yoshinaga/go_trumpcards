@@ -14,7 +14,7 @@ const CHICAGO_TUTORIAL_STEPS: TutorialStep[] = [
     placement: 'top',
     advanceOn: 'next',
   },
-  { target: '[data-tutorial="scs-player-hand"]', messageKey: 'tutorial.spade', placement: 'top', advanceOn: 'next' },
+  { target: '[data-tutorial="chicago-hole-cards"]', messageKey: 'tutorial.spade', placement: 'top', advanceOn: 'next' },
   { target: '[data-tutorial="scs-pot-display"]', messageKey: 'tutorial.split', placement: 'bottom', advanceOn: 'next' },
   { target: '[data-tutorial="scs-action-buttons"]', messageKey: 'tutorial.scoop', placement: 'top', advanceOn: 'next' },
 ];
