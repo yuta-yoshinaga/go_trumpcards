@@ -384,9 +384,8 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
                               key={`${card.design}-${card.value}`}
                               className="inline-block rounded ring-2 ring-ds-accent motion-safe:animate-pulse"
                               data-testid={`latest-door-cpu-${p.id}`}
-                              {...(gameKey === 'soko'
-                                ? { role: 'img' as const, 'aria-label': t('latestDoorCard', { card: cardAlt(card) }) }
-                                : {})}
+                              role="img"
+                              aria-label={t('latestDoorCard', { card: cardAlt(card) })}
                             >
                               {renderPlayerCard(p, card)}
                             </span>
@@ -488,9 +487,8 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
                             key={`${card.design}-${card.value}`}
                             className="inline-block rounded ring-2 ring-ds-accent motion-safe:animate-pulse"
                             data-testid="latest-door-human"
-                            {...(gameKey === 'soko'
-                              ? { role: 'img' as const, 'aria-label': t('latestDoorCard', { card: cardAlt(card) }) }
-                              : {})}
+                            role="img"
+                            aria-label={t('latestDoorCard', { card: cardAlt(card) })}
                           >
                             {renderPlayerCard(humanPlayer, card)}
                           </span>
