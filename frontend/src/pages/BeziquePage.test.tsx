@@ -154,6 +154,7 @@ describe('BeziquePage', () => {
     expect(live).toHaveAttribute('role', 'status');
     expect(live).toHaveAttribute('aria-live', 'polite');
     expect(live).toHaveTextContent('2');
+    expect(screen.getAllByText('宣言できるメルドが2件あります')).toHaveLength(1);
   });
 
   it('announces meld availability through the atomic polite live region', async () => {
@@ -168,7 +169,7 @@ describe('BeziquePage', () => {
     expect(live).toHaveTextContent('2');
   });
 
-  // **0件でも読み上げる。**沈黙は「まだ自分の番でない」と区別が付かない。
+  // 0件でもプレイヤーが選ぶ必要があるため通知する。
   it('announces that nothing can be declared when the list is empty', async () => {
     mockExec.mockResolvedValue(makeBeziqueState({ ...meldPhaseState, availableMelds: [] }));
     renderWithProviders(<BeziquePage />);
@@ -179,12 +180,15 @@ describe('BeziquePage', () => {
     expect(screen.getByTestId('meld-skip')).toBeInTheDocument();
   });
 
-  it('keeps the live region out of the way outside the meld phase', async () => {
-    mockExec.mockResolvedValue(playPhaseState);
+  it('does not announce meld availability outside the human meld turn', async () => {
+    mockExec.mockResolvedValue(
+      makeBeziqueState({ phase: 1, currentPlayerIdx: 1, availableMelds: meldPhaseState.availableMelds }),
+    );
     renderWithProviders(<BeziquePage />);
 
+    const live = await screen.findByTestId('bezique-meld-live');
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    expect(screen.queryByTestId('bezique-meld-live')).not.toBeInTheDocument();
+    expect(live).toBeEmptyDOMElement();
   });
 
   it('gives each meld button a suit-named aria-label inside a labelled group', async () => {
