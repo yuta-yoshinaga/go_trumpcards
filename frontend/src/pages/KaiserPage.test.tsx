@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { kaiserApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { CardDesign, KaiserPlayer, KaiserResponse } from '../types/card';
@@ -143,7 +144,7 @@ describe('KaiserPage', () => {
   });
 
   it('announces team score changes without repeating unchanged scores', async () => {
-    const { unmount } = renderWithProviders(<KaiserPage />);
+    renderWithProviders(<KaiserPage />);
     await screen.findByTestId('kaiser-scores');
     const status = screen.getByRole('status');
     expect(status).toBeEmptyDOMElement();
@@ -153,12 +154,16 @@ describe('KaiserPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
     await waitFor(() => expect(status).toHaveTextContent('得点更新。この局: 4 対 2。通算: 10 対 8'));
 
-    mockExec.mockResolvedValue(makeState({ teamHandPoints: [4, 2], teamScores: [10, 8] }));
-    fireEvent.click(handButtons()[0]);
-    fireEvent.click(screen.getByRole('button', { name: '出す' }));
-    await waitFor(() => expect(screen.getByTestId('kaiser-scores')).toHaveTextContent('この局: 4 対 2'));
-    expect(status).toHaveTextContent('得点更新。この局: 4 対 2。通算: 10 対 8');
-    unmount();
+    try {
+      await i18n.changeLanguage('en');
+      mockExec.mockResolvedValue(makeState({ teamHandPoints: [4, 2], teamScores: [10, 8] }));
+      fireEvent.click(handButtons()[0]);
+      fireEvent.click(screen.getByRole('button', { name: 'Play' }));
+      await waitFor(() => expect(screen.getByTestId('kaiser-scores')).toHaveTextContent('This hand: 4 to 2'));
+      expect(status).toHaveTextContent('得点更新。この局: 4 対 2。通算: 10 対 8');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('does not show contract progress outside play or before a contract is awarded', async () => {
