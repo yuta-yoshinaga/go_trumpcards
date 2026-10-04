@@ -99,6 +99,16 @@ function BassetPageContent() {
                 {t('playerCard')}: {state.playerCard.value}
               </p>
             )}
+            {state.bankerCard && state.playerCard && (
+              <p className="rounded bg-ds-surface p-3" data-testid="basset-turn-result">
+                {state.bankerHit ? t('bankerHitResult') : state.playerHit ? t('playerHitResult') : t('missResult')}
+              </p>
+            )}
+            {state.payoutReceived > 0 && (
+              <p className="rounded bg-ds-surface p-3" data-testid="basset-payout-received">
+                {t('payoutReceived', { amount: state.payoutReceived })}
+              </p>
+            )}
             {state.phase === BassetPhase.BETTING || state.phase === BassetPhase.TURN ? (
               <div className="flex flex-wrap justify-center gap-3">
                 <fieldset className="flex flex-wrap justify-center gap-2">

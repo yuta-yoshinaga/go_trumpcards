@@ -40,10 +40,13 @@ type BassetBet struct {
 
 // BassetTurnResult describes the two cards dealt by the bank.
 type BassetTurnResult struct {
-	BankerCard *Card `json:"bc"`
-	PlayerCard *Card `json:"pc"`
-	Hit        bool  `json:"ht"`
-	Net        int   `json:"nt"`
+	BankerCard     *Card `json:"bc"`
+	PlayerCard     *Card `json:"pc"`
+	Hit            bool  `json:"ht"`
+	Net            int   `json:"nt"`
+	BankerHit      bool  `json:"bh"`
+	PlayerHit      bool  `json:"ph"`
+	PayoutReceived int   `json:"pr"`
 }
 
 // Basset is the single-player Venetian banking game.
@@ -143,7 +146,7 @@ func (b *Basset) PlayerDealTurn() error {
 	banker, player := b.trumpCards.DrawCard(), b.trumpCards.DrawCard()
 	b.turnsPlayed++
 	hit := banker.GetValue() == b.betRank || player.GetValue() == b.betRank
-	b.lastTurn = &BassetTurnResult{BankerCard: banker, PlayerCard: player, Hit: hit}
+	b.lastTurn = &BassetTurnResult{BankerCard: banker, PlayerCard: player, Hit: hit, BankerHit: banker.GetValue() == b.betRank, PlayerHit: player.GetValue() == b.betRank}
 	if banker.GetValue() == b.betRank {
 		b.totalPayout -= b.bet.Amount
 		b.bet, b.betRank = nil, 0
@@ -167,6 +170,7 @@ func (b *Basset) PlayerTakeWinnings() error {
 		return NewDomainError(ErrWrongPhase, "There are no winnings to take.")
 	}
 	payout := b.bet.Amount * (1 + BassetPayoutMultipliers[b.bet.Stage])
+	b.lastTurn.PayoutReceived = payout
 	b.chips.AddChips(payout)
 	b.totalPayout += b.bet.Amount * BassetPayoutMultipliers[b.bet.Stage]
 	b.bet, b.betRank = nil, 0

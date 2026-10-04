@@ -24,6 +24,9 @@ function makeState(overrides: Partial<BassetResponse> = {}): BassetResponse {
     bankerCard: null,
     playerCard: null,
     hit: false,
+    bankerHit: false,
+    playerHit: false,
+    payoutReceived: 0,
     turnsPlayed: 0,
     turnsTotal: 25,
     remaining: 52,
@@ -40,6 +43,7 @@ const turnState = makeState({
   phase: 2,
   bet: { rank: 7, amount: 10, stage: 1 },
   bankerCard: card('SPADE', 3),
+  playerCard: card('CLOVER', 4),
   turnsPlayed: 1,
   remaining: 50,
 });
@@ -49,6 +53,7 @@ const decisionState = makeState({
   bankerCard: card('SPADE', 3),
   playerCard: card('HEART', 7),
   hit: true,
+  playerHit: true,
   turnsPlayed: 1,
   remaining: 50,
 });
@@ -56,6 +61,7 @@ const roundEndState = makeState({
   phase: 4,
   bet: null,
   totalPayout: 20,
+  payoutReceived: 20,
   chips: 1020,
 });
 const gameEndState = makeState({ phase: 5, gameEndFlag: true, chips: 0 });
@@ -180,6 +186,42 @@ describe('BassetPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('deal'));
     expect(await screen.findByText('賭け: 7 / 10 / 1')).toBeInTheDocument();
     expect(screen.getByText('親の札: 3')).toBeInTheDocument();
+    expect(screen.getByTestId('basset-turn-result')).toHaveTextContent(
+      'どちらの札も賭けたランクと一致しませんでした。外れです。',
+    );
+  });
+
+  it('explains banker losses in Japanese and English', async () => {
+    const previousLanguage = i18n.language;
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        phase: 2,
+        bankerCard: card('SPADE', 7),
+        playerCard: card('HEART', 3),
+        bankerHit: true,
+        hit: true,
+      }),
+    );
+    renderWithProviders(<BassetPage />);
+    expect(await screen.findByTestId('basset-turn-result')).toHaveTextContent(
+      '親札が賭けたランクと一致しました。賭け金を失いました。',
+    );
+    try {
+      await i18n.changeLanguage('en');
+      expect(screen.getByTestId('basset-turn-result')).toHaveTextContent(
+        'The banker card matched your rank. Your bet was lost.',
+      );
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
+  it('explains a player hit', async () => {
+    mockExec.mockResolvedValueOnce(decisionState);
+    renderWithProviders(<BassetPage />);
+    expect(await screen.findByTestId('basset-turn-result')).toHaveTextContent(
+      '子札が賭けたランクと一致しました。的中です。',
+    );
   });
 
   it('shows both take and paroli after a hit', async () => {
@@ -211,6 +253,7 @@ describe('BassetPage', () => {
     mockExec.mockClear();
     fireEvent.click(take);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('take'));
+    expect(await screen.findByTestId('basset-payout-received')).toHaveTextContent('受取配当: 20チップ');
     expect(await screen.findByRole('button', { name: '次のディール' })).toBeInTheDocument();
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '次のディール' }));
