@@ -225,7 +225,11 @@ describe('BigTwoPage', () => {
 
     await screen.findByTestId('pass-button');
     const log = screen.getByText(/^\[CPUの行動\]/).parentElement;
+    expect(log).toHaveAttribute('aria-hidden', 'true');
     expect(log).toHaveTextContent('CPU 1がパスしました');
+    const announcement = screen.getByTestId('bt-cpu-action-announcement');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toHaveTextContent('CPU 1がパスしました');
   });
 
   it('shows the cards played by a CPU in the action log', async () => {
@@ -239,12 +243,14 @@ describe('BigTwoPage', () => {
     await screen.findByTestId('pass-button');
     const log = screen.getByText(/^\[CPUの行動\]/).parentElement;
     expect(log).toHaveTextContent('CPU 2が出しました: SPADE 4');
+    expect(screen.getByTestId('bt-cpu-action-announcement')).toHaveTextContent('CPU 2が出しました: SPADE 4');
   });
 
   it('does not render the CPU action log when there are no CPU actions', async () => {
     renderWithProviders(<BigTwoPage />);
     await screen.findByTestId('pass-button');
     expect(screen.queryByText('[CPUの行動]')).not.toBeInTheDocument();
+    expect(screen.getByTestId('bt-cpu-action-announcement')).toBeEmptyDOMElement();
   });
 
   // **currentTurn は届いていたのに isHumanTurn の判定にしか使われていなかった。**
