@@ -126,7 +126,7 @@ function CitadelPageContent() {
     // Layout has 9 visual columns: 4 left tableau + 1 foundation strip + 4 right tableau.
     const totalCols = 9;
     const colW = Math.floor((windowWidth - padX - (totalCols - 1) * gapPx) / totalCols);
-    const cw = Math.min(Math.max(colW, 30), cardWidth);
+    const cw = Math.min(Math.max(colW, 40), cardWidth);
     const ch = Math.round(cw * 1.5);
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
@@ -231,7 +231,8 @@ function CitadelPageContent() {
     return (
       <div
         key={`col-${colIdx.toString()}`}
-        className={`flex-1 min-w-0${legalTargets.tableau.has(colIdx) ? targetRing : ''}`}
+        className={`${isMobile ? 'flex-none' : 'flex-1 min-w-0'}${legalTargets.tableau.has(colIdx) ? targetRing : ''}`}
+        style={isMobile ? { width: dims.cw } : undefined}
         data-legal-target={legalTargets.tableau.has(colIdx) ? 'true' : undefined}
         data-preview-target={legalTargets.tableau.has(colIdx) && preview.isPreview ? 'true' : undefined}
       >
@@ -355,69 +356,79 @@ function CitadelPageContent() {
             <span id={selectSourceHintId} className="sr-only">
               {tc('label.selectSourceFirst')}
             </span>
-            <div className="flex gap-2 sm:gap-3 items-start">
-              <div className="flex-1 flex gap-1 sm:gap-2" data-tutorial="bc-tableau">
-                {[0, 1, 2, 3].map(renderTableauColumn)}
-              </div>
+            <div className="overflow-x-auto" data-testid="citadel-board-scroll">
+              <div className={`flex gap-2 sm:gap-3 items-start ${isMobile ? 'w-max' : 'w-full'}`}>
+                <div
+                  className={`flex gap-1 sm:gap-2 ${isMobile ? 'flex-none' : 'flex-1 min-w-0'}`}
+                  data-tutorial="bc-tableau"
+                >
+                  {[0, 1, 2, 3].map(renderTableauColumn)}
+                </div>
 
-              <div className="flex flex-col items-center gap-1 sm:gap-2 mb-3" data-tutorial="bc-foundation">
-                {state.foundation.map((pile, idx) => {
-                  const foundationZone: CitadelMoveZone = { zone: 'foundation', col: idx };
-                  return (
-                    <div
-                      key={`f-${idx.toString()}`}
-                      className={`text-center${legalTargets.foundation.has(idx) ? targetRing : ''}`}
-                      data-legal-target={legalTargets.foundation.has(idx) ? 'true' : undefined}
-                      data-preview-target={legalTargets.foundation.has(idx) && preview.isPreview ? 'true' : undefined}
-                    >
-                      <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
-                      <DropZone
-                        isDropTarget={dnd.isDropTarget(foundationZone)}
-                        onDragOver={dnd.handleDragOver(foundationZone)}
-                        onDrop={dnd.handleDrop(foundationZone)}
-                        onDragLeave={dnd.handleDragLeave}
+                <div
+                  className={`flex flex-col items-center gap-1 sm:gap-2 mb-3 ${isMobile ? 'flex-none' : ''}`}
+                  data-tutorial="bc-foundation"
+                >
+                  {state.foundation.map((pile, idx) => {
+                    const foundationZone: CitadelMoveZone = { zone: 'foundation', col: idx };
+                    return (
+                      <div
+                        key={`f-${idx.toString()}`}
+                        className={`text-center${legalTargets.foundation.has(idx) ? targetRing : ''}`}
+                        data-legal-target={legalTargets.foundation.has(idx) ? 'true' : undefined}
+                        data-preview-target={legalTargets.foundation.has(idx) && preview.isPreview ? 'true' : undefined}
                       >
-                        {pile.length > 0 ? (
-                          <button
-                            type="button"
-                            onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting}
-                            aria-disabled={!selectedSource || undefined}
-                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('foundationAriaLabel', {
-                              suit: FOUNDATION_SUITS[idx],
-                              count: pile.length,
-                            })}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
-                          >
-                            <AnimatedCard
-                              card={pile[pile.length - 1]}
-                              width={dims.cw}
-                              draggable={false}
-                              dealDelay={isAutoCompleting ? idx * 0.15 : 0}
-                            />
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading}
-                            aria-disabled={!selectedSource || undefined}
-                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
-                            style={{ width: dims.cw, height: dims.ch }}
-                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                          >
-                            A
-                          </button>
-                        )}
-                      </DropZone>
-                    </div>
-                  );
-                })}
-              </div>
+                        <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
+                        <DropZone
+                          isDropTarget={dnd.isDropTarget(foundationZone)}
+                          onDragOver={dnd.handleDragOver(foundationZone)}
+                          onDrop={dnd.handleDrop(foundationZone)}
+                          onDragLeave={dnd.handleDragLeave}
+                        >
+                          {pile.length > 0 ? (
+                            <button
+                              type="button"
+                              onClick={() => game.handleSelectTarget(foundationZone)}
+                              disabled={!isPlaying || loading || isAutoCompleting}
+                              aria-disabled={!selectedSource || undefined}
+                              aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                              aria-label={t('foundationAriaLabel', {
+                                suit: FOUNDATION_SUITS[idx],
+                                count: pile.length,
+                              })}
+                              className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+                            >
+                              <AnimatedCard
+                                card={pile[pile.length - 1]}
+                                width={dims.cw}
+                                draggable={false}
+                                dealDelay={isAutoCompleting ? idx * 0.15 : 0}
+                              />
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => game.handleSelectTarget(foundationZone)}
+                              disabled={!isPlaying || loading}
+                              aria-disabled={!selectedSource || undefined}
+                              aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                              aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
+                              style={{ width: dims.cw, height: dims.ch }}
+                              className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                            >
+                              A
+                            </button>
+                          )}
+                        </DropZone>
+                      </div>
+                    );
+                  })}
+                </div>
 
-              <div className="flex-1 flex gap-1 sm:gap-2">{[4, 5, 6, 7].map(renderTableauColumn)}</div>
+                <div className={`flex gap-1 sm:gap-2 ${isMobile ? 'flex-none' : 'flex-1 min-w-0'}`}>
+                  {[4, 5, 6, 7].map(renderTableauColumn)}
+                </div>
+              </div>
             </div>
 
             {/*
