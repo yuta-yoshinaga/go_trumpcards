@@ -35,6 +35,7 @@ const baseState: SevenBridgeResponse = {
   gameEndFlag: false,
   winnerIdx: -1,
   roundWinnerIdx: -1,
+  roundScoreHistory: [],
   config: { cpuDifficulty: 1, pointLimit: 100 },
   message: '',
 };

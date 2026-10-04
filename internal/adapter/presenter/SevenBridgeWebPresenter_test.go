@@ -29,6 +29,7 @@ func setupSevenBridgeWebMock() *interfaces.MockSevenBridgeGame {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetRoundWinnerIdx").Return(-1)
 	m.On("GetClaimedThisTurn").Return(false).Maybe()
+	m.On("GetRoundScoreHistory").Return([][]int{}).Maybe()
 	return m
 }
 
@@ -212,4 +213,16 @@ func TestSevenBridgeWebPresenter_Output_ClaimedThisTurn(t *testing.T) {
 
 	assert.True(t, outputWith(true).ClaimedThisTurn)
 	assert.False(t, outputWith(false).ClaimedThisTurn)
+}
+
+func TestSevenBridgeWebPresenter_Output_RoundScoreHistory(t *testing.T) {
+	pres := new(presenter.SevenBridgeWebPresenter)
+	m, _ := setupSevenBridgeWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundScoreHistory")
+	want := [][]int{{60, 0}, {0, 25}}
+	m.On("GetRoundScoreHistory").Return(want)
+
+	var out controller.SevenBridgeWebOutput
+	require.NoError(t, json.Unmarshal([]byte(pres.Output(m, nil)), &out))
+	assert.Equal(t, want, out.RoundScoreHistory)
 }

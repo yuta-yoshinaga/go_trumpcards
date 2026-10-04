@@ -49,6 +49,7 @@ const drawState: SevenBridgeResponse = {
   gameEndFlag: false,
   winnerIdx: -1,
   roundWinnerIdx: -1,
+  roundScoreHistory: [],
   message: '',
   config: { cpuDifficulty: 1, pointLimit: 100 },
 };

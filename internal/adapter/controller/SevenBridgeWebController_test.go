@@ -16,10 +16,11 @@ import (
 
 func mustSevenBridgeOutputJSON(msg string) string {
 	out := &controller.SevenBridgeWebOutput{
-		Players:        []*controller.SevenBridgeWebOutputPlayer{},
-		WinnerIdx:      -1,
-		RoundWinnerIdx: -1,
-		WebOutputBase:  controller.WebOutputBase{Message: msg},
+		Players:           []*controller.SevenBridgeWebOutputPlayer{},
+		RoundScoreHistory: [][]int{},
+		WinnerIdx:         -1,
+		RoundWinnerIdx:    -1,
+		WebOutputBase:     controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

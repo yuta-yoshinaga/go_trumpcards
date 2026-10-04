@@ -79,6 +79,7 @@ import type {
   SchafkopfResponse,
   ScoponeResponse,
   SedmaResponse,
+  SevenBridgeResponse,
   SheepsheadResponse,
   ShelemResponse,
   SoloWhistResponse,
@@ -181,6 +182,25 @@ export function makeChinchonState(overrides: Partial<ChinchonResponse> = {}): Ch
     layoffableIndices: [],
     message: '',
     config: { playerCount: 2, knockThreshold: 5, eliminationLimit: 100 },
+    ...overrides,
+  };
+}
+
+/** Creates a Seven Bridge response with round score history defaults. */
+export function makeSevenBridgeState(overrides: Partial<SevenBridgeResponse> = {}): SevenBridgeResponse {
+  return {
+    players: [],
+    phase: 0,
+    roundNumber: 1,
+    currentPlayerIdx: 0,
+    discardTop: null,
+    drawPileCount: 0,
+    gameEndFlag: false,
+    winnerIdx: -1,
+    roundWinnerIdx: -1,
+    roundScoreHistory: [],
+    config: { cpuDifficulty: 1, pointLimit: 1500 },
+    message: '',
     ...overrides,
   };
 }

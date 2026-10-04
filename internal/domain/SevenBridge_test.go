@@ -698,6 +698,39 @@ func TestSevenBridge_NextRound(t *testing.T) {
 	assert.Equal(t, 30, g.GetPlayer(1).GetCumulativeScore())
 }
 
+func TestSevenBridge_RoundScoreHistory(t *testing.T) {
+	g := newTestSevenBridge()
+	g.Reset()
+	g.GetPlayer(0).AppendMeld([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 3, true),
+		domain.NewCard(domain.CardDesignClover, 3, true),
+		domain.NewCard(domain.CardDesignHeart, 3, true),
+	})
+	g.SetDiscardPile([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 7, true)})
+	setHand(g.GetPlayer(0), []*domain.Card{domain.NewCard(domain.CardDesignSpade, 8, true)})
+	setHand(g.GetPlayer(1), []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 7, true),
+		domain.NewCard(domain.CardDesignDiamond, 13, true),
+	})
+	g.SetPhase(domain.SevenBridgePhasePlay)
+	g.SetCurrentPlayerIdx(0)
+	require.NoError(t, g.PlayerDiscard(0))
+	assert.Equal(t, [][]int{{60, 0}}, g.GetRoundScoreHistory())
+	// A repeated action after settlement cannot record the same round again.
+	assert.Error(t, g.PlayerDiscard(0))
+	assert.Len(t, g.GetRoundScoreHistory(), 1)
+
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var restored domain.SevenBridge
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Equal(t, g.GetRoundScoreHistory(), restored.GetRoundScoreHistory())
+	assert.Equal(t, [][]int{{60, 0}}, restored.GetRoundScoreHistory())
+
+	g.Reset()
+	assert.Empty(t, g.GetRoundScoreHistory())
+}
+
 func TestSevenBridge_NextRound_IgnoresWrongPhase(t *testing.T) {
 	g := newTestSevenBridge()
 	g.Reset()
