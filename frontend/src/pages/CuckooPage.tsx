@@ -43,6 +43,11 @@ const CPU_DIFFICULTY_OPTIONS = [
   { value: 2, label: 'hard' },
 ];
 
+const INITIAL_LIVES_OPTIONS = Array.from({ length: 10 }, (_, index) => {
+  const lives = index + 1;
+  return { value: String(lives), label: String(lives) };
+});
+
 /** Cuckoo tutorial step definitions. */
 const CUCKOO_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -100,6 +105,7 @@ function CuckooPageContent() {
   const { state, loading, error, exec, retry } = useGameApi(cuckooApi.exec);
 
   const [cpuDifficulty, setCpuDifficulty] = useState(1);
+  const [initialLives, setInitialLives] = useState(3);
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
@@ -110,7 +116,13 @@ function CuckooPageContent() {
   const handleDifficultyChange = (value: string) => {
     const level = Number(value);
     setCpuDifficulty(level);
-    exec('reset', { config: { cpuDifficulty: level } });
+    exec('reset', { config: { cpuDifficulty: level, initialLives } });
+  };
+
+  const handleInitialLivesChange = (value: string) => {
+    const lives = Number(value);
+    setInitialLives(lives);
+    exec('reset', { config: { cpuDifficulty, initialLives: lives } });
   };
 
   // CLI mode
@@ -213,7 +225,7 @@ function CuckooPageContent() {
 
   const handleManualReset = () => {
     hideActionLog();
-    exec('reset', { config: { cpuDifficulty } });
+    exec('reset', { config: { cpuDifficulty, initialLives } });
   };
 
   return (
@@ -252,6 +264,14 @@ function CuckooPageContent() {
                       label: t(`settings.${o.label}`),
                     })),
                     onSelect: handleDifficultyChange,
+                  },
+                  {
+                    type: 'select',
+                    id: 'initialLives',
+                    label: t('settings.initialLives'),
+                    value: String(initialLives),
+                    options: INITIAL_LIVES_OPTIONS,
+                    onSelect: handleInitialLivesChange,
                   },
                   hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
