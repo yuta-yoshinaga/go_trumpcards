@@ -84,6 +84,8 @@
   },
   "bidHighest": "現在の最高入札: {{name}}",
   "bidNone": "なし",
+  "bidStatusTitle": "各プレイヤーの入札",
+  "bidNotYet": "未入札",
   "bidTooLow": "現在の最高入札を上回る必要があります",
   "misereBadge": "特殊",
   "misereDesc": "ミゼールは1トリックも取らないことを目指す特殊契約で、失敗すると大きな失点になります。",
