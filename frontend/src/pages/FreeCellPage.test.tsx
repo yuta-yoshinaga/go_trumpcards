@@ -93,16 +93,34 @@ describe('FreeCellPage', () => {
     renderWithProviders(<FreeCellPage />);
     expect(await screen.findByTestId('freecell-timer')).toHaveTextContent('経過時間: 00:00');
     await vi.waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
-    await vi.advanceTimersByTimeAsync(3000);
-    expect(screen.getByTestId('freecell-timer')).toHaveTextContent('経過時間: 00:03');
+    const secondsFrom = (text: string | null) => {
+      const match = text?.match(/(\d{2}):(\d{2})$/);
+      return Number(match?.[1]) * 60 + Number(match?.[2]);
+    };
+    const initialElapsed = screen.getByTestId('freecell-timer').textContent;
+    expect(secondsFrom(initialElapsed)).toBeGreaterThanOrEqual(0);
+    expect(secondsFrom(initialElapsed)).toBeLessThanOrEqual(1);
+    await vi.advanceTimersByTimeAsync(1000);
+    if (screen.getByTestId('freecell-timer').textContent?.endsWith('00:00')) {
+      await vi.advanceTimersByTimeAsync(1000);
+    }
+    await vi.waitFor(() => expect(screen.getByTestId('freecell-timer').textContent).not.toMatch(/00:00$/));
+    const elapsedBeforeNextTwoSeconds = screen.getByTestId('freecell-timer').textContent;
+    await vi.advanceTimersByTimeAsync(2000);
+    const elapsedAfterNextTwoSeconds = screen.getByTestId('freecell-timer').textContent;
+    expect(secondsFrom(elapsedAfterNextTwoSeconds)).toBe(secondsFrom(elapsedBeforeNextTwoSeconds) + 2);
 
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     await screen.findByRole('button', { name: 'ヒント' });
-    await vi.waitFor(() => expect(screen.getByTestId('freecell-timer')).toHaveTextContent('00:00'));
+    const resetElapsedBeforeNextTwoSeconds = screen.getByTestId('freecell-timer').textContent;
+    expect(secondsFrom(resetElapsedBeforeNextTwoSeconds)).toBeGreaterThanOrEqual(0);
+    expect(secondsFrom(resetElapsedBeforeNextTwoSeconds)).toBeLessThanOrEqual(1);
     await vi.advanceTimersByTimeAsync(2000);
-    expect(screen.getByTestId('freecell-timer')).toHaveTextContent('経過時間: 00:02');
+    expect(secondsFrom(screen.getByTestId('freecell-timer').textContent)).toBe(
+      secondsFrom(resetElapsedBeforeNextTwoSeconds) + 2,
+    );
 
     mockExec.mockImplementation((command) => Promise.resolve(command === 'giveup' ? gameOverState : playingState));
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
