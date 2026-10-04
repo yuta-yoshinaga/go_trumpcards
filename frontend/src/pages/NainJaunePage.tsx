@@ -21,7 +21,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useNainJauneGame } from '../hooks/useNainJauneGame';
-import { btnPrimary } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { NainJauneResponse } from '../types/card';
 import { NainJaunePhase } from '../types/phases';
@@ -242,25 +242,24 @@ function NainJaunePageContent() {
                   <>
                     <button
                       type="button"
-                      className={`${btnPrimary} min-h-11 mb-2`}
+                      className={`${btnSecondary} min-h-11 mb-2`}
                       aria-expanded={showPlayedHistory}
                       onClick={() => setShowPlayedHistory((shown) => !shown)}
                     >
                       {t(showPlayedHistory ? 'playedHistory.hide' : 'playedHistory.show')}
                     </button>
-                    <div className="flex gap-1 justify-center flex-wrap" data-testid="nainjaune-played-history">
-                      {showPlayedHistory &&
-                        state.playedPile
-                          .slice(0, -10)
-                          .map((card, i) => (
-                            <AnimatedCard
-                              key={`past-pile-${i.toString()}`}
-                              card={card}
-                              width={Math.round(cardWidth * 0.7)}
-                              draggable={false}
-                            />
-                          ))}
-                    </div>
+                    {showPlayedHistory && (
+                      <div className="flex gap-1 justify-center flex-wrap" data-testid="nainjaune-played-history">
+                        {state.playedPile.slice(0, -10).map((card, i) => (
+                          <AnimatedCard
+                            key={`past-pile-${i.toString()}`}
+                            card={card}
+                            width={Math.round(cardWidth * 0.7)}
+                            draggable={false}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </>
                 )}
                 <div className="flex gap-1 justify-center flex-wrap" data-testid="nainjaune-played-recent">

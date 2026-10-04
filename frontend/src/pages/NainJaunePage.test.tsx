@@ -90,7 +90,7 @@ describe('NainJaunePage', () => {
 
     const showHistory = await screen.findByRole('button', { name: '過去の札を表示' });
     expect(showHistory).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.getByTestId('nainjaune-played-history')).toBeEmptyDOMElement();
+    expect(screen.queryByTestId('nainjaune-played-history')).not.toBeInTheDocument();
     expect(screen.getByTestId('nainjaune-played-recent').querySelectorAll('img')).toHaveLength(10);
 
     fireEvent.click(showHistory);
@@ -100,6 +100,7 @@ describe('NainJaunePage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '過去の札を隠す' }));
     expect(screen.getByRole('button', { name: '過去の札を表示' })).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByTestId('nainjaune-played-history')).not.toBeInTheDocument();
     expect(screen.getByTestId('nainjaune-played-recent').querySelectorAll('img')).toHaveLength(10);
   });
 
