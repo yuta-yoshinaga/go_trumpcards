@@ -39,6 +39,8 @@
   "nav": {
     "wasp": "ワスプ"
   },
-  "autoCompleteNotReady": "すべてのカードが表向きになるとクリックできます",
+  "autoCompleteStockNotEmpty": "自動完成するにはストックを使い切ってください",
+  "autoCompleteFaceDown": "自動完成するには裏向きのカードをすべて表向きにしてください",
+  "autoCompleteStockAndFaceDown": "自動完成するにはストックを使い切り、裏向きのカードをすべて表向きにしてください",
   "hintExposes": "（裏カードが1枚開きます）"
 }
