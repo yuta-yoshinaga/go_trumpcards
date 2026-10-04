@@ -1217,7 +1217,26 @@ describe('ShortDeckPage', () => {
 
   it('announces best-five membership with the card name for hole and community cards', async () => {
     mockExec.mockReset();
-    mockExec.mockResolvedValue(showdownState);
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [
+        humanPlayer({
+          handName: 'ストレートフラッシュ',
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 6 },
+          ],
+        }),
+        ...showdownState.players.slice(1),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'SPADE', value: 11 },
+        { design: 'SPADE', value: 12 },
+        { design: 'SPADE', value: 13 },
+        { design: 'DIAMOND', value: 9 },
+      ],
+    });
     renderWithProviders(<ShortDeckPage />);
 
     await waitFor(() => expect(document.querySelectorAll('[data-best5-hole]').length).toBeGreaterThan(0));
@@ -1230,11 +1249,10 @@ describe('ShortDeckPage', () => {
       (image) => !image.closest('[data-best5-board]'),
     );
 
+    expect(holeUnmarked).toBeDefined();
     expect(holeMarked).toHaveAttribute('alt', expect.stringContaining('ベストハンドを構成するカード'));
     expect(boardMarked).toHaveAttribute('alt', expect.stringContaining('ベストハンドを構成するカード'));
-    if (holeUnmarked) {
-      expect(holeUnmarked).not.toHaveAttribute('alt', expect.stringContaining('ベストハンドを構成するカード'));
-    }
+    expect(holeUnmarked).not.toHaveAttribute('alt', expect.stringContaining('ベストハンドを構成するカード'));
     expect(boardUnmarked).not.toHaveAttribute('alt', expect.stringContaining('ベストハンドを構成するカード'));
     expect(holeMarked?.getAttribute('alt')).toMatch(/♠/);
     expect(boardMarked?.getAttribute('alt')).toMatch(/[♥♦♣♠]/);
