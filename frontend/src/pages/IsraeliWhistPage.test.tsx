@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { israeliwhistApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, IsraeliWhistResponse } from '../types/card';
 import { IsraeliWhistPage } from './IsraeliWhistPage';
@@ -201,6 +202,25 @@ describe('IsraeliWhistPage', () => {
     await waitFor(() =>
       expect(screen.getByTestId('iw-cpu-bid-announcement')).toHaveTextContent('CPU1が6トリックを宣言しました'),
     );
+  });
+
+  it('uses English singular and plural forms for CPU trick calls', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValueOnce(makeState({ phase: 1, bidPlayerIdx: 0 })).mockResolvedValueOnce(
+      makeState({
+        phase: 1,
+        bidPlayerIdx: 3,
+        players: [seat(0), seat(1, { bid: 1 }), seat(2), seat(3, { bid: 2 })],
+      }),
+    );
+    renderWithProviders(<IsraeliWhistPage />);
+    fireEvent.click(await screen.findByTestId('iw-bid-0-btn'));
+    await waitFor(() => {
+      expect(screen.getByTestId('iw-cpu-bid-announcement')).toHaveTextContent('CPU1 called 1 trick');
+      expect(screen.getByTestId('iw-cpu-bid-announcement')).toHaveTextContent('CPU3 called 2 tricks');
+    });
+    await i18n.changeLanguage(previousLanguage);
   });
 
   it('includes the translated suit name in each auction button accessible name', async () => {

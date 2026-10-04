@@ -126,7 +126,7 @@ function IsraeliWhistPageContent() {
         messages.push(t('announcements.cpuAuctionBid', { player: playerName, n: String(player.auctionBid) }));
       }
       if (player.bid >= 0 && player.bid !== before.bid) {
-        messages.push(t('announcements.cpuBid', { player: playerName, n: String(player.bid) }));
+        messages.push(t('announcements.cpuBid', { player: playerName, n: player.bid, count: player.bid }));
       }
       return messages;
     });

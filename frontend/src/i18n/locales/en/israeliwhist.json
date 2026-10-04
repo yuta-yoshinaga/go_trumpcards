@@ -32,7 +32,8 @@
   "announcements": {
     "cpuAuctionBid": "{{player}} bid {{n}} in the auction",
     "cpuPassed": "{{player}} passed",
-    "cpuBid": "{{player}} called {{n}} tricks"
+    "cpuBid_one": "{{player}} called {{count}} trick",
+    "cpuBid_other": "{{player}} called {{count}} tricks"
   },
   "mustBid": "Everyone else has passed. You cannot drop out — a trump has to be settled, so you must bid.",
   "bidQuota": "You won the auction, so you must call at least {{n}}.",
