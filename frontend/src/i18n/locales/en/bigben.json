@@ -1,7 +1,8 @@
 {
   "autoComplete": "Auto Complete",
   "autoCompleteNotReady": "Available once a clock face builds past the deal",
-  "cardPosAria": "{{card}} (column {{col}}, position {{pos}})",
+  "cardPosAria_one": "{{card}} (column {{col}}, {{count}} card in column, position {{pos}})",
+  "cardPosAria_other": "{{card}} (column {{col}}, {{count}} cards in column, position {{pos}})",
   "empty": "Empty",
   "emptyColumnAriaLabel": "Empty tableau column {{col}}",
   "emptyFaceAriaLabel": "Empty clock face {{idx}} ({{hour}} o'clock)",
@@ -36,6 +37,8 @@
   "playing": "Move cards to build the clock faces",
   "stalemate": "Stalemate",
   "tableau": "Tableau",
+  "tableauColumnCount_one": "Column {{col}}, {{count}} card",
+  "tableauColumnCount_other": "Column {{col}}, {{count}} cards",
   "tutorial": {
     "clock": "The twelve clock faces sit above. **♣2 is at nine o'clock** and each position clockwise starts one rank higher, ending on ♦K at eight. Each builds up in suit, wrapping king to ace.",
     "targets": "The \"→\" under each face is the rank it must reach — **its own hour** (9 at nine o'clock, Q at twelve). A finished face is marked and accepts nothing more. **The twelve totals come to exactly 104**, so finishing them all uses the whole deck.",
