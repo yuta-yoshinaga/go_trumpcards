@@ -75,7 +75,7 @@ describe('CatchTenPage', () => {
     );
     renderWithProviders(<CatchTenPage />);
 
-    expect(await screen.findByText('獲得トリック数: 1')).toBeInTheDocument();
+    expect(await screen.findByTestId('catchten-human-team')).toHaveTextContent('チーム 0 · 獲得トリック数: 1');
     expect(screen.getByText('獲得トリック数: 2')).toBeInTheDocument();
     expect(screen.getByText('獲得トリック数: 3')).toBeInTheDocument();
     expect(screen.getByText('獲得トリック数: 4')).toBeInTheDocument();
@@ -83,7 +83,7 @@ describe('CatchTenPage', () => {
     const previousLanguage = i18n.language;
     await i18n.changeLanguage('en');
     try {
-      expect(screen.getByText('Tricks won: 1')).toBeInTheDocument();
+      expect(await screen.findByTestId('catchten-human-team')).toHaveTextContent('Team 0 · Tricks won: 1');
       expect(screen.getByText('Tricks won: 2')).toBeInTheDocument();
       expect(screen.getByText('Tricks won: 3')).toBeInTheDocument();
       expect(screen.getByText('Tricks won: 4')).toBeInTheDocument();

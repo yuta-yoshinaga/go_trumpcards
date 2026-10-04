@@ -214,7 +214,7 @@ function CatchTenPageContent() {
   };
 
   // Render a CPU player's stats as a definition list so screen readers
-  // announce each field (hand size, team, cumulative/round score) as an
+  // announce each field (hand size, team, trick count, cumulative/round score) as an
   // independent item instead of one long pipe-joined sentence. The visual `|`
   // separators are decorative and hidden from assistive tech.
   const renderCpuStats = (p: CatchTenPlayerData) => (
@@ -492,7 +492,10 @@ function CatchTenPageContent() {
               <div className="mb-1 text-ds-text-muted text-sm" data-testid="catchten-human-team">
                 {tc('label.you')}:{' '}
                 <span className={teamBadgeClass(humanPlayer.team)}>{t('team', { n: humanPlayer.team })}</span>
-                <span className="ml-2">{t('trickCount', { count: humanPlayer.trickCount })}</span>
+                <span className="ml-2">
+                  {' · '}
+                  {t('trickCount', { count: humanPlayer.trickCount })}
+                </span>
               </div>
             )}
 
