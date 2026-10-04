@@ -211,6 +211,18 @@ describe('SkitgubbePage', () => {
     }
   });
 
+  it('shows the losing CPU seat only after the human wins', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, loserIdx: 2 }));
+    const { unmount } = renderWithProviders(<SkitgubbePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('sg-loser-seat')).not.toBeInTheDocument();
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ phase: 2, gameEndFlag: true, loserIdx: 2, messageCode: 'skitgubbe.win' }));
+    renderWithProviders(<SkitgubbePage />);
+    expect(await screen.findByTestId('sg-loser-seat')).toHaveTextContent('敗者: CPU2（Skitgubbe）');
+  });
+
   it('announces that picking up has become forced', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 1, pile: [card('SPADE', 10)], validIndices: [], canPickUp: true }));
     renderWithProviders(<SkitgubbePage />);
