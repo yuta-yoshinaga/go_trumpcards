@@ -94,6 +94,41 @@ describe('GongZhuPage', () => {
     });
   });
 
+  it('shows heart-break state and announces its transition once, then clears it at round start', async () => {
+    const unbroken = makeGongZhuState({ heartsBroken: false });
+    const broken = makeGongZhuState({ phase: 3, heartsBroken: true });
+    const nextRound = makeGongZhuState({ phase: 0, trickNumber: 0, heartsBroken: false });
+    mockExec.mockResolvedValue(unbroken);
+    renderWithProviders(<GongZhuPage />);
+
+    const live = await screen.findByTestId('gongzhu-hearts-broken-live');
+    expect(screen.getByTestId('gongzhu-hearts-broken-state')).toHaveTextContent('ハート未ブレイク');
+    expect(live).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValue(broken);
+    fireEvent.click(screen.getByAltText('♠ Q'));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() =>
+      expect(screen.getByTestId('gongzhu-hearts-broken-state')).toHaveTextContent('ハートブレイク済み'),
+    );
+    expect(live).toHaveTextContent('ハートがブレイクされました');
+
+    mockExec.mockResolvedValue(nextRound);
+    fireEvent.click(screen.getByRole('button', { name: '次のラウンド' }));
+    await waitFor(() =>
+      expect(screen.getByTestId('gongzhu-hearts-broken-state')).toHaveTextContent('ハート未ブレイク'),
+    );
+    expect(live).toBeEmptyDOMElement();
+  });
+
+  it('renders an already broken heart state without announcing a change on mount', async () => {
+    mockExec.mockResolvedValue(makeGongZhuState({ heartsBroken: true }));
+    renderWithProviders(<GongZhuPage />);
+
+    expect(await screen.findByTestId('gongzhu-hearts-broken-state')).toHaveTextContent('ハートブレイク済み');
+    expect(screen.getByTestId('gongzhu-hearts-broken-live')).toBeEmptyDOMElement();
+  });
+
   it('labels each trick card with its player and updates the label for the next trick', async () => {
     const firstTrick = makeGongZhuState({
       phase: 2,
