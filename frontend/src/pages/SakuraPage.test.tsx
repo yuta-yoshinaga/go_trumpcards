@@ -4,6 +4,7 @@ import { sakuraApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeSakuraState } from '../test/stateFactories';
+import { cardAlt } from '../utils/cardAlt';
 import { SakuraPage } from './SakuraPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -67,6 +68,26 @@ describe('SakuraPage', () => {
     expect(within(screen.getByTestId('field-card-0')).getByTestId('sakura-card-points')).toHaveTextContent('10');
     // 取り札にも出る。
     expect(within(screen.getByTestId('sakura-human')).getAllByTestId('sakura-card-points')[0]).toHaveTextContent('1');
+  });
+
+  it('includes the field card name, zero-based position, points, and choice status in its accessible name', async () => {
+    mockExec.mockResolvedValue(
+      makeSakuraState({
+        fieldCards: [
+          { ...playState.fieldCards[0], points: 20 },
+          { ...playState.fieldCards[1], points: 5 },
+        ],
+        captureOptions: { 0: [0] },
+        choiceOptions: { 0: [0, 1] },
+      }),
+    );
+    renderWithProviders(<SakuraPage />);
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+
+    const candidate = await screen.findByRole('button', { name: /場札0、20点、選択候補/ });
+    const unavailable = screen.getByRole('button', { name: /場札1、5点、候補ではありません/ });
+    expect(candidate).toHaveAccessibleName(`${cardAlt(playState.fieldCards[0])}、場札0、20点、選択候補`);
+    expect(unavailable).toHaveAccessibleName(`${cardAlt(playState.fieldCards[1])}、場札1、5点、候補ではありません`);
   });
 
   // **点数を持たない札には出さない。** 他のゲームの札に空のバッジを付けない。
