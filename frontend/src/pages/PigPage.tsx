@@ -179,7 +179,7 @@ function PigPageContent() {
                 role="alert"
                 data-testid="pig-signal-alert"
               >
-                {t('status.signal')}
+                {t('status.signal', { count: state.noticedCnt })}
               </div>
             )}
 
