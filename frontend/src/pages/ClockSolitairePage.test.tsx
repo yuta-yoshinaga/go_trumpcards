@@ -85,6 +85,22 @@ afterEach(() => {
 });
 
 describe('ClockSolitairePage', () => {
+  it('fits the clock face to narrow viewports and updates after resizing', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 320 });
+    const { unmount } = renderWithProviders(<ClockSolitairePage />);
+    const face = await screen.findByTestId('clock-face');
+    await waitFor(() => expect(face).toHaveStyle({ width: '288px' }));
+
+    act(() => {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 400 });
+      window.dispatchEvent(new Event('resize'));
+    });
+    await waitFor(() => expect(face).toHaveStyle({ width: '368px' }));
+    unmount();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<ClockSolitairePage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
