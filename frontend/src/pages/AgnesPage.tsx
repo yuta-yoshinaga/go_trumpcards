@@ -437,6 +437,7 @@ function AgnesPageContent() {
                           <div className="flex flex-col gap-1">
                             <button
                               type="button"
+                              aria-label={t('moveToFoundationAriaLabel', { col: i })}
                               className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
                               onClick={() => handleMoveTableauToFoundation(i)}
                               disabled={loading || !canMoveToFoundation}
@@ -450,6 +451,7 @@ function AgnesPageContent() {
                                 <button
                                   key={`t-${i}-to-${j}`}
                                   type="button"
+                                  aria-label={t('moveToColAriaLabel', { fromCol: i, toCol: j })}
                                   className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
                                   onClick={() => handleMoveTableauToTableau(i, endIndex, j)}
                                   disabled={loading || !canMoveToCol}

@@ -28,6 +28,8 @@
   "playing": "Playing",
   "noHint": "No hint available",
   "hintAvailable": "Hint available",
+  "moveToFoundationAriaLabel": "Move from tableau column {{col}} to foundation",
+  "moveToColAriaLabel": "Move from tableau column {{fromCol}} to tableau column {{toCol}}",
   "moveToFoundation": "→F",
   "moveToCol": "→{{col}}",
   "dragTargetColumn": "Can move to column {{col}}",
