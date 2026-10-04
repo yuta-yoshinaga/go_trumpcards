@@ -20,6 +20,8 @@
   "round": "Deal {{n}}",
   "trick": "Trick {{n}}",
   "trump": "Trump: {{suit}}",
+  "turnUp": "Turn-up card: {{card}}",
+  "turnUpDescription": "This card sets trump. It is part of the stock, but stays on the table when the stock is bought.",
   "stockUnsold": "Stock: still being bid for (highest {{bid}})",
   "stockSold": "Stock: bought by {{name}} for {{bid}}",
   "ruffLine": "Ruff: {{name}} wins it with {{total}} in {{suit}}",
