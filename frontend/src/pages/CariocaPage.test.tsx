@@ -142,6 +142,7 @@ describe('CariocaPage', () => {
       pendingAction();
       fireEvent.click(button);
       await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(2));
+      selectCards([1]);
       fireEvent.click(button);
       await flushPendingDispatch();
       expect(mockExec).toHaveBeenCalledTimes(2);
@@ -157,6 +158,10 @@ describe('CariocaPage', () => {
       pendingAction();
       fireEvent.click(button);
       await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(2));
+      selectCards([0, 1, 2]);
+      fireEvent.click(screen.getByRole('button', { name: /Add to slot|スロットに追加/ }));
+      selectCards([3, 4, 5]);
+      fireEvent.click(screen.getByRole('button', { name: /Add to slot|スロットに追加/ }));
       fireEvent.click(button);
       await flushPendingDispatch();
       expect(mockExec).toHaveBeenCalledTimes(2);
@@ -173,6 +178,7 @@ describe('CariocaPage', () => {
       pendingAction();
       fireEvent.click(button);
       await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(2));
+      selectCards([3, 4, 5]);
       fireEvent.click(button);
       await flushPendingDispatch();
       expect(mockExec).toHaveBeenCalledTimes(2);
@@ -198,6 +204,8 @@ describe('CariocaPage', () => {
       pendingAction();
       fireEvent.click(button);
       await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(2));
+      selectCards([1]);
+      fireEvent.click(screen.getByTestId('ca-meld-1-0'));
       fireEvent.click(button);
       await flushPendingDispatch();
       expect(mockExec).toHaveBeenCalledTimes(2);

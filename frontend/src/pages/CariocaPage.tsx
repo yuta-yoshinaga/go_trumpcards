@@ -177,7 +177,7 @@ function CariocaPageContent() {
   }, [loading, execApi, clearSelection]);
 
   const handleDiscard = useCallback(() => {
-    if (loading || selectedCards.length !== 1) return;
+    if (loading) return;
     void execApi('discard', { cardIndex: selectedCards[0] });
     clearSelection();
   }, [loading, execApi, selectedCards, clearSelection]);
@@ -193,22 +193,23 @@ function CariocaPageContent() {
   }, []);
 
   const handleSubmitContract = useCallback(() => {
-    if (loading || contractSlots.length === 0) return;
+    if (loading) return;
     void execApi('meldcontract', { indicesPerSlot: contractSlots });
     clearSelection();
   }, [loading, execApi, contractSlots, clearSelection]);
 
   const handleMeldExtra = useCallback(() => {
-    if (loading || selectedCards.length < 3) return;
+    if (loading) return;
     void execApi('meldextra', { cardIndices: selectedCards });
     clearSelection();
   }, [loading, execApi, selectedCards, clearSelection]);
 
   const handleLayoff = useCallback(() => {
-    if (loading || selectedCards.length !== 1 || !layoffTarget) return;
+    if (loading) return;
+    const target = layoffTarget as NonNullable<typeof layoffTarget>;
     void execApi('layoff', {
-      targetPlayerIdx: layoffTarget.playerIdx,
-      meldIdx: layoffTarget.meldIdx,
+      targetPlayerIdx: target.playerIdx,
+      meldIdx: target.meldIdx,
       cardIndex: selectedCards[0],
     });
     clearSelection();
