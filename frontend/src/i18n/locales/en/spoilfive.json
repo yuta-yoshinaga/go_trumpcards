@@ -24,6 +24,7 @@
   "score": "{{count}} pts",
   "currentTrick": "Current Trick",
   "players": "Players",
+  "dealer": "Dealer",
   "you": "You",
   "cpu": "CPU {{id}}",
   "leader": "Leader",
