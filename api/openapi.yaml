@@ -71230,7 +71230,12 @@ components:
           type: array
           items:
             type: integer
-          description: Bid placed by each player in seat order (0=Pass, 1=Six, 2=Misere, 3=Seven, 4=Eight; -1=not yet bid)
+          description: Bid placed by each player in seat order (0=Pass, 1=Gask, 2=Solo, 3=Misere, 4=Vira)
+        bidDone:
+          type: array
+          items:
+            type: boolean
+          description: Whether each player has submitted a bid this round, in seat order
         currentTrick:
           type: array
           items:

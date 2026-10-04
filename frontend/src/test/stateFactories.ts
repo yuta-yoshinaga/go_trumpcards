@@ -3949,6 +3949,7 @@ const baseViraState: ViraResponse = {
   contract: 0,
   trumpSuit: 0,
   bids: [0, 0, 0],
+  bidDone: [false, false, false],
   pot: 3,
   lastRoundDelta: [0, 0, 0],
   lastRoundMade: false,
