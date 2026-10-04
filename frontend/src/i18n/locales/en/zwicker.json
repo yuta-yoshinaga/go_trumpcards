@@ -25,6 +25,8 @@
   "trail": "Trail",
   "nextRound": "Next deal",
   "roundResult": "This deal: us {{us}}, them {{them}}",
+  "teamBreakdownUs": "us: card points {{cardPoints}}, cards captured {{cards}}, Zwicks {{zwicks}}, total {{total}}",
+  "teamBreakdownThem": "them: card points {{cardPoints}}, cards captured {{cards}}, Zwicks {{zwicks}}, total {{total}}",
   "majorityTied": "the card counts were level, so nobody takes the three for the majority",
   "landscapeBanner": "Landscape mode recommended",
   "phase.play": "Take or trail",
