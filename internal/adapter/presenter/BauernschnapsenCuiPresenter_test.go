@@ -173,9 +173,24 @@ func TestBauernschnapsenCuiPresenter_HintOutput(t *testing.T) {
 }
 
 func TestBauernschnapsenCuiPresenter_ActionLogOutput(t *testing.T) {
-	m := setupBauernschnapsenCuiMock()
 	p := new(presenter.BauernschnapsenCuiPresenter)
-	assert.NotNil(t, p.ActionLogOutput(m))
+	t.Run("includes the resolved name for a seated player", func(t *testing.T) {
+		m, _ := setupBauernschnapsenCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetActionLog")
+		m.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "bauernschnapsen.log.play", DetailParams: map[string]string{"player": "CPU 1", "card": "♠13"}, Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 13, false)}}})
+
+		out := p.ActionLogOutput(m)
+		assert.Contains(t, out, "あなた")
+		assert.Contains(t, out, "♠13", "棋譜は対局中も出力する")
+	})
+
+	t.Run("uses the seat fallback for an out-of-range player", func(t *testing.T) {
+		m, _ := setupBauernschnapsenCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetActionLog")
+		m.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, PlayerIdx: 4, ActionType: "play", DetailCode: "bauernschnapsen.log.play", DetailParams: map[string]string{"player": "CPU 1", "card": "♠13"}}})
+
+		assert.Contains(t, p.ActionLogOutput(m), "座席4")
+	})
 }
 
 // 切り札は**表向きの札ではなく宣言**で決まる。クローン元のガイゲルにあった
