@@ -130,12 +130,13 @@ func TestFourSeasonsCuiPresenter_HintOutput(t *testing.T) {
 }
 
 func TestFourSeasonsCuiPresenter_ActionLogOutput(t *testing.T) {
-	// While the game runs the transcript is withheld — it is a post-mortem, not
-	// a live crib sheet.
-	t.Run("withheld while playing", func(t *testing.T) {
+	t.Run("emitted while playing", func(t *testing.T) {
 		g := new(interfaces.MockFourSeasonsGame)
 		g.On("GetPhase").Return(domain.FourSeasonsPhasePlaying)
-		assert.Equal(t, actionLogToText(nil), new(FourSeasonsCuiPresenter).ActionLogOutput(g))
+		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "draw", DetailCode: "fourseasons.log.draw"},
+		})
+		assert.Contains(t, new(FourSeasonsCuiPresenter).ActionLogOutput(g), "draw")
 	})
 	t.Run("emitted once ended", func(t *testing.T) {
 		g := new(interfaces.MockFourSeasonsGame)
