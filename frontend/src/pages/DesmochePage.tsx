@@ -292,7 +292,7 @@ function DesmochePageContent() {
                 {' · '}
                 {t('melded', { n: human?.meldedCount ?? 0, goal: state.goOutSize })}
                 {' · '}
-                <span data-testid="desmoche-own-score">{t('yourScore', { score: human?.score ?? 0 })}</span>
+                <span data-testid="desmoche-own-score">{t('yourScore', { score: state.players[0].score })}</span>
                 {selected.length > 0 && ` · ${t('selected', { n: selected.length })}`}
               </div>
               <div className="flex gap-1 justify-center flex-wrap">
