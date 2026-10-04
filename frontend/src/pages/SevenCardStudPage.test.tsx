@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { chicagoApi, sevenCardStudApi, sevenCardStudHiLoApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -216,6 +216,38 @@ describe('SevenCardStudPage', () => {
     // Dealer renders via playerName (CPU 3), not the raw index.
     expect(screen.getAllByText('CPU 3').length).toBeGreaterThan(0);
     expect(screen.queryByText(/Player 3|プレイヤー 3/)).not.toBeInTheDocument();
+  });
+
+  it('shows side pot amounts and eligible player names during betting only when multiple pots exist', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      sidePots: [
+        { amount: 100, eligiblePlayers: [0, 1, 2] },
+        { amount: 60, eligiblePlayers: [1, 2] },
+      ],
+    });
+    renderWithProviders(<SevenCardStudPage />);
+    expect(await screen.findByText('ポット1: 100チップ — 対象: あなた、CPU 1、CPU 2')).toBeInTheDocument();
+    expect(screen.getByText('ポット2: 60チップ — 対象: CPU 1、CPU 2')).toBeInTheDocument();
+  });
+
+  it('does not show a side pot breakdown without side pots or outside betting', async () => {
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<SevenCardStudPage />);
+    await screen.findByText(/ポット:/);
+    expect(screen.queryByText(/ポット1:/)).not.toBeInTheDocument();
+    cleanup();
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      phase: 6,
+      sidePots: [
+        { amount: 100, eligiblePlayers: [0, 1] },
+        { amount: 60, eligiblePlayers: [1] },
+      ],
+    });
+    renderWithProviders(<SevenCardStudPage />);
+    await screen.findByText(/ポット:/);
+    expect(screen.queryByText(/ポット1:/)).not.toBeInTheDocument();
   });
 
   // ---- CPU players ----

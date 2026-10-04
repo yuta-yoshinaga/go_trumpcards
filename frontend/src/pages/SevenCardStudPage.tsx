@@ -337,6 +337,23 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
           <span data-tutorial="scs-pot-display">
             {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
           </span>
+          {state.sidePots.length > 1 &&
+            phase >= SevenCardStudPhase.THIRD_STREET &&
+            phase <= SevenCardStudPhase.SEVENTH_STREET && (
+              <div className="rounded-md bg-ds-surface px-3 py-2 text-sm text-ds-text-primary">
+                {state.sidePots.map((sidePot, index) => (
+                  <div key={index}>
+                    {t('sidePot', {
+                      number: index + 1,
+                      amount: sidePot.amount,
+                      players: sidePot.eligiblePlayers
+                        .map((playerIdx) => findPlayerName(state.players, playerIdx))
+                        .join(t('listSeparator')),
+                    })}
+                  </div>
+                ))}
+              </div>
+            )}
           <span>
             {t('anteBringIn')}:{' '}
             <strong>

@@ -20,6 +20,8 @@
   "bringIn": "ブリングイン",
   "callAmount": "({{amount}})",
   "callPotOdds": "必要ポットオッズ: {{percent}}%",
+  "sidePot": "ポット{{number}}: {{amount}}チップ — 対象: {{players}}",
+  "listSeparator": "、",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "rebuy": {
     "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",
