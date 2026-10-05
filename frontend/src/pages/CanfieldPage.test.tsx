@@ -66,6 +66,8 @@ describe('CanfieldPage', () => {
     expect(wasteCards).toHaveLength(3);
     expect(wasteCards[0].closest('button')).toBeNull();
     expect(wasteCards[1].closest('button')).toBeNull();
+    expect(wasteCards[0]).toHaveAttribute('draggable', 'false');
+    expect(wasteCards[1]).toHaveAttribute('draggable', 'false');
     expect(wasteCards[2].closest('button')).toHaveAttribute('draggable', 'true');
   });
 

@@ -41,6 +41,9 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
+const WASTE_FAN_COUNT = 3;
+const WASTE_FAN_RATIO = 0.24;
+
 /** Ring styling applied to the hinted source / target cards (mirrors Yukon / Forty Thieves). */
 const HINT_RING = 'ring-2 ring-ds-info motion-safe:animate-pulse';
 
@@ -265,8 +268,8 @@ function CanfieldPageContent() {
   const autoCompleteReady = canfieldAutoCompleteReady(state);
 
   const topWaste = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
-  const wasteDisplay = state.waste.slice(-3);
-  const wasteFan = Math.round(cardWidth * 0.24);
+  const wasteDisplay = state.waste.slice(-WASTE_FAN_COUNT);
+  const wasteFan = Math.round(cardWidth * WASTE_FAN_RATIO);
   const topReserve = state.reserve.length > 0 ? state.reserve[state.reserve.length - 1] : null;
 
   // Server hint (populated by the "hint" button; cleared on the next move since
@@ -421,7 +424,7 @@ function CanfieldPageContent() {
                 <div
                   className={wasteDisplay.length > 0 ? 'relative' : ''}
                   style={{
-                    width: cardWidth + (wasteDisplay.length - 1) * wasteFan,
+                    width: cardWidth + (WASTE_FAN_COUNT - 1) * wasteFan,
                     height: cardHeight,
                   }}
                 >
@@ -445,7 +448,7 @@ function CanfieldPageContent() {
                               <AnimatedCard card={card} width={cardWidth} draggable={false} />
                             </button>
                           ) : (
-                            <AnimatedCard card={card} width={cardWidth} />
+                            <AnimatedCard card={card} width={cardWidth} draggable={false} />
                           )}
                         </div>
                       );
