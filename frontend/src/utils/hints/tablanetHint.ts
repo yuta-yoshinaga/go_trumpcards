@@ -19,5 +19,6 @@ export function getTablanetHint(state: TablanetResponse): HintResult | null {
     targetAction: 'play',
     reason: `hint.${hint.reason}`,
     confidence: 'moderate',
+    ...(hint.cardIndices.length > 0 ? { targetPos: hint.cardIndices[0], targetIndices: hint.cardIndices } : {}),
   };
 }

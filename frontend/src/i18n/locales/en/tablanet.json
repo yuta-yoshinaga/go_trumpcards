@@ -48,6 +48,7 @@
   "tableCandidateAria": "{{card}}, capturable",
   "tableEmpty": "(empty)",
   "tableSelectedAria": "{{card}}, selected",
+  "tableRecommendedAria": "{{card}}, hint recommendation",
   "title": "Tablanet (Tablić)",
   "trailButton": "Trail",
   "turnCpu": "CPU {{id}} is playing…",

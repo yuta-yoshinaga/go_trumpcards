@@ -48,6 +48,7 @@
   "tableCandidateAria": "{{card}}、キャプチャ可能",
   "tableEmpty": "（なし）",
   "tableSelectedAria": "{{card}}、選択済み",
+  "tableRecommendedAria": "{{card}}、ヒントの推奨",
   "title": "タブラネット（Tablić）",
   "trailButton": "トレイル",
   "turnCpu": "CPU {{id}} がプレイ中です…",
