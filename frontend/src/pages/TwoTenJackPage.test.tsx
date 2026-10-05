@@ -80,6 +80,29 @@ afterEach(() => {
 });
 
 describe('TwoTenJackPage', () => {
+  it('shows each CPU team and marks trick cards by their seat team', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<TwoTenJackPage />);
+
+    await screen.findByTestId('trick-display-cards');
+    expect(document.querySelectorAll('[data-cpu-team="1"]')).toHaveLength(2);
+    expect(document.querySelectorAll('[data-cpu-team="0"]')).toHaveLength(1);
+    for (const cpuRow of document.querySelectorAll('[data-cpu-team]')) {
+      expect(cpuRow.textContent).toContain('チーム:');
+    }
+    expect(screen.getAllByTestId('trick-display-cards')[0].children).toHaveLength(4);
+    const trickCards = screen.getByTestId('trick-display-cards');
+    expect(trickCards.children[0]).toHaveAttribute('data-team', '0');
+    expect(trickCards.children[1]).toHaveAttribute('data-team', '1');
+    expect(trickCards.children[2]).toHaveAttribute('data-team', '0');
+    expect(trickCards.children[3]).toHaveAttribute('data-team', '1');
+    expect(trickCards.children[0]).toHaveAttribute('data-team-role', 'ally');
+    expect(trickCards.children[1]).toHaveAttribute('data-team-role', 'foe');
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+  });
+
   it('announces the resolved trick winner when the winner is not the leader', async () => {
     mockExec.mockResolvedValue(
       makeTwoTenJackState({
