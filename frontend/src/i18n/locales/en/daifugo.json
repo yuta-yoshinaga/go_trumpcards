@@ -115,5 +115,7 @@
     "playStronger": "You can beat the table — play a stronger card",
     "passNoPlay": "No cards strong enough — pass"
   },
-  "countMismatch": "Select {{count}} card(s) to match the table"
+  "countMismatch": "Select {{count}} card(s) to match the table",
+  "invalidCombination": "This selected combination cannot be played on the table",
+  "noPlayableCombinations": "No playable combinations. Please pass."
 }

@@ -154,11 +154,32 @@ describe('OsmosisPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     screen.getByRole('button', { name: /^リザーブ 0:/ }).click();
     await waitFor(() => expect(screen.getByRole('button', { name: /組札 0/ })).toBeEnabled());
-    expect(screen.getByRole('button', { name: /組札 0/ })).toHaveAttribute('aria-label', '組札 0, 置ける');
+    expect(screen.getByRole('button', { name: /組札 0/ })).toHaveAttribute('aria-label', '組札 0、♠ 5、置ける');
     screen.getByRole('button', { name: /組札 0/ }).click();
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve', col: 0 }, { zone: 'foundation', col: 0 }),
     );
+  });
+
+  it('includes the top foundation card and keeps empty row names clear in Japanese', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    expect(screen.getByRole('button', { name: '組札 0、♠ 5' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^組札 1/ })).toBeInTheDocument();
+  });
+
+  it('includes the top foundation card name in English', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<OsmosisPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      expect(screen.getByRole('button', { name: 'Foundation 0, ♠ 5' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Foundation 1' })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('flags foundation rows the selected card cannot be placed on', async () => {
@@ -168,15 +189,15 @@ describe('OsmosisPage', () => {
     // for the empty rows → cannot be placed anywhere.
     screen.getByRole('button', { name: /^リザーブ 1:/ }).click();
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: '組札 0' })).toHaveAttribute('title', 'この段には置けません'),
+      expect(screen.getByRole('button', { name: /^組札 0/ })).toHaveAttribute('title', 'この段には置けません'),
     );
-    expect(screen.getByRole('button', { name: '組札 0' }).className).toContain('border-ds-error');
+    expect(screen.getByRole('button', { name: /^組札 0/ }).className).toContain('border-ds-error');
   });
 
   it('foundation targets stay focusable until a source is selected', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const button = screen.getByRole('button', { name: '組札 0' });
+    const button = screen.getByRole('button', { name: /^組札 0/ });
     expect(button).not.toBeDisabled();
     expect(button).toHaveAttribute('aria-disabled', 'true');
   });
@@ -185,7 +206,7 @@ describe('OsmosisPage', () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
-    const button = screen.getByRole('button', { name: '組札 0' });
+    const button = screen.getByRole('button', { name: /^組札 0/ });
     expect(button).not.toBeDisabled();
     expect(button).toHaveAttribute('aria-disabled', 'true');
     const describedBy = button.getAttribute('aria-describedby');
@@ -472,7 +493,7 @@ describe('OsmosisPage', () => {
       const wasteBtn = screen.getByRole('button', { name: /ウェイスト/ });
       const dt = buildDataTransfer();
       fireEvent.dragStart(wasteBtn, { dataTransfer: dt });
-      const dropZone = screen.getByRole('button', { name: '組札 0' }).parentElement as HTMLElement;
+      const dropZone = screen.getByRole('button', { name: /^組札 0/ }).parentElement as HTMLElement;
       mockExec.mockClear();
       mockExec.mockResolvedValueOnce({ ...playingState, moveCount: 1 });
       fireEvent.dragOver(dropZone, { dataTransfer: dt });
@@ -493,7 +514,7 @@ describe('OsmosisPage', () => {
       const reserveBtn = screen.getByRole('button', { name: /リザーブ 0/ });
       const dt = buildDataTransfer();
       fireEvent.dragStart(reserveBtn, { dataTransfer: dt });
-      const dropZone = screen.getByRole('button', { name: '組札 0' }).parentElement as HTMLElement;
+      const dropZone = screen.getByRole('button', { name: /^組札 0/ }).parentElement as HTMLElement;
       mockExec.mockClear();
       fireEvent.dragOver(dropZone, { dataTransfer: dt });
       fireEvent.drop(dropZone, { dataTransfer: dt });
@@ -505,7 +526,7 @@ describe('OsmosisPage', () => {
     it('a drop with no active drag does not dispatch a move', async () => {
       renderWithProviders(<OsmosisPage />);
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-      const dropZone = screen.getByRole('button', { name: '組札 0' }).parentElement as HTMLElement;
+      const dropZone = screen.getByRole('button', { name: /^組札 0/ }).parentElement as HTMLElement;
       mockExec.mockClear();
       // No dragStart ran, so the dataTransfer carries no source payload.
       fireEvent.drop(dropZone, { dataTransfer: buildDataTransfer() });
@@ -520,7 +541,7 @@ describe('OsmosisPage', () => {
       const reserveBtn = screen.getByRole('button', { name: /リザーブ 1/ });
       const dt = buildDataTransfer();
       fireEvent.dragStart(reserveBtn, { dataTransfer: dt });
-      const foundation0 = screen.getByRole('button', { name: '組札 0' });
+      const foundation0 = screen.getByRole('button', { name: /^組札 0/ });
       fireEvent.dragOver(foundation0.parentElement as HTMLElement, { dataTransfer: dt });
       await waitFor(() => expect(foundation0.className).toContain('border-ds-error'));
       expect(foundation0).toHaveAttribute('title', 'この段には置けません');
@@ -544,19 +565,19 @@ describe('OsmosisPage blocked foundation rows', () => {
     fireEvent.click(screen.getByRole('button', { name: /^リザーブ 0:/ }));
     const row0 = screen.getByRole('button', { name: /^組札 0/ });
     const row1 = screen.getByRole('button', { name: /^組札 1/ });
-    await waitFor(() => expect(row1).toHaveAccessibleName('組札 1, 置ける'));
+    await waitFor(() => expect(row1).toHaveAccessibleName('組札 1、置ける'));
     expect(within(row1).getByText('置ける')).toBeInTheDocument();
     expect(row0.className).not.toContain('border-ds-success');
 
     fireEvent.click(screen.getByRole('button', { name: /^ウェイスト:/ }));
-    await waitFor(() => expect(row0).toHaveAccessibleName('組札 0, 置ける'));
+    await waitFor(() => expect(row0).toHaveAccessibleName('組札 0、♠ 5、置ける'));
     expect(within(row0).getByText('置ける')).toBeInTheDocument();
     expect(row1).toHaveAccessibleName('組札 1');
     expect(within(row1).queryByText('置ける')).not.toBeInTheDocument();
     expect(row1.className).not.toContain('border-ds-success');
 
     fireEvent.click(screen.getByRole('button', { name: /^ウェイスト:/ }));
-    await waitFor(() => expect(row0).toHaveAccessibleName('組札 0'));
+    await waitFor(() => expect(row0).toHaveAccessibleName('組札 0、♠ 5'));
     expect(within(row0).queryByText('置ける')).not.toBeInTheDocument();
   });
 
@@ -568,7 +589,7 @@ describe('OsmosisPage blocked foundation rows', () => {
     fireEvent.click(screen.getByRole('button', { name: /ウェイスト/ }));
 
     // 名前は状態で変えず、理由は説明として結びつける。
-    const row0 = await screen.findByRole('button', { name: '組札 0' });
+    const row0 = await screen.findByRole('button', { name: /^組札 0/ });
     await waitFor(() => expect(row0).toHaveAttribute('aria-describedby'));
     const id = row0.getAttribute('aria-describedby') as string;
     expect(document.getElementById(id)).toHaveTextContent('この段には置けません');
@@ -580,7 +601,7 @@ describe('OsmosisPage blocked foundation rows', () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(screen.getByTestId('os-allowed-0')).toBeInTheDocument());
 
-    const row0 = screen.getByRole('button', { name: '組札 0' });
+    const row0 = screen.getByRole('button', { name: /^組札 0/ });
     const describedBy = row0.getAttribute('aria-describedby');
     expect(describedBy).toBeTruthy();
     expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
@@ -599,12 +620,12 @@ describe('OsmosisPage hint highlight', () => {
     await waitFor(() => expect(screen.getByTestId('os-allowed-0')).toBeInTheDocument());
 
     const reserve1 = screen.getByRole('button', { name: /リザーブ 1/ });
-    const foundation2 = screen.getByRole('button', { name: '組札 2' });
+    const foundation2 = screen.getByRole('button', { name: /^組札 2/ });
     expect(reserve1.className).toContain('ring-ds-warning');
     expect(foundation2.className).toContain('ring-ds-warning');
 
     const reserve0 = screen.getByRole('button', { name: /リザーブ 0/ });
-    const foundation0 = screen.getByRole('button', { name: '組札 0' });
+    const foundation0 = screen.getByRole('button', { name: /^組札 0/ });
     expect(reserve0.className).not.toContain('ring-ds-warning');
     expect(foundation0.className).not.toContain('ring-ds-warning');
   });
@@ -634,7 +655,7 @@ describe('OsmosisPage hint highlight', () => {
     await waitFor(() => expect(screen.getByTestId('os-allowed-0')).toBeInTheDocument());
 
     const waste = screen.getByRole('button', { name: /ウェイスト/ });
-    const foundation0 = screen.getByRole('button', { name: '組札 0' });
+    const foundation0 = screen.getByRole('button', { name: /^組札 0/ });
     expect(waste.className).toContain('ring-ds-warning');
     expect(foundation0.className).toContain('ring-ds-warning');
   });
@@ -649,7 +670,7 @@ describe('OsmosisPage hint highlight', () => {
     await waitFor(() => expect(screen.getByTestId('os-allowed-0')).toBeInTheDocument());
 
     const reserve1 = screen.getByRole('button', { name: /リザーブ 1/ });
-    const foundation2 = screen.getByRole('button', { name: '組札 2' });
+    const foundation2 = screen.getByRole('button', { name: /^組札 2/ });
     expect(reserve1.className).not.toContain('ring-ds-warning');
     expect(foundation2.className).not.toContain('ring-ds-warning');
   });

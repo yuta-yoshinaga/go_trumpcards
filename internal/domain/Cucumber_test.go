@@ -112,6 +112,20 @@ func TestCucumberTrickWinnerIgnoresSuit(t *testing.T) {
 	assert.Equal(t, 3, c.trickWinner(), "同ランクなら先に出したほう")
 }
 
+func TestCucumberResolvedTrickSummaryUsesWinningCard(t *testing.T) {
+	c := newCucumberForTest(t, 3)
+	c.GiveHandForTest(0, NewCard(CardDesignSpade, 11, false))
+	c.GiveHandForTest(1, NewCard(CardDesignHeart, 11, false))
+	c.GiveHandForTest(2, NewCard(CardDesignClover, 4, false))
+	c.SetCurrentPlayerIdxForTest(0)
+	c.SetCurrentTrickForTest(nil)
+	for i := range 3 {
+		require.NoError(t, c.PlayForTest(i, 0))
+	}
+	assert.Equal(t, 0, c.GetResolvedTrickWinnerIdx(), "同ランクは先に出した席が勝つ")
+	assert.Equal(t, 11, c.GetLastTrickRank(), "記録するランクは勝者の札")
+}
+
 // **失点は最終トリックだけ、取った札のランクぶん。**
 func TestCucumberOnlyTheLastTrickScores(t *testing.T) {
 	c := newCucumberForTest(t, 3)
@@ -133,6 +147,8 @@ func TestCucumberOnlyTheLastTrickScores(t *testing.T) {
 	assert.Equal(t, 13, c.GetLastPenalty())
 	assert.Equal(t, 13, c.GetPlayer(0).GetPenalty())
 	assert.Zero(t, c.GetPlayer(1).GetPenalty(), "取らなかった席は 0 点")
+	assert.Equal(t, 0, c.GetResolvedTrickWinnerIdx())
+	assert.Equal(t, 13, c.GetLastTrickRank())
 }
 
 // **ラウンドの区切りは観測できます。** 読む前に配り直しません。
@@ -155,8 +171,47 @@ func TestCucumberRoundEndWaitsForTheNextDeal(t *testing.T) {
 	assert.Equal(t, CucumberHandSize, c.GetPlayer(0).GetCardsSize())
 	// **最終トリックを取った席が次のリード。**
 	assert.Equal(t, 0, c.GetLeadPlayerIdx())
+	assert.Equal(t, -1, c.GetResolvedTrickWinnerIdx())
+	assert.Zero(t, c.GetLastTrickRank())
 	// 失点は持ち越す。
 	assert.Equal(t, 5, c.GetPlayer(0).GetPenalty())
+}
+
+func TestCucumberUnmarshalLegacySnapshotWithoutTrickSummary(t *testing.T) {
+	c := newCucumberForTest(t, 3)
+	data, err := json.Marshal(c)
+	require.NoError(t, err)
+	var snapshot map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &snapshot))
+	delete(snapshot, "rtw")
+	delete(snapshot, "ltr")
+	data, err = json.Marshal(snapshot)
+	require.NoError(t, err)
+
+	var restored Cucumber
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Equal(t, -1, restored.GetResolvedTrickWinnerIdx())
+	assert.Zero(t, restored.GetLastTrickRank())
+}
+
+func TestCucumberUnmarshalRejectsOutOfRangeTrickSummary(t *testing.T) {
+	c := newCucumberForTest(t, 3)
+	data, err := json.Marshal(c)
+	require.NoError(t, err)
+	var snapshot map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &snapshot))
+	snapshot["rtw"] = json.RawMessage(`3`)
+	data, err = json.Marshal(snapshot)
+	require.NoError(t, err)
+	var restored Cucumber
+	assert.Error(t, json.Unmarshal(data, &restored))
+
+	require.NoError(t, json.Unmarshal(data, &snapshot))
+	snapshot["rtw"] = json.RawMessage(`-1`)
+	snapshot["ltr"] = json.RawMessage(`15`)
+	data, err = json.Marshal(snapshot)
+	require.NoError(t, err)
+	assert.Error(t, json.Unmarshal(data, &restored))
 }
 
 // **失点上限に達したら終わり。** 少ない人の勝ちです。

@@ -143,16 +143,17 @@ function DuchessPageContent() {
     () => requestGiveUpConfirm(game.handleGiveUp),
     [requestGiveUpConfirm, game.handleGiveUp],
   );
+  const autoCompleteReady = state?.canAutoComplete ?? false;
 
   const actionBindings = useMemo(
     () => [
       { key: 'd', action: game.handleDraw, label: 'draw' },
       { key: 'h', action: game.handleHint, label: 'hint' },
-      { key: 'a', action: game.handleAutoComplete, label: 'autoComplete' },
+      { key: 'a', action: game.handleAutoComplete, label: 'autoComplete', enabled: autoCompleteReady },
       { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
       { key: 'z', action: game.handleUndo, label: 'undo' },
     ],
-    [game, confirmGiveUpAction],
+    [game, confirmGiveUpAction, autoCompleteReady],
   );
 
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading });
@@ -170,7 +171,6 @@ function DuchessPageContent() {
   // **押せる = 成功する。**組札の枚数で代用していたが、それはドメインの条件では
   // ない (#5557)。1枚しか乗っていなくても次を送れることがあり、逆に何枚乗っていても
   // 送れる札が無ければ AutoComplete は失敗する。ドメインの答えをそのまま使う。
-  const autoCompleteReady = state.canAutoComplete ?? false;
   // While any reserve card remains, empty columns are the reserve's exit only.
   const reserveRemaining = state.reserve.reduce((sum, fan) => sum + fan.length, 0);
 

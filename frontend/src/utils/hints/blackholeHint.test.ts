@@ -17,7 +17,9 @@ function makeState(overrides?: Partial<BlackHoleResponse>): BlackHoleResponse {
 
 describe('getBlackHoleHint', () => {
   it('names the fan the backend recommends', () => {
-    const hint = getBlackHoleHint(makeState({ hint: { fan: 4, movesAfter: 3 } }));
+    const hint = getBlackHoleHint(
+      makeState({ hint: { fan: 4, movesAfter: 3, canClear: false, continuationMoves: 0 } }),
+    );
     expect(hint?.targetAction).toBe('fan-4');
     expect(hint?.confidence).toBe('strong');
   });
@@ -28,10 +30,14 @@ describe('getBlackHoleHint', () => {
 
   // **fan が -1 のヒントは「対象なし」。**山番号として使うと fan--1 になる。
   it('returns null for a negative fan index', () => {
-    expect(getBlackHoleHint(makeState({ hint: { fan: -1, movesAfter: 0 } }))).toBeNull();
+    expect(
+      getBlackHoleHint(makeState({ hint: { fan: -1, movesAfter: 0, canClear: false, continuationMoves: 0 } })),
+    ).toBeNull();
   });
 
   it('returns null once the game has ended', () => {
-    expect(getBlackHoleHint(makeState({ phase: 1, hint: { fan: 0, movesAfter: 0 } }))).toBeNull();
+    expect(
+      getBlackHoleHint(makeState({ phase: 1, hint: { fan: 0, movesAfter: 0, canClear: false, continuationMoves: 0 } })),
+    ).toBeNull();
   });
 });

@@ -67,6 +67,7 @@ const drawState: ContractRummyResponse = {
   totalRounds: 7,
   currentPlayerIdx: 0,
   discardTop: card('HEART', 7),
+  discardHistory: [card('SPADE', 3), card('HEART', 7)],
   drawPileCount: 60,
   gameEndFlag: false,
   winnerIdx: -1,
@@ -102,6 +103,14 @@ describe('ContractRummyPage', () => {
   it('shows the round and contract banner', async () => {
     renderWithProviders(<ContractRummyPage />);
     await waitFor(() => expect(screen.getByText(/Round 1 \/ 7|ラウンド 1 \/ 7/)).toBeInTheDocument());
+  });
+
+  it('shows the round discard history in order and matching its top card', async () => {
+    renderWithProviders(<ContractRummyPage />);
+    await screen.findByRole('region', { name: /Discard history|捨て札の履歴/ });
+    const history = screen.getByRole('region', { name: /Discard history|捨て札の履歴/ });
+    expect(within(history).getAllByRole('img').length).toBe(2);
+    expect(history.textContent).toMatch(/Discard history|捨て札の履歴/);
   });
 
   it('shows draw-phase action buttons during human draw turn', async () => {

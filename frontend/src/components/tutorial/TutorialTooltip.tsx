@@ -18,6 +18,13 @@ export interface TutorialTooltipProps {
   advanceOn: TutorialAdvanceOn;
 }
 
+function renderMessage(message: string) {
+  return message.split(/(\*\*.+?\*\*)/g).map((part, index) => {
+    const emphasis = part.match(/^\*\*(.+)\*\*$/);
+    return emphasis ? <strong key={index}>{emphasis[1]}</strong> : part;
+  });
+}
+
 /** Renders a glass-panel tooltip with step indicator and navigation buttons for the tutorial. */
 export function TutorialTooltip({ message, stepIndex, totalSteps, onNext, onSkip, advanceOn }: TutorialTooltipProps) {
   const { t } = useTranslation('tutorial');
@@ -25,7 +32,7 @@ export function TutorialTooltip({ message, stepIndex, totalSteps, onNext, onSkip
 
   return (
     <div role="status" aria-live="polite" className="glass-panel rounded-lg shadow-xl p-4 max-w-xs">
-      <p className="text-ds-text-primary text-sm mb-3">{message}</p>
+      <p className="text-ds-text-primary text-sm mb-3">{renderMessage(message)}</p>
       <div className="flex items-center justify-between">
         <span className="text-ds-text-muted text-xs">
           {stepIndex + 1} / {totalSteps}

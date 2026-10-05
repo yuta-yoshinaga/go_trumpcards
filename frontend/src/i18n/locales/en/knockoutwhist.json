@@ -23,6 +23,7 @@
     "next": "Next round {{count}}"
   },
   "trump": "Trump {{suit}}",
+  "trumpCardDescription": "Trump",
   "trumpSelectPrompt": "You won the round. Choose the trump suit for the next round:",
   "trumpSelectSuit": "Set trump to {{suit}}",
   "activeCount": "{{n}} left",

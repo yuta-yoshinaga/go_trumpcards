@@ -137,6 +137,20 @@ func (_m *MockDaifugoGame) GetPlayableCardIndices() []int {
 	return ret.Get(0).([]int)
 }
 
+// GetPlayableSelections モック
+func (_m *MockDaifugoGame) GetPlayableSelections() ([]int, [][]int) {
+	ret := _m.Called()
+	var indices []int
+	var combos [][]int
+	if ret.Get(0) != nil {
+		indices = ret.Get(0).([]int)
+	}
+	if ret.Get(1) != nil {
+		combos = ret.Get(1).([][]int)
+	}
+	return indices, combos
+}
+
 func (_m *MockDaifugoGame) GetCurrentTurn() int {
 	ret := _m.Called()
 	return ret.Int(0)

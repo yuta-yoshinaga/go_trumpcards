@@ -119,8 +119,5 @@ func (p *FourSeasonsCuiPresenter) HintOutput(f interfaces.FourSeasonsGame) strin
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *FourSeasonsCuiPresenter) ActionLogOutput(f interfaces.FourSeasonsGame) string {
-	if f.GetPhase() == domain.FourSeasonsPhasePlaying {
-		return actionLogToText(nil)
-	}
 	return actionLogToText(f.GetActionLog())
 }

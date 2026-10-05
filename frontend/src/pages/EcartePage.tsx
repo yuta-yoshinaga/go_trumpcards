@@ -333,6 +333,8 @@ function EcartePageContent() {
                 isMobile={isMobile}
                 dataTutorialPrefix="ecarte"
                 restrictedTooltip={t('playButton')}
+                validIndices={isHumanPlayTurn ? state.validPlays : undefined}
+                legalIndices={isHumanPlayTurn ? state.validPlays : undefined}
               />
             )}
 

@@ -128,16 +128,35 @@ function BoliviaPageContent() {
   const isGameEnd = state?.phase === BoliviaPhase.GAME_END || !!state?.gameEndFlag;
 
   const drawDiscardReason = useMemo(() => {
-    if (!isDrawPhase) return '';
+    if (!state || !isDrawPhase || !humanPlayer) return '';
     const n = selectedCardIndices.length;
     if (n > 2) return t('drawDiscardReason.tooMany');
-    if (n === 2) return '';
+    if (n === 2) {
+      const discardTop = state.discardTop;
+      if (!discardTop) return t('drawDiscardReason.noTop');
+      if (
+        discardTop.design === 'JOKER' ||
+        discardTop.value === 2 ||
+        (discardTop.value === 3 && (discardTop.design === 'SPADE' || discardTop.design === 'CLOVER'))
+      ) {
+        return t('drawDiscardReason.unusableTop');
+      }
+      const selectedCards = selectedCardIndices.map((idx) => humanPlayer.cards[idx]);
+      if (selectedCards.some((card) => card.design === 'JOKER' || card.value === 2)) {
+        return t(state.isFrozen ? 'drawDiscardReason.frozenWild' : 'drawDiscardReason.wild');
+      }
+      if (selectedCards.some((card) => card.value !== discardTop.value)) {
+        return t('drawDiscardReason.rankMismatch');
+      }
+      return t('drawDiscardReason.validPair');
+    }
     // Frozen takes priority while the player is still picking — the wildcard restriction
     // is the load-bearing rule players forget; surface it whether they've picked 0 or 1 cards.
-    if (state?.isFrozen) return t('drawDiscardReason.frozen');
+    if (state.isFrozen) return t('drawDiscardReason.frozen');
     if (n === 1) return t('drawDiscardReason.selectOneMore');
     return t('drawDiscardReason.selectTwo');
-  }, [isDrawPhase, selectedCardIndices.length, state?.isFrozen, t]);
+  }, [isDrawPhase, selectedCardIndices, humanPlayer, state, t]);
+  const canTakeDiscard = drawDiscardReason === t('drawDiscardReason.validPair');
 
   // Meld phase: surface the initial-meld minimum (by team score band) and the
   // selected cards' running point total so the player can tell if they qualify.
@@ -571,24 +590,21 @@ function BoliviaPageContent() {
                     </button>
                     <button
                       type="button"
-                      className={btnPrimary}
-                      onClick={handleDrawDiscard}
-                      disabled={loading || selectedCardIndices.length !== 2}
+                      className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+                      onClick={() => {
+                        if (loading || !canTakeDiscard) return;
+                        handleDrawDiscard();
+                      }}
+                      aria-disabled={loading || !canTakeDiscard}
                       title={drawDiscardReason || undefined}
                       aria-describedby={drawDiscardReason ? 'sa-draw-discard-reason' : undefined}
                     >
                       {t('drawDiscardButton')}
                     </button>
                   </div>
-                  {drawDiscardReason && (
-                    <div
-                      id="sa-draw-discard-reason"
-                      data-testid="sa-draw-discard-reason"
-                      className="text-xs text-ds-text-muted"
-                    >
-                      {drawDiscardReason}
-                    </div>
-                  )}
+                  <div id="sa-draw-discard-reason" data-testid="sa-draw-discard-reason">
+                    {drawDiscardReason && <span className="text-xs text-ds-text-muted">{drawDiscardReason}</span>}
+                  </div>
                 </div>
               )}
               {isMeldPhase && isHumanTurn && (

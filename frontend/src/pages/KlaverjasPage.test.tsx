@@ -45,6 +45,30 @@ beforeEach(() => {
 });
 
 describe('KlaverjasPage', () => {
+  it('marks alternating seats as ally and foe in the trick display', async () => {
+    mockExec.mockResolvedValue(
+      makeKlaverjasState({
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'HEART', value: 12 } },
+          { playerIdx: 1, card: { design: 'CLOVER', value: 13 } },
+          { playerIdx: 2, card: { design: 'SPADE', value: 1 } },
+          { playerIdx: 3, card: { design: 'DIAMOND', value: 1 } },
+        ],
+      }),
+    );
+    renderWithProviders(<KlaverjasPage />);
+
+    const trickCards = await screen.findByTestId('trick-display-cards');
+    expect(
+      [...trickCards.children].map((card) => [card.getAttribute('data-team'), card.getAttribute('data-team-role')]),
+    ).toEqual([
+      ['0', 'ally'],
+      ['1', 'foe'],
+      ['0', 'ally'],
+      ['1', 'foe'],
+    ]);
+  });
+
   it('shows current trick card points using trump and plain suit values', async () => {
     mockExec.mockResolvedValue(
       makeKlaverjasState({

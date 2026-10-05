@@ -10,6 +10,8 @@
   "dealerTag": "[dealer]",
   "playerLine": "{{name}}(T{{team}}){{role}}: up {{up}}  tricks {{tricks}}  hand: {{hand}}",
   "trick": "Trick: {{cards}}",
+  "trickCard": "{{card}}({{name}})",
+  "listSeparator": ", ",
   "playable": "Playable: {{indexes}}",
   "ladder": "Ranking: THE JACK (Karnöffel) > THE SEVEN (devil, ONLY WHEN LED) > 6 (Pope) > 2 (Kaiser) > 3 > 4 > 5 > K > Q > 10 > 9 > 8. THE THREE LOSES TO KINGS, THE FOUR TO KINGS AND QUEENS, THE FIVE TO EVERY FACE CARD. A seven played in follow loses to every card",
   "title.karnoffel": "Karnoffel",

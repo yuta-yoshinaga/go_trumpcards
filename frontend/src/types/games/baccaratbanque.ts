@@ -93,6 +93,10 @@ export interface BaccaratBanqueResponse extends BaseGameResponse {
   bankHeld: number;
   /** Cards left in the three-pack shoe. The bank ends when a coup will not fit. */
   shoeRemaining: number;
+  /** Remaining cards by baccarat point (0–9). */
+  shoeComposition: number[];
+  /** Chance in percent that a draw beats right and left respectively. */
+  drawWinPercent: number[];
   /** Whether the banker gave the bank up rather than being broken or running out. */
   retired: boolean;
   lastResult?: BaccaratBanqueResult;

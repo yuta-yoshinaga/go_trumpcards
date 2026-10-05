@@ -23,6 +23,8 @@
   "scoresPlayer": "Player",
   "scoresRound": "Round",
   "scoresTotal": "Total",
+  "scoreHistory": "Round score history",
+  "scoreHistoryRound": "Round",
   "scoreBreakdown": {
     "title": "Round Score Breakdown",
     "ace": "Aces",

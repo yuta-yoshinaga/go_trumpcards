@@ -243,6 +243,26 @@ describe('BalootPage', () => {
     expect(screen.getByTestId('bl-seat-2')).toHaveTextContent('T0');
   });
 
+  it("shows each player's trick count on their seat, including after the round ends", async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        players: [
+          seat(0, { trickCount: 3 }),
+          seat(1, { trickCount: 2 }),
+          seat(2, { trickCount: 1 }),
+          seat(3, { trickCount: 2 }),
+        ],
+      } as Partial<BalootResponse>),
+    );
+    renderWithProviders(<BalootPage />);
+
+    expect(await screen.findByTestId('bl-seat-0')).toHaveTextContent('獲得トリック数: 3');
+    expect(screen.getByTestId('bl-seat-1')).toHaveTextContent('獲得トリック数: 2');
+    expect(screen.getByTestId('bl-seat-2')).toHaveTextContent('獲得トリック数: 1');
+    expect(screen.getByTestId('bl-seat-3')).toHaveTextContent('獲得トリック数: 2');
+  });
+
   // **誰がもう降りたかが見えないと、選択肢の絞られ具合が読めない。**
   it('marks which seats have already declared or passed, during the declaration phase', async () => {
     mockExec.mockResolvedValue(

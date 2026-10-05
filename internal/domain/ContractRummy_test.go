@@ -154,6 +154,33 @@ func TestContractRummy_PlayerDrawFromStock_RejectsNotHumanTurn(t *testing.T) {
 	}
 }
 
+func TestContractRummy_DiscardPileTracksDiscardAndDraw(t *testing.T) {
+	t.Run("discard appends to pile", func(t *testing.T) {
+		g := helperContractRummyHand(t)
+		a, b, c := crCard(0, 2), crCard(1, 3), crCard(2, 4)
+		g.SetDiscardPile([]*Card{a, b})
+		setHand(g.GetPlayer(0), []*Card{c, crCard(3, 5)})
+		g.SetPhase(ContractRummyPhasePlay)
+		if err := g.PlayerDiscard(0); err != nil {
+			t.Fatalf("PlayerDiscard error: %v", err)
+		}
+		assert.Equal(t, []*Card{a, b, c}, g.GetDiscardPile())
+		assert.Same(t, c, g.GetDiscardPile()[len(g.GetDiscardPile())-1])
+	})
+
+	t.Run("draw removes pile top", func(t *testing.T) {
+		g := helperContractRummyHand(t)
+		a, b, c := crCard(0, 2), crCard(1, 3), crCard(2, 4)
+		g.SetDiscardPile([]*Card{a, b, c})
+		g.SetPhase(ContractRummyPhaseDraw)
+		if err := g.PlayerDrawFromDiscard(); err != nil {
+			t.Fatalf("PlayerDrawFromDiscard error: %v", err)
+		}
+		assert.Equal(t, []*Card{a, b}, g.GetDiscardPile())
+		assert.Same(t, b, g.GetDiscardTop())
+	})
+}
+
 func TestContractRummy_PlayerDrawFromDiscard_Success(t *testing.T) {
 	g := helperContractRummyHand(t)
 	if err := g.PlayerDrawFromDiscard(); err != nil {

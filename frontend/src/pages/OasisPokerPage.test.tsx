@@ -214,6 +214,35 @@ describe('OasisPokerPage', () => {
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
   });
 
+  it('shows the call cost and blocks button and p shortcut when chips are insufficient', async () => {
+    mockApi.mockResolvedValue({ ...actionPhaseState, chips: 199 });
+    renderWithProviders(<OasisPokerPage />);
+    const callButton = await screen.findByRole('button', { name: 'コール (200)' });
+    expect(callButton).toHaveAttribute('aria-disabled', 'true');
+    expect(callButton).toHaveAttribute('aria-describedby', 'oasispoker-call-unavailable');
+    expect(screen.getByText('チップが不足しています。フォールドのみ選択できます。')).toBeInTheDocument();
+
+    fireEvent.click(callButton);
+    fireEvent.keyDown(document, { key: 'p' });
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalledWith('play');
+  });
+
+  it('allows call by button and p shortcut when chips cover the call cost', async () => {
+    mockApi.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    const callButton = await screen.findByRole('button', { name: 'コール (200)' });
+    expect(callButton).not.toHaveAttribute('aria-disabled', 'true');
+    expect(document.getElementById('oasispoker-call-unavailable')).toBeNull();
+    fireEvent.click(callButton);
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('play'));
+
+    mockApi.mockClear();
+    mockApi.mockResolvedValue(actionPhaseState);
+    fireEvent.keyDown(document, { key: 'p' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('play'));
+  });
+
   it('end phase player wins shows payout breakdown', async () => {
     mockApi.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhasePlayerWins);
     renderWithProviders(<OasisPokerPage />);

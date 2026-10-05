@@ -45,6 +45,8 @@ function makeState(overrides: Partial<CucumberResponse> = {}): CucumberResponse 
     trickNumber: 2,
     roundNumber: 3,
     lastTrickWinnerIdx: -1,
+    resolvedTrickWinnerIdx: -1,
+    lastTrickRank: 0,
     lastPenalty: 0,
     gameEndFlag: false,
     winnerIdx: -1,
@@ -211,6 +213,26 @@ describe('CucumberPage', () => {
     mockExec.mockResolvedValue(makeState({ lastTrickWinnerIdx: 2, lastPenalty: 11 }));
     renderWithProviders(<CucumberPage />);
     expect(await screen.findByTestId('cu-seat-2')).toHaveTextContent(/最終トリックで11点/);
+  });
+
+  it('shows the previous trick winner and highest rank alongside final penalty', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        trickNumber: 7,
+        currentTrick: [],
+        lastTrickWinnerIdx: 2,
+        lastPenalty: 11,
+        resolvedTrickWinnerIdx: 2,
+        lastTrickRank: 11,
+      }),
+    );
+    renderWithProviders(<CucumberPage />);
+
+    expect(await screen.findByTestId('cu-last-trick-result')).toHaveTextContent(
+      '直前のトリックはCPU2が最高ランク11で取りました。',
+    );
+    expect(screen.getByTestId('cu-round-end')).toHaveTextContent(/11 点の失点/);
   });
 
   it('plays the clicked card by its hand index', async () => {

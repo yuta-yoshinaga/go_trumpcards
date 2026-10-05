@@ -1,5 +1,6 @@
 {
   "title": "Tarocco Piemontese",
+  "listSeparator": ", ",
   "phase": {
     "scarto": "Scarto (discard)",
     "play": "Play",
@@ -60,6 +61,11 @@
     "trickPoints": "{{name}}: tricks {{points}}",
     "scartoPoints": "{{name}}: scarto {{points}}",
     "formula": "change = seats ({{n}}) x your card points - table total"
+  },
+  "dealScoreHistory": {
+    "title": "Score changes by deal",
+    "empty": "No completed deal scores yet",
+    "row": "Deal {{round}}: {{scores}}"
   },
   "hintAvailable": "Hint",
   "hint": {

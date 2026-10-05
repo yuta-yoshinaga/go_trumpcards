@@ -45,6 +45,8 @@
   },
   "bidPass": "Pass",
   "bidRufer": "Rufer",
+  "highestBid": "Highest bid: {{contract}} ({{name}})",
+  "noHighestBid": "No bids yet",
   "bidPhase": "Auction — declare the Rufer (King-calling) contract, or pass.",
   "callPhase": "Call a King — choose the King's suit to call. Whoever holds that King becomes your secret partner (you cannot call a King you hold yourself).",
   "talonPhase": "Talon exchange — bury 6 cards from your hand ({{count}}/6 selected). Kings and the Trull honours (trumps 1, 21, and the Sküs) cannot be buried.",

@@ -35,6 +35,7 @@ type TuteWebOutputPlayer struct {
 	Cards      []*WebOutputCard `json:"cards"`
 	TrickCount int              `json:"trickCount"`
 	TeamScore  int              `json:"teamScore"`
+	TeamID     int              `json:"teamId"`
 }
 
 // TuteWebOutputHint ヒント出力

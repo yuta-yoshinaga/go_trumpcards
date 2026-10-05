@@ -16,7 +16,7 @@
   "giveup": "Give up",
   "empty": "Empty",
   "foundationAriaLabel": "{{suit}} foundation {{idx}}, {{count}} cards",
-  "emptyFoundationAriaLabel": "Empty foundation {{idx}} ({{suit}}, starts at the Ace)",
+  "emptyFoundationAriaLabel": "Empty foundation {{idx}} ({{suit}}, starts at {{rank}})",
   "stockAriaLabel": "Stock, {{count}} cards left",
   "emptyStockAriaLabel": "The stock is empty (there is no redeal)",
   "emptyWasteAriaLabel": "The waste is empty",

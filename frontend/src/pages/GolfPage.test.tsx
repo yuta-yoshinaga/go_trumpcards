@@ -84,6 +84,24 @@ describe('GolfPage', () => {
     expect(screen.getAllByTestId('golf-playable')).toHaveLength(2);
   });
 
+  it('announces playable exposed cards with the card name in Japanese and English', async () => {
+    renderWithProviders(<GolfPage />);
+    await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());
+
+    const playableCards = screen.getAllByRole('button', { name: /出せるカード/ });
+    expect(playableCards).toHaveLength(2);
+    expect(playableCards[0]).toHaveAccessibleName(/♠ 3。出せるカード/);
+    expect(screen.getByRole('button', { name: '♠ 2' })).not.toHaveAccessibleName(/出せるカード/);
+
+    await i18n.changeLanguage('en');
+    try {
+      await waitFor(() => expect(screen.getAllByRole('button', { name: /Playable card/ })).toHaveLength(2));
+      expect(screen.getByRole('button', { name: '♠ 2' })).not.toHaveAccessibleName(/Playable card/);
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('offers the frontend hint toggle in the settings panel', async () => {
     renderWithProviders(<GolfPage />);
     await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());

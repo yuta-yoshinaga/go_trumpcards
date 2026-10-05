@@ -51,28 +51,37 @@ func parseGrandfathersClockOutput(t *testing.T, jsonStr string) *controller.Gran
 
 // setupGrandfathersClockOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**
 // ようになった (#4483) ので GetHint を呼べるようにする。
-func setupGrandfathersClockOutputMock(g *interfaces.MockGrandfathersClockGame) {
+func setupGrandfathersClockOutputMock(g *interfaces.MockGrandfathersClockGame, canRedo bool) {
 	setupGrandfathersClockWebMockDefaults(g)
+	g.On("CanRedo").Return(canRedo).Maybe()
 	g.On("GetHint").Return(nil).Maybe()
 }
 
 func TestGrandfathersClockWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		g := new(interfaces.MockGrandfathersClockGame)
-		setupGrandfathersClockOutputMock(g)
+		setupGrandfathersClockOutputMock(g, false)
 
 		result := parseGrandfathersClockOutput(t, new(GrandfathersClockWebPresenter).Output(g, nil))
 		assert.Equal(t, 0, result.Phase)
 		assert.Len(t, result.Tableau, domain.GrandfathersClockTableauCnt)
 		assert.Len(t, result.Foundation, domain.GrandfathersClockFoundationCnt)
 		assert.Equal(t, "grandfathersclock.playing", result.MessageCode)
+		assert.False(t, result.CanRedo)
+	})
+
+	t.Run("reports redo availability", func(t *testing.T) {
+		g := new(interfaces.MockGrandfathersClockGame)
+		setupGrandfathersClockOutputMock(g, true)
+		result := parseGrandfathersClockOutput(t, new(GrandfathersClockWebPresenter).Output(g, nil))
+		assert.True(t, result.CanRedo)
 	})
 
 	// The target rank is on the wire so the client never has to recompute the
 	// clock ordering and drift from the domain.
 	t.Run("each face carries its target rank", func(t *testing.T) {
 		g := new(interfaces.MockGrandfathersClockGame)
-		setupGrandfathersClockOutputMock(g)
+		setupGrandfathersClockOutputMock(g, false)
 
 		result := parseGrandfathersClockOutput(t, new(GrandfathersClockWebPresenter).Output(g, nil))
 		for i, f := range result.Foundation {
@@ -85,7 +94,7 @@ func TestGrandfathersClockWebPresenter_Output(t *testing.T) {
 
 	t.Run("completed faces are flagged", func(t *testing.T) {
 		g := new(interfaces.MockGrandfathersClockGame)
-		setupGrandfathersClockOutputMock(g)
+		setupGrandfathersClockOutputMock(g, false)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsFoundationComplete")
 		g.On("IsFoundationComplete", mock.AnythingOfType("int")).Return(true)
 
@@ -97,7 +106,7 @@ func TestGrandfathersClockWebPresenter_Output(t *testing.T) {
 
 	t.Run("all face up", func(t *testing.T) {
 		g := new(interfaces.MockGrandfathersClockGame)
-		setupGrandfathersClockOutputMock(g)
+		setupGrandfathersClockOutputMock(g, false)
 
 		result := parseGrandfathersClockOutput(t, new(GrandfathersClockWebPresenter).Output(g, nil))
 		for _, col := range result.Tableau {
@@ -110,7 +119,7 @@ func TestGrandfathersClockWebPresenter_Output(t *testing.T) {
 
 	t.Run("error message", func(t *testing.T) {
 		g := new(interfaces.MockGrandfathersClockGame)
-		setupGrandfathersClockOutputMock(g)
+		setupGrandfathersClockOutputMock(g, false)
 
 		result := parseGrandfathersClockOutput(t, new(GrandfathersClockWebPresenter).Output(g, errors.New("test error")))
 		assert.Equal(t, "test error", result.Message)
@@ -126,7 +135,7 @@ func TestGrandfathersClockWebPresenter_Output(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			g := new(interfaces.MockGrandfathersClockGame)
-			setupGrandfathersClockOutputMock(g)
+			setupGrandfathersClockOutputMock(g, false)
 			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
 			g.On("GetPhase").Return(tc.val)
 
@@ -137,7 +146,7 @@ func TestGrandfathersClockWebPresenter_Output(t *testing.T) {
 
 	t.Run("stalemate", func(t *testing.T) {
 		g := new(interfaces.MockGrandfathersClockGame)
-		setupGrandfathersClockOutputMock(g)
+		setupGrandfathersClockOutputMock(g, false)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsStalemate")
 		g.On("IsStalemate").Return(true)
 
@@ -153,6 +162,7 @@ func TestGrandfathersClockWebPresenter_OutputCarriesTheHint(t *testing.T) {
 
 	g := new(interfaces.MockGrandfathersClockGame)
 	setupGrandfathersClockWebMockDefaults(g)
+	g.On("CanRedo").Return(false).Maybe()
 	g.On("GetHint").Return(hint).Maybe()
 
 	result := parseGrandfathersClockOutput(t, new(GrandfathersClockWebPresenter).Output(g, nil))

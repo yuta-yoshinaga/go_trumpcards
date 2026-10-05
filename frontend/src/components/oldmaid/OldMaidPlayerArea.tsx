@@ -215,6 +215,9 @@ export function OldMaidPlayerArea({
       {!player.isFinished && (
         <div className="text-game-text-muted text-xs mb-1">{t('cardCount', { count: player.cardCount })}</div>
       )}
+      {player.isHuman && !player.isFinished && onReorder && cardCount > 0 && (
+        <p className="text-game-text-muted text-xs mb-1">{t('keyboardReorderHint')}</p>
+      )}
       {showSelectable && !player.isFinished && (
         <>
           <div className="text-game-text-highlight text-xs mb-1">{t('draw')}</div>

@@ -5,7 +5,7 @@ import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sheepsheadApi } from '../api/gameApi';
 import { makeSheepsheadState } from '../test/stateFactories';
-import { DEFAULT_SHEEPSHEAD_CONFIG, useSheepsheadGame } from './useSheepsheadGame';
+import { BASE_CHIPS_OPTIONS, DEFAULT_SHEEPSHEAD_CONFIG, useSheepsheadGame } from './useSheepsheadGame';
 
 vi.mock('../api/gameApi', () => ({
   sheepsheadApi: { exec: vi.fn() },
@@ -110,5 +110,11 @@ describe('useSheepsheadGame', () => {
       result.current.handlePlay();
     });
     await waitFor(() => expect(result.current.selectedCardIndices).toEqual([]));
+  });
+
+  it('offers positive base-chip units and defaults to one', () => {
+    expect(BASE_CHIPS_OPTIONS).toEqual([1, 2, 5, 10]);
+    expect(BASE_CHIPS_OPTIONS.every((value) => value >= 1)).toBe(true);
+    expect(DEFAULT_SHEEPSHEAD_CONFIG.baseChips).toBe(1);
   });
 });

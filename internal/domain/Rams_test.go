@@ -67,6 +67,32 @@ func TestRams_ResetDealsAndAntes(t *testing.T) {
 	assert.Equal(t, 1, r.GetRoundNumber())
 }
 
+func TestRamsRetainsResolvedTrickUntilNextRound(t *testing.T) {
+	r := newTestRams(t)
+	r.players[0].SetInRound(true)
+	r.players[1].SetInRound(true)
+	r.currentTrick = []*TrickCard{
+		{PlayerIdx: 0, Card: NewCard(CardDesignSpade, 7, false)},
+		{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 14, false)},
+	}
+	r.resolveTrick()
+
+	assert.Empty(t, r.GetCurrentTrick())
+	require.Len(t, r.GetLastTrick(), 2)
+	assert.Equal(t, 1, r.GetLastTrickWinnerIdx())
+
+	data, err := json.Marshal(r)
+	require.NoError(t, err)
+	restored := NewDefaultRams()
+	require.NoError(t, json.Unmarshal(data, restored))
+	require.Len(t, restored.GetLastTrick(), 2)
+	assert.Equal(t, 1, restored.GetLastTrickWinnerIdx())
+
+	r.dealRound()
+	assert.Empty(t, r.GetLastTrick())
+	assert.Equal(t, -1, r.GetLastTrickWinnerIdx())
+}
+
 // **切り札は表向きの 1 枚で決まる。** issue には切り札の規定が無い。
 func TestRams_TrumpComesFromTheUpCard(t *testing.T) {
 	r := newTestRams(t)

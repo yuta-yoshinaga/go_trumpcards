@@ -71,7 +71,8 @@
     "nobs": "ノブ",
     "total": "合計",
     "caption": "ショー得点の内訳",
-    "subject": "対象"
+    "subject": "対象",
+    "evidence": "{{category}}: {{cards}}"
   },
   "handScoreLabels": {
     "you": "あなたのハンド",

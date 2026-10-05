@@ -40,6 +40,7 @@ function makeState(overrides: Partial<GaigelResponse> = {}): GaigelResponse {
     gameEndFlag: false,
     winnerTeam: -1,
     leadPlayerIdx: 0,
+    trickWinnerIdx: -1,
     message: '',
     config: { cpuDifficulty: 1, targetScore: 101 },
     ...overrides,

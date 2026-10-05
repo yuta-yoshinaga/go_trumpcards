@@ -512,6 +512,37 @@ func TestSlobberhannes_JSONRoundTrip(t *testing.T) {
 	assert.Equal(t, s.GetPlayer(0).GetCardsSize(), restored.GetPlayer(0).GetCardsSize())
 }
 
+func TestSlobberhannes_LastTrickLifecycleAndJSONRoundTrip(t *testing.T) {
+	s := newTestSlobberhannes(t)
+	trick := []*TrickCard{
+		{PlayerIdx: 0, Card: NewCard(CardDesignSpade, 7, false)},
+		{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 8, false)},
+		{PlayerIdx: 2, Card: NewCard(CardDesignSpade, 9, false)},
+		{PlayerIdx: 3, Card: NewCard(CardDesignSpade, 13, false)},
+	}
+	s.currentTrick = trick
+	s.resolveTrick()
+	assert.Len(t, s.GetLastTrick(), SlobberhannesPlayerCnt)
+	assert.Equal(t, 3, s.GetLastTrickWinner())
+
+	data, err := json.Marshal(s)
+	require.NoError(t, err)
+	restored := NewDefaultSlobberhannes()
+	require.NoError(t, json.Unmarshal(data, restored))
+	assert.Len(t, restored.GetLastTrick(), SlobberhannesPlayerCnt)
+	assert.Equal(t, 3, restored.GetLastTrickWinner())
+
+	// Beginning the next trick clears the prior result.
+	s.currentTrick = nil
+	s.lastTrick = trick
+	s.lastTrickWinner = 3
+	s.players[s.currentPlayerIdx].AddCard(NewCard(CardDesignHeart, 7, false))
+	idx := s.players[s.currentPlayerIdx].GetCardsSize() - 1
+	assert.NoError(t, s.play(s.currentPlayerIdx, idx))
+	assert.Empty(t, s.GetLastTrick())
+	assert.Equal(t, -1, s.GetLastTrickWinner())
+}
+
 func TestSlobberhannes_UnmarshalRejectsGarbage(t *testing.T) {
 	s := NewDefaultSlobberhannes()
 	assert.Error(t, json.Unmarshal([]byte("not json"), s))

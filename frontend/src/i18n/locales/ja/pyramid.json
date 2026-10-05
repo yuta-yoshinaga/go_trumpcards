@@ -20,12 +20,11 @@
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
   "noHint": "ヒントはありません",
-  "hintAvailable": "ヒントがあります",
-  "hintType": {
-    "pair": "ピラミッドのペアを除去",
-    "king": "ピラミッドのキングを除去",
-    "waste_pair": "ウェイスト＋ピラミッドのペアを除去",
-    "waste_king": "ウェイストのキングを除去"
+  "hintAnnouncement": {
+    "pair": "ヒント: ピラミッドの{{row1}}行{{col1}}列と{{row2}}行{{col2}}列のペアを除去",
+    "king": "ヒント: ピラミッドの{{row1}}行{{col1}}列のキングを除去",
+    "waste_pair": "ヒント: ウェイストとピラミッドの{{row1}}行{{col1}}列のペアを除去",
+    "waste_king": "ヒント: ウェイストのキングを除去"
   },
   "tutorial": {
     "pyramid": "ピラミッドです。露出したカードをクリックして選択します。",

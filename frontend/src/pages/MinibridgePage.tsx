@@ -69,6 +69,7 @@ function MinibridgePageContent() {
   const { cardWidth } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('minibridge', state);
   const [level, setLevel] = useState(1);
+  const [cpuProcessing, setCpuProcessing] = useState(false);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('minibridge');
   const cliConfig: CliGameConfig<MinibridgeResponse, Parameters<typeof minibridgeApi.exec>> = useMemo(
@@ -94,14 +95,16 @@ function MinibridgePageContent() {
 
   const handleContract = useCallback(
     (suit: number) => {
-      void dispatch('contract', undefined, undefined, level, suit);
+      setCpuProcessing(true);
+      void dispatch('contract', undefined, undefined, level, suit).finally(() => setCpuProcessing(false));
     },
     [dispatch, level],
   );
 
   const handlePlay = useCallback(
     (idx: number) => {
-      void dispatch('play', idx);
+      setCpuProcessing(true);
+      void dispatch('play', idx).finally(() => setCpuProcessing(false));
     },
     [dispatch],
   );
@@ -182,6 +185,9 @@ function MinibridgePageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div role="status" aria-live="polite" aria-atomic="true" data-testid="mb-cpu-processing">
+        {cpuProcessing && <span className="text-ds-warning">{t('header.cpuProcessing')}</span>}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (

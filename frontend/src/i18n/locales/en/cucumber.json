@@ -40,6 +40,7 @@
     "finalTrick": "This is the final trick. Only its winner scores penalty points.",
     "waiting": "Waiting for the other players.",
     "yourTurn": "Your turn",
+    "trickWinner": "{{name}} took the previous trick with the highest rank {{rank}}.",
     "roundEnd": "{{name}} took the last trick and scored {{n}} penalty points."
   },
   "result": {

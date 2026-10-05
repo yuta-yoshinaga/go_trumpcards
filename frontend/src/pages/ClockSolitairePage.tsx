@@ -15,7 +15,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -210,6 +210,7 @@ function ClockSolitairePageContent() {
     previousStepStateRef.current = state;
   }, [state, t]);
   const { cardWidth, cardHeight } = useCardDimensions();
+  const viewportWidth = useWindowWidth();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('clocksolitaire', state);
 
   // CLI mode
@@ -275,7 +276,8 @@ function ClockSolitairePageContent() {
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
   if (!state) return <GameSkeleton gameKey="clocksolitaire" layout={{ kind: 'centered', rows: [4, 5, 4] }} />;
 
-  const radius = Math.min(cardWidth * 5, 180);
+  const availableBoardWidth = Math.max(cardWidth + 16, viewportWidth - 32);
+  const radius = Math.min(cardWidth * 5, 180, (availableBoardWidth - cardWidth - 16) / 2);
 
   // Resolve the same text GameMessageBox shows so it can also be announced in a
   // dedicated live region (the visible box is not guaranteed to be a live region).
@@ -336,6 +338,7 @@ function ClockSolitairePageContent() {
             {/* Clock face layout */}
             <div
               data-tutorial="clock-face"
+              data-testid="clock-face"
               className="relative mx-auto"
               style={{ width: radius * 2 + cardWidth + 16, height: radius * 2 + cardHeight + 16 }}
             >

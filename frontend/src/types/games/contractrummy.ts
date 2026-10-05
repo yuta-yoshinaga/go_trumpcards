@@ -44,6 +44,8 @@ export interface ContractRummyResponse extends BaseGameResponse {
   totalRounds: number;
   currentPlayerIdx: number;
   discardTop: Card | null;
+  /** Cards discarded this round, oldest first. */
+  discardHistory: Card[];
   drawPileCount: number;
   gameEndFlag: boolean;
   winnerIdx: number;

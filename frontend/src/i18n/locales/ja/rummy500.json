@@ -49,7 +49,8 @@
     "drawStock": "山札から1枚引きましょう",
     "drawDiscardTop": "捨て札の一番上を取るのが安全です",
     "meldSet": "3枚以上のセットが揃っています。メルドしましょう",
-    "discardHighCard": "高得点のカードを捨てて減点を減らしましょう"
+    "discardHighCard": "高得点のカードを捨てて減点を減らしましょう",
+    "discardCard": "{{card}}を捨てて減点を減らしましょう"
   },
   "tutorial": {
     "drawArea": "ドローエリア。山札または捨て札の任意のカードから引けます",

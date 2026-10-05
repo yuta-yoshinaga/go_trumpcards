@@ -121,7 +121,7 @@ describe('ScoponePage', () => {
     expect(rules).toHaveTextContent('スコパ（1回1点）');
   });
 
-  it('take button is disabled until both hand and table are selected', async () => {
+  it('take button is enabled only for an exact legal capture set, regardless of selection order', async () => {
     renderWithProviders(<ScoponePage />);
     await waitFor(() => expect(screen.getByTestId('take-button')).toBeInTheDocument());
     expect(screen.getByTestId('take-button')).toBeDisabled();
@@ -130,7 +130,22 @@ describe('ScoponePage', () => {
     expect(screen.getByTestId('take-button')).toBeDisabled();
 
     fireEvent.click(screen.getByTestId('table-card-0'));
-    await waitFor(() => expect(screen.getByTestId('take-button')).not.toBeDisabled());
+    expect(screen.getByTestId('take-button')).toBeDisabled();
+
+    fireEvent.click(screen.getByTestId('table-card-1'));
+    expect(screen.getByTestId('take-button')).toBeDisabled();
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    expect(screen.getByTestId('take-button')).not.toBeDisabled();
+  });
+
+  it('keeps Take disabled when the selected hand index is missing from handCaptures', async () => {
+    mockExec.mockResolvedValue(makeScoponeState({ handCaptures: [[[0]], []] }));
+    renderWithProviders(<ScoponePage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-2')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('hand-card-2'));
+    expect(screen.getByTestId('hand-card-2')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('take-button')).toBeDisabled();
   });
 
   it('lay button is enabled when a hand card is selected and no table card', async () => {
@@ -144,6 +159,7 @@ describe('ScoponePage', () => {
   });
 
   it('plays "p" with sorted table indices when Take is clicked', async () => {
+    mockExec.mockResolvedValue(makeScoponeState({ handCaptures: [[[0, 1]], [], []] }));
     renderWithProviders(<ScoponePage />);
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
 
@@ -285,6 +301,7 @@ describe('ScoponePage', () => {
   });
 
   it('shows the scopa badge when a player scopaCount increases', async () => {
+    mockExec.mockResolvedValue(makeScoponeState({ handCaptures: [[[0]], [], []] }));
     renderWithProviders(<ScoponePage />);
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
 
@@ -301,6 +318,7 @@ describe('ScoponePage', () => {
   });
 
   it('clears the scopa badge after scopaCount resets to zero', async () => {
+    mockExec.mockResolvedValue(makeScoponeState({ handCaptures: [[[0]], [], []] }));
     renderWithProviders(<ScoponePage />);
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
 

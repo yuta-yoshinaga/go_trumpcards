@@ -292,6 +292,7 @@ function LobaPageContent() {
 
             <ActionLogSection
               isEndPhase={ended}
+              availableDuringPlay
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}

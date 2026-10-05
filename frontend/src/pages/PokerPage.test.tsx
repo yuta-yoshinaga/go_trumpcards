@@ -200,10 +200,35 @@ describe('PokerPage', () => {
     expect(screen.queryByText(/Player 3|プレイヤー 3/)).not.toBeInTheDocument();
   });
 
+  it('shows each side pot amount and eligible players, and hides the breakdown when empty', async () => {
+    mockExec.mockResolvedValue({
+      ...dealState,
+      sidePots: [
+        { amount: 120, eligiblePlayers: [0, 1, 2] },
+        { amount: 80, eligiblePlayers: [1, 2] },
+      ],
+    });
+    renderWithProviders(<PokerPage />);
+    await waitFor(() =>
+      expect(screen.getByText(/メインポット 120: 対象 \[あなた、CPU 1、CPU 2\]/)).toBeInTheDocument(),
+    );
+    expect(screen.getByText(/サイドポット1 80: 対象 \[CPU 1、CPU 2\]/)).toBeInTheDocument();
+  });
+
   it('shows joker count when jokerCount > 0', async () => {
     mockExec.mockResolvedValue({ ...dealState, jokerCount: 2 });
     renderWithProviders(<PokerPage />);
     await waitFor(() => expect(screen.getByText(/ジョーカー:/)).toBeInTheDocument());
+  });
+
+  it('does not show a pot breakdown when there are no side pots', async () => {
+    mockExec.mockResolvedValue({
+      ...dealState,
+      sidePots: [{ amount: 120, eligiblePlayers: [0, 1, 2] }],
+    });
+    renderWithProviders(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/ポット:/)).toBeInTheDocument());
+    expect(screen.queryByText(/メインポット|サイドポット/)).not.toBeInTheDocument();
   });
 
   it('does not show joker count when jokerCount is 0', async () => {
@@ -1393,6 +1418,7 @@ describe('PokerPage', () => {
       phase: 3, // PokerPhase.END
       currentTurn: 0,
       players: [],
+      sidePots: [],
       playerIdx: 0,
     } as unknown as PokerResponse);
 

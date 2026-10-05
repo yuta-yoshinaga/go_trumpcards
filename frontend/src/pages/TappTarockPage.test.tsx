@@ -77,6 +77,38 @@ describe('TappTarockPage', () => {
     expect(await screen.findByTestId('zw-info')).toHaveTextContent('ディール 1/4');
   });
 
+  it('shows the previous trick and its winner while cards are being played', async () => {
+    mockExec.mockResolvedValue(
+      makeTappTarockState({
+        ...playState,
+        currentTrick: [{ playerIdx: 0, card: playState.players[0].cards[0] }],
+        lastTrickCards: [playState.players[0].cards[1]],
+        lastTrickWinner: 1,
+      }),
+    );
+    renderWithProviders(<TappTarockPage />);
+    const previousTrick = await screen.findByTestId('zw-previous-trick');
+    expect(previousTrick).toHaveTextContent('前のトリック');
+    expect(previousTrick).toHaveTextContent('勝者: CPU1');
+    expect(previousTrick.querySelector('[aria-label]')).toHaveAttribute('aria-label', expect.any(String));
+  });
+
+  it('does not show the previous trick before one exists', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<TappTarockPage />);
+    await screen.findByTestId('zw-info');
+    expect(screen.queryByTestId('zw-previous-trick')).not.toBeInTheDocument();
+  });
+
+  it('does not show the previous trick while waiting to advance from trick end', async () => {
+    mockExec.mockResolvedValue(
+      makeTappTarockState({ ...playState, phase: 3, lastTrickCards: [playState.players[0].cards[0]] }),
+    );
+    renderWithProviders(<TappTarockPage />);
+    await screen.findByTestId('zw-info');
+    expect(screen.queryByTestId('zw-previous-trick')).not.toBeInTheDocument();
+  });
+
   // **入札できるのはドライヤーとソロだけ。** トリシャーケンは全員パスの結果なので
   // ボタンにしない。
   it('offers only dreier, solo and pass in the auction', async () => {

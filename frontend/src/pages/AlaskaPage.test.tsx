@@ -93,6 +93,41 @@ describe('AlaskaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('explains autocomplete availability and removes the explanation when ready', async () => {
+    const { unmount } = renderWithProviders(<AlaskaPage />);
+    const button = await screen.findByTestId('autocomplete-button');
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    const descriptionId = button.getAttribute('aria-describedby');
+    expect(descriptionId).toBeTruthy();
+    const description = document.getElementById(descriptionId ?? '');
+    expect(description).toHaveTextContent('全カードが表向きになると利用可能です');
+    expect(description).toHaveClass('basis-full');
+    expect(description).toHaveClass('order-last');
+    fireEvent.click(button);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('autocomplete');
+
+    try {
+      await i18n.changeLanguage('en');
+      expect(document.getElementById(descriptionId ?? '')).toHaveTextContent('Available once every card is face up');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+
+    const readyState: AlaskaResponse = {
+      ...playingState,
+      tableau: playingState.tableau.map((column) => column.map((slot) => ({ ...slot, faceUp: true }))),
+    };
+    unmount();
+    mockExec.mockResolvedValue(readyState);
+    renderWithProviders(<AlaskaPage />);
+    const readyButton = await screen.findByTestId('autocomplete-button');
+    await waitFor(() => expect(readyButton).not.toHaveAttribute('aria-disabled', 'true'));
+    expect(readyButton).not.toHaveAttribute('aria-describedby');
+    fireEvent.click(readyButton);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
   it('keeps a move target focusable and explains why selection is needed', async () => {
     renderWithProviders(<AlaskaPage />);
     const target = await screen.findByRole('button', { name: /空の組札 \(♠\)/ });
@@ -288,10 +323,13 @@ describe('AlaskaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
 
-  it('autocomplete button is disabled while face-down cards exist', async () => {
+  it('autocomplete button stays focusable and explains why while face-down cards exist', async () => {
     renderWithProviders(<AlaskaPage />);
     await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeInTheDocument());
-    expect(screen.getByTestId('autocomplete-button')).toBeDisabled();
+    const button = screen.getByTestId('autocomplete-button');
+    expect(button).not.toBeDisabled();
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(button).toHaveAttribute('aria-describedby', 'alaska-autocomplete-hint');
   });
 
   it('give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {
@@ -365,7 +403,6 @@ describe('AlaskaPage', () => {
 describe('AlaskaPage keyboard shortcuts', () => {
   it.each([
     ['h', 'hint'],
-    ['a', 'autocomplete'],
     ['z', 'undo'],
   ])('pressing %s dispatches %s', async (key, command) => {
     mockExec.mockResolvedValue(playingState);
@@ -375,6 +412,20 @@ describe('AlaskaPage keyboard shortcuts', () => {
     mockExec.mockResolvedValue(playingState);
     fireEvent.keyDown(document, { key });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith(command));
+  });
+
+  it('pressing a dispatches autocomplete when all cards are face up', async () => {
+    const readyState: AlaskaResponse = {
+      ...playingState,
+      tableau: playingState.tableau.map((column) => column.map((slot) => ({ ...slot, faceUp: true }))),
+    };
+    mockExec.mockResolvedValue(readyState);
+    renderWithProviders(<AlaskaPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(readyState);
+    fireEvent.keyDown(document, { key: 'a' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
 
   it('pressing g asks for give-up confirmation rather than firing it', async () => {

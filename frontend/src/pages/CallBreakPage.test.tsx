@@ -79,6 +79,22 @@ describe('fmtScore', () => {
 });
 
 describe('CallBreakPage', () => {
+  it('names the mobile and desktop score tables with the localized scores caption', async () => {
+    const originalWidth = window.innerWidth;
+    window.innerWidth = 1024;
+    const desktop = renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByRole('table', { name: 'スコア' })).toBeInTheDocument());
+    desktop.unmount();
+
+    await i18n.changeLanguage('en');
+    window.innerWidth = 375;
+    const mobile = renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByRole('table', { name: 'Scores' })).toBeInTheDocument());
+    mobile.unmount();
+    await i18n.changeLanguage('ja');
+    window.innerWidth = originalWidth;
+  });
+
   it('explains bags without claiming the game always has five rounds', async () => {
     renderWithProviders(<CallBreakPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());

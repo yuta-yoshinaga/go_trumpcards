@@ -344,7 +344,9 @@ describe('MonteBankPage', () => {
     renderWithProviders(<MonteBankPage />);
     await waitFor(() => expect(screen.getByTestId('mb-gate')).toBeInTheDocument());
     expect(screen.getByTestId('mb-result')).toHaveTextContent('的中');
-    expect(screen.getByTestId('mb-result')).toHaveTextContent('150');
+    expect(screen.getByTestId('mb-result')).toHaveTextContent('賭け金 50');
+    expect(screen.getByTestId('mb-result')).toHaveTextContent('払戻額 200');
+    expect(screen.getByTestId('mb-result')).toHaveTextContent('収支 150');
   });
 
   it('外れの収支は負で出す', async () => {

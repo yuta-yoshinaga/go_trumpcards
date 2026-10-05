@@ -39,18 +39,27 @@ describe('ContinentalRummyPage', () => {
     renderWithProviders(<ContinentalRummyPage />);
     const history = await screen.findByTestId('cont-score-history');
     expect(history).toHaveTextContent('得点履歴');
-    expect(history.querySelectorAll('thead th')).toHaveLength(5);
+    expect(history.querySelectorAll('thead th')).toHaveLength(14);
     expect(history.querySelectorAll('tbody tr')).toHaveLength(2);
+    expect(history).toHaveTextContent('累計');
     expect(Array.from(history.querySelectorAll('tbody tr')[0].children).map((cell) => cell.textContent)).toEqual([
       '1',
       '0',
+      '0',
       '54',
+      '54',
+      '0',
+      '0',
       '0',
       '0',
     ]);
     expect(Array.from(history.querySelectorAll('tbody tr')[1].children).map((cell) => cell.textContent)).toEqual([
       '2',
       '42',
+      '42',
+      '0',
+      '54',
+      '0',
       '0',
       '0',
       '0',

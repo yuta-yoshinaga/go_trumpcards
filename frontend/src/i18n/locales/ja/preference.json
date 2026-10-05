@@ -21,6 +21,7 @@
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
   "currentTrick": "現在のトリック",
+  "leadSuit": "リードスート",
   "trickWinner": "勝者",
   "trickEmpty": "(まだカードがありません)",
   "players": "プレイヤー",

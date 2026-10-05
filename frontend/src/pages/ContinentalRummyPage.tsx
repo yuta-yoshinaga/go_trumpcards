@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { Fragment, useCallback, useMemo } from 'react';
 import type { continentalrummyApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -149,6 +149,11 @@ function ContinentalRummyPageContent() {
   const me = state.players.find((p) => p.isHuman);
   // 捨てられるのは自分の番だけ。番でなければ 1 枚も押せない。
   const legalIndices = canDiscard ? (me?.cards ?? []).map((_, i) => i) : [];
+  const cumulativeScores = state.roundScoreHistory.reduce<number[][]>((totalsByRound, round) => {
+    const previous = totalsByRound.at(-1) ?? state.players.map(() => 0);
+    totalsByRound.push(state.players.map((_, playerIdx) => previous[playerIdx] + round.scores[playerIdx]));
+    return totalsByRound;
+  }, []);
 
   return (
     <GamePageShell
@@ -291,22 +296,36 @@ function ContinentalRummyPageContent() {
                         {t('historyRound')}
                       </th>
                       {state.players.map((player) => (
-                        <th scope="col" className="p-1" key={player.id}>
+                        <th scope="col" className="p-1" colSpan={2} key={player.id}>
                           {player.id === 0 ? t('label.you') : t('label.cpu', { n: player.id })}
                         </th>
                       ))}
                     </tr>
+                    <tr>
+                      <th scope="col" className="p-1" />
+                      {state.players.map((player) => (
+                        <Fragment key={player.id}>
+                          <th scope="col" className="p-1">
+                            {t('historyRoundScore')}
+                          </th>
+                          <th scope="col" className="p-1">
+                            {t('historyCumulativeScore')}
+                          </th>
+                        </Fragment>
+                      ))}
+                    </tr>
                   </thead>
                   <tbody>
-                    {state.roundScoreHistory.map((round) => (
+                    {state.roundScoreHistory.map((round, roundIdx) => (
                       <tr key={round.roundNumber}>
                         <th scope="row" className="p-1">
                           {round.roundNumber}
                         </th>
                         {state.players.map((player) => (
-                          <td className="p-1" key={player.id}>
-                            {round.scores[player.id] ?? 0}
-                          </td>
+                          <Fragment key={player.id}>
+                            <td className="p-1">{round.scores[player.id]}</td>
+                            <td className="p-1">{cumulativeScores[roundIdx][player.id]}</td>
+                          </Fragment>
                         ))}
                       </tr>
                     ))}

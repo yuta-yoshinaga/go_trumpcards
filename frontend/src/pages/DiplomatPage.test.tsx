@@ -28,6 +28,7 @@ const playingState: DiplomatResponse = {
   tableau: makeTableau([[card('SPADE', 9)], [card('HEART', 8)], [card('CLOVER', 1)]]),
   // サーバが返す判定 (domain.DiplomatIsDeadEndTop)。列2 の頭が ♣A。
   tableauDeadEnd: [false, false, true, false, false, false, false, false],
+  tableauMoveTargets: [[], [], [], [], [], [], [], [], []],
   foundation: Array.from({ length: 8 }, () => []),
   stockCount: 72,
   waste: [],
@@ -424,6 +425,32 @@ describe('DiplomatPage dead-end columns', () => {
     expect(await screen.findByTestId('diplomat-dead-end-2')).toHaveTextContent('行き止まり');
     expect(screen.queryByTestId('diplomat-dead-end-0')).not.toBeInTheDocument();
     expect(screen.queryByTestId('diplomat-dead-end-1')).not.toBeInTheDocument();
+  });
+
+  it('highlights only tableau destinations supplied for the selected source', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableauMoveTargets: [[1, 3], [], [], [], [], [], [], [], []],
+    });
+    renderWithProviders(<DiplomatPage />);
+    const source = await screen.findByRole('button', { name: '♠ 9' });
+    fireEvent.click(source);
+    expect(await screen.findByTestId('diplomat-legal-target-help')).toHaveTextContent('選択した札を置ける列');
+    expect(screen.getByRole('button', { name: '♥ 8' })).toHaveAttribute('data-legal-target', 'true');
+    expect(screen.getByRole('button', { name: /空の列 3/ })).toHaveAttribute('data-legal-target', 'true');
+    expect(screen.getByRole('button', { name: /この列にはもう積めません/ })).not.toHaveAttribute('data-legal-target');
+  });
+
+  it('uses the server destination list for the selected waste card', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      waste: [card('DIAMOND', 7)],
+      tableauMoveTargets: [[], [], [], [], [], [], [], [], [4]],
+    });
+    renderWithProviders(<DiplomatPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♦ 7' }));
+    expect(await screen.findByRole('button', { name: /空の列 4/ })).toHaveAttribute('data-legal-target', 'true');
+    expect(screen.getByRole('button', { name: /空の列 3/ })).not.toHaveAttribute('data-legal-target');
   });
 
   it('says in the accessible name that the Ace can still go to a foundation', async () => {

@@ -26,6 +26,7 @@
   "bid": "ビッド {{n}}",
   "bidNone": "ビッドなし",
   "buried": "埋めた枚数: {{count}}",
+  "buriedCardsTitle": "自分が埋めたカード",
   "bidProgress": "ビッド: {{bid}} / 獲得: {{won}}",
   "roundScoreAnnouncementName": "{{name}}（{{result}}）",
   "roundScoreAnnouncementResult": "ビッド {{bid}}、獲得 {{tricks}} トリック",

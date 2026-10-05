@@ -48,6 +48,11 @@
     "title": "設定"
   },
   "betGuide": "アンテとローボーナスを設定してベット",
+  "betSummary": {
+    "total": "合計: {{amount}}",
+    "remaining": "残りチップ: {{amount}}",
+    "shortfall": "不足チップ: {{amount}}"
+  },
   "foldConsequence": "フォールドするとアンテ {{ante}} を失います。ローボーナス {{lowBonus}} は独立して評価されます。",
   "foldConsequenceNoLowBonus": "フォールドするとアンテ {{ante}} を失います。",
   "scoringNote": "3枚の合計が低いほど強く、0点が最強。絵札=10、A=1。同ランク3枚か同スート連番3枚は0点。",

@@ -27,6 +27,81 @@ func baseballTotalChips(g *BaseballPoker) int {
 	return total
 }
 
+func TestBaseballPoker_GetHintDecisions(t *testing.T) {
+	type hand int
+	const (
+		highCard hand = iota
+		onePair
+		twoPair
+		threeOfAKind
+		flush
+	)
+	tests := []struct {
+		name       string
+		hand       hand
+		phase      BaseballPhase
+		turn       int
+		buyer      int
+		buyCost    int
+		chips      int
+		toCall     int
+		raiseCount int
+		wantAction string
+		wantReason string
+	}{
+		{name: "strong hand pays for buy-in", hand: twoPair, phase: BaseballPhaseBuyIn, buyer: 0, buyCost: 900, chips: 1000, wantAction: "pay", wantReason: "handIsWorthTheBuy"},
+		{name: "cheap buy-in without a hand", hand: highCard, phase: BaseballPhaseBuyIn, buyer: 0, buyCost: 30, chips: 1000, wantAction: "pay", wantReason: "buyIsCheapEnough"},
+		{name: "expensive buy-in folds", hand: highCard, phase: BaseballPhaseBuyIn, buyer: 0, buyCost: 400, chips: 1000, wantAction: "fold", wantReason: "buyCostsTooMuch"},
+		{name: "not the buyer gets no hint", hand: highCard, phase: BaseballPhaseBuyIn, buyer: 1, chips: 1000},
+		{name: "no bet checks", hand: highCard, phase: BaseballPhaseBetting, turn: 0, chips: 1000, wantAction: "check", wantReason: "seeAnotherCard"},
+		{name: "three of a kind bets", hand: threeOfAKind, phase: BaseballPhaseBetting, turn: 0, chips: 1000, wantAction: "bet", wantReason: "strongEnoughToBet"},
+		{name: "raise cap prevents bet", hand: threeOfAKind, phase: BaseballPhaseBetting, turn: 0, chips: 1000, raiseCount: baseballMaxRaisesPerRound, wantAction: "check", wantReason: "seeAnotherCard"},
+		{name: "flush raises", hand: flush, phase: BaseballPhaseBetting, turn: 0, chips: 1000, toCall: 20, wantAction: "raise", wantReason: "strongEnoughToRaise"},
+		{name: "two pair calls", hand: twoPair, phase: BaseballPhaseBetting, turn: 0, chips: 1000, toCall: 20, wantAction: "call", wantReason: "worthACall"},
+		{name: "one pair folds to an expensive call", hand: onePair, phase: BaseballPhaseBetting, turn: 0, chips: 1000, toCall: 20, wantAction: "fold", wantReason: "wildsRaiseTheBar"},
+		{name: "cheap call without a strong hand", hand: onePair, phase: BaseballPhaseBetting, turn: 0, chips: 1000, toCall: BaseballDefaultAnte, wantAction: "call", wantReason: "cheapToStay"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := NewDefaultBaseballPoker()
+			human := g.players[0]
+			human.SetChips(tt.chips)
+			var cards []*Card
+			switch tt.hand {
+			case onePair:
+				cards = []*Card{NewCard(CardDesignSpade, 1, true), NewCard(CardDesignHeart, 1, true), NewCard(CardDesignClover, 13, true), NewCard(CardDesignDiamond, 12, true), NewCard(CardDesignSpade, 7, true)}
+			case twoPair:
+				cards = []*Card{NewCard(CardDesignSpade, 8, true), NewCard(CardDesignHeart, 8, true), NewCard(CardDesignClover, 5, true), NewCard(CardDesignDiamond, 5, true), NewCard(CardDesignSpade, 13, true)}
+			case threeOfAKind:
+				cards = []*Card{NewCard(CardDesignSpade, 8, true), NewCard(CardDesignHeart, 8, true), NewCard(CardDesignClover, 8, true), NewCard(CardDesignDiamond, 5, true), NewCard(CardDesignSpade, 13, true)}
+			case flush:
+				cards = []*Card{NewCard(CardDesignSpade, 1, true), NewCard(CardDesignSpade, 8, true), NewCard(CardDesignSpade, 5, true), NewCard(CardDesignSpade, 12, true), NewCard(CardDesignSpade, 2, true)}
+			default:
+				cards = []*Card{NewCard(CardDesignSpade, 1, true), NewCard(CardDesignHeart, 8, true), NewCard(CardDesignClover, 5, true), NewCard(CardDesignDiamond, 2, true), NewCard(CardDesignSpade, 11, true)}
+			}
+			for _, card := range cards {
+				human.AddDealtCard(card, true)
+			}
+			g.phase = tt.phase
+			g.turn = tt.turn
+			g.buyer = tt.buyer
+			g.buyCost = tt.buyCost
+			g.currentBet = tt.toCall
+			g.raiseCount = tt.raiseCount
+
+			hint := g.GetHint()
+			if tt.wantAction == "" {
+				assert.Nil(t, hint)
+				return
+			}
+			require.NotNil(t, hint)
+			assert.Equal(t, tt.wantAction, hint.Action)
+			assert.Equal(t, tt.wantReason, hint.Reason)
+		})
+	}
+}
+
 // baseballDriveToShowdown は人間の席を機械的に打たせてハンドを閉じる。
 //
 // **人間の席は残したまま駆動する。** 全席を CPU にすると `HumanSeat()` が

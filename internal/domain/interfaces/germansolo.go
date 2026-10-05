@@ -89,6 +89,8 @@ type GermanSoloGame interface {
 	GetCurrentBidderIdx() int
 	// GetPlayerScores プレイヤー別累積点を取得する
 	GetPlayerScores() [domain.GermanSoloPlayerCnt]int
+	// GetPlayerScoreDeltas 得点計算済みの直近ディールのプレイヤー別増減点を取得する
+	GetPlayerScoreDeltas() [domain.GermanSoloPlayerCnt]int
 	// GetOutcome 直近ディールの結果を取得する
 	GetOutcome() domain.GermanSoloOutcome
 	// GetResult 人間視点のマッチ結果を取得する

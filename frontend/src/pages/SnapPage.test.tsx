@@ -59,6 +59,18 @@ describe('SnapPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('explains that player count and CPU reaction changes apply after the next reset', async () => {
+    renderWithProviders(<SnapPage />);
+    await screen.findByTestId('sp-rule');
+    fireEvent.click(screen.getByText('設定', { selector: 'summary' }));
+
+    const playerSelect = screen.getByTestId('sp-players-select');
+    const difficultySelect = screen.getByTestId('sp-difficulty-select');
+    expect(playerSelect).toHaveAttribute('aria-describedby', 'snap-players-description');
+    expect(difficultySelect).toHaveAttribute('aria-describedby', 'snap-difficulty-description');
+    expect(screen.getAllByText('設定変更は次のリセット後、次のゲームから反映されます。')).toHaveLength(2);
+  });
+
   // **トリガーが動くことが規則そのもの。**
   it('states the rule', async () => {
     renderWithProviders(<SnapPage />);

@@ -180,6 +180,13 @@ function BiribaPageContent() {
   }, [gameExec, hideActionLog, biribaConfig.cpuDifficulty, biribaConfig.pointLimit]);
   const isHumanTurn =
     (isDrawPhase || isMeldPhase || isDiscardPhase) && state?.players[state.currentPlayerIdx]?.isHuman === true;
+  const goOutMissingRequirements = [
+    ...(humanPlayer?.tookPozzetto ? [] : [t('goOutRequirementPozzetto')]),
+    ...(humanPlayer?.hasBiriba ? [] : [t('goOutRequirementBiriba')]),
+  ];
+  const goOutReason = goOutMissingRequirements.length
+    ? t('goOutReason', { requirements: goOutMissingRequirements.join(t('listSeparator')) })
+    : '';
 
   // Transient feedback when a player grabs the pozzetto (a pivotal Biriba moment)
   // and a one-shot pulse on round-score cells that just changed.
@@ -543,6 +550,10 @@ function BiribaPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
+            <div id="biriba-go-out-reason" data-testid="biriba-go-out-reason" role="status" aria-live="polite">
+              {isDiscardPhase && isHumanTurn && goOutReason && <span className="sr-only">{goOutReason}</span>}
+            </div>
+
             <div className="flex gap-2 items-center flex-wrap" data-tutorial="ca-actions">
               {isDrawPhase && isHumanTurn && (
                 <div className="flex gap-2 flex-col">
@@ -618,9 +629,27 @@ function BiribaPageContent() {
                   >
                     {t('discardButton')}
                   </button>
-                  <button type="button" className={btnSuccess} onClick={handleGoOut} disabled={loading}>
+                  <button
+                    type="button"
+                    className={`${btnSuccess} ${goOutReason || loading ? 'aria-disabled:opacity-70 aria-disabled:cursor-not-allowed aria-disabled:saturate-50' : ''}`}
+                    onClick={() => {
+                      if (!loading && !goOutReason) handleGoOut();
+                    }}
+                    aria-disabled={!!goOutReason || loading || undefined}
+                    aria-describedby={goOutReason ? 'biriba-go-out-reason-visible' : undefined}
+                  >
                     {t('goOutButton')}
                   </button>
+                  {goOutReason && (
+                    <span
+                      id="biriba-go-out-reason-visible"
+                      data-testid="biriba-go-out-reason-visible"
+                      className="text-xs text-ds-text-muted"
+                      aria-hidden="true"
+                    >
+                      {goOutReason}
+                    </span>
+                  )}
                 </>
               )}
               {isRoundEnd && (

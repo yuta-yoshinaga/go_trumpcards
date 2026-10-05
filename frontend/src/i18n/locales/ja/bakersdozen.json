@@ -6,6 +6,7 @@
   },
   "foundation": "組札",
   "tableau": "場札",
+  "tableauCardAriaLabel": "{{card}}、列{{col}}",
   "moveCount": "手数",
   "giveup": "ギブアップ",
   "empty": "空",

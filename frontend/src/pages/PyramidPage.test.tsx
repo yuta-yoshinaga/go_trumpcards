@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, pyramidApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -132,6 +132,49 @@ describe('PyramidPage', () => {
     await waitFor(() => expect(screen.getByLabelText(/♦ 3/)).toHaveClass('ring-ds-warning'));
     expect(screen.getByLabelText(/♠ 10/)).toHaveClass('ring-ds-warning');
     expect(screen.getByLabelText(/♥ K/)).not.toHaveClass('ring-ds-warning');
+  });
+
+  it('announces hinted pyramid and waste positions in Japanese and English', async () => {
+    const cases = [
+      [{ type: 'king', row1: 2, col1: 2, row2: -1, col2: -1 }, 'ヒント: ピラミッドの2行2列'],
+      [{ type: 'pair', row1: 2, col1: 0, row2: 2, col2: 1 }, 'ヒント: ピラミッドの2行0列と2行1列'],
+      [{ type: 'waste_pair', row1: 2, col1: 0, row2: -1, col2: -1 }, 'ヒント: ウェイストとピラミッドの2行0列'],
+      [{ type: 'waste_king', row1: -1, col1: -1, row2: -1, col2: -1 }, 'ヒント: ウェイスト'],
+    ] as const;
+    for (const [hint, expected] of cases) {
+      renderWithProviders(<PyramidPage />);
+      mockExec.mockResolvedValue({ ...playingState, hint });
+      fireEvent.click(await screen.findByRole('button', { name: 'ヒント' }));
+      expect(await screen.findByTestId('py-hint-live')).toHaveTextContent(expected);
+      // Isolate each case because a hint response persists in the page state.
+      cleanup();
+    }
+
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      const englishCases = [
+        [{ type: 'king', row1: 2, col1: 2, row2: -1, col2: -1 }, 'Hint: remove the pyramid King at row 2, column 2'],
+        [
+          { type: 'pair', row1: 2, col1: 0, row2: 2, col2: 1 },
+          'Hint: remove the pyramid pair at row 2, column 0 and row 2, column 1',
+        ],
+        [
+          { type: 'waste_pair', row1: 2, col1: 0, row2: -1, col2: -1 },
+          'Hint: pair the waste with the pyramid card at row 2, column 0',
+        ],
+        [{ type: 'waste_king', row1: -1, col1: -1, row2: -1, col2: -1 }, 'Hint: remove the King from the waste'],
+      ] as const;
+      for (const [hint, expected] of englishCases) {
+        renderWithProviders(<PyramidPage />);
+        mockExec.mockResolvedValue({ ...playingState, hint });
+        fireEvent.click(await screen.findByRole('button', { name: 'Hint' }));
+        expect(await screen.findByTestId('py-hint-live')).toHaveTextContent(expected);
+        cleanup();
+      }
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('shows only the hint ring when a card is both hinted and a pair candidate', async () => {
@@ -433,7 +476,7 @@ describe('PyramidPage', () => {
     mockExec.mockResolvedValue(withHintState);
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
-    await waitFor(() => expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/ヒント: ピラミッドの2行0列/)).toBeInTheDocument());
   });
 
   // #5955: ヒントは無言で現れていた。**空のまま先にマウントしてある**領域の中身が
@@ -450,7 +493,7 @@ describe('PyramidPage', () => {
     mockExec.mockResolvedValue(withHintState);
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
     // **同じ要素**の中身が変わる (別の要素が現れるのではない)。
-    await waitFor(() => expect(region).toHaveTextContent(/ヒントがあります/));
+    await waitFor(() => expect(region).toHaveTextContent(/ヒント: ピラミッドの2行0列/));
   });
 
   it('game clear shows action log button', async () => {
@@ -596,7 +639,7 @@ describe('PyramidPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(withHintState);
     fireEvent.keyDown(document, { key: 'h' });
-    await waitFor(() => expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/ヒント: ピラミッドの2行0列/)).toBeInTheDocument());
   });
 
   it('keyboard shortcuts are disabled when game is over', async () => {

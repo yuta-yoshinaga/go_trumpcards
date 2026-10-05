@@ -109,6 +109,13 @@ beforeEach(() => {
 });
 
 describe('SultanPage', () => {
+  it('spaces and wraps the play controls', async () => {
+    renderWithProviders(<SultanPage />);
+    const controls = await screen.findByText('引く', { selector: '[data-tutorial="sultan-controls"] button' });
+
+    expect(controls.parentElement).toHaveClass('flex', 'flex-wrap', 'gap-2');
+  });
+
   it('marks only playable waste and divan cards', async () => {
     mockExec.mockResolvedValue(playablePreviewState);
     renderWithProviders(<SultanPage />);

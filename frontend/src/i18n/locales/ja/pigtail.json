@@ -21,6 +21,14 @@
     "safe": "セーフ",
     "recentCenter": "直近のしっぽ"
   },
+  "listSeparator": "、",
+  "announcement": {
+    "summary": "あなたの結果: {{human}}{{cpu}}",
+    "action": "{{player}}が{{card}}を引き、{{result}}",
+    "safe": "セーフ",
+    "penalty": "ペナルティ",
+    "cpuPrefix": "。CPUの結果: {{cpu}}"
+  },
   "drawGuidance": {
     "penalty": "場札トップと同じスートを引くと、場札をすべて引き取ります。",
     "stock": "山札は{{count}}枚残っています。",

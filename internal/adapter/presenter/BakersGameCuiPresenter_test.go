@@ -29,6 +29,23 @@ func TestBakersGameCuiPresenterOutputPlaying(t *testing.T) {
 	assert.Contains(t, result, "手数:")
 }
 
+func TestBakersGameCuiPresenterShowsSameSuitRuleInBothLocales(t *testing.T) {
+	origLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(origLang) })
+	p := new(BakersGameCuiPresenter)
+	f := domain.NewDefaultBakersGame()
+	f.Reset()
+	f.SetPhase(domain.FreeCellPhasePlaying)
+
+	for _, tc := range []struct{ lang, expected string }{
+		{"ja", "タブローは同じスートの降順で積みます"},
+		{"en", "Build down in suit on the tableau"},
+	} {
+		i18n.SetLang(tc.lang)
+		assert.Contains(t, p.Output(f, nil), tc.expected)
+	}
+}
+
 func TestBakersGameCuiPresenterOutputGameClear(t *testing.T) {
 	p := new(BakersGameCuiPresenter)
 	f := domain.NewDefaultBakersGame()

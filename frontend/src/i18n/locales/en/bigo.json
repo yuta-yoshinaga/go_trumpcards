@@ -84,6 +84,7 @@
     "weakHandRank": "Weak hand — fold recommended"
   },
   "livePreview": "Current hand:",
+  "liveHandAnnouncement": "Current hand: {{hand}}",
   "hand": {
     "highCard": "High Card",
     "onePair": "One Pair",

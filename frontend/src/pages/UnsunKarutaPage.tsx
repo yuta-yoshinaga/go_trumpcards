@@ -239,6 +239,7 @@ function UnsunKarutaPageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  wrap
                   dataTutorial="unsunkaruta-trick-display"
                   winnerIdx={isTrickEnd && state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
                   winnerLabel={t('trickWinnerBadge')}

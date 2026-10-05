@@ -13,6 +13,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -38,6 +39,9 @@ import { paiGowHouseWaySplit } from '../utils/paiGowHouseWay';
 
 /** Bet cap enforced by the domain (`PaiGowMaxBet`); bets are multiples of 10. */
 const PAIGOW_MAX_BET = 10000;
+
+/** Number of cards dealt to each Pai Gow hand. */
+const PAI_GOW_HAND_SIZE = 7;
 
 /** High hand rank display name lookup. */
 const HIGH_HAND_RANK_KEYS: Record<number, string> = {
@@ -259,6 +263,19 @@ function PaiGowPageContent() {
               <div className="flex flex-col items-center justify-center py-4 gap-4">
                 <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
               </div>
+            )}
+
+            {isSetHandsPhase && (
+              <section className="mb-4" data-testid="dealer-cards" aria-label={t('dealer')}>
+                <div className="text-ds-error-text font-bold text-center mb-1">
+                  <span aria-hidden="true">🔴</span> {t('dealer')}
+                </div>
+                <div className="flex justify-center gap-2 flex-wrap">
+                  {Array.from({ length: PAI_GOW_HAND_SIZE }, (_, i) => (
+                    <AnimatedCardBack key={`d-${i}`} width={cardWidth * 0.65} silent />
+                  ))}
+                </div>
+              </section>
             )}
 
             {/* Player Cards with selection during SET_HANDS phase */}

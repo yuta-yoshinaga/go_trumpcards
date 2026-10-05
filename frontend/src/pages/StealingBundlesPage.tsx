@@ -379,7 +379,7 @@ function StealingBundlesPageContent() {
                     data-testid="sb-take-btn"
                   >
                     {t('actions.take', {
-                      cards: selectedTakes.map((i) => cardAlt(state.tableCards[i])).join(', '),
+                      cards: selectedTakes.map((i) => cardAlt(state.tableCards[i])).join(t('listSeparator')),
                     })}
                   </button>
                 )}

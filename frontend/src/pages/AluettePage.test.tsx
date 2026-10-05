@@ -72,6 +72,12 @@ describe('AluettePage', () => {
     expect(held).not.toHaveTextContent('[1]');
   });
 
+  it('includes a held luette name in that card button accessible name', async () => {
+    renderWithProviders(<AluettePage />);
+    expect(await screen.findByRole('button', { name: /♦ 3.*ムッシュー/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 3' })).toBeInTheDocument();
+  });
+
   it('says so when the hand holds no luette', async () => {
     mockExec.mockResolvedValue(
       makeAluetteState({
@@ -107,7 +113,7 @@ describe('AluettePage', () => {
     const playButton = await screen.findByRole('button', { name: '出す' });
     expect(playButton).toBeDisabled();
 
-    fireEvent.click(screen.getByRole('button', { name: '♦ 3' }));
+    fireEvent.click(screen.getByRole('button', { name: /♦ 3.*ムッシュー/ }));
     mockExec.mockClear();
     mockExec.mockResolvedValue(playState);
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
@@ -185,7 +191,7 @@ describe('AluettePage', () => {
   it('shows the shared ErrorAlert with a retry button when a play fails', async () => {
     renderWithProviders(<AluettePage />);
     await screen.findByRole('button', { name: '出す' });
-    fireEvent.click(screen.getByRole('button', { name: '♦ 3' }));
+    fireEvent.click(screen.getByRole('button', { name: /♦ 3.*ムッシュー/ }));
 
     mockExec.mockRejectedValueOnce(new Error('boom'));
     fireEvent.click(screen.getByRole('button', { name: '出す' }));

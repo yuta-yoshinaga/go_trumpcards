@@ -38,6 +38,9 @@ func TestBasset_FirstCardMatchLosesAndSecondCardMatchWins(t *testing.T) {
 	if losing.GetPhase() != BassetPhaseTurn {
 		t.Fatalf("first-card match should lose bet, phase=%d", losing.GetPhase())
 	}
+	if turn := losing.GetLastTurn(); turn == nil || !turn.BankerHit || turn.PlayerHit || turn.PayoutReceived != 0 {
+		t.Fatalf("first-card result = %#v", turn)
+	}
 	if bet, rank := losing.GetBet(); bet != nil || rank != 0 {
 		t.Fatalf("first-card match retained bet: %#v/%d", bet, rank)
 	}
@@ -48,6 +51,9 @@ func TestBasset_FirstCardMatchLosesAndSecondCardMatchWins(t *testing.T) {
 	}
 	if winning.GetPhase() != BassetPhaseDecision {
 		t.Fatalf("second-card match should open decision phase: %d", winning.GetPhase())
+	}
+	if turn := winning.GetLastTurn(); turn == nil || turn.BankerHit || !turn.PlayerHit || turn.PayoutReceived != 0 {
+		t.Fatalf("second-card result = %#v", turn)
 	}
 	if bet, rank := winning.GetBet(); bet == nil || rank != 7 {
 		t.Fatalf("winning bet not retained: %#v/%d", bet, rank)
@@ -76,6 +82,9 @@ func TestBasset_ParoliAdvancesNamedMultipliers(t *testing.T) {
 	}
 	if err := b.PlayerTakeWinnings(); err != nil {
 		t.Fatal(err)
+	}
+	if turn := b.GetLastTurn(); turn == nil || turn.PayoutReceived != 680 {
+		t.Fatalf("received payout = %#v, want 680", turn)
 	}
 	if b.GetPhase() != BassetPhaseRoundEnd {
 		t.Fatalf("final stage must cash out: phase=%d", b.GetPhase())
@@ -129,6 +138,9 @@ func TestBasset_TakeWinningsResetsStage(t *testing.T) {
 	}
 	if err := b.PlayerTakeWinnings(); err != nil {
 		t.Fatal(err)
+	}
+	if turn := b.GetLastTurn(); turn == nil || turn.PayoutReceived != 20 {
+		t.Fatalf("received payout = %#v, want 20", turn)
 	}
 	if bet, rank := b.GetBet(); bet != nil || rank != 0 {
 		t.Fatalf("cash-out retained bet: %#v/%d", bet, rank)

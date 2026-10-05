@@ -27,6 +27,8 @@ const state = (over: Partial<CucumberResponse> = {}): CucumberResponse =>
     trickNumber: 2,
     roundNumber: 3,
     lastTrickWinnerIdx: -1,
+    resolvedTrickWinnerIdx: -1,
+    lastTrickRank: 0,
     lastPenalty: 0,
     gameEndFlag: false,
     winnerIdx: -1,

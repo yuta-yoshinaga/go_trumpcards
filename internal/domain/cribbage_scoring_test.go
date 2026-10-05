@@ -3,6 +3,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -336,6 +337,65 @@ func TestCribbageScoreHand(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			detail := CribbageScoreHand(tt.hand, tt.starter, tt.isCrib)
 			assert.Equal(t, tt.want, detail.Total)
+		})
+	}
+}
+
+func TestCribbageScoreHandRecordsScoringCardEvidence(t *testing.T) {
+	hand := []*Card{NewCard(CardDesignSpade, 5, false), NewCard(CardDesignHeart, 10, false), NewCard(CardDesignDiamond, 3, false), NewCard(CardDesignClover, 4, false)}
+	starter := NewCard(CardDesignHeart, 5, false)
+	detail := CribbageScoreHand(hand, starter, false)
+	assert.Len(t, detail.FifteenCards, 2)
+	assert.Len(t, detail.PairCards, 1)
+	assert.Len(t, detail.RunCards, 2)
+	assert.Equal(t, []*Card{hand[0], hand[2], hand[3]}, detail.RunCards[0])
+	assert.Len(t, detail.FlushCards, 0)
+	assert.Len(t, detail.NobsCards, 0)
+	var decoded CribbageScoreDetail
+	data, err := json.Marshal(detail)
+	assert.NoError(t, err)
+	assert.NoError(t, json.Unmarshal(data, &decoded))
+	assert.Equal(t, detail.FifteenCards, decoded.FifteenCards)
+	assert.Equal(t, detail.RunCards, decoded.RunCards)
+}
+
+func TestCribbageScoreHandEvidenceCountsMatchScoringFunctions(t *testing.T) {
+	tests := []struct {
+		name    string
+		hand    []*Card
+		starter *Card
+	}{
+		{
+			name:    "double run",
+			hand:    []*Card{cCard(1, 3), cCard(2, 4), cCard(3, 4), cCard(4, 5)},
+			starter: cCard(1, 9),
+		},
+		{
+			name:    "three of a kind",
+			hand:    []*Card{cCard(1, 8), cCard(2, 8), cCard(3, 8), cCard(4, 2)},
+			starter: cCard(1, 11),
+		},
+		{
+			name:    "multiple fifteens",
+			hand:    []*Card{cCard(1, 5), cCard(2, 5), cCard(3, 10), cCard(4, 10)},
+			starter: cCard(1, 1),
+		},
+		{
+			name:    "zero points",
+			hand:    []*Card{cCard(1, 1), cCard(2, 3), cCard(3, 7), cCard(4, 9)},
+			starter: cCard(1, 12),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			detail := CribbageScoreHand(tt.hand, tt.starter, false)
+			var runPoints int
+			for _, run := range detail.RunCards {
+				runPoints += len(run)
+			}
+			assert.Equal(t, CribbageScoreFifteens(detail.Cards), len(detail.FifteenCards)*2)
+			assert.Equal(t, CribbageScorePairs(detail.Cards), len(detail.PairCards)*2)
+			assert.Equal(t, CribbageScoreRuns(detail.Cards), runPoints)
 		})
 	}
 }

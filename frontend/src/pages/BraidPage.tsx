@@ -425,8 +425,11 @@ function BraidPageContent() {
                     disabled={!isPlaying || loading || isAutoCompleting || (state.stockCount === 0 && !state.canRedeal)}
                     aria-label={
                       state.stockCount === 0
-                        ? t('emptyStockAriaLabel')
-                        : t('stockAriaLabel', { count: state.stockCount })
+                        ? t('emptyStockAriaLabel', { redeals: t('redealsLeft', { count: state.redealsLeft }) })
+                        : t('stockAriaLabel', {
+                            count: state.stockCount,
+                            redeals: t('redealsLeft', { count: state.redealsLeft }),
+                          })
                     }
                     style={{ width: dims.cw, height: dims.ch }}
                     className={`rounded border-2 border-white/30 bg-white/10 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}

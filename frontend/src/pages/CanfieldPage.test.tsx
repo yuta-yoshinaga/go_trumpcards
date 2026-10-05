@@ -55,6 +55,22 @@ beforeEach(() => {
 });
 
 describe('CanfieldPage', () => {
+  it('fans the latest three waste cards while keeping only the top card interactive', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      waste: [card('SPADE', 2), card('CLOVER', 6), card('HEART', 4), card('DIAMOND', 9)],
+    });
+    renderWithProviders(<CanfieldPage />);
+
+    const wasteCards = await Promise.all(['♣ 6', '♥ 4', '♦ 9'].map((alt) => screen.findByAltText(alt)));
+    expect(wasteCards).toHaveLength(3);
+    expect(wasteCards[0].closest('button')).toBeNull();
+    expect(wasteCards[1].closest('button')).toBeNull();
+    expect(wasteCards[0]).toHaveAttribute('draggable', 'false');
+    expect(wasteCards[1]).toHaveAttribute('draggable', 'false');
+    expect(wasteCards[2].closest('button')).toHaveAttribute('draggable', 'true');
+  });
+
   it('advertises and runs the shared draw shortcut', async () => {
     renderWithProviders(<CanfieldPage />);
     const shortcuts = await screen.findByTestId('canfield-kbd-shortcuts');

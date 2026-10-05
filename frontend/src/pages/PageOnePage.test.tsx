@@ -211,10 +211,17 @@ describe('PageOnePage', () => {
     await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
   });
 
+  it('keeps the current score table caption when there is no round history', async () => {
+    renderWithProviders(<PageOnePage />);
+    expect(await screen.findByRole('table', { name: '現在のラウンドと累計スコア' })).toBeInTheDocument();
+    expect(screen.queryByRole('table', { name: 'ラウンド別スコア履歴' })).not.toBeInTheDocument();
+  });
+
   it('renders server provided round score history by round and player', async () => {
     mockExec.mockResolvedValue({ ...gameEndState, roundHistory: [{ roundNumber: 1, scores: [0, 12, 7, 3] }] });
     renderWithProviders(<PageOnePage />);
     const history = await screen.findByTestId('po-round-history');
+    expect(history).toHaveAccessibleName('ラウンド別スコア履歴');
     expect(history).toHaveTextContent('ラウンド');
     expect(history).toHaveTextContent('1');
     expect(history).toHaveTextContent('12');

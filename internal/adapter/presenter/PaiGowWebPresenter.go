@@ -17,11 +17,20 @@ func (pp *PaiGowWebPresenter) Output(pg interfaces.PaiGowGame, lastErr error) st
 	resObj := new(controller.PaiGowWebOutput)
 
 	resObj.PlayerCards = cardsToOutputOrEmpty(pg.GetPlayerCards())
-	resObj.DealerCards = cardsToOutputOrEmpty(pg.GetDealerCards())
+	if pg.GetGameEndFlag() {
+		resObj.DealerCards = cardsToOutputOrEmpty(pg.GetDealerCards())
+	} else {
+		resObj.DealerCards = cardsToOutputOrEmpty(nil)
+	}
 	resObj.PlayerHighHand = cardsToOutputOrEmpty(pg.GetPlayerHighHand())
 	resObj.PlayerLowHand = cardsToOutputOrEmpty(pg.GetPlayerLowHand())
-	resObj.DealerHighHand = cardsToOutputOrEmpty(pg.GetDealerHighHand())
-	resObj.DealerLowHand = cardsToOutputOrEmpty(pg.GetDealerLowHand())
+	if pg.GetGameEndFlag() {
+		resObj.DealerHighHand = cardsToOutputOrEmpty(pg.GetDealerHighHand())
+		resObj.DealerLowHand = cardsToOutputOrEmpty(pg.GetDealerLowHand())
+	} else {
+		resObj.DealerHighHand = cardsToOutputOrEmpty(nil)
+		resObj.DealerLowHand = cardsToOutputOrEmpty(nil)
+	}
 	resObj.Phase = pg.GetPhase()
 	resObj.Chips = pg.GetChips()
 	resObj.Bet = pg.GetBet()
@@ -32,8 +41,13 @@ func (pp *PaiGowWebPresenter) Output(pg interfaces.PaiGowGame, lastErr error) st
 	resObj.Commission = pg.GetCommission()
 	resObj.PlayerHighRank = pg.GetPlayerHighRank()
 	resObj.PlayerLowRank = pg.GetPlayerLowRank()
-	resObj.DealerHighRank = pg.GetDealerHighRank()
-	resObj.DealerLowRank = pg.GetDealerLowRank()
+	if pg.GetGameEndFlag() {
+		resObj.DealerHighRank = pg.GetDealerHighRank()
+		resObj.DealerLowRank = pg.GetDealerLowRank()
+	} else {
+		resObj.DealerHighRank = -1
+		resObj.DealerLowRank = -1
+	}
 
 	// **受動ヒントは Output() でも埋める。**HintOutput() は command:"hint" 専用の
 	// レスポンスで、ページの state にはマージされない。フェーズ判定は

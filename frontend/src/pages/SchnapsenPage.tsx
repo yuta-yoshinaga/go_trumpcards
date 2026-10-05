@@ -28,6 +28,7 @@ import { cardAlt, suitSymbol } from '../utils/cardAlt';
 import { parseSchnapsenCommand, SCHNAPSEN_HELP } from '../utils/cli/commands/schnapsenCommands';
 import { formatSchnapsenState } from '../utils/cli/formatters/schnapsenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { playerName } from '../utils/playerUtils';
 import { computeSchnapsenLegalRing } from '../utils/schnapsenLegal';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -240,6 +241,9 @@ function SchnapsenPageContent() {
                 players={state.players}
                 cardWidth={cardWidth}
                 label={t('currentTrick')}
+                cardAriaLabelFor={(player, card) =>
+                  t('trickCardByPlayer', { card: cardAlt(card), name: playerName(player.id, player.isHuman) })
+                }
               />
             </div>
 

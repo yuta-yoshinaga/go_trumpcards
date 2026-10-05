@@ -63,6 +63,7 @@
   "log.pass": "{{player}} がパスしました",
   "log.redeal": "全員がパスしました。配り直します。",
   "log.winBid": "{{player}} が {{bid}} のコントラクトを取りました",
+  "log.revealChien": "シアンが公開されました",
   "log.discard": "{{player}} が {{count}} 枚をシアンに捨てました",
   "log.play": "{{player}} が {{card}} を出しました",
   "log.trickWin": "{{player}} がトリック {{trick}} を取りました",

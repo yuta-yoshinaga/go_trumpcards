@@ -33,6 +33,12 @@ export function formatMachiavelliState(state: MachiavelliResponse): string {
       lines.push(`  ${formatIndexedCards(p.cards)}`);
     }
   }
+  if (state.roundScoreHistory.length > 0) {
+    lines.push('round score history:');
+    for (const round of state.roundScoreHistory) {
+      lines.push(`  round ${round.roundNumber}: ${round.scores.join(', ')}`);
+    }
+  }
   lines.push('----------');
 
   if (state.message) lines.push(state.message);

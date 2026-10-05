@@ -5,6 +5,8 @@
     "gameOver": "Game Over"
   },
   "title": "Gaps / Montana",
+  "boardLabel": "Game board",
+  "keyboardInstructions": "Use the arrow keys to move around the board.",
   "moveCount": "Moves",
   "redealsRemaining": "Redeals left",
   "undo": "Undo",

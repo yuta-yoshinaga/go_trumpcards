@@ -162,6 +162,20 @@ describe('ViraPage', () => {
     expect(banner).toHaveTextContent('なし');
   });
 
+  it('shows each seat bid status during bidding and hides it afterward', async () => {
+    mockExec.mockResolvedValue(makeViraState({ bids: [0, 2, 0], bidDone: [true, true, false] }));
+    renderWithProviders(<ViraPage />);
+    const bids = await screen.findByTestId('vira-bid-status');
+    expect(bids).toHaveTextContent('あなた: パス');
+    expect(bids).toHaveTextContent('CPU 1: ソロ (8)');
+    expect(bids).toHaveTextContent('CPU 2: 未入札');
+
+    mockExec.mockResolvedValue(makeViraState({ phase: 1, isHumanBidTurn: false }));
+    fireEvent.click(screen.getByTestId('bid-0'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 0 }));
+    expect(screen.queryByTestId('vira-bid-status')).not.toBeInTheDocument();
+  });
+
   it('names the current highest bid once someone has bid', async () => {
     // **2 は Solo。**Préférence では 2 が Misère だったので、写した表だと
     // ここが「ミゼール」に見えてしまう。梯子の位置ごと違う。

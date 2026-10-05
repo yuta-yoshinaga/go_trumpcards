@@ -30,11 +30,12 @@ type FlowerGardenWebOutputTableauCard struct {
 
 // FlowerGardenWebOutputHint ヒント出力
 type FlowerGardenWebOutputHint struct {
-	FromZone  string `json:"fromZone"`
-	FromCol   int    `json:"fromCol"`
-	CardIndex int    `json:"cardIndex"`
-	ToZone    string `json:"toZone"`
-	ToCol     int    `json:"toCol"`
+	Card      *WebOutputCard `json:"card"`
+	FromZone  string         `json:"fromZone"`
+	FromCol   int            `json:"fromCol"`
+	CardIndex int            `json:"cardIndex"`
+	ToZone    string         `json:"toZone"`
+	ToCol     int            `json:"toCol"`
 }
 
 // FlowerGardenWebOutput Flower Garden Web アウトプット

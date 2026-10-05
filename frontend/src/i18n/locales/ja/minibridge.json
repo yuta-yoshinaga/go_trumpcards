@@ -25,6 +25,7 @@
     "yourTurn": "あなたの番",
     "dummyTurn": "ダミーの番（あなたが出します）",
     "cpuOperatedDummy": "この手札はCPUが操作するダミーです",
+    "cpuProcessing": "CPUの手番です。処理中です…",
     "teamTag": "T{{team}}",
     "teamAllyAria": "あなたの味方",
     "teamFoeAria": "相手チーム"

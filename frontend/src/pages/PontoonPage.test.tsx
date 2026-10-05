@@ -115,6 +115,23 @@ describe('PontoonPage', () => {
     expect(screen.getByLabelText(/親の手 合計18/)).toBeInTheDocument();
   });
 
+  it('marks only the active hand in its accessible name', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        activeHand: 1,
+        seats: [
+          { name: 'あなた', isCpu: false, hands: [hand(), hand({ total: 19 })] },
+          { name: 'CPU1', isCpu: true, hands: [] },
+          { name: 'CPU2', isCpu: true, hands: [hand({ bet: 20 })] },
+        ],
+      }),
+    );
+    renderWithProviders(<PontoonPage />);
+
+    await waitFor(() => expect(screen.getByLabelText('あなた の手 合計19、現在の手札')).toBeInTheDocument());
+    expect(screen.getByLabelText('あなた の手 合計18')).toBeInTheDocument();
+  });
+
   it('offers the bet buttons while betting', async () => {
     mockExec.mockResolvedValue(bettingState);
     renderWithProviders(<PontoonPage />);

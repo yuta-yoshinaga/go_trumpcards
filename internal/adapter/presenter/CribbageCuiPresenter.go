@@ -168,6 +168,38 @@ func (p *CribbageCuiPresenter) writeShowDetails(b *strings.Builder, g interfaces
 			"runs", strconv.Itoa(d.Runs),
 			"flush", strconv.Itoa(d.Flush),
 			"nobs", strconv.Itoa(d.Nobs)) + "\n")
+		writeGroups := func(key string, groups [][]*domain.Card) {
+			for _, group := range groups {
+				cards := make([]string, 0, len(group))
+				for _, card := range group {
+					cards = append(cards, cuiCardStr(card))
+				}
+				b.WriteString(i18n.Tf("cribbage.showEvidence", "category", i18n.T("cribbage."+key), "cards", strings.Join(cards, i18n.T("cribbage.listSeparator"))) + "\n")
+			}
+		}
+		if d.Fifteens > 0 {
+			writeGroups("showFifteen", d.FifteenCards)
+		}
+		if d.Pairs > 0 {
+			writeGroups("showPair", d.PairCards)
+		}
+		if d.Runs > 0 {
+			writeGroups("showRun", d.RunCards)
+		}
+		if d.Flush > 0 {
+			cards := make([]string, 0, len(d.FlushCards))
+			for _, card := range d.FlushCards {
+				cards = append(cards, cuiCardStr(card))
+			}
+			b.WriteString(i18n.Tf("cribbage.showEvidence", "category", i18n.T("cribbage.showFlush"), "cards", strings.Join(cards, i18n.T("cribbage.listSeparator"))) + "\n")
+		}
+		if d.Nobs > 0 {
+			cards := make([]string, 0, len(d.NobsCards))
+			for _, card := range d.NobsCards {
+				cards = append(cards, cuiCardStr(card))
+			}
+			b.WriteString(i18n.Tf("cribbage.showEvidence", "category", i18n.T("cribbage.showNobs"), "cards", strings.Join(cards, i18n.T("cribbage.listSeparator"))) + "\n")
+		}
 	}
 }
 

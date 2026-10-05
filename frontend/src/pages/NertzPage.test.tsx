@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { nertzApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { NertzResponse } from '../types/card';
 import { NertzPhase } from '../types/phases';
@@ -362,7 +363,7 @@ describe('NertzPage', () => {
     await waitFor(() => {
       const announce = screen.getByTestId('nertz-announce');
       expect(announce).toHaveAttribute('aria-live', 'polite');
-      expect(announce.textContent).toMatch(/組札3/);
+      expect(announce.textContent).toMatch(/組札2/);
     });
   });
 
@@ -391,7 +392,7 @@ describe('NertzPage', () => {
       await act(async () => vi.advanceTimersByTimeAsync(0));
       expect(screen.getByTestId('nertz-announce')).toBeEmptyDOMElement();
       await act(async () => vi.advanceTimersByTimeAsync(700));
-      expect(screen.getByTestId('nertz-announce').textContent).toMatch(/CPU1.*\+4.*12.*組札3/);
+      expect(screen.getByTestId('nertz-announce').textContent).toMatch(/CPU1.*\+4.*12.*組札2/);
       await act(async () => vi.advanceTimersByTimeAsync(700));
       expect(screen.getByTestId('nertz-announce').textContent).toMatch(/CPU1.*-2.*10/);
     } finally {
@@ -479,7 +480,31 @@ describe('NertzPage', () => {
     mockExec.mockClear();
     mockExec.mockRejectedValue(new Error('invalid move'));
     fireEvent.click(screen.getByLabelText(/組札0|Foundation 0/));
-    await waitFor(() => expect(screen.getByTestId('nertz-announce').textContent).toMatch(/移動が失敗/));
+    await waitFor(() => expect(screen.getByTestId('nertz-announce').textContent).toMatch(/組札0への移動が失敗/));
+  });
+
+  it('uses zero-based foundation numbers in English placement and collision announcements', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      const grown: NertzResponse['foundations'] = Array.from({ length: 8 }, () => ({ suit: -1, size: 0 }));
+      grown[2] = { suit: 3, size: 1, top: { design: 'HEART', value: 1 } };
+      mockExec.mockResolvedValue({ ...playingState, foundations: grown });
+      renderWithProviders(
+        <MemoryRouter initialEntries={['/nertz']}>
+          <NertzPage />
+        </MemoryRouter>,
+      );
+      await waitFor(() => expect(screen.getByTestId('nertz-announce').textContent).toMatch(/foundation 2/));
+
+      await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
+      fireEvent.click(screen.getByAltText('♥ 7').closest('button') as HTMLElement);
+      mockExec.mockClear();
+      mockExec.mockRejectedValue(new Error('invalid move'));
+      fireEvent.click(screen.getByLabelText(/Foundation 0/));
+      await waitFor(() => expect(screen.getByTestId('nertz-announce').textContent).toMatch(/foundation 0 rejected/));
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('shows the next-round button at round end', async () => {

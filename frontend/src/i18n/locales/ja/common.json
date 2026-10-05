@@ -1,4 +1,6 @@
 {
+  "handOdds.hand": "ハンド",
+  "handOdds.probability": "確率",
   "pokerhand.unknown": "不明",
   "pokerhand.highCard": "ハイカード",
   "pokerhand.pair": "ペア",
@@ -946,6 +948,7 @@
   "canfield.log.giveUp": "ギブアップしました",
   "canfield.log.autocomplete": "オートコンプリートを実行しました",
   "frenchtarot.log.bid": "{{player}} が {{bid}} を入札しました",
+  "frenchtarot.log.revealChien": "シアンが公開されました",
   "frenchtarot.log.pass": "{{player}} がパスしました",
   "frenchtarot.log.redeal": "全員がパスしました。配り直します。",
   "frenchtarot.log.winBid": "{{player}} が {{bid}} のコントラクトを取りました",
@@ -2407,6 +2410,7 @@
     "ganjifa.errFollowLeadSuit": "リードスートに従ってください",
     "ganjifa.playPhase.lead": "あなたの番です — リードするカードを選んでください。",
     "ganjifa.result.cpuWin": "ゲーム終了！ プレイヤー {{player}} の勝ちです。",
+    "ganjifa.result.draw": "ゲーム終了！ 引き分けです！",
     "ganjifa.result.humanWin": "ゲーム終了！ あなたの勝ちです！",
     "ganjifa.roundEnd": "ラウンド終了 — 次のラウンドへ進んでください。",
     "ganjifa.trickEnd": "トリック終了 — 次へ進んでください。",
@@ -4314,6 +4318,8 @@
   "kbd": {
     "title": "キーボードショートカット",
     "selectCard": "数字キーで手札のカードを選択",
+    "moveCardFocus": "矢印キーで手札の選択位置を移動",
+    "toggleFocusedCard": "フォーカス中の札を選択／解除",
     "selectCardNamed": "{{name}} のカードを選択",
     "playCard": "数字キーで手札のカードをそのまま出す",
     "confirm": "選択したカードを出す",

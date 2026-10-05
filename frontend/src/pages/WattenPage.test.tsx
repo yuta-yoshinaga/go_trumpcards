@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, wattenApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeWattenState } from '../test/stateFactories';
 import type { ActionLogEntry } from '../types/card';
@@ -56,7 +57,21 @@ const gameEndState = makeWattenState({
 });
 const cpuTurnState = makeWattenState({ phase: 1, currentPlayerIdx: 1, canRaise: false });
 
+function makeFollowState(
+  cards: Array<{ design: 'HEART' | 'DIAMOND' | 'SPADE' | 'CLOVER'; value: number }>,
+  lead?: { design: 'HEART' | 'DIAMOND' | 'SPADE' | 'CLOVER'; value: number },
+) {
+  const base = makeWattenState();
+  return {
+    ...base,
+    players: base.players.map((player, idx) => (idx === 0 ? { ...player, cards } : player)),
+    currentTrick: lead ? [{ playerIdx: 1, card: lead }] : [],
+  };
+}
+
 beforeEach(() => {
+  Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+  window.dispatchEvent(new Event('resize'));
   mockExec.mockReset();
   mockExec.mockResolvedValue(playPhaseState);
   mockActionLog.mockReset();
@@ -115,6 +130,91 @@ describe('WattenPage', () => {
       expect(screen.getByAltText('♥ K')).toBeInTheDocument();
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
     });
+  });
+
+  it('marks only trumps as legal when following a trump lead and blocks illegal plays', async () => {
+    const state = makeFollowState(
+      [
+        { design: 'HEART', value: 13 },
+        { design: 'DIAMOND', value: 7 },
+        { design: 'SPADE', value: 1 },
+        { design: 'CLOVER', value: 8 },
+      ],
+      { design: 'DIAMOND', value: 13 },
+    );
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<WattenPage />);
+    await screen.findByAltText('♣ 8');
+    const illegal = screen.getByRole('button', { name: /^♣ 8/ });
+    expect(illegal).toHaveAttribute('aria-disabled', 'true');
+    expect(illegal).toHaveAttribute('title', 'トランプを持っている場合はトランプを出してください');
+    expect(illegal).toHaveAccessibleName(/トランプを持っている場合はトランプを出してください/);
+    expect(illegal).not.toHaveAttribute('data-legal');
+    expect(screen.getByRole('button', { name: '♥ K (切り札)' })).toHaveAttribute('data-legal', 'true');
+    mockExec.mockClear();
+    fireEvent.click(illegal);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('marks only matching plain cards as legal when following a plain lead', async () => {
+    const state = makeFollowState(
+      [
+        { design: 'HEART', value: 13 },
+        { design: 'DIAMOND', value: 7 },
+        { design: 'SPADE', value: 1 },
+        { design: 'SPADE', value: 8 },
+        { design: 'CLOVER', value: 8 },
+      ],
+      { design: 'SPADE', value: 9 },
+    );
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<WattenPage />);
+    await screen.findByAltText('♣ 8');
+    const hand = screen.getByRole('button', { name: /^♣ 8/ });
+    expect(hand).toHaveAttribute('aria-disabled', 'true');
+    expect(hand).toHaveAttribute('title', 'リードされたスートの平札を持っている場合は、そのスートを出してください');
+    expect(screen.getByRole('button', { name: '♠ 8' })).toHaveAttribute('data-legal', 'true');
+    expect(screen.getByRole('button', { name: /^♥ K \(切り札\)/ })).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('shows follow restrictions and legal cards on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    const state = makeFollowState(
+      [
+        { design: 'HEART', value: 13 },
+        { design: 'DIAMOND', value: 7 },
+        { design: 'SPADE', value: 1 },
+        { design: 'CLOVER', value: 8 },
+      ],
+      { design: 'DIAMOND', value: 13 },
+    );
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<WattenPage />);
+    const illegal = (await screen.findByAltText('♣ 8')).closest('button');
+    expect(illegal).toHaveAttribute('aria-disabled', 'true');
+    expect(illegal).toHaveAttribute('title', 'トランプを持っている場合はトランプを出してください');
+    expect(illegal).toHaveAccessibleName(/トランプを持っている場合はトランプを出してください/);
+    expect(screen.getByRole('button', { name: /♥ K .*切り札/ })).toHaveAttribute('data-legal', 'true');
+    expect(document.querySelector('[data-testid="hand-row"]')).toBeInTheDocument();
+  });
+
+  it('allows every card when there is no card to follow, on mobile too', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    const state = makeFollowState([
+      { design: 'HEART', value: 13 },
+      { design: 'DIAMOND', value: 7 },
+      { design: 'SPADE', value: 1 },
+      { design: 'CLOVER', value: 8 },
+    ]);
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<WattenPage />);
+    const card = await screen.findByAltText('♣ 8');
+    expect(card.closest('button')).not.toHaveAttribute('aria-disabled');
+    expect(card.closest('button')).toHaveAttribute('data-legal', 'true');
+    expect(document.querySelector('[data-testid="hand-row"]')).toBeInTheDocument();
   });
 
   it('announces only team scores that change after the initial state', async () => {

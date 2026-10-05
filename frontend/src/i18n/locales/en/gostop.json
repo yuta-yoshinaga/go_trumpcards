@@ -42,6 +42,7 @@
   },
   "decision": {
     "title": "You have a scoring hand! Go or Stop?",
+    "announcement": "You have a scoring hand. Your current score is {{points}} points. Choose Go or Stop.",
     "points": "{{points}} pts",
     "go": "Go",
     "stop": "Stop"

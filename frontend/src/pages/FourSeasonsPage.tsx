@@ -222,7 +222,7 @@ function FourSeasonsPageContent() {
     [handleDraw, handleHint, handleUndo, handleAutoComplete, confirmGiveUpAction],
   );
   const isPlayingForKbd = state?.phase === FourSeasonsPhase.PLAYING;
-  useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading });
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading && actionLog === null });
 
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
 
@@ -482,6 +482,7 @@ function FourSeasonsPageContent() {
 
               <ActionLogSection
                 isEndPhase={isEnded}
+                availableDuringPlay
                 actionLog={actionLog}
                 showActionLog={showActionLog}
                 hideActionLog={hideActionLog}

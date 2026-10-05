@@ -69,6 +69,29 @@ beforeEach(() => {
 });
 
 describe('CatchTenPage', () => {
+  it('shows each player’s current trick count in Japanese and English', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ players: makeState().players.map((player, index) => ({ ...player, trickCount: index + 1 })) }),
+    );
+    renderWithProviders(<CatchTenPage />);
+
+    expect(await screen.findByTestId('catchten-human-team')).toHaveTextContent('チーム 0 · 獲得トリック数: 1');
+    expect(screen.getByText('獲得トリック数: 2')).toBeInTheDocument();
+    expect(screen.getByText('獲得トリック数: 3')).toBeInTheDocument();
+    expect(screen.getByText('獲得トリック数: 4')).toBeInTheDocument();
+
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      expect(await screen.findByTestId('catchten-human-team')).toHaveTextContent('Team 0 · Tricks won: 1');
+      expect(screen.getByText('Tricks won: 2')).toBeInTheDocument();
+      expect(screen.getByText('Tricks won: 3')).toBeInTheDocument();
+      expect(screen.getByText('Tricks won: 4')).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('shows the configured target score alongside team scores', async () => {
     renderWithProviders(<CatchTenPage />);
     expect(await screen.findByText(/チームスコア · 目標: 41/)).toBeInTheDocument();

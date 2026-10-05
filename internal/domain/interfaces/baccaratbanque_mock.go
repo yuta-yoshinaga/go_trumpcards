@@ -85,6 +85,18 @@ func (_m *MockBaccaratBanqueGame) GetShoeRemaining() int {
 	return ret.Get(0).(int)
 }
 
+// GetShoeComposition モック
+func (_m *MockBaccaratBanqueGame) GetShoeComposition() []int {
+	ret := _m.Called()
+	return ret.Get(0).([]int)
+}
+
+// GetDrawWinPercent モック
+func (_m *MockBaccaratBanqueGame) GetDrawWinPercent(seat int) int {
+	ret := _m.Called(seat)
+	return ret.Get(0).(int)
+}
+
 // GetEndReason モック
 func (_m *MockBaccaratBanqueGame) GetEndReason() string {
 	ret := _m.Called()

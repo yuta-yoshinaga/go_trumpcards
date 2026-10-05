@@ -187,6 +187,13 @@ function TarabishPageContent() {
               {t('header.score', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
             </div>
 
+            <div className="text-ds-text-muted text-center mb-2" data-testid="tb-round-points">
+              {t('header.roundPoints', {
+                t0: String(state.roundPoints[0]),
+                t1: String(state.roundPoints[1]),
+              })}
+            </div>
+
             {/* 切り札の序列はこの系統の肝。盤面からは読み取れない。 */}
             <div
               className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-muted text-sm text-center"

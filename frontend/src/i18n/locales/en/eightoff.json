@@ -33,6 +33,8 @@
   "listSeparator": ", ",
   "tableauMoveGuide": "Move from column {{source}}. Destinations: {{targets}}",
   "noTableauMoveTargets": "There are no destinations from column {{source}}",
+  "freeCellMoveGuide": "Move from a free cell. Destinations: {{targets}}",
+  "noFreeCellMoveTargets": "There are no destinations from this free cell",
   "tableauColumnLabel": "Column {{column}}",
   "frontendHint": {
     "moveToFoundation": "A card can be moved to the foundation",

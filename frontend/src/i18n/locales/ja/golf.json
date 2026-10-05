@@ -8,6 +8,7 @@
   "stock": "山札",
   "waste": "捨て札",
   "wasteCount": "{{count}}枚",
+  "playableAria": "{{card}}。出せるカード",
   "moveCount": "手数",
   "combo": "コンボ ×{{count}}",
   "draw": "引く",

@@ -267,7 +267,7 @@ function ToepenPageContent() {
             )}
 
             <ActionLogSection
-              isEndPhase={ended}
+              isEndPhase={ended || handOver}
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}

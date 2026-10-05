@@ -77,6 +77,10 @@ export interface RamsResponse extends BaseGameResponse {
   /** How many players entered this round. */
   activeCount: number;
   currentTrick: RamsTrickCard[];
+  /** Most recently completed trick, cleared when the next round is dealt. */
+  lastTrick: RamsTrickCard[];
+  /** Winner of `lastTrick`, or -1 when the round has no completed trick. */
+  lastTrickWinner: number;
   /** Hand indices you may legally play. Following suit is compulsory. */
   validPlays: number[];
   gameEndFlag: boolean;

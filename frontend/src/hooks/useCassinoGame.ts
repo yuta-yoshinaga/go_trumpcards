@@ -24,6 +24,12 @@ export function useCassinoGame() {
     setBuildIndices([]);
   }, []);
 
+  const selectHand = useCallback((idx: number) => {
+    setHandIndex((current) => (current === idx ? null : idx));
+    setTableIndices([]);
+    setBuildIndices([]);
+  }, []);
+
   const toggleTable = useCallback((idx: number) => {
     setTableIndices((prev) => (prev.includes(idx) ? prev.filter((x) => x !== idx) : [...prev, idx]));
   }, []);
@@ -83,7 +89,7 @@ export function useCassinoGame() {
     retry,
     callApi,
     handIndex,
-    setHandIndex,
+    selectHand,
     tableIndices,
     toggleTable,
     buildIndices,

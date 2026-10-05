@@ -182,21 +182,24 @@ function TichuPageContent() {
 
   const handleDeclare = useCallback(
     (value: number) => {
+      if (loading) return;
       void apiCall({ command: 'declare', declType: value });
     },
-    [apiCall],
+    [apiCall, loading],
   );
 
   const handlePlay = useCallback(() => {
+    if (loading || selectedCards.size === 0) return;
     const indices = Array.from(selectedCards).sort((a, b) => a - b);
     void apiCall({ command: 'p', indices });
     setSelectedCards(new Set());
-  }, [apiCall, selectedCards]);
+  }, [apiCall, loading, selectedCards]);
 
   const handlePass = useCallback(() => {
+    if (loading) return;
     void apiCall({ command: 'p', indices: [] });
     setSelectedCards(new Set());
-  }, [apiCall]);
+  }, [apiCall, loading]);
 
   const handleReset = useCallback(
     () => apiCall({ command: 'reset', config: { cpuDifficulty } }),
@@ -266,6 +269,11 @@ function TichuPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <div className="flex flex-col gap-3 p-3 overflow-y-auto">
+          {loading && (
+            <span id="tichu-loading-description" className="sr-only">
+              {tc('loading')}
+            </span>
+          )}
           <LandscapeBanner message={t('landscapeBanner')} />
           {error && <ErrorAlert message={error} onRetry={retry} />}
           <GameMessageBox messageCode={state.messageCode} messageParams={state.messageParams} message={state.message} />
@@ -339,13 +347,31 @@ function TichuPageContent() {
           {/* Declaration phase buttons */}
           {phase === 'declare' && isHumanTurn && (
             <div className="flex justify-center gap-2" data-tutorial="tichu-declare">
-              <button type="button" className={btnSecondary} onClick={() => handleDeclare(0)}>
+              <button
+                type="button"
+                className={`${btnSecondary} aria-disabled:cursor-not-allowed aria-disabled:opacity-50`}
+                onClick={() => handleDeclare(0)}
+                aria-disabled={loading || undefined}
+                aria-describedby={loading ? 'tichu-loading-description' : undefined}
+              >
                 {t('button.declareNone')}
               </button>
-              <button type="button" className={btnWarning} onClick={() => handleDeclare(1)}>
+              <button
+                type="button"
+                className={`${btnWarning} aria-disabled:cursor-not-allowed aria-disabled:opacity-50`}
+                onClick={() => handleDeclare(1)}
+                aria-disabled={loading || undefined}
+                aria-describedby={loading ? 'tichu-loading-description' : undefined}
+              >
                 {t('button.tichu')}
               </button>
-              <button type="button" className={btnWarning} onClick={() => handleDeclare(2)}>
+              <button
+                type="button"
+                className={`${btnWarning} aria-disabled:cursor-not-allowed aria-disabled:opacity-50`}
+                onClick={() => handleDeclare(2)}
+                aria-disabled={loading || undefined}
+                aria-describedby={loading ? 'tichu-loading-description' : undefined}
+              >
                 {t('button.grandTichu')}
               </button>
             </div>
@@ -361,15 +387,19 @@ function TichuPageContent() {
                     <button
                       key={`hand-${c.design}-${c.value}-${i}`}
                       type="button"
-                      className={`relative ${
+                      className={`relative aria-disabled:cursor-not-allowed aria-disabled:opacity-50 ${
                         selectedCards.has(i)
                           ? 'transition-transform -translate-y-2 ring-2 ring-ds-warning rounded'
                           : isBomb
                             ? 'transition-transform ring-2 ring-ds-error rounded'
                             : 'transition-transform'
                       }`}
-                      onClick={() => toggleCard(i)}
+                      onClick={() => {
+                        if (!loading && phase === 'play') toggleCard(i);
+                      }}
                       disabled={phase !== 'play'}
+                      aria-disabled={(phase === 'play' && loading) || undefined}
+                      aria-describedby={loading ? 'tichu-loading-description' : undefined}
                       aria-label={isBomb ? t('bombCardAriaLabel', { card: cardAlt(c) }) : cardAlt(c)}
                       aria-pressed={selectedCards.has(i)}
                     >
@@ -416,11 +446,23 @@ function TichuPageContent() {
               )}
               {phase === 'play' && isHumanTurn && (
                 <div className="flex justify-center gap-2 mt-2">
-                  <button type="button" className={btnPrimary} onClick={handlePlay} disabled={selectedCards.size === 0}>
+                  <button
+                    type="button"
+                    className={`${btnPrimary} aria-disabled:cursor-not-allowed aria-disabled:opacity-50`}
+                    onClick={handlePlay}
+                    aria-disabled={loading || selectedCards.size === 0 || undefined}
+                    aria-describedby={loading ? 'tichu-loading-description' : undefined}
+                  >
                     {t('button.play')}
                   </button>
                   {state.tableCards.length > 0 && (
-                    <button type="button" className={btnSecondary} onClick={handlePass}>
+                    <button
+                      type="button"
+                      className={`${btnSecondary} aria-disabled:cursor-not-allowed aria-disabled:opacity-50`}
+                      onClick={handlePass}
+                      aria-disabled={loading || undefined}
+                      aria-describedby={loading ? 'tichu-loading-description' : undefined}
+                    >
                       {t('button.pass')}
                     </button>
                   )}

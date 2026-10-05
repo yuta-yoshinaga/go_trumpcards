@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type AccordionMoveZone, accordionApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -145,6 +145,7 @@ function AccordionPageContent() {
   useMountReset(apiCall);
 
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  const pileButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
   // Tracks the pile under cursor/focus so we can paint legal -1/-3 targets
   // (same suit OR same rank) without waiting for click. Reset by mouseleave/blur
   // and on every state change (handled implicitly because piles re-key on size).
@@ -250,6 +251,11 @@ function AccordionPageContent() {
   // two legal merges, `u`/`h`/`g` mirror the action buttons. Hook reads from
   // the live state so it stays in sync without a separate effect.
   const pileCount = state?.pileCount ?? 0;
+  useEffect(() => {
+    if (selectedIdx === null) return;
+    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    pileButtonRefs.current[selectedIdx]?.scrollIntoView?.({ inline: 'center', block: 'nearest', behavior });
+  }, [selectedIdx]);
   const moveSelection = useCallback(
     (delta: number) => {
       setSelectedIdx((prev) => {
@@ -345,7 +351,10 @@ function AccordionPageContent() {
           <LandscapeBanner message={t('landscapeBanner')} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
-            <div className="flex flex-wrap gap-1 sm:gap-2 justify-center" data-tutorial="ac-piles">
+            <div
+              className="flex flex-nowrap gap-1 sm:gap-2 w-full overflow-x-auto justify-start pt-2 pb-1 px-1"
+              data-tutorial="ac-piles"
+            >
               {(() => {
                 const hoverTargets =
                   isPlaying && hoveredIdx !== null ? new Set(accordionLegalTargets(state.piles, hoveredIdx)) : null;
@@ -385,8 +394,11 @@ function AccordionPageContent() {
                   return (
                     <button
                       key={pileKey}
+                      ref={(element) => {
+                        pileButtonRefs.current[idx] = element;
+                      }}
                       type="button"
-                      className={`relative ${focusRingWhite} rounded-lg transition-transform ${
+                      className={`relative shrink-0 ${focusRingWhite} rounded-lg transition-transform ${
                         isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
                       } ${hintFrom ? 'ring-2 ring-ds-info animate-pulse' : ''} ${
                         hintTo ? 'ring-2 ring-ds-success animate-pulse' : ''

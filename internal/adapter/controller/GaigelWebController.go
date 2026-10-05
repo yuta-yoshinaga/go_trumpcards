@@ -63,6 +63,7 @@ type GaigelWebOutput struct {
 	GameEndFlag     bool                  `json:"gameEndFlag"`
 	WinnerTeam      int                   `json:"winnerTeam"`
 	LeadPlayerIdx   int                   `json:"leadPlayerIdx"`
+	TrickWinnerIdx  int                   `json:"trickWinnerIdx"`
 	Hint            *GaigelWebOutputHint  `json:"hint,omitempty"`
 	WebOutputBase
 	Config GaigelWebOutputConfig `json:"config"`
@@ -102,6 +103,7 @@ func newGaigelDefaultOutput(msg string) *GaigelWebOutput {
 		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		MarriageIndices: make([]int, 0),
 		WinnerTeam:      -1,
+		TrickWinnerIdx:  -1,
 		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }

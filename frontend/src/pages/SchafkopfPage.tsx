@@ -323,7 +323,7 @@ function SchafkopfPageContent() {
                       {state.players.map((p) => (
                         <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                           {playerName(p.id, p.isHuman)}: {t('chips', { count: p.chips })} |{' '}
-                          {t('tricks', { count: p.trickCount })}
+                          {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
                           {dealerBadge(p.id)}
                         </div>
                       ))}
@@ -334,7 +334,7 @@ function SchafkopfPageContent() {
                     {state.players.map((p) => (
                       <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                         {playerName(p.id, p.isHuman)}: {t('chips', { count: p.chips })} |{' '}
-                        {t('tricks', { count: p.trickCount })}
+                        {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
                         {dealerBadge(p.id)}
                       </div>
                     ))}

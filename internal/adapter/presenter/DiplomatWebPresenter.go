@@ -19,6 +19,14 @@ func (p *DiplomatWebPresenter) Output(c interfaces.DiplomatGame, lastErr error) 
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, c, int(c.GetPhase()))
 
 	tableau := c.GetTableau()
+	moveTargets := c.GetTableauMoveTargets()
+	resObj.TableauMoveTargets = make([][]int, len(moveTargets))
+	for i, targets := range moveTargets {
+		if targets == nil {
+			targets = []int{}
+		}
+		resObj.TableauMoveTargets[i] = targets
+	}
 	resObj.Tableau = make([][]*controller.WebOutputCard, domain.DiplomatTableauCnt)
 	resObj.TableauDeadEnd = make([]bool, domain.DiplomatTableauCnt)
 	for i := range domain.DiplomatTableauCnt {

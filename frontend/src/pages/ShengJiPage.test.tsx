@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { shengjiApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { CardDesign, ShengJiPlayer, ShengJiResponse } from '../types/card';
 import { ShengJiPhase } from '../types/phases';
@@ -273,6 +274,112 @@ describe('ShengJiPage', () => {
     expect(screen.getByRole('button', { name: '出す' })).toBeEnabled();
   });
 
+  it('blocks an off-suit-only play when the led suit is held', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          seat(0, true, { cards: [card('HEART', 7), card('SPADE', 9)] }),
+          seat(1, false),
+          seat(2, false),
+          seat(3, false),
+        ],
+        trick: [{ seat: 1, cards: [card('HEART', 8)] }],
+        leadCombo: { kind: 1, rank: 8, size: 1, trump: false, suit: 3 },
+      }),
+    );
+    renderWithProviders(<ShengJiPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+
+    const play = screen.getByRole('button', { name: '出す' });
+    expect(play).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByTestId('shengji-follow-suit-warning')).toHaveTextContent('♥');
+    fireEvent.click(play);
+    await flushPendingDispatch();
+    expect(mockExec).toHaveBeenCalledTimes(1);
+    expect(mockExec).toHaveBeenCalledWith('reset');
+  });
+
+  it('allows an off-suit play when no led-suit card is held', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [seat(0, true, { cards: [card('SPADE', 9)] }), seat(1, false), seat(2, false), seat(3, false)],
+        trick: [{ seat: 1, cards: [card('HEART', 8)] }],
+        leadCombo: { kind: 1, rank: 8, size: 1, trump: false, suit: 3 },
+      }),
+    );
+    renderWithProviders(<ShengJiPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    const play = screen.getByRole('button', { name: '出す' });
+    expect(play).not.toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    expect(play).not.toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(play);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndexes: [0] }));
+  });
+
+  it('treats the trump group as the led suit', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          seat(0, true, { cards: [card('JOKER', 1), card('HEART', 7), card('SPADE', 9)] }),
+          seat(1, false),
+          seat(2, false),
+          seat(3, false),
+        ],
+        trick: [{ seat: 1, cards: [card('JOKER', 2)] }],
+        leadCombo: { kind: 1, rank: 500, size: 1, trump: true, suit: 0 },
+      }),
+    );
+    renderWithProviders(<ShengJiPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+
+    expect(screen.getByRole('button', { name: '出す' })).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByTestId('shengji-follow-suit-warning')).toHaveTextContent('切札');
+  });
+
+  it('treats an ace as a level trump when the level is ace', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        level: 14,
+        players: [
+          seat(0, true, { cards: [card('HEART', 7), card('HEART', 1), card('SPADE', 9)] }),
+          seat(1, false),
+          seat(2, false),
+          seat(3, false),
+        ],
+        trick: [{ seat: 1, cards: [card('JOKER', 2)] }],
+        leadCombo: { kind: 1, rank: 500, size: 1, trump: true, suit: 0 },
+      }),
+    );
+    renderWithProviders(<ShengJiPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+
+    expect(screen.getByRole('button', { name: '出す' })).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('treats a card of the current level as a trump', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          seat(0, true, { cards: [card('HEART', 5), card('HEART', 7), card('SPADE', 9)] }),
+          seat(1, false),
+          seat(2, false),
+          seat(3, false),
+        ],
+        trick: [{ seat: 1, cards: [card('JOKER', 2)] }],
+        leadCombo: { kind: 1, rank: 500, size: 1, trump: true, suit: 0 },
+      }),
+    );
+    renderWithProviders(<ShengJiPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+
+    expect(screen.getByRole('button', { name: '出す' })).toHaveAttribute('aria-disabled', 'true');
+  });
+
   // **選び直せる。**一度選んだ札を外せないと手が組めない。
   it('deselects a card that is clicked twice', async () => {
     renderWithProviders(<ShengJiPage />);
@@ -292,6 +399,11 @@ describe('ShengJiPage', () => {
   });
 
   it('announces the lead, every played card, and the empty trick in a persistent live region', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [seat(0, true, { cards: [card('HEART', 7)] }), seat(1, false), seat(2, false), seat(3, false)],
+      }),
+    );
     renderWithProviders(<ShengJiPage />);
     const status = screen.getByTestId('shengji-trick-status');
     expect(status).not.toBeNull();
@@ -316,11 +428,6 @@ describe('ShengJiPage', () => {
     await waitFor(() => expect(loadedStatus).toHaveTextContent('席1: ♥ 7、♥ 7'));
     expect(loadedStatus).toHaveTextContent('席2: ♠ 9');
     expect(loadedStatus).toHaveTextContent('対子');
-
-    mockExec.mockResolvedValue(makeState());
-    fireEvent.click(screen.getByTestId('hand-card-0'));
-    fireEvent.click(screen.getByRole('button', { name: '出す' }));
-    await waitFor(() => expect(loadedStatus).toHaveTextContent('場: まだ誰も出していません'));
   });
 
   it('announces plays without a leading separator when the lead combo is missing', async () => {

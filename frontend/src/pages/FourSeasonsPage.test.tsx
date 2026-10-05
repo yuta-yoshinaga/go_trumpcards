@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fourseasonsApi } from '../api/gameApi';
+import { actionLogApi, fourseasonsApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, FourSeasonsResponse } from '../types/card';
@@ -80,6 +80,20 @@ describe('FourSeasonsPage', () => {
   it('resets on mount', async () => {
     renderWithProviders(<FourSeasonsPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('opens the action log during play and disables shortcuts while it is open', async () => {
+    vi.mocked(actionLogApi.fourseasons).mockResolvedValue({
+      entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'draw', detail: '', detailCode: 'fourseasons.log.draw' }],
+    });
+    renderWithProviders(<FourSeasonsPage />);
+    const logButton = await screen.findByRole('button', { name: '棋譜を見る' });
+    fireEvent.click(logButton);
+    expect(await screen.findByText(/ストックから1枚引きました/)).toBeInTheDocument();
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'd' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   // The base rank drives every placement rule, so it has to be on screen.

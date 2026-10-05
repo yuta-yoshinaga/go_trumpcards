@@ -36,6 +36,7 @@
   "scoresRound": "Round",
   "scoresTotal": "Total",
   "scoresChips": "Chips",
+  "scoresHandPoints": "Hand Points",
   "drawStockButton": "Draw Stock",
   "drawDiscardButton": "Draw Discard",
   "meldButton": "Meld",

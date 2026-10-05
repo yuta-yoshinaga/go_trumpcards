@@ -21,6 +21,7 @@
   "cards": "{{count}} cards",
   "cardPlayable": "Playable",
   "cardNotPlayable": "Not playable",
+  "trumpCard": "Trump",
   "teamScores": "Team Scores",
   "team": "Team {{n}}",
   "scoreRows": {

@@ -35,6 +35,7 @@ func setupGaigelWebMock() *interfaces.MockGaigelGame {
 	m.On("GetRoundMarriagePoints", 1).Return(0)
 	m.On("GetWinnerTeam").Return(-1)
 	m.On("GetLeadPlayerIdx").Return(0)
+	m.On("GetTrickWinnerIdx").Return(-1)
 	m.On("GetMarriageIndices", 0).Return([]int(nil))
 	m.On("GetConfig").Return(domain.DefaultGaigelConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
@@ -69,7 +70,18 @@ func TestGaigelWebPresenter_Output(t *testing.T) {
 		assert.False(t, resObj.GameEndFlag)
 		assert.Equal(t, int(domain.GaigelPhasePlay), resObj.Phase)
 		assert.Equal(t, -1, resObj.WinnerTeam)
+		assert.Equal(t, -1, resObj.TrickWinnerIdx)
 		assert.Equal(t, 27, resObj.StockRemaining)
+	})
+
+	t.Run("completed trick winner populated", func(t *testing.T) {
+		m, _ := setupGaigelWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrickWinnerIdx")
+		m.On("GetTrickWinnerIdx").Return(2)
+		result := p.Output(m, nil)
+		var resObj controller.GaigelWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, 2, resObj.TrickWinnerIdx)
 	})
 
 	t.Run("turn-up trump card populated", func(t *testing.T) {

@@ -172,6 +172,7 @@ function BigTwoPageContent() {
     const cards = action.playedCards.map(cardLabel).join(t('listSeparator'));
     return t('actionPlayed', { name: findPlayerName(players, action.playerIdx), cards });
   };
+  const cpuActionDescriptions = state.cpuActions.map((action) => actionDescription(state.players, action));
 
   return (
     <GamePageShell
@@ -194,6 +195,9 @@ function BigTwoPageContent() {
         <>
           <span data-testid="bt-table-play-announcement" aria-live="polite" aria-atomic="true" className="sr-only">
             {tablePlayAnnouncement}
+          </span>
+          <span data-testid="bt-cpu-action-announcement" aria-live="polite" aria-atomic="true" className="sr-only">
+            {cpuActionDescriptions.join('\n')}
           </span>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             <ErrorAlert message={error} onRetry={retry} />
@@ -234,11 +238,11 @@ function BigTwoPageContent() {
                 ))}
             </div>
 
-            {state.cpuActions && state.cpuActions.length > 0 && (
-              <div className="bg-black/40 rounded-lg text-ds-text-primary py-2 px-3.5 my-2 whitespace-pre-line text-xs">
-                {[tc('label.cpuActions'), ...state.cpuActions.map((a) => actionDescription(state.players, a))].join(
-                  '\n',
-                )}
+            {cpuActionDescriptions.length > 0 && (
+              <div aria-hidden="true">
+                <div className="bg-black/40 rounded-lg text-ds-text-primary py-2 px-3.5 my-2 whitespace-pre-line text-xs">
+                  {[tc('label.cpuActions'), ...cpuActionDescriptions].join('\n')}
+                </div>
               </div>
             )}
 

@@ -99,6 +99,15 @@ func (cp *TuSacWebPresenter) Output(c interfaces.TuSacGame, lastErr error) strin
 	resObj.MeldPointsByKind = tuSacMeldPointsByKindOut()
 	resObj.WinnerSeat = c.WinnerSeat()
 	resObj.GameEndFlag = c.GetGameEndFlag()
+	if c.IsHumanTurn() || c.GetPhase() == domain.TuSacPhaseRoundEnd {
+		if hint := c.GetHint(); hint != nil {
+			indexes := hint.Indexes
+			if indexes == nil {
+				indexes = []int{}
+			}
+			resObj.ServerHint = &controller.TuSacWebOutputHint{Action: hint.Action, Indexes: indexes, Reason: hint.Reason}
+		}
+	}
 	cfg := c.GetConfig()
 	resObj.Config = &controller.TuSacWebOutCfg{Seats: cfg.Seats, Rounds: cfg.Rounds}
 

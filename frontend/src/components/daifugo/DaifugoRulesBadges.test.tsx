@@ -58,6 +58,7 @@ function makeState(overrides: Partial<DaifugoResponse> = {}): DaifugoResponse {
     sequenceLocked: false,
     sortMode: 0,
     playableCardIndices: null,
+    playableCardCombinations: null,
     ...overrides,
   };
 }

@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { botifarraApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BotifarraResponse, Card } from '../types/card';
 import { BOTIFARRA_NO_TRUMP } from '../types/games/botifarra';
@@ -386,6 +387,34 @@ describe('BotifarraPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('giveup'));
+  });
+
+  it('pressing g asks for confirmation and gives up only after confirm', async () => {
+    renderWithProviders(<BotifarraPage />);
+    await screen.findByTestId('giveup-button');
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'g' });
+    expect(await screen.findByText('投了確認')).toBeInTheDocument();
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalledWith('giveup');
+
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('giveup'));
+  });
+
+  it('keeps the game active when keyboard give-up confirmation is cancelled', async () => {
+    renderWithProviders(<BotifarraPage />);
+    await screen.findByTestId('giveup-button');
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'g' });
+    expect(await screen.findByText('投了確認')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    await flushPendingDispatch();
+
+    expect(screen.getByTestId('giveup-button')).toBeInTheDocument();
+    expect(mockApi).not.toHaveBeenCalled();
   });
 
   // キャンセルしたら何も起きない ── ダイアログを出すだけで通す実装を落とす。

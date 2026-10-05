@@ -33,6 +33,8 @@ type DiplomatGame interface {
 	GetWaste() []*domain.Card
 	// GetTableau タブローを取得する
 	GetTableau() [domain.DiplomatTableauCnt][]*domain.Card
+	// GetTableauMoveTargets returns legal destination columns for each tableau top and the waste top.
+	GetTableauMoveTargets() [domain.DiplomatTableauCnt + 1][]int
 	// GetFoundation 基礎札を取得する
 	GetFoundation() [domain.DiplomatFoundationCnt][]*domain.Card
 	// AllFaceUp 全カードが表向きかを返す

@@ -60,6 +60,7 @@ export interface GaigelResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   winnerTeam: number;
   leadPlayerIdx: number;
+  trickWinnerIdx: number;
   config: GaigelConfig;
   hint?: GaigelHint;
 }

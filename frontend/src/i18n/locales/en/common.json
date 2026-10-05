@@ -1,4 +1,6 @@
 {
+  "handOdds.hand": "Hand",
+  "handOdds.probability": "Probability",
   "pokerhand.unknown": "Unknown",
   "pokerhand.highCard": "High Card",
   "pokerhand.pair": "Pair",
@@ -946,6 +948,7 @@
   "canfield.log.giveUp": "Gave up",
   "canfield.log.autocomplete": "Ran autocomplete",
   "frenchtarot.log.bid": "{{player}} bids {{bid}}",
+  "frenchtarot.log.revealChien": "The chien is revealed",
   "frenchtarot.log.pass": "{{player}} passes",
   "frenchtarot.log.redeal": "All players passed. Redealing.",
   "frenchtarot.log.winBid": "{{player}} takes the contract {{bid}}",
@@ -2407,6 +2410,7 @@
     "ganjifa.errFollowLeadSuit": "You must follow the lead suit.",
     "ganjifa.playPhase.lead": "Your turn — choose a card to lead.",
     "ganjifa.result.cpuWin": "Game over! Player {{player}} wins.",
+    "ganjifa.result.draw": "Game over! It's a draw!",
     "ganjifa.result.humanWin": "Game over! You win!",
     "ganjifa.roundEnd": "Round over — continue to the next round.",
     "ganjifa.trickEnd": "Trick over — continue to the next one.",
@@ -4314,6 +4318,8 @@
   "kbd": {
     "title": "Keyboard shortcuts",
     "selectCard": "Select a card in your hand by number",
+    "moveCardFocus": "Move the hand selection with the arrow keys",
+    "toggleFocusedCard": "Select or deselect the focused card",
     "selectCardNamed": "Select card {{name}}",
     "playCard": "Play a card from your hand directly by number",
     "confirm": "Play the selected card",

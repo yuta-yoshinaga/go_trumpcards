@@ -66,6 +66,8 @@ type RamsWebOutput struct {
 	DealerIdx        int                       `json:"dealerIdx"`
 	ActiveCount      int                       `json:"activeCount"`
 	CurrentTrick     []*WebOutputTrickCard     `json:"currentTrick"`
+	LastTrick        []*WebOutputTrickCard     `json:"lastTrick"`
+	LastTrickWinner  int                       `json:"lastTrickWinner"`
 	ValidPlays       []int                     `json:"validPlays"`
 	GameEndFlag      bool                      `json:"gameEndFlag"`
 	WinnerIdx        int                       `json:"winnerIdx"`
@@ -108,11 +110,13 @@ var NewRamsWebController, NewRamsWebControllerWithProvider = webControllerPair[u
 
 func newRamsDefaultOutput(msg string) *RamsWebOutput {
 	return &RamsWebOutput{
-		Players:       make([]*RamsWebOutputPlayer, 0),
-		CurrentTrick:  make([]*WebOutputTrickCard, 0),
-		ValidPlays:    make([]int, 0),
-		WinnerIdx:     -1,
-		WebOutputBase: WebOutputBase{Message: msg},
+		Players:         make([]*RamsWebOutputPlayer, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
+		LastTrick:       make([]*WebOutputTrickCard, 0),
+		LastTrickWinner: -1,
+		ValidPlays:      make([]int, 0),
+		WinnerIdx:       -1,
+		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }
 

@@ -8,6 +8,12 @@
   "emptyFoundationAriaLabel": "空の組札{{idx}} ({{suit}}){{nextRank}}",
   "emptyWasteAriaLabel": "捨て札は空です",
   "foundation": "組札",
+  "destinationAnnouncement": "{{source}}を選択しました。移動先。場札: {{tableau}}。組札: {{foundation}}。",
+  "destinationColumn": "列{{col}}",
+  "destinationFoundation": "組札{{idx}}",
+  "listSeparator": "、",
+  "noDestination": "なし",
+  "selectionCleared": "札の選択を解除しました",
   "foundationAriaLabel": "{{suit}} 組札{{idx}} {{count}}枚{{nextRank}}",
   "nextRankAria": "、次に必要なランク {{rank}}",
   "frontendHint": {

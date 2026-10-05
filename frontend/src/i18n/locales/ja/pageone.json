@@ -21,6 +21,8 @@
   "cards": "{{count}}枚",
   "cumulativeScore": "累計: {{score}}",
   "roundScore": "ラウンド: {{score}}",
+  "scoreTableCaption": "現在のラウンドと累計スコア",
+  "roundHistoryCaption": "ラウンド別スコア履歴",
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",
   "scoresRound": "ラウンド",

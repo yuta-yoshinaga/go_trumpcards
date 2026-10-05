@@ -117,6 +117,15 @@ func (_m *MockPiedmonteseTarotGame) GetDealScores() []int {
 	return nil
 }
 
+// GetDealScoreHistory モック
+func (_m *MockPiedmonteseTarotGame) GetDealScoreHistory() []domain.PiedmonteseTarotDealScore {
+	ret := _m.Called()
+	if v, ok := ret.Get(0).([]domain.PiedmonteseTarotDealScore); ok {
+		return v
+	}
+	return nil
+}
+
 // GetCardThirds モック
 func (_m *MockPiedmonteseTarotGame) GetCardThirds(i int) int { return _m.Called(i).Int(0) }
 

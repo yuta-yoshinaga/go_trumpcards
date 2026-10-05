@@ -21,6 +21,7 @@
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",
+  "leadSuit": "Led suit",
   "trickWinner": "Winner",
   "trickEmpty": "(no cards yet)",
   "players": "Players",

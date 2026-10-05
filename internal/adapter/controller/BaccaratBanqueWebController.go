@@ -63,6 +63,10 @@ type BaccaratBanqueWebOutput struct {
 	BankHeld int `json:"bankHeld"`
 	// ShoeRemaining はシューの残り枚数。配り切るとバンクが終わる。
 	ShoeRemaining int `json:"shoeRemaining"`
+	// ShoeComposition は A〜K のランクごとの残り枚数。
+	ShoeComposition []int `json:"shoeComposition"`
+	// DrawWinPercent は右・左を引いて上回る確率 (整数パーセント)。
+	DrawWinPercent []int `json:"drawWinPercent"`
 	// Retired はバンカーが自分から降りたか。
 	Retired     bool                           `json:"retired"`
 	LastResult  *BaccaratBanqueWebOutputResult `json:"lastResult,omitempty"`

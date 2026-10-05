@@ -36,12 +36,17 @@ type CribbageWebOutputPlayer struct {
 
 // CribbageWebOutputScoreDetail スコア詳細のアウトプット
 type CribbageWebOutputScoreDetail struct {
-	Fifteens int `json:"fifteens"`
-	Pairs    int `json:"pairs"`
-	Runs     int `json:"runs"`
-	Flush    int `json:"flush"`
-	Nobs     int `json:"nobs"`
-	Total    int `json:"total"`
+	Fifteens     int                `json:"fifteens"`
+	Pairs        int                `json:"pairs"`
+	Runs         int                `json:"runs"`
+	Flush        int                `json:"flush"`
+	Nobs         int                `json:"nobs"`
+	Total        int                `json:"total"`
+	FifteenCards [][]*WebOutputCard `json:"fifteenCards"`
+	PairCards    [][]*WebOutputCard `json:"pairCards"`
+	RunCards     [][]*WebOutputCard `json:"runCards"`
+	FlushCards   []*WebOutputCard   `json:"flushCards"`
+	NobsCards    []*WebOutputCard   `json:"nobsCards"`
 }
 
 // CribbageWebOutputPegScoreEvent describes one pegging score.

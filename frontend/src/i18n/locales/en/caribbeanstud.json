@@ -93,6 +93,6 @@
     "hands": "{{hands}} hands",
     "net": "Net",
     "clear": "Clear history",
-    "note": "Kept across resets (cleared on page reload)"
+    "note": "History is kept across resets and page reloads. Clear it with the Clear history button."
   }
 }

@@ -369,6 +369,27 @@ describe('DuchessPage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('autocomplete');
   });
 
+  it('does not run auto-complete from the a shortcut when the server says it is unavailable', async () => {
+    mockExec.mockResolvedValue({ ...playingState, canAutoComplete: false });
+    renderWithProviders(<DuchessPage />);
+    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'a' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('autocomplete');
+  });
+
+  it('runs auto-complete from the a shortcut when the server says it is ready', async () => {
+    mockExec.mockResolvedValue({ ...playingState, canAutoComplete: true });
+    renderWithProviders(<DuchessPage />);
+    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'a' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
   // 基準ランク未選択の局面は従来どおり押せない (サーバも false を返す)。
   it('announces auto-complete is unavailable while the base rank is still unchosen', async () => {
     mockExec.mockResolvedValue({ ...playingState, awaitingBaseRank: true, canAutoComplete: false });
@@ -432,11 +453,11 @@ describe('DuchessPage keyboard shortcuts', () => {
     ['a', 'autocomplete'],
     ['z', 'undo'],
   ])('pressing %s dispatches %s', async (key, command) => {
-    mockExec.mockResolvedValue(playingState);
+    mockExec.mockResolvedValue({ ...playingState, canAutoComplete: key === 'a' });
     renderWithProviders(<DuchessPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     mockExec.mockClear();
-    mockExec.mockResolvedValue(playingState);
+    mockExec.mockResolvedValue({ ...playingState, canAutoComplete: key === 'a' });
     fireEvent.keyDown(document, { key });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith(command));
   });

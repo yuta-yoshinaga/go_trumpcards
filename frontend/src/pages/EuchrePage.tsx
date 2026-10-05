@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { euchreApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
@@ -142,6 +142,9 @@ function EuchrePageContent() {
   } = useGameHint('euchre', state);
   const { cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
   const [goAlone, setGoAlone] = useState(false);
+  useEffect(() => {
+    if (state?.phase !== EuchrePhase.CALL_TRUMP) setGoAlone(false);
+  }, [state?.phase]);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('euchre');
   const cliConfig: CliGameConfig<EuchreResponse, Parameters<typeof euchreApi.exec>> = useMemo(
@@ -576,7 +579,10 @@ function EuchrePageContent() {
                         // used instead of red label text, which on the accent button background
                         // would fail WCAG text contrast; a ring only needs the 3:1 non-text ratio.
                         className={`${btnPrimary}${s >= 3 ? ' ring-2 ring-inset ring-ds-error' : ''}`}
-                        onClick={() => handleCallTrump(s, goAlone)}
+                        onClick={() => {
+                          handleCallTrump(s, goAlone);
+                          setGoAlone(false);
+                        }}
                         disabled={loading || isTurnedDownSuit}
                         title={isTurnedDownSuit ? t('turnedDownSuit') : undefined}
                         data-suit={s}

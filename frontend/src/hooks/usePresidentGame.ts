@@ -91,6 +91,7 @@ export function usePresidentGame() {
 
   const { selected: selectedIndices, toggle: toggleCardSelection, clear: clearSelection } = useCardSelection();
   const [configInput, setConfigInput] = useState<PresidentConfigInput>(defaultConfigInput);
+  const [hasPendingConfigChanges, setHasPendingConfigChanges] = useState(false);
   const [displayState, setDisplayState] = useState<PresidentResponse | null>(null);
 
   const lastReplayedActionsRef = useRef<PresidentResponse['cpuActions']>(undefined);
@@ -118,6 +119,7 @@ export function usePresidentGame() {
 
   const handleConfigChange = useCallback((key: keyof PresidentConfigInput, value: boolean | number) => {
     setConfigInput((prev: PresidentConfigInput) => ({ ...prev, [key]: value }));
+    setHasPendingConfigChanges(true);
   }, []);
 
   const handlePlay = useCallback(() => {
@@ -132,6 +134,7 @@ export function usePresidentGame() {
   }, [callApi]);
 
   const handleResetWithConfig = useCallback(() => {
+    setHasPendingConfigChanges(false);
     callApi('reset', undefined, configInput);
   }, [callApi, configInput]);
 
@@ -144,6 +147,7 @@ export function usePresidentGame() {
     toggleCardSelection,
     clearSelection,
     configInput,
+    hasPendingConfigChanges,
     handleConfigChange,
     handlePlay,
     handlePass,

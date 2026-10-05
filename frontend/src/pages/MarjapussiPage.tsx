@@ -392,7 +392,7 @@ function MarjapussiPageContent() {
                           aria-label={barLabel}
                           aria-valuemin={0}
                           aria-valuemax={target}
-                          aria-valuenow={Math.max(0, score)}
+                          aria-valuenow={Math.max(0, Math.min(target, score))}
                           data-testid={`marjapussi-progress-team-${teamId}`}
                           className="relative mt-0.5 h-2 w-full rounded-sm bg-white/15 overflow-hidden"
                         >

@@ -217,6 +217,34 @@ function UltimateTexasHoldemPageContent() {
       >
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
+        {(isPreFlopPhase || isFlopPhase || isRiverPhase) && (
+          <section className="mb-3" data-testid="uth-current-bets">
+            <h2 className="text-ds-text-primary text-center font-bold text-sm mb-1">{t('currentBets.title')}</h2>
+            <div className="flex flex-wrap justify-center gap-x-4 text-ds-text-muted text-sm tabular-nums">
+              {state.anteBet > 0 && (
+                <span>
+                  {t('label.ante')}: {state.anteBet}
+                </span>
+              )}
+              {state.blindBet > 0 && (
+                <span>
+                  {t('label.blind')}: {state.blindBet}
+                </span>
+              )}
+              {state.tripsBet > 0 && (
+                <span>
+                  {t('label.trips')}: {state.tripsBet}
+                </span>
+              )}
+              {state.playBet > 0 && (
+                <span>
+                  {t('label.playBet')}: {state.playBet}
+                </span>
+              )}
+            </div>
+          </section>
+        )}
+
         <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mb-2 cursor-pointer min-h-[44px]">
           <input
             type="checkbox"

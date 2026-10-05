@@ -79,7 +79,7 @@ func (swp *ShitheadWebPresenter) Output(sg interfaces.ShitheadGame, lastErr erro
 
 func shitheadActionToOutput(a *domain.ShitheadCpuAction) *controller.ShitheadWebOutputAction {
 	played := make([]*controller.WebOutputCard, 0)
-	if !a.Pickup {
+	if !a.Pickup || a.Source == domain.ShitheadSourceFaceDown {
 		played = cardsToOutput(a.PlayedCards)
 	}
 	return &controller.ShitheadWebOutputAction{

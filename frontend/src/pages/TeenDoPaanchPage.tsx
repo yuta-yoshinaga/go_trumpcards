@@ -32,6 +32,12 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** The four suits, in the order the trump buttons are offered. */
 const SUITS: readonly number[] = [1, 2, 3, 4];
+const SUIT_I18N_KEYS: Record<string, string> = {
+  SPADE: 'common.suit.spade',
+  CLOVER: 'common.suit.club',
+  HEART: 'common.suit.heart',
+  DIAMOND: 'common.suit.diamond',
+};
 
 /** Guided tutorial steps (the assigned targets, trump, the exchange, your hand). */
 const TEENDOPAANCH_TUTORIAL_STEPS: TutorialStep[] = [
@@ -132,6 +138,11 @@ function TeenDoPaanchPageContent() {
 
   // 出せない札もフォーカスできるようにし、理由を読み上げる。クリックしても出せない。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
+  const leadSuit = state.currentTrick[0]?.card.design;
+  const mustFollowSuit = !!leadSuit && human?.cards.some((card) => card.design === leadSuit);
+  const unavailableReason = mustFollowSuit
+    ? t('actions.playUnavailableFollowSuit', { suit: tc(SUIT_I18N_KEYS[leadSuit]) })
+    : t('actions.playUnavailable');
 
   const resultBanner = (() => {
     if (!isGameEnd) return null;
@@ -286,7 +297,7 @@ function TeenDoPaanchPageContent() {
                   })}
                 </div>
                 <span id="td-play-unavailable" className="sr-only">
-                  {t('actions.playUnavailable')}
+                  {unavailableReason}
                 </span>
               </div>
             )}

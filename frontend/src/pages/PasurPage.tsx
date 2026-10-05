@@ -259,25 +259,33 @@ function PasurPageContent() {
                   {t('header.you')}: {human.cardCount}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {human.cards.map((card, idx) => (
-                    <button
-                      key={`${card.design}-${card.value}-${idx}`}
-                      type="button"
-                      onClick={() => setPicked(picked === idx ? null : idx)}
-                      disabled={loading || !isHumanTurn}
-                      aria-pressed={picked === idx}
-                      aria-label={t('actions.selectAria', { card: cardAlt(card) })}
-                      className={`disabled:opacity-50 ${
-                        picked === idx
-                          ? 'rounded-lg ring-2 ring-ds-warning'
-                          : (state.captureOptions[idx]?.length ?? 0) > 0
-                            ? 'rounded-lg ring-2 ring-ds-success'
-                            : ''
-                      }`}
-                    >
-                      <CardImage card={card} width={cardWidth} />
-                    </button>
-                  ))}
+                  {human.cards.map((card, idx) => {
+                    const canCapture = (state.captureOptions[idx]?.length ?? 0) > 0;
+
+                    return (
+                      <button
+                        key={`${card.design}-${card.value}-${idx}`}
+                        type="button"
+                        onClick={() => setPicked(picked === idx ? null : idx)}
+                        disabled={loading || !isHumanTurn}
+                        aria-pressed={picked === idx}
+                        aria-label={t('actions.selectAria', { card: cardAlt(card) })}
+                        aria-describedby={`ps-capture-status-${idx}`}
+                        className={`disabled:opacity-50 ${
+                          picked === idx
+                            ? 'rounded-lg ring-2 ring-ds-warning'
+                            : canCapture
+                              ? 'rounded-lg ring-2 ring-ds-success'
+                              : ''
+                        }`}
+                      >
+                        <CardImage card={card} width={cardWidth} />
+                        <span id={`ps-capture-status-${idx}`} className="sr-only">
+                          {t(canCapture ? 'actions.captureAvailable' : 'actions.noCapture')}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}

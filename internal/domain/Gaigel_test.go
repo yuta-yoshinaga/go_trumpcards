@@ -86,6 +86,26 @@ func TestGaigel_TrickWinner_DoubleDeckTie(t *testing.T) {
 	assert.Equal(t, 0, g.GetLeadPlayerIdx(), "earlier identical card should win")
 }
 
+func TestGaigel_GetTrickWinnerIdxBeforeResolve(t *testing.T) {
+	g := newGaigel()
+	g.Reset()
+	g.SetTrumpSuit(domain.CardDesignDiamond)
+	g.SetLeadPlayerIdx(0)
+	g.SetPhase(domain.GaigelPhaseTrickEnd)
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 10, false)},
+		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignDiamond, 7, false)},
+		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 13, false)},
+	})
+
+	assert.Equal(t, 2, g.GetTrickWinnerIdx())
+	assert.Equal(t, 0, g.GetLeadPlayerIdx(), "reading the winner must not resolve the trick")
+
+	g.SetPhase(domain.GaigelPhasePlay)
+	assert.Equal(t, -1, g.GetTrickWinnerIdx())
+}
+
 func TestGaigel_TrumpBeatsNonTrump(t *testing.T) {
 	g := newGaigel()
 	g.Reset()

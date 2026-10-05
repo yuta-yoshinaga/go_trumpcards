@@ -30,6 +30,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { SlapjackResponse } from '../types/card';
 import { SlapjackEventKind, SlapjackPendingKind, SlapjackPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseSlapjackCommand, slapjackHelp } from '../utils/cli/commands/slapjackCommands';
 import { formatSlapjackState } from '../utils/cli/formatters/slapjackFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
@@ -98,6 +99,20 @@ function SlapjackPageContent() {
   // The visual SlapBurst alone is invisible to assistive tech (#2607).
   const [slapAnnounce, setSlapAnnounce] = useState('');
   const [jackAnnounce, setJackAnnounce] = useState('');
+  const [cardAnnounce, setCardAnnounce] = useState('');
+  const prevTopCardRef = useRef<string | null | undefined>(undefined);
+  useEffect(() => {
+    if (!state) {
+      prevTopCardRef.current = undefined;
+      setCardAnnounce('');
+      return;
+    }
+    const current = state.topCard ? cardAlt(state.topCard) : null;
+    if (prevTopCardRef.current !== undefined && current !== prevTopCardRef.current) {
+      setCardAnnounce(current && !state.isTopJack ? t('slapjack.cardAnnounce', { card: current }) : '');
+    }
+    prevTopCardRef.current = current;
+  }, [state, t]);
   const prevSlapAvailableRef = useRef<boolean | null>(null);
   useEffect(() => {
     if (!state) {
@@ -286,6 +301,9 @@ function SlapjackPageContent() {
                     { count: 1 },
                   )
                 : ''}
+            </div>
+            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="sj-card-announce">
+              {cardAnnounce}
             </div>
             {isCpuPending && !isGameEnd && (
               <div

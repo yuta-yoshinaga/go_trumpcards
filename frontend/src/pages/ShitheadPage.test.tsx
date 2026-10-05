@@ -81,6 +81,25 @@ beforeEach(() => {
 });
 
 describe('ShitheadPage', () => {
+  it('shows the revealed card in the feed when a blind play picks up the pile', async () => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      humanAction: {
+        playerIdx: 0,
+        source: 'facedown',
+        playedCards: [{ design: 'SPADE', value: 3 }],
+        pickup: true,
+        burned: false,
+        skipped: false,
+      },
+    });
+    renderWithProviders(<ShitheadPage />);
+
+    expect(await screen.findByTestId('sh-action-0')).toHaveTextContent(
+      'あなた が ♠ 3 をめくりましたが、出せないため場札を引き取りました',
+    );
+  });
+
   it('shows the discard pile count and describes the top card with it', async () => {
     renderWithProviders(
       <MemoryRouter initialEntries={['/shithead']}>

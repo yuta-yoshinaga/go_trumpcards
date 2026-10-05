@@ -252,6 +252,12 @@ function SlobberhannesPageContent() {
             <div data-tutorial="slobberhannes-trick">
               <TrickDisplay
                 currentTrick={state.currentTrick}
+                lastTrick={state.phase === SlobberhannesPhase.PLAY ? state.lastTrick : []}
+                lastTrickWinner={
+                  state.phase === SlobberhannesPhase.PLAY && state.lastTrick.length > 0
+                    ? state.lastTrickWinner
+                    : undefined
+                }
                 players={state.players}
                 cardWidth={cardWidth}
                 label={t('currentTrick')}

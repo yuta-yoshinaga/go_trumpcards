@@ -635,7 +635,7 @@ function MightyPageContent() {
                         type="button"
                         key={`${card.design}-${card.value}-${idx}`}
                         onClick={() => toggleCard(idx)}
-                        aria-label={cardAlt(card)}
+                        aria-label={`${cardAlt(card)}${badge ? ` (${badge.title})` : ''}`}
                         aria-pressed={selectedCardIndices.includes(idx)}
                         data-hinted={hinted || undefined}
                         className={`transition-transform ${focusRingCard} relative ${

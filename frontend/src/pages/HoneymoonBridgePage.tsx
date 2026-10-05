@@ -465,6 +465,7 @@ function HoneymoonBridgePageContent() {
 
           <ActionLogSection
             isEndPhase={isGameEnd}
+            availableDuringPlay={isBid}
             actionLog={actionLog}
             showActionLog={showActionLog}
             hideActionLog={hideActionLog}

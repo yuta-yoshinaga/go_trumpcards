@@ -102,5 +102,5 @@ func (owp *OmahaWebPresenter) buildResultMessage(o interfaces.OmahaGame) (string
 
 // ActionLogOutput 棋譜をJSON出力
 func (owp *OmahaWebPresenter) ActionLogOutput(o interfaces.OmahaGame) string {
-	return actionLogOutputJSON(o)
+	return actionLogToJSON(o.GetActionLog())
 }

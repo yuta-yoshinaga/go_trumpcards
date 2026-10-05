@@ -51,6 +51,12 @@ export function useGrandfathersClockGame() {
     runApi('undo');
   }, [runApi]);
 
+  const handleRedo = useCallback(() => {
+    setSelectedSource(null);
+    setHint(null);
+    runApi('redo');
+  }, [runApi]);
+
   /** Undo N moves at once to escape a stalemate. */
   const handleUndoEscape = useCallback(
     (n: number) => {
@@ -93,6 +99,7 @@ export function useGrandfathersClockGame() {
     handleHint,
     handleAutoComplete,
     handleUndo,
+    handleRedo,
     handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,

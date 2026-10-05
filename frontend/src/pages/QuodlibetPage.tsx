@@ -306,23 +306,27 @@ function QuodlibetPageContent() {
                   </div>
                 )}
                 {state.players
-                  .filter((p) => !p.isHuman && p.cards.length > 0)
+                  .filter((p) => !p.isHuman)
                   .map((p) => (
                     <div
                       key={p.id}
                       className="mb-2 p-2 rounded bg-black/30"
-                      data-testid={`quodlibet-visible-hand-${p.id}`}
+                      data-testid={`quodlibet-opponent-hand-${p.id}`}
                     >
-                      <div className="text-ds-text-muted text-xs mb-1">{playerName(p.id, false)}</div>
-                      <div className="flex flex-wrap gap-1">
-                        {p.cards.map((card, i) => (
-                          <CardImage
-                            key={`${card.design}-${card.value}-${i}`}
-                            card={card}
-                            width={Math.min(cardWidth, 48)}
-                          />
-                        ))}
+                      <div className="text-ds-text-muted text-xs mb-1">
+                        {t('opponentHandCount', { count: p.cardCount, name: playerName(p.id, false) })}
                       </div>
+                      {p.cards.length > 0 && (
+                        <div className="flex flex-wrap gap-1" data-testid={`quodlibet-visible-hand-${p.id}`}>
+                          {p.cards.map((card, i) => (
+                            <CardImage
+                              key={`${card.design}-${card.value}-${i}`}
+                              card={card}
+                              width={Math.min(cardWidth, 48)}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
 

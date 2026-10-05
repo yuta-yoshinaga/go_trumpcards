@@ -477,6 +477,7 @@ func (s *SevenCardStud) executeAction(playerIdx, action, amount int) error {
 	if err != nil {
 		return err
 	}
+	s.sidePots = CalculateSidePots(bp, s.pot, s.startingChips)
 
 	s.logAction(playerIdx, action, amount)
 

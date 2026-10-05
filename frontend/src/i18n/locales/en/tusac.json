@@ -41,6 +41,7 @@
   "result.gameEnd": "The game is over",
   "frontendHint.tusacRoundIsOver": "the round is over — move on to the next one",
   "frontendHint.tusacDrawFirst": "draw before anything else",
+  "frontendHint.tusacMeldAvailable": "you can lay down a combination",
   "frontendHint.tusacDiscardToEndTurn": "discard one card to pass the turn",
   "frontendHint.tusacHoldingCostsPoints": "every card left in hand is a point against you"
 }

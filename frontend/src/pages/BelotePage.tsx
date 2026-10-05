@@ -242,6 +242,7 @@ function BelotePageContent() {
         <div className="text-ds-text-primary text-center mb-2">
           <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
           <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
+          {state.trumpSuit > 0 && <span className="mr-4">{t('maker', { team: state.makerTeam })}</span>}
           <span>
             {state.trumpSuit > 0 ? t('trumpSuit', { suit: t(SUIT_LABEL_KEYS[state.trumpSuit]) }) : t('noTrump')}
           </span>

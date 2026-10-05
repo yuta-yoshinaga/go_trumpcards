@@ -117,5 +117,5 @@ func (p *SalicLawWebPresenter) HintOutput(c interfaces.SalicLawGame) string {
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *SalicLawWebPresenter) ActionLogOutput(c interfaces.SalicLawGame) string {
-	return actionLogOutputJSON(c)
+	return actionLogToJSON(c.GetActionLog())
 }

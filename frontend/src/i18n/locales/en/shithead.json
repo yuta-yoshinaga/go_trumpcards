@@ -71,6 +71,7 @@
   "feed": {
     "header": "Last actions",
     "pickup": "{{name}} picked up the pile",
+    "facedownPickup": "{{name}} revealed {{card}}, but could not play it and picked up the pile",
     "play": "{{name}} played {{cards}}",
     "burned": "pile burned!",
     "skipped": "next player skipped"

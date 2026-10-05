@@ -211,6 +211,10 @@ function ConquianPageContent() {
     );
   }
 
+  const selectedCardCanLayoff =
+    selectedCardIndices.length === 1 &&
+    state.layoffTargets.some((targets, cardIdx) => cardIdx === selectedCardIndices[0] && targets.length > 0);
+
   return (
     <GamePageShell
       title={tc('nav.conquian')}
@@ -501,9 +505,11 @@ function ConquianPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={btnPrimary}
-                    onClick={() => handleMeldSelected()}
-                    disabled={loading || selectedCardIndices.length !== 1}
+                    className={`${btnPrimary} ${selectedCardCanLayoff && !loading ? '' : 'opacity-70 cursor-not-allowed saturate-50'}`}
+                    onClick={() => {
+                      if (!loading && selectedCardCanLayoff) handleMeldSelected();
+                    }}
+                    aria-disabled={!selectedCardCanLayoff || loading}
                     data-testid="conquian-layoff-button"
                   >
                     {t('layoffButton')}

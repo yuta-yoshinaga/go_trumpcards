@@ -30,6 +30,15 @@
   "counterButton": "カウンター・ケムプス！（{{name}}）",
   "declineButton": "宣言しない",
   "nextRound": "次のラウンドへ",
+  "roundResultMessage": "{{team}}のラウンド勝利：{{result}}",
+  "roundResultNoWinner": "ラウンド結果：{{result}}",
+  "roundResults": {
+    "0": "結果なし",
+    "1": "ケムプス成功",
+    "2": "カウンター・ケムプス成功",
+    "3": "カウンター・ケムプス失敗",
+    "4": "宣言失敗"
+  },
   "settings": {
     "title": "設定",
     "cpuDifficulty": "CPU難易度",

@@ -56,5 +56,7 @@
     "stock": "Click the stock to deal one card to each of the three fans.",
     "actionButtons": "Action buttons: hint, auto-complete, undo, and more.",
     "resetButton": "Start a new game."
-  }
+  },
+  "stockAria_one": "Stock ({{count}} card remaining)",
+  "stockAria_other": "Stock ({{count}} cards remaining)"
 }

@@ -9,6 +9,8 @@
   "reserve": "Reserve",
   "moveCount": "Moves",
   "moveCountAnnouncement": "Moves: {{count}}",
+  "selectedTableauAnnouncement": "Selected: {{card}}, column {{col}}, position {{pos}}",
+  "selectedReserveAnnouncement": "Selected: {{card}}, reserve slot {{idx}}",
   "giveup": "Give Up",
   "empty": "Empty",
   "emptyReserveSlot": "Empty reserve slot {{idx}}",

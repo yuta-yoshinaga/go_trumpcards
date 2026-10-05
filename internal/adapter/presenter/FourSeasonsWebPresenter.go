@@ -89,7 +89,7 @@ func (p *FourSeasonsWebPresenter) HintOutput(f interfaces.FourSeasonsGame) strin
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *FourSeasonsWebPresenter) ActionLogOutput(f interfaces.FourSeasonsGame) string {
-	return actionLogOutputJSON(f)
+	return actionLogToJSON(f.GetActionLog())
 }
 
 func toFourSeasonsHintOutput(h *domain.FourSeasonsHint) *controller.FourSeasonsWebOutputHint {

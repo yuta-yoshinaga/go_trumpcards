@@ -55,6 +55,12 @@ const ACESUP_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
   {
+    target: '[data-tutorial="acesup-columns"]',
+    messageKey: 'tutorial.rules',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
     target: '[data-tutorial="acesup-controls"]',
     messageKey: 'tutorial.controls',
     placement: 'top',

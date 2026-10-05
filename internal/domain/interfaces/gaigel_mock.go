@@ -81,6 +81,11 @@ func (m *MockGaigelGame) GetLeadPlayerIdx() int {
 	return args.Int(0)
 }
 
+func (m *MockGaigelGame) GetTrickWinnerIdx() int {
+	args := m.Called()
+	return args.Int(0)
+}
+
 func (m *MockGaigelGame) GetDealerIdx() int {
 	args := m.Called()
 	return args.Int(0)

@@ -31,6 +31,8 @@
   "score": "通算{{score}}",
   "currentTrick": "現在のトリック",
   "trickWinner": "勝ち",
+  "previousTrick": "前のトリック",
+  "previousTrickWinner": "勝者: {{name}}",
   "restricted": "リードスートに従う必要があります",
   "bidDreier": "ドライヤー",
   "bidSolo": "ソロ",

@@ -59,6 +59,7 @@ func (p *GermanSoloWebPresenter) buildBase(g interfaces.GermanSoloGame) *control
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerPlayer = g.GetWinnerPlayer()
 	resObj.PlayerScores = g.GetPlayerScores()
+	resObj.PlayerScoreDeltas = g.GetPlayerScoreDeltas()
 	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.IsHumanTurn = g.IsHumanTurn()
 	resObj.IsHumanBidTurn = g.IsHumanBidTurn()

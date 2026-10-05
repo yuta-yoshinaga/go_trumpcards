@@ -34,6 +34,7 @@
     "nextHand": "Next hand",
     "reset": "Reset",
     "giveUp": "Give up",
+    "playableVisual": "Playable",
     "playAria": "Play {{card}}",
     "playableAria": "Play {{card}} (playable)"
   },
@@ -51,7 +52,7 @@
     "tens": "Mendikot is decided by neither points nor tricks but by **how many of the four tens you take**. **Three of them wins the hand outright.** The figure above is that race.",
     "trump": "**There is no step where anyone chooses trump.** The suit is fixed by whatever card the first player who cannot follow chooses to play -- so you cannot pretend to be void in the suit you want.",
     "mendikot": "Only a two-apiece split falls back to the trick count. **Taking all four tens is a Mendikot, worth 2**; **taking all thirteen tricks is a Whitewash, worth 3.**",
-    "hand": "Your hand. Playable cards get a green ring. When your partner (T0) already has the trick, put a ten on it."
+    "hand": "Your hand. Playable cards get a check mark and a green ring. When your partner (T0) already has the trick, put a ten on it."
   },
   "warn": {
     "setsTrump": "The suit you play now becomes the trump for this hand — you cannot follow"

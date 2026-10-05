@@ -60,6 +60,32 @@ describe('CometPage', () => {
     );
   });
 
+  it('marks changed settings as next-game settings and clears the notice when reverted or reset', async () => {
+    renderWithProviders(<CometPage />);
+    await screen.findByTestId('comet-pile');
+    fireEvent.click(screen.getByText('設定'));
+    const notice = screen.getByTestId('comet-settings-status');
+    expect(notice).not.toHaveTextContent('次のゲームで適用');
+
+    fireEvent.change(screen.getByLabelText('席数'), { target: { value: '3' } });
+    expect(notice).toHaveTextContent('次のゲームで適用');
+    expect(notice).toHaveTextContent('現在の対局には影響しません');
+
+    fireEvent.change(screen.getByLabelText('席数'), { target: { value: '4' } });
+    expect(notice).not.toHaveTextContent('次のゲームで適用');
+
+    fireEvent.change(screen.getByLabelText('席数'), { target: { value: '3' } });
+    mockExec.mockResolvedValue(makeCometState({ config: { cpuDifficulty: 1, players: 3, targetScore: 100 } }));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', {
+        config: { cpuDifficulty: 1, players: 3, targetScore: 100 },
+      }),
+    );
+    expect(notice).not.toHaveTextContent('次のゲームで適用');
+  });
+
   it('shows the round and the dead hand', async () => {
     renderWithProviders(<CometPage />);
     expect(await screen.findByText('局 1（100 点勝負）')).toBeInTheDocument();

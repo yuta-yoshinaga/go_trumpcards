@@ -33,6 +33,7 @@ type NinetyNineWebOutputPlayer struct {
 	CumulativeScore int              `json:"cumulativeScore"`
 	TrickCount      int              `json:"trickCount"`
 	BuriedCount     int              `json:"buriedCount"`
+	BuriedCards     []*WebOutputCard `json:"buriedCards,omitempty"`
 }
 
 // NinetyNineWebOutputHint ヒント出力

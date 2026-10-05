@@ -10,6 +10,14 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// formatSigned formats an integer with an explicit plus sign for non-negative values.
+func formatSigned(value int) string {
+	if value >= 0 {
+		return "+" + strconv.Itoa(value)
+	}
+	return strconv.Itoa(value)
+}
+
 // isRedSuit returns true for heart and diamond suits.
 func isRedSuit(design int) bool {
 	return design == domain.CardDesignHeart || design == domain.CardDesignDiamond

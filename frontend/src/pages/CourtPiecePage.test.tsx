@@ -145,6 +145,11 @@ describe('CourtPiecePage', () => {
     );
   });
 
+  it('explains that changed settings apply to the next game', async () => {
+    renderWithProviders(<CourtPiecePage />);
+    expect(await screen.findByText('設定の変更は次のゲームから適用されます。')).toBeInTheDocument();
+  });
+
   it('shows trump suit buttons on a human trump-declaration turn', async () => {
     renderWithProviders(<CourtPiecePage />);
     await waitFor(() => expect(screen.getByTestId('trump-1')).toBeInTheDocument());

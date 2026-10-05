@@ -19,6 +19,15 @@
     "bettingLimit": "Betting Limit",
     "metaAI": "Meta AI"
   },
+  "metaAI": {
+    "title": "Meta-AI learning stats",
+    "gamesPlayed": "Games played: {{value}}",
+    "bluffRate": "Bluff rate: {{value}}",
+    "foldRate": "Fold rate: {{value}}",
+    "hesitationMean": "Average decision time: {{value}}",
+    "milliseconds": "{{value}} ms",
+    "unmeasured": "Not measured"
+  },
   "tutorial": {
     "cpuCards": "You can see your opponents' cards. Use this information to decide your action.",
     "playerCard": "Your card is hidden from you. It will be revealed at showdown.",

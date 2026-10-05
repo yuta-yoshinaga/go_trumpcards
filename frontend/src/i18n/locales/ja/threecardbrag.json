@@ -29,6 +29,7 @@
     "other": "{{name}} の番です。"
   },
   "playersTitle": "プレイヤー",
+  "dealerBadge": "ディーラー",
   "badge": {
     "blind": "ブラインド",
     "seen": "シーン",

@@ -29,6 +29,8 @@
   "kittyRules": "Bury {{count}} cards back into the kitty. KEEP YOUR POINTS AND TRUMPS OUT: if the defenders take the last trick, the kitty's points reach them multiplied.",
   "buryButton": "Bury ({{selected}}/{{count}})",
   "playButton": "Play",
+  "trumpLed": "trumps",
+  "followSuitRequired": "Play from the led suit ({{suit}}).",
   "nextButton": "Next hand",
   "handHeldLine": "The declarers held ({{points}} of {{target}} to the defenders). Team {{team}} climbs {{advance}} level(s)",
   "handTakenLine": "The defenders collected {{points}} ({{target}} or more). The deal changes hands and team {{team}} climbs {{advance}} level(s)",

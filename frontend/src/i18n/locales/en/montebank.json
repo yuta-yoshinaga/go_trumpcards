@@ -9,6 +9,7 @@
   "label.layout": "Layout",
   "label.gate": "Gate",
   "label.net": "Net",
+  "label.payoutAmount": "Payout",
   "label.sessionWins_one": "Session wins: {{count}}",
   "label.sessionWins_other": "Session wins: {{count}}",
   "label.sessionLosses_one": "Session losses: {{count}}",

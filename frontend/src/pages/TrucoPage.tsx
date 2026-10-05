@@ -361,6 +361,7 @@ function TrucoPageContent() {
                 id: 'matchTarget',
                 label: t('settings.matchTarget'),
                 value: matchTarget,
+                description: matchTarget !== state.matchTarget ? t('settings.matchTargetNextReset') : undefined,
                 options: TRUCO_MATCH_TARGET_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                 onSelect: (v) => setMatchTarget(Number(v)),
               },

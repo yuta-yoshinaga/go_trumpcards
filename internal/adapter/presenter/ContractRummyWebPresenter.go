@@ -27,6 +27,10 @@ func (p *ContractRummyWebPresenter) Output(g interfaces.ContractRummyGame, lastE
 	if top != nil {
 		resObj.DiscardTop = cardToOutput(top)
 	}
+	resObj.DiscardHistory = make([]*controller.WebOutputCard, 0)
+	for _, card := range g.GetDiscardPile() {
+		resObj.DiscardHistory = append(resObj.DiscardHistory, cardToOutput(card))
+	}
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.ContractRummyWebOutputConfig{

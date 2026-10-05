@@ -181,10 +181,13 @@ func TestBuraWebPresenter_ReportsTheDrawDistinctly(t *testing.T) {
 	assert.Equal(t, float64(-1), out["winnerIdx"])
 }
 
-func TestBuraWebPresenter_ActionLogIsEmptyUntilTheRoundEnds(t *testing.T) {
+func TestBuraWebPresenter_ActionLogIsAvailableDuringPlay(t *testing.T) {
 	p := new(BuraWebPresenter)
 	b := buraTestGame(t)
-	assert.NotEmpty(t, p.ActionLogOutput(b))
+	out := buraDecode(t, p.ActionLogOutput(b))
+	entries := out["entries"].([]any)
+	require.NotEmpty(t, entries)
+	assert.Equal(t, "deal", entries[0].(map[string]any)["actionType"])
 
 	require.NoError(t, b.Claim(0))
 	assert.NotEmpty(t, p.ActionLogOutput(b))

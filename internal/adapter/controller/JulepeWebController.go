@@ -33,10 +33,12 @@ type JulepeWebOutputPlayer struct {
 	// Chips は持ちチップ。**多いほど良い。**
 	Chips int `json:"chips"`
 	// InRound はこのラウンドに参加しているか、Decided は選び終えたか。
-	InRound     bool `json:"inRound"`
-	Decided     bool `json:"decided"`
-	RoundTricks int  `json:"roundTricks"`
-	TrickCount  int  `json:"trickCount"`
+	InRound      bool `json:"inRound"`
+	Decided      bool `json:"decided"`
+	RoundTricks  int  `json:"roundTricks"`
+	RoundPayout  int  `json:"roundPayout"`
+	RoundPenalty int  `json:"roundPenalty"`
+	TrickCount   int  `json:"trickCount"`
 }
 
 // JulepeWebOutputHint ヒント出力

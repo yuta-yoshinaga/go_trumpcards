@@ -404,6 +404,33 @@ describe('FortyAndEightPage', () => {
     await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'true'));
   });
 
+  it('Escape clears the selected source without dispatching a move', async () => {
+    renderWithProviders(<FortyAndEightPage />);
+    const cardButton = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
+    fireEvent.click(cardButton);
+    await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'true'));
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'false'));
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('Escape does not clear a selected source while a modal is open', async () => {
+    renderWithProviders(<FortyAndEightPage />);
+    const cardButton = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
+    fireEvent.click(cardButton);
+    await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'true'));
+    fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    expect(await screen.findByText('投了確認')).toBeInTheDocument();
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    expect(cardButton).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('clicking waste card when source already selected does nothing', async () => {
     renderWithProviders(<FortyAndEightPage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());

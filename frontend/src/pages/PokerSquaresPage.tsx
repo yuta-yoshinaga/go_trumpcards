@@ -384,7 +384,38 @@ function PokerSquaresPageContent() {
 
                 <div className="flex justify-center mb-3" data-testid="ps-board-wrapper" data-tutorial="ps-board">
                   <div className="inline-flex flex-col items-start">
+                    <div className="flex items-end mb-1">
+                      <div className="w-8 mr-1" aria-hidden="true" />
+                      <div
+                        className="grid gap-1 text-center text-xs font-mono text-game-text-muted"
+                        style={{ gridTemplateColumns: `repeat(5, minmax(0, 1fr))` }}
+                        data-testid="ps-column-numbers"
+                      >
+                        {state.board[0].map((_, colIdx) => (
+                          <div key={`column-number-${colIdx}`} style={{ width: cardWidth }}>
+                            <span className="sr-only">{t('label.columnNumber', { col: colIdx })}</span>
+                            <span aria-hidden="true">{colIdx}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                     <div className="flex">
+                      <div
+                        className="mr-1 grid gap-1 text-center text-xs font-mono text-game-text-muted"
+                        style={{ gridTemplateRows: `repeat(5, minmax(0, 1fr))` }}
+                        data-testid="ps-row-numbers"
+                      >
+                        {state.board.map((_, rowIdx) => (
+                          <div
+                            key={`row-number-${rowIdx}`}
+                            style={{ height: Math.round(cardWidth * 1.4) }}
+                            className="w-8 flex items-center justify-center"
+                          >
+                            <span className="sr-only">{t('label.rowNumber', { row: rowIdx })}</span>
+                            <span aria-hidden="true">{rowIdx}</span>
+                          </div>
+                        ))}
+                      </div>
                       <div
                         className="grid gap-1"
                         style={{ gridTemplateColumns: `repeat(5, minmax(0, 1fr))` }}

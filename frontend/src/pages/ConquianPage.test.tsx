@@ -271,20 +271,20 @@ describe('ConquianPage', () => {
   });
 
   it('meld and layoff buttons are both disabled with no selection', async () => {
-    mockExec.mockResolvedValue(meldPhaseThreeCards);
+    mockExec.mockResolvedValue({ ...meldPhaseThreeCards, layoffTargets: [[], [], []] });
     renderWithProviders(<ConquianPage />);
     await waitFor(() => expect(screen.getByTestId('conquian-meld-button')).toBeInTheDocument());
     expect(screen.getByTestId('conquian-meld-button')).toBeDisabled();
-    expect(screen.getByTestId('conquian-layoff-button')).toBeDisabled();
+    expect(screen.getByTestId('conquian-layoff-button')).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('layoff enabled and meld disabled when exactly 1 card selected; dispatches meld', async () => {
-    mockExec.mockResolvedValue(meldPhaseThreeCards);
+    mockExec.mockResolvedValue({ ...meldPhaseThreeCards, layoffTargets: [[0], [], []] });
     renderWithProviders(<ConquianPage />);
     await waitFor(() => expect(screen.getByAltText('♠ 5')).toBeInTheDocument());
 
     fireEvent.click(screen.getByAltText('♠ 5').closest('button') as HTMLButtonElement);
-    expect(screen.getByTestId('conquian-layoff-button')).not.toBeDisabled();
+    expect(screen.getByTestId('conquian-layoff-button')).toHaveAttribute('aria-disabled', 'false');
     expect(screen.getByTestId('conquian-meld-button')).toBeDisabled();
 
     mockExec.mockClear();
@@ -301,7 +301,7 @@ describe('ConquianPage', () => {
     fireEvent.click(screen.getByAltText('♠ 5').closest('button') as HTMLButtonElement);
     fireEvent.click(screen.getByAltText('♥ 5').closest('button') as HTMLButtonElement);
     expect(screen.getByTestId('conquian-meld-button')).toBeDisabled();
-    expect(screen.getByTestId('conquian-layoff-button')).toBeDisabled();
+    expect(screen.getByTestId('conquian-layoff-button')).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('meld enabled and layoff disabled when 3 cards selected; dispatches meld', async () => {
@@ -313,7 +313,7 @@ describe('ConquianPage', () => {
     fireEvent.click(screen.getByAltText('♥ 5').closest('button') as HTMLButtonElement);
     fireEvent.click(screen.getByAltText('♣ 5').closest('button') as HTMLButtonElement);
     expect(screen.getByTestId('conquian-meld-button')).not.toBeDisabled();
-    expect(screen.getByTestId('conquian-layoff-button')).toBeDisabled();
+    expect(screen.getByTestId('conquian-layoff-button')).toHaveAttribute('aria-disabled', 'true');
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(drawPhaseState);
@@ -587,6 +587,12 @@ describe('ConquianPage', () => {
     const handButtons = screen.getAllByRole('button').filter((b) => b.hasAttribute('aria-pressed'));
     fireEvent.click(handButtons[0]);
     expect(document.querySelectorAll('[data-layoff-target]')).toHaveLength(0);
+    const layoffButton = screen.getByTestId('conquian-layoff-button');
+    expect(layoffButton).toHaveAttribute('aria-disabled', 'true');
+    mockExec.mockClear();
+    fireEvent.click(layoffButton);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   it('does not offer layoff targets without exactly one selected card', async () => {

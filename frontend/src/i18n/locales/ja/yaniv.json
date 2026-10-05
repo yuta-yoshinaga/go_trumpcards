@@ -1,6 +1,7 @@
 {
   "handTotalHelp": "手札合計が5以下でヤニブを宣言できます。超過分はペナルティ点になります。",
   "yanivGuidance": "手札合計: {{total}}。5以下で宣言可能。{{availability}}",
+  "selectionPreview": "(選択中: -{{selected}} = 暫定 {{remaining}})",
   "yanivAvailable": "宣言できます。",
   "yanivUnavailableTotal": "合計が5を超えているため宣言できません。",
   "yanivUnavailableTurn": "自分の捨て札フェーズで宣言できます。",

@@ -95,6 +95,8 @@ export interface GermanSoloResponse extends BaseGameResponse {
   currentTrick: GermanSoloTrickCard[];
   /** Cumulative match scores per player — [p0, p1, p2, p3]. */
   playerScores: number[];
+  /** Server-settled score changes from the most recent deal, indexed by seat. */
+  playerScoreDeltas: number[];
   /** Seat index of the last trick winner, or -1. */
   lastTrickWinner: number;
   /** Deal outcome (0=None, 1=Made, 2=Failed). */

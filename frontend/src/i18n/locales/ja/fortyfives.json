@@ -32,6 +32,7 @@
   "yourTeam": "あなたのチーム",
   "teamScore": "{{team}}: {{score}}点",
   "declarerBadge": "落札者",
+  "currentTurn": "手番",
   "contractUndecided": "落札者: 未決定",
   "contractLine": "落札者: {{name}}（{{team}}） — {{contract}}",
   "playButton": "出す",

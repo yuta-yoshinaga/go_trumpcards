@@ -85,8 +85,9 @@ export function tallyCaribbeanStudHistory(history: readonly CaribbeanStudRecord[
  * Hook that persists the Caribbean Stud session round history in localStorage.
  * `recordRound` appends one finished round (the caller records each round only
  * once), capping the stored history at `CARIBBEANSTUD_HISTORY_MAX`.
- * `clearHistory` empties it. `tally` is the derived win / loss / push counts and
- * cumulative net chips over the full history.
+ * History is reloaded from localStorage on mount and cleared by `clearHistory`.
+ * `tally` is the derived win / loss / push counts and cumulative net chips over
+ * the full history.
  */
 export function useCaribbeanStudStats() {
   const [history, setHistory] = useState<CaribbeanStudRecord[]>(readCaribbeanStudHistory);

@@ -408,7 +408,7 @@ function SultanPageContent() {
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap">
               {isPlaying && (
-                <div data-tutorial="sultan-controls">
+                <div className="flex flex-wrap gap-2" data-tutorial="sultan-controls">
                   <button
                     type="button"
                     className={btnPrimary}

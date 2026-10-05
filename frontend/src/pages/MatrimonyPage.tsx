@@ -321,11 +321,15 @@ function MatrimonyPageContent() {
                             disabled={!isPlaying || loading}
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_LABELS[idx], idx })}
+                            aria-label={t('emptyFoundationAriaLabel', {
+                              suit: FOUNDATION_LABELS[idx % FOUNDATION_LABELS.length],
+                              idx,
+                              rank: FOUNDATION_LABELS[idx % FOUNDATION_LABELS.length][0],
+                            })}
                             style={{ width: dims.cw, height: dims.ch }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                           >
-                            A
+                            {FOUNDATION_LABELS[idx % FOUNDATION_LABELS.length][0]}
                           </button>
                         )}
                       </DropZone>

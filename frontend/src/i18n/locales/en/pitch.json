@@ -34,6 +34,9 @@
   "previousTrick": "Previous Trick",
   "previousTrickEmpty": "No previous trick yet this round",
   "previousTrickWinner": "Won by {{name}}",
+  "listSeparator": ", ",
+  "trickResultCard": "{{name}} played {{card}}",
+  "trickResultAnnouncement": "Trick resolved. {{cards}}. {{winner}} won the trick.",
   "leadBadge": "Lead",
   "trickLegend": {
     "lead": "Lead suit",

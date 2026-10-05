@@ -6,6 +6,7 @@
   },
   "foundation": "Foundation",
   "tableau": "Tableau",
+  "tableauCardAriaLabel": "{{card}}, column {{col}}",
   "moveCount": "Moves",
   "giveup": "Give Up",
   "empty": "Empty",

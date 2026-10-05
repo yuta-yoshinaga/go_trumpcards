@@ -87,6 +87,21 @@ describe('BlackHolePage', () => {
     expect(screen.getByTestId('fan-16')).toBeInTheDocument();
   });
 
+  it('shows whether the recommended continuation can clear the deal', async () => {
+    mockExec.mockResolvedValue(makeState({ hint: { fan: 0, movesAfter: 1, canClear: true, continuationMoves: 12 } }));
+    renderWithProviders(<BlackHolePage />);
+    fireEvent.click(await screen.findByTestId('hint-button'));
+    expect(await screen.findByTestId('bh-hint-detail')).toHaveTextContent('12');
+    expect(screen.getByTestId('bh-hint-detail')).toHaveTextContent('クリアまで');
+  });
+
+  it('uses the singular clear continuation label for one move', async () => {
+    mockExec.mockResolvedValue(makeState({ hint: { fan: 0, movesAfter: 1, canClear: true, continuationMoves: 1 } }));
+    renderWithProviders(<BlackHolePage />);
+    fireEvent.click(await screen.findByTestId('hint-button'));
+    expect(await screen.findByTestId('bh-hint-detail')).toHaveTextContent('1手');
+  });
+
   it('keeps mobile fan tops at least 44px wide in a horizontally scrollable row', async () => {
     cardDimensions.isMobile = true;
     cardDimensions.cardWidth = 40;
@@ -197,7 +212,10 @@ describe('BlackHolePage', () => {
   it('strongly emphasises the backend-recommended fan, distinct from other legal fans', async () => {
     // Hole top 7 → fan0 top ♣6 and fan2 top ♠8 are both legal; the backend
     // recommends fan 2.
-    const state = makeState({ blackHole: [card('SPADE', 7)], hint: { fan: 2, movesAfter: 0 } });
+    const state = makeState({
+      blackHole: [card('SPADE', 7)],
+      hint: { fan: 2, movesAfter: 0, canClear: false, continuationMoves: 0 },
+    });
     state.fans[2] = [card('SPADE', 8)];
     mockExec.mockResolvedValue(state);
     renderWithProviders(<BlackHolePage />);

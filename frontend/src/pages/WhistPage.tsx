@@ -278,6 +278,7 @@ function WhistPageContent() {
                   currentTrick={state.currentTrick}
                   lastTrick={state.lastTrick}
                   lastTrickWinner={state.lastTrickWinner}
+                  winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
                   players={state.players}
                   cardWidth={cardWidth}
                   label={state.currentTrick.length > 0 ? t('currentTrick') : t('lastTrick')}

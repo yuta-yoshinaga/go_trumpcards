@@ -1,6 +1,7 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { coincheApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CoincheResponse } from '../types/card';
 import { CoinchePhase } from '../types/phases';
@@ -196,6 +197,37 @@ describe('CoinchePage', () => {
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: /♠ スペードで宣言/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', 110, 1));
+  });
+
+  it('clears a selected target when an updated auction no longer offers it', async () => {
+    mockExec.mockResolvedValueOnce(initialState).mockResolvedValueOnce(makeState({ biddablePoints: [120, 130] }));
+    renderWithProviders(<CoinchePage />);
+    const select = (await screen.findByLabelText('目標点')) as HTMLSelectElement;
+    fireEvent.change(select, { target: { value: '110' } });
+    fireEvent.click(screen.getByRole('button', { name: 'パス' }));
+
+    await waitFor(() => expect(select).toHaveValue(''));
+    const spade = screen.getByRole('button', { name: /♠ スペードで宣言/ });
+    expect(spade).toBeDisabled();
+    fireEvent.click(spade);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('bid', 110, 1);
+    expect(
+      Array.from(select.options)
+        .map((option) => option.value)
+        .filter(Boolean),
+    ).toEqual(['120', '130']);
+  });
+
+  it('keeps a selected target while it remains biddable after an update', async () => {
+    mockExec.mockResolvedValueOnce(initialState).mockResolvedValueOnce(makeState({ biddablePoints: [110, 120] }));
+    renderWithProviders(<CoinchePage />);
+    const select = (await screen.findByLabelText('目標点')) as HTMLSelectElement;
+    fireEvent.change(select, { target: { value: '110' } });
+    fireEvent.click(screen.getByRole('button', { name: 'パス' }));
+
+    await waitFor(() => expect(select).toHaveValue('110'));
+    expect(screen.getByRole('button', { name: /♠ スペードで宣言/ })).toBeEnabled();
   });
 
   // **上回れない契約はボタンに出さない。** 打てば必ず拒否される値を並べると、

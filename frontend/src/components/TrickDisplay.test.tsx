@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { Card } from '../types/card';
 import { TrickDisplay, type TrickDisplayCard, type TrickDisplayPlayer } from './TrickDisplay';
 
@@ -28,6 +28,51 @@ describe('TrickDisplay', () => {
     render(<TrickDisplay currentTrick={trick} players={players} cardWidth={40} label="現在のトリック" />);
     expect(screen.getByText('現在のトリック')).toBeInTheDocument();
     expect(screen.getAllByTestId('animated-card')).toHaveLength(2);
+  });
+
+  it('uses the supplied pile position when generating card row keys', () => {
+    const keyFor = vi.fn((trickCard: TrickDisplayCard, index: number) => `pile-${trickCard.playerIdx}-${index}`);
+    const { rerender } = render(
+      <TrickDisplay
+        currentTrick={[
+          { playerIdx: 1, card },
+          { playerIdx: 1, card: { design: 'HEART', value: 2 } },
+        ]}
+        players={players}
+        cardWidth={40}
+        label="Pile"
+        cardKeyFor={keyFor}
+        cardAriaLabelFor={(player, playedCard) => `CPU ${player.id} played ${playedCard.design} ${playedCard.value}`}
+      />,
+    );
+
+    expect(keyFor).toHaveBeenCalledTimes(2);
+    expect(keyFor).toHaveBeenNthCalledWith(1, { playerIdx: 1, card }, 0);
+    expect(keyFor).toHaveBeenNthCalledWith(2, { playerIdx: 1, card: { design: 'HEART', value: 2 } }, 1);
+
+    keyFor.mockClear();
+    rerender(
+      <TrickDisplay
+        currentTrick={[
+          { playerIdx: 1, card },
+          { playerIdx: 2, card: { design: 'DIAMOND', value: 3 } },
+          { playerIdx: 1, card: { design: 'HEART', value: 2 } },
+        ]}
+        players={players}
+        cardWidth={40}
+        label="Pile"
+        cardKeyFor={keyFor}
+        cardAriaLabelFor={(player, playedCard) => `CPU ${player.id} played ${playedCard.design} ${playedCard.value}`}
+      />,
+    );
+
+    expect(keyFor).toHaveBeenCalledTimes(3);
+    expect(keyFor).toHaveBeenNthCalledWith(1, { playerIdx: 1, card }, 0);
+    expect(keyFor).toHaveBeenNthCalledWith(2, { playerIdx: 2, card: { design: 'DIAMOND', value: 3 } }, 1);
+    expect(keyFor).toHaveBeenNthCalledWith(3, { playerIdx: 1, card: { design: 'HEART', value: 2 } }, 2);
+    expect(screen.getByRole('img', { name: 'CPU 1 played SPADE 1' }).closest('.relative')).toHaveTextContent('CPU 1');
+    expect(screen.getByRole('img', { name: 'CPU 2 played DIAMOND 3' }).closest('.relative')).toHaveTextContent('CPU 2');
+    expect(screen.getByRole('img', { name: 'CPU 1 played HEART 2' }).closest('.relative')).toHaveTextContent('CPU 1');
   });
 
   it('passes server trick details through to the visible detail and card announcement', () => {

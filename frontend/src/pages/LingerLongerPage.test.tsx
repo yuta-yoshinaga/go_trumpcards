@@ -124,6 +124,28 @@ describe('LingerLongerPage', () => {
     expect(await screen.findByTestId('ll-stock')).toHaveTextContent('30');
   });
 
+  it('shows the last resolved trick when the current trick is empty', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        lastTrick: [
+          { playerIdx: 0, card: card('SPADE', 9) },
+          { playerIdx: 1, card: card('HEART', 10) },
+        ],
+      }),
+    );
+    renderWithProviders(<LingerLongerPage />);
+
+    const trickCards = await screen.findByTestId('trick-display-cards');
+    expect(trickCards.querySelectorAll('img')).toHaveLength(2);
+    expect(trickCards.querySelector('img')).toHaveAttribute('alt', expect.stringContaining('♠'));
+  });
+
+  it('shows no trick when both current and last tricks are empty', async () => {
+    renderWithProviders(<LingerLongerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('trick-display-cards')).not.toBeInTheDocument();
+  });
+
   // **山札の残りと「場から消えた札」は別の数字。** 前者は補充できる回数、
   // 後者はトリックが解決するたびに増える、二度と戻らない枚数。
   it('shows the cards gone from play, separately from the stock', async () => {

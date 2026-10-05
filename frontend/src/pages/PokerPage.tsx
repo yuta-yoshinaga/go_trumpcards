@@ -239,6 +239,21 @@ function PokerPageContent() {
           <span>
             {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
           </span>
+          {state.sidePots.length > 1 && (
+            <div className="text-xs">
+              {state.sidePots.map((pot, index) => (
+                <div key={index}>
+                  {t('potAwards.eligibleLine', {
+                    pot: t(index === 0 ? 'potAwards.mainPot' : 'potAwards.sidePot', { n: index }),
+                    amount: pot.amount,
+                    players: pot.eligiblePlayers
+                      .map((playerIdx) => findPlayerName(state.players, playerIdx))
+                      .join(t('listSeparator')),
+                  })}
+                </div>
+              ))}
+            </div>
+          )}
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }

@@ -100,12 +100,42 @@ describe('useCassinoGame', () => {
   it('clearSelection resets all selections', async () => {
     const { result } = renderHook(() => useCassinoGame(), { wrapper: Hookwrapper });
     act(() => {
-      result.current.setHandIndex(1);
+      result.current.selectHand(1);
       result.current.toggleTable(0);
       result.current.toggleBuild(0);
     });
     act(() => {
       result.current.clearSelection();
+    });
+    expect(result.current.handIndex).toBeNull();
+    expect(result.current.tableIndices).toEqual([]);
+    expect(result.current.buildIndices).toEqual([]);
+  });
+
+  it('clears table and build selections when changing or clearing the hand selection', async () => {
+    const { result } = renderHook(() => useCassinoGame(), { wrapper: Hookwrapper });
+    act(() => {
+      result.current.toggleTable(0);
+      result.current.toggleBuild(1);
+      result.current.selectHand(0);
+    });
+    expect(result.current.handIndex).toBe(0);
+    expect(result.current.tableIndices).toEqual([]);
+    expect(result.current.buildIndices).toEqual([]);
+
+    act(() => {
+      result.current.toggleTable(2);
+      result.current.toggleBuild(3);
+      result.current.selectHand(1);
+    });
+    expect(result.current.handIndex).toBe(1);
+    expect(result.current.tableIndices).toEqual([]);
+    expect(result.current.buildIndices).toEqual([]);
+
+    act(() => {
+      result.current.toggleTable(4);
+      result.current.toggleBuild(5);
+      result.current.selectHand(1);
     });
     expect(result.current.handIndex).toBeNull();
     expect(result.current.tableIndices).toEqual([]);
@@ -150,7 +180,7 @@ describe('useCassinoGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     act(() => {
-      result.current.setHandIndex(0);
+      result.current.selectHand(0);
       result.current.toggleTable(2);
       result.current.toggleTable(0);
       result.current.toggleBuild(1);
@@ -172,7 +202,7 @@ describe('useCassinoGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     act(() => {
-      result.current.setHandIndex(0);
+      result.current.selectHand(0);
       result.current.toggleTable(0);
       result.current.setDeclaredValue(7);
     });
@@ -193,7 +223,7 @@ describe('useCassinoGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     act(() => {
-      result.current.setHandIndex(2);
+      result.current.selectHand(2);
     });
     act(() => {
       result.current.playTrail();

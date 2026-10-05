@@ -49,7 +49,7 @@
     "playerHand": "Your hand. Click a card to select it. The trump suit is decided by the deal and shown in the header.",
     "playButton": "After selecting a card, play it with this button.",
     "scoreTable": "Team scores. You (player 0) and player 2 are Team A; players 1 and 3 are Team B.",
-    "pointInfo": "Scoring: A = 1 point; face cards (K/Q/J) and 2/3 are 1/3 point each, plus 1/3 for the last trick. First team to the target (default 21) wins.",
+    "pointInfo": "Card points are A = 11, 3 = 10, K = 4, Q = 3, and J = 2; all other cards score 0. The last trick adds 1 point. The team with at least 61 points wins the deal; the first team to win the target number of deals (default 21) wins the game.",
     "resetButton": "Use the reset button to start a new game."
   },
   "hint": {
@@ -66,14 +66,14 @@
     "cardCol": "Card",
     "pointCol": "Points",
     "ace": "A (Ace)",
-    "aceValue": "1 pt",
-    "figures": "K / Q / J / 2 / 3",
-    "figuresValue": "1/3 pt",
-    "others": "Others (4-7, 10)",
+    "aceValue": "11 pts",
+    "figures": "3 / K / Q / J",
+    "figuresValue": "10 / 4 / 3 / 2 pts",
+    "others": "Others (2, 4-7)",
     "othersValue": "0 pt",
     "lastTrick": "Last trick (ultima)",
-    "lastTrickValue": "+1/3 pt",
-    "note": "Each round totals 11 points. First team to reach the target (default 21) wins."
+    "lastTrickValue": "+1 pt",
+    "note": "The cards total 120 points per deal; the last trick adds 1 point. A team needs at least 61 points to win a deal. The target (default 21) is the number of deals won to win the game."
   },
   "hintRequested": "Hint available",
   "noHint": "No hint available",

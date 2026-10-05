@@ -18,6 +18,7 @@
   "wheel": "第 {{n}} の輪",
   "contract": "種目: {{name}}",
   "trick": "トリック {{n}}/{{total}}",
+  "opponentHandCount": "{{name}}: 残り{{count}}枚",
   "contractName": {
     "plus": "プラス",
     "minus": "マイナス",

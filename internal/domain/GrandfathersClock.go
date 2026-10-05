@@ -96,6 +96,7 @@ type GrandfathersClock struct {
 	moveCount  int
 	actionLogBase
 	history     []*grandfathersClockSnapshot
+	redoHistory []*grandfathersClockSnapshot
 	isStalemate bool
 }
 
@@ -126,6 +127,7 @@ func (gc *GrandfathersClock) Reset() {
 	gc.moveCount = 0
 	gc.actionLog = nil
 	gc.history = nil
+	gc.redoHistory = nil
 	gc.isStalemate = false
 
 	for i := range GrandfathersClockFoundationCnt {
@@ -320,13 +322,41 @@ func (gc *GrandfathersClock) Undo() error {
 		return errors.New("nothing to undo")
 	}
 	snap := gc.history[len(gc.history)-1]
+	gc.redoHistory = appendSnapshot(gc.redoHistory, gc.currentSnapshot())
 	gc.history = gc.history[:len(gc.history)-1]
-	gc.foundation = snap.foundation
-	gc.tableau = snap.tableau
-	gc.phase = snap.phase
-	gc.moveCount = snap.moveCount
-	gc.isStalemate = snap.isStalemate
+	gc.restoreSnapshot(snap)
 	return nil
+}
+
+// Redo reapplies the most recently undone move.
+func (gc *GrandfathersClock) Redo() error {
+	if len(gc.redoHistory) == 0 {
+		return errors.New("nothing to redo")
+	}
+	snap := gc.redoHistory[len(gc.redoHistory)-1]
+	gc.redoHistory = gc.redoHistory[:len(gc.redoHistory)-1]
+	gc.history = appendSnapshot(gc.history, gc.currentSnapshot())
+	gc.restoreSnapshot(snap)
+	return nil
+}
+
+// CanRedo reports whether a move can be redone.
+func (gc *GrandfathersClock) CanRedo() bool { return len(gc.redoHistory) > 0 }
+
+func (gc *GrandfathersClock) currentSnapshot() *grandfathersClockSnapshot {
+	s := &grandfathersClockSnapshot{phase: gc.phase, moveCount: gc.moveCount, isStalemate: gc.isStalemate}
+	for i := range GrandfathersClockFoundationCnt {
+		s.foundation[i] = append([]*Card(nil), gc.foundation[i]...)
+	}
+	for i := range GrandfathersClockTableauCnt {
+		s.tableau[i] = append([]*GrandfathersClockTableauCard(nil), gc.tableau[i]...)
+	}
+	return s
+}
+
+func (gc *GrandfathersClock) restoreSnapshot(s *grandfathersClockSnapshot) {
+	gc.foundation, gc.tableau = s.foundation, s.tableau
+	gc.phase, gc.moveCount, gc.isStalemate = s.phase, s.moveCount, s.isStalemate
 }
 
 // CanUndo アンドゥ可能か
@@ -487,18 +517,8 @@ func (gc *GrandfathersClock) checkStalemate() {
 
 // takeSnapshot 現在の状態を保存する
 func (gc *GrandfathersClock) takeSnapshot() {
-	snap := &grandfathersClockSnapshot{
-		phase:       gc.phase,
-		moveCount:   gc.moveCount,
-		isStalemate: gc.isStalemate,
-	}
-	for i := range GrandfathersClockFoundationCnt {
-		snap.foundation[i] = append([]*Card(nil), gc.foundation[i]...)
-	}
-	for i := range GrandfathersClockTableauCnt {
-		snap.tableau[i] = append([]*GrandfathersClockTableauCard(nil), gc.tableau[i]...)
-	}
-	gc.history = appendSnapshot(gc.history, snap)
+	gc.history = appendSnapshot(gc.history, gc.currentSnapshot())
+	gc.redoHistory = nil
 }
 
 // appendLog 棋譜エントリを追加
@@ -568,7 +588,8 @@ type grandfathersClockJSON struct {
 	// History must round-trip: the Cloudflare Worker is stateless per request
 	// and rebuilds the game from KV every call, so an unpersisted undo stack
 	// means Undo/UndoN/UndoToEscape silently never work in production (#4478).
-	History []*grandfathersClockSnapshot `json:"hi,omitempty"`
+	History     []*grandfathersClockSnapshot `json:"hi,omitempty"`
+	RedoHistory []*grandfathersClockSnapshot `json:"rh,omitempty"`
 }
 
 // MarshalJSON KV スナップショット用のシリアライズ
@@ -582,6 +603,7 @@ func (gc *GrandfathersClock) MarshalJSON() ([]byte, error) {
 		ActionLog:   gc.actionLog,
 		IsStalemate: gc.isStalemate,
 		History:     gc.history,
+		RedoHistory: gc.redoHistory,
 	})
 }
 
@@ -592,7 +614,7 @@ func (gc *GrandfathersClock) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.ActionLog) > grandfathersClockMaxSliceLen || len(j.History) > grandfathersClockMaxSliceLen {
+	if len(j.ActionLog) > grandfathersClockMaxSliceLen || len(j.History) > grandfathersClockMaxSliceLen || len(j.RedoHistory) > grandfathersClockMaxSliceLen {
 		return errors.New("grandfathersclock: input array exceeds maximum allowed size")
 	}
 	if j.Phase < GrandfathersClockPhasePlaying || j.Phase > GrandfathersClockPhaseGameOver {
@@ -621,5 +643,6 @@ func (gc *GrandfathersClock) UnmarshalJSON(data []byte) error {
 	gc.actionLog = j.ActionLog
 	gc.isStalemate = j.IsStalemate
 	gc.history = j.History
+	gc.redoHistory = j.RedoHistory
 	return nil
 }

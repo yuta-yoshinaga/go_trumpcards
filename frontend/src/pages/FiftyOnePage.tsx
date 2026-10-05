@@ -40,6 +40,11 @@ const DIFFICULTY_OPTIONS = [
   { value: '1', labelKey: 'settings.difficultyNormal' },
   { value: '2', labelKey: 'settings.difficultyHard' },
 ];
+const DIFFICULTY_LABEL_KEYS: Record<0 | 1 | 2, string> = {
+  0: 'settings.difficultyEasy',
+  1: 'settings.difficultyNormal',
+  2: 'settings.difficultyHard',
+};
 
 /** Tutorial steps for the Fifty-one game. */
 const FO_TUTORIAL_STEPS: TutorialStep[] = [
@@ -155,12 +160,26 @@ function FiftyOnePageContent() {
         'p <handIdx> <tableIdx> - Exchange 1 card',
         'a/all                 - Exchange all 5',
         'stop                  - Call stop',
+        t('cli.difficultyHelp'),
         'r/reset               - Reset game',
         'l/log                 - Show action log',
       ],
-      localCommand: hintLocalCommand(frontendHint),
+      localCommand: hintLocalCommand(frontendHint, (input: string) => {
+        const normalizedInput = input.trim().toLowerCase();
+        const parts = normalizedInput.split(/\s+/);
+        if (parts[0] === 'sd') {
+          const difficultyCommand = normalizedInput.match(/^sd\s+[0-2]$/);
+          if (!difficultyCommand) return t('cli.difficultyUsage');
+          const difficulty = Number(difficultyCommand[0].slice(-1)) as 0 | 1 | 2;
+          setCpuDifficulty(difficulty);
+          return t('cli.difficultySet', {
+            difficulty: t(DIFFICULTY_LABEL_KEYS[difficulty]),
+          });
+        }
+        return null;
+      }),
     }),
-    [frontendHint],
+    [frontendHint, t],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

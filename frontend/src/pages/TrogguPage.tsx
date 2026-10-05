@@ -246,12 +246,29 @@ function TrogguPageContent() {
             >
               <span className="mr-3">{t('deal', { n: state.roundNumber, total: state.totalRounds })}</span>
               <span className="mr-3">{t('trick', { n: state.trickNumber })}</span>
-              <span>
-                {t('contract', {
-                  name: t(`contract.${state.contractName}`, { target: state.soloTarget, defaultValue: '-' }),
-                })}
-              </span>
+              {!isBid && (
+                <span>
+                  {t('contract', {
+                    name: t(`contract.${state.contractName}`, { target: state.soloTarget, defaultValue: '-' }),
+                  })}
+                </span>
+              )}
             </div>
+
+            {isBid && (
+              <div className="text-center text-xs text-ds-text-muted" data-testid="tg-auction-highest">
+                {state.highestBid === 0 ? (
+                  <span className="inline-block rounded bg-ds-surface/60 px-3 py-1">{t('auctionNoBids')}</span>
+                ) : (
+                  <span className="inline-block rounded bg-ds-surface/60 px-3 py-1">
+                    {t('auctionHighest', {
+                      contract: t(`contract.${CONTRACT_NAME[state.highestBid]}`, { target: state.soloTarget }),
+                    })}{' '}
+                    {t('auctionBidder', { name: seatName(state.highestBidder) })}
+                  </span>
+                )}
+              </div>
+            )}
 
             <div className="flex flex-wrap justify-center gap-3" data-testid="tg-seats">
               {state.players.map((p) => (

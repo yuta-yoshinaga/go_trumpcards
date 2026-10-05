@@ -28,7 +28,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import { classifyYanivDiscard } from '../utils/yanivCombos';
+import { classifyYanivDiscard, yanivCardValue } from '../utils/yanivCombos';
 import { yanivIsNearOut } from '../utils/yanivNearOut';
 import { isPickupable } from '../utils/yanivPickup';
 
@@ -197,6 +197,8 @@ function YanivPageContent() {
   const discardCheck =
     isDiscard && isHumanTurn && selectedCards.length > 0 ? classifyYanivDiscard(selectedCards) : null;
   const discardWarning = discardCheck?.reasonKey ? t(discardCheck.reasonKey) : null;
+  const selectedTotal = selectedCards.reduce((total, card) => total + yanivCardValue(card), 0);
+  const hasSelectionPreview = isDiscard && isHumanTurn && selectedCards.length > 0;
 
   return (
     <GamePageShell
@@ -350,6 +352,11 @@ function YanivPageContent() {
                 >
                   {human.handTotal}
                 </span>
+                {hasSelectionPreview && (
+                  <span data-testid="yaniv-selection-preview" className="ml-2 text-ds-info">
+                    {t('selectionPreview', { selected: selectedTotal, remaining: human.handTotal - selectedTotal })}
+                  </span>
+                )}
               </div>
               {isDiscard && isHumanTurn && (
                 <div className="text-xs text-ds-text-muted mb-1">{t('label.selectCard')}</div>

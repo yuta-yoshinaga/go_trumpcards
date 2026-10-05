@@ -144,7 +144,11 @@ func (p *HoneymoonBridgeWebPresenter) HintOutput(s interfaces.HoneymoonBridgeGam
 	return marshalOrError(resObj)
 }
 
-// ActionLogOutput 棋譜をJSON出力
+// ActionLogOutput 棋譜をJSON出力する。競り中は宣言とパスの履歴を返し、
+// ドロー/プレイ中はゲーム終了まで伏せる。
 func (p *HoneymoonBridgeWebPresenter) ActionLogOutput(s interfaces.HoneymoonBridgeGame) string {
+	if !s.GetGameEndFlag() && s.GetPhase() == domain.HoneymoonBridgePhaseBid {
+		return actionLogToJSON(s.GetActionLog())
+	}
 	return actionLogOutputJSON(s)
 }

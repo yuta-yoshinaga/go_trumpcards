@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import i18n from 'i18next';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { escobaApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeEscobaState } from '../test/stateFactories';
 import { EscobaPage, escobaCardValue, escobaSelectionSum } from './EscobaPage';
@@ -123,16 +124,43 @@ describe('EscobaPage', () => {
     expect(screen.getByTestId('stock-remaining')).toBeInTheDocument();
   });
 
-  it('take button is disabled until both hand and table are selected', async () => {
+  it('take button is unavailable until the selection matches a capture candidate', async () => {
     renderWithProviders(<EscobaPage />);
     await waitFor(() => expect(screen.getByTestId('take-button')).toBeInTheDocument());
-    expect(screen.getByTestId('take-button')).toBeDisabled();
+    expect(screen.getByTestId('take-button')).toHaveAttribute('aria-disabled', 'true');
 
     fireEvent.click(screen.getByTestId('hand-card-0'));
-    expect(screen.getByTestId('take-button')).toBeDisabled();
+    expect(screen.getByTestId('take-button')).toHaveAttribute('aria-disabled', 'true');
 
     fireEvent.click(screen.getByTestId('table-card-0'));
-    await waitFor(() => expect(screen.getByTestId('take-button')).not.toBeDisabled());
+    fireEvent.click(screen.getByTestId('table-card-1'));
+    await waitFor(() => expect(screen.getByTestId('take-button')).toHaveAttribute('aria-disabled', 'false'));
+  });
+
+  it('does not call the API for a selected but unmatched capture', async () => {
+    mockExec.mockResolvedValue(
+      makeEscobaState({
+        tableCards: [
+          { design: 'SPADE', value: 4 },
+          { design: 'HEART', value: 4 },
+          { design: 'CLOVER', value: 4 },
+        ],
+        handCaptures: [[[0, 1]], [], []],
+      }),
+    );
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-2'));
+    const takeButton = screen.getByTestId('take-button');
+    expect(takeButton).toHaveAttribute('aria-disabled', 'true');
+
+    fireEvent.click(takeButton);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   it('lay button is enabled when a hand card is selected and no table card', async () => {
@@ -181,6 +209,7 @@ describe('EscobaPage', () => {
     fireEvent.click(screen.getByTestId('hand-card-0'));
     fireEvent.click(screen.getByTestId('table-card-1'));
     fireEvent.click(screen.getByTestId('table-card-0'));
+    expect(screen.getByTestId('take-button')).toHaveAttribute('aria-disabled', 'false');
     fireEvent.click(screen.getByTestId('take-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('p', { handIndex: 0, tableIndices: [0, 1] }));
   });
@@ -199,7 +228,7 @@ describe('EscobaPage', () => {
   it('disables actions when it is not the human turn', async () => {
     mockExec.mockResolvedValue(makeEscobaState({ currentTurn: 1, isHumanTurn: false }));
     renderWithProviders(<EscobaPage />);
-    await waitFor(() => expect(screen.getByTestId('take-button')).toBeDisabled());
+    await waitFor(() => expect(screen.getByTestId('take-button')).toHaveAttribute('aria-disabled', 'true'));
     expect(screen.getByTestId('lay-button')).toBeDisabled();
   });
 
@@ -438,6 +467,7 @@ describe('EscobaPage', () => {
     mockExec.mockResolvedValue(swept);
     fireEvent.click(screen.getByTestId('hand-card-0'));
     fireEvent.click(screen.getByTestId('table-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-1'));
     fireEvent.click(screen.getByTestId('take-button'));
     const badge = await screen.findByTestId('escoba-celebration');
     // Escoba has no teams, so the emphasised label is the human's own sweep.
@@ -447,6 +477,7 @@ describe('EscobaPage', () => {
     mockExec.mockResolvedValue(makeEscobaState());
     fireEvent.click(screen.getByTestId('hand-card-0'));
     fireEvent.click(screen.getByTestId('table-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-1'));
     fireEvent.click(screen.getByTestId('take-button'));
     await waitFor(() => expect(screen.queryByTestId('escoba-celebration')).not.toBeInTheDocument());
   });

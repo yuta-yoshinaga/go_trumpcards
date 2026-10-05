@@ -38,11 +38,12 @@ type DiplomatWebOutput struct {
 	// **A の上には何も置けない。**判定はドメイン (DiplomatIsDeadEndTop) が持ち、
 	// 画面はそれを表示するだけにする。フロントで作り直すと、置ける規則が
 	// 変わったときに片方だけ古いままになる (#5741)。
-	TableauDeadEnd []bool                 `json:"tableauDeadEnd"`
-	Foundation     [][]*WebOutputCard     `json:"foundation"`
-	StockCount     int                    `json:"stockCount"`
-	Waste          []*WebOutputCard       `json:"waste"`
-	Hint           *DiplomatWebOutputHint `json:"hint,omitempty"`
+	TableauDeadEnd     []bool                 `json:"tableauDeadEnd"`
+	TableauMoveTargets [][]int                `json:"tableauMoveTargets"`
+	Foundation         [][]*WebOutputCard     `json:"foundation"`
+	StockCount         int                    `json:"stockCount"`
+	Waste              []*WebOutputCard       `json:"waste"`
+	Hint               *DiplomatWebOutputHint `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -58,11 +59,12 @@ var NewDiplomatWebController, NewDiplomatWebControllerWithProvider = webControll
 
 func newDiplomatDefaultOutput(msg string) *DiplomatWebOutput {
 	return &DiplomatWebOutput{
-		Tableau:        make([][]*WebOutputCard, 0),
-		TableauDeadEnd: make([]bool, 0),
-		Foundation:     make([][]*WebOutputCard, 0),
-		Waste:          make([]*WebOutputCard, 0),
-		WebOutputBase:  WebOutputBase{Message: msg},
+		Tableau:            make([][]*WebOutputCard, 0),
+		TableauDeadEnd:     make([]bool, 0),
+		TableauMoveTargets: make([][]int, 0),
+		Foundation:         make([][]*WebOutputCard, 0),
+		Waste:              make([]*WebOutputCard, 0),
+		WebOutputBase:      WebOutputBase{Message: msg},
 	}
 }
 

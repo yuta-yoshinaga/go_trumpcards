@@ -201,6 +201,12 @@ func (_m *MockDoppelkopfGame) GetRoundGamePoints() int {
 	return ret.Get(0).(int)
 }
 
+// GetRoundScoreHistory モック
+func (_m *MockDoppelkopfGame) GetRoundScoreHistory() [][]int {
+	ret := _m.Called()
+	return ret.Get(0).([][]int)
+}
+
 // GetWinnerIdx モック
 func (_m *MockDoppelkopfGame) GetWinnerIdx() int {
 	ret := _m.Called()

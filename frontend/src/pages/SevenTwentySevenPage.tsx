@@ -203,6 +203,7 @@ function SevenTwentySevenPageContent() {
                     type: 'select',
                     id: 'playerCount',
                     label: t('settings.playerCount'),
+                    description: t('settings.applyOnReset'),
                     value: sevenTwentySevenConfig.playerCount,
                     options: PLAYER_COUNT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('playerCount', v),

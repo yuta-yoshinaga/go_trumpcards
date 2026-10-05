@@ -132,6 +132,8 @@ describe('CassinoPage', () => {
     expect(build).toHaveAttribute('aria-pressed', 'false');
 
     fireEvent.click(handCard);
+    expect(tableCard).toHaveAttribute('aria-pressed', 'false');
+    expect(build).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(tableCard);
     fireEvent.click(build);
     expect(handCard).toHaveAttribute('aria-pressed', 'true');
@@ -139,9 +141,16 @@ describe('CassinoPage', () => {
     expect(build).toHaveAttribute('aria-pressed', 'true');
 
     fireEvent.click(handCard);
+    expect(handCard).toHaveAttribute('aria-pressed', 'false');
+    expect(tableCard).toHaveAttribute('aria-pressed', 'false');
+    expect(build).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(tableCard);
     fireEvent.click(build);
     expect(handCard).toHaveAttribute('aria-pressed', 'false');
+    expect(tableCard).toHaveAttribute('aria-pressed', 'true');
+    expect(build).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(tableCard);
+    fireEvent.click(build);
     expect(tableCard).toHaveAttribute('aria-pressed', 'false');
     expect(build).toHaveAttribute('aria-pressed', 'false');
   });

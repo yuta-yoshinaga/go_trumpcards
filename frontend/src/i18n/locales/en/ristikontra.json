@@ -30,6 +30,7 @@
   },
   "win": "You win!",
   "lose": "{{name}} wins.",
+  "draw": "It's a draw.",
   "tutorial": {
     "info": "The remaining stock and each player's capture progress are shown here.",
     "players": "Each player's hand size, captured count and team.",

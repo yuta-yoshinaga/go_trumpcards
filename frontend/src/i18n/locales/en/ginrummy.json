@@ -34,6 +34,7 @@
   "drawDiscardButton": "Draw Discard",
   "discardButton": "Discard",
   "knockButton": "Knock",
+  "knockDisabledReason": "Select one card to discard and knock when the remaining deadwood is at or below the limit.",
   "deadwoodLabel": "Deadwood: {{score}} pts (knock ≤ {{threshold}})",
   "meldLegend": "Meld",
   "deadwoodLegend": "Deadwood",

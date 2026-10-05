@@ -111,7 +111,7 @@ function MendikotPageContent() {
 
   const phaseName = isGameEnd ? t('phase.gameEnd') : isHandEnd ? t('phase.handEnd') : t('phase.play');
 
-  // 出せる札に緑の枠を足すだけで、押せなくはしない（サーバが必ず検証する）。
+  // 出せる札は記号と緑の枠で示し、押せなくはしない（サーバが必ず検証する）。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
 
   const resultBanner = (() => {
@@ -279,8 +279,14 @@ function MendikotPageContent() {
                       aria-label={t(legalRing.has(idx) ? 'actions.playableAria' : 'actions.playAria', {
                         card: cardAlt(card),
                       })}
-                      className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                      className={`flex flex-col items-center disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
                     >
+                      {legalRing.has(idx) && (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-ds-success">
+                          <span aria-hidden="true">✓</span>
+                          {t('actions.playableVisual')}
+                        </span>
+                      )}
                       <CardImage card={card} width={cardWidth} />
                     </button>
                   ))}

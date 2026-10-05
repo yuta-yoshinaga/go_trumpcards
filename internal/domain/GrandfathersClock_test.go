@@ -332,6 +332,34 @@ func TestGrandfathersClock_UndoRestoresBothZones(t *testing.T) {
 	assert.Len(t, gc.GetTableau()[1], 2)
 }
 
+func TestGrandfathersClock_RedoAndBranchDiscard(t *testing.T) {
+	gc := newTestGrandfathersClock()
+	setGCBoard(gc, starterBoard(), [][]*Card{
+		{NewCard(CardDesignHeart, 3, true)},
+		{NewCard(CardDesignSpade, 9, true), NewCard(CardDesignHeart, 8, true)},
+	})
+	assert.False(t, gc.CanRedo())
+	assert.Error(t, gc.Redo())
+	require.NoError(t, gc.MoveTableauToFoundation(0, 4))
+	before := gc.GetFoundation()[4]
+	require.NoError(t, gc.Undo())
+	assert.True(t, gc.CanRedo())
+	assert.Equal(t, 0, gc.GetMoveCount())
+	data, err := json.Marshal(gc)
+	require.NoError(t, err)
+	restored := newTestGrandfathersClock()
+	require.NoError(t, json.Unmarshal(data, restored))
+	gc = restored
+	assert.True(t, gc.CanRedo(), "redo history survives persistence")
+	require.NoError(t, gc.Redo())
+	assert.False(t, gc.CanRedo())
+	assert.Equal(t, 1, gc.GetMoveCount())
+	assert.Equal(t, before, gc.GetFoundation()[4])
+	require.NoError(t, gc.Undo())
+	require.NoError(t, gc.MoveTableauToTableau(1, 2))
+	assert.False(t, gc.CanRedo(), "a new move discards the previous branch")
+}
+
 func TestGrandfathersClock_UndoToEscapeCountsBackToAPlayablePosition(t *testing.T) {
 	gc := newTestGrandfathersClock()
 

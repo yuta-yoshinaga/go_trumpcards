@@ -217,6 +217,16 @@ function KingAlbertPageContent() {
   // リングは**置ける先だけ**に付ける。「選択中なら全部光る」だと、エラーになる手を
   // 勧めることになる (#5598)。
   const legalTargets = kingAlbertLegalTargets(state.tableau, state.foundation, selectedCard);
+  const selectedSourceAnnouncement =
+    selectedSource && selectedCard
+      ? selectedSource.zone === 'reserve'
+        ? t('selectedReserveAnnouncement', { card: cardAlt(selectedCard), idx: selectedSource.col })
+        : t('selectedTableauAnnouncement', {
+            card: cardAlt(selectedCard),
+            col: selectedSource.col,
+            pos: selectedSource.cardIndex,
+          })
+      : '';
 
   const renderTableauColumn = (colIdx: number) => {
     const col = state.tableau[colIdx];
@@ -378,6 +388,9 @@ function KingAlbertPageContent() {
           </span>
           <div data-testid="ka-move-count-live" className="sr-only" role="status" aria-live="polite">
             {announcedMoveCount === null ? '' : t('moveCountAnnouncement', { count: announcedMoveCount })}
+          </div>
+          <div data-testid="ka-selection-live" className="sr-only" role="status" aria-live="polite">
+            {selectedSourceAnnouncement}
           </div>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>

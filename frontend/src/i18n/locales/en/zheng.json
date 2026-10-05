@@ -11,6 +11,8 @@
   },
   "finishCards": "Finishing play: {{cards}}",
   "listSeparator": ", ",
+  "comboRulesTitle": "Combination rules",
+  "comboRulesHint": "Combos: single/pair/triple/run(3..A)/pair run(3..A). Ranks 3<...<A<2<small Joker<big Joker; suits never matter. A bomb (four of a kind) cuts any normal combo, and a Joker bomb (both Jokers) beats everything.",
   "selectToPlay": "Click cards to select",
   "tableCards": "Table",
   "tableEmpty": "(empty)",

@@ -36,6 +36,11 @@ func (cp *CasinoHoldemWebPresenter) Output(g interfaces.CasinoHoldemGame, lastEr
 	resObj.TotalPayout = g.GetTotalPayout()
 	resObj.NetChange = g.GetNetChange()
 	resObj.PlayerHandRank = g.GetPlayerHandRank()
+	if g.GetPhase() == domain.CasinoHoldemPhaseFlop {
+		if rate, ok := g.GetCallWinRate(); ok {
+			resObj.CallWinRate = &rate
+		}
+	}
 	resObj.DealerHandRank = g.GetDealerHandRank()
 
 	if lastErr != nil {

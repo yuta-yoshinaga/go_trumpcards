@@ -142,6 +142,19 @@ describe('OldMaidPlayerArea keyboard reordering', () => {
     expect(container).toHaveAttribute('tabindex', '0');
   });
 
+  it('shows separate keyboard instructions beside the reorderable hand', () => {
+    const { rerender } = render(
+      <OldMaidPlayerArea {...defaultProps} player={makeHumanPlayer(threeCards)} onReorder={vi.fn()} />,
+    );
+    expect(screen.getByText(/手札の並び替え/)).toHaveTextContent('Tabキーで手札にフォーカス');
+    expect(screen.getByText(/手札の並び替え/)).toHaveTextContent('←/→キーで位置を移動');
+    expect(screen.getByText(/手札の並び替え/)).toHaveTextContent('Shift+←/→キーでカードを移動');
+    expect(screen.getByText(/手札の並び替え/)).toHaveTextContent('Escapeキーでフォーカス解除');
+
+    rerender(<OldMaidPlayerArea {...defaultProps} player={makeHumanPlayer(threeCards)} />);
+    expect(screen.queryByText(/手札の並び替え/)).not.toBeInTheDocument();
+  });
+
   it('uses the same zero-based position in move targets and keyboard move announcements', () => {
     render(<OldMaidPlayerArea {...defaultProps} player={makeHumanPlayer(threeCards)} onReorder={vi.fn()} />);
     const buttons = cardButtons();

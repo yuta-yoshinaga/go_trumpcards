@@ -29,7 +29,8 @@
     "reset": "Reset",
     "giveUp": "Give up",
     "playAria": "Play {{card}}",
-    "playUnavailable": "This card cannot be played right now."
+    "playUnavailable": "This card cannot be played right now.",
+    "playUnavailableFollowSuit": "The lead suit is {{suit}}. You must follow {{suit}} because you have a card of that suit."
   },
   "result": {
     "you": "You win! You made your target most often.",

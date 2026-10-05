@@ -53,6 +53,7 @@ func (p *GaigelWebPresenter) buildBase(g interfaces.GaigelGame) *controller.Gaig
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerTeam = g.GetWinnerTeam()
 	resObj.LeadPlayerIdx = g.GetLeadPlayerIdx()
+	resObj.TrickWinnerIdx = g.GetTrickWinnerIdx()
 
 	resObj.MarriageIndices = g.GetMarriageIndices(g.GetCurrentPlayerIdx())
 	if resObj.MarriageIndices == nil {

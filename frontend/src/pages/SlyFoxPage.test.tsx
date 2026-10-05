@@ -1,9 +1,11 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { slyFoxApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, SlyFoxResponse } from '../types/card';
+import { cardAlt } from '../utils/cardAlt';
 import { SlyFoxPage, slyfoxNextRank } from './SlyFoxPage';
 
 /**
@@ -73,10 +75,37 @@ describe('slyfoxNextRank', () => {
 });
 
 describe('SlyFoxPage', () => {
+  const originalLanguage = i18n.language;
+
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
     mockExec.mockResolvedValue(makeState());
+  });
+
+  it('includes the top reserve card in localized accessible names and preserves empty names', async () => {
+    const state = makeState();
+    state.tableau[0] = [card('HEART', 7), card('SPADE', 12)];
+    state.tableau[3] = [];
+    const topCard = card('SPADE', 12);
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<SlyFoxPage />);
+
+    const reserve = await screen.findByTestId('co-tableau-0');
+    expect(reserve).toHaveAccessibleName(`リザーブ 0 2枚、最上札 ${cardAlt(topCard)}`);
+    expect(screen.getByTestId('co-tableau-3')).toHaveAccessibleName(
+      'リザーブ 3 空き枠。配るときの置き場所になります（補充はされません）',
+    );
+
+    try {
+      await i18n.changeLanguage('en');
+      expect(reserve).toHaveAccessibleName(`Reserve 0 2 cards, top card ${cardAlt(topCard)}`);
+      expect(screen.getByTestId('co-tableau-3')).toHaveAccessibleName(
+        'Reserve 3 Empty slot. A place to deal onto; it is never refilled',
+      );
+    } finally {
+      await i18n.changeLanguage(originalLanguage);
+    }
   });
 
   it('shows and updates the total foundation progress while playing', async () => {

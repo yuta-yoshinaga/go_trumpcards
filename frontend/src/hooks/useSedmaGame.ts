@@ -39,6 +39,10 @@ export function useSedmaGame() {
 
   const { state, loading, error, exec, retry } = useGameApi(sedmaApi.exec, { onSuccess });
 
+  const hasPendingConfig =
+    state !== null &&
+    (config.cpuDifficulty !== state.config.cpuDifficulty || config.targetPoints !== state.config.targetPoints);
+
   /** Resets the game, applying the current config. */
   const reset = useCallback(() => {
     void exec('reset', { config });
@@ -67,6 +71,7 @@ export function useSedmaGame() {
     exec,
     retry,
     sedmaConfig: config,
+    hasPendingConfig,
     handleConfigChange,
     selectedCardIndices,
     toggleCard,

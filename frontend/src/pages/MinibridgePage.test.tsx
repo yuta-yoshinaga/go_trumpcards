@@ -109,6 +109,44 @@ describe('MinibridgePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('announces CPU processing while a contract request is pending, then clears it', async () => {
+    let resolveContract!: (state: MinibridgeResponse) => void;
+    mockExec.mockImplementation((command) => {
+      if (command === 'contract')
+        return new Promise((resolve) => {
+          resolveContract = resolve;
+        });
+      return Promise.resolve(makeState());
+    });
+    renderWithProviders(<MinibridgePage />);
+    await screen.findByTestId('mb-contract-1-btn');
+    fireEvent.click(screen.getByTestId('mb-contract-1-btn'));
+    expect(screen.getByTestId('mb-cpu-processing')).toHaveTextContent('CPUの手番です。処理中です…');
+    await waitFor(() => expect(resolveContract).toBeTypeOf('function'));
+    resolveContract(playing());
+    await waitFor(() => expect(screen.getByTestId('mb-cpu-processing')).toBeEmptyDOMElement());
+  });
+
+  it('does not announce CPU processing during reset requests', async () => {
+    let resetCount = 0;
+    let resolveReset!: (state: MinibridgeResponse) => void;
+    mockExec.mockImplementation((command) => {
+      if (command === 'reset' && resetCount++ > 0)
+        return new Promise((resolve) => {
+          resolveReset = resolve;
+        });
+      return Promise.resolve(makeState());
+    });
+    renderWithProviders(<MinibridgePage />);
+    await screen.findByTestId('mb-contract-1-btn');
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+    expect(screen.getByTestId('mb-cpu-processing')).toBeEmptyDOMElement();
+    await waitFor(() => expect(resolveReset).toBeTypeOf('function'));
+    resolveReset(makeState());
+    await waitFor(() => expect(screen.getByTestId('mb-cpu-processing')).toBeEmptyDOMElement());
+  });
+
   // **競りが無いこと自体が規則。**
   it('states that there is no auction', async () => {
     renderWithProviders(<MinibridgePage />);

@@ -349,7 +349,7 @@ function AmericanToadPageContent() {
                     type="button"
                     onClick={() => game.handleSelectSource(reserveZone)}
                     disabled={!isPlaying || loading}
-                    aria-label={t('reserveAriaLabel', { count: state.reserve.length })}
+                    aria-label={t('reserveAriaLabel', { card: cardAlt(reserveTop), count: state.reserve.length })}
                     aria-pressed={isSourceSelected('reserve', undefined, undefined)}
                     draggable={isPlaying && !loading}
                     onDragStart={dnd.handleDragStart(reserveZone)}

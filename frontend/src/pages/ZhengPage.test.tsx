@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { zhengApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, ZhengResponse } from '../types/card';
 import { ZhengPage } from './ZhengPage';
@@ -73,6 +74,34 @@ describe('ZhengPage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<ZhengPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('shows expandable combination rules during play', async () => {
+    renderWithProviders(<ZhengPage />);
+    const rules = await screen.findByTestId('zheng-combo-rules');
+    expect(rules).toHaveTextContent('役の強さ');
+    expect(rules).not.toHaveAttribute('open');
+
+    fireEvent.click(within(rules).getByText('役の強さ'));
+
+    expect(rules).toHaveTextContent('3<...<A<2<小J<大J');
+    expect(rules).toHaveTextContent('ジョーカーボム');
+  });
+
+  it('shows combination rules in English when English is selected', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+
+    try {
+      renderWithProviders(<ZhengPage />);
+      const rules = await screen.findByTestId('zheng-combo-rules');
+      expect(rules).toHaveTextContent('Combination rules');
+      fireEvent.click(within(rules).getByText('Combination rules'));
+      expect(rules).toHaveTextContent('Ranks 3<...<A<2<small Joker<big Joker');
+      expect(rules).toHaveTextContent('both Jokers');
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('disables pass on a lead (empty table)', async () => {

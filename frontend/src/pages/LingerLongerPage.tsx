@@ -241,6 +241,7 @@ function LingerLongerPageContent() {
             <div data-tutorial="ll-trick">
               <TrickDisplay
                 currentTrick={state.currentTrick}
+                lastTrick={state.lastTrick}
                 players={state.players}
                 cardWidth={cardWidth}
                 label={t('currentTrick')}

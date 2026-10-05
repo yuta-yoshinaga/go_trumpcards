@@ -415,6 +415,17 @@ describe('CegoPage', () => {
     await waitFor(() => expect(screen.getByText(/\[0\], \[2\]/)).toBeInTheDocument());
   });
 
+  it('highlights suggested hand cards only while a requested hint has indices', async () => {
+    mockExec.mockResolvedValue(
+      makeCegoState({ hint: { cardIndices: [0, 2], reason: 'lead_high' }, messageCode: 'cego.hintRequested' }),
+    );
+    renderWithProviders(<CegoPage />);
+    const suggested = await screen.findByRole('button', { name: 'K ♥' });
+    const other = screen.getByRole('button', { name: 'J ♠' });
+    expect(suggested).toHaveStyle({ border: '3px solid var(--color-ds-warning)' });
+    expect(other).toHaveClass('opacity-60');
+  });
+
   // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
   // ヒントを載せるので、`state.hint` だけを見て描画すると常時表示になる (#4605)。
   it('hides the hint when it was not requested', async () => {
@@ -422,6 +433,9 @@ describe('CegoPage', () => {
     renderWithProviders(<CegoPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByText(/\[0\], \[2\]/)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'K ♥' })).not.toHaveStyle({
+      border: '3px solid var(--color-ds-warning)',
+    });
   });
 
   // **催促は常設のライブ領域の中にある (#6880)。** フェーズ切り替えで現れる

@@ -9,6 +9,7 @@
   "label.cross": "Cross",
   "label.revealed": "{{revealed}} of {{total}} shown",
   "label.toCall": "{{amount}} to call",
+  "label.potOdds": "Estimated break-even win rate: {{percentage}}%",
   "label.raiseCount": "Raises {{n}}/{{max}}",
   "label.canCheck": "You may check",
   "label.chooseLine": "Choose vertical or horizontal",

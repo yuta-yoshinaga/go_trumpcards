@@ -355,6 +355,19 @@ describe('TexasHoldemBonusPage', () => {
     expect(screen.getByText(/ボーナスサイド: 310/)).toBeInTheDocument();
   });
 
+  it.each([
+    ['winning hand', endPlayerWins, '純損益: +100300', 'text-ds-success'],
+    ['losing hand', endDealerWins, '純損益: -300', 'text-ds-error-text'],
+    ['push hand', endPush, '純損益: +100', 'text-ds-success'],
+    ['break-even hand', { ...endPush, totalPayout: 300 }, '純損益: ±0', 'text-ds-text-muted'],
+  ])('shows signed hand net for a %s', async (_description, state, expected, colorClass) => {
+    mockApi.mockResolvedValue(state);
+    renderWithProviders(<TexasHoldemBonusPage />);
+    const net = await screen.findByTestId('hand-net');
+    expect(net).toHaveTextContent(expected);
+    expect(net).toHaveClass(colorClass);
+  });
+
   it('changes ante and bonus amounts', async () => {
     mockApi.mockResolvedValue(betPhaseState);
     renderWithProviders(<TexasHoldemBonusPage />);

@@ -44,28 +44,29 @@ type GermanSoloWebOutputPlayer struct {
 
 // GermanSoloWebOutput ジャーマン・ソロのWebアウトプット
 type GermanSoloWebOutput struct {
-	Players          []*GermanSoloWebOutputPlayer    `json:"players"`
-	Phase            int                             `json:"phase"`
-	RoundNumber      int                             `json:"roundNumber"`
-	TrickNumber      int                             `json:"trickNumber"`
-	CurrentPlayerIdx int                             `json:"currentPlayerIdx"`
-	CurrentBidderIdx int                             `json:"currentBidderIdx"`
-	LeadPlayerIdx    int                             `json:"leadPlayerIdx"`
-	DealerIdx        int                             `json:"dealerIdx"`
-	ForehandIdx      int                             `json:"forehandIdx"`
-	DeclarerIdx      int                             `json:"declarerIdx"`
-	WinningBid       int                             `json:"winningBid"`
-	TrumpSuit        int                             `json:"trumpSuit"`
-	CurrentTrick     []*WebOutputTrickCard           `json:"currentTrick"`
-	PlayerScores     [domain.GermanSoloPlayerCnt]int `json:"playerScores"`
-	LastTrickWinner  int                             `json:"lastTrickWinner"`
-	Outcome          int                             `json:"outcome"`
-	Result           int                             `json:"result"`
-	PlayableIndices  []int                           `json:"playableIndices"`
-	GameEndFlag      bool                            `json:"gameEndFlag"`
-	WinnerPlayer     int                             `json:"winnerPlayer"`
-	IsHumanTurn      bool                            `json:"isHumanTurn"`
-	IsHumanBidTurn   bool                            `json:"isHumanBidTurn"`
+	Players           []*GermanSoloWebOutputPlayer    `json:"players"`
+	Phase             int                             `json:"phase"`
+	RoundNumber       int                             `json:"roundNumber"`
+	TrickNumber       int                             `json:"trickNumber"`
+	CurrentPlayerIdx  int                             `json:"currentPlayerIdx"`
+	CurrentBidderIdx  int                             `json:"currentBidderIdx"`
+	LeadPlayerIdx     int                             `json:"leadPlayerIdx"`
+	DealerIdx         int                             `json:"dealerIdx"`
+	ForehandIdx       int                             `json:"forehandIdx"`
+	DeclarerIdx       int                             `json:"declarerIdx"`
+	WinningBid        int                             `json:"winningBid"`
+	TrumpSuit         int                             `json:"trumpSuit"`
+	CurrentTrick      []*WebOutputTrickCard           `json:"currentTrick"`
+	PlayerScores      [domain.GermanSoloPlayerCnt]int `json:"playerScores"`
+	PlayerScoreDeltas [domain.GermanSoloPlayerCnt]int `json:"playerScoreDeltas"`
+	LastTrickWinner   int                             `json:"lastTrickWinner"`
+	Outcome           int                             `json:"outcome"`
+	Result            int                             `json:"result"`
+	PlayableIndices   []int                           `json:"playableIndices"`
+	GameEndFlag       bool                            `json:"gameEndFlag"`
+	WinnerPlayer      int                             `json:"winnerPlayer"`
+	IsHumanTurn       bool                            `json:"isHumanTurn"`
+	IsHumanBidTurn    bool                            `json:"isHumanBidTurn"`
 	// HighestBid は競り中に上回るべき宣言、BiddableBids は今宣言できるビッド。
 	// RequiredTricks は確定した契約の必要トリック数 (Tout=8, それ以外=5)。
 	HighestBid     int   `json:"highestBid"`

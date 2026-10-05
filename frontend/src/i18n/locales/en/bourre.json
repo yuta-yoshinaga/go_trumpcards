@@ -6,6 +6,8 @@
   },
   "decideSummary": "Pot: {{pot}} chips | Play and win no tricks: {{penalty}}-chip penalty (folding avoids it)",
   "decideSummaryHelp": "If you play and take zero tricks you are 'bourréd' and pay {{penalty}} chips. Folding incurs no penalty.",
+  "playableAria": "{{card}}. Playable",
+  "notPlayableAria": "{{card}}. Not playable",
   "label": {
     "pot": "Pot",
     "carry": "Carry",

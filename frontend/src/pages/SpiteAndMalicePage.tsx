@@ -362,6 +362,16 @@ function SpiteAndMalicePageContent() {
               dataTutorial="sam-opponent"
               handCountLabel={(count) => t('label.handCount', { count })}
               goalLabel={(count) => t('label.cpuGoal', { count })}
+              sidePileLabel={(index, top, count) =>
+                top
+                  ? t('aria.cpuSideTop', {
+                      n: index,
+                      card: cardAlt(top),
+                      count,
+                      listSeparator: t('listSeparator'),
+                    })
+                  : t('aria.cpuSideEmpty', { n: index })
+              }
             />
 
             <div className="flex items-center justify-center gap-2 sm:gap-4" data-tutorial="sam-foundations">
@@ -514,6 +524,7 @@ function PlayerSummary({
   dataTutorial,
   handCountLabel,
   goalLabel,
+  sidePileLabel,
 }: {
   label: string;
   sidesLabel: string;
@@ -522,6 +533,7 @@ function PlayerSummary({
   dataTutorial: string;
   handCountLabel: (count: number) => string;
   goalLabel: (count: number) => string;
+  sidePileLabel: (index: number, top: Card | undefined, count: number) => string;
 }) {
   // Side piles render at half scale to keep the opponent strip compact on mobile.
   const sideWidth = Math.round(cardWidth * 0.5);
@@ -545,11 +557,12 @@ function PlayerSummary({
             {player.sides.map((pile, i) => {
               const top = pile.length > 0 ? pile[pile.length - 1] : undefined;
               return (
-                <div
+                <fieldset
                   // Fixed-length 4-pile array; index is a stable key.
                   key={`cpu-side-${i}`}
                   data-testid={`sam-cpu-side-${i}`}
-                  className="relative flex items-center justify-center"
+                  aria-label={sidePileLabel(i, top, pile.length)}
+                  className="border-0 p-0 m-0 min-w-0 relative flex items-center justify-center"
                 >
                   {top ? (
                     <AnimatedCard card={top} width={sideWidth} />
@@ -564,7 +577,7 @@ function PlayerSummary({
                       {pile.length}
                     </span>
                   )}
-                </div>
+                </fieldset>
               );
             })}
           </div>

@@ -15,6 +15,13 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
+type durakHintGame struct {
+	interfaces.DurakGame
+	hint *domain.DurakHint
+}
+
+func (g durakHintGame) GetHint() *domain.DurakHint { return g.hint }
+
 func TestDurakWebPresenter_Output(t *testing.T) {
 	p := new(presenter.DurakWebPresenter)
 
@@ -128,8 +135,32 @@ func TestDurakWebPresenter_ActionLogOutput(t *testing.T) {
 func TestDurakWebPresenter_HintOutput(t *testing.T) {
 	d := domain.NewDefaultDurak()
 	d.Reset()
-
-	out := new(presenter.DurakWebPresenter).HintOutput(d)
-	assert.True(t, json.Valid([]byte(out)), "JSON として妥当")
-	assert.Contains(t, out, `"players"`, "状態も一緒に返る")
+	p := new(presenter.DurakWebPresenter)
+	idx, attackIdx := 2, 1
+	cases := []struct {
+		name string
+		hint *domain.DurakHint
+		want map[string]any
+	}{
+		{"attack", &domain.DurakHint{CardIndex: &idx, Reason: "attack_weakest"}, map[string]any{"cardIndex": float64(2), "reason": "attack_weakest"}},
+		{"defend", &domain.DurakHint{CardIndex: &idx, AttackIdx: &attackIdx, Reason: "defend_beat"}, map[string]any{"cardIndex": float64(2), "attackIdx": float64(1), "reason": "defend_beat"}},
+		{"take", &domain.DurakHint{TakeCards: true, Reason: "take_cannot_beat"}, map[string]any{"takeCards": true, "reason": "take_cannot_beat"}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var result map[string]any
+			assert.NoError(t, json.Unmarshal([]byte(p.HintOutput(durakHintGame{DurakGame: d, hint: tc.hint})), &result))
+			assert.Equal(t, tc.want, result["hint"])
+		})
+	}
+	t.Run("nil hint omitted", func(t *testing.T) {
+		var result map[string]any
+		assert.NoError(t, json.Unmarshal([]byte(p.HintOutput(durakHintGame{DurakGame: d})), &result))
+		assert.NotContains(t, result, "hint")
+	})
+	t.Run("normal output omits hint", func(t *testing.T) {
+		var result map[string]any
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(durakHintGame{DurakGame: d, hint: cases[0].hint}, nil)), &result))
+		assert.NotContains(t, result, "hint")
+	})
 }
