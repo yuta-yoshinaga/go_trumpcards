@@ -63,6 +63,24 @@ describe('HachiHachiPage', () => {
     expect(screen.getByTestId('hachihachi-cpu-2')).toBeInTheDocument();
   });
 
+  it('names hand cards and their server-reported playability in Japanese and English', async () => {
+    mockExec.mockResolvedValue(makeHachiHachiState({ playableIndices: [1] }));
+    renderWithProviders(<HachiHachiPage />);
+    const unplayable = await screen.findByTestId('hand-card-0');
+    const playable = screen.getByTestId('hand-card-1');
+    expect(unplayable).toHaveAccessibleName(/3月 タネ.*出せません$/);
+    expect(playable).toHaveAccessibleName(/7月 カス.*出せます$/);
+
+    const originalLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      expect(unplayable).toHaveAccessibleName(/3月 タネ.*not playable$/);
+      expect(playable).toHaveAccessibleName(/7月 カス.*playable$/);
+    } finally {
+      await i18n.changeLanguage(originalLanguage);
+    }
+  });
+
   it('explains the three-player 88-baseline settlement in the scoring note', async () => {
     renderWithProviders(<HachiHachiPage />);
     await screen.findByTestId('hand-card-0');
