@@ -87,6 +87,14 @@ function SjavsPageContent() {
   // this game "trump" is not the same thing as "a card of the trump suit".
   const playable = new Set(state.validIndices);
   const trumps = new Set(state.trumpIndices);
+  const unplayableReason = bidding
+    ? 'cardReason.bidding'
+    : handOver
+      ? 'cardReason.handEnd'
+      : ended
+        ? 'cardReason.gameEnd'
+        : 'cardReason.follow';
+  const unplayableReasonId = `sjavs-${unplayableReason.slice('cardReason.'.length)}-reason`;
 
   // Every length the human can legally bid. Below minBid you must pass, and you
   // can never bid more than you hold.
@@ -238,6 +246,7 @@ function SjavsPageContent() {
                       // Kept focusable while it cannot act so the reason is
                       // announced rather than the control leaving the tab order.
                       aria-disabled={!canPlay}
+                      aria-describedby={!canPlay && state.currentPlayerIdx === 0 ? unplayableReasonId : undefined}
                       onClick={() => canPlay && game.handlePlay(i)}
                       className={[
                         'rounded transition-transform',
@@ -262,6 +271,11 @@ function SjavsPageContent() {
                   );
                 })}
               </div>
+              {state.currentPlayerIdx === 0 && human?.cards.length ? (
+                <span id={unplayableReasonId} className="sr-only">
+                  {t(unplayableReason)}
+                </span>
+              ) : null}
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>
 
