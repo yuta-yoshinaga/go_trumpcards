@@ -36,6 +36,8 @@ type HoldemWebOutputPlayer struct {
 	AllIn                    bool             `json:"allIn"`
 	HandRank                 int              `json:"handRank"`
 	HandName                 string           `json:"handName"`
+	OmahaHandName            string           `json:"omahaHandName,omitempty"`
+	DrawHandName             string           `json:"drawHandName,omitempty"`
 	BestHand                 []*WebOutputCard `json:"bestHand"`
 	LiveBestHandHoleIndices  []int            `json:"liveBestHandHoleIndices,omitempty"`
 	LiveBestHandBoardIndices []int            `json:"liveBestHandBoardIndices,omitempty"`
