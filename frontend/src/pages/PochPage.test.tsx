@@ -115,7 +115,7 @@ describe('PochPage', () => {
       makeState({
         phase: PochPhase.GAME_END,
         gameEndFlag: true,
-        players: [seat(0, true), seat(1, false, { cards: [], cardCount: 0 }), seat(2, false), seat(3, false)],
+        players: [seat(0, true), seat(1, false, { cards: [], cardCount: 3 }), seat(2, false), seat(3, false)],
       }),
     );
     renderWithProviders(<PochPage />);
