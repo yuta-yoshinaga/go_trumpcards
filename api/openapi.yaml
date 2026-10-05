@@ -62720,6 +62720,12 @@ components:
         lastTrickWinnerIdx:
           type: integer
           description: The seat that took the last trick of the previous round, or -1.
+        resolvedTrickWinnerIdx:
+          type: integer
+          description: The seat that took the most recently completed trick, or -1.
+        lastTrickRank:
+          type: integer
+          description: Highest rank in the most recently completed trick, or 0.
         lastPenalty:
           type: integer
           description: Penalty scored for that last trick.

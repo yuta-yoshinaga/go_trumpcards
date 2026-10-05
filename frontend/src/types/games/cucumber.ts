@@ -70,6 +70,10 @@ export interface CucumberResponse extends BaseGameResponse {
   roundNumber: number;
   /** The seat that took the last trick of the previous round, or `-1`. */
   lastTrickWinnerIdx: number;
+  /** The seat that took the most recently completed trick, or `-1`. */
+  resolvedTrickWinnerIdx: number;
+  /** Highest rank in the most recently completed trick, or `0`. */
+  lastTrickRank: number;
   /** Penalty scored for that last trick. */
   lastPenalty: number;
   gameEndFlag: boolean;

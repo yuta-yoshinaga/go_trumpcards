@@ -18,10 +18,11 @@ func intPtrCu(v int) *int { return &v }
 
 func mustCucumberOutputJSON(msg string) string {
 	out := &controller.CucumberWebOutput{
-		Players:            []*controller.CucumberWebOutputPlayer{},
-		ValidPlays:         []int{},
-		CurrentTrick:       []*controller.WebOutputTrickCard{},
-		LastTrickWinnerIdx: -1,
+		Players:                []*controller.CucumberWebOutputPlayer{},
+		ValidPlays:             []int{},
+		CurrentTrick:           []*controller.WebOutputTrickCard{},
+		LastTrickWinnerIdx:     -1,
+		ResolvedTrickWinnerIdx: -1,
 		// エラー応答でも総トリック数は規則どおりの固定値。
 		TotalTricks:   domain.CucumberHandSize,
 		WinnerIdx:     -1,
