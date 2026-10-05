@@ -72,7 +72,7 @@ type Cribbage struct {
 	gameEndFlag bool
 	winnerIdx   int
 	roundNumber int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 	// ディスカード状態追跡
 	discardDone [CribbagePlayerCnt]bool
 	// 各プレイヤーの元の手札 (ショーフェーズ用に保持)
@@ -789,14 +789,7 @@ func (g *Cribbage) getPlayerCards(playerIdx int) []*Card {
 
 // addLog アクションログを追加
 func (g *Cribbage) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber:   g.roundNumber,
-		PlayerIdx:    playerIdx,
-		ActionType:   actionType,
-		DetailCode:   detailCode,
-		DetailParams: detailParams,
-		Cards:        cards,
-	})
+	g.appendLogCodeAt(g.roundNumber, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // ---- Getter/Setter ----
@@ -847,9 +840,6 @@ func (g *Cribbage) GetWinnerIdx() int { return g.winnerIdx }
 
 // GetRoundNumber ラウンド番号取得
 func (g *Cribbage) GetRoundNumber() int { return g.roundNumber }
-
-// GetActionLog アクションログ取得
-func (g *Cribbage) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayer プレイヤー取得
 func (g *Cribbage) GetPlayer(idx int) *CribbagePlayer {

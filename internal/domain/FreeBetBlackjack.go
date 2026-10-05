@@ -100,8 +100,8 @@ type FreeBetBlackjack struct {
 	dealerPushed22 bool
 	roundNumber    int
 	gameEndFlag    bool
-	actionLog      []*ActionLogEntry
-	turnNumber     int
+	actionLogBase
+	turnNumber int
 }
 
 // NewFreeBetBlackjack は指定のシュー・プレイヤー・設定で卓を構築する。
@@ -540,7 +540,7 @@ func (g *FreeBetBlackjack) dealerUpValue() int {
 // appendLog は行動ログを 1 行足す。
 func (g *FreeBetBlackjack) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
-	g.actionLog = append(g.actionLog, &ActionLogEntry{TurnNumber: g.turnNumber, PlayerIdx: 0, ActionType: actionType, DetailCode: detailCode, DetailParams: detailParams, Cards: cards})
+	g.appendLogCodeAt(g.turnNumber, 0, actionType, detailCode, detailParams, cards)
 }
 
 // --- アクセサ ---
@@ -626,9 +626,6 @@ func (g *FreeBetBlackjack) GetConfig() FreeBetBlackjackConfig { return g.config 
 
 // SetConfig は設定を差し替える。
 func (g *FreeBetBlackjack) SetConfig(c FreeBetBlackjackConfig) { g.config = c }
-
-// GetActionLog は行動ログを返す。
-func (g *FreeBetBlackjack) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetRemainingCards はシューの残り枚数を返す。
 func (g *FreeBetBlackjack) GetRemainingCards() int { return g.shoe.GetRemainingCount() }

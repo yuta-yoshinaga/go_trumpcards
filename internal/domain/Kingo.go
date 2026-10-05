@@ -72,17 +72,17 @@ type Kingo struct {
 	results     []KingoResult
 	gameEndFlag bool
 
-	actionLog  []*ActionLogEntry
+	actionLogBase
 	turnNumber int
 }
 
 // NewKingo は Kingo を構築する。
 func NewKingo(players []*KingoPlayer, config KingoConfig) *Kingo {
 	return &Kingo{
-		players:   players,
-		config:    config,
-		results:   make([]KingoResult, 0, len(players)),
-		actionLog: make([]*ActionLogEntry, 0),
+		players:       players,
+		config:        config,
+		results:       make([]KingoResult, 0, len(players)),
+		actionLogBase: actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 }
 
@@ -366,20 +366,10 @@ func (g *Kingo) GetResults() []KingoResult { return g.results }
 // GetRemainingCards は山の残り枚数を返す。
 func (g *Kingo) GetRemainingCards() int { return len(g.deck) }
 
-// GetActionLog は棋譜を返す。
-func (g *Kingo) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // appendLog は棋譜に 1 行足す。
 func (g *Kingo) appendLog(seat int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber:   g.turnNumber,
-		PlayerIdx:    seat,
-		ActionType:   actionType,
-		DetailCode:   detailCode,
-		DetailParams: detailParams,
-		Cards:        cards,
-	})
+	g.appendLogCodeAt(g.turnNumber, seat, actionType, detailCode, detailParams, cards)
 }
 
 // --- 助言 ---

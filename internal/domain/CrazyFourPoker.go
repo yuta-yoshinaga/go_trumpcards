@@ -101,8 +101,8 @@ type CrazyFourPoker struct {
 	payout      int
 	roundNumber int
 	gameEndFlag bool
-	actionLog   []*ActionLogEntry
-	turnNumber  int
+	actionLogBase
+	turnNumber int
 }
 
 // NewCrazyFourPoker は指定のデッキ・プレイヤー・設定で卓を構築する。
@@ -474,7 +474,7 @@ func (g *CrazyFourPoker) GetHint() *CrazyFourPokerHint {
 // appendLog は行動ログを 1 行足す。
 func (g *CrazyFourPoker) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
-	g.actionLog = append(g.actionLog, &ActionLogEntry{TurnNumber: g.turnNumber, PlayerIdx: 0, ActionType: actionType, DetailCode: detailCode, DetailParams: detailParams, Cards: cards})
+	g.appendLogCodeAt(g.turnNumber, 0, actionType, detailCode, detailParams, cards)
 }
 
 // --- アクセサ ---
@@ -549,9 +549,6 @@ func (g *CrazyFourPoker) GetConfig() CrazyFourPokerConfig { return g.config }
 
 // SetConfig は設定を差し替える。
 func (g *CrazyFourPoker) SetConfig(c CrazyFourPokerConfig) { g.config = c }
-
-// GetActionLog は行動ログを返す。
-func (g *CrazyFourPoker) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetRemainingCards はデッキの残り枚数を返す。
 func (g *CrazyFourPoker) GetRemainingCards() int { return g.trumpCards.GetRemainingCount() }
