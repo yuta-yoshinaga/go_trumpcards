@@ -196,8 +196,24 @@ describe('TichuPage', () => {
   });
 
   it('declaration phase: all three buttons dispatch declare', async () => {
-    mockExec.mockResolvedValue(makeState({ phase: 'declare', currentTurn: 0 }));
-    renderWithProviders(<TichuPage />);
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'declare',
+        currentTurn: 0,
+        players: [
+          player({ id: 0, isHuman: true, cards: [{ design: 'SPADE', value: 9 }] }),
+          player({ id: 1, team: 1 }),
+          player({ id: 2, team: 0 }),
+          player({ id: 3, team: 1 }),
+        ],
+      }),
+    );
+    const { container } = renderWithProviders(<TichuPage />);
+    await screen.findByTestId('tichu-score-bar');
+    const handCard = container.querySelector('[data-tutorial="tichu-hand"] button');
+    if (!handCard) throw new Error('Expected a hand card');
+    expect(handCard).toBeDisabled();
+    expect(handCard).not.toHaveAttribute('aria-disabled');
     fireEvent.click(await screen.findByRole('button', { name: '宣言しない' }));
     fireEvent.click(screen.getByRole('button', { name: 'ティチュー宣言' }));
     fireEvent.click(screen.getByRole('button', { name: 'グランド宣言' }));
@@ -306,6 +322,7 @@ describe('TichuPage', () => {
     fireEvent.click(pass);
     await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(2));
     const play = screen.getByRole('button', { name: '出す' });
+    expect(card).not.toBeDisabled();
     expect(card).toHaveAttribute('aria-disabled', 'true');
     expect(play).toHaveAttribute('aria-disabled', 'true');
     expect(pass).toHaveAttribute('aria-disabled', 'true');

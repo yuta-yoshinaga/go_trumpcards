@@ -397,7 +397,8 @@ function TichuPageContent() {
                       onClick={() => {
                         if (!loading && phase === 'play') toggleCard(i);
                       }}
-                      aria-disabled={loading || phase !== 'play' || undefined}
+                      disabled={phase !== 'play'}
+                      aria-disabled={(phase === 'play' && loading) || undefined}
                       aria-describedby={loading ? 'tichu-loading-description' : undefined}
                       aria-label={isBomb ? t('bombCardAriaLabel', { card: cardAlt(c) }) : cardAlt(c)}
                       aria-pressed={selectedCards.has(i)}
