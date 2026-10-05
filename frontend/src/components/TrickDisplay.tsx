@@ -59,6 +59,8 @@ export interface TrickDisplayProps {
   cardAriaLabelFor?: (player: TrickDisplayPlayer, card: Card) => string;
   /** Optional localized per-card detail, such as points and trump status. */
   cardDetailFor?: (card: Card, trickCard: TrickDisplayCard) => string;
+  /** Optional stable key override for games where a player can contribute multiple cards. */
+  cardKeyFor?: (trickCard: TrickDisplayCard, index: number) => string;
 }
 
 /**
@@ -88,6 +90,7 @@ export function TrickDisplay({
   cardBadgeFor,
   cardAriaLabelFor,
   cardDetailFor,
+  cardKeyFor,
 }: TrickDisplayProps) {
   const displayedTrick = currentTrick.length > 0 ? currentTrick : (lastTrick ?? []);
   const displayedWinnerIdx = currentTrick.length > 0 ? winnerIdx : (lastTrickWinner ?? winnerIdx);
@@ -111,7 +114,7 @@ export function TrickDisplay({
       {/* wrap の既定は false。通常のトリックは席数までしか積まれないので
           1 行に収まり、これまでの見た目のまま。 */}
       <div className={wrap ? 'flex gap-2 flex-wrap' : 'flex gap-2'} data-testid="trick-display-cards">
-        {displayedTrick.map((trickCard) => {
+        {displayedTrick.map((trickCard, index) => {
           const player = players[trickCard.playerIdx];
           const displayPlayer = player ?? { id: trickCard.playerIdx, isHuman: false };
           const team = player?.team;
@@ -137,7 +140,7 @@ export function TrickDisplay({
           const accessibleLabel = badge ? `${cardLabel} (${badge.title})` : cardAriaLabelFor ? cardLabel : undefined;
           return (
             <div
-              key={`trick-${trickCard.playerIdx}`}
+              key={cardKeyFor?.(trickCard, index) ?? `trick-${trickCard.playerIdx}`}
               className="relative text-center"
               data-team={team ?? undefined}
               data-team-role={isAlly ? 'ally' : isFoe ? 'foe' : undefined}
