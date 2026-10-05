@@ -64,6 +64,29 @@ describe('getTusacHint', () => {
     expect(getTusacHint(state({ phase: TuSacPhase.DISCARD }))?.targetAction).toBe('discard');
   });
 
+  it('サーバがメルドを薦めたら対象札とともに薦める', () => {
+    expect(
+      getTusacHint(
+        state({ phase: TuSacPhase.DISCARD, serverHint: { action: 'meld', indexes: [0, 1], reason: 'set' } }),
+      ),
+    ).toMatchObject({ targetAction: 'meld', targetIndices: [0, 1], reason: 'frontendHint.tusacMeldAvailable' });
+  });
+
+  it('サーバが捨て札位置を返したら対象札を加える', () => {
+    expect(
+      getTusacHint(
+        state({ phase: TuSacPhase.DISCARD, serverHint: { action: 'discard', indexes: [1], reason: 'low' } }),
+      ),
+    ).toMatchObject({ targetAction: 'discard', targetIndices: [1] });
+  });
+
+  it('サーバヒントが無い捨てる場面は従来どおり', () => {
+    expect(getTusacHint(state({ phase: TuSacPhase.DISCARD }))).toMatchObject({
+      targetAction: 'discard',
+      reason: 'frontendHint.tusacHoldingCostsPoints',
+    });
+  });
+
   // **引いた直後は手札が 1 枚多い。** 捨てて手番を渡す必要がある。
   it('手札が配り枚数を超えていたら理由が変わる', () => {
     const over = getTusacHint(

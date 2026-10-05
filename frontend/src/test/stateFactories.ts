@@ -99,6 +99,7 @@ import type {
   TrenteEtQuaranteResponse,
   TressetteResponse,
   TrogguResponse,
+  TuSacResponse,
   TuteResponse,
   TwentyNineResponse,
   TwoTenJackResponse,
@@ -110,6 +111,30 @@ import type {
   ZwanzigerrufenResponse,
 } from '../types/card';
 import type { PaiGowHint } from '../types/games/paigow';
+
+/** Creates a default Tu Sac state. */
+export function makeTuSacState(overrides: Partial<TuSacResponse> = {}): TuSacResponse {
+  return {
+    phase: 0,
+    seats: [],
+    discardTop: null,
+    discardCount: 0,
+    stockCount: 0,
+    turnSeat: 0,
+    humanSeat: 0,
+    isHumanTurn: true,
+    roundNumber: 1,
+    rounds: 1,
+    wentOutSeat: -1,
+    handSize: 20,
+    deckSize: 112,
+    meldPointsByKind: [0, 2, 3, 5],
+    winnerSeat: 0,
+    gameEndFlag: false,
+    message: '',
+    ...overrides,
+  };
+}
 
 /** Creates a Pai Gow set-hands response with no server split hint by default. */
 export function makePaiGowState(overrides: Partial<PaiGowResponse> = {}): PaiGowResponse {
