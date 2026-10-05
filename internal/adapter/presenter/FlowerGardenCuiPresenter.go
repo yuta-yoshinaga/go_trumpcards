@@ -117,6 +117,7 @@ func (p *FlowerGardenCuiPresenter) HintOutput(bc interfaces.FlowerGardenGame) st
 	if hint == nil {
 		return i18n.T("cuiHintNone") + "\n"
 	}
+	card := flowerGardenHintSourceCard(bc.GetTableau(), bc.GetReserve(), hint)
 	var from string
 	if hint.FromZone == "reserve" {
 		from = i18n.Tf("flowergarden.hintFromReserve", "idx", strconv.Itoa(hint.FromCol))
@@ -131,7 +132,7 @@ func (p *FlowerGardenCuiPresenter) HintOutput(bc interfaces.FlowerGardenGame) st
 	} else {
 		to = i18n.Tf("flowergarden.hintToTableau", "col", strconv.Itoa(hint.ToCol))
 	}
-	return i18n.Tf("flowergarden.hintLine", "from", from, "to", to) + "\n"
+	return i18n.Tf("flowergarden.hintLine", "card", cuiCardStr(card), "from", from, "to", to) + "\n"
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

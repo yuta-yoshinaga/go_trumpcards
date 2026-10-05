@@ -81,7 +81,14 @@ describe('useFlowerGardenGame', () => {
   it('handleHint stores hint payload from API', async () => {
     mockExec.mockResolvedValueOnce(baseState).mockResolvedValueOnce({
       ...baseState,
-      hint: { fromZone: 'reserve', fromCol: 0, cardIndex: 0, toZone: 'tableau', toCol: 1 },
+      hint: {
+        card: { design: 'HEART', value: 5 },
+        fromZone: 'reserve',
+        fromCol: 0,
+        cardIndex: 0,
+        toZone: 'tableau',
+        toCol: 1,
+      },
     });
     const { result } = renderHook(() => useFlowerGardenGame(), { wrapper: makeWrapper() });
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
@@ -90,6 +97,7 @@ describe('useFlowerGardenGame', () => {
       await result.current.handleHint();
     });
     expect(result.current.hint).toEqual({
+      card: { design: 'HEART', value: 5 },
       fromZone: 'reserve',
       fromCol: 0,
       cardIndex: 0,

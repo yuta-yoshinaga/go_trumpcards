@@ -479,7 +479,7 @@ function FlowerGardenPageContent() {
             <div data-tutorial="fg-hint-display" data-testid="fg-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2 mt-3">
-                  {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromCol)} →{' '}
+                  {t('hintAvailable', { card: cardAlt(hint.card) })}: {formatHintZone(t, hint.fromZone, hint.fromCol)} →{' '}
                   {formatHintZone(t, hint.toZone, hint.toCol)}
                 </div>
               )}

@@ -32,7 +32,14 @@ describe('getFlowergardenHint', () => {
   it('maps foundation hint to strong play action', () => {
     const r = getFlowergardenHint(
       makeState({
-        hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: 1 },
+        hint: {
+          card: { design: 'HEART', value: 5 },
+          fromZone: 'tableau',
+          fromCol: 0,
+          cardIndex: 0,
+          toZone: 'foundation',
+          toCol: 1,
+        },
       }),
     );
     expect(r).toEqual({ targetAction: 'play.foundation', reason: 'hintReason.toFoundation', confidence: 'strong' });
@@ -41,7 +48,14 @@ describe('getFlowergardenHint', () => {
   it('maps tableau hint', () => {
     const r = getFlowergardenHint(
       makeState({
-        hint: { fromZone: 'reserve', fromCol: 1, cardIndex: 0, toZone: 'tableau', toCol: 4 },
+        hint: {
+          card: { design: 'HEART', value: 5 },
+          fromZone: 'reserve',
+          fromCol: 1,
+          cardIndex: 0,
+          toZone: 'tableau',
+          toCol: 4,
+        },
       }),
     );
     expect(r?.targetAction).toBe('play.tableau');
