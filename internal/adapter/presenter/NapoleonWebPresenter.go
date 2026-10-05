@@ -53,6 +53,13 @@ func (p *NapoleonWebPresenter) buildBaseOutput(n interfaces.NapoleonGame) *contr
 	resObj.GameEndFlag = n.GetGameEndFlag()
 	resObj.WinnerTeam = n.GetWinnerTeam()
 	resObj.LeadPlayerIdx = n.GetLeadPlayerIdx()
+	resObj.ValidPlayIndices = make([]int, 0)
+	if n.GetPhase() == domain.NapoleonPhasePlay {
+		playerIdx := n.GetCurrentPlayerIdx()
+		if playerIdx >= 0 && playerIdx < n.GetPlayerCnt() {
+			resObj.ValidPlayIndices = n.GetValidPlayIndices(playerIdx)
+		}
+	}
 
 	// 副官カード
 	adjCard := n.GetAdjutantCard()

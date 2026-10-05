@@ -76,6 +76,7 @@ type NapoleonWebOutput struct {
 	GameEndFlag      bool                       `json:"gameEndFlag"`
 	WinnerTeam       int                        `json:"winnerTeam"`
 	LeadPlayerIdx    int                        `json:"leadPlayerIdx"`
+	ValidPlayIndices []int                      `json:"validPlayIndices"`
 	Hint             *NapoleonWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config NapoleonWebOutputConfig `json:"config"`

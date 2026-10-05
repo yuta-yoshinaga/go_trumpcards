@@ -36,6 +36,7 @@ func setupNapoleonWebMock() *interfaces.MockNapoleonGame {
 	m.On("GetBidPlayerIdx").Return(0)
 	m.On("GetWinnerTeam").Return(domain.NapoleonWinnerUndecided)
 	m.On("GetLeadPlayerIdx").Return(0)
+	m.On("GetValidPlayIndices", 0).Return([]int{0})
 	m.On("GetConfig").Return(domain.DefaultNapoleonConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
@@ -83,8 +84,19 @@ func TestNapoleonWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 1, resObj.TrickNumber)
 		assert.Equal(t, -1, resObj.WinnerTeam)
 		assert.Equal(t, 0, resObj.LeadPlayerIdx)
+		assert.Equal(t, []int{0}, resObj.ValidPlayIndices)
 		assert.Equal(t, "", resObj.Message)
 		assert.Empty(t, resObj.CurrentTrick)
+	})
+
+	t.Run("play indices are empty outside play phase", func(t *testing.T) {
+		m, _ := setupNapoleonWebMockWithPlayers()
+		m.ExpectedCalls = removeNapoleonWebMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.NapoleonPhaseBid)
+		result := p.Output(m, nil)
+		var resObj controller.NapoleonWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.ValidPlayIndices)
 	})
 
 	t.Run("human cards shown, CPU cards hidden", func(t *testing.T) {
