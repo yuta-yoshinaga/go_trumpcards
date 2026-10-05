@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
@@ -91,23 +92,19 @@ func TestKingoCuiPresenter_ShowsNoHandsBeforeTheDeal(t *testing.T) {
 
 func TestKingoCuiPresenter_ShowsZeroChipChange(t *testing.T) {
 	cp := new(KingoCuiPresenter)
-	var out string
-	var zeroName string
-	for attempt := 0; attempt < 500; attempt++ {
-		g := kingoSettled(t)
-		for i, result := range g.GetResults() {
-			if result.WonAmount == 0 {
-				zeroName = g.GetPlayers()[i].GetName()
-				out = cp.Output(g, nil)
-				break
-			}
-		}
-		if zeroName != "" {
-			break
-		}
-	}
-	require.NotEmpty(t, zeroName, "500 局で増減ゼロの席が出なかった")
-	assert.Contains(t, out, i18n.Tf("kingo.noChangeLine", "name", zeroName))
+	players := []*domain.KingoPlayer{domain.NewKingoPlayer("YOU", 1000, true)}
+	g := new(interfaces.MockKingoGame)
+	g.On("GetConfig").Return(domain.KingoConfig{Rounds: 4}).Once()
+	g.On("GetPhase").Return(domain.KingoPhaseResult)
+	g.On("GetPlayers").Return(players)
+	g.On("GetBankerSeat").Return(0)
+	g.On("GetRoundNumber").Return(1).Once()
+	g.On("GetGameEndFlag").Return(false).Twice()
+	g.On("GetResults").Return([]domain.KingoResult{{PlayerIdx: 0, WonAmount: 0}}).Once()
+
+	out := cp.Output(g, nil)
+	assert.Contains(t, out, "YOU: 増減なし")
+	g.AssertExpectations(t)
 }
 
 func kingoRankLabel(r domain.KingoRank) string {
