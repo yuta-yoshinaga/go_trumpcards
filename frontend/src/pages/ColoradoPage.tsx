@@ -19,14 +19,14 @@ import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
-import { useGameApi } from '../hooks/useGameApi';
+import { isRejectedAction, useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { ColoradoResponse } from '../types/card';
+import type { ColoradoMoveZone, ColoradoResponse } from '../types/card';
 import { ColoradoPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { valueName } from '../utils/cardUtils';
@@ -89,13 +89,24 @@ function ColoradoPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('colorado');
+  const [moveAnnouncement, setMoveAnnouncement] = useState({ text: '', id: 0 });
   const {
     state,
     loading,
     error,
     exec: runApi,
     retry,
-  } = useGameApi<ColoradoResponse, ApiArgs>((...args) => coloradoApi.exec(...args));
+  } = useGameApi<ColoradoResponse, ApiArgs>((...args) => coloradoApi.exec(...args), {
+    onSuccess: (response, args) => {
+      if (args[0] !== 'move' || isRejectedAction(response)) return;
+      const [, from, to] = args as ['move', ColoradoMoveZone, ColoradoMoveZone];
+      const source =
+        from.zone === 'waste' ? t('waste') : from.zone === 'stock' ? t('stock') : `${t('tableau')} ${from.idx}`;
+      const destination = to.zone === 'foundation' ? t('foundation') : `${t('tableau')} ${to.idx}`;
+      const text = t('moveAnnouncement', { source, destination });
+      setMoveAnnouncement((previous) => ({ text, id: previous.id + 1 }));
+    },
+  });
 
   useMountReset(runApi);
 
@@ -215,7 +226,15 @@ function ColoradoPageContent() {
 
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
 
-  if (!state) return <GameSkeleton gameKey="colorado" layout={{ kind: 'tableau', topRow: 8, tableau: 10 }} />;
+  if (!state)
+    return (
+      <>
+        <div className="sr-only" role="status" aria-live="polite">
+          <span key={moveAnnouncement.id}>{moveAnnouncement.text}</span>
+        </div>
+        <GameSkeleton gameKey="colorado" layout={{ kind: 'tableau', topRow: 8, tableau: 10 }} />
+      </>
+    );
 
   const isPlaying = state.phase === ColoradoPhase.PLAYING;
   const isGameClear = state.phase === ColoradoPhase.GAME_CLEAR;
@@ -472,6 +491,9 @@ function ColoradoPageContent() {
                 られないことがある (#5955)。
               */}
               <div data-testid="colorado-hint-live" role="status" aria-live="polite">
+                <span key={moveAnnouncement.id} className="sr-only">
+                  {moveAnnouncement.text}
+                </span>
                 {requestedHint && (
                   <div className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1">
                     {t('hintAvailable')}:{' '}

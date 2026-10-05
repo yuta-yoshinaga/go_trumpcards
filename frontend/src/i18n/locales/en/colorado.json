@@ -25,6 +25,7 @@
   "undo": "Undo",
   "autoComplete": "Auto Complete",
   "selectTarget": "Choose a destination",
+  "moveAnnouncement": "Moved from {{source}} to {{destination}}",
   "deselect": "Cancel",
   "empty": "Empty",
   "nextRankBadge": "Next:{{rank}}",
