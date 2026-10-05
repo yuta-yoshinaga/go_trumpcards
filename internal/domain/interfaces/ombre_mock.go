@@ -170,6 +170,20 @@ func (_m *MockOmbreGame) GetHighestBid() domain.OmbreBid {
 	return ret.Get(0).(domain.OmbreBid)
 }
 
+func (_m *MockOmbreGame) GetBids() [domain.OmbrePlayerCnt]domain.OmbreBid {
+	ret := _m.Called()
+	return ret.Get(0).([domain.OmbrePlayerCnt]domain.OmbreBid)
+}
+func (_m *MockOmbreGame) GetBidActed() [domain.OmbrePlayerCnt]bool {
+	ret := _m.Called()
+	return ret.Get(0).([domain.OmbrePlayerCnt]bool)
+}
+func (_m *MockOmbreGame) GetBidTrump() [domain.OmbrePlayerCnt]int {
+	ret := _m.Called()
+	return ret.Get(0).([domain.OmbrePlayerCnt]int)
+}
+func (_m *MockOmbreGame) GetHighestBidderIdx() int { ret := _m.Called(); return ret.Get(0).(int) }
+
 // GetTrumpSuit モック
 func (_m *MockOmbreGame) GetTrumpSuit() int {
 	ret := _m.Called()

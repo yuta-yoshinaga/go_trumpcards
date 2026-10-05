@@ -23,3 +23,14 @@ func TestOmbre_GetHighestBidDuringAuction(t *testing.T) {
 	assert.Equal(t, OmbreBidSolo, g.GetHighestBid(), "Solo outranks Entrar")
 	assert.Equal(t, OmbreBidNone, g.GetWinningBid(), "the winning bid is unset during the auction")
 }
+
+func TestOmbre_GetHighestBidderIdxUsesForehandTieBreak(t *testing.T) {
+	g := NewDefaultOmbre()
+	g.forehandIdx = 1
+	g.phase = OmbrePhaseBid
+	g.bids[0] = OmbreBidSolo
+	g.bids[1] = OmbreBidSolo
+	assert.Equal(t, 1, g.GetHighestBidderIdx())
+	g.bids[1] = OmbreBidNone
+	assert.Equal(t, 0, g.GetHighestBidderIdx())
+}
