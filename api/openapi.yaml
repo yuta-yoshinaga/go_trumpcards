@@ -73730,8 +73730,12 @@ components:
               type: integer
               description: >-
                 Legal moves that would remain after playing the recommended fan.
-                This is the score the recommendation was chosen by, so a larger
-                value is what makes one fan better than another.
+            canClear:
+              type: boolean
+              description: Whether the search found a path to clear the deal.
+            continuationMoves:
+              type: integer
+              description: Number of moves in the found clearing continuation, or zero when none was found.
         message:
           type: string
         messageCode:
