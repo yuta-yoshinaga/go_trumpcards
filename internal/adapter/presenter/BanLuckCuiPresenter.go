@@ -94,14 +94,14 @@ func (cp *BanLuckCuiPresenter) writeResult(sb *strings.Builder, c interfaces.Ban
 			break
 		}
 		multiplier := 0
-		if i == c.GetBankerSeat() {
+		if i == banker {
 			multiplier = domain.BanLuckPayoutFor(r.Rank)
 		} else {
 			switch r.Outcome {
 			case domain.BanLuckOutcomeWin:
 				multiplier = domain.BanLuckPayoutFor(r.Rank)
 			case domain.BanLuckOutcomeLose:
-				if banker := c.GetBankerSeat(); banker >= 0 && banker < len(results) {
+				if banker >= 0 && banker < len(results) {
 					multiplier = domain.BanLuckPayoutFor(results[banker].Rank)
 				}
 			}
@@ -115,7 +115,7 @@ func (cp *BanLuckCuiPresenter) writeResult(sb *strings.Builder, c interfaces.Ban
 			"rank", i18n.T("banluck.rank."+domain.BanLuckRankName(r.Rank)),
 			"multiplier", multiplierText,
 			"delta", strconv.Itoa(r.Delta))
-		if i != banker {
+		if i != banker && banker >= 0 && banker < len(hands) && i < len(hands) && hands[i] != nil && hands[banker] != nil {
 			line += i18n.Tf("banluck.comparison",
 				"banker", cp.seatName(c, banker),
 				"score", strconv.Itoa(hands[i].GetScore()),
