@@ -185,7 +185,7 @@ function BlackHolePageContent() {
   const hintAnnounce = !showLegalHint
     ? ''
     : recommendedTop && recommendedFan !== null
-      ? `${t('hintRecommendedAnnounce', { card: cardAlt(recommendedTop), fan: recommendedFan + 1, movesAfter: state.hint?.movesAfter ?? 0 })} · ${legalFansAnnounce}`
+      ? `${t('hintRecommendedAnnounce', { card: cardAlt(recommendedTop), fan: recommendedFan + 1, movesAfter: state.hint?.movesAfter ?? 0 })} ${state.hint?.canClear ? t('clearIn', { count: state.hint.continuationMoves }) : t('cannotConfirmClear')} · ${legalFansAnnounce}`
       : legalFansAnnounce;
 
   const renderFan = (fan: (typeof state.fans)[number], idx: number) => (
@@ -309,6 +309,11 @@ function BlackHolePageContent() {
         <span className="sr-only" role="status" aria-live="polite" data-testid="bh-hint-announce">
           {hintAnnounce}
         </span>
+        {showLegalHint && recommendedTop && state.hint && (
+          <p className="mt-2 text-xs text-ds-text-primary" data-testid="bh-hint-detail">
+            {state.hint.canClear ? t('clearIn', { count: state.hint.continuationMoves }) : t('cannotConfirmClear')}
+          </p>
+        )}
 
         <div
           className={

@@ -34,8 +34,10 @@ const (
 
 // BlackHoleHint 推奨手。Fan は移動可能な扇のインデックス。
 type BlackHoleHint struct {
-	Fan        int
-	MovesAfter int
+	Fan               int
+	MovesAfter        int
+	CanClear          bool
+	ContinuationMoves int
 }
 
 // BlackHole Black Hole (ブラックホール) 本体。状態のみを保持する。
@@ -121,7 +123,11 @@ func blackHoleAdjacent(a, b *Card) bool {
 	if a == nil || b == nil {
 		return false
 	}
-	diff := a.GetValue() - b.GetValue()
+	return blackHoleAdjacentValues(a.GetValue(), b.GetValue())
+}
+
+func blackHoleAdjacentValues(a, b int) bool {
+	diff := a - b
 	if diff < 0 {
 		diff = -diff
 	}
@@ -214,22 +220,99 @@ func (g *BlackHole) GiveUp() {
 
 // GetHint 次に積める扇のインデックスを返す (なければ nil)。
 func (g *BlackHole) GetHint() *BlackHoleHint {
+	// メモ化しながら残りの配札を探索する。nodeLimit で打ち切られた枝はクリア不能扱いになる。
+	// クリア手順が 1 つも見つからなければ従来の局所評価 (legalMovesAfter 最大) を使う。
+	const nodeLimit = 500
+	visits := 0
+	memo := make(map[string]int)
+	var solve func(int) (bool, int)
+	solve = func(top int) (bool, int) {
+		keyBytes := make([]byte, 0, len(g.fans)*4+1)
+		keyBytes = append(keyBytes, byte(top))
+		for _, fan := range g.fans {
+			keyBytes = append(keyBytes, byte(len(fan)))
+			for _, c := range fan {
+				keyBytes = append(keyBytes, byte(c.GetValue()))
+			}
+		}
+		key := string(keyBytes)
+		if v, ok := memo[key]; ok {
+			return v > 0, max(0, v-1)
+		}
+		visits++
+		if visits > nodeLimit {
+			return false, -1
+		}
+		if blackHoleRemainingCards(g.fans) == 0 {
+			return true, 0
+		}
+		best := -1
+		for i, fan := range g.fans {
+			if len(fan) == 0 || !blackHoleAdjacentValues(fan[len(fan)-1].GetValue(), top) {
+				continue
+			}
+			c := fan[len(fan)-1]
+			g.fans[i] = fan[:len(fan)-1]
+			won, depth := solve(c.GetValue())
+			g.fans[i] = fan
+			if depth < 0 {
+				return false, -1
+			}
+			if won && (best < 0 || depth+1 > best) {
+				best = depth + 1
+			}
+		}
+		if best >= 0 {
+			memo[key] = best + 1
+			return true, best
+		}
+		memo[key] = -1
+		return false, 0
+	}
 	best, bestScore := -1, -1
+	bestDepth := 0
+	bestWinFan := -1
 	for i := range g.fans {
 		if !g.canPlay(i) {
 			continue
 		}
+		card := g.fanTop(i)
+		fan := g.fans[i]
+		g.fans[i] = fan[:len(fan)-1]
+		won, depth := solve(card.GetValue())
+		g.fans[i] = fan
 		score := g.legalMovesAfter(i)
 		// 同点なら番号の小さい扇。**決定性が要る** ── 同じ盤面で毎回違う手を
 		// 勧めると、画面の★が理由もなく飛び回る。
 		if score > bestScore {
 			best, bestScore = i, score
 		}
+		if won && depth+1 > bestDepth {
+			bestWinFan, bestDepth = i, depth+1
+		}
 	}
 	if best < 0 {
 		return nil
 	}
-	return &BlackHoleHint{Fan: best, MovesAfter: bestScore}
+	if bestWinFan >= 0 {
+		best = bestWinFan
+		bestScore = g.legalMovesAfter(best)
+	}
+	canClear := bestWinFan >= 0
+	continuationMoves := 0
+	if canClear {
+		continuationMoves = bestDepth
+	}
+	return &BlackHoleHint{Fan: best, MovesAfter: bestScore, CanClear: canClear, ContinuationMoves: continuationMoves}
+}
+
+// blackHoleRemainingCards は全ての扇に残っているカード枚数を返す。
+func blackHoleRemainingCards(fans [][]*Card) int {
+	n := 0
+	for _, f := range fans {
+		n += len(f)
+	}
+	return n
 }
 
 // legalMovesAfter は扇 i を打った直後に残る合法手の数を返す。
