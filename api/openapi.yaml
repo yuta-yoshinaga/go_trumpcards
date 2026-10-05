@@ -54338,7 +54338,7 @@ components:
             $ref: '#/components/schemas/Card'
         dealerCards:
           type: array
-          description: Dealer's 7 dealt cards (hidden until End phase)
+          description: Dealer's 7 dealt cards (empty until the game ends)
           items:
             $ref: '#/components/schemas/Card'
         playerHighHand:
@@ -54353,12 +54353,12 @@ components:
             $ref: '#/components/schemas/Card'
         dealerHighHand:
           type: array
-          description: Dealer's 5-card high hand
+          description: Dealer's 5-card high hand; empty until the game ends
           items:
             $ref: '#/components/schemas/Card'
         dealerLowHand:
           type: array
-          description: Dealer's 2-card low hand
+          description: Dealer's 2-card low hand; empty until the game ends
           items:
             $ref: '#/components/schemas/Card'
         phase:
@@ -54407,11 +54407,11 @@ components:
           example: ""
         dealerHighRank:
           type: integer
-          description: Dealer's high hand rank name
+          description: Dealer's high hand rank name; unpublished until the game ends (-1)
           example: ""
         dealerLowRank:
           type: integer
-          description: Dealer's low hand rank name
+          description: Dealer's low hand rank name; unpublished until the game ends (-1)
           example: ""
         message:
           type: string
