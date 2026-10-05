@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { schnapsenApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, SchnapsenResponse } from '../types/card';
@@ -77,6 +78,35 @@ describe('SchnapsenPage', () => {
     expect(screen.getByText(/得点 \(66点で勝利\) — あなた: 0 \/ CPU: 0/)).toBeInTheDocument();
     expect(screen.queryByText(/\{\{target\}\}/)).not.toBeInTheDocument();
     expect(screen.getByTestId('schnapsen-phase')).toHaveTextContent(/第1フェーズ/);
+  });
+
+  it('labels trick cards with the card and the player who played them', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        currentTrick: [
+          { playerIdx: 0, card: card('SPADE', 1) },
+          { playerIdx: 1, card: card('HEART', 10) },
+        ],
+        currentPlayerIdx: 0,
+      }),
+    );
+    renderWithProviders(<SchnapsenPage />);
+    const trickCards = await screen.findByTestId('trick-display-cards');
+    await waitFor(() => expect(trickCards.querySelectorAll('img')[0]).toHaveAttribute('alt', 'あなたが出した♠ A'));
+    expect(trickCards.querySelectorAll('img')[1]).toHaveAttribute('alt', 'CPU 1が出した♥ 10');
+  });
+
+  it('localizes trick card labels in English', async () => {
+    const previousLanguage = i18n.language;
+    mockExec.mockResolvedValue(makeState({ currentTrick: [{ playerIdx: 1, card: card('HEART', 10) }] }));
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<SchnapsenPage />);
+      const trickCards = await screen.findByTestId('trick-display-cards');
+      await waitFor(() => expect(trickCards.querySelector('img')).toHaveAttribute('alt', '♥ 10 played by CPU 1'));
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('shows the human hand as play buttons', async () => {
