@@ -124,11 +124,21 @@ describe('SjavsPage', () => {
     [SjavsPhase.HAND_END, false, 'sjavs-handEnd-reason', 'ハンド終了後は札を出せません'],
     [SjavsPhase.GAME_END, true, 'sjavs-gameEnd-reason', 'ゲーム終了後は札を出せません'],
   ])('explains why cards cannot be played in phase %s', async (phase, gameEndFlag, reasonId, reason) => {
-    mockExec.mockResolvedValue(makeState({ phase, gameEndFlag }));
+    mockExec.mockResolvedValue(
+      makeState({ phase, gameEndFlag, ...(phase === SjavsPhase.HAND_END ? { currentPlayerIdx: 2 } : {}) }),
+    );
     renderWithProviders(<SjavsPage />);
     await waitFor(() => expect(document.querySelectorAll('[data-tutorial="sj-hand"] button')).toHaveLength(3));
     expect(document.querySelector('[data-tutorial="sj-hand"] button')).toHaveAttribute('aria-describedby', reasonId);
     expect(document.getElementById(reasonId)).toHaveTextContent(reason);
+  });
+
+  it('does not render a reason when every card is playable', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: SjavsPhase.PLAY, validIndices: [0, 1, 2] }));
+    renderWithProviders(<SjavsPage />);
+    await waitFor(() => expect(document.querySelectorAll('[data-tutorial="sj-hand"] button')).toHaveLength(3));
+    expect(document.getElementById('sjavs-follow-reason')).not.toBeInTheDocument();
+    expect(document.querySelectorAll('[data-tutorial="sj-hand"] button[aria-disabled="true"]')).toHaveLength(0);
   });
 
   it('labels hand points with the same team identifiers shown by each player', async () => {
