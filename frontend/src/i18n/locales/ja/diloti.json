@@ -64,5 +64,10 @@
     "playButton": "手札を選び、候補から「取る」か「宣言する」を押します。どちらも選ばないときだけ「場に置く」が出ます。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
-  "declValue": "宣言{{value}}"
+  "declValue": "宣言{{value}}",
+  "hintTargets": {
+    "captureTable": "対象の場札: {{cards}}",
+    "captureDeclaration": "対象の宣言: 宣言{{idx}}（{{value}}）",
+    "declare": "宣言{{value}}の対象の場札: {{cards}}"
+  }
 }

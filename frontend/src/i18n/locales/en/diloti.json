@@ -64,5 +64,10 @@
     "playButton": "Pick a card, then press a Take or Declare option. Lay off appears only when you choose neither.",
     "resetButton": "The reset button starts a new game."
   },
-  "declValue": "declaration of {{value}}"
+  "declValue": "declaration of {{value}}",
+  "hintTargets": {
+    "captureTable": "Target table cards: {{cards}}",
+    "captureDeclaration": "Target declaration {{idx}} (value {{value}})",
+    "declare": "Declare {{value}} for these table cards: {{cards}}"
+  }
 }
