@@ -176,26 +176,27 @@ type GermanSoloHint struct {
 
 // GermanSolo ジャーマン・ソロのゲームクラス
 type GermanSolo struct {
-	trumpCards       *TrumpCards
-	players          []*GermanSoloPlayer
-	config           GermanSoloConfig
-	phase            GermanSoloPhase
-	roundNumber      int
-	trickNumber      int
-	currentPlayerIdx int
-	currentTrick     []*TrickCard
-	leadPlayerIdx    int
-	dealerIdx        int
-	forehandIdx      int                                // ディーラーの左隣 (ビッド開始)
-	declarerIdx      int                                // ジャーマン・ソロ (-1=未確定)
-	winningBid       GermanSoloBid                      // 確定したビッド (ジャーマン・ソロの宣言)
-	trumpSuit        int                                // 切り札スート (-1=未確定, 1..4)
-	currentBidderIdx int                                // 現在ビッド中のプレイヤー (bid フェーズ)
-	bids             [GermanSoloPlayerCnt]GermanSoloBid // 各プレイヤーの宣言
-	bidTrump         [GermanSoloPlayerCnt]int           // 各プレイヤーが宣言時に選んだ切り札 (-1=なし)
-	bidActed         [GermanSoloPlayerCnt]bool          // 各プレイヤーが宣言済みか
-	playerScores     [GermanSoloPlayerCnt]int           // 累積ゲーム点
-	lastTrickWinner  int                                // 直前トリックの勝者 (-1=未確定)
+	trumpCards        *TrumpCards
+	players           []*GermanSoloPlayer
+	config            GermanSoloConfig
+	phase             GermanSoloPhase
+	roundNumber       int
+	trickNumber       int
+	currentPlayerIdx  int
+	currentTrick      []*TrickCard
+	leadPlayerIdx     int
+	dealerIdx         int
+	forehandIdx       int                                // ディーラーの左隣 (ビッド開始)
+	declarerIdx       int                                // ジャーマン・ソロ (-1=未確定)
+	winningBid        GermanSoloBid                      // 確定したビッド (ジャーマン・ソロの宣言)
+	trumpSuit         int                                // 切り札スート (-1=未確定, 1..4)
+	currentBidderIdx  int                                // 現在ビッド中のプレイヤー (bid フェーズ)
+	bids              [GermanSoloPlayerCnt]GermanSoloBid // 各プレイヤーの宣言
+	bidTrump          [GermanSoloPlayerCnt]int           // 各プレイヤーが宣言時に選んだ切り札 (-1=なし)
+	bidActed          [GermanSoloPlayerCnt]bool          // 各プレイヤーが宣言済みか
+	playerScores      [GermanSoloPlayerCnt]int           // 累積ゲーム点
+	playerScoreDeltas [GermanSoloPlayerCnt]int           // 直近ディールで精算した得点増減
+	lastTrickWinner   int                                // 直前トリックの勝者 (-1=未確定)
 
 	// エース呼び。calledAceSuit は指名されたエースのスート (-1=未指名)。
 	// **呼び声は卓で聞こえるのでエース自体は公開情報**だが、誰が持っているかは
@@ -291,6 +292,7 @@ func (g *GermanSolo) NextRound() {
 
 // startRound 手札を配り、ビッドフェーズを開始する。
 func (g *GermanSolo) startRound() {
+	g.playerScoreDeltas = [GermanSoloPlayerCnt]int{}
 	g.trickNumber = 1
 	g.currentTrick = nil
 	g.trickResolved = false
@@ -1019,10 +1021,11 @@ func (g *GermanSolo) applyScores(outcome GermanSoloOutcome) {
 		// **味方も落札者と同じ側の点を受け取る。** 落札者だけに配ると、
 		// 呼ばれたエースを持っていた席は自分が勝った側にいながら相手側の点を貰う。
 		if g.germanSoloSideOf(i) {
-			g.playerScores[i] += germanSoloDelta
+			g.playerScoreDeltas[i] = germanSoloDelta
 		} else {
-			g.playerScores[i] += oppDelta
+			g.playerScoreDeltas[i] = oppDelta
 		}
+		g.playerScores[i] += g.playerScoreDeltas[i]
 	}
 }
 
@@ -1600,6 +1603,9 @@ func (g *GermanSolo) GetCurrentBidderIdx() int { return g.currentBidderIdx }
 // GetPlayerScores プレイヤー別累積点取得
 func (g *GermanSolo) GetPlayerScores() [GermanSoloPlayerCnt]int { return g.playerScores }
 
+// GetPlayerScoreDeltas returns the score changes settled for the most recent deal.
+func (g *GermanSolo) GetPlayerScoreDeltas() [GermanSoloPlayerCnt]int { return g.playerScoreDeltas }
+
 // SetPlayerScores プレイヤー別累積点設定 (テスト用)
 func (g *GermanSolo) SetPlayerScores(s [GermanSoloPlayerCnt]int) { g.playerScores = s }
 
@@ -1657,26 +1663,27 @@ func (g *GermanSolo) GetPlayableIndices(playerIdx int) []int {
 
 // germanSoloJSON is the JSON wire format for GermanSolo.
 type germanSoloJSON struct {
-	TrumpCards       *TrumpCards                        `json:"tc"`
-	Players          []*GermanSoloPlayer                `json:"ps"`
-	Config           GermanSoloConfig                   `json:"cf"`
-	Phase            GermanSoloPhase                    `json:"ph"`
-	RoundNumber      int                                `json:"rn"`
-	TrickNumber      int                                `json:"tn"`
-	CurrentPlayerIdx int                                `json:"ci"`
-	CurrentTrick     []*TrickCard                       `json:"ct"`
-	LeadPlayerIdx    int                                `json:"li"`
-	DealerIdx        int                                `json:"di"`
-	ForehandIdx      int                                `json:"fh"`
-	DeclarerIdx      int                                `json:"om"`
-	WinningBid       GermanSoloBid                      `json:"wb"`
-	TrumpSuit        int                                `json:"ts"`
-	CurrentBidderIdx int                                `json:"cbi"`
-	Bids             [GermanSoloPlayerCnt]GermanSoloBid `json:"bd"`
-	BidTrump         [GermanSoloPlayerCnt]int           `json:"bt"`
-	BidActed         [GermanSoloPlayerCnt]bool          `json:"ba"`
-	PlayerScores     [GermanSoloPlayerCnt]int           `json:"sc"`
-	LastTrickWinner  int                                `json:"lt"`
+	TrumpCards        *TrumpCards                        `json:"tc"`
+	Players           []*GermanSoloPlayer                `json:"ps"`
+	Config            GermanSoloConfig                   `json:"cf"`
+	Phase             GermanSoloPhase                    `json:"ph"`
+	RoundNumber       int                                `json:"rn"`
+	TrickNumber       int                                `json:"tn"`
+	CurrentPlayerIdx  int                                `json:"ci"`
+	CurrentTrick      []*TrickCard                       `json:"ct"`
+	LeadPlayerIdx     int                                `json:"li"`
+	DealerIdx         int                                `json:"di"`
+	ForehandIdx       int                                `json:"fh"`
+	DeclarerIdx       int                                `json:"om"`
+	WinningBid        GermanSoloBid                      `json:"wb"`
+	TrumpSuit         int                                `json:"ts"`
+	CurrentBidderIdx  int                                `json:"cbi"`
+	Bids              [GermanSoloPlayerCnt]GermanSoloBid `json:"bd"`
+	BidTrump          [GermanSoloPlayerCnt]int           `json:"bt"`
+	BidActed          [GermanSoloPlayerCnt]bool          `json:"ba"`
+	PlayerScores      [GermanSoloPlayerCnt]int           `json:"sc"`
+	PlayerScoreDeltas [GermanSoloPlayerCnt]int           `json:"sdx"`
+	LastTrickWinner   int                                `json:"lt"`
 	// エース呼びは盤面の一部。落とすと復元後に**味方が席 0 になる** (ゼロ値)。
 	// 呼ばれたエースも単独プレイの区別も消えるので、勝敗の集計が静かに変わる。
 	CalledAceSuit   int               `json:"ca"`
@@ -1695,37 +1702,38 @@ type germanSoloJSON struct {
 // MarshalJSON implements json.Marshaler.
 func (g *GermanSolo) MarshalJSON() ([]byte, error) {
 	return json.Marshal(germanSoloJSON{
-		TrumpCards:       g.trumpCards,
-		Players:          g.players,
-		Config:           g.config,
-		Phase:            g.phase,
-		RoundNumber:      g.roundNumber,
-		TrickNumber:      g.trickNumber,
-		CurrentPlayerIdx: g.currentPlayerIdx,
-		CurrentTrick:     g.currentTrick,
-		LeadPlayerIdx:    g.leadPlayerIdx,
-		DealerIdx:        g.dealerIdx,
-		ForehandIdx:      g.forehandIdx,
-		DeclarerIdx:      g.declarerIdx,
-		WinningBid:       g.winningBid,
-		TrumpSuit:        g.trumpSuit,
-		CurrentBidderIdx: g.currentBidderIdx,
-		Bids:             g.bids,
-		BidTrump:         g.bidTrump,
-		BidActed:         g.bidActed,
-		PlayerScores:     g.playerScores,
-		LastTrickWinner:  g.lastTrickWinner,
-		CalledAceSuit:    g.calledAceSuit,
-		PartnerIdx:       g.partnerIdx,
-		PartnerRevealed:  g.partnerRevealed,
-		PlaysAlone:       g.playsAlone,
-		TrickResolved:    g.trickResolved,
-		Outcome:          g.outcome,
-		Result:           g.result,
-		Scored:           g.scored,
-		GameEndFlag:      g.gameEndFlag,
-		WinnerPlayer:     g.winnerPlayer,
-		ActionLog:        g.actionLog,
+		TrumpCards:        g.trumpCards,
+		Players:           g.players,
+		Config:            g.config,
+		Phase:             g.phase,
+		RoundNumber:       g.roundNumber,
+		TrickNumber:       g.trickNumber,
+		CurrentPlayerIdx:  g.currentPlayerIdx,
+		CurrentTrick:      g.currentTrick,
+		LeadPlayerIdx:     g.leadPlayerIdx,
+		DealerIdx:         g.dealerIdx,
+		ForehandIdx:       g.forehandIdx,
+		DeclarerIdx:       g.declarerIdx,
+		WinningBid:        g.winningBid,
+		TrumpSuit:         g.trumpSuit,
+		CurrentBidderIdx:  g.currentBidderIdx,
+		Bids:              g.bids,
+		BidTrump:          g.bidTrump,
+		BidActed:          g.bidActed,
+		PlayerScores:      g.playerScores,
+		PlayerScoreDeltas: g.playerScoreDeltas,
+		LastTrickWinner:   g.lastTrickWinner,
+		CalledAceSuit:     g.calledAceSuit,
+		PartnerIdx:        g.partnerIdx,
+		PartnerRevealed:   g.partnerRevealed,
+		PlaysAlone:        g.playsAlone,
+		TrickResolved:     g.trickResolved,
+		Outcome:           g.outcome,
+		Result:            g.result,
+		Scored:            g.scored,
+		GameEndFlag:       g.gameEndFlag,
+		WinnerPlayer:      g.winnerPlayer,
+		ActionLog:         g.actionLog,
 	})
 }
 
@@ -1891,6 +1899,7 @@ func (g *GermanSolo) UnmarshalJSON(data []byte) error {
 	g.bidTrump = j.BidTrump
 	g.bidActed = j.BidActed
 	g.playerScores = j.PlayerScores
+	g.playerScoreDeltas = j.PlayerScoreDeltas
 	g.lastTrickWinner = j.LastTrickWinner
 	g.calledAceSuit, g.partnerIdx, g.partnerRevealed, g.playsAlone =
 		germanSoloNormaliseAceCall(j.CalledAceSuit, j.PartnerIdx, j.PartnerRevealed, j.PlaysAlone)

@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { GERMAN_SOLO_HELP, parseGermanSoloCommand } from '../utils/cli/commands/germansoloCommands';
 import { formatGermanSoloState } from '../utils/cli/formatters/germansoloFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { MATADOR_NAME_KEY, matadorRank } from '../utils/germansoloMatadors';
 import { isRequestedHint } from '../utils/hintRequest';
 import { findPlayerName, playerName } from '../utils/playerUtils';
@@ -418,6 +419,19 @@ function GermanSoloPageContent() {
                         })}
                       </div>
                     )}
+                    <section aria-label={t('roundResult.scoreChanges')}>
+                      {state.players.map((p) => {
+                        const delta = state.playerScoreDeltas[p.id];
+                        return (
+                          <div key={p.id}>
+                            {playerName(p.id, p.isHuman)}:{' '}
+                            {t('roundResult.scoreDelta', {
+                              score: formatSignedDelta(delta),
+                            })}
+                          </div>
+                        );
+                      })}
+                    </section>
                   </div>
                 )}
               </div>

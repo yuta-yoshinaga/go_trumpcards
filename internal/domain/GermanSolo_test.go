@@ -407,6 +407,7 @@ func germanSoloScoreRound(t *testing.T, bid domain.GermanSoloBid, partner int, d
 	}
 	g.SetPhase(domain.GermanSoloPhaseRoundEnd)
 	g.ScoreRound()
+	assert.Equal(t, g.GetPlayerScores(), g.GetPlayerScoreDeltas(), "直近ディールの増減は精算で適用した点")
 	return g.GetPlayerScores()
 }
 

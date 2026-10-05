@@ -65745,6 +65745,7 @@ components:
         - trumpSuit
         - currentTrick
         - playerScores
+        - playerScoreDeltas
         - outcome
         - result
         - playableIndices
@@ -65820,6 +65821,11 @@ components:
             $ref: '#/components/schemas/GermanSoloTrickCard'
         playerScores:
           type: array
+          items:
+            type: integer
+        playerScoreDeltas:
+          type: array
+          description: Score changes from the most recently settled deal, indexed by seat.
           items:
             type: integer
         outcome:

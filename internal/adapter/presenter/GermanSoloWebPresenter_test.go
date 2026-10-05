@@ -40,6 +40,7 @@ func setupGermanSoloWebMock() *interfaces.MockGermanSoloGame {
 	m.On("GetOutcome").Return(domain.GermanSoloOutcomeNone)
 	m.On("GetResult").Return(domain.GermanSoloResultNone)
 	m.On("GetPlayerScores").Return([domain.GermanSoloPlayerCnt]int{})
+	m.On("GetPlayerScoreDeltas").Return([domain.GermanSoloPlayerCnt]int{1, -1, 2, -2})
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetPlayableIndices", 0).Return([]int{0})
 	m.On("IsHumanTurn").Return(true)
@@ -92,6 +93,7 @@ func TestGermanSoloWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, domain.CardDesignHeart, resObj.TrumpSuit)
 		assert.Equal(t, 1, resObj.ForehandIdx)
 		assert.Equal(t, int(domain.GermanSoloBidFrage), resObj.WinningBid)
+		assert.Equal(t, [domain.GermanSoloPlayerCnt]int{1, -1, 2, -2}, resObj.PlayerScoreDeltas)
 		assert.True(t, resObj.IsHumanTurn)
 	})
 
