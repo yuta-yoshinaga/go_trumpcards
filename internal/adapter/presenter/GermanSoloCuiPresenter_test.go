@@ -45,6 +45,7 @@ func setupGermanSoloCuiMock() *interfaces.MockGermanSoloGame {
 	m.On("GetOutcome").Return(domain.GermanSoloOutcomeMade)
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetPlayerScores").Return([domain.GermanSoloPlayerCnt]int{})
+	m.On("GetPlayerScoreDeltas").Return([domain.GermanSoloPlayerCnt]int{})
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetSideTrickCounts").Return(2, 3)
 	m.On("RequiredTricks").Return(domain.GermanSoloMakeTricks)
@@ -103,10 +104,14 @@ func TestGermanSoloCuiPresenter_Output(t *testing.T) {
 	t.Run("round end prompt", func(t *testing.T) {
 		m, _ := setupGermanSoloCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayerScoreDeltas")
 		m.On("GetPhase").Return(domain.GermanSoloPhaseRoundEnd)
+		m.On("GetPlayerScoreDeltas").Return([domain.GermanSoloPlayerCnt]int{3, -1, 0, -2})
 		result := p.Output(m, nil)
 		assert.NotEmpty(t, result)
 		assert.Contains(t, result, "成功") // outcome label
+		assert.Contains(t, result, "あなた: 今回の増減 +3点")
+		assert.Contains(t, result, "CPU 1: 今回の増減 -1点")
 	})
 
 	t.Run("game end banner", func(t *testing.T) {

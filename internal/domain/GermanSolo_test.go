@@ -375,11 +375,14 @@ func TestGermanSolo_PartnerStaysHiddenUntilTheCalledAceIsPlayed(t *testing.T) {
 // --- scoring ------------------------------------------------------------
 
 // germanSoloScoreRound runs a deal end with the supplied trick split and returns the scores.
-func germanSoloScoreRound(t *testing.T, bid domain.GermanSoloBid, partner int, declarerTricks int) [domain.GermanSoloPlayerCnt]int {
+func germanSoloScoreRound(t *testing.T, bid domain.GermanSoloBid, partner int, declarerTricks int, startingScores ...[domain.GermanSoloPlayerCnt]int) [domain.GermanSoloPlayerCnt]int {
 	t.Helper()
 	g := newTestGermanSolo()
 	g.SetDeclarerIdx(0)
 	g.SetWinningBid(bid)
+	if len(startingScores) > 0 {
+		g.SetPlayerScores(startingScores[0])
+	}
 	g.SetTrumpSuit(domain.CardDesignHeart)
 	if partner >= 0 {
 		g.SetCalledAceSuitForTest(domain.CardDesignClover)
@@ -407,8 +410,26 @@ func germanSoloScoreRound(t *testing.T, bid domain.GermanSoloBid, partner int, d
 	}
 	g.SetPhase(domain.GermanSoloPhaseRoundEnd)
 	g.ScoreRound()
-	assert.Equal(t, g.GetPlayerScores(), g.GetPlayerScoreDeltas(), "直近ディールの増減は精算で適用した点")
+	for i, delta := range g.GetPlayerScoreDeltas() {
+		assert.Equal(t, g.GetPlayerScores()[i], startingScore(startingScores, i)+delta, "席 %d の累積点は開始点に今回の増減を加えた値", i)
+	}
 	return g.GetPlayerScores()
+}
+
+func startingScore(scores [][domain.GermanSoloPlayerCnt]int, seat int) int {
+	if len(scores) == 0 {
+		return 0
+	}
+	return scores[0][seat]
+}
+
+func TestGermanSolo_ScoreRoundAddsDeltasToExistingScores(t *testing.T) {
+	start := [domain.GermanSoloPlayerCnt]int{20, -5, 7, -22}
+	scores := germanSoloScoreRound(t, domain.GermanSoloBidSolo, -1, 5, start)
+	deltas := [domain.GermanSoloPlayerCnt]int{12, -4, -4, -4}
+	for seat := range scores {
+		assert.Equal(t, start[seat]+deltas[seat], scores[seat], "seat %d", seat)
+	}
 }
 
 func TestGermanSolo_SoloMadePaysThreeTimesTheContract(t *testing.T) {
@@ -644,6 +665,41 @@ func TestGermanSolo_JSONRoundTripKeepsTheAceCall(t *testing.T) {
 	assert.Equal(t, 2, restored.GetDeclarerSideSize())
 	assert.Equal(t, domain.GermanSoloBidFrage, restored.GetWinningBid())
 	assert.Equal(t, domain.CardDesignHeart, restored.GetTrumpSuit())
+}
+
+func TestGermanSolo_JSONRoundTripKeepsPlayerScoreDeltas(t *testing.T) {
+	g := newTestGermanSolo()
+	g.SetDeclarerIdx(0)
+	g.SetWinningBid(domain.GermanSoloBidSolo)
+	g.SetTrumpSuit(domain.CardDesignHeart)
+	g.SetPlaysAloneForTest(true)
+	g.SetPlayerScores([domain.GermanSoloPlayerCnt]int{20, -5, 7, -22})
+	germanSoloGiveTricks(g, 0, 5)
+	germanSoloGiveTricks(g, 1, domain.GermanSoloTrickCount-5)
+	g.SetPhase(domain.GermanSoloPhaseRoundEnd)
+	g.ScoreRound()
+
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	restored := new(domain.GermanSolo)
+	require.NoError(t, json.Unmarshal(data, restored))
+	assert.Equal(t, g.GetPlayerScoreDeltas(), restored.GetPlayerScoreDeltas())
+}
+
+func TestGermanSolo_NextRoundClearsPlayerScoreDeltas(t *testing.T) {
+	g := newTestGermanSolo()
+	g.SetDeclarerIdx(0)
+	g.SetWinningBid(domain.GermanSoloBidSolo)
+	g.SetTrumpSuit(domain.CardDesignHeart)
+	g.SetPlaysAloneForTest(true)
+	germanSoloGiveTricks(g, 0, 5)
+	germanSoloGiveTricks(g, 1, domain.GermanSoloTrickCount-5)
+	g.SetPhase(domain.GermanSoloPhaseRoundEnd)
+	g.ScoreRound()
+	assert.NotEqual(t, [domain.GermanSoloPlayerCnt]int{}, g.GetPlayerScoreDeltas())
+
+	g.NextRound()
+	assert.Equal(t, [domain.GermanSoloPlayerCnt]int{}, g.GetPlayerScoreDeltas())
 }
 
 func TestGermanSolo_JSONRejectsOutOfRangeValues(t *testing.T) {

@@ -1603,7 +1603,7 @@ func (g *GermanSolo) GetCurrentBidderIdx() int { return g.currentBidderIdx }
 // GetPlayerScores プレイヤー別累積点取得
 func (g *GermanSolo) GetPlayerScores() [GermanSoloPlayerCnt]int { return g.playerScores }
 
-// GetPlayerScoreDeltas returns the score changes settled for the most recent deal.
+// GetPlayerScoreDeltas 得点計算済みの直近ディールのプレイヤー別増減点を取得する。
 func (g *GermanSolo) GetPlayerScoreDeltas() [GermanSoloPlayerCnt]int { return g.playerScoreDeltas }
 
 // SetPlayerScores プレイヤー別累積点設定 (テスト用)
