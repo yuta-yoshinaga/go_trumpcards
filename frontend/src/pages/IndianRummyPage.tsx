@@ -121,7 +121,7 @@ function IndianRummyPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('indianrummy', state);
   const { cardWidth } = useCardDimensions();
-  const [keyboardFocusIndex, setKeyboardFocusIndex] = useState(0);
+  const [keyboardFocusIndex, setKeyboardFocusIndex] = useState<number | null>(null);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('indianrummy');
   const cliConfig: CliGameConfig<IndianRummyResponse, Parameters<typeof indianRummyApi.exec>> = useMemo(
@@ -413,7 +413,7 @@ function IndianRummyPageContent() {
                     aria-pressed={selectedCardIndices.includes(idx)}
                     className={`relative transition-transform ${focusRingCard} ${
                       isWildCard(card) ? 'ring-2 ring-ds-info' : ''
-                    } ${keyboardFocusIndex === idx ? 'ring-2 ring-ds-accent' : ''}`}
+                    } ${keyboardFocusIndex === idx ? 'outline-2 outline-offset-2 outline-ds-accent' : ''}`}
                     style={{
                       background: 'none',
                       padding: 0,

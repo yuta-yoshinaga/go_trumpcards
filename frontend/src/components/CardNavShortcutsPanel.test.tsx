@@ -51,6 +51,8 @@ describe('CardNavShortcutsPanel', () => {
     expect(screen.getByText('←')).toBeInTheDocument();
     expect(screen.getByText('→')).toBeInTheDocument();
     expect(screen.getByText('矢印キーで手札の選択位置を移動')).toBeInTheDocument();
+    expect(screen.getByText('Space')).toBeInTheDocument();
+    expect(screen.getByText('フォーカス中の札を選択／解除')).toBeInTheDocument();
   });
 
   it('stays collapsed by default so it costs no vertical space', () => {

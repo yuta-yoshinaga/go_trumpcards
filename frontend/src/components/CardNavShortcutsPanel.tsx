@@ -41,7 +41,12 @@ export function CardNavShortcutsPanel({
       [{ keys: ['1', '0'], description: t('kbd.playCard') }]
     : [
         { keys: ['1', '0'], description: t('kbd.selectCard') },
-        ...(arrowSelection ? [{ keys: ['←', '→'], description: t('kbd.moveCardFocus') }] : []),
+        ...(arrowSelection
+          ? [
+              { keys: ['←', '→'], description: t('kbd.moveCardFocus') },
+              { keys: ['Space'], description: t('kbd.toggleFocusedCard') },
+            ]
+          : []),
         { keys: ['Enter'], description: t('kbd.confirm') },
         { keys: ['Esc'], description: t('kbd.clear') },
       ];

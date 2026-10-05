@@ -635,7 +635,7 @@ describe('IndianRummyPage', () => {
     expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
   });
 
-  it('selects the thirteenth card with arrow keys and Enter', async () => {
+  it('selects the thirteenth card with arrow keys and Space', async () => {
     const thirteenCardState = {
       ...discardPhaseState,
       players: [
@@ -647,9 +647,22 @@ describe('IndianRummyPage', () => {
     renderWithProviders(<IndianRummyPage />);
     await waitFor(() => expect(screen.getAllByRole('button', { pressed: false })).toHaveLength(13));
     for (let i = 0; i < 12; i++) fireEvent.keyDown(document, { key: 'ArrowRight' });
-    fireEvent.keyDown(document, { key: 'Enter' });
+    fireEvent.keyDown(document, { key: ' ' });
     expect(screen.getAllByRole('button', { pressed: true })).toHaveLength(1);
     expect(screen.getAllByRole('button', { pressed: true })[0]).toHaveAttribute('aria-label', '♠ K');
+  });
+
+  it('shows keyboard outline only after arrow navigation and on the focused card', async () => {
+    mockExec.mockResolvedValue(discardPhaseState);
+    renderWithProviders(<IndianRummyPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    const cardButtons = screen.getAllByRole('button', { pressed: false });
+    expect(cardButtons[0]).not.toHaveClass('outline-2');
+    expect(cardButtons[1]).not.toHaveClass('outline-2');
+
+    fireEvent.keyDown(document, { key: 'ArrowRight' });
+    expect(cardButtons[0]).not.toHaveClass('outline-2');
+    expect(cardButtons[1]).toHaveClass('outline-2', 'outline-offset-2', 'outline-ds-accent');
   });
 
   it('Enter key triggers discard in discard phase', async () => {
