@@ -45,6 +45,12 @@ const CW_TUTORIAL_STEPS: TutorialStep[] = [
     placement: 'top',
     advanceOn: 'next',
   },
+  {
+    target: '[data-tutorial="cw-columns"]',
+    messageKey: 'tutorial.rules',
+    placement: 'top',
+    advanceOn: 'next',
+  },
 ];
 
 /** Maps numeric Curds and Whey phases to i18n phase-label keys. */
