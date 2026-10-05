@@ -17,6 +17,21 @@ describe('TutorialTooltip', () => {
     expect(screen.getByText('ここをクリックしてください')).toBeInTheDocument();
   });
 
+  it('renders inline emphasis as strong text without showing the markers', () => {
+    render(<TutorialTooltip {...defaultProps} message="ドミノは**J**を起点にします" />);
+    expect(screen.getByText('J', { selector: 'strong' })).toBeInTheDocument();
+    expect(
+      screen.getByText((_, element) => element?.tagName === 'P' && element.textContent === 'ドミノはJを起点にします'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/\*\*/)).not.toBeInTheDocument();
+  });
+
+  it('keeps messages without emphasis as plain text', () => {
+    render(<TutorialTooltip {...defaultProps} message="Plain tutorial message" />);
+    expect(screen.getByText('Plain tutorial message')).toBeInTheDocument();
+    expect(screen.queryByText('Plain tutorial message', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
   it('renders step indicator', () => {
     render(<TutorialTooltip {...defaultProps} stepIndex={2} totalSteps={5} />);
     expect(screen.getByText('3 / 5')).toBeInTheDocument();
