@@ -137,13 +137,13 @@ describe('SoloWhistPage', () => {
   });
 
   it('shows every seat bid state, distinguishing unbid, pass, and localized contracts', async () => {
-    mockExec.mockResolvedValue(makeSoloWhistState({ bids: [0, 1, 2, 3], bidDone: [false, true, true, true] }));
+    mockExec.mockResolvedValue(makeSoloWhistState({ bids: [0, 0, 2, 3], bidDone: [true, false, true, true] }));
     renderWithProviders(<SoloWhistPage />);
     const history = await screen.findByTestId('solowhist-bid-history');
     expect(history).toHaveTextContent('あなた');
     expect(history).toHaveTextContent('未入札');
+    expect(history).toHaveTextContent('パス');
     expect(history).toHaveTextContent('CPU 1');
-    expect(history).toHaveTextContent('ソロ');
     expect(history).toHaveTextContent('ミゼール');
     expect(history).toHaveTextContent('アバンダンス');
   });

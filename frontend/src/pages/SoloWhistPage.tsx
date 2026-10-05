@@ -273,7 +273,7 @@ function SoloWhistPageContent() {
               <li key={player.id} className="text-sm text-ds-text-primary">
                 <span>{playerName(player.id, player.isHuman)}: </span>
                 <span>
-                  {state.bidDone[idx] ? t(`bid.${CONTRACT_KEYS[state.bids[idx] as 0 | 1 | 2 | 3]}`) : t('bidUnbid')}
+                  {state.bidDone?.[idx] ? t(`bid.${CONTRACT_KEYS[state.bids[idx] as 0 | 1 | 2 | 3]}`) : t('bidUnbid')}
                 </span>
               </li>
             ))}
