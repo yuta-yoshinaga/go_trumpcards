@@ -51,8 +51,9 @@ type BaseballPokerWebOutputSeat struct {
 
 // BaseballPokerWebOutput ベースボールポーカーWebアウトプット
 type BaseballPokerWebOutput struct {
-	Phase int                           `json:"phase"`
-	Seats []*BaseballPokerWebOutputSeat `json:"seats"`
+	ServerHint *BaseballPokerWebOutputHint   `json:"serverHint,omitempty"`
+	Phase      int                           `json:"phase"`
+	Seats      []*BaseballPokerWebOutputSeat `json:"seats"`
 	// Street は配り終えた表札の数 (1..4)。
 	Street int `json:"street"`
 	// StreetTotal は表札の総数 (4)。残りのベットラウンド数が読める。
@@ -84,6 +85,12 @@ type BaseballPokerWebOutput struct {
 
 	Config *BaseballPokerWebOutCfg `json:"config,omitempty"`
 	WebOutputBase
+}
+
+// BaseballPokerWebOutputHint はサーバが評価した助言。
+type BaseballPokerWebOutputHint struct {
+	Action string `json:"action"`
+	Reason string `json:"reason"`
 }
 
 // BaseballPokerWebController ベースボールポーカーWebコントローラークラス

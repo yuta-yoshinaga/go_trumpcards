@@ -60174,6 +60174,14 @@ components:
       type: object
       description: Response payload for /baseballpoker/exec
       properties:
+        serverHint:
+          type: object
+          description: Server-computed recommendation for the human's current decision.
+          properties:
+            action:
+              type: string
+            reason:
+              type: string
         messageParams:
           type: object
           description: "Substitution values for `messageCode`. Absent when the message takes none."

@@ -3,6 +3,7 @@ import type {
   AnacondaResponse,
   AndarBaharResponse,
   BaccaratBanqueResponse,
+  BaseballPokerResponse,
   BasraResponse,
   BatakResponse,
   BeziqueResponse,
@@ -111,6 +112,36 @@ import type {
   ZwanzigerrufenResponse,
 } from '../types/card';
 import type { PaiGowHint } from '../types/games/paigow';
+
+/** Creates a default Baseball Poker state. */
+export function makeBaseballPokerState(overrides: Partial<BaseballPokerResponse> = {}): BaseballPokerResponse {
+  return {
+    phase: 0,
+    seats: [],
+    street: 1,
+    streetTotal: 4,
+    wildValues: [3, 9],
+    bonusValue: 4,
+    buyInValue: 3,
+    pot: 0,
+    currentBet: 0,
+    toCall: 0,
+    raiseCount: 0,
+    canRaise: true,
+    turnSeat: 0,
+    humanSeat: 0,
+    isHumanTurn: true,
+    buyerSeat: -1,
+    buyCost: 0,
+    isBuying: false,
+    handNumber: 1,
+    remainingCards: 0,
+    winnerSeat: 0,
+    gameEndFlag: false,
+    message: '',
+    ...overrides,
+  };
+}
 
 /** Creates a default Tu Sac state. */
 export function makeTuSacState(overrides: Partial<TuSacResponse> = {}): TuSacResponse {
