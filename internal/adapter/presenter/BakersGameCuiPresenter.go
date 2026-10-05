@@ -76,6 +76,7 @@ func (p *BakersGameCuiPresenter) Output(f interfaces.FreeCellGame, lastErr error
 
 		switch f.GetPhase() {
 		case domain.FreeCellPhasePlaying:
+			b.WriteString(i18n.T("bakersgame.tableauRule") + "\n")
 			if f.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
 				// Tell the player how many undos escape the dead end, matching the
