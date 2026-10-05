@@ -37,6 +37,8 @@ func TestSlobberhannesWebPresenterOutput(t *testing.T) {
 	assert.Equal(t, float64(1), m["roundNumber"])
 	assert.False(t, m["gameEndFlag"].(bool))
 	assert.Equal(t, float64(-1), m["winnerIdx"])
+	assert.Empty(t, m["lastTrick"])
+	assert.Equal(t, float64(-1), m["lastTrickWinner"])
 
 	players := m["players"].([]any)
 	require.Len(t, players, domain.SlobberhannesPlayerCnt)
@@ -53,6 +55,26 @@ func TestSlobberhannesWebPresenterOutput(t *testing.T) {
 	cpu := players[1].(map[string]any)
 	assert.Empty(t, cpu["cards"], "CPU の手札は伏せる")
 	assert.Equal(t, float64(domain.SlobberhannesHandSize), cpu["cardCount"])
+}
+
+func TestSlobberhannesWebPresenterLastTrickOnlyDuringPlay(t *testing.T) {
+	p := new(SlobberhannesWebPresenter)
+	s := newSlobberhannesForWeb(t)
+	trick := []*domain.TrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 7, false)},
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 8, false)},
+		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 9, false)},
+		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 13, false)},
+	}
+	s.SetLastTrickForTest(trick, 3)
+	m := decodeSlobberhannes(t, p.Output(s, nil))
+	assert.Len(t, m["lastTrick"], domain.SlobberhannesPlayerCnt)
+	assert.Equal(t, float64(3), m["lastTrickWinner"])
+
+	s.SetPhase(domain.SlobberhannesPhaseRoundEnd)
+	m = decodeSlobberhannes(t, p.Output(s, nil))
+	assert.Empty(t, m["lastTrick"])
+	assert.Equal(t, float64(-1), m["lastTrickWinner"])
 }
 
 func TestSlobberhannesWebPresenterPenaltiesSurface(t *testing.T) {

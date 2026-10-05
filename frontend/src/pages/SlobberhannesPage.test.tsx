@@ -42,6 +42,8 @@ function makeState(overrides: Partial<SlobberhannesResponse> = {}): Slobberhanne
     leadPlayerIdx: 0,
     dealerIdx: 0,
     currentTrick: [],
+    lastTrick: [],
+    lastTrickWinner: -1,
     validPlays: [0, 1, 2],
     gameEndFlag: false,
     winnerIdx: -1,
@@ -57,6 +59,40 @@ beforeEach(() => {
 });
 
 describe('SlobberhannesPage', () => {
+  it('shows the resolved trick and its winner until the next trick has cards', async () => {
+    const trick = [0, 1, 2, 3].map((playerIdx) => ({ playerIdx, card: card('spade', 7 + playerIdx) }));
+    mockExec.mockResolvedValue(makeState({ lastTrick: trick, lastTrickWinner: 2 }));
+    const { unmount } = renderWithProviders(<SlobberhannesPage />);
+    expect(await screen.findAllByTestId('trick-display-cards')).toHaveLength(1);
+    expect(screen.getByTestId('trick-display-cards').children).toHaveLength(4);
+    expect(screen.getAllByTestId('trick-winner-badge')).toHaveLength(1);
+
+    mockExec.mockResolvedValue(
+      makeState({
+        currentTrick: [trick[0]],
+        lastTrick: trick,
+        lastTrickWinner: 2,
+      }),
+    );
+    unmount();
+    renderWithProviders(<SlobberhannesPage />);
+    expect(await screen.findByTestId('trick-display-cards')).toBeInTheDocument();
+    expect(screen.getByTestId('trick-display-cards').children).toHaveLength(1);
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
+  });
+
+  it('does not show a previous trick after round end or game end', async () => {
+    const trick = [0, 1, 2, 3].map((playerIdx) => ({ playerIdx, card: card('spade', 7 + playerIdx) }));
+    mockExec.mockResolvedValue(makeState({ phase: 1, lastTrick: trick, lastTrickWinner: 2 }));
+    const { unmount } = renderWithProviders(<SlobberhannesPage />);
+    await waitFor(() => expect(screen.queryByTestId('trick-display-cards')).not.toBeInTheDocument());
+    mockExec.mockResolvedValue(makeState({ phase: 2, gameEndFlag: true, lastTrick: trick, lastTrickWinner: 2 }));
+    unmount();
+    renderWithProviders(<SlobberhannesPage />);
+    expect(screen.queryByTestId('trick-display-cards')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
+  });
+
   it('keeps the original card label off turn', async () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
     renderWithProviders(<SlobberhannesPage />);

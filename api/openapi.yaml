@@ -63629,6 +63629,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SlobberhannesTrickCard'
+        lastTrick:
+          type: array
+          description: Most recently resolved trick in the current round; empty when unavailable.
+          items:
+            $ref: '#/components/schemas/SlobberhannesTrickCard'
+        lastTrickWinner:
+          type: integer
+          description: Winner of lastTrick, or -1 when unavailable.
         validPlays:
           type: array
           description: Hand indices you may legally play. Following suit is compulsory.

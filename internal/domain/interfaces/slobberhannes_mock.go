@@ -52,6 +52,16 @@ func (m *MockSlobberhannesGame) GetCurrentTrick() []*domain.TrickCard {
 	return args.Get(0).([]*domain.TrickCard)
 }
 
+func (m *MockSlobberhannesGame) GetLastTrick() []*domain.TrickCard {
+	args := m.Called()
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).([]*domain.TrickCard)
+}
+
+func (m *MockSlobberhannesGame) GetLastTrickWinner() int { return m.Called().Int(0) }
+
 func (m *MockSlobberhannesGame) GetValidPlayIndices(playerIdx int) []int {
 	args := m.Called(playerIdx)
 	if args.Get(0) == nil {

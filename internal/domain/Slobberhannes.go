@@ -84,6 +84,8 @@ type Slobberhannes struct {
 	trickNumber int
 	// currentTrick 現在のトリックに出された札
 	currentTrick     []*TrickCard
+	lastTrick        []*TrickCard
+	lastTrickWinner  int
 	currentPlayerIdx int
 	leadPlayerIdx    int
 	dealerIdx        int
@@ -97,10 +99,11 @@ type Slobberhannes struct {
 // NewSlobberhannes コンストラクタ
 func NewSlobberhannes(trumpCards *TrumpCards, players []*SlobberhannesPlayer, config SlobberhannesConfig) *Slobberhannes {
 	return &Slobberhannes{
-		trumpCards: trumpCards,
-		players:    players,
-		config:     config,
-		winnerIdx:  -1,
+		trumpCards:      trumpCards,
+		players:         players,
+		config:          config,
+		winnerIdx:       -1,
+		lastTrickWinner: -1,
 	}
 }
 
@@ -131,6 +134,8 @@ func (s *Slobberhannes) Reset() {
 func (s *Slobberhannes) dealRound() {
 	s.trickNumber = 0
 	s.currentTrick = nil
+	s.lastTrick = nil
+	s.lastTrickWinner = -1
 	for _, p := range s.players {
 		p.ResetRound()
 	}
@@ -202,6 +207,10 @@ func (s *Slobberhannes) play(playerIdx, cardIndex int) error {
 	if !s.canPlay(playerIdx, card) {
 		return errors.New("must follow suit")
 	}
+	if len(s.currentTrick) == 0 {
+		s.lastTrick = nil
+		s.lastTrickWinner = -1
+	}
 	p.RemoveCard(cardIndex)
 	s.currentTrick = append(s.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	s.appendLog(playerIdx, "play", "slobberhannes.log.play", map[string]string{"card": cardStr(card)}, []*Card{card})
@@ -250,6 +259,8 @@ func (s *Slobberhannes) GetValidPlayIndices(playerIdx int) []int {
 // resolveTrick トリックを解決し、罰点の対象なら記録する
 func (s *Slobberhannes) resolveTrick() {
 	winner := s.trickWinner()
+	s.lastTrick = append([]*TrickCard(nil), s.currentTrick...)
+	s.lastTrickWinner = winner
 	cards := make([]*Card, 0, len(s.currentTrick))
 	hasQueen := false
 	for _, tc := range s.currentTrick {
@@ -493,6 +504,12 @@ func (s *Slobberhannes) GetTrickNumber() int { return s.trickNumber }
 // GetCurrentTrick 現在のトリック
 func (s *Slobberhannes) GetCurrentTrick() []*TrickCard { return s.currentTrick }
 
+// GetLastTrick returns the most recently resolved trick in this round.
+func (s *Slobberhannes) GetLastTrick() []*TrickCard { return s.lastTrick }
+
+// GetLastTrickWinner returns the winner of the most recently resolved trick, or -1 when absent.
+func (s *Slobberhannes) GetLastTrickWinner() int { return s.lastTrickWinner }
+
 // GetCurrentPlayerIdx 現在の手番
 func (s *Slobberhannes) GetCurrentPlayerIdx() int { return s.currentPlayerIdx }
 
@@ -594,6 +611,8 @@ type slobberhannesJSON struct {
 	RoundNumber      int                    `json:"rn"`
 	TrickNumber      int                    `json:"tn"`
 	CurrentTrick     []*TrickCard           `json:"ct"`
+	LastTrick        []*TrickCard           `json:"lt"`
+	LastTrickWinner  int                    `json:"lw"`
 	CurrentPlayerIdx int                    `json:"cp"`
 	LeadPlayerIdx    int                    `json:"lp"`
 	DealerIdx        int                    `json:"di"`
@@ -612,6 +631,8 @@ func (s *Slobberhannes) MarshalJSON() ([]byte, error) {
 		RoundNumber:      s.roundNumber,
 		TrickNumber:      s.trickNumber,
 		CurrentTrick:     s.currentTrick,
+		LastTrick:        s.lastTrick,
+		LastTrickWinner:  s.lastTrickWinner,
 		CurrentPlayerIdx: s.currentPlayerIdx,
 		LeadPlayerIdx:    s.leadPlayerIdx,
 		DealerIdx:        s.dealerIdx,
@@ -643,6 +664,9 @@ func (s *Slobberhannes) UnmarshalJSON(data []byte) error {
 	if len(j.CurrentTrick) > SlobberhannesPlayerCnt {
 		return fmt.Errorf("current trick holds %d cards", len(j.CurrentTrick))
 	}
+	if len(j.LastTrick) > SlobberhannesPlayerCnt {
+		return fmt.Errorf("last trick holds %d cards", len(j.LastTrick))
+	}
 	for _, f := range []namedInt{{"current player", j.CurrentPlayerIdx}, {"lead player", j.LeadPlayerIdx}, {"dealer", j.DealerIdx}} {
 		if f.value < 0 || f.value >= SlobberhannesPlayerCnt {
 			return fmt.Errorf("invalid %s: %d", f.name, f.value)
@@ -650,6 +674,9 @@ func (s *Slobberhannes) UnmarshalJSON(data []byte) error {
 	}
 	if j.WinnerIdx < -1 || j.WinnerIdx >= SlobberhannesPlayerCnt {
 		return fmt.Errorf("invalid winner: %d", j.WinnerIdx)
+	}
+	if j.LastTrickWinner < -1 || j.LastTrickWinner >= SlobberhannesPlayerCnt {
+		return fmt.Errorf("invalid last trick winner: %d", j.LastTrickWinner)
 	}
 	if j.TrumpCards != nil {
 		s.trumpCards = j.TrumpCards
@@ -662,6 +689,11 @@ func (s *Slobberhannes) UnmarshalJSON(data []byte) error {
 	s.roundNumber = j.RoundNumber
 	s.trickNumber = j.TrickNumber
 	s.currentTrick = j.CurrentTrick
+	s.lastTrick = j.LastTrick
+	s.lastTrickWinner = j.LastTrickWinner
+	if len(s.lastTrick) == 0 {
+		s.lastTrickWinner = -1
+	}
 	s.currentPlayerIdx = j.CurrentPlayerIdx
 	s.leadPlayerIdx = j.LeadPlayerIdx
 	s.dealerIdx = j.DealerIdx

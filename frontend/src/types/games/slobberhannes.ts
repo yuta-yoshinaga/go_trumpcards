@@ -57,6 +57,10 @@ export interface SlobberhannesResponse extends BaseGameResponse {
   leadPlayerIdx: number;
   dealerIdx: number;
   currentTrick: SlobberhannesTrickCard[];
+  /** Most recently resolved trick in the current round, cleared when a new trick starts. */
+  lastTrick: SlobberhannesTrickCard[];
+  /** Winner of lastTrick, or -1 when no resolved trick is available. */
+  lastTrickWinner: number;
   /** Hand indices you may legally play. Following suit is compulsory. */
   validPlays: number[];
   gameEndFlag: boolean;
