@@ -191,6 +191,25 @@ describe('SedmaPage', () => {
     // The setting that decides the match was only visible inside the panel.
     await waitFor(() => expect(screen.getByTestId('sedma-target')).toBeInTheDocument());
   });
+
+  it('shows when changed settings will apply and hides the notice after reset', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<SedmaPage />);
+
+    expect(await screen.findByLabelText('CPU難易度')).toHaveValue('1');
+    expect(screen.queryByText('設定変更は次回リセット時に適用されます。')).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('CPU難易度'), { target: { value: '2' } });
+    fireEvent.change(screen.getByLabelText('目標ポイント'), { target: { value: '151' } });
+    expect(screen.getByText('設定変更は次回リセット時に適用されます。')).toBeInTheDocument();
+
+    mockExec.mockResolvedValue(makeSedmaState({ config: { cpuDifficulty: 2, targetPoints: 151 } }));
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2, targetPoints: 151 } }),
+    );
+    await waitFor(() => expect(screen.queryByText('設定変更は次回リセット時に適用されます。')).not.toBeInTheDocument());
+  });
 });
 
 // **7 はどのスートでもトリックを奪える。**フォロー義務が無い捕獲ゲームなのに、
