@@ -12,6 +12,10 @@ type DurakWebPresenter struct{}
 
 // Output ゲーム状態をJSON出力
 func (dwp *DurakWebPresenter) Output(dg interfaces.DurakGame, lastErr error) string {
+	return marshalOrError(dwp.buildOutput(dg, lastErr))
+}
+
+func (dwp *DurakWebPresenter) buildOutput(dg interfaces.DurakGame, lastErr error) *controller.DurakWebOutput {
 	resObj := new(controller.DurakWebOutput)
 	resObj.Players = make([]*controller.DurakWebOutputPlayer, 0)
 	resObj.CurrentTurn = dg.GetCurrentTurn()
@@ -95,7 +99,7 @@ func (dwp *DurakWebPresenter) Output(dg interfaces.DurakGame, lastErr error) str
 		}
 	}
 
-	return marshalOrError(resObj)
+	return resObj
 }
 
 // buildResultMessage ゲーム終了メッセージを生成
@@ -118,5 +122,14 @@ func (dwp *DurakWebPresenter) ActionLogOutput(dg interfaces.DurakGame) string {
 
 // HintOutput はサーバー計算のヒントを返す (`command: "hint"` 専用のレスポンス)。
 func (p *DurakWebPresenter) HintOutput(g interfaces.DurakGame) string {
-	return p.Output(g, nil)
+	resObj := p.buildOutput(g, nil)
+	if hint := g.GetHint(); hint != nil {
+		resObj.Hint = &controller.DurakWebOutputHint{
+			CardIndex: hint.CardIndex,
+			AttackIdx: hint.AttackIdx,
+			TakeCards: hint.TakeCards,
+			Reason:    hint.Reason,
+		}
+	}
+	return marshalOrError(resObj)
 }

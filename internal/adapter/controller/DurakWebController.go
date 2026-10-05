@@ -55,6 +55,14 @@ type DurakWebOutputAction struct {
 	AttackIdx  int            `json:"attackIdx"`  // 防御時: 対象攻撃カード (-1 = 該当なし)
 }
 
+// DurakWebOutputHint はドゥラークのサーバー計算ヒント。
+type DurakWebOutputHint struct {
+	CardIndex *int   `json:"cardIndex,omitempty"`
+	AttackIdx *int   `json:"attackIdx,omitempty"`
+	TakeCards bool   `json:"takeCards,omitempty"`
+	Reason    string `json:"reason"`
+}
+
 // DurakWebOutput ドゥラークWebアウトプット
 type DurakWebOutput struct {
 	Players     []*DurakWebOutputPlayer    `json:"players"`
@@ -73,6 +81,7 @@ type DurakWebOutput struct {
 	HumanAction *DurakWebOutputAction      `json:"humanAction"`
 	BoutNumber  int                        `json:"boutNumber"`
 	SortMode    int                        `json:"sortMode"`
+	Hint        *DurakWebOutputHint        `json:"hint,omitempty"`
 	WebOutputBase
 }
 
