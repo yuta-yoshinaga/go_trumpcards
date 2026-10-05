@@ -8017,26 +8017,30 @@ func TestDaifugo_GetPlayableCardIndices(t *testing.T) {
 
 	t.Run("playable selections share legal combination indices", func(t *testing.T) {
 		cases := []struct {
-			name        string
-			hand        []*domain.Card
-			table       []*domain.Card
-			wantIndices []int
-			wantCombos  [][]int
+			name           string
+			hand           []*domain.Card
+			table          []*domain.Card
+			sequenceLocked bool
+			wantIndices    []int
+			wantCombos     [][]int
 		}{
-			{"single", []*domain.Card{card(domain.CardDesignSpade, 5), card(domain.CardDesignHeart, 12)}, []*domain.Card{card(domain.CardDesignClover, 9)}, []int{1}, [][]int{{1}}},
-			{"pair", []*domain.Card{card(domain.CardDesignSpade, 12), card(domain.CardDesignHeart, 12), card(domain.CardDesignClover, 4)}, []*domain.Card{card(domain.CardDesignSpade, 9), card(domain.CardDesignHeart, 9)}, []int{0, 1}, [][]int{{0, 1}}},
+			{"single", []*domain.Card{card(domain.CardDesignSpade, 5), card(domain.CardDesignHeart, 12)}, []*domain.Card{card(domain.CardDesignClover, 9)}, false, []int{1}, [][]int{{1}}},
+			{"pair", []*domain.Card{card(domain.CardDesignSpade, 12), card(domain.CardDesignHeart, 12), card(domain.CardDesignClover, 4)}, []*domain.Card{card(domain.CardDesignSpade, 9), card(domain.CardDesignHeart, 9)}, false, []int{0, 1}, [][]int{{0, 1}}},
 			// Empty table keeps the existing API distinction: every card is
 			// playable as a lead, while combinations are unavailable.
-			{"empty table", []*domain.Card{card(domain.CardDesignSpade, 3), card(domain.CardDesignHeart, 9)}, nil, []int{0, 1}, nil},
+			{"empty table", []*domain.Card{card(domain.CardDesignSpade, 3), card(domain.CardDesignHeart, 9)}, nil, false, []int{0, 1}, nil},
+			{"sequence lock with a non-empty table", []*domain.Card{card(domain.CardDesignSpade, 12), card(domain.CardDesignHeart, 7)}, []*domain.Card{card(domain.CardDesignClover, 9)}, true, []int{0}, nil},
+			{"enumerated but no legal combinations", []*domain.Card{card(domain.CardDesignSpade, 5)}, []*domain.Card{card(domain.CardDesignClover, 9)}, false, nil, [][]int{}},
 		}
 		for _, tc := range cases {
 			t.Run(tc.name, func(t *testing.T) {
 				d := newGame(tc.hand)
 				d.SetTableCards(tc.table)
+				d.SetSequenceLocked(tc.sequenceLocked)
 				indices, combos := d.GetPlayableSelections()
 				assert.Equal(t, tc.wantIndices, indices)
 				assert.Equal(t, tc.wantCombos, combos)
-				if tc.table != nil {
+				if tc.table != nil && !tc.sequenceLocked {
 					marked := make([]bool, len(tc.hand))
 					for _, combo := range combos {
 						for _, index := range combo {

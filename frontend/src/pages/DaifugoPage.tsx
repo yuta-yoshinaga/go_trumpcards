@@ -212,8 +212,11 @@ function DaifugoPageContent() {
   const playableCombinations = state.playableCardCombinations;
   const canCheckCombination =
     pendingAction === 'none' && tableCount > 0 && selectedIndices.length > 0 && playableCombinations !== null;
+  const noPlayableCombination =
+    canCheckCombination && playableCombinations.length === 0 && selectedIndices.length === tableCount;
   const invalidCombination =
     canCheckCombination &&
+    playableCombinations.length > 0 &&
     !playableCombinations.some(
       (combo) => combo.length === sortedSelection.length && combo.every((index, i) => index === sortedSelection[i]),
     );
@@ -455,6 +458,15 @@ function DaifugoPageContent() {
               {invalidCombination && !countMismatch && (
                 <p className="mb-1.5 text-xs text-ds-error-text" role="alert" data-testid="daifugo-combination-warning">
                   {t('invalidCombination')}
+                </p>
+              )}
+              {noPlayableCombination && !countMismatch && (
+                <p
+                  className="mb-1.5 text-xs text-ds-error-text"
+                  role="alert"
+                  data-testid="daifugo-no-combinations-warning"
+                >
+                  {t('noPlayableCombinations')}
                 </p>
               )}
               <GameResetButton

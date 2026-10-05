@@ -116,5 +116,6 @@
     "passNoPlay": "出せるカードなし — パス推奨"
   },
   "countMismatch": "場のカードと同じ {{count}} 枚を選んでください",
-  "invalidCombination": "選択した組み合わせは場に出せません"
+  "invalidCombination": "選択した組み合わせは場に出せません",
+  "noPlayableCombinations": "出せる組み合わせがありません。パスしてください"
 }

@@ -48,8 +48,6 @@ type DaifugoGame interface {
 	GetCpuActions() []*domain.DaifugoCpuAction
 	// GetPlayableCardIndices いま出せる組み合わせに含まれる手札インデックスを取得する
 	GetPlayableCardIndices() []int
-	// GetPlayableCardCombinations returns each legal selected hand-index combination.
-	GetPlayableCardCombinations() [][]int
 	// GetPlayableSelections returns indices and legal combinations from one enumeration.
 	GetPlayableSelections() ([]int, [][]int)
 	// GetCurrentTurn 現在の手番プレイヤーインデックスを取得する

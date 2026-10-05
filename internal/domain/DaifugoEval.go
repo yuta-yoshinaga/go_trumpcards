@@ -327,6 +327,7 @@ func (d *Daifugo) GetPlayableSelections() ([]int, [][]int) {
 	return indices, combos
 }
 
+// playableIndices returns the sorted union of hand indices in legal combinations.
 func playableIndices(combos [][]int, n int) []int {
 	marked := make([]bool, n)
 	for _, combo := range combos {
@@ -346,12 +347,13 @@ func playableIndices(combos [][]int, n int) []int {
 	return out
 }
 
+// playableCombos enumerates legal k-card combinations, or nil when enumeration is unsafe.
 func (d *Daifugo) playableCombos(player *DaifugoPlayer, k int) [][]int {
 	n := player.GetCardsSize()
 	if k > n || combinationCountCapped(n, k, daifugoMaxPlayableCombos) > daifugoMaxPlayableCombos {
 		return nil
 	}
-	var out [][]int
+	out := make([][]int, 0)
 	idx := make([]int, k)
 	cards := make([]*Card, k)
 	var walk func(start, depth int)
@@ -372,18 +374,6 @@ func (d *Daifugo) playableCombos(player *DaifugoPlayer, k int) [][]int {
 	}
 	walk(0, 0)
 	return out
-}
-
-// GetPlayableCardCombinations returns every currently legal hand-index combination.
-// A nil result means the domain could not enumerate them safely.
-func (d *Daifugo) GetPlayableCardCombinations() [][]int {
-	if d.round.gameEndFlag || d.round.pendingActionType != DaifugoPendingNone || !d.players[d.round.currentTurn].GetIsHuman() || d.round.tableCards == nil {
-		return nil
-	}
-	if d.round.sequenceLocked {
-		return nil
-	}
-	return d.playableCombos(d.players[d.round.currentTurn], len(d.round.tableCards))
 }
 
 // combinationCountCapped は C(n, k) を返す。cap を超えた時点で打ち切って
