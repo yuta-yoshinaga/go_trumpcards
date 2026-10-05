@@ -60939,6 +60939,18 @@ components:
       type: object
       description: Response payload for /tusac/exec
       properties:
+        serverHint:
+          type: object
+          description: Server-computed recommendation for a human turn or round end.
+          properties:
+            action:
+              type: string
+            indexes:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
         messageParams:
           type: object
           description: "Substitution values for `messageCode`. Absent when the message takes none."

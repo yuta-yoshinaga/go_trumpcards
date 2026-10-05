@@ -295,7 +295,7 @@ function TuSacPageContent() {
                     data-testid={`tusac-card-${i}`}
                     aria-label={t('label.handCardAria', { card: cardAlt(card), position: i + 1 })}
                     aria-pressed={selected.includes(i)}
-                    className={`rounded transition-transform ${selected.includes(i) ? '-translate-y-2 ring-2 ring-ds-success' : ''}`}
+                    className={`rounded transition-transform ${selected.includes(i) ? '-translate-y-2 ring-2 ring-ds-success' : frontendHintEnabled && frontendHint?.targetIndices?.includes(i) ? 'ring-2 ring-ds-accent' : ''}`}
                     onClick={() => toggleCard(i)}
                     disabled={loading || !canAct}
                   >

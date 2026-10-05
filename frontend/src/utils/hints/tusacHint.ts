@@ -26,9 +26,32 @@ export function getTusacHint(state: TuSacResponse): HintResult | null {
   const seat = state.seats[state.humanSeat];
   if (!seat) return null;
 
+  const serverHint = state.serverHint;
+  // 組み合わせの判定はサーバに任せる (#10305)。出せる組があれば捨てより先に勧める。
+  if (serverHint?.action === 'meld')
+    return {
+      targetAction: 'meld',
+      targetIndices: serverHint.indexes,
+      reason: 'frontendHint.tusacMeldAvailable',
+      confidence: 'strong',
+    };
+
+  const discardTarget =
+    serverHint?.action === 'discard' && serverHint.indexes.length > 0 ? { targetIndices: serverHint.indexes } : {};
+
   // **抱えた枚数がそのまま減点。** 手札が多いほど捨てを急ぐ理由がある。
   if (seat.cards.length > state.handSize) {
-    return { targetAction: 'discard', reason: 'frontendHint.tusacDiscardToEndTurn', confidence: 'strong' };
+    return {
+      targetAction: 'discard',
+      ...discardTarget,
+      reason: 'frontendHint.tusacDiscardToEndTurn',
+      confidence: 'strong',
+    };
   }
-  return { targetAction: 'discard', reason: 'frontendHint.tusacHoldingCostsPoints', confidence: 'moderate' };
+  return {
+    targetAction: 'discard',
+    ...discardTarget,
+    reason: 'frontendHint.tusacHoldingCostsPoints',
+    confidence: 'moderate',
+  };
 }

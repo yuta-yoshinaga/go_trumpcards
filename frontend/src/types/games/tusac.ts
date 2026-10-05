@@ -78,6 +78,8 @@ export interface TuSacConfig {
 
 /** Response payload for `/tusac/exec`. */
 export interface TuSacResponse extends BaseGameResponse {
+  /** Server-computed recommendation for the current state. */
+  serverHint?: { action: string; indexes: number[]; reason: string };
   /** 0=Draw, 1=Discard, 2=RoundEnd, 3=GameEnd. */
   phase: number;
   seats: TuSacSeat[];

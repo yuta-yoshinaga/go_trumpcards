@@ -72,6 +72,7 @@ const withState = (over: Partial<TuSacResponse>): TuSacResponse => ({ ...base, .
 
 beforeEach(() => {
   vi.clearAllMocks();
+  localStorage.removeItem('hint_enabled_tusac');
   mockUseCliMode.mockReturnValue({
     cliEnabled: false,
     toggleCli: vi.fn(),
@@ -84,6 +85,19 @@ beforeEach(() => {
 });
 
 describe('TuSacPage', () => {
+  it('meld ヒント対象の札だけを強調する', async () => {
+    mockApi.mockResolvedValue(
+      withState({ phase: TuSacPhase.DISCARD, serverHint: { action: 'meld', indexes: [1, 2], reason: 'set' } }),
+    );
+    renderWithProviders(<TuSacPage />);
+    fireEvent.click(await screen.findByLabelText('ヒント表示'));
+    const one = await screen.findByTestId('tusac-card-1');
+    const two = screen.getByTestId('tusac-card-2');
+    expect(one.className).toContain('ring-ds-accent');
+    expect(two.className).toContain('ring-ds-accent');
+    expect(screen.getByTestId('tusac-card-0').className).not.toContain('ring-ds-accent');
+    expect(screen.getByTestId('tusac-card-3').className).not.toContain('ring-ds-accent');
+  });
   it('現在手番の席にだけ手番ラベルを表示する', async () => {
     mockApi.mockResolvedValue(
       withState({
