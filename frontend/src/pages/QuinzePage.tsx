@@ -1,4 +1,4 @@
-import { Fragment, useMemo } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import type { quinzeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -34,6 +34,8 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { formatSignedDelta } from '../utils/formatSignedDelta';
 
 const BET_OPTIONS = [10, 50, 100, 500];
+const MIN_BET = 10;
+const MAX_BET = 10000;
 
 const QUINZE_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="quinze-seats"]', messageKey: 'tutorial.seats', placement: 'top', advanceOn: 'next' },
@@ -45,6 +47,7 @@ const QUINZE_TUTORIAL_STEPS: TutorialStep[] = [
 export const QuinzePage = withTutorial(QuinzePageContent, 'quinze', QUINZE_TUTORIAL_STEPS);
 
 function QuinzePageContent() {
+  const [customBet, setCustomBet] = useState('');
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('quinze');
   const game = useQuinzeGame();
@@ -91,6 +94,19 @@ function QuinzePageContent() {
   const isBetting = state.phase === QuinzePhase.BET;
   const isBankerTurn = state.phase === QuinzePhase.BANKER_TURN;
   const bankerName = state.isHumanBanker ? t('bankerIsYou') : (state.seats[state.bankerIdx]?.name ?? '');
+  const customBetAmount = Number(customBet);
+  const customBetError =
+    customBet.trim() === '' || !Number.isFinite(customBetAmount)
+      ? 'betCustomInvalid'
+      : !Number.isInteger(customBetAmount)
+        ? 'betCustomNotWhole'
+        : customBetAmount < MIN_BET
+          ? 'betCustomTooLow'
+          : customBetAmount > MAX_BET
+            ? 'betCustomTooHigh'
+            : customBetAmount > state.chips
+              ? 'betCustomInsufficient'
+              : '';
 
   /**
    * Render one hand. Visibility comes from the server's `hidden` flag; the page
@@ -281,6 +297,42 @@ function QuinzePageContent() {
                       )}
                     </Fragment>
                   ))}
+                  <section
+                    aria-label={t('betCustomLabel')}
+                    className="w-full flex flex-wrap justify-center gap-2 items-center"
+                  >
+                    <label htmlFor="quinze-custom-bet" className="text-sm text-ds-text-primary">
+                      {t('betCustomLabel')}
+                    </label>
+                    <input
+                      id="quinze-custom-bet"
+                      type="number"
+                      min={MIN_BET}
+                      max={Math.min(MAX_BET, state.chips)}
+                      step="1"
+                      value={customBet}
+                      onChange={(event) => setCustomBet(event.target.value)}
+                      aria-describedby="quinze-custom-bet-help quinze-custom-bet-error"
+                      className="w-28 rounded border border-ds-border bg-ds-surface px-2 py-1 text-ds-text-primary"
+                    />
+                    <span id="quinze-custom-bet-help" className="text-xs text-ds-text-muted">
+                      {t('betCustomHelp', { min: MIN_BET, max: MAX_BET })}
+                    </span>
+                    <span id="quinze-custom-bet-error" className="text-xs text-ds-error-text">
+                      {customBetError ? t(customBetError, { min: MIN_BET, max: MAX_BET, chips: state.chips }) : ''}
+                    </span>
+                    <button
+                      type="button"
+                      className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+                      aria-disabled={loading || !!customBetError}
+                      aria-describedby="quinze-custom-bet-error"
+                      onClick={() => {
+                        if (!loading && !customBetError) game.handleBet(customBetAmount);
+                      }}
+                    >
+                      {t('betCustomSubmit')}
+                    </button>
+                  </section>
                 </>
               )}
 
