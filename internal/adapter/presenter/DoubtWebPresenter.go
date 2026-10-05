@@ -38,6 +38,7 @@ func (dwp *DoubtWebPresenter) Output(d interfaces.DoubtGame, lastErr error) stri
 			PlayerIdx:    la.PlayerIdx,
 			ClaimedValue: la.ClaimedValue,
 			CardCount:    la.CardCount,
+			HasTell:      la.HasTell,
 		}
 	}
 
