@@ -104,6 +104,8 @@
     "balancedTooltip": "Balanced style"
   },
   "livePreview": "Current hand:",
+  "liveLowPreview": "Best low:",
+  "liveLowNone": "None",
   "hand": {
     "highCard": "High Card",
     "onePair": "One Pair",

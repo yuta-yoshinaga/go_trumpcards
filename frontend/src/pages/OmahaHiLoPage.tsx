@@ -38,7 +38,7 @@ import { valueName } from '../utils/cardUtils';
 import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
 import { omahaLivePreviewKey } from '../utils/livePokerPreview';
-import { lowCardIndexSets } from '../utils/omahaLowCards';
+import { lowCardIndexSets, omahaLowCandidate } from '../utils/omahaLowCards';
 import { findPlayerName } from '../utils/playerUtils';
 
 /** Omaha Hi-Lo (8 or Better) tutorial step definitions. */
@@ -230,6 +230,9 @@ function OmahaHiLoPageContent() {
     ? state?.roundResults?.find((r) => r.playerIdx === humanPlayer?.id)?.lowBestHand
     : undefined;
   const lowSets = lowCardIndexSets(humanLowBestHand, humanPlayer?.cards ?? [], state?.communityCards ?? []);
+  const liveLowCandidate = omahaLowCandidate(humanPlayer?.cards ?? [], state?.communityCards ?? []);
+  const liveLowHoleSet = new Set(liveLowCandidate?.holeIdx ?? []);
+  const liveLowBoardSet = new Set(liveLowCandidate?.boardIdx ?? []);
 
   if (!state)
     return (
@@ -292,7 +295,7 @@ function OmahaHiLoPageContent() {
                     {state?.communityCards?.length
                       ? state.communityCards.map((card, idx) => {
                           const inBest = showdownBest5.boardSet.has(idx);
-                          const inLo = lowSets.loBoardSet.has(idx);
+                          const inLo = lowSets.loBoardSet.has(idx) || liveLowBoardSet.has(idx);
                           return (
                             <OmahaLoCard
                               key={`${card.design}-${card.value}`}
@@ -497,6 +500,16 @@ function OmahaHiLoPageContent() {
                   <span aria-hidden="true">🎯</span>
                   {t('mandatoryRule')}
                 </div>
+                <div className="mb-1" data-testid="omahahilo-live-low-preview" role="status" aria-live="polite">
+                  {phase >= OmahaPhase.FLOP && phase <= OmahaPhase.RIVER && (
+                    <span className="text-ds-text-primary text-xs">
+                      {t('liveLowPreview')}{' '}
+                      {liveLowCandidate
+                        ? liveLowCandidate.ranks.map((rank) => (rank === 1 ? 'A' : rank)).join('-')
+                        : t('liveLowNone')}
+                    </span>
+                  )}
+                </div>
                 {liveBestHandKey && (
                   <div className="mb-1" data-testid="omahahilo-live-besthand">
                     <span className="text-ds-text-primary text-xs">{t('livePreview')}</span>
@@ -512,7 +525,7 @@ function OmahaHiLoPageContent() {
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card, idx) => {
                         const inBest = showdownBest5.holeSet.has(idx);
-                        const inLo = lowSets.loHoleSet.has(idx);
+                        const inLo = lowSets.loHoleSet.has(idx) || liveLowHoleSet.has(idx);
                         return (
                           <OmahaLoCard
                             key={`${card.design}-${card.value}`}
