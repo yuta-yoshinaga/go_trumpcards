@@ -64706,6 +64706,7 @@ components:
         - roundNumber
         - totalRounds
         - currentPlayerIdx
+        - discardHistory
         - drawPileCount
         - gameEndFlag
         - winnerIdx
@@ -64734,6 +64735,11 @@ components:
           type: integer
         discardTop:
           $ref: '#/components/schemas/Card'
+        discardHistory:
+          type: array
+          description: Cards currently in the discard pile, oldest first; the last one is the discard top.
+          items:
+            $ref: '#/components/schemas/Card'
         drawPileCount:
           type: integer
         gameEndFlag:
