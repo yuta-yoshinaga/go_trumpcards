@@ -83,7 +83,7 @@ touch "$tmp/state/reviewed.txt"
 PATH="$tmp:$PATH" GH_CALLS="$tmp" BATCH_REPO="$ROOT" BATCH_STATE="$tmp/state" BATCH_BRANCH_RE='^feat/[0-9]+-' \
   bash "$SCRIPTS/sweep.sh" >"$tmp/sweep.out" || fail "sweep.sh rejected a configured branch expression"
 grep -q '^REVIEW-READY 123$' "$tmp/sweep.out" || fail "sweep.sh did not filter the matching PR: $(cat "$tmp/sweep.out")"
-grep -q '456' "$tmp/sweep.out" && fail "sweep.sh included a nonmatching PR"
+grep -q '^UNSWEPT 456 chore/456-skip$' "$tmp/sweep.out" || fail "sweep.sh did not report the nonmatching PR as UNSWEPT"
 PATH="$tmp:$PATH" GH_CALLS="$tmp" BATCH_REPO="$ROOT" BATCH_STATE="$tmp/state" BATCH_BRANCH_RE='^feat/[0-9]+-' \
   bash "$SCRIPTS/triage.sh" >"$tmp/triage.out" || fail "triage.sh failed"
 grep -q '^OK 123$' "$tmp/triage.out" || fail "triage.sh did not filter the matching PR: $(cat "$tmp/triage.out")"

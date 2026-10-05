@@ -53,6 +53,11 @@ $body
    - デザイントークンのみ (\`text-ds-*\`, \`bg-ds-*\`)。生のパレットや \`text-white/N\` は不可。
    - 追加した試験が**実装を壊すと落ちる**ことを確かめる (一時的に実装を戻して失敗を見て、元に戻す。戻しは手で行い git checkout を使わない)。
    - \`waitFor(() => expect(...).not...)\` のような、描画が空でも通る否定だけの assert を書かない。
+   - サーバ側のヒント (domain の GetHint) を画面で使う issue: ページに hint ボタン + useHintRequest が既にあれば、その経路 (hint コマンド → HintOutput → res.hint) を直すだけにする。無ければ state 変化ごとに hint コマンドを別リクエストで叩く形にはせず、Web 出力 struct に serverHint (omitempty) を足して状態応答 (Output) に GetHint() を詰め (openapi・types・stateFactories も)、getXxxHint(state) で state.serverHint を HintResult に写す (BlackHole / TuSac が先例)。共有の useGameHint / FrontendHintTooltip は外さない。
+   - Web 応答で札を伏せるとき: 偽の札 (design "BACK" など) を作らない (Card スキーマの enum 違反)。札は送らず空配列にし、枚数は定数か既存の count フィールドで表す。同じ札が別フィールド (例 dealerHighHand) から漏れていないか presenter の全フィールドを確認する。
+   - 判定ロジックをドメインへ移して フロントの試験を消すときは、消した試験の場面を同じ数だけドメイン試験に移植する。
+   - Go の presenter / domain を触ったら、そのファイルの //go:build にある worker タグで GOOS=js GOARCH=wasm go build -tags <worker> -o /dev/null ./cmd/workers/<worker> を通す。別タグのファイルの関数は使わず、共有したい関数はタグ無しの共有ヘルパへ移す。
+   - 新しく足した関数・export は、定義以外から使われていることを git grep で確かめる (使われないものは足さない)。
 3. 受け入れ条件 (issue の各項目) を 1 対 1 で満たすこと。範囲外の改名・整形・無関係なファイル変更をしない。
 
 ## 検証 (すべて通すこと)

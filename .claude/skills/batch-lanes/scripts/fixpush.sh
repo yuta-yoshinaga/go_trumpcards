@@ -7,6 +7,10 @@ $B/busy.sh "$1" >/dev/null && { echo "REFUSED: a delegation is still running in 
 # usage: fixpush.sh <fxslot> <pr> "<commit subject>" "<reply to review>"
 set -e
 cd "$WT_ROOT/wt-ib$1"
+if [[ "${CLAIM_SKIP:-}" != 1 ]] && ! "$B/claimcheck.sh" "$PWD" "$4"; then
+  echo "REFUSED: unverified claims" >&2
+  exit 1
+fi
 mapfile -d '' -t files < <({ git diff --name-only -z HEAD; git ls-files -o --exclude-standard -z; } | sort -zu)
 if ((${#files[@]})); then git add -- "${files[@]}"; fi
 git commit -q -F - <<M
