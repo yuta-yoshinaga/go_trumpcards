@@ -94,6 +94,38 @@ describe('PochPage', () => {
     expect(screen.getByText(/宣言ではなく同ランクの組の比べ合い/)).toBeInTheDocument();
   });
 
+  it('reveals CPU cards with alt text after the game ends', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: PochPhase.GAME_END,
+        gameEndFlag: true,
+        players: [seat(0, true), seat(1, false, { cards: [card('HEART', 8)] }), seat(2, false), seat(3, false)],
+      }),
+    );
+    renderWithProviders(<PochPage />);
+
+    const cpuLabel = await screen.findByText(/CPU1/);
+    const cpuSeat = cpuLabel.parentElement;
+    expect(cpuSeat?.querySelector('img[alt="♥ 8"]')).toBeInTheDocument();
+    expect(cpuSeat?.querySelector('img[alt="カード裏面"]')).not.toBeInTheDocument();
+  });
+
+  it('shows no CPU cards after the game ends when the revealed hand is empty', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: PochPhase.GAME_END,
+        gameEndFlag: true,
+        players: [seat(0, true), seat(1, false, { cards: [], cardCount: 0 }), seat(2, false), seat(3, false)],
+      }),
+    );
+    renderWithProviders(<PochPage />);
+
+    const cpuLabel = await screen.findByText(/CPU1/);
+    const cpuSeat = cpuLabel.parentElement;
+    expect(cpuSeat?.querySelectorAll('[data-testid="animated-card"]')).toHaveLength(0);
+    expect(cpuSeat?.querySelectorAll('img[alt="カード裏面"]')).toHaveLength(0);
+  });
+
   it('labels the turn-up suit as the pay suit visually and accessibly', async () => {
     renderWithProviders(<PochPage />);
     const paySuit = await screen.findByRole('group', { name: '支払い対象スート: スペード' });
