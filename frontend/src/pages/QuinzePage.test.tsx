@@ -153,6 +153,34 @@ describe('QuinzePage', () => {
     expect(screen.getByRole('button', { name: '10' })).toBeEnabled();
   });
 
+  it('accepts a custom bet and explains values outside the legal range or stack', async () => {
+    mockExec.mockResolvedValue(bettingState);
+    renderWithProviders(<QuinzePage />);
+    const input = await screen.findByRole('spinbutton', { name: '任意の賭け金' });
+    const submit = screen.getByRole('button', { name: 'この金額で賭ける' });
+    expect(submit).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByText('賭け金を入力してください')).toBeInTheDocument();
+    mockExec.mockClear();
+    fireEvent.click(submit);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+
+    fireEvent.change(input, { target: { value: '9' } });
+    expect(screen.getByText('最低賭け金は10チップです')).toBeInTheDocument();
+    fireEvent.change(input, { target: { value: '10001' } });
+    expect(screen.getByText('最高賭け金は10000チップです')).toBeInTheDocument();
+    fireEvent.change(input, { target: { value: '901' } });
+    expect(screen.getByText('所持チップ（900）を超えています')).toBeInTheDocument();
+    fireEvent.change(input, { target: { value: '10.5' } });
+    expect(screen.getByText('賭け金は整数で入力してください')).toBeInTheDocument();
+
+    fireEvent.change(input, { target: { value: '750' } });
+    expect(submit).toHaveAttribute('aria-disabled', 'false');
+    mockExec.mockClear();
+    fireEvent.click(submit);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 750));
+  });
+
   it('shows a deal button instead of stakes when the human banks', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 1, isHumanBanker: true, bankerIdx: 0, bankerHand: undefined }));
     renderWithProviders(<QuinzePage />);
