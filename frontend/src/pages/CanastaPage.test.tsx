@@ -55,6 +55,7 @@ const drawPhaseState: CanastaResponse = {
   roundNumber: 1,
   currentPlayerIdx: 0,
   discardTop: { design: 'SPADE', value: 5 },
+  discardPile: [{ design: 'SPADE', value: 5 }],
   drawPileCount: 67,
   discardPileCount: 1,
   isFrozen: false,
@@ -522,17 +523,46 @@ describe('CanastaPage', () => {
     expect(screen.queryByText(/15 cards/)).not.toBeInTheDocument();
   });
 
-  it('renders the discard pile when discardTop is present', async () => {
-    // 捨て札がある場合に一番上のカードを表示する (discardTop が truthy のときだけ表示)
-    mockExec.mockResolvedValue({ ...drawPhaseState, discardTop: { design: 'SPADE', value: 1 } });
+  it('renders every discard pile card in oldest-to-newest order', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      discardTop: { design: 'HEART', value: 8 },
+      discardPile: [
+        { design: 'SPADE', value: 1 },
+        { design: 'HEART', value: 8 },
+      ],
+    });
     renderWithProviders(<CanastaPage />);
-    await waitFor(() => expect(screen.getByTestId('ca-discard-pile')).toBeInTheDocument());
+    const pile = await screen.findByTestId('ca-discard-pile');
+    const cards = within(pile).getAllByTestId('animated-card');
+    expect(cards).toHaveLength(2);
+    expect(cards[0].parentElement).not.toHaveAttribute('data-discard-top');
+    expect(cards[1].parentElement).toHaveAttribute('data-discard-top', 'true');
+    expect(cards[1].parentElement).toHaveTextContent('捨て札の一番上');
+    expect(within(pile).getByAltText('♠ A')).toBeInTheDocument();
+    expect(within(pile).getByAltText('♥ 8')).toBeInTheDocument();
   });
 
-  it('hides the discard pile when discardTop is undefined', async () => {
-    // 捨て札がない場合は表示しない
-    mockExec.mockResolvedValue({ ...drawPhaseState, discardTop: null });
+  it('shows the frozen badge with a multi-card discard pile', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      isFrozen: true,
+      discardPile: [
+        { design: 'SPADE', value: 1 },
+        { design: 'HEART', value: 8 },
+      ],
+    });
     renderWithProviders(<CanastaPage />);
-    await waitFor(() => expect(screen.queryByTestId('ca-discard-pile')).not.toBeInTheDocument());
+    const pile = await screen.findByTestId('ca-discard-pile');
+    expect(within(pile).getAllByTestId('animated-card')).toHaveLength(2);
+    expect(within(pile).getByTestId('ca-frozen-badge')).toBeInTheDocument();
+  });
+
+  it('renders the discard pile container when the pile is empty', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, discardTop: null, discardPile: [], discardPileCount: 0 });
+    renderWithProviders(<CanastaPage />);
+    const pile = await screen.findByTestId('ca-discard-pile');
+    expect(within(pile).getByText('捨て札')).toBeInTheDocument();
+    expect(within(pile).queryByTestId('animated-card')).not.toBeInTheDocument();
   });
 });

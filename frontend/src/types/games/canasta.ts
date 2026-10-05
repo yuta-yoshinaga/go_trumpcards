@@ -51,6 +51,8 @@ export interface CanastaResponse extends BaseGameResponse {
   roundNumber: number;
   currentPlayerIdx: number;
   discardTop: Card | null;
+  /** Discard pile ordered oldest (bottom) first, current top last. */
+  discardPile: Card[];
   drawPileCount: number;
   discardPileCount: number;
   isFrozen: boolean;
