@@ -1,6 +1,7 @@
 import type { Card, RussianPokerResponse } from '../../types/card';
 import type { HintResult } from '../../types/hint';
 import { RussianPokerPhase } from '../../types/phases';
+import { evaluateFiveCardHand } from '../pokerSquaresUtils';
 
 /** PokerHandOnePair = 1 (sync: internal/domain/PokerPlayer.go). */
 const RANK_ONE_PAIR = 1;
@@ -19,7 +20,8 @@ export function getRussianPokerHint(state: RussianPokerResponse): HintResult | n
   if (state.phase !== RussianPokerPhase.ACTION && state.phase !== RussianPokerPhase.POST_ACTION) return null;
   if (!state.playerHand || state.playerHand.length === 0) return null;
 
-  if (state.playerHandRank >= RANK_ONE_PAIR) {
+  const currentHandRank = evaluateFiveCardHand(state.playerHand) ?? state.playerHandRank;
+  if (currentHandRank >= RANK_ONE_PAIR) {
     return { targetAction: 'play', reason: 'hint.pairOrBetter', confidence: 'strong' };
   }
 
