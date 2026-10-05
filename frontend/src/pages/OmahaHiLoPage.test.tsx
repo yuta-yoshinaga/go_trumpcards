@@ -490,6 +490,36 @@ describe('OmahaHiLoPage', () => {
     expect(screen.getByTestId('omahahilo-hi-takes-all')).toBeInTheDocument();
   });
 
+  it('does not highlight a live low candidate after the hand ends without a low result', async () => {
+    // A-2 in the human's hand and 3-4-5 on the board form a live low candidate,
+    // but the response has no settled low result.
+    const endedWithLiveLowCandidate: OmahaResponse = {
+      ...endState,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 2 },
+            { design: 'DIAMOND', value: 10 },
+            { design: 'CLOVER', value: 13 },
+          ],
+        }),
+        ...endState.players.slice(1),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 3 },
+        { design: 'HEART', value: 4 },
+        { design: 'DIAMOND', value: 5 },
+        { design: 'CLOVER', value: 8 },
+        { design: 'SPADE', value: 9 },
+      ],
+    };
+    mockExec.mockResolvedValue(endedWithLiveLowCandidate);
+    const { container } = renderWithProviders(<OmahaHiLoPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('結果'));
+    expect(container.querySelectorAll('[data-testid="omahahilo-lo-card"]')).toHaveLength(0);
+  });
+
   it('highlights the human qualifying low and lists the low cards', async () => {
     // Human hole A♠,K♥,10♦,5♣; board 10♠,5♥,8♦,2♣,9♥.
     const lowState: OmahaResponse = {

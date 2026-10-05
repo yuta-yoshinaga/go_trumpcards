@@ -230,7 +230,10 @@ function OmahaHiLoPageContent() {
     ? state?.roundResults?.find((r) => r.playerIdx === humanPlayer?.id)?.lowBestHand
     : undefined;
   const lowSets = lowCardIndexSets(humanLowBestHand, humanPlayer?.cards ?? [], state?.communityCards ?? []);
-  const liveLowCandidate = omahaLowCandidate(humanPlayer?.cards ?? [], state?.communityCards ?? []);
+  const liveLowCandidate =
+    phase >= OmahaPhase.FLOP && phase <= OmahaPhase.RIVER
+      ? omahaLowCandidate(humanPlayer?.cards ?? [], state?.communityCards ?? [])
+      : undefined;
   const liveLowHoleSet = new Set(liveLowCandidate?.holeIdx ?? []);
   const liveLowBoardSet = new Set(liveLowCandidate?.boardIdx ?? []);
 
