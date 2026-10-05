@@ -32,6 +32,7 @@
   "payoutTable": {
     "title": "配当表",
     "hand": "役",
+    "count": "回数",
     "name": {
       "naturalRoyalFlush": "ナチュラルロイヤルフラッシュ",
       "fourDeuces": "フォーデューシーズ",
@@ -44,6 +45,11 @@
       "straight": "ストレート",
       "threeOfAKind": "スリーカード"
     }
+  },
+  "stats": {
+    "summary": "{{hands}} ハンド / 勝率 {{winRate}}% / 収支 {{net}}",
+    "empty": "まだプレイ記録がありません",
+    "clear": "統計クリア"
   },
   "tutorial": {
     "betControls": "1〜5コインを賭けます。2は全てワイルドカードです!",
