@@ -39,6 +39,30 @@ function defaultProps(overrides?: Partial<BjBetPhaseControlsProps>): BjBetPhaseC
 }
 
 describe('BjBetPhaseControls', () => {
+  it('exposes toggle state through aria-pressed and keeps it aligned with the displayed state', () => {
+    const { rerender } = render(<BjBetPhaseControls {...defaultProps()} />);
+    const hint = screen.getByRole('button', { name: 'ヒント OFF' });
+    const soft17 = screen.getByRole('button', { name: 'S17' });
+    const counting = screen.getByRole('button', { name: 'カウント OFF' });
+    const das = screen.getByRole('button', { name: 'DAS ON' });
+
+    expect(hint).toHaveAttribute('aria-pressed', 'false');
+    expect(soft17).toHaveAttribute('aria-pressed', 'false');
+    expect(counting).toHaveAttribute('aria-pressed', 'false');
+    expect(das).toHaveAttribute('aria-pressed', 'true');
+
+    rerender(
+      <BjBetPhaseControls
+        {...defaultProps({ hintEnabled: true, dealerHitsSoft17: true, countingEnabled: true, doubleAfterSplit: false })}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'ヒント ON' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'H17' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'カウント ON' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'DAS OFF' })).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('renders bet amount input with provided value', () => {
     render(<BjBetPhaseControls {...defaultProps({ betAmount: 50 })} />);
     // ChipBetInput now uses type=text + inputMode=numeric (#1615) — value is a string.
