@@ -36,7 +36,7 @@
   "tutorial": {
     "foundation": "The 4 foundations. Build each suit up from the Ace to the King; clear all 52 cards to win.",
     "fan": "Only the top card of each fan can move. Stack it onto a fan whose top is the next-higher card of the same suit.",
-    "actionButtons": "Hint, auto-complete and undo controls.",
+    "actionButtons": "Hint shows a suggested move. Auto-complete moves cards to foundations when possible, and undo takes back your last move.",
     "resetButton": "Start a new game."
   },
   "frontendHint": {
