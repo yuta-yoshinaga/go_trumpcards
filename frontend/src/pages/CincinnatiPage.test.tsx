@@ -181,6 +181,43 @@ describe('CincinnatiPage', () => {
     expect(await screen.findByTestId('cin-call-pot-ratio')).toHaveTextContent('算出できません');
   });
 
+  it('半ポット額とポット額を選んでベット・レイズに反映する', async () => {
+    mockApi.mockResolvedValue(base);
+    const { unmount } = renderWithProviders(<CincinnatiPage />);
+    await waitFor(() => expect(screen.getByTestId('cin-pot-size-half')).toBeInTheDocument());
+    expect(screen.getByTestId('cin-pot-size-options')).toBeInTheDocument();
+    expect(screen.getByTestId('cin-pot-size-half')).toHaveTextContent('20');
+    expect(screen.getByTestId('cin-pot-size-full')).toHaveTextContent('40');
+    fireEvent.click(screen.getByTestId('cin-pot-size-half'));
+    fireEvent.click(screen.getByTestId('cin-bet'));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', { amount: 20 }));
+    unmount();
+
+    mockApi.mockResolvedValue(withState({ toCall: 20, currentBet: 20, pot: 80 }));
+    renderWithProviders(<CincinnatiPage />);
+    await waitFor(() => expect(screen.getByTestId('cin-pot-size-full')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('cin-pot-size-full'));
+    fireEvent.click(screen.getByTestId('cin-raise'));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('raise', { amount: 80 }));
+  });
+
+  it('ポット割合の選択額を手持ちチップ数で上限設定する', async () => {
+    mockApi.mockResolvedValue(withState({ pot: 200, seats: [seat({ chips: 35 }), base.seats[1]] }));
+    const { unmount } = renderWithProviders(<CincinnatiPage />);
+    await waitFor(() => expect(screen.getByTestId('cin-pot-size-full')).toBeInTheDocument());
+    expect(screen.getByTestId('cin-pot-size-half')).toHaveTextContent('35');
+    expect(screen.getByTestId('cin-pot-size-full')).toHaveTextContent('35');
+    unmount();
+
+    mockApi.mockResolvedValue(
+      withState({ pot: 200, toCall: 20, currentBet: 20, seats: [seat({ chips: 35 }), base.seats[1]] }),
+    );
+    renderWithProviders(<CincinnatiPage />);
+    await waitFor(() => expect(screen.getByTestId('cin-pot-size-full')).toBeInTheDocument());
+    expect(screen.getByTestId('cin-pot-size-half')).toHaveTextContent('15');
+    expect(screen.getByTestId('cin-pot-size-full')).toHaveTextContent('15');
+  });
+
   // **レイズの可否はサーバが決める。** 上限に達したら出さない。
   it('レイズ上限に達したらレイズを出さない', async () => {
     mockApi.mockResolvedValue(withState({ toCall: 20, currentBet: 20, canRaise: false }));
