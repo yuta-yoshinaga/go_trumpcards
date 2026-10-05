@@ -24,6 +24,7 @@
   "you": "You",
   "cpu": "CPU {{id}}",
   "yourTeam": "Your team",
+  "playerTeam": "{{name}} ({{team}})",
   "team": {
     "a": "Team A",
     "b": "Team B"

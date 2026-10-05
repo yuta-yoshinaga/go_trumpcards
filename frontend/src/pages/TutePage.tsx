@@ -132,6 +132,7 @@ function TutePageContent() {
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const humanIdx = state.players.findIndex((p) => p.isHuman);
+  const teamLabels = [t('team.a'), t('team.b')] as const;
   const isHumanTurn = state.currentPlayerIdx === humanIdx;
 
   const isPlayPhase = state.phase === TutePhase.PLAY;
@@ -225,7 +226,7 @@ function TutePageContent() {
               <div>
                 <TrickDisplay
                   currentTrick={state.currentTrick}
-                  players={state.players}
+                  players={state.players.map((p) => ({ ...p, team: p.teamId }))}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="tute-trick-display"
@@ -297,8 +298,11 @@ function TutePageContent() {
                     <div className="mt-1">
                       {state.players.map((p) => (
                         <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('tricks', { count: p.trickCount })}
+                          {t('playerTeam', {
+                            name: playerName(p.id, p.isHuman),
+                            team: teamLabels[p.teamId],
+                          })}
+                          : {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
                         </div>
                       ))}
                     </div>
@@ -307,8 +311,11 @@ function TutePageContent() {
                   <div className="mb-2 p-2 rounded bg-black/30">
                     {state.players.map((p) => (
                       <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('tricks', { count: p.trickCount })}
+                        {t('playerTeam', {
+                          name: playerName(p.id, p.isHuman),
+                          team: teamLabels[p.teamId],
+                        })}
+                        : {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
                       </div>
                     ))}
                   </div>

@@ -70,6 +70,7 @@ func TestTuteWebPresenter_Output(t *testing.T) {
 		var resObj controller.TuteWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Len(t, resObj.Players, 4)
+		assert.Equal(t, []int{0, 1, 0, 1}, []int{resObj.Players[0].TeamID, resObj.Players[1].TeamID, resObj.Players[2].TeamID, resObj.Players[3].TeamID})
 		assert.Equal(t, int(domain.TutePhasePlay), resObj.Phase)
 		assert.Equal(t, -1, resObj.WinnerTeam)
 		assert.Equal(t, "tute.playPhase.lead", resObj.MessageCode)
