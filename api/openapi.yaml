@@ -52192,6 +52192,11 @@ components:
               buriedCount:
                 type: integer
                 description: Number of cards this player has buried this deal
+              buriedCards:
+                type: array
+                description: Cards buried by the human player this deal; omitted for CPU players
+                items:
+                  $ref: '#/components/schemas/Card'
         phase:
           type: integer
           description: "Game phase: 0 = Bid, 1 = Play, 2 = TrickEnd, 3 = RoundEnd, 4 = GameEnd"
