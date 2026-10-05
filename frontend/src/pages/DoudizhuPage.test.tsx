@@ -599,6 +599,30 @@ describe('DoudizhuPage', () => {
     expect(screen.getByAltText('♠ 3')).toBeInTheDocument();
   });
 
+  it('does not render kitty cards during bidding and renders them after bidding', async () => {
+    mockExec.mockResolvedValue({
+      ...defaultState,
+      phase: 'bid',
+      landlordIdx: -1,
+      kittyCards: [{ design: 'SPADE', value: 3 }],
+    });
+    const view = renderWithProviders(<DoudizhuPage />);
+    expect(await screen.findByTestId('phase-indicator')).toHaveTextContent('ビッド');
+    expect(screen.queryByAltText('♠ 3')).not.toBeInTheDocument();
+
+    view.unmount();
+    mockExec.mockResolvedValue({
+      ...defaultState,
+      phase: 'play',
+      kittyCards: [{ design: 'SPADE', value: 3 }],
+    });
+    renderWithProviders(<DoudizhuPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/底牌/)).toBeInTheDocument();
+      expect(screen.getByAltText('♠ 3')).toBeInTheDocument();
+    });
+  });
+
   it('renders the CLI terminal when CLI mode is enabled', async () => {
     localStorage.setItem('cli-mode-doudizhu', 'true');
     renderWithProviders(<DoudizhuPage />);

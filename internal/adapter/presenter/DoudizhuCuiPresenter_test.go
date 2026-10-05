@@ -18,6 +18,7 @@ import (
 func TestDoudizhuCuiPresenter_Output_BidPhase(t *testing.T) {
 	dg := newDoudizhuForPresenter()
 	dg.Reset()
+	dg.SetKittyCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
 	// Put the human on turn so the bid prompt renders.
 	humanIdx := 0
 	for i := 0; i < dg.GetPlayerCnt(); i++ {
@@ -35,6 +36,7 @@ func TestDoudizhuCuiPresenter_Output_BidPhase(t *testing.T) {
 	bidderPrefix := strings.SplitN(i18n.T("doudizhu.currentBidder"), "{{", 2)[0]
 	assert.Contains(t, out, bidderPrefix)
 	assert.Contains(t, out, i18n.T("doudizhu.promptBid"))
+	assert.NotContains(t, out, i18n.T("doudizhu.kittyCards"), "kitty cards must remain hidden during bidding")
 }
 
 func TestDoudizhuCuiPresenter_Output_PlayPhase(t *testing.T) {
@@ -54,6 +56,7 @@ func TestDoudizhuCuiPresenter_Output_PlayPhase(t *testing.T) {
 	p := new(presenter.DoudizhuCuiPresenter)
 	out := p.Output(dg, nil)
 	assert.NotEmpty(t, out)
+	assert.Contains(t, out, i18n.T("doudizhu.kittyCards"), "kitty cards become visible after the landlord is decided")
 }
 
 // 最終得点の倍率はビッド額とボム回数で決まるのに、CUI はどちらも終局まで
