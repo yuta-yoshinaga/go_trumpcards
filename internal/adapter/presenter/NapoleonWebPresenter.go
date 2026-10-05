@@ -57,7 +57,9 @@ func (p *NapoleonWebPresenter) buildBaseOutput(n interfaces.NapoleonGame) *contr
 	if n.GetPhase() == domain.NapoleonPhasePlay {
 		playerIdx := n.GetCurrentPlayerIdx()
 		if playerIdx >= 0 && playerIdx < n.GetPlayerCnt() {
-			resObj.ValidPlayIndices = n.GetValidPlayIndices(playerIdx)
+			if idx := n.GetValidPlayIndices(playerIdx); idx != nil {
+				resObj.ValidPlayIndices = idx
+			}
 		}
 	}
 

@@ -230,8 +230,6 @@ function NapoleonPageContent() {
   const isGameEnd = state.phase === NapoleonPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const validPlayIndices = playableIndicesForSelection ?? [];
-  const hasRestrictedPlay = hasRestrictedPlayForSelection;
-  const canPlayCard = canSelectPlayCard;
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
   const minLegalBid = Math.max(napoleonConfig.minBid, state.highestBid + 1);
   const effectiveBidValue = Math.max(bidValue, minLegalBid);
@@ -640,7 +638,8 @@ function NapoleonPageContent() {
                   onToggle={togglePlayableCard}
                   cardWidth={cardWidth}
                   dataTutorial="np-player-hand"
-                  validIndices={hasRestrictedPlay ? validPlayIndices : undefined}
+                  // Disable illegal cards only when restricted; highlight legal cards on the human turn.
+                  validIndices={hasRestrictedPlayForSelection ? validPlayIndices : undefined}
                   legalIndices={isHumanTurn ? validPlayIndices : undefined}
                 />
               ) : (
@@ -652,8 +651,8 @@ function NapoleonPageContent() {
                       onClick={() => togglePlayableCard(idx)}
                       aria-label={cardAlt(card)}
                       aria-pressed={selectedCardIndices.includes(idx)}
-                      aria-disabled={(hasRestrictedPlay && !canPlayCard(idx)) || undefined}
-                      className={`transition-transform ${focusRingCard} ${isHumanTurn && canPlayCard(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''} ${hasRestrictedPlay && !canPlayCard(idx) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      aria-disabled={(hasRestrictedPlayForSelection && !canSelectPlayCard(idx)) || undefined}
+                      className={`transition-transform ${focusRingCard} ${isHumanTurn && canSelectPlayCard(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''} ${hasRestrictedPlayForSelection && !canSelectPlayCard(idx) ? 'opacity-50 cursor-not-allowed' : ''}`}
                       style={{
                         background: 'none',
                         padding: 0,

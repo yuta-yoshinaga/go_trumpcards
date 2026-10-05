@@ -5,6 +5,7 @@ package presenter_test
 import (
 	"encoding/json"
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -97,6 +98,18 @@ func TestNapoleonWebPresenter_Output(t *testing.T) {
 		var resObj controller.NapoleonWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Empty(t, resObj.ValidPlayIndices)
+	})
+
+	t.Run("nil play indices are serialized as an empty array", func(t *testing.T) {
+		m, _ := setupNapoleonWebMockWithPlayers()
+		m.ExpectedCalls = removeNapoleonWebMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", 0).Return([]int(nil))
+
+		result := p.Output(m, nil)
+		var resObj controller.NapoleonWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.ValidPlayIndices)
+		assert.True(t, strings.Contains(result, `"validPlayIndices":[]`), result)
 	})
 
 	t.Run("human cards shown, CPU cards hidden", func(t *testing.T) {
