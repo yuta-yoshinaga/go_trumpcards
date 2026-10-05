@@ -131,6 +131,27 @@ describe('DragonTigerPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
   });
 
+  it('shows the initial load error with retry, then returns to loading and the game', async () => {
+    let finishRetry: (state: DragonTigerResponse) => void = () => {};
+    mockApi.mockRejectedValueOnce(new Error('network unavailable')).mockImplementationOnce(
+      () =>
+        new Promise<DragonTigerResponse>((resolve) => {
+          finishRetry = resolve;
+        }),
+    );
+    const { container } = renderWithProviders(<DragonTigerPage />);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('通信エラーが発生しました');
+    const retryButton = screen.getByRole('button', { name: '再試行' });
+    fireEvent.click(retryButton);
+
+    await waitFor(() => expect(container.querySelector('[data-skeleton-section]')).toBeInTheDocument());
+    await waitFor(() => expect(mockApi).toHaveBeenCalledTimes(2));
+    finishRetry(betState);
+    expect(await screen.findByRole('button', { name: 'ドラゴン' })).toBeInTheDocument();
+  });
+
   it('renders three bet buttons in the bet phase', async () => {
     renderWithProviders(<DragonTigerPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ドラゴン' })).toBeInTheDocument());
