@@ -13,6 +13,7 @@ export interface EquityDisplayProps {
 /** Renders a Hold'em equity display with win probability, pot odds, and hand odds table. */
 export function EquityDisplay({ equity, potOdds, lowProbability }: EquityDisplayProps) {
   const { t } = useTranslation('holdem');
+  const { t: tc } = useTranslation('common');
   const [showHandOdds, setShowHandOdds] = useState(false);
 
   const winPct = Math.round(equity.winProbability * 100);
@@ -66,8 +67,8 @@ export function EquityDisplay({ equity, potOdds, lowProbability }: EquityDisplay
         <table className="w-full text-xs text-ds-text-primary mt-2" data-testid="hand-odds-table">
           <thead>
             <tr className="border-b border-white/20">
-              <th className="text-left py-1">Hand</th>
-              <th className="text-right py-1">%</th>
+              <th className="text-left py-1">{tc('handOdds.hand')}</th>
+              <th className="text-right py-1">{tc('handOdds.probability')}</th>
             </tr>
           </thead>
           <tbody>
