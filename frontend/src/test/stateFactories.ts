@@ -5833,6 +5833,8 @@ const baseBaccaratBanqueState: BaccaratBanqueResponse = {
   coupNumber: 2,
   bankHeld: 2,
   shoeRemaining: 141,
+  shoeComposition: [40, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 8, 8],
+  drawWinPercent: [68, 31],
   retired: false,
   gameEndFlag: false,
   winnerIdx: -1,

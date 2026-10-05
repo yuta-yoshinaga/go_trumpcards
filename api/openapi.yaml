@@ -74214,6 +74214,16 @@ components:
                 type: boolean
         phase:
           type: string
+        shoeComposition:
+          type: array
+          description: Remaining card counts by rank, from ace through king.
+          items:
+            type: integer
+        drawWinPercent:
+          type: array
+          description: Chance that the next card beats right and left tableaux, in that order.
+          items:
+            type: integer
         lastResult:
           type: object
           properties:

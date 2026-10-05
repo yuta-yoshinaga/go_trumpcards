@@ -75,6 +75,13 @@ describe('BaccaratBanquePage', () => {
     expect(await screen.findByTestId('banque-shoe-line')).toHaveTextContent('12');
   });
 
+  it('shows remaining baccarat points and draw chances from the response', async () => {
+    renderWithProviders(<BaccaratBanquePage />);
+    const analysis = await screen.findByTestId('banque-shoe-analysis');
+    expect(analysis).toHaveTextContent('ランクA〜Kの残り枚数: 40、12、12');
+    expect(analysis).toHaveTextContent('右: 68%、左: 31%');
+  });
+
   it('marks a natural, and only on a two-card 8 or 9', async () => {
     mockExec.mockResolvedValue(
       makeBaccaratBanqueState({

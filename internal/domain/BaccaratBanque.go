@@ -354,6 +354,38 @@ func (b *BaccaratBanque) GetBankHeld() int { return b.bankHeld }
 // GetShoeRemaining はシューの残り枚数を返す。
 func (b *BaccaratBanque) GetShoeRemaining() int { return b.remaining() }
 
+// GetShoeComposition は A〜K のランクごとに残り札を数える。
+func (b *BaccaratBanque) GetShoeComposition() []int {
+	counts := make([]int, 13)
+	for _, c := range b.shoe[b.drawIdx:] {
+		if c.GetValue() >= 1 && c.GetValue() <= 13 {
+			counts[c.GetValue()-1]++
+		}
+	}
+	return counts
+}
+
+// GetDrawWinPercent は、人間 (バンカー) が次の1枚を引いた後の合計が指定席の現合計を上回る確率を返す。
+func (b *BaccaratBanque) GetDrawWinPercent(seat int) int {
+	if seat < 0 || seat >= len(b.players) || b.remaining() == 0 {
+		return 0
+	}
+	counts := b.GetShoeComposition()
+	bankTotal := b.players[BaccaratBanqueBankerIdx].GetTotal()
+	target := b.players[seat].GetTotal()
+	twins := 0
+	for index, count := range counts {
+		pt := index + 1
+		if pt >= 10 {
+			pt = 0
+		}
+		if (bankTotal+pt)%10 > target {
+			twins += count
+		}
+	}
+	return (100*twins + b.remaining()/2) / b.remaining()
+}
+
 // IsRetired はバンカーが自分から降りたかを返す。
 func (b *BaccaratBanque) IsRetired() bool { return b.retired }
 
