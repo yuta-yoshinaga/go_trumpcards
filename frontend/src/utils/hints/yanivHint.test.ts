@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { Card, YanivResponse } from '../../types/card';
 import { YanivPhase } from '../../types/phases';
-import { getYanivHint, yanivCardValue } from './yanivHint';
+import { yanivCardValue } from '../yanivCombos';
+import { getYanivHint } from './yanivHint';
 
 function card(design: Card['design'], value: number): Card {
   return { design, value } as Card;

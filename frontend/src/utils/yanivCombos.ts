@@ -1,5 +1,12 @@
 import type { Card } from '../types/card';
 
+/** Returns the point value of a card in Yaniv: joker 0, ace 1, face cards 10. */
+export function yanivCardValue(card: Card): number {
+  if (card.design === 'JOKER') return 0;
+  if (card.value >= 10) return 10;
+  return card.value;
+}
+
 /**
  * Yaniv discard category. Mirrors the Go domain `YanivValidCombo`:
  * a legal discard is a single card, a same-rank set of 2+, or a same-suit
