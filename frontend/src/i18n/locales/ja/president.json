@@ -22,6 +22,7 @@
   "settings.revolution": "革命",
   "settings.cardExchange": "カード交換",
   "settings.passFieldFlush": "パス即場流れ",
+  "settings.pendingReset": "設定の変更は次回のリセット後に適用されます。",
   "tutorial.cpuArea": "CPU3人の手札枚数がここに表示されます。",
   "tutorial.tableCards": "場に出されたカードが表示されます。これより強い同じ枚数のカードのみ出せます。",
   "tutorial.playerHand": "あなたの手札です。カードをクリックして選び、[出す] ボタンで場に出します。",

@@ -22,6 +22,7 @@
   "settings.revolution": "Revolution",
   "settings.cardExchange": "Card Exchange",
   "settings.passFieldFlush": "Pass Flushes Field",
+  "settings.pendingReset": "Setting changes will apply after the next reset.",
   "tutorial.cpuArea": "Card counts for the three CPU opponents.",
   "tutorial.tableCards": "The current play on the table — you must beat it with the same number of cards but higher rank.",
   "tutorial.playerHand": "Your hand. Click cards to select, then press Play to put them down.",
