@@ -948,6 +948,7 @@
   "canfield.log.giveUp": "Gave up",
   "canfield.log.autocomplete": "Ran autocomplete",
   "frenchtarot.log.bid": "{{player}} bids {{bid}}",
+  "frenchtarot.log.revealChien": "The chien is revealed",
   "frenchtarot.log.pass": "{{player}} passes",
   "frenchtarot.log.redeal": "All players passed. Redealing.",
   "frenchtarot.log.winBid": "{{player}} takes the contract {{bid}}",

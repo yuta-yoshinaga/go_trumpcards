@@ -948,6 +948,7 @@
   "canfield.log.giveUp": "ギブアップしました",
   "canfield.log.autocomplete": "オートコンプリートを実行しました",
   "frenchtarot.log.bid": "{{player}} が {{bid}} を入札しました",
+  "frenchtarot.log.revealChien": "シアンが公開されました",
   "frenchtarot.log.pass": "{{player}} がパスしました",
   "frenchtarot.log.redeal": "全員がパスしました。配り直します。",
   "frenchtarot.log.winBid": "{{player}} が {{bid}} のコントラクトを取りました",
