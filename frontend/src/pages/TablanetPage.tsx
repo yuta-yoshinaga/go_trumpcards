@@ -173,6 +173,8 @@ function TablanetPageContent() {
   // Table indices the currently-selected hand card can capture (backend hint).
   const captureCandidates =
     handIndex !== null && isHumanTurn ? new Set(state.captureOptions[handIndex] ?? []) : new Set<number>();
+  // Both recommendations come from the server hint in state.hint: the hand uses frontendHint,
+  // while the table uses the hint returned by an explicit hint request.
   const recommendedHandIndices =
     frontendHintEnabled && isHumanTurn ? new Set(frontendHint?.targetIndices ?? []) : new Set<number>();
   const recommendedTableIndices =
@@ -368,6 +370,9 @@ function TablanetPageContent() {
                   <button
                     key={i}
                     type="button"
+                    aria-label={
+                      recommendedHandIndices.has(i) ? t('handRecommendedAria', { card: cardAlt(c) }) : undefined
+                    }
                     aria-pressed={handIndex === i}
                     onClick={() => isHumanTurn && setHandIndex(handIndex === i ? null : i)}
                     disabled={!isHumanTurn}

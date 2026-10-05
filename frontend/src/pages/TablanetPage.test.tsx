@@ -71,7 +71,9 @@ describe('TablanetPage', () => {
       }),
     );
     renderWithProviders(<TablanetPage />);
-    expect(await screen.findByTestId('hand-card-1')).toHaveAttribute('data-hint-recommended', 'true');
+    const recommendedHandCard = await screen.findByTestId('hand-card-1');
+    expect(recommendedHandCard).toHaveAttribute('data-hint-recommended', 'true');
+    expect(recommendedHandCard).toHaveAccessibleName(/推奨/);
     expect(screen.getByTestId('table-card-0')).toHaveAttribute('data-hint-recommended', 'true');
     expect(screen.getByTestId('hand-card-0')).not.toHaveAttribute('data-hint-recommended');
   });

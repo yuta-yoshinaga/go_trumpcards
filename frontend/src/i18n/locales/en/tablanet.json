@@ -15,6 +15,7 @@
   },
   "hintAvailable": "Hint",
   "hintRequested": "Hint available",
+  "handRecommendedAria": "{{card}}, recommended",
   "listSeparator": ", ",
   "newGame": "New Game",
   "noHint": "No hint available",

@@ -15,6 +15,7 @@
   },
   "hintAvailable": "ヒント",
   "hintRequested": "ヒントがあります",
+  "handRecommendedAria": "{{card}}、推奨",
   "listSeparator": "、",
   "newGame": "新しいゲーム",
   "noHint": "ヒントはありません",
