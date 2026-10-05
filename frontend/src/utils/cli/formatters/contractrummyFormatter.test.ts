@@ -25,6 +25,7 @@ const baseState: ContractRummyResponse = {
   totalRounds: 7,
   currentPlayerIdx: 0,
   discardTop: { design: 'CLOVER', value: 7 },
+  discardHistory: [{ design: 'CLOVER', value: 7 }],
   drawPileCount: 30,
   gameEndFlag: false,
   winnerIdx: -1,
