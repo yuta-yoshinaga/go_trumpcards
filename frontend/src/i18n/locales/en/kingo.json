@@ -13,6 +13,7 @@
   "label.bankerBetExcluded": "The banker does not bet",
   "label.dealPrompt": "The bets are in — deal to continue",
   "label.won": "{{amount}}",
+  "label.noChange": "No change",
   "label.winner": "Winner",
   "label.noCards": "Nothing is dealt yet",
   "rank.arashi": "arashi",

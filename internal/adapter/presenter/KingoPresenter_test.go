@@ -89,6 +89,27 @@ func TestKingoCuiPresenter_ShowsNoHandsBeforeTheDeal(t *testing.T) {
 	assert.True(t, shown, "決着後に役が出ていない")
 }
 
+func TestKingoCuiPresenter_ShowsZeroChipChange(t *testing.T) {
+	cp := new(KingoCuiPresenter)
+	var out string
+	var zeroName string
+	for attempt := 0; attempt < 500; attempt++ {
+		g := kingoSettled(t)
+		for i, result := range g.GetResults() {
+			if result.WonAmount == 0 {
+				zeroName = g.GetPlayers()[i].GetName()
+				out = cp.Output(g, nil)
+				break
+			}
+		}
+		if zeroName != "" {
+			break
+		}
+	}
+	require.NotEmpty(t, zeroName, "500 局で増減ゼロの席が出なかった")
+	assert.Contains(t, out, i18n.Tf("kingo.noChangeLine", "name", zeroName))
+}
+
 func kingoRankLabel(r domain.KingoRank) string {
 	switch r {
 	case domain.KingoRankArashi:
