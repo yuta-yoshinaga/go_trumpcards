@@ -88,4 +88,6 @@ export interface DaifugoResponse extends BaseGameResponse {
    * every card as unplayable.
    */
   playableCardIndices: number[] | null;
+  /** Legal complete selections, or null when the server cannot determine them. */
+  playableCardCombinations: number[][] | null;
 }

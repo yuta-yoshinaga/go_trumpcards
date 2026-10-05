@@ -208,6 +208,18 @@ function DaifugoPageContent() {
   const tableCount = state.tableCards?.length ?? 0;
   const countMismatch =
     pendingAction === 'none' && tableCount > 0 && selectedIndices.length > 0 && selectedIndices.length !== tableCount;
+  const sortedSelection = [...selectedIndices].sort((a, b) => a - b);
+  const playableCombinations = state.playableCardCombinations;
+  const canCheckCombination =
+    pendingAction === 'none' && tableCount > 0 && selectedIndices.length > 0 && playableCombinations !== null;
+  const noPlayableCombination =
+    canCheckCombination && playableCombinations.length === 0 && selectedIndices.length === tableCount;
+  const invalidCombination =
+    canCheckCombination &&
+    playableCombinations.length > 0 &&
+    !playableCombinations.some(
+      (combo) => combo.length === sortedSelection.length && combo.every((index, i) => index === sortedSelection[i]),
+    );
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
   const humanPlayer = state.players.find((p) => p.isHuman);
 
@@ -443,6 +455,20 @@ function DaifugoPageContent() {
                   {t('countMismatch', { count: tableCount })}
                 </p>
               )}
+              {invalidCombination && !countMismatch && (
+                <p className="mb-1.5 text-xs text-ds-error-text" role="alert" data-testid="daifugo-combination-warning">
+                  {t('invalidCombination')}
+                </p>
+              )}
+              {noPlayableCombination && !countMismatch && (
+                <p
+                  className="mb-1.5 text-xs text-ds-error-text"
+                  role="alert"
+                  data-testid="daifugo-no-combinations-warning"
+                >
+                  {t('noPlayableCombinations')}
+                </p>
+              )}
               <GameResetButton
                 isGameEnd={!!state.gameEndFlag}
                 onReset={handleManualReset}
@@ -468,7 +494,8 @@ function DaifugoPageContent() {
                   state.gameEndFlag ||
                   selectedIndices.length === 0 ||
                   pendingAction === 'queenBomber' ||
-                  countMismatch
+                  countMismatch ||
+                  invalidCombination
                 }
                 onClick={() =>
                   exec(

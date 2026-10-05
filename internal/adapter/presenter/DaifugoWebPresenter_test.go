@@ -514,7 +514,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		m.On("GetNumberLocked").Return(false)
 		m.On("GetSequenceLocked").Return(false)
 		m.On("GetSortMode").Return(domain.DaifugoSortByStrength)
-		m.On("GetPlayableCardIndices").Return([]int(nil))
+		m.On("GetPlayableSelections").Return([]int(nil), [][]int(nil))
 		return m
 	}
 

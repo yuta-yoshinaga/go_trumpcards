@@ -41017,6 +41017,7 @@ components:
         - sequenceLocked
         - sortMode
         - playableCardIndices
+        - playableCardCombinations
       properties:
         entries:
           type: array
@@ -41146,6 +41147,15 @@ components:
           items:
             type: integer
           example: [0, 2]
+        playableCardCombinations:
+          type: array
+          nullable: true
+          description: Legal complete selections of hand indices, or null when the server cannot determine them.
+          items:
+            type: array
+            items:
+              type: integer
+          example: [[0, 2], [1, 3]]
 
     # -------------------------------------------------------------------------
     # Dou Dizhu (斗地主)
