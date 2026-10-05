@@ -166,6 +166,9 @@ function BlackHolePageContent() {
     recommendedFan !== null && state.fans[recommendedFan]?.length
       ? state.fans[recommendedFan][state.fans[recommendedFan].length - 1]
       : null;
+  const clearLabel = state.hint?.canClear
+    ? t('clearIn', { count: state.hint.continuationMoves })
+    : t('cannotConfirmClear');
 
   // Spoken hint result: lead with the backend's recommended card (when any),
   // then list every playable fan-top (or "none"), shown only while the visual
@@ -185,7 +188,7 @@ function BlackHolePageContent() {
   const hintAnnounce = !showLegalHint
     ? ''
     : recommendedTop && recommendedFan !== null
-      ? `${t('hintRecommendedAnnounce', { card: cardAlt(recommendedTop), fan: recommendedFan + 1, movesAfter: state.hint?.movesAfter ?? 0 })} ${state.hint?.canClear ? t('clearIn', { count: state.hint.continuationMoves }) : t('cannotConfirmClear')} · ${legalFansAnnounce}`
+      ? `${t('hintRecommendedAnnounce', { card: cardAlt(recommendedTop), fan: recommendedFan + 1, movesAfter: state.hint?.movesAfter ?? 0 })} ${clearLabel} · ${legalFansAnnounce}`
       : legalFansAnnounce;
 
   const renderFan = (fan: (typeof state.fans)[number], idx: number) => (
@@ -311,7 +314,7 @@ function BlackHolePageContent() {
         </span>
         {showLegalHint && recommendedTop && state.hint && (
           <p className="mt-2 text-xs text-ds-text-primary" data-testid="bh-hint-detail">
-            {state.hint.canClear ? t('clearIn', { count: state.hint.continuationMoves }) : t('cannotConfirmClear')}
+            {clearLabel}
           </p>
         )}
 

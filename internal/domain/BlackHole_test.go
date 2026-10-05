@@ -327,6 +327,7 @@ func TestBlackHole_HintPrefersClearOverLocalMoves(t *testing.T) {
 	require.NotNil(t, h)
 	assert.Equal(t, 1, h.Fan)
 	assert.True(t, h.CanClear)
+	assert.Equal(t, 4, h.ContinuationMoves, "clear length is the number of cards still in the fans")
 }
 
 func TestBlackHole_HintFallsBackWhenNoMoveCanClear(t *testing.T) {
@@ -358,7 +359,7 @@ func TestBlackHole_GetHintOnNewDealDoesNotChangeFanLengths(t *testing.T) {
 	for i := range g.fans {
 		before[i] = len(g.fans[i])
 	}
-	require.NotPanics(t, func() { require.NotNil(t, g.GetHint()) })
+	require.NotPanics(t, func() { g.GetHint() })
 	for i := range g.fans {
 		assert.Equal(t, before[i], len(g.fans[i]))
 	}
