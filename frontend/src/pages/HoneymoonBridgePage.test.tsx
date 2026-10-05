@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { honeymoonbridgeApi } from '../api/gameApi';
+import { actionLogApi, honeymoonbridgeApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, HoneymoonBridgeResponse } from '../types/card';
@@ -16,6 +16,7 @@ vi.mock('../hooks/useGameHint', () => ({
 }));
 
 const mockExec = vi.mocked(honeymoonbridgeApi.exec);
+const mockActionLog = vi.mocked(actionLogApi.honeymoonbridge);
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
@@ -79,6 +80,7 @@ const playing = (over: Partial<HoneymoonBridgeResponse> = {}) =>
 beforeEach(() => {
   vi.clearAllMocks();
   mockExec.mockResolvedValue(makeState());
+  mockActionLog.mockResolvedValue({ entries: [] });
 });
 
 describe('HoneymoonBridgePage', () => {
@@ -123,6 +125,30 @@ describe('HoneymoonBridgePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.queryByTestId('hb-stock')).not.toBeInTheDocument();
     expect(screen.queryByTestId('hb-trick-status')).not.toBeInTheDocument();
+  });
+
+  it('shows bid and pass history during the auction', async () => {
+    mockExec.mockResolvedValue(bidding());
+    mockActionLog.mockResolvedValue({
+      entries: [
+        {
+          turnNumber: 1,
+          playerIdx: 0,
+          actionType: 'bid',
+          detail: '',
+          detailCode: 'honeymoonbridge.log.bid',
+          detailParams: { level: '1', suitKey: 'card.suit.spade' },
+        },
+      ],
+    });
+    renderWithProviders(<HoneymoonBridgePage />);
+
+    const viewLog = await screen.findByRole('button', { name: '棋譜を見る' });
+    expect(viewLog).toBeInTheDocument();
+    fireEvent.click(viewLog);
+    expect(await screen.findByText('棋譜')).toBeInTheDocument();
+    expect(screen.getByText(/bid: 1/)).toBeInTheDocument();
+    expect(screen.queryByText('棋譜はありません。')).not.toBeInTheDocument();
   });
 
   it('hides trick status after the deal ends', async () => {

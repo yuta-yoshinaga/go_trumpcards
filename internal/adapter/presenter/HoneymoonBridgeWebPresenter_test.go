@@ -216,12 +216,32 @@ func TestHoneymoonBridgeWebPresenterHintOutput(t *testing.T) {
 	assert.Nil(t, decodeHoneymoonBridge(t, p.HintOutput(h))["hint"], "終局後は助言しない")
 }
 
-// **棋譜は終局まで伏せる。** 進行中に出すと相手の手が読める。
+// **競りの判断に必要な宣言履歴だけを公開する。** ドロー/プレイ中は
+// 記憶系ゲームのため、従来どおり終局まで伏せる。
 func TestHoneymoonBridgeWebPresenterActionLogOutput(t *testing.T) {
 	p := new(HoneymoonBridgeWebPresenter)
-	h := newHoneymoonBridgeForWeb(t)
-	assert.Empty(t, decodeHoneymoonBridge(t, p.ActionLogOutput(h))["entries"])
 
+	t.Run("競り中は宣言とパスを表示する", func(t *testing.T) {
+		h := newHoneymoonBridgeForWeb(t)
+		h.SetPhaseForTest(domain.HoneymoonBridgePhaseBid)
+		h.SetCurrentPlayerIdxForTest(0)
+		require.NoError(t, h.PlayerBid(1, domain.CardDesignSpade))
+		h.SetCurrentPlayerIdxForTest(0)
+		require.NoError(t, h.PlayerPass())
+
+		entries := decodeHoneymoonBridge(t, p.ActionLogOutput(h))["entries"].([]any)
+		require.Len(t, entries, 3)
+		assert.Equal(t, "bid", entries[1].(map[string]any)["actionType"])
+		assert.Equal(t, "pass", entries[2].(map[string]any)["actionType"])
+	})
+
+	t.Run("プレイ中は空のまま", func(t *testing.T) {
+		h := newHoneymoonBridgeForWeb(t)
+		h.SetPhaseForTest(domain.HoneymoonBridgePhasePlay)
+		assert.Empty(t, decodeHoneymoonBridge(t, p.ActionLogOutput(h))["entries"])
+	})
+
+	h := newHoneymoonBridgeForWeb(t)
 	h.GiveUp()
 	assert.NotEmpty(t, decodeHoneymoonBridge(t, p.ActionLogOutput(h))["entries"])
 }
