@@ -262,6 +262,13 @@ function JulepePageContent() {
                   )}
                   {': '}
                   {t('header.seat', { chips: String(p.chips), tricks: String(p.roundTricks) })} [{statusStr(p)}]
+                  {isRoundEnd && (p.roundPayout > 0 || p.roundPenalty > 0) && (
+                    <span className="ml-2 text-ds-text-primary" data-testid={`rm-chip-change-${p.id.toString()}`}>
+                      {p.roundPayout > 0 && t('roundResult.payout', { amount: String(p.roundPayout) })}
+                      {p.roundPayout > 0 && p.roundPenalty > 0 && ' '}
+                      {p.roundPenalty > 0 && t('roundResult.penalty', { amount: String(p.roundPenalty) })}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>

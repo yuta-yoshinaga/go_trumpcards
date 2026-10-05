@@ -25,6 +25,10 @@ export interface JulepePlayer {
   decided: boolean;
   /** Tricks taken this round. Zero while `inRound` costs an extra payment. */
   roundTricks: number;
+  /** Chips awarded from the pot in the completed round. */
+  roundPayout: number;
+  /** Extra chips paid into the pot for missing the required trick count. */
+  roundPenalty: number;
   trickCount: number;
 }
 

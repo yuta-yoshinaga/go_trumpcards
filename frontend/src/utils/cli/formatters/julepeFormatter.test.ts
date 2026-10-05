@@ -13,6 +13,8 @@ const seat = (id: number, over: Record<string, unknown> = {}) => ({
   inRound: false,
   decided: false,
   roundTricks: 0,
+  roundPayout: 0,
+  roundPenalty: 0,
   trickCount: 0,
   ...over,
 });

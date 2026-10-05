@@ -64,15 +64,17 @@ func (p *JulepeWebPresenter) buildPlayersOutput(r interfaces.JulepeGame) []*cont
 	for i := 0; i < r.GetPlayerCnt(); i++ {
 		player := r.GetPlayer(i)
 		out = append(out, &controller.JulepeWebOutputPlayer{
-			ID:          i,
-			IsHuman:     player.GetIsHuman(),
-			CardCount:   player.GetCardsSize(),
-			Cards:       playerCardsToOutput(player, player.GetIsHuman()),
-			Chips:       player.GetChips(),
-			InRound:     player.GetInRound(),
-			Decided:     player.GetDecided(),
-			RoundTricks: player.GetRoundTricks(),
-			TrickCount:  player.GetTrickCount(),
+			ID:           i,
+			IsHuman:      player.GetIsHuman(),
+			CardCount:    player.GetCardsSize(),
+			Cards:        playerCardsToOutput(player, player.GetIsHuman()),
+			Chips:        player.GetChips(),
+			InRound:      player.GetInRound(),
+			Decided:      player.GetDecided(),
+			RoundTricks:  player.GetRoundTricks(),
+			RoundPayout:  player.GetRoundPayout(),
+			RoundPenalty: player.GetRoundPenalty(),
+			TrickCount:   player.GetTrickCount(),
 		})
 	}
 	return out

@@ -174,6 +174,36 @@ func TestJulepe_PotIsSharedByTrickCount(t *testing.T) {
 	assert.Equal(t, 12, r.GetPlayer(1).GetChips(), "2 トリック × 6")
 }
 
+func TestJulepe_RoundPayoutAndPenaltyResetOnNextDeal(t *testing.T) {
+	r := newTestJulepe(t)
+	r.config.Rounds = 3
+	r.SetPotForTest(20)
+	for i := range r.GetPlayerCnt() {
+		r.GetPlayer(i).SetInRound(i < 3)
+	}
+	r.GetPlayer(0).SetRoundTricks(2)
+	r.GetPlayer(1).SetRoundTricks(1)
+	// 3 人参加時の規定は 2 トリック。席 1 は 1 トリック不足。
+	r.GetPlayer(2).SetRoundTricks(0)
+
+	r.FinishRoundForTest()
+
+	// ペナルティ 5 を 2 席から加えたポット 30 を 3 トリックで分ける。
+	assert.Equal(t, 20, r.GetPlayer(0).GetRoundPayout())
+	assert.Equal(t, 10, r.GetPlayer(1).GetRoundPayout())
+	assert.Equal(t, JulepeMissPenalty, r.GetPlayer(1).GetRoundPenalty())
+	assert.Equal(t, JulepeMissPenalty, r.GetPlayer(2).GetRoundPenalty())
+	assert.Equal(t, 0, r.GetPlayer(3).GetRoundPayout())
+	assert.Equal(t, 0, r.GetPlayer(3).GetRoundPenalty())
+
+	r.SetPhaseForTest(JulepePhaseRoundEnd)
+	r.NextRound()
+	for i := range r.GetPlayerCnt() {
+		assert.Zero(t, r.GetPlayer(i).GetRoundPayout(), "player %d payout reset", i)
+		assert.Zero(t, r.GetPlayer(i).GetRoundPenalty(), "player %d penalty reset", i)
+	}
+}
+
 // **端数は次ラウンドへ残す。** 配り切れないぶんを消すとチップが減る。
 func TestJulepe_RemainderStaysInThePot(t *testing.T) {
 	r := newTestJulepe(t)
@@ -586,6 +616,26 @@ func TestJulepe_JSONRoundTrip(t *testing.T) {
 		require.NotNil(t, restored.GetUpCard())
 		assert.Equal(t, up.GetDesign(), restored.GetUpCard().GetDesign())
 	}
+}
+
+func TestJulepePlayerJSONRoundTripRoundSettlement(t *testing.T) {
+	p := NewJulepePlayer(true)
+	p.roundPayout = 17
+	p.roundPenalty = 10
+
+	data, err := json.Marshal(p)
+	require.NoError(t, err)
+	var restored JulepePlayer
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Equal(t, 17, restored.GetRoundPayout())
+	assert.Equal(t, 10, restored.GetRoundPenalty())
+
+	zeroData, err := json.Marshal(NewJulepePlayer(true))
+	require.NoError(t, err)
+	var snapshot map[string]any
+	require.NoError(t, json.Unmarshal(zeroData, &snapshot))
+	assert.NotContains(t, snapshot, "rp")
+	assert.NotContains(t, snapshot, "rn")
 }
 
 // **5 人の局面を 4 人の器へ復元しても壊れない。** 可変人数ゲーム固有の危険。
