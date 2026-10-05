@@ -13,6 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // karnoffelAnsi は色付けのエスケープを落とす。赤スートは cuiCardStr が色を
@@ -38,7 +39,12 @@ func setupKarnoffelCuiMock(o karnoffelMockOpts) *interfaces.MockKarnoffelGame {
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetDealerIdx").Return(3)
 	m.On("GetChosenSuit").Return(o.chosen)
-	m.On("GetTrick").Return([]*domain.Card{knTestCard(domain.CardDesignSpade, 9)})
+	trick := o.trick
+	if trick == nil {
+		trick = []*domain.Card{knTestCard(domain.CardDesignSpade, 9)}
+	}
+	m.On("GetTrick").Return(trick)
+	m.On("GetTrickLeaderIdx").Return(o.leader)
 	m.On("GetTrickNumber").Return(2)
 	m.On("GetGameEndFlag").Return(o.gameEnd)
 	m.On("GetWinnerTeam").Return(o.winner)
@@ -149,6 +155,44 @@ func TestKarnoffelCuiPresenter_SurvivesNoChosenSuit(t *testing.T) {
 	assert.NotPanics(t, func() {
 		new(presenter.KarnoffelCuiPresenter).Output(setupKarnoffelCuiMock(o), nil)
 	})
+}
+
+func TestKarnoffelCuiPresenter_ShowsTrickPlayersInLeadOrderInBothLocales(t *testing.T) {
+	origLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(origLang) })
+	for _, tc := range []struct {
+		lang string
+		want []string
+	}{
+		{lang: "ja", want: []string{"♠9(CPU 2)", "♥8(CPU 3)", "♣7(あなた)"}},
+		{lang: "en", want: []string{"♠9(CPU 2)", "♥8(CPU 3)", "♣7(You)"}},
+	} {
+		t.Run(tc.lang, func(t *testing.T) {
+			i18n.SetLang(tc.lang)
+			o := defaultKarnoffelOpts()
+			o.leader = 2
+			o.trick = []*domain.Card{
+				knTestCard(domain.CardDesignSpade, 9),
+				knTestCard(domain.CardDesignHeart, 8),
+				knTestCard(domain.CardDesignClover, 7),
+			}
+			m := setupKarnoffelCuiMock(o)
+			out := karnoffelPlain(new(presenter.KarnoffelCuiPresenter).Output(m, nil))
+			trickLine := strings.Split(out, "\n")
+			for _, line := range trickLine {
+				if strings.Contains(line, "♠9") {
+					for i, want := range tc.want {
+						assert.Contains(t, line, want)
+						if i > 0 {
+							assert.Less(t, strings.Index(line, tc.want[i-1]), strings.Index(line, want))
+						}
+					}
+					return
+				}
+			}
+			t.Fatal("trick line not found")
+		})
+	}
 }
 
 func TestKarnoffelCuiPresenter_ActionLogOutput(t *testing.T) {

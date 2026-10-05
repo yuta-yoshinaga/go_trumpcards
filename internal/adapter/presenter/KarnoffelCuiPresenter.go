@@ -108,11 +108,15 @@ func (p *KarnoffelCuiPresenter) Output(g interfaces.KarnoffelGame, lastErr error
 		}
 
 		if trick := g.GetTrick(); len(trick) > 0 {
-			var t strings.Builder
-			for _, c := range trick {
-				t.WriteString(cuiCardStr(c) + " ")
+			cards := make([]string, 0, len(trick))
+			for i, c := range trick {
+				seat := (g.GetTrickLeaderIdx() + i) % len(g.GetPlayers())
+				cards = append(cards, i18n.Tf("karnoffel.trickCard",
+					"card", cuiCardStr(c),
+					"name", cuiPlayerName(g.GetPlayer(seat), seat)))
 			}
-			b.WriteString(i18n.Tf("karnoffel.trick", "cards", strings.TrimSpace(t.String())) + "\n")
+			b.WriteString(i18n.Tf("karnoffel.trick",
+				"cards", strings.Join(cards, i18n.T("karnoffel.listSeparator"))) + "\n")
 		}
 
 		b.WriteString("----------\n")
