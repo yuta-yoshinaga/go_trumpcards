@@ -19,6 +19,7 @@
   "cardCount": "{{count}}枚",
   "draw": "引く",
   "keyboardDrawHint": "{{name}}のカードは左から1枚目、2枚目…の順です。Tabキーで位置を選び、EnterまたはSpaceキーで引けます。",
+  "keyboardReorderHint": "手札の並び替え: Tabキーで手札にフォーカスし、←/→キーで位置を移動。Shift+←/→キーでカードを移動し、Escapeキーでフォーカス解除。",
   "drawTarget": "← 引く相手",
   "discardArea": "捨て札エリア",
   "lastDiscarded": "直前に捨てられたカード",
