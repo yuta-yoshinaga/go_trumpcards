@@ -8,7 +8,7 @@ import { useGameApi } from './useGameApi';
  * draw-odds (Badugi's evaluator has no meaningful single-draw probability
  * table) and tracks the draw counter (0..3) via state.drawIndex. */
 export function useBadugiGame() {
-  const { selected, clear: clearSelection, toggle: toggleCard } = useCardSelection();
+  const { selected, clear: clearSelection, toggle } = useCardSelection();
 
   const onSuccess = useCallback(() => clearSelection(), [clearSelection]);
   const gameApi = useGameApi(badugiApi.exec, { onSuccess });
@@ -21,6 +21,12 @@ export function useBadugiGame() {
   const phase = state?.phase ?? BadugiPhase.INIT;
   const humanPlayer = state?.players?.find((p) => p.isHuman);
   const canExchange = phase === BadugiPhase.DRAW && state?.currentTurn === humanPlayer?.id;
+  const toggleCard = useCallback(
+    (index: number) => {
+      if (canExchange) toggle(index);
+    },
+    [canExchange, toggle],
+  );
 
   return {
     state,

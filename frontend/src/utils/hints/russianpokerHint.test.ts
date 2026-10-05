@@ -41,7 +41,7 @@ describe('getRussianPokerHint', () => {
     expect(getRussianPokerHint(makeState({ playerHand: [] }))).toBeNull();
   });
 
-  it('recommends play with pair or better', () => {
+  it('detects a pair from the current hand when the response rank is unevaluated', () => {
     const state = makeState({
       phase: RussianPokerPhase.ACTION,
       playerHand: [
@@ -51,12 +51,20 @@ describe('getRussianPokerHint', () => {
         { design: 'DIAMOND', value: 7 },
         { design: 'SPADE', value: 9 },
       ],
-      playerHandRank: 1,
+      playerHandRank: 0,
     });
     const hint = getRussianPokerHint(state);
     expect(hint).not.toBeNull();
     expect(hint?.targetAction).toBe('play');
     expect(hint?.confidence).toBe('strong');
+  });
+
+  it('uses the response rank when the hand cannot be evaluated as five cards', () => {
+    const state = makeState({
+      playerHand: [{ design: 'SPADE', value: 2 }],
+      playerHandRank: 1,
+    });
+    expect(getRussianPokerHint(state)?.targetAction).toBe('play');
   });
 
   it('recommends play with Ace-King high', () => {
@@ -75,6 +83,21 @@ describe('getRussianPokerHint', () => {
     expect(hint).not.toBeNull();
     expect(hint?.targetAction).toBe('play');
     expect(hint?.confidence).toBe('moderate');
+  });
+
+  it('uses the updated hand after an exchange instead of a stale response rank', () => {
+    const state = makeState({
+      phase: RussianPokerPhase.ACTION,
+      playerHand: [
+        { design: 'SPADE', value: 2 },
+        { design: 'CLOVER', value: 5 },
+        { design: 'HEART', value: 7 },
+        { design: 'DIAMOND', value: 9 },
+        { design: 'SPADE', value: 11 },
+      ],
+      playerHandRank: 1,
+    });
+    expect(getRussianPokerHint(state)?.targetAction).toBe('fold');
   });
 
   it('recommends fold with weak hand', () => {

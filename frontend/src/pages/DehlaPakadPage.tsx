@@ -233,6 +233,7 @@ function DehlaPakadPageContent() {
                       <tr className="border-b border-ds-border text-left text-ds-text-muted">
                         <th className="p-2">{t('handHistory.hand')}</th>
                         <th className="p-2">{t('handHistory.winner')}</th>
+                        <th className="p-2">{t('handHistory.trump')}</th>
                         <th className="p-2">{t('handHistory.tens')}</th>
                         <th className="p-2">{t('handHistory.kot')}</th>
                       </tr>
@@ -242,6 +243,11 @@ function DehlaPakadPageContent() {
                         <tr key={`${index}-${hand.dealerIdx}`} className="border-b border-ds-border-subtle">
                           <td className="p-2">{t('handHistory.handNumber', { n: index + 1 })}</td>
                           <td className="p-2">{t('team', { n: hand.winnerTeam })}</td>
+                          <td className="p-2">
+                            {t(
+                              `suit.${DEHLA_PAKAD_SUITS.find((suit) => suit.value === hand.trumpSuit)?.key ?? 'unknown'}`,
+                            )}
+                          </td>
                           <td className="p-2">
                             {t('handHistory.tensResult', { a: hand.teamTens[0], b: hand.teamTens[1] })}
                           </td>

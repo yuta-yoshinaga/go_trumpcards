@@ -27,6 +27,8 @@
   "selectedMoveLimitAnnouncement": "{{size}}枚の束を選択中。通常の移動上限は{{limit}}枚、空き列への上限は{{emptyLimit}}枚です。",
   "clearedMoveLimitAnnouncement": "束の選択を解除しました。通常の移動上限は{{limit}}枚、空き列への上限は{{emptyLimit}}枚です。",
   "emptyColumnAriaLabel": "空き列 {{idx}}（K のみ置けます）",
+  "tableauCardAriaLabel": "{{card}}、列{{col}}",
+  "tableauCardAriaLabelWithLimit": "{{card}}、列{{col}}。{{limit}}",
   "emptyColLimitTooltip": "空き列へ動かせるのは{{limit}}枚まで（選択中: {{size}}枚）",
   "tutorial": {
     "cells": "セルです。一時的にカードを置ける4つのスペースです。空きセルが多いほど多くのカードを一度に移動できます。",

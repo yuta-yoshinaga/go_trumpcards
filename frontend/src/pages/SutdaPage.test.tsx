@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sutdaApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -49,6 +49,23 @@ describe('SutdaPage', () => {
     expect(screen.getByTestId('sutda-table')).toHaveTextContent('残りチップ');
     expect(screen.getByTestId('sutda-table')).toHaveTextContent('投入額');
     expect(screen.getByTestId('sutda-pot')).toHaveTextContent('ポット 30');
+  });
+
+  it('groups each seat’s chips, contribution, dealer, and folded status under the player name', async () => {
+    const base = makeSutdaState();
+    const players = base.players.map((player, index) => ({
+      ...player,
+      isDealer: index === 1,
+      folded: index === 1,
+    }));
+    mockExec.mockResolvedValue(makeSutdaState({ players }));
+    renderWithProviders(<SutdaPage />);
+
+    const seat = await screen.findByRole('region', { name: 'CPU 1' });
+    expect(within(seat).getByTestId('sutda-chips-1')).toHaveTextContent('990');
+    expect(within(seat).getByTestId('sutda-bet-1')).toHaveTextContent('10');
+    expect(within(seat).getByText('親')).toBeInTheDocument();
+    expect(within(seat).getByTestId('sutda-folded-1')).toHaveTextContent('降り');
   });
 
   // **自分の役は常に見える。** 伏せているのは相手の札だけ。

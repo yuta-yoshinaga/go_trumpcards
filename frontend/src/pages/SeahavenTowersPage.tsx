@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { SeahavenTowersMoveZone, seahaventowersApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -129,6 +129,15 @@ function SeahavenTowersPageContent() {
           : undefined
       : undefined;
   const hintedCardName = hintedCard ? cardAlt(hintedCard) : undefined;
+  const previousMoveCount = useRef<number | null>(null);
+  const [announcedMoveCount, setAnnouncedMoveCount] = useState<number | null>(null);
+  useEffect(() => {
+    if (!state) return;
+    if (previousMoveCount.current !== null && previousMoveCount.current !== state.moveCount) {
+      setAnnouncedMoveCount(state.moveCount);
+    }
+    previousMoveCount.current = state.moveCount;
+  }, [state]);
   // Live longest-column length: shrinks the per-card vertical step on mobile so the tallest
   // tableau column fits within 375×667 without scrolling (#1861).
   const maxColCards = useMemo(
@@ -245,6 +254,15 @@ function SeahavenTowersPageContent() {
         <>
           <span>
             {t('moveCount')}: {state.moveCount}
+          </span>
+          <span
+            className="sr-only"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            data-testid="seahaventowers-move-live"
+          >
+            {announcedMoveCount === null ? '' : `${t('moveCount')}: ${announcedMoveCount}`}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>

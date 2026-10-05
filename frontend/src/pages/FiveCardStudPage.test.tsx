@@ -306,14 +306,14 @@ describe('FiveCardStudPage', () => {
     mockSokoExec.mockResolvedValue(secondStreetState);
     renderWithProviders(<SokoPage />);
     expect(await screen.findByRole('img', { name: '♦ 7、最新' })).toBeInTheDocument();
-    expect(screen.getAllByRole('img', { name: '♣ 7、最新' }).length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByRole('img', { name: '♣ 7、最新' })).toHaveLength(3);
   });
 
-  it('keeps Five Card Stud latest door card announcements unchanged', async () => {
+  it('announces Five Card Stud latest door cards with their card names for the human and CPUs', async () => {
     mockExec.mockResolvedValue(secondStreetState);
     renderWithProviders(<FiveCardStudPage />);
-    expect(await screen.findByTestId('latest-door-human')).not.toHaveAttribute('role', 'img');
-    expect(screen.getByTestId('latest-door-human')).not.toHaveAttribute('aria-label');
+    expect(await screen.findByRole('img', { name: '♦ 7、最新' })).toBeInTheDocument();
+    expect(screen.getAllByRole('img', { name: '♣ 7、最新' })).toHaveLength(3);
   });
 
   it('reveals CPU hand name and hole card during showdown and shows round results', async () => {
@@ -330,6 +330,35 @@ describe('FiveCardStudPage', () => {
     expect(screen.queryByLabelText('♦ 8、役の構成札')).not.toBeInTheDocument();
     expect(screen.getByAltText('♥ K')).toBeInTheDocument();
     expect(screen.queryByLabelText('♥ K、役の構成札')).not.toBeInTheDocument();
+  });
+
+  it('marks only human hole cards in the best hand at showdown', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [
+        humanPlayer({
+          holeCards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 8 },
+          ],
+          bestHandCore: [{ design: 'SPADE', value: 1 }],
+        }),
+        ...showdownState.players.slice(1),
+      ],
+    });
+    renderWithProviders(<FiveCardStudPage />);
+
+    expect(await screen.findByLabelText('♠ A、役の構成札')).toBeInTheDocument();
+    expect(screen.getByAltText('♥ 8')).toBeInTheDocument();
+    expect(screen.queryByLabelText('♥ 8、役の構成札')).not.toBeInTheDocument();
+  });
+
+  it('does not mark human hole cards during normal play', async () => {
+    mockExec.mockResolvedValue(secondStreetState);
+    renderWithProviders(<FiveCardStudPage />);
+
+    expect(await screen.findByAltText('♠ A')).toBeInTheDocument();
+    expect(screen.queryByLabelText('♠ A、役の構成札')).not.toBeInTheDocument();
   });
 
   it('shows bet/check buttons when canAct and no outstanding bet', async () => {

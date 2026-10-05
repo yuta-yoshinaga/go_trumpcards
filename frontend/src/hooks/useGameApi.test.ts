@@ -98,6 +98,19 @@ describe('useGameApi', () => {
     expect(result.current.loading).toBe(false);
   });
 
+  it('notifies the caller when an API request fails', async () => {
+    const failure = new Error('network');
+    const apiFn = vi.fn().mockRejectedValue(failure);
+    const onError = vi.fn();
+    const { result } = renderHook(() => useGameApi(apiFn, { onError }), { wrapper: createWrapper() });
+
+    await act(async () => {
+      await result.current.exec('step');
+    });
+
+    expect(onError).toHaveBeenCalledWith(failure, ['step']);
+  });
+
   it('uses actionable messages and disables retry for rejected requests', async () => {
     const apiFn = vi.fn().mockRejectedValue(new ApiError(400, 'private server detail'));
     const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createWrapper() });

@@ -193,7 +193,7 @@ func TestPolignacWebPresenterActionLogOutput(t *testing.T) {
 
 	var during map[string]any
 	require.NoError(t, json.Unmarshal([]byte(p.ActionLogOutput(g)), &during))
-	assert.Empty(t, during["entries"], "進行中は空")
+	assert.NotEmpty(t, during["entries"], "終局前も棋譜を含む")
 
 	g.GiveUp()
 	var after map[string]any

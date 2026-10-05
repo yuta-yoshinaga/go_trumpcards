@@ -70,6 +70,19 @@ describe('NiuNiuPage', () => {
     await waitFor(() => expect(screen.getByText(/チップ: 900/)).toBeInTheDocument());
   });
 
+  it('explains how hands of the same rank are compared in the tutorial', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<NiuNiuPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'チュートリアル' }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: '次へ' }));
+    expect(await within(dialog).findByText(/残り2枚/)).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole('button', { name: '次へ' }));
+    await waitFor(() => expect(within(dialog).getByRole('status').textContent).toContain('格が同じなら'));
+    expect(within(dialog).getByRole('status').textContent).toContain('最高ランク');
+    expect(i18n.t('tutorial.compare', { ns: 'niuniu', lng: 'en' })).toContain('same rank');
+  });
+
   it('shows the undealt shoe count', async () => {
     mockExec.mockResolvedValue(makeState({ drawPileCount: 32 }));
     renderWithProviders(<NiuNiuPage />);

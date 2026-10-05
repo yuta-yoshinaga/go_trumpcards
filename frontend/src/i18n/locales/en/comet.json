@@ -12,7 +12,8 @@
     "targetScore": "Target score",
     "easy": "Easy",
     "normal": "Normal",
-    "hard": "Hard"
+    "hard": "Hard",
+    "pendingChanges": "Changed settings will apply to the next game. They do not affect the current game."
   },
   "round": "Round {{n}} (playing to {{target}})",
   "dead": "Dead hand: {{n}}",

@@ -223,6 +223,7 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
+  const callAmount = Math.min((state?.lastBet ?? 0) - (humanPlayer?.currentBet ?? 0), humanPlayer?.chips ?? 0);
   const minRaise = state?.minRaise ?? 0;
   const isMuckPhase = phase === FollowTheQueenPhase.SHOWDOWN && state?.muckAvailable === true;
   const isRebuyPhase =
@@ -637,6 +638,9 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
                   maxBetAmount={state?.maxBetAmount}
                   potSize={state?.pot}
                   hasOutstandingBet={hasOutstandingBet}
+                  callAmountLabel={
+                    hasOutstandingBet && callAmount > 0 ? t('callAmount', { amount: callAmount }) : undefined
+                  }
                   loading={loading}
                   onCall={() => execApi('call', undefined, undefined, getElapsed())}
                   onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}

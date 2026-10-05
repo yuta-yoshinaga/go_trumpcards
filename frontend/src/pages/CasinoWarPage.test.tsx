@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { casinowarApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, CasinoWarResponse } from '../types/card';
 import { CasinoWarPhase } from '../types/phases';
@@ -122,6 +123,60 @@ describe('CasinoWarPage', () => {
     mockApi.mockClear();
     fireEvent.click(betBtn);
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 100));
+  });
+
+  it('keeps a non-multiple manual bet and prevents submitting it', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<CasinoWarPage />);
+    const input = await screen.findByLabelText('アンテ');
+    fireEvent.change(input, { target: { value: '55' } });
+    expect(input).toHaveValue('55');
+    expect(screen.getByText('ベット額は10チップ単位で入力してください')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /ベット/ })).toHaveAttribute('aria-disabled', 'true');
+    mockApi.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: /ベット/ }));
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalled();
+  });
+
+  it('prevents submitting a bet above the current chip balance', async () => {
+    mockApi.mockResolvedValue({ ...betState, chips: 50 });
+    renderWithProviders(<CasinoWarPage />);
+    expect(await screen.findByLabelText('アンテ')).toHaveValue('100');
+    expect(screen.getByText('ベット額がチップ残高を超えています')).toBeInTheDocument();
+    const betBtn = screen.getByRole('button', { name: /ベット/ });
+    expect(betBtn).toHaveAttribute('aria-disabled', 'true');
+    mockApi.mockClear();
+    fireEvent.click(betBtn);
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalled();
+  });
+
+  it('keeps betting unavailable when fewer than ten chips remain', async () => {
+    mockApi.mockResolvedValue({ ...betState, chips: 0 });
+    renderWithProviders(<CasinoWarPage />);
+    const betBtn = await screen.findByRole('button', { name: /ベット/ });
+    expect(betBtn).toHaveAttribute('aria-disabled', 'true');
+    expect(betBtn).toHaveAttribute('aria-describedby', 'cw-bet-unavailable');
+    expect(screen.getByText('ベットには10チップ以上必要です')).toBeInTheDocument();
+    mockApi.mockClear();
+    fireEvent.click(betBtn);
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalled();
+  });
+
+  it('prevents submitting a bet below ten chips', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<CasinoWarPage />);
+    const input = await screen.findByLabelText('アンテ');
+    fireEvent.change(input, { target: { value: '5' } });
+    expect(screen.getByText('ベット額は10チップ以上にしてください')).toBeInTheDocument();
+    const betBtn = screen.getByRole('button', { name: /ベット/ });
+    expect(betBtn).toHaveAttribute('aria-disabled', 'true');
+    mockApi.mockClear();
+    fireEvent.click(betBtn);
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalled();
   });
 
   it('renders tie decision with surrender & war buttons', async () => {

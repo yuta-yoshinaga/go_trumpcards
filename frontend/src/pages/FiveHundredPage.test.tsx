@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fiveHundredApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeFiveHundredState } from '../test/stateFactories';
@@ -76,7 +77,34 @@ beforeEach(() => {
   mockExec.mockResolvedValue(makeState());
 });
 
+afterEach(async () => {
+  await i18n.changeLanguage('ja');
+});
+
 describe('FiveHundredPage', () => {
+  it('uses the active game target from the server response in the tutorial', async () => {
+    mockExec.mockResolvedValue(makeState({ config: { cpuDifficulty: 1, targetScore: 700 } }));
+    renderWithProviders(<FiveHundredPage />);
+    fireEvent.change(await screen.findByLabelText('目標スコア'), { target: { value: '300' } });
+    fireEvent.click(await screen.findByRole('button', { name: 'チュートリアル' }));
+    expect(
+      await screen.findByText(
+        'ここにラウンド・契約・チームスコアが表示されます。先に700点に到達したチームの勝ちです。',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('uses the active game target from the server response in the English tutorial', async () => {
+    mockExec.mockResolvedValue(makeState({ config: { cpuDifficulty: 1, targetScore: 700 } }));
+    await i18n.changeLanguage('en');
+    renderWithProviders(<FiveHundredPage />);
+    fireEvent.change(await screen.findByLabelText('Target score'), { target: { value: '300' } });
+    fireEvent.click(await screen.findByRole('button', { name: 'Tutorial' }));
+    expect(
+      await screen.findByText('Round, contract, and team scores show here. The first team to reach 700 points wins.'),
+    ).toBeInTheDocument();
+  });
+
   it('marks suit and no-trump bids that do not beat the highest bid and blocks submission', async () => {
     mockExec.mockResolvedValue(
       makeState({

@@ -84,6 +84,58 @@ beforeEach(() => {
 });
 
 describe('PigsTailPage', () => {
+  it('keeps the status region empty before a draw', async () => {
+    renderWithProviders(<PigsTailPage />);
+    const status = await screen.findByTestId('pigtail-action-announcement');
+    expect(status).toBeEmptyDOMElement();
+  });
+
+  it('announces the human draw and completed CPU actions together', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      humanAction: {
+        drawPlayerIdx: 0,
+        drawnCard: { design: 'SPADE', value: 1 },
+        penaltyFlag: true,
+        penaltyCount: 2,
+      },
+      cpuActions: [
+        { drawPlayerIdx: 1, drawnCard: { design: 'HEART', value: 3 }, penaltyFlag: false, penaltyCount: 0 },
+        { drawPlayerIdx: 2, drawnCard: { design: 'CLOVER', value: 4 }, penaltyFlag: true, penaltyCount: 3 },
+        { drawPlayerIdx: 3, drawnCard: null, penaltyFlag: false, penaltyCount: 0 },
+      ],
+    });
+    renderWithProviders(<PigsTailPage />);
+    await waitFor(() =>
+      expect(screen.getByTestId('pigtail-action-announcement')).toHaveTextContent(
+        'あなたの結果: あなたが♠ Aを引き、ペナルティ。CPUの結果: CPU 1が♥ 3を引き、セーフ、CPU 2が♣ 4を引き、ペナルティ、CPU 3が?を引き、セーフ',
+      ),
+    );
+  });
+
+  it('provides the announcement in English', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue({
+        ...baseState,
+        humanAction: {
+          drawPlayerIdx: 0,
+          drawnCard: { design: 'SPADE', value: 1 },
+          penaltyFlag: false,
+          penaltyCount: 0,
+        },
+      });
+      renderWithProviders(<PigsTailPage />);
+      await waitFor(() =>
+        expect(screen.getByTestId('pigtail-action-announcement')).toHaveTextContent(
+          'Your result: You drew ♠ A. Result: safe',
+        ),
+      );
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('renders center history supplied by the server', async () => {
     mockExec.mockResolvedValue({
       ...baseState,
@@ -128,6 +180,7 @@ describe('PigsTailPage', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<PigsTailPage />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+    expect(screen.getByTestId('pigtail-action-announcement')).toBeEmptyDOMElement();
   });
 
   it('calls reset on mount', async () => {

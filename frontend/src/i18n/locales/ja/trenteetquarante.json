@@ -11,6 +11,8 @@
     "rougeRow": "ルージュ",
     "total": "合計",
     "winner": "勝ち列",
+    "red": "赤",
+    "black": "黒",
     "crossing": "31到達",
     "crossingAria": "累積 {{total}}、{{card}}で31到達"
   },
@@ -47,7 +49,10 @@
     "lose": "敗北",
     "push": "プッシュ — 賭け金は返却されます。",
     "refait": "ルフェ — 31での引き分け。賭け金の半分を失います。",
-    "margin": "{{winner}} が {{diff}} 点差で勝ち（{{winnerTotal}} 対 {{loserTotal}}）"
+    "margin": "{{winner}} が {{diff}} 点差で勝ち（{{winnerTotal}} 対 {{loserTotal}}）",
+    "colorExplanation": "最初のカードの色: {{firstColor}}。勝ち色（{{winningColor}}）と{{matchResult}}",
+    "colorMatch": "一致",
+    "colorMismatch": "不一致"
   },
   "payout": {
     "total": "総払戻額"

@@ -120,6 +120,12 @@ function CoinchePageContent() {
   // 目標点は先に選んでからスートを押す。契約は「点 + 切り札」の対なので、
   // 片方だけで送ると残りに既定値が入って別の契約になる。
   const [selectedPoints, setSelectedPoints] = useState<number | null>(null);
+  const currentBiddablePoints = state?.biddablePoints ?? [];
+  useEffect(() => {
+    if (selectedPoints !== null && !currentBiddablePoints.includes(selectedPoints)) {
+      setSelectedPoints(null);
+    }
+  }, [currentBiddablePoints, selectedPoints]);
 
   const isPlayPhaseForKbd = state?.phase === CoinchePhase.PLAY;
   const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
@@ -487,8 +493,10 @@ function CoinchePageContent() {
                   key={s}
                   type="button"
                   className={btnPrimary}
-                  onClick={() => selectedPoints !== null && handleBid(selectedPoints, s)}
-                  disabled={loading || selectedPoints === null}
+                  onClick={() =>
+                    selectedPoints !== null && biddablePoints.includes(selectedPoints) && handleBid(selectedPoints, s)
+                  }
+                  disabled={loading || selectedPoints === null || !biddablePoints.includes(selectedPoints)}
                   aria-label={t('bidButtonAriaLabel', { suit: t(SUIT_LABEL_KEYS[s]) })}
                 >
                   {t(SUIT_LABEL_KEYS[s])}

@@ -83,6 +83,14 @@ const ROUND_INDEX_KEYS: Readonly<Record<number, string>> = {
   3: 'juego',
 };
 
+/** Maps a result kind to its localized settlement method. */
+const RESULT_KIND_KEYS: Readonly<Record<number, string>> = {
+  1: 'deferred',
+  2: 'accepted',
+  3: 'awarded',
+  4: 'ordago',
+};
+
 /** Renders the Mus game page: a 4-player Basque vying (betting) game. */
 export const MusPage = withTutorial(MusPageContent, 'mus', MUS_TUTORIAL_STEPS);
 
@@ -287,6 +295,7 @@ function MusPageContent() {
                     <div key={`result-${i}`}>
                       {t('roundResult.line', {
                         round: t(`roundResult.${ROUND_INDEX_KEYS[i] ?? i}`),
+                        method: t(`roundResult.${RESULT_KIND_KEYS[r.kind]}`),
                         team: r.team,
                         stake: r.stake,
                       })}

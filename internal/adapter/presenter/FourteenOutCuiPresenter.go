@@ -98,8 +98,5 @@ func fourteenOutTail(cols [][]*domain.Card, c int) *domain.Card {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (pr *FourteenOutCuiPresenter) ActionLogOutput(g interfaces.FourteenOutGame) string {
-	if g.GetPhase() == domain.FourteenOutPhasePlaying {
-		return actionLogToText(nil)
-	}
 	return actionLogToText(g.GetActionLog())
 }

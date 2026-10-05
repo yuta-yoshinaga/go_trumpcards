@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, ginrummyApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import i18n from '../i18n';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { GinRummyResponse } from '../types/card';
 import { GinRummyCpu } from '../types/phases';
@@ -268,7 +269,7 @@ describe('GinRummyPage', () => {
     expect(screen.queryByTestId('ginrummy-meld-legend')).not.toBeInTheDocument();
   });
 
-  it('pulses the knock button when deadwood ≤10 during discard phase', async () => {
+  it('pulses the knock button when a knockable card is selected during discard phase', async () => {
     const lowDeadwoodHand: GinRummyResponse = {
       ...discardPhaseState,
       players: [
@@ -287,13 +288,14 @@ describe('GinRummyPage', () => {
     mockExec.mockResolvedValue(lowDeadwoodHand);
     renderWithProviders(<GinRummyPage />);
     const knockBtn = await screen.findByTestId('ginrummy-knock-button');
+    fireEvent.click(screen.getByAltText('♥ 3').closest('button') as HTMLButtonElement);
     expect(knockBtn.className).toContain('animate-pulse');
   });
 
   it('considers post-discard deadwood, not the full 11-card hand', async () => {
     // 11-card hand whose full deadwood is 11 (K + A = 11) but drops to
     // 0 once the King is discarded (♠5-6-7 run + 7♥-7♣-7♦ set + ace).
-    // The knock button must pulse because a single discard makes it ≤ 10.
+    // A single discard makes the hand knockable, though no card is selected yet.
     const eleven: GinRummyResponse = {
       ...discardPhaseState,
       players: [
@@ -320,7 +322,9 @@ describe('GinRummyPage', () => {
     mockExec.mockResolvedValue(eleven);
     renderWithProviders(<GinRummyPage />);
     const knockBtn = await screen.findByTestId('ginrummy-knock-button');
-    expect(knockBtn.className).toContain('animate-pulse');
+    expect(knockBtn).toHaveAttribute('aria-disabled', 'true');
+    expect(knockBtn.className).not.toContain('animate-pulse');
+    expect(knockBtn.className).not.toContain('ring-ds-success');
   });
 
   it('renders draw phase with human cards', async () => {
@@ -420,7 +424,89 @@ describe('GinRummyPage', () => {
   it('knock button disabled when not 1 card selected', async () => {
     mockExec.mockResolvedValue(discardPhaseState);
     renderWithProviders(<GinRummyPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'ノック' })).toBeDisabled());
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'ノック' })).toHaveAttribute('aria-disabled', 'true'),
+    );
+  });
+
+  it('keeps knock unavailable when the best possible discard is legal but no card is selected', async () => {
+    const lowDeadwoodHand: GinRummyResponse = {
+      ...discardPhaseState,
+      players: [
+        {
+          ...discardPhaseState.players[0],
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'SPADE', value: 6 },
+            { design: 'SPADE', value: 7 },
+            { design: 'HEART', value: 3 },
+          ],
+        },
+        ...discardPhaseState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(lowDeadwoodHand);
+    renderWithProviders(<GinRummyPage />);
+    const knockBtn = await screen.findByTestId('ginrummy-knock-button');
+    expect(knockBtn).toHaveAttribute('aria-disabled', 'true');
+    expect(knockBtn.className).not.toContain('animate-pulse');
+    expect(knockBtn.className).not.toContain('ring-ds-success');
+  });
+
+  it('prevents knocking when the selected discard leaves deadwood above the limit', async () => {
+    mockExec.mockResolvedValue({
+      ...discardPhaseState,
+      players: [
+        {
+          ...discardPhaseState.players[0],
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'SPADE', value: 6 },
+            { design: 'SPADE', value: 7 },
+            { design: 'HEART', value: 11 },
+            { design: 'CLOVER', value: 13 },
+          ],
+        },
+        ...discardPhaseState.players.slice(1),
+      ],
+    });
+    renderWithProviders(<GinRummyPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 5')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ 5').closest('button') as HTMLButtonElement);
+    const knockBtn = screen.getByTestId('ginrummy-knock-button');
+    expect(knockBtn).toHaveAttribute('aria-disabled', 'true');
+    mockExec.mockClear();
+    fireEvent.click(knockBtn);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('allows knocking when the selected discard leaves deadwood at the limit', async () => {
+    mockExec.mockResolvedValue({
+      ...discardPhaseState,
+      players: [
+        {
+          ...discardPhaseState.players[0],
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'SPADE', value: 6 },
+            { design: 'SPADE', value: 7 },
+            { design: 'HEART', value: 11 },
+            { design: 'CLOVER', value: 13 },
+          ],
+        },
+        ...discardPhaseState.players.slice(1),
+      ],
+    });
+    renderWithProviders(<GinRummyPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 5')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♥ J').closest('button') as HTMLButtonElement);
+    const knockBtn = screen.getByTestId('ginrummy-knock-button');
+    expect(knockBtn).not.toHaveAttribute('aria-disabled');
+    expect(knockBtn.className).toContain('animate-pulse');
+    expect(knockBtn.className).toContain('ring-ds-success');
   });
 
   it('renders layoff and skip buttons when human layoff turn', async () => {

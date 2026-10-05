@@ -32,6 +32,7 @@
   "scoresPlayer": "Player",
   "scoresRound": "Round",
   "scoresTotal": "Total",
+  "roundScoreHistory": "Round scores",
   "drawButton": "Draw",
   "newMeldButton": "New meld",
   "layoffButton": "Lay off",

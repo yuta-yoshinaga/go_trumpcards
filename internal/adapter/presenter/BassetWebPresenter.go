@@ -23,6 +23,7 @@ func (p *BassetWebPresenter) Output(g interfaces.BassetGame, lastErr error) stri
 	}
 	if turn := g.GetLastTurn(); turn != nil {
 		o.BankerCard, o.PlayerCard, o.Hit = cardToOutput(turn.BankerCard), cardToOutput(turn.PlayerCard), turn.Hit
+		o.BankerHit, o.PlayerHit, o.PayoutReceived = turn.BankerHit, turn.PlayerHit, turn.PayoutReceived
 	}
 	if lastErr != nil {
 		o.Message = lastErr.Error()

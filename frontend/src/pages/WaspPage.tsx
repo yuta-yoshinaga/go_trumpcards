@@ -295,7 +295,6 @@ function WaspPageContent() {
   // ドメインの AllFaceUp は**ストックが空であること**も要求する (Wasp.go)。
   // 表向きだけで判定すると、山札が残った盤面でボタンが押せてしまい、押すと
   // "not all cards are face up" で弾かれる — #5545 が直したはずの形に戻る。
-  const autoCompleteReady = (state?.stockCount ?? 0) === 0 && isTableauAllFaceUp(state?.tableau ?? []);
   const handleDealGuarded = useCallback(() => {
     if (dealBlockedByEmpty) {
       setEmptyDealAttemptKey((k) => k + 1);
@@ -379,6 +378,14 @@ function WaspPageContent() {
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
 
   if (!state) return <GameSkeleton gameKey="wasp" layout={{ kind: 'tableau', topRow: 6, tableau: 7 }} />;
+
+  const autoCompleteReady = state.stockCount === 0 && isTableauAllFaceUp(state.tableau);
+  const autoCompleteNotReadyReason =
+    state.stockCount > 0
+      ? isTableauAllFaceUp(state.tableau)
+        ? t('autoCompleteStockNotEmpty')
+        : t('autoCompleteStockAndFaceDown')
+      : t('autoCompleteFaceDown');
 
   const isPlaying = state.phase === WaspPhase.PLAYING;
   const isGameClear = state.phase === WaspPhase.GAME_CLEAR;
@@ -628,7 +635,7 @@ function WaspPageContent() {
                     onClick={handleAutoComplete}
                     disabled={loading || !autoCompleteReady}
                     data-testid="autocomplete-button"
-                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
+                    title={autoCompleteReady ? undefined : autoCompleteNotReadyReason}
                   >
                     {t('autoComplete')}
                   </button>

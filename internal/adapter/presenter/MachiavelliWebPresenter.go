@@ -23,6 +23,7 @@ func (p *MachiavelliWebPresenter) Output(g interfaces.MachiavelliGame, lastErr e
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerIdx = g.GetWinnerIdx()
 	resObj.RoundWinnerIdx = g.GetRoundWinnerIdx()
+	resObj.RoundScoreHistory = g.GetRoundScoreHistory()
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.MachiavelliWebOutputConfig{

@@ -315,6 +315,21 @@ describe('GoofspielPage', () => {
     expect(await screen.findByTestId('gs-result')).toHaveTextContent(/CPU1 が 61 点/);
   });
 
+  it('explains a tied final score and the lower-seat winner rule', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        gameEndFlag: true,
+        winnerIdx: 0,
+        players: [seat(0, { score: 50 }), seat(1, { score: 50 })],
+      }),
+    );
+    renderWithProviders(<GoofspielPage />);
+    const banner = await screen.findByTestId('gs-result');
+    expect(banner).toHaveTextContent('あなた、CPU1が50点で同点です');
+    expect(banner).toHaveTextContent('席番号が若いプレイヤーが勝者です');
+  });
+
   it('gives up when the give-up button is pressed', async () => {
     renderWithProviders(<GoofspielPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

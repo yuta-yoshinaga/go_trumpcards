@@ -223,7 +223,12 @@ function SakuraPageContent() {
                   const fieldStatus = needsFieldPick
                     ? t(isCandidate ? 'fieldChoiceCandidate' : 'fieldChoiceUnavailable')
                     : '';
-                  const fieldLabel = [cardAlt(c), t('fieldPosition', { position: i }), fieldStatus]
+                  const fieldLabel = [
+                    cardAlt(c),
+                    t('fieldPosition', { position: i }),
+                    c.points != null ? t('fieldPoints', { points: c.points }) : '',
+                    fieldStatus,
+                  ]
                     .filter(Boolean)
                     .join(t('listSeparator'));
                   return (

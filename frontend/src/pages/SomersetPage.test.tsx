@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { somersetApi } from '../api/gameApi';
+import { actionLogApi, somersetApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { SOMERSET_STATS_KEY } from '../hooks/useSomersetStats';
 import i18n from '../i18n';
@@ -19,6 +19,7 @@ vi.mock('../hooks/useGameHint', () => ({
 }));
 
 const mockExec = vi.mocked(somersetApi.exec);
+const mockActionLog = vi.mocked(actionLogApi.somerset);
 
 function makeTableau(cols: SomersetTableauCard[][]): SomersetTableauCard[][] {
   const result: SomersetTableauCard[][] = [];
@@ -75,7 +76,38 @@ describe('SomersetPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockActionLog.mockResolvedValue({ entries: [] });
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  });
+
+  it('opens the action log during play and disables game shortcuts while it is open', async () => {
+    mockExec.mockResolvedValue(playingState);
+    mockActionLog.mockResolvedValue({
+      entries: [
+        {
+          turnNumber: 1,
+          playerIdx: 0,
+          actionType: 'move',
+          detail: '5 を移動しました',
+          cards: [],
+        },
+      ],
+    });
+    renderWithProviders(<SomersetPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    const logButton = screen.getByRole('button', { name: '棋譜を見る' });
+    fireEvent.click(logButton);
+    await waitFor(() => expect(mockActionLog).toHaveBeenCalled());
+    const actionLog = await screen.findByRole('region', { name: '棋譜' });
+    await waitFor(() => expect(actionLog).toHaveTextContent('5 を移動しました'));
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'h' });
+    fireEvent.keyDown(document, { key: 'a' });
+    fireEvent.keyDown(document, { key: 'z' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   it('calls reset on initial render', async () => {

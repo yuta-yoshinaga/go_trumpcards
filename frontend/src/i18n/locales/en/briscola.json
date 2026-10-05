@@ -26,7 +26,7 @@
   },
   "hint": {
     "available": "Hint",
-    "card": "Suggested card: [{{index}}]",
+    "card": "Suggested card: [{{index}}] {{name}}",
     "lead_trump": "Lead a trump to seize the initiative",
     "lead_low": "Lead a low card to keep your point cards",
     "lead_value": "Play a high-value card to score",

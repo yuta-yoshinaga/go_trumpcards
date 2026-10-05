@@ -240,9 +240,15 @@ function SutdaPageContent() {
 
             <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="sutda-table" data-testid="sutda-table">
               {state.players.map((p) => (
-                <div key={p.id} className="py-2 border-b border-white/5 last:border-0">
+                <section
+                  key={p.id}
+                  aria-labelledby={`sutda-player-${p.id}`}
+                  className="py-2 border-b border-white/5 last:border-0"
+                >
                   <div className="text-ds-text-muted text-sm flex items-center gap-2 mb-1">
-                    <span className={p.folded ? 'opacity-50 line-through' : ''}>{playerName(p.id, p.isHuman)}</span>
+                    <span id={`sutda-player-${p.id}`} className={p.folded ? 'opacity-50 line-through' : ''}>
+                      {playerName(p.id, p.isHuman)}
+                    </span>
                     {p.isDealer && (
                       <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>{t('dealerBadge')}</span>
                     )}
@@ -282,7 +288,7 @@ function SutdaPageContent() {
                       <span className="ml-2 text-ds-text-primary text-sm">{t(`handName.${p.handName}`)}</span>
                     </div>
                   )}
-                </div>
+                </section>
               ))}
             </div>
 

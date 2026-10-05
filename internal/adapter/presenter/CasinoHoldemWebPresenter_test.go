@@ -31,6 +31,7 @@ func setupCasinoHoldemWebMockDefaults(m *interfaces.MockCasinoHoldemGame) {
 	m.On("GetNetChange").Return(0).Maybe()
 	m.On("GetPlayerHandRank").Return(0).Maybe()
 	m.On("GetDealerHandRank").Return(0).Maybe()
+	m.On("GetCallWinRate").Return(0.0, false).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 }
 
@@ -99,7 +100,10 @@ func TestCasinoHoldemWebPresenter_Output_Flop_DealerMasked(t *testing.T) {
 	m.On("GetDealerHandRank").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
+	m.On("GetCallWinRate").Return(0.75, true).Once()
 	result := parseCasinoHoldemOutput(t, p.Output(m, nil))
+	assert.NotNil(t, result.CallWinRate)
+	assert.Equal(t, 0.75, *result.CallWinRate)
 	assert.Len(t, result.DealerHand, 2)
 	for i := 0; i < 2; i++ {
 		assert.Equal(t, "", result.DealerHand[i].Design)

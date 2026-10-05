@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cuarentaApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -297,6 +297,41 @@ describe('CuarentaPage', () => {
     expect(announce).toHaveAttribute('role', 'status');
     expect(announce).toHaveAttribute('aria-live', 'polite');
     expect(announce.textContent).toBe('カイーダ! +2ロンダ! +1リンピア! +1');
+    const result = screen.getByTestId('cuarenta-action-0');
+    expect(within(result).getByRole('img', { name: '♥ 7' })).toBeInTheDocument();
+    expect(within(result).getByRole('img', { name: '♠ 7' })).toBeInTheDocument();
+  });
+
+  it('shows captured cards for CPU plays and none for a card laid on the table', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        cpuActions: [
+          {
+            playerIdx: 2,
+            playedCard: card('HEART', 3),
+            capturedCards: [card('HEART', 3)],
+            isCaida: false,
+            isLimpia: false,
+            rondaBonus: 0,
+          },
+          {
+            playerIdx: 1,
+            playedCard: card('SPADE', 9),
+            capturedCards: [],
+            isCaida: false,
+            isLimpia: false,
+            rondaBonus: 0,
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<CuarentaPage />);
+    const capture = await screen.findByTestId('cuarenta-action-2');
+    expect(capture).toHaveTextContent('捕獲 1枚');
+    expect(within(capture).getAllByRole('img', { name: '♥ 3' })).toHaveLength(2);
+    const laid = screen.getByTestId('cuarenta-action-1');
+    expect(laid).toHaveTextContent('場に置いた');
+    expect(laid.querySelectorAll('img')).toHaveLength(1);
   });
 
   it('announces a ronda-only bonus with the complete badge text', async () => {

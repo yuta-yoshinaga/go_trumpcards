@@ -52,6 +52,7 @@ func (p *DoppelkopfWebPresenter) buildBase(g interfaces.DoppelkopfGame) *control
 	resObj.LiveKontraPoints = g.GetLiveKontraPoints()
 	resObj.RoundReWon = g.GetRoundReWon()
 	resObj.RoundGamePoints = g.GetRoundGamePoints()
+	resObj.RoundHistory = g.GetRoundScoreHistory()
 
 	// youAreRe: human always knows their own team.
 	humanIdx := -1

@@ -84,6 +84,7 @@ func TestTrogguWebPresenter_Output(t *testing.T) {
 	assert.Len(t, decoded["players"].([]any), domain.TrogguPlayerCnt)
 	assert.Equal(t, float64(domain.TrogguTalonSize), decoded["talonCount"])
 	assert.Equal(t, float64(-1), decoded["declarerIdx"])
+	assert.Equal(t, float64(-1), decoded["highestBidder"])
 	assert.Equal(t, "pass", decoded["contractName"])
 	assert.Equal(t, float64(domain.TrogguSoloTarget()), decoded["soloTarget"])
 	assert.Contains(t, decoded, "playableIndices")

@@ -36,9 +36,9 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 type ThirtyOneArgs = Parameters<typeof thirtyoneApi.exec>;
 
 const DIFFICULTY_OPTIONS = [
-  { value: '0', label: 'Easy' },
-  { value: '1', label: 'Normal' },
-  { value: '2', label: 'Hard' },
+  { value: '0', labelKey: 'easy' },
+  { value: '1', labelKey: 'normal' },
+  { value: '2', labelKey: 'hard' },
 ];
 
 const LIVES_OPTIONS = Array.from({ length: 10 }, (_, index) => {
@@ -401,7 +401,10 @@ function ThirtyOnePageContent() {
                       hard: state.config.knockThresholds.hard,
                     }),
                     value: String(cpuDifficulty),
-                    options: DIFFICULTY_OPTIONS,
+                    options: DIFFICULTY_OPTIONS.map((option) => ({
+                      value: option.value,
+                      label: t(`settings.difficulty.${option.labelKey}`),
+                    })),
                     onSelect: (v: string) => setCpuDifficulty(Number.parseInt(v, 10)),
                   },
                   {

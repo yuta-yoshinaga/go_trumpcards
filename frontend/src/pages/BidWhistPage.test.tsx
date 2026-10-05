@@ -243,6 +243,35 @@ describe('BidWhistPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
   });
 
+  it('exposes hand-card selection as pressed state in exchange and play phases', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: BidWhistPhase.KITTY_EXCHANGE,
+        declarerIdx: 0,
+        kittyIndices: [0],
+      }),
+    );
+    const { unmount } = renderWithProviders(<BidWhistPage />);
+
+    const exchangeCard = await screen.findByTestId('hand-card-0');
+    expect(exchangeCard).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(exchangeCard);
+    expect(exchangeCard).toHaveAttribute('aria-pressed', 'true');
+    expect(exchangeCard).toHaveAccessibleName(/♠ 5/);
+    fireEvent.click(exchangeCard);
+    expect(exchangeCard).toHaveAttribute('aria-pressed', 'false');
+
+    unmount();
+    mockExec.mockResolvedValue(makeState({ phase: BidWhistPhase.PLAY, currentPlayerIdx: 0 }));
+    renderWithProviders(<BidWhistPage />);
+    const playCard = await screen.findByTestId('hand-card-0');
+    expect(playCard).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(playCard);
+    expect(playCard).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(playCard);
+    expect(playCard).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('shows the kitty selection progress and fills the bar at six cards', async () => {
     mockExec.mockResolvedValue(
       makeState({

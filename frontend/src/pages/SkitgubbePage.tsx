@@ -75,6 +75,7 @@ function SkitgubbePageContent() {
   const collecting = state.phase === SkitgubbePhase.COLLECT;
   const human = state.players.find((p) => p.isHuman);
   const opponents = state.players.filter((p) => !p.isHuman);
+  const losingOpponent = ended ? opponents.find((p) => p.id === state.loserIdx) : undefined;
   const isHumanTurn = !ended && state.currentPlayerIdx === 0;
 
   // Playability comes from the server, which owns the beat rule. Re-deriving
@@ -224,6 +225,11 @@ function SkitgubbePageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+            {losingOpponent && (
+              <p className="text-center text-sm text-ds-error-text" data-testid="sg-loser-seat">
+                {t('loserSeat', { seat: losingOpponent.id })}
+              </p>
+            )}
 
             <ActionLogSection
               isEndPhase={ended}

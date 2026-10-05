@@ -16,11 +16,12 @@ import (
 
 func mustMachiavelliOutputJSON(msg string) string {
 	out := &controller.MachiavelliWebOutput{
-		Players:        []*controller.MachiavelliWebOutputPlayer{},
-		Table:          []*controller.MachiavelliWebOutputMeld{},
-		WinnerIdx:      -1,
-		RoundWinnerIdx: -1,
-		WebOutputBase:  controller.WebOutputBase{Message: msg},
+		Players:           []*controller.MachiavelliWebOutputPlayer{},
+		Table:             []*controller.MachiavelliWebOutputMeld{},
+		WinnerIdx:         -1,
+		RoundWinnerIdx:    -1,
+		RoundScoreHistory: []domain.MachiavelliRoundScore{},
+		WebOutputBase:     controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

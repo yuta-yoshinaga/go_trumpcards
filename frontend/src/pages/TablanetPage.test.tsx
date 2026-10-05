@@ -62,6 +62,75 @@ beforeEach(() => {
 });
 
 describe('TablanetPage', () => {
+  it('highlights recommended hand and table cards only while hints are enabled', async () => {
+    localStorage.setItem('hint_enabled_tablanet', 'true');
+    mockExec.mockResolvedValue(
+      makeTablanetState({
+        messageCode: 'tablanet.hintRequested',
+        hint: { cardIndices: [1], tableIndices: [0], reason: 'capture' },
+      }),
+    );
+    renderWithProviders(<TablanetPage />);
+    const recommendedHandCard = await screen.findByTestId('hand-card-1');
+    expect(recommendedHandCard).toHaveAttribute('data-hint-recommended', 'true');
+    expect(recommendedHandCard).toHaveAccessibleName(/推奨/);
+    expect(screen.getByTestId('table-card-0')).toHaveAttribute('data-hint-recommended', 'true');
+    expect(screen.getByTestId('hand-card-0')).not.toHaveAttribute('data-hint-recommended');
+  });
+
+  it('does not highlight server hint positions when hints are disabled', async () => {
+    mockExec.mockResolvedValue(makeTablanetState({ hint: { cardIndices: [1], tableIndices: [0], reason: 'capture' } }));
+    renderWithProviders(<TablanetPage />);
+    await screen.findByTestId('hand-card-1');
+    expect(screen.getByTestId('hand-card-1')).not.toHaveAttribute('data-hint-recommended');
+    expect(screen.getByTestId('table-card-0')).not.toHaveAttribute('data-hint-recommended');
+  });
+
+  it('does not highlight table recommendations from an unrequested server hint', async () => {
+    localStorage.setItem('hint_enabled_tablanet', 'true');
+    mockExec.mockResolvedValue(makeTablanetState({ hint: { cardIndices: [1], tableIndices: [0], reason: 'capture' } }));
+    renderWithProviders(<TablanetPage />);
+    await screen.findByTestId('table-card-0');
+    expect(screen.getByTestId('table-card-0')).not.toHaveAttribute('data-hint-recommended');
+  });
+
+  it('does not highlight recommendations outside the human turn or without a hinted hand position', async () => {
+    localStorage.setItem('hint_enabled_tablanet', 'true');
+    mockExec.mockResolvedValue(
+      makeTablanetState({
+        currentTurn: 1,
+        isHumanTurn: false,
+        hint: { cardIndices: [], tableIndices: [0], reason: 'trail_low' },
+      }),
+    );
+    renderWithProviders(<TablanetPage />);
+    await screen.findByTestId('hand-card-0');
+    expect(screen.getByTestId('hand-card-0')).not.toHaveAttribute('data-hint-recommended');
+    expect(screen.getByTestId('table-card-0')).not.toHaveAttribute('data-hint-recommended');
+  });
+
+  it('highlights table recommendations even when a hint has no hand position', async () => {
+    localStorage.setItem('hint_enabled_tablanet', 'true');
+    mockExec.mockResolvedValue(
+      makeTablanetState({
+        messageCode: 'tablanet.hintRequested',
+        hint: { cardIndices: [], tableIndices: [1], reason: 'trail_low' },
+      }),
+    );
+    renderWithProviders(<TablanetPage />);
+    expect(await screen.findByTestId('table-card-1')).toHaveAttribute('data-hint-recommended', 'true');
+    expect(screen.getByTestId('hand-card-0')).not.toHaveAttribute('data-hint-recommended');
+  });
+
+  it('does not highlight anything when hints are enabled but no hint is available', async () => {
+    localStorage.setItem('hint_enabled_tablanet', 'true');
+    mockExec.mockResolvedValue(makeTablanetState({ hint: null }));
+    renderWithProviders(<TablanetPage />);
+    await screen.findByTestId('hand-card-0');
+    expect(screen.getByTestId('hand-card-0')).not.toHaveAttribute('data-hint-recommended');
+    expect(screen.getByTestId('table-card-0')).not.toHaveAttribute('data-hint-recommended');
+  });
+
   it('shows each player captured cards with rank and suit matching the captured count', async () => {
     const captured = [
       { design: 'HEART' as const, value: 1 },

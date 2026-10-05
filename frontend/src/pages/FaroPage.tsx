@@ -74,6 +74,12 @@ const FARO_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
   {
+    target: '[data-tutorial="faro-call"]',
+    messageKey: 'tutorial.call',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
     target: '[data-tutorial="faro-reset-button"]',
     messageKey: 'tutorial.resetButton',
     placement: 'top',
@@ -421,7 +427,7 @@ function FaroPageContent() {
 
             {/* Call phase order picker */}
             {isCall && (
-              <div className="mb-3 p-3 rounded bg-black/30 text-center">
+              <div className="mb-3 p-3 rounded bg-black/30 text-center" data-tutorial="faro-call">
                 <div className="text-ds-text-primary text-sm mb-1">{t('callTitle')}</div>
                 <div className="text-ds-text-muted text-xs mb-2">{t('callHint')}</div>
                 <div className="flex flex-wrap justify-center gap-3 mb-2">

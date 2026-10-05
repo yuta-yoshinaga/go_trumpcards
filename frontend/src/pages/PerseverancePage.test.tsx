@@ -220,9 +220,11 @@ describe('PerseverancePage', () => {
     renderWithProviders(<PerseverancePage />);
     expect(await screen.findByText('クリア回数: 1')).toBeInTheDocument();
     expect(screen.getByText('合計手数: 3')).toBeInTheDocument();
+    expect(screen.getByText('最少クリア手数: 3')).toBeInTheDocument();
     expect(screen.getByText('クリア時の残り再配り回数: 2')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '成績を消去' }));
     expect(screen.getByText('クリア回数: 0')).toBeInTheDocument();
+    expect(screen.getByText('最少クリア手数: 未記録')).toBeInTheDocument();
   });
 
   it('giveup button opens a confirm dialog and only dispatches giveup after confirm', async () => {

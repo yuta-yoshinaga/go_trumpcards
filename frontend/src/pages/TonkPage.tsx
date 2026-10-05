@@ -451,6 +451,14 @@ function TonkPageContent() {
                         type="button"
                         onClick={() => toggleCard(idx)}
                         aria-label={cardAlt(card)}
+                        aria-describedby={
+                          [
+                            isMeldCard ? `tonk-meld-description-${idx.toString()}` : undefined,
+                            candidateValue !== undefined ? `tonk-discard-candidate-${idx.toString()}` : undefined,
+                          ]
+                            .filter(Boolean)
+                            .join(' ') || undefined
+                        }
                         aria-pressed={isCardSelected}
                         data-meld={isMeldCard ? 'true' : undefined}
                         data-testid={`tonk-hand-${idx.toString()}`}
@@ -470,8 +478,14 @@ function TonkPageContent() {
                       >
                         <AnimatedCard card={card} width={cardWidth} />
                       </button>
+                      {isMeldCard && (
+                        <span id={`tonk-meld-description-${idx.toString()}`} className="sr-only">
+                          {t('meldCardDescription')}
+                        </span>
+                      )}
                       {candidateValue !== undefined && (
                         <span
+                          id={`tonk-discard-candidate-${idx.toString()}`}
                           className={`text-xs text-center ${
                             candidateKnockable ? 'text-ds-success' : 'text-ds-text-muted'
                           } ${candidateValue === bestDiscardCandidateValue ? 'font-bold' : ''}`}

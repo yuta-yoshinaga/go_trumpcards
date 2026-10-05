@@ -712,6 +712,61 @@ describe('MemoryPage', () => {
     expect(screen.getByTestId('board-2')).toHaveFocus();
   });
 
+  it('moves DOM focus to the next playable card when the focused card is taken', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
+    const first = screen.getByTestId('board-0');
+    first.focus();
+    mockExec.mockResolvedValue({
+      ...flip1State,
+      board: makeBoard({ 0: { taken: true } }),
+    });
+
+    fireEvent.click(first);
+
+    const next = screen.getByTestId('board-1');
+    await waitFor(() => expect(next).toHaveFocus());
+    expect(next).toHaveAttribute('tabindex', '0');
+    expect(first).toHaveAttribute('tabindex', '-1');
+    expect(first).toHaveClass('hidden');
+  });
+
+  it('keeps focus on the board when no playable cards remain', async () => {
+    mockExec.mockResolvedValue({
+      ...flip1State,
+      board: makeBoard(Object.fromEntries(Array.from({ length: 52 }, (_, idx) => [idx, { taken: true }]))),
+    });
+    renderWithProviders(<MemoryPage />);
+
+    const board = await screen.findByTestId('board-0').then((button) => button.parentElement);
+    await waitFor(() => expect(board).toHaveFocus());
+    expect(board).toHaveAttribute('tabindex', '-1');
+    expect(screen.getByTestId('board-0')).toHaveClass('hidden');
+  });
+
+  it('moves the roving tab stop without focusing a face-up card', async () => {
+    mockExec.mockResolvedValue({
+      ...flip1State,
+      board: makeBoard({
+        0: { faceUp: true },
+        1: {},
+        ...Object.fromEntries(Array.from({ length: 50 }, (_, i) => [i + 2, { taken: true }])),
+      }),
+    });
+    renderWithProviders(<MemoryPage />);
+
+    await waitFor(() => expect(screen.getByTestId('board-1')).toHaveAttribute('tabindex', '0'));
+    expect(screen.getByTestId('board-1')).not.toHaveFocus();
+  });
+
+  it('handles an empty board without trying to focus a missing card', async () => {
+    mockExec.mockResolvedValue({ ...flip1State, board: [] });
+    renderWithProviders(<MemoryPage />);
+
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
+    expect(screen.queryByTestId('board-0')).not.toBeInTheDocument();
+  });
+
   // --- Flip-result live region (#3029) ---
 
   it('announces a match result in the polite live region', async () => {

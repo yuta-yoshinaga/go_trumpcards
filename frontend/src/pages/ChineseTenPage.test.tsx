@@ -119,6 +119,8 @@ describe('ChineseTenPage', () => {
     expect(secondLayoutCard).toHaveTextContent('位置 1');
     expect(firstLayoutCard).toHaveAttribute('aria-label', expect.stringContaining('位置 0'));
     expect(secondLayoutCard).toHaveAttribute('aria-label', expect.stringContaining('位置 1'));
+    expect(firstLayoutCard).toHaveAttribute('aria-label', expect.stringContaining('先に手札を1枚出してください'));
+    expect(firstLayoutCard).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('selects the layout index shown on the card', async () => {
@@ -217,6 +219,18 @@ describe('ChineseTenPage', () => {
 
     fireEvent.click(layoutButtons[1]);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('select', undefined, 1));
+  });
+
+  it('names a selectable layout card, its zero-based position, and the take action', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, pendingCard: card('SPADE', 1), selectableIndices: [1] }));
+    renderWithProviders(<ChineseTenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const layoutButtons = screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'select');
+    expect(layoutButtons[1]).toHaveAttribute('aria-label', expect.stringContaining('位置 1'));
+    expect(layoutButtons[1]).toHaveAttribute('aria-label', expect.stringContaining('この札を取る'));
+    expect(layoutButtons[1]).toHaveAttribute('aria-label', expect.stringMatching(/[♠♥♦♣]/));
+    expect(layoutButtons[1]).toHaveAttribute('aria-disabled', 'false');
   });
 
   it('reports each outcome', async () => {

@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
+import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { chemindeferApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -277,7 +278,7 @@ describe('ChemindeFerPage', () => {
         isHumanTurn: false,
         players: [
           seat(0, { isBanker: true }),
-          seat(1, { isBanker: false, bet: 50, chips: 950 }),
+          seat(1, { isBanker: false, isRepresentative: true, bet: 50, chips: 950 }),
           seat(2, { isBanker: false }),
         ],
       }),
@@ -285,8 +286,30 @@ describe('ChemindeFerPage', () => {
     renderWithProviders(<ChemindeFerPage />);
     await waitFor(() => expect(screen.getByTestId('cdf-seat-0')).toBeInTheDocument());
     expect(screen.getByTestId('cdf-seat-0')).toHaveTextContent('★');
+    expect(screen.getByTestId('cdf-seat-0')).toHaveAccessibleName('あなた 親');
+    expect(screen.getByTestId('cdf-seat-0').querySelector('span')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getByTestId('cdf-seat-1')).toHaveTextContent('◆');
+    expect(screen.getByTestId('cdf-seat-1')).toHaveAccessibleName('CPU1 子側の代表');
+    expect(screen.getByTestId('cdf-seat-1').querySelector('span')).toHaveAttribute('aria-hidden', 'true');
     expect(screen.getByTestId('cdf-seat-1')).toHaveTextContent('950');
     expect(screen.getByTestId('cdf-seat-1')).toHaveTextContent('50');
+  });
+
+  it('英語では親と子側代表を席のアクセシブル名に含める', async () => {
+    await i18n.changeLanguage('en');
+    mockApi.mockResolvedValue(
+      withState({
+        players: [seat(0, { isBanker: true }), seat(1, { isBanker: false, isRepresentative: true })],
+      }),
+    );
+    try {
+      renderWithProviders(<ChemindeFerPage />);
+      await screen.findByTestId('cdf-seat-0');
+      expect(screen.getByTestId('cdf-seat-0')).toHaveAccessibleName('You Banker');
+      expect(screen.getByTestId('cdf-seat-1')).toHaveAccessibleName('CPU1 Punter representative');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('BET中の賭け額0はパス扱いにせず、BET終了後はパスと表示する', async () => {

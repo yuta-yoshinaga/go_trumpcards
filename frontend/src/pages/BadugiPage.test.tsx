@@ -391,6 +391,17 @@ describe('BadugiPage', () => {
     await waitFor(() => expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true'));
   });
 
+  it('does not select cards or expose a pressed state outside the draw phase', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.BET, currentTurn: 0, lastBet: 20 }));
+    renderWithProviders(<BadugiPage />);
+
+    const card = await screen.findByRole('button', { name: /♠ A/ });
+    expect(card).not.toHaveAttribute('aria-pressed');
+    fireEvent.click(card);
+    expect(card).not.toHaveAttribute('aria-pressed');
+    expect(card).not.toHaveStyle({ transform: 'translateY(-4px)' });
+  });
+
   it('marks every card with data-badugi-subset during the draw phase when the hand is a perfect Badugi', async () => {
     // The lift/dim assist follows the hint setting, which defaults to off.
     localStorage.setItem('hint_enabled_badugi', 'true');

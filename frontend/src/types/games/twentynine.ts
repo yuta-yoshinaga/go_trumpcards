@@ -58,6 +58,10 @@ export interface TwentyNineResponse extends BaseGameResponse {
   /** Each player's bid this round — [p0, p1, p2, p3]. */
   bids: number[];
   currentTrick: TwentyNineTrickCard[];
+  /** Card points for currentTrick, in the same order. */
+  currentTrickPoints: number[];
+  /** Whether currentTrick is the final trick of the round. */
+  isLastTrick: boolean;
   /** Cumulative game-point scores per team — [teamA, teamB]. */
   teamScores: number[];
   /** Card points captured by each team this round — [teamA, teamB]. */

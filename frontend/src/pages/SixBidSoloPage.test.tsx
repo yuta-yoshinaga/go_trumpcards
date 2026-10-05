@@ -134,6 +134,19 @@ describe('SixBidSoloPage', () => {
     expect(hand[1]).toHaveAttribute('aria-pressed', 'true');
   });
 
+  it('does not select hand cards outside the human play turn', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: SixBidSoloPhase.BID, highBid: null, declarerIdx: -1 }));
+    renderWithProviders(<SixBidSoloPage />);
+    await waitFor(() => expect(handButtons()).toHaveLength(3));
+
+    const hand = handButtons();
+    expect(hand[0]).toHaveAttribute('aria-pressed', 'false');
+    expect(hand[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(hand.every((button) => !button.className.includes('opacity-40'))).toBe(true);
+    fireEvent.click(hand[0]);
+    expect(hand[0]).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('shows each trick card with the player who played it', async () => {
     mockExec.mockResolvedValue(
       makeState({
@@ -148,15 +161,22 @@ describe('SixBidSoloPage', () => {
   });
 
   // **追随は強制。**サーバーが出せる札を決める。
-  it('disables cards the server did not list as playable', async () => {
+  it('allows selecting only cards the server lists as playable', async () => {
     mockExec.mockResolvedValue(makeState({ validPlays: [2] }));
     renderWithProviders(<SixBidSoloPage />);
     await waitFor(() => expect(screen.getByTestId('sixbidsolo-play-notice')).toBeInTheDocument());
 
     const hand = handButtons();
-    expect(hand[0]).toBeDisabled();
-    expect(hand[1]).toBeDisabled();
-    expect(hand[2]).toBeEnabled();
+    expect(hand[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(hand[1]).toHaveAttribute('aria-disabled', 'true');
+    expect(hand[2]).not.toHaveAttribute('aria-disabled');
+    fireEvent.click(hand[0]);
+    expect(hand[0]).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(hand[2]);
+    expect(hand[2]).toHaveAttribute('aria-pressed', 'true');
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 2 }));
   });
 
   // **通常ビッドは61点以上、ミゼールは0点。**入札画面で両方読めること。

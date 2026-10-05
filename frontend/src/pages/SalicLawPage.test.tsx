@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { salicLawApi } from '../api/gameApi';
+import { actionLogApi, salicLawApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -17,6 +17,7 @@ vi.mock('../hooks/useGameHint', () => ({
 }));
 
 const mockExec = vi.mocked(salicLawApi.exec);
+const mockActionLog = vi.mocked(actionLogApi.saliclaw);
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
@@ -75,6 +76,32 @@ describe('SalicLawPage', () => {
     vi.clearAllMocks();
     localStorage.removeItem('cli-mode-saliclaw');
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  });
+
+  it('opens the action log during play and shows its entry', async () => {
+    mockExec.mockResolvedValue(playingState);
+    mockActionLog.mockResolvedValue({
+      entries: [{ turnNumber: 1, playerIdx: -1, actionType: 'draw', detail: '山札から列0に配りました' }],
+    });
+    renderWithProviders(<SalicLawPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '棋譜を見る' }));
+    expect(await screen.findByText(/山札から列0に配りました/)).toBeInTheDocument();
+  });
+
+  it('disables game shortcuts while the action log is open', async () => {
+    mockExec.mockResolvedValue(playingState);
+    mockActionLog.mockResolvedValue({ entries: [] });
+    renderWithProviders(<SalicLawPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: '棋譜を見る' }));
+    await screen.findByRole('region', { name: '棋譜' });
+    await waitFor(() => expect(mockActionLog).toHaveBeenCalled());
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'h' });
+    fireEvent.keyDown(document, { key: 'z' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   it('keeps a foundation target focusable and explains that a source must be selected', async () => {

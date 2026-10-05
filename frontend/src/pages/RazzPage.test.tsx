@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { razzApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { useCliMode } from '../hooks/useCliMode';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { SevenCardStudResponse } from '../types/card';
 import { RazzPage } from './RazzPage';
@@ -1057,9 +1058,47 @@ describe('RazzPage', () => {
       };
       mockExec.mockResolvedValue(statsState);
       renderWithProviders(<RazzPage />);
-      const statsText = await screen.findByText(/VPIP:15% PFR:10% 3Bet:2% AF:1\.5/);
-      expect(statsText).toBeInTheDocument();
-      expect(statsText.textContent).not.toMatch(/{{/);
+      await screen.findByTestId('hud-stats');
+      for (const [abbreviation, description] of [
+        ['VPIP', 'VPIP（ボランタリー・プット・イン・ポット）: 自発的にポットに参加した割合'],
+        ['PFR', 'PFR（プリフロップレイズ）: 最初のラウンドでレイズした割合'],
+        ['3Bet', '3Bet（スリーベット）: 相手のレイズに対して再レイズした割合'],
+        ['AF', 'AF（アグレッションファクター）: ベット・レイズのコールに対する比率'],
+      ]) {
+        const term = screen.getByRole('button', { name: new RegExp(`^${abbreviation}`) });
+        const descriptionId = term.getAttribute('aria-describedby');
+        expect(descriptionId).toBeTruthy();
+        const descriptionElement = document.getElementById(descriptionId ?? '');
+        expect(descriptionElement).toHaveTextContent(description);
+      }
+    });
+
+    it('shows the existing English descriptions when the language is English', async () => {
+      await i18n.changeLanguage('en');
+      mockExec.mockResolvedValue({
+        ...baseState,
+        players: [humanPlayer(), cpuPlayer(1, { totalHands: 10, vpip: 15, pfr: 10, threeBet: 2, af: '1.5' })],
+        phase: 1,
+        message: '',
+      });
+      renderWithProviders(<RazzPage />);
+
+      try {
+        await screen.findByTestId('hud-stats');
+        for (const [abbreviation, description] of [
+          ['VPIP', 'VPIP (Voluntarily Put In Pot): % of hands where player voluntarily put chips in the pot'],
+          ['PFR', 'PFR: % of hands where the player raised in the first betting round (third street)'],
+          ['3Bet', "3Bet: % of hands where player re-raised an opponent's raise"],
+          ['AF', 'AF (Aggression Factor): ratio of aggressive actions (bet/raise) to passive actions (call)'],
+        ]) {
+          const term = screen.getByRole('button', { name: new RegExp(`^${abbreviation}`) });
+          const descriptionId = term.getAttribute('aria-describedby');
+          expect(descriptionId).toBeTruthy();
+          expect(document.getElementById(descriptionId ?? '')).toHaveTextContent(description);
+        }
+      } finally {
+        await i18n.changeLanguage('ja');
+      }
     });
 
     it('does not render CPU stats when totalHands is 0', async () => {

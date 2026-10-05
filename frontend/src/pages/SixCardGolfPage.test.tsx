@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sixcardgolfApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, SixCardGolfResponse, SixCardGolfSlot } from '../types/card';
 import { SixCardGolfPage } from './SixCardGolfPage';
@@ -52,6 +53,36 @@ beforeEach(() => {
 });
 
 describe('SixCardGolfPage', () => {
+  it('shows and announces the final turn trigger and current player', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, finalTurnTrigger: 0, currentPlayerIdx: 1 }));
+    renderWithProviders(<SixCardGolfPage />);
+
+    const status = await screen.findByTestId('sixcardgolf-final-turn-status');
+    expect(status).toHaveTextContent('最終ターン');
+    expect(status).toHaveTextContent('あなたが全カードを公開');
+    expect(status).toHaveTextContent('現在の手番: CPU1');
+    expect(screen.getByTestId('sixcardgolf-final-turn-live')).toHaveTextContent('あなたが全カードを公開');
+    expect(within(status).getByText('あなたが全カードを公開！最終ターンです')).toHaveAttribute('aria-hidden', 'true');
+    expect(within(status).getByText('最終ターン', { selector: 'strong' })).not.toHaveAttribute('aria-hidden');
+    expect(within(status).getByText('現在の手番: CPU1')).not.toHaveAttribute('aria-hidden');
+    expect(
+      screen.getByText('最終ターン', { selector: '[data-testid="sixcardgolf-final-turn-status"] strong' }),
+    ).toBeInTheDocument();
+
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      expect(status).toHaveTextContent('Final Turn');
+      expect(status).toHaveTextContent('You revealed all cards! Final turn!');
+      expect(status).toHaveTextContent('Current turn: CPU 1');
+      expect(screen.getByTestId('sixcardgolf-final-turn-live')).toHaveTextContent(
+        'You revealed all cards! Final turn!',
+      );
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('identifies the discard card as a draw option only during the human draw phase', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 1 }));
     renderWithProviders(<SixCardGolfPage />);

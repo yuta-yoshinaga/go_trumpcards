@@ -14,6 +14,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { HudStats } from '../components/HudStats';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -363,14 +364,7 @@ function RazzPageContent() {
                     {/* CUI は GetTotalHands() > 0 のときだけ出している (#6337)。
                         手が始まっていない席に 0% を並べても読み違いを招くだけ。 */}
                     {p.totalHands > 0 && (
-                      <span className="ml-2 text-xs text-ds-text-muted">
-                        {t('stats.playerStats', {
-                          vpip: p.vpip,
-                          pfr: p.pfr,
-                          tb: p.threeBet,
-                          af: p.af,
-                        })}
-                      </span>
+                      <HudStats namespace="razz" vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} />
                     )}
                   </div>
                   {/* Door cards (always visible) */}

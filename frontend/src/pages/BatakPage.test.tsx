@@ -2,6 +2,7 @@ import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { batakApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeBatakState } from '../test/stateFactories';
 import type { BatakResponse, BatakTrickCard } from '../types/card';
@@ -191,6 +192,20 @@ describe('BatakPage', () => {
     const liveRegion = screen.getByTestId('batak-bid-selected');
     expect(liveRegion).toHaveTextContent('パス');
     expect(liveRegion).not.toHaveTextContent(': 0');
+  });
+
+  it('shows the current highest bid to the human in Japanese and English', async () => {
+    mockExec.mockResolvedValue(makeBatakState({ ...bidPhaseState, highBid: 7, minLegalBid: 8 }));
+    renderWithProviders(<BatakPage />);
+    await waitFor(() => expect(screen.getByTestId('bid-pass')).toBeInTheDocument());
+
+    expect(screen.getByTestId('batak-high-bid')).toHaveTextContent('最高ビッド: 7');
+    try {
+      await i18n.changeLanguage('en');
+      expect(screen.getByTestId('batak-high-bid')).toHaveTextContent('Highest bid: 7');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('shows bid phase instruction when human bid turn', async () => {

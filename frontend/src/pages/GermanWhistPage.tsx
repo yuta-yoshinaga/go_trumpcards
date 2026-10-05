@@ -32,6 +32,13 @@ import { formatGermanWhistState } from '../utils/cli/formatters/germanwhistForma
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
+const TRUMP_SUIT_I18N_KEYS: Record<1 | 2 | 3 | 4, string> = {
+  1: 'common.suit.spade',
+  2: 'common.suit.club',
+  3: 'common.suit.heart',
+  4: 'common.suit.diamond',
+};
+
 /** Guided tutorial steps (face-up card, trick, hand, actions). */
 const GERMANWHIST_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -189,7 +196,10 @@ function GermanWhistPageContent() {
                 {t('header.stock')}: {state.stockCount}
               </span>
               <span className="mr-4">
-                {t('header.trump')}: {suitSymbolAt(state.trumpSuit, '?')}
+                {t('header.trump')}:{' '}
+                <span role="img" aria-label={tc(TRUMP_SUIT_I18N_KEYS[state.trumpSuit as 1 | 2 | 3 | 4])}>
+                  {suitSymbolAt(state.trumpSuit, '?')}
+                </span>
               </span>
               <span className="text-ds-accent" data-testid="gw-phase">
                 {isFirstHalf ? t('header.phase1') : t('header.phase2')}

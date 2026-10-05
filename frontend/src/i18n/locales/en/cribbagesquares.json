@@ -24,6 +24,7 @@
   "noScoredParts": "no scoring items",
   "placementAnnouncementPartial": "Partial score before the starter is revealed. Row {{rowNo}}: {{rowScore}} points ({{rowParts}}); column {{colNo}}: {{colScore}} points ({{colParts}}); combined: {{total}} points",
   "placementAnnouncement": "Row {{rowNo}}: {{rowScore}} points ({{rowParts}}); column {{colNo}}: {{colScore}} points ({{colParts}}); combined: {{total}} points",
+  "undoAnnouncementPartial": "Undid the card at row {{rowNo}}, column {{colNo}}. Partial score before the starter is revealed. Row {{rowNo}}: {{rowScore}} points ({{rowParts}}); column {{colNo}}: {{colScore}} points ({{colParts}}); combined: {{total}} points",
   "part": {
     "fifteens": "15s {{n}}",
     "pairs": "pairs {{n}}",

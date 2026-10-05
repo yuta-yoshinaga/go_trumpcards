@@ -197,6 +197,7 @@ function CruelPageContent() {
   }, [apiExec]);
 
   const handleShift = useCallback(() => {
+    setSelectedSource(null);
     void apiExec('shift');
     playSound('shuffle');
   }, [apiExec, playSound]);
@@ -220,15 +221,18 @@ function CruelPageContent() {
   }, [setState]);
 
   const handleAutoComplete = useCallback(() => {
+    setSelectedSource(null);
     void apiExec('autocomplete');
   }, [apiExec]);
 
   const handleUndo = useCallback(() => {
+    setSelectedSource(null);
     void apiExec('undo');
   }, [apiExec]);
 
   const handleUndoEscape = useCallback(
     (n: number) => {
+      setSelectedSource(null);
       void apiExec('undo_n', undefined, undefined, n);
     },
     [apiExec],

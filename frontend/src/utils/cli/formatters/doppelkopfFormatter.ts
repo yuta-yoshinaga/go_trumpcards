@@ -1,4 +1,5 @@
 import type { DoppelkopfResponse } from '../../../types/card';
+import { formatSignedDelta } from '../../formatSignedDelta';
 import {
   formatCard,
   formatHeader,
@@ -15,6 +16,14 @@ export function formatDoppelkopfState(state: DoppelkopfResponse): string {
   const lines: string[] = [];
 
   lines.push(formatHeader('Doppelkopf'));
+  if (state.roundScoreHistory.length > 0) {
+    lines.push('ROUND SCORES:');
+    state.roundScoreHistory.forEach((scores, roundIndex) => {
+      lines.push(
+        `Round ${roundIndex + 1}: ${scores.map((score, playerIdx) => `P${playerIdx + 1} ${formatSignedDelta(score)}`).join(' | ')}`,
+      );
+    });
+  }
   lines.push(
     `round: ${state.roundNumber}  trick: ${state.trickNumber}  phase: ${PHASE_NAMES[state.phase] ?? state.phase}`,
   );

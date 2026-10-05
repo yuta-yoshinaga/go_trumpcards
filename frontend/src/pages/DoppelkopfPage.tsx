@@ -31,6 +31,7 @@ import { DOPPELKOPF_HELP, parseDoppelkopfCommand } from '../utils/cli/commands/d
 import { formatDoppelkopfState } from '../utils/cli/formatters/doppelkopfFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { DOPPELKOPF_TRUMP_ORDER, isDoppelkopfTrump } from '../utils/doppelkopfTrump';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -326,6 +327,35 @@ function DoppelkopfPageContent() {
                     <div>{t('roundResult.rePoints', { points: state.roundRePoints })}</div>
                     <div>{state.roundReWon ? t('roundResult.reWon') : t('roundResult.reLost')}</div>
                     <div>{t('roundResult.gamePoints', { points: state.roundGamePoints })}</div>
+                  </div>
+                )}
+                {state.roundScoreHistory.length > 0 && (
+                  <div className="my-3 overflow-x-auto" data-testid="dk-round-history">
+                    <table className="w-full text-sm">
+                      <caption className="mb-1 text-left text-ds-text-primary">{t('roundHistory.title')}</caption>
+                      <thead>
+                        <tr>
+                          <th scope="col">{t('roundHistory.round')}</th>
+                          {state.players.map((p) => (
+                            <th scope="col" key={p.id}>
+                              {playerName(p.id, p.isHuman)}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {state.roundScoreHistory.map((scores, index) => (
+                          <tr key={index}>
+                            <th scope="row">{index + 1}</th>
+                            {scores.map((score, playerIdx) => (
+                              <td key={playerIdx} className="text-center">
+                                {formatSignedDelta(score)}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </div>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { looApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -27,7 +28,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { LooResponse } from '../types/card';
 import { LooPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { suitSymbolAt } from '../utils/cardAlt';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { LOO_HELP, parseLooCommand } from '../utils/cli/commands/looCommands';
 import { formatLooState } from '../utils/cli/formatters/looFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -213,6 +214,13 @@ function LooPageContent() {
               <span className="mr-4">{t('trick', { n: state.trickNumber, total: state.totalTricks })}</span>
               <span className="mr-4">{t('pot', { pot: state.pot })}</span>
               <span>{t('trump', { suit: trumpSymbol })}</span>
+              {state.turnUp && (
+                <span className="ml-4 inline-flex items-center gap-2">
+                  <span>{t('turnUp')}</span>
+                  <CardImage card={state.turnUp} width={32} />
+                  <span aria-hidden="true">{cardAlt(state.turnUp)}</span>
+                </span>
+              )}
             </div>
 
             <div className={lgTwoColGrid}>

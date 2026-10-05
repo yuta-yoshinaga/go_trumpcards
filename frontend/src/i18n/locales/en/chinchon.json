@@ -67,7 +67,9 @@
   "frontendHint": {
     "chinchonTakeDiscard": "The discard connects with your hand — take it",
     "chinchonDrawStock": "The discard connects with nothing — draw from the stock",
-    "chinchonDiscardHeavy": "Your heaviest unconnected card. You are scored on what stays in hand"
+    "chinchonDiscardHeavy": "Your heaviest unconnected card. You are scored on what stays in hand",
+    "chinchonLayoff": "This card can be laid off. Add it to the knocker's meld",
+    "chinchonSkipLayoff": "No cards can be laid off. Skip this step"
   },
   "noDeadwood": "none"
 }

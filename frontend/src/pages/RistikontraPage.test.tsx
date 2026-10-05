@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ristikontraApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, RistikontraPlayer, RistikontraResponse } from '../types/card';
@@ -396,6 +397,36 @@ describe('RistikontraPage', () => {
     renderWithProviders(<RistikontraPage />);
     await waitFor(() => expect(screen.getByText('あなたの勝利です！')).toBeInTheDocument());
     expect(screen.getByRole('button', { name: '次のゲームへ' })).toBeInTheDocument();
+  });
+
+  it('shows the win message when the human partner wins', async () => {
+    mockExec.mockResolvedValue(makeState({ ...gameEndState, winners: [0, 2] }));
+    renderWithProviders(<RistikontraPage />);
+    expect(await screen.findByText('あなたの勝利です！')).toBeInTheDocument();
+  });
+
+  it('keeps the loss message when the other team wins', async () => {
+    mockExec.mockResolvedValue(makeState({ ...gameEndState, winners: [1, 3] }));
+    renderWithProviders(<RistikontraPage />);
+    expect(await screen.findByText('CPU 1 の勝利です。')).toBeInTheDocument();
+  });
+
+  it('shows a draw message when the game ends without winners', async () => {
+    mockExec.mockResolvedValue(makeState({ ...gameEndState, winners: [] }));
+    renderWithProviders(<RistikontraPage />);
+    expect(await screen.findByText('引き分けです。')).toBeInTheDocument();
+  });
+
+  it('has an English draw message', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(makeState({ ...gameEndState, winners: [] }));
+      renderWithProviders(<RistikontraPage />);
+      expect(await screen.findByText("It's a draw.")).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('dispatches next when next-game is clicked', async () => {

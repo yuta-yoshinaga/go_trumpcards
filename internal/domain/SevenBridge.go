@@ -42,16 +42,17 @@ const (
 
 // SevenBridge セブンブリッジのゲームクラス
 type SevenBridge struct {
-	trumpCards       *TrumpCards
-	players          []*SevenBridgePlayer
-	config           SevenBridgeConfig
-	phase            SevenBridgePhase
-	currentPlayerIdx int
-	discardPile      []*Card
-	drawPile         []*Card
-	gameEndFlag      bool
-	winnerIdx        int
-	roundNumber      int
+	trumpCards        *TrumpCards
+	players           []*SevenBridgePlayer
+	config            SevenBridgeConfig
+	phase             SevenBridgePhase
+	currentPlayerIdx  int
+	discardPile       []*Card
+	drawPile          []*Card
+	gameEndFlag       bool
+	winnerIdx         int
+	roundNumber       int
+	roundScoreHistory [][]int
 	actionLogBase
 	roundWinnerIdx  int  // ラウンド勝者（上がったプレイヤー）。-1 は山切れ流局
 	claimedThisTurn bool // 直前のターンで discard を pon/chi で取得したか
@@ -89,6 +90,7 @@ func (g *SevenBridge) Reset() {
 	g.gameEndFlag = false
 	g.winnerIdx = -1
 	g.roundNumber = 1
+	g.roundScoreHistory = nil
 	g.discardPile = nil
 	g.drawPile = nil
 	g.currentPlayerIdx = 0
@@ -842,6 +844,11 @@ func (g *SevenBridge) finishRound(winnerIdx int) {
 	for i := range g.players {
 		g.players[i].CommitRoundScore()
 	}
+	roundScores := make([]int, len(g.players))
+	for i := range g.players {
+		roundScores[i] = g.players[i].GetRoundScore()
+	}
+	g.roundScoreHistory = append(g.roundScoreHistory, roundScores)
 
 	g.checkGameEnd()
 	if !g.gameEndFlag {
@@ -968,6 +975,15 @@ func (g *SevenBridge) SetConfig(cfg SevenBridgeConfig) { g.config = cfg }
 // GetRoundWinnerIdx 直近ラウンドの勝者
 func (g *SevenBridge) GetRoundWinnerIdx() int { return g.roundWinnerIdx }
 
+// GetRoundScoreHistory returns a copy of completed round scores by player.
+func (g *SevenBridge) GetRoundScoreHistory() [][]int {
+	history := make([][]int, len(g.roundScoreHistory))
+	for i := range g.roundScoreHistory {
+		history[i] = append([]int(nil), g.roundScoreHistory[i]...)
+	}
+	return history
+}
+
 // GetClaimedThisTurn 直前ターンで claim されたか
 func (g *SevenBridge) GetClaimedThisTurn() bool { return g.claimedThisTurn }
 
@@ -1075,37 +1091,39 @@ func validateIndexPair(indices []int, size int) error {
 
 // sevenBridgeJSON is the JSON wire format for SevenBridge.
 type sevenBridgeJSON struct {
-	TrumpCards       *TrumpCards          `json:"tc"`
-	Players          []*SevenBridgePlayer `json:"pl"`
-	Config           SevenBridgeConfig    `json:"cf"`
-	Phase            SevenBridgePhase     `json:"ps"`
-	CurrentPlayerIdx int                  `json:"ci"`
-	DiscardPile      []*Card              `json:"dp"`
-	DrawPile         []*Card              `json:"wp"`
-	GameEndFlag      bool                 `json:"ge"`
-	WinnerIdx        int                  `json:"wi"`
-	RoundNumber      int                  `json:"rn"`
-	ActionLog        []*ActionLogEntry    `json:"al"`
-	RoundWinnerIdx   int                  `json:"rw"`
-	ClaimedThisTurn  bool                 `json:"ct"`
+	TrumpCards        *TrumpCards          `json:"tc"`
+	Players           []*SevenBridgePlayer `json:"pl"`
+	Config            SevenBridgeConfig    `json:"cf"`
+	Phase             SevenBridgePhase     `json:"ps"`
+	CurrentPlayerIdx  int                  `json:"ci"`
+	DiscardPile       []*Card              `json:"dp"`
+	DrawPile          []*Card              `json:"wp"`
+	GameEndFlag       bool                 `json:"ge"`
+	WinnerIdx         int                  `json:"wi"`
+	RoundNumber       int                  `json:"rn"`
+	ActionLog         []*ActionLogEntry    `json:"al"`
+	RoundWinnerIdx    int                  `json:"rw"`
+	ClaimedThisTurn   bool                 `json:"ct"`
+	RoundScoreHistory [][]int              `json:"rsh,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (g *SevenBridge) MarshalJSON() ([]byte, error) {
 	return json.Marshal(sevenBridgeJSON{
-		TrumpCards:       g.trumpCards,
-		Players:          g.players,
-		Config:           g.config,
-		Phase:            g.phase,
-		CurrentPlayerIdx: g.currentPlayerIdx,
-		DiscardPile:      g.discardPile,
-		DrawPile:         g.drawPile,
-		GameEndFlag:      g.gameEndFlag,
-		WinnerIdx:        g.winnerIdx,
-		RoundNumber:      g.roundNumber,
-		ActionLog:        g.actionLog,
-		RoundWinnerIdx:   g.roundWinnerIdx,
-		ClaimedThisTurn:  g.claimedThisTurn,
+		TrumpCards:        g.trumpCards,
+		Players:           g.players,
+		Config:            g.config,
+		Phase:             g.phase,
+		CurrentPlayerIdx:  g.currentPlayerIdx,
+		DiscardPile:       g.discardPile,
+		DrawPile:          g.drawPile,
+		GameEndFlag:       g.gameEndFlag,
+		WinnerIdx:         g.winnerIdx,
+		RoundNumber:       g.roundNumber,
+		ActionLog:         g.actionLog,
+		RoundWinnerIdx:    g.roundWinnerIdx,
+		ClaimedThisTurn:   g.claimedThisTurn,
+		RoundScoreHistory: g.roundScoreHistory,
 	})
 }
 
@@ -1118,7 +1136,8 @@ func (g *SevenBridge) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if len(j.Players) > sevenBridgeMaxSliceLen || len(j.DiscardPile) > sevenBridgeMaxSliceLen ||
-		len(j.DrawPile) > sevenBridgeMaxSliceLen || len(j.ActionLog) > sevenBridgeMaxSliceLen {
+		len(j.DrawPile) > sevenBridgeMaxSliceLen || len(j.ActionLog) > sevenBridgeMaxSliceLen ||
+		len(j.RoundScoreHistory) > sevenBridgeMaxSliceLen {
 		return fmt.Errorf("sevenbridge: input array exceeds maximum allowed size")
 	}
 
@@ -1150,5 +1169,9 @@ func (g *SevenBridge) UnmarshalJSON(data []byte) error {
 	}
 	g.roundWinnerIdx = j.RoundWinnerIdx
 	g.claimedThisTurn = j.ClaimedThisTurn
+	g.roundScoreHistory = j.RoundScoreHistory
+	if g.roundScoreHistory == nil {
+		g.roundScoreHistory = make([][]int, 0)
+	}
 	return nil
 }

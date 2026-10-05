@@ -11,6 +11,8 @@
   "foundationAriaLabel": "Foundation {{col}}",
   "foundationTopAriaLabel": "Foundation {{col}}: {{card}}",
   "tableau": "Tableau",
+  "tableauCardAriaLabel": "column {{col}}, position {{pos}}, {{card}}",
+  "tableauFaceDownAriaLabel": "column {{col}}, position {{pos}}, face down",
   "stockCount": "Stock left: {{count}}",
   "stockDrawAriaLabel": "Draw from stock, {{count}} cards remaining",
   "stockEmptyAriaLabel": "Draw from stock, empty",

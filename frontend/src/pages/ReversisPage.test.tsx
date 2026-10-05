@@ -145,16 +145,19 @@ describe('ReversisPage', () => {
     expect(breakdown).toHaveTextContent('CPU1: 通常 4 点 + 特殊札追加 0 点 = 4');
   });
 
-  // **プールが急に大きくなる理由は持ち越し。**その規則はラウンド終了時の
-  // メッセージ欄に一瞬出るだけで、常設表示のどこにも書かれていなかった。
-  it('tracks a growing pool and says why it can carry over', async () => {
+  it('explains how ties treat the pool in the header and tutorial', async () => {
     mockExec.mockResolvedValue(makeState({ pool: 45 }));
     renderWithProviders(<ReversisPage />);
     const pool = await screen.findByTestId('rv-pool');
     expect(pool).toHaveTextContent('45');
-    expect(pool).toHaveTextContent('同点なら分配せず次のラウンドへ持ち越し');
-    // 総取りの規則も落ちていない。
+    expect(pool).toHaveTextContent('通常ラウンドの同点なら次のラウンドへ持ち越し');
+    expect(pool).toHaveTextContent('最終ラウンドの同点なら同点者で分配');
     expect(pool).toHaveTextContent('失点が最も少ない人が総取り');
+
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      '通常ラウンドの同点なら次のラウンドへ持ち越され、最終ラウンドの同点なら同点者で分配されます',
+    );
   });
 
   // 印付きの札を取ったかどうかが席ごとに出る。両側を踏む。

@@ -131,7 +131,7 @@ function GutsPageContent() {
   // Rough hand-name + win-chance readout shown while the human must call In/Out.
   const declareGuide =
     isDeclarePhase && !isGameEnd && humanPlayer && humanPlayer.cards.length > 0
-      ? evaluateGutsGuide(humanPlayer.cards)
+      ? { ...evaluateGutsGuide(humanPlayer.cards), maxPayment: Math.min(state.pot, humanPlayer.chips) }
       : null;
   const humanWonMatch = state.matchWinnerIdx >= 0 && (state.players[state.matchWinnerIdx]?.isHuman ?? false);
 
@@ -371,7 +371,7 @@ function GutsPageContent() {
                   <span data-testid="guts-guide-tier">{t(`guide.tier.${declareGuide.tier}`)}</span>
                 </div>
                 <div className="text-ds-error-text text-xs" data-testid="guts-guide-risk">
-                  {t('guide.matchRisk', { pot: state.pot })}
+                  {t('guide.matchRisk', { amount: declareGuide.maxPayment })}
                 </div>
               </div>
             )}

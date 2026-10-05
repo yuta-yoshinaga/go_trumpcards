@@ -436,6 +436,26 @@ describe('SpeedPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0, 0));
   });
 
+  it('announces the active digit shortcuts on hand cards only during keyboard play', async () => {
+    renderWithProviders(<SpeedPage />);
+    await screen.findByText('手札');
+    const handButtons = [
+      screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' }),
+      screen.getByRole('button', { name: '♥ 8 (今すぐ出せる)' }),
+      screen.getByRole('button', { name: '♣ J' }),
+      screen.getByRole('button', { name: '♦ 2' }),
+    ];
+    handButtons.forEach((button, index) => {
+      expect(button).toHaveAttribute('aria-keyshortcuts', String(index + 1));
+    });
+
+    mockExec.mockResolvedValue(gameEndState);
+    fireEvent.click(handButtons[0]);
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' })).not.toHaveAttribute('aria-keyshortcuts'),
+    );
+  });
+
   it('ignores keyboard shortcuts while a modal is open', async () => {
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());

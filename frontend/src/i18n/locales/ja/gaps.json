@@ -5,6 +5,8 @@
     "gameOver": "ゲームオーバー"
   },
   "title": "ギャップス / モンタナ",
+  "boardLabel": "盤面",
+  "keyboardInstructions": "矢印キーで盤面内を移動できます。",
   "moveCount": "手数",
   "redealsRemaining": "再配り残り",
   "undo": "元に戻す",

@@ -471,6 +471,37 @@ function DilotiPageContent() {
                 <div className="text-ds-warning text-sm mb-2">
                   {t('hintAvailable')}: {t(`hint.${state.hintReason}`)} ([{state.hintHandIdx}]
                   {` → ${t(`action.${state.hintAction}`)}`})
+                  {state.hintAction === 'capture' && (
+                    <span>
+                      {state.hintTableIdxs.length > 0 && (
+                        <>
+                          {' '}
+                          {t('hintTargets.captureTable', {
+                            cards: state.hintTableIdxs
+                              .map((idx) => `[${idx}] ${cardAlt(state.table[idx])}`)
+                              .join(t('listSeparator')),
+                          })}
+                        </>
+                      )}
+                      {state.hintDeclIdxs.map((idx) => (
+                        <span key={idx}>
+                          {' '}
+                          {t('hintTargets.captureDeclaration', { idx, value: state.declarations[idx].value })}
+                        </span>
+                      ))}
+                    </span>
+                  )}
+                  {state.hintAction === 'declare' && (
+                    <span>
+                      {' '}
+                      {t('hintTargets.declare', {
+                        value: state.hintDeclValue,
+                        cards: state.hintTableIdxs
+                          .map((idx) => `[${idx}] ${cardAlt(state.table[idx])}`)
+                          .join(t('listSeparator')),
+                      })}
+                    </span>
+                  )}
                 </div>
               )}
             </div>

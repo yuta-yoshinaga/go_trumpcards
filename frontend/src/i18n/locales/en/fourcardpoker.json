@@ -52,6 +52,7 @@
   },
   "betGuide": "Place ante and optional Aces Up side bet",
   "foldWarning": "Folding forfeits your {{amount}} ante",
+  "actionBets": "Ante: {{ante}}, Aces Up: {{acesUp}}",
   "betError": "Ante must be at least 10, bets in steps of 10, and within your balance",
   "payoutRef": {
     "title": "Paytable",

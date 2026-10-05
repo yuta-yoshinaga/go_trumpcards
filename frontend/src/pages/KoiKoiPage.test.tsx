@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { koikoiApi } from '../api/gameApi';
+import { actionLogApi, koikoiApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeKoiKoiState } from '../test/stateFactories';
@@ -12,6 +12,7 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(koikoiApi.exec);
+const mockActionLog = vi.mocked(actionLogApi.koikoi);
 
 const playState = makeKoiKoiState();
 const decisionState = makeKoiKoiState({
@@ -40,10 +41,28 @@ const gameEndState = makeKoiKoiState({
 
 beforeEach(() => {
   mockExec.mockReset();
+  mockActionLog.mockReset();
   mockExec.mockResolvedValue(playState);
 });
 
 describe('KoiKoiPage', () => {
+  it('opens the action log during an active game', async () => {
+    mockActionLog.mockResolvedValue({
+      entries: [
+        {
+          turnNumber: 1,
+          playerIdx: 0,
+          actionType: 'play',
+          detail: 'あなたは札を出しました',
+        },
+      ],
+    });
+    renderWithProviders(<KoiKoiPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: '棋譜を見る' }));
+    expect(await screen.findByText(/あなたは札を出しました/)).toBeInTheDocument();
+  });
+
   it('announces deck count changes without announcing the initial count', async () => {
     mockExec.mockResolvedValueOnce(playState).mockResolvedValueOnce(makeKoiKoiState({ remainingDeck: 31 }));
     renderWithProviders(<KoiKoiPage />);

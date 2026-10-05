@@ -3,6 +3,7 @@
   "autoCompleteNotReady": "エースを組札に上げると有効になります",
   "cardPosAria": "{{card}}（列{{col}}・上から{{pos}}枚目）",
   "deal": "配り足す",
+  "dealsRemaining": "残り{{count}}回配れます",
   "dealBlockedByWaive": "保持中の札を戻すまで配り足しできません",
   "empty": "空",
   "emptyColumnAriaLabel": "空のタブロー列 {{col}} (キングのみ置けます)",

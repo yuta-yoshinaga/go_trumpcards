@@ -46639,6 +46639,13 @@ components:
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
           items:
             $ref: '#/components/schemas/ActionLogEntry'
+        roundScoreHistory:
+          type: array
+          description: Completed round scores, indexed by round and player.
+          items:
+            type: array
+            items:
+              type: integer
         players:
           type: array
           items:
@@ -50663,6 +50670,37 @@ components:
           type: integer
           description: Total points for this hand/crib
           example: 10
+        fifteenCards:
+          type: array
+          description: Card combinations that sum to 15
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        pairCards:
+          type: array
+          description: Card pairs that scored
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        runCards:
+          type: array
+          description: Card runs that scored
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        flushCards:
+          type: array
+          description: Cards that formed the flush
+          items:
+            $ref: '#/components/schemas/Card'
+        nobsCards:
+          type: array
+          description: Jack and starter cards that formed nobs
+          items:
+            $ref: '#/components/schemas/Card'
 
     CribbageResponse:
       type: object
@@ -51863,6 +51901,10 @@ components:
           type: integer
           description: Dealer's best 5-card hand rank (same encoding as `playerHandRank`)
           example: 0
+        callWinRate:
+          type: number
+          description: Estimated share of completed call outcomes, including ties; present during the flop decision.
+          example: 0.82
         message:
           type: string
           description: Game result or error message. Empty during pre-resolution phases.
@@ -60655,6 +60697,9 @@ components:
         highestBid:
           type: integer
           description: "0=pass, 1=Trois, 2=Solo, 3=Piccolo, 4=Misere"
+        highestBidder:
+          type: integer
+          description: Seat of the current highest bidder, or -1 when nobody has bid.
         declarerIdx:
           type: integer
           description: Declaring seat, or -1 for a thrown-in deal.
@@ -67867,6 +67912,13 @@ components:
         roundGamePoints:
           type: integer
           description: Game points awarded to the winning side this round (before chip settlement)
+        roundScoreHistory:
+          type: array
+          description: Completed rounds' chip changes, indexed by round then player.
+          items:
+            type: array
+            items:
+              type: integer
         gameEndFlag:
           type: boolean
         winnerIdx:
@@ -70242,6 +70294,14 @@ components:
                 type: integer
               card:
                 $ref: '#/components/schemas/Card'
+        currentTrickPoints:
+          type: array
+          items:
+            type: integer
+          description: Card points for currentTrick, in the same order
+        isLastTrick:
+          type: boolean
+          description: Whether the current trick is the final trick of the round
         teamScores:
           type: array
           items:
@@ -71174,7 +71234,12 @@ components:
           type: array
           items:
             type: integer
-          description: Bid placed by each player in seat order (0=Pass, 1=Six, 2=Misere, 3=Seven, 4=Eight; -1=not yet bid)
+          description: Bid placed by each player in seat order (0=Pass, 1=Gask, 2=Solo, 3=Misere, 4=Vira)
+        bidDone:
+          type: array
+          items:
+            type: boolean
+          description: Whether each player has submitted a bid this round, in seat order
         currentTrick:
           type: array
           items:
@@ -72573,6 +72638,15 @@ components:
           nullable: true
         hit:
           type: boolean
+        bankerHit:
+          type: boolean
+          description: Whether the banker card matched the player's wager on the last turn.
+        playerHit:
+          type: boolean
+          description: Whether the player card matched the player's wager on the last turn.
+        payoutReceived:
+          type: integer
+          description: Amount credited when winnings were taken after the last turn; otherwise 0.
         turnsPlayed:
           type: integer
         turnsTotal:
@@ -78830,6 +78904,17 @@ components:
           type: integer
         roundWinnerIdx:
           type: integer
+        roundScoreHistory:
+          type: array
+          items:
+            type: object
+            properties:
+              roundNumber:
+                type: integer
+              scores:
+                type: array
+                items:
+                  type: integer
         config:
           type: object
           properties:
@@ -79621,6 +79706,18 @@ components:
           type: array
           items:
             type: integer
+        dealScoreHistory:
+          type: array
+          description: Settled score changes for each completed deal, in match order.
+          items:
+            type: object
+            properties:
+              roundNumber:
+                type: integer
+              scores:
+                type: array
+                items:
+                  type: integer
         lastTrickWinner:
           type: integer
         outcome:

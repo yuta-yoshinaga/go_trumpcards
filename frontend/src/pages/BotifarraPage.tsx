@@ -115,9 +115,9 @@ function BotifarraPageContent() {
   const actionBindings = useMemo(
     () => [
       { key: 'n', action: () => execApi('next'), enabled: isRoundEnd },
-      { key: 'g', action: () => execApi('giveup'), enabled: !!state && !state.gameEndFlag },
+      { key: 'g', action: confirmGiveUpAction, enabled: !!state && !state.gameEndFlag && !giveUpConfirmOpen },
     ],
-    [execApi, isRoundEnd, state],
+    [confirmGiveUpAction, execApi, giveUpConfirmOpen, isRoundEnd, state],
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 

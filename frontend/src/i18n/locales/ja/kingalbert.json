@@ -9,6 +9,8 @@
   "reserve": "リザーブ",
   "moveCount": "手数",
   "moveCountAnnouncement": "手数: {{count}}",
+  "selectedTableauAnnouncement": "選択中: {{card}}、列{{col}}・位置{{pos}}",
+  "selectedReserveAnnouncement": "選択中: {{card}}、リザーブ枠 {{idx}}",
   "giveup": "ギブアップ",
   "empty": "空",
   "emptyReserveSlot": "空のリザーブ枠 {{idx}}",

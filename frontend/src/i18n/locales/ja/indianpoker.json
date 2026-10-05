@@ -19,6 +19,15 @@
     "bettingLimit": "ベッティングリミット",
     "metaAI": "メタAI"
   },
+  "metaAI": {
+    "title": "メタAIの学習状況",
+    "gamesPlayed": "対戦数: {{value}}",
+    "bluffRate": "ブラフ率: {{value}}",
+    "foldRate": "フォールド率: {{value}}",
+    "hesitationMean": "平均逡巡時間: {{value}}",
+    "milliseconds": "{{value}}ミリ秒",
+    "unmeasured": "未計測"
+  },
   "tutorial": {
     "cpuCards": "相手のカードが見えています。自分のカードは見えませんが、相手のカードから推理しましょう。",
     "playerCard": "あなたのカードは伏せられています。ショーダウンまで自分のカードは見えません。",

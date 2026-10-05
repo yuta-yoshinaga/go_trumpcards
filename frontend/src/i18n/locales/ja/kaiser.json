@@ -23,6 +23,7 @@
   "scoreTitle": "得点",
   "handPoints": "この局: {{t0}} 対 {{t1}}",
   "gameScores": "通算: {{t0}} 対 {{t1}}",
+  "scoreUpdateAnnouncement": "得点更新。この局: {{hand0}} 対 {{hand1}}。通算: {{total0}} 対 {{total1}}",
   "contractProgressNeed": "宣言側: {{got}}/{{contract}}点、あと{{remaining}}点",
   "contractProgressMade": "宣言側: {{got}}/{{contract}}点、契約成立",
   "specialTitle": "得点札",

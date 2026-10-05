@@ -15,6 +15,7 @@
   },
   "button": {
     "bet": "Bet",
+    "maximum": "Maximum",
     "draw": "Draw",
     "stand": "Stand",
     "reset": "Reset",

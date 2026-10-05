@@ -371,10 +371,34 @@ describe('KempsPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
   });
 
+  it('shows the round winner and result without replacing the final game result', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<KempsPage />);
+    expect(await screen.findByTestId('kemps-round-result')).toHaveTextContent('チームAのラウンド勝利：ケムプス成功');
+    expect(screen.getByRole('button', { name: '次のラウンドへ' })).toBeInTheDocument();
+  });
+
+  it('shows the round result without a winner when the round has no winner', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2, isHumanTurn: false, roundResult: 3, roundWinnerTeam: -1 }));
+    renderWithProviders(<KempsPage />);
+    const result = await screen.findByTestId('kemps-round-result');
+    expect(result).toHaveTextContent('ラウンド結果：カウンター・ケムプス失敗');
+    expect(result).not.toHaveTextContent('チーム');
+  });
+
+  it('shows the winning team B at round end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2, isHumanTurn: false, roundResult: 3, roundWinnerTeam: 1 }));
+    renderWithProviders(<KempsPage />);
+    expect(await screen.findByTestId('kemps-round-result')).toHaveTextContent(
+      'チームBのラウンド勝利：カウンター・ケムプス失敗',
+    );
+  });
+
   it('shows the win message when the human team wins', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<KempsPage />);
     await waitFor(() => expect(screen.getByText('あなたのチームの勝利です！')).toBeInTheDocument());
+    expect(screen.queryByTestId('kemps-round-result')).not.toBeInTheDocument();
   });
 
   it('changes CPU difficulty via the settings panel and resets', async () => {

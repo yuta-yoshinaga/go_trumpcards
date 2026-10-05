@@ -112,6 +112,26 @@ describe('BigBenPage', () => {
     }
   });
 
+  it('announces each tableau column count and updates it after dealing', async () => {
+    const dealtState = {
+      ...playingState,
+      tableau: makeTableau([
+        [...playingState.tableau[0]!, { card: card('CLOVER', 2), faceUp: true }],
+        [...playingState.tableau[1]!, { card: card('DIAMOND', 7), faceUp: true }],
+      ]),
+      stockCount: 49,
+    };
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValue(dealtState);
+    renderWithProviders(<BigBenPage />);
+    expect(await screen.findByText('列0、2枚')).toBeInTheDocument();
+    expect(screen.getByText('列1、1枚')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('bigben-deal-button'));
+
+    expect(await screen.findByText('列0、3枚')).toBeInTheDocument();
+    expect(screen.getByText('列1、2枚')).toBeInTheDocument();
+  });
+
   it('shows how many faces are done', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
@@ -382,7 +402,8 @@ describe('BigBenPage', () => {
     mockExec.mockReset();
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BigBenPage />);
-    await waitFor(() => expect(screen.getAllByLabelText(/列\d+・上から\d+枚目/).length).toBeGreaterThan(0));
+    await waitFor(() => expect(screen.getAllByLabelText(/列\d+・全\d+枚・上から\d+枚目/).length).toBeGreaterThan(0));
+    expect(screen.getByRole('button', { name: /列0・全2枚・上から1枚目/ })).toBeInTheDocument();
   });
 });
 

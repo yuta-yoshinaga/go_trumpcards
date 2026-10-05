@@ -11,6 +11,8 @@
   "foundationAriaLabel": "組札 {{col}}",
   "foundationTopAriaLabel": "組札 {{col}}: {{card}}",
   "tableau": "場札",
+  "tableauCardAriaLabel": "列{{col}}、位置{{pos}}、{{card}}",
+  "tableauFaceDownAriaLabel": "列{{col}}、位置{{pos}}、裏向き",
   "stockCount": "ストック残り: {{count}}",
   "stockDrawAriaLabel": "ストックをめくる、残り{{count}}枚",
   "stockEmptyAriaLabel": "ストックをめくる、空",

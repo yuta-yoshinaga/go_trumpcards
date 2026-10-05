@@ -137,7 +137,7 @@ function PrsiPageContent() {
     onToggle: toggleCard,
     onConfirm: confirmAction,
     onClear: clearSelection,
-    enabled: !!isHumanTurnForKbd && !loading,
+    enabled: !!isHumanTurnForKbd && !loading && actionLog === null,
   });
 
   const phaseNames = usePhaseNames('prsi', PRSI_PHASE_KEYS);
@@ -299,6 +299,7 @@ function PrsiPageContent() {
 
                 <ActionLogSection
                   isEndPhase={isGameEnd}
+                  availableDuringPlay
                   actionLog={actionLog}
                   showActionLog={showActionLog}
                   hideActionLog={hideActionLog}

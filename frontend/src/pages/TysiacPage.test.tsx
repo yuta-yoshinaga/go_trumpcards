@@ -237,6 +237,29 @@ describe('TysiacPage', () => {
     expect(bar0.querySelector('.bg-ds-warning')).toBeNull();
   });
 
+  it('clamps the progress value and bar width to the target range', async () => {
+    mockExec.mockResolvedValue(
+      makeTysiacState({
+        players: [
+          { id: 0, isHuman: true, cardCount: 7, cards: [], trickCount: 0, score: -50, isDeclarer: false },
+          { id: 1, isHuman: false, cardCount: 7, cards: [], trickCount: 0, score: 400, isDeclarer: false },
+          { id: 2, isHuman: false, cardCount: 7, cards: [], trickCount: 0, score: 1200, isDeclarer: false },
+        ],
+      }),
+    );
+    renderWithProviders(<TysiacPage />);
+
+    const bar0 = await screen.findByTestId('tysiac-progress-0');
+    const bar1 = screen.getByTestId('tysiac-progress-1');
+    const bar2 = screen.getByTestId('tysiac-progress-2');
+    expect(bar0).toHaveAttribute('aria-valuenow', '0');
+    expect(bar0.firstElementChild).toHaveStyle({ width: '0%' });
+    expect(bar1).toHaveAttribute('aria-valuenow', '400');
+    expect(bar1.firstElementChild).toHaveStyle({ width: '40%' });
+    expect(bar2).toHaveAttribute('aria-valuenow', '1000');
+    expect(bar2.firstElementChild).toHaveStyle({ width: '100%' });
+  });
+
   it('shows remaining points from current scores and marks players at the target as reached', async () => {
     mockExec.mockResolvedValue(
       makeTysiacState({

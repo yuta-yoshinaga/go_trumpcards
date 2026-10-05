@@ -52,20 +52,21 @@ type ViraWebOutput struct {
 	TrumpSuit        int                    `json:"trumpSuit"`
 	// Pot 現在のポット。**次局へ持ち越されるので画面に出す。**これが見えないと、
 	// 同じ契約でも見返りが違う理由がプレイヤーに分からない。
-	Pot             int                       `json:"pot"`
-	LastRoundDelta  [domain.ViraPlayerCnt]int `json:"lastRoundDelta"`
-	LastRoundMade   bool                      `json:"lastRoundMade"`
-	LastRoundPotWon int                       `json:"lastRoundPotWon"`
-	Bids            [domain.ViraPlayerCnt]int `json:"bids"`
-	CurrentTrick    []*WebOutputTrickCard     `json:"currentTrick"`
-	PlayerScores    [domain.ViraPlayerCnt]int `json:"playerScores"`
-	RoundTricks     [domain.ViraPlayerCnt]int `json:"roundTricks"`
-	PlayableIndices []int                     `json:"playableIndices"`
-	GameEndFlag     bool                      `json:"gameEndFlag"`
-	WinnerPlayer    int                       `json:"winnerPlayer"`
-	IsHumanTurn     bool                      `json:"isHumanTurn"`
-	IsHumanBidTurn  bool                      `json:"isHumanBidTurn"`
-	Hint            *WebOutputCardHint        `json:"hint,omitempty"`
+	Pot             int                        `json:"pot"`
+	LastRoundDelta  [domain.ViraPlayerCnt]int  `json:"lastRoundDelta"`
+	LastRoundMade   bool                       `json:"lastRoundMade"`
+	LastRoundPotWon int                        `json:"lastRoundPotWon"`
+	Bids            [domain.ViraPlayerCnt]int  `json:"bids"`
+	BidDone         [domain.ViraPlayerCnt]bool `json:"bidDone"`
+	CurrentTrick    []*WebOutputTrickCard      `json:"currentTrick"`
+	PlayerScores    [domain.ViraPlayerCnt]int  `json:"playerScores"`
+	RoundTricks     [domain.ViraPlayerCnt]int  `json:"roundTricks"`
+	PlayableIndices []int                      `json:"playableIndices"`
+	GameEndFlag     bool                       `json:"gameEndFlag"`
+	WinnerPlayer    int                        `json:"winnerPlayer"`
+	IsHumanTurn     bool                       `json:"isHumanTurn"`
+	IsHumanBidTurn  bool                       `json:"isHumanBidTurn"`
+	Hint            *WebOutputCardHint         `json:"hint,omitempty"`
 	WebOutputBase
 	Config ViraWebOutputConfig `json:"config"`
 }

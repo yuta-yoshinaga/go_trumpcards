@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Card } from '../types/card';
-import { boardLowPossibility, lowCardIndexSets } from './omahaLowCards';
+import { boardLowPossibility, lowCardIndexSets, omahaLowCandidate } from './omahaLowCards';
 
 const c = (design: Card['design'], value: number): Card => ({ design, value });
 
@@ -27,6 +27,24 @@ describe('lowCardIndexSets', () => {
     const { loHoleSet, loBoardSet } = lowCardIndexSets(low, hole, board);
     expect(loHoleSet.size).toBe(0);
     expect(loBoardSet.size).toBe(0);
+  });
+});
+
+describe('omahaLowCandidate', () => {
+  it('selects the strongest qualifying two-hole, three-board low', () => {
+    const hole = [c('SPADE', 1), c('HEART', 2), c('DIAMOND', 3), c('CLOVER', 13)];
+    const board = [c('SPADE', 4), c('HEART', 5), c('DIAMOND', 8)];
+    expect(omahaLowCandidate(hole, board)).toEqual({ holeIdx: [0, 1], boardIdx: [0, 1, 2], ranks: [8, 5, 4, 2, 1] });
+  });
+
+  it('returns no candidate when ranks duplicate or exceed eight', () => {
+    const hole = [c('SPADE', 1), c('HEART', 2), c('DIAMOND', 13), c('CLOVER', 12)];
+    expect(omahaLowCandidate(hole, [c('SPADE', 1), c('HEART', 2), c('DIAMOND', 3)])).toBeNull();
+    expect(omahaLowCandidate(hole, [c('SPADE', 9), c('HEART', 10), c('DIAMOND', 11)])).toBeNull();
+  });
+
+  it('requires three board cards', () => {
+    expect(omahaLowCandidate([c('SPADE', 1), c('HEART', 2)], [c('DIAMOND', 3), c('CLOVER', 4)])).toBeNull();
   });
 });
 

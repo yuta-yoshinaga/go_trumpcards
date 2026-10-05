@@ -72,6 +72,32 @@ describe('SettingsPanel', () => {
     expect(onSelect).toHaveBeenCalledWith('b');
   });
 
+  it('renders select descriptions and associates them with the control', () => {
+    render(
+      <SettingsPanel
+        title="Settings"
+        groups={[
+          {
+            items: [
+              {
+                type: 'select',
+                id: 'sel-description',
+                label: 'Pick one',
+                value: 'a',
+                description: 'Applies on reset',
+                options: [{ value: 'a', label: 'Alpha' }],
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    const select = screen.getByLabelText('Pick one');
+    expect(select).toHaveAttribute('aria-describedby', 'sel-description-description');
+    expect(screen.getByText('Applies on reset')).toHaveAttribute('id', 'sel-description-description');
+  });
+
   it('uses ariaLabel as the select accessible name when provided', () => {
     render(
       <SettingsPanel

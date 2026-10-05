@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import golden from '../constants/shengjiCombo.json';
 import type { Card, CardDesign } from '../types/card';
-import { SHENGJI_COMBO, shengjiEvaluate } from './shengjiCombo';
+import { SHENGJI_COMBO, shengjiEvaluate, shengjiIsTrump } from './shengjiCombo';
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 const spade = (value: number) => card('SPADE', value);
@@ -10,6 +10,15 @@ const joker = (value: number) => card('JOKER', value);
 
 const LEVEL = 5;
 const TRUMP_SUIT = 1;
+
+describe('shengjiIsTrump', () => {
+  it('recognizes jokers, level cards and the trump suit, but not other cards', () => {
+    expect(shengjiIsTrump(joker(1), LEVEL, TRUMP_SUIT)).toBe(true);
+    expect(shengjiIsTrump(heart(LEVEL), LEVEL, TRUMP_SUIT)).toBe(true);
+    expect(shengjiIsTrump(spade(7), LEVEL, TRUMP_SUIT)).toBe(true);
+    expect(shengjiIsTrump(heart(7), LEVEL, TRUMP_SUIT)).toBe(false);
+  });
+});
 
 describe('shengjiEvaluate', () => {
   it('matches the shared Go golden fixture', () => {

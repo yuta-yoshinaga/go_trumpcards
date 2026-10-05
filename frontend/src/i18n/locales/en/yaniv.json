@@ -1,6 +1,7 @@
 {
   "handTotalHelp": "Declare Yaniv when your hand total is 5 or less; any excess becomes penalty points.",
   "yanivGuidance": "Hand total: {{total}}. Declare Yaniv at 5 or less. {{availability}}",
+  "selectionPreview": "(Selected: -{{selected}} = preview {{remaining}})",
   "yanivAvailable": "Yaniv is available.",
   "yanivUnavailableTotal": "Your total is above 5, so you cannot declare.",
   "yanivUnavailableTurn": "You can declare during your discard turn.",

@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { buraApi } from '../api/gameApi';
+import { actionLogApi, buraApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BuraPlayer, BuraResponse, Card, CardDesign } from '../types/card';
 import { BuraPage } from './BuraPage';
@@ -249,6 +249,29 @@ describe('BuraPage', () => {
     renderWithProviders(<BuraPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.getByText('切札 ハート（指示カードは引かれた）')).toBeInTheDocument();
+  });
+});
+
+describe('BuraPage action log during play', () => {
+  it('opens the action log with its current entries before the game ends', async () => {
+    mockExec.mockResolvedValue(makeState({ gameEndFlag: false }));
+    vi.mocked(actionLogApi.bura).mockResolvedValueOnce({
+      entries: [
+        {
+          turnNumber: 1,
+          playerIdx: -1,
+          actionType: 'deal',
+          detail: '切り札のスートは 2 です',
+          detailCode: 'bura.log.deal',
+          detailParams: { suit: '2' },
+          cards: [],
+        },
+      ],
+    });
+    renderWithProviders(<BuraPage />);
+    await screen.findByRole('button', { name: '棋譜を見る' });
+    fireEvent.click(screen.getByRole('button', { name: '棋譜を見る' }));
+    expect(await screen.findByText(/切り札のスートは 2 です/)).toBeInTheDocument();
   });
 });
 

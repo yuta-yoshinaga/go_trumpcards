@@ -796,12 +796,15 @@ describe('StalactitesPage', () => {
 
   // --- Tableau card aria ---
 
-  it('tableau face-up card button has aria-label with card name', async () => {
+  it('tableau face-up card button has aria-label with card name and zero-based column', async () => {
     renderWithProviders(<StalactitesPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
-    const cardButton = screen.getByRole('button', { name: '♠ K' });
-    expect(cardButton).toHaveAttribute('aria-label', '♠ K');
+    const cardButton = screen.getByRole('button', { name: '♠ K、列0' });
+    expect(cardButton).toHaveAttribute('aria-label', '♠ K、列0');
+
+    const nextColumnCard = screen.getByAltText('♥ Q').closest('button');
+    expect(nextColumnCard).toHaveAttribute('aria-label', '♥ Q、列1');
   });
 
   it('tableau face-up card button has aria-pressed false initially and true when selected', async () => {

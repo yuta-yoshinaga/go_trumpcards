@@ -241,6 +241,11 @@ function DoubleKlondikePageContent() {
             // 選択元を見失いやすい。掴んだ束の**全部**が押された状態になる:
             // リングと同じ条件 (`i >= selected.idx`) で揃える。
             aria-pressed={selected?.zone === 'tableau' && selected.col === col && i >= selected.idx}
+            aria-label={
+              tc2.faceUp && tc2.card
+                ? t('tableauCardAriaLabel', { col, pos: i, card: cardAlt(tc2.card) })
+                : t('tableauFaceDownAriaLabel', { col, pos: i })
+            }
             data-testid={`card-${col}-${i}`}
           >
             {tc2.faceUp && tc2.card ? <CardImage card={tc2.card} width={w} /> : <CardBack width={w} />}

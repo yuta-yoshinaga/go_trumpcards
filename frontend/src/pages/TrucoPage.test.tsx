@@ -329,4 +329,25 @@ describe('TrucoPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { matchTarget: 24 }));
   });
+
+  it('explains that a changed match target applies on reset, then clears the notice after reset', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockImplementation(async (_action, _payload, options) =>
+      makeState({ matchTarget: options?.matchTarget ?? 15 }),
+    );
+    renderWithProviders(<TrucoPage />);
+    await screen.findByTestId('truco-header');
+    fireEvent.click(screen.getByText('設定'));
+    const target = screen.getByLabelText('マッチ目標点');
+    expect(screen.queryByText('マッチ目標点の変更は次のリセットから適用されます。')).not.toBeInTheDocument();
+    fireEvent.change(target, { target: { value: '24' } });
+    expect(await screen.findByText('マッチ目標点の変更は次のリセットから適用されます。')).toBeInTheDocument();
+    expect(screen.getByTestId('truco-header')).toHaveTextContent('目標: 15');
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(screen.getByTestId('truco-header')).toHaveTextContent('目標: 24'));
+    expect(screen.queryByText('マッチ目標点の変更は次のリセットから適用されます。')).not.toBeInTheDocument();
+  });
 });

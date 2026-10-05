@@ -28,6 +28,12 @@
     "value": "宣言{{n}}"
   },
   "currentTrick": "現在のトリック",
+  "listSeparator": "、",
+  "announcements": {
+    "cpuAuctionBid": "{{player}}が{{n}}で入札しました",
+    "cpuPassed": "{{player}}が降りました",
+    "cpuBid": "{{player}}が{{n}}トリックを宣言しました"
+  },
   "mustBid": "あなた以外は全員降りました。切り札が決まらないため、降りずに入札してください。",
   "bidQuota": "あなたが落札者です。{{n}} 以上を宣言する義務があります。",
   "bidRestricted": "あなたが最後の宣言者です。合計が13になるため {{n}} は宣言できません。",

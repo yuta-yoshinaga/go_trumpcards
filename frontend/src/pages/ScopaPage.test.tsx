@@ -87,7 +87,7 @@ describe('ScopaPage', () => {
     );
     renderWithProviders(<ScopaPage />);
     await waitFor(() => expect(screen.getByTestId('scopa-action-lines')).toBeInTheDocument());
-    expect(screen.getByTestId('scopa-action-lines')).toHaveTextContent('捕獲 played=♥ 5 captured=1枚 (スコパ!)');
+    expect(screen.getByTestId('scopa-action-lines')).toHaveTextContent('♥ 5を出して1枚を捕獲（スコパ！）');
     expect(screen.getByTestId('scopa-action-lines')).toHaveTextContent('場に置く ♦ 7');
   });
 
@@ -101,7 +101,7 @@ describe('ScopaPage', () => {
     );
     renderWithProviders(<ScopaPage />);
     await waitFor(() => expect(screen.getByTestId('scopa-action-lines')).toBeInTheDocument());
-    expect(screen.getByTestId('scopa-action-lines')).toHaveTextContent('CPU 1: 捕獲 played=♦ 7 captured=1枚');
+    expect(screen.getByTestId('scopa-action-lines')).toHaveTextContent('CPU 1: ♦ 7を出して1枚を捕獲');
     expect(screen.getByTestId('scopa-action-lines')).not.toHaveTextContent('スコパ');
   });
 
@@ -125,7 +125,7 @@ describe('ScopaPage', () => {
     );
     renderWithProviders(<ScopaPage />);
     await waitFor(() => expect(screen.getByTestId('scopa-action-lines')).toBeInTheDocument());
-    expect(screen.getByTestId('scopa-action-lines')).toHaveTextContent('捕獲 played=- captured=1枚');
+    expect(screen.getByTestId('scopa-action-lines')).toHaveTextContent('-を出して1枚を捕獲');
   });
 
   it('does not render action lines when neither action exists', async () => {

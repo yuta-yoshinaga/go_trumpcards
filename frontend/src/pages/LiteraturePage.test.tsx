@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { literatureApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { CardDesign, LiteraturePlayer, LiteratureResponse } from '../types/card';
@@ -189,6 +190,11 @@ describe('LiteraturePage', () => {
     expect(holderSelects).toHaveLength(6);
     // 自チームの席だけ。
     expect(Array.from((holderSelects[0] as HTMLSelectElement).options).map((o) => o.value)).toEqual(['0', '2', '4']);
+    expect(Array.from((holderSelects[0] as HTMLSelectElement).options).map((o) => o.textContent)).toEqual([
+      '席0',
+      '席2',
+      '席4',
+    ]);
 
     fireEvent.change(holderSelects[0], { target: { value: '2' } });
     mockExec.mockClear();
@@ -238,6 +244,30 @@ describe('LiteraturePage', () => {
     expect(dialog).toHaveTextContent('♠ 5: 席0');
     expect(dialog).toHaveTextContent('♠ 6: 席0');
     expect(dialog).toHaveTextContent('♠ 7: 席4');
+  });
+
+  it('labels the six seat choices in English while keeping zero-based values', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<LiteraturePage />);
+      await screen.findByRole('button', { name: 'Claim' });
+
+      const holderSelects = screen.getAllByLabelText(/^♠[0-9]+$/);
+      expect(holderSelects).toHaveLength(6);
+      expect(Array.from((holderSelects[0] as HTMLSelectElement).options).map((o) => [o.value, o.textContent])).toEqual([
+        ['0', 'Seat 0'],
+        ['2', 'Seat 2'],
+        ['4', 'Seat 4'],
+      ]);
+      fireEvent.change(holderSelects[0], { target: { value: '2' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Claim' }));
+      expect(screen.getByRole('alertdialog')).toHaveTextContent('♠ 2: Seat 2');
+      fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('claim', { halfSuit: 0, holders: [2, 0, 0, 0, 0, 0] }));
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   // **無効は「相手に渡る」とは違う。**宣言の説明に書く。

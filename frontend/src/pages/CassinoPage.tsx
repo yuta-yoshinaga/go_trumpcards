@@ -97,7 +97,7 @@ function CassinoPageContent() {
     error,
     callApi,
     handIndex,
-    setHandIndex,
+    selectHand,
     tableIndices,
     toggleTable,
     buildIndices,
@@ -423,7 +423,7 @@ function CassinoPageContent() {
                   <button
                     key={i}
                     type="button"
-                    onClick={() => isHumanTurn && setHandIndex(handIndex === i ? null : i)}
+                    onClick={() => isHumanTurn && selectHand(i)}
                     disabled={!isHumanTurn}
                     aria-pressed={handIndex === i}
                     aria-label={cardAlt(c)}

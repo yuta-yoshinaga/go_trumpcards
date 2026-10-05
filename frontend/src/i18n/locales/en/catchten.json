@@ -18,6 +18,7 @@
   "trumpSuit": "Trump Suit",
   "honorBadge": "Honor points: {{points}}",
   "cards": "{{count}} cards",
+  "trickCount": "Tricks won: {{count}}",
   "cumulativeScore": "Total: {{score}}",
   "roundScore": "Round: {{score}}",
   "currentTrick": "Current Trick",
@@ -72,7 +73,8 @@
     "hand": "Hand",
     "team": "Team",
     "total": "Total score",
-    "round": "Round score"
+    "round": "Round score",
+    "tricks": "Tricks won"
   },
   "hintRequested": "Hint available",
   "noHint": "No hint available",

@@ -338,7 +338,11 @@ function PishtiPageContent() {
                       title={t('provisionalNote')}
                     >
                       {t('provisional', { score: p.provisionalScore })}
-                      {p.id === provisionalLeaderSeat && <span className="ml-1 text-ds-accent">★</span>}
+                      {p.id === provisionalLeaderSeat && (
+                        <span className="ml-1 text-ds-accent" role="img" aria-label={t('provisionalLeader')}>
+                          ★
+                        </span>
+                      )}
                     </span>
                   )}
                   {!isGameEnd && (

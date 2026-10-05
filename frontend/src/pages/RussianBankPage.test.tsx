@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { russianbankApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -48,6 +48,29 @@ describe('RussianBankPage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<RussianBankPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('shows a card back while a player has cards in hand', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ players: [makePlayer({ handCount: 3 }), makePlayer({ id: 1, isHuman: false })] }),
+    );
+    renderWithProviders(<RussianBankPage />);
+
+    const hand = await screen.findByTestId('hand-0');
+    expect(screen.getByTestId('player-0')).toHaveTextContent('手札 3');
+    expect(within(hand).getByRole('img', { name: 'カード裏面' })).toBeInTheDocument();
+  });
+
+  it('keeps an empty hand slot when a player has no cards in hand', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ players: [makePlayer({ handCount: 0 }), makePlayer({ id: 1, isHuman: false })] }),
+    );
+    renderWithProviders(<RussianBankPage />);
+
+    const hand = await screen.findByTestId('hand-0');
+    expect(screen.getByTestId('player-0')).toHaveTextContent('手札 0');
+    expect(hand.querySelector('img')).toBeNull();
+    expect(hand.querySelector('div')).toHaveStyle({ width: '62px', height: '87px' });
   });
 
   it('renders both players and the board', async () => {

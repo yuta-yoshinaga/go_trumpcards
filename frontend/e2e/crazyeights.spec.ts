@@ -23,7 +23,7 @@ test.describe('Crazy Eights E2E', () => {
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });
     const suitSpade = page.getByRole('button', { name: '♠', exact: true });
     const endResetButton = page.getByRole('button', { name: '次のゲーム' });
-    const handCards = page.locator('button[aria-pressed]:has(img)');
+    const handCards = page.locator('button[aria-pressed]:not([aria-disabled="true"]):has(img)');
 
     // Play through several interactions to verify phase transitions
     const MAX_TURNS = 80;

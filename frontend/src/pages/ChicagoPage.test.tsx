@@ -90,6 +90,15 @@ describe('ChicagoPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
   });
 
+  it('marks the face-down cards as the Chicago spade tutorial target', async () => {
+    renderWithProviders(<ChicagoPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const holeCards = document.querySelector('[data-tutorial="chicago-hole-cards"]');
+    expect(holeCards).toBeInTheDocument();
+    expect(holeCards).not.toBe(document.querySelector('[data-tutorial="scs-player-hand"]'));
+  });
+
   it('uses the shared muck/show shortcuts during Chicago showdown', async () => {
     mockExec.mockResolvedValue(makeState({ phase: SevenCardStudPhase.SHOWDOWN, muckAvailable: true }));
     renderWithProviders(<ChicagoPage />);

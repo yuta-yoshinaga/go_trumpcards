@@ -45,6 +45,7 @@ export interface SevenBridgeResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   winnerIdx: number;
   roundWinnerIdx: number;
+  roundScoreHistory: number[][];
   /** Whether this turn took the discard with a pon/chi claim rather than drawing (#5547). */
   claimedThisTurn?: boolean;
   config: SevenBridgeConfig;

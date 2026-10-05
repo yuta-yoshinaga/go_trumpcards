@@ -53,6 +53,12 @@ type PiedmonteseTarotWebOutputCompletedTrick struct {
 	Cards         []*WebOutputTrickCard `json:"cards"`
 }
 
+// PiedmonteseTarotWebOutputDealScore はディールごとの精算履歴。
+type PiedmonteseTarotWebOutputDealScore struct {
+	RoundNumber int   `json:"roundNumber"`
+	Scores      []int `json:"scores"`
+}
+
 // PiedmonteseTarotWebOutput はピエモンテ・タロッコの Web アウトプット。
 type PiedmonteseTarotWebOutput struct {
 	Players          []*PiedmonteseTarotWebOutputPlayer `json:"players"`
@@ -66,15 +72,16 @@ type PiedmonteseTarotWebOutput struct {
 	ScartoCount      int                                `json:"scartoCount"`
 	ScartoCards      []*WebOutputCard                   `json:"scartoCards"`
 	// TalonSize は親が捨てる枚数 (席数で変わる: 4 人なら 2、3 人なら 3)。
-	TalonSize       int                                        `json:"talonSize"`
-	CurrentTrick    []*WebOutputTrickCard                      `json:"currentTrick"`
-	CompletedTricks []*PiedmonteseTarotWebOutputCompletedTrick `json:"completedTricks"`
-	PlayerScores    []int                                      `json:"playerScores"`
-	DealScores      []int                                      `json:"dealScores"`
-	LastTrickWinner int                                        `json:"lastTrickWinner"`
-	Outcome         int                                        `json:"outcome"`
-	Result          int                                        `json:"result"`
-	PlayableIndices []int                                      `json:"playableIndices"`
+	TalonSize        int                                        `json:"talonSize"`
+	CurrentTrick     []*WebOutputTrickCard                      `json:"currentTrick"`
+	CompletedTricks  []*PiedmonteseTarotWebOutputCompletedTrick `json:"completedTricks"`
+	PlayerScores     []int                                      `json:"playerScores"`
+	DealScores       []int                                      `json:"dealScores"`
+	DealScoreHistory []PiedmonteseTarotWebOutputDealScore       `json:"dealScoreHistory"`
+	LastTrickWinner  int                                        `json:"lastTrickWinner"`
+	Outcome          int                                        `json:"outcome"`
+	Result           int                                        `json:"result"`
+	PlayableIndices  []int                                      `json:"playableIndices"`
 	// DiscardableIndices は親がスカルトに出せる札。**ピップが足りなければ
 	// 非オヌール切り札も含む** —— 画面側で色や値から作ると再現できない (#6236)。
 	DiscardableIndices []int              `json:"discardableIndices"`
@@ -128,15 +135,16 @@ var NewPiedmonteseTarotWebController, NewPiedmonteseTarotWebControllerWithProvid
 
 func newPiedmonteseTarotDefaultOutput(msg string) *PiedmonteseTarotWebOutput {
 	return &PiedmonteseTarotWebOutput{
-		Players:         make([]*PiedmonteseTarotWebOutputPlayer, 0),
-		CurrentTrick:    make([]*WebOutputTrickCard, 0),
-		ScartoCards:     make([]*WebOutputCard, 0),
-		PlayableIndices: make([]int, 0),
-		PlayerScores:    make([]int, 0),
-		DealScores:      make([]int, 0),
-		LastTrickWinner: -1,
-		WinnerPlayer:    -1,
-		WebOutputBase:   WebOutputBase{Message: msg},
+		Players:          make([]*PiedmonteseTarotWebOutputPlayer, 0),
+		CurrentTrick:     make([]*WebOutputTrickCard, 0),
+		ScartoCards:      make([]*WebOutputCard, 0),
+		PlayableIndices:  make([]int, 0),
+		PlayerScores:     make([]int, 0),
+		DealScores:       make([]int, 0),
+		DealScoreHistory: make([]PiedmonteseTarotWebOutputDealScore, 0),
+		LastTrickWinner:  -1,
+		WinnerPlayer:     -1,
+		WebOutputBase:    WebOutputBase{Message: msg},
 	}
 }
 

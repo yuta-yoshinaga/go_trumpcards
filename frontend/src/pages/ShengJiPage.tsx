@@ -27,11 +27,12 @@ import type { Card, ShengJiResponse } from '../types/card';
 import { ShengJiPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { suitName } from '../utils/cardUtils';
 import { parseShengJiCommand, SHENGJI_HELP } from '../utils/cli/commands/shengjiCommands';
 import { formatShengJiState } from '../utils/cli/formatters/shengjiFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
-import { shengjiEvaluate } from '../utils/shengjiCombo';
+import { shengjiEvaluate, shengjiIsTrump } from '../utils/shengjiCombo';
 
 /** Combination names by wire code (sync: `ShengJiComboKind`). */
 const COMBO_KEYS: Readonly<Record<number, string>> = {
@@ -132,6 +133,16 @@ function ShengJiPageContent() {
     return shengjiEvaluate(picked, state?.level ?? 2, state?.trumpSuit ?? 0);
   }, [selected, state]);
 
+  const humanCards = state?.players.find((player) => player.isHuman)?.cards ?? [];
+  const ledCombo = state?.phase === ShengJiPhase.PLAY && state.trick.length > 0 ? state.leadCombo : null;
+  const ledSuit = ledCombo ? (ledCombo.trump ? 0 : ledCombo.suit) : -1;
+  const level = state?.level ?? 2;
+  const trumpSuit = state?.trumpSuit ?? 0;
+  const belongsToLedSuit = (card: Card): boolean => {
+    if (ledSuit === 0) return shengjiIsTrump(card, level, trumpSuit);
+    return !shengjiIsTrump(card, level, trumpSuit) && card.design === suitName(ledSuit);
+  };
+
   const trickAnnouncement = !state
     ? ''
     : state.trick.length === 0
@@ -181,6 +192,12 @@ function ShengJiPageContent() {
   const isDeclare = state.phase === ShengJiPhase.DECLARE && isHumanTurn;
   const isKitty = state.phase === ShengJiPhase.KITTY && isHumanTurn;
   const isPlay = state.phase === ShengJiPhase.PLAY && isHumanTurn;
+  const mustFollowLedSuit =
+    isPlay &&
+    ledCombo !== null &&
+    humanCards.some(belongsToLedSuit) &&
+    selected.length > 0 &&
+    !selected.map((index) => humanCards[index]).some((card) => card !== undefined && belongsToLedSuit(card));
 
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
   const suitLabel = (suit: number): string => (suit === 0 ? t('noTrump') : t(`suitName.${suit}`));
@@ -197,7 +214,7 @@ function ShengJiPageContent() {
   }));
 
   const handlePlay = () => {
-    if (selected.length === 0) return;
+    if (selected.length === 0 || mustFollowLedSuit) return;
     exec('play', { cardIndexes: [...selected].sort((a, b) => a - b) });
     clear();
   };
@@ -468,14 +485,27 @@ function ShengJiPageContent() {
                 )}
 
                 {isPlay && (
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handlePlay}
-                    disabled={loading || selected.length === 0}
-                  >
-                    {t('playButton')}
-                  </button>
+                  <>
+                    {mustFollowLedSuit && (
+                      <span
+                        id="shengji-follow-suit-warning"
+                        className="text-ds-warning text-sm"
+                        data-testid="shengji-follow-suit-warning"
+                      >
+                        {t('followSuitRequired', { suit: ledSuit === 0 ? t('trumpLed') : t(`suitName.${ledSuit}`) })}
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      className={`${btnPrimary} ${mustFollowLedSuit ? 'aria-disabled:opacity-50 aria-disabled:cursor-not-allowed' : ''}`}
+                      onClick={handlePlay}
+                      disabled={loading || selected.length === 0}
+                      aria-disabled={mustFollowLedSuit || undefined}
+                      aria-describedby={mustFollowLedSuit ? 'shengji-follow-suit-warning' : undefined}
+                    >
+                      {t('playButton')}
+                    </button>
+                  </>
                 )}
 
                 {isHandEnd && (

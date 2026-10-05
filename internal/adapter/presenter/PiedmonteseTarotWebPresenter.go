@@ -84,6 +84,11 @@ func (p *PiedmonteseTarotWebPresenter) buildBase(g interfaces.PiedmonteseTarotGa
 	resObj.WinnerPlayer = g.GetWinnerPlayer()
 	resObj.PlayerScores = intsOrEmpty(g.GetPlayerScores())
 	resObj.DealScores = intsOrEmpty(g.GetDealScores())
+	dealHistory := g.GetDealScoreHistory()
+	resObj.DealScoreHistory = make([]controller.PiedmonteseTarotWebOutputDealScore, 0, len(dealHistory))
+	for _, deal := range dealHistory {
+		resObj.DealScoreHistory = append(resObj.DealScoreHistory, controller.PiedmonteseTarotWebOutputDealScore{RoundNumber: deal.RoundNumber, Scores: intsOrEmpty(deal.Scores)})
+	}
 	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.IsHumanTurn = g.IsHumanTurn()
 	resObj.IsHumanScarto = g.IsHumanScartoTurn()

@@ -6,6 +6,7 @@
   "phase.gameOver": "ゲーム終了",
   "phase.cpuTurn": "CPUのターン",
   "button.draw": "山札から引く",
+  "stockButtonAria": "山札から引く、残り{{count}}枚",
   "button.cpu": "CPUターンを進める",
   "button.reset": "リセット",
   "button.undo": "アンドゥ",

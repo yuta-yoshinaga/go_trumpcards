@@ -26,6 +26,8 @@
     "reset": "リセット",
     "giveUp": "投了",
     "selectAria": "{{card}} を選ぶ",
+    "captureAvailable": "捕獲可能",
+    "noCapture": "場に置く",
     "takeSoor": "スール",
     "takeSoorAria": "この選択で場が空になり、取った札は 2 倍になります",
     "scoreBreakdown": "通常 {{normal}}点 + スール加算 {{bonus}}点 = {{total}}点"

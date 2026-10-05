@@ -34,6 +34,9 @@
   "previousTrick": "前のトリック",
   "previousTrickEmpty": "このラウンドにはまだ前のトリックがありません",
   "previousTrickWinner": "{{name}} が獲得",
+  "listSeparator": "、",
+  "trickResultCard": "{{name}}が{{card}}を出しました",
+  "trickResultAnnouncement": "トリックが解決しました。{{cards}}。{{winner}}がトリックを獲得しました。",
   "leadBadge": "リード",
   "trickLegend": {
     "lead": "リードスート",

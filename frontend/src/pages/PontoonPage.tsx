@@ -127,26 +127,25 @@ function PontoonPageContent() {
    * banker's hand is the one you cannot read, and leaking it here would defeat
    * the game.
    */
-  const renderHand = (hand: PontoonHand, label: string, keyPrefix: string) => {
+  const renderHand = (hand: PontoonHand, label: string, keyPrefix: string, isCurrentHand = false) => {
     // The server decides what may be seen and says so with `hidden`; the page
     // never infers it, so there is one place that can be wrong instead of two.
     const hide = hand.hidden;
     const rankKey = rankLabelKey(hand.rank);
+    const handLabel = hide
+      ? label
+      : rankKey
+        ? t('rankedHandAriaLabel', {
+            name: t('seatAriaLabel', { name: label, total: hand.total }),
+            rank: t(rankKey),
+          })
+        : t('seatAriaLabel', { name: label, total: hand.total });
     return (
       <div key={keyPrefix} className="text-center">
         <div
           className="flex gap-1 justify-center"
           role="img"
-          aria-label={
-            hide
-              ? label
-              : rankKey
-                ? t('rankedHandAriaLabel', {
-                    name: t('seatAriaLabel', { name: label, total: hand.total }),
-                    rank: t(rankKey),
-                  })
-                : t('seatAriaLabel', { name: label, total: hand.total })
-          }
+          aria-label={isCurrentHand ? t('currentHandAriaLabel', { name: handLabel }) : handLabel}
         >
           {hand.cards.map((card, i) =>
             hide || !card ? (
@@ -241,6 +240,7 @@ function PontoonPageContent() {
                               hand,
                               hand.hidden ? t('hiddenHandAriaLabel', { name: seat.name }) : seat.name,
                               `s${seatIdx.toString()}h${handIdx.toString()}`,
+                              onTurn,
                             )}
                             <div className="text-game-text-muted text-xs mt-1">
                               {t('bet')}: {hand.bet}

@@ -199,4 +199,11 @@ func TestPrsiWebPresenter_ActionLogOutput(t *testing.T) {
 		m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 		assert.Contains(t, p.ActionLogOutput(m), `"entries":[]`)
 	})
+
+	t.Run("entries during play", func(t *testing.T) {
+		m := new(interfaces.MockPrsiGame)
+		m.On("GetGameEndFlag").Return(false)
+		m.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "play", DetailCode: "prsi.log.play"}})
+		assert.Contains(t, p.ActionLogOutput(m), `"detailCode":"prsi.log.play"`)
+	})
 }

@@ -50,6 +50,7 @@ func setupMachiavelliWebMock(phase domain.MachiavelliPhase, gameEnd bool) (*inte
 	}
 	m.On("GetWinnerIdx").Return(winner)
 	m.On("GetRoundWinnerIdx").Return(winner)
+	m.On("GetRoundScoreHistory").Return([]domain.MachiavelliRoundScore{{RoundNumber: 1, Scores: []int{0, 15}}})
 	m.On("GetConfig").Return(domain.DefaultMachiavelliConfig())
 	m.On("GetPlayerCnt").Return(2)
 	m.On("GetPlayer", 0).Return(players[0])
@@ -79,6 +80,7 @@ func TestMachiavelliWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 0, out.Table[0].Kind) // set
 		assert.Equal(t, 1, out.Table[1].Kind) // run
 		assert.Equal(t, 1, out.RoundNumber)
+		assert.Equal(t, []int{0, 15}, out.RoundScoreHistory[0].Scores)
 		assert.Equal(t, "machiavelli.turnPhase", out.MessageCode)
 		assert.Equal(t, domain.MachiavelliDefaultPlayerCount, out.Config.PlayerCount)
 	})

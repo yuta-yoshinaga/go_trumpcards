@@ -28,6 +28,7 @@ import type { ManilleResponse } from '../types/card';
 import { ManillePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { suitSymbolAt } from '../utils/cardAlt';
+import { suitName } from '../utils/cardUtils';
 import { MANILLE_HELP, parseManilleCommand } from '../utils/cli/commands/manilleCommands';
 import { formatManilleState } from '../utils/cli/formatters/manilleFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -153,6 +154,14 @@ function ManillePageContent() {
   const canPlay = isPlayPhase && isHumanTurn;
   const humanTeam = humanIdx % 2;
   const trumpSymbol = suitSymbolAt(state.trumpSuit, '');
+  const trumpDesign = suitName(state.trumpSuit);
+  const trumpIndices = humanPlayer
+    ? humanPlayer.cards.reduce<number[]>((indices, card, index) => {
+        if (card.design === trumpDesign) indices.push(index);
+        return indices;
+      }, [])
+    : [];
+  const trumpDescription = t('trump', { suit: trumpSymbol });
 
   // One info-sidebar row per player; same-team members are emphasised. Shared by the
   // mobile (<details>) and desktop layouts so the highlight logic lives in one place.
@@ -390,6 +399,9 @@ function ManillePageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="manille"
+                trumpIndices={trumpIndices}
+                trumpTitle={trumpDescription}
+                trumpAccessibleLabel={trumpDescription}
                 validIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}
               />

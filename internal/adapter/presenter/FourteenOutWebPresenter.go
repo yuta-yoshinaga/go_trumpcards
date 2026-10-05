@@ -74,7 +74,7 @@ func (pr *FourteenOutWebPresenter) HintOutput(g interfaces.FourteenOutGame) stri
 
 // ActionLogOutput は棋譜を JSON で出力する。
 func (pr *FourteenOutWebPresenter) ActionLogOutput(g interfaces.FourteenOutGame) string {
-	return actionLogOutputJSON(g)
+	return actionLogToJSON(g.GetActionLog())
 }
 
 // buildBase は共通のレスポンスフィールドを詰めて返す。

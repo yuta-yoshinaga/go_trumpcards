@@ -490,7 +490,7 @@ function LiteraturePageContent() {
                       >
                         {ownTeamSeats.map((seat) => (
                           <option key={seat} value={seat}>
-                            {seat}
+                            {t('seat', { n: seat })}
                           </option>
                         ))}
                       </select>

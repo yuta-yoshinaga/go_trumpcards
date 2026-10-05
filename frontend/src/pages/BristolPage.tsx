@@ -551,7 +551,7 @@ function BristolPageContent() {
                   onClick={handleDraw}
                   disabled={!isPlaying || loading || state.stockCount === 0}
                   className="rounded border border-white/30"
-                  aria-label={t('stock')}
+                  aria-label={t('stockAria', { count: state.stockCount })}
                   style={{ width: cardWidth, height: cardHeight }}
                 >
                   {state.stockCount > 0 ? (

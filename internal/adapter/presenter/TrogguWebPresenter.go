@@ -41,6 +41,7 @@ func (p *TrogguWebPresenter) buildBase(g interfaces.TrogguGame) *controller.Trog
 	resObj.DealerIdx = g.GetDealerIdx()
 	resObj.BidPlayerIdx = g.GetBidPlayerIdx()
 	resObj.HighestBid = int(g.GetHighestBid())
+	resObj.HighestBidder = g.GetHighestBidder()
 	resObj.DeclarerIdx = g.GetDeclarerIdx()
 	resObj.Contract = int(g.GetContract())
 	resObj.ContractName = domain.TrogguBidName(g.GetContract())

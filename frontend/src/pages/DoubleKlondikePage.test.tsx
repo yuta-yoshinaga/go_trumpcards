@@ -138,6 +138,24 @@ describe('DoubleKlondikePage', () => {
     expect(screen.queryByText('##')).not.toBeInTheDocument();
   });
 
+  it('names tableau cards with their 0-based column and position without exposing face-down cards', async () => {
+    renderWithProviders(<DoubleKlondikePage />);
+    await screen.findByTestId('card-1-1');
+
+    expect(screen.getByTestId('card-0-0')).toHaveAttribute('aria-label', '列0、位置0、♠ 9');
+    const faceDown = screen.getByTestId('card-1-0');
+    expect(faceDown).toHaveAttribute('aria-label', '列1、位置0、裏向き');
+    expect(faceDown.getAttribute('aria-label')).not.toContain('♥');
+
+    await i18n.changeLanguage('en');
+    try {
+      expect(screen.getByTestId('card-0-0')).toHaveAttribute('aria-label', 'column 0, position 0, ♠ 9');
+      expect(screen.getByTestId('card-1-0')).toHaveAttribute('aria-label', 'column 1, position 0, face down');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('draws from the stock', async () => {
     renderWithProviders(<DoubleKlondikePage />);
     const stock = await screen.findByTestId('stock');

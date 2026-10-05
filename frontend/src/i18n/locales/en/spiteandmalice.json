@@ -73,7 +73,11 @@
     "goalEmpty": "{{label}}: empty",
     "sideTop": "{{label}} {{n}} top: {{card}} ({{count}})",
     "sideEmpty": "{{label}} {{n}}: empty",
+    "cpuSideTop_one": "CPU side pile {{n}}{{listSeparator}}top: {{card}} ({{count}} card)",
+    "cpuSideTop_other": "CPU side pile {{n}}{{listSeparator}}top: {{card}} ({{count}} cards)",
+    "cpuSideEmpty": "CPU side pile {{n}}: empty",
     "foundationTop": "{{label}} {{n}}: {{card}} (top={{top}})",
     "foundationEmpty": "{{label}} {{n}}: empty"
-  }
+  },
+  "listSeparator": ", "
 }

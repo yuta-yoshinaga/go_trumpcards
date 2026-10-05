@@ -293,7 +293,7 @@ function NertzPageContent() {
       const announceIdx = humanIdx !== null && grown.includes(humanIdx) ? humanIdx : grown[grown.length - 1];
       announcements.push(
         t(announceIdx === humanIdx ? 'foundationAnnounce.human' : 'foundationAnnounce.cpu', {
-          foundation: announceIdx + 1,
+          foundation: announceIdx,
         }),
       );
       // Schedule a removal for each idx independently so the visible flash
@@ -331,7 +331,7 @@ function NertzPageContent() {
         setCollidedFoundationIdx(collidedIdx);
         setCollisionTick((n) => n + 1);
         setIsCollisionError(true);
-        setFoundationAnnounce(t('foundationAnnounce.collision', { foundation: collidedIdx + 1 }));
+        setFoundationAnnounce(t('foundationAnnounce.collision', { foundation: collidedIdx }));
         pendingFoundationRef.current = null;
       } else {
         setIsCollisionError(false);

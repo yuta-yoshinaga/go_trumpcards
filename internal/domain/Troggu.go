@@ -902,6 +902,9 @@ func (g *Troggu) GetBidPlayerIdx() int { return g.bidPlayerIdx }
 // GetHighestBid 現在の最高入札を返す。
 func (g *Troggu) GetHighestBid() TrogguBid { return g.highestBid }
 
+// GetHighestBidder 最高入札者の席を返す (-1 = なし)。
+func (g *Troggu) GetHighestBidder() int { return g.highestBidder }
+
 // GetDeclarerIdx デクレアラーの席を返す (-1 = 未確定 / 流局)。
 func (g *Troggu) GetDeclarerIdx() int { return g.declarerIdx }
 

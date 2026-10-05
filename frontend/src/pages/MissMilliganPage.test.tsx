@@ -78,6 +78,22 @@ describe('MissMilliganPage', () => {
     expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
   });
 
+  it('shows the remaining number of deals, rounding up a partial row and showing zero when empty', async () => {
+    mockExec.mockResolvedValue(playingState);
+    let rendered = renderWithProviders(<MissMilliganPage />);
+    expect(await screen.findByText('残り12回配れます')).toBeInTheDocument();
+    rendered.unmount();
+
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 1 });
+    rendered = renderWithProviders(<MissMilliganPage />);
+    expect(await screen.findByText('残り1回配れます')).toBeInTheDocument();
+    rendered.unmount();
+
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0 });
+    renderWithProviders(<MissMilliganPage />);
+    expect(await screen.findByText('残り0回配れます')).toBeInTheDocument();
+  });
+
   it('renders eight foundations and eight columns', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<MissMilliganPage />);

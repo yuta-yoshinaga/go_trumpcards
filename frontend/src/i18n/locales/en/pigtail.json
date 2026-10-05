@@ -21,6 +21,14 @@
     "safe": "SAFE",
     "recentCenter": "Recent tail"
   },
+  "listSeparator": ", ",
+  "announcement": {
+    "summary": "Your result: {{human}}{{cpu}}",
+    "action": "{{player}} drew {{card}}. Result: {{result}}",
+    "safe": "safe",
+    "penalty": "penalty",
+    "cpuPrefix": ". CPU results: {{cpu}}"
+  },
   "drawGuidance": {
     "penalty": "If you draw the same suit as the top center card, you take the whole center pile.",
     "stock": "{{count}} cards remain in the stock.",

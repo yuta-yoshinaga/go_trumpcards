@@ -73,7 +73,11 @@ function FreeBetPageContent() {
   const isResultPhase = phase === FreeBetPhase.RESULT;
   const gameOver = !!state?.gameEndFlag;
 
-  const handleDeal = useCallback(() => execApi('bet', { ante }), [execApi, ante]);
+  const dealUnavailable = loading || ante > (state?.chips ?? 0);
+  const handleDeal = useCallback(() => {
+    if (dealUnavailable) return;
+    execApi('bet', { ante });
+  }, [execApi, ante, dealUnavailable]);
 
   const actionBindings = useMemo(
     () => [
@@ -256,7 +260,7 @@ function FreeBetPageContent() {
                   >
                     <p>{t('betSummary.balance', { amount: state.chips })}</p>
                     <p>{t('betSummary.ante', { amount: ante })}</p>
-                    <p>{t('betSummary.remaining', { amount: state.chips - ante })}</p>
+                    <p>{t('betSummary.remaining', { amount: Math.max(0, state.chips - ante) })}</p>
                     <p className="text-ds-text-muted">{t('betSummary.freeBets')}</p>
                   </div>
                   <ChipBetInput
@@ -266,7 +270,12 @@ function FreeBetPageContent() {
                     onChange={setAnte}
                     max={state.chips}
                   />
-                  <button type="button" className={btnPrimary} onClick={handleDeal} disabled={loading}>
+                  <button
+                    type="button"
+                    className={`${btnPrimary} aria-disabled:opacity-70 aria-disabled:cursor-not-allowed aria-disabled:saturate-50`}
+                    onClick={handleDeal}
+                    aria-disabled={dealUnavailable || undefined}
+                  >
                     {t('button.deal')}
                   </button>
                 </div>

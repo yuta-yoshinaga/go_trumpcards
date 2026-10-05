@@ -89,6 +89,7 @@
   "hint": {
     "pairOrBetter": "Pair or better — recommend Call",
     "weakHand": "Weak hand — consider Fold",
-    "aceKingHigh": "You hold an Ace or a King — call"
+    "aceKingHigh": "You hold an Ace or a King — call",
+    "callWinRate": "Estimated chance to win after calling: {{percent}}%"
   }
 }

@@ -51,6 +51,7 @@
   "landscapeBanner": "Landscape mode recommended",
   "seatAriaLabel": "{{name}}'s hand, total {{total}}",
   "rankedHandAriaLabel": "{{name}}, {{rank}}",
+  "currentHandAriaLabel": "{{name}}, current hand",
   "hiddenHandAriaLabel": "{{name}}'s hand is face down",
   "bankerHandAriaLabel": "Banker's hand, total {{total}}",
   "hiddenBankerHandAriaLabel": "The banker's hand is face down",

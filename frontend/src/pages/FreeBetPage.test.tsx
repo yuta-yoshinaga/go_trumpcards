@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { freebetApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, FreeBetResponse } from '../types/card';
 import { FREE_BET_RESULT } from '../types/games/freebet';
@@ -171,13 +172,40 @@ describe('FreeBetPage', () => {
   });
 
   it('配るはアンティを送る', async () => {
-    mockApi.mockResolvedValue(base);
+    let finishBet: (response: FreeBetResponse) => void = () => {};
+    mockApi.mockImplementation((action) =>
+      action === 'bet'
+        ? new Promise<FreeBetResponse>((resolve) => {
+            finishBet = resolve;
+          })
+        : Promise.resolve(base),
+    );
     renderWithProviders(<FreeBetPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '配る' })).toBeInTheDocument());
 
     mockApi.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: '配る' }));
-    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', { ante: 50 }));
+    const deal = screen.getByRole('button', { name: '配る' });
+    fireEvent.click(deal);
+    await waitFor(() => expect(deal).toHaveAttribute('aria-disabled', 'true'));
+    fireEvent.click(deal);
+    await flushPendingDispatch();
+    expect(mockApi).toHaveBeenCalledTimes(1);
+    expect(mockApi).toHaveBeenCalledWith('bet', { ante: 50 });
+    finishBet(base);
+  });
+
+  it('残高が保持中のアンティを下回ると配れず、賭け後残高は0と表示する', async () => {
+    mockApi.mockResolvedValue(withState({ chips: 30 }));
+    renderWithProviders(<FreeBetPage />);
+
+    const deal = await screen.findByRole('button', { name: '配る' });
+    expect(deal).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByTestId('fb-bet-summary')).toHaveTextContent('賭け後の残高: 0');
+
+    mockApi.mockClear();
+    fireEvent.click(deal);
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalledWith('bet', expect.anything());
   });
 
   it('プレイフェーズではヒットとスタンドを出す', async () => {

@@ -381,6 +381,7 @@ function BostonPageContent() {
                   <button
                     key={`hand-${c.design}-${c.value}-${i}`}
                     type="button"
+                    aria-pressed={selected === i}
                     data-hint-action="play"
                     onClick={() => setSelected(i)}
                     disabled={loading || (isPlay && !canPlay(i))}

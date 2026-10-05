@@ -171,7 +171,7 @@ func TestMaoCuiPresenter_ActionLogOutput(t *testing.T) {
 	entries := []*domain.ActionLogEntry{
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	}
-	m.On("GetGameEndFlag").Return(true)
+	m.On("GetGameEndFlag").Return(false)
 	m.On("GetActionLog").Return(entries)
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewMaoPlayer(true)).Maybe()

@@ -203,7 +203,8 @@ function SkatPageContent() {
             {/* Round / declarer / game info */}
             <div className="bg-black/30 text-ds-text-primary p-3 rounded space-y-1 text-sm">
               <div>
-                {t('round')}: {state.roundNumber} | {t('dealer')}: CPU {state.dealerIdx} | {t('currentBid')}:{' '}
+                {t('round')}: {state.roundNumber} | {t('dealer')}:{' '}
+                {state.players[state.dealerIdx]?.isHuman ? t('you') : `CPU ${state.dealerIdx}`} | {t('currentBid')}:{' '}
                 {state.currentBid}
               </div>
               {isBid &&

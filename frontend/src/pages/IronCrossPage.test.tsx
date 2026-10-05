@@ -582,6 +582,22 @@ describe('IronCrossPage', () => {
     await waitFor(() => expect(screen.getByTestId('ic-call')).toBeInTheDocument());
     expect(screen.queryByTestId('ic-check')).not.toBeInTheDocument();
     expect(screen.getByTestId('ic-raise')).toBeInTheDocument();
+    expect(screen.getByTestId('ic-pot-odds')).toHaveTextContent('必要勝率の目安: 33%');
+  });
+
+  it('チェック可能時と列選択中は必要勝率を表示しない', async () => {
+    mockApi.mockResolvedValue(base);
+    const { unmount } = renderWithProviders(<IronCrossPage />);
+    await waitFor(() => expect(screen.getByTestId('ic-check')).toBeInTheDocument());
+    expect(screen.queryByTestId('ic-pot-odds')).not.toBeInTheDocument();
+    unmount();
+
+    mockApi.mockResolvedValue(
+      withState({ phase: IronCrossPhase.CHOOSE_LINE, isChoosing: true, isHumanTurn: false, toCall: 20 }),
+    );
+    renderWithProviders(<IronCrossPage />);
+    await waitFor(() => expect(screen.getByTestId('ic-choose-guide')).toBeInTheDocument());
+    expect(screen.queryByTestId('ic-pot-odds')).not.toBeInTheDocument();
   });
 
   // **レイズの可否はサーバが決める。** 上限に達したら出さない。

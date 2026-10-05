@@ -332,6 +332,37 @@ describe('BourrePage', () => {
     });
   });
 
+  it('play phase: announces legal and illegal cards by name on the human turn', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'play',
+        currentPlayerIdx: 0,
+        validPlays: [0],
+        players: [
+          player({
+            id: 0,
+            isHuman: true,
+            cards: [
+              { design: 'SPADE', value: 9 },
+              { design: 'CLOVER', value: 5 },
+            ],
+          }),
+          player({ id: 1 }),
+          player({ id: 2 }),
+          player({ id: 3 }),
+          player({ id: 4 }),
+        ],
+      }),
+    );
+    renderWithProviders(<BourrePage />);
+    const legalCard = await screen.findByRole('button', { name: '♠ 9。出せる札' });
+    const illegalCard = screen.getByRole('button', { name: '♣ 5。出せない札' });
+    expect(legalCard).toBeInTheDocument();
+    expect(illegalCard).toBeInTheDocument();
+    expect(legalCard).toBeEnabled();
+    expect(illegalCard).toBeDisabled();
+  });
+
   it('roundEnd phase: next hand button dispatches next', async () => {
     mockExec.mockResolvedValue(
       makeState({

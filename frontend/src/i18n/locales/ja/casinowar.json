@@ -5,6 +5,10 @@
   "warTieRule": "ウォーで再びタイになった場合はプレイヤーの勝利になります",
   "warCost": "ウォー = 追加 {{amount}} チップ",
   "insufficientChips": "チップが足りません",
+  "betUnavailable": "ベットには10チップ以上必要です",
+  "betTooSmall": "ベット額は10チップ以上にしてください",
+  "betNotMultiple": "ベット額は10チップ単位で入力してください",
+  "betExceedsChips": "ベット額がチップ残高を超えています",
   "previousBet": "前回額を使う ({{amount}})",
   "label": {
     "chips": "チップ",

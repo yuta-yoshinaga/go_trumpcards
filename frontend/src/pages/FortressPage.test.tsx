@@ -449,8 +449,8 @@ describe('FortressPage destination preview', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
     // **同じ要素**の中身が変わる (別の要素が現れるのではない) ことが読み上げの条件。
-    await waitFor(() => expect(region).toHaveTextContent(/→/));
-    expect(region.textContent).toBe('ヒントがあります: タブロー列1 → 組札');
+    await waitFor(() => expect(region).toHaveTextContent(/ヒント:/));
+    expect(region.textContent).toBe('ヒント: ♠ 6をタブロー列1から組札へ移動');
   });
 
   describe('hint card highlighting', () => {
@@ -465,7 +465,7 @@ describe('FortressPage destination preview', () => {
       await screen.findByRole('button', { name: /^♠ 5、/ });
       mockExec.mockResolvedValue(hintedState);
       fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
-      await waitFor(() => expect(screen.getByTestId('fortress-hint-live')).toHaveTextContent(/→/));
+      await waitFor(() => expect(screen.getByTestId('fortress-hint-live')).toHaveTextContent(/ヒント:/));
     };
 
     it('marks the hinted source card and the last card in the hinted tableau destination', async () => {

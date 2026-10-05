@@ -240,6 +240,22 @@ function TrenteEtQuarantePageContent() {
                     {state.result > 0 ? t('result.win') : state.result < 0 ? t('result.lose') : ''}
                   </div>
                 )}
+                {!state.refait &&
+                  (state.currentBet === TrenteEtQuaranteBetType.COULEUR ||
+                    state.currentBet === TrenteEtQuaranteBetType.INVERSE) &&
+                  state.winningRow !== TrenteEtQuaranteWinningRow.NONE && (
+                    <div data-testid="teq-color-result">
+                      {t('result.colorExplanation', {
+                        firstColor: state.firstCardRed ? t('label.red') : t('label.black'),
+                        winningColor:
+                          state.winningRow === TrenteEtQuaranteWinningRow.ROUGE ? t('label.red') : t('label.black'),
+                        matchResult:
+                          state.firstCardRed === (state.winningRow === TrenteEtQuaranteWinningRow.ROUGE)
+                            ? t('result.colorMatch')
+                            : t('result.colorMismatch'),
+                      })}
+                    </div>
+                  )}
                 {!state.refait && state.winningRow !== TrenteEtQuaranteWinningRow.NONE && (
                   <div className="text-ds-success" data-testid="teq-margin">
                     {(() => {

@@ -23,6 +23,7 @@ import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { JassPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitName } from '../utils/cardUtils';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -151,6 +152,14 @@ function JassPageContent() {
   const humanIdx = state.players.findIndex((p) => p.isHuman);
   const isHumanBidTurn = (isBidTrump || isBidPartner) && state.bidPlayerIdx === humanIdx;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const trumpDesign = suitName(state.trumpSuit);
+  const trumpIndices =
+    isPlayPhase && humanPlayer && trumpDesign
+      ? humanPlayer.cards.reduce<number[]>((indices, card, index) => {
+          if (card.design === trumpDesign) indices.push(index);
+          return indices;
+        }, [])
+      : [];
 
   return (
     <GamePageShell
@@ -413,6 +422,9 @@ function JassPageContent() {
               cardWidth={cardWidth}
               isMobile={isMobile}
               dataTutorialPrefix="ja"
+              trumpIndices={trumpIndices}
+              trumpTitle={t('trumpCard')}
+              trumpAccessibleLabel={t('trumpCard')}
               validIndices={isHumanTurn ? state.validPlayIndices : undefined}
               cardStatusFor={
                 isHumanTurn

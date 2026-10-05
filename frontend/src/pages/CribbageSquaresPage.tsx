@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cribbagesquaresApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -101,6 +101,7 @@ function CribbageSquaresPageContent() {
   } = useGamePageSetup('cribbagesquares');
   const { cardWidth } = useCardDimensions();
   const [placementAnnouncement, setPlacementAnnouncement] = useState('');
+  const previousStateRef = useRef<CribbageSquaresResponse | null>(null);
   const {
     state,
     loading,
@@ -109,6 +110,35 @@ function CribbageSquaresPageContent() {
     retry,
   } = useGameApi(cribbagesquaresApi.exec, {
     onSuccess: (result, [command, row, col]) => {
+      if (command === 'undo') {
+        const previous = previousStateRef.current as CribbageSquaresResponse;
+        const undoneCell = previous.board
+          .flatMap((cells, r) =>
+            cells.map((cell, c) => (cell.card && !result.board[r][c].card ? { row: r, col: c } : null)),
+          )
+          .find((cell) => cell !== null);
+        if (!undoneCell) return;
+        const { row, col } = undoneCell;
+        const rowDetail = result.rowPartialDetails[row];
+        const colDetail = result.colPartialDetails[col];
+        const breakdownLabel = (key: string, n: number) => t(`part.${key}`, { n });
+        const rowParts =
+          cribbageBreakdownParts(rowDetail, breakdownLabel).join(t('listSeparator')) || t('noScoredParts');
+        const colParts =
+          cribbageBreakdownParts(colDetail, breakdownLabel).join(t('listSeparator')) || t('noScoredParts');
+        setPlacementAnnouncement(
+          t('undoAnnouncementPartial', {
+            rowNo: row + 1,
+            colNo: col + 1,
+            rowScore: rowDetail.total,
+            rowParts,
+            colScore: colDetail.total,
+            colParts,
+            total: rowDetail.total + colDetail.total,
+          }),
+        );
+        return;
+      }
       if (command !== 'place' || typeof row !== 'number' || typeof col !== 'number') return;
       if (!result.board[row]?.[col]?.card) return;
       const isComplete = result.phase === CribbageSquaresPhase.COMPLETE;
@@ -132,6 +162,7 @@ function CribbageSquaresPageContent() {
       );
     },
   });
+  previousStateRef.current = state;
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,

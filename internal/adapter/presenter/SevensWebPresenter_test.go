@@ -578,7 +578,6 @@ func TestSevensWebPresenter_ActionLogOutput(t *testing.T) {
 		entries := []*domain.ActionLogEntry{
 			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}, Cards: []*domain.Card{domain.NewCard(domain.CardDesignHeart, 7, true)}},
 		}
-		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
 
 		result := p.ActionLogOutput(mockGame)
@@ -590,7 +589,6 @@ func TestSevensWebPresenter_ActionLogOutput(t *testing.T) {
 
 	t.Run("nil_entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockSevensGame)
-		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 
 		result := p.ActionLogOutput(mockGame)
@@ -601,11 +599,12 @@ func TestSevensWebPresenter_ActionLogOutput(t *testing.T) {
 
 	t.Run("game_not_ended", func(t *testing.T) {
 		mockGame := new(interfaces.MockSevensGame)
-		mockGame.On("GetGameEndFlag").Return(false)
+		entries := []*domain.ActionLogEntry{{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub"}}
+		mockGame.On("GetActionLog").Return(entries)
 
 		result := p.ActionLogOutput(mockGame)
 
-		assert.Contains(t, result, `"entries":[]`)
+		assert.Contains(t, result, `"actionType":"play"`)
 		mockGame.AssertExpectations(t)
 	})
 }

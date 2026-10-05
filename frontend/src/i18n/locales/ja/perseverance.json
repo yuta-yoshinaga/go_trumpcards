@@ -54,6 +54,8 @@
     "games": "クリア回数: {{count}}",
     "clearRate": "クリア率: {{rate}}%",
     "moves": "合計手数: {{count}}",
+    "minMoves": "最少クリア手数: {{count}}",
+    "unrecorded": "未記録",
     "redeals": "クリア時の残り再配り回数: {{count}}",
     "clear": "成績を消去"
   }

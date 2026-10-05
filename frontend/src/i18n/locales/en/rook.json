@@ -28,7 +28,7 @@
   "trickEmpty": "(no cards yet)",
   "listSeparator": ", ",
   "bidStatus": {
-    "highest": "Highest bid: {{value}}",
+    "highest": "Highest bid: {{value}} ({{name}})",
     "highestNone": "Highest bid: undecided",
     "remaining": "Active bidders: {{n}}",
     "passed": "Passed: {{n}} ({{names}})"

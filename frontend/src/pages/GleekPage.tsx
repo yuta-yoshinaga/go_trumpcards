@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { gleekApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -28,6 +29,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { GleekResponse } from '../types/card';
 import { GleekPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { GLEEK_HELP, parseGleekCommand } from '../utils/cli/commands/gleekCommands';
 import { formatGleekState } from '../utils/cli/formatters/gleekFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -274,6 +276,15 @@ function GleekPageContent() {
 
               {/* Right: info sidebar */}
               <div data-tutorial="gleek-info">
+                {state.turnUp && (
+                  <div className="mb-2 p-2 rounded bg-ds-surface flex items-center gap-3" data-testid="gleek-turn-up">
+                    <CardImage card={state.turnUp} width={56} />
+                    <div className="text-sm">
+                      <div className="text-ds-text-primary">{t('turnUp', { card: cardAlt(state.turnUp) })}</div>
+                      <div className="text-ds-text-muted">{t('turnUpDescription')}</div>
+                    </div>
+                  </div>
+                )}
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
                   {state.players.map((p) => (
                     <div

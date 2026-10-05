@@ -147,6 +147,22 @@ describe('SpoonsPage', () => {
     expect(screen.getByTestId('spoons-icon-row')).toHaveAttribute('aria-label', '残りスプーン: 3');
   });
 
+  it('tutorial explains elimination and the last-player win condition', async () => {
+    renderWithProviders(<SpoonsPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'チュートリアル' }));
+    expect(await screen.findByRole('dialog')).toHaveTextContent(
+      'ラウンド数・残りスプーン数・山札の枚数がここに表示されます。',
+    );
+    fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    expect(await screen.findByRole('dialog')).toHaveTextContent('各プレイヤーの文字');
+    fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    expect(await screen.findByRole('dialog')).toHaveTextContent(
+      '文字が6つ揃うと脱落します。最後まで残ったプレイヤーが勝者です。',
+    );
+    fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    expect(await screen.findByRole('dialog')).toHaveTextContent('あなたの4枚の手札');
+  });
+
   it('shows grabbed spoons grayed out with the grabber name', async () => {
     // One CPU grabbed a spoon: 2 remaining + 1 grabbed = 3 spoons in play.
     mockExec.mockResolvedValue(

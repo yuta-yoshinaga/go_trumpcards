@@ -237,10 +237,21 @@ function CuarentaPageContent() {
     if (a.isLimpia) badges.push(t('limpia'));
     const captured = a.capturedCards.length;
     return (
-      <div key={`act-${a.playerIdx}`} className="text-sm text-ds-text-muted flex items-center gap-2 flex-wrap py-0.5">
+      <div
+        key={`act-${a.playerIdx}`}
+        data-testid={`cuarenta-action-${a.playerIdx}`}
+        className="text-sm text-ds-text-muted flex items-center gap-2 flex-wrap py-0.5"
+      >
         <span className="font-semibold text-ds-text-primary">{playerLabel(a.playerIdx, a.playerIdx === 0)}</span>
         {a.playedCard && <CardImage card={a.playedCard} width={Math.round(cardWidth * 0.6)} />}
         <span>{captured > 0 ? t('captured', { count: captured }) : t('laidDown')}</span>
+        {a.capturedCards.map((capturedCard, index) => (
+          <CardImage
+            key={`${capturedCard.design}-${capturedCard.value}-${index}`}
+            card={capturedCard}
+            width={Math.round(cardWidth * 0.45)}
+          />
+        ))}
         {badges.map((b) => (
           <span
             key={b}

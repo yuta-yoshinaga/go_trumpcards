@@ -27,7 +27,7 @@ import { badgeErrorColors } from '../styles/badgeStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, PigsTailResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
-import { isSuitDesign, suitSymbol } from '../utils/cardAlt';
+import { cardAlt, isSuitDesign, suitSymbol } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { parsePigtailCommand, pigtailHelp } from '../utils/cli/commands/pigtailCommands';
 import { formatPigtailState } from '../utils/cli/formatters/pigtailFormatter';
@@ -149,7 +149,40 @@ function PigsTailPageContent() {
   }, [penaltyFlash]);
 
   if (!state)
-    return <GameSkeleton gameKey="pigtail" layout={{ kind: 'centered', rows: [2], shape: 'circle', bars: 4 }} />;
+    return (
+      <>
+        <div role="status" aria-live="polite" className="sr-only" data-testid="pigtail-action-announcement" />
+        <GameSkeleton gameKey="pigtail" layout={{ kind: 'centered', rows: [2], shape: 'circle', bars: 4 }} />
+      </>
+    );
+
+  const announcement = state.humanAction
+    ? t('announcement.summary', {
+        human: t('announcement.action', {
+          player: playerName(state.humanAction.drawPlayerIdx, true),
+          card: state.humanAction.drawnCard ? cardAlt(state.humanAction.drawnCard) : '?',
+          result: state.humanAction.penaltyFlag
+            ? t('announcement.penalty', { count: state.humanAction.penaltyCount })
+            : t('announcement.safe'),
+        }),
+        cpu:
+          state.cpuActions.length > 0
+            ? t('announcement.cpuPrefix', {
+                cpu: state.cpuActions
+                  .map((action) =>
+                    t('announcement.action', {
+                      player: playerName(action.drawPlayerIdx, false),
+                      card: action.drawnCard ? cardAlt(action.drawnCard) : '?',
+                      result: action.penaltyFlag
+                        ? t('announcement.penalty', { count: action.penaltyCount })
+                        : t('announcement.safe'),
+                    }),
+                  )
+                  .join(t('listSeparator')),
+              })
+            : '',
+      })
+    : '';
 
   const isGameEnd = state.gameEndFlag;
   const isHumanTurn = !isGameEnd && state.players[state.currentTurn]?.isHuman === true;
@@ -173,6 +206,9 @@ function PigsTailPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div role="status" aria-live="polite" className="sr-only" data-testid="pigtail-action-announcement">
+        {announcement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
