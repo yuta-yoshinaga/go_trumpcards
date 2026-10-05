@@ -551,6 +551,7 @@ describe('OmiPage', () => {
       expect(screen.getByText(/8トリック全取り/)).toBeInTheDocument();
       // 4-4 → 0 points
       expect(screen.getByText(/4-4/)).toBeInTheDocument();
+      expect(screen.getByText('10点先取で勝利')).toBeInTheDocument();
     });
   });
 
