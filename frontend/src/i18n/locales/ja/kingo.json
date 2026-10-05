@@ -13,6 +13,7 @@
   "label.bankerBetExcluded": "親はベット対象外です",
   "label.dealPrompt": "子の張りが出そろいました。配ってください",
   "label.won": "{{amount}}",
+  "label.noChange": "増減なし",
   "label.winner": "勝者",
   "label.noCards": "配る前です",
   "rank.arashi": "嵐",

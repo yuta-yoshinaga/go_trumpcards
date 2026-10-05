@@ -11,6 +11,7 @@
   "betPrompt": "Place a bet ({{min}} or more, in steps of 10)",
   "dealPrompt": "You hold the bank. The bets are in — deal to continue",
   "wonLine": "{{name}}: {{amount}}",
+  "noChangeLine": "{{name}}: no change",
   "gameEndLine": "Winner: {{name}}",
   "rank.arashi": "arashi (three alike)",
   "rank.pair": "pair",

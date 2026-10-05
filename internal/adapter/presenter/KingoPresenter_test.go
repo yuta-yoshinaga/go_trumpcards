@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
@@ -87,6 +88,23 @@ func TestKingoCuiPresenter_ShowsNoHandsBeforeTheDeal(t *testing.T) {
 		}
 	}
 	assert.True(t, shown, "決着後に役が出ていない")
+}
+
+func TestKingoCuiPresenter_ShowsZeroChipChange(t *testing.T) {
+	cp := new(KingoCuiPresenter)
+	players := []*domain.KingoPlayer{domain.NewKingoPlayer("YOU", 1000, true)}
+	g := new(interfaces.MockKingoGame)
+	g.On("GetConfig").Return(domain.KingoConfig{Rounds: 4}).Once()
+	g.On("GetPhase").Return(domain.KingoPhaseResult)
+	g.On("GetPlayers").Return(players)
+	g.On("GetBankerSeat").Return(0)
+	g.On("GetRoundNumber").Return(1).Once()
+	g.On("GetGameEndFlag").Return(false).Twice()
+	g.On("GetResults").Return([]domain.KingoResult{{PlayerIdx: 0, WonAmount: 0}}).Once()
+
+	out := cp.Output(g, nil)
+	assert.Contains(t, out, "YOU: 増減なし")
+	g.AssertExpectations(t)
 }
 
 func kingoRankLabel(r domain.KingoRank) string {
