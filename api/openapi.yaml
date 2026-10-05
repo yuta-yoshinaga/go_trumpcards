@@ -35080,6 +35080,8 @@ components:
           type: integer
         canUndo:
           type: boolean
+        canRedo:
+          type: boolean
         isStalemate:
           type: boolean
         undoToEscape:

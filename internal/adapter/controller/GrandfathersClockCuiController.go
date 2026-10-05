@@ -28,7 +28,7 @@ func (c *GrandfathersClockCuiController) Exec(command string) string {
 		func(_ []string) string {
 			return c.gi.Reset()
 		},
-		[]string{"m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
+		[]string{"m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo", "redo"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "m", "move":
@@ -39,6 +39,8 @@ func (c *GrandfathersClockCuiController) Exec(command string) string {
 				return c.gi.AutoComplete(), true
 			case "u", "undo":
 				return c.gi.Undo(), true
+			case "redo":
+				return c.gi.Redo(), true
 			default:
 				return handleCuiHintAndLog(cmd, c.gi.Hint, c.gi.ActionLog)
 			}

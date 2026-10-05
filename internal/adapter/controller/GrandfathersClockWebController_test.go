@@ -39,6 +39,7 @@ func TestGrandfathersClockWebController_Method(t *testing.T) {
 	giMock.On("MoveTableauToTableau", 0, 5).Return(mockOutput)
 	giMock.On("Undo").Return(mockOutput)
 	giMock.On("UndoN", 2).Return(mockOutput)
+	giMock.On("Redo").Return(mockOutput)
 
 	ctrl := controller.NewGrandfathersClockWebController(func() uc.GrandfathersClockInteractorIF { return giMock })
 	defer ctrl.Stop()
@@ -62,6 +63,7 @@ func TestGrandfathersClockWebController_Method(t *testing.T) {
 		{"hint h", `{"command":"h","sessionId":"s1"}`},
 		{"autocomplete ac", `{"command":"ac","sessionId":"s1"}`},
 		{"undo u", `{"command":"u","sessionId":"s1"}`},
+		{"redo", `{"command":"redo","sessionId":"s1"}`},
 		{"undo_n", `{"command":"undo_n","sessionId":"s1","n":2}`},
 		{"log", `{"command":"log","sessionId":"s1"}`},
 		{"tableau to tableau", `{"command":"m","sessionId":"s1","from":{"zone":"tableau","col":0},"to":{"zone":"tableau","col":5}}`},

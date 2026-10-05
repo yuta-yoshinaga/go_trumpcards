@@ -9,6 +9,7 @@ function makeState(overrides?: Partial<GrandfathersClockResponse>): Grandfathers
     phase: 0,
     moveCount: 0,
     canUndo: false,
+    canRedo: false,
     isStalemate: false,
     message: '',
     ...overrides,

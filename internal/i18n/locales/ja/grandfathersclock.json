@@ -6,6 +6,7 @@
   "helpHint": "  h                    ヒント",
   "helpAutoComplete": "  ac                   オートコンプリート",
   "helpUndo": "  u                    1手戻す",
+  "helpRedo": "  redo                 1手やり直す",
   "promptToZone": "移動先を入力してください (列番号, または f=文字盤):",
   "promptFaceIdx": "文字盤の番号 (0..11) を入力してください:",
   "invalidFaceIdx": "無効な文字盤番号です: {{val}}",
