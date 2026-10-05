@@ -191,6 +191,21 @@ func TestGanjifaWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, map[string]string{"player": "1"}, resObj.MessageParams)
 	})
 
+	t.Run("game end is a draw", func(t *testing.T) {
+		m, _ := setupGanjifaWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerPlayer")
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetWinnerPlayer").Return(-1)
+		result := p.Output(m, nil)
+		var resObj controller.GanjifaWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, "ganjifa.result.draw", resObj.MessageCode)
+		assert.Empty(t, resObj.MessageParams)
+		assert.NotContains(t, resObj.Message, "CPU")
+		assert.NotContains(t, resObj.Message, "-1")
+	})
+
 	t.Run("player scores propagated to players", func(t *testing.T) {
 		m, _ := setupGanjifaWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayerScores")

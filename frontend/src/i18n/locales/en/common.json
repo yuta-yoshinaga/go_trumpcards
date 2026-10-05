@@ -2409,6 +2409,7 @@
     "ganjifa.errFollowLeadSuit": "You must follow the lead suit.",
     "ganjifa.playPhase.lead": "Your turn — choose a card to lead.",
     "ganjifa.result.cpuWin": "Game over! Player {{player}} wins.",
+    "ganjifa.result.draw": "Game over! It's a draw!",
     "ganjifa.result.humanWin": "Game over! You win!",
     "ganjifa.roundEnd": "Round over — continue to the next round.",
     "ganjifa.trickEnd": "Trick over — continue to the next one.",
