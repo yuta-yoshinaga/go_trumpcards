@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { toepenApi } from '../api/gameApi';
+import { actionLogApi, toepenApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, ToepenPlayer, ToepenResponse } from '../types/card';
@@ -14,6 +14,7 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(toepenApi.exec);
+const mockActionLog = vi.mocked(actionLogApi.toepen);
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
@@ -81,6 +82,27 @@ describe('ToepenPage', () => {
   it('resets on mount', async () => {
     renderWithProviders(<ToepenPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('opens and closes the action log at hand end and restores focus to its trigger', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: ToepenPhase.HAND_END, lastTrickWinner: 2 }));
+    mockActionLog.mockResolvedValue({ entries: [] });
+    renderWithProviders(<ToepenPage />);
+
+    const trigger = await screen.findByRole('button', { name: '棋譜を見る' });
+    trigger.focus();
+    fireEvent.click(trigger);
+
+    expect(await screen.findByText('棋譜はありません。')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '閉じる' }));
+    expect(screen.getByRole('button', { name: '棋譜を見る' })).toHaveFocus();
+  });
+
+  it('keeps the action log available after the game ends', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: ToepenPhase.GAME_END, gameEndFlag: true }));
+    renderWithProviders(<ToepenPage />);
+
+    expect(await screen.findByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
   });
 
   it('shows the inverted ranking permanently', async () => {
