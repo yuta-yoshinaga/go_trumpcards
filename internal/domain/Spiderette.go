@@ -82,8 +82,7 @@ type spideretteSnapshot struct {
 	moveCount      int
 	score          int
 	isStalemate    bool
-	// actionLogLen は、アンドゥ時にログを取り消し前の長さへ切り詰めるための
-	// マーカー (#1676 review)。
+	// actionLogLen は、アンドゥ時に使うログの累積 mark。
 	actionLogLen int
 }
 
@@ -533,7 +532,7 @@ func (s *Spiderette) takeSnapshot() {
 		moveCount:      s.moveCount,
 		score:          s.score,
 		isStalemate:    s.isStalemate,
-		actionLogLen:   len(s.actionLog),
+		actionLogLen:   s.actionLogMark(),
 	}
 	for i := range SpideretteTableauCnt {
 		snap.tableau[i] = make([]*SpideretteTableauCard, len(s.tableau[i]))
@@ -555,9 +554,7 @@ func (s *Spiderette) restoreSnapshot(snap *spideretteSnapshot) {
 	s.moveCount = snap.moveCount
 	s.score = snap.score
 	s.isStalemate = snap.isStalemate
-	if snap.actionLogLen >= 0 && snap.actionLogLen <= len(s.actionLog) {
-		s.actionLog = s.actionLog[:snap.actionLogLen]
-	}
+	s.truncateActionLog(snap.actionLogLen)
 }
 
 // appendLog 棋譜エントリを追加
@@ -567,16 +564,17 @@ func (s *Spiderette) appendLog(actionType, detailCode string, detailParams map[s
 
 // spideretteJSON is the JSON wire format for Spiderette.
 type spideretteJSON struct {
-	TrumpCards     *TrumpCards                                    `json:"tc"`
-	Tableau        [SpideretteTableauCnt][]*SpideretteTableauCard `json:"tb"`
-	Stock          []*Card                                        `json:"st"`
-	CompletedSuits int                                            `json:"cs"`
-	Phase          SpiderettePhase                                `json:"ps"`
-	MoveCount      int                                            `json:"mc"`
-	Score          int                                            `json:"sc"`
-	ActionLog      []*ActionLogEntry                              `json:"al"`
-	IsStalemate    bool                                           `json:"sm"`
-	History        []*spideretteSnapshot                          `json:"hi,omitempty"`
+	TrumpCards       *TrumpCards                                    `json:"tc"`
+	Tableau          [SpideretteTableauCnt][]*SpideretteTableauCard `json:"tb"`
+	Stock            []*Card                                        `json:"st"`
+	CompletedSuits   int                                            `json:"cs"`
+	Phase            SpiderettePhase                                `json:"ps"`
+	MoveCount        int                                            `json:"mc"`
+	Score            int                                            `json:"sc"`
+	ActionLog        []*ActionLogEntry                              `json:"al"`
+	ActionLogDropped int                                            `json:"actionLogDropped,omitempty"`
+	IsStalemate      bool                                           `json:"sm"`
+	History          []*spideretteSnapshot                          `json:"hi,omitempty"`
 }
 
 // spideretteSnapshotJSON is the wire format for a single undo snapshot.
@@ -636,16 +634,17 @@ func (s *spideretteSnapshot) UnmarshalJSON(data []byte) error {
 // MarshalJSON implements json.Marshaler.
 func (s *Spiderette) MarshalJSON() ([]byte, error) {
 	return json.Marshal(spideretteJSON{
-		TrumpCards:     s.trumpCards,
-		Tableau:        s.tableau,
-		Stock:          s.stock,
-		CompletedSuits: s.completedSuits,
-		Phase:          s.phase,
-		MoveCount:      s.moveCount,
-		Score:          s.score,
-		ActionLog:      s.actionLog,
-		IsStalemate:    s.isStalemate,
-		History:        s.history,
+		TrumpCards:       s.trumpCards,
+		Tableau:          s.tableau,
+		Stock:            s.stock,
+		CompletedSuits:   s.completedSuits,
+		Phase:            s.phase,
+		MoveCount:        s.moveCount,
+		Score:            s.score,
+		ActionLog:        s.actionLog,
+		ActionLogDropped: s.dropped,
+		IsStalemate:      s.isStalemate,
+		History:          s.history,
 	})
 }
 
@@ -682,6 +681,7 @@ func (s *Spiderette) UnmarshalJSON(data []byte) error {
 	s.moveCount = j.MoveCount
 	s.score = j.Score
 	s.actionLog = j.ActionLog
+	s.dropped = max(0, j.ActionLogDropped)
 	if s.actionLog == nil {
 		s.actionLog = make([]*ActionLogEntry, 0)
 	}

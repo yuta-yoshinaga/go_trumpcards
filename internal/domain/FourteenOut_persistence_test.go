@@ -114,7 +114,7 @@ func TestFourteenOut_RejectsOversizedHistory(t *testing.T) {
 
 func TestFourteenOut_RejectsSnapshotActionLogLnOutOfRange(t *testing.T) {
 	t.Parallel()
-	for _, payload := range []string{`{"ll":-1}`, `{"ll":100000}`} {
+	for _, payload := range []string{`{"ll":-1}`} {
 		var s fourteenOutSnapshot
 		assert.Error(t, json.Unmarshal([]byte(payload), &s), "payload %s", payload)
 	}

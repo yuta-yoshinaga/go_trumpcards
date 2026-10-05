@@ -540,5 +540,5 @@ func TestDoubleAttack_ActionLogIsBounded(t *testing.T) {
 	for range doubleAttackMaxSliceLen + 50 {
 		g.appendLog("noise", "x", nil, nil)
 	}
-	assert.Len(t, g.GetActionLog(), doubleAttackMaxSliceLen)
+	assert.Len(t, g.GetActionLog(), MaxActionLog)
 }

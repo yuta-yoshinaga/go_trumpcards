@@ -144,10 +144,9 @@ func TestPokerSquares_SnapshotExcessiveDeckDrawCntRejected(t *testing.T) {
 	require.Error(t, err, "excessive deckDrawCnt must be rejected")
 }
 
-// TestPokerSquares_SnapshotExcessiveActionLogLnRejected rejects snapshots with
-// ActionLogLn > pokerSquaresMaxSliceLen, consistent with the maxSliceLen
-// defence used across the codebase.
-func TestPokerSquares_SnapshotExcessiveActionLogLnRejected(t *testing.T) {
+// TestPokerSquares_SnapshotLargeActionLogMarkAccepted accepts snapshots with
+// ActionLogLn above the action-log cap because it is an absolute undo mark.
+func TestPokerSquares_SnapshotLargeActionLogMarkAccepted(t *testing.T) {
 	t.Parallel()
 
 	payload := map[string]any{
@@ -159,5 +158,5 @@ func TestPokerSquares_SnapshotExcessiveActionLogLnRejected(t *testing.T) {
 
 	var restored PokerSquares
 	err = json.Unmarshal(data, &restored)
-	require.Error(t, err, "excessive actionLogLn must be rejected")
+	require.NoError(t, err, "large actionLogLn marks are valid")
 }
