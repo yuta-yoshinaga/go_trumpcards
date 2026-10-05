@@ -35,6 +35,13 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
+function getUnplayableReason(bidding: boolean, handOver: boolean, ended: boolean): string {
+  if (bidding) return 'cardReason.bidding';
+  if (handOver) return 'cardReason.handEnd';
+  if (ended) return 'cardReason.gameEnd';
+  return 'cardReason.follow';
+}
+
 const SJ_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="sj-rule"]', messageKey: 'tutorial.trumps', placement: 'bottom', advanceOn: 'next' },
   { target: '[data-tutorial="sj-bid"]', messageKey: 'tutorial.bid', placement: 'top', advanceOn: 'next' },
@@ -87,6 +94,10 @@ function SjavsPageContent() {
   // this game "trump" is not the same thing as "a card of the trump suit".
   const playable = new Set(state.validIndices);
   const trumps = new Set(state.trumpIndices);
+  const unplayableReason = getUnplayableReason(bidding, handOver, ended);
+  const reasonApplies = bidding || handOver || ended || isHumanTurn;
+  const hasUnplayableCard = (human?.cards ?? []).some((_, i) => !isHumanTurn || bidding || !playable.has(i));
+  const unplayableReasonId = `sjavs-${unplayableReason.slice('cardReason.'.length)}-reason`;
 
   // Every length the human can legally bid. Below minBid you must pass, and you
   // can never bid more than you hold.
@@ -238,6 +249,7 @@ function SjavsPageContent() {
                       // Kept focusable while it cannot act so the reason is
                       // announced rather than the control leaving the tab order.
                       aria-disabled={!canPlay}
+                      aria-describedby={!canPlay && reasonApplies ? unplayableReasonId : undefined}
                       onClick={() => canPlay && game.handlePlay(i)}
                       className={[
                         'rounded transition-transform',
@@ -262,6 +274,11 @@ function SjavsPageContent() {
                   );
                 })}
               </div>
+              {reasonApplies && hasUnplayableCard ? (
+                <span id={unplayableReasonId} className="sr-only">
+                  {t(unplayableReason)}
+                </span>
+              ) : null}
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>
 
