@@ -85,6 +85,16 @@ function CasinoWarPageContent() {
   const isBetPhase = state?.phase === CasinoWarPhase.BET;
   const isTieDecision = state?.phase === CasinoWarPhase.TIE_DECISION;
   const isEndPhase = state?.phase === CasinoWarPhase.END;
+  const betUnavailableReason =
+    state === null || state.chips < 10
+      ? 'betUnavailable'
+      : betAmount < 10
+        ? 'betTooSmall'
+        : betAmount % 10 !== 0
+          ? 'betNotMultiple'
+          : betAmount > state.chips
+            ? 'betExceedsChips'
+            : null;
 
   // Client-side win/loss history persisted in localStorage.
   const { history, tally, cumulativeNetChange, recordOutcome, clearHistory } = useCasinoWarStats();
@@ -107,9 +117,10 @@ function CasinoWarPageContent() {
   }, [phase, result, netChange, recordOutcome]);
 
   const handleBet = useCallback(() => {
+    if (betUnavailableReason !== null) return;
     setLastBetAmount(betAmount);
     execApi('bet', betAmount);
-  }, [execApi, betAmount]);
+  }, [betAmount, betUnavailableReason, execApi]);
   const handleSurrender = useCallback(() => execApi('surrender'), [execApi]);
   const handleWar = useCallback(() => execApi('war'), [execApi]);
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
@@ -329,6 +340,7 @@ function CasinoWarPageContent() {
                   value={betAmount}
                   onChange={setBetAmount}
                   max={state.chips}
+                  autoClamp={false}
                 />
                 {canRebet && lastBetAmount !== null && lastBetAmount !== betAmount && (
                   <button
@@ -343,14 +355,19 @@ function CasinoWarPageContent() {
                 )}
                 <button
                   type="button"
-                  className={btnPrimary}
+                  className={`${btnPrimary} ${betUnavailableReason !== null ? 'opacity-40 cursor-not-allowed' : ''}`}
                   onClick={handleBet}
                   disabled={loading}
+                  aria-disabled={betUnavailableReason !== null || undefined}
+                  aria-describedby={betUnavailableReason !== null ? 'cw-bet-unavailable' : undefined}
                   aria-keyshortcuts="b"
                 >
                   {t('button.bet')}
                   <KbdBadge label={t('kbd.bet')} />
                 </button>
+                <p id="cw-bet-unavailable" className="text-ds-text-muted text-sm">
+                  {betUnavailableReason !== null ? t(betUnavailableReason) : ''}
+                </p>
               </div>
             )}
             {isTieDecision && (
