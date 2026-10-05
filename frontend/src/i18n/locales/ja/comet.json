@@ -12,7 +12,8 @@
     "targetScore": "目標点",
     "easy": "Easy",
     "normal": "Normal",
-    "hard": "Hard"
+    "hard": "Hard",
+    "pendingChanges": "変更した設定は次のゲームで適用されます。現在の対局には影響しません。"
   },
   "round": "局 {{n}}（{{target}} 点勝負）",
   "dead": "伏せた死に手: {{n}} 枚",
