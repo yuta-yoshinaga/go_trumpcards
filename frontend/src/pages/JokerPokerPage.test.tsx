@@ -114,6 +114,20 @@ beforeEach(() => {
 });
 
 describe('JokerPokerPage', () => {
+  it('renders localized session stats and payout count labels', async () => {
+    localStorage.setItem(
+      'vp_stats_jokerpoker',
+      JSON.stringify({ hands: 2, wins: 1, totalBet: 2, totalPayout: 40, handCounts: { fullHouse: 1 } }),
+    );
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<JokerPokerPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByTestId('vp-stats-summary')).toHaveTextContent('2 ハンド / 勝率 50% / 収支 +38');
+    expect(screen.getByTestId('vp-stats-clear')).toHaveTextContent('統計クリア');
+    expect(screen.getByRole('columnheader', { name: '回数' })).toBeInTheDocument();
+  });
+
   it('calls reset on mount and renders bet phase', async () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderWithProviders(<JokerPokerPage />);

@@ -32,6 +32,7 @@
   "payoutTable": {
     "title": "Payout Table",
     "hand": "Hand",
+    "count": "Hits",
     "name": {
       "naturalRoyalFlush": "Natural Royal Flush",
       "fiveOfAKind": "Five of a Kind",
@@ -45,6 +46,11 @@
       "twoPair": "Two Pair",
       "kingsOrBetter": "Kings or Better"
     }
+  },
+  "stats": {
+    "summary": "{{hands}} hands / win rate {{winRate}}% / net {{net}}",
+    "empty": "No hands played yet",
+    "clear": "Clear stats"
   },
   "madeHand": {
     "label": "Current hand",
