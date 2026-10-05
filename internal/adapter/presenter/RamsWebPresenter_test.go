@@ -39,6 +39,8 @@ func TestRamsWebPresenterOutput(t *testing.T) {
 	// **ポットと切り札は参加判断の材料。** 常に出す。
 	assert.Equal(t, float64(domain.RamsAnte*domain.RamsPlayerCntDefault), m["pot"])
 	assert.Empty(t, m["roundSettlement"], "ラウンド終了フェーズ外では精算を出さない")
+	assert.Empty(t, m["lastTrick"])
+	assert.Equal(t, float64(-1), m["lastTrickWinner"])
 	require.NotNil(t, m["upCard"], "切り札を決めた 1 枚が出る")
 	assert.Equal(t, float64(r.GetTrumpSuit()), m["trumpSuit"])
 
@@ -183,6 +185,8 @@ func TestRamsWebPresenterRoundSettlementJSONBranches(t *testing.T) {
 	g.On("GetGameEndFlag").Return(false)
 	g.On("GetWinnerIdx").Return(-1)
 	g.On("GetCurrentTrick").Return([]*domain.TrickCard{})
+	g.On("GetLastTrick").Return([]*domain.TrickCard{})
+	g.On("GetLastTrickWinnerIdx").Return(-1)
 	g.On("GetPlayerCnt").Return(4)
 	for i := 0; i < 4; i++ {
 		g.On("GetPlayer", i).Return(domain.NewRamsPlayer(i == 0))

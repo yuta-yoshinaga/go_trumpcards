@@ -239,7 +239,7 @@ func joinKeys(m map[string]bool) string {
 	return strings.Join(out, "|")
 }
 
-// TestOpenAPISeparatesJulepeAndRamsTrickFields keeps Julepe-only history out of Rams.
+// TestOpenAPISeparatesJulepeAndRamsTrickFields checks that Julepe and Rams each declare lastTrick/lastTrickWinner on their own response schema, so neither relies on the other's declaration.
 func TestOpenAPISeparatesJulepeAndRamsTrickFields(t *testing.T) {
 	root := filepath.Join("..", "..", "..")
 	raw, err := os.ReadFile(filepath.Join(root, "api", "openapi.yaml")) //nolint:gosec // test-only, fixed path
@@ -263,13 +263,16 @@ func TestOpenAPISeparatesJulepeAndRamsTrickFields(t *testing.T) {
 		if julepeProps[field] == nil {
 			t.Errorf("JulepeResponse does not declare %s", field)
 		}
-		if spec.Components.Schemas["RamsResponse"].Properties[field] != nil {
-			t.Errorf("RamsResponse must not declare %s", field)
-		}
 	}
 	rams := spec.Paths["/rams/exec"].Post.Responses.OK.Content.JSON.Schema
 	if len(rams.OneOf) == 0 || rams.OneOf[0].Ref != openAPIRefPrefix+"RamsResponse" {
 		t.Fatalf("Rams 200 response must use RamsResponse, got %#v", rams)
+	}
+	ramsProps := spec.props(spec.Components.Schemas["RamsResponse"])
+	for _, field := range []string{"lastTrick", "lastTrickWinner"} {
+		if ramsProps[field] == nil {
+			t.Errorf("RamsResponse does not declare %s", field)
+		}
 	}
 }
 
