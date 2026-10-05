@@ -53,6 +53,8 @@ type SlobberhannesWebOutput struct {
 	LeadPlayerIdx    int                             `json:"leadPlayerIdx"`
 	DealerIdx        int                             `json:"dealerIdx"`
 	CurrentTrick     []*WebOutputTrickCard           `json:"currentTrick"`
+	LastTrick        []*WebOutputTrickCard           `json:"lastTrick"`
+	LastTrickWinner  int                             `json:"lastTrickWinner"`
 	ValidPlays       []int                           `json:"validPlays"`
 	GameEndFlag      bool                            `json:"gameEndFlag"`
 	WinnerIdx        int                             `json:"winnerIdx"`
@@ -90,11 +92,13 @@ var NewSlobberhannesWebController, NewSlobberhannesWebControllerWithProvider = w
 
 func newSlobberhannesDefaultOutput(msg string) *SlobberhannesWebOutput {
 	return &SlobberhannesWebOutput{
-		Players:       make([]*SlobberhannesWebOutputPlayer, 0),
-		CurrentTrick:  make([]*WebOutputTrickCard, 0),
-		ValidPlays:    make([]int, 0),
-		WinnerIdx:     -1,
-		WebOutputBase: WebOutputBase{Message: msg},
+		Players:         make([]*SlobberhannesWebOutputPlayer, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
+		LastTrick:       make([]*WebOutputTrickCard, 0),
+		LastTrickWinner: -1,
+		ValidPlays:      make([]int, 0),
+		WinnerIdx:       -1,
+		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }
 
