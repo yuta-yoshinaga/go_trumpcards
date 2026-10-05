@@ -275,22 +275,39 @@ function CanastaPageContent() {
                   data-tutorial="ca-draw-area"
                   data-testid="ca-discard-pile"
                 >
-                  <div className="text-ds-text-muted text-sm mb-2">{t('discardTop')}</div>
-                  <div className="flex flex-wrap gap-1 items-start">
-                    {state.discardPile.map((card, idx) => (
-                      <AnimatedCard key={`ca-discard-${idx}`} card={card} width={cardWidth} />
-                    ))}
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-ds-text-muted text-sm">{t('discardTop')}</span>
+                    {state.isFrozen && (
+                      <span
+                        className="text-ds-info text-xs font-bold"
+                        data-testid="ca-frozen-badge"
+                        role="img"
+                        aria-label={t('frozenIndicator')}
+                      >
+                        {t('frozenIndicator')}
+                      </span>
+                    )}
                   </div>
-                  {state.isFrozen && (
-                    <span
-                      className="absolute top-1 right-2 text-ds-info text-xs font-bold"
-                      data-testid="ca-frozen-badge"
-                      role="img"
-                      aria-label={t('frozenIndicator')}
-                    >
-                      {t('frozenIndicator')}
-                    </span>
-                  )}
+                  <div className="max-h-48 overflow-y-auto">
+                    <div className="flex flex-wrap gap-1 items-start">
+                      {state.discardPile.map((card, idx) => (
+                        <div
+                          key={`ca-discard-${idx}`}
+                          data-discard-top={idx === state.discardPile.length - 1 ? 'true' : undefined}
+                          className={
+                            idx === state.discardPile.length - 1
+                              ? 'outline outline-2 outline-ds-accent outline-offset-2 rounded'
+                              : undefined
+                          }
+                        >
+                          {idx === state.discardPile.length - 1 && (
+                            <span className="sr-only">{t('discardPileTop')}</span>
+                          )}
+                          <AnimatedCard card={card} width={cardWidth} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Player melds */}

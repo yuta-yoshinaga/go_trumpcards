@@ -534,9 +534,28 @@ describe('CanastaPage', () => {
     });
     renderWithProviders(<CanastaPage />);
     const pile = await screen.findByTestId('ca-discard-pile');
-    expect(within(pile).getAllByTestId('animated-card')).toHaveLength(2);
+    const cards = within(pile).getAllByTestId('animated-card');
+    expect(cards).toHaveLength(2);
+    expect(cards[0].parentElement).not.toHaveAttribute('data-discard-top');
+    expect(cards[1].parentElement).toHaveAttribute('data-discard-top', 'true');
+    expect(cards[1].parentElement).toHaveTextContent('捨て札の一番上');
     expect(within(pile).getByAltText('♠ A')).toBeInTheDocument();
     expect(within(pile).getByAltText('♥ 8')).toBeInTheDocument();
+  });
+
+  it('shows the frozen badge with a multi-card discard pile', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      isFrozen: true,
+      discardPile: [
+        { design: 'SPADE', value: 1 },
+        { design: 'HEART', value: 8 },
+      ],
+    });
+    renderWithProviders(<CanastaPage />);
+    const pile = await screen.findByTestId('ca-discard-pile');
+    expect(within(pile).getAllByTestId('animated-card')).toHaveLength(2);
+    expect(within(pile).getByTestId('ca-frozen-badge')).toBeInTheDocument();
   });
 
   it('renders the discard pile container when the pile is empty', async () => {
