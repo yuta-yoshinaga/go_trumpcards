@@ -231,6 +231,14 @@ func TestHoneymoonBridgeWebPresenterActionLogOutput(t *testing.T) {
 
 		entries := decodeHoneymoonBridge(t, p.ActionLogOutput(h))["entries"].([]any)
 		require.Len(t, entries, 3)
+		assert.Equal(t, "deal", entries[0].(map[string]any)["actionType"])
+		for _, rawEntry := range entries {
+			entry := rawEntry.(map[string]any)
+			cards, hasCards := entry["cards"]
+			if hasCards {
+				assert.Empty(t, cards)
+			}
+		}
 		assert.Equal(t, "bid", entries[1].(map[string]any)["actionType"])
 		assert.Equal(t, "pass", entries[2].(map[string]any)["actionType"])
 	})
@@ -241,7 +249,9 @@ func TestHoneymoonBridgeWebPresenterActionLogOutput(t *testing.T) {
 		assert.Empty(t, decodeHoneymoonBridge(t, p.ActionLogOutput(h))["entries"])
 	})
 
-	h := newHoneymoonBridgeForWeb(t)
-	h.GiveUp()
-	assert.NotEmpty(t, decodeHoneymoonBridge(t, p.ActionLogOutput(h))["entries"])
+	t.Run("終局後は全棋譜", func(t *testing.T) {
+		h := newHoneymoonBridgeForWeb(t)
+		h.GiveUp()
+		assert.NotEmpty(t, decodeHoneymoonBridge(t, p.ActionLogOutput(h))["entries"])
+	})
 }
