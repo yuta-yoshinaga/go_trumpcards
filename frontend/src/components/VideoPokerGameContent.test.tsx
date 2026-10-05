@@ -245,6 +245,32 @@ describe('VideoPokerGameContent', () => {
     }
   });
 
+  it('announces signed net change for Deuces Wild wins and losses in Japanese and English', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue({ ...resultPhaseWin, variantName: 'deuceswild' });
+      const english = renderContent('deuceswild');
+      await waitFor(() => expect(screen.getByTestId('vp-result-announce')).toHaveTextContent('net change +4'));
+      english.unmount();
+
+      mockExec.mockResolvedValue({ ...resultPhaseLose, variantName: 'deuceswild' });
+      const englishLose = renderContent('deuceswild');
+      await waitFor(() => expect(screen.getByTestId('vp-result-announce')).toHaveTextContent('net change -1'));
+      englishLose.unmount();
+
+      await i18n.changeLanguage('ja');
+      mockExec.mockResolvedValue({ ...resultPhaseLose, variantName: 'deuceswild' });
+      const japaneseLose = renderContent('deuceswild');
+      await waitFor(() => expect(screen.getByTestId('vp-result-announce')).toHaveTextContent('純増減 -1'));
+      japaneseLose.unmount();
+      mockExec.mockResolvedValue({ ...resultPhaseWin, variantName: 'deuceswild' });
+      renderContent('deuceswild');
+      await waitFor(() => expect(screen.getByTestId('vp-result-announce')).toHaveTextContent('純増減 +4'));
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('formats a break-even result as ±0', async () => {
     mockExec.mockResolvedValue({ ...resultPhaseWin, betAmount: 5, payout: 5 });
     renderContent();
