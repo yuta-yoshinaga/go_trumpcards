@@ -541,9 +541,6 @@ func (g *FreeBetBlackjack) dealerUpValue() int {
 func (g *FreeBetBlackjack) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
 	g.actionLog = append(g.actionLog, &ActionLogEntry{TurnNumber: g.turnNumber, PlayerIdx: 0, ActionType: actionType, DetailCode: detailCode, DetailParams: detailParams, Cards: cards})
-	if len(g.actionLog) > freeBetMaxSliceLen {
-		g.actionLog = g.actionLog[len(g.actionLog)-freeBetMaxSliceLen:]
-	}
 }
 
 // --- アクセサ ---

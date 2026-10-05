@@ -360,7 +360,7 @@ func (rp *RussianPoker) finalResolve() {
 
 // appendLog records a Russian Poker action with a locale-independent detail code.
 func (rp *RussianPoker) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	rp.appendLogCodeAt(len(rp.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+	rp.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // compareHands プレイヤーとディーラーのハンドを比較する

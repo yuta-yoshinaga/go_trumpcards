@@ -874,9 +874,6 @@ func (g *ChemindeFer) appendLog(playerIdx int, actionType, detailCode string, de
 		DetailParams: detailParams,
 		Cards:        cards,
 	})
-	if len(g.actionLog) > chemindeFerMaxSliceLen {
-		g.actionLog = g.actionLog[len(g.actionLog)-chemindeFerMaxSliceLen:]
-	}
 }
 
 // --- アクセサ ---

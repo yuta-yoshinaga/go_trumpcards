@@ -964,7 +964,7 @@ func (g *Scarto) isHumanScartoTurn() bool {
 
 // appendLog 棋譜にエントリを追加する。
 func (g *Scarto) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // scartoCardStr カードのログ表示文字列 (切り札・エクスキューズ対応)。

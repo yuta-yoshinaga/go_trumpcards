@@ -746,7 +746,7 @@ func (g *PiedmonteseTarot) checkGameEnd() {
 
 // appendLog records a Piedmontese Tarot action with a locale-independent detail code.
 func (g *PiedmonteseTarot) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // humanResult は人間視点のマッチ結果を返す。

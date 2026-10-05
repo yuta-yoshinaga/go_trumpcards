@@ -686,7 +686,7 @@ func (g *Ombre) humanResult(leader int, tie bool) OmbreResult {
 
 // appendLog records an Ombre action with a locale-independent detail code.
 func (g *Ombre) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // ScoreRound RoundEnd フェーズでの得点計算を行う (enterRoundEnd を idempotent に呼ぶ、インタフェース互換)。

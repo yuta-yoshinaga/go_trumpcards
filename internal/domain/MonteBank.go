@@ -314,9 +314,6 @@ func (g *MonteBank) appendLog(actionType, detailCode string, detailParams map[st
 		DetailParams: detailParams,
 		Cards:        cards,
 	})
-	if len(g.actionLog) > monteBankMaxSliceLen {
-		g.actionLog = g.actionLog[len(g.actionLog)-monteBankMaxSliceLen:]
-	}
 }
 
 // --- 助言 ---

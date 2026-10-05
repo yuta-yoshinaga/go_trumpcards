@@ -1366,7 +1366,7 @@ func (g *Cego) isHumanBidTurn() bool {
 
 // appendLog 棋譜にエントリを追加する。
 func (g *Cego) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // cegoBidKey は入札の i18n キーを返す。

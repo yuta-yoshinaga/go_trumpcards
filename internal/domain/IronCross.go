@@ -619,9 +619,6 @@ func (g *IronCross) appendLogCode(seat int, actionType, detailCode string, detai
 		DetailParams: detailParams,
 		Cards:        cards,
 	})
-	if len(g.actionLog) > ironCrossMaxSliceLen {
-		g.actionLog = g.actionLog[len(g.actionLog)-ironCrossMaxSliceLen:]
-	}
 }
 
 // --- 助言 ---
