@@ -216,6 +216,22 @@ describe('PresidentPage', () => {
     expect(revCheckbox).toBeChecked();
     fireEvent.click(revCheckbox);
     await waitFor(() => expect(revCheckbox).not.toBeChecked());
+    expect(screen.getByTestId('president-settings-status')).toHaveTextContent(
+      '設定の変更は次回のリセット後に適用されます。',
+    );
+  });
+
+  it('clears the pending-settings notice after reset', async () => {
+    renderWithProviders(<PresidentPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('checkbox', { name: /革命|Revolution/ }));
+    expect(screen.getByTestId('president-settings-status')).toHaveTextContent(
+      '設定の変更は次回のリセット後に適用されます。',
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(screen.getByTestId('president-settings-status')).toBeEmptyDOMElement());
   });
 
   it('toggles cardExchangeEnabled setting', async () => {
