@@ -64,6 +64,15 @@ describe('EquityDisplay', () => {
     expect(indicator).toHaveClass('text-ds-error-text');
   });
 
+  it('uses tie-adjusted expected pot share for display and EV', () => {
+    const tiedEquity: HoldemEquity = { ...mockEquity, winProbability: 0.5 };
+    render(<EquityDisplay equity={tiedEquity} potOdds={55.0} />);
+
+    expect(screen.getByText(/50%/)).toBeInTheDocument();
+    expect(screen.getByTestId('equity-bar')).toHaveStyle({ width: '50%' });
+    expect(screen.getByTestId('ev-indicator')).toHaveTextContent('-EV');
+  });
+
   it('shows hand odds breakdown after toggle', () => {
     render(<EquityDisplay equity={mockEquity} potOdds={33.3} />);
     expect(screen.queryByTestId('hand-odds-table')).not.toBeInTheDocument();

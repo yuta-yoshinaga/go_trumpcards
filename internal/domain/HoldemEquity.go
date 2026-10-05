@@ -34,6 +34,7 @@ func CalcEquity(humanCards, communityCards []*Card, activePlayers, simulations i
 		evalHuman:            evalSevenCardHand,
 		evalOpponent:         evalSevenCardHand,
 		compareHighCards:     compareHighCardsSlice,
+		splitTies:            true,
 	})
 }
 
