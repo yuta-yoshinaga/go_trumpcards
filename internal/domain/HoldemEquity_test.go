@@ -158,22 +158,53 @@ func TestCalcEquity_NeededCardsExceedsPool(t *testing.T) {
 }
 
 func TestCalcEquity_RiverExact(t *testing.T) {
-	t.Run("river with unbeatable hand has equity 1.0", func(t *testing.T) {
-		// Royal flush: A K Q J 10 of spades
+	t.Run("river board royal flush is split with opponent", func(t *testing.T) {
 		humanCards := []*Card{
-			NewCard(CardDesignSpade, 1, false),
-			NewCard(CardDesignSpade, 13, false),
-		}
-		communityCards := []*Card{
-			NewCard(CardDesignSpade, 12, false),
-			NewCard(CardDesignSpade, 11, false),
-			NewCard(CardDesignSpade, 10, false),
 			NewCard(CardDesignHeart, 2, false),
 			NewCard(CardDesignClover, 3, false),
 		}
+		communityCards := []*Card{
+			NewCard(CardDesignSpade, 1, false),
+			NewCard(CardDesignSpade, 13, false),
+			NewCard(CardDesignSpade, 12, false),
+			NewCard(CardDesignSpade, 11, false),
+			NewCard(CardDesignSpade, 10, false),
+		}
 		rng := rand.New(rand.NewSource(42))
 		result := CalcEquity(humanCards, communityCards, 1, 5000, rng)
-		assert.Equal(t, 1.0, result.Equity)
+		assert.Equal(t, 0.5, result.Equity)
+	})
+
+	t.Run("three players split board royal flush equally", func(t *testing.T) {
+		humanCards := []*Card{
+			NewCard(CardDesignHeart, 2, false),
+			NewCard(CardDesignClover, 3, false),
+		}
+		communityCards := []*Card{
+			NewCard(CardDesignSpade, 1, false),
+			NewCard(CardDesignSpade, 13, false),
+			NewCard(CardDesignSpade, 12, false),
+			NewCard(CardDesignSpade, 11, false),
+			NewCard(CardDesignSpade, 10, false),
+		}
+		result := CalcEquity(humanCards, communityCards, 2, 4, rand.New(rand.NewSource(42)))
+		assert.InDelta(t, 1.0/3.0, result.Equity, 0.0001)
+	})
+
+	t.Run("tie followed by opponent win contributes no partial share", func(t *testing.T) {
+		humanCards := []*Card{
+			NewCard(CardDesignHeart, 12, false),
+			NewCard(CardDesignClover, 11, false),
+		}
+		communityCards := []*Card{
+			NewCard(CardDesignSpade, 7, false),
+			NewCard(CardDesignHeart, 7, false),
+			NewCard(CardDesignClover, 7, false),
+			NewCard(CardDesignDiamond, 7, false),
+			NewCard(CardDesignSpade, 13, false),
+		}
+		result := CalcEquity(humanCards, communityCards, 2, 1, rand.New(rand.NewSource(42)))
+		assert.Zero(t, result.Equity)
 	})
 }
 
