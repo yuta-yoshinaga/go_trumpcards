@@ -268,29 +268,30 @@ function CanastaPageContent() {
             <div className={lgTwoColGrid}>
               {/* Left: game play area */}
               <div>
-                {/* Discard pile top */}
-                {state.discardTop && (
-                  <div
-                    className={`my-3 p-3 rounded flex items-center gap-3 relative ${
-                      state.isFrozen ? `${badgeInfoColors} ring-2 ring-ds-info` : 'bg-black/40'
-                    }`}
-                    data-tutorial="ca-draw-area"
-                    data-testid="ca-discard-pile"
-                  >
-                    <AnimatedCard card={state.discardTop} width={cardWidth} />
-                    <div className="text-ds-text-muted text-sm">{t('discardTop')}</div>
-                    {state.isFrozen && (
-                      <span
-                        className="absolute top-1 right-2 text-ds-info text-xs font-bold"
-                        data-testid="ca-frozen-badge"
-                        role="img"
-                        aria-label={t('frozenIndicator')}
-                      >
-                        {t('frozenIndicator')}
-                      </span>
-                    )}
+                <div
+                  className={`my-3 p-3 rounded relative ${
+                    state.isFrozen ? `${badgeInfoColors} ring-2 ring-ds-info` : 'bg-ds-surface'
+                  }`}
+                  data-tutorial="ca-draw-area"
+                  data-testid="ca-discard-pile"
+                >
+                  <div className="text-ds-text-muted text-sm mb-2">{t('discardTop')}</div>
+                  <div className="flex flex-wrap gap-1 items-start">
+                    {state.discardPile.map((card, idx) => (
+                      <AnimatedCard key={`ca-discard-${idx}`} card={card} width={cardWidth} />
+                    ))}
                   </div>
-                )}
+                  {state.isFrozen && (
+                    <span
+                      className="absolute top-1 right-2 text-ds-info text-xs font-bold"
+                      data-testid="ca-frozen-badge"
+                      role="img"
+                      aria-label={t('frozenIndicator')}
+                    >
+                      {t('frozenIndicator')}
+                    </span>
+                  )}
+                </div>
 
                 {/* Player melds */}
                 {state.players.map((p, pi) => {

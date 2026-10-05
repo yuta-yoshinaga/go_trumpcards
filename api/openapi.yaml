@@ -48263,6 +48263,11 @@ components:
         drawPileCount:
           type: integer
           description: Number of cards remaining in the stock pile
+        discardPile:
+          type: array
+          description: Discard pile ordered oldest (bottom) first, current top last
+          items:
+            $ref: '#/components/schemas/Card'
         discardPileCount:
           type: integer
           description: Number of cards in the discard pile

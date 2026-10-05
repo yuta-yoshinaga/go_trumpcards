@@ -28,6 +28,10 @@ func (p *CanastaWebPresenter) Output(g interfaces.CanastaGame, lastErr error) st
 	if top != nil {
 		resObj.DiscardTop = cardToOutput(top)
 	}
+	resObj.DiscardPile = make([]*controller.WebOutputCard, 0, g.GetDiscardPileCount())
+	for _, card := range g.GetDiscardPile() {
+		resObj.DiscardPile = append(resObj.DiscardPile, cardToOutput(card))
+	}
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.CanastaWebOutputConfig{

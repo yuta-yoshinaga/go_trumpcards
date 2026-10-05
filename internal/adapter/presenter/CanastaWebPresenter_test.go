@@ -23,6 +23,7 @@ func setupCanastaWebMock() *interfaces.MockCanastaGame {
 	m.On("GetDiscardPileCount").Return(0)
 	m.On("GetIsFrozen").Return(false)
 	m.On("GetDiscardTop").Return((*domain.Card)(nil))
+	m.On("GetDiscardPile").Return([]*domain.Card{})
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.CanastaPhaseDraw)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -94,6 +95,7 @@ func TestCanastaWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 54, resObj.DrawPileCount)
 		assert.Equal(t, -1, resObj.WinnerIdx)
 		assert.Nil(t, resObj.DiscardTop)
+		assert.Empty(t, resObj.DiscardPile)
 		assert.False(t, resObj.IsFrozen)
 		assert.Equal(t, "", resObj.Message)
 	})
@@ -165,6 +167,14 @@ func TestCanastaWebPresenter_Output(t *testing.T) {
 		assert.NotNil(t, resObj.DiscardTop)
 		assert.Equal(t, "HEART", resObj.DiscardTop.Design)
 		assert.Equal(t, 7, resObj.DiscardTop.Value)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardPile")
+		m.On("GetDiscardPile").Return([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 3, false),
+			top,
+		})
+		result = p.Output(m, nil)
+		_ = json.Unmarshal([]byte(result), &resObj)
+		assert.Equal(t, []int{3, 7}, []int{resObj.DiscardPile[0].Value, resObj.DiscardPile[1].Value})
 	})
 
 	t.Run("frozen pile flag", func(t *testing.T) {
