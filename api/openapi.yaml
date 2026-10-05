@@ -77287,6 +77287,8 @@ components:
         hint:
           type: object
           properties:
+            card:
+              $ref: "#/components/schemas/Card"
             fromZone:
               type: string
             fromCol:

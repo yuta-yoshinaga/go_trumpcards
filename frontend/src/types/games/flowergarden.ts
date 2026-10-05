@@ -11,6 +11,7 @@ export interface FlowerGardenTableauCard {
 
 /** A suggested move hint in Flower Garden. */
 export interface FlowerGardenHint {
+  card: Card;
   fromZone: string;
   fromCol: number;
   cardIndex: number;

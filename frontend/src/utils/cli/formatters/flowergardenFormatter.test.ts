@@ -55,7 +55,14 @@ describe('formatFlowerGardenState', () => {
   it('shows hint from tableau when present', () => {
     const result = formatFlowerGardenState(
       makeState({
-        hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 1, toZone: 'tableau', toCol: 2 },
+        hint: {
+          card: { design: 'HEART', value: 5 },
+          fromZone: 'tableau',
+          fromCol: 0,
+          cardIndex: 1,
+          toZone: 'tableau',
+          toCol: 2,
+        },
         messageCode: 'flowergarden.hintAvailable',
       }),
     );
@@ -68,7 +75,14 @@ describe('formatFlowerGardenState', () => {
   it('does not print a passive hint carried on an ordinary response', () => {
     const result = formatFlowerGardenState(
       makeState({
-        hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 1, toZone: 'tableau', toCol: 2 },
+        hint: {
+          card: { design: 'HEART', value: 5 },
+          fromZone: 'tableau',
+          fromCol: 0,
+          cardIndex: 1,
+          toZone: 'tableau',
+          toCol: 2,
+        },
         messageCode: 'flowergarden.playing',
       }),
     );
@@ -78,7 +92,14 @@ describe('formatFlowerGardenState', () => {
   it('shows hint from reserve when present', () => {
     const result = formatFlowerGardenState(
       makeState({
-        hint: { fromZone: 'reserve', fromCol: 3, cardIndex: 0, toZone: 'foundation', toCol: 1 },
+        hint: {
+          card: { design: 'HEART', value: 5 },
+          fromZone: 'reserve',
+          fromCol: 3,
+          cardIndex: 0,
+          toZone: 'foundation',
+          toCol: 1,
+        },
         messageCode: 'flowergarden.hintAvailable',
       }),
     );

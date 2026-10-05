@@ -59,6 +59,7 @@ func (p *FlowerGardenWebPresenter) Output(bc interfaces.FlowerGardenGame, lastEr
 	if bc.GetPhase() == domain.FlowerGardenPhasePlaying && !bc.IsStalemate() {
 		if hint := bc.GetHint(); hint != nil {
 			resObj.Hint = &controller.FlowerGardenWebOutputHint{
+				Card:      cardToOutput(flowerGardenHintSourceCard(tableau, reserve, hint)),
 				FromZone:  hint.FromZone,
 				FromCol:   hint.FromCol,
 				CardIndex: hint.CardIndex,
@@ -102,6 +103,7 @@ func (p *FlowerGardenWebPresenter) HintOutput(bc interfaces.FlowerGardenGame) st
 
 	if hint != nil {
 		resObj.Hint = &controller.FlowerGardenWebOutputHint{
+			Card:      cardToOutput(flowerGardenHintSourceCard(bc.GetTableau(), bc.GetReserve(), hint)),
 			FromZone:  hint.FromZone,
 			FromCol:   hint.FromCol,
 			CardIndex: hint.CardIndex,
