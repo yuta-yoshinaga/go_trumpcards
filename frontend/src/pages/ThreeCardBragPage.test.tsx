@@ -32,6 +32,15 @@ beforeEach(() => {
 });
 
 describe('ThreeCardBragPage', () => {
+  it('marks the dealer in the player list for assistive technology', async () => {
+    mockExec.mockResolvedValue(makeThreeCardBragState({ dealerIdx: 1 }));
+    renderWithProviders(<ThreeCardBragPage />);
+
+    const dealerBadge = await screen.findByText(jaThreeCardBrag.dealerBadge);
+    expect(dealerBadge).toBeVisible();
+    expect(dealerBadge.parentElement).toHaveTextContent('CPU 1');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<ThreeCardBragPage />);
