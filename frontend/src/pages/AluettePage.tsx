@@ -375,6 +375,10 @@ function AluettePageContent() {
                 dataTutorialPrefix="aluette"
                 validIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}
+                cardStatusFor={(idx) => {
+                  const luetteName = aluetteLuetteName(luettes, humanPlayer.cards[idx]);
+                  return luetteName ? t(`luette.${luetteName}`) : undefined;
+                }}
               />
             )}
 
