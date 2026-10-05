@@ -31,6 +31,7 @@
   "stock": "Stock: {{count}}",
   "turnUpCard": "Turn-up card",
   "currentTrick": "Current Trick",
+  "winnerBadge": "Winner",
   "trickCount": "Tricks: {{count}}",
   "marriageButton": "Marriage",
   "marriageBadge": "Marriage available ({{points}} points: King + Queen)",

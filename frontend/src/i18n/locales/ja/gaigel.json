@@ -31,6 +31,7 @@
   "stock": "山札: {{count}}",
   "turnUpCard": "めくり札",
   "currentTrick": "現在のトリック",
+  "winnerBadge": "勝者",
   "trickCount": "獲得トリック: {{count}}",
   "marriageButton": "マリッジ",
   "marriageBadge": "マリッジ可能 ({{points}}点: キング+クイーン)",

@@ -77792,6 +77792,9 @@ components:
           type: integer
         leadPlayerIdx:
           type: integer
+        trickWinnerIdx:
+          type: integer
+          description: Winning seat for the completed trick, or -1 when no trick is complete.
         hint:
           type: object
           properties:

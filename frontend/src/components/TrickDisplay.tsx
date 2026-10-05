@@ -143,6 +143,7 @@ export function TrickDisplay({
               key={cardKeyFor?.(trickCard, index) ?? `trick-${trickCard.playerIdx}`}
               className="relative text-center"
               data-team={team ?? undefined}
+              data-player-idx={trickCard.playerIdx}
               data-team-role={isAlly ? 'ally' : isFoe ? 'foe' : undefined}
               data-trick-winner={isWinner || undefined}
             >
