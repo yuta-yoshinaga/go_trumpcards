@@ -31,6 +31,7 @@
   "previousTrick": "Previous Trick",
   "previousTrickEmpty": "No previous trick yet this round",
   "previousTrickWinner": "Won by {{name}}",
+  "trickResult": "{{name}} won the trick; the team gained {{thirds}} thirds",
   "scores": "Scores",
   "scoresTeam": "Team",
   "scoresPoints": "Points",

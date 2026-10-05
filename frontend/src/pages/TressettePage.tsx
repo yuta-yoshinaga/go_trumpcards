@@ -200,6 +200,13 @@ function TressettePageContent() {
   const isRoundEnd = state.phase === TressettePhase.ROUND_END;
   const isGameEnd = state.phase === TressettePhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const hasTrickResult = isTrickEnd && state.lastTrickWinner >= 0 && state.lastTrick.length > 0;
+  const trickResult = hasTrickResult
+    ? t('trickResult', {
+        name: playerName(state.lastTrickWinner, state.players[state.lastTrickWinner]?.isHuman === true),
+        thirds: formatThirdPoints(state.currentTrickThirds),
+      })
+    : '';
 
   const teamLabels = ['A', 'B'];
 
@@ -219,6 +226,9 @@ function TressettePageContent() {
     >
       <span className="sr-only" data-testid="tr-score-live" role="status" aria-live="polite" aria-atomic="true">
         {scoreAnnouncement}
+      </span>
+      <span className="sr-only" data-testid="tr-trick-result-live" role="status" aria-live="polite" aria-atomic="true">
+        {trickResult}
       </span>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
@@ -271,6 +281,15 @@ function TressettePageContent() {
                 ? t('currentTrickPointsEmpty')
                 : t('currentTrickPoints', { thirds: state.currentTrickThirds })}
             </output>
+
+            {hasTrickResult && (
+              <div
+                className="mb-2 rounded bg-ds-surface p-2 text-center text-ds-text-primary"
+                data-testid="tr-trick-result"
+              >
+                {trickResult}
+              </div>
+            )}
 
             <div className={lgTwoColGrid}>
               {/* Left: play area */}
