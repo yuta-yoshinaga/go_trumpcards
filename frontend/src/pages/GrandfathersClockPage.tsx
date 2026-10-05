@@ -458,7 +458,7 @@ function GrandfathersClockPageContent() {
                     type="button"
                     className={`${btnPrimary} aria-disabled:cursor-not-allowed aria-disabled:opacity-50`}
                     aria-disabled={loading || isAutoCompleting || !state.canRedo}
-                    aria-describedby="gc-redo-unavailable"
+                    aria-describedby={!state.canRedo ? 'gc-redo-unavailable' : undefined}
                     onClick={() => {
                       if (!loading && !isAutoCompleting && state.canRedo) game.handleRedo();
                     }}

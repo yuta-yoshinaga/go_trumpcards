@@ -92,6 +92,7 @@ describe('GrandfathersClockPage', () => {
     renderWithProviders(<GrandfathersClockPage />);
     const redo = await screen.findByRole('button', { name: 'やり直す' });
     expect(redo).toHaveAttribute('aria-disabled', 'true');
+    expect(redo).toHaveAttribute('aria-describedby', 'gc-redo-unavailable');
     mockExec.mockClear();
     fireEvent.click(redo);
     await flushPendingDispatch();
@@ -102,6 +103,7 @@ describe('GrandfathersClockPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     const enabledRedo = await screen.findByRole('button', { name: 'やり直す' });
     expect(enabledRedo).toHaveAttribute('aria-disabled', 'false');
+    expect(enabledRedo).not.toHaveAttribute('aria-describedby');
     fireEvent.click(enabledRedo);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('redo'));
   });

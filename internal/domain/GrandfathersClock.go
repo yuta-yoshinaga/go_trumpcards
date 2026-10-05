@@ -324,11 +324,7 @@ func (gc *GrandfathersClock) Undo() error {
 	snap := gc.history[len(gc.history)-1]
 	gc.redoHistory = appendSnapshot(gc.redoHistory, gc.currentSnapshot())
 	gc.history = gc.history[:len(gc.history)-1]
-	gc.foundation = snap.foundation
-	gc.tableau = snap.tableau
-	gc.phase = snap.phase
-	gc.moveCount = snap.moveCount
-	gc.isStalemate = snap.isStalemate
+	gc.restoreSnapshot(snap)
 	return nil
 }
 
