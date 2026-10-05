@@ -3,6 +3,7 @@ package domain_test
 import (
 	"encoding/json"
 	"errors"
+	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -696,4 +697,15 @@ func TestCasinoHoldem_RecommendCall(t *testing.T) {
 		)
 		assert.False(t, g.RecommendCall())
 	})
+}
+
+func TestCasinoHoldemCallWinRate(t *testing.T) {
+	player := makeHandCH(cd{domain.CardDesignSpade, 1}, cd{domain.CardDesignHeart, 1})
+	flop := makeHandCH(cd{domain.CardDesignDiamond, 1}, cd{domain.CardDesignClover, 13}, cd{domain.CardDesignSpade, 13})
+	first := domain.CasinoHoldemCallWinRate(player, flop, 200, rand.New(rand.NewSource(42)))
+	second := domain.CasinoHoldemCallWinRate(player, flop, 200, rand.New(rand.NewSource(42)))
+	assert.InDelta(t, first, second, 0)
+	assert.GreaterOrEqual(t, first, 0.0)
+	assert.LessOrEqual(t, first, 1.0)
+	assert.Greater(t, first, 0.9)
 }

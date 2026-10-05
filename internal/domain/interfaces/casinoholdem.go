@@ -58,4 +58,6 @@ type CasinoHoldemGame interface {
 	GetChips() int
 	// RecommendCall はフロップ後にコールを推奨するかを返す
 	RecommendCall() bool
+	// GetCallWinRate はフロップ時のコール勝率目安を返す。
+	GetCallWinRate() (float64, bool)
 }

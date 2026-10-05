@@ -47,6 +47,7 @@ const flopState: CasinoHoldemResponse = {
   anteBet: 100,
   chips: 900,
   callBet: 200,
+  callWinRate: 0.75,
 };
 
 const endPlayerWins: CasinoHoldemResponse = {
@@ -108,6 +109,7 @@ describe('CasinoHoldemPage', () => {
     renderWithProviders(<CasinoHoldemPage />);
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
+    expect(screen.queryByTestId('ch-call-win-rate')).not.toBeInTheDocument();
   });
 
   it('renders skeleton before state loads', () => {
@@ -147,6 +149,7 @@ describe('CasinoHoldemPage', () => {
     expect(screen.getByTestId('ch-dealer-qualify-rule')).toHaveTextContent(
       'ディーラーはツーペア以上、または4以上のペアでクオリファイします',
     );
+    expect(screen.getByTestId('ch-call-win-rate')).toHaveTextContent('75%');
   });
 
   it('shows the dealer qualification rule in English during the flop', async () => {
@@ -182,6 +185,19 @@ describe('CasinoHoldemPage', () => {
     renderWithProviders(<CasinoHoldemPage />);
     await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
     expect(screen.getByTestId('payout-breakdown').querySelector('[data-testid="ch-flop-call-bet"]')).toBeNull();
+    expect(screen.queryByTestId('ch-call-win-rate')).not.toBeInTheDocument();
+  });
+
+  it('shows the call win estimate in English at the flop', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockApi.mockResolvedValue(flopState);
+      renderWithProviders(<CasinoHoldemPage />);
+      expect(await screen.findByTestId('ch-call-win-rate')).toHaveTextContent('Estimated chance to win after calling:');
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('shows end phase with player wins', async () => {
