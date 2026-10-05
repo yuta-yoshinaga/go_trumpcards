@@ -70,6 +70,7 @@
   "feed": {
     "header": "直前の行動",
     "pickup": "{{name}} が場札を引き取りました",
+    "facedownPickup": "{{name}} が {{card}} をめくりましたが、出せないため場札を引き取りました",
     "play": "{{name}} が {{cards}} を出しました",
     "burned": "場札焼却!",
     "skipped": "次をスキップ"
