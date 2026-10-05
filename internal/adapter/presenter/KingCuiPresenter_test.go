@@ -151,12 +151,24 @@ func TestKingCuiPresenter_DealEndBreakdown(t *testing.T) {
 		detail := g.GetLastDealDetail()
 		require.NotNil(t, detail)
 
-		line := cuiLineContaining(p.Output(g, nil), gainedPrefix)
+		out := p.Output(g, nil)
+		line := cuiLineContaining(out, gainedPrefix)
+		assert.Contains(t, out, "コントラクト: ノーハート — 得点条件: 取ったハート1枚につき2点減点")
+		assert.NotContains(t, cuiLineContaining(out, "コントラクト: ノーハート —"), "ノーハート（")
 
 		for i := 0; i < domain.KingPlayerCnt; i++ {
 			assert.Contains(t, line, strconv.Itoa(detail.Gained[i]),
 				"player %d gained %d", i, detail.Gained[i])
 		}
+	})
+
+	t.Run("uses resolved English text", func(t *testing.T) {
+		defer i18n.SetLang("ja")
+		i18n.SetLang("en")
+		g := kingPlayToDealEnd(t, domain.KingContractNoHearts, -1)
+		out := p.Output(g, nil)
+		assert.Contains(t, out, "Contract: No Hearts — Scoring basis: lose 2 points per heart taken")
+		assert.NotContains(t, cuiLineContaining(out, "Contract: No Hearts —"), "No Hearts (")
 	})
 
 	// 累計得点はプレイヤー行に出ているので、**このディールぶん**と取り違えないこと。
@@ -227,6 +239,18 @@ func TestKingCuiPresenter_DealEndBreakdownOnTheDecidingDeal(t *testing.T) {
 
 	line := cuiLineContaining(p.Output(g, nil),
 		strings.Split(i18n.T("king.dealResultGained"), "{{")[0])
+	out := p.Output(g, nil)
+	contractRows := []string{
+		"コントラクト: ノートリック — 得点条件: 取ったトリック1つにつき2点減点",
+		"コントラクト: ノーハート — 得点条件: 取ったハート1枚につき2点減点",
+		"コントラクト: ノークイーン — 得点条件: 取ったクイーン1枚につき6点減点",
+		"コントラクト: ノーキングハート — 得点条件: ハートのキングを取ると20点減点",
+		"コントラクト: ノーラスト2 — 得点条件: 最後の2トリックそれぞれ10点減点",
+		"コントラクト: ノーメン — 得点条件: 取ったジャックまたはキング1枚につき3点減点",
+		"コントラクト: キング（切り札あり）（切り札: SPADE） — 得点条件: 取ったトリック1つにつき5点加点",
+	}
+	assert.Contains(t, out, contractRows[g.GetLastDealDetail().Contract])
+	assert.NotContains(t, cuiLineContaining(out, "得点条件:"), "ノーハート（")
 
 	require.NotEmpty(t, line, "the deciding deal must show its breakdown too")
 	for i := 0; i < domain.KingPlayerCnt; i++ {
