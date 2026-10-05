@@ -426,6 +426,31 @@ func (c *Diplomat) GetWaste() []*Card { return c.waste }
 // GetTableau タブローを取得
 func (c *Diplomat) GetTableau() [DiplomatTableauCnt][]*Card { return c.tableau }
 
+// GetTableauMoveTargets returns legal tableau destinations for each movable
+// tableau top, followed by the waste top at index DiplomatTableauCnt.
+func (c *Diplomat) GetTableauMoveTargets() [DiplomatTableauCnt + 1][]int {
+	var targets [DiplomatTableauCnt + 1][]int
+	for from := range DiplomatTableauCnt {
+		card := c.tableauTop(from)
+		if card == nil {
+			continue
+		}
+		for to := range DiplomatTableauCnt {
+			if from != to && c.canPlaceOnTableau(card, to) {
+				targets[from] = append(targets[from], to)
+			}
+		}
+	}
+	if card := c.wasteTop(); card != nil {
+		for to := range DiplomatTableauCnt {
+			if c.canPlaceOnTableau(card, to) {
+				targets[DiplomatTableauCnt] = append(targets[DiplomatTableauCnt], to)
+			}
+		}
+	}
+	return targets
+}
+
 // GetFoundation 基礎札を取得
 func (c *Diplomat) GetFoundation() [DiplomatFoundationCnt][]*Card { return c.foundation }
 

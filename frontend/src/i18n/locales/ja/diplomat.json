@@ -54,6 +54,7 @@
     "draw": "動かせる札が無いので、山札をめくって手を増やしましょう"
   },
   "emptyColumn": "空き列",
+  "legalTableauTargets": "選択した札を置ける列を緑色で示しています。",
   "deadEndBadge": "行き止まり",
   "deadEndAria": "{{card}}（この列にはもう積めません。A は組札へ送れます）",
   "deadEndTitle": "A の上には置けません。この列は組札へ送るか、空き列にするまで受け皿になりません"

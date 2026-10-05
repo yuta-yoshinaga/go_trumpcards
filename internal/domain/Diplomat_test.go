@@ -48,6 +48,22 @@ func TestNewDiplomat(t *testing.T) {
 	assert.NotNil(t, NewDefaultDiplomat())
 }
 
+func TestDiplomatGetTableauMoveTargets(t *testing.T) {
+	c := newTestDiplomat()
+	clearDiplomatBoard(c)
+	c.tableau[0] = []*Card{NewCard(CardDesignSpade, 8, true)}
+	c.tableau[1] = []*Card{NewCard(CardDesignHeart, 9, true)}
+	c.tableau[2] = []*Card{NewCard(CardDesignDiamond, 1, true)}
+	c.tableau[3] = []*Card{NewCard(CardDesignClover, 4, true)}
+	c.waste = []*Card{NewCard(CardDesignSpade, 8, true)}
+	targets := c.GetTableauMoveTargets()
+	assert.Contains(t, targets[0], 1) // descending, suit ignored
+	assert.NotContains(t, targets[0], 2)
+	assert.NotContains(t, targets[0], 3)
+	assert.Contains(t, targets[0], 4) // empty column accepts any card
+	assert.Contains(t, targets[DiplomatTableauCnt], 1)
+}
+
 // The deal is 8 columns of FOUR with 72 left in the stock. #5276 adds a 4-card
 // reserve, which would leave 68 -- every rulebook agrees on 32 dealt and 72
 // held back.
