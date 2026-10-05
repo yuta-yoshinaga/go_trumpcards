@@ -342,6 +342,26 @@ func TestFrenchTarotFinalizePetiteEntersChien(t *testing.T) {
 	}
 }
 
+func TestFrenchTarotFinalizePetiteLogsRevealedChienCards(t *testing.T) {
+	g := frenchTarotNewReset()
+	g.SetBidPlayerIdx(0)
+	require.NoError(t, g.PlayerBid(domain.FrenchTarotBidPetite))
+	chien := append([]*domain.Card(nil), g.GetChien()...)
+	for g.GetPhase() == domain.FrenchTarotPhaseBid {
+		g.CpuBid()
+	}
+
+	var reveal *domain.ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "frenchtarot.log.revealChien" {
+			reveal = entry
+		}
+	}
+	require.NotNil(t, reveal)
+	assert.Equal(t, chien, reveal.Cards)
+	assert.Len(t, reveal.Cards, domain.FrenchTarotChienSize)
+}
+
 func TestFrenchTarotBidLogUsesDetailCode(t *testing.T) {
 	g := frenchTarotNewReset()
 	g.SetBidPlayerIdx(0)

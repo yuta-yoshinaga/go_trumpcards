@@ -468,6 +468,7 @@ func (g *FrenchTarot) finalizeBid() {
 	case FrenchTarotBidPetite, FrenchTarotBidGarde:
 		// シアンを公開してデクレアラーの手札に加え、エカルトを待つ。
 		g.chienRevealed = true
+		g.appendLog(g.declarerIdx, "reveal_chien", "frenchtarot.log.revealChien", nil, g.chien)
 		for _, c := range g.chien {
 			g.players[g.declarerIdx].AddCard(c)
 		}
