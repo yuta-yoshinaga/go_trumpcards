@@ -28,6 +28,18 @@ export function getChinchonHint(state: ChinchonResponse): HintResult | null {
       : { targetAction: 'drawStock', reason: 'frontendHint.chinchonDrawStock', confidence: 'moderate' };
   }
 
+  if (state.phase === ChinchonPhase.LAYOFF) {
+    if (state.layoffableIndices.length > 0) {
+      return {
+        targetAction: 'layoff',
+        reason: 'frontendHint.chinchonLayoff',
+        confidence: 'moderate',
+        targetIndices: state.layoffableIndices,
+      };
+    }
+    return { targetAction: 'skipLayoff', reason: 'frontendHint.chinchonSkipLayoff', confidence: 'moderate' };
+  }
+
   if (state.phase !== ChinchonPhase.DISCARD) return null;
 
   // 点は手に残った札の合計なので、繋がっていない札のうち一番重いものを出す。
