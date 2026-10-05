@@ -80,6 +80,7 @@ const humanTurnState: DaifugoResponse = {
   sequenceLocked: false,
   sortMode: 0,
   playableCardIndices: null,
+  playableCardCombinations: null,
 };
 
 const cpuTurnState: DaifugoResponse = {
@@ -346,6 +347,23 @@ describe('DaifugoPage', () => {
     fireEvent.click(screen.getByAltText('♦ 5')); // 2 cards = table count
     expect(screen.queryByTestId('daifugo-count-warning')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '選択して出す' })).not.toBeDisabled();
+  });
+
+  it('warns and disables play when a matching-size selection is not a legal combination', async () => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      tableCards: [
+        { design: 'HEART', value: 6 },
+        { design: 'DIAMOND', value: 6 },
+      ],
+      playableCardCombinations: [[1, 2]],
+    });
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♠ 3'));
+    fireEvent.click(screen.getByAltText('♥ 5'));
+    expect(screen.getByTestId('daifugo-combination-warning')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '選択して出す' })).toBeDisabled();
   });
 
   it('does not show the count warning during a pending action', async () => {

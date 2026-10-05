@@ -8014,4 +8014,44 @@ func TestDaifugo_GetPlayableCardIndices(t *testing.T) {
 		d.SetSequenceLocked(true)
 		assert.Nil(t, d.GetPlayableCardIndices())
 	})
+
+	t.Run("playable selections share legal combination indices", func(t *testing.T) {
+		cases := []struct {
+			name        string
+			hand        []*domain.Card
+			table       []*domain.Card
+			wantIndices []int
+			wantCombos  [][]int
+		}{
+			{"single", []*domain.Card{card(domain.CardDesignSpade, 5), card(domain.CardDesignHeart, 12)}, []*domain.Card{card(domain.CardDesignClover, 9)}, []int{1}, [][]int{{1}}},
+			{"pair", []*domain.Card{card(domain.CardDesignSpade, 12), card(domain.CardDesignHeart, 12), card(domain.CardDesignClover, 4)}, []*domain.Card{card(domain.CardDesignSpade, 9), card(domain.CardDesignHeart, 9)}, []int{0, 1}, [][]int{{0, 1}}},
+			// Empty table keeps the existing API distinction: every card is
+			// playable as a lead, while combinations are unavailable.
+			{"empty table", []*domain.Card{card(domain.CardDesignSpade, 3), card(domain.CardDesignHeart, 9)}, nil, []int{0, 1}, nil},
+		}
+		for _, tc := range cases {
+			t.Run(tc.name, func(t *testing.T) {
+				d := newGame(tc.hand)
+				d.SetTableCards(tc.table)
+				indices, combos := d.GetPlayableSelections()
+				assert.Equal(t, tc.wantIndices, indices)
+				assert.Equal(t, tc.wantCombos, combos)
+				if tc.table != nil {
+					marked := make([]bool, len(tc.hand))
+					for _, combo := range combos {
+						for _, index := range combo {
+							marked[index] = true
+						}
+					}
+					var union []int
+					for index, playable := range marked {
+						if playable {
+							union = append(union, index)
+						}
+					}
+					assert.Equal(t, indices, union)
+				}
+			})
+		}
+	})
 }

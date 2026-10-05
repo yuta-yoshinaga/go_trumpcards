@@ -295,29 +295,45 @@ func (d *Daifugo) GetPlayableCardIndices() []int {
 		return nil
 	}
 
-	marked := make([]bool, n)
-	idx := make([]int, k)
-	cards := make([]*Card, k)
-	var walk func(start, depth int)
-	walk = func(start, depth int) {
-		if depth == k {
-			for i, j := range idx {
-				cards[i] = player.GetCard(j)
-			}
-			if d.isPlayable(cards) {
-				for _, j := range idx {
-					marked[j] = true
-				}
-			}
-			return
+	return playableIndices(d.playableCombos(player, k), n)
+}
+
+// GetPlayableSelections returns playable hand indices and their legal combinations.
+// Both results share one enumeration of the current hand.
+func (d *Daifugo) GetPlayableSelections() ([]int, [][]int) {
+	if d.round.gameEndFlag || d.round.pendingActionType != DaifugoPendingNone {
+		return nil, nil
+	}
+	player := d.players[d.round.currentTurn]
+	if !player.GetIsHuman() || player.GetCardsSize() == 0 {
+		return nil, nil
+	}
+	if d.round.tableCards == nil {
+		if d.round.sequenceLocked {
+			return nil, nil
 		}
-		for i := start; i <= n-(k-depth); i++ {
-			idx[depth] = i
-			walk(i+1, depth+1)
+		indices := make([]int, player.GetCardsSize())
+		for i := range indices {
+			indices[i] = i
+		}
+		return indices, nil
+	}
+	n, k := player.GetCardsSize(), len(d.round.tableCards)
+	combos := d.playableCombos(player, k)
+	indices := playableIndices(combos, n)
+	if d.round.sequenceLocked {
+		return indices, nil
+	}
+	return indices, combos
+}
+
+func playableIndices(combos [][]int, n int) []int {
+	marked := make([]bool, n)
+	for _, combo := range combos {
+		for _, i := range combo {
+			marked[i] = true
 		}
 	}
-	walk(0, 0)
-
 	out := make([]int, 0, n)
 	for i, ok := range marked {
 		if ok {
@@ -328,6 +344,46 @@ func (d *Daifugo) GetPlayableCardIndices() []int {
 		return nil
 	}
 	return out
+}
+
+func (d *Daifugo) playableCombos(player *DaifugoPlayer, k int) [][]int {
+	n := player.GetCardsSize()
+	if k > n || combinationCountCapped(n, k, daifugoMaxPlayableCombos) > daifugoMaxPlayableCombos {
+		return nil
+	}
+	var out [][]int
+	idx := make([]int, k)
+	cards := make([]*Card, k)
+	var walk func(start, depth int)
+	walk = func(start, depth int) {
+		if depth == k {
+			for i, j := range idx {
+				cards[i] = player.GetCard(j)
+			}
+			if d.isPlayable(cards) {
+				out = append(out, append([]int(nil), idx...))
+			}
+			return
+		}
+		for i := start; i <= n-(k-depth); i++ {
+			idx[depth] = i
+			walk(i+1, depth+1)
+		}
+	}
+	walk(0, 0)
+	return out
+}
+
+// GetPlayableCardCombinations returns every currently legal hand-index combination.
+// A nil result means the domain could not enumerate them safely.
+func (d *Daifugo) GetPlayableCardCombinations() [][]int {
+	if d.round.gameEndFlag || d.round.pendingActionType != DaifugoPendingNone || !d.players[d.round.currentTurn].GetIsHuman() || d.round.tableCards == nil {
+		return nil
+	}
+	if d.round.sequenceLocked {
+		return nil
+	}
+	return d.playableCombos(d.players[d.round.currentTurn], len(d.round.tableCards))
 }
 
 // combinationCountCapped は C(n, k) を返す。cap を超えた時点で打ち切って
