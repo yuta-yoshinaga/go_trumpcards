@@ -257,11 +257,22 @@ describe('GermanSoloPage', () => {
   });
 
   it('renders round end with the next deal button and the deal result', async () => {
-    mockExec.mockResolvedValue(roundEndState);
+    mockExec.mockResolvedValue(
+      makeGermanSoloState({
+        ...roundEndState,
+        players: roundEndState.players.map((player, id) => ({ ...player, score: [12, -4, -4, -4][id] })),
+        playerScores: [12, -4, -4, -4],
+        playerScoreDeltas: [12, -4, -4, -4],
+      }),
+    );
     renderWithProviders(<GermanSoloPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のディール' })).toBeInTheDocument());
     expect(screen.getByText('ディール結果')).toBeInTheDocument();
     expect(screen.getByText(/成功（契約達成）/)).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: '今回の得点増減' })).toBeInTheDocument();
+    expect(screen.getByText(/あなた: 今回の増減: \+12点/)).toBeInTheDocument();
+    expect(screen.getByText(/あなた: 得点: 12/)).toBeInTheDocument();
+    expect(screen.getAllByText(/今回の増減: -4点/)).toHaveLength(3);
   });
 
   it('renders the game end message', async () => {

@@ -253,6 +253,12 @@ func (_m *MockGermanSoloGame) GetPlayerScores() [domain.GermanSoloPlayerCnt]int 
 	return ret.Get(0).([domain.GermanSoloPlayerCnt]int)
 }
 
+// GetPlayerScoreDeltas モック
+func (_m *MockGermanSoloGame) GetPlayerScoreDeltas() [domain.GermanSoloPlayerCnt]int {
+	ret := _m.Called()
+	return ret.Get(0).([domain.GermanSoloPlayerCnt]int)
+}
+
 // GetOutcome モック
 func (_m *MockGermanSoloGame) GetOutcome() domain.GermanSoloOutcome {
 	ret := _m.Called()

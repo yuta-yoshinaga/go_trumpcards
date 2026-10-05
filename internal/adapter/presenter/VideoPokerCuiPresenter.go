@@ -92,13 +92,6 @@ func (vpp *VideoPokerCuiPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 	return sb.String()
 }
 
-func formatSigned(value int) string {
-	if value >= 0 {
-		return "+" + strconv.Itoa(value)
-	}
-	return strconv.Itoa(value)
-}
-
 // ActionLogOutput 棋譜をテキスト出力
 func (vpp *VideoPokerCuiPresenter) ActionLogOutput(vp interfaces.VideoPokerGame) string {
 	return actionLogOutputText(vp)

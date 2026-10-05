@@ -13,6 +13,12 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+func TestFormatSigned(t *testing.T) {
+	assert.Equal(t, "+5", formatSigned(5))
+	assert.Equal(t, "+0", formatSigned(0))
+	assert.Equal(t, "-5", formatSigned(-5))
+}
+
 func setupVideoPokerCuiMockDefaults(m *interfaces.MockVideoPokerGame) {
 	m.On("GetChips").Return(1000).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseBet).Maybe()

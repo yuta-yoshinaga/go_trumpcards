@@ -75,7 +75,9 @@
   "roundResult": {
     "title": "Deal result",
     "outcome": "Result: {{outcome}}",
-    "declarer": "Declarer: {{name}} ({{bid}})"
+    "declarer": "Declarer: {{name}} ({{bid}})",
+    "scoreChanges": "Score changes this deal",
+    "scoreDelta": "Deal change: {{score}} points"
   },
   "hintAvailable": "Hint",
   "hint": {
