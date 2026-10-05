@@ -51901,6 +51901,10 @@ components:
           type: integer
           description: Dealer's best 5-card hand rank (same encoding as `playerHandRank`)
           example: 0
+        callWinRate:
+          type: number
+          description: Estimated share of completed call outcomes, including ties; present during the flop decision.
+          example: 0.82
         message:
           type: string
           description: Game result or error message. Empty during pre-resolution phases.

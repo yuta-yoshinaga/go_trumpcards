@@ -520,6 +520,14 @@ func (c *CasinoHoldem) GetDealerBest() []*Card { return c.dealerBest }
 // GetChips チップ
 func (c *CasinoHoldem) GetChips() int { return c.chips.GetChips() }
 
+// GetCallWinRate returns the estimated call outcome share during the flop decision.
+func (c *CasinoHoldem) GetCallWinRate() (float64, bool) {
+	if c.phase != CasinoHoldemPhaseFlop {
+		return 0, false
+	}
+	return CasinoHoldemCallWinRate(c.playerHand, c.community, casinoHoldemCallWinRateSimulations, nil), true
+}
+
 // --- Test helpers ---
 
 // SetPhase フェーズ設定（テスト用）

@@ -34,6 +34,7 @@ type CasinoHoldemWebOutput struct {
 	NetChange      int              `json:"netChange"`
 	PlayerHandRank int              `json:"playerHandRank"`
 	DealerHandRank int              `json:"dealerHandRank"`
+	CallWinRate    *float64         `json:"callWinRate,omitempty"`
 	WebOutputBase
 }
 
