@@ -94,7 +94,7 @@ func (p *OmiCuiPresenter) Output(e interfaces.OmiGame, lastErr error) string {
 			b.WriteString(i18n.T("omi.dealStageSecond") + "\n")
 		}
 
-		b.WriteString(i18n.T("omi.scoringRule") + "\n")
+		b.WriteString(i18n.Tf("omi.scoringRule", "limit", strconv.Itoa(e.GetConfig().PointLimit)) + "\n")
 
 		tricks0 := 0
 		tricks1 := 0

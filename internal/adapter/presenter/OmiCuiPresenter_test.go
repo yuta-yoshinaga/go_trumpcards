@@ -77,7 +77,7 @@ func TestOmiCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "指名者: あなた")
 		assert.Contains(t, result, "切り札: SPADE (指名: あなた / チーム0)")
 		assert.Contains(t, result, "残り4枚が配られ、全員の手札が8枚になりました。")
-		assert.Contains(t, result, "得点規則: 5トリック以上で1点、全取り(8トリック)で2点、4-4引き分けは0点")
+		assert.Contains(t, result, "得点規則: 5トリック以上で1点、全取り(8トリック)で2点、4-4引き分けは0点。10点先取で勝利")
 		assert.Contains(t, result, "チーム0: 0点 (0トリック)  チーム1: 0点 (0トリック)")
 		assert.Contains(t, result, "あなた: チーム0 獲得0トリック 2枚")
 		assert.Contains(t, result, "[0]♠1")

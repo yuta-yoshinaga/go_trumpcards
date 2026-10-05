@@ -15,7 +15,7 @@
   "trumpUndecided": "切り札: 未決定",
   "dealStageFirst": "各自に4枚配られました。切り札を宣言してください。",
   "dealStageSecond": "残り4枚が配られ、全員の手札が8枚になりました。",
-  "scoringRule": "得点規則: 5トリック以上で1点、全取り(8トリック)で2点、4-4引き分けは0点",
+  "scoringRule": "得点規則: 5トリック以上で1点、全取り(8トリック)で2点、4-4引き分けは0点。{{limit}}点先取で勝利",
   "teamScoreLine": "チーム0: {{t0}}点 ({{tricks0}}トリック)  チーム1: {{t1}}点 ({{tricks1}}トリック)",
   "playerLine": "{{name}}: チーム{{team}} 獲得{{tricks}}トリック {{cards}}枚",
   "gameEnd": "ゲーム終了！ チーム{{team}}の勝利です！",
