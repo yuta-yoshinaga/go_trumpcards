@@ -69322,7 +69322,12 @@ components:
           type: array
           items:
             type: integer
-          description: Bid placed by each player in seat order (0=Pass, 1=Solo, 2=Misère, 3=Abundance; -1=not yet bid)
+          description: Bid value per player in seat order (0=Pass or not yet bid; use bidDone to distinguish, 1=Solo, 2=Misère, 3=Abundance)
+        bidDone:
+          type: array
+          items:
+            type: boolean
+          description: Whether each player has completed bidding, distinguishing Pass from not yet bid
         currentTrick:
           type: array
           items:

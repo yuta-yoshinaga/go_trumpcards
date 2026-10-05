@@ -261,6 +261,25 @@ function SoloWhistPageContent() {
             })
           : t('bidNone')}
       </span>
+      {isBidPhase && (
+        <section
+          aria-label={t('bidHistory')}
+          data-testid="solowhist-bid-history"
+          className="mx-4 mb-2 rounded-lg bg-ds-surface p-3"
+        >
+          <h2 className="mb-2 text-sm font-semibold text-ds-text-primary">{t('bidHistory')}</h2>
+          <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {state.players.map((player, idx) => (
+              <li key={player.id} className="text-sm text-ds-text-primary">
+                <span>{playerName(player.id, player.isHuman)}: </span>
+                <span>
+                  {state.bidDone?.[idx] ? t(`bid.${CONTRACT_KEYS[state.bids[idx] as 0 | 1 | 2 | 3]}`) : t('bidUnbid')}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (

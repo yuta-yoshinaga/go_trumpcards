@@ -30,6 +30,7 @@ func setupSoloWhistWebMock() *interfaces.MockSoloWhistGame {
 	m.On("GetContract").Return(domain.SoloWhistBidSolo)
 	m.On("GetTrumpSuit").Return(domain.CardDesignSpade)
 	m.On("GetBids").Return([domain.SoloWhistPlayerCnt]domain.SoloWhistBid{domain.SoloWhistBidSolo, domain.SoloWhistBidPass, domain.SoloWhistBidPass, domain.SoloWhistBidPass})
+	m.On("GetBidDone").Return([domain.SoloWhistPlayerCnt]bool{true, true, false, false})
 	m.On("GetPlayerScores").Return([domain.SoloWhistPlayerCnt]int{0, 0, 0, 0})
 	m.On("GetRoundTricks").Return([domain.SoloWhistPlayerCnt]int{0, 0, 0, 0})
 	m.On("GetWinnerPlayer").Return(-1)
@@ -78,6 +79,7 @@ func TestSoloWhistWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, domain.CardDesignSpade, resObj.TrumpSuit)
 		assert.Equal(t, int(domain.SoloWhistBidSolo), resObj.Contract)
 		assert.Equal(t, int(domain.SoloWhistBidSolo), resObj.Bids[0])
+		assert.Equal(t, [domain.SoloWhistPlayerCnt]bool{true, true, false, false}, resObj.BidDone)
 	})
 
 	t.Run("config values", func(t *testing.T) {
