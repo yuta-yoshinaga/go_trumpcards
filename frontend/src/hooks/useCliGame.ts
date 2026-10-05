@@ -15,6 +15,7 @@ export function useCliGame<TState, TArgs extends unknown[]>(
   config: CliGameConfig<TState, TArgs>,
   state: TState | null,
   callbacks: CliLogCallbacks,
+  options: { onCommandSuccess?: (args: TArgs) => void } = {},
 ) {
   const configRef = useRef(config);
   configRef.current = config;
@@ -22,6 +23,8 @@ export function useCliGame<TState, TArgs extends unknown[]>(
   callbacksRef.current = callbacks;
   const execRef = useRef(exec);
   execRef.current = exec;
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
   const pendingCommandRef = useRef(false);
 
   // Format and output state when it changes after a CLI command
@@ -70,6 +73,7 @@ export function useCliGame<TState, TArgs extends unknown[]>(
     try {
       pendingCommandRef.current = true;
       await execRef.current(...parsed.args);
+      optionsRef.current.onCommandSuccess?.(parsed.args);
     } catch (e) {
       pendingCommandRef.current = false;
       addError(e instanceof Error ? e.message : 'Error executing command');

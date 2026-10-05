@@ -140,6 +140,8 @@ function FreeCellPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('freecell', state);
   const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [timerVersion, setTimerVersion] = useState(0);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('freecell');
   const cliConfig: CliGameConfig<FreeCellResponse, Parameters<typeof freecellApi.exec>> = useMemo(
@@ -151,7 +153,17 @@ function FreeCellPageContent() {
     }),
     [],
   );
-  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+  const { handleCommand } = useCliGame(
+    exec,
+    cliConfig,
+    state,
+    { addInput, addOutput, addError, clearLog },
+    {
+      onCommandSuccess: (args) => {
+        if (String(args[0]).toLowerCase() === 'reset') setTimerVersion((version) => version + 1);
+      },
+    },
+  );
 
   const isPlayingForKbd = state?.phase === FreeCellPhase.PLAYING;
 
@@ -205,8 +217,6 @@ function FreeCellPageContent() {
 
   const [hoveredStack, setHoveredStack] = useState<{ col: number; cardIdx: number } | null>(null);
 
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [timerVersion, setTimerVersion] = useState(0);
   const startedAtRef = useRef<number | null>(null);
   const observedTimerVersionRef = useRef(0);
   const timerRunning = state?.phase === FreeCellPhase.PLAYING;
