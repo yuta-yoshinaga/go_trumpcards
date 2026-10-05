@@ -100,6 +100,9 @@ func (p *PutCuiPresenter) Output(g interfaces.PutGame, lastErr error) string {
 			sb.WriteString(i18n.Tf("put.promptRespond",
 				"name", cuiPlayerName(g.GetPlayer(caller), caller),
 				"level", putLevelLabel(g.GetPendingLevel())) + "\n")
+			sb.WriteString(i18n.Tf("put.promptRespondPoints",
+				"acceptStake", strconv.Itoa(domain.PutLevelValue(g.GetPendingLevel())),
+				"declinePoints", strconv.Itoa(g.GetHandStake())) + "\n")
 		case domain.PutPhaseTrickEnd:
 			sb.WriteString(i18n.T("put.promptTrickEnd") + "\n")
 			sb.WriteString(i18n.T("put.promptNextHelp") + "\n")

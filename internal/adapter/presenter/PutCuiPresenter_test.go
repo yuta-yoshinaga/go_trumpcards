@@ -30,6 +30,7 @@ func TestPutCuiPresenter_Output_Phases(t *testing.T) {
 			g.SetPendingLevel(domain.PutLevelPut)
 			g.SetPutCallerIdx(1)
 			g.SetResponderIdx(0)
+			g.SetHandStake(1)
 		}
 		if ph == domain.PutPhaseHandEnd {
 			g.SetHandWinnerIdx(0)
@@ -37,6 +38,21 @@ func TestPutCuiPresenter_Output_Phases(t *testing.T) {
 		out := p.Output(g, nil)
 		assert.NotEmpty(t, out, "phase %d output should be non-empty", ph)
 	}
+}
+
+func TestPutCuiPresenter_Output_RespondShowsDecisionPoints(t *testing.T) {
+	g := domain.NewDefaultPut()
+	g.Reset()
+	g.SetPhase(domain.PutPhaseRespond)
+	g.SetPendingLevel(domain.PutLevelPut)
+	g.SetPutCallerIdx(1)
+	g.SetResponderIdx(0)
+	g.SetHandStake(1)
+
+	out := new(presenter.PutCuiPresenter).Output(g, nil)
+
+	assert.Contains(t, out, "受諾時の賭け点: 2")
+	assert.Contains(t, out, "拒否時に宣言者が得る点数: 1")
 }
 
 func TestPutCuiPresenter_Output_Error(t *testing.T) {

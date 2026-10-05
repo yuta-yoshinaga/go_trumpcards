@@ -14,6 +14,7 @@
   "promptPlay": "play <idx>・・・カードを出す",
   "promptCanPut": "put・・・賭け点を倍にする",
   "promptRespond": "{{name}} が {{level}} を宣言！ accept・・・受諾 / decline・・・降参",
+  "promptRespondPoints": "受諾時の賭け点: {{acceptStake}}点 / 拒否時に宣言者が得る点数: {{declinePoints}}点",
   "promptTrickEnd": "トリック終了",
   "promptHandEnd": "ハンド終了: {{name}} が {{stake}}点 獲得",
   "promptNextHelp": "next・・・次へ",
