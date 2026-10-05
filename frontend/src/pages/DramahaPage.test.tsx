@@ -1890,12 +1890,22 @@ describe('DramahaPage showdown split', () => {
   });
 
   it('shows both labelled CPU hand names only at showdown and hides them for folded CPUs', async () => {
-    mockExec.mockResolvedValue(showdownState);
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [...showdownState.players, cpuPlayer(3, { folded: true })],
+    });
     renderWithProviders(<DramahaPage />);
-    const cpu = await screen.findByTestId('cpu-showdown-hand-names');
-    expect(cpu).toHaveTextContent('オマハ役: ツーペア');
-    expect(cpu).toHaveTextContent('ドロー役: ストレート');
-    expect(screen.getAllByTestId('cpu-showdown-hand-names')).toHaveLength(1);
+    await screen.findByTestId('cpu-showdown-hand-names');
+
+    const activeCpuRow = screen.getByTestId('cpu-showdown-hand-names').parentElement?.parentElement;
+    const foldedCpuRow = screen.getAllByText('[フォールド]')[1].parentElement?.parentElement;
+    expect(activeCpuRow).not.toBeNull();
+    expect(foldedCpuRow).not.toBeNull();
+
+    const activeCpuHandNames = within(activeCpuRow as HTMLElement).getByTestId('cpu-showdown-hand-names');
+    expect(activeCpuHandNames).toHaveTextContent('オマハ役: ツーペア');
+    expect(activeCpuHandNames).toHaveTextContent('ドロー役: ストレート');
+    expect(within(foldedCpuRow as HTMLElement).queryByTestId('cpu-showdown-hand-names')).not.toBeInTheDocument();
   });
 
   it('flags a scoop when one seat takes both halves', async () => {
