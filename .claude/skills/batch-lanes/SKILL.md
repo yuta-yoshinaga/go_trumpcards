@@ -48,6 +48,7 @@ The flows require `dele`, `gh`, `jq`, `flock`, `bun`, `go`, and `golangci-lint`,
 - `ship.sh`: commit a gated issue worktree and create a PR.
 - `fixpush.sh`: commit and push a gated fix and comment on its PR.
 - `sweep.sh`: land eligible reviewed batch PRs and report blocked ones.
+- `sweep.sh` reports `UNSWEPT` for open PRs outside `BATCH_BRANCH_RE`; set `BATCH_UNSWEPT_IGNORE="<pr ...>"` to ignore intentional non-batch PRs.
 - `triage.sh`: inspect automated review feedback and mark clean reviews as read.
 - `land.sh`: run the merge gate and squash-merge a PR.
 - `waitfor.sh`: wait for a shell condition up to a timeout.

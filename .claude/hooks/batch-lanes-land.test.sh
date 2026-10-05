@@ -44,4 +44,6 @@ fi
 grep -q 'Failed to merge PR 7' "$tmp/open.out" || fail "land.sh did not report the OPEN merge failure"
 BATCH_BRANCH_RE='^feat/(10[1-5][0-9]{2})-' bash "$SCRIPTS/sweep.sh" >"$tmp/sweep.out" || fail "sweep.sh failed"
 grep -q '^UNSWEPT 8 fix/10523-old$' "$tmp/sweep.out" || fail "sweep.sh did not report the unmatched PR: $(cat "$tmp/sweep.out")"
+BATCH_BRANCH_RE='^feat/(10[1-5][0-9]{2})-' BATCH_UNSWEPT_IGNORE='8 999' bash "$SCRIPTS/sweep.sh" >"$tmp/sweep-ignored.out" || fail "sweep.sh failed with BATCH_UNSWEPT_IGNORE"
+! grep -q '^UNSWEPT 8' "$tmp/sweep-ignored.out" || fail "sweep.sh reported ignored PR 8: $(cat "$tmp/sweep-ignored.out")"
 echo "batch-lanes land tests passed"

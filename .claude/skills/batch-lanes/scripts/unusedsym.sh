@@ -35,6 +35,13 @@ for path in files:
 for name, path, lineno in defs:
     if name in allowed: continue
     result = subprocess.run(['grep', '-R', '-n', '-I', '-w', '--exclude-dir=.git', '--exclude-dir=node_modules', '--exclude-dir=vendor', '--', name, '.'], text=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-    hits = [row for row in result.stdout.splitlines() if not (row.startswith(f'./{path}:') and row.split(':', 2)[1] == str(lineno))]
+    hits = []
+    for row in result.stdout.splitlines():
+        parts = row.split(':', 2)
+        if len(parts) >= 2 and (parts[0] == f'./{path}' or parts[0] == path) and parts[1] == str(lineno):
+            continue
+        if len(parts) >= 3 and parts[2].lstrip().startswith(('//', '*', '/*')):
+            continue
+        hits.append(row)
     if not hits: print(f'WARN UNUSED_NEW_SYMBOL {name} {path}')
 PY

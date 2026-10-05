@@ -15,25 +15,40 @@ echo 'export {}' > "$repo/frontend/base.ts"
 git -C "$repo" add . && git -C "$repo" commit -qm base
 cat > "$repo/internal/new.go" <<'GO'
 package internal
+
 func NewUnusedThing() {}
+
+// DocUnusedThing is a doc-commented function.
+func DocUnusedThing() {}
 GO
 cat > "$repo/frontend/new.ts" <<'TS'
 export function unusedNewThing() {}
+
+/**
+ * unusedJSDocThing has a JSDoc comment.
+ */
+export function unusedJSDocThing() {}
 TS
 out="$(bash "$SCRIPTS/unusedsym.sh" "$repo")"
 grep -q '^WARN UNUSED_NEW_SYMBOL NewUnusedThing internal/new.go$' <<< "$out" || fail "missing unused Go warning: $out"
+grep -q '^WARN UNUSED_NEW_SYMBOL DocUnusedThing internal/new.go$' <<< "$out" || fail "missing doc-commented unused Go warning: $out"
 grep -q '^WARN UNUSED_NEW_SYMBOL unusedNewThing frontend/new.ts$' <<< "$out" || fail "missing unused TS warning: $out"
+grep -q '^WARN UNUSED_NEW_SYMBOL unusedJSDocThing frontend/new.ts$' <<< "$out" || fail "missing JSDoc unused TS warning: $out"
 cat > "$repo/internal/use.go" <<'GO'
 package internal
-func UseIt() { NewUnusedThing() }
+func UseIt() {
+	NewUnusedThing()
+	DocUnusedThing()
+}
 GO
 cat > "$repo/frontend/use.ts" <<'TS'
-import { unusedNewThing } from './new'
+import { unusedNewThing, unusedJSDocThing } from './new'
 unusedNewThing()
+unusedJSDocThing()
 TS
 out="$(bash "$SCRIPTS/unusedsym.sh" "$repo")"
-! grep -q 'WARN UNUSED_NEW_SYMBOL NewUnusedThing\|WARN UNUSED_NEW_SYMBOL unusedNewThing' <<< "$out" || fail "reported referenced symbol: $out"
-out="$(ALLOW_UNUSED='NewUnusedThing unusedNewThing UseIt' bash "$SCRIPTS/unusedsym.sh" "$repo")"
+! grep -q 'WARN UNUSED_NEW_SYMBOL NewUnusedThing\|WARN UNUSED_NEW_SYMBOL DocUnusedThing\|WARN UNUSED_NEW_SYMBOL unusedNewThing\|WARN UNUSED_NEW_SYMBOL unusedJSDocThing' <<< "$out" || fail "reported referenced symbol: $out"
+out="$(ALLOW_UNUSED='NewUnusedThing DocUnusedThing unusedNewThing unusedJSDocThing UseIt' bash "$SCRIPTS/unusedsym.sh" "$repo")"
 ! grep -q 'WARN UNUSED_NEW_SYMBOL' <<< "$out" || fail "ALLOW_UNUSED did not suppress warnings: $out"
 
 BATCH_TESTING=1 source "$SCRIPTS/workerbuild.sh"

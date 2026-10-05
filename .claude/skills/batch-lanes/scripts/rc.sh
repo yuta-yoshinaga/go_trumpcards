@@ -18,8 +18,7 @@ fi
 bash "$B/unusedsym.sh" "$wt" >> "$BATCH_STATE/rc$1.txt" 2>&1
 if [[ "${ALLOW_PATCH_GAPS:-}" != 1 ]] && git -C "$wt" diff --name-only HEAD -- frontend/src/{pages,components,utils,hooks,api} \
   | grep -E '^frontend/src/(pages|components|utils|hooks|api)/.*\.(ts|tsx)$' | grep -qvE '\.test\.tsx?$'; then
-  gap_output="$(cd "$wt" && timeout 600 bash .claude/skills/patch-branch-gaps/scripts/patch-branch-gaps.sh 2>&1)"
-  gap_status=$?
+  gap_status=0; gap_output="$(cd "$wt" && timeout 600 bash .claude/skills/patch-branch-gaps/scripts/patch-branch-gaps.sh 2>&1)" || gap_status=$?
   if [[ $gap_status -ne 0 ]]; then
     while IFS= read -r line; do
       [[ "$line" == *"NO TEST FILE"* ]] && continue

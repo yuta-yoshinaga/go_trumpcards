@@ -4,10 +4,12 @@ source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 require_branch_re || exit $?
 branch_re="$BATCH_BRANCH_RE"
 prs=$(gh pr list --state open --author @me --limit 200 --json number,headRefName)
-while IFS=$'\t' read -r pr branch; do
+while IFS=$'\t' read -r -u 3 pr branch; do
   [[ -z "$pr" ]] && continue
   if ! jq -e --arg re "$branch_re" -n --arg branch "$branch" '$branch|test($re)' >/dev/null; then
-    echo "UNSWEPT $pr $branch"
+    if [[ ! " ${BATCH_UNSWEPT_IGNORE:-} " =~ [[:space:]]"$pr"[[:space:]] ]]; then
+      echo "UNSWEPT $pr $branch"
+    fi
     continue
   fi
   mg=$(gh pr view $pr --json mergeable -q .mergeable); [ "$mg" = CONFLICTING ] && { echo "CONFLICT $pr"; continue; }
@@ -27,4 +29,4 @@ while IFS=$'\t' read -r pr branch; do
     [ "$n" -gt 0 ] && echo "REVIEW-READY $pr"; continue
   fi
   [ "$pend" = 0 ] && "$B/land.sh" "$pr"
-done < <(jq -r '.[]|[.number,.headRefName]|@tsv' <<<"$prs")
+done 3< <(jq -r '.[]|[.number,.headRefName]|@tsv' <<<"$prs")
