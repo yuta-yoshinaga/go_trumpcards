@@ -49,6 +49,10 @@ type CucumberGame interface {
 	GetRoundNumber() int
 	// GetLastTrickWinnerIdx 直前ラウンドで最終トリックを取った席 (-1: 未)
 	GetLastTrickWinnerIdx() int
+	// GetResolvedTrickWinnerIdx 直前に決着したトリックの勝者を取得する (-1: なし)
+	GetResolvedTrickWinnerIdx() int
+	// GetLastTrickRank 直前に決着したトリックの最高ランクを取得する (0: なし)
+	GetLastTrickRank() int
 	// GetLastPenalty 直前ラウンドで付いた失点を取得する
 	GetLastPenalty() int
 	// GetPlayerCnt プレイヤー数を取得する

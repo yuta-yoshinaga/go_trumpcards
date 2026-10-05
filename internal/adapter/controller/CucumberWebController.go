@@ -56,13 +56,15 @@ type CucumberWebOutput struct {
 	//
 	// **失点が出るのは最終トリックだけ。** あと何回で失点判定かは表示から
 	// 読めなければ意味がありません。
-	TotalTricks        int                    `json:"totalTricks"`
-	RoundNumber        int                    `json:"roundNumber"`
-	LastTrickWinnerIdx int                    `json:"lastTrickWinnerIdx"`
-	LastPenalty        int                    `json:"lastPenalty"`
-	GameEndFlag        bool                   `json:"gameEndFlag"`
-	WinnerIdx          int                    `json:"winnerIdx"`
-	Hint               *CucumberWebOutputHint `json:"hint,omitempty"`
+	TotalTricks            int                    `json:"totalTricks"`
+	RoundNumber            int                    `json:"roundNumber"`
+	LastTrickWinnerIdx     int                    `json:"lastTrickWinnerIdx"`
+	ResolvedTrickWinnerIdx int                    `json:"resolvedTrickWinnerIdx"`
+	LastTrickRank          int                    `json:"lastTrickRank"`
+	LastPenalty            int                    `json:"lastPenalty"`
+	GameEndFlag            bool                   `json:"gameEndFlag"`
+	WinnerIdx              int                    `json:"winnerIdx"`
+	Hint                   *CucumberWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 	Config CucumberWebOutputConfig `json:"config"`
 }
@@ -99,13 +101,14 @@ var NewCucumberWebController, NewCucumberWebControllerWithProvider = webControll
 
 func newCucumberDefaultOutput(msg string) *CucumberWebOutput {
 	return &CucumberWebOutput{
-		Players:            make([]*CucumberWebOutputPlayer, 0),
-		ValidPlays:         make([]int, 0),
-		CurrentTrick:       make([]*WebOutputTrickCard, 0),
-		LastTrickWinnerIdx: -1,
-		TotalTricks:        domain.CucumberHandSize,
-		WinnerIdx:          -1,
-		WebOutputBase:      WebOutputBase{Message: msg},
+		Players:                make([]*CucumberWebOutputPlayer, 0),
+		ValidPlays:             make([]int, 0),
+		CurrentTrick:           make([]*WebOutputTrickCard, 0),
+		LastTrickWinnerIdx:     -1,
+		ResolvedTrickWinnerIdx: -1,
+		TotalTricks:            domain.CucumberHandSize,
+		WinnerIdx:              -1,
+		WebOutputBase:          WebOutputBase{Message: msg},
 	}
 }
 

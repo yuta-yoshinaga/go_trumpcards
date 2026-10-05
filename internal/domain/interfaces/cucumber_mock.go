@@ -38,14 +38,16 @@ func (m *MockCucumberGame) IsForcedLowest(playerIdx int) bool {
 	return m.Called(playerIdx).Bool(0)
 }
 
-func (m *MockCucumberGame) GetCurrentPlayerIdx() int   { return m.Called().Int(0) }
-func (m *MockCucumberGame) GetLeadPlayerIdx() int      { return m.Called().Int(0) }
-func (m *MockCucumberGame) GetTrickNumber() int        { return m.Called().Int(0) }
-func (m *MockCucumberGame) GetRoundNumber() int        { return m.Called().Int(0) }
-func (m *MockCucumberGame) GetLastTrickWinnerIdx() int { return m.Called().Int(0) }
-func (m *MockCucumberGame) GetLastPenalty() int        { return m.Called().Int(0) }
-func (m *MockCucumberGame) GetPlayerCnt() int          { return m.Called().Int(0) }
-func (m *MockCucumberGame) GetWinnerIdx() int          { return m.Called().Int(0) }
+func (m *MockCucumberGame) GetCurrentPlayerIdx() int       { return m.Called().Int(0) }
+func (m *MockCucumberGame) GetLeadPlayerIdx() int          { return m.Called().Int(0) }
+func (m *MockCucumberGame) GetTrickNumber() int            { return m.Called().Int(0) }
+func (m *MockCucumberGame) GetRoundNumber() int            { return m.Called().Int(0) }
+func (m *MockCucumberGame) GetLastTrickWinnerIdx() int     { return m.Called().Int(0) }
+func (m *MockCucumberGame) GetResolvedTrickWinnerIdx() int { return m.Called().Int(0) }
+func (m *MockCucumberGame) GetLastTrickRank() int          { return m.Called().Int(0) }
+func (m *MockCucumberGame) GetLastPenalty() int            { return m.Called().Int(0) }
+func (m *MockCucumberGame) GetPlayerCnt() int              { return m.Called().Int(0) }
+func (m *MockCucumberGame) GetWinnerIdx() int              { return m.Called().Int(0) }
 
 func (m *MockCucumberGame) GetValidPlayIndices(playerIdx int) []int {
 	args := m.Called(playerIdx)

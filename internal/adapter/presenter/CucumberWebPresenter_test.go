@@ -35,6 +35,8 @@ func TestCucumberWebPresenterOutput(t *testing.T) {
 	assert.Equal(t, float64(domain.CucumberPhasePlay), m["phase"])
 	assert.Equal(t, float64(-1), m["winnerIdx"])
 	assert.Equal(t, float64(-1), m["lastTrickWinnerIdx"], "まだ最終トリックは無い")
+	assert.Equal(t, float64(-1), m["resolvedTrickWinnerIdx"])
+	assert.Zero(t, m["lastTrickRank"])
 	assert.Zero(t, m["lastPenalty"])
 	assert.Zero(t, m["highestInTrick"], "リードの前は基準が無い")
 	assert.False(t, m["forced"].(bool))
@@ -52,6 +54,26 @@ func TestCucumberWebPresenterOutput(t *testing.T) {
 	assert.Empty(t, players[1].(map[string]any)["cards"], "CPU の手札は伏せる")
 	// リードなので全部出せる。
 	assert.Len(t, m["validPlays"].([]any), domain.CucumberHandSize)
+}
+
+func TestCucumberWebPresenterReportsMostRecentlyResolvedTrick(t *testing.T) {
+	p := new(CucumberWebPresenter)
+	c := newCucumberForWeb(t)
+	for i := range c.GetPlayerCnt() {
+		c.GiveHandForTest(i,
+			domain.NewCard(domain.CardDesignSpade, 5+i, false),
+			domain.NewCard(domain.CardDesignHeart, 2, false),
+		)
+	}
+	c.SetCurrentPlayerIdxForTest(0)
+	c.SetCurrentTrickForTest(nil)
+	for i := range c.GetPlayerCnt() {
+		require.NoError(t, c.PlayForTest(i, 0))
+	}
+	m := decodeCucumber(t, p.Output(c, nil))
+	assert.Equal(t, float64(c.GetLeadPlayerIdx()), m["resolvedTrickWinnerIdx"])
+	assert.Equal(t, float64(8), m["lastTrickRank"])
+	assert.Equal(t, float64(-1), m["lastTrickWinnerIdx"], "通常トリックの勝者は失点対象とは別")
 }
 
 // **超える基準はワイヤに載る。** 盤面から数えさせません。
