@@ -12,6 +12,9 @@ import { rummy500CardPenalty } from '../rummy500HandPenalty';
  * Suggestions:
  * - During the Draw phase, recommend the discard pile when it has cards.
  * - During the Play phase, recommend laying any obvious 3-of-a-kind.
+ * - Otherwise, name the highest-penalty card with no lay-off target and no meld
+ *   partner (same rank, or same suit within two ranks) as the discard; fall back
+ *   to the generic high-card advice when no such card exists.
  */
 export function getRummy500Hint(state: Rummy500Response): HintResult | null {
   if (state.gameEndFlag) return null;
