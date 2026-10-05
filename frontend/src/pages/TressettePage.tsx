@@ -201,11 +201,12 @@ function TressettePageContent() {
   const isGameEnd = state.phase === TressettePhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const teamLabels = ['A', 'B'];
-  const hasTrickResult = isTrickEnd && state.lastTrickWinner >= 0 && state.lastTrick.length > 0;
-  const trickResult = hasTrickResult
+  const trickWinner = isTrickEnd && state.lastTrick.length > 0 ? state.players[state.lastTrickWinner] : undefined;
+  const hasTrickResult = trickWinner !== undefined;
+  const trickResult = trickWinner
     ? t('trickResult', {
-        name: playerName(state.lastTrickWinner, state.players[state.lastTrickWinner]?.isHuman === true),
-        team: t('teamLabel', { team: teamLabels[state.players[state.lastTrickWinner]?.teamId ?? 0] }),
+        name: playerName(state.lastTrickWinner, trickWinner.isHuman),
+        team: t('teamLabel', { team: teamLabels[trickWinner.teamId] }),
         points: formatThirdPoints(state.currentTrickThirds),
       })
     : '';
