@@ -12,6 +12,7 @@
     "title": "Settings",
     "cpuDifficulty": "CPU Difficulty",
     "targetChips": "Target Chips",
+    "baseChips": "Base Chip Unit",
     "easy": "Easy",
     "normal": "Normal",
     "hard": "Hard"
