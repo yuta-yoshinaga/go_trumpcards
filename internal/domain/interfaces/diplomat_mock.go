@@ -109,6 +109,11 @@ func (_m *MockDiplomatGame) GetTableau() [domain.DiplomatTableauCnt][]*domain.Ca
 	return ret.Get(0).([domain.DiplomatTableauCnt][]*domain.Card)
 }
 
+func (_m *MockDiplomatGame) GetTableauMoveTargets() [domain.DiplomatTableauCnt + 1][]int {
+	ret := _m.Called()
+	return ret.Get(0).([domain.DiplomatTableauCnt + 1][]int)
+}
+
 func (_m *MockDiplomatGame) GetFoundation() [domain.DiplomatFoundationCnt][]*domain.Card {
 	ret := _m.Called()
 	return ret.Get(0).([domain.DiplomatFoundationCnt][]*domain.Card)

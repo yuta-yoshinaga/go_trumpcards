@@ -63944,6 +63944,13 @@ components:
             stacked on it any more (the Ace itself can still go to a foundation).
           items:
             type: boolean
+        tableauMoveTargets:
+          type: array
+          description: Legal tableau destination columns for each tableau top, followed by the waste top at index 8.
+          items:
+            type: array
+            items:
+              type: integer
         foundation:
           type: array
           description: The eight foundations, each building up in suit from the Ace.

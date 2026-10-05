@@ -26,6 +26,8 @@ export interface DiplomatResponse extends BaseGameResponse {
    * the badge cannot disagree with `canPlaceOnTableau` (#5741).
    */
   tableauDeadEnd?: boolean[];
+  /** Legal destination columns by source: tableau columns 0..7, then waste at index 8. */
+  tableauMoveTargets: number[][];
   /** Eight foundations, two per suit, opened by Aces and built up to Kings. */
   foundation: Card[][];
   stockCount: number;
