@@ -387,3 +387,25 @@ func TestBaccaratBanqueDrawWinPercentUsesBaccaratPoints(t *testing.T) {
 		})
 	}
 }
+
+func TestBaccaratBanqueDrawWinPercentReturnsZeroWithoutDrawOrForInvalidSeat(t *testing.T) {
+	tests := []struct {
+		name string
+		seat int
+		shoe []*Card
+	}{
+		{name: "empty shoe", seat: BaccaratBanqueRightIdx},
+		{name: "negative seat", seat: -1, shoe: []*Card{NewCard(CardDesignSpade, 1, true)}},
+		{name: "seat beyond player count", seat: BaccaratBanquePlayerCnt, shoe: []*Card{NewCard(CardDesignSpade, 1, true)}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			b := NewDefaultBaccaratBanque()
+			b.Reset()
+			b.SetShoeForTest(tt.shoe)
+
+			assert.Zero(t, b.GetDrawWinPercent(tt.seat))
+		})
+	}
+}

@@ -356,9 +356,9 @@ func (b *BaccaratBanque) GetShoeRemaining() int { return b.remaining() }
 
 // GetShoeComposition は A〜K のランクごとに残り札を数える。
 func (b *BaccaratBanque) GetShoeComposition() []int {
-	counts := make([]int, 13)
+	counts := make([]int, CardValueMax)
 	for _, c := range b.shoe[b.drawIdx:] {
-		if c.GetValue() >= 1 && c.GetValue() <= 13 {
+		if c.GetValue() >= 1 && c.GetValue() <= CardValueMax {
 			counts[c.GetValue()-1]++
 		}
 	}
