@@ -167,6 +167,38 @@ describe('BeggarMyNeighbourPage', () => {
     }
   });
 
+  it('stops autoplay after a failed step and allows retry from the error alert', async () => {
+    vi.useFakeTimers();
+    try {
+      mockExec
+        .mockReset()
+        .mockResolvedValueOnce(baseState)
+        .mockRejectedValueOnce(new Error('network unavailable'))
+        .mockResolvedValueOnce(baseState);
+      renderWithProviders(<BeggarMyNeighbourPage />);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      fireEvent.click(screen.getByTestId('autoplay-button'));
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(450);
+      });
+      expect(screen.getByRole('alert')).toHaveTextContent('通信エラーが発生しました');
+      expect(screen.getByRole('button', { name: '再試行' })).toBeInTheDocument();
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2000);
+      });
+      expect(mockExec.mock.calls.filter(([cmd]) => cmd === 'step')).toHaveLength(1);
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: '再試行' }));
+      });
+      expect(mockExec.mock.calls.filter(([cmd]) => cmd === 'step')).toHaveLength(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('faster speed shortens the auto-advance interval', async () => {
     vi.useFakeTimers();
     try {
