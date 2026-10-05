@@ -16,15 +16,17 @@ import (
 
 func mustOmbreOutputJSON(msg string) string {
 	out := &controller.OmbreWebOutput{
-		Players:         []*controller.OmbreWebOutputPlayer{},
-		CurrentTrick:    []*controller.WebOutputTrickCard{},
-		PlayableIndices: []int{},
-		OmbreIdx:        -1,
-		HighestBid:      int(domain.OmbreBidNone),
-		TrumpSuit:       -1,
-		LastTrickWinner: -1,
-		WinnerPlayer:    -1,
-		WebOutputBase:   controller.WebOutputBase{Message: msg},
+		Players:          []*controller.OmbreWebOutputPlayer{},
+		CurrentTrick:     []*controller.WebOutputTrickCard{},
+		PlayableIndices:  []int{},
+		OmbreIdx:         -1,
+		HighestBid:       int(domain.OmbreBidNone),
+		HighestBidderIdx: -1,
+		BidTrump:         [domain.OmbrePlayerCnt]int{-1, -1, -1},
+		TrumpSuit:        -1,
+		LastTrickWinner:  -1,
+		WinnerPlayer:     -1,
+		WebOutputBase:    controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {
@@ -40,6 +42,9 @@ func TestOmbreGoldenOutputIncludesHighestBid(t *testing.T) {
 	}
 	if value, ok := body["highestBid"]; !ok || value != float64(0) {
 		t.Fatalf("highestBid = %v, want 0", body["highestBid"])
+	}
+	if value, ok := body["highestBidderIdx"]; !ok || value != float64(-1) {
+		t.Fatalf("highestBidderIdx = %v, want -1", body["highestBidderIdx"])
 	}
 }
 

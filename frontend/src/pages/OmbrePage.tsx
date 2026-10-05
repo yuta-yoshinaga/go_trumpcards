@@ -76,10 +76,16 @@ const OMBRE_PHASE_KEYS: Readonly<Record<number, string>> = {
 };
 
 /** Bid labels indexed by bid value (0=pass/none, 1=entrar, 2=solo). */
-const BID_KEYS = ['bidNone', 'bidEntrar', 'bidSolo'] as const;
+const BID_KEYS: Readonly<Record<number, string>> = { 0: 'bidNone', 1: 'bidEntrar', 2: 'bidSolo' };
 
 /** Trump-suit i18n keys indexed by suit code (1=♠ 2=♣ 3=♥ 4=♦); index 0 = none. */
-const SUIT_KEYS = ['suitNone', 'suitSpade', 'suitClub', 'suitHeart', 'suitDiamond'] as const;
+const SUIT_KEYS: Readonly<Record<number, string>> = {
+  0: 'suitNone',
+  1: 'suitSpade',
+  2: 'suitClub',
+  3: 'suitHeart',
+  4: 'suitDiamond',
+};
 
 /** Outcome i18n keys indexed by outcome value (0=none, 1=Sacar, 2=Puesta, 3=Codille). */
 const OUTCOME_KEYS = ['outcomeNone', 'outcomeSacar', 'outcomePuesta', 'outcomeCodille'] as const;
@@ -165,8 +171,9 @@ function OmbrePageContent() {
 
   const canBid = isBidPhase && state.isHumanBidTurn;
   const canPlay = isPlayPhase && isHumanTurn;
+  const highestBidder = state.players.find((player) => player.id === state.highestBidderIdx);
 
-  const trumpLabel = state.trumpSuit >= 1 ? t(SUIT_KEYS[state.trumpSuit] ?? 'suitNone') : t('suitNone');
+  const trumpLabel = state.trumpSuit >= 1 ? t(SUIT_KEYS[state.trumpSuit]) : t('suitNone');
 
   // Badge the three matadors (Spadille ♠A / Manille = trump 7 / Basto ♣A) in
   // the human's hand once trump is decided. Ring only — never blocks clicks.
@@ -261,7 +268,7 @@ function OmbrePageContent() {
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span className="mr-4">{t('winningBid', { bid: t(BID_KEYS[state.winningBid] ?? 'bidNone') })}</span>
+              <span className="mr-4">{t('winningBid', { bid: t(BID_KEYS[state.winningBid]) })}</span>
               <span>{t('trump', { suit: trumpLabel })}</span>
             </div>
 
@@ -285,6 +292,37 @@ function OmbrePageContent() {
 
               {/* Right: info sidebar */}
               <div data-tutorial="ombre-info">
+                {isBidPhase && (
+                  <section
+                    aria-label={t('bidHistory')}
+                    className="mb-2 p-2 rounded bg-ds-surface text-ds-text-muted text-sm"
+                  >
+                    <div className="text-ds-text-primary font-semibold">{t('bidHistory')}</div>
+                    {state.players.map((p) => (
+                      <div key={p.id} className="py-0.5">
+                        {t('bidDeclaration', {
+                          name: playerName(p.id, p.isHuman),
+                          bid: state.bidActed[p.id]
+                            ? t(state.bids[p.id] === 0 ? 'bidPass' : BID_KEYS[state.bids[p.id]])
+                            : t('bidWaiting'),
+                          trump:
+                            state.bidActed[p.id] && state.bids[p.id] > 0
+                              ? t('bidTrumpSuffix', { suit: t(SUIT_KEYS[state.bidTrump[p.id]]) })
+                              : '',
+                          highest: state.highestBidderIdx === p.id ? t('highestBidderSuffix') : '',
+                        })}
+                      </div>
+                    ))}
+                    {highestBidder && (
+                      <div className="text-ds-text-primary">
+                        {t('currentHighestBid', {
+                          name: playerName(highestBidder.id, highestBidder.isHuman),
+                          bid: t(BID_KEYS[state.highestBid]),
+                        })}
+                      </div>
+                    )}
+                  </section>
+                )}
                 {/* Per-player match scores with Ombre badge */}
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
                   {state.players.map((p) => (
@@ -449,7 +487,7 @@ function OmbrePageContent() {
               {canBid && pendingBid !== null && (
                 <div className="flex flex-wrap gap-2 items-center" data-testid="ombre-bid-stage2">
                   <span className="text-ds-text-muted text-sm">
-                    {t('chooseTrumpFor', { bid: t(BID_KEYS[pendingBid] ?? 'bidNone') })}:
+                    {t('chooseTrumpFor', { bid: t(BID_KEYS[pendingBid]) })}:
                   </span>
                   {TRUMP_CHOICES.map((c) => (
                     <button

@@ -79493,6 +79493,24 @@ components:
           type: integer
         highestBid:
           type: integer
+        bids:
+          type: array
+          description: Bid declarations per seat (0 means pass or not yet declared; see bidActed).
+          items:
+            type: integer
+        bidActed:
+          type: array
+          description: Whether each seat has declared in the current auction.
+          items:
+            type: boolean
+        bidTrump:
+          type: array
+          description: Trump suit selected per declaration (-1 when absent).
+          items:
+            type: integer
+        highestBidderIdx:
+          type: integer
+          description: Seat of the highest declaration, or -1 when none.
         trumpSuit:
           type: integer
         currentTrick:
