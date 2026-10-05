@@ -50,6 +50,23 @@ describe('getChinchonHint', () => {
     expect(getChinchonHint(base({ phase: ChinchonPhase.ROUND_END }))).toBeNull();
   });
 
+  it('points to a layoffable card during the layoff phase', () => {
+    expect(getChinchonHint(base({ phase: ChinchonPhase.LAYOFF, layoffableIndices: [1] }))).toEqual({
+      targetAction: 'layoff',
+      reason: 'frontendHint.chinchonLayoff',
+      confidence: 'moderate',
+      targetIndices: [1],
+    });
+  });
+
+  it('recommends skipping when no cards can be laid off', () => {
+    expect(getChinchonHint(base({ phase: ChinchonPhase.LAYOFF, layoffableIndices: [] }))).toEqual({
+      targetAction: 'skipLayoff',
+      reason: 'frontendHint.chinchonSkipLayoff',
+      confidence: 'moderate',
+    });
+  });
+
   // **同じランクが手札にあれば拾う。**セットに近づく。
   it('takes a discard that matches a rank in hand', () => {
     const hand = [card('SPADE', 7), card('HEART', 2)];
