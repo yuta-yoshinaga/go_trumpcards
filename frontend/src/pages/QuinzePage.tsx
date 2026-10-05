@@ -34,6 +34,7 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { formatSignedDelta } from '../utils/formatSignedDelta';
 
 const BET_OPTIONS = [10, 50, 100, 500];
+/** Mirrors `QuinzeMinBet` / `QuinzeMaxBet` in internal/domain/Quinze.go; keep them in sync. */
 const MIN_BET = 10;
 const MAX_BET = 10000;
 
@@ -318,7 +319,12 @@ function QuinzePageContent() {
                     <span id="quinze-custom-bet-help" className="text-xs text-ds-text-muted">
                       {t('betCustomHelp', { min: MIN_BET, max: MAX_BET })}
                     </span>
-                    <span id="quinze-custom-bet-error" className="text-xs text-ds-error-text">
+                    <span
+                      id="quinze-custom-bet-error"
+                      className="text-xs text-ds-error-text"
+                      role="status"
+                      aria-live="polite"
+                    >
                       {customBetError ? t(customBetError, { min: MIN_BET, max: MAX_BET, chips: state.chips }) : ''}
                     </span>
                     <button
