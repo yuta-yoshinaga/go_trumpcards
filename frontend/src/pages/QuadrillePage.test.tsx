@@ -119,7 +119,7 @@ describe('QuadrillePage', () => {
         currentBidderIdx: 1,
         bids: [0, 1, 2, 0],
         bidActed: [true, true, true, false],
-        bidTrump: [-1, 1, 3, -1],
+        bidTrump: [-1, -1, 3, -1],
         isHumanBidTurn: true,
         winningBid: 0,
         quadrilleIdx: -1,
@@ -130,7 +130,9 @@ describe('QuadrillePage', () => {
     const auction = await screen.findByTestId('quadrille-auction');
     expect(within(auction).getByText('未宣言')).toBeInTheDocument();
     expect(within(auction).getByText('パス')).toBeInTheDocument();
-    expect(within(auction).getByText('エントラール（スペード）')).toBeInTheDocument();
+    const entrarDeclaration = within(auction).getByText('エントラール');
+    expect(entrarDeclaration).toBeInTheDocument();
+    expect(entrarDeclaration).not.toHaveTextContent('（');
     expect(within(auction).getByText('ソロ（ハート）')).toBeInTheDocument();
     expect(within(auction).getByText('入札中')).toBeInTheDocument();
   });
