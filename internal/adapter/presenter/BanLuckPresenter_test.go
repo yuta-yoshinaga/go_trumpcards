@@ -5,6 +5,8 @@ package presenter
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -118,14 +120,50 @@ func TestBanLuckCuiPresenter_NamesTheBankerObligation(t *testing.T) {
 
 func TestBanLuckCuiPresenter_ShowsResults(t *testing.T) {
 	cp := new(BanLuckCuiPresenter)
-	out := cp.Output(banLuckSettled(t), nil)
+	g := banLuckSettled(t)
+	out := cp.Output(g, nil)
 
 	assert.Contains(t, out, "→", "収支が出ていない")
 	assert.NotContains(t, out, "banluck.")
+	banker := g.GetBankerSeat()
+	bankerName := g.GetPlayers()[banker].GetName()
+	bankerScore := g.GetHands()[banker].GetScore()
+	for i, result := range g.GetResults() {
+		if i == banker {
+			continue
+		}
+		outcome := map[domain.BanLuckOutcome]string{
+			domain.BanLuckOutcomeWin:  "勝ち",
+			domain.BanLuckOutcomeLose: "負け",
+			domain.BanLuckOutcomePush: "引き分け",
+		}[result.Outcome]
+		comparison := "親" + bankerName + "と比較: " + strconv.Itoa(g.GetHands()[i].GetScore()) + "対" + strconv.Itoa(bankerScore) + "、" + outcome
+		assert.Contains(t, out, comparison)
+	}
+	assert.Equal(t, len(g.GetResults())-1, strings.Count(out, "（親"+bankerName+"と比較:"))
 	// 役の名前が生キーでなく訳されている。
 	for _, name := range []string{"バスト", "通常", "ファイブドラゴン", "バンラック", "バンバン"} {
 		if assert.NotContains(t, out, "rank."+name) {
 			continue
+		}
+	}
+}
+
+func TestBanLuckCuiPresenter_ShowsComparisonOnGameEnd(t *testing.T) {
+	g := banLuckSettled(t)
+	if g.GetPhase() == domain.BanLuckPhaseRoundEnd {
+		config := g.GetConfig()
+		config.Rounds = g.GetRoundNumber()
+		g.SetConfig(config)
+		require.NoError(t, g.NextRound())
+	}
+	require.Equal(t, domain.BanLuckPhaseGameEnd, g.GetPhase())
+	out := new(BanLuckCuiPresenter).Output(g, nil)
+	bankerName := g.GetPlayers()[g.GetBankerSeat()].GetName()
+	assert.Equal(t, len(g.GetResults())-1, strings.Count(out, "（親"+bankerName+"と比較:"))
+	for i := range g.GetResults() {
+		if i != g.GetBankerSeat() {
+			assert.Contains(t, out, "（親"+bankerName+"と比較:")
 		}
 	}
 }

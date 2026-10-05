@@ -86,6 +86,8 @@ func (cp *BanLuckCuiPresenter) writeResult(sb *strings.Builder, c interfaces.Ban
 	}
 	results := c.GetResults()
 	players := c.GetPlayers()
+	hands := c.GetHands()
+	banker := c.GetBankerSeat()
 	sb.WriteString("----------\n")
 	for i, r := range results {
 		if i >= len(players) {
@@ -113,6 +115,13 @@ func (cp *BanLuckCuiPresenter) writeResult(sb *strings.Builder, c interfaces.Ban
 			"rank", i18n.T("banluck.rank."+domain.BanLuckRankName(r.Rank)),
 			"multiplier", multiplierText,
 			"delta", strconv.Itoa(r.Delta))
+		if i != banker {
+			line += i18n.Tf("banluck.comparison",
+				"banker", cp.seatName(c, banker),
+				"score", strconv.Itoa(hands[i].GetScore()),
+				"bankerScore", strconv.Itoa(hands[banker].GetScore()),
+				"outcome", i18n.T("banluck.outcome."+banLuckOutcomeName(r.Outcome)))
+		}
 		switch {
 		case r.Delta > 0:
 			sb.WriteString(color.Green(line) + "\n")
@@ -125,6 +134,18 @@ func (cp *BanLuckCuiPresenter) writeResult(sb *strings.Builder, c interfaces.Ban
 	if phase == domain.BanLuckPhaseGameEnd {
 		sb.WriteString(i18n.Tf("banluck.winnerLine",
 			"name", cp.seatName(c, c.WinnerSeat())) + "\n")
+	}
+}
+
+// banLuckOutcomeName は子から見た決着のロケールキー名を返す。
+func banLuckOutcomeName(outcome domain.BanLuckOutcome) string {
+	switch outcome {
+	case domain.BanLuckOutcomeWin:
+		return "win"
+	case domain.BanLuckOutcomeLose:
+		return "lose"
+	default:
+		return "push"
 	}
 }
 
