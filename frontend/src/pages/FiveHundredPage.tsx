@@ -17,6 +17,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useFiveHundredGame } from '../hooks/useFiveHundredGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useTutorialMessageParams } from '../providers/TutorialProvider';
 import { gameTheme } from '../styles/gameTheme';
 import type { FiveHundredResponse } from '../types/card';
 import { FiveHundredContract, FiveHundredPhase } from '../types/phases';
@@ -121,6 +122,7 @@ function FiveHundredPageContent() {
     nextRound,
     reset,
   } = useFiveHundredGame();
+  useTutorialMessageParams({ targetScore: state ? state.config.targetScore : config.targetScore });
   const { cardWidth } = useCardDimensions();
   const {
     hint: frontendHint,
