@@ -122,6 +122,22 @@ describe('FreeCellPage', () => {
       secondsFrom(resetElapsedBeforeNextTwoSeconds) + 2,
     );
 
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    const cliInput = screen.getByRole('textbox');
+    const elapsedBeforeCliAction = screen.getByTestId('freecell-timer').textContent;
+    fireEvent.change(cliInput, { target: { value: 'undo' } });
+    fireEvent.keyDown(cliInput, { key: 'Enter' });
+    await flushPendingDispatch();
+    expect(mockExec).toHaveBeenCalledWith('undo');
+    expect(screen.getByTestId('freecell-timer')).toHaveTextContent(elapsedBeforeCliAction ?? '');
+
+    fireEvent.change(cliInput, { target: { value: 'reset' } });
+    fireEvent.keyDown(cliInput, { key: 'Enter' });
+    await flushPendingDispatch();
+    expect(mockExec).toHaveBeenCalledWith('reset');
+    expect(screen.getByTestId('freecell-timer').textContent).toMatch(/00:00$/);
+    fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
+
     mockExec.mockImplementation((command) => Promise.resolve(command === 'giveup' ? gameOverState : playingState));
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
@@ -130,6 +146,7 @@ describe('FreeCellPage', () => {
     await vi.advanceTimersByTimeAsync(3000);
     expect(screen.getByTestId('freecell-timer')).toHaveTextContent(finalTime ?? '');
   });
+
   // --- Skeleton ---
 
   it('renders skeleton when state is null', () => {
