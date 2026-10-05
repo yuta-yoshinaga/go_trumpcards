@@ -15,6 +15,8 @@ export interface TutePlayer {
   trickCount: number;
   /** Cumulative score of the team this player belongs to. */
   teamScore: number;
+  /** Team membership (0=seats 0 & 2, 1=seats 1 & 3). */
+  teamId: 0 | 1;
 }
 
 /** A card played into the current Tute trick. */

@@ -66,6 +66,29 @@ describe('TutePage', () => {
     });
   });
 
+  it('shows each player team and marks allies and opponents in the trick', async () => {
+    mockExec.mockResolvedValue(
+      makeTuteState({
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'HEART', value: 12 } },
+          { playerIdx: 1, card: { design: 'CLOVER', value: 13 } },
+        ],
+      }),
+    );
+    renderWithProviders(<TutePage />);
+    await screen.findByText('現在のトリック');
+    expect(document.body.textContent).toContain('あなた（チームA）');
+    expect(document.body.textContent).toContain('CPU 1（チームB）');
+    expect(document.querySelector('[data-testid="trick-display-cards"] [data-team="0"]')).toHaveAttribute(
+      'data-team-role',
+      'ally',
+    );
+    expect(document.querySelector('[data-testid="trick-display-cards"] [data-team="1"]')).toHaveAttribute(
+      'data-team-role',
+      'foe',
+    );
+  });
+
   it('rings only trump cards and moves the rings when the trump suit changes', async () => {
     mockExec.mockResolvedValue(makeTuteState({ trumpSuit: 3 }));
     const firstRender = renderWithProviders(<TutePage />);
