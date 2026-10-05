@@ -490,11 +490,7 @@ func (b *Brusquembille) playCard(playerIdx int, card *Card) {
 	}
 }
 
-// validatePlay カードのプレイがルール上有効かを検証する。
-// 山札が残っているあいだは自由に出せる。山札と表向きの切り札を使い切った後は、
-// リードスートを持っていればそのスートに従う必要がある。IsFollowRequired は
-// 「いまリードスートに追従する義務があるか」を返す。
-//
+// IsFollowRequired は、いまリードスートに追従する義務があるかを返す。
 // **ブリュスカンビーユの肝はこの二相構造。** 山札が残っているあいだは
 // クローン元のブリスコラと同じく自由に出せるが、**山札を使い切った時点で
 // 追従必須に切り替わる**。前半は手札を補充できるので自由に捨てられ、
@@ -528,6 +524,9 @@ func (b *Brusquembille) leadSuit() int {
 	return -1
 }
 
+// validatePlay カードのプレイがルール上有効かを検証する。
+// 山札が残っているあいだは自由に出せる。山札と表向きの切り札を使い切った後は、
+// リードスートを持っていればそのスートに従う必要がある。
 func (b *Brusquembille) validatePlay(playerIdx int, card *Card) error {
 	if card == nil {
 		return NewDomainErrorCode(ErrInvalidCard, "brusquembille.errCardNil", nil)
