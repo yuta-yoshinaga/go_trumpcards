@@ -135,9 +135,27 @@ describe('TressettePage', () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<TressettePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
-    expect(screen.getByTestId('tr-trick-result')).toHaveTextContent('あなたがトリックに勝ち、チームが2/3サーズを獲得');
+    expect(screen.getByTestId('tr-trick-result')).toHaveTextContent('あなたがトリックに勝ち、チームAが2/3点を獲得');
     expect(screen.getByTestId('tr-trick-result-live')).toHaveTextContent(
-      'あなたがトリックに勝ち、チームが2/3サーズを獲得',
+      'あなたがトリックに勝ち、チームAが2/3点を獲得',
+    );
+  });
+
+  it.each([
+    [3, '1'],
+    [4, '1+1/3'],
+  ])('announces %i thirds as %s points', async (thirds, points) => {
+    mockExec.mockResolvedValue(
+      makeTressetteState({
+        phase: 1,
+        lastTrickWinner: 0,
+        currentTrickThirds: thirds,
+        lastTrick: [{ playerIdx: 0, card: { design: 'SPADE', value: 3 } }],
+      }),
+    );
+    renderWithProviders(<TressettePage />);
+    expect(await screen.findByTestId('tr-trick-result')).toHaveTextContent(
+      `あなたがトリックに勝ち、チームAが${points}点を獲得`,
     );
   });
 
