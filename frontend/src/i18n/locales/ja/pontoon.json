@@ -51,6 +51,7 @@
   "landscapeBanner": "横画面での表示を推奨します",
   "seatAriaLabel": "{{name}} の手 合計{{total}}",
   "rankedHandAriaLabel": "{{name}}、{{rank}}",
+  "currentHandAriaLabel": "{{name}}、現在の手札",
   "hiddenHandAriaLabel": "{{name}} の手は伏せられています",
   "bankerHandAriaLabel": "親の手 合計{{total}}",
   "hiddenBankerHandAriaLabel": "親の手は伏せられています",
