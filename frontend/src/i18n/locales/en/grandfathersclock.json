@@ -44,5 +44,7 @@
     "tableau": "The tableau is eight columns of five. Move one card at a time onto a card one rank higher, suit ignored; an empty column takes anything. There is no stock — all 52 cards are already on the table.",
     "controls": "Use the hint, undo, and auto-complete buttons."
   },
-  "undo": "Undo"
+  "undo": "Undo",
+  "redo": "Redo",
+  "redoUnavailable": "There is no move to redo"
 }

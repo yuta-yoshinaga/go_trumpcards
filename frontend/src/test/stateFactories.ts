@@ -39,6 +39,7 @@ import type {
   GongZhuResponse,
   GoStopBreakdown,
   GoStopResponse,
+  GrandfathersClockResponse,
   GutsResponse,
   HachiHachiResponse,
   HeartsResponse,
@@ -6383,6 +6384,21 @@ export function makeMinibridgeState(overrides?: Partial<MinibridgeResponse>): Mi
     winnerTeam: -1,
     declarerByDealerTie: false,
     config: { rounds: 4 },
+    message: '',
+    ...overrides,
+  };
+}
+
+/** Creates a default Grandfather's Clock state. */
+export function makeGrandfathersClockState(overrides?: Partial<GrandfathersClockResponse>): GrandfathersClockResponse {
+  return {
+    tableau: Array.from({ length: 8 }, () => []),
+    foundation: Array.from({ length: 12 }, (_, i) => ({ cards: [], targetRank: i + 1, complete: false })),
+    phase: 0,
+    moveCount: 0,
+    canUndo: false,
+    canRedo: false,
+    isStalemate: false,
     message: '',
     ...overrides,
   };

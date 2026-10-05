@@ -30,6 +30,8 @@ type GrandfathersClockInteractorIF interface {
 	Undo() string
 	// UndoN n回連続アンドゥ
 	UndoN(n int) string
+	// Redo reapplies the most recently undone move.
+	Redo() string
 }
 
 // GrandfathersClockInteractor グランドファーザーズ・クロック インタラクタークラス
@@ -72,6 +74,11 @@ func (gi *GrandfathersClockInteractor) Hint() string {
 // ActionLog 棋譜を出力する
 func (gi *GrandfathersClockInteractor) ActionLog() string {
 	return gi.gcp.ActionLogOutput(gi.Game)
+}
+
+// Redo reapplies the most recently undone move.
+func (gi *GrandfathersClockInteractor) Redo() string {
+	return execAndPresent(gi.Game, gi.gcp, gi.Game.Redo)
 }
 
 // RestoreGrandfathersClockInteractor deserialises JSON into a GrandfathersClockInteractor.
