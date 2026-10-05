@@ -15,7 +15,9 @@ type JulepePlayer struct {
 	// decided は play / pass を選び終えたか。
 	decided bool
 	// roundTricks はこのラウンドで取ったトリック数。
-	roundTricks int
+	roundTricks  int
+	roundPayout  int
+	roundPenalty int
 }
 
 // NewJulepePlayer コンストラクタ
@@ -35,6 +37,8 @@ func (p *JulepePlayer) ResetRound() {
 	p.inRound = false
 	p.decided = false
 	p.roundTricks = 0
+	p.roundPayout = 0
+	p.roundPenalty = 0
 }
 
 // GetChips 持ちチップを返す
@@ -61,6 +65,12 @@ func (p *JulepePlayer) SetDecided(b bool) { p.decided = b }
 // GetRoundTricks このラウンドで取ったトリック数
 func (p *JulepePlayer) GetRoundTricks() int { return p.roundTricks }
 
+// GetRoundPayout returns chips awarded from the pot in the completed round.
+func (p *JulepePlayer) GetRoundPayout() int { return p.roundPayout }
+
+// GetRoundPenalty returns the extra payment made for falling short this round.
+func (p *JulepePlayer) GetRoundPenalty() int { return p.roundPenalty }
+
 // AddRoundTrick このラウンドのトリック獲得を 1 つ数える
 func (p *JulepePlayer) AddRoundTrick() { p.roundTricks++ }
 
@@ -73,21 +83,25 @@ type julepePlayerJSON struct {
 	TrickHolder *TrickHolder `json:"th"`
 	// チップと参加状態は必ず往復させる。Worker はリクエストごとに KV から
 	// 作り直すので、抜けると降りたはずの人が参加者に戻る (#4478)。
-	Chips       int  `json:"ch"`
-	InRound     bool `json:"ir"`
-	Decided     bool `json:"dc"`
-	RoundTricks int  `json:"rt"`
+	Chips        int  `json:"ch"`
+	InRound      bool `json:"ir"`
+	Decided      bool `json:"dc"`
+	RoundTricks  int  `json:"rt"`
+	RoundPayout  int  `json:"rp,omitempty"`
+	RoundPenalty int  `json:"rn,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (p *JulepePlayer) MarshalJSON() ([]byte, error) {
 	return json.Marshal(julepePlayerJSON{
-		GamePlayer:  p.GamePlayer,
-		TrickHolder: &p.TrickHolder,
-		Chips:       p.chips,
-		InRound:     p.inRound,
-		Decided:     p.decided,
-		RoundTricks: p.roundTricks,
+		GamePlayer:   p.GamePlayer,
+		TrickHolder:  &p.TrickHolder,
+		Chips:        p.chips,
+		InRound:      p.inRound,
+		Decided:      p.decided,
+		RoundTricks:  p.roundTricks,
+		RoundPayout:  p.roundPayout,
+		RoundPenalty: p.roundPenalty,
 	})
 }
 
@@ -109,5 +123,7 @@ func (p *JulepePlayer) UnmarshalJSON(data []byte) error {
 	p.inRound = j.InRound
 	p.decided = j.Decided
 	p.roundTricks = j.RoundTricks
+	p.roundPayout = j.RoundPayout
+	p.roundPenalty = j.RoundPenalty
 	return nil
 }

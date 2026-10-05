@@ -63291,6 +63291,21 @@ components:
           additionalProperties:
             type: string
     JulepeResponse:
+      properties:
+        players:
+          type: array
+          description: Seats with round settlement values.
+          items:
+            allOf:
+              - $ref: '#/components/schemas/RamsPlayer'
+              - type: object
+                properties:
+                  roundPayout:
+                    type: integer
+                    description: Chips awarded from the pot in the completed round.
+                  roundPenalty:
+                    type: integer
+                    description: Extra chips paid into the pot for missing the required trick count.
       allOf:
         - $ref: '#/components/schemas/RamsResponse'
         - type: object

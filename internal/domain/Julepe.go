@@ -470,6 +470,7 @@ func (r *Julepe) finishRound() {
 	for i, p := range r.players {
 		if p.GetInRound() && p.GetRoundTricks() < required {
 			p.AddChips(-JulepeMissPenalty)
+			p.roundPenalty += JulepeMissPenalty
 			r.pot += JulepeMissPenalty
 			r.beast[i] = true
 			r.appendLog(i, "penalty", "julepe.log.penalty", map[string]string{
@@ -489,6 +490,7 @@ func (r *Julepe) finishRound() {
 			if n := p.GetRoundTricks(); n > 0 {
 				amount := share * n
 				p.AddChips(amount)
+				p.roundPayout += amount
 				paid += amount
 				r.appendLog(i, "payout", "julepe.log.payout", map[string]string{"tricks": strconv.Itoa(n), "amount": strconv.Itoa(amount)}, nil)
 			}

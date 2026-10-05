@@ -21,6 +21,10 @@
     "out": "out",
     "undecided": "—"
   },
+  "roundResult": {
+    "payout": "+{{amount}} payout",
+    "penalty": "extra payment {{amount}}"
+  },
   "decision": {
     "undecided": "Choose whether to play or drop out. Undecided: {{count}}."
   },
