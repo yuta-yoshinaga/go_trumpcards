@@ -45,6 +45,9 @@ func (cp *BaseballPokerWebPresenter) Output(c interfaces.BaseballPokerGame, last
 	resObj.Config = &controller.BaseballPokerWebOutCfg{
 		Seats: cfg.Seats, InitialChips: cfg.InitialChips, Ante: cfg.Ante,
 	}
+	if hint := c.GetHint(); hint != nil {
+		resObj.ServerHint = &controller.BaseballPokerWebOutputHint{Action: hint.Action, Reason: hint.Reason}
+	}
 
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()

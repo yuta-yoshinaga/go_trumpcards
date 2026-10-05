@@ -67,54 +67,27 @@ describe('getBaseballpokerHint', () => {
     expect(getBaseballpokerHint(state({ humanSeat: 9 }))).toBeNull();
   });
 
-  // **買い増しの返事が最優先。** その場で払うか降りるかしかない。
-  it('役が強ければ買い増しを薦める', () => {
-    const hint = getBaseballpokerHint(
-      state({ isBuying: true, phase: BaseballPhase.BUY_IN, buyCost: 400, seats: [seat({ handRank: 3 })] }),
-    );
-    expect(hint?.targetAction).toBe('pay');
+  it.each([
+    ['handIsWorthTheBuy', 'pay'],
+    ['buyIsCheapEnough', 'pay'],
+    ['buyCostsTooMuch', 'fold'],
+    ['strongEnoughToBet', 'bet'],
+    ['seeAnotherCard', 'check'],
+    ['strongEnoughToRaise', 'raise'],
+    ['worthACall', 'call'],
+    ['cheapToStay', 'call'],
+    ['wildsRaiseTheBar', 'fold'],
+  ])('サーバ助言 %s を対応するキーと操作へ写す', (reason, action) => {
+    const hint = getBaseballpokerHint(state({ serverHint: { action, reason } }));
+    expect(hint).toEqual({
+      targetAction: action,
+      reason: `frontendHint.baseball${reason[0].toUpperCase()}${reason.slice(1)}`,
+      confidence: reason === 'seeAnotherCard' ? 'strong' : 'moderate',
+    });
   });
 
-  it('安ければ役が無くても買い増しを薦める', () => {
-    const hint = getBaseballpokerHint(state({ isBuying: true, phase: BaseballPhase.BUY_IN, buyCost: 100 }));
-    expect(hint?.targetAction).toBe('pay');
-  });
-
-  it('手持ちに対して重ければ降りるよう薦める', () => {
-    const hint = getBaseballpokerHint(state({ isBuying: true, phase: BaseballPhase.BUY_IN, buyCost: 900 }));
-    expect(hint?.targetAction).toBe('fold');
-  });
-
-  it('自分が迫られていない買い増し中は助言しない', () => {
-    expect(getBaseballpokerHint(state({ phase: BaseballPhase.BUY_IN, isBuying: false }))).toBeNull();
-  });
-
-  it('賭けが無ければチェックを薦める', () => {
-    expect(getBaseballpokerHint(state())?.targetAction).toBe('check');
-  });
-
-  it('スリーカード以上なら賭けを薦める', () => {
-    expect(getBaseballpokerHint(state({ seats: [seat({ handRank: 4 })] }))?.targetAction).toBe('bet');
-  });
-
-  it('レイズ上限に達していたら賭けを薦めない', () => {
-    expect(getBaseballpokerHint(state({ seats: [seat({ handRank: 4 })], canRaise: false }))?.targetAction).toBe(
-      'check',
-    );
-  });
-
-  it('フラッシュ以上ならレイズを薦める', () => {
-    expect(getBaseballpokerHint(state({ toCall: 20, seats: [seat({ handRank: 6 })] }))?.targetAction).toBe('raise');
-  });
-
-  // **ワイルドが8枚あるので相場が上がる。** ツーペア未満はコールに値しない。
-  it('二段以上ならコール、それ未満で高ければ降りるよう薦める', () => {
-    expect(getBaseballpokerHint(state({ toCall: 20, seats: [seat({ handRank: 3 })] }))?.targetAction).toBe('call');
-    expect(getBaseballpokerHint(state({ toCall: 200, seats: [seat({ handRank: 2 })] }))?.targetAction).toBe('fold');
-  });
-
-  it('安ければ役が無くてもコールを薦める', () => {
-    expect(getBaseballpokerHint(state({ toCall: 5 }))?.targetAction).toBe('call');
+  it('serverHint が無ければ助言しない', () => {
+    expect(getBaseballpokerHint(state())).toBeNull();
   });
 });
 
