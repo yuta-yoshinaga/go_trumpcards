@@ -29,6 +29,7 @@ function makeState(overrides?: Partial<NapoleonResponse>): NapoleonResponse {
     currentPlayerIdx: 0,
     bidPlayerIdx: 0,
     leadPlayerIdx: 0,
+    validPlayIndices: [],
     currentTrick: [],
     trumpSuit: 1,
     adjutantCard: { design: 'HEART', value: 1 },

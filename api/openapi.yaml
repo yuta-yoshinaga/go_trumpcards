@@ -49621,6 +49621,11 @@ components:
         adjutantIdx:
           type: integer
           description: "Seat holding the adjutant card, or -1 while it is still hidden."
+        validPlayIndices:
+          type: array
+          description: Card indices playable by the current player according to Napoleon follow-suit rules.
+          items:
+            type: integer
         adjutantRevealed:
           type: boolean
           description: "Whether the adjutant has been revealed by playing the named card."
