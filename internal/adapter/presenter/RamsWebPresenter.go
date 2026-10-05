@@ -43,6 +43,8 @@ func (p *RamsWebPresenter) buildBase(r interfaces.RamsGame) *controller.RamsWebO
 	resObj.GameEndFlag = r.GetGameEndFlag()
 	resObj.WinnerIdx = r.GetWinnerIdx()
 	resObj.CurrentTrick = trickCardsToOutput(r.GetCurrentTrick())
+	resObj.LastTrick = trickCardsToOutput(r.GetLastTrick())
+	resObj.LastTrickWinner = r.GetLastTrickWinnerIdx()
 	resObj.Players = p.buildPlayersOutput(r)
 	resObj.RoundSettlement = ramsRoundSettlement(r)
 	resObj.MissPenalty = domain.RamsMissPenalty
