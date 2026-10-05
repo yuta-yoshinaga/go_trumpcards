@@ -65,24 +65,24 @@ describe('getBarbuHint', () => {
   it('advises avoiding tricks on negative contracts', () => {
     const hint = getBarbuHint(baseState({ currentContract: 1 }));
     expect(hint?.targetAction).toBe('play');
-    expect(hint?.reason).toBe('barbu.hint.avoid');
+    expect(hint?.reason).toBe('hint.avoid');
   });
 
   it('advises winning on the Trumps contract', () => {
     const hint = getBarbuHint(baseState({ currentContract: 5, trumpSuit: 1 }));
     expect(hint?.targetAction).toBe('play');
-    expect(hint?.reason).toBe('barbu.hint.win');
+    expect(hint?.reason).toBe('hint.win');
   });
 
   it('advises placing a domino when one is playable', () => {
     const hint = getBarbuHint(baseState({ currentContract: 6, dominoPlayable: [0] }));
     expect(hint?.targetAction).toBe('play');
-    expect(hint?.reason).toBe('barbu.hint.placeDomino');
+    expect(hint?.reason).toBe('hint.placeDomino');
   });
 
   it('advises passing in Dominoes when nothing is playable', () => {
     const hint = getBarbuHint(baseState({ currentContract: 6, dominoPlayable: [] }));
     expect(hint?.targetAction).toBe('pass');
-    expect(hint?.reason).toBe('barbu.hint.pass');
+    expect(hint?.reason).toBe('hint.pass');
   });
 });
