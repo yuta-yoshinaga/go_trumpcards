@@ -639,7 +639,10 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                 </div>
                 {/* Hole cards */}
                 <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
-                <div className="flex flex-wrap gap-1.5 mb-2">
+                <div
+                  className="flex flex-wrap gap-1.5 mb-2"
+                  {...(gameKey === 'chicago' ? { 'data-tutorial': 'chicago-hole-cards' } : {})}
+                >
                   {humanPlayer.holeCards?.length
                     ? humanPlayer.holeCards.map((card) => (
                         <AnimatedCard
