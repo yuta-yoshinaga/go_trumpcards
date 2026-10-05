@@ -43,6 +43,8 @@ func (p *BaccaratBanqueWebPresenter) buildBase(g interfaces.BaccaratBanqueGame) 
 	// 要なので、続いている数字が見えていないと伝わらない。
 	resObj.BankHeld = g.GetBankHeld()
 	resObj.ShoeRemaining = g.GetShoeRemaining()
+	resObj.ShoeComposition = g.GetShoeComposition()
+	resObj.DrawWinPercent = []int{g.GetDrawWinPercent(domain.BaccaratBanqueRightIdx), g.GetDrawWinPercent(domain.BaccaratBanqueLeftIdx)}
 	resObj.Retired = g.IsRetired()
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerIdx = g.GetWinnerIdx()

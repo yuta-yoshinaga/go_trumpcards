@@ -213,6 +213,16 @@ function BaccaratBanquePageContent() {
             <div className="text-ds-text-muted text-center text-xs mb-3" data-testid="banque-shoe-line">
               {t('label.shoe', { n: state.shoeRemaining })}
             </div>
+            <section
+              aria-label={t('shoeAnalysis.title')}
+              data-testid="banque-shoe-analysis"
+              className="mb-3 rounded border border-ds-border p-2 text-center text-xs text-ds-text-muted"
+            >
+              <div>{t('shoeAnalysis.composition', { counts: state.shoeComposition.join(t('listSeparator')) })}</div>
+              <div>
+                {t('shoeAnalysis.winChance', { right: state.drawWinPercent[0], left: state.drawWinPercent[1] })}
+              </div>
+            </section>
 
             <div className="flex gap-3 mb-3 flex-wrap sm:flex-nowrap" data-tutorial="baccaratbanque-tableaux">
               {tableaux.map((p) => seatBox(p))}

@@ -336,3 +336,76 @@ func TestBaccaratBanqueConfig_Validate(t *testing.T) {
 		assert.NoError(t, cfg.Validate(), "選べる張り額 %d が弾かれる", v)
 	}
 }
+
+func TestBaccaratBanqueShoeCompositionAndDrawOdds(t *testing.T) {
+	b := NewDefaultBaccaratBanque()
+	b.Reset()
+	b.SetShoeForTest([]*Card{NewCard(CardDesignSpade, 1, true), NewCard(CardDesignHeart, 10, true), NewCard(CardDesignClover, 9, true)})
+	b.GetPlayer(BaccaratBanqueBankerIdx).ResetCoup()
+	b.GetPlayer(BaccaratBanqueBankerIdx).AddCard(NewCard(CardDesignSpade, 2, true))
+	b.GetPlayer(BaccaratBanqueBankerIdx).AddCard(NewCard(CardDesignHeart, 2, true))
+	b.GetPlayer(BaccaratBanqueRightIdx).ResetCoup()
+	b.GetPlayer(BaccaratBanqueRightIdx).AddCard(NewCard(CardDesignSpade, 4, true))
+	counts := b.GetShoeComposition()
+	assert.Equal(t, 1, counts[0])
+	assert.Equal(t, 1, counts[8])
+	assert.Equal(t, 1, counts[9])
+	assert.Equal(t, 3, b.GetShoeRemaining())
+	assert.Equal(t, 33, b.GetDrawWinPercent(BaccaratBanqueRightIdx))
+}
+
+func TestBaccaratBanqueDrawWinPercentUsesBaccaratPoints(t *testing.T) {
+	tests := []struct {
+		name      string
+		shoe      []int
+		bankTotal int
+		seatTotal int
+		want      int
+	}{
+		{name: "face cards do not change a higher banker total", shoe: []int{11, 12, 13}, bankTotal: 5, seatTotal: 4, want: 100},
+		{name: "ten does not change an equal banker total", shoe: []int{10}, bankTotal: 4, seatTotal: 4, want: 0},
+		{name: "ace raises an equal banker total", shoe: []int{1}, bankTotal: 4, seatTotal: 4, want: 100},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			b := NewDefaultBaccaratBanque()
+			b.Reset()
+			shoe := make([]*Card, 0, len(tt.shoe))
+			for i, rank := range tt.shoe {
+				shoe = append(shoe, NewCard(CardDesignSpade+i%4, rank, true))
+			}
+			b.SetShoeForTest(shoe)
+			banker := b.GetPlayer(BaccaratBanqueBankerIdx)
+			banker.ResetCoup()
+			banker.AddCard(NewCard(CardDesignSpade, tt.bankTotal, true))
+			seat := b.GetPlayer(BaccaratBanqueRightIdx)
+			seat.ResetCoup()
+			seat.AddCard(NewCard(CardDesignHeart, tt.seatTotal, true))
+
+			assert.Equal(t, tt.want, b.GetDrawWinPercent(BaccaratBanqueRightIdx))
+		})
+	}
+}
+
+func TestBaccaratBanqueDrawWinPercentReturnsZeroWithoutDrawOrForInvalidSeat(t *testing.T) {
+	tests := []struct {
+		name string
+		seat int
+		shoe []*Card
+	}{
+		{name: "empty shoe", seat: BaccaratBanqueRightIdx},
+		{name: "negative seat", seat: -1, shoe: []*Card{NewCard(CardDesignSpade, 1, true)}},
+		{name: "seat beyond player count", seat: BaccaratBanquePlayerCnt, shoe: []*Card{NewCard(CardDesignSpade, 1, true)}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			b := NewDefaultBaccaratBanque()
+			b.Reset()
+			b.SetShoeForTest(tt.shoe)
+
+			assert.Zero(t, b.GetDrawWinPercent(tt.seat))
+		})
+	}
+}
