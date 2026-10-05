@@ -232,6 +232,12 @@ function HokmPageContent() {
                 players={state.players}
                 cardWidth={cardWidth}
                 label={t('currentTrick')}
+                cardAriaLabelFor={(player, card) =>
+                  t('trickCardByPlayer', {
+                    card: cardAlt(card),
+                    name: player.isHuman ? t('header.you') : t('header.cpu', { idx: String(player.id) }),
+                  })
+                }
               />
             </div>
 

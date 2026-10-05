@@ -88,6 +88,18 @@ describe('HokmPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it.each([
+    [1, 'CPU1が出した♠ A'],
+    [0, 'あなたが出した♠ A'],
+  ])('names trick cards with the localized player and card names for player %s', async (playerIdx, name) => {
+    mockExec.mockResolvedValue(
+      playing({ currentTrick: [{ playerIdx, card: card('SPADE', 1) }] } as Partial<HokmResponse>),
+    );
+    renderWithProviders(<HokmPage />);
+
+    expect(await screen.findByRole('img', { name })).toBeInTheDocument();
+  });
+
   it('announces the completed hand result', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 2, lastHandWinner: 0, lastHandKot: true }));
     renderWithProviders(<HokmPage />);
