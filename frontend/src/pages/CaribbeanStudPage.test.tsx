@@ -437,6 +437,10 @@ describe('CaribbeanStudPage', () => {
       mockApi.mockResolvedValue(betPhaseState);
       renderWithProviders(<CaribbeanStudPage />);
       await waitFor(() => expect(screen.getByTestId('csp-session-stats')).toBeInTheDocument());
+      expect(
+        screen.getByText('リセット後もページ再読み込み後も保持されます。クリアボタンで消去できます。'),
+      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '履歴をクリア' })).toBeInTheDocument();
       expect(screen.getByTestId('csp-session-tally')).toHaveTextContent('1勝 1敗 0分');
       expect(screen.getByTestId('csp-session-net')).toHaveTextContent('収支: +300');
     });
