@@ -25,6 +25,12 @@ const mockExec = vi.mocked(tressetteApi.exec);
 const playPhaseState = makeTressetteState();
 const trickEndState = makeTressetteState({
   phase: 1,
+  lastTrickWinner: 0,
+  currentTrickThirds: 2,
+  lastTrick: [
+    { playerIdx: 0, card: { design: 'SPADE', value: 3 } },
+    { playerIdx: 1, card: { design: 'SPADE', value: 1 } },
+  ],
   currentTrick: [
     { playerIdx: 0, card: { design: 'SPADE', value: 3 } },
     { playerIdx: 1, card: { design: 'SPADE', value: 1 } },
@@ -129,6 +135,49 @@ describe('TressettePage', () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<TressettePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+    expect(screen.getByTestId('tr-trick-result')).toHaveTextContent('あなたがトリックに勝ち、チームAが2/3点を獲得');
+    expect(screen.getByTestId('tr-trick-result-live')).toHaveTextContent(
+      'あなたがトリックに勝ち、チームAが2/3点を獲得',
+    );
+  });
+
+  it.each([
+    [3, '1'],
+    [4, '1+1/3'],
+  ])('announces %i thirds as %s points', async (thirds, points) => {
+    mockExec.mockResolvedValue(
+      makeTressetteState({
+        phase: 1,
+        lastTrickWinner: 0,
+        currentTrickThirds: thirds,
+        lastTrick: [{ playerIdx: 0, card: { design: 'SPADE', value: 3 } }],
+      }),
+    );
+    renderWithProviders(<TressettePage />);
+    expect(await screen.findByTestId('tr-trick-result')).toHaveTextContent(
+      `あなたがトリックに勝ち、チームAが${points}点を獲得`,
+    );
+  });
+
+  it('does not announce a trick result without winner data or outside trick end', async () => {
+    mockExec.mockResolvedValue(makeTressetteState({ phase: 1, lastTrickWinner: -1, lastTrick: [] }));
+    const { unmount } = renderWithProviders(<TressettePage />);
+    await screen.findByTestId('tr-trick-result-live');
+    expect(screen.queryByTestId('tr-trick-result')).not.toBeInTheDocument();
+    expect(screen.getByTestId('tr-trick-result-live')).toBeEmptyDOMElement();
+
+    unmount();
+    mockExec.mockResolvedValue(
+      makeTressetteState({
+        phase: 0,
+        lastTrickWinner: 0,
+        lastTrick: [{ playerIdx: 0, card: { design: 'SPADE', value: 3 } }],
+      }),
+    );
+    renderWithProviders(<TressettePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('tr-trick-result')).not.toBeInTheDocument();
+    expect(screen.getByTestId('tr-trick-result-live')).toBeEmptyDOMElement();
   });
 
   it('renders round end with next round button', async () => {

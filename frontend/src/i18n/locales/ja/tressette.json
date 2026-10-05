@@ -31,6 +31,7 @@
   "previousTrick": "前のトリック",
   "previousTrickEmpty": "このラウンドにはまだ前のトリックがありません",
   "previousTrickWinner": "{{name}} が獲得",
+  "trickResult": "{{name}}がトリックに勝ち、{{team}}が{{points}}点を獲得",
   "scores": "スコア",
   "scoresTeam": "チーム",
   "scoresPoints": "得点",
