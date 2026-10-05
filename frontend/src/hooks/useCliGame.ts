@@ -9,7 +9,14 @@ export interface CliLogCallbacks {
   clearLog?: () => void;
 }
 
-/** Hook that wires CLI command input to a game API exec function. */
+/**
+ * Hook that wires CLI command input to a game API exec function.
+ *
+ * `options.onCommandSuccess` runs with the parsed args after `exec` resolves for a
+ * command. `exec` reports API failures through its own error state rather than
+ * rejecting, so this signals "the command was dispatched", not "the server
+ * accepted it" (matching the web buttons, which also act after dispatch).
+ */
 export function useCliGame<TState, TArgs extends unknown[]>(
   exec: (...args: TArgs) => Promise<void>,
   config: CliGameConfig<TState, TArgs>,
