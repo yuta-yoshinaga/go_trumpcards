@@ -107,6 +107,9 @@ func (p *NinetyNineWebPresenter) buildPlayersOutput(o interfaces.NinetyNineGame)
 			TrickCount:      player.GetTrickCount(),
 			BuriedCount:     len(player.GetBuried()),
 		}
+		if player.GetIsHuman() {
+			pObj.BuriedCards = cardsToOutputOrEmpty(player.GetBuried())
+		}
 		out = append(out, pObj)
 	}
 	return out
