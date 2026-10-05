@@ -1851,6 +1851,7 @@ const baseQuadrilleState: QuadrilleResponse = {
   currentBidderIdx: 0,
   bids: [0, 0, 0, 0],
   bidActed: [false, false, false, false],
+  bidTrump: [-1, -1, -1, -1],
   leadPlayerIdx: 0,
   dealerIdx: 3,
   forehandIdx: 0,

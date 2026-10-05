@@ -65,6 +65,8 @@ export interface QuadrilleResponse extends BaseGameResponse {
   bids: number[];
   /** Whether each seat has acted in the current auction. */
   bidActed: boolean[];
+  /** Trump suit chosen with each declaration (1=♠, 2=♣, 3=♥, 4=♦; -1=none). */
+  bidTrump: number[];
   leadPlayerIdx: number;
   dealerIdx: number;
   /** Seat index of the forehand (first to bid / lead). */

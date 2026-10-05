@@ -103,5 +103,6 @@
   "roiSeul": "単独プレイ (Roi seul)",
   "kingUncalled": "王呼び: 未指名",
   "kingCalledHidden": "呼ばれた王: {{suit}} の K (持ち主は伏せられています)",
-  "kingCalledRevealed": "呼ばれた王: {{suit}} の K → 味方: {{name}}"
+  "kingCalledRevealed": "呼ばれた王: {{suit}} の K → 味方: {{name}}",
+  "bidWithTrump": "{{bid}}（{{suit}}）"
 }

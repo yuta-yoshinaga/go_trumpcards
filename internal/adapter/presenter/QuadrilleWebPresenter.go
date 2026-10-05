@@ -42,6 +42,7 @@ func (p *QuadrilleWebPresenter) buildBase(g interfaces.QuadrilleGame) *controlle
 		resObj.Bids[i] = int(bid)
 	}
 	resObj.BidActed = g.GetBidActed()
+	resObj.BidTrump = g.GetBidTrump()
 	resObj.LeadPlayerIdx = g.GetLeadPlayerIdx()
 	resObj.DealerIdx = g.GetDealerIdx()
 	resObj.ForehandIdx = g.GetForehandIdx()
