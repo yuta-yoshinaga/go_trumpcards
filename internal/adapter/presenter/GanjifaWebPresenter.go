@@ -146,6 +146,9 @@ func (p *GanjifaWebPresenter) buildMessage(g interfaces.GanjifaGame, lastErr err
 // winnerMessage 勝者プレイヤーメッセージを構築する
 func (p *GanjifaWebPresenter) winnerMessage(g interfaces.GanjifaGame) (string, string, map[string]string) {
 	winner := g.GetWinnerPlayer()
+	if winner == -1 {
+		return "ゲーム終了！ 引き分け！", "ganjifa.result.draw", nil
+	}
 	humanIdx := -1
 	for i := 0; i < g.GetPlayerCnt(); i++ {
 		if player := g.GetPlayer(i); player != nil && player.GetIsHuman() {

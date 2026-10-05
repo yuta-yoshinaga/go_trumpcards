@@ -1628,12 +1628,50 @@ describe('BigOPage', () => {
     expect(badge.textContent?.trim()).toBeTruthy();
   });
 
+  it('announces the current hand when it first becomes available', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(flopState);
+    renderWithProviders(<BigOPage />);
+    const announcement = await screen.findByTestId('bigo-live-besthand-announcement');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toHaveTextContent('現在の役:');
+    expect(announcement).toHaveTextContent('ツーペア');
+  });
+
+  it('announces a changed hand after another community card is revealed', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    const highCardPlayer = humanPlayer({
+      cards: [
+        { design: 'SPADE', value: 1 },
+        { design: 'HEART', value: 13 },
+        { design: 'DIAMOND', value: 12 },
+        { design: 'CLOVER', value: 11 },
+        { design: 'SPADE', value: 9 },
+      ],
+    });
+    const currentFlop = { ...flopState, players: [highCardPlayer, ...flopState.players.slice(1)] };
+    const updatedTurn = {
+      ...currentFlop,
+      phase: 3,
+      communityCards: [...flopState.communityCards, { design: 'HEART' as const, value: 9 }],
+    };
+    mockExec.mockResolvedValueOnce(currentFlop).mockResolvedValue(updatedTurn);
+    renderWithProviders(<BigOPage />);
+    const announcement = await screen.findByTestId('bigo-live-besthand-announcement');
+    await waitFor(() => expect(announcement).toHaveTextContent('ハイカード'));
+    fireEvent.click(screen.getByRole('button', { name: 'チェック' }));
+    await waitFor(() => expect(announcement).toHaveTextContent('ストレート'));
+  });
+
   it('drops the preview at showdown, where the final hand is already shown', async () => {
     localStorage.clear();
     mockExec.mockReset();
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<BigOPage />);
     await waitFor(() => expect(screen.queryByTestId('bigo-live-besthand')).not.toBeInTheDocument());
+    expect(screen.getByTestId('bigo-live-besthand-announcement')).toBeEmptyDOMElement();
     expect(screen.getByTestId('bigo-rule-badge')).toBeInTheDocument();
   });
 

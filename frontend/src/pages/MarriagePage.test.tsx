@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi } from '../api/gameApi';
 import { marriageApi } from '../api/games/marriage';
@@ -500,6 +500,30 @@ describe('MarriagePage', () => {
     mockExec.mockResolvedValue(drawPhaseState);
     fireEvent.click(screen.getByRole('button', { name: '次のラウンド' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+
+  it('marks only the current dealer in the score table and follows the next round', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<MarriagePage />);
+
+    const scoreTable = await screen.findByRole('table');
+    const rows = within(scoreTable).getAllByRole('row');
+    expect(within(rows[1]).getByText('ディーラー')).toBeInTheDocument();
+    expect(within(rows[1]).getByTestId('marriage-dealer-badge')).toBeInTheDocument();
+    expect(within(rows[2]).queryByText('ディーラー')).not.toBeInTheDocument();
+    expect(within(rows[2]).queryByTestId('marriage-dealer-badge')).not.toBeInTheDocument();
+
+    const nextRoundState = { ...drawPhaseState, dealerIdx: 1, roundNumber: 2 };
+    mockExec.mockResolvedValue(nextRoundState);
+    fireEvent.click(screen.getByRole('button', { name: '次のラウンド' }));
+
+    await waitFor(() => {
+      const updatedRows = within(screen.getByRole('table')).getAllByRole('row');
+      expect(within(updatedRows[1]).queryByText('ディーラー')).not.toBeInTheDocument();
+      expect(within(updatedRows[1]).queryByTestId('marriage-dealer-badge')).not.toBeInTheDocument();
+      expect(within(updatedRows[2]).getByText('ディーラー')).toBeInTheDocument();
+      expect(within(updatedRows[2]).getByTestId('marriage-dealer-badge')).toBeInTheDocument();
+    });
   });
 
   it('shows game end with action log button', async () => {

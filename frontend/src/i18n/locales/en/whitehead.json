@@ -28,7 +28,7 @@
   "foundationAriaLabel_one": "{{suit}} foundation {{count}} card (overall {{placed}} / {{total}} cards)",
   "foundationAriaLabel_other": "{{suit}} foundation {{count}} cards (overall {{placed}} / {{total}} cards)",
   "emptyFoundationAriaLabel": "Empty foundation ({{suit}}) (overall {{placed}} / {{total}} cards)",
-  "emptyColumnAriaLabel": "Empty column {{col}} (kings only)",
+  "emptyColumnAriaLabel": "Empty column {{col}} (any card may be placed here)",
   "drawMode": "Draw Mode",
   "drawMode1": "Draw 1",
   "drawMode3": "Draw 3",

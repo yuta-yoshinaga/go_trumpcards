@@ -88,7 +88,7 @@ describe('RollingStonePage', () => {
       }),
     );
     renderWithProviders(<RollingStonePage />);
-    const playButton = await screen.findByRole('button', { name: '♠ 9 を出す' });
+    const playButton = await screen.findByRole('button', { name: '♠ 9 を出す（合法手）' });
     fireEvent.click(playButton);
     expect(await screen.findByTestId('rs-trick-announcement')).toHaveTextContent('あなた: ♠ 9、CPU1: ♥ J');
     expect(screen.getByTestId('rs-trick-announcement')).toHaveClass('sr-only');
@@ -119,7 +119,7 @@ describe('RollingStonePage', () => {
       }),
     );
     renderWithProviders(<RollingStonePage />);
-    fireEvent.click(await screen.findByRole('button', { name: '♠ 9 を出す' }));
+    fireEvent.click(await screen.findByRole('button', { name: '♠ 9 を出す（合法手）' }));
     await waitFor(() =>
       expect(screen.getByTestId('rs-trick-announcement')).toHaveTextContent(
         'CPU3: ♠ Q、トリックが解決しました。、CPU2: ♥ 9',
@@ -203,10 +203,19 @@ describe('RollingStonePage', () => {
 
   it('plays the clicked card by its hand index', async () => {
     renderWithProviders(<RollingStonePage />);
-    const cards = await screen.findAllByRole('button', { name: /を出す$/ });
+    const cards = await screen.findAllByRole('button', { name: /を出す/ });
     mockExec.mockClear();
     fireEvent.click(cards[1]);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 1));
+  });
+
+  it('announces legal cards by name only during the human turn when pickup is not required', async () => {
+    renderWithProviders(<RollingStonePage />);
+    const cards = await screen.findAllByRole('button', { name: /出す/ });
+    expect(cards[0]).toHaveAccessibleName('♠ 9 を出す（合法手）');
+    expect(cards[1]).toHaveAccessibleName('♠ K を出す（合法手）');
+    expect(cards[2]).toHaveAccessibleName('♥ 10 を出す');
+    expect(cards[3]).toHaveAccessibleName('♣ 7 を出す');
   });
 
   // **出せる札が無い局面は、手札を押させずに引き取らせる。**
@@ -222,8 +231,9 @@ describe('RollingStonePage', () => {
     expect(banner).toHaveTextContent(/現在のトリック.*手札/);
     const pickup = screen.getByTestId('rs-pickup-btn');
     expect(pickup).toBeEnabled();
-    const cards = screen.getAllByRole('button', { name: /を出す$/ });
+    const cards = screen.getAllByRole('button', { name: /を出す/ });
     expect(cards[0]).toBeDisabled();
+    expect(cards[0]).toHaveAccessibleName('♠ 9 を出す');
 
     mockExec.mockClear();
     fireEvent.click(pickup);
@@ -257,8 +267,9 @@ describe('RollingStonePage', () => {
   it('disables the hand while it is a CPU turn', async () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
     renderWithProviders(<RollingStonePage />);
-    const cards = await screen.findAllByRole('button', { name: /を出す$/ });
+    const cards = await screen.findAllByRole('button', { name: /を出す/ });
     expect(cards[0]).toBeDisabled();
+    expect(cards[0]).toHaveAccessibleName('♠ 9 を出す');
     expect(screen.queryByTestId('rs-pickup-btn')).not.toBeInTheDocument();
   });
 

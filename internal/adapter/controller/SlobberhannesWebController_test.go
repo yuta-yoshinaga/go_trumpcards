@@ -18,11 +18,13 @@ func intPtrSlob(v int) *int { return &v }
 
 func mustSlobberhannesOutputJSON(msg string) string {
 	out := &controller.SlobberhannesWebOutput{
-		Players:       []*controller.SlobberhannesWebOutputPlayer{},
-		CurrentTrick:  []*controller.WebOutputTrickCard{},
-		ValidPlays:    []int{},
-		WinnerIdx:     -1,
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Players:         []*controller.SlobberhannesWebOutputPlayer{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
+		LastTrick:       []*controller.WebOutputTrickCard{},
+		LastTrickWinner: -1,
+		ValidPlays:      []int{},
+		WinnerIdx:       -1,
+		WebOutputBase:   controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {
@@ -32,7 +34,7 @@ func mustSlobberhannesOutputJSON(msg string) string {
 }
 
 func TestSlobberhannesWebController_Method(t *testing.T) {
-	mockOutput := `{"players":[],"phase":0,"currentTrick":[],"validPlays":[],"message":""}`
+	mockOutput := `{"players":[],"phase":0,"currentTrick":[],"lastTrick":[],"lastTrickWinner":-1,"validPlays":[],"message":""}`
 
 	siMock := new(usecase.MockSlobberhannesInteractor)
 	siMock.On("ResetWithConfig", domain.DefaultSlobberhannesConfig()).Return(mockOutput)

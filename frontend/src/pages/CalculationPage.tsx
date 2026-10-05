@@ -420,9 +420,24 @@ function CalculationPageContent() {
                       disabled={!isPlaying || loading || source === null}
                       title={upcomingLabel ? t('upcomingRanksTooltip', { sequence: upcomingLabel }) : undefined}
                       aria-label={
-                        nextRankLabel
-                          ? `${t('foundation')} ${idx} ${STEP_LABELS[idx]} ${t('nextRankAria', { rank: nextRankLabel })}`
-                          : `${t('foundation')} ${idx} ${STEP_LABELS[idx]} ${t('foundationCompleteAria')}`
+                        top
+                          ? nextRankLabel
+                            ? t('foundationTopNextAria', {
+                                idx,
+                                step: STEP_LABELS[idx],
+                                card: cardAlt(top),
+                                rank: nextRankLabel,
+                              })
+                            : t('foundationTopCompleteAria', {
+                                idx,
+                                step: STEP_LABELS[idx],
+                                card: cardAlt(top),
+                              })
+                          : t('foundationEmptyAria', {
+                              idx,
+                              step: STEP_LABELS[idx],
+                              rank: valueName(idx + 1),
+                            })
                       }
                     >
                       <span className="text-[11px] mb-0.5 text-ds-text-muted">

@@ -464,9 +464,23 @@ describe('EgyptianRatscrewPage slap sounds', () => {
       const rule = await screen.findByTestId('er-rule');
       expect(rule).toHaveTextContent('ペア');
       expect(rule).toHaveTextContent('サンドイッチ');
+      expect(rule.querySelectorAll('strong')).toHaveLength(2);
+      expect(rule).not.toHaveTextContent('**');
       // 回数はサーバから来た値。
       expect(rule).toHaveTextContent('J=1');
       expect(rule).toHaveTextContent('A=4');
+    });
+
+    it('emphasizes the corresponding conditions in English', async () => {
+      await i18n.changeLanguage('en');
+      renderWithProviders(<EgyptianRatscrewPage />);
+      const rule = await screen.findByTestId('er-rule');
+      expect(rule.querySelectorAll('strong')).toHaveLength(2);
+      expect(rule).toHaveTextContent('pair');
+      expect(rule).toHaveTextContent('sandwich');
+      expect(rule).not.toHaveTextContent('**');
+      expect(rule).toHaveTextContent('J=1');
+      await i18n.changeLanguage('ja');
     });
 
     // **回数を訳文に焼き込んでいない証拠。**別の回数を返せばそのまま出る。

@@ -26,12 +26,13 @@
     "lose": "No winning hand."
   },
   "resultAnnounce": {
-    "win": "Hand: {{handName}}, payout {{payout}} coins",
-    "lose": "No winning hand, bet forfeited"
+    "win": "Hand: {{handName}}, payout {{payout}} coins, net change {{net}}",
+    "lose": "No winning hand, bet forfeited, net change {{net}}"
   },
   "payoutTable": {
     "title": "Payout Table",
     "hand": "Hand",
+    "count": "Hits",
     "name": {
       "naturalRoyalFlush": "Natural Royal Flush",
       "fourDeuces": "Four Deuces",
@@ -44,6 +45,11 @@
       "straight": "Straight",
       "threeOfAKind": "Three of a Kind"
     }
+  },
+  "stats": {
+    "summary": "{{hands}} hands / win rate {{winRate}}% / net {{net}}",
+    "empty": "No hands played yet",
+    "clear": "Clear stats"
   },
   "tutorial": {
     "betControls": "Place 1–5 coins. All 2s are wild cards!",

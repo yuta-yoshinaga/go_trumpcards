@@ -14,6 +14,7 @@
   "forehand": "先手: {{name}}",
   "contractLine": "契約: {{bid}}（必要 {{need}} トリック）  宣言側 {{tricks}} - 守備側 {{opp}}",
   "playerLine": "{{name}} ({{role}}): {{cards}}枚  得点: {{score}}  トリック: {{tricks}}",
+  "dealScoreDelta": "{{name}}: 今回の増減 {{score}}点",
   "roleDeclarer": "宣言者",
   "roleDefender": "守備",
   "rolePartner": "味方",

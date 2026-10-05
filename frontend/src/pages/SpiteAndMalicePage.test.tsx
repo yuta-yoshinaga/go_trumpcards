@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { spiteAndMaliceApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, SpiteAndMaliceResponse } from '../types/card';
 import { SpiteAndMalicePage } from './SpiteAndMalicePage';
@@ -327,6 +328,34 @@ describe('SpiteAndMalicePage', () => {
     expect(within(screen.getByTestId('sam-cpu-side-0')).getByText('2')).toBeInTheDocument();
     // The other three piles render an empty dashed placeholder (no count badge).
     expect(within(screen.getByTestId('sam-cpu-side-1')).queryByText(/\d/)).not.toBeInTheDocument();
+  });
+
+  it('names each CPU side pile with its zero-based index and current contents', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      players: [
+        baseState.players[0],
+        {
+          ...baseState.players[1],
+          sides: [[card('SPADE', 4), card('HEART', 9)], [card('DIAMOND', 6)], [], []],
+        },
+      ],
+    });
+    renderWithProviders(<SpiteAndMalicePage />);
+
+    expect(await screen.findByRole('group', { name: 'CPUのサイドパイル 0、一番上: ♥ 9 (2枚)' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'CPUのサイドパイル 1、一番上: ♦ 6 (1枚)' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'CPUのサイドパイル 2: 空' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'CPUのサイドパイル 3: 空' })).toBeInTheDocument();
+
+    try {
+      await i18n.changeLanguage('en');
+      expect(screen.getByRole('group', { name: 'CPU side pile 0, top: ♥ 9 (2 cards)' })).toBeInTheDocument();
+      expect(screen.getByRole('group', { name: 'CPU side pile 1, top: ♦ 6 (1 card)' })).toBeInTheDocument();
+      expect(screen.getByRole('group', { name: 'CPU side pile 2: empty' })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('drives CPU turn automatically', async () => {

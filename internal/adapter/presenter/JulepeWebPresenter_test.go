@@ -53,6 +53,25 @@ func TestJulepeWebPresenterOutput(t *testing.T) {
 	assert.Empty(t, players[1].(map[string]any)["cards"], "CPU の手札は伏せる")
 }
 
+func TestJulepeWebPresenterRoundSettlement(t *testing.T) {
+	p := new(JulepeWebPresenter)
+	r := newJulepeForWeb(t)
+	r.SetPotForTest(20)
+	for i := range r.GetPlayerCnt() {
+		r.GetPlayer(i).SetInRound(i < 3)
+	}
+	r.GetPlayer(0).SetRoundTricks(2)
+	r.GetPlayer(1).SetRoundTricks(1)
+	r.SetPhaseForTest(domain.JulepePhaseRoundEnd)
+	r.FinishRoundForTest()
+
+	players := decodeJulepe(t, p.Output(r, nil))["players"].([]any)
+	assert.Equal(t, float64(r.GetPlayer(0).GetRoundPayout()), players[0].(map[string]any)["roundPayout"])
+	assert.Equal(t, float64(r.GetPlayer(0).GetRoundPenalty()), players[0].(map[string]any)["roundPenalty"])
+	assert.Equal(t, float64(r.GetPlayer(1).GetRoundPayout()), players[1].(map[string]any)["roundPayout"])
+	assert.Equal(t, float64(r.GetPlayer(1).GetRoundPenalty()), players[1].(map[string]any)["roundPenalty"])
+}
+
 // **人数は可変。** 5 人でも席が 5 つ出る。
 func TestJulepeWebPresenterFivePlayers(t *testing.T) {
 	p := new(JulepeWebPresenter)

@@ -39,6 +39,14 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 /** Contract i18n key suffixes indexed by contract value (0=Pass…4=Eight). */
 const CONTRACT_KEYS = ['pass', 'six', 'misere', 'seven', 'eight'] as const;
 
+/** Shared suit translation keys indexed by the card design name. */
+const SUIT_I18N_KEYS: Readonly<Record<'SPADE' | 'CLOVER' | 'HEART' | 'DIAMOND', string>> = {
+  SPADE: 'common.suit.spade',
+  CLOVER: 'common.suit.club',
+  HEART: 'common.suit.heart',
+  DIAMOND: 'common.suit.diamond',
+};
+
 /**
  * Target trick count for each contract, indexed by contract value
  * (0=Pass 1=Six 2=Misère 3=Seven 4=Eight). Mirrors the Go domain
@@ -200,6 +208,10 @@ function PreferencePageContent() {
 
   const canPlay = isPlayPhase && isHumanTurn;
   const trumpSymbol = state.trumpSuit === 0 ? t('noTrump') : suitSymbolAt(state.trumpSuit, '');
+  const firstTrickCard = state.currentTrick[0]?.card;
+  const leadSuit = firstTrickCard
+    ? tc(SUIT_I18N_KEYS[firstTrickCard.design as keyof typeof SUIT_I18N_KEYS])
+    : undefined;
 
   // The current highest (non-pass) bid; a new non-pass bid must beat it.
   const highestBid = Math.max(0, ...state.bids);
@@ -322,6 +334,8 @@ function PreferencePageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  leadSuit={leadSuit}
+                  leadSuitLabel={t('leadSuit')}
                   winnerIdx={isTrickEnd ? state.leadPlayerIdx : undefined}
                   winnerLabel={t('trickWinner')}
                   dataTutorial="preference-trick-display"

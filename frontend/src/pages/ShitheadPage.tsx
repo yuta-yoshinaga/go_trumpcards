@@ -247,7 +247,12 @@ function ShitheadPageContent() {
                       data-testid={`sh-action-${i.toString()}`}
                     >
                       {a.pickup
-                        ? t('feed.pickup', { name: seatName(a.playerIdx) })
+                        ? a.source === 'facedown' && a.playedCards.length > 0
+                          ? t('feed.facedownPickup', {
+                              name: seatName(a.playerIdx),
+                              card: cardAlt(a.playedCards[0]),
+                            })
+                          : t('feed.pickup', { name: seatName(a.playerIdx) })
                         : t('feed.play', {
                             name: seatName(a.playerIdx),
                             cards: a.playedCards.map((c) => cardAlt(c)).join(', '),

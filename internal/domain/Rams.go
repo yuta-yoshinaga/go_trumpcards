@@ -85,10 +85,12 @@ type Rams struct {
 	// upCard 切り札を決めた表向きの 1 枚
 	upCard *Card
 
-	currentTrick     []*TrickCard
-	currentPlayerIdx int
-	leadPlayerIdx    int
-	dealerIdx        int
+	currentTrick       []*TrickCard
+	lastTrick          []*TrickCard
+	lastTrickWinnerIdx int
+	currentPlayerIdx   int
+	leadPlayerIdx      int
+	dealerIdx          int
 
 	gameEndFlag bool
 	winnerIdx   int
@@ -139,6 +141,8 @@ func (r *Rams) dealRound() {
 	r.phase = RamsPhaseDecide
 	r.trickNumber = 0
 	r.currentTrick = nil
+	r.lastTrick = nil
+	r.lastTrickWinnerIdx = -1
 	for _, p := range r.players {
 		p.ResetRound()
 		p.AddChips(-RamsAnte)
@@ -375,6 +379,8 @@ func (r *Rams) GetValidPlayIndices(playerIdx int) []int {
 // resolveTrick トリックを解決する
 func (r *Rams) resolveTrick() {
 	winner := r.trickWinner()
+	r.lastTrick = append([]*TrickCard(nil), r.currentTrick...)
+	r.lastTrickWinnerIdx = winner
 	cards := make([]*Card, 0, len(r.currentTrick))
 	for _, tc := range r.currentTrick {
 		cards = append(cards, tc.Card)
@@ -676,6 +682,12 @@ func (r *Rams) GetUpCard() *Card { return r.upCard }
 // GetCurrentTrick 現在のトリック
 func (r *Rams) GetCurrentTrick() []*TrickCard { return r.currentTrick }
 
+// GetLastTrick 最後に完了したトリック
+func (r *Rams) GetLastTrick() []*TrickCard { return r.lastTrick }
+
+// GetLastTrickWinnerIdx 最後に完了したトリックの勝者
+func (r *Rams) GetLastTrickWinnerIdx() int { return r.lastTrickWinnerIdx }
+
 // GetCurrentPlayerIdx 現在の手番
 func (r *Rams) GetCurrentPlayerIdx() int { return r.currentPlayerIdx }
 
@@ -733,43 +745,47 @@ func (r *Rams) appendLog(playerIdx int, actionType, detailCode string, detailPar
 
 // ramsJSON is the KV snapshot format for Rams.
 type ramsJSON struct {
-	TrumpCards       *TrumpCards       `json:"tc"`
-	Players          []*RamsPlayer     `json:"pl"`
-	Config           RamsConfig        `json:"cf"`
-	Phase            RamsPhase         `json:"ph"`
-	RoundNumber      int               `json:"rn"`
-	TrickNumber      int               `json:"tn"`
-	Pot              int               `json:"po"`
-	TrumpSuit        int               `json:"ts"`
-	UpCard           *Card             `json:"uc"`
-	CurrentTrick     []*TrickCard      `json:"ct"`
-	CurrentPlayerIdx int               `json:"cp"`
-	LeadPlayerIdx    int               `json:"lp"`
-	DealerIdx        int               `json:"di"`
-	GameEndFlag      bool              `json:"ge"`
-	WinnerIdx        int               `json:"wi"`
-	ActionLog        []*ActionLogEntry `json:"al"`
+	TrumpCards         *TrumpCards       `json:"tc"`
+	Players            []*RamsPlayer     `json:"pl"`
+	Config             RamsConfig        `json:"cf"`
+	Phase              RamsPhase         `json:"ph"`
+	RoundNumber        int               `json:"rn"`
+	TrickNumber        int               `json:"tn"`
+	Pot                int               `json:"po"`
+	TrumpSuit          int               `json:"ts"`
+	UpCard             *Card             `json:"uc"`
+	CurrentTrick       []*TrickCard      `json:"ct"`
+	LastTrick          []*TrickCard      `json:"lt"`
+	LastTrickWinnerIdx int               `json:"lw"`
+	CurrentPlayerIdx   int               `json:"cp"`
+	LeadPlayerIdx      int               `json:"lp"`
+	DealerIdx          int               `json:"di"`
+	GameEndFlag        bool              `json:"ge"`
+	WinnerIdx          int               `json:"wi"`
+	ActionLog          []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON KV スナップショット用のシリアライズ
 func (r *Rams) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&ramsJSON{
-		TrumpCards:       r.trumpCards,
-		Players:          r.players,
-		Config:           r.config,
-		Phase:            r.phase,
-		RoundNumber:      r.roundNumber,
-		TrickNumber:      r.trickNumber,
-		Pot:              r.pot,
-		TrumpSuit:        r.trumpSuit,
-		UpCard:           r.upCard,
-		CurrentTrick:     r.currentTrick,
-		CurrentPlayerIdx: r.currentPlayerIdx,
-		LeadPlayerIdx:    r.leadPlayerIdx,
-		DealerIdx:        r.dealerIdx,
-		GameEndFlag:      r.gameEndFlag,
-		WinnerIdx:        r.winnerIdx,
-		ActionLog:        r.actionLog,
+		TrumpCards:         r.trumpCards,
+		Players:            r.players,
+		Config:             r.config,
+		Phase:              r.phase,
+		RoundNumber:        r.roundNumber,
+		TrickNumber:        r.trickNumber,
+		Pot:                r.pot,
+		TrumpSuit:          r.trumpSuit,
+		UpCard:             r.upCard,
+		CurrentTrick:       r.currentTrick,
+		LastTrick:          r.lastTrick,
+		LastTrickWinnerIdx: r.lastTrickWinnerIdx,
+		CurrentPlayerIdx:   r.currentPlayerIdx,
+		LeadPlayerIdx:      r.leadPlayerIdx,
+		DealerIdx:          r.dealerIdx,
+		GameEndFlag:        r.gameEndFlag,
+		WinnerIdx:          r.winnerIdx,
+		ActionLog:          r.actionLog,
 	})
 }
 
@@ -833,6 +849,8 @@ func (r *Rams) UnmarshalJSON(data []byte) error {
 	r.trumpSuit = j.TrumpSuit
 	r.upCard = j.UpCard
 	r.currentTrick = j.CurrentTrick
+	r.lastTrick = j.LastTrick
+	r.lastTrickWinnerIdx = j.LastTrickWinnerIdx
 	r.currentPlayerIdx = j.CurrentPlayerIdx
 	r.leadPlayerIdx = j.LeadPlayerIdx
 	r.dealerIdx = j.DealerIdx

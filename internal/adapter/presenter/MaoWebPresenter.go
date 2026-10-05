@@ -114,5 +114,5 @@ func (p *MaoWebPresenter) buildMessage(g interfaces.MaoGame, lastErr error) (str
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *MaoWebPresenter) ActionLogOutput(g interfaces.MaoGame) string {
-	return actionLogOutputJSON(g)
+	return actionLogToJSON(g.GetActionLog())
 }

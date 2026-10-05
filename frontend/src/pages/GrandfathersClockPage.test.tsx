@@ -43,6 +43,7 @@ const playingState: GrandfathersClockResponse = {
   phase: 0,
   moveCount: 3,
   canUndo: false,
+  canRedo: false,
   isStalemate: false,
   message: '',
 };
@@ -84,6 +85,27 @@ describe('GrandfathersClockPage', () => {
     renderWithProviders(<GrandfathersClockPage />);
     await waitFor(() => expect(screen.getByText(/グランドファーザーズ・クロック/)).toBeInTheDocument());
     expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
+  });
+
+  it('enables redo only when the server reports redo history', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<GrandfathersClockPage />);
+    const redo = await screen.findByRole('button', { name: 'やり直す' });
+    expect(redo).toHaveAttribute('aria-disabled', 'true');
+    expect(redo).toHaveAttribute('aria-describedby', 'gc-redo-unavailable');
+    mockExec.mockClear();
+    fireEvent.click(redo);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+
+    mockExec.mockResolvedValue({ ...playingState, canRedo: true });
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    const enabledRedo = await screen.findByRole('button', { name: 'やり直す' });
+    expect(enabledRedo).toHaveAttribute('aria-disabled', 'false');
+    expect(enabledRedo).not.toHaveAttribute('aria-describedby');
+    fireEvent.click(enabledRedo);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('redo'));
   });
 
   it('renders all twelve clock faces', async () => {

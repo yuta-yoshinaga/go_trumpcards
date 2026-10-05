@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { matrimonyApi } from '../api/games/matrimony';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeMatrimonyState } from '../test/stateFactories';
@@ -86,6 +87,39 @@ describe('MatrimonyPage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/空の組札\d+/).length).toBe(4));
     for (let i = 0; i < 4; i++) {
       expect(screen.getByText(`#${i}`)).toBeInTheDocument();
+    }
+  });
+
+  it('shows and announces each foundation starting rank in Japanese and English', async () => {
+    mockExec.mockResolvedValue(playingState);
+    const originalLanguage = i18n.language;
+    try {
+      await i18n.changeLanguage('ja');
+      const { unmount } = renderWithProviders(<MatrimonyPage />);
+
+      const foundations = await screen.findAllByRole('button', { name: /空の組札/ });
+      expect(foundations).toHaveLength(4);
+      expect(foundations.map((button) => button.textContent)).toEqual(['Q', 'Q', 'J', 'J']);
+      expect(foundations.map((button) => button.getAttribute('aria-label'))).toEqual([
+        '空の組札0 (Q♠↓、Q から)',
+        '空の組札1 (Q♠↓、Q から)',
+        '空の組札2 (J♦↑、J から)',
+        '空の組札3 (J♦↑、J から)',
+      ]);
+      unmount();
+
+      await i18n.changeLanguage('en');
+      renderWithProviders(<MatrimonyPage />);
+      const englishFoundations = await screen.findAllByRole('button', { name: /Empty foundation/ });
+      expect(englishFoundations.map((button) => button.textContent)).toEqual(['Q', 'Q', 'J', 'J']);
+      expect(englishFoundations.map((button) => button.getAttribute('aria-label'))).toEqual([
+        'Empty foundation 0 (Q♠↓, starts at Q)',
+        'Empty foundation 1 (Q♠↓, starts at Q)',
+        'Empty foundation 2 (J♦↑, starts at J)',
+        'Empty foundation 3 (J♦↑, starts at J)',
+      ]);
+    } finally {
+      await i18n.changeLanguage(originalLanguage);
     }
   });
 

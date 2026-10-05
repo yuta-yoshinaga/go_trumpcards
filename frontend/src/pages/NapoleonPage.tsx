@@ -172,14 +172,30 @@ function NapoleonPageContent() {
   const isPlayPhaseForKbd = state?.phase === NapoleonPhase.PLAY;
   const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
   const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+  const playableIndicesForSelection =
+    state?.phase === NapoleonPhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman
+      ? state.validPlayIndices
+      : undefined;
+  const hasRestrictedPlayForSelection =
+    playableIndicesForSelection != null && playableIndicesForSelection.length < humanCardCountForKbd;
+  const canSelectPlayCard = useCallback(
+    (idx: number) => !hasRestrictedPlayForSelection || playableIndicesForSelection.includes(idx),
+    [hasRestrictedPlayForSelection, playableIndicesForSelection],
+  );
+  const togglePlayableCard = useCallback(
+    (idx: number) => {
+      if (canSelectPlayCard(idx)) toggleCard(idx);
+    },
+    [canSelectPlayCard, toggleCard],
+  );
 
   const confirmAction = useCallback(() => {
-    handlePlay();
-  }, [handlePlay]);
+    if (selectedCardIndices.length === 1 && canSelectPlayCard(selectedCardIndices[0])) handlePlay();
+  }, [canSelectPlayCard, handlePlay, selectedCardIndices]);
 
   useCardKeyboardNav({
     cardCount: humanCardCountForKbd,
-    onToggle: toggleCard,
+    onToggle: togglePlayableCard,
     onConfirm: confirmAction,
     onClear: clearSelection,
     enabled: !!isHumanTurnForKbd && !loading,
@@ -213,6 +229,7 @@ function NapoleonPageContent() {
   const isRoundEnd = state.phase === NapoleonPhase.ROUND_END;
   const isGameEnd = state.phase === NapoleonPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const validPlayIndices = playableIndicesForSelection ?? [];
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
   const minLegalBid = Math.max(napoleonConfig.minBid, state.highestBid + 1);
   const effectiveBidValue = Math.max(bidValue, minLegalBid);
@@ -618,9 +635,12 @@ function NapoleonPageContent() {
                 <MobileHandGrid
                   cards={humanPlayer.cards}
                   selectedIndices={selectedCardIndices}
-                  onToggle={toggleCard}
+                  onToggle={togglePlayableCard}
                   cardWidth={cardWidth}
                   dataTutorial="np-player-hand"
+                  // Disable illegal cards only when restricted; highlight legal cards on the human turn.
+                  validIndices={hasRestrictedPlayForSelection ? validPlayIndices : undefined}
+                  legalIndices={isHumanTurn ? validPlayIndices : undefined}
                 />
               ) : (
                 <div className="flex flex-wrap gap-1 mb-2" data-tutorial="np-player-hand">
@@ -628,10 +648,11 @@ function NapoleonPageContent() {
                     <button
                       type="button"
                       key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
+                      onClick={() => togglePlayableCard(idx)}
                       aria-label={cardAlt(card)}
                       aria-pressed={selectedCardIndices.includes(idx)}
-                      className={`transition-transform ${focusRingCard}`}
+                      aria-disabled={(hasRestrictedPlayForSelection && !canSelectPlayCard(idx)) || undefined}
+                      className={`transition-transform ${focusRingCard} ${isHumanTurn && canSelectPlayCard(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''} ${hasRestrictedPlayForSelection && !canSelectPlayCard(idx) ? 'opacity-50 cursor-not-allowed' : ''}`}
                       style={{
                         background: 'none',
                         padding: 0,
@@ -753,7 +774,7 @@ function NapoleonPageContent() {
                 <button
                   type="button"
                   className={btnPrimary}
-                  onClick={handlePlay}
+                  onClick={confirmAction}
                   disabled={loading || selectedCardIndices.length !== 1}
                 >
                   {t('playButton')}

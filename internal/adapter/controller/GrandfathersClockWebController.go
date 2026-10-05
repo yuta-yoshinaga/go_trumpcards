@@ -48,6 +48,7 @@ type GrandfathersClockWebOutput struct {
 	Tableau    [][]*GrandfathersClockWebOutputTableauCard `json:"tableau"`
 	Foundation []*GrandfathersClockWebOutputFoundation    `json:"foundation"`
 	Hint       *GrandfathersClockWebOutputHint            `json:"hint,omitempty"`
+	CanRedo    bool                                       `json:"canRedo"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -79,6 +80,8 @@ func grandfathersClockDispatch(bc *baseController, w http.ResponseWriter, gi use
 		bc.writePresenterResponse(w, gi.AutoComplete())
 	case "u", "undo":
 		bc.writePresenterResponse(w, gi.Undo())
+	case "redo":
+		bc.writePresenterResponse(w, gi.Redo())
 	case "undo_n":
 		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
 			return true

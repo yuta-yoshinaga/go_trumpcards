@@ -25,6 +25,7 @@
   "team": "Team",
   "highestBid": "Highest Bid",
   "trumpSuit": "Trump Suit",
+  "trumpCardLabel": "{{card}}, trump",
   "trumpUndecided": "undecided",
   "trumpSelecting": "selecting",
   "meldScore": "Meld Score",

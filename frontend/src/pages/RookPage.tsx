@@ -208,6 +208,10 @@ function RookPageContent() {
   // Bid-turn context: the standing high bid plus who is still in the auction.
   const bidStatus = rookBidStatus(state.players);
   const passedNames = bidStatus.passed.map((p) => playerName(p.id, p.isHuman)).join(t('listSeparator'));
+  const highestBidderName =
+    state.highestBid > 0
+      ? playerName(state.players[state.highestBidder].id, state.players[state.highestBidder].isHuman)
+      : '';
 
   const handleExchange = () => {
     if (selectedCardIndices.length === ROOK_DISCARD_COUNT && trumpChoice !== null) {
@@ -443,7 +447,7 @@ function RookPageContent() {
                   >
                     <div>
                       {state.highestBid > 0
-                        ? t('bidStatus.highest', { value: state.highestBid })
+                        ? t('bidStatus.highest', { value: state.highestBid, name: highestBidderName })
                         : t('bidStatus.highestNone')}
                       {' · '}
                       {t('bidStatus.remaining', { n: bidStatus.activeBidders })}

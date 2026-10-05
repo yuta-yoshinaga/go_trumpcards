@@ -43,6 +43,8 @@
     "contract": "Contract",
     "trump": "Trump",
     "trick": "Current Trick",
+    "previousTrick": "Previous Trick",
+    "previousTrickWinner": "Won by {{name}}",
     "board": "Board",
     "boardEmpty": "Board is empty",
     "yourTricks": "Tricks",

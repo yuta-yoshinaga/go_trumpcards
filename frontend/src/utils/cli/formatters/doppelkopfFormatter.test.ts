@@ -7,6 +7,11 @@ describe('formatDoppelkopfState', () => {
     expect(formatDoppelkopfState(makeDoppelkopfState())).toContain('Doppelkopf');
   });
 
+  it('prints round score rows by player', () => {
+    const out = formatDoppelkopfState(makeDoppelkopfState({ roundScoreHistory: [[2, -2, 2, -2]] }));
+    expect(out).toContain('Round 1: P1 +2 | P2 -2 | P3 +2 | P4 -2');
+  });
+
   // 進行中の獲得点。GUI のパネルと CUI の 1 行が出しているのに、CLI モードだけが
   // 何も出していなかった (#6435)。値はレスポンス由来で、240 からの引き算ではない。
   it('shows the running card points while the round is in progress', () => {

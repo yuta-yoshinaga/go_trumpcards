@@ -411,6 +411,58 @@ describe('MrsMopPage', () => {
     await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'true'));
   });
 
+  it('highlights only legal destination columns while a source is selected', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 13), faceUp: true },
+          { card: card('SPADE', 12), faceUp: true },
+        ],
+        [{ card: card('DIAMOND', 13), faceUp: true }],
+      ]),
+    });
+    renderWithProviders(<MrsMopPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ K').closest('button')!);
+    await waitFor(() => {
+      expect(screen.getByTestId('spd-empty-col-2').closest('.flex-1')).toHaveAttribute('data-legal-target', 'true');
+      expect(screen.getByTestId('spd-empty-col-2').closest('.flex-1')).toHaveClass('ring-ds-info');
+    });
+    const occupiedColumn = screen.getByAltText('♦ K').closest('button')?.closest('.flex-1');
+    expect(occupiedColumn).not.toHaveAttribute('data-legal-target');
+    expect(occupiedColumn).not.toHaveClass('ring-ds-info');
+
+    // Choosing another card in the selected column replaces the source selection.
+    fireEvent.click(screen.getByAltText('♠ Q').closest('button')!);
+    await waitFor(() => expect(screen.getByAltText('♠ Q').closest('button')).toHaveAttribute('aria-pressed', 'true'));
+    expect(occupiedColumn).toHaveAttribute('data-legal-target', 'true');
+    expect(occupiedColumn).toHaveClass('ring-ds-info');
+
+    // Selecting the same source again clears both the selection and its legal destinations.
+    fireEvent.click(screen.getByAltText('♠ Q').closest('button')!);
+    await waitFor(() => {
+      expect(screen.getByTestId('spd-empty-col-2').closest('.flex-1')).not.toHaveAttribute('data-legal-target');
+      expect(screen.getByTestId('spd-empty-col-2').closest('.flex-1')).not.toHaveClass('ring-ds-info');
+    });
+  });
+
+  it('does not highlight columns when the selected source has no legal destinations', async () => {
+    const blockedTableau = makeTableau(
+      Array.from({ length: MRSMOP_COLUMN_COUNT }, (_, col) => [
+        { card: card('SPADE', col === 0 ? 13 : 5), faceUp: true },
+      ]),
+    );
+    mockExec.mockResolvedValue({ ...playingState, tableau: blockedTableau });
+    renderWithProviders(<MrsMopPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ K').closest('button')!);
+    expect(screen.getByTestId('mrsMop-selection-status')).toHaveTextContent('移動先はありません');
+    expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(0);
+  });
+
   it('includes zero-based tableau column and card index in card and empty-column names', async () => {
     renderWithProviders(<MrsMopPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());

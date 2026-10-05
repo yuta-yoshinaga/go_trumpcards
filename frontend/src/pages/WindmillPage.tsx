@@ -209,7 +209,6 @@ function WindmillPageContent() {
     // 元」を兼ねていて、transferBlocked が禁じるのは後者だけ。ボタンごと無効に
     // すると、影響を受けないはずの「四隅へ置く」手まで潰れる。
     const blockedAsSource = selectedSource === null && state.transferBlocked;
-    const cornerLabel = t('cornerAriaLabel', { idx, count: pile.length });
     return (
       <div key={`corner-${idx.toString()}`} className="text-center">
         <div className="text-game-text-muted text-xs mb-1" aria-hidden="true">
@@ -229,7 +228,16 @@ function WindmillPageContent() {
               }
               disabled={!isPlaying || loading || isAutoCompleting || blockedAsSource}
               title={blockedAsSource ? t('transferBlocked') : undefined}
-              aria-label={blockedAsSource ? `${cornerLabel}。${t('transferBlocked')}` : cornerLabel}
+              aria-label={
+                blockedAsSource
+                  ? t('blockedCornerAriaLabel', {
+                      idx,
+                      count: pile.length,
+                      card: cardAlt(top),
+                      reason: t('transferBlocked'),
+                    })
+                  : t('cornerAriaLabel', { idx, count: pile.length, card: cardAlt(top) })
+              }
               aria-pressed={isSourceSelected('corner', idx)}
               draggable={isPlaying && !loading && !blockedAsSource}
               onDragStart={dnd.handleDragStart(cornerZone)}
@@ -328,7 +336,7 @@ function WindmillPageContent() {
                       disabled={!isPlaying || loading || isAutoCompleting}
                       aria-disabled={!selectedSource || undefined}
                       aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                      aria-label={t('centerAriaLabel', { count: state.center.length })}
+                      aria-label={t('centerAriaLabel', { count: state.center.length, card: cardAlt(centerTop) })}
                       className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
                     >
                       <AnimatedCard card={centerTop} width={cardWidth} draggable={false} />

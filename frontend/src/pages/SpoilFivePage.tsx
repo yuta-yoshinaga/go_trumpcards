@@ -195,6 +195,11 @@ function SpoilFivePageContent() {
             獲得数だけでは、あと何トリックで決まるのかが読めない (#5655)。 */}
         <span className="text-ds-text-muted" data-testid={`sf-tricks-${p.id}`}>
           {playerName(p.id, p.isHuman)}
+          {state.dealerIdx === p.id && (
+            <span className="ml-1 text-ds-accent" data-testid={`sf-dealer-${p.id}`}>
+              {t('dealer')}
+            </span>
+          )}
           {` — ${t('roundTricksOf', { count: p.roundTricks, needed: SPOILFIVE_WIN_TRICKS })} · ${t('score', { count: p.score })}`}
         </span>
         {/* 残り1トリックで決まる状態は、終盤でいちばん重要な情報。 */}

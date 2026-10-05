@@ -106,10 +106,9 @@ func TestMinchiateWebPresenter_Output(t *testing.T) {
 		for _, c := range cards {
 			assert.Equal(t, "tarot", c.Deck, "every card needs the procedural path")
 		}
-		// **切札は番号ではなく呼び名をラベルに出す。**40 枚あるので番号だけでは
-		// 「35 と 36 のどちらが強いか」以外の情報が画面から消える。
-		assert.Equal(t, domain.MinchiateTrumpName(20), cards[0].Label)
-		assert.Equal(t, domain.MinchiateTrumpName(domain.MinchiateMaxTrump), cards[1].Label)
+		// ランクと固有名の両方をラベルに載せ、強さと札の呼び名を判別できる。
+		assert.Equal(t, "20 "+domain.MinchiateTrumpName(20), cards[0].Label)
+		assert.Equal(t, "40 "+domain.MinchiateTrumpName(domain.MinchiateMaxTrump), cards[1].Label)
 		assert.NotEqual(t, cards[0].Label, cards[1].Label, "each trump needs its own name")
 		assert.Equal(t, "Matto", cards[2].Label)
 		assert.Equal(t, "R", cards[3].Label)

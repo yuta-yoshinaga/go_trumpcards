@@ -555,6 +555,7 @@ function EasthavenPageContent() {
                                       }
                                       disabled={!isPlaying}
                                       aria-label={tcard.card ? cardAlt(tcard.card) : ''}
+                                      aria-pressed={isSelected}
                                       data-testid={isLast ? `eh-tableau-top-${colIdx.toString()}` : undefined}
                                     >
                                       {tcard.card && <AnimatedCard card={tcard.card} width={eh.cw} />}

@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sergeantmajorApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, SergeantMajorResponse } from '../types/card';
 import { SergeantMajorPage } from './SergeantMajorPage';
@@ -190,6 +191,27 @@ describe('SergeantMajorPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 2));
   });
 
+  it('asks before giving up and only dispatches after confirmation', async () => {
+    mockExec.mockResolvedValue(playing());
+    renderWithProviders(<SergeantMajorPage />);
+    await screen.findByTestId('sm-round');
+    mockExec.mockClear();
+
+    fireEvent.click(screen.getByRole('button', { name: '投了' }));
+    expect(await screen.findByText('投了確認')).toBeInTheDocument();
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(screen.queryByText('投了確認')).not.toBeInTheDocument();
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: '投了' }));
+    fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
+  });
+
   // 切り札は未宣言と確定の両側を踏む。
   it('mentions the kitty, then the trump', async () => {
     const { unmount } = renderWithProviders(<SergeantMajorPage />);
@@ -235,15 +257,6 @@ describe('SergeantMajorPage', () => {
     mockExec.mockClear();
     fireEvent.click(btn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
-  });
-
-  it('gives up when the give-up button is pressed', async () => {
-    renderWithProviders(<SergeantMajorPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-
-    mockExec.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: '投了' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
   });
 
   it('renders the result banner for each outcome', async () => {

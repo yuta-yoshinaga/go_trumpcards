@@ -74,8 +74,9 @@ describe('formatGermanSoloState', () => {
   });
 
   it('renders the outcome during RoundEnd', () => {
-    const out = formatGermanSoloState(makeGermanSoloState({ phase: 4, outcome: 2 }));
+    const out = formatGermanSoloState(makeGermanSoloState({ phase: 4, outcome: 2, playerScoreDeltas: [3, -2, 0, -1] }));
     expect(out).toContain('round result: failed');
+    expect(out).toContain('deal change: P0=+3  P1=-2  P2=±0  P3=-1');
   });
 
   it('renders a hint with card indices', () => {

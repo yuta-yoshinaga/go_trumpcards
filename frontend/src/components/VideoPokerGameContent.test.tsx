@@ -223,6 +223,19 @@ describe('VideoPokerGameContent', () => {
     expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument();
   });
 
+  it('associates payout cells with column and row headers', async () => {
+    mockExec.mockResolvedValue(resultPhaseWin);
+    renderContent();
+
+    const table = await screen.findByRole('table', { name: '配当表' });
+    const headers = within(table).getAllByRole('columnheader');
+    expect(headers[0]).toHaveAttribute('scope', 'col');
+    expect(headers.slice(1, 6)).toHaveLength(5);
+    for (const header of headers) expect(header).toHaveAttribute('scope', 'col');
+    const jacksOrBetterRow = within(table).getByTestId('vp-payout-row-jacksOrBetter');
+    expect(within(jacksOrBetterRow).getByRole('rowheader')).toHaveAttribute('scope', 'row');
+  });
+
   it('renders result phase on lose', async () => {
     mockExec.mockResolvedValue(resultPhaseLose);
     renderContent();
@@ -240,6 +253,32 @@ describe('VideoPokerGameContent', () => {
     await i18n.changeLanguage('en');
     try {
       expect(netChange).toHaveTextContent('Net change: -1');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
+  it('announces signed net change for Deuces Wild wins and losses in Japanese and English', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue({ ...resultPhaseWin, variantName: 'deuceswild' });
+      const english = renderContent('deuceswild');
+      await waitFor(() => expect(screen.getByTestId('vp-result-announce')).toHaveTextContent('net change +4'));
+      english.unmount();
+
+      mockExec.mockResolvedValue({ ...resultPhaseLose, variantName: 'deuceswild' });
+      const englishLose = renderContent('deuceswild');
+      await waitFor(() => expect(screen.getByTestId('vp-result-announce')).toHaveTextContent('net change -1'));
+      englishLose.unmount();
+
+      await i18n.changeLanguage('ja');
+      mockExec.mockResolvedValue({ ...resultPhaseLose, variantName: 'deuceswild' });
+      const japaneseLose = renderContent('deuceswild');
+      await waitFor(() => expect(screen.getByTestId('vp-result-announce')).toHaveTextContent('純増減 -1'));
+      japaneseLose.unmount();
+      mockExec.mockResolvedValue({ ...resultPhaseWin, variantName: 'deuceswild' });
+      renderContent('deuceswild');
+      await waitFor(() => expect(screen.getByTestId('vp-result-announce')).toHaveTextContent('純増減 +4'));
     } finally {
       await i18n.changeLanguage('ja');
     }

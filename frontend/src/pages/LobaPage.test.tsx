@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { lobaApi } from '../api/gameApi';
+import { actionLogApi, lobaApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, LobaPlayer, LobaResponse } from '../types/card';
@@ -14,6 +14,7 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(lobaApi.exec);
+const mockActionLog = vi.mocked(actionLogApi.loba);
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
@@ -66,6 +67,17 @@ describe('LobaPage', () => {
     // チェック済みで始まり、クリックで off になる。
     localStorage.clear();
     mockExec.mockResolvedValue(makeState());
+    mockActionLog.mockResolvedValue({
+      entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'discard', detail: 'VISIBLE LOG ENTRY' }],
+    });
+  });
+
+  it('opens the action log during play and shows its entries', async () => {
+    renderWithProviders(<LobaPage />);
+    const button = await screen.findByRole('button', { name: '棋譜を見る' });
+    fireEvent.click(button);
+    expect(await screen.findByText(/VISIBLE LOG ENTRY/)).toBeInTheDocument();
+    expect(mockActionLog).toHaveBeenCalled();
   });
 
   it('resets on mount', async () => {

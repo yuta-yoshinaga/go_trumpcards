@@ -55,6 +55,18 @@ describe('ZwanzigerrufenPage', () => {
     expect(await screen.findByTestId('zw-info')).toHaveTextContent('ディール 1/4');
   });
 
+  it('shows each player’s won trick count', async () => {
+    mockExec.mockResolvedValue(
+      makeZwanzigerrufenState({
+        players: bidState.players.map((player, index) => ({ ...player, trickCount: index + 2 })),
+      }),
+    );
+    renderWithProviders(<ZwanzigerrufenPage />);
+
+    expect(await screen.findByTestId('zw-seat-0-tricks')).toHaveTextContent('獲得トリック2回');
+    expect(screen.getByTestId('zw-seat-3-tricks')).toHaveTextContent('獲得トリック5回');
+  });
+
   it.each([
     ['bid', bidState, 'あなたの入札の番です'],
     ['talon', makeZwanzigerrufenState({ ...talonState, currentPlayerIdx: 2 }), 'CPU2の場札交換の番です'],

@@ -413,6 +413,17 @@ function ContractRummyPageContent() {
                   <AnimatedCard card={state.discardTop} width={cardWidth} />
                 </span>
               )}
+              <section
+                aria-label={t('discardHistoryLabel')}
+                className="w-full flex flex-wrap gap-1 items-center text-sm"
+              >
+                <span>{t('discardHistoryLabel')}:</span>
+                {state.discardHistory.map((c, idx) => (
+                  <span key={`${idx}-${c.design}-${c.value}`}>
+                    <AnimatedCard card={c} width={cardWidth * 0.6} />
+                  </span>
+                ))}
+              </section>
             </section>
 
             {isPlayPhase && humanPlayer && !humanPlayer.contractMet && state.contractSlots.length > 0 && (

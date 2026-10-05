@@ -22,6 +22,9 @@ export const CPU_DIFFICULTY_OPTIONS = [
 /** Available target-chip options for Sheepshead. */
 export const TARGET_CHIPS_OPTIONS = [150, 200, 300, 500] as const;
 
+/** Available base-chip units for Sheepshead round settlements. */
+export const BASE_CHIPS_OPTIONS = [1, 2, 5, 10] as const;
+
 /** Number of cards the picker must bury in the Bury phase. */
 export const SHEEPSHEAD_BURY_COUNT = 2;
 

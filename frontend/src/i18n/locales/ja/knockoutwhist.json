@@ -23,6 +23,7 @@
     "next": "次ラウンド {{count}}枚"
   },
   "trump": "切り札 {{suit}}",
+  "trumpCardDescription": "切り札",
   "trumpSelectPrompt": "あなたがラウンド勝者です。次ラウンドの切り札を選んでください:",
   "trumpSelectSuit": "切り札を{{suit}}にする",
   "activeCount": "残り {{n}}人",

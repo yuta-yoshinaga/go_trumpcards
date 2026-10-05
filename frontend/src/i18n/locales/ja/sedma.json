@@ -12,7 +12,8 @@
     "targetPoints": "目標ポイント",
     "easy": "Easy",
     "normal": "Normal",
-    "hard": "Hard"
+    "hard": "Hard",
+    "pendingApplication": "設定変更は次回リセット時に適用されます。"
   },
   "round": "ラウンド {{n}}",
   "trick": "トリック {{n}}",

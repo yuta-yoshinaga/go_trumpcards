@@ -33,6 +33,10 @@ type BaccaratBanqueGame interface {
 	GetBankHeld() int
 	// GetShoeRemaining シューの残り枚数を取得する
 	GetShoeRemaining() int
+	// GetShoeComposition は残り札を A〜K のランクごとに数える
+	GetShoeComposition() []int
+	// GetDrawWinPercent は指定タブローを引いて上回る確率を返す
+	GetDrawWinPercent(seat int) int
 	// IsRetired バンカーが自分から降りたかを取得する
 	IsRetired() bool
 	// GetEndReason バンクの終わり方を取得する ("retired" / "bankrupt" /

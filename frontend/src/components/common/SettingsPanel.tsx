@@ -158,7 +158,9 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
                       onChange={(e) => item.onSelect?.(e.target.value)}
                       className="bg-ds-surface-elevated text-ds-text-primary disabled:text-ds-text-muted disabled:opacity-70 rounded px-2 py-2 min-h-[44px]"
                       disabled={item.disabled}
-                      aria-describedby={item.tooltip ? `${item.id}-tooltip` : undefined}
+                      aria-describedby={
+                        item.description ? `${item.id}-description` : item.tooltip ? `${item.id}-tooltip` : undefined
+                      }
                       aria-label={item.ariaLabel}
                       data-testid={item.testId}
                     >
@@ -168,6 +170,11 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
                         </option>
                       ))}
                     </select>
+                    {item.description && (
+                      <span id={`${item.id}-description`} className="basis-full text-xs text-ds-text-muted">
+                        {item.description}
+                      </span>
+                    )}
                     {renderHelp(item)}
                   </span>
                 ),

@@ -59,6 +59,36 @@ describe('KnockoutWhistPage', () => {
     });
   });
 
+  it('marks current trump cards visually and in their accessible names', async () => {
+    renderWithProviders(<KnockoutWhistPage />);
+    const trumpCard = await screen.findByRole('button', { name: '♥ Q (切り札)' });
+    expect(trumpCard).toHaveAttribute('data-trump', 'true');
+    expect(screen.getByRole('button', { name: '♠ A' })).not.toHaveAttribute('data-trump');
+  });
+
+  it('updates trump markers when the trump suit changes', async () => {
+    renderWithProviders(<KnockoutWhistPage />);
+    const heartTrump = await screen.findByRole('button', { name: '♥ Q (切り札)' });
+    expect(heartTrump).toHaveAttribute('data-trump', 'true');
+
+    mockExec.mockResolvedValue(makeKnockoutWhistState({ trumpSuit: 1 }));
+    fireEvent.click(heartTrump);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    expect(await screen.findByRole('button', { name: '♠ A (切り札)' })).toHaveAttribute('data-trump', 'true');
+    expect(screen.getByRole('button', { name: '♥ Q' })).not.toHaveAttribute('data-trump');
+  });
+
+  it('renders without trump card markers when there is no human hand', async () => {
+    mockExec.mockResolvedValue(
+      makeKnockoutWhistState({
+        players: makeKnockoutWhistState().players.map((player) => ({ ...player, isHuman: false })),
+      }),
+    );
+    renderWithProviders(<KnockoutWhistPage />);
+    await waitFor(() => expect(screen.getByTestId('knockoutwhist-hint-live')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: /切り札/ })).not.toBeInTheDocument();
+  });
+
   it('shows each active player current cards and the shared next-round card count during a round', async () => {
     const state = makeKnockoutWhistState({
       players: makeKnockoutWhistState().players.map((player, index) => ({

@@ -130,9 +130,10 @@ describe('TehonbikiPage', () => {
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('bet', expect.anything());
     fireEvent.change(input, { target: { value: '40' } });
+    fireEvent.click(screen.getByRole('button', { name: '1' }));
     expect(screen.getByRole('button', { name: '張る' })).toHaveAttribute('aria-disabled', 'false');
     fireEvent.click(screen.getByRole('button', { name: '張る' }));
-    expect(mockExec).toHaveBeenCalledWith('bet', { numbers: [], betType: 'single', bet: 40 });
+    expect(mockExec).toHaveBeenCalledWith('bet', { numbers: [1], betType: 'single', bet: 40 });
   });
 
   it('translates bet range guidance into English', async () => {
@@ -171,13 +172,54 @@ describe('TehonbikiPage', () => {
     expect(screen.getByRole('button', { name: '1' })).toHaveAttribute('aria-pressed', 'false');
   });
 
-  it('sends an incomplete selection when the user submits it', async () => {
+  it('blocks bets until the selected number count matches the wager type', async () => {
     renderWithProviders(<TehonbikiPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '張る' })).toBeInTheDocument());
     fireEvent.change(screen.getByRole('combobox'), { target: { value: 'double' } });
+    expect(screen.getByText('数字を2個選んでください。')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '張る' })).toHaveAttribute('aria-disabled', 'true');
     fireEvent.click(screen.getByRole('button', { name: '1' }));
     fireEvent.click(screen.getByRole('button', { name: '張る' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', { numbers: [1], betType: 'double', bet: 50 }));
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('bet', expect.anything());
+    fireEvent.click(screen.getByRole('button', { name: '2' }));
+    expect(screen.getByRole('button', { name: '張る' })).toHaveAttribute('aria-disabled', 'false');
+    fireEvent.click(screen.getByRole('button', { name: '張る' }));
+    expect(mockExec).toHaveBeenCalledWith('bet', { numbers: [1, 2], betType: 'double', bet: 50 });
+  });
+
+  it('blocks invalid half groups and explains the valid groups in both languages', async () => {
+    renderWithProviders(<TehonbikiPage />);
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'half' } });
+    const guidance = '片山は1、2、3または4、5、6の組を選んでください。';
+    const invalid = '選択中の数字は有効な片山の組ではありません。1、2、3または4、5、6を選んでください。';
+    expect(screen.getByText(guidance)).toBeInTheDocument();
+    expect(screen.queryByText(invalid)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '1' }));
+    fireEvent.click(screen.getByRole('button', { name: '2' }));
+    fireEvent.click(screen.getByRole('button', { name: '4' }));
+    expect(screen.getByText(invalid)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '張る' })).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(screen.getByRole('button', { name: '張る' }));
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('bet', expect.anything());
+    await i18n.changeLanguage('en');
+    try {
+      expect(
+        screen.getByText('The selected numbers do not form a valid half group. Choose 1, 2, 3 or 4, 5, 6.'),
+      ).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+    fireEvent.click(screen.getByRole('button', { name: '1' }));
+    fireEvent.click(screen.getByRole('button', { name: '2' }));
+    fireEvent.click(screen.getByRole('button', { name: '4' }));
+    fireEvent.click(screen.getByRole('button', { name: '4' }));
+    fireEvent.click(screen.getByRole('button', { name: '5' }));
+    fireEvent.click(screen.getByRole('button', { name: '6' }));
+    expect(screen.getByText(guidance)).toBeInTheDocument();
+    expect(screen.queryByText(invalid)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '張る' })).toHaveAttribute('aria-disabled', 'false');
   });
 
   it('starts the next round from the result phase', async () => {

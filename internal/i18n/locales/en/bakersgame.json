@@ -2,6 +2,7 @@
   "helpTitle": "Baker's Game",
   "supermoveLine": "Supermove: up to {{limit}} cards ({{cells}} free cells / {{cols}} empty columns)",
   "supermoveToEmpty": " / {{limit}} to an empty column",
+  "tableauRule": "Build down in suit on the tableau",
   "helpMove": "  m t <col> t <col>    move tableau top card to tableau",
   "helpMoveTF": "  m t <col> f          move tableau to foundation",
   "helpMoveTT": "  m t <col> <idx> t <col>  move tableau sequence to tableau",

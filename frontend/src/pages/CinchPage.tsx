@@ -427,6 +427,26 @@ function CinchPageContent() {
                     points: bidStrength.pointsBySuit[bidStrength.bestSuit],
                   })}
                 </div>
+                <div
+                  className="mt-1 grid grid-cols-2 gap-x-3 text-left sm:grid-cols-4"
+                  data-testid="cinch-bid-strength-suits"
+                >
+                  {TRUMP_SUITS.map((suit) => (
+                    <div key={suit}>
+                      <span className="text-ds-text-primary">
+                        {suitSymbolAt(suit, '-')} {suitLabel(suit)}
+                      </span>
+                      <div>
+                        {t('bidStrength.suitEstimate', {
+                          points: bidStrength.pointsBySuit[suit],
+                          trumps: bidStrength.trumpCountBySuit[suit],
+                          control: bidStrength.controlBySuit[suit],
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-1">{t('bidStrength.controlMethod')}</div>
                 <div className="mt-1">
                   <span className="text-ds-text-primary">{t('bidStrength.legendTitle')}:</span>{' '}
                   {t('bidStrength.legend')}

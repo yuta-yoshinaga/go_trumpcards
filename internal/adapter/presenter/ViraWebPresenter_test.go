@@ -90,6 +90,7 @@ func TestViraWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, domain.CardDesignSpade, resObj.TrumpSuit)
 		assert.Equal(t, int(domain.ViraBidGask), resObj.Contract)
 		assert.Equal(t, int(domain.ViraBidGask), resObj.Bids[0])
+		assert.Equal(t, [domain.ViraPlayerCnt]bool{true, true, true}, resObj.BidDone)
 	})
 
 	// The pot is the number a Vira player tracks between rounds; the response has

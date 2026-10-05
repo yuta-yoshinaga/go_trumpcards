@@ -24,6 +24,7 @@
   "noScoredParts": "得点項目なし",
   "placementAnnouncementPartial": "スターター公開前の途中得点。行{{rowNo}}が{{rowScore}}点（{{rowParts}}）、列{{colNo}}が{{colScore}}点（{{colParts}}）、合計{{total}}点",
   "placementAnnouncement": "行{{rowNo}}が{{rowScore}}点（{{rowParts}}）、列{{colNo}}が{{colScore}}点（{{colParts}}）、合計{{total}}点",
+  "undoAnnouncementPartial": "行{{rowNo}}・列{{colNo}}のカードを取り消しました。スターター公開前の途中得点。行{{rowNo}}が{{rowScore}}点（{{rowParts}}）、列{{colNo}}が{{colScore}}点（{{colParts}}）、合計{{total}}点",
   "part": {
     "fifteens": "15が{{n}}",
     "pairs": "ペア{{n}}",

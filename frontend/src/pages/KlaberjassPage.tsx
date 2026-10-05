@@ -38,6 +38,12 @@ const TARGET_OPTIONS = [301, 501, 1000];
 
 /** Suit glyphs by design value (1=Spade … 4=Diamond). */
 const SUIT_GLYPHS: Readonly<Record<number, string>> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
+const SUIT_NAME_KEYS: Readonly<Record<number, string>> = {
+  1: 'common.suit.spade',
+  2: 'common.suit.club',
+  3: 'common.suit.heart',
+  4: 'common.suit.diamond',
+};
 
 /**
  * The trump order with its point values.
@@ -473,7 +479,7 @@ function KlaberjassPageContent() {
                       onClick={() => exec('call', { suit: s })}
                       disabled={loading}
                     >
-                      {t('callButton', { suit: SUIT_GLYPHS[s] })}
+                      {t('callButton', { suit: SUIT_GLYPHS[s], suitName: tc(SUIT_NAME_KEYS[s]) })}
                     </button>
                   ))}
 

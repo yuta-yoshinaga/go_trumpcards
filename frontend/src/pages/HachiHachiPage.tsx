@@ -265,6 +265,7 @@ function HachiHachiPageContent() {
                       type="button"
                       onClick={() => onHandClick(i)}
                       disabled={!isPlayPhase || !isHumanTurn}
+                      aria-label={`${cardAlt(c)} — ${t(playable ? 'handPlayable' : 'handNotPlayable')}`}
                       aria-pressed={handIndex === i}
                       className={`rounded transition-all ${
                         handIndex === i ? 'ring-2 ring-ds-info -translate-y-2' : ''

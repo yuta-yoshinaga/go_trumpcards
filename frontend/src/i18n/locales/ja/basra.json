@@ -18,6 +18,7 @@
   "players": "プレイヤー",
   "you": "あなた",
   "cpu": "CPU {{id}}",
+  "cpuHand": "CPU {{id}} の手札: {{count}}枚",
   "cards": "{{count}}枚",
   "captured": "捕獲: {{count}}",
   "basra": "バスラ: {{count}}",

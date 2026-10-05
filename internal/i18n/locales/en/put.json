@@ -14,6 +14,7 @@
   "promptPlay": "play <idx>...play a card",
   "promptCanPut": "put ... double the stake",
   "promptRespond": "{{name}} declared {{level}}! accept / decline",
+  "promptRespondPoints": "If accepted, hand stake: {{acceptStake}} pt. If declined, declarer scores: {{declinePoints}} pt.",
   "promptTrickEnd": "Trick over",
   "promptHandEnd": "Hand over: {{name}} wins {{stake}} pt",
   "promptNextHelp": "next...continue",

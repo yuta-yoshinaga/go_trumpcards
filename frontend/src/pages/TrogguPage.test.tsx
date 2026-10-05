@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { trogguApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeTrogguState } from '../test/stateFactories';
@@ -40,6 +41,44 @@ describe('TrogguPage', () => {
   it('shows the deal, trick and contract', async () => {
     renderWithProviders(<TrogguPage />);
     expect(await screen.findByTestId('tg-info')).toHaveTextContent('ディール 1/4');
+  });
+
+  it('shows the current auction contract and bidder, including the no-bids state', async () => {
+    mockExec.mockResolvedValue(makeTrogguState({ highestBid: 3, highestBidder: 2 }));
+    const { unmount } = renderWithProviders(<TrogguPage />);
+    expect(await screen.findByTestId('tg-auction-highest')).toHaveTextContent(
+      '最高入札: ピッコロ（ちょうど1トリック）',
+    );
+    expect(screen.getByTestId('tg-auction-highest')).toHaveTextContent('入札者: CPU2');
+    try {
+      await i18n.changeLanguage('en');
+      expect(screen.getByTestId('tg-auction-highest')).toHaveTextContent(
+        'Highest bid: Piccolo (exactly 1 trick) Bidder: CPU2',
+      );
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+    unmount();
+
+    mockExec.mockResolvedValue(makeTrogguState({ highestBid: 0, highestBidder: -1 }));
+    const { unmount: unmountNoBid } = renderWithProviders(<TrogguPage />);
+    expect(await screen.findByTestId('tg-auction-highest')).toHaveTextContent('未入札');
+    unmountNoBid();
+  });
+
+  it('shows the settled contract after the auction phase', async () => {
+    mockExec.mockResolvedValue(
+      makeTrogguState({
+        phase: 1,
+        highestBid: 3,
+        highestBidder: 2,
+        declarerIdx: 2,
+        contractName: 'piccolo',
+      }),
+    );
+    renderWithProviders(<TrogguPage />);
+    expect(await screen.findByTestId('tg-info')).toHaveTextContent('契約: ピッコロ（ちょうど1トリック）');
+    expect(screen.queryByTestId('tg-auction-highest')).not.toBeInTheDocument();
   });
 
   it('keeps the previous trick and winner visible while the next trick is in progress', async () => {

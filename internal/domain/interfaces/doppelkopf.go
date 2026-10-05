@@ -75,6 +75,8 @@ type DoppelkopfGame interface {
 	GetRoundReWon() bool
 	// GetRoundGamePoints 直近ラウンドのゲームポイントを取得する
 	GetRoundGamePoints() int
+	// GetRoundScoreHistory returns completed round chip changes by player index.
+	GetRoundScoreHistory() [][]int
 	// GetWinnerIdx 勝者インデックスを取得する
 	GetWinnerIdx() int
 	// GetPlayerCnt プレイヤー数を取得する

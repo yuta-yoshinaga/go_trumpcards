@@ -163,6 +163,34 @@ describe('UltimateTexasHoldemPage', () => {
     expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
   });
 
+  it('shows current committed bets during play and updates them from state', async () => {
+    const committedBets: UltimateTexasHoldemResponse = {
+      ...preFlopState,
+      tripsBet: 30,
+      playBet: 400,
+    };
+    mockApi.mockResolvedValue(committedBets);
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByTestId('uth-current-bets')).toBeInTheDocument());
+
+    const breakdown = screen.getByTestId('uth-current-bets');
+    expect(breakdown).toHaveTextContent('プレイ中のベット内訳');
+    expect(breakdown).toHaveTextContent('アンテ: 100');
+    expect(breakdown).toHaveTextContent('ブラインド: 100');
+    expect(breakdown).toHaveTextContent('トリップス: 30');
+    expect(breakdown).toHaveTextContent('プレイベット: 400');
+
+    mockApi
+      .mockResolvedValueOnce({ ...flopState, playBet: 400 })
+      .mockResolvedValueOnce({ ...riverState, playBet: 600 });
+    fireEvent.click(screen.getByRole('button', { name: 'チェック' }));
+    await waitFor(() => expect(screen.getByTestId('uth-current-bets')).toHaveTextContent('プレイベット: 400'));
+    expect(screen.getByTestId('uth-current-bets')).not.toHaveTextContent('トリップス:');
+
+    fireEvent.click(screen.getByRole('button', { name: /プレイ 2×/ }));
+    await waitFor(() => expect(screen.getByTestId('uth-current-bets')).toHaveTextContent('プレイベット: 600'));
+  });
+
   it('shows flop with play 2x / check buttons after preflop check', async () => {
     mockApi.mockResolvedValueOnce(preFlopState).mockResolvedValueOnce(flopState);
     renderWithProviders(<UltimateTexasHoldemPage />);

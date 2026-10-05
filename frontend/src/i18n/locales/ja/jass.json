@@ -21,6 +21,7 @@
   "cards": "{{count}}枚",
   "cardPlayable": "プレイ可能",
   "cardNotPlayable": "プレイ不可",
+  "trumpCard": "切り札",
   "teamScores": "チームスコア",
   "team": "チーム{{n}}",
   "scoreRows": {

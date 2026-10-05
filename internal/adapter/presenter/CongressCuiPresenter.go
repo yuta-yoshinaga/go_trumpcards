@@ -125,8 +125,5 @@ func (p *CongressCuiPresenter) HintOutput(c interfaces.CongressGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *CongressCuiPresenter) ActionLogOutput(c interfaces.CongressGame) string {
-	if c.GetPhase() == domain.CongressPhasePlaying {
-		return actionLogToText(nil)
-	}
 	return actionLogToText(c.GetActionLog())
 }

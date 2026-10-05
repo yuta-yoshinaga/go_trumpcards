@@ -33,6 +33,8 @@
   "bidStrength": {
     "range": "Estimated points held: {{min}}-{{max}} pts (rough guide, depends on trump)",
     "best": "Strongest trump: {{symbol}} {{suit}} (holding {{points}} pts)",
+    "suitEstimate": "Point cards: {{points}} pts · trumps: {{trumps}} · control: {{control}}",
+    "controlMethod": "Control estimate = trump count + 1 for each A/K/Q/J/10. This does not guarantee winning tricks.",
     "legendTitle": "The 14 points",
     "legend": "High(A)=1 / King(K)=1 / Ten(10)=1 / Jack(J)=1 / Right Pedro(5 of trump)=5 / Left Pedro(off-color 5)=5",
     "note": "A rough guide only — your actual take depends on play after trump is named."

@@ -258,6 +258,7 @@ function RikkenPageContent() {
                   <div>
                     {t('label.score')}: {p.score} / {p.cardCount} {t('label.cards')}
                   </div>
+                  <div>{t('trickCount', { count: p.trickCount })}</div>
                 </div>
               ))}
             </div>

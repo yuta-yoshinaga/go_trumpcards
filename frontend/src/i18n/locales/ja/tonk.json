@@ -68,6 +68,7 @@
     "knockable": "ノック可能",
     "notKnockable": "ノック不可（{{threshold}}点以下が必要）"
   },
+  "meldCardDescription": "残りの手札でメルドを構成しています",
   "opponentMelds": "{{name}}のメルド",
   "opponentDeadwood": "{{name}}のデッドウッド"
 }

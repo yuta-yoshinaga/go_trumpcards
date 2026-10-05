@@ -72,18 +72,6 @@ const SC_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** CLI help text for Scorpion. */
-const SCORPION_HELP = [
-  'm <from> <to>  Move top card between tableau columns',
-  'm <from> <idx> <to>  Move a card (and everything on top) by index',
-  'd              Deal 3 stock cards to columns 0-2',
-  'g              Give up',
-  'h              Hint',
-  'ac             Auto-complete',
-  'u              Undo',
-  'r              Reset',
-];
-
 /** Parse a Scorpion CLI command into API call arguments. */
 function parseScorpionCommand(input: string): { args: Parameters<typeof scorpionApi.exec> } | { error: string } {
   const parts = input.trim().split(/\s+/);
@@ -134,19 +122,28 @@ function parseScorpionCommand(input: string): { args: Parameters<typeof scorpion
 }
 
 /** Format Scorpion state for CLI display. */
-function formatScorpionState(state: ScorpionResponse): string {
+function formatScorpionState(
+  state: ScorpionResponse,
+  t: (key: string, options?: Record<string, unknown>) => string,
+): string {
   const lines: string[] = [];
-  lines.push(`Completed: ${state.completedSuits}/4  Stock: ${state.stockCount}`);
+  lines.push(t('cli.stateSummary', { completedSuits: state.completedSuits, stockCount: state.stockCount }));
   lines.push('');
-  lines.push('Tableau:');
+  lines.push(t('cli.tableau'));
   for (let col = 0; col < state.tableau.length; col++) {
     const cards = state.tableau[col]
       .map((tc, i) => (tc.faceUp && tc.card ? `[${i}]${tc.card.design}-${tc.card.value}` : `[${i}]??`))
       .join(' ');
-    lines.push(`  ${col}: ${cards || '(empty)'}`);
+    lines.push(t('cli.tableauColumn', { col, cards: cards || t('cli.empty') }));
   }
   lines.push('');
-  lines.push(`Moves: ${state.moveCount}  Phase: ${state.phase}`);
+  const phase =
+    state.phase === ScorpionPhase.GAME_CLEAR
+      ? t('phase.gameClear')
+      : state.phase === ScorpionPhase.GAME_OVER
+        ? t('phase.gameOver')
+        : t('phase.playing');
+  lines.push(t('cli.stateFooter', { moveCount: state.moveCount, phase }));
   return lines.join('\n');
 }
 
@@ -194,10 +191,19 @@ function ScorpionPageContent() {
     () => ({
       gameName: 'scorpion',
       parseCommand: parseScorpionCommand,
-      formatResponse: formatScorpionState,
-      helpText: SCORPION_HELP,
+      formatResponse: (response) => formatScorpionState(response, t),
+      helpText: [
+        'cli.help.moveTop',
+        'cli.help.moveIndex',
+        'cli.help.deal',
+        'cli.help.giveUp',
+        'cli.help.hint',
+        'cli.help.autoComplete',
+        'cli.help.undo',
+        'cli.help.reset',
+      ].map((key) => t(key)),
     }),
-    [],
+    [t],
   );
   const { handleCommand } = useCliGame(apiCall, scorpionCliConfig, state, { addInput, addOutput, addError, clearLog });
 

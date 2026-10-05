@@ -10,6 +10,7 @@
   "contractLabel": "Contract",
   "stockLabel": "Stock",
   "discardLabel": "Discard",
+  "discardHistoryLabel": "Discard history",
   "yourHand": "Your hand",
   "cards": "cards",
   "scoreLabel": "Total",

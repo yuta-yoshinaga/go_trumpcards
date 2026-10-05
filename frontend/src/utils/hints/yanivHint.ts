@@ -1,16 +1,10 @@
 import type { Card, YanivResponse } from '../../types/card';
 import type { HintResult } from '../../types/hint';
 import { YanivPhase } from '../../types/phases';
+import { yanivCardValue } from '../yanivCombos';
 
 /** Hand total at or below which Yaniv may be declared. */
 const CALL_THRESHOLD = 5;
-
-/** Card value in Yaniv: Joker = 0, Ace = 1, J/Q/K/10 = 10, else face value. */
-export function yanivCardValue(card: Card): number {
-  if (!card || card.design === 'JOKER') return 0;
-  if (card.value >= 10) return 10;
-  return card.value;
-}
 
 /** Sum of card values for a hand. */
 function handTotal(cards: Card[]): number {

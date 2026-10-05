@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, cribbageApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { makeCribbageState } from '../test/stateFactories';
 import type { CribbageResponse } from '../types/card';
 import { CribbagePage } from './CribbagePage';
 
@@ -13,7 +14,7 @@ vi.mock('../api/gameApi', () => ({
 
 const mockExec = vi.mocked(cribbageApi.exec);
 
-const discardPhaseState: CribbageResponse = {
+const discardPhaseState: CribbageResponse = makeCribbageState({
   players: [
     {
       id: 0,
@@ -32,23 +33,7 @@ const discardPhaseState: CribbageResponse = {
     },
     { id: 1, isHuman: false, cardCount: 6, cards: [], roundScore: 0, cumulativeScore: 0 },
   ],
-  phase: 0,
-  roundNumber: 1,
-  currentPlayerIdx: 0,
-  dealerIdx: 0,
-  crib: [],
-  starter: null,
-  pegCount: 0,
-  pegPlayedCards: [],
-  pegPlayedBy: [],
-  pegScoreEvents: [],
-  showPhaseStep: 0,
-  handScoreDetails: [null, null, null],
-  gameEndFlag: false,
-  winnerIdx: -1,
-  message: '',
-  config: { cpuDifficulty: 1, pointLimit: 121 },
-};
+});
 
 const peggingPhaseState: CribbageResponse = {
   ...discardPhaseState,
@@ -98,7 +83,34 @@ const showPhaseState: CribbageResponse = {
   phase: 3,
   dealerIdx: 1,
   starter: { design: 'SPADE', value: 10 },
-  handScoreDetails: [{ fifteens: 2, pairs: 0, runs: 3, flush: 0, nobs: 0, total: 5 }, null, null],
+  handScoreDetails: [
+    {
+      fifteens: 2,
+      pairs: 0,
+      runs: 3,
+      flush: 0,
+      nobs: 0,
+      total: 5,
+      fifteenCards: [
+        [
+          { design: 'SPADE', value: 5 },
+          { design: 'HEART', value: 10 },
+        ],
+      ],
+      pairCards: [],
+      runCards: [
+        [
+          { design: 'DIAMOND', value: 3 },
+          { design: 'CLOVER', value: 4 },
+          { design: 'HEART', value: 5 },
+        ],
+      ],
+      flushCards: [],
+      nobsCards: [],
+    },
+    null,
+    null,
+  ],
   players: [
     {
       ...discardPhaseState.players[0],
@@ -191,6 +203,81 @@ describe('CribbagePage', () => {
       expect(screen.getByAltText('\u2660 A')).toBeInTheDocument();
       expect(screen.getByAltText('\u2665 J')).toBeInTheDocument();
     });
+  });
+
+  it('shows the cards responsible for nonzero show categories', async () => {
+    mockExec.mockResolvedValue(showPhaseState);
+    renderWithProviders(<CribbagePage />);
+    const table = await screen.findByRole('table', { name: 'ショー得点の内訳' });
+    expect(table).toHaveTextContent('15s: ♠ 5、♥ 10');
+    expect(table).toHaveTextContent('ラン: ♦ 3、♣ 4、♥ 5');
+    expect(table).not.toHaveTextContent('ペア:');
+  });
+
+  it('shows card evidence for pairs, flushes, and nobs', async () => {
+    const detail = showPhaseState.handScoreDetails[0] as NonNullable<(typeof showPhaseState.handScoreDetails)[number]>;
+    mockExec.mockResolvedValue({
+      ...showPhaseState,
+      handScoreDetails: [
+        {
+          ...detail,
+          pairs: 2,
+          pairCards: [
+            [
+              { design: 'SPADE', value: 5 },
+              { design: 'HEART', value: 5 },
+            ],
+          ],
+          flush: 4,
+          flushCards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'SPADE', value: 3 },
+          ],
+          nobs: 1,
+          nobsCards: [
+            { design: 'SPADE', value: 11 },
+            { design: 'SPADE', value: 10 },
+          ],
+        },
+        null,
+        null,
+      ],
+    });
+    renderWithProviders(<CribbagePage />);
+    const table = await screen.findByRole('table', { name: 'ショー得点の内訳' });
+    expect(table).toHaveTextContent('ペア: ♠ 5、♥ 5');
+    expect(table).toHaveTextContent('フラッシュ: ♠ 5、♠ 3');
+    expect(table).toHaveTextContent('ノブ: ♠ J、♠ 10');
+  });
+
+  it('omits combinations for zero point categories', async () => {
+    const detail = showPhaseState.handScoreDetails[0] as NonNullable<(typeof showPhaseState.handScoreDetails)[number]>;
+    mockExec.mockResolvedValue({
+      ...showPhaseState,
+      handScoreDetails: [
+        {
+          ...detail,
+          fifteens: 0,
+          fifteenCards: [],
+          pairs: 0,
+          pairCards: [],
+          runs: 0,
+          runCards: [],
+          flush: 0,
+          flushCards: [],
+          nobs: 0,
+          nobsCards: [],
+          total: 0,
+        },
+        null,
+        null,
+      ],
+    });
+    renderWithProviders(<CribbagePage />);
+    const table = await screen.findByRole('table', { name: 'ショー得点の内訳' });
+    expect(table).toHaveTextContent('0');
+    expect(table).not.toHaveTextContent('15s:');
+    expect(table).not.toHaveTextContent('ラン:');
   });
 
   it('shows pegging score reasons and announces scoring', async () => {

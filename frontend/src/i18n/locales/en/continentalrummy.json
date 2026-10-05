@@ -51,5 +51,7 @@
   "frontendHint.continentalrummy_go_out_on_deal": "the dealt fifteen already go out - worth 10 if you lay them without drawing",
   "button.goOutOnDeal": "Go out on the deal",
   "scoreHistory": "Score history",
-  "historyRound": "Round"
+  "historyRound": "Round",
+  "historyRoundScore": "Round score",
+  "historyCumulativeScore": "Cumulative score"
 }

@@ -316,7 +316,8 @@ function MichiganPageContent() {
                   className={`text-sm py-0.5 ${p.isWinner ? 'text-ds-success' : 'text-ds-text-muted'} ${p.isHuman ? 'font-semibold' : ''}`}
                 >
                   {playerLabel(p.id, p.isHuman)} — {t('chips', { amount: p.chips })} ·{' '}
-                  {t('handCount', { count: p.cardCount })} · [{playerBadge(p)}]
+                  {t('handCount', { count: p.cardCount })} · {t('roundBet', { amount: p.roundBet })} · [{playerBadge(p)}
+                  ]
                 </div>
               ))}
             </div>

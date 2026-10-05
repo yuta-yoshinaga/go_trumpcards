@@ -33,6 +33,8 @@
   "listSeparator": "、",
   "tableauMoveGuide": "列{{source}}から移動できます。移動先: {{targets}}",
   "noTableauMoveTargets": "列{{source}}から移動できる先はありません",
+  "freeCellMoveGuide": "フリーセルから移動できます。移動先: {{targets}}",
+  "noFreeCellMoveTargets": "このフリーセルから移動できる先はありません",
   "tableauColumnLabel": "列{{column}}",
   "frontendHint": {
     "moveToFoundation": "組札に移動できるカードがあります",

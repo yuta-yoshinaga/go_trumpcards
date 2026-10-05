@@ -3,6 +3,8 @@
   "autoCompleteNotReady": "Available once an Ace reaches a foundation",
   "cardPosAria": "{{card}} (column {{col}}, position {{pos}})",
   "deal": "Deal",
+  "dealsRemaining_one": "{{count}} deal remaining",
+  "dealsRemaining_other": "{{count}} deals remaining",
   "dealBlockedByWaive": "Return the waived cards before dealing",
   "empty": "Empty",
   "emptyColumnAriaLabel": "Empty tableau column {{col}} (Kings only)",

@@ -93,6 +93,16 @@ describe('CurdsAndWheyPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('shows the existing rules explanation in the tutorial', async () => {
+    renderWithProviders(<CurdsAndWheyPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'チュートリアル' }));
+    const nextButton = await screen.findByRole('button', { name: '次へ' });
+    fireEvent.click(nextButton);
+    fireEvent.click(nextButton);
+    fireEvent.click(nextButton);
+    expect(await screen.findByText(/同スートでK〜Aの完全な降順列が揃うと自動的に除去されます/)).toBeInTheDocument();
+  });
+
   it('renders all 13 columns', async () => {
     renderWithProviders(<CurdsAndWheyPage />);
     await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());

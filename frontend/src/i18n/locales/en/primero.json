@@ -57,7 +57,6 @@
   "roundResult": {
     "title": "Round Result",
     "winner": "{{name}} won the pot of {{pot}}.",
-    "yourBet": "Your bet: {{amount}}",
     "payout": "Payout: {{amount}}",
     "net": "Net: {{amount}}"
   },

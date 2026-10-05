@@ -92,6 +92,18 @@ function SimpleSimonPageContent() {
   // Transient notice shown when a double-click auto-move finds no destination.
   const [autoMoveNotice, setAutoMoveNotice] = useState<string | null>(null);
 
+  const isLegalDestination = useCallback(
+    (col: number) => {
+      if (!state || !selected || selected.col === col) return false;
+      const destination = state.columns[col];
+      if (destination.length === 0) return true;
+      const movingHead = state.columns[selected.col][selected.idx];
+      const destinationTop = destination[destination.length - 1];
+      return destinationTop.value === movingHead.value + 1;
+    },
+    [selected, state],
+  );
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useEffect(() => {
     exec('reset');
@@ -133,6 +145,7 @@ function SimpleSimonPageContent() {
     (col: number, idx: number) => {
       if (!state || !isPlayingForKbd) return;
       if (selected && selected.col !== col) {
+        if (!isLegalDestination(col)) return;
         exec('m', { fromCol: selected.col, cardIndex: selected.idx, toCol: col });
         setSelected(null);
         return;
@@ -140,16 +153,16 @@ function SimpleSimonPageContent() {
       if (!isGrabbable(state.columns[col], idx)) return;
       setSelected({ col, idx });
     },
-    [exec, isPlayingForKbd, selected, state],
+    [exec, isLegalDestination, isPlayingForKbd, selected, state],
   );
 
   const clickColumn = useCallback(
     (col: number) => {
-      if (!isPlayingForKbd || !selected || selected.col === col) return;
+      if (!isPlayingForKbd || !selected || !isLegalDestination(col)) return;
       exec('m', { fromCol: selected.col, cardIndex: selected.idx, toCol: col });
       setSelected(null);
     },
-    [exec, isPlayingForKbd, selected],
+    [exec, isLegalDestination, isPlayingForKbd, selected],
   );
 
   const handleKeyboardColumn = useCallback(
@@ -220,7 +233,7 @@ function SimpleSimonPageContent() {
   };
 
   const renderColumn = (column: Card[], col: number) => {
-    const isDestination = Boolean(selected && selected.col !== col);
+    const isDestination = isLegalDestination(col);
     const runStart = movableFromIndex(column);
     const columnLabel = selected?.col === col ? t('columnSource') : isDestination ? t('columnDestination') : '';
     return (
@@ -243,7 +256,7 @@ function SimpleSimonPageContent() {
         {column.length === 0 ? (
           <button
             type="button"
-            className="rounded border border-dashed border-white/25 bg-black/20"
+            className={`rounded border border-dashed border-white/25 bg-black/20 ${!canAct ? 'cursor-not-allowed opacity-50' : ''}`}
             style={{ width: w, height: Math.round(w * 1.4) }}
             onClick={canAct ? () => clickColumn(col) : undefined}
             disabled={!canAct}
@@ -259,16 +272,16 @@ function SimpleSimonPageContent() {
             const grabbable = i >= runStart;
             const runStartLabel =
               i === runStart ? ` ${t('movableRunStartAria', { count: column.length - runStart })}` : '';
-            const clickable = isDestination || grabbable;
+            const clickable = selected ? isDestination || (col === selected.col && grabbable) : grabbable;
             // Highlight the movable-run boundary only while this column can be a
             // source (no selection, or the selection is here).
-            const showRunHint = !isDestination && grabbable && !inSelectedRun;
+            const showRunHint = selected === null && grabbable;
             const ring = inSelectedRun ? 'ring-2 ring-ds-warning' : showRunHint ? 'ring-1 ring-ds-success/70' : '';
             return (
               <button
                 type="button"
                 key={`col-${col}-${i}`}
-                className={`rounded ${ring} ${clickable ? '' : 'cursor-not-allowed'}`}
+                className={`rounded ${ring} ${clickable ? '' : 'cursor-not-allowed opacity-50'}`}
                 style={{ marginTop: i === 0 ? 0 : -Math.round(w * 1.05) }}
                 onClick={
                   canAct
@@ -282,7 +295,13 @@ function SimpleSimonPageContent() {
                     : undefined
                 }
                 onDoubleClick={canAct && grabbable ? () => autoMoveCard(col, i) : undefined}
-                disabled={!canAct || !clickable}
+                disabled={!canAct || (!selected && !grabbable)}
+                aria-disabled={selected !== null && col !== selected.col ? !isDestination : undefined}
+                aria-describedby={
+                  selected !== null && selected.col !== col && !isDestination
+                    ? `ss-illegal-destination-${col}`
+                    : undefined
+                }
                 data-testid={`card-${col}-${i}`}
                 data-grabbable={grabbable}
                 aria-label={`${t('cardPosAria', { card: cardAlt(c), col: col + 1, pos: i + 1 })}${runStartLabel}`}
@@ -323,6 +342,17 @@ function SimpleSimonPageContent() {
         {canAct && (
           <div className="mt-2 text-ds-text-primary text-xs" role="status" data-testid="ss-guidance">
             {selected === null ? t('selectSource') : t('selectDestination')}
+          </div>
+        )}
+        {selected !== null && (
+          <div className="sr-only">
+            {state.columns.map((_, col) =>
+              isLegalDestination(col) ? null : (
+                <span key={col} id={`ss-illegal-destination-${col}`}>
+                  {t('illegalDestination')}
+                </span>
+              ),
+            )}
           </div>
         )}
         {canAct && autoMoveNotice && (

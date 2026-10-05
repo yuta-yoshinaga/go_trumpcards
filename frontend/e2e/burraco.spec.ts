@@ -20,7 +20,9 @@ test.describe('Burraco E2E', () => {
     const meldButton = page.getByRole('button', { name: 'メルドする' });
     const skipMeldButton = page.getByRole('button', { name: 'スキップ' });
     const discardButton = page.getByRole('button', { name: '捨てる' });
-    const goOutButton = page.getByRole('button', { name: '上がる' });
+    const goOutButton = page
+      .getByRole('button', { name: '上がる' })
+      .and(page.locator('button:not([aria-disabled="true"])'));
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });
     const handCards = page.locator('button[aria-pressed]:has(img)');
     const anyResetButton = page.getByRole('button', { name: /リセット|次のゲーム/ });

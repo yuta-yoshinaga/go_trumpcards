@@ -19,7 +19,13 @@
     "tricksTaken": "{{count}} tricks",
     "suitCounts": "Pre-bid hand suit counts: {{counts}}",
     "suitCount": "{{suit}} {{count}}",
-    "suits": { "spade": "Spades", "clover": "Clubs", "heart": "Hearts", "diamond": "Diamonds" }
+    "suits": {
+      "spade": "Spades",
+      "clover": "Clubs",
+      "heart": "Hearts",
+      "diamond": "Diamonds"
+    },
+    "roundPoints": "Round points: your team {{t0}} — theirs {{t1}}"
   },
   "meld": {
     "none": "no meld",

@@ -33,4 +33,8 @@ type GrandfathersClockGame interface {
 	IsStalemate() bool
 	// UndoToEscape 手詰まりから抜けるために必要なアンドゥ回数を取得する
 	UndoToEscape() int
+	// CanRedo reports whether a move can be redone.
+	CanRedo() bool
+	// Redo reapplies the most recently undone move.
+	Redo() error
 }

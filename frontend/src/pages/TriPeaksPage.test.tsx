@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, tripeaksApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { TRIPEAKS_STATS_KEY } from '../hooks/useTriPeaksStats';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, TriPeaksCard, TriPeaksResponse } from '../types/card';
@@ -143,38 +144,49 @@ describe('TriPeaksPage playable summary', () => {
 });
 
 describe('TriPeaksPage', () => {
+  it('includes localized playability in the accessible card names', async () => {
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 5、除去可能' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♥ 6' })).toBeInTheDocument();
+
+    await i18n.changeLanguage('en');
+    expect(screen.getByRole('button', { name: '♠ 5 — removable' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 6' })).toBeInTheDocument();
+    await i18n.changeLanguage('ja');
+  });
+
   it('rings exposed cards adjacent to the waste top during play', async () => {
     renderWithProviders(<TriPeaksPage />);
-    await waitFor(() => expect(screen.getByLabelText('♠ 5')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByLabelText(/♠ 5/)).toBeInTheDocument());
     // Waste top is ♣4: the exposed ♠5 is playable, ♥6/♣7 are not, ♦10 is face-down.
-    expect(screen.getByLabelText('♠ 5')).toHaveClass('ring-ds-success/70');
+    expect(screen.getByLabelText(/♠ 5/)).toHaveClass('ring-ds-success/70');
     expect(screen.getByLabelText('♥ 6')).not.toHaveClass('ring-ds-success/70');
     expect(screen.getByLabelText('♦ 10')).not.toHaveClass('ring-ds-success/70');
   });
 
   it('prefers the hint ring over the playable ring on the same card', async () => {
     renderWithProviders(<TriPeaksPage />);
-    await waitFor(() => expect(screen.getByLabelText('♠ 5')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByLabelText(/♠ 5/)).toBeInTheDocument());
 
     // Server hint targets ♠5 at row 3, col 0 — the same card the playable ring covers.
     mockExec.mockResolvedValueOnce({ ...playingState, hint: { type: 'remove', row: 3, col: 0 } });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
-    await waitFor(() => expect(screen.getByLabelText('♠ 5')).toHaveClass('ring-ds-warning'));
-    expect(screen.getByLabelText('♠ 5')).not.toHaveClass('ring-ds-success/70');
+    await waitFor(() => expect(screen.getByLabelText(/♠ 5/)).toHaveClass('ring-ds-warning'));
+    expect(screen.getByLabelText(/♠ 5/)).not.toHaveClass('ring-ds-success/70');
   });
 
   it('shows no playable ring when the waste is empty', async () => {
     mockExec.mockResolvedValue({ ...playingState, waste: [] });
     renderWithProviders(<TriPeaksPage />);
-    await waitFor(() => expect(screen.getByLabelText('♠ 5')).toBeInTheDocument());
-    expect(screen.getByLabelText('♠ 5')).not.toHaveClass('ring-ds-success/70');
+    await waitFor(() => expect(screen.getByLabelText(/♠ 5/)).toBeInTheDocument());
+    expect(screen.getByLabelText(/♠ 5/)).not.toHaveClass('ring-ds-success/70');
   });
 
   it('shows no playable ring after the game ends', async () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<TriPeaksPage />);
-    await waitFor(() => expect(screen.getByLabelText('♠ 5')).toBeInTheDocument());
-    expect(screen.getByLabelText('♠ 5')).not.toHaveClass('ring-ds-success/70');
+    await waitFor(() => expect(screen.getByLabelText(/♠ 5/)).toBeInTheDocument());
+    expect(screen.getByLabelText(/♠ 5/)).not.toHaveClass('ring-ds-success/70');
   });
 
   it('renders skeleton when no state', () => {
@@ -470,11 +482,11 @@ describe('TriPeaksPage chain-bonus score & best record (#3087)', () => {
 
   it('adds chain-bonus points after removing a card', async () => {
     renderWithProviders(<TriPeaksPage />);
-    await waitFor(() => expect(screen.getByLabelText('♠ 5')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByLabelText(/♠ 5/)).toBeInTheDocument());
     // **得点はサーバが数える。** ページは state.score を映すだけ (#5511)。
     // 連鎖倍率とピークボーナスの式そのものは domain のテストが押さえている。
     mockExec.mockResolvedValueOnce({ ...playingState, moveCount: 4, score: 100, combo: 1 });
-    fireEvent.click(screen.getByLabelText('♠ 5'));
+    fireEvent.click(screen.getByLabelText(/♠ 5/));
     await waitFor(() => expect(screen.getByTestId('tp-score')).toHaveTextContent('100'));
   });
 
@@ -488,7 +500,7 @@ describe('TriPeaksPage chain-bonus score & best record (#3087)', () => {
 
   it('records a new best score on game clear and persists it', async () => {
     renderWithProviders(<TriPeaksPage />);
-    await waitFor(() => expect(screen.getByLabelText('♠ 5')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByLabelText(/♠ 5/)).toBeInTheDocument());
     // The clearing move both scores 100 and ends the game.
     mockExec.mockResolvedValueOnce({
       ...playingState,
@@ -499,7 +511,7 @@ describe('TriPeaksPage chain-bonus score & best record (#3087)', () => {
       messageCode: 'tripeaks.gameClear',
       messageParams: { moveCount: '4' },
     });
-    fireEvent.click(screen.getByLabelText('♠ 5'));
+    fireEvent.click(screen.getByLabelText(/♠ 5/));
     await waitFor(() => expect(screen.getByTestId('tp-best-badge')).toBeInTheDocument());
     expect(JSON.parse(localStorage.getItem(TRIPEAKS_STATS_KEY) ?? '{}')).toEqual({
       plays: 1,

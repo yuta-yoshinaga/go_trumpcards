@@ -22,6 +22,7 @@ func (p *SevenBridgeWebPresenter) Output(g interfaces.SevenBridgeGame, lastErr e
 	resObj.WinnerIdx = g.GetWinnerIdx()
 	resObj.RoundWinnerIdx = g.GetRoundWinnerIdx()
 	resObj.ClaimedThisTurn = g.GetClaimedThisTurn()
+	resObj.RoundScoreHistory = g.GetRoundScoreHistory()
 
 	top := g.GetDiscardTop()
 	if top != nil {

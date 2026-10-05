@@ -47,6 +47,7 @@ const PINOCHLE_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 /** Suit labels for display. */
 const SUIT_LABELS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
+const CARD_DESIGN_SUITS: Record<string, number> = { SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4 };
 
 /** Pinochle tutorial step definitions. */
 const PN_TUTORIAL_STEPS: TutorialStep[] = [
@@ -456,7 +457,11 @@ function PinochlePageContent() {
                       key={`${card.design}-${card.value}-${idx}`}
                       onClick={() => isPlayTurn && isValid && handlePlay(idx)}
                       disabled={loading || !isPlayTurn || !isValid}
-                      aria-label={cardAlt(card)}
+                      aria-label={
+                        state.trumpSuit > 0 && CARD_DESIGN_SUITS[card.design] === state.trumpSuit
+                          ? t('trumpCardLabel', { card: cardAlt(card) })
+                          : cardAlt(card)
+                      }
                       data-meld-highlighted={inHighlightedMeld ? 'true' : undefined}
                       data-in-meld={isInMeld ? 'true' : undefined}
                       title={meldTitle}

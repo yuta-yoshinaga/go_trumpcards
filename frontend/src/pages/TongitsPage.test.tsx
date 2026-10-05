@@ -4,7 +4,7 @@ import { tongitsApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, TongitsResponse } from '../types/card';
 import { TongitsPhase } from '../types/phases';
-import { TongitsPage } from './TongitsPage';
+import { publicMeldRowKey, TongitsPage } from './TongitsPage';
 
 vi.mock('../api/gameApi', () => ({ tongitsApi: { exec: vi.fn() }, actionLogApi: { tongits: vi.fn() } }));
 const mockExec = vi.mocked(tongitsApi.exec);
@@ -65,6 +65,10 @@ beforeEach(() => {
 });
 
 describe('TongitsPage', () => {
+  it('uses the player ID to make public meld row keys unique', () => {
+    expect(publicMeldRowKey(1, 0)).not.toBe(publicMeldRowKey(2, 0));
+  });
+
   it('renders three player rows and every public meld', async () => {
     renderWithProviders(<TongitsPage />);
     expect(await screen.findByTestId('tongits-melds')).toBeInTheDocument();
@@ -74,6 +78,25 @@ describe('TongitsPage', () => {
     const publicMelds = screen.getByTestId('tongits-melds');
     expect(within(publicMelds).getByText('CPU 1')).toBeInTheDocument();
     expect(within(publicMelds).getByText('CPU 2')).toBeInTheDocument();
+  });
+
+  it('keeps public meld rows unique when players have the same meld number', async () => {
+    const initial = state();
+    mockExec.mockResolvedValue(
+      state({
+        players: [
+          initial.players[0],
+          { ...initial.players[1], melds: [meld([card('HEART', 5), card('HEART', 6), card('HEART', 7)])] },
+          { ...initial.players[2], melds: [meld([card('DIAMOND', 8), card('DIAMOND', 9), card('DIAMOND', 10)])] },
+        ],
+      }),
+    );
+    renderWithProviders(<TongitsPage />);
+    const publicMelds = await screen.findByTestId('tongits-melds');
+
+    expect(within(publicMelds).getByText('CPU 1')).toBeInTheDocument();
+    expect(within(publicMelds).getByText('CPU 2')).toBeInTheDocument();
+    expect(within(publicMelds).getAllByTestId('animated-card')).toHaveLength(6);
   });
 
   it('melds the selected cards through the PlayerMeld API action', async () => {

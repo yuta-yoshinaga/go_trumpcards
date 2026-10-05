@@ -295,6 +295,84 @@ func TestBlackHole_HintTakesTheOnlyLegalMove(t *testing.T) {
 	assert.Equal(t, 0, h.Fan)
 }
 
+func TestBlackHole_HintFindsClearAndDoesNotMutateState(t *testing.T) {
+	g := newBhGame()
+	bhClear(g)
+	g.blackHole = make([]*Card, BlackHoleTotalCards-1)
+	g.blackHole[len(g.blackHole)-1] = bhCard(CardDesignSpade, 5)
+	g.fans = [][]*Card{{bhCard(CardDesignHeart, 4)}}
+	beforeMoves, beforeLogs := g.moveCount, len(g.actionLog)
+	h := g.GetHint()
+	require.NotNil(t, h)
+	assert.Equal(t, 0, h.Fan)
+	assert.True(t, h.CanClear)
+	assert.Equal(t, 1, h.ContinuationMoves)
+	assert.Equal(t, beforeMoves, g.moveCount)
+	assert.Equal(t, beforeLogs, len(g.actionLog))
+	assert.Len(t, g.fans[0], 1)
+}
+
+func TestBlackHole_HintPrefersClearOverLocalMoves(t *testing.T) {
+	g := newBhGame()
+	bhClear(g)
+	g.blackHole = []*Card{bhCard(CardDesignSpade, 5)}
+	g.fans = [][]*Card{
+		{bhCard(CardDesignHeart, 4)},
+		{bhCard(CardDesignHeart, 6)},
+		{bhCard(CardDesignClover, 3)},
+		{bhCard(CardDesignDiamond, 5)},
+	}
+	assert.Greater(t, g.legalMovesAfter(0), g.legalMovesAfter(1))
+	h := g.GetHint()
+	require.NotNil(t, h)
+	assert.Equal(t, 1, h.Fan)
+	assert.True(t, h.CanClear)
+	assert.Equal(t, 4, h.ContinuationMoves, "clear length is the number of cards still in the fans")
+}
+
+func TestBlackHole_HintFallsBackWhenNoMoveCanClear(t *testing.T) {
+	g := newBhGame()
+	bhClear(g)
+	g.blackHole = []*Card{bhCard(CardDesignSpade, 5)}
+	g.fans = [][]*Card{
+		{bhCard(CardDesignHeart, 4)},
+		{bhCard(CardDesignHeart, 6)},
+		{bhCard(CardDesignClover, 10)},
+	}
+	wantFan, wantScore := 0, g.legalMovesAfter(0)
+	for i := 1; i < len(g.fans); i++ {
+		if score := g.legalMovesAfter(i); score > wantScore {
+			wantFan, wantScore = i, score
+		}
+	}
+	h := g.GetHint()
+	require.NotNil(t, h)
+	assert.False(t, h.CanClear)
+	assert.Zero(t, h.ContinuationMoves)
+	assert.Equal(t, wantFan, h.Fan)
+	assert.Equal(t, wantScore, h.MovesAfter)
+}
+
+func TestBlackHole_GetHintOnNewDealDoesNotChangeFanLengths(t *testing.T) {
+	g := newBhGame()
+	before := make([]int, len(g.fans))
+	for i := range g.fans {
+		before[i] = len(g.fans[i])
+	}
+	require.NotPanics(t, func() { g.GetHint() })
+	for i := range g.fans {
+		assert.Equal(t, before[i], len(g.fans[i]))
+	}
+}
+
+func BenchmarkBlackHoleGetHint(b *testing.B) {
+	g := newBhGame()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		g.GetHint()
+	}
+}
+
 // 合法手が無ければヒントも無い (既存の振る舞いを保つ)。
 func TestBlackHole_HintIsNilWithoutALegalMove(t *testing.T) {
 	g := newBhGame()

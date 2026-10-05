@@ -439,7 +439,8 @@ function Rummy500PageContent() {
                 onClick={() => toggleCard(idx)}
                 aria-label={cardAlt(card)}
                 aria-pressed={selectedCardIndices.includes(idx)}
-                className={`transition-transform ${focusRingCard}`}
+                data-hint-target={frontendHintEnabled && frontendHint?.targetPos === idx ? 'true' : undefined}
+                className={`transition-transform ${focusRingCard} ${frontendHintEnabled && frontendHint?.targetPos === idx ? 'ring-2 ring-ds-accent' : ''}`}
                 style={{
                   background: 'none',
                   padding: 0,

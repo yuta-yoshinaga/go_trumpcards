@@ -28,7 +28,7 @@
   "trickEmpty": "(まだカードがありません)",
   "listSeparator": "、",
   "bidStatus": {
-    "highest": "現在最高: {{value}}点",
+    "highest": "現在最高: {{value}}点（{{name}}）",
     "highestNone": "現在最高: 未決定",
     "remaining": "残り入札者: {{n}}人",
     "passed": "パス済み: {{n}}人（{{names}}）"

@@ -65,6 +65,61 @@ beforeEach(() => {
 });
 
 describe('MichiganPage', () => {
+  it('shows every player round bet, including zero, in a consistent position', async () => {
+    mockExec.mockResolvedValue(
+      makeMichiganState({
+        players: [
+          { id: 0, isHuman: true, chips: 200, roundBet: 0, cardCount: 5, cards: [], isCurrent: false, isWinner: false },
+          {
+            id: 1,
+            isHuman: false,
+            chips: 192,
+            roundBet: 8,
+            cardCount: 5,
+            cards: [],
+            isCurrent: false,
+            isWinner: false,
+          },
+          {
+            id: 2,
+            isHuman: false,
+            chips: 184,
+            roundBet: 16,
+            cardCount: 5,
+            cards: [],
+            isCurrent: false,
+            isWinner: false,
+          },
+          {
+            id: 3,
+            isHuman: false,
+            chips: 176,
+            roundBet: 24,
+            cardCount: 5,
+            cards: [],
+            isCurrent: false,
+            isWinner: false,
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<MichiganPage />);
+
+    const players = [
+      await screen.findByText(/あなた — チップ:/),
+      screen.getByText(/CPU 1 — チップ:/),
+      screen.getByText(/CPU 2 — チップ:/),
+      screen.getByText(/CPU 3 — チップ:/),
+    ];
+    expect(players[0]).toHaveTextContent('ベット: 0');
+    expect(players[1]).toHaveTextContent('ベット: 8');
+    expect(players[2]).toHaveTextContent('ベット: 16');
+    expect(players[3]).toHaveTextContent('ベット: 24');
+    for (const player of players) {
+      expect(player.textContent).toMatch(/チップ: .*手札: .*ベット: .*\[/);
+    }
+  });
+
   it('announces a new sequence and the current suit and high value in a live region', async () => {
     mockExec.mockResolvedValueOnce(
       makeMichiganState({

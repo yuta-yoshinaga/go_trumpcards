@@ -58,6 +58,7 @@ type ContractRummyWebOutput struct {
 	TotalRounds      int                                   `json:"totalRounds"`
 	CurrentPlayerIdx int                                   `json:"currentPlayerIdx"`
 	DiscardTop       *WebOutputCard                        `json:"discardTop"`
+	DiscardHistory   []*WebOutputCard                      `json:"discardHistory"`
 	DrawPileCount    int                                   `json:"drawPileCount"`
 	GameEndFlag      bool                                  `json:"gameEndFlag"`
 	WinnerIdx        int                                   `json:"winnerIdx"`

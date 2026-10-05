@@ -290,7 +290,9 @@ function RollingStonePageContent() {
                       type="button"
                       onClick={() => handlePlay(idx)}
                       disabled={loading || !isHumanTurn || mustPickUp}
-                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
+                      aria-label={t(legalRing.has(idx) ? 'actions.legalPlayAria' : 'actions.playAria', {
+                        card: cardAlt(card),
+                      })}
                       className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
                     >
                       <CardImage card={card} width={cardWidth} />

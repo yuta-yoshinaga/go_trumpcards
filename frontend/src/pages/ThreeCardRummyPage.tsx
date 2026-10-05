@@ -102,9 +102,11 @@ function ThreeCardRummyPageContent() {
   );
 
   const handleBet = useCallback(() => {
+    if (loading || !state || state.phase !== ThreeCardRummyPhase.BET || anteAmount + lowBonusAmount > state.chips)
+      return;
     setLastBet({ ante: anteAmount, lowBonus: lowBonusAmount });
     execApi('bet', anteAmount, lowBonusAmount);
-  }, [execApi, anteAmount, lowBonusAmount]);
+  }, [execApi, anteAmount, lowBonusAmount, loading, state]);
   const handlePlay = useCallback(() => execApi('play'), [execApi]);
   const handleFold = useCallback(() => execApi('fold'), [execApi]);
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
@@ -139,6 +141,8 @@ function ThreeCardRummyPageContent() {
   if (!state) return <GameSkeleton gameKey="threecardrummy" layout={{ kind: 'casino-table', sections: [3, 3] }} />;
 
   const phaseName = isBetPhase ? t('phase.bet') : isActionPhase ? t('phase.action') : t('phase.end');
+  const betTotal = anteAmount + lowBonusAmount;
+  const betShortfall = Math.max(0, betTotal - state.chips);
 
   return (
     <GamePageShell
@@ -357,7 +361,21 @@ function ThreeCardRummyPageContent() {
                   disabled={loading}
                   showSteppers
                 />
-                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+                <div className="text-ds-text-muted text-sm tabular-nums" data-testid="tcr-bet-summary">
+                  <p>{t('betSummary.total', { amount: betTotal })}</p>
+                  {betShortfall > 0 ? (
+                    <p className="text-ds-error-text">{t('betSummary.shortfall', { amount: betShortfall })}</p>
+                  ) : (
+                    <p>{t('betSummary.remaining', { amount: state.chips - betTotal })}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+                  onClick={handleBet}
+                  disabled={loading}
+                  aria-disabled={betShortfall > 0}
+                >
                   {t('button.bet')}
                 </button>
               </div>

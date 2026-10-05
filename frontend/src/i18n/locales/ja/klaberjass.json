@@ -31,7 +31,7 @@
   "schmeissButton": "投げる",
   "schmeissAcceptButton": "同意する",
   "schmeissRefuseButton": "拒否する",
-  "callButton": "{{suit}} を切札に",
+  "callButton": "{{suit}} {{suitName}} を切札に",
   "playButton": "出す",
   "nextDeal": "次のディールへ",
   "pointsBreakdown": "カード {{card}}、シーケンス {{sequence}}、ベラ {{bela}}、最終トリック {{lastTrick}}、合計 {{total}}",

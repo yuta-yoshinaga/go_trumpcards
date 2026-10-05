@@ -201,7 +201,6 @@ function EscobaPageContent() {
   const humanWon = isGameEnd && state.winnerIdx === human.id;
   const takeCandidateIndices =
     handIndex !== null && isHumanTurn ? captureCandidateIndices(state.handCaptures, handIndex) : new Set<number>();
-  const canTake = isHumanTurn && handIndex !== null && tableIndices.length > 0;
   // **エスコバは強制捕獲** (#6163)。合計 15 を作れる組が場にあるなら、
   // ドメイン (Escoba.go の applyPlay) はその札を置く手を拒む。押せてしまうと
   // サーバまで飛んでエラーで返るだけなので、押させない。判定は既に配られて
@@ -213,6 +212,7 @@ function EscobaPageContent() {
   const selectionSum = selectedHandCard ? escobaSelectionSum(selectedHandCard, state.tableCards, tableIndices) : null;
   const matchedCandidate =
     handIndex !== null && isHumanTurn ? matchedCaptureCandidate(state.handCaptures, handIndex, tableIndices) : null;
+  const canTake = isHumanTurn && handIndex !== null && tableIndices.length > 0 && matchedCandidate !== null;
   const phaseName = isGameEnd ? t('phase.gameEnd') : t(`phase.${state.phase}`, t('phase.play'));
   const detail = state.lastRoundDetail;
   const lastCapturer = isRoundEnd ? state.players[state.lastCaptureIdx] : undefined;
@@ -513,9 +513,11 @@ function EscobaPageContent() {
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="es-actions">
               <button
                 type="button"
-                onClick={play}
-                disabled={loading || !canTake}
-                className="px-4 py-2 rounded-lg bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                onClick={() => {
+                  if (!loading && canTake) play();
+                }}
+                aria-disabled={loading || !canTake}
+                className="px-4 py-2 rounded-lg bg-ds-info text-white font-medium aria-disabled:opacity-40 aria-disabled:cursor-not-allowed text-sm"
                 data-testid="take-button"
               >
                 {t('button.take')}

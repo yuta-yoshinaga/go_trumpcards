@@ -119,5 +119,7 @@ func (p *PrsiCuiPresenter) Output(g interfaces.PrsiGame, lastErr error) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *PrsiCuiPresenter) ActionLogOutput(g interfaces.PrsiGame) string {
-	return actionLogOutputTextForSeats[*domain.PrsiPlayer](g)
+	return actionLogToTextWithNames(g.GetActionLog(), func(idx int) string {
+		return cuiPlayerName(g.GetPlayer(idx), idx)
+	})
 }

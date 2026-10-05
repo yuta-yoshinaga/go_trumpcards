@@ -35,7 +35,12 @@ import type {
  * `lowQualifies` is unconditionally true because five cards always rank). They
  * carry no "8 or better" meaning here.
  */
-export type DramahaPlayerData = HoldemPlayerData;
+export type DramahaPlayerData = HoldemPlayerData & {
+  /** Omaha-side hand name, populated for non-folded players at showdown. */
+  omahaHandName?: string;
+  /** Draw-side hand name, populated for non-folded players at showdown. */
+  drawHandName?: string;
+};
 
 /** Dramaha CPU action (same structure as Hold'em). */
 export type DramahaCpuAction = HoldemCpuAction;
@@ -65,4 +70,4 @@ export type DramahaHandOdds = HoldemHandOdds;
  * it means "this variant has a low hand", which Dramaha does not — the split
  * is read from the per-result `hiWonAmount` / `lowWonAmount` fields instead.
  */
-export type DramahaResponse = HoldemResponse;
+export type DramahaResponse = Omit<HoldemResponse, 'players'> & { players: DramahaPlayerData[] };

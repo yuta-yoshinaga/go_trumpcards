@@ -29,6 +29,8 @@ const seat = (id: number, over: Record<string, unknown> = {}) => ({
   inRound: false,
   decided: false,
   roundTricks: 0,
+  roundPayout: 0,
+  roundPenalty: 0,
   trickCount: 0,
   ...over,
 });
@@ -206,6 +208,26 @@ describe('JulepePage', () => {
     expect(await screen.findByTestId('rm-beast-1')).toHaveTextContent('ビースト');
     expect(screen.getByTestId('rm-beast-3')).toBeInTheDocument();
     expect(screen.queryByTestId('rm-beast-0')).not.toBeInTheDocument();
+  });
+
+  it('shows per-seat payout and distinguishes the extra payment after a round', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        players: [
+          seat(0, { roundPayout: 18, roundPenalty: 0 }),
+          seat(1, { roundPayout: 0, roundPenalty: 5 }),
+          seat(2, { roundPayout: 0, roundPenalty: 0 }),
+          seat(3, { roundPayout: 12, roundPenalty: 5 }),
+        ],
+      }),
+    );
+    renderWithProviders(<JulepePage />);
+    expect(await screen.findByTestId('rm-chip-change-0')).toHaveTextContent('+18 獲得');
+    expect(screen.getByTestId('rm-chip-change-1')).toHaveTextContent('追加支払 5');
+    expect(screen.getByTestId('rm-chip-change-3')).toHaveTextContent('+12 獲得');
+    expect(screen.getByTestId('rm-chip-change-3')).toHaveTextContent('追加支払 5');
+    expect(screen.queryByTestId('rm-chip-change-2')).not.toBeInTheDocument();
   });
 
   // **降りたラウンドは「見ている」と伝える。** 操作待ちに見えてはいけない。

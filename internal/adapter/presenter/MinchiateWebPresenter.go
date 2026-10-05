@@ -13,9 +13,8 @@ import (
 
 // minchiateFace は 97 枚デッキの札を手続き描画するための自己記述子を返す。
 //
-// **切札はラベルに呼び名を出す。**Minchiate の切札は 40 枚あり、上位は星座・
-// 四大元素・美徳といった固有の札。番号だけを出すと「35 と 36 のどちらが強いか」
-// 以外の情報が画面から消える。同格札は無いので色は一律で構わない。
+// **切札はランクと呼び名をラベルに出す。**Minchiate の切札は 40 枚あり、
+// 固有名だけでは強さが分からず、番号だけでは札の呼び名が分からない。
 func minchiateFace(card *domain.Card) *CardFace {
 	if card == nil {
 		return nil
@@ -26,7 +25,7 @@ func minchiateFace(card *domain.Card) *CardFace {
 	case domain.MinchiateTrumpDesign:
 		return &CardFace{
 			Glyph: "✦",
-			Label: domain.MinchiateTrumpName(card.GetValue()),
+			Label: fmt.Sprintf("%d %s", card.GetValue(), domain.MinchiateTrumpName(card.GetValue())),
 			Color: "purple",
 			Deck:  "tarot",
 		}

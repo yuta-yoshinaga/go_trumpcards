@@ -75,7 +75,9 @@
   "roundResult": {
     "title": "ディール結果",
     "outcome": "結果: {{outcome}}",
-    "declarer": "宣言者: {{name}}（{{bid}}）"
+    "declarer": "宣言者: {{name}}（{{bid}}）",
+    "scoreChanges": "今回の得点増減",
+    "scoreDelta": "今回の増減: {{score}}点"
   },
   "hintAvailable": "ヒント",
   "hint": {

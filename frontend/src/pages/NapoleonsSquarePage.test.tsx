@@ -141,6 +141,38 @@ describe('NapoleonsSquarePage', () => {
     expect(emptyColumn).not.toHaveClass('ring-ds-success');
   });
 
+  it('announces legal destinations with 0-based columns and announces selection changes', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<NapoleonsSquarePage />);
+    const live = await screen.findByTestId('ns-destination-live');
+    const source = screen.getByRole('button', { name: /列0・上から2枚目/ });
+
+    expect(live).toBeEmptyDOMElement();
+    fireEvent.click(source);
+    expect(live).toHaveTextContent('列2');
+    expect(live).toHaveTextContent('列11');
+    expect(live).not.toHaveTextContent('場札: 列0');
+    expect(live).toHaveTextContent('組札: なし');
+
+    fireEvent.click(source);
+    expect(live).toHaveTextContent('札の選択を解除しました');
+  });
+
+  it('announces when the selected card has no legal destination', async () => {
+    const blockedState = {
+      ...playingState,
+      tableau: makeTableau([
+        playingState.tableau[0] ?? [],
+        ...Array.from({ length: 11 }, () => [{ card: card('HEART', 9), faceUp: true }]),
+      ]),
+    };
+    mockExec.mockResolvedValue(blockedState);
+    renderWithProviders(<NapoleonsSquarePage />);
+    const source = await screen.findByRole('button', { name: /列0・上から1枚目/ });
+    fireEvent.click(source);
+    expect(screen.getByTestId('ns-destination-live')).toHaveTextContent('場札: なし。組札: なし');
+  });
+
   it('labels all twelve tableau columns with their 0-based index', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<NapoleonsSquarePage />);
@@ -309,6 +341,17 @@ describe('NapoleonsSquarePage waste, hints and CLI mode', () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<NapoleonsSquarePage />);
     await waitFor(() => expect(screen.getByLabelText('捨て札は空です')).toBeInTheDocument());
+  });
+
+  it('announces the waste source in the destination live region', async () => {
+    mockExec.mockResolvedValue(withWaste);
+    renderWithProviders(<NapoleonsSquarePage />);
+    const live = await screen.findByTestId('ns-destination-live');
+    fireEvent.click(await screen.findByRole('button', { name: '♦ 4' }));
+
+    expect(live).toHaveTextContent(
+      '捨て札を選択しました。移動先。場札: 列2、列3、列4、列5、列6、列7、列8、列9、列10、列11。組札: なし。',
+    );
   });
 
   it('selects the waste top and sends it to a foundation', async () => {

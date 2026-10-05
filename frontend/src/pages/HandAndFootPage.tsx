@@ -368,7 +368,9 @@ function HandAndFootPageContent() {
                     <tbody>
                       {state.players.map((p) => (
                         <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                          <td>{playerName(p.id, p.isHuman)}</td>
+                          <th scope="row" className="text-left">
+                            {playerName(p.id, p.isHuman)}
+                          </th>
                           <td className="text-center">{p.team}</td>
                           <td className="text-center">{p.inFoot ? t('inFoot') : p.footCount}</td>
                           <td className="text-center">{p.roundScore}</td>

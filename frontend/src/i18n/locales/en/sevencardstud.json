@@ -20,6 +20,8 @@
   "bringIn": "Bring-in",
   "callAmount": "({{amount}})",
   "callPotOdds": "Required pot odds: {{percent}}%",
+  "sidePot": "Pot {{number}}: {{amount}} chips — eligible: {{players}}",
+  "listSeparator": ", ",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",

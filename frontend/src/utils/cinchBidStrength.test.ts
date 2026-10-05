@@ -51,4 +51,15 @@ describe('estimateCinchBidStrength', () => {
     expect(s.minPoints).toBe(0);
     expect(s.bestSuit).toBe(1); // ties resolve to the lowest suit index
   });
+
+  it('estimates trump length and top-five control separately from held points', () => {
+    const s = estimateCinchBidStrength([
+      card('HEART', 1),
+      card('HEART', 9),
+      card('DIAMOND', 5), // Left Pedro when hearts are trump
+    ]);
+    expect(s.pointsBySuit[3]).toBe(6);
+    expect(s.trumpCountBySuit[3]).toBe(3);
+    expect(s.controlBySuit[3]).toBe(4);
+  });
 });

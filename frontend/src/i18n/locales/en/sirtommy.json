@@ -43,6 +43,7 @@
   "landscapeBanner": "Landscape mode recommended",
   "frontendHint": {
     "sirtommyStock": "The stock card can be played to a foundation",
+    "sirtommyStockToWaste": "Place the stock card in a waste pile",
     "sirtommyWaste": "A waste pile top can be played to a foundation"
   },
   "tutorial": {

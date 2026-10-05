@@ -298,6 +298,13 @@ function ZhengPageContent() {
               )}
             </div>
 
+            <details className="rounded-lg bg-ds-surface px-3" data-testid="zheng-combo-rules">
+              <summary className="flex min-h-[44px] cursor-pointer items-center text-sm font-medium text-ds-text-primary">
+                {t('comboRulesTitle')}
+              </summary>
+              <p className="pb-3 text-sm text-ds-text-muted">{t('comboRulesHint')}</p>
+            </details>
+
             {/* Human hand */}
             <div className="text-center" data-tutorial="zheng-player-hand">
               <div className="text-xs text-ds-text-muted mb-1 flex items-center justify-center gap-1">

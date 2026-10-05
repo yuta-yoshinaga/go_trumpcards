@@ -452,6 +452,22 @@ describe('TerracePage keyboard shortcuts', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 
+  it('ignores all shortcuts while auto-completion is running', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<TerracePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    fireEvent.keyDown(document, { key: 'a' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+    mockExec.mockClear();
+
+    for (const key of ['d', 'h', 'a', 'g', 'z']) {
+      fireEvent.keyDown(document, { key });
+    }
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
   it('ignores shortcuts once the game has ended', async () => {
     mockExec.mockResolvedValue(gameOverState);
     renderWithProviders(<TerracePage />);

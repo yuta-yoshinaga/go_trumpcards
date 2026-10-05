@@ -103,5 +103,6 @@
   "roiSeul": "Playing alone (Roi seul)",
   "kingUncalled": "King call: not yet called",
   "kingCalledHidden": "Called king: K of {{suit}} (holder hidden)",
-  "kingCalledRevealed": "Called king: K of {{suit}} -> partner: {{name}}"
+  "kingCalledRevealed": "Called king: K of {{suit}} -> partner: {{name}}",
+  "bidWithTrump": "{{bid}} ({{suit}})"
 }

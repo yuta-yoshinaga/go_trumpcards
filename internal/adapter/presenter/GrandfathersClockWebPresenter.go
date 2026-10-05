@@ -17,6 +17,7 @@ type GrandfathersClockWebPresenter struct{}
 func (p *GrandfathersClockWebPresenter) Output(gc interfaces.GrandfathersClockGame, lastErr error) string {
 	resObj := new(controller.GrandfathersClockWebOutput)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, gc, int(gc.GetPhase()))
+	resObj.CanRedo = gc.CanRedo()
 
 	// タブロー — 規則上すべて表向きだが、将来の伏せ札バリアントで状態が漏れない
 	// よう、ハードコードせずドメインの FaceUp をそのまま流す。

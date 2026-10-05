@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { napoleonsSquareApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -91,6 +91,13 @@ function NapoleonsSquarePageContent() {
   const game = useNapoleonsSquareGame();
   const { state, loading, error, retry, hintError, selectedSource, legalTargets, hint, isAutoCompleting } = game;
   const selectSourceHintId = useId();
+  const previousSelectedSource = useRef(selectedSource);
+  const [selectionCleared, setSelectionCleared] = useState(false);
+  useEffect(() => {
+    if (previousSelectedSource.current && !selectedSource) setSelectionCleared(true);
+    if (selectedSource) setSelectionCleared(false);
+    previousSelectedSource.current = selectedSource;
+  }, [selectedSource]);
 
   const {
     hint: frontendHint,
@@ -184,6 +191,21 @@ function NapoleonsSquarePageContent() {
   };
   const isLegalTarget = (zone: NapoleonsSquareMoveZone) =>
     legalTargets.some((target) => target.zone === zone.zone && target.col === zone.col);
+  const destinationAnnouncement = selectedSource
+    ? t('destinationAnnouncement', {
+        source: selectedSource.zone === 'waste' ? t('waste') : t('destinationColumn', { col: selectedSource.col }),
+        tableau:
+          legalTargets
+            .filter((target) => target.zone === 'tableau')
+            .map((target) => t('destinationColumn', { col: target.col }))
+            .join(t('listSeparator')) || t('noDestination'),
+        foundation:
+          legalTargets
+            .filter((target) => target.zone === 'foundation')
+            .map((target) => t('destinationFoundation', { idx: target.col }))
+            .join(t('listSeparator')) || t('noDestination'),
+      })
+    : null;
 
   const renderTableauColumn = (colIdx: number) => {
     const col = state.tableau[colIdx] ?? [];
@@ -437,6 +459,9 @@ function NapoleonsSquarePageContent() {
                   {formatHintZone(t, hint.toZone, hint.toCol)}
                 </div>
               )}
+            </div>
+            <div data-testid="ns-destination-live" className="sr-only" role="status" aria-live="polite">
+              {destinationAnnouncement ?? (selectionCleared ? t('selectionCleared') : '')}
             </div>
             <div className="flex justify-center">
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />

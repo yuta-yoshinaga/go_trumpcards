@@ -79,6 +79,20 @@ describe('MonteCarloPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('shows the pair selection instructions while spotlighting the board', async () => {
+    renderWithProviders(<MonteCarloPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toHaveTextContent(/5×5のグリッド/));
+    fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    await waitFor(() =>
+      expect(screen.getByRole('dialog')).toHaveTextContent(
+        '1枚目をクリック → 隣接する同ランクの2枚目をクリックすると、両方が消えます。',
+      ),
+    );
+    expect(document.querySelector('[data-tutorial="mc-board"]')).toBeInTheDocument();
+  });
+
   it('shows stock and removed counts in the header', async () => {
     renderWithProviders(<MonteCarloPage />);
     await waitFor(() => expect(screen.getAllByText(/27/).length).toBeGreaterThan(0));

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { kaiserApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -97,6 +97,24 @@ function KaiserPageContent() {
 
   const [contract, setContract] = useState(0);
   const [selected, setSelected] = useState<number[]>([]);
+  const [scoreAnnouncement, setScoreAnnouncement] = useState('');
+  const previousScores = useRef<{ hand: [number, number]; total: [number, number] } | null>(null);
+
+  useEffect(() => {
+    if (!state) return;
+    const hand: [number, number] = [state.teamHandPoints[0], state.teamHandPoints[1]];
+    const total: [number, number] = [state.teamScores[0], state.teamScores[1]];
+    const previous = previousScores.current;
+    if (
+      previous &&
+      (hand.some((score, i) => score !== previous.hand[i]) || total.some((score, i) => score !== previous.total[i]))
+    ) {
+      setScoreAnnouncement(
+        t('scoreUpdateAnnouncement', { hand0: hand[0], hand1: hand[1], total0: total[0], total1: total[1] }),
+      );
+    }
+    previousScores.current = { hand, total };
+  }, [state, t]);
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
@@ -268,6 +286,9 @@ function KaiserPageContent() {
             </div>
 
             {/* Scores */}
+            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+              {scoreAnnouncement}
+            </div>
             <div className="mb-2 p-2 rounded bg-black/20 text-sm" data-testid="kaiser-scores">
               <div className="mb-1 text-ds-text-primary">{t('scoreTitle')}</div>
               <div>{t('gameScores', { t0: state.teamScores[0], t1: state.teamScores[1] })}</div>

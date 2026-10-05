@@ -108,6 +108,52 @@ describe('CitadelPage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/組札 1枚/).length).toBe(4));
   });
 
+  it('keeps mobile cards at least 40px wide inside a horizontally scrollable board', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 320 });
+    mockExec.mockResolvedValue(playingState);
+    try {
+      renderWithProviders(<CitadelPage />);
+      const board = await screen.findByTestId('citadel-board-scroll');
+      const firstCard = screen.getByRole('button', { name: '♠ 5' });
+      expect(board).toHaveClass('overflow-x-auto');
+      expect(board).toHaveClass('p-1');
+      expect(firstCard).toBeInTheDocument();
+      expect(board.querySelector('[data-tutorial="bc-tableau"]')?.firstElementChild).toHaveStyle({ width: '40px' });
+      expect(board.querySelector('[data-tutorial="bc-foundation"]')).toBeInTheDocument();
+      expect(board.querySelector('[data-tutorial="bc-tableau"]')).toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', {
+        configurable: true,
+        writable: true,
+        value: originalWidth,
+      });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('keeps the desktop board columns flexible in the existing single-row layout', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(playingState);
+    try {
+      renderWithProviders(<CitadelPage />);
+      const board = await screen.findByTestId('citadel-board-scroll');
+      expect(board).not.toHaveClass('overflow-x-auto');
+      expect(board.firstElementChild).toHaveClass('w-full');
+      expect(board.firstElementChild).not.toHaveClass('w-max');
+      expect(board.querySelector('[data-tutorial="bc-tableau"]')).toHaveClass('flex-1');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', {
+        configurable: true,
+        writable: true,
+        value: originalWidth,
+      });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('labels all eight tableau columns with their 0-based index (matching hint text)', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<CitadelPage />);
@@ -357,6 +403,26 @@ describe('CitadelPage destination preview', () => {
 
     fireEvent.mouseLeave(spadeFive);
     await waitFor(() => expect(targets()).toHaveLength(0));
+  });
+
+  it('includes foundation destinations in the horizontally scrollable board preview', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 13), faceUp: true },
+          { card: card('SPADE', 2), faceUp: true },
+        ],
+      ]),
+    });
+    renderWithProviders(<CitadelPage />);
+    const spadeTwo = await screen.findByRole('button', { name: '♠ 2' });
+    fireEvent.mouseEnter(spadeTwo);
+    await waitFor(() =>
+      expect(
+        document.querySelector('[data-tutorial="bc-foundation"] [data-preview-target="true"]'),
+      ).toBeInTheDocument(),
+    );
   });
 
   it('marks the destinations on focus', async () => {

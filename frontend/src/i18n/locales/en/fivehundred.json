@@ -57,7 +57,7 @@
     "hard": "Hard"
   },
   "tutorial": {
-    "info": "Round, contract, and team scores show here. The first team to reach 500 points wins.",
+    "info": "Round, contract, and team scores show here. The first team to reach {{targetScore}} points wins.",
     "trick": "Cards played to the table appear here. The strongest card wins the trick.",
     "hand": "Your hand. To play, select a card then press Play. To exchange, select exactly 3.",
     "actions": "Phase-specific action buttons (bid, exchange, play) appear here."

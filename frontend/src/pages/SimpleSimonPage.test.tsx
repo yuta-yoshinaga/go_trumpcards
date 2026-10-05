@@ -63,7 +63,7 @@ describe('SimpleSimonPage', () => {
       columns: (() => {
         const columns: Card[][] = Array.from({ length: 10 }, () => []);
         columns[0] = [card('SPADE', 9), card('SPADE', 8)];
-        columns[1] = [card('SPADE', 10)];
+        columns[1] = [card('SPADE', 7)];
         return columns;
       })(),
     });
@@ -71,7 +71,7 @@ describe('SimpleSimonPage', () => {
       moveCount: 1,
       columns: (() => {
         const columns: Card[][] = Array.from({ length: 10 }, () => []);
-        columns[0] = [card('SPADE', 9), card('SPADE', 8), card('SPADE', 10)];
+        columns[0] = [card('SPADE', 9), card('SPADE', 8), card('SPADE', 7)];
         return columns;
       })(),
     });
@@ -97,12 +97,37 @@ describe('SimpleSimonPage', () => {
 
   it('marks the selected source and destination columns in their numbered headings', async () => {
     renderWithProviders(<SimpleSimonPage />);
-    fireEvent.click(await screen.findByTestId('card-1-0'));
+    const sourceCard = await screen.findByTestId('card-1-0');
+    fireEvent.click(sourceCard);
 
+    expect(sourceCard).not.toHaveClass('opacity-50');
     expect(screen.getByTestId('column-label-1')).toHaveTextContent('選択元');
     expect(screen.getByTestId('column-label-0')).toHaveTextContent('移動先候補');
     expect(screen.getByTestId('column-label-1')).toHaveClass('ring-ds-warning');
     expect(screen.getByTestId('column-label-0')).toHaveClass('ring-ds-success');
+  });
+
+  it('highlights one-rank-higher columns and empty columns, and ignores other clicks', async () => {
+    const columns: Card[][] = Array.from({ length: 10 }, () => []);
+    columns[0] = [card('SPADE', 8)];
+    columns[1] = [card('HEART', 9)];
+    columns[2] = [card('SPADE', 8)];
+    mockExec.mockResolvedValue(makeState({ columns }));
+    renderWithProviders(<SimpleSimonPage />);
+
+    fireEvent.click(await screen.findByTestId('card-0-0'));
+    expect(screen.getByTestId('column-label-1')).toHaveClass('ring-ds-success');
+    expect(screen.getByTestId('column-label-2')).not.toHaveClass('ring-ds-success');
+    expect(screen.getByTestId('column-label-3')).toHaveClass('ring-ds-success');
+    expect(screen.getByTestId('card-1-0')).toHaveAttribute('aria-disabled', 'false');
+    expect(screen.getByTestId('card-2-0')).toHaveAttribute('aria-disabled', 'true');
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('card-2-0'));
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByTestId('card-1-0'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 0, cardIndex: 0, toCol: 1 }));
   });
 
   it('selects a card then moves the run to another column', async () => {
@@ -125,6 +150,33 @@ describe('SimpleSimonPage', () => {
     fireEvent.keyDown(document, { key: '1' });
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 1, cardIndex: 0, toCol: 0 }));
+  });
+
+  it('does not execute a keyboard move to an illegal column', async () => {
+    const columns: Card[][] = Array.from({ length: 10 }, () => []);
+    columns[1] = [card('SPADE', 8)];
+    columns[2] = [card('SPADE', 6)];
+    mockExec.mockResolvedValue(makeState({ columns }));
+    renderWithProviders(<SimpleSimonPage />);
+    await screen.findByTestId('card-1-0');
+    mockExec.mockClear();
+
+    fireEvent.keyDown(document, { key: '2' });
+    fireEvent.keyDown(document, { key: '3' });
+
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('does not move to an empty column when no source is selected', async () => {
+    renderWithProviders(<SimpleSimonPage />);
+    await screen.findByTestId('column-5-drop');
+    mockExec.mockClear();
+
+    fireEvent.click(screen.getByTestId('column-5-drop'));
+
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   it('confirms a keyboard-selected card with Enter and auto-moves it', async () => {

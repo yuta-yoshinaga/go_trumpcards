@@ -15,6 +15,7 @@
   },
   "button": {
     "bet": "ベット",
+    "maximum": "最大額",
     "draw": "引く",
     "stand": "勝負",
     "reset": "リセット",

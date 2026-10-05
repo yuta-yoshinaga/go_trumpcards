@@ -80,5 +80,6 @@
     "resetButton": "Reset the game and start over."
   },
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "hintTarget": "Suggested by hint"
 }

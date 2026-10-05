@@ -20,6 +20,12 @@ export interface MachiavelliMeld {
   kind: number;
 }
 
+/** Scores recorded for one completed round, in player order. */
+export interface MachiavelliRoundScore {
+  roundNumber: number;
+  scores: number[];
+}
+
 /** Machiavelli game configuration. */
 export interface MachiavelliConfig {
   playerCount: number;
@@ -39,6 +45,7 @@ export interface MachiavelliResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   winnerIdx: number;
   roundWinnerIdx: number;
+  roundScoreHistory: MachiavelliRoundScore[];
   config: MachiavelliConfig;
 }
 

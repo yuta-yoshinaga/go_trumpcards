@@ -113,6 +113,11 @@ function DoubleAttackPageContent() {
 
   if (!state) return <GameSkeleton gameKey="doubleattack" layout={{ kind: 'casino-table', sections: [1, 1] }} />;
 
+  const handleAnteChange = (nextAnte: number) => {
+    setAnte(nextAnte);
+    setBustIt((currentBustIt) => Math.min(currentBustIt, Math.max(0, state.chips - nextAnte)));
+  };
+
   const phaseName =
     {
       [DoubleAttackPhase.BET]: t('phase.bet'),
@@ -259,7 +264,7 @@ function DoubleAttackPageContent() {
                     id="doubleattack-ante"
                     label={t('label.ante')}
                     value={ante}
-                    onChange={setAnte}
+                    onChange={handleAnteChange}
                     max={state.chips}
                   />
                   <ChipBetInput

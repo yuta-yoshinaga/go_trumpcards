@@ -184,13 +184,16 @@ func TestBisleyCuiPresenter_HintOutput(t *testing.T) {
 }
 
 func TestBisleyCuiPresenter_ActionLogOutput(t *testing.T) {
-	t.Run("playing phase returns empty", func(t *testing.T) {
+	t.Run("playing phase returns log", func(t *testing.T) {
 		bg := new(interfaces.MockBisleyGame)
 		bg.On("GetPhase").Return(domain.BisleyPhasePlaying)
+		bg.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
+		})
 
 		p := new(BisleyCuiPresenter)
 		result := p.ActionLogOutput(bg)
-		assert.Contains(t, result, "棋譜はありません")
+		assert.Contains(t, result, "move")
 	})
 
 	t.Run("game over returns log", func(t *testing.T) {

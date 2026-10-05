@@ -166,7 +166,7 @@ function SalicLawPageContent() {
     [game, confirmGiveUpAction],
   );
 
-  useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading });
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading && actionLog === null });
 
   if (!state) {
     return <GameSkeleton gameKey="saliclaw" layout={{ kind: 'tableau', topRow: 8, tableau: TABLEAU_PILES }} />;
@@ -503,6 +503,7 @@ function SalicLawPageContent() {
 
             <ActionLogSection
               isEndPhase={isEnded}
+              availableDuringPlay
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}

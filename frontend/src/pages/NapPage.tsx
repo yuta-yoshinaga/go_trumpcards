@@ -446,6 +446,7 @@ function NapPageContent() {
                       ? t('bidHighest', { bid: t(highestBidLabelKey), player: highestBidderName })
                       : t('bidNone')}
                   </span>
+                  <span className="basis-full text-xs text-ds-text-muted">{t('bidStakeLegend')}</span>
                   {BIDS.map((b) => {
                     // Pass (0) is always allowed; a non-pass bid must beat the current highest.
                     const tooLow = b.value !== NapContract.PASS && b.value <= highestBid;
@@ -464,12 +465,16 @@ function NapPageContent() {
                           onClick={() => handleBid(b.value)}
                           disabled={disabled}
                           aria-disabled={disabled}
-                          aria-label={reason ? `${t(b.key)} — ${reason}` : undefined}
+                          aria-label={
+                            reason
+                              ? `${t(b.key)} — ${reason}`
+                              : payout
+                                ? t('bidStakeAria', { bid: t(b.key), make: payout.make, fail: payout.fail })
+                                : undefined
+                          }
                           data-testid={`bid-${b.value}`}
                         >
                           {t(b.key)}
-                          {/* 賭け金は契約ごとに違い、ナップだけ非対称 (#5651)。
-                              失敗時に動くのは「相手それぞれが得る」数。 */}
                           {payout && (
                             <span className="ml-1 text-xs opacity-80">
                               {t('bidStake', { make: payout.make, fail: payout.fail })}

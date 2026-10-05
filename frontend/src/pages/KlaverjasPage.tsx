@@ -198,6 +198,7 @@ function KlaverjasPageContent() {
 
   const canPlay = isPlayPhase && isHumanTurn;
   const humanTeam = humanIdx % 2;
+  const playersWithTeams = state.players.map((p) => ({ ...p, team: p.id % 2 }));
   const trumpSymbol = suitSymbolAt(state.trumpSuit, '');
 
   const handleManualReset = () => {
@@ -266,7 +267,7 @@ function KlaverjasPageContent() {
               <div>
                 <TrickDisplay
                   currentTrick={state.currentTrick}
-                  players={state.players}
+                  players={playersWithTeams}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="klaverjas-trick-display"

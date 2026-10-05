@@ -297,7 +297,14 @@ function QuadrillePageContent() {
                     >
                       <span className="block">{playerName(idx, player.isHuman)}</span>
                       <span>
-                        {state.bidActed[idx] ? t(BID_DECLARATION_KEYS[state.bids[idx]] ?? 'bidNone') : t('notDeclared')}
+                        {state.bidActed[idx]
+                          ? state.bids[idx] > 0 && state.bidTrump[idx] > 0
+                            ? t('bidWithTrump', {
+                                bid: t(BID_DECLARATION_KEYS[state.bids[idx]]),
+                                suit: t(SUIT_KEYS[state.bidTrump[idx]]),
+                              })
+                            : t(BID_DECLARATION_KEYS[state.bids[idx]])
+                          : t('notDeclared')}
                       </span>
                       {idx === state.currentBidderIdx && <span className="ml-1">{t('currentBidder')}</span>}
                     </li>

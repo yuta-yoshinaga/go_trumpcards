@@ -1617,6 +1617,35 @@ describe('BigOHiLoPage', () => {
       expect(screen.getByTestId('equity-display')).toBeInTheDocument();
     });
 
+    it('shows the low share probability when equity data includes it', async () => {
+      mockExec.mockResolvedValue({
+        ...stateWithEquity,
+        equity: {
+          winProbability: 0.75,
+          handOdds: [
+            { handRank: 0, handName: 'High Card', probability: 0.1 },
+            { handRank: 1, handName: 'One Pair', probability: 0.9 },
+          ],
+          lowProbability: 0.35,
+        },
+      });
+      renderWithProviders(<BigOHiLoPage />);
+      await waitFor(() => expect(screen.getByTestId('learning-mode-toggle')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByLabelText('ラーニングモード'));
+      expect(screen.getByTestId('low-probability')).toHaveTextContent('ローの取り分: 35%');
+    });
+
+    it('does not show the low share probability when equity data omits it', async () => {
+      mockExec.mockResolvedValue(stateWithEquity);
+      renderWithProviders(<BigOHiLoPage />);
+      await waitFor(() => expect(screen.getByTestId('learning-mode-toggle')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByLabelText('ラーニングモード'));
+      expect(screen.getByTestId('equity-display')).toBeInTheDocument();
+      expect(screen.queryByTestId('low-probability')).not.toBeInTheDocument();
+    });
+
     it('hides equity display when learning mode is toggled off', async () => {
       mockExec.mockResolvedValue(stateWithEquity);
       renderWithProviders(<BigOHiLoPage />);

@@ -66,6 +66,8 @@ export interface BaseballConfig {
 
 /** Response payload for `/baseballpoker/exec`. */
 export interface BaseballPokerResponse extends BaseGameResponse {
+  /** Server-computed advice for the human's current decision. */
+  serverHint?: BaseballHint;
   /** 0=Betting, 1=BuyIn, 2=Showdown, 3=GameEnd. */
   phase: number;
   seats: BaseballSeat[];

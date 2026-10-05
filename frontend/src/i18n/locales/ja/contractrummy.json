@@ -10,6 +10,7 @@
   "contractLabel": "今回のコントラクト",
   "stockLabel": "山札",
   "discardLabel": "捨て札",
+  "discardHistoryLabel": "捨て札の履歴",
   "yourHand": "あなたの手札",
   "cards": "枚数",
   "scoreLabel": "累計",

@@ -47,6 +47,8 @@ function makeState(overrides: Partial<RamsResponse> = {}): RamsResponse {
     dealerIdx: 0,
     activeCount: 0,
     currentTrick: [],
+    lastTrick: [],
+    lastTrickWinner: -1,
     validPlays: [0, 1, 2],
     gameEndFlag: false,
     winnerIdx: -1,
@@ -72,6 +74,34 @@ beforeEach(() => {
 });
 
 describe('RamsPage', () => {
+  it('shows the last completed trick and winner when the current trick is empty', async () => {
+    const previous = card('SPADE', 14);
+    mockExec.mockResolvedValue(
+      playing({
+        currentTrick: [],
+        lastTrick: [{ playerIdx: 1, card: previous }],
+        lastTrickWinner: 1,
+      }),
+    );
+    renderWithProviders(<RamsPage />);
+    expect(await screen.findByTestId('trick-display-cards')).toBeInTheDocument();
+    expect(screen.getByTestId('trick-winner-badge')).toBeInTheDocument();
+  });
+
+  it('shows the current trick instead of the last trick when a new trick has cards', async () => {
+    mockExec.mockResolvedValue(
+      playing({
+        currentTrick: [{ playerIdx: 2, card: card('HEART', 13) }],
+        lastTrick: [{ playerIdx: 1, card: card('SPADE', 14) }],
+        lastTrickWinner: 1,
+      }),
+    );
+    renderWithProviders(<RamsPage />);
+    const cards = await screen.findByTestId('trick-display-cards');
+    expect(cards).toHaveTextContent('CPU 2');
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
+  });
+
   it('keeps the original card label off turn', async () => {
     renderWithProviders(<RamsPage />);
     const cards = await screen.findAllByRole('button', { name: /を出す/ });

@@ -124,7 +124,8 @@ type DaifugoWebOutput struct {
 	//
 	// **判定できないときは空配列ではなく null。**空配列は「1枚も出せない」と
 	// 読めてしまい、実際には出せる手札を全部「出せない」と表示することになる。
-	PlayableCardIndices []int `json:"playableCardIndices"`
+	PlayableCardIndices      []int   `json:"playableCardIndices"`
+	PlayableCardCombinations [][]int `json:"playableCardCombinations"`
 	WebOutputBase
 }
 

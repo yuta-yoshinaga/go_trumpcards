@@ -38,6 +38,12 @@ func (p *SlobberhannesWebPresenter) buildBase(s interfaces.SlobberhannesGame) *c
 	resObj.GameEndFlag = s.GetGameEndFlag()
 	resObj.WinnerIdx = s.GetWinnerIdx()
 	resObj.CurrentTrick = trickCardsToOutput(s.GetCurrentTrick())
+	resObj.LastTrick = make([]*controller.WebOutputTrickCard, 0)
+	resObj.LastTrickWinner = -1
+	if s.GetPhase() == domain.SlobberhannesPhasePlay && len(s.GetLastTrick()) > 0 {
+		resObj.LastTrick = trickCardsToOutput(s.GetLastTrick())
+		resObj.LastTrickWinner = s.GetLastTrickWinner()
+	}
 	resObj.Players = p.buildPlayersOutput(s)
 	resObj.Config = controller.SlobberhannesWebOutputConfig{Rounds: s.GetConfig().Rounds}
 	return resObj

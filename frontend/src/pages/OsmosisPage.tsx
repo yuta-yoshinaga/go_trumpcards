@@ -319,7 +319,14 @@ function OsmosisPageContent() {
                       onClick={() => handleFoundationClick(i)}
                       disabled={!isPlaying || loading}
                       aria-disabled={!selected || undefined}
-                      aria-label={`${t('foundation')} ${i}${clickAllowed ? `, ${t('placeable')}` : ''}`}
+                      aria-label={
+                        pile.length > 0
+                          ? t(clickAllowed ? 'foundationAriaWithCardPlaceable' : 'foundationAriaWithCard', {
+                              num: i,
+                              card: cardAlt(pile[pile.length - 1]),
+                            })
+                          : t(clickAllowed ? 'foundationAriaEmptyPlaceable' : 'foundationAriaEmpty', { num: i })
+                      }
                       // Read the available action in the name; explain blocked rows with
                       // aria-describedby because title and border color are not reliable cues.
                       aria-describedby={

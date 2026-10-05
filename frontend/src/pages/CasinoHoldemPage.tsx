@@ -284,9 +284,16 @@ function CasinoHoldemPageContent() {
                   )}
                 </div>
                 {isFlopPhase && (
-                  <p className="text-ds-text-muted text-sm text-center" data-testid="ch-dealer-qualify-rule">
-                    {t('dealerQualifyRule')}
-                  </p>
+                  <>
+                    <p className="text-ds-text-muted text-sm text-center" data-testid="ch-dealer-qualify-rule">
+                      {t('dealerQualifyRule')}
+                    </p>
+                    {state.callWinRate !== undefined && (
+                      <p className="text-ds-text-muted text-sm text-center" data-testid="ch-call-win-rate">
+                        {t('hint.callWinRate', { percent: Math.round(state.callWinRate * 100) })}
+                      </p>
+                    )}
+                  </>
                 )}
                 <div className="flex justify-center gap-2 flex-wrap">
                   {state.playerHand.map((card, i) => (

@@ -49,6 +49,8 @@ type TrogguGame interface {
 	GetBidPlayerIdx() int
 	// GetHighestBid 現在の最高入札を取得する
 	GetHighestBid() domain.TrogguBid
+	// GetHighestBidder 最高入札者の席を取得する (-1 = なし)
+	GetHighestBidder() int
 	// GetDeclarerIdx デクレアラーの席を取得する (-1 = 未確定 / 流局)
 	GetDeclarerIdx() int
 	// GetContract 成立した契約を取得する

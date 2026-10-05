@@ -312,6 +312,10 @@ function GoStopPageContent() {
                     }))}
             </div>
 
+            <div data-testid="gostop-decision-live" role="status" aria-live="polite" className="sr-only">
+              {isDecisionPhase && !isGameEnd && t('decision.announcement', { points: state.pendingPoints })}
+            </div>
+
             {/* Go / Stop decision */}
             {isDecisionPhase && !isGameEnd && (
               <div

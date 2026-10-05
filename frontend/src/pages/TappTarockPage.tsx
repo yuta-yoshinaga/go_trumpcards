@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { tapptarockApi as TappTarockApi } from '../api/gameApi';
 import { tapptarockApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -26,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { TappTarockResponse } from '../types/card';
 import { TappTarockBid, TappTarockPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseTappTarockCommand, TAPPTAROCK_HELP } from '../utils/cli/commands/tapptarockCommands';
 import { formatTappTarockState } from '../utils/cli/formatters/tapptarockFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -225,6 +227,20 @@ function TappTarockPageContent() {
               winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
               winnerLabel={t('trickWinner')}
             />
+
+            {isPlay && state.currentTrick.length > 0 && state.lastTrickCards.length > 0 && (
+              <section className="my-3 p-3 rounded bg-ds-surface" data-testid="zw-previous-trick">
+                <div className="text-ds-text-muted text-sm mb-1">{t('previousTrick')}</div>
+                <div className="flex justify-center gap-2">
+                  {state.lastTrickCards.map((card, index) => (
+                    <CardImage key={index} card={card} ariaLabel={cardAlt(card)} width={cardWidth} />
+                  ))}
+                </div>
+                <div className="mt-2 text-center text-sm text-ds-text-primary">
+                  {t('previousTrickWinner', { name: seatName(state.lastTrickWinner) })}
+                </div>
+              </section>
+            )}
 
             {human && (
               <PlayerHandSection

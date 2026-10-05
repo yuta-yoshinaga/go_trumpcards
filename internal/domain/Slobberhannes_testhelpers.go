@@ -26,3 +26,9 @@ func (s *Slobberhannes) Finish() { s.finishGame() }
 
 // SetCurrentTrickForTest 場に出ている札を設定する（テスト用）
 func (s *Slobberhannes) SetCurrentTrickForTest(t []*TrickCard) { s.currentTrick = t }
+
+// SetLastTrickForTest injects a resolved trick for adapter tests.
+func (s *Slobberhannes) SetLastTrickForTest(t []*TrickCard, winner int) {
+	s.lastTrick = t
+	s.lastTrickWinner = winner
+}

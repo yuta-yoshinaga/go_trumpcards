@@ -247,6 +247,22 @@ describe('KlondikePage', () => {
     expect(kElements.length).toBeGreaterThanOrEqual(1);
   });
 
+  it('announces empty tableau columns with zero-based indices in Japanese and English', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    expect(screen.getByRole('button', { name: '空の場札列、列2' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の場札列、列6' })).toBeInTheDocument();
+
+    await i18n.changeLanguage('en');
+    try {
+      expect(screen.getByRole('button', { name: 'Empty tableau column 2' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Empty tableau column 6' })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('clicking draw button dispatches draw', async () => {
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());

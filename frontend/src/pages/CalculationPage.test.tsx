@@ -82,6 +82,35 @@ describe('CalculationPage', () => {
     }
   });
 
+  it('includes the current top card and next rank in non-empty foundation names', async () => {
+    renderWithProviders(<CalculationPage />);
+    const f0 = await screen.findByRole('button', { name: '組札 0 +1 現在の一番上: ♠ A、次に置くカード 2' });
+    expect(f0).toBeInTheDocument();
+  });
+
+  it('keeps empty foundation names and identifies a completed foundation', async () => {
+    const fullPile = Array.from({ length: 13 }, (_, index) => card('SPADE', index + 1));
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundations: [[], [card('HEART', 2)], [card('DIAMOND', 3)], fullPile],
+    });
+    renderWithProviders(<CalculationPage />);
+    expect(await screen.findByRole('button', { name: '組札 0 +1 次に置くべきカード A' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '組札 3 +4 現在の一番上: ♠ K、完成' })).toBeInTheDocument();
+  });
+
+  it('includes the current top card and next rank in English foundation names', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<CalculationPage />);
+      expect(
+        await screen.findByRole('button', { name: 'Foundation 0 +1 Top card: ♠ A, next required card 2' }),
+      ).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('labels a non-empty waste pile with its top ranks, not the empty text', async () => {
     mockExec.mockResolvedValue({ ...playingState, wastes: [[card('HEART', 9)], [], [], []] });
     renderWithProviders(<CalculationPage />);

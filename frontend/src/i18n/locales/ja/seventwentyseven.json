@@ -9,7 +9,8 @@
     "playerCount": "プレイヤー数",
     "ante": "アンティ",
     "startingChips": "初期チップ",
-    "targetRounds": "ラウンド数"
+    "targetRounds": "ラウンド数",
+    "applyOnReset": "設定変更は次のリセットから適用されます。リセットすると、変更した設定で新しい対局が始まります。"
   },
   "you": "あなた",
   "cpu": "CPU {{id}}",

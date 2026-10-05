@@ -40,6 +40,20 @@ beforeEach(() => {
 });
 
 describe('LooPage', () => {
+  it('shows the turn-up card alongside the trump suit', async () => {
+    renderWithProviders(<LooPage />);
+    expect(await screen.findByText('めくり札:')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '♠ 7' })).toBeInTheDocument();
+    expect(screen.getByText('♠ 7')).toBeInTheDocument();
+  });
+
+  it('keeps the trump display stable when there is no turn-up card', async () => {
+    mockExec.mockResolvedValue(makeLooState({ trumpSuit: 0, turnUp: null }));
+    renderWithProviders(<LooPage />);
+    expect(await screen.findByText('切り札: -')).toBeInTheDocument();
+    expect(screen.queryByText('めくり札:')).not.toBeInTheDocument();
+  });
+
   it('shows - when no trump suit has been set', async () => {
     mockExec.mockResolvedValue(makeLooState({ trumpSuit: 0 }));
     renderWithProviders(<LooPage />);

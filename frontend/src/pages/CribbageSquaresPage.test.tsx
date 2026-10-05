@@ -112,11 +112,22 @@ describe('CribbageSquaresPage', () => {
       ),
     );
 
-    // A state refresh such as undo must not repeat a placement announcement.
-    mockExec.mockResolvedValue(makeState());
+    // Undo announces the updated score and the cell it cleared.
+    mockExec.mockResolvedValue(
+      makeState({
+        board: makeState().board.map((cells, row) =>
+          cells.map((cell, col) => (row === 1 && col === 2 ? { card: null } : cell)),
+        ),
+        rowPartialDetails: [zero(), zero(), zero(), zero()],
+        colPartialDetails: [zero(), zero(), zero(), zero()],
+      }),
+    );
     fireEvent.click(screen.getByRole('button', { name: '元に戻す' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
-    expect(live).toHaveTextContent('スターター公開前の途中得点。行2が4点（15が2、ペア2）、列3が2点（ペア2）、合計6点');
+    await waitFor(() =>
+      expect(live).toHaveTextContent(
+        '行2・列3のカードを取り消しました。スターター公開前の途中得点。行2が0点（得点項目なし）、列3が0点（得点項目なし）、合計0点',
+      ),
+    );
   });
 
   it('uses the no-scored-parts fallback for zero-score details', async () => {
@@ -148,6 +159,54 @@ describe('CribbageSquaresPage', () => {
     fireEvent.click(screen.getByTestId('cell-1-2'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('place', 1, 2));
     expect(live).toBeEmptyDOMElement();
+  });
+
+  it('announces the undone cell and updated partial scores after successful undo', async () => {
+    renderWithProviders(<CribbageSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('cs-placement-announcement')).toBeInTheDocument());
+    const emptyBoard = Array.from({ length: 4 }, () =>
+      Array.from({ length: 4 }, () => ({ card: null as Card | null })),
+    );
+    mockExec.mockResolvedValue(
+      makeState({
+        board: emptyBoard,
+        placedCount: 0,
+        canUndo: false,
+        rowPartialDetails: [zero(), zero(), zero(), zero()],
+        colPartialDetails: [zero(), zero(), zero(), zero()],
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: '元に戻す' }));
+    await waitFor(() =>
+      expect(screen.getByTestId('cs-placement-announcement')).toHaveTextContent(
+        '行1・列1のカードを取り消しました。スターター公開前の途中得点。行1が0点（得点項目なし）、列1が0点（得点項目なし）、合計0点',
+      ),
+    );
+  });
+
+  it('does not announce an undo when the returned board is unchanged', async () => {
+    renderWithProviders(<CribbageSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('cell-1-2')).toBeEnabled());
+    const live = screen.getByTestId('cs-placement-announcement');
+    const board = makeState().board;
+    board[1][2] = { card: card('HEART', 10) };
+    const placedState = makeState({ board, placedCount: 2 });
+    mockExec.mockResolvedValue(placedState);
+    fireEvent.click(screen.getByTestId('cell-1-2'));
+    await waitFor(() =>
+      expect(live).toHaveTextContent(
+        'スターター公開前の途中得点。行2が0点（得点項目なし）、列3が0点（得点項目なし）、合計0点',
+      ),
+    );
+    const announcementBeforeUndo = live.textContent;
+
+    // A rejected undo can return the same board it received.
+    mockExec.mockResolvedValue(placedState);
+
+    fireEvent.click(screen.getByRole('button', { name: '元に戻す' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+    expect(live).toHaveTextContent(announcementBeforeUndo ?? '');
   });
 
   it('announces final row and column scores when placement completes the board', async () => {

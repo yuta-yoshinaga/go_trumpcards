@@ -262,7 +262,8 @@ function MonteBankPageContent() {
             {isResultPhase && (
               <div className="text-center mb-2" data-testid="mb-result">
                 <div className={`text-sm font-medium ${net >= 0 ? 'text-ds-success' : 'text-ds-error-text'}`}>
-                  {t(`result.${resultKeyOf(state.result)}`)} · {t('label.net')} {net}
+                  {t(`result.${resultKeyOf(state.result)}`)} · {t('label.bet')} {state.bet} · {t('label.payoutAmount')}{' '}
+                  {state.payout} · {t('label.net')} {net}
                 </div>
               </div>
             )}

@@ -1,6 +1,6 @@
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { bisleyApi } from '../api/gameApi';
+import { actionLogApi, bisleyApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -75,6 +75,25 @@ describe('BisleyPage', () => {
     renderWithProviders(<BisleyPage />);
     await waitFor(() => expect(screen.getByText(/ビズリー/)).toBeInTheDocument());
     expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
+  });
+
+  it('opens the action log during play and disables game shortcuts while it is open', async () => {
+    mockExec.mockResolvedValue(playingState);
+    vi.mocked(actionLogApi.bisley).mockResolvedValue({
+      entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'move', detail: '列 0 から組札へ' }],
+    });
+    renderWithProviders(<BisleyPage />);
+
+    const button = await screen.findByRole('button', { name: '棋譜を見る' });
+    fireEvent.click(button);
+    const actionLog = await screen.findByRole('region', { name: '棋譜' });
+    expect(actionLog).toHaveTextContent('move: 列 0 から組札へ');
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'h' });
+    fireEvent.keyDown(document, { key: 'z' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   it('renders four ascending piles and four empty descending piles', async () => {

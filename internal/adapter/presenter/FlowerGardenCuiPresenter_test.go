@@ -150,6 +150,7 @@ func TestFlowerGardenCuiPresenter_Output(t *testing.T) {
 func TestFlowerGardenCuiPresenter_HintOutput(t *testing.T) {
 	t.Run("foundation hint from tableau", func(t *testing.T) {
 		bg := new(interfaces.MockFlowerGardenGame)
+		setupFlowerGardenCuiMockDefaults(bg)
 		bg.On("GetHint").Return(&domain.FlowerGardenHint{
 			FromZone:  "tableau",
 			FromCol:   0,
@@ -163,10 +164,12 @@ func TestFlowerGardenCuiPresenter_HintOutput(t *testing.T) {
 		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "フラワーベッド0")
 		assert.Contains(t, result, "組札")
+		assert.Contains(t, result, "♠5")
 	})
 
 	t.Run("tableau hint", func(t *testing.T) {
 		bg := new(interfaces.MockFlowerGardenGame)
+		setupFlowerGardenCuiMockDefaults(bg)
 		bg.On("GetHint").Return(&domain.FlowerGardenHint{
 			FromZone:  "tableau",
 			FromCol:   1,
@@ -183,6 +186,7 @@ func TestFlowerGardenCuiPresenter_HintOutput(t *testing.T) {
 
 	t.Run("reserve hint", func(t *testing.T) {
 		bg := new(interfaces.MockFlowerGardenGame)
+		setupFlowerGardenCuiMockDefaults(bg)
 		bg.On("GetHint").Return(&domain.FlowerGardenHint{
 			FromZone:  "reserve",
 			FromCol:   2,
@@ -194,6 +198,7 @@ func TestFlowerGardenCuiPresenter_HintOutput(t *testing.T) {
 		p := new(FlowerGardenCuiPresenter)
 		result := p.HintOutput(bg)
 		assert.Contains(t, result, "ブーケ2")
+		assert.Contains(t, result, "♥3")
 	})
 
 	t.Run("no hint", func(t *testing.T) {

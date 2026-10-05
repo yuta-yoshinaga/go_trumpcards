@@ -454,6 +454,20 @@ function GrandfathersClockPageContent() {
                   >
                     {t('undo')}
                   </button>
+                  <button
+                    type="button"
+                    className={`${btnPrimary} aria-disabled:cursor-not-allowed aria-disabled:opacity-50`}
+                    aria-disabled={loading || isAutoCompleting || !state.canRedo}
+                    aria-describedby={!state.canRedo ? 'gc-redo-unavailable' : undefined}
+                    onClick={() => {
+                      if (!loading && !isAutoCompleting && state.canRedo) game.handleRedo();
+                    }}
+                  >
+                    {t('redo')}
+                  </button>
+                  <span id="gc-redo-unavailable" className="sr-only">
+                    {t('redoUnavailable')}
+                  </span>
                   {state.isStalemate && (
                     <StalemateEscapeButton
                       undoToEscape={state.undoToEscape ?? 0}

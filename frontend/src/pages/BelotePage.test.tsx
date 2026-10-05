@@ -206,6 +206,19 @@ describe('BelotePage', () => {
     expect(screen.getByTestId('belote-rebelote-badge')).not.toHaveAttribute('data-active');
   });
 
+  it('shows the maker team during play', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BelotePhase.PLAY, trumpSuit: 1, makerTeam: 1 }));
+    renderWithProviders(<BelotePage />);
+    expect(await screen.findByText('メイカー: チーム1')).toBeInTheDocument();
+  });
+
+  it('does not show the maker team during bidding', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpSuit: 0 }));
+    renderWithProviders(<BelotePage />);
+    await screen.findByText('ターンアップを取る');
+    expect(screen.queryByText('メイカー: チーム0')).not.toBeInTheDocument();
+  });
+
   it('activates the dix-de-der badge on the 8th trick', async () => {
     mockExec.mockResolvedValue(makeState({ phase: BelotePhase.PLAY, trumpSuit: 1, trickNumber: 8, makerTeam: 0 }));
     renderWithProviders(<BelotePage />);

@@ -86,6 +86,7 @@ const CRESCENT_TOTAL_CARDS = 104;
 
 function CrescentPageContent() {
   const selectSourceHintId = useId();
+  const autoCompleteNotReadyId = useId();
   const {
     t,
     tc,
@@ -596,9 +597,15 @@ function CrescentPageContent() {
                     disabled={loading || isAutoCompleting || !autoCompleteReady}
                     data-testid="autocomplete-button"
                     title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
+                    aria-describedby={!autoCompleteReady ? autoCompleteNotReadyId : undefined}
                   >
                     {t('autoComplete')}
                   </button>
+                  {!autoCompleteReady && (
+                    <p id={autoCompleteNotReadyId} className="basis-full order-last text-sm text-ds-text-muted">
+                      {t('autoCompleteNotReady')}
+                    </p>
+                  )}
                   <button
                     type="button"
                     className={btnDanger}

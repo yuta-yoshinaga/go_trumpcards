@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, baccaratApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BaccaratResponse, Card, CardDesign } from '../types/card';
@@ -190,6 +191,7 @@ describe('BaccaratPage', () => {
     mockExec.mockReturnValue(new Promise(() => {})); // never resolves
     renderWithProviders(<BaccaratPage />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+    expect(screen.getByTestId('baccarat-reveal-live')).toHaveAttribute('aria-live', 'polite');
   });
 
   it('shows end phase with player wins', async () => {
@@ -645,6 +647,9 @@ describe('BaccaratPage', () => {
       await vi.waitFor(() => {
         expect(screen.getByTestId('bac-player-cards').childElementCount).toBe(2);
       });
+      const liveRegion = screen.getByTestId('baccarat-reveal-live');
+      expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+      expect(liveRegion).toBeEmptyDOMElement();
       expect(screen.getByTestId('bac-banker-cards').childElementCount).toBe(2);
       expect(screen.queryByTestId('bac-payout')).not.toBeInTheDocument();
       // Step 2: player's third card lands.
@@ -653,17 +658,30 @@ describe('BaccaratPage', () => {
       });
       expect(screen.getByTestId('bac-player-cards').childElementCount).toBe(3);
       expect(screen.getByTestId('bac-banker-cards').childElementCount).toBe(2);
+      expect(liveRegion).toHaveTextContent('プレイヤーに3枚目のカードが公開されました。合計値は4です。');
       // Step 3: banker's third card lands.
       await act(async () => {
         await vi.advanceTimersByTimeAsync(600);
       });
       expect(screen.getByTestId('bac-banker-cards').childElementCount).toBe(3);
+      expect(liveRegion).toHaveTextContent('バンカーに3枚目のカードが公開されました。合計値は2です。');
       expect(screen.queryByTestId('bac-payout')).not.toBeInTheDocument();
       // Step 4: payout appears.
       await act(async () => {
         await vi.advanceTimersByTimeAsync(600);
       });
       expect(screen.getByTestId('bac-payout')).toBeInTheDocument();
+      expect(liveRegion).toHaveTextContent('結果詳細。プレイヤーの勝ち！ 配当は200です。');
+      try {
+        await act(async () => {
+          await i18n.changeLanguage('en');
+        });
+        expect(liveRegion).toHaveTextContent('Result details. Player wins! Payout: 200.');
+      } finally {
+        await act(async () => {
+          await i18n.changeLanguage('ja');
+        });
+      }
     } finally {
       vi.useRealTimers();
     }

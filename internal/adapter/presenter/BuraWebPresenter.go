@@ -124,7 +124,7 @@ func (p *BuraWebPresenter) HintOutput(b interfaces.BuraGame) string {
 
 // ActionLogOutput 棋譜を出力する
 func (p *BuraWebPresenter) ActionLogOutput(b interfaces.BuraGame) string {
-	return actionLogOutputJSON(b)
+	return actionLogToJSON(b.GetActionLog())
 }
 
 // buraHint 人間プレイヤーへの推奨手を返す。

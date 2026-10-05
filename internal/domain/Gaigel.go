@@ -527,6 +527,14 @@ func (g *Gaigel) trickWinner() int {
 	return winnerIdx
 }
 
+// GetTrickWinnerIdx 完了したトリックの勝者インデックスを取得する。未完了時は -1。
+func (g *Gaigel) GetTrickWinnerIdx() int {
+	if g.phase != GaigelPhaseTrickEnd || len(g.currentTrick) != GaigelPlayerCnt {
+		return -1
+	}
+	return g.trickWinner()
+}
+
 // gaigelBeats challenger が currentBest に厳密に勝つかを判定する。
 // ・両者がトランプ: ランクの高い方が勝つ
 // ・challenger のみトランプ: challenger が勝つ

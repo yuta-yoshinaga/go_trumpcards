@@ -177,6 +177,15 @@ func TestLaughAndLieDownWebPresenter_HintOutputAndActionLog(t *testing.T) {
 	assert.NotEmpty(t, new(LaughAndLieDownWebPresenter).ActionLogOutput(l))
 }
 
+func TestLaughAndLieDownWebPresenter_ActionLogIncludesEntriesDuringPlay(t *testing.T) {
+	g := lldTestGame(t)
+	var out map[string]any
+	require.NoError(t, json.Unmarshal([]byte(new(LaughAndLieDownWebPresenter).ActionLogOutput(g)), &out))
+	entries, ok := out["entries"].([]any)
+	require.True(t, ok)
+	assert.NotEmpty(t, entries)
+}
+
 func TestLaughAndLieDownCuiPresenter_ShowsTheWholeTableAndOnlyYourHand(t *testing.T) {
 	l := lldTestGame(t)
 	out := new(LaughAndLieDownCuiPresenter).Output(l, nil)
@@ -256,6 +265,22 @@ func TestLaughAndLieDownCuiPresenter_HintReasonKeysAreAllMapped(t *testing.T) {
 
 func TestLaughAndLieDownCuiPresenter_ActionLog(t *testing.T) {
 	assert.NotEmpty(t, new(LaughAndLieDownCuiPresenter).ActionLogOutput(lldTestGame(t)))
+}
+
+func TestLaughAndLieDownCuiPresenter_ActionLogIncludesEntriesDuringPlay(t *testing.T) {
+	l := lldTestGame(t)
+	assert.Contains(t, new(LaughAndLieDownCuiPresenter).ActionLogOutput(l), i18n.T("laughandliedown.log.deal"))
+}
+
+func TestLaughAndLieDownCuiPresenter_ActionLogIncludesResolvedNameForSeatedPlayer(t *testing.T) {
+	g := new(interfaces.MockLaughAndLieDownGame)
+	g.On("GetPlayer", 0).Return(domain.NewLaughAndLieDownPlayer(true))
+	g.On("GetActionLog").Return([]*domain.ActionLogEntry{{
+		TurnNumber: 1, PlayerIdx: 0, ActionType: "capture",
+		DetailCode: "laughandliedown.log.capture",
+	}})
+
+	assert.Contains(t, new(LaughAndLieDownCuiPresenter).ActionLogOutput(g), "あなた")
 }
 
 // #5576: ラストインのボーナス額は CUI の精算行には出ているが Web には無く、

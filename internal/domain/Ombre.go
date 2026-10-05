@@ -343,6 +343,35 @@ func (g *Ombre) highestBid() OmbreBid {
 // GetHighestBid returns the highest bid declared so far, including during the auction.
 func (g *Ombre) GetHighestBid() OmbreBid { return g.highestBid() }
 
+// GetBids returns each seat's declared bid (0 means pass or not yet declared).
+func (g *Ombre) GetBids() [OmbrePlayerCnt]OmbreBid { return g.bids }
+
+// GetBidActed returns whether each seat has declared during this auction.
+func (g *Ombre) GetBidActed() [OmbrePlayerCnt]bool { return g.bidActed }
+
+// GetBidTrump returns the trump suit selected with each declaration (-1 when absent).
+func (g *Ombre) GetBidTrump() [OmbrePlayerCnt]int { return g.bidTrump }
+
+// GetHighestBidderIdx returns the highest bidder, with forehand order breaking ties.
+func (g *Ombre) GetHighestBidderIdx() int {
+	return g.highestBidderIdx()
+}
+
+// highestBidderIdx applies the auction's forehand-first tie break.
+func (g *Ombre) highestBidderIdx() int {
+	best := g.highestBid()
+	if best == OmbreBidNone {
+		return -1
+	}
+	for i := 0; i < OmbrePlayerCnt; i++ {
+		idx := (g.forehandIdx + i) % OmbrePlayerCnt
+		if g.bids[idx] == best {
+			return idx
+		}
+	}
+	return -1
+}
+
 // applyBid ビッドを適用し、全員が宣言し終えたら auction を締める。
 func (g *Ombre) applyBid(playerIdx int, bid OmbreBid, trumpSuit int) {
 	g.bids[playerIdx] = bid
@@ -388,16 +417,7 @@ func (g *Ombre) nextBidder(playerIdx int) int {
 // 全員パスならディーラーが強制的にオンブル (切り札はディーラーの最良スートを自動選択)。
 func (g *Ombre) finalizeAuction() {
 	best := g.highestBid()
-	ombre := -1
-	if best > OmbreBidNone {
-		for i := 0; i < OmbrePlayerCnt; i++ {
-			cand := (g.forehandIdx + i) % OmbrePlayerCnt
-			if g.bids[cand] == best {
-				ombre = cand
-				break
-			}
-		}
-	}
+	ombre := g.highestBidderIdx()
 	g.forcedEntrar = ombre < 0
 	if ombre < 0 {
 		// 全員パス: ディーラーが強制的に Entrar を引き受け、切り札を自動選択する。

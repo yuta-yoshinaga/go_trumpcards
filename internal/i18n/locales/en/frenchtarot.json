@@ -63,6 +63,7 @@
   "log.pass": "{{player}} passes",
   "log.redeal": "All players passed. Redealing.",
   "log.winBid": "{{player}} takes the contract {{bid}}",
+  "log.revealChien": "The chien is revealed",
   "log.discard": "{{player}} discards {{count}} cards to the chien",
   "log.play": "{{player}} plays {{card}}",
   "log.trickWin": "{{player}} wins trick {{trick}}",

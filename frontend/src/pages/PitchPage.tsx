@@ -244,6 +244,20 @@ function PitchPageContent() {
     return <GameSkeleton gameKey="pitch" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 6 }} />;
 
   const phaseName = t(`phase.${PHASE_KEYS[state.phase] ?? 'bid'}`);
+  const trickResultAnnouncement =
+    (state.phase === PitchPhase.TRICK_END || state.phase === PitchPhase.ROUND_END) && state.lastTrick.length > 0
+      ? t('trickResultAnnouncement', {
+          cards: state.lastTrick
+            .map(({ playerIdx, card }) =>
+              t('trickResultCard', {
+                name: playerName(playerIdx, state.players[playerIdx]?.isHuman === true),
+                card: cardAlt(card),
+              }),
+            )
+            .join(t('listSeparator')),
+          winner: playerName(state.lastTrickWinner, state.players[state.lastTrickWinner]?.isHuman === true),
+        })
+      : '';
 
   return (
     <GamePageShell
@@ -260,6 +274,9 @@ function PitchPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only" data-testid="pt-trick-result-live">
+        {trickResultAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (

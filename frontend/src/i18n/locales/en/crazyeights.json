@@ -71,6 +71,7 @@
     "chooseMostSuit": "Choose the suit you have the most of"
   },
   "illegalHint": "Can't play this card (no matching suit, rank, or 8)",
+  "cardSelectionUnavailable": "You can select cards only during your play turn",
   "sort": {
     "label": "Sort hand",
     "original": "Original",

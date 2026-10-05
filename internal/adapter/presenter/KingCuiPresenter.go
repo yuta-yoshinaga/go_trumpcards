@@ -118,12 +118,38 @@ func kingDealGainedLine(b *strings.Builder, kg interfaces.KingGame) {
 	if detail == nil {
 		return
 	}
+	contract := kingContractShortLabel(detail.Contract)
+	if detail.Contract == domain.KingContractKingTrump {
+		contract = i18n.Tf("king.dealResultContractTrump", "contract", contract, "trump", kingTrumpLabel(detail.TrumpSuit), "basis", kingContractBasis(detail.Contract))
+	} else {
+		contract = i18n.Tf("king.dealResultContract", "contract", contract, "basis", kingContractBasis(detail.Contract))
+	}
+	b.WriteString(contract + "\n")
 	gains := make([]string, 0, kg.GetPlayerCnt())
 	for i := 0; i < kg.GetPlayerCnt(); i++ {
 		gains = append(gains, fmt.Sprintf("%s %d",
 			cuiPlayerName(kg.GetPlayer(i), i), detail.Gained[i]))
 	}
 	b.WriteString(i18n.Tf("king.dealResultGained", "gains", strings.Join(gains, " / ")) + "\n")
+}
+
+// kingContractBasis は各コントラクトの得点条件を i18n で返す。
+func kingContractBasis(contract int) string {
+	keys := []string{"king.contractBasisNoTricks", "king.contractBasisNoHearts", "king.contractBasisNoQueens", "king.contractBasisKingHeart", "king.contractBasisNoLastTwo", "king.contractBasisNoMen", "king.contractBasisKingTrump"}
+	points := []int{domain.KingNoTrickPenalty, domain.KingHeartPenalty, domain.KingQueenPenalty, domain.KingKingHeartPenalty, domain.KingLastTwoPenalty, domain.KingMenPenalty, domain.KingTrumpReward}
+	if contract < 0 || contract >= len(keys) {
+		return "-"
+	}
+	return i18n.Tf(keys[contract], "points", strconv.Itoa(points[contract]))
+}
+
+// kingContractShortLabel は結果行用の短いコントラクト名を i18n で返す。
+func kingContractShortLabel(contract int) string {
+	keys := []string{"king.contractShort.noTricks", "king.contractShort.noHearts", "king.contractShort.noQueens", "king.contractShort.noKingHeart", "king.contractShort.noLastTwo", "king.contractShort.noMen", "king.contractShort.kingTrump"}
+	if contract < 0 || contract >= len(keys) {
+		return i18n.T("king.contractShort.unknown")
+	}
+	return i18n.T(keys[contract])
 }
 
 // kingContractLabel はコントラクトの表示名を i18n で返す。

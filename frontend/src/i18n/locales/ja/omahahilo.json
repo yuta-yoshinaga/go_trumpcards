@@ -104,6 +104,8 @@
     "balancedTooltip": "バランス型のスタイル"
   },
   "livePreview": "現在の役:",
+  "liveLowPreview": "ロー候補:",
+  "liveLowNone": "なし",
   "hand": {
     "highCard": "ハイカード",
     "onePair": "ワンペア",

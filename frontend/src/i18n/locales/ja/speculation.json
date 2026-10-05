@@ -33,7 +33,7 @@
   "result.void": "切り札が1枚も出ませんでした。参加料は返却されます",
   "result.chipChange": "{{name}}: チップ増減 {{change}}",
   "result.trade": "{{buyer}} が {{seller}} から {{price}} で購入",
-  "result.finalChips": "最終チップ: {{chips}}",
+  "result.finalStanding": "{{rank}}位: {{name}} — 最終チップ {{chips}}",
   "button.flip": "めくる",
   "button.accept": "受ける",
   "button.decline": "断る",

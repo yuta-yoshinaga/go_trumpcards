@@ -141,6 +141,7 @@ function BriscolaPageContent() {
   // 要求したときは具体的なバナーだけを残す。
   // (真偽値ではなく値にしているのは、null チェックで state.hint を絞るため。)
   const serverHint = state.hint && isRequestedHint(state) ? state.hint : null;
+  const suggestedCard = serverHint?.cardIndex !== undefined ? human?.cards[serverHint.cardIndex] : undefined;
 
   const phaseName = isGameEnd ? t('phase.gameEnd') : isTrickEnd ? t('phase.trickEnd') : t('phase.play');
 
@@ -294,7 +295,9 @@ function BriscolaPageContent() {
         {serverHint && (
           <p className="mt-3 text-sm text-ds-accent" data-testid="briscola-hint">
             {t('hint.available')}: {t(`hint.${serverHint.reason}`)}
-            {serverHint.cardIndex !== undefined && ` ${t('hint.card', { index: serverHint.cardIndex })}`}
+            {serverHint.cardIndex !== undefined &&
+              suggestedCard &&
+              ` ${t('hint.card', { index: serverHint.cardIndex, name: cardAlt(suggestedCard) })}`}
           </p>
         )}
 

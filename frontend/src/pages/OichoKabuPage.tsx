@@ -250,14 +250,24 @@ function OichoKabuPageContent() {
             <SettingsPanel title={tc('settings.title')} groups={[]} />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="ok-bet-controls">
-                <ChipBetInput
-                  id="oichokabu-bet-amount"
-                  label={t('label.bet')}
-                  value={betAmount}
-                  onChange={setBetAmount}
-                  max={state.chips}
-                  describedBy="oichokabu-bet-max"
-                />
+                <div className="flex items-center gap-2">
+                  <ChipBetInput
+                    id="oichokabu-bet-amount"
+                    label={t('label.bet')}
+                    value={betAmount}
+                    onChange={setBetAmount}
+                    max={state.chips}
+                    describedBy="oichokabu-bet-max"
+                  />
+                  <button
+                    type="button"
+                    className={btnSecondary}
+                    onClick={() => setBetAmount(state.chips)}
+                    disabled={loading}
+                  >
+                    {t('button.maximum')}
+                  </button>
+                </div>
                 <span id="oichokabu-bet-max" className="sr-only">
                   {t('maxBetDescription', { amount: state.chips })}
                 </span>

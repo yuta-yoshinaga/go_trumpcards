@@ -222,6 +222,9 @@ function BigOPageContent() {
       <div aria-live="polite" aria-atomic="true" className="sr-only" data-testid="community-cards-announcement">
         {communityCardsAnnouncement}
       </div>
+      <div aria-live="polite" aria-atomic="true" className="sr-only" data-testid="bigo-live-besthand-announcement">
+        {liveBestHandKey ? t('liveHandAnnouncement', { hand: t(`hand.${liveBestHandKey}`) }) : ''}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (

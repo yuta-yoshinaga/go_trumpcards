@@ -6,6 +6,7 @@
   "helpHint": "  h                    hint",
   "helpAutoComplete": "  ac                   auto-complete",
   "helpUndo": "  u                    undo one move",
+  "helpRedo": "  redo                 redo one move",
   "promptToZone": "Enter destination (column number, or f=clock face):",
   "promptFaceIdx": "Enter the clock face index (0..11):",
   "invalidFaceIdx": "Invalid clock face index: {{val}}",

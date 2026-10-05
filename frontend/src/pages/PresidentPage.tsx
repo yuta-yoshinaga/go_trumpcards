@@ -113,6 +113,7 @@ function PresidentPageContent() {
     selectedIndices,
     toggleCardSelection,
     configInput,
+    hasPendingConfigChanges,
     handleConfigChange,
     handlePlay,
     handlePass,
@@ -411,6 +412,9 @@ function PresidentPageContent() {
               },
             ]}
           />
+          <div role="status" aria-live="polite" data-testid="president-settings-status">
+            {hasPendingConfigChanges && <p className="mt-2 text-sm text-ds-warning">{t('settings.pendingReset')}</p>}
+          </div>
           <ReplaySpeedSettingsPanel />
 
           <GameFooter className={`${gameTheme.president.footer} px-4 py-2.5`}>

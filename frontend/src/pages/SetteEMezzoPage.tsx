@@ -119,7 +119,17 @@ function SetteEMezzoPageContent() {
       <div
         className="flex gap-1 justify-center"
         role="img"
-        aria-label={hand.hidden ? label : t('seatAriaLabel', { name: label, total: hand.totalLabel })}
+        aria-label={
+          hand.hidden
+            ? label
+            : hand.hasMatta
+              ? t('seatAriaLabelWithMatta', {
+                  name: label,
+                  total: hand.totalLabel,
+                  value: halvesToLabel(hand.mattaHalves || 1),
+                })
+              : t('seatAriaLabel', { name: label, total: hand.totalLabel })
+        }
       >
         {hand.cards.map((card, i) =>
           hand.hidden || !card ? (

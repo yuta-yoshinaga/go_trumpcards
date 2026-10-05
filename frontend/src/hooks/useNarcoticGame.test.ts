@@ -174,4 +174,62 @@ describe('useNarcoticGame', () => {
     expect(result.current.hintError).toBeTruthy();
     expect(result.current.hint).toBeNull();
   });
+
+  it.each(['draw', 'move', 'remove', 'redeal', 'undo', 'reset', 'giveup'] as const)(
+    'clears a hint error after successful %s',
+    async (command) => {
+      const { result } = renderHook(() => useNarcoticGame(), { wrapper: createWrapper() });
+      await waitFor(() => expect(result.current.state).not.toBeNull());
+
+      mockExec.mockRejectedValueOnce(new Error('Network error'));
+      await act(async () => {
+        await result.current.handleHint();
+      });
+      expect(result.current.hintError).toBeTruthy();
+
+      mockExec.mockResolvedValueOnce(defaultState);
+      act(() => {
+        switch (command) {
+          case 'draw':
+            result.current.handleDraw();
+            break;
+          case 'move':
+            result.current.handleMove(1);
+            break;
+          case 'remove':
+            result.current.handleRemove();
+            break;
+          case 'redeal':
+            result.current.handleRedeal();
+            break;
+          case 'undo':
+            result.current.handleUndo();
+            break;
+          case 'reset':
+            result.current.handleReset();
+            break;
+          case 'giveup':
+            result.current.handleGiveUp();
+            break;
+        }
+      });
+      await waitFor(() => expect(result.current.hintError).toBeNull());
+    },
+  );
+
+  it('keeps the hint error when an action is rejected', async () => {
+    const { result } = renderHook(() => useNarcoticGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.state).not.toBeNull());
+
+    mockExec.mockRejectedValueOnce(new Error('Network error'));
+    await act(async () => {
+      await result.current.handleHint();
+    });
+    expect(result.current.hintError).toBeTruthy();
+
+    mockExec.mockResolvedValueOnce({ ...defaultState, message: 'invalid move' });
+    act(() => result.current.handleMove(1));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', 1));
+    expect(result.current.hintError).toBeTruthy();
+  });
 });

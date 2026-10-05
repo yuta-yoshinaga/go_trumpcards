@@ -31,6 +31,27 @@ beforeEach(() => {
 });
 
 describe('TeenPattiPage', () => {
+  it('shows three face-down cards with an accessible description while the human is blind', async () => {
+    renderWithProviders(<TeenPattiPage />);
+    const hand = await screen.findByRole('group', { name: 'ブラインド中の手札。カードは伏せられています。' });
+    expect(within(hand).getAllByAltText('カード裏面')).toHaveLength(3);
+    expect(within(hand).queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('shows the existing face-up hand after the human sees', async () => {
+    const state = makeTeenPattiState({
+      players: makeTeenPattiState().players.map((player) => (player.isHuman ? { ...player, seen: true } : player)),
+    });
+    mockExec.mockResolvedValue(state);
+    const { container } = renderWithProviders(<TeenPattiPage />);
+    await waitFor(() => expect(container.querySelector('[data-tutorial="teenpatti-player-hand"]')).not.toBeNull());
+    const hand = container.querySelector('[data-tutorial="teenpatti-player-hand"]') as HTMLElement;
+    expect(await within(hand).findAllByRole('button')).toHaveLength(3);
+    expect(
+      container.querySelector('[role="group"][aria-label="ブラインド中の手札。カードは伏せられています。"]'),
+    ).not.toBeInTheDocument();
+  });
+
   it('shows the dealer badge alongside the dealer seat status', async () => {
     renderWithProviders(<TeenPattiPage />);
     const badge = await screen.findByText('ディーラー', { selector: 'span' });

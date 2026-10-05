@@ -5,17 +5,28 @@ import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { FiftyOneResponse } from '../types/card';
 
-vi.mock('../hooks/useCliMode', () => ({
-  useCliMode: () => ({
-    cliEnabled: false,
-    toggleCli: vi.fn(),
-    logEntries: [],
-    addInput: vi.fn(),
-    addOutput: vi.fn(),
-    addError: vi.fn(),
-    clearLog: vi.fn(),
-  }),
-}));
+vi.mock('../hooks/useCliMode', async () => {
+  const { useState } = await import('react');
+  return {
+    useCliMode: () => {
+      const [cliEnabled, setCliEnabled] = useState(false);
+      const [logEntries, setLogEntries] = useState<{ type: 'input' | 'output' | 'error'; text: string; id: number }[]>(
+        [],
+      );
+      const add = (type: 'input' | 'output' | 'error') => (text: string) =>
+        setLogEntries((entries) => [...entries, { type, text, id: entries.length }]);
+      return {
+        cliEnabled,
+        toggleCli: () => setCliEnabled((enabled) => !enabled),
+        logEntries,
+        addInput: add('input'),
+        addOutput: add('output'),
+        addError: add('error'),
+        clearLog: () => setLogEntries([]),
+      };
+    },
+  };
+});
 
 const mockExec = vi.fn();
 vi.mock('../api/gameApi', () => ({
@@ -123,6 +134,43 @@ describe('FiftyOnePage', () => {
     expect(screen.getByRole('option', { name: '簡単' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: '普通' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: '難しい' })).toBeInTheDocument();
+  });
+
+  it('uses the selected CPU difficulty on the next reset', async () => {
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByText('設定'));
+    fireEvent.change(screen.getAllByRole('combobox')[0], { target: { value: '2' } });
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2 } }));
+  });
+
+  it('updates CPU difficulty from CLI and rejects invalid values', async () => {
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    const prompt = screen.getByRole('textbox', { name: 'コマンドを入力...' });
+    fireEvent.change(prompt, { target: { value: 'sd 2' } });
+    fireEvent.keyDown(prompt, { key: 'Enter' });
+    expect(await screen.findByRole('log')).toHaveTextContent(/難しいに設定しました/);
+    fireEvent.change(prompt, { target: { value: 'sd 3' } });
+    fireEvent.keyDown(prompt, { key: 'Enter' });
+    expect(await screen.findByRole('log')).toHaveTextContent(/使い方: sd <0-2>/);
+    fireEvent.change(prompt, { target: { value: 'unknown' } });
+    fireEvent.keyDown(prompt, { key: 'Enter' });
+    expect(await screen.findByRole('log')).toHaveTextContent('Unknown command: unknown');
+    fireEvent.change(prompt, { target: { value: 'help' } });
+    fireEvent.keyDown(prompt, { key: 'Enter' });
+    expect(await screen.findByRole('log')).toHaveTextContent(/sd <0-2> - CPU難易度を設定/);
+    fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
+    fireEvent.click(screen.getByText('設定'));
+    expect(screen.getAllByRole('combobox')[0]).toHaveValue('2');
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2 } }));
   });
 
   it('explains exchange choices and shows the updated score after exchange', async () => {

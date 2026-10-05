@@ -193,6 +193,7 @@ describe('DehlaPakadPage', () => {
         handHistory: [
           { winnerTeam: 0, teamTens: [3, 1], kot: true, kotReason: 'allTens', dealerIdx: 3, trumpSuit: 1 },
           { winnerTeam: 1, teamTens: [1, 3], kot: false, kotReason: '', dealerIdx: 2, trumpSuit: 2 },
+          { winnerTeam: 0, teamTens: [2, 2], kot: false, kotReason: '', dealerIdx: 1, trumpSuit: 0 },
         ],
       }),
     );
@@ -205,6 +206,11 @@ describe('DehlaPakadPage', () => {
     expect(history).toHaveTextContent('ハンド 2');
     expect(history).toHaveTextContent('組1');
     expect(history).toHaveTextContent('1 対 3');
+    expect(history).toHaveTextContent('切り札');
+    expect(history).toHaveTextContent('スペード（♠）');
+    expect(history).toHaveTextContent('クラブ（♣）');
+    expect(history).toHaveTextContent('-');
+    expect(history).not.toHaveTextContent('ハート（♥）');
     expect(screen.getByTestId('dehlapakad-scores')).toHaveTextContent('10（デーラ）— 味方 1 / 相手 3');
   });
 

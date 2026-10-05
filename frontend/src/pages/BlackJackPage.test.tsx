@@ -1397,6 +1397,32 @@ describe('BlackJackPage', () => {
     expect(screen.getByTestId('spanish21-side-bet-breakdown-1')).toHaveTextContent('払い戻し: 260');
   });
 
+  it('shows the round net including every settled hand and side bet', async () => {
+    mockSpanish21Exec.mockResolvedValue({
+      ...endPhaseState,
+      hands: [
+        { ...baseHand, result: 1, netChange: 100 },
+        { ...baseHand, result: -1, netChange: -20 },
+      ],
+      sideBetResults: [
+        { betType: 1, resultType: 1, resultName: 'Perfect Pair', betAmount: 10, payout: 250 },
+        { betType: 2, resultType: 0, resultName: '', betAmount: 20, payout: 0 },
+      ],
+    });
+    renderWithProviders(<BlackJackPage variant="spanish21" />);
+    expect(await screen.findByTestId('round-net-change')).toHaveTextContent('ラウンド収支: +310 チップ');
+  });
+
+  it('does not show the round net when no hand has a net change', async () => {
+    mockSpanish21Exec.mockResolvedValue({
+      ...endPhaseState,
+      hands: [{ ...baseHand, result: 1 }],
+    });
+    renderWithProviders(<BlackJackPage variant="spanish21" />);
+    await screen.findByTestId('hand-result-0');
+    expect(screen.queryByTestId('round-net-change')).not.toBeInTheDocument();
+  });
+
   it('shows Spanish 21 losing side bet with no qualifying condition and zero return', async () => {
     mockSpanish21Exec.mockResolvedValue({
       ...endPhaseState,

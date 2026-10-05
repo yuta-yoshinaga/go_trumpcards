@@ -10,6 +10,8 @@
   "dealerTag": "[親]",
   "playerLine": "{{name}}(T{{team}}){{role}}: 表 {{up}}  トリック {{tricks}}  手札: {{hand}}",
   "trick": "場: {{cards}}",
+  "trickCard": "{{card}}({{name}})",
+  "listSeparator": "、",
   "playable": "出せる札: {{indexes}}",
   "ladder": "序列: 【J(カルニッフェル)】 > 【7(悪魔・リード時のみ)】 > 6(法王) > 2(皇帝) > 3 > 4 > 5 > K > Q > 10 > 9 > 8。【3はKに、4はK/Qに、5は絵札すべてに負けます】。追随して出した7はあらゆる札に負けます",
   "title.karnoffel": "カルニッフェル",

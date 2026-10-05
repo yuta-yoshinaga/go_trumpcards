@@ -23,6 +23,7 @@
   "undo": "元に戻す",
   "autoComplete": "オートコンプリート",
   "selectTarget": "移動先を選択してください",
+  "moveAnnouncement": "{{source}}から{{destination}}へ移動しました",
   "deselect": "キャンセル",
   "empty": "空",
   "nextRankBadge": "次:{{rank}}",

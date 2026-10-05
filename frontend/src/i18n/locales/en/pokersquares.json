@@ -10,6 +10,8 @@
     "placedCount": "Placed",
     "row": "Row",
     "col": "Col",
+    "rowNumber": "row {{row}}",
+    "columnNumber": "column {{col}}",
     "empty": "Empty",
     "cellEmptyAria": "Empty, row {{row}}, column {{col}}",
     "cellCardAria": "{{card}}, row {{row}}, column {{col}}"

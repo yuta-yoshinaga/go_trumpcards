@@ -57,7 +57,11 @@
     "chica": "チカ",
     "pares": "パレス",
     "juego": "フエゴ",
-    "line": "{{round}}: チーム{{team}} +{{stake}}",
+    "line": "{{round}}: {{method}}でチーム{{team}} +{{stake}}",
+    "deferred": "パソ後の勝負",
+    "accepted": "賭けを受けて勝負",
+    "awarded": "賭けを断って即時獲得",
+    "ordago": "オルダゴ受諾後の勝負",
     "undecided": "未決着"
   },
   "nextRound": "次のラウンド",

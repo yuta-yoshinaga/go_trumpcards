@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { israeliwhistApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -103,6 +103,36 @@ function IsraeliWhistPageContent() {
   } = useGameApi<IsraeliWhistResponse, Parameters<typeof israeliwhistApi.exec>>(israeliwhistApi.exec);
   const { cardWidth } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('israeliwhist', state);
+  const previousStateRef = useRef<IsraeliWhistResponse | null>(null);
+  const [cpuBidAnnouncement, setCpuBidAnnouncement] = useState('');
+
+  useEffect(() => {
+    if (!state) return;
+    const previous = previousStateRef.current;
+    previousStateRef.current = state;
+    if (!previous) return;
+    if (state.roundNumber !== previous.roundNumber) return;
+
+    const announcements = state.players.flatMap((player, index) => {
+      if (player.isHuman) return [];
+      const before = previous.players[index];
+      if (!before) return [];
+      const playerName = t('header.cpu', { idx: String(player.id) });
+      const messages: string[] = [];
+      if (!before.passed && player.passed) {
+        messages.push(t('announcements.cpuPassed', { player: playerName }));
+      }
+      if (player.auctionBid >= 0 && player.auctionBid !== before.auctionBid) {
+        messages.push(t('announcements.cpuAuctionBid', { player: playerName, n: String(player.auctionBid) }));
+      }
+      if (player.bid >= 0 && player.bid !== before.bid) {
+        messages.push(t('announcements.cpuBid', { player: playerName, n: player.bid, count: player.bid }));
+      }
+      return messages;
+    });
+    if (announcements.length === 0) return;
+    setCpuBidAnnouncement(announcements.join(t('listSeparator')));
+  }, [state, t]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('israeliwhist');
   const cliConfig: CliGameConfig<IsraeliWhistResponse, Parameters<typeof israeliwhistApi.exec>> = useMemo(
@@ -223,6 +253,9 @@ function IsraeliWhistPageContent() {
       ) : (
         <>
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+            <div role="status" aria-live="polite" className="sr-only" data-testid="iw-cpu-bid-announcement">
+              {cpuBidAnnouncement}
+            </div>
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4" data-testid="iw-round">
                 {t('header.round')}: {state.roundNumber}/{state.config.rounds}

@@ -392,16 +392,15 @@ describe('LetItRidePage', () => {
     expect(breakdown).toHaveTextContent('合計: 600');
   });
 
-  it('hides zero-value bet payouts and shows total in END phase', async () => {
+  it('shows zero-value bet payouts and total in END phase', async () => {
     mockApi.mockResolvedValue(endPhaseLoss);
     renderWithProviders(<LetItRidePage />);
     await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
     const breakdown = screen.getByTestId('payout-breakdown');
     expect(breakdown).toHaveTextContent('合計: 0');
-    // Individual bet lines with 0 should not render
-    expect(breakdown).not.toHaveTextContent('ベット1:');
-    expect(breakdown).not.toHaveTextContent('ベット2:');
-    expect(breakdown).not.toHaveTextContent('ベット3:');
+    expect(breakdown).toHaveTextContent('ベット1: 0');
+    expect(breakdown).toHaveTextContent('ベット2: 0');
+    expect(breakdown).toHaveTextContent('ベット3: 0');
   });
 
   it('confirms before pulling, showing the return amount and new risk', async () => {

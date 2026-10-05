@@ -89,6 +89,7 @@
   "hint": {
     "pairOrBetter": "ペア以上 — コール推奨",
     "weakHand": "弱い手札 — フォールド検討",
-    "aceKingHigh": "A か K を含む — コール推奨"
+    "aceKingHigh": "A か K を含む — コール推奨",
+    "callWinRate": "コールした場合の勝率の目安: {{percent}}%"
   }
 }

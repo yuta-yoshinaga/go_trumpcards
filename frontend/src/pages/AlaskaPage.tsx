@@ -212,8 +212,9 @@ function AlaskaPageContent() {
   }, [setState]);
 
   const handleAutoComplete = useCallback(() => {
+    if (loading || !state || !isTableauAllFaceUp(state.tableau)) return;
     void apiExec('autocomplete');
-  }, [apiExec]);
+  }, [apiExec, loading, state]);
 
   const handleUndo = useCallback(() => {
     void apiExec('undo');
@@ -599,14 +600,19 @@ function AlaskaPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={`${btnSuccess}${autoCompleteReady && !loading ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
+                    className={`${btnSuccess}${autoCompleteReady && !loading ? ' animate-pulse ring-2 ring-ds-success' : ''}${loading || !autoCompleteReady ? ' opacity-50 cursor-not-allowed' : ''}`}
                     onClick={handleAutoComplete}
-                    disabled={loading || !autoCompleteReady}
+                    aria-disabled={loading || !autoCompleteReady || undefined}
+                    aria-describedby={!autoCompleteReady ? 'alaska-autocomplete-hint' : undefined}
                     data-testid="autocomplete-button"
-                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
                   >
                     {t('autoComplete')}
                   </button>
+                  {!autoCompleteReady && (
+                    <p id="alaska-autocomplete-hint" className="basis-full order-last text-sm text-ds-text-muted">
+                      {t('autoCompleteNotReady')}
+                    </p>
+                  )}
                   <button
                     type="button"
                     className={btnOutline}

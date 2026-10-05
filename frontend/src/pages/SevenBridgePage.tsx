@@ -288,6 +288,37 @@ function SevenBridgePageContent() {
                       ))}
                     </tbody>
                   </table>
+                  {state?.roundScoreHistory && state.roundScoreHistory.length > 0 && (
+                    <table className="w-full text-sm text-ds-text-muted mt-3" data-testid="sb-round-score-history">
+                      <caption className="text-left text-ds-text-muted text-sm mb-1">{t('scoreHistory')}</caption>
+                      <thead>
+                        <tr>
+                          <th scope="col" className="text-left">
+                            {t('scoreHistoryRound')}
+                          </th>
+                          {state.players.map((p) => (
+                            <th scope="col" key={p.id}>
+                              {playerName(p.id, p.isHuman)}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {state.roundScoreHistory.map((scores, roundIdx) => (
+                          <tr key={roundIdx}>
+                            <th scope="row" className="text-left">
+                              {roundIdx + 1}
+                            </th>
+                            {scores.map((score, playerIdx) => (
+                              <td className="text-center" key={playerIdx}>
+                                {score}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               </div>
             </div>

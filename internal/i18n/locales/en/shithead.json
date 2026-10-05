@@ -18,6 +18,7 @@
   "noticeSkip": "[Next player skipped]",
   "cpuActionsHeader": "[CPU actions]",
   "actionPickup": "{{name}} picked up the discard pile",
+  "actionFacedownPickup": "{{name}} revealed {{card}}, but could not play it and picked up the discard pile",
   "actionPlay": "{{name}} played {{cards}} [{{source}}]{{suffix}}",
   "actionSuffixBurned": " (pile burned!)",
   "actionSuffixSkipped": " (next player skipped)",

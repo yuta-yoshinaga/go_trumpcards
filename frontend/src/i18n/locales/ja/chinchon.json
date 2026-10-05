@@ -67,7 +67,9 @@
   "frontendHint": {
     "chinchonTakeDiscard": "捨て札が手札と繋がります。拾いましょう",
     "chinchonDrawStock": "捨て札は手札と繋がりません。山から引きましょう",
-    "chinchonDiscardHeavy": "繋がっていない札のうち一番重い札です。点は手に残った札の合計です"
+    "chinchonDiscardHeavy": "繋がっていない札のうち一番重い札です。点は手に残った札の合計です",
+    "chinchonLayoff": "レイオフ可能な札です。ノッカーのメルドに加えましょう",
+    "chinchonSkipLayoff": "レイオフできる札がありません。スキップしましょう"
   },
   "noDeadwood": "なし"
 }

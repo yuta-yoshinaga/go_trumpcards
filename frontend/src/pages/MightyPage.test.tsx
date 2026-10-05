@@ -332,6 +332,43 @@ describe('MightyPage', () => {
     await waitFor(() => expect(screen.getByTestId('card-role-badge-0')).toBeInTheDocument());
     expect(screen.getByTestId('card-role-badge-1')).toBeInTheDocument();
     expect(screen.queryByTestId('card-role-badge-2')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /♠ A.*マイティ/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /♥ J.*副官カード/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ 8' })).toBeInTheDocument();
+  });
+
+  it('includes card names and special roles in mobile hand accessible names', async () => {
+    const heartTrump: MightyResponse = {
+      ...playPhaseState,
+      trumpSuit: 3,
+      partnerCard: { design: 'HEART', value: 11 },
+      players: playPhaseState.players.map((p, i) =>
+        i === 0
+          ? {
+              ...p,
+              cards: [
+                { design: 'SPADE', value: 1 },
+                { design: 'HEART', value: 11 },
+                { design: 'DIAMOND', value: 8 },
+              ],
+            }
+          : p,
+      ),
+    };
+    mockCall.mockResolvedValue(heartTrump);
+    mockUseCardDimensions.mockReturnValue({
+      cardHeight: 84,
+      cardOverlap: 22,
+      cardWidth: 60,
+      cpuCardWidth: 50,
+      footerCardWidth: 54,
+      solitaireMinColWidth: 0,
+      isMobile: true,
+    });
+    renderWithProviders(<MightyPage />);
+    expect(await screen.findByRole('button', { name: /♠ A.*マイティ/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /♥ J.*副官カード/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ 8' })).toBeInTheDocument();
   });
 
   it('renders bid phase with bid button and a discrete bid grid', async () => {

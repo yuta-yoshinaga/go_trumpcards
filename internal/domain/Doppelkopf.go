@@ -83,6 +83,8 @@ type Doppelkopf struct {
 	roundRePts       int                       // 直近ラウンドの Re チーム得点
 	roundReWon       bool                      // 直近ラウンドで Re が勝ったか
 	roundGamePts     int                       // 直近ラウンドのゲームポイント (倍率込み)
+	roundHistory     [][]int                   // ラウンドごとの各プレイヤーのチップ増減 (席順)
+	roundScored      bool                      // このラウンドの精算が済んだか
 	gameEndFlag      bool
 	winnerIdx        int // ゲーム勝者 (-1 = 未確定)
 	actionLogBase
@@ -111,6 +113,8 @@ func NewDefaultDoppelkopf() *Doppelkopf {
 
 // Reset ゲーム初期化: チップを開始値へ戻し最初のラウンドを開始する。
 func (g *Doppelkopf) Reset() {
+	g.roundHistory = nil
+	g.roundScored = false
 	g.gameEndFlag = false
 	g.winnerIdx = -1
 	g.lastTrickPoints = 0
@@ -135,6 +139,7 @@ func (g *Doppelkopf) NextRound() {
 
 // startRound 手札を配り、Re チームを割り当ててプレイフェーズを開始する。
 func (g *Doppelkopf) startRound() {
+	g.roundScored = false
 	g.trickNumber = 1
 	g.currentTrick = nil
 	g.lastTrickPoints = 0
@@ -336,7 +341,7 @@ func (g *Doppelkopf) NextTrick() {
 
 // ScoreRound ラウンドの得点を確定し、チップ精算とゲーム終了判定を行う。
 func (g *Doppelkopf) ScoreRound() {
-	if g.phase != DoppelkopfPhaseRoundEnd {
+	if g.roundScored || g.phase != DoppelkopfPhaseRoundEnd {
 		return
 	}
 	g.teamsRevealed = true
@@ -353,7 +358,16 @@ func (g *Doppelkopf) ScoreRound() {
 	g.roundRePts = rePts
 	g.roundReWon = reWon
 	g.roundGamePts = gamePts
+	beforeChips := make([]int, len(g.players))
+	for i, player := range g.players {
+		beforeChips[i] = player.GetChips()
+	}
 	g.settleChips(reWon, gamePts)
+	roundScores := make([]int, len(g.players))
+	for i, player := range g.players {
+		roundScores[i] = player.GetChips() - beforeChips[i]
+	}
+	g.roundHistory = append(g.roundHistory, roundScores)
 
 	g.appendLog(-1, "round_score", "doppelkopf.log.roundScore", map[string]string{"round": fmt.Sprintf("%d", g.roundNumber), "rePoints": fmt.Sprintf("%d", rePts), "outcomeKey": dkOutcomeKey(reWon), "gamePoints": fmt.Sprintf("%d", gamePts)}, nil)
 
@@ -363,6 +377,16 @@ func (g *Doppelkopf) ScoreRound() {
 		g.phase = DoppelkopfPhaseGameEnd
 		g.appendLog(-1, "game_end", "doppelkopf.log.gameEnd", map[string]string{"name": playerName(g.players, w)}, nil)
 	}
+	g.roundScored = true
+}
+
+// GetRoundScoreHistory returns each completed round's chip changes by player index.
+func (g *Doppelkopf) GetRoundScoreHistory() [][]int {
+	history := make([][]int, len(g.roundHistory))
+	for i, row := range g.roundHistory {
+		history[i] = append([]int(nil), row...)
+	}
+	return history
 }
 
 // announceMultiplier 宣言による倍率 (Re 宣言 ×2、Kontra 宣言 ×2、両方で ×4)。
@@ -959,6 +983,8 @@ type doppelkopfJSON struct {
 	RoundRePts       int                       `json:"rp"`
 	RoundReWon       bool                      `json:"rw"`
 	RoundGamePts     int                       `json:"rg"`
+	RoundHistory     [][]int                   `json:"rsh,omitempty"`
+	RoundScored      bool                      `json:"rs,omitempty"`
 	GameEndFlag      bool                      `json:"ge"`
 	WinnerIdx        int                       `json:"wi"`
 	ActionLog        []*ActionLogEntry         `json:"al"`
@@ -988,6 +1014,8 @@ func (g *Doppelkopf) MarshalJSON() ([]byte, error) {
 		RoundRePts:       g.roundRePts,
 		RoundReWon:       g.roundReWon,
 		RoundGamePts:     g.roundGamePts,
+		RoundHistory:     g.roundHistory,
+		RoundScored:      g.roundScored,
 		GameEndFlag:      g.gameEndFlag,
 		WinnerIdx:        g.winnerIdx,
 		ActionLog:        g.actionLog,
@@ -1007,8 +1035,13 @@ func (g *Doppelkopf) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if len(j.Players) > doppelkopfMaxSliceLen || len(j.CurrentTrick) > doppelkopfMaxSliceLen ||
-		len(j.ActionLog) > doppelkopfMaxSliceLen {
+		len(j.ActionLog) > doppelkopfMaxSliceLen || len(j.RoundHistory) > doppelkopfMaxSliceLen {
 		return errDoppelkopfOversized
+	}
+	for _, row := range j.RoundHistory {
+		if len(row) > DoppelkopfPlayerCnt {
+			return errDoppelkopfOversized
+		}
 	}
 	g.trumpCards = j.TrumpCards
 	if g.trumpCards == nil {
@@ -1040,6 +1073,11 @@ func (g *Doppelkopf) UnmarshalJSON(data []byte) error {
 	g.roundRePts = j.RoundRePts
 	g.roundReWon = j.RoundReWon
 	g.roundGamePts = j.RoundGamePts
+	g.roundHistory = j.RoundHistory
+	g.roundScored = j.RoundScored
+	if g.roundHistory == nil {
+		g.roundHistory = make([][]int, 0)
+	}
 	g.gameEndFlag = j.GameEndFlag
 	g.winnerIdx = j.WinnerIdx
 	g.actionLog = j.ActionLog

@@ -11,6 +11,8 @@
     "rougeRow": "Rouge",
     "total": "Total",
     "winner": "Winner",
+    "red": "red",
+    "black": "black",
     "crossing": "Reaches 31",
     "crossingAria": "Cumulative {{total}}, reaches 31 on {{card}}"
   },
@@ -47,7 +49,10 @@
     "lose": "You lose",
     "push": "Push — your stake is returned.",
     "refait": "Refait — a tie at 31. Half your stake is lost.",
-    "margin": "{{winner}} wins by {{diff}} ({{winnerTotal}} vs {{loserTotal}})"
+    "margin": "{{winner}} wins by {{diff}} ({{winnerTotal}} vs {{loserTotal}})",
+    "colorExplanation": "First card color: {{firstColor}}. It {{matchResult}} the winning color ({{winningColor}}).",
+    "colorMatch": "matches",
+    "colorMismatch": "does not match"
   },
   "payout": {
     "total": "Total payout"

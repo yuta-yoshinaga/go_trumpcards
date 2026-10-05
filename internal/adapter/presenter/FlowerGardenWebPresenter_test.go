@@ -160,6 +160,8 @@ func TestFlowerGardenWebPresenter_OutputCarriesTheHint(t *testing.T) {
 		t.Fatal("Output must carry the hint -- the frontend reads state.hint")
 	}
 	assert.Equal(t, 2, result.Hint.FromCol)
+	assert.Equal(t, "SPADE", result.Hint.Card.Design)
+	assert.Equal(t, 3, result.Hint.Card.Value)
 }
 
 func TestFlowerGardenWebPresenter_HintOutput(t *testing.T) {
@@ -178,6 +180,8 @@ func TestFlowerGardenWebPresenter_HintOutput(t *testing.T) {
 		result := parseFlowerGardenOutput(t, p.HintOutput(bg))
 		assert.NotNil(t, result.Hint)
 		assert.Equal(t, "foundation", result.Hint.ToZone)
+		assert.Equal(t, "SPADE", result.Hint.Card.Design)
+		assert.Equal(t, 5, result.Hint.Card.Value)
 		assert.Equal(t, "flowergarden.hintAvailable", result.MessageCode)
 	})
 
@@ -196,6 +200,8 @@ func TestFlowerGardenWebPresenter_HintOutput(t *testing.T) {
 		result := parseFlowerGardenOutput(t, p.HintOutput(bg))
 		assert.NotNil(t, result.Hint)
 		assert.Equal(t, "reserve", result.Hint.FromZone)
+		assert.Equal(t, "HEART", result.Hint.Card.Design)
+		assert.Equal(t, 3, result.Hint.Card.Value)
 	})
 
 	t.Run("no hint", func(t *testing.T) {
@@ -208,6 +214,27 @@ func TestFlowerGardenWebPresenter_HintOutput(t *testing.T) {
 		assert.Nil(t, result.Hint)
 		assert.Equal(t, "flowergarden.noHint", result.MessageCode)
 	})
+}
+
+func TestFlowerGardenHintSourceCard_InvalidSourceReturnsNil(t *testing.T) {
+	tableau := [domain.FlowerGardenTableauCnt][]*domain.FlowerGardenTableauCard{
+		{{Card: domain.NewCard(domain.CardDesignSpade, 1, false)}},
+	}
+	reserve := []*domain.Card{domain.NewCard(domain.CardDesignHeart, 1, false)}
+	tests := []struct {
+		name string
+		hint *domain.FlowerGardenHint
+	}{
+		{name: "reserve out of range", hint: &domain.FlowerGardenHint{FromZone: "reserve", FromCol: 1}},
+		{name: "tableau column out of range", hint: &domain.FlowerGardenHint{FromZone: "tableau", FromCol: len(tableau)}},
+		{name: "tableau card index out of range", hint: &domain.FlowerGardenHint{FromZone: "tableau", FromCol: 0, CardIndex: 1}},
+		{name: "unknown source zone", hint: &domain.FlowerGardenHint{FromZone: "unknown"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Nil(t, flowerGardenHintSourceCard(tableau, reserve, tt.hint))
+		})
+	}
 }
 
 func TestFlowerGardenWebPresenter_ActionLogOutput(t *testing.T) {

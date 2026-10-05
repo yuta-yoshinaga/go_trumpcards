@@ -296,6 +296,25 @@ describe('EuchrePage', () => {
     });
   });
 
+  it('clears go alone after calling trump and sends false when unchecked', async () => {
+    mockExec.mockResolvedValue(callTrumpPhaseState);
+    renderWithProviders(<EuchrePage />);
+    const checkbox = await screen.findByLabelText('一人で勝負');
+
+    fireEvent.click(checkbox);
+    expect(checkbox).toBeChecked();
+    mockExec.mockClear();
+    const nextRoundCallTrumpState = { ...callTrumpPhaseState, roundNumber: 2 };
+    mockExec.mockResolvedValue(nextRoundCallTrumpState);
+    fireEvent.click(screen.getByRole('button', { name: '♠ スペード' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('calltrump', undefined, 1, true));
+    expect(await screen.findByLabelText('一人で勝負')).not.toBeChecked();
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '♠ スペード' }));
+    await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('calltrump', undefined, 1, false));
+  });
+
   it('shows the turned-down suit as a disabled, explained button', async () => {
     mockExec.mockResolvedValue(callTrumpPhaseState); // faceUpCard is HEART
     renderWithProviders(<EuchrePage />);

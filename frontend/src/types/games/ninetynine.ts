@@ -14,6 +14,8 @@ export interface NinetyNinePlayerData {
   cumulativeScore: number;
   trickCount: number;
   buriedCount: number;
+  /** Cards buried by this player; present only for the human player. */
+  buriedCards?: Card[];
 }
 
 /** A card played in a Ninety-Nine trick. */

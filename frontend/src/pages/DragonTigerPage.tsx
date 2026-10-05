@@ -122,7 +122,10 @@ function DragonTigerPageContent() {
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 
-  if (!state) return <GameSkeleton gameKey="dragontiger" layout={{ kind: 'casino-table', sections: [1, 1] }} />;
+  if (!state) {
+    if (error && !loading) return <ErrorAlert message={error} onRetry={retry} />;
+    return <GameSkeleton gameKey="dragontiger" layout={{ kind: 'casino-table', sections: [1, 1] }} />;
+  }
 
   const handleReset = () => execApi('reset');
   const handleClearHistory = () => execApi('clear');

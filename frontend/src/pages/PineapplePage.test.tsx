@@ -208,6 +208,72 @@ beforeEach(() => {
 });
 
 describe('PineapplePage', () => {
+  it('allows Irish Poker hints to be toggled and persists the game-specific setting', async () => {
+    mockIrishExec.mockResolvedValue({
+      ...preFlopState,
+      initialDealCount: 4,
+      phase: PineapplePhase.DISCARD,
+      isDiscardPhase: true,
+      discardDone: [false, false, false, false],
+    });
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+
+    const hintToggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    expect(hintToggle).not.toBeChecked();
+    fireEvent.click(hintToggle);
+
+    expect(hintToggle).toBeChecked();
+    expect(localStorage.getItem('hint_enabled_irishpoker')).toBe('true');
+    expect(await screen.findByTestId('hint-tooltip')).toHaveTextContent('最も弱いカードを捨てましょう');
+
+    fireEvent.click(hintToggle);
+    expect(hintToggle).not.toBeChecked();
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+    expect(localStorage.getItem('hint_enabled_irishpoker')).toBe('false');
+  });
+
+  it('shows each CPU its initial hole-card count until that CPU discards', async () => {
+    mockCrazyExec.mockResolvedValue({
+      ...preFlopState,
+      initialDealCount: 3,
+      discardDone: [false, false, false, false],
+    });
+    const firstRender = renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(mockCrazyExec).toHaveBeenCalled());
+    expect(firstRender.container.querySelectorAll('img[alt="カード裏面"]').length).toBe(14);
+    firstRender.unmount();
+
+    mockCrazyExec.mockResolvedValue({
+      ...preFlopState,
+      initialDealCount: 3,
+      discardDone: [false, true, true, true],
+    });
+    const secondRender = renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(secondRender.container.querySelectorAll('img[alt="カード裏面"]').length).toBe(11));
+  });
+
+  it('shows HUD stats for CPUs with completed hands', async () => {
+    mockExec.mockResolvedValue({
+      ...preFlopState,
+      players: [humanPlayer(), cpuPlayer(1, { totalHands: 1, vpip: 40 })],
+    });
+    const { container } = renderWithProviders(<PineapplePage />);
+    const hudStats = await screen.findByTestId('hud-stats');
+    expect(hudStats).toBeInTheDocument();
+    expect(container.querySelector('[data-testid="hud-vpip-tendency"]')).toHaveAttribute('data-tendency', 'loose');
+  });
+
+  it('uses the Irish Poker initial deal count until CPU discards', async () => {
+    mockIrishExec.mockResolvedValue({
+      ...preFlopState,
+      initialDealCount: 4,
+      discardDone: [false, false, false, false],
+    });
+    const { container } = renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(mockIrishExec).toHaveBeenCalled());
+    expect(container.querySelectorAll('img[alt="カード裏面"]').length).toBe(17);
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<PineapplePage />);
@@ -366,7 +432,7 @@ describe('PineapplePage', () => {
     await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
     const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
 
-    const group = cardButtons[0].closest('[aria-describedby]');
+    const group = cardButtons[0].parentElement?.parentElement;
     expect(group).toHaveAttribute('aria-describedby', 'pn-discard-limit-desc');
     expect(document.getElementById('pn-discard-limit-desc')).toHaveTextContent('最大1枚');
 
@@ -1246,7 +1312,13 @@ describe('PineapplePage', () => {
     mockExec.mockResolvedValue(discardState);
     renderWithProviders(<PineapplePage />);
     await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
-    expect(screen.getAllByTestId('cp-discard-candidate').length).toBeGreaterThan(0);
+    const candidates = screen.getAllByTestId('cp-discard-candidate');
+    expect(candidates.length).toBeGreaterThan(0);
+    const candidate = candidates[0];
+    const button = candidate.closest('div')?.querySelector('button');
+    expect(candidate.id).toBeTruthy();
+    expect(button).toHaveAttribute('aria-describedby', expect.stringContaining(candidate.id));
+    expect(button).toHaveAttribute('aria-describedby', expect.stringContaining('pn-discard-limit-desc'));
     expect(screen.getAllByTestId('cp-discard-recommended').length).toBeGreaterThan(0);
   });
 
@@ -1274,6 +1346,10 @@ describe('PineapplePage', () => {
     renderWithProviders(<PineapplePage variant="crazypineapple" />);
     await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
     expect(screen.queryByTestId('cp-discard-candidate')).not.toBeInTheDocument();
+    expect(screen.getByAltText('♠ A').closest('button')).not.toHaveAttribute(
+      'aria-describedby',
+      expect.stringContaining('cp-discard-candidate-'),
+    );
   });
 
   it('does not show Crazy Pineapple candidate labels outside the discard phase', async () => {

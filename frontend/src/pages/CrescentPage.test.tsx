@@ -97,6 +97,30 @@ describe('CrescentPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/手数: 5/));
   });
 
+  it('shows and associates the auto-complete reason only while unavailable', async () => {
+    const { unmount } = renderWithProviders(<CrescentPage />);
+    await screen.findByTestId('phase-indicator');
+    const button = screen.getByTestId('autocomplete-button');
+    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute('aria-describedby');
+    const reason = document.getElementById(button.getAttribute('aria-describedby') ?? '');
+    expect(reason).toHaveTextContent('すべての山が組札に移動可能になると有効になります');
+    expect(reason).toHaveClass('basis-full');
+    expect(reason).toHaveClass('order-last');
+    unmount();
+
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: playingState.foundation.map((pile, index) => (index === 0 ? [...pile, card('SPADE', 2)] : pile)),
+    });
+    renderWithProviders(<CrescentPage />);
+    await screen.findByTestId('phase-indicator');
+    const readyButton = screen.getByTestId('autocomplete-button');
+    expect(readyButton).not.toBeDisabled();
+    expect(readyButton).not.toHaveAttribute('aria-describedby');
+    expect(screen.queryByText('すべての山が組札に移動可能になると有効になります')).not.toBeInTheDocument();
+  });
+
   it('announces auto-complete transitions in a persistent status region', async () => {
     mockExec.mockResolvedValue({
       ...playingState,

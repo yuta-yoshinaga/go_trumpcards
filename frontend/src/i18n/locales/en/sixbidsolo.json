@@ -14,6 +14,7 @@
   "bidHistoryEmpty": "No bids yet",
   "hiddenHand": "{{count}} hidden",
   "yourHand": "Your hand",
+  "handSelectionUnavailable": "Only legal cards can be selected during your play turn.",
   "trick": "Trick",
   "points": "points {{n}}",
   "tricksWon": "tricks {{n}}",

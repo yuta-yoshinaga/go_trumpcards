@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import i18n from 'i18next';
 import { describe, expect, it } from 'vitest';
 import type { HoldemEquity } from '../types/card';
 import { EquityDisplay } from './EquityDisplay';
@@ -18,6 +19,24 @@ const mockEquity: HoldemEquity = {
 };
 
 describe('EquityDisplay', () => {
+  it('translates hand odds column headings while preserving hand names and probabilities', async () => {
+    const { rerender } = render(<EquityDisplay equity={mockEquity} potOdds={33.3} />);
+    fireEvent.click(screen.getByTestId('toggle-hand-odds'));
+
+    expect(screen.getByRole('columnheader', { name: 'ハンド' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: '確率' })).toBeInTheDocument();
+    expect(screen.getByText('One Pair')).toBeInTheDocument();
+    expect(screen.getByText('50.0%')).toBeInTheDocument();
+
+    await i18n.changeLanguage('en');
+    rerender(<EquityDisplay equity={mockEquity} potOdds={33.3} />);
+    expect(screen.getByRole('columnheader', { name: 'Hand' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Probability' })).toBeInTheDocument();
+    expect(screen.getByText('One Pair')).toBeInTheDocument();
+    expect(screen.getByText('50.0%')).toBeInTheDocument();
+    await i18n.changeLanguage('ja');
+  });
+
   it('renders equity bar with correct percentage', () => {
     render(<EquityDisplay equity={mockEquity} potOdds={33.3} />);
     expect(screen.getByText(/75%/)).toBeInTheDocument();

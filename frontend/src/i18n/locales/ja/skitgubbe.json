@@ -8,6 +8,7 @@
   "hint.duel": "この札で一騎打ちを取れます",
   "hint.pickup": "上回れる札が1枚もないので引き取るしかありません",
   "landscapeBanner": "横画面での表示を推奨します",
+  "loserSeat": "敗者: CPU{{seat}}（Skitgubbe）",
   "notYourTurnAria": "いまは自分の番ではありません",
   "opponentHand": "{{name}} の手札 {{n}} 枚",
   "opponentHandAriaLabel": "{{name}} の手札 {{n}} 枚（裏向き）",

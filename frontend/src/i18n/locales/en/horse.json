@@ -19,6 +19,7 @@
   "disciplineOrder": "Discipline {{position}}/{{total}}",
   "handTotal": "{{n}} overall",
   "pot": "Pot {{pot}}",
+  "callAmount": "({{amount}} chips to call)",
   "community": "Board",
   "chips": "{{chips}} chips",
   "you": "You",

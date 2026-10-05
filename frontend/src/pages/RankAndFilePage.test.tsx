@@ -686,6 +686,23 @@ describe('RankAndFilePage', () => {
     await waitFor(() => expect(screen.getByText('棋譜')).toBeInTheDocument());
   });
 
+  it('shows and opens the action log during play without triggering shortcuts', async () => {
+    const mockLogApi = vi.mocked(actionLogApi.rankandfile);
+    mockLogApi.mockResolvedValue({
+      entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'move', detail: '対局中の記録' }],
+    });
+
+    renderWithProviders(<RankAndFilePage />);
+    const logButton = await screen.findByRole('button', { name: '棋譜を見る' });
+    fireEvent.click(logButton);
+
+    expect(await screen.findByText(/対局中の記録/)).toBeInTheDocument();
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'd' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
   it('playing buttons not shown when game is over', async () => {
     mockExec.mockResolvedValue(gameOverState);
     renderWithProviders(<RankAndFilePage />);

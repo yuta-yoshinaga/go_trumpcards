@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -411,6 +412,54 @@ func TestBaseballPokerWebPresenter_BettingStateIsOnTheWire(t *testing.T) {
 	assert.Equal(t, g.HumanSeat(), got.HumanSeat)
 	assert.Equal(t, g.IsHumanTurn(), got.IsHumanTurn)
 	assert.Positive(t, got.Pot, "アンティがポットに入っていない")
+}
+
+func TestBaseballPokerWebPresenter_ShipsHumanHintOnly(t *testing.T) {
+	cp := new(BaseballPokerWebPresenter)
+	g := baseballAtBetting(t)
+	human := g.GetPlayers()[g.HumanSeat()]
+	human.ResetForHand()
+	for _, value := range []int{10, 10, 10, 2, 5} {
+		human.AddDealtCard(domain.NewCard(domain.CardDesignSpade, value, false), false)
+	}
+	assert.GreaterOrEqual(t, human.EvaluateBest(), domain.PokerHandThreeOfAKind)
+	var got struct {
+		ServerHint *controller.BaseballPokerWebOutputHint `json:"serverHint"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(cp.Output(g, nil)), &got))
+	require.NotNil(t, got.ServerHint)
+	assert.Equal(t, "bet", got.ServerHint.Action)
+	assert.Equal(t, "strongEnoughToBet", got.ServerHint.Reason)
+
+	weak := baseballAtBetting(t)
+	human = weak.GetPlayers()[weak.HumanSeat()]
+	human.ResetForHand()
+	for i, value := range []int{2, 5, 7, 10, 12} {
+		human.AddDealtCard(domain.NewCard(i%4, value, false), false)
+	}
+	var weakGot struct {
+		ServerHint *controller.BaseballPokerWebOutputHint `json:"serverHint"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(cp.Output(weak, nil)), &weakGot))
+	require.NotNil(t, weakGot.ServerHint)
+	assert.Equal(t, "check", weakGot.ServerHint.Action)
+
+	// A CPU buy-in decision is never advice for the human.
+	var cpuDecision *domain.BaseballPoker
+	for range 1000 {
+		candidate := newBaseballForPresenter(t)
+		if candidate.GetPhase() == domain.BaseballPhaseBuyIn &&
+			!candidate.GetPlayers()[candidate.GetBuyerSeat()].GetIsHuman() {
+			cpuDecision = candidate
+			break
+		}
+	}
+	require.NotNil(t, cpuDecision, "1000 回配っても CPU の買い増し手番が出なかった")
+	var cpuGot struct {
+		ServerHint *controller.BaseballPokerWebOutputHint `json:"serverHint"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(cp.Output(cpuDecision, nil)), &cpuGot))
+	assert.Nil(t, cpuGot.ServerHint)
 }
 
 func TestBaseballPokerWebPresenter_ErrorAndHint(t *testing.T) {

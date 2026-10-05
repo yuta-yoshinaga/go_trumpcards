@@ -140,8 +140,10 @@ func TestBuraCuiPresenter_HintResolvesItsReasonKey(t *testing.T) {
 func TestBuraCuiPresenter_ActionLogRenders(t *testing.T) {
 	b := domain.NewDefaultBura()
 	b.Reset()
-	require.NoError(t, b.Claim(0))
-	assert.NotEmpty(t, new(BuraCuiPresenter).ActionLogOutput(b))
+	require.NoError(t, b.PlayCards(0, []int{0}))
+	require.NoError(t, b.PlayCards(1, []int{0}))
+	assert.False(t, b.GetGameEndFlag())
+	assert.Contains(t, new(BuraCuiPresenter).ActionLogOutput(b), "trick:")
 }
 
 // TestBuraWinningCombosLine_DropsWhatItCannotName は落とす側の 2 分岐を直接見る。

@@ -7,6 +7,8 @@ import type { BaseGameResponse, Card } from '../common';
 export interface BlackHoleHint {
   fan: number;
   movesAfter: number;
+  canClear: boolean;
+  continuationMoves: number;
 }
 
 /** Full Black Hole game state returned from the API. */

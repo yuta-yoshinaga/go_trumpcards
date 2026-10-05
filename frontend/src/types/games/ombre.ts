@@ -66,6 +66,14 @@ export interface OmbreResponse extends BaseGameResponse {
   winningBid: number;
   /** Highest bid declared so far, including during the auction. */
   highestBid: number;
+  /** Bid per seat (0=pass or undeclared); use bidActed to distinguish them. */
+  bids: number[];
+  /** Whether each seat has declared in the current auction. */
+  bidActed: boolean[];
+  /** Trump suit selected per bid (1..4, -1 when absent). */
+  bidTrump: number[];
+  /** Seat of the highest declaration, with forehand order breaking ties; -1 if none. */
+  highestBidderIdx: number;
   /** The trump suit (1=♠ 2=♣ 3=♥ 4=♦), or -1 until chosen. */
   trumpSuit: number;
   currentTrick: OmbreTrickCard[];

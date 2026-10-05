@@ -264,6 +264,43 @@ describe('BiribaPage', () => {
     expect(screen.getByRole('button', { name: '上がる' })).toBeInTheDocument();
   });
 
+  it('explains missing go-out requirements and blocks the action accessibly', async () => {
+    mockExec.mockResolvedValue({
+      ...discardPhaseState,
+      players: [{ ...basePlayers[0], tookPozzetto: false, hasBiriba: false }, basePlayers[1]],
+    });
+    renderWithProviders(<BiribaPage />);
+    const button = await screen.findByRole('button', { name: '上がる' });
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(button).toHaveAttribute('aria-describedby', 'biriba-go-out-reason-visible');
+    expect(screen.getByTestId('biriba-go-out-reason')).toHaveAttribute('aria-live', 'polite');
+    expect(screen.getByTestId('biriba-go-out-reason-visible')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getByTestId('biriba-go-out-reason-visible')).toHaveTextContent(
+      '上がるには次が必要です: ポゼットの獲得、ビリバの成立',
+    );
+    expect(screen.getByTestId('biriba-go-out-reason')).toHaveTextContent(
+      '上がるには次が必要です: ポゼットの獲得、ビリバの成立',
+    );
+    mockExec.mockClear();
+    fireEvent.click(button);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('enables going out after both requirements are met', async () => {
+    mockExec.mockResolvedValue({
+      ...discardPhaseState,
+      players: [{ ...basePlayers[0], tookPozzetto: true, hasBiriba: true }, basePlayers[1]],
+    });
+    renderWithProviders(<BiribaPage />);
+    const button = await screen.findByRole('button', { name: '上がる' });
+    expect(button).not.toHaveAttribute('aria-disabled', 'true');
+    expect(button).not.toHaveAttribute('aria-describedby');
+    mockExec.mockClear();
+    fireEvent.click(button);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('goout'));
+  });
+
   it('shows next round button at round end', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<BiribaPage />);

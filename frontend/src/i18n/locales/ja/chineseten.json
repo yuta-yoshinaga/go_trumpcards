@@ -6,6 +6,7 @@
   "opponent": "CPU",
   "layout": "場",
   "layoutPosition": "位置 {{position}}",
+  "layoutTakeAction": "この札を取る",
   "choosePrompt": "取る札を選んでください",
   "opponentHand": "CPU の手札 {{n}} 枚",
   "opponentHandAriaLabel": "CPU の手札 {{n}} 枚（裏向き）",

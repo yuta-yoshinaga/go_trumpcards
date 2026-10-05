@@ -192,10 +192,12 @@ function DiplomatPageContent() {
 
   const wasteTop = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
   const wasteZone: DiplomatMoveZone = { zone: 'waste' };
+  const selectedMoveTargets = selectedSource ? state.tableauMoveTargets[selectedSource.col ?? TABLEAU_PILES] : [];
 
   const renderPile = (pileIdx: number) => {
     const cards = state.tableau[pileIdx] ?? [];
     const pileZone: DiplomatMoveZone = { zone: 'tableau', col: pileIdx };
+    const isLegalTableauTarget = selectedMoveTargets.includes(pileIdx) && isPlaying && !loading;
     return (
       <div key={`pile-${pileIdx.toString()}`} className="flex-1 min-w-0">
         <div className="text-center text-xs text-ds-text-muted mb-0.5" aria-hidden="true">
@@ -220,7 +222,8 @@ function DiplomatPageContent() {
                 aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                 aria-label={t('emptyPileAriaLabel', { pile: pileIdx })}
                 style={{ height: dims.ch }}
-                className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite}`}
+                data-legal-target={isLegalTableauTarget ? 'true' : undefined}
+                className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite} ${isLegalTableauTarget ? 'ring-2 ring-ds-success' : ''}`}
               >
                 {t('emptyColumn')}
               </button>
@@ -232,6 +235,7 @@ function DiplomatPageContent() {
                 // 判定はドメイン (`DiplomatIsDeadEndTop`) が返す。ここで
                 // 作り直すと、置ける規則が変わったときに片方だけ古くなる。
                 const isDeadEnd = isTop && state.tableauDeadEnd?.[pileIdx] === true;
+                const isLegalTarget = isTop && isLegalTableauTarget;
                 return (
                   <div
                     key={`c-${pileIdx.toString()}-${cardIdx.toString()}`}
@@ -251,10 +255,11 @@ function DiplomatPageContent() {
                       aria-label={isDeadEnd ? t('deadEndAria', { card: cardAlt(card) }) : cardAlt(card)}
                       title={isDeadEnd ? t('deadEndTitle') : undefined}
                       aria-pressed={isTop ? isSourceSelected('tableau', pileIdx) : undefined}
+                      data-legal-target={isLegalTarget ? 'true' : undefined}
                       draggable={isTop && isPlaying && !loading}
                       onDragStart={dnd.handleDragStart(pileZone)}
                       onDragEnd={dnd.handleDragEnd}
-                      className={`relative p-0 border-0 bg-transparent w-full rounded cursor-pointer ${focusRingWhite} ${isTop && isSourceSelected('tableau', pileIdx) ? 'ring-2 ring-ds-warning' : ''}`}
+                      className={`relative p-0 border-0 bg-transparent w-full rounded cursor-pointer ${focusRingWhite} ${isTop && isSourceSelected('tableau', pileIdx) ? 'ring-2 ring-ds-warning' : ''} ${isLegalTarget ? 'ring-2 ring-ds-success' : ''}`}
                     >
                       <AnimatedCard
                         card={card}
@@ -311,6 +316,11 @@ function DiplomatPageContent() {
         {tc('label.selectSourceFirst')}
       </span>
       <LandscapeBanner message={t('landscapeBanner')} />
+      {selectedSource && (
+        <p className="text-xs text-ds-text-muted px-3" data-testid="diplomat-legal-target-help">
+          {t('legalTableauTargets')}
+        </p>
+      )}
 
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />

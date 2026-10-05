@@ -9,12 +9,20 @@ export interface CliLogCallbacks {
   clearLog?: () => void;
 }
 
-/** Hook that wires CLI command input to a game API exec function. */
+/**
+ * Hook that wires CLI command input to a game API exec function.
+ *
+ * `options.onCommandSuccess` runs with the parsed args after `exec` resolves for a
+ * command. `exec` reports API failures through its own error state rather than
+ * rejecting, so this signals "the command was dispatched", not "the server
+ * accepted it" (matching the web buttons, which also act after dispatch).
+ */
 export function useCliGame<TState, TArgs extends unknown[]>(
   exec: (...args: TArgs) => Promise<void>,
   config: CliGameConfig<TState, TArgs>,
   state: TState | null,
   callbacks: CliLogCallbacks,
+  options: { onCommandSuccess?: (args: TArgs) => void } = {},
 ) {
   const configRef = useRef(config);
   configRef.current = config;
@@ -22,6 +30,8 @@ export function useCliGame<TState, TArgs extends unknown[]>(
   callbacksRef.current = callbacks;
   const execRef = useRef(exec);
   execRef.current = exec;
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
   const pendingCommandRef = useRef(false);
 
   // Format and output state when it changes after a CLI command
@@ -70,6 +80,7 @@ export function useCliGame<TState, TArgs extends unknown[]>(
     try {
       pendingCommandRef.current = true;
       await execRef.current(...parsed.args);
+      optionsRef.current.onCommandSuccess?.(parsed.args);
     } catch (e) {
       pendingCommandRef.current = false;
       addError(e instanceof Error ? e.message : 'Error executing command');

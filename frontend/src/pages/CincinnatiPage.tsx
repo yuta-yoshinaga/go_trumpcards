@@ -116,6 +116,7 @@ function CincinnatiPageContent() {
     }[state.phase] ?? '';
 
   const human = state.seats[state.humanSeat];
+  const maxAmount = Math.max(0, human.chips - (facingBet ? state.toCall : 0));
   const humanWon = gameOver && state.winnerSeat === state.humanSeat;
 
   return (
@@ -351,8 +352,27 @@ function CincinnatiPageContent() {
                     label={t('label.bet')}
                     value={amount}
                     onChange={setAmount}
-                    max={human?.chips ?? 0}
+                    max={maxAmount}
                   />
+                  <div className="flex flex-wrap justify-center gap-2" data-testid="cin-pot-size-options">
+                    {[0.5, 1].map((fraction) => {
+                      const max = maxAmount;
+                      const rounded = Math.round((state.pot * fraction) / 10) * 10;
+                      const suggested = Math.min(max, Math.max(Math.min(10, max), rounded));
+                      return (
+                        <button
+                          key={fraction}
+                          type="button"
+                          className={btnSecondary}
+                          data-testid={fraction === 0.5 ? 'cin-pot-size-half' : 'cin-pot-size-full'}
+                          onClick={() => setAmount(suggested)}
+                          disabled={loading}
+                        >
+                          {t('button.potFraction', { percentage: fraction * 100, amount: suggested })}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </>
               )}
 

@@ -125,8 +125,5 @@ func (p *SalicLawCuiPresenter) HintOutput(c interfaces.SalicLawGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SalicLawCuiPresenter) ActionLogOutput(c interfaces.SalicLawGame) string {
-	if c.GetPhase() == domain.SalicLawPhasePlaying {
-		return actionLogToText(nil)
-	}
 	return actionLogToText(c.GetActionLog())
 }

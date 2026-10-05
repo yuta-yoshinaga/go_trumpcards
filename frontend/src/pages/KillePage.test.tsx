@@ -110,6 +110,37 @@ describe('KillePage', () => {
     }
   });
 
+  it('shows every number rank in strength order between the special cards', async () => {
+    renderWithProviders(<KillePage />);
+    const ladder = await screen.findByTestId('kille-ladder');
+    const ranks = Array.from(ladder.querySelectorAll(':scope > div:nth-child(2) > span')).map(
+      (rank) => rank.textContent,
+    );
+    expect(ranks).toEqual([
+      'Harlequin',
+      'Cuckoo',
+      'Hussar',
+      'Pig',
+      'Cavalier',
+      'Inn',
+      '12',
+      '11',
+      '10',
+      '9',
+      '8',
+      '7',
+      '6',
+      '5',
+      '4',
+      '3',
+      '2',
+      '1',
+      'Wreath',
+      'Flowerpot',
+      'Mask',
+    ]);
+  });
+
   it('explains effect cards with symbols and text, not colour alone', async () => {
     renderWithProviders(<KillePage />);
     const legend = await screen.findByTestId('kille-effect-legend');

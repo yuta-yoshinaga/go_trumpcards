@@ -130,6 +130,53 @@ describe('OpenFaceChinesePage', () => {
     await waitFor(() => expect(screen.getByTestId('player-0')).toBeInTheDocument());
     expect(screen.getByTestId('player-1')).toBeInTheDocument();
     expect(screen.getByText(/ラウンド: 1/)).toBeInTheDocument();
+    expect(screen.queryByText(/次のラウンドは13枚/)).not.toBeInTheDocument();
+  });
+
+  it('explains Fantasyland earned at round end', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        isHumanTurn: false,
+        players: [makePlayer({ fantasyland: true }), makePlayer({ id: 1, isHuman: false })],
+      }),
+    );
+    renderWithProviders(<OpenFaceChinesePage />);
+    expect(
+      await screen.findByText(
+        'ファンタジーランド獲得（トップでクイーン以上のペアまたはスリーカード）。次のラウンドは13枚まとめて配置します。',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('explains the current Fantasyland placing round', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [makePlayer({ fantasyland: true }), makePlayer({ id: 1, isHuman: false })],
+      }),
+    );
+    renderWithProviders(<OpenFaceChinesePage />);
+    const note = await screen.findByText('ファンタジーランドのラウンドです。13枚をまとめて配置します。');
+    expect(note.tagName).toBe('P');
+    expect(note).toHaveClass('text-xs', 'mb-2');
+  });
+
+  it('shows the earned Fantasyland note at game end', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        gameEndFlag: true,
+        isHumanTurn: false,
+        players: [makePlayer({ fantasyland: true }), makePlayer({ id: 1, isHuman: false })],
+      }),
+    );
+    renderWithProviders(<OpenFaceChinesePage />);
+
+    expect(
+      await screen.findByText(
+        'ファンタジーランド獲得（トップでクイーン以上のペアまたはスリーカード）。次のラウンドは13枚まとめて配置します。',
+      ),
+    ).toHaveClass('text-xs', 'mb-2');
   });
 
   it('shows every player total during placing and refreshes scores with game state', async () => {

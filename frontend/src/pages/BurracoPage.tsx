@@ -129,6 +129,17 @@ function BurracoPageContent() {
   const isDiscardPhase = state?.phase === BurracoPhase.DISCARD;
   const isRoundEnd = state?.phase === BurracoPhase.ROUND_END;
   const isGameEnd = state?.phase === BurracoPhase.GAME_END || !!state?.gameEndFlag;
+  const canGoOut = humanPlayer?.tookPozzetto === true && humanPlayer.hasBurraco;
+  const goOutReason = canGoOut
+    ? ''
+    : t('goOutReason', {
+        requirements: [
+          humanPlayer?.tookPozzetto ? null : t('goOutRequirementPozzetto'),
+          humanPlayer?.hasBurraco ? null : t('goOutRequirementBurraco'),
+        ]
+          .filter((requirement): requirement is string => requirement !== null)
+          .join(t('listSeparator')),
+      });
 
   // Burraco runs on the Canasta domain (`BurracoGame = CanastaGame`), so the same
   // pair rules apply and the same count-only check was letting rejected
@@ -625,9 +636,23 @@ function BurracoPageContent() {
                   >
                     {t('discardButton')}
                   </button>
-                  <button type="button" className={btnSuccess} onClick={handleGoOut} disabled={loading}>
+                  <button
+                    type="button"
+                    className={`${btnSuccess} ${!canGoOut ? 'aria-disabled:opacity-70 aria-disabled:cursor-not-allowed' : ''}`}
+                    onClick={() => {
+                      if (!loading && canGoOut) handleGoOut();
+                    }}
+                    disabled={loading}
+                    aria-disabled={!canGoOut || undefined}
+                    aria-describedby={!canGoOut ? 'bu-go-out-reason' : undefined}
+                  >
                     {t('goOutButton')}
                   </button>
+                  {goOutReason && (
+                    <span id="bu-go-out-reason" data-testid="bu-go-out-reason" className="text-xs text-ds-text-muted">
+                      {goOutReason}
+                    </span>
+                  )}
                 </>
               )}
               {isRoundEnd && (

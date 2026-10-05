@@ -118,6 +118,29 @@ describe('OichoKabuPage', () => {
     expect(betInput).toHaveAttribute('max', '650');
   });
 
+  it('sets the bet input to the current chip balance from the maximum button', async () => {
+    mockApi.mockResolvedValue({ ...betState, chips: 650 });
+    renderWithProviders(<OichoKabuPage />);
+    const input = (await screen.findByLabelText('賭け金')) as HTMLInputElement;
+
+    fireEvent.change(input, { target: { value: '200' } });
+    fireEvent.click(screen.getByRole('button', { name: '最大額' }));
+
+    expect(input.value).toBe('650');
+  });
+
+  it('disables the maximum button while loading', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<OichoKabuPage />);
+    const betButton = await screen.findByRole('button', { name: /^ベット$/ });
+    const pendingResponse = new Promise<OichoKabuResponse>(() => {});
+    mockApi.mockReturnValue(pendingResponse);
+
+    fireEvent.click(betButton);
+
+    expect(screen.getByRole('button', { name: '最大額' })).toBeDisabled();
+  });
+
   it('triggers bet action with current amount', async () => {
     mockApi.mockResolvedValue(betState);
     renderWithProviders(<OichoKabuPage />);

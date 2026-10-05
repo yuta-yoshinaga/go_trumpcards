@@ -188,10 +188,17 @@ describe('MadrassoPage', () => {
     const legend = await screen.findByTestId('tr-point-legend');
     // Summary is always present; the point values render inside the details.
     expect(legend).toHaveTextContent('点数の凡例');
-    expect(legend).toHaveTextContent('1点');
-    expect(legend).toHaveTextContent('1/3点');
-    expect(legend).toHaveTextContent('+1/3点');
+    expect(legend).toHaveTextContent('11点');
+    expect(legend).toHaveTextContent('10・4・3・2点');
+    expect(legend).toHaveTextContent('その他（2・4〜7）');
+    expect(legend).toHaveTextContent('+1点');
     expect(legend).toHaveTextContent('0点');
+    expect(legend).toHaveTextContent('120点');
+    expect(legend).toHaveTextContent('61点');
+    expect(legend).toHaveTextContent('既定21');
+    expect(legend).not.toHaveTextContent('1/3点');
+    expect(legend).not.toHaveTextContent('+1/3点');
+    expect(legend).not.toHaveTextContent('11点合計');
   });
 
   // **合法手はサーバーが計算済みなのに画面が使っていなかった (#4718)。**

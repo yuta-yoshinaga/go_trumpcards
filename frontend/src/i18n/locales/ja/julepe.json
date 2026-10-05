@@ -21,6 +21,10 @@
     "out": "降り",
     "undecided": "未定"
   },
+  "roundResult": {
+    "payout": "+{{amount}} 獲得",
+    "penalty": "追加支払 {{amount}}"
+  },
   "decision": {
     "undecided": "参加するか降りるかを選んでください。未決定: {{count}}人。"
   },

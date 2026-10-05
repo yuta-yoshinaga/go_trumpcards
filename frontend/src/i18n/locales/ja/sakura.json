@@ -17,6 +17,7 @@
   "fieldEmpty": "（なし）",
   "listSeparator": "、",
   "fieldPosition": "場札{{position}}",
+  "fieldPoints": "{{points}}点",
   "fieldChoiceCandidate": "選択候補",
   "fieldChoiceUnavailable": "候補ではありません",
   "fieldChoiceDisabledReason": "この場札は現在選択できません。",

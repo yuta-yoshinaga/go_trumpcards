@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { preferenceApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makePreferenceState } from '../test/stateFactories';
 import { PreferenceContract } from '../types/phases';
@@ -200,6 +201,25 @@ describe('PreferencePage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
     expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('勝者');
     expect(screen.getByTestId('trick-display-cards').querySelector('[data-trick-winner="true"]')).toBeInTheDocument();
+    expect(screen.getByTestId('trick-lead-suit')).toHaveTextContent('リードスート: ハート');
+  });
+
+  it('shows the lead suit in English and hides it when the trick is empty', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(trickEndState);
+      const { unmount } = renderWithProviders(<PreferencePage />);
+      expect(await screen.findByTestId('trick-lead-suit')).toHaveTextContent('Led suit: Heart');
+
+      unmount();
+      mockExec.mockResolvedValue(makePreferenceState());
+      renderWithProviders(<PreferencePage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      expect(screen.queryByTestId('trick-lead-suit')).not.toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('does not show a winner during ordinary play', async () => {

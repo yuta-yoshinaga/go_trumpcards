@@ -41,6 +41,10 @@ type SlobberhannesGame interface {
 	GetDealerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// GetLastTrick returns the most recently resolved trick in this round.
+	GetLastTrick() []*domain.TrickCard
+	// GetLastTrickWinner returns its winner, or -1 when absent.
+	GetLastTrickWinner() int
 	// GetValidPlayIndices プレイ可能なカードのインデックスリストを返す
 	GetValidPlayIndices(playerIdx int) []int
 	// GetPlayerCnt プレイヤー数を取得する

@@ -1580,10 +1580,10 @@ describe('CourchevelPage', () => {
     });
   });
 
-  it('handles action log visibility and API fetch', async () => {
+  it('opens the action log during play and fetches its entries', async () => {
     mockExec.mockResolvedValue({
-      gameEndFlag: true,
-      phase: 4, // HoldemPhase.END
+      gameEndFlag: false,
+      phase: 0,
       currentTurn: 0,
       players: [],
       playerIdx: 0,
@@ -1591,13 +1591,16 @@ describe('CourchevelPage', () => {
     } as unknown as OmahaResponse);
 
     renderWithProviders(<CourchevelPage />);
-    await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument());
 
-    vi.mocked(actionLogApi.courchevel).mockResolvedValueOnce({ entries: [] });
-    fireEvent.click(screen.getByText('棋譜を見る'));
+    vi.mocked(actionLogApi.courchevel).mockResolvedValueOnce({
+      entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'call', detail: 'あなた: コール' }],
+    });
+    fireEvent.click(screen.getByRole('button', { name: '棋譜を見る' }));
 
     await waitFor(() => expect(actionLogApi.courchevel).toHaveBeenCalledTimes(1));
     expect(await screen.findByText('棋譜')).toBeInTheDocument();
+    expect(screen.getByText(/call: あなた: コール/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('閉じる'));
     await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
