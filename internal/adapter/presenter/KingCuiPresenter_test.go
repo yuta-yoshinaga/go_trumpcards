@@ -198,6 +198,56 @@ func TestKingCuiPresenter_DealEndBreakdown(t *testing.T) {
 	})
 }
 
+func TestKingCuiPresenter_DealResultContractBasisAllContracts(t *testing.T) {
+	tests := []struct {
+		name     string
+		contract int
+		ja       string
+		en       string
+	}{
+		{"no tricks", domain.KingContractNoTricks,
+			"コントラクト: ノートリック — 得点条件: 取ったトリック1つにつき2点減点",
+			"Contract: No Tricks — Scoring basis: lose 2 points per trick taken"},
+		{"no hearts", domain.KingContractNoHearts,
+			"コントラクト: ノーハート — 得点条件: 取ったハート1枚につき2点減点",
+			"Contract: No Hearts — Scoring basis: lose 2 points per heart taken"},
+		{"no queens", domain.KingContractNoQueens,
+			"コントラクト: ノークイーン — 得点条件: 取ったクイーン1枚につき6点減点",
+			"Contract: No Queens — Scoring basis: lose 6 points per queen taken"},
+		{"king of hearts", domain.KingContractKingHeart,
+			"コントラクト: ノーキングハート — 得点条件: ハートのキングを取ると20点減点",
+			"Contract: No King of Hearts — Scoring basis: lose 20 points for taking the king of hearts"},
+		{"no last two", domain.KingContractNoLastTwo,
+			"コントラクト: ノーラスト2 — 得点条件: 最後の2トリックそれぞれ10点減点",
+			"Contract: No Last Two Tricks — Scoring basis: lose 10 points for each of the last two tricks"},
+		{"no men", domain.KingContractNoMen,
+			"コントラクト: ノーメン — 得点条件: 取ったジャックまたはキング1枚につき3点減点",
+			"Contract: No Men — Scoring basis: lose 3 points per jack or king taken"},
+		{"king trump", domain.KingContractKingTrump,
+			"コントラクト: キング（切り札あり）（切り札: HEART） — 得点条件: 取ったトリック1つにつき5点加点",
+			"Contract: King (Trump) (Trump: HEART) — Scoring basis: gain 5 points per trick taken"},
+	}
+	p := new(presenter.KingCuiPresenter)
+	defer i18n.SetLang("ja")
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			g := kingPlayToDealEnd(t, domain.KingContractNoTricks, -1)
+			detail := g.GetLastDealDetail()
+			require.NotNil(t, detail)
+			detail.Contract = tc.contract
+			if tc.contract == domain.KingContractKingTrump {
+				detail.TrumpSuit = domain.CardDesignHeart
+			}
+
+			i18n.SetLang("ja")
+			assert.Contains(t, p.Output(g, nil), tc.ja)
+			i18n.SetLang("en")
+			assert.Contains(t, p.Output(g, nil), tc.en)
+		})
+	}
+}
+
 // レビュー指摘 (#6026): 7 ディール目は finishDeal が gameEndFlag を立てて
 // DealEnd を飛ばすので、DealEnd 分岐だけに置くと**最後のディールの内訳が出ない**。
 // 決着を決めた 1 ディールこそ見たいので、GameEnd でも出す。
