@@ -43,6 +43,7 @@
   "landscapeBanner": "横画面での表示を推奨します",
   "frontendHint": {
     "sirtommyStock": "ストックのカードを組札に置けます",
+    "sirtommyStockToWaste": "ストックのカードをウェイストに置きます",
     "sirtommyWaste": "ウェイストのカードを組札に置けます"
   },
   "tutorial": {

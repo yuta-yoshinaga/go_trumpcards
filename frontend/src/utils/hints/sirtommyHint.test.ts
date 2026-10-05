@@ -41,6 +41,16 @@ describe('getSirTommyHint', () => {
     expect(hint?.confidence).toBe('strong');
   });
 
+  it('returns a stock-to-waste hint when the backend indicates stock → waste', () => {
+    const hint = getSirTommyHint(
+      makeState({ hint: { fromZone: 'stock', toZone: 'waste', wasteIdx: 2, foundationIdx: -1 } }),
+    );
+    expect(hint).not.toBeNull();
+    expect(hint?.reason).toBe('frontendHint.sirtommyStockToWaste');
+    expect(hint?.targetAction).toBe('stock-to-waste2');
+    expect(hint?.confidence).toBe('strong');
+  });
+
   it('returns a waste hint when the backend indicates waste → foundation', () => {
     const hint = getSirTommyHint(makeState({ hint: { fromZone: 'waste', wasteIdx: 1, foundationIdx: 0 } }));
     expect(hint).not.toBeNull();
