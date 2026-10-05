@@ -18,6 +18,7 @@
   "trick": "トリック {{n}}/{{total}}",
   "pot": "ポット: {{pot}}",
   "trump": "切り札: {{suit}}",
+  "turnUp": "めくり札:",
   "decidePrompt": "あなたの参加判断です — 参加（Play）するか降りる（Pass）か選んでください。",
   "decisionCounts": "参加: {{play}}人、降り: {{pass}}人、未決定: {{undecided}}人",
   "decideCpu": "CPU {{id}} が参加判断中です…",

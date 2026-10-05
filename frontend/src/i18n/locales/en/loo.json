@@ -18,6 +18,7 @@
   "trick": "Trick {{n}}/{{total}}",
   "pot": "Pot: {{pot}}",
   "trump": "Trump: {{suit}}",
+  "turnUp": "Turn-up:",
   "decidePrompt": "Your turn to decide — play or pass.",
   "decisionCounts": "Playing: {{play}}, passed: {{pass}}, undecided: {{undecided}}",
   "decideCpu": "CPU {{id}} is deciding…",
