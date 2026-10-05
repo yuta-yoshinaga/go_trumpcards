@@ -80074,6 +80074,11 @@ components:
           description: Whether each seat has acted in the current auction.
           items:
             type: boolean
+        bidTrump:
+          type: array
+          description: Trump suit chosen with each declaration (1=spade, 2=club, 3=heart, 4=diamond; -1=none).
+          items:
+            type: integer
         leadPlayerIdx:
           type: integer
         dealerIdx:

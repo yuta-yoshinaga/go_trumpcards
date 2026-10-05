@@ -1402,6 +1402,9 @@ func (g *Quadrille) GetCurrentBidderIdx() int { return g.currentBidderIdx }
 // GetBids returns each seat's declaration (0=pass, 1=entrar, 2=solo).
 func (g *Quadrille) GetBids() [QuadrillePlayerCnt]QuadrilleBid { return g.bids }
 
+// GetBidTrump returns each seat's chosen trump suit (-1 when none was chosen).
+func (g *Quadrille) GetBidTrump() [QuadrillePlayerCnt]int { return g.bidTrump }
+
 // GetBidActed returns whether each seat has declared during the current auction.
 func (g *Quadrille) GetBidActed() [QuadrillePlayerCnt]bool { return g.bidActed }
 

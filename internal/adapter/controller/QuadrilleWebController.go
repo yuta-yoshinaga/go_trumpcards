@@ -52,6 +52,7 @@ type QuadrilleWebOutput struct {
 	CurrentBidderIdx int                             `json:"currentBidderIdx"`
 	Bids             [domain.QuadrillePlayerCnt]int  `json:"bids"`
 	BidActed         [domain.QuadrillePlayerCnt]bool `json:"bidActed"`
+	BidTrump         [domain.QuadrillePlayerCnt]int  `json:"bidTrump"`
 	LeadPlayerIdx    int                             `json:"leadPlayerIdx"`
 	DealerIdx        int                             `json:"dealerIdx"`
 	ForehandIdx      int                             `json:"forehandIdx"`
