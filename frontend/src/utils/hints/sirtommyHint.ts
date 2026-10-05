@@ -10,6 +10,13 @@ export function getSirTommyHint(state: SirTommyResponse): HintResult | null {
   if (!state.hint) return null;
 
   if (state.hint.fromZone === 'stock') {
+    if (state.hint.toZone === 'waste') {
+      return {
+        targetAction: `stock-to-waste${state.hint.wasteIdx}`,
+        reason: 'frontendHint.sirtommyStockToWaste',
+        confidence: 'strong',
+      };
+    }
     return {
       targetAction: `stock-to-f${state.hint.foundationIdx}`,
       reason: 'frontendHint.sirtommyStock',
