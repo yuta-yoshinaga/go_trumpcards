@@ -1,6 +1,8 @@
 import type { Rummy500Response } from '../../types/card';
 import type { HintResult } from '../../types/hint';
 import { Rummy500Phase } from '../../types/phases';
+import { cardAlt } from '../cardAlt';
+import { rummy500CardPenalty } from '../rummy500HandPenalty';
 
 /**
  * Heuristic hint for Rummy 500. Returns null when no actionable
@@ -20,9 +22,9 @@ export function getRummy500Hint(state: Rummy500Response): HintResult | null {
 
   if (state.phase === Rummy500Phase.DRAW) {
     if (state.discardPile.length > 0) {
-      return { targetAction: 'drawdiscard', reason: 'rummy500.hint.drawDiscardTop', confidence: 'moderate' };
+      return { targetAction: 'drawdiscard', reason: 'hint.drawDiscardTop', confidence: 'moderate' };
     }
-    return { targetAction: 'drawstock', reason: 'rummy500.hint.drawStock', confidence: 'moderate' };
+    return { targetAction: 'drawstock', reason: 'hint.drawStock', confidence: 'moderate' };
   }
 
   if (state.phase === Rummy500Phase.PLAY) {
@@ -32,9 +34,33 @@ export function getRummy500Hint(state: Rummy500Response): HintResult | null {
     }
     const hasTriple = Object.values(ranks).some((n) => n >= 3);
     if (hasTriple) {
-      return { targetAction: 'meld', reason: 'rummy500.hint.meldSet', confidence: 'strong' };
+      return { targetAction: 'meld', reason: 'hint.meldSet', confidence: 'strong' };
     }
-    return { targetAction: 'discard', reason: 'rummy500.hint.discardHighCard', confidence: 'moderate' };
+    const discardCandidates = me.cards
+      .map((candidate, index) => {
+        if (state.layoffTargets[index].length > 0) return false;
+        const hasMeldPartner = me.cards.some((other, otherIndex) => {
+          if (otherIndex === index) return false;
+          const sameRank = other.value === candidate.value;
+          const canExtendRun = other.design === candidate.design && Math.abs(other.value - candidate.value) <= 2;
+          return sameRank || canExtendRun;
+        });
+        return hasMeldPartner ? false : index;
+      })
+      .filter((index): index is number => index !== false)
+      .sort((left, right) => rummy500CardPenalty(me.cards[right].value) - rummy500CardPenalty(me.cards[left].value));
+    const discardIndex = discardCandidates[0];
+    if (discardIndex >= 0) {
+      const card = me.cards[discardIndex];
+      return {
+        targetAction: 'discard',
+        targetPos: discardIndex,
+        reason: 'hint.discardCard',
+        reasonParams: { card: cardAlt(card) },
+        confidence: 'moderate',
+      };
+    }
+    return { targetAction: 'discard', reason: 'hint.discardHighCard', confidence: 'moderate' };
   }
 
   return null;
