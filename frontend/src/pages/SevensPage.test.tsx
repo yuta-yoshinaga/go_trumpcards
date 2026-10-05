@@ -1615,7 +1615,7 @@ describe('SevensPage', () => {
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.sevens).toHaveBeenCalledTimes(1));
-    expect(screen.getByText('棋譜')).toBeInTheDocument();
+    expect(await screen.findByText('棋譜')).toBeInTheDocument();
     expect(screen.getByText(/CPUが♥7を出した/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('閉じる'));

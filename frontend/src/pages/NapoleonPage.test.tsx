@@ -985,7 +985,7 @@ describe('NapoleonPage', () => {
     fireEvent.click(screen.getByText('\u68cb\u8b5c\u3092\u898b\u308b'));
 
     await waitFor(() => expect(actionLogApi.napoleon).toHaveBeenCalledTimes(1));
-    expect(screen.getByText('\u68cb\u8b5c')).toBeInTheDocument();
+    expect(await screen.findByText('\u68cb\u8b5c')).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('\u9589\u3058\u308b'));
     await waitFor(() => expect(screen.queryByText(/^\u68cb\u8b5c$/)).not.toBeInTheDocument());

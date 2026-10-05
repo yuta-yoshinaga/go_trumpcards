@@ -536,7 +536,7 @@ describe('ThreeThirteenPage', () => {
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.threethirteen).toHaveBeenCalledTimes(1));
-    expect(screen.getByText('棋譜')).toBeInTheDocument();
+    expect(await screen.findByText('棋譜')).toBeInTheDocument();
   });
 
   // **ヒント経路はページ側からも踏む。**ファクトリ単体テストだけだと

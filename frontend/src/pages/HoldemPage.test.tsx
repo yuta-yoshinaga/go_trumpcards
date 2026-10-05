@@ -1530,7 +1530,7 @@ describe('HoldemPage', () => {
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.holdem).toHaveBeenCalledTimes(1));
-    expect(screen.getByText('棋譜')).toBeInTheDocument();
+    expect(await screen.findByText('棋譜')).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('閉じる'));
     await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
