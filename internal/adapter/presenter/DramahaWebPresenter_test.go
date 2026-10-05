@@ -595,6 +595,33 @@ func TestDramahaWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestDramahaWebPresenter_Output_DramahaHandNames(t *testing.T) {
+	p := new(presenter.DramahaWebPresenter)
+	players := []*domain.DramahaPlayer{
+		domain.NewDramahaPlayer(true, domain.HoldemStyleTAG),
+		domain.NewDramahaPlayer(false, domain.HoldemStyleLAP),
+		domain.NewDramahaPlayer(false, domain.HoldemStyleTAP),
+	}
+	players[1].SetHandRank(domain.PokerHandTwoPair)
+	players[1].SetDrawHand(domain.PokerHandStraight, nil)
+	players[2].SetHandRank(domain.PokerHandFlush)
+	players[2].SetDrawHand(domain.PokerHandFullHouse, nil)
+	players[2].SetFolded(true)
+	h := domain.NewDramaha(domain.NewTrumpCards(0), players, domain.DefaultDramahaConfig())
+	h.SetPhase(domain.DramahaPhaseShowdown)
+	var out controller.HoldemWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(p.Output(h, nil)), &out))
+	assert.Equal(t, "twoPair", out.Players[1].OmahaHandName)
+	assert.Equal(t, "straight", out.Players[1].DrawHandName)
+	assert.Empty(t, out.Players[2].OmahaHandName)
+	assert.Empty(t, out.Players[2].DrawHandName)
+	h.SetPhase(domain.DramahaPhasePreFlop)
+	out = controller.HoldemWebOutput{}
+	assert.NoError(t, json.Unmarshal([]byte(p.Output(h, nil)), &out))
+	assert.Empty(t, out.Players[1].OmahaHandName)
+	assert.Empty(t, out.Players[1].DrawHandName)
+}
+
 func TestDramahaWebPresenter_Output_RebuyAddonFields(t *testing.T) {
 	p := new(presenter.DramahaWebPresenter)
 

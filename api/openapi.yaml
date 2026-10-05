@@ -42840,6 +42840,14 @@ components:
           type: string
           description: Human-readable hand name (empty until showdown)
           example: ""
+        omahaHandName:
+          type: string
+          description: Dramaha Omaha-side hand translation key (showdown only)
+          example: twoPair
+        drawHandName:
+          type: string
+          description: Dramaha draw-side hand translation key (showdown only)
+          example: straight
         bestHand:
           type: array
           description: Best 5-card hand (only populated at showdown)

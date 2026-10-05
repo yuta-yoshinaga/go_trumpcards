@@ -185,6 +185,8 @@ const showdownState: DramahaResponse = {
     humanPlayer({ handName: '\u30ef\u30f3\u30da\u30a2', currentBet: 0, chips: 950 }),
     cpuPlayer(1, {
       handName: '\u30c4\u30fc\u30da\u30a2',
+      omahaHandName: 'twoPair',
+      drawHandName: 'straight',
       folded: false,
       cards: [
         { design: 'SPADE', value: 5 },
@@ -447,11 +449,10 @@ describe('DramahaPage', () => {
     await waitFor(() => expect(screen.getByText('[オールイン]')).toBeInTheDocument());
   });
 
-  it('shows CPU hand name badge during showdown when not folded', async () => {
+  it('shows CPU hand names during showdown when not folded', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<DramahaPage />);
-    // Scoped to the CPU area: the human's own Omaha-half badge reads the same hand name.
-    await waitFor(() => expect(within(screen.getByTestId('cpu-accordion')).getByText('ツーペア')).toBeInTheDocument());
+    expect(await screen.findByTestId('cpu-showdown-hand-names')).toHaveTextContent('オマハ役: ツーペア');
   });
 
   it('highlights exactly 2 hole + 3 board cards as the best-5 at showdown', async () => {
@@ -1886,6 +1887,15 @@ describe('DramahaPage showdown split', () => {
     expect(within(table).getByTestId('dramaha-split-result-0')).not.toHaveTextContent('ドロー側');
     expect(within(table).getByTestId('dramaha-split-result-1')).toHaveTextContent('ドロー側');
     expect(within(table).getByTestId('dramaha-split-result-1')).not.toHaveTextContent('オマハ側');
+  });
+
+  it('shows both labelled CPU hand names only at showdown and hides them for folded CPUs', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<DramahaPage />);
+    const cpu = await screen.findByTestId('cpu-showdown-hand-names');
+    expect(cpu).toHaveTextContent('オマハ役: ツーペア');
+    expect(cpu).toHaveTextContent('ドロー役: ストレート');
+    expect(screen.getAllByTestId('cpu-showdown-hand-names')).toHaveLength(1);
   });
 
   it('flags a scoop when one seat takes both halves', async () => {
