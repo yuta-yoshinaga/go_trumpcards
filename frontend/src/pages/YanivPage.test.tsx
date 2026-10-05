@@ -106,6 +106,16 @@ describe('YanivPage', () => {
     expect(screen.getByTestId('discard-button')).toBeDisabled();
   });
 
+  it('previews selected card points and the remaining hand total', async () => {
+    renderWithProviders(<YanivPage />);
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    expect(screen.getByTestId('yaniv-selection-preview')).toHaveTextContent('選択中: -1 = 暫定 2');
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    expect(screen.getByTestId('yaniv-selection-preview')).toHaveTextContent('選択中: -3 = 暫定 0');
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    expect(screen.getByTestId('yaniv-selection-preview')).toHaveTextContent('選択中: -2 = 暫定 1');
+  });
+
   // **捨てる対象そのものが読み上げから漏れていた。**隣の `pickup-card-*` は最初から
   // 名前を持っていたのに、手札のボタンには名前も押下状態も無かった (#6425)。
   it('names each hand card and marks the selected ones pressed', async () => {

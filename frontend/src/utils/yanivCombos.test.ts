@@ -1,9 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import type { Card } from '../types/card';
-import { classifyYanivDiscard, isValidYanivDiscard } from './yanivCombos';
+import { classifyYanivDiscard, isValidYanivDiscard, yanivCardValue } from './yanivCombos';
 
 const card = (design: Card['design'], value: number): Card => ({ design, value });
 const joker = (value: number): Card => ({ design: 'JOKER', value });
+
+describe('yanivCardValue', () => {
+  it('scores jokers as zero, aces by face value, and ten or higher as ten', () => {
+    expect(yanivCardValue(joker(1))).toBe(0);
+    expect(yanivCardValue(card('SPADE', 1))).toBe(1);
+    expect(yanivCardValue(card('HEART', 7))).toBe(7);
+    expect(yanivCardValue(card('CLOVER', 10))).toBe(10);
+    expect(yanivCardValue(card('DIAMOND', 13))).toBe(10);
+  });
+});
 
 describe('classifyYanivDiscard', () => {
   it('classifies a single card as a valid single', () => {
