@@ -57,6 +57,8 @@ export interface SoloWhistResponse extends BaseGameResponse {
   trumpSuit: number;
   /** Each player's bid this round (0-3) — [p0, p1, p2, p3]. */
   bids: number[];
+  /** Whether each player has completed bidding; distinguishes pass from unbid. */
+  bidDone: boolean[];
   currentTrick: SoloWhistTrickCard[];
   /** Cumulative match scores per player — [p0, p1, p2, p3]. */
   playerScores: number[];
