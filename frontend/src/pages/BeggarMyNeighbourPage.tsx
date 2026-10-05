@@ -141,7 +141,20 @@ export const BeggarMyNeighbourPage = withTutorial(
 function BeggarMyNeighbourPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('beggarmyneighbour');
-  const { state, loading, error, exec: execApi, retry } = useGameApi(beggarmyneighbourApi.exec);
+  const [autoPlaying, setAutoPlaying] = useState(false);
+  const autoPlayFailedRef = useRef(false);
+  const {
+    state,
+    loading,
+    error,
+    exec: execApi,
+    retry,
+  } = useGameApi(beggarmyneighbourApi.exec, {
+    onError: () => {
+      autoPlayFailedRef.current = true;
+      setAutoPlaying(false);
+    },
+  });
   const { cardWidth } = useCardDimensions();
   const [maxRounds, setMaxRounds] = useState(DEFAULT_MAX_ROUNDS);
   const {
@@ -151,7 +164,6 @@ function BeggarMyNeighbourPageContent() {
   } = useGameHint('beggarmyneighbour', state);
 
   const [autoPlaySpeed, setAutoPlaySpeed] = useState<AutoPlaySpeed>(loadAutoPlaySpeed);
-  const [autoPlaying, setAutoPlaying] = useState(false);
 
   const handleStep = useCallback(() => execApi('step'), [execApi]);
   // Autoplay is driven client-side as a timed sequence of `step` calls (see the
@@ -182,6 +194,7 @@ function BeggarMyNeighbourPageContent() {
   // play's animation is visible, stopping as soon as the game ends.
   useEffect(() => {
     if (!autoPlaying) return;
+    autoPlayFailedRef.current = false;
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout>;
     const tick = async () => {
@@ -191,7 +204,7 @@ function BeggarMyNeighbourPageContent() {
         return;
       }
       await execApi('step');
-      if (cancelled) return;
+      if (cancelled || autoPlayFailedRef.current) return;
       timer = setTimeout(() => void tick(), AUTOPLAY_DELAY_MS[speedRef.current]);
     };
     timer = setTimeout(() => void tick(), AUTOPLAY_DELAY_MS[speedRef.current]);
