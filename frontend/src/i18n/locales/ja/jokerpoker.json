@@ -32,6 +32,7 @@
   "payoutTable": {
     "title": "配当表",
     "hand": "役",
+    "count": "回数",
     "name": {
       "naturalRoyalFlush": "ナチュラルロイヤルフラッシュ",
       "fiveOfAKind": "ファイブカード",
@@ -45,6 +46,11 @@
       "twoPair": "ツーペア",
       "kingsOrBetter": "キングス・オア・ベター"
     }
+  },
+  "stats": {
+    "summary": "{{hands}} ハンド / 勝率 {{winRate}}% / 収支 {{net}}",
+    "empty": "まだプレイ記録がありません",
+    "clear": "統計クリア"
   },
   "madeHand": {
     "label": "現在の役",
