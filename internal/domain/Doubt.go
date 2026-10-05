@@ -90,6 +90,7 @@ type DoubtAction struct {
 	ClaimedValue int     // 宣言した値 (1-13)
 	CardCount    int     // 出した枚数
 	PlayedCards  []*Card // 実際に出したカード (ダウト時に公開)
+	HasTell      bool    // CPU がテル（緊張の兆候）を見せているか
 }
 
 // DoubtCpuAction 1ターン分の行動記録 (表示用; 実際のカードは含まない)
@@ -349,6 +350,7 @@ func (d *Doubt) CpuPlay() {
 	if isActuallyBluff {
 		cpuAction.HasTell = rand.Float64() < calcTellChance(d.config.CpuMemoryLevel)
 	}
+	d.lastAction.HasTell = cpuAction.HasTell
 	if d.config.CpuHesitationEnabled {
 		cpuAction.HesitationMs = calcDoubtHesitationMs(isActuallyBluff)
 	}
@@ -757,6 +759,7 @@ type doubtActionJSON struct {
 	ClaimedValue int     `json:"cv"`
 	CardCount    int     `json:"cc"`
 	PlayedCards  []*Card `json:"pc"`
+	HasTell      bool    `json:"ht,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -766,6 +769,7 @@ func (a *DoubtAction) MarshalJSON() ([]byte, error) {
 		ClaimedValue: a.ClaimedValue,
 		CardCount:    a.CardCount,
 		PlayedCards:  a.PlayedCards,
+		HasTell:      a.HasTell,
 	})
 }
 
@@ -779,6 +783,7 @@ func (a *DoubtAction) UnmarshalJSON(data []byte) error {
 	a.ClaimedValue = j.ClaimedValue
 	a.CardCount = j.CardCount
 	a.PlayedCards = j.PlayedCards
+	a.HasTell = j.HasTell
 	return nil
 }
 

@@ -99,6 +99,29 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 		assert.Equal(t, 1, resObj.LastAction.CardCount)
 	})
 
+	t.Run("success Output lastAction includes CPU tell", func(t *testing.T) {
+		d, _ := setupDoubtWebTest()
+		d.SetLastAction(&domain.DoubtAction{PlayerIdx: 1, ClaimedValue: 5, CardCount: 1, HasTell: true})
+		result := tdwp.Output(d, nil)
+		var resObj controller.DoubtWebOutput
+		require.NoError(t, json.Unmarshal([]byte(result), &resObj))
+
+		require.NotNil(t, resObj.LastAction)
+		assert.True(t, resObj.LastAction.HasTell)
+	})
+
+	t.Run("success Output lastAction has no tell for human play", func(t *testing.T) {
+		d, players := setupDoubtWebTest()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		_ = d.PlayerPlay([]int{0}, 5, 0)
+		result := tdwp.Output(d, nil)
+		var resObj controller.DoubtWebOutput
+		require.NoError(t, json.Unmarshal([]byte(result), &resObj))
+
+		require.NotNil(t, resObj.LastAction)
+		assert.False(t, resObj.LastAction.HasTell)
+	})
+
 	t.Run("success Output lastAction nil", func(t *testing.T) {
 		d, _ := setupDoubtWebTest()
 		// lastAction is nil by default
