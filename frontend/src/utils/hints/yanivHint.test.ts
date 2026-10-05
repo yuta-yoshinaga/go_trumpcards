@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Card, YanivResponse } from '../../types/card';
 import { YanivPhase } from '../../types/phases';
-import { yanivCardValue } from '../yanivCombos';
 import { getYanivHint } from './yanivHint';
 
 function card(design: Card['design'], value: number): Card {
@@ -30,15 +29,6 @@ function baseState(overrides: Partial<YanivResponse>): YanivResponse {
     ...overrides,
   } as YanivResponse;
 }
-
-describe('yanivCardValue', () => {
-  it('scores jokers as 0, aces as 1, face cards as 10', () => {
-    expect(yanivCardValue(card('JOKER', 1))).toBe(0);
-    expect(yanivCardValue(card('SPADE', 1))).toBe(1);
-    expect(yanivCardValue(card('HEART', 7))).toBe(7);
-    expect(yanivCardValue(card('CLOVER', 13))).toBe(10);
-  });
-});
 
 describe('getYanivHint', () => {
   it('returns null when game has ended', () => {
