@@ -1,4 +1,6 @@
 {
+  "handOdds.hand": "ハンド",
+  "handOdds.probability": "確率",
   "pokerhand.unknown": "不明",
   "pokerhand.highCard": "ハイカード",
   "pokerhand.pair": "ペア",

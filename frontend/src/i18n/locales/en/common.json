@@ -1,4 +1,6 @@
 {
+  "handOdds.hand": "Hand",
+  "handOdds.probability": "Probability",
   "pokerhand.unknown": "Unknown",
   "pokerhand.highCard": "High Card",
   "pokerhand.pair": "Pair",
