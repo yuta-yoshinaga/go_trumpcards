@@ -226,12 +226,19 @@ describe('FaroPage', () => {
     mockExec.mockResolvedValue(callState);
     renderWithProviders(<FaroPage />);
     await screen.findByTestId('call-card-3-0');
+    expect(document.querySelector('[data-tutorial="faro-call"]')).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('call-card-3-0'));
     fireEvent.click(screen.getByTestId('call-card-9-1'));
     fireEvent.click(screen.getByTestId('call-card-12-2'));
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'コールする' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', { order: [3, 9, 12] }));
+  });
+
+  it('does not render the call tutorial target outside the call phase', async () => {
+    renderWithProviders(<FaroPage />);
+    await screen.findByTestId('rank-1');
+    expect(document.querySelector('[data-tutorial="faro-call"]')).not.toBeInTheDocument();
   });
 
   it('shows an order badge and marks the tapped card as pressed', async () => {
