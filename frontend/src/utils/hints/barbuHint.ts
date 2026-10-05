@@ -27,14 +27,14 @@ export function getBarbuHint(state: BarbuResponse): HintResult | null {
 
   if (state.currentContract === CONTRACT_DOMINOES) {
     if (state.dominoPlayable.length === 0) {
-      return { targetAction: 'pass', reason: 'barbu.hint.pass', confidence: 'strong' };
+      return { targetAction: 'pass', reason: 'hint.pass', confidence: 'strong' };
     }
-    return { targetAction: 'play', reason: 'barbu.hint.placeDomino', confidence: 'moderate' };
+    return { targetAction: 'play', reason: 'hint.placeDomino', confidence: 'moderate' };
   }
 
   if (state.currentContract === CONTRACT_TRUMPS) {
-    return { targetAction: 'play', reason: 'barbu.hint.win', confidence: 'moderate' };
+    return { targetAction: 'play', reason: 'hint.win', confidence: 'moderate' };
   }
 
-  return { targetAction: 'play', reason: 'barbu.hint.avoid', confidence: 'moderate' };
+  return { targetAction: 'play', reason: 'hint.avoid', confidence: 'moderate' };
 }

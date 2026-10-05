@@ -133,6 +133,18 @@ describe('BarbuPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('p', { handIndex: 0 }));
   });
 
+  it('shows the Japanese frontend hint translation when hints are enabled', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 'play', currentContract: 0, currentTurn: 0 }));
+    renderWithProviders(<BarbuPage />);
+
+    const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    fireEvent.click(toggle);
+
+    const tooltip = await screen.findByTestId('hint-tooltip');
+    expect(tooltip).toHaveTextContent('マイナス・コントラクトです。低いカードでトリックを避けましょう。');
+    expect(tooltip).not.toHaveTextContent('barbu.hint');
+  });
+
   it('labels each trick card with the player who played it and marks the lead', async () => {
     mockExec.mockResolvedValue(
       makeState({
