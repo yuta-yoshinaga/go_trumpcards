@@ -2409,6 +2409,7 @@
     "ganjifa.errFollowLeadSuit": "リードスートに従ってください",
     "ganjifa.playPhase.lead": "あなたの番です — リードするカードを選んでください。",
     "ganjifa.result.cpuWin": "ゲーム終了！ プレイヤー {{player}} の勝ちです。",
+    "ganjifa.result.draw": "ゲーム終了！ 引き分けです！",
     "ganjifa.result.humanWin": "ゲーム終了！ あなたの勝ちです！",
     "ganjifa.roundEnd": "ラウンド終了 — 次のラウンドへ進んでください。",
     "ganjifa.trickEnd": "トリック終了 — 次へ進んでください。",
