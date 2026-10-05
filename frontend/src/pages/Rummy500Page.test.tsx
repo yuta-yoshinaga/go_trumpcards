@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { rummy500Api } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -12,6 +12,10 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(rummy500Api.exec);
+
+afterEach(() => {
+  localStorage.removeItem('hint_enabled_rummy500');
+});
 
 const drawPhaseState: Rummy500Response = {
   players: [
@@ -56,6 +60,7 @@ const drawPhaseState: Rummy500Response = {
 const playPhaseState: Rummy500Response = {
   ...drawPhaseState,
   phase: 1,
+  layoffTargets: [[], [], []],
   players: [
     {
       ...drawPhaseState.players[0],
@@ -73,6 +78,7 @@ const playPhaseState: Rummy500Response = {
 const playPhaseInvalidHandState: Rummy500Response = {
   ...drawPhaseState,
   phase: 1,
+  layoffTargets: [[], [], []],
   players: [
     {
       ...drawPhaseState.players[0],
@@ -351,6 +357,37 @@ describe('Rummy500Page', () => {
       expect(screen.getByRole('button', { name: /メルドする/ })).toBeInTheDocument();
     });
     expect(screen.getByRole('button', { name: /^捨てる$/ })).toBeInTheDocument();
+  });
+
+  it('identifies the recommended discard without selecting it until clicked', async () => {
+    const state: Rummy500Response = {
+      ...playPhaseInvalidHandState,
+      players: [
+        {
+          ...playPhaseInvalidHandState.players[0],
+          cardCount: 4,
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'SPADE', value: 6 },
+            { design: 'HEART', value: 8 },
+            { design: 'CLOVER', value: 11 },
+          ],
+        },
+        playPhaseInvalidHandState.players[1],
+      ],
+      layoffTargets: [[], [], [{ owner: 1, meldIdx: 0 }], []],
+    };
+    localStorage.setItem('hint_enabled_rummy500', 'true');
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<Rummy500Page />);
+
+    const recommended = await screen.findByRole('button', { name: '♣ J' });
+    expect(recommended).toHaveAttribute('aria-pressed', 'false');
+    expect(recommended).toHaveAttribute('data-hint-target', 'true');
+    expect(screen.getByTestId('hint-tooltip')).toHaveTextContent('♣ Jを捨てて減点を減らしましょう');
+
+    fireEvent.click(recommended);
+    expect(recommended).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('previews points only for a valid selected meld and follows card selection', async () => {
