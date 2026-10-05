@@ -223,6 +223,19 @@ describe('VideoPokerGameContent', () => {
     expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument();
   });
 
+  it('associates payout cells with column and row headers', async () => {
+    mockExec.mockResolvedValue(resultPhaseWin);
+    renderContent();
+
+    const table = await screen.findByRole('table', { name: '配当表' });
+    const headers = within(table).getAllByRole('columnheader');
+    expect(headers[0]).toHaveAttribute('scope', 'col');
+    expect(headers.slice(1, 6)).toHaveLength(5);
+    for (const header of headers) expect(header).toHaveAttribute('scope', 'col');
+    const jacksOrBetterRow = within(table).getByTestId('vp-payout-row-jacksOrBetter');
+    expect(within(jacksOrBetterRow).getByRole('rowheader')).toHaveAttribute('scope', 'row');
+  });
+
   it('renders result phase on lose', async () => {
     mockExec.mockResolvedValue(resultPhaseLose);
     renderContent();
