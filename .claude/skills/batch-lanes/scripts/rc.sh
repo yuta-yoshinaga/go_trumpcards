@@ -11,4 +11,21 @@ git -C "$WT_ROOT/wt-ib$1" diff -U0 HEAD -- '*.test.ts' '*.test.tsx' | grep -nE "
   | sed 's/^/WARN VACUOUS_EMPTY_TEXT /' >> "$BATCH_STATE/rc$1.txt"
 git -C "$WT_ROOT/wt-ib$1" diff -U0 HEAD -- "*.ts" "*.tsx" | grep -nE "^\+.*biome-ignore" | sed "s/^/WARN NEW_BIOME_IGNORE /" >> "$BATCH_STATE/rc$1.txt"
 (cd "$WT_ROOT/wt-ib$1"/frontend && timeout 120 bun run deadcode 2>&1 | grep -E "^(Unused|Unlisted|Unresolved)" -A6 | sed "s/^/WARN DEADCODE /") >> "$BATCH_STATE/rc$1.txt"
+wt="$WT_ROOT/wt-ib$1"
+if [[ "${ALLOW_WORKER_BUILD:-}" != 1 ]]; then
+  bash "$B/workerbuild.sh" "$wt" >> "$BATCH_STATE/rc$1.txt" 2>&1
+fi
+bash "$B/unusedsym.sh" "$wt" >> "$BATCH_STATE/rc$1.txt" 2>&1
+if [[ "${ALLOW_PATCH_GAPS:-}" != 1 ]] && git -C "$wt" diff --name-only HEAD -- frontend/src/{pages,components,utils,hooks,api} \
+  | grep -E '^frontend/src/(pages|components|utils|hooks|api)/.*\.(ts|tsx)$' | grep -qvE '\.test\.tsx?$'; then
+  gap_output="$(cd "$wt" && timeout 600 bash .claude/skills/patch-branch-gaps/scripts/patch-branch-gaps.sh 2>&1)"
+  gap_status=$?
+  if [[ $gap_status -ne 0 ]]; then
+    while IFS= read -r line; do
+      [[ "$line" == *"NO TEST FILE"* ]] && continue
+      [[ "$line" =~ ^[^:]+:[0-9]+:.*\[[^]]*\] ]] || [[ "$line" == *"NO RESULT"* ]] || continue
+      printf 'WARN PATCH_BRANCH_GAP %s\n' "$line" >> "$BATCH_STATE/rc$1.txt"
+    done <<< "$gap_output"
+  fi
+fi
 echo RC_DONE >> "$BATCH_STATE/rc$1.txt"; cat "$BATCH_STATE/rc$1.txt"

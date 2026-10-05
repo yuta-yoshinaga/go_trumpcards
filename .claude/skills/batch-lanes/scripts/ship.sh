@@ -8,6 +8,10 @@ $B/busy.sh "$1" >/dev/null && { echo "REFUSED: a delegation is still running in 
 set -e
 s="$1" n="$2" subj="$3" summ="$4"
 cd "$WT_ROOT/wt-ib$s"
+if [[ "${CLAIM_SKIP:-}" != 1 ]] && ! "$B/claimcheck.sh" "$PWD" "$summ"; then
+  echo "REFUSED: unverified claims" >&2
+  exit 1
+fi
 br=$(git branch --show-current)
 mapfile -d '' -t files < <({ git diff --name-only -z HEAD; git ls-files -o --exclude-standard -z; } | sort -zu)
 if ((${#files[@]})); then git add -- "${files[@]}"; fi
