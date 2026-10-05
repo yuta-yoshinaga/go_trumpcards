@@ -32,7 +32,11 @@ func (p *DoudizhuWebPresenter) Output(dg interfaces.DoudizhuGame, lastErr error)
 		CpuDifficulty: int(config.CpuDifficulty),
 	}
 
-	resObj.KittyCards = cardsToOutputOrEmpty(dg.GetKittyCards())
+	if dg.GetPhase() == domain.DoudizhuPhaseBid {
+		resObj.KittyCards = make([]*controller.WebOutputCard, 0)
+	} else {
+		resObj.KittyCards = cardsToOutputOrEmpty(dg.GetKittyCards())
+	}
 
 	if combo := dg.GetTableCombo(); combo != nil {
 		resObj.TableCards = cardsToOutputOrEmpty(combo.Cards)

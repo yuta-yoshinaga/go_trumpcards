@@ -266,7 +266,7 @@ function DoudizhuPageContent() {
           </div>
 
           {/* Kitty cards */}
-          {state.kittyCards.length > 0 && (
+          {state.phase !== 'bid' && state.kittyCards.length > 0 && (
             <div className="flex justify-center gap-1 items-center" data-tutorial="ddz-kitty">
               <span className="text-ds-text-primary text-xs mr-1">{t('label.kitty')}:</span>
               {state.kittyCards.map((c) => (
