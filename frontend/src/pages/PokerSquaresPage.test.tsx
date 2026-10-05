@@ -113,6 +113,24 @@ describe('PokerSquaresPage', () => {
     expect(screen.getByText(/次に置くカード/)).toBeInTheDocument();
   });
 
+  it('shows zero-based row and column numbers aligned with the board', async () => {
+    mockApi.mockResolvedValue(playingState);
+    renderWithProviders(<PokerSquaresPage />);
+
+    const columns = await screen.findByTestId('ps-column-numbers');
+    const rows = screen.getByTestId('ps-row-numbers');
+    expect(Array.from(columns.children, (item) => item.lastElementChild?.textContent)).toEqual([
+      '0',
+      '1',
+      '2',
+      '3',
+      '4',
+    ]);
+    expect(Array.from(rows.children, (item) => item.lastElementChild?.textContent)).toEqual(['0', '1', '2', '3', '4']);
+    expect(screen.getByText('列0')).toHaveClass('sr-only');
+    expect(screen.getByText('行4')).toHaveClass('sr-only');
+  });
+
   it('shows the poker hand scoring reference while playing', async () => {
     mockApi.mockResolvedValue(playingState);
     renderWithProviders(<PokerSquaresPage />);
