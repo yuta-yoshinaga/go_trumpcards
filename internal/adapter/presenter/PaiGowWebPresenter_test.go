@@ -56,6 +56,40 @@ func TestPaiGowWebPresenter_Output_BetPhase(t *testing.T) {
 	assert.Empty(t, result.Message)
 }
 
+func TestPaiGowWebPresenter_Output_MasksDealerCardsUntilGameEnds(t *testing.T) {
+	p := new(PaiGowWebPresenter)
+	cards := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 1, true),
+		domain.NewCard(domain.CardDesignHeart, 13, true),
+		domain.NewCard(domain.CardDesignClover, 2, true),
+		domain.NewCard(domain.CardDesignDiamond, 3, true),
+		domain.NewCard(domain.CardDesignSpade, 4, true),
+		domain.NewCard(domain.CardDesignHeart, 5, true),
+		domain.NewCard(domain.CardDesignClover, 6, true),
+	}
+
+	t.Run("in progress", func(t *testing.T) {
+		m := new(interfaces.MockPaiGowGame)
+		setupPaiGowWebMockDefaults(m)
+		m.On("GetDealerCards").Return(cards).Maybe()
+		result := parsePaiGowOutput(t, p.Output(m, nil))
+		assert.NotNil(t, result.DealerCards)
+		assert.Empty(t, result.DealerCards)
+	})
+
+	t.Run("game ended", func(t *testing.T) {
+		m := new(interfaces.MockPaiGowGame)
+		m.On("GetGameEndFlag").Return(true).Maybe()
+		m.On("GetDealerCards").Return(cards).Maybe()
+		setupPaiGowWebMockDefaults(m)
+		result := parsePaiGowOutput(t, p.Output(m, nil))
+		if assert.Len(t, result.DealerCards, 7) {
+			assert.Equal(t, "SPADE", result.DealerCards[0].Design)
+			assert.Equal(t, 1, result.DealerCards[0].Value)
+		}
+	})
+}
+
 func TestPaiGowWebPresenter_Output_Error(t *testing.T) {
 	p := new(PaiGowWebPresenter)
 	m := new(interfaces.MockPaiGowGame)

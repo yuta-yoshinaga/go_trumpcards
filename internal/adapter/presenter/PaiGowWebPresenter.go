@@ -17,7 +17,11 @@ func (pp *PaiGowWebPresenter) Output(pg interfaces.PaiGowGame, lastErr error) st
 	resObj := new(controller.PaiGowWebOutput)
 
 	resObj.PlayerCards = cardsToOutputOrEmpty(pg.GetPlayerCards())
-	resObj.DealerCards = cardsToOutputOrEmpty(pg.GetDealerCards())
+	if pg.GetGameEndFlag() {
+		resObj.DealerCards = cardsToOutputOrEmpty(pg.GetDealerCards())
+	} else {
+		resObj.DealerCards = cardsToOutputOrEmpty(nil)
+	}
 	resObj.PlayerHighHand = cardsToOutputOrEmpty(pg.GetPlayerHighHand())
 	resObj.PlayerLowHand = cardsToOutputOrEmpty(pg.GetPlayerLowHand())
 	resObj.DealerHighHand = cardsToOutputOrEmpty(pg.GetDealerHighHand())

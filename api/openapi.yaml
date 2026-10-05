@@ -54325,7 +54325,7 @@ components:
             $ref: '#/components/schemas/Card'
         dealerCards:
           type: array
-          description: Dealer's 7 dealt cards (hidden until End phase)
+          description: Dealer's 7 dealt cards (empty until the game ends)
           items:
             $ref: '#/components/schemas/Card'
         playerHighHand:
