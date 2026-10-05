@@ -11,6 +11,8 @@ export interface CardNavShortcutsPanelProps extends Omit<ComponentPropsWithoutRe
    * Escape do nothing and are omitted rather than advertised falsely.
    */
   directPlay?: boolean;
+  /** Advertise arrow-key navigation when selection-only arrow navigation is enabled. */
+  arrowSelection?: boolean;
   /** Extra rows for keys the page binds itself, appended after the card-nav set. */
   extra?: KeyboardShortcut[];
 }
@@ -27,13 +29,19 @@ export interface CardNavShortcutsPanelProps extends Omit<ComponentPropsWithoutRe
  * meant 38 chances for the advertised keys to drift from the bound ones. See
  * issue #4369.
  */
-export function CardNavShortcutsPanel({ directPlay = false, extra = [], ...rest }: CardNavShortcutsPanelProps) {
+export function CardNavShortcutsPanel({
+  directPlay = false,
+  arrowSelection = false,
+  extra = [],
+  ...rest
+}: CardNavShortcutsPanelProps) {
   const { t } = useTranslation('common');
   const shortcuts: KeyboardShortcut[] = directPlay
     ? // `1`–`0` is rendered as a range by KeyboardShortcutsPanel.
       [{ keys: ['1', '0'], description: t('kbd.playCard') }]
     : [
         { keys: ['1', '0'], description: t('kbd.selectCard') },
+        ...(arrowSelection ? [{ keys: ['←', '→'], description: t('kbd.moveCardFocus') }] : []),
         { keys: ['Enter'], description: t('kbd.confirm') },
         { keys: ['Esc'], description: t('kbd.clear') },
       ];

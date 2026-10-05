@@ -635,6 +635,23 @@ describe('IndianRummyPage', () => {
     expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('selects the thirteenth card with arrow keys and Enter', async () => {
+    const thirteenCardState = {
+      ...discardPhaseState,
+      players: [
+        player({ cards: Array.from({ length: 13 }, (_, value) => ({ design: 'SPADE' as const, value: value + 1 })) }),
+        discardPhaseState.players[1],
+      ],
+    };
+    mockExec.mockResolvedValue(thirteenCardState);
+    renderWithProviders(<IndianRummyPage />);
+    await waitFor(() => expect(screen.getAllByRole('button', { pressed: false })).toHaveLength(13));
+    for (let i = 0; i < 12; i++) fireEvent.keyDown(document, { key: 'ArrowRight' });
+    fireEvent.keyDown(document, { key: 'Enter' });
+    expect(screen.getAllByRole('button', { pressed: true })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { pressed: true })[0]).toHaveAttribute('aria-label', '♠ K');
+  });
+
   it('Enter key triggers discard in discard phase', async () => {
     mockExec.mockResolvedValue(discardPhaseState);
     renderWithProviders(<IndianRummyPage />);

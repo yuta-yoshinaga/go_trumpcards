@@ -45,6 +45,14 @@ describe('CardNavShortcutsPanel', () => {
     expect(screen.queryByText('Esc')).not.toBeInTheDocument();
   });
 
+  it('advertises arrow-key selection when enabled for a page', () => {
+    render(<CardNavShortcutsPanel arrowSelection />);
+    openPanel();
+    expect(screen.getByText('←')).toBeInTheDocument();
+    expect(screen.getByText('→')).toBeInTheDocument();
+    expect(screen.getByText('矢印キーで手札の選択位置を移動')).toBeInTheDocument();
+  });
+
   it('stays collapsed by default so it costs no vertical space', () => {
     // The mobile viewport budget is tight (issue #4373): this must not expand
     // the page until the player asks for it.

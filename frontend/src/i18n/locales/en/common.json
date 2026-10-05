@@ -4314,6 +4314,7 @@
   "kbd": {
     "title": "Keyboard shortcuts",
     "selectCard": "Select a card in your hand by number",
+    "moveCardFocus": "Move the hand selection with the arrow keys",
     "selectCardNamed": "Select card {{name}}",
     "playCard": "Play a card from your hand directly by number",
     "confirm": "Play the selected card",

@@ -77,6 +77,104 @@ describe('useCardKeyboardNav', () => {
     expect(onClear).toHaveBeenCalledTimes(1);
   });
 
+  it('moves the selection position within the hand and Enter toggles the focused card', () => {
+    const onToggle = vi.fn();
+    const onConfirm = vi.fn();
+    const onFocusIndexChange = vi.fn();
+    renderHook(() =>
+      useCardKeyboardNav({
+        cardCount: 13,
+        onToggle,
+        onConfirm,
+        onClear: vi.fn(),
+        enabled: true,
+        arrowSelection: true,
+        onFocusIndexChange,
+      }),
+    );
+
+    fire('ArrowLeft');
+    expect(onFocusIndexChange).toHaveBeenLastCalledWith(0);
+    for (let i = 0; i < 12; i++) fire('ArrowRight');
+    expect(onFocusIndexChange).toHaveBeenLastCalledWith(12);
+    fire('ArrowRight');
+    expect(onFocusIndexChange).toHaveBeenCalledTimes(14);
+    fire('Enter');
+    expect(onToggle).toHaveBeenCalledWith(12);
+    expect(onConfirm).not.toHaveBeenCalled();
+  });
+
+  it('keeps the arrow position after Enter causes a callback change and rerender', () => {
+    const onToggleBefore = vi.fn();
+    const onToggleAfter = vi.fn();
+    const onConfirm = vi.fn();
+    const { rerender } = renderHook(
+      ({ onToggle }) =>
+        useCardKeyboardNav({
+          cardCount: 5,
+          onToggle,
+          onConfirm,
+          onClear: vi.fn(),
+          enabled: true,
+          arrowSelection: true,
+        }),
+      { initialProps: { onToggle: onToggleBefore } },
+    );
+
+    fire('ArrowRight');
+    fire('ArrowRight');
+    fire('Enter');
+    expect(onToggleBefore).toHaveBeenCalledWith(2);
+
+    rerender({ onToggle: onToggleAfter });
+    fire('ArrowRight');
+    fire('Enter');
+    expect(onToggleAfter).toHaveBeenCalledWith(3);
+    expect(onConfirm).not.toHaveBeenCalled();
+  });
+
+  it('clamps the focused position when the hand gets smaller', () => {
+    const onFocusIndexChange = vi.fn();
+    const { rerender } = renderHook(
+      ({ cardCount }) =>
+        useCardKeyboardNav({
+          cardCount,
+          onToggle: vi.fn(),
+          onConfirm: vi.fn(),
+          onClear: vi.fn(),
+          enabled: true,
+          arrowSelection: true,
+          onFocusIndexChange,
+        }),
+      { initialProps: { cardCount: 5 } },
+    );
+
+    fire('ArrowRight');
+    fire('ArrowRight');
+    fire('ArrowRight');
+    fire('ArrowRight');
+    rerender({ cardCount: 2 });
+    fire('ArrowRight');
+    expect(onFocusIndexChange).toHaveBeenLastCalledWith(1);
+  });
+
+  it('does not create a focused selection when the hand is empty', () => {
+    const onFocusIndexChange = vi.fn();
+    renderHook(() =>
+      useCardKeyboardNav({
+        cardCount: 0,
+        onToggle: vi.fn(),
+        onConfirm: vi.fn(),
+        onClear: vi.fn(),
+        enabled: true,
+        arrowSelection: true,
+        onFocusIndexChange,
+      }),
+    );
+    fire('ArrowRight');
+    expect(onFocusIndexChange).not.toHaveBeenCalled();
+  });
+
   it('blocks board keys while a modal is open, then resumes them', () => {
     const onToggle = vi.fn();
     const onConfirm = vi.fn();
