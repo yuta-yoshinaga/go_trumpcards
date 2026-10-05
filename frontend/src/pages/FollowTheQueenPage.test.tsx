@@ -471,9 +471,26 @@ describe('FollowTheQueenPage', () => {
     mockExec.mockResolvedValue(thirdStreetWithBetState);
     renderWithProviders(<FollowTheQueenPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /^コール(?:\s|$)/ })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'コール (40チップ)' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
+  });
+
+  it('shows only the amount still needed to call and hides it when no call is due', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetWithBetState,
+      players: [humanPlayer({ currentBet: 15 }), cpuPlayer(1), cpuPlayer(2)],
+      lastBet: 40,
+    });
+    const { unmount } = renderWithProviders(<FollowTheQueenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'コール (25チップ)' })).toBeInTheDocument());
+
+    unmount();
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<FollowTheQueenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: /^コール/ })).not.toBeInTheDocument();
   });
 
   it('hides betting controls when not active phase', async () => {
