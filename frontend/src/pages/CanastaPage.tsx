@@ -270,7 +270,7 @@ function CanastaPageContent() {
               <div>
                 <div
                   className={`my-3 p-3 rounded relative ${
-                    state.isFrozen ? `${badgeInfoColors} ring-2 ring-ds-info` : 'bg-ds-surface'
+                    state.isFrozen ? `${badgeInfoColors} ring-2 ring-ds-info` : 'bg-black/40'
                   }`}
                   data-tutorial="ca-draw-area"
                   data-testid="ca-discard-pile"
