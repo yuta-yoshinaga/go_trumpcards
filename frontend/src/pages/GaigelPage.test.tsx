@@ -54,6 +54,7 @@ function makeState(overrides: Partial<GaigelResponse> = {}): GaigelResponse {
     gameEndFlag: false,
     winnerTeam: -1,
     leadPlayerIdx: 0,
+    trickWinnerIdx: -1,
     message: '',
     config: { cpuDifficulty: 1, targetScore: 101 },
     ...overrides,
@@ -98,6 +99,47 @@ describe('GaigelPage', () => {
     renderWithProviders(<GaigelPage />);
     await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
     expect(screen.getByText('山札: 28')).toBeInTheDocument();
+  });
+
+  it('highlights only the trick winner at trick end and clears the highlight on the next trick', async () => {
+    const completedTrick = makeState({
+      phase: GaigelPhase.TRICK_END,
+      leadPlayerIdx: 0,
+      trickWinnerIdx: 2,
+      currentTrick: [
+        { playerIdx: 0, card: card('SPADE', 13) },
+        { playerIdx: 1, card: card('SPADE', 12) },
+        { playerIdx: 2, card: card('HEART', 10) },
+        { playerIdx: 3, card: card('SPADE', 11) },
+      ],
+    });
+    mockExec.mockResolvedValueOnce(completedTrick).mockResolvedValueOnce(makeState());
+
+    renderWithProviders(<GaigelPage />);
+    expect(await screen.findAllByTestId('trick-winner-badge')).toHaveLength(1);
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('勝者');
+    const trickCards = screen.getByTestId('trick-display-cards');
+    expect(trickCards.querySelectorAll('[data-trick-winner="true"]')).toHaveLength(1);
+    const highlightedCard = trickCards.querySelector('[data-trick-winner="true"]');
+    expect(highlightedCard).toHaveAttribute('data-player-idx', '2');
+    expect(trickCards.querySelector('[data-player-idx="0"][data-trick-winner="true"]')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '次のトリック' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
+    await waitFor(() => expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument());
+  });
+
+  it('does not show a winner during play', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        currentTrick: [{ playerIdx: 0, card: card('SPADE', 13) }],
+        leadPlayerIdx: 0,
+      }),
+    );
+
+    renderWithProviders(<GaigelPage />);
+    expect(await screen.findByTestId('trick-display-cards')).toBeInTheDocument();
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
   });
 
   it('marks the dealer beside the matching human or CPU player', async () => {

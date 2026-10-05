@@ -45,6 +45,8 @@ type GaigelGame interface {
 	GetCurrentTrick() []*domain.TrickCard
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する
 	GetLeadPlayerIdx() int
+	// GetTrickWinnerIdx 完了したトリックの勝者インデックスを取得する
+	GetTrickWinnerIdx() int
 	// GetDealerIdx ディーラーインデックスを取得する
 	GetDealerIdx() int
 	// GetTrumpSuit 切り札スートを取得する

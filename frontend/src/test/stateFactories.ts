@@ -34,6 +34,7 @@ import type {
   FiveHundredResponse,
   FortyFivesResponse,
   FrenchTarotResponse,
+  GaigelResponse,
   GanjifaResponse,
   GermanSoloResponse,
   GleekResponse,
@@ -112,6 +113,33 @@ import type {
   ZwanzigerrufenResponse,
 } from '../types/card';
 import type { PaiGowHint } from '../types/games/paigow';
+
+/** Creates a default Gaigel response with no completed trick winner. */
+export function makeGaigelState(overrides: Partial<GaigelResponse> = {}): GaigelResponse {
+  return {
+    players: [],
+    phase: 0,
+    roundNumber: 1,
+    trickNumber: 1,
+    currentPlayerIdx: 0,
+    dealerIdx: 0,
+    trumpSuit: 0,
+    stockRemaining: 0,
+    isEndgame: false,
+    currentTrick: [],
+    teamScores: [0, 0],
+    roundPoints: [0, 0],
+    roundMarriage: [0, 0],
+    marriageIndices: [],
+    gameEndFlag: false,
+    winnerTeam: -1,
+    leadPlayerIdx: 0,
+    trickWinnerIdx: -1,
+    message: '',
+    config: { cpuDifficulty: 1, targetScore: 101 },
+    ...overrides,
+  };
+}
 
 /** Creates a default Baseball Poker state. */
 export function makeBaseballPokerState(overrides: Partial<BaseballPokerResponse> = {}): BaseballPokerResponse {
