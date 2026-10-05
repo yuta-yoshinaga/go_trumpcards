@@ -85,6 +85,27 @@ describe('WhistPage', () => {
     expect(screen.getByTestId('trick-display-cards').querySelector('img')).toHaveAttribute('alt', 'あなたが出した♠ A');
   });
 
+  it('highlights the winning card while a trick is awaiting confirmation', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        currentTrick: [
+          { playerIdx: 0, card: card('SPADE', 1) },
+          { playerIdx: 1, card: card('HEART', 5) },
+          { playerIdx: 2, card: card('DIAMOND', 9) },
+          { playerIdx: 3, card: card('CLUB', 13) },
+        ],
+        lastTrickWinner: 2,
+      }),
+    );
+    renderWithProviders(<WhistPage />);
+
+    const winningCard = await screen.findByTestId('trick-winner-badge');
+    expect(winningCard).toHaveTextContent('勝者');
+    expect(winningCard.parentElement).toHaveAttribute('data-trick-winner', 'true');
+    expect(winningCard.parentElement?.querySelector('[class*="ring-ds-warning"]')).toBeInTheDocument();
+  });
+
   it('calls reset on mount with default config', async () => {
     renderWithProviders(<WhistPage />);
     // useTrickGameBase fires the mount reset with four positional args.
