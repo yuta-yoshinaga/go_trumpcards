@@ -19,6 +19,8 @@ describe('getTablanetHint', () => {
       targetAction: 'play',
       reason: 'hint.capture',
       confidence: 'moderate',
+      targetPos: 0,
+      targetIndices: [0],
     });
   });
 
@@ -35,5 +37,16 @@ describe('getTablanetHint', () => {
   it('maps a trail hint reason verbatim', () => {
     const state = makeTablanetState({ hint: { cardIndices: [3], reason: 'trail_low' } });
     expect(getTablanetHint(state)?.reason).toBe('hint.trail_low');
+  });
+
+  it('preserves the recommended hand and table positions', () => {
+    const state = makeTablanetState({ hint: { cardIndices: [2], tableIndices: [0, 2], reason: 'capture' } });
+    expect(getTablanetHint(state)).toMatchObject({ targetPos: 2, targetIndices: [2] });
+  });
+
+  it('does not invent a hand position when the hint has no card indices', () => {
+    const state = makeTablanetState({ hint: { cardIndices: [], tableIndices: [1], reason: 'trail_low' } });
+    expect(getTablanetHint(state)).not.toHaveProperty('targetPos');
+    expect(getTablanetHint(state)).not.toHaveProperty('targetIndices');
   });
 });

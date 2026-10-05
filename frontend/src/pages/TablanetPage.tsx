@@ -30,6 +30,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseTablanetCommand, TABLANET_HELP } from '../utils/cli/commands/tablanetCommands';
 import { formatTablanetState } from '../utils/cli/formatters/tablanetFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Tablanet (Tablić) tutorial step definitions. */
@@ -172,6 +173,12 @@ function TablanetPageContent() {
   // Table indices the currently-selected hand card can capture (backend hint).
   const captureCandidates =
     handIndex !== null && isHumanTurn ? new Set(state.captureOptions[handIndex] ?? []) : new Set<number>();
+  // Both recommendations come from the server hint in state.hint: the hand uses frontendHint,
+  // while the table uses the hint returned by an explicit hint request.
+  const recommendedHandIndices =
+    frontendHintEnabled && isHumanTurn ? new Set(frontendHint?.targetIndices ?? []) : new Set<number>();
+  const recommendedTableIndices =
+    isHumanTurn && state.hint && isRequestedHint(state) ? new Set(state.hint.tableIndices) : new Set<number>();
   const canPlay = isHumanTurn && handIndex !== null;
 
   // Tabla (sweep) is possible when the selected non-Jack card can capture EVERY
@@ -296,13 +303,16 @@ function TablanetPageContent() {
                   state.tableCards.map((c, i) => {
                     const isCandidate = captureCandidates.has(i);
                     const isSelected = tableIndices.includes(i);
+                    const isRecommended = recommendedTableIndices.has(i);
                     // Without a name these read as a bare "button"; Basra already
                     // spells out the same three states (#4923).
                     const ariaLabel = isSelected
                       ? t('tableSelectedAria', { card: cardAlt(c) })
-                      : isCandidate
-                        ? t('tableCandidateAria', { card: cardAlt(c) })
-                        : cardAlt(c);
+                      : isRecommended
+                        ? t('tableRecommendedAria', { card: cardAlt(c) })
+                        : isCandidate
+                          ? t('tableCandidateAria', { card: cardAlt(c) })
+                          : cardAlt(c);
                     return (
                       <button
                         key={i}
@@ -314,12 +324,15 @@ function TablanetPageContent() {
                         className={`rounded transition-all ${
                           isSelected
                             ? 'ring-2 ring-ds-warning -translate-y-1'
-                            : isCandidate
-                              ? 'ring-2 ring-ds-success motion-safe:animate-pulse'
-                              : ''
+                            : isRecommended
+                              ? 'ring-2 ring-ds-accent motion-safe:animate-pulse'
+                              : isCandidate
+                                ? 'ring-2 ring-ds-success motion-safe:animate-pulse'
+                                : ''
                         } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
                         data-testid={`table-card-${i}`}
                         data-capture-candidate={isCandidate || undefined}
+                        data-hint-recommended={isRecommended || undefined}
                       >
                         <AnimatedCard card={c} width={cardWidth * 0.9} />
                       </button>
@@ -357,13 +370,21 @@ function TablanetPageContent() {
                   <button
                     key={i}
                     type="button"
+                    aria-label={
+                      recommendedHandIndices.has(i) ? t('handRecommendedAria', { card: cardAlt(c) }) : undefined
+                    }
                     aria-pressed={handIndex === i}
                     onClick={() => isHumanTurn && setHandIndex(handIndex === i ? null : i)}
                     disabled={!isHumanTurn}
                     className={`rounded transition-all ${
-                      handIndex === i ? 'ring-2 ring-ds-info -translate-y-2' : ''
+                      handIndex === i
+                        ? 'ring-2 ring-ds-info -translate-y-2'
+                        : recommendedHandIndices.has(i)
+                          ? 'ring-2 ring-ds-accent motion-safe:animate-pulse'
+                          : ''
                     } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
                     data-testid={`hand-card-${i}`}
+                    data-hint-recommended={recommendedHandIndices.has(i) || undefined}
                   >
                     <AnimatedCard card={c} width={cardWidth} />
                   </button>
