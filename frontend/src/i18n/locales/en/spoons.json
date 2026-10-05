@@ -45,6 +45,7 @@
   "tutorial": {
     "info": "The round number, spoons remaining, and draw pile size are shown here.",
     "players": "Each player's letters (S-P-O-O-N-S) plus their eliminated / has-spoon status.",
+    "eliminationAndWin": "A player is eliminated when they collect all six letters. The last player remaining wins.",
     "hand": "Your four cards. During the Pass phase, pick one card to pass on.",
     "grab": "When someone gets four of a kind, everyone races to grab a spoon from here. Whoever misses out gains a letter.",
     "resetButton": "Use this button to reset the game at any time."
