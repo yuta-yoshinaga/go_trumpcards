@@ -135,8 +135,6 @@ func (c *Cucumber) Reset() {
 	}
 	c.roundNumber = 0
 	c.lastTrickWinnerIdx = -1
-	c.resolvedTrickWinnerIdx = -1
-	c.lastTrickRank = 0
 	c.lastPenalty = 0
 	c.gameEndFlag = false
 	c.winnerIdx = -1
@@ -151,6 +149,8 @@ func (c *Cucumber) dealRound() {
 	c.phase = CucumberPhasePlay
 	c.currentTrick = nil
 	c.trickNumber = 0
+	c.resolvedTrickWinnerIdx = -1
+	c.lastTrickRank = 0
 
 	c.trumpCards = NewTrumpCards(0)
 	c.trumpCards.Shuffle()
@@ -339,10 +339,10 @@ func (c *Cucumber) forcedLowest(playerIdx int, valid []int) bool {
 func (c *Cucumber) resolveTrick() {
 	winner := c.trickWinner()
 	c.resolvedTrickWinnerIdx = winner
-	c.lastTrickRank = cucumberRank(c.currentTrick[0].Card)
-	for _, tc := range c.currentTrick[1:] {
-		if rank := cucumberRank(tc.Card); rank > c.lastTrickRank {
-			c.lastTrickRank = rank
+	for _, tc := range c.currentTrick {
+		if tc.PlayerIdx == winner {
+			c.lastTrickRank = cucumberRank(tc.Card)
+			break
 		}
 	}
 	c.trickNumber++
@@ -591,8 +591,14 @@ func (c *Cucumber) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
+	var summaryKeys struct {
+		ResolvedTrickWinnerIdx *int `json:"rtw"`
+	}
+	if err := json.Unmarshal(data, &summaryKeys); err != nil {
+		return err
+	}
 	// Older saved games did not contain a completed-trick summary.
-	if j.LastTrickRank == 0 {
+	if summaryKeys.ResolvedTrickWinnerIdx == nil {
 		j.ResolvedTrickWinnerIdx = -1
 	}
 	if err := j.Config.Validate(); err != nil {
