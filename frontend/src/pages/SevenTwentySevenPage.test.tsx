@@ -60,6 +60,16 @@ beforeEach(() => {
 });
 
 describe('SevenTwentySevenPage', () => {
+  it('explains that changed settings start a new game on reset', async () => {
+    renderWithProviders(<SevenTwentySevenPage />);
+
+    expect(
+      await screen.findByText(
+        '設定変更は次のリセットから適用されます。リセットすると、変更した設定で新しい対局が始まります。',
+      ),
+    ).toBeInTheDocument();
+  });
+
   it("shows every seat's server provided round chip change in the result", async () => {
     mockExec.mockResolvedValue({
       ...baseState,
