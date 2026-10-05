@@ -18,6 +18,7 @@
   "noticeSkip": "【次プレイヤースキップ】",
   "cpuActionsHeader": "[CPUの行動]",
   "actionPickup": "{{name}} が場札を引き取りました",
+  "actionFacedownPickup": "{{name}} が {{card}} をめくりましたが、出せないため場札を引き取りました",
   "actionPlay": "{{name}} が {{cards}} を出しました [{{source}}]{{suffix}}",
   "actionSuffixBurned": " (場札焼却!)",
   "actionSuffixSkipped": " (次プレイヤーをスキップ)",

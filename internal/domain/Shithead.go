@@ -475,9 +475,10 @@ func (s *Shithead) playFromFaceDown(idx int, p *ShitheadPlayer, fdIdx int, isHum
 	p.AddCard(c)
 	s.pickupDiscardForPlayer(idx)
 	s.recordAction(idx, &ShitheadCpuAction{
-		PlayerIdx: idx,
-		Source:    ShitheadSourceFaceDown,
-		Pickup:    true,
+		PlayerIdx:   idx,
+		Source:      ShitheadSourceFaceDown,
+		PlayedCards: cards,
+		Pickup:      true,
 	}, isHuman)
 	s.appendLog(idx, "facedown_pickup", "shithead.log.facedownPickup", map[string]string{"card": cuiCardName(c)}, []*Card{c})
 	s.advanceTurn()
