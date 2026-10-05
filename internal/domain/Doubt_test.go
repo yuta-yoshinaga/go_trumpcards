@@ -1,6 +1,7 @@
 package domain_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -1112,6 +1113,55 @@ func TestDoubt_ActionLog_CpuPlay(t *testing.T) {
 		}
 	}
 	assert.True(t, found, "expected CPU play action log entry")
+}
+
+func TestDoubt_CpuPlay_LastActionHasTell(t *testing.T) {
+	for i := 0; i < 1000; i++ {
+		game, players := makeDoubtGame()
+		advanceToCpuTurn(game)
+		game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelEasy})
+		// 1枚だけ持たせ、ブラフなら実際のカード値と宣言値が必ず異なる。
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+
+		game.CpuPlay()
+
+		cpuAction := game.GetCpuActions()[0]
+		assert.Equal(t, cpuAction.HasTell, game.GetLastAction().HasTell)
+		if cpuAction.HasTell {
+			assert.True(t, game.GetLastAction().HasTell)
+			return
+		}
+		assert.False(t, game.GetLastAction().HasTell)
+	}
+	t.Fatal("CPU did not show a tell in 1000 bluff attempts")
+}
+
+func TestDoubt_LastActionHasTellJSON(t *testing.T) {
+	t.Run("true survives game JSON round trip", func(t *testing.T) {
+		game, _ := makeDoubtGame()
+		game.SetLastAction(&domain.DoubtAction{
+			PlayerIdx: 1, ClaimedValue: 5, CardCount: 1,
+			PlayedCards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)},
+			HasTell:     true,
+		})
+
+		data, err := json.Marshal(game)
+		assert.NoError(t, err)
+		restored := domain.NewDefaultDoubt()
+		assert.NoError(t, restored.UnmarshalJSON(data))
+		assert.True(t, restored.GetLastAction().HasTell)
+	})
+
+	t.Run("false omits ht key", func(t *testing.T) {
+		data, err := json.Marshal(&domain.DoubtAction{
+			PlayerIdx: 1, ClaimedValue: 5, CardCount: 1,
+			PlayedCards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)},
+		})
+		assert.NoError(t, err)
+		var action map[string]json.RawMessage
+		assert.NoError(t, json.Unmarshal(data, &action))
+		assert.NotContains(t, action, "ht")
+	})
 }
 
 func TestDoubt_ActionLog_ResolveDoubt(t *testing.T) {
