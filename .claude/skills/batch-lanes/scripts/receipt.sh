@@ -39,7 +39,8 @@ for file in "${changed[@]}"; do [[ "$file" =~ pages/(BlackJackPage|PineapplePage
 for compfile in "${components[@]}"; do comp="${compfile%.tsx}"; users=(); while IFS= read -r f; do [[ -f "$f" ]] && users+=("$f"); done < <(grep -lE "from '\.\./components/${comp}'" src/pages/*.tsx 2>/dev/null | sed 's/\.tsx$/.test.tsx/')
   n=${#users[@]}; if ((n > 0 && n <= 40)); then echo "== vitest importers of $comp ($n)"; bunx vitest run "${users[@]}" 2>&1 | grep -E 'Test Files|Tests |FAIL' | head -10; elif ((n > 40)); then echo "NOTE $comp has $n importers (not run locally; CI covers)"; fi
 done
-for u in "${new_sources[@]}"; do t="${u#frontend/}"; t="${t%.tsx}"; t="${t%.ts}"; [[ "$u" == *.tsx ]] && t+=".test.tsx" || t+=".test.ts"; [ -f "$t" ] || echo "MISSING_TEST for $u"; done
+# a .ts hook is often tested from a .test.tsx file (it renders providers), so accept either extension
+for u in "${new_sources[@]}"; do t="${u#frontend/}"; t="${t%.tsx}"; t="${t%.ts}"; [ -f "$t.test.ts" ] || [ -f "$t.test.tsx" ] || echo "MISSING_TEST for $u"; done
 ((${#fmt[@]})) && bunx biome check --write "${fmt[@]}" >/dev/null 2>&1
 mkdir -p "$BATCH_STATE"
 bun run check >"$BATCH_STATE/ck$slot.log" 2>&1 && echo CHECK=ok || { echo CHECK=FAIL; tail -20 "$BATCH_STATE/ck$slot.log"; }
