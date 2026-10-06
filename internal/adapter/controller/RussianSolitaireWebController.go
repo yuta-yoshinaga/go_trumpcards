@@ -67,10 +67,7 @@ func russianSolitaireDispatch(bc *baseController, w http.ResponseWriter, ri usec
 	case "u", "undo":
 		bc.writePresenterResponse(w, ri.Undo())
 	case "undo_n":
-		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, ri.UndoN(*param.N))
+		dispatchUndoN(bc, w, newDefault, param.N, ri.UndoN)
 	default:
 		return dispatchResetHintAndLog(param.Command, bc, w, ri.Reset, ri.Hint, ri.ActionLog)
 	}

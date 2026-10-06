@@ -46,10 +46,8 @@ func (cc *SpeculationCuiController) Exec(command string) string {
 				return cc.ci.Bid(amount), true
 			case "next":
 				return cc.ci.NextRound(), true
-			case "h", "hint":
-				return cc.ci.Hint(), true
 			default:
-				return handleCuiLog(cmd, cc.ci.ActionLog)
+				return handleCuiHintAndLog(cmd, cc.ci.Hint, cc.ci.ActionLog)
 			}
 		},
 	)

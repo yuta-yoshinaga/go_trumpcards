@@ -100,8 +100,6 @@ func (c *CassinoCuiController) Exec(command string) string {
 				return c.handleTrail(args)
 			case "n", "next":
 				return c.ci.NextRound(), true
-			case "h", "hint":
-				return c.ci.Hint(), true
 			case "sd", "setdifficulty":
 				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.ci.GetConfig()
@@ -126,7 +124,7 @@ func (c *CassinoCuiController) Exec(command string) string {
 				setCassinoRule(&cfg, args[0], args[1] == "1")
 				return c.ci.ResetWithConfig(cfg), true
 			default:
-				return handleCuiLog(cmd, c.ci.ActionLog)
+				return handleCuiHintAndLog(cmd, c.ci.Hint, c.ci.ActionLog)
 			}
 		},
 	)

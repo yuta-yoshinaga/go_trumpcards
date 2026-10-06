@@ -4,7 +4,6 @@ package controller
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -23,31 +22,21 @@ func NewDuchessCuiController(di usecase.DuchessInteractorIF) *DuchessCuiControll
 
 // Exec コマンド実行
 func (c *DuchessCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(_ []string) string {
-			return c.di.Reset()
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset:        c.di.Reset,
+		move:         c.handleMove,
+		giveUp:       c.di.GiveUp,
+		autoComplete: c.di.AutoComplete,
+		undo:         c.di.Undo,
+		hint:         c.di.Hint,
+		actionLog:    c.di.ActionLog,
+		extraCommands: map[string]func([]string) string{
+			"b":    c.handleBase,
+			"base": c.handleBase,
+			"d":    func([]string) string { return c.di.Draw() },
+			"draw": func([]string) string { return c.di.Draw() },
 		},
-		[]string{"b", "base", "d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "b", "base":
-				return c.handleBase(args), true
-			case "d", "draw":
-				return c.di.Draw(), true
-			case "m", "move":
-				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.di.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.di.AutoComplete(), true
-			case "u", "undo":
-				return c.di.Undo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.di.Hint, c.di.ActionLog)
-			}
-		},
-	)
+	})
 }
 
 // handleBase 開始ランクの選択: b <fan>
@@ -55,9 +44,9 @@ func (c *DuchessCuiController) handleBase(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("duchess.promptBaseFan"), "b {0}")
 	}
-	fan, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("duchess.invalidFanIdx", "val", args[0])
+	fan, msg, ok := cuiutil.ParseIntArgKeys(args, "", "duchess.invalidFanIdx", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	return c.di.ChooseBaseRank(fan)
 }
@@ -90,9 +79,9 @@ func (c *DuchessCuiController) handleMoveFromReserve(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("duchess.promptBaseFan"), "m r {0}")
 	}
-	fan, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("duchess.invalidFanIdx", "val", args[0])
+	fan, msg, ok := cuiutil.ParseIntArgKeys(args, "", "duchess.invalidFanIdx", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("duchess.promptToZone"), fmt.Sprintf("m r %s {0}", args[0]))
@@ -104,9 +93,9 @@ func (c *DuchessCuiController) handleMoveFromReserve(args []string) string {
 		if len(args) < 3 {
 			return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m r %s t {0}", args[0]))
 		}
-		col, err := strconv.Atoi(args[2])
-		if err != nil {
-			return invalidArg("invalidColumn", "val", args[2])
+		col, msg, ok := cuiutil.ParseIntArgKeys(args[2:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+		if !ok {
+			return msg
 		}
 		return c.di.MoveReserveToTableau(fan, col)
 	default:
@@ -125,9 +114,9 @@ func (c *DuchessCuiController) handleMoveFromWaste(args []string) string {
 		if len(args) < 2 {
 			return cuiutil.PromptRequest(i18n.T("promptToColumn"), "m w t {0}")
 		}
-		col, err := strconv.Atoi(args[1])
-		if err != nil {
-			return invalidArg("invalidColumn", "val", args[1])
+		col, msg, ok := cuiutil.ParseIntArgKeys(args[1:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+		if !ok {
+			return msg
 		}
 		return c.di.MoveWasteToTableau(col)
 	default:
@@ -139,9 +128,9 @@ func (c *DuchessCuiController) handleMoveFromTableau(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "m t {0}")
 	}
-	fromCol, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[0])
+	fromCol, msg, ok := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("duchess.promptToZone"), fmt.Sprintf("m t %s {0}", args[0]))
@@ -153,16 +142,16 @@ func (c *DuchessCuiController) handleMoveFromTableau(args []string) string {
 		if len(args) < 3 {
 			return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m t %s t {0}", args[0]))
 		}
-		toCol, err := strconv.Atoi(args[2])
-		if err != nil {
-			return invalidArg("invalidColumn", "val", args[2])
+		toCol, msg, ok := cuiutil.ParseIntArgKeys(args[2:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+		if !ok {
+			return msg
 		}
 		// 連番グループの先頭。省略時は -1 = 最上段 1 枚。
 		cardIndex := -1
 		if len(args) >= 4 {
-			idx, err := strconv.Atoi(args[3])
-			if err != nil {
-				return invalidArg("duchess.invalidCardIndex", "val", args[3])
+			idx, msg, ok := cuiutil.ParseIntArgKeys(args[3:], "", "duchess.invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
+			if !ok {
+				return msg
 			}
 			cardIndex = idx
 		}

@@ -58,8 +58,6 @@ func (c *SevenBridgeCuiController) Exec(command string) string {
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ci.Discard)
 			case "nr", "nextround":
 				return c.ci.NextRound(), true
-			case "h", "hint":
-				return c.ci.Hint(), true
 			case "sd", "setdifficulty":
 				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.ci.GetConfig()
@@ -73,7 +71,7 @@ func (c *SevenBridgeCuiController) Exec(command string) string {
 					return c.ci.ResetWithConfig(cfg)
 				})
 			default:
-				return handleCuiLog(cmd, c.ci.ActionLog)
+				return handleCuiHintAndLog(cmd, c.ci.Hint, c.ci.ActionLog)
 			}
 		},
 	)

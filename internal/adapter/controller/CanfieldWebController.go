@@ -83,10 +83,7 @@ func canfieldDispatch(bc *baseController, w http.ResponseWriter, ci usecase.Canf
 	case "u", "undo":
 		bc.writePresenterResponse(w, ci.Undo())
 	case "undo_n":
-		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, ci.UndoN(*param.N))
+		dispatchUndoN(bc, w, newDefault, param.N, ci.UndoN)
 	default:
 		return dispatchResetHintAndLog(param.Command, bc, w, ci.Reset, ci.Hint, ci.ActionLog)
 	}

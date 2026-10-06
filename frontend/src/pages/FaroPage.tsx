@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -126,11 +127,7 @@ function FaroPageContent() {
     }
   }, [state, t]);
 
-  // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    exec('reset');
-  }, []);
+  useMountReset(exec);
 
   // **ケースキーパーはサーバが数える (#6471)。**以前は公開札をローカルの Set に
   // 溜めて残数を組み立てていたが、ラウンド途中でページを再読み込みするとその Set が

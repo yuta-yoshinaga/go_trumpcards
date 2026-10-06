@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"strconv"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -37,8 +35,7 @@ func (c *TrashCuiController) Exec(command string) string {
 			case "h", "hint":
 				return c.ti.Hint(), true
 			default:
-				result, handled := handleCuiLog(cmd, c.ti.ActionLog)
-				return result, handled
+				return handleCuiHintAndLog(cmd, c.ti.Hint, c.ti.ActionLog)
 			}
 		},
 	)
@@ -50,9 +47,9 @@ func (c *TrashCuiController) handlePlace(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("trash.promptPosition"), "p {0}")
 	}
-	pos, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[0])
+	pos, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.ti.PlaceWild(pos)
 }

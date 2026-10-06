@@ -73,9 +73,9 @@ func (c *DoubleKlondikeCuiController) withInts(args []string, count int, fn func
 	}
 	nums := make([]int, count)
 	for i := 0; i < count; i++ {
-		n, err := strconv.Atoi(args[i])
-		if err != nil {
-			return invalidArg("invalidArgumentNotInteger", "val", args[i])
+		n, msg, ok := cuiutil.ParseIntArgKeys(args[i:], "", "invalidArgumentNotInteger", cuiutil.NoMin, cuiutil.NoMax)
+		if !ok {
+			return msg
 		}
 		nums[i] = n
 	}

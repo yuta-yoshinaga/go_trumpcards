@@ -87,10 +87,7 @@ func spideretteDispatch(bc *baseController, w http.ResponseWriter, si usecase.Sp
 	case "u", "undo":
 		bc.writePresenterResponse(w, si.Undo())
 	case "undo_n":
-		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, si.UndoN(*param.N))
+		dispatchUndoN(bc, w, newDefault, param.N, si.UndoN)
 	default:
 		return dispatchHintAndLog(param.Command, bc, w, si.Hint, si.ActionLog)
 	}

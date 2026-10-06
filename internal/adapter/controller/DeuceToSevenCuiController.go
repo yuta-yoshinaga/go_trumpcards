@@ -62,8 +62,6 @@ func (dcc *DeuceToSevenCuiController) Exec(command string) string {
 				return dcc.di.Exchange(indices), true
 			case "s", "stand":
 				return dcc.di.Stand(), true
-			case "h", "hint":
-				return dcc.di.Hint(), true
 			case "b", "bet":
 				amount := parseCuiAmount(args)
 				return dcc.di.Action(domain.DeuceToSevenActionBet, amount, 0), true
@@ -102,7 +100,7 @@ func (dcc *DeuceToSevenCuiController) Exec(command string) string {
 				cfg.CpuMetaAI = v == 1
 				return dcc.di.ResetWithConfig(cfg, nil), true
 			default:
-				return handleCuiLog(cmd, dcc.di.ActionLog)
+				return handleCuiHintAndLog(cmd, dcc.di.Hint, dcc.di.ActionLog)
 			}
 		},
 	)

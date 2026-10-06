@@ -97,8 +97,6 @@ func (c *PresidentCuiController) Exec(command string) string {
 					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
 				}
 				return c.pi.Play(indices), true
-			case "h", "hint":
-				return c.pi.Hint(), true
 			case "sd", "setdifficulty":
 				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.pi.GetConfig()
@@ -123,7 +121,7 @@ func (c *PresidentCuiController) Exec(command string) string {
 				setPresidentRule(&cfg, args[0], args[1] == "1")
 				return c.pi.ResetWithConfig(cfg), true
 			default:
-				return handleCuiLog(cmd, c.pi.ActionLog)
+				return handleCuiHintAndLog(cmd, c.pi.Hint, c.pi.ActionLog)
 			}
 		},
 	)

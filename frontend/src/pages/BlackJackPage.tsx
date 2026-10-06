@@ -19,6 +19,7 @@ import {
   BJ_SUGGEST_SPLIT,
   BJ_SUGGEST_STAND,
   BJ_SUGGEST_SURRENDER,
+  BJ_SURRENDER_LATE,
 } from '../components/blackjack/bjConstants';
 import { HandStatusBadges } from '../components/blackjack/HandStatusBadges';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -209,7 +210,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
   const [doubleAfterSplit, setDoubleAfterSplit] = useState(true);
   const [countingSystem, setCountingSystem] = useState(0);
   const [deckPenetration, setDeckPenetration] = useState(75);
-  const [surrenderRule, setSurrenderRule] = useState(0);
+  const [surrenderRule, setSurrenderRule] = useState(BJ_SURRENDER_LATE);
   const [autoAdvance, setAutoAdvance] = useState(0);
 
   const onSuccess = useCallback(

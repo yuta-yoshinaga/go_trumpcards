@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
@@ -116,11 +117,7 @@ function KaiserPageContent() {
     previousScores.current = { hand, total };
   }, [state, t]);
 
-  // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    exec('reset');
-  }, []);
+  useMountReset(exec);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('kaiser');

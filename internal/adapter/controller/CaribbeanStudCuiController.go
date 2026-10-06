@@ -47,10 +47,8 @@ func (cc *CaribbeanStudCuiController) Exec(command string) string {
 				return cc.ci.Play(), true
 			case "f", "fold":
 				return cc.ci.Fold(), true
-			case "h", "hint":
-				return cc.ci.Hint(), true
 			default:
-				return handleCuiLog(cmd, cc.ci.ActionLog)
+				return handleCuiHintAndLog(cmd, cc.ci.Hint, cc.ci.ActionLog)
 			}
 		},
 	)

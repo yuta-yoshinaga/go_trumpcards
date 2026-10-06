@@ -4,7 +4,6 @@ package controller
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -23,29 +22,19 @@ func NewCrazyQuiltCuiController(ci usecase.CrazyQuiltInteractorIF) *CrazyQuiltCu
 
 // Exec コマンド実行
 func (c *CrazyQuiltCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(_ []string) string {
-			return c.ci.Reset()
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset:        c.ci.Reset,
+		move:         c.handleMove,
+		giveUp:       c.ci.GiveUp,
+		autoComplete: c.ci.AutoComplete,
+		undo:         c.ci.Undo,
+		hint:         c.ci.Hint,
+		actionLog:    c.ci.ActionLog,
+		extraCommands: map[string]func([]string) string{
+			"d":    func([]string) string { return c.ci.Draw() },
+			"draw": func([]string) string { return c.ci.Draw() },
 		},
-		[]string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "d", "draw":
-				return c.ci.Draw(), true
-			case "m", "move":
-				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.ci.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.ci.AutoComplete(), true
-			case "u", "undo":
-				return c.ci.Undo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.ci.Hint, c.ci.ActionLog)
-			}
-		},
-	)
+	})
 }
 
 // handleMove 移動コマンドを処理。supported syntax:
@@ -72,9 +61,9 @@ func (c *CrazyQuiltCuiController) handleMoveFromQuilt(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("crazyquilt.promptCell"), "m q {0}")
 	}
-	idx, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("crazyquilt.invalidCell", "val", args[0])
+	idx, msg, ok := cuiutil.ParseIntArgKeys(args, "", "crazyquilt.invalidCell", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("crazyquilt.promptToZone"), fmt.Sprintf("m q %s {0}", args[0]))

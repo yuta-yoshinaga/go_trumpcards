@@ -8,22 +8,6 @@ export const ANDAR = 0;
 /** Bahar — the outer column. */
 export const BAHAR = 1;
 
-/**
- * A side bet on how many cards it takes to settle the round.
- *
- * The bands cover every reachable count (1..49) with no gaps.
- */
-export const ANDAR_BAHAR_SIDE_NONE = -1;
-
-/** Payout multipliers are stored in tenths so 0.9:1 stays exact in integer chips. */
-export const ANDAR_BAHAR_PAYOUT_SCALE = 10;
-
-/** Total returned (stake included) when the first-dealt column wins: 1.9x. */
-export const ANDAR_BAHAR_FIRST_COLUMN_PAYOUT = 19;
-
-/** Total returned (stake included) when the second column wins: 2.0x. */
-export const ANDAR_BAHAR_SECOND_COLUMN_PAYOUT = 20;
-
 /** One side-bet band: the inclusive card-count range and its payout in tenths. */
 export interface AndarBaharSideBand {
   band: number;
@@ -34,8 +18,9 @@ export interface AndarBaharSideBand {
 }
 
 /**
- * The side-bet table, mirroring `andarBaharSideBands` / `andarBaharSidePayouts`
- * in `internal/domain/AndarBahar.go`.
+ * A side bet on how many cards it takes to settle the round. The bands cover
+ * every reachable count (1..49) with no gaps, mirroring `andarBaharSideBands`
+ * / `andarBaharSidePayouts` in `internal/domain/AndarBahar.go`.
  */
 export const ANDAR_BAHAR_SIDE_BANDS: readonly AndarBaharSideBand[] = [
   { band: 0, lo: 1, hi: 1, payout: 150 },

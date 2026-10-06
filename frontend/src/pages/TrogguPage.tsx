@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { trogguApi as TrogguApi } from '../api/gameApi';
 import { trogguApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
@@ -24,6 +24,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { TrogguResponse } from '../types/card';
@@ -117,9 +118,7 @@ function TrogguPageContent() {
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    callApi('reset');
-  }, []);
+  useMountReset(callApi);
 
   const resetWithConfig = useCallback(() => {
     callApi('reset', { config: { cpuDifficulty, targetDeals } });

@@ -16,6 +16,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useShamrocksStats } from '../hooks/useShamrocksStats';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
@@ -101,9 +102,7 @@ function ShamrocksPageContent() {
   }, [state, stats.clearRecorded, recordClear, markPlaying]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    exec('reset');
-  }, []);
+  useMountReset(exec);
 
   // Clear a stale source selection (and any hint highlight) whenever the board
   // changes (move, undo, auto-complete) so a selected/hinted index can't

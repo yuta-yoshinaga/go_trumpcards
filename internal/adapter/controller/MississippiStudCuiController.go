@@ -42,10 +42,8 @@ func (mc *MississippiStudCuiController) Exec(command string) string {
 				return mc.ci.Play(mult), true
 			case "f", "fold":
 				return mc.ci.Fold(), true
-			case "h", "hint":
-				return mc.ci.Hint(), true
 			default:
-				return handleCuiLog(cmd, mc.ci.ActionLog)
+				return handleCuiHintAndLog(cmd, mc.ci.Hint, mc.ci.ActionLog)
 			}
 		},
 	)

@@ -16,6 +16,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -87,10 +88,7 @@ function LaBelleLuciePageContent() {
   const [showHint, setShowHint] = useState(false);
   const hintTimerRef = useRef<number | null>(null);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    exec('reset');
-  }, []);
+  useMountReset(exec);
 
   // Clear a stale source selection (and any hint highlight) whenever the board
   // changes (move, redeal, undo, auto-complete) so a selected/hinted index can't

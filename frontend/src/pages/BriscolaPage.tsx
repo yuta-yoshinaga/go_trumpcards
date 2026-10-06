@@ -18,6 +18,7 @@ import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BriscolaResponse } from '../types/card';
@@ -66,9 +67,7 @@ function BriscolaPageContent() {
   const { cardWidth } = useCardDimensions();
 
   // Initial reset on mount.
-  useEffect(() => {
-    void dispatch('reset');
-  }, [dispatch]);
+  useMountReset(dispatch);
 
   const handleReset = useCallback(() => {
     hideActionLog();
