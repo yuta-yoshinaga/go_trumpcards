@@ -19,6 +19,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { CPU_DIFFICULTY_OPTIONS, useTablanetGame } from '../hooks/useTablanetGame';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
@@ -94,9 +95,7 @@ function TablanetPageContent() {
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    callApi('reset');
-  }, []);
+  useMountReset(callApi);
 
   // Captures and tablas are shown only via animation and count updates (the web
   // presenter never puts them in state.message), so a screen-reader user gets no
