@@ -169,10 +169,10 @@ type Binokel struct {
 	gameEndFlag      bool
 	winnerPlayer     int // 勝利プレイヤー (-1 = 未確定)
 	playerMelds      [BinokelPlayerCnt][]*BinokelMeld
-	actionLog        []*ActionLogEntry
-	dabb             []*Card // 配られたDabb (3枚)
-	dabbDiscarded    []*Card // 落札者が捨てたDabb (3枚)
-	lastBidSpeaker   int     // 最後にビッドで発言したプレイヤー
+	actionLogBase
+	dabb           []*Card // 配られたDabb (3枚)
+	dabbDiscarded  []*Card // 落札者が捨てたDabb (3枚)
+	lastBidSpeaker int     // 最後にビッドで発言したプレイヤー
 }
 
 // NewBinokel コンストラクタ
@@ -391,19 +391,9 @@ func (p *Binokel) SetConfig(config BinokelConfig) { p.config = config }
 // GetPlayerMelds プレイヤーのメルドを取得
 func (p *Binokel) GetPlayerMelds() [BinokelPlayerCnt][]*BinokelMeld { return p.playerMelds }
 
-// GetActionLog アクションログを取得
-func (p *Binokel) GetActionLog() []*ActionLogEntry { return p.actionLog }
-
 // addLog アクションログを追加
 func (p *Binokel) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	p.actionLog = append(p.actionLog, &ActionLogEntry{
-		TurnNumber:   p.trickNumber,
-		PlayerIdx:    playerIdx,
-		ActionType:   actionType,
-		DetailCode:   detailCode,
-		DetailParams: detailParams,
-		Cards:        cards,
-	})
+	p.appendLogCodeAt(p.trickNumber, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // ─── Card Ranking & Point Values ────────────────────────

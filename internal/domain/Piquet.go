@@ -904,7 +904,7 @@ func (p *Piquet) GetHint(playerIdx int) *PiquetHint {
 // ───── Log ─────
 
 func (p *Piquet) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	p.appendLogCodeAt(len(p.actionLog), playerIdx, actionType, detailCode, detailParams, cards)
+	p.appendLogCodeAt(p.nextTurnNumber()-1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // ───── Card rank helper ─────

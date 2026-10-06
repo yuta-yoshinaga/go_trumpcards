@@ -294,7 +294,7 @@ func (g *Klaverjas) ScoreRound() {
 
 // appendLog records a Klaverjas action with a locale-independent detail code.
 func (g *Klaverjas) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Trick / play helpers ---

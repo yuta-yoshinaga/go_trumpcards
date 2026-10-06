@@ -597,7 +597,7 @@ func (c *CourtPiece) playCard(playerIdx int, card *Card) {
 
 // appendLog records a Court Piece action with a locale-independent detail code.
 func (c *CourtPiece) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	c.appendLogCodeAt(len(c.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+	c.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // validatePlay カードのプレイがルール上有効か検証する。

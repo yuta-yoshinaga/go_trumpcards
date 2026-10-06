@@ -55,9 +55,9 @@ type MonteCarlo struct {
 	phase        MonteCarloPhase
 	removedCount int
 	dealCount    int
-	actionLog    []*ActionLogEntry
-	history      []*monteCarloSnapshot
-	isStalemate  bool
+	actionLogBase
+	history     []*monteCarloSnapshot
+	isStalemate bool
 }
 
 // monteCarloSnapshot はアンドゥ用のスナップショット。
@@ -160,9 +160,7 @@ func (m *MonteCarlo) Undo() error {
 	m.dealCount = snap.dealCount
 	m.phase = snap.phase
 	m.isStalemate = snap.isStalemate
-	if len(m.actionLog) > snap.actionLogLn {
-		m.actionLog = m.actionLog[:snap.actionLogLn]
-	}
+	m.truncateActionLog(snap.actionLogLn)
 	return nil
 }
 
@@ -398,20 +396,13 @@ func (m *MonteCarlo) takeSnapshot() {
 		phase:        m.phase,
 		isStalemate:  m.isStalemate,
 		deckDrawCnt:  m.trumpCards.deckDrawCnt,
-		actionLogLn:  len(m.actionLog),
+		actionLogLn:  m.actionLogMark(),
 	})
 }
 
 // appendLog は棋譜エントリを追加する。
 func (m *MonteCarlo) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	m.actionLog = append(m.actionLog, &ActionLogEntry{
-		TurnNumber:   m.removedCount/2 + m.dealCount,
-		PlayerIdx:    0,
-		ActionType:   actionType,
-		DetailCode:   detailCode,
-		DetailParams: detailParams,
-		Cards:        cards,
-	})
+	m.appendLogCodeAt(m.removedCount/2+m.dealCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // absInt は int の絶対値を返す。
@@ -424,14 +415,15 @@ func absInt(x int) int {
 
 // monteCarloJSON はシリアライズ用のワイヤーフォーマット。
 type monteCarloJSON struct {
-	TrumpCards   *TrumpCards                                   `json:"tc"`
-	Board        [MonteCarloGridSize][MonteCarloGridSize]*Card `json:"bd"`
-	Phase        MonteCarloPhase                               `json:"ps"`
-	RemovedCount int                                           `json:"rc"`
-	DealCount    int                                           `json:"dc"`
-	IsStalemate  bool                                          `json:"sl"`
-	ActionLog    []*ActionLogEntry                             `json:"al"`
-	History      []*monteCarloSnapshot                         `json:"hi,omitempty"`
+	TrumpCards       *TrumpCards                                   `json:"tc"`
+	Board            [MonteCarloGridSize][MonteCarloGridSize]*Card `json:"bd"`
+	Phase            MonteCarloPhase                               `json:"ps"`
+	RemovedCount     int                                           `json:"rc"`
+	DealCount        int                                           `json:"dc"`
+	IsStalemate      bool                                          `json:"sl"`
+	ActionLog        []*ActionLogEntry                             `json:"al"`
+	ActionLogDropped int                                           `json:"actionLogDropped,omitempty"`
+	History          []*monteCarloSnapshot                         `json:"hi,omitempty"`
 }
 
 // monteCarloSnapshotJSON is the wire format for a single undo snapshot.
@@ -477,7 +469,7 @@ func (s *monteCarloSnapshot) UnmarshalJSON(data []byte) error {
 	if j.DeckDrawCnt < 0 || j.DeckDrawCnt > MonteCarloDeckSize {
 		return fmt.Errorf("montecarlo: snapshot deckDrawCnt out of range")
 	}
-	if j.ActionLogLn < 0 || j.ActionLogLn > monteCarloMaxSliceLen {
+	if j.ActionLogLn < 0 {
 		return fmt.Errorf("montecarlo: snapshot actionLogLn out of range")
 	}
 	s.board = j.Board
@@ -493,14 +485,15 @@ func (s *monteCarloSnapshot) UnmarshalJSON(data []byte) error {
 // MarshalJSON implements json.Marshaler.
 func (m *MonteCarlo) MarshalJSON() ([]byte, error) {
 	return json.Marshal(monteCarloJSON{
-		TrumpCards:   m.trumpCards,
-		Board:        m.board,
-		Phase:        m.phase,
-		RemovedCount: m.removedCount,
-		DealCount:    m.dealCount,
-		IsStalemate:  m.isStalemate,
-		ActionLog:    m.actionLog,
-		History:      m.history,
+		TrumpCards:       m.trumpCards,
+		Board:            m.board,
+		Phase:            m.phase,
+		RemovedCount:     m.removedCount,
+		DealCount:        m.dealCount,
+		IsStalemate:      m.isStalemate,
+		ActionLog:        m.actionLog,
+		ActionLogDropped: m.dropped,
+		History:          m.history,
 	})
 }
 
@@ -526,6 +519,7 @@ func (m *MonteCarlo) UnmarshalJSON(data []byte) error {
 	m.dealCount = j.DealCount
 	m.isStalemate = j.IsStalemate
 	m.actionLog = j.ActionLog
+	m.dropped = max(0, j.ActionLogDropped)
 	if m.actionLog == nil {
 		m.actionLog = make([]*ActionLogEntry, 0)
 	}

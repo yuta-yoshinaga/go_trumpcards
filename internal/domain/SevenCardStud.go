@@ -1042,7 +1042,7 @@ func (s *SevenCardStud) logAction(playerIdx, action, amount int) {
 
 // appendLog records a Seven Card Stud action with a locale-independent detail code.
 func (s *SevenCardStud) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	s.appendLogCodeAt(len(s.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+	s.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- ゲッター ---

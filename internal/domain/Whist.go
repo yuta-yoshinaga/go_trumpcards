@@ -472,7 +472,7 @@ func (w *Whist) checkGameEnd() {
 
 // appendLog records a Whist action with a locale-independent detail code.
 func (w *Whist) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	w.appendLogCodeAt(len(w.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+	w.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする

@@ -47,8 +47,8 @@ type PokerSquares struct {
 	currentCard *Card
 	placedCount int
 	phase       PokerSquaresPhase
-	actionLog   []*ActionLogEntry
-	history     []*pokerSquaresSnapshot
+	actionLogBase
+	history []*pokerSquaresSnapshot
 }
 
 // pokerSquaresSnapshot はアンドゥ用の状態スナップショット。
@@ -126,9 +126,7 @@ func (p *PokerSquares) Undo() error {
 	p.currentCard = snap.currentCard
 	p.placedCount = snap.placedCount
 	p.phase = snap.phase
-	if len(p.actionLog) > snap.actionLogLn {
-		p.actionLog = p.actionLog[:snap.actionLogLn]
-	}
+	p.truncateActionLog(snap.actionLogLn)
 	return nil
 }
 
@@ -402,31 +400,25 @@ func (p *PokerSquares) takeSnapshot() {
 		placedCount: p.placedCount,
 		phase:       p.phase,
 		deckDrawCnt: p.trumpCards.deckDrawCnt,
-		actionLogLn: len(p.actionLog),
+		actionLogLn: p.actionLogMark(),
 	})
 }
 
 // appendLog は棋譜エントリを追加する。
 func (p *PokerSquares) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	p.actionLog = append(p.actionLog, &ActionLogEntry{
-		TurnNumber:   p.placedCount,
-		PlayerIdx:    0,
-		ActionType:   actionType,
-		DetailCode:   detailCode,
-		DetailParams: detailParams,
-		Cards:        cards,
-	})
+	p.appendLogCodeAt(p.placedCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // pokerSquaresJSON はシリアライズ用のワイヤーフォーマット。
 type pokerSquaresJSON struct {
-	TrumpCards  *TrumpCards                                       `json:"tc"`
-	Board       [PokerSquaresGridSize][PokerSquaresGridSize]*Card `json:"bd"`
-	CurrentCard *Card                                             `json:"cc"`
-	PlacedCount int                                               `json:"pc"`
-	Phase       PokerSquaresPhase                                 `json:"ps"`
-	ActionLog   []*ActionLogEntry                                 `json:"al"`
-	History     []*pokerSquaresSnapshot                           `json:"hi,omitempty"`
+	TrumpCards       *TrumpCards                                       `json:"tc"`
+	Board            [PokerSquaresGridSize][PokerSquaresGridSize]*Card `json:"bd"`
+	CurrentCard      *Card                                             `json:"cc"`
+	PlacedCount      int                                               `json:"pc"`
+	Phase            PokerSquaresPhase                                 `json:"ps"`
+	ActionLog        []*ActionLogEntry                                 `json:"al"`
+	ActionLogDropped int                                               `json:"actionLogDropped,omitempty"`
+	History          []*pokerSquaresSnapshot                           `json:"hi,omitempty"`
 }
 
 // pokerSquaresSnapshotJSON is the wire format for a single undo snapshot.
@@ -470,7 +462,7 @@ func (s *pokerSquaresSnapshot) UnmarshalJSON(data []byte) error {
 	if j.DeckDrawCnt < 0 || j.DeckDrawCnt > CardCnt {
 		return fmt.Errorf("pokersquares: snapshot deckDrawCnt out of range")
 	}
-	if j.ActionLogLn < 0 || j.ActionLogLn > pokerSquaresMaxSliceLen {
+	if j.ActionLogLn < 0 {
 		return fmt.Errorf("pokersquares: snapshot actionLogLn out of range")
 	}
 	s.board = j.Board
@@ -485,13 +477,14 @@ func (s *pokerSquaresSnapshot) UnmarshalJSON(data []byte) error {
 // MarshalJSON implements json.Marshaler.
 func (p *PokerSquares) MarshalJSON() ([]byte, error) {
 	return json.Marshal(pokerSquaresJSON{
-		TrumpCards:  p.trumpCards,
-		Board:       p.board,
-		CurrentCard: p.currentCard,
-		PlacedCount: p.placedCount,
-		Phase:       p.phase,
-		ActionLog:   p.actionLog,
-		History:     p.history,
+		TrumpCards:       p.trumpCards,
+		Board:            p.board,
+		CurrentCard:      p.currentCard,
+		PlacedCount:      p.placedCount,
+		Phase:            p.phase,
+		ActionLog:        p.actionLog,
+		ActionLogDropped: p.dropped,
+		History:          p.history,
 	})
 }
 
@@ -516,6 +509,7 @@ func (p *PokerSquares) UnmarshalJSON(data []byte) error {
 	p.placedCount = j.PlacedCount
 	p.phase = j.Phase
 	p.actionLog = j.ActionLog
+	p.dropped = max(0, j.ActionLogDropped)
 	if p.actionLog == nil {
 		p.actionLog = make([]*ActionLogEntry, 0)
 	}

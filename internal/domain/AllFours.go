@@ -82,7 +82,7 @@ type AllFours struct {
 
 // appendLog records an All Fours action with a locale-independent detail code.
 func (a *AllFours) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	a.appendLogCodeAt(len(a.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+	a.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NewAllFours コンストラクタ

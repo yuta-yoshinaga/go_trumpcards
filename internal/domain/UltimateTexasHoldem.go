@@ -486,7 +486,7 @@ func (u *UltimateTexasHoldem) resolve() {
 
 // appendLog records an Ultimate Texas Hold'em action with a locale-independent detail code.
 func (u *UltimateTexasHoldem) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	u.appendLogCodeAt(len(u.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+	u.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // compareBest 最良5枚の比較

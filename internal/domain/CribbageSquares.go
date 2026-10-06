@@ -82,8 +82,8 @@ type CribbageSquares struct {
 	starter     *Card
 	placedCount int
 	phase       CribbageSquaresPhase
-	actionLog   []*ActionLogEntry
-	history     []*cribbageSquaresSnapshot
+	actionLogBase
+	history []*cribbageSquaresSnapshot
 }
 
 // cribbageSquaresSnapshot はアンドゥ用の状態スナップショット。
@@ -170,9 +170,7 @@ func (c *CribbageSquares) Undo() error {
 	c.starter = snap.starter
 	c.placedCount = snap.placedCount
 	c.phase = snap.phase
-	if len(c.actionLog) > snap.actionLogLn {
-		c.actionLog = c.actionLog[:snap.actionLogLn]
-	}
+	c.truncateActionLog(snap.actionLogLn)
 	return nil
 }
 
@@ -421,31 +419,25 @@ func (c *CribbageSquares) takeSnapshot() {
 		placedCount: c.placedCount,
 		phase:       c.phase,
 		deckDrawCnt: c.trumpCards.deckDrawCnt,
-		actionLogLn: len(c.actionLog),
+		actionLogLn: c.actionLogMark(),
 	})
 }
 
 // appendLog は棋譜エントリを追加する。
 func (c *CribbageSquares) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	c.actionLog = append(c.actionLog, &ActionLogEntry{
-		TurnNumber:   c.placedCount,
-		PlayerIdx:    0,
-		ActionType:   actionType,
-		DetailCode:   detailCode,
-		DetailParams: detailParams,
-		Cards:        cards,
-	})
+	c.appendLogCodeAt(c.placedCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // cribbageSquaresJSON はシリアライズ用のワイヤーフォーマット。
 type cribbageSquaresJSON struct {
-	TrumpCards  *TrumpCards                                             `json:"tc"`
-	Board       [CribbageSquaresGridSize][CribbageSquaresGridSize]*Card `json:"bd"`
-	CurrentCard *Card                                                   `json:"cc"`
-	Starter     *Card                                                   `json:"st"`
-	PlacedCount int                                                     `json:"pc"`
-	Phase       CribbageSquaresPhase                                    `json:"ps"`
-	ActionLog   []*ActionLogEntry                                       `json:"al"`
+	TrumpCards       *TrumpCards                                             `json:"tc"`
+	Board            [CribbageSquaresGridSize][CribbageSquaresGridSize]*Card `json:"bd"`
+	CurrentCard      *Card                                                   `json:"cc"`
+	Starter          *Card                                                   `json:"st"`
+	PlacedCount      int                                                     `json:"pc"`
+	Phase            CribbageSquaresPhase                                    `json:"ps"`
+	ActionLog        []*ActionLogEntry                                       `json:"al"`
+	ActionLogDropped int                                                     `json:"actionLogDropped,omitempty"`
 	// History must round-trip: the Cloudflare Worker is stateless per request
 	// and rebuilds the game from KV every call, so an unpersisted undo stack
 	// means Undo silently never works in production (#4478).
@@ -491,8 +483,8 @@ func (s *cribbageSquaresSnapshot) UnmarshalJSON(data []byte) error {
 	if j.DeckDrawCnt < 0 || j.DeckDrawCnt > CardCnt {
 		return errors.New("cribbagesquares: snapshot deckDrawCnt out of range")
 	}
-	if j.ActionLogLn < 0 || j.ActionLogLn > cribbageSquaresMaxSliceLen {
-		return errors.New("cribbagesquares: snapshot actionLogLn out of range")
+	if j.ActionLogLn < 0 {
+		return fmt.Errorf("cribbagesquares: snapshot actionLogLn out of range")
 	}
 	if j.PlacedCount < 0 || j.PlacedCount > CribbageSquaresTotalCells {
 		return fmt.Errorf("cribbagesquares: snapshot placedCount out of range: %d", j.PlacedCount)
@@ -510,14 +502,15 @@ func (s *cribbageSquaresSnapshot) UnmarshalJSON(data []byte) error {
 // MarshalJSON implements json.Marshaler.
 func (c *CribbageSquares) MarshalJSON() ([]byte, error) {
 	return json.Marshal(cribbageSquaresJSON{
-		TrumpCards:  c.trumpCards,
-		Board:       c.board,
-		CurrentCard: c.currentCard,
-		Starter:     c.starter,
-		PlacedCount: c.placedCount,
-		Phase:       c.phase,
-		ActionLog:   c.actionLog,
-		History:     c.history,
+		TrumpCards:       c.trumpCards,
+		Board:            c.board,
+		CurrentCard:      c.currentCard,
+		Starter:          c.starter,
+		PlacedCount:      c.placedCount,
+		Phase:            c.phase,
+		ActionLog:        c.actionLog,
+		ActionLogDropped: c.dropped,
+		History:          c.history,
 	})
 }
 
@@ -547,6 +540,7 @@ func (c *CribbageSquares) UnmarshalJSON(data []byte) error {
 	c.placedCount = j.PlacedCount
 	c.phase = j.Phase
 	c.actionLog = j.ActionLog
+	c.dropped = max(0, j.ActionLogDropped)
 	if c.actionLog == nil {
 		c.actionLog = make([]*ActionLogEntry, 0)
 	}

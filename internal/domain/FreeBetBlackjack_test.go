@@ -628,8 +628,8 @@ func TestFreeBet_Accessors(t *testing.T) {
 
 func TestFreeBet_ActionLogIsBounded(t *testing.T) {
 	g := newFreeBetForTest(t)
-	for range freeBetMaxSliceLen + 50 {
+	for range MaxActionLog + 50 {
 		g.appendLog("noise", "freebetblackjack.log.hit", nil, nil)
 	}
-	assert.Len(t, g.GetActionLog(), freeBetMaxSliceLen)
+	assert.Len(t, g.GetActionLog(), MaxActionLog)
 }

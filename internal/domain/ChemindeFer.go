@@ -69,8 +69,8 @@ type ChemindeFer struct {
 	roundNetHistory []ChemindeFerRoundNet
 	roundNumber     int
 	gameEndFlag     bool
-	actionLog       []*ActionLogEntry
-	turnNumber      int
+	actionLogBase
+	turnNumber int
 }
 
 // ChemindeFerRoundNet はラウンド終了時の席ごとのチップ純増減。
@@ -866,17 +866,7 @@ func (g *ChemindeFer) GetHint() *ChemindeFerHint {
 // appendLog は行動ログを 1 行足す。
 func (g *ChemindeFer) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber:   g.turnNumber,
-		PlayerIdx:    playerIdx,
-		ActionType:   actionType,
-		DetailCode:   detailCode,
-		DetailParams: detailParams,
-		Cards:        cards,
-	})
-	if len(g.actionLog) > chemindeFerMaxSliceLen {
-		g.actionLog = g.actionLog[len(g.actionLog)-chemindeFerMaxSliceLen:]
-	}
+	g.appendLogCodeAt(g.turnNumber, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- アクセサ ---
@@ -927,9 +917,6 @@ func (g *ChemindeFer) GetConfig() ChemindeFerConfig { return g.config }
 
 // SetConfig は設定を差し替える。
 func (g *ChemindeFer) SetConfig(c ChemindeFerConfig) { g.config = c }
-
-// GetActionLog は行動ログを返す。
-func (g *ChemindeFer) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetRemainingCards はシューの残り枚数を返す。
 func (g *ChemindeFer) GetRemainingCards() int { return g.shoe.GetRemainingCount() }

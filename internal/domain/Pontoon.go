@@ -153,7 +153,7 @@ type Pontoon struct {
 	lastResult       string
 	lastResultCode   string
 	lastResultParams map[string]string
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // pontoonOpeningBanker 最初の局の親。
@@ -699,9 +699,6 @@ func (p *Pontoon) GetLastResultCode() string { return p.lastResultCode }
 // GetLastResultParams 直近の精算メッセージパラメータを取得する
 func (p *Pontoon) GetLastResultParams() map[string]string { return p.lastResultParams }
 
-// GetActionLog 棋譜取得
-func (p *Pontoon) GetActionLog() []*ActionLogEntry { return p.actionLog }
-
 // GetGameEndFlag 局が終わっているか
 func (p *Pontoon) GetGameEndFlag() bool { return p.phase == PontoonPhaseEnd }
 
@@ -742,14 +739,7 @@ func (p *Pontoon) CanSplit() bool {
 
 // appendLog 棋譜エントリを追加
 func (p *Pontoon) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	p.actionLog = append(p.actionLog, &ActionLogEntry{
-		TurnNumber:   len(p.actionLog),
-		PlayerIdx:    p.activeSeat,
-		ActionType:   actionType,
-		DetailCode:   detailCode,
-		DetailParams: detailParams,
-		Cards:        append([]*Card(nil), cards...),
-	})
+	p.appendLogCodeAt(p.nextTurnNumber()-1, p.activeSeat, actionType, detailCode, detailParams, append([]*Card(nil), cards...))
 }
 
 // pontoonHandJSON is the wire format for one hand. PontoonHand's fields are

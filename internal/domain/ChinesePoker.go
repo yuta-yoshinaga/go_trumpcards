@@ -59,7 +59,7 @@ type ChinesePoker struct {
 	dealerMiddleRoyalty int
 	dealerBackRoyalty   int
 	scoop               bool
-	actionLog           []*ActionLogEntry
+	actionLogBase
 }
 
 // NewChinesePoker コンストラクタ
@@ -665,14 +665,7 @@ func cpHouseWayScore(front, middle, back []*Card) int {
 
 // cpAppendLog 棋譜にエントリを追加する
 func (cp *ChinesePoker) cpAppendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	cp.actionLog = append(cp.actionLog, &ActionLogEntry{
-		TurnNumber:   len(cp.actionLog) + 1,
-		PlayerIdx:    playerIdx,
-		ActionType:   actionType,
-		DetailCode:   detailCode,
-		DetailParams: detailParams,
-		Cards:        cards,
-	})
+	cp.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Getters ---
@@ -772,9 +765,6 @@ func (cp *ChinesePoker) GetScoop() bool { return cp.scoop }
 
 // GetChips チップ
 func (cp *ChinesePoker) GetChips() int { return cp.chips.GetChips() }
-
-// GetActionLog 棋譜を取得する
-func (cp *ChinesePoker) GetActionLog() []*ActionLogEntry { return cp.actionLog }
 
 // --- Test helpers ---
 

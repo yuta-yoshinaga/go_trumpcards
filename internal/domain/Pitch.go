@@ -122,7 +122,7 @@ func NewDefaultPitch() *Pitch {
 
 // appendLog records a Pitch action with a locale-independent detail code.
 func (p *Pitch) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	p.appendLogCodeAt(len(p.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+	p.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // Reset ゲーム初期化

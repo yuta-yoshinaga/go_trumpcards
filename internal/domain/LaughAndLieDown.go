@@ -109,7 +109,7 @@ type LaughAndLieDown struct {
 	lastInIdx   int
 	scores      []int
 	gameEndFlag bool
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewLaughAndLieDown はコンストラクタ。
@@ -501,19 +501,9 @@ func (l *LaughAndLieDown) GetConfig() LaughAndLieDownConfig { return l.config }
 // SetConfig はゲーム設定をセットする。
 func (l *LaughAndLieDown) SetConfig(c LaughAndLieDownConfig) { l.config = c }
 
-// GetActionLog は棋譜を返す。
-func (l *LaughAndLieDown) GetActionLog() []*ActionLogEntry { return l.actionLog }
-
 // addLog は棋譜に 1 件追加する。
 func (l *LaughAndLieDown) addLog(player int, action, detailCode string, detailParams map[string]string, cards []*Card) {
-	l.actionLog = append(l.actionLog, &ActionLogEntry{
-		TurnNumber:   len(l.actionLog) + 1,
-		PlayerIdx:    player,
-		ActionType:   action,
-		DetailCode:   detailCode,
-		DetailParams: detailParams,
-		Cards:        cards,
-	})
+	l.appendLogCode(player, action, detailCode, detailParams, cards)
 }
 
 // laughAndLieDownJSON is the JSON wire format for LaughAndLieDown.

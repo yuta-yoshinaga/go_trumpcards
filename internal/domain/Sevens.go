@@ -1202,7 +1202,7 @@ type sevensJSON struct {
 
 // MarshalJSON implements json.Marshaler.
 func (s *Sevens) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	s.appendLogCodeAt(len(s.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+	s.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 func (s *Sevens) MarshalJSON() ([]byte, error) {

@@ -110,7 +110,7 @@ type Quinze struct {
 	lastResultCode   string
 	lastResultParams map[string]string
 	chipsReplenished bool
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // quinzeOpeningBanker 最初の局の親。
@@ -508,9 +508,6 @@ func (s *Quinze) GetLastResultParams() map[string]string { return s.lastResultPa
 // WasChipsReplenished reports whether the most recent reset restored the chips.
 func (s *Quinze) WasChipsReplenished() bool { return s.chipsReplenished }
 
-// GetActionLog 棋譜取得
-func (s *Quinze) GetActionLog() []*ActionLogEntry { return s.actionLog }
-
 // GetGameEndFlag 局が終わっているか
 func (s *Quinze) GetGameEndFlag() bool { return s.phase == QuinzePhaseEnd }
 
@@ -528,14 +525,7 @@ func (s *Quinze) CanStand() bool {
 
 // appendLog 棋譜エントリを追加
 func (s *Quinze) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber:   len(s.actionLog),
-		PlayerIdx:    s.activeSeat,
-		ActionType:   actionType,
-		DetailCode:   detailCode,
-		DetailParams: detailParams,
-		Cards:        append([]*Card(nil), cards...),
-	})
+	s.appendLogCodeAt(s.nextTurnNumber()-1, s.activeSeat, actionType, detailCode, detailParams, append([]*Card(nil), cards...))
 }
 
 // quinzeHandJSON is the wire format for one hand. QuinzeHand's fields

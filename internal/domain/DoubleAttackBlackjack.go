@@ -566,9 +566,6 @@ func (g *DoubleAttackBlackjack) dealerUpValue() int {
 func (g *DoubleAttackBlackjack) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
 	g.appendLogCodeAt(g.turnNumber, 0, actionType, detailCode, detailParams, cards)
-	if len(g.actionLog) > doubleAttackMaxSliceLen {
-		g.actionLog = g.actionLog[len(g.actionLog)-doubleAttackMaxSliceLen:]
-	}
 }
 
 // --- アクセサ ---

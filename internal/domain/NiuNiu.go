@@ -131,7 +131,7 @@ type NiuNiu struct {
 	chips      ChipHolder
 	phase      int
 	lastResult string
-	actionLog  []*ActionLogEntry
+	actionLogBase
 }
 
 // NewNiuNiu コンストラクタ
@@ -452,22 +452,12 @@ func (n *NiuNiu) GetBankerHand() *NiuNiuHand { return n.bankerHand }
 // GetLastResult 直近の精算の要約
 func (n *NiuNiu) GetLastResult() string { return n.lastResult }
 
-// GetActionLog 棋譜取得
-func (n *NiuNiu) GetActionLog() []*ActionLogEntry { return n.actionLog }
-
 // GetGameEndFlag 局が終わっているか
 func (n *NiuNiu) GetGameEndFlag() bool { return n.phase == NiuNiuPhaseEnd }
 
 // appendLog 棋譜エントリを追加
 func (n *NiuNiu) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	n.actionLog = append(n.actionLog, &ActionLogEntry{
-		TurnNumber:   len(n.actionLog),
-		PlayerIdx:    0,
-		ActionType:   actionType,
-		DetailCode:   detailCode,
-		DetailParams: detailParams,
-		Cards:        append([]*Card(nil), cards...),
-	})
+	n.appendLogCodeAt(n.nextTurnNumber()-1, 0, actionType, detailCode, detailParams, append([]*Card(nil), cards...))
 }
 
 // niuNiuHandJSON is the wire format for one hand. NiuNiuHand's fields are
