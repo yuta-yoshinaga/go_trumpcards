@@ -59,9 +59,9 @@ type FourteenOut struct {
 	columns      [][]*Card
 	phase        FourteenOutPhase
 	removedCount int
-	actionLog    []*ActionLogEntry
-	history      []*fourteenOutSnapshot
-	isStalemate  bool
+	actionLogBase
+	history     []*fourteenOutSnapshot
+	isStalemate bool
 }
 
 // fourteenOutSnapshot はアンドゥ用のスナップショット。
@@ -156,9 +156,7 @@ func (m *FourteenOut) Undo() error {
 	m.removedCount = snap.removedCount
 	m.phase = snap.phase
 	m.isStalemate = snap.isStalemate
-	if len(m.actionLog) > snap.actionLogLn {
-		m.actionLog = m.actionLog[:snap.actionLogLn]
-	}
+	m.truncateActionLog(snap.actionLogLn)
 	return nil
 }
 
@@ -319,30 +317,24 @@ func (m *FourteenOut) takeSnapshot() {
 		removedCount: m.removedCount,
 		phase:        m.phase,
 		isStalemate:  m.isStalemate,
-		actionLogLn:  len(m.actionLog),
+		actionLogLn:  m.actionLogMark(),
 	})
 }
 
 func (m *FourteenOut) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	m.actionLog = append(m.actionLog, &ActionLogEntry{
-		TurnNumber:   m.removedCount / 2,
-		PlayerIdx:    0,
-		ActionType:   actionType,
-		DetailCode:   detailCode,
-		DetailParams: detailParams,
-		Cards:        cards,
-	})
+	m.appendLogCodeAt(m.removedCount/2, 0, actionType, detailCode, detailParams, cards)
 }
 
 // fourteenOutJSON はシリアライズ用のワイヤーフォーマット。
 type fourteenOutJSON struct {
-	TrumpCards   *TrumpCards            `json:"tc"`
-	Columns      [][]*Card              `json:"cl"`
-	Phase        FourteenOutPhase       `json:"ps"`
-	RemovedCount int                    `json:"rc"`
-	IsStalemate  bool                   `json:"sl"`
-	ActionLog    []*ActionLogEntry      `json:"al"`
-	History      []*fourteenOutSnapshot `json:"hi,omitempty"`
+	TrumpCards       *TrumpCards            `json:"tc"`
+	Columns          [][]*Card              `json:"cl"`
+	Phase            FourteenOutPhase       `json:"ps"`
+	RemovedCount     int                    `json:"rc"`
+	IsStalemate      bool                   `json:"sl"`
+	ActionLog        []*ActionLogEntry      `json:"al"`
+	ActionLogDropped int                    `json:"actionLogDropped,omitempty"`
+	History          []*fourteenOutSnapshot `json:"hi,omitempty"`
 }
 
 // fourteenOutSnapshotJSON is the wire format for a single undo snapshot.
@@ -381,7 +373,7 @@ func (s *fourteenOutSnapshot) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if j.ActionLogLn < 0 || j.ActionLogLn > fourteenOutMaxSliceLen {
+	if j.ActionLogLn < 0 {
 		return fmt.Errorf("fourteenout: snapshot actionLogLn out of range")
 	}
 	if len(j.Columns) > FourteenOutColumnCnt {
@@ -398,13 +390,14 @@ func (s *fourteenOutSnapshot) UnmarshalJSON(data []byte) error {
 // MarshalJSON implements json.Marshaler.
 func (m *FourteenOut) MarshalJSON() ([]byte, error) {
 	return json.Marshal(fourteenOutJSON{
-		TrumpCards:   m.trumpCards,
-		Columns:      m.columns,
-		Phase:        m.phase,
-		RemovedCount: m.removedCount,
-		IsStalemate:  m.isStalemate,
-		ActionLog:    m.actionLog,
-		History:      m.history,
+		TrumpCards:       m.trumpCards,
+		Columns:          m.columns,
+		Phase:            m.phase,
+		RemovedCount:     m.removedCount,
+		IsStalemate:      m.isStalemate,
+		ActionLog:        m.actionLog,
+		ActionLogDropped: m.dropped,
+		History:          m.history,
 	})
 }
 
@@ -432,6 +425,7 @@ func (m *FourteenOut) UnmarshalJSON(data []byte) error {
 	m.removedCount = j.RemovedCount
 	m.isStalemate = j.IsStalemate
 	m.actionLog = j.ActionLog
+	m.dropped = max(0, j.ActionLogDropped)
 	if m.actionLog == nil {
 		m.actionLog = make([]*ActionLogEntry, 0)
 	}

@@ -490,6 +490,36 @@ describe('OmahaHiLoPage', () => {
     expect(screen.getByTestId('omahahilo-hi-takes-all')).toBeInTheDocument();
   });
 
+  it('does not highlight a live low candidate after the hand ends without a low result', async () => {
+    // A-2 in the human's hand and 3-4-5 on the board form a live low candidate,
+    // but the response has no settled low result.
+    const endedWithLiveLowCandidate: OmahaResponse = {
+      ...endState,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 2 },
+            { design: 'DIAMOND', value: 10 },
+            { design: 'CLOVER', value: 13 },
+          ],
+        }),
+        ...endState.players.slice(1),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 3 },
+        { design: 'HEART', value: 4 },
+        { design: 'DIAMOND', value: 5 },
+        { design: 'CLOVER', value: 8 },
+        { design: 'SPADE', value: 9 },
+      ],
+    };
+    mockExec.mockResolvedValue(endedWithLiveLowCandidate);
+    const { container } = renderWithProviders(<OmahaHiLoPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('結果'));
+    expect(container.querySelectorAll('[data-testid="omahahilo-lo-card"]')).toHaveLength(0);
+  });
+
   it('highlights the human qualifying low and lists the low cards', async () => {
     // Human hole A♠,K♥,10♦,5♣; board 10♠,5♥,8♦,2♣,9♥.
     const lowState: OmahaResponse = {
@@ -1545,7 +1575,7 @@ describe('OmahaHiLoPage', () => {
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.omahahilo).toHaveBeenCalledTimes(1));
-    expect(screen.getByText('棋譜')).toBeInTheDocument();
+    expect(await screen.findByText('棋譜')).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('閉じる'));
     await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
@@ -1712,6 +1742,79 @@ describe('OmahaHiLoPage', () => {
     // A missing hand.* key renders the key itself, which the presence check missed.
     expect(badge.textContent).not.toMatch(/^hand\./);
     expect(badge.textContent?.trim()).toBeTruthy();
+  });
+
+  it('shows the best qualifying low cards during play and says none when no low is made', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue({
+      ...flopState,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 2 },
+            { design: 'DIAMOND', value: 3 },
+            { design: 'CLOVER', value: 13 },
+          ],
+        }),
+        ...flopState.players.slice(1),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 4 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+    });
+    const firstRender = renderWithProviders(<OmahaHiLoPage />);
+    const preview = await screen.findByTestId('omahahilo-live-low-preview');
+    expect(preview).toHaveTextContent('ロー候補: 8-5-4-2-A');
+    expect(screen.getAllByTestId('omahahilo-lo-card')).toHaveLength(5);
+    firstRender.unmount();
+
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(flopState);
+    renderWithProviders(<OmahaHiLoPage />);
+    expect(await screen.findByTestId('omahahilo-live-low-preview')).toHaveTextContent('ロー候補: なし');
+    expect(screen.queryAllByTestId('omahahilo-lo-card')).toHaveLength(0);
+  });
+
+  it.each([
+    [3, [{ design: 'SPADE', value: 4 }]],
+    [
+      4,
+      [
+        { design: 'SPADE', value: 4 },
+        { design: 'CLOVER', value: 7 },
+      ],
+    ],
+  ] as const)('keeps the qualifying low preview on phase %i', async (phase, extraBoardCards) => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue({
+      ...flopState,
+      phase,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 2 },
+            { design: 'DIAMOND', value: 3 },
+            { design: 'CLOVER', value: 13 },
+          ],
+        }),
+        ...flopState.players.slice(1),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 3 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+        ...extraBoardCards,
+      ],
+    });
+    renderWithProviders(<OmahaHiLoPage />);
+    expect(await screen.findByTestId('omahahilo-live-low-preview')).toHaveTextContent('ロー候補: 5-4-3-2-A');
+    expect(screen.getAllByTestId('omahahilo-lo-card')).toHaveLength(5);
   });
 
   it('drops the preview at showdown, where the final hand is already shown', async () => {

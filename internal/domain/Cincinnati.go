@@ -555,9 +555,6 @@ func (g *Cincinnati) GetActionLog() []*ActionLogEntry { return g.actionLog }
 func (g *Cincinnati) appendLog(seat int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
 	g.appendLogCodeAt(g.turnNumber, seat, actionType, detailCode, detailParams, cards)
-	if len(g.actionLog) > cincinnatiMaxSliceLen {
-		g.actionLog = g.actionLog[len(g.actionLog)-cincinnatiMaxSliceLen:]
-	}
 }
 
 // --- 永続化 ---

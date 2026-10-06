@@ -54,6 +54,8 @@
     "games": "Games cleared: {{count}}",
     "clearRate": "Clear rate: {{rate}}%",
     "moves": "Total moves: {{count}}",
+    "minMoves": "Fewest moves to clear: {{count}}",
+    "unrecorded": "Not recorded",
     "redeals": "Redeals remaining at clear: {{count}}",
     "clear": "Clear results"
   }

@@ -201,7 +201,15 @@ function MemoryPageContent() {
     const cur = board[focusedIdx];
     if (cur && !cur.taken && !cur.faceUp) return;
     const firstIdx = board.findIndex((c) => !c.taken && !c.faceUp);
-    if (firstIdx >= 0) setFocusedIdx(firstIdx);
+    const focusedCardTaken = cur === undefined ? false : cur.taken;
+    if (firstIdx >= 0) {
+      setFocusedIdx(firstIdx);
+      if (focusedCardTaken) {
+        boardRef.current?.querySelector<HTMLButtonElement>(`[data-testid="board-${firstIdx.toString()}"]`)?.focus();
+      }
+    } else if (focusedCardTaken) {
+      boardRef.current?.focus();
+    }
   }, [state?.board, focusedIdx]);
 
   const focusCell = useCallback((idx: number) => {
@@ -431,6 +439,7 @@ function MemoryPageContent() {
               {/* biome-ignore lint/a11y/noStaticElementInteractions: keydown only routes arrow keys for roving focus; the real controls are the child <button>s */}
               <div
                 ref={boardRef}
+                tabIndex={-1}
                 onKeyDown={handleBoardKeyDown}
                 className="grid grid-cols-7 gap-0.5 sm:gap-1 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-13 lg:grid-rows-4 lg:h-full"
               >

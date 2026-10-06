@@ -697,10 +697,10 @@ func TestChemindeFer_Accessors(t *testing.T) {
 // 行動ログは上限を超えたら古い方から捨てる。
 func TestChemindeFer_ActionLogIsBounded(t *testing.T) {
 	g := newChemindeFerAllCpu(t, 17)
-	for range chemindeFerMaxSliceLen + 50 {
+	for range MaxActionLog + 50 {
 		g.appendLog(0, "noise", "chemindefer.log.pass", nil, nil)
 	}
-	assert.Len(t, g.GetActionLog(), chemindeFerMaxSliceLen)
+	assert.Len(t, g.GetActionLog(), MaxActionLog)
 }
 
 // シューが尽きかけたら組み直す。**nil 札を配らないための最後の砦。**

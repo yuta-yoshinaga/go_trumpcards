@@ -274,6 +274,39 @@ function IndianPokerPageContent() {
         <>
           {/* Scrollable: opponent cards + CPU players */}
           <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
+            <section className="mb-3 rounded-lg bg-ds-surface p-3 text-xs" aria-label={t('metaAI.title')}>
+              <h2 className="mb-1 font-bold text-ds-text-primary">{t('metaAI.title')}</h2>
+              <div className="text-ds-text-muted">
+                {t('metaAI.gamesPlayed', {
+                  value:
+                    state.metaAI && state.metaAI.gamesPlayed > 0 ? state.metaAI.gamesPlayed : t('metaAI.unmeasured'),
+                })}
+              </div>
+              <div className="text-ds-text-muted">
+                {t('metaAI.bluffRate', {
+                  value:
+                    state.metaAI && state.profile && state.profile.aggressiveByBracket[1].total > 0
+                      ? `${(state.metaAI.bluffRate * 100).toFixed(0)}%`
+                      : t('metaAI.unmeasured'),
+                })}
+              </div>
+              <div className="text-ds-text-muted">
+                {t('metaAI.foldRate', {
+                  value:
+                    state.metaAI && state.profile && state.profile.foldToBetTotal > 0
+                      ? `${(state.metaAI.foldRate * 100).toFixed(0)}%`
+                      : t('metaAI.unmeasured'),
+                })}
+              </div>
+              <div className="text-ds-text-muted">
+                {t('metaAI.hesitationMean', {
+                  value:
+                    state.metaAI && state.profile && state.profile.hesitationCount > 0
+                      ? t('metaAI.milliseconds', { value: Math.round(state.metaAI.hesitationMean) })
+                      : t('metaAI.unmeasured'),
+                })}
+              </div>
+            </section>
             {/* CPU players - show cards face-up (opponents can see each other's cards) */}
             <div data-tutorial="ip-cpu-cards" className={isMobile ? 'grid grid-cols-3 gap-2 mb-3' : ''}>
               {state.players

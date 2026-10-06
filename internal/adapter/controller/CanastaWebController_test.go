@@ -18,6 +18,7 @@ import (
 func mustCanastaOutputJSON(msg string) string {
 	out := &controller.CanastaWebOutput{
 		Players:       make([]*controller.CanastaWebOutputPlayer, 0),
+		DiscardPile:   make([]*controller.WebOutputCard, 0),
 		WinnerIdx:     -1,
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
@@ -29,7 +30,7 @@ func mustCanastaOutputJSON(msg string) string {
 }
 
 func TestCanastaWebController_Method(t *testing.T) {
-	mockOutput := `{"players":[],"phase":0,"roundNumber":0,"currentPlayerIdx":0,"discardTop":null,"drawPileCount":0,"discardPileCount":0,"isFrozen":false,"gameEndFlag":false,"winnerIdx":-1,"message":"","messageCode":"","config":{"cpuDifficulty":0,"pointLimit":0}}`
+	mockOutput := `{"players":[],"phase":0,"roundNumber":0,"currentPlayerIdx":0,"discardTop":null,"discardPile":[],"drawPileCount":0,"discardPileCount":0,"isFrozen":false,"gameEndFlag":false,"winnerIdx":-1,"message":"","messageCode":"","config":{"cpuDifficulty":0,"pointLimit":0}}`
 	expectedBody := mockOutput
 
 	siMock := new(usecase.MockCanastaInteractor)

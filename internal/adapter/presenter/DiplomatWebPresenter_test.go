@@ -28,6 +28,7 @@ func setupDiplomatWebMockDefaults(g *interfaces.MockDiplomatGame) {
 		tableau[i] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, i+2, true)}
 	}
 	g.On("GetTableau").Return(tableau).Maybe()
+	g.On("GetTableauMoveTargets").Return([domain.DiplomatTableauCnt + 1][]int{}).Maybe()
 
 	var foundation [domain.DiplomatFoundationCnt][]*domain.Card
 	g.On("GetFoundation").Return(foundation).Maybe()
@@ -179,6 +180,7 @@ func TestDiplomatWebPresenter_MarksDeadEndColumns(t *testing.T) {
 	tableau[1] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, true), domain.NewCard(domain.CardDesignClover, 1, true)}
 	tableau[2] = []*domain.Card{domain.NewCard(domain.CardDesignClover, 1, true), domain.NewCard(domain.CardDesignHeart, 9, true)}
 	g.On("GetTableau").Return(tableau).Maybe()
+	g.On("GetTableauMoveTargets").Return([domain.DiplomatTableauCnt + 1][]int{}).Maybe()
 	setupDiplomatOutputMock(g)
 
 	out := parseDiplomatOutput(t, new(DiplomatWebPresenter).Output(g, nil))

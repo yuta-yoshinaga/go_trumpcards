@@ -99,6 +99,7 @@ function SedmaPageContent() {
     exec,
     retry,
     sedmaConfig,
+    hasPendingConfig,
     handleConfigChange,
     selectedCardIndices,
     toggleCard,
@@ -239,6 +240,11 @@ function SedmaPageContent() {
               },
             ]}
           />
+          <div role="status" aria-live="polite">
+            {hasPendingConfig && (
+              <p className="px-4 pt-1 text-sm text-ds-text-muted">{t('settings.pendingApplication')}</p>
+            )}
+          </div>
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             <div className="text-ds-text-primary text-center mb-2">

@@ -54,6 +54,11 @@ func (_m *MockGrandfathersClockInteractor) UndoN(n int) string {
 	return ret.Get(0).(string)
 }
 
+func (_m *MockGrandfathersClockInteractor) Redo() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
 // Snapshot モック
 func (_m *MockGrandfathersClockInteractor) Snapshot() ([]byte, error) {
 	ret := _m.Called()

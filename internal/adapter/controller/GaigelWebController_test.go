@@ -20,6 +20,7 @@ func mustGaigelOutputJSON(msg string) string {
 		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		MarriageIndices: []int{},
 		WinnerTeam:      -1,
+		TrickWinnerIdx:  -1,
 		WebOutputBase:   controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

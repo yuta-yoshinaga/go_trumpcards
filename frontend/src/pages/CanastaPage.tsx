@@ -268,20 +268,18 @@ function CanastaPageContent() {
             <div className={lgTwoColGrid}>
               {/* Left: game play area */}
               <div>
-                {/* Discard pile top */}
-                {state.discardTop && (
-                  <div
-                    className={`my-3 p-3 rounded flex items-center gap-3 relative ${
-                      state.isFrozen ? `${badgeInfoColors} ring-2 ring-ds-info` : 'bg-black/40'
-                    }`}
-                    data-tutorial="ca-draw-area"
-                    data-testid="ca-discard-pile"
-                  >
-                    <AnimatedCard card={state.discardTop} width={cardWidth} />
-                    <div className="text-ds-text-muted text-sm">{t('discardTop')}</div>
+                <div
+                  className={`my-3 p-3 rounded relative ${
+                    state.isFrozen ? `${badgeInfoColors} ring-2 ring-ds-info` : 'bg-black/40'
+                  }`}
+                  data-tutorial="ca-draw-area"
+                  data-testid="ca-discard-pile"
+                >
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-ds-text-muted text-sm">{t('discardTop')}</span>
                     {state.isFrozen && (
                       <span
-                        className="absolute top-1 right-2 text-ds-info text-xs font-bold"
+                        className="text-ds-info text-xs font-bold"
                         data-testid="ca-frozen-badge"
                         role="img"
                         aria-label={t('frozenIndicator')}
@@ -290,7 +288,27 @@ function CanastaPageContent() {
                       </span>
                     )}
                   </div>
-                )}
+                  <div className="max-h-48 overflow-y-auto">
+                    <div className="flex flex-wrap gap-1 items-start">
+                      {state.discardPile.map((card, idx) => (
+                        <div
+                          key={`ca-discard-${idx}`}
+                          data-discard-top={idx === state.discardPile.length - 1 ? 'true' : undefined}
+                          className={
+                            idx === state.discardPile.length - 1
+                              ? 'outline outline-2 outline-ds-accent outline-offset-2 rounded'
+                              : undefined
+                          }
+                        >
+                          {idx === state.discardPile.length - 1 && (
+                            <span className="sr-only">{t('discardPileTop')}</span>
+                          )}
+                          <AnimatedCard card={card} width={cardWidth} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
 
                 {/* Player melds */}
                 {state.players.map((p, pi) => {

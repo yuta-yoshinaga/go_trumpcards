@@ -362,7 +362,24 @@ describe('CuckooPage', () => {
     mockExec.mockClear();
     const select = screen.getByLabelText('CPU難易度');
     fireEvent.change(select, { target: { value: '2' } });
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2 } }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2, initialLives: 3 } }),
+    );
+  });
+
+  it('changes initial lives while preserving CPU difficulty', async () => {
+    renderWithProviders(<CuckooPage />);
+    await waitFor(() => expect(screen.getByText(/プレイヤー/)).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.change(screen.getByLabelText('CPU難易度'), { target: { value: '2' } });
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenLastCalledWith('reset', { config: { cpuDifficulty: 2, initialLives: 3 } }),
+    );
+    mockExec.mockClear();
+    fireEvent.change(screen.getByLabelText('初期ライフ'), { target: { value: '10' } });
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2, initialLives: 10 } }),
+    );
   });
 
   // #5671: 脱落者はターン順から飛ばされるので、「隣」が席順の隣とは限らない。

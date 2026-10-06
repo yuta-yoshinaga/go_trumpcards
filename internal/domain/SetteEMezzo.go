@@ -139,7 +139,7 @@ type SetteEMezzo struct {
 	lastResult       string
 	lastResultCode   string
 	lastResultParams map[string]string
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // setteEMezzoOpeningBanker 最初の局の親。
@@ -608,9 +608,6 @@ func (s *SetteEMezzo) GetLastResultCode() string { return s.lastResultCode }
 // GetLastResultParams 直近の精算メッセージパラメータを取得する
 func (s *SetteEMezzo) GetLastResultParams() map[string]string { return s.lastResultParams }
 
-// GetActionLog 棋譜取得
-func (s *SetteEMezzo) GetActionLog() []*ActionLogEntry { return s.actionLog }
-
 // GetGameEndFlag 局が終わっているか
 func (s *SetteEMezzo) GetGameEndFlag() bool { return s.phase == SetteEMezzoPhaseEnd }
 
@@ -634,14 +631,7 @@ func (s *SetteEMezzo) CanSetMatta() bool {
 
 // appendLog 棋譜エントリを追加
 func (s *SetteEMezzo) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber:   len(s.actionLog),
-		PlayerIdx:    s.activeSeat,
-		ActionType:   actionType,
-		DetailCode:   detailCode,
-		DetailParams: detailParams,
-		Cards:        append([]*Card(nil), cards...),
-	})
+	s.appendLogCodeAt(s.nextTurnNumber()-1, s.activeSeat, actionType, detailCode, detailParams, append([]*Card(nil), cards...))
 }
 
 // setteEMezzoHandJSON is the wire format for one hand. SetteEMezzoHand's fields

@@ -6,6 +6,8 @@
     "abundance": "アバンダンス"
   },
   "bidHighest": "現在の最高ビッド: {{bid}}（{{player}}）",
+  "bidHistory": "入札状況",
+  "bidUnbid": "未入札",
   "bidLabel": "入札",
   "bidNone": "まだ入札なし",
   "bidPrompt": "入札してください（上回る入札のみ可）:",

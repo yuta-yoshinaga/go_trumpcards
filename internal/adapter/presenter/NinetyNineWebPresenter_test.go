@@ -65,6 +65,9 @@ func TestNinetyNineWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		m, players := setupNinetyNineWebMockWithPlayers()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		buried := domain.NewCard(domain.CardDesignDiamond, 8, false)
+		players[0].SetBuried([]*domain.Card{buried})
+		players[1].SetBuried([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, false)})
 
 		result := p.Output(m, nil)
 		var resObj controller.NinetyNineWebOutput
@@ -78,6 +81,13 @@ func TestNinetyNineWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, domain.CardDesignHeart, resObj.TrumpSuit)
 		assert.Equal(t, -1, resObj.WinnerIdx)
 		assert.Equal(t, []int{0}, resObj.ValidPlayIndices)
+		assert.Equal(t, []*controller.WebOutputCard{{Design: "DIAMOND", Value: 8}}, resObj.Players[0].BuriedCards)
+		assert.Nil(t, resObj.Players[1].BuriedCards)
+		var wire struct {
+			Players []map[string]json.RawMessage `json:"players"`
+		}
+		assert.NoError(t, json.Unmarshal([]byte(result), &wire))
+		assert.NotContains(t, wire.Players[1], "buriedCards")
 	})
 
 	t.Run("error message", func(t *testing.T) {

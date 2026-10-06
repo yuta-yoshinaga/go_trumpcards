@@ -86,6 +86,9 @@ type Cucumber struct {
 	roundNumber      int
 	// lastTrickWinnerIdx は直前ラウンドで最終トリックを取った席 (-1 = 未)。
 	lastTrickWinnerIdx int
+	// resolvedTrickWinnerIdx と lastTrickRank は直前に決着したトリックの結果。
+	resolvedTrickWinnerIdx int
+	lastTrickRank          int
 	// lastPenalty は直前ラウンドで付いた失点。
 	lastPenalty int
 	gameEndFlag bool
@@ -102,10 +105,11 @@ func NewCucumber(players []*CucumberPlayer, config CucumberConfig) *Cucumber {
 		players = newCucumberSeats(config.PlayerCnt)
 	}
 	return &Cucumber{
-		players:            players,
-		config:             config,
-		lastTrickWinnerIdx: -1,
-		winnerIdx:          -1,
+		players:                players,
+		config:                 config,
+		lastTrickWinnerIdx:     -1,
+		resolvedTrickWinnerIdx: -1,
+		winnerIdx:              -1,
 	}
 }
 
@@ -145,6 +149,8 @@ func (c *Cucumber) dealRound() {
 	c.phase = CucumberPhasePlay
 	c.currentTrick = nil
 	c.trickNumber = 0
+	c.resolvedTrickWinnerIdx = -1
+	c.lastTrickRank = 0
 
 	c.trumpCards = NewTrumpCards(0)
 	c.trumpCards.Shuffle()
@@ -332,6 +338,13 @@ func (c *Cucumber) forcedLowest(playerIdx int, valid []int) bool {
 // 先に出したほうが勝ちます。
 func (c *Cucumber) resolveTrick() {
 	winner := c.trickWinner()
+	c.resolvedTrickWinnerIdx = winner
+	for _, tc := range c.currentTrick {
+		if tc.PlayerIdx == winner {
+			c.lastTrickRank = cucumberRank(tc.Card)
+			break
+		}
+	}
 	c.trickNumber++
 	c.addLog(winner, "trick", "cucumber.log.trickWin", map[string]string{"trick": fmt.Sprintf("%d", c.trickNumber)}, nil)
 
@@ -509,6 +522,12 @@ func (c *Cucumber) GetRoundNumber() int { return c.roundNumber }
 // GetLastTrickWinnerIdx は直前ラウンドで最終トリックを取った席を返す (-1 = 未)。
 func (c *Cucumber) GetLastTrickWinnerIdx() int { return c.lastTrickWinnerIdx }
 
+// GetResolvedTrickWinnerIdx は直前に決着したトリックの勝者を返す (-1 = なし)。
+func (c *Cucumber) GetResolvedTrickWinnerIdx() int { return c.resolvedTrickWinnerIdx }
+
+// GetLastTrickRank は直前に決着したトリックの最高ランクを返す (未決着は 0)。
+func (c *Cucumber) GetLastTrickRank() int { return c.lastTrickRank }
+
 // GetLastPenalty は直前ラウンドで付いた失点を返す。
 func (c *Cucumber) GetLastPenalty() int { return c.lastPenalty }
 
@@ -528,37 +547,41 @@ func (c *Cucumber) GetWinnerIdx() int { return c.winnerIdx }
 
 // cucumberJSON is the JSON wire format for Cucumber.
 type cucumberJSON struct {
-	Players            []*CucumberPlayer `json:"pl"`
-	Config             CucumberConfig    `json:"cf"`
-	Phase              CucumberPhase     `json:"ph"`
-	CurrentTrick       []*TrickCard      `json:"ct"`
-	LeadPlayerIdx      int               `json:"lp"`
-	CurrentIdx         int               `json:"ci"`
-	TrickNumber        int               `json:"tn"`
-	RoundNumber        int               `json:"rn"`
-	LastTrickWinnerIdx int               `json:"lw"`
-	LastPenalty        int               `json:"lpn"`
-	GameEndFlag        bool              `json:"ge"`
-	WinnerIdx          int               `json:"wi"`
-	ActionLog          []*ActionLogEntry `json:"al"`
+	Players                []*CucumberPlayer `json:"pl"`
+	Config                 CucumberConfig    `json:"cf"`
+	Phase                  CucumberPhase     `json:"ph"`
+	CurrentTrick           []*TrickCard      `json:"ct"`
+	LeadPlayerIdx          int               `json:"lp"`
+	CurrentIdx             int               `json:"ci"`
+	TrickNumber            int               `json:"tn"`
+	RoundNumber            int               `json:"rn"`
+	LastTrickWinnerIdx     int               `json:"lw"`
+	ResolvedTrickWinnerIdx int               `json:"rtw"`
+	LastTrickRank          int               `json:"ltr"`
+	LastPenalty            int               `json:"lpn"`
+	GameEndFlag            bool              `json:"ge"`
+	WinnerIdx              int               `json:"wi"`
+	ActionLog              []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (c *Cucumber) MarshalJSON() ([]byte, error) {
 	return json.Marshal(cucumberJSON{
-		Players:            c.players,
-		Config:             c.config,
-		Phase:              c.phase,
-		CurrentTrick:       c.currentTrick,
-		LeadPlayerIdx:      c.leadPlayerIdx,
-		CurrentIdx:         c.currentPlayerIdx,
-		TrickNumber:        c.trickNumber,
-		RoundNumber:        c.roundNumber,
-		LastTrickWinnerIdx: c.lastTrickWinnerIdx,
-		LastPenalty:        c.lastPenalty,
-		GameEndFlag:        c.gameEndFlag,
-		WinnerIdx:          c.winnerIdx,
-		ActionLog:          c.actionLog,
+		Players:                c.players,
+		Config:                 c.config,
+		Phase:                  c.phase,
+		CurrentTrick:           c.currentTrick,
+		LeadPlayerIdx:          c.leadPlayerIdx,
+		CurrentIdx:             c.currentPlayerIdx,
+		TrickNumber:            c.trickNumber,
+		RoundNumber:            c.roundNumber,
+		LastTrickWinnerIdx:     c.lastTrickWinnerIdx,
+		ResolvedTrickWinnerIdx: c.resolvedTrickWinnerIdx,
+		LastTrickRank:          c.lastTrickRank,
+		LastPenalty:            c.lastPenalty,
+		GameEndFlag:            c.gameEndFlag,
+		WinnerIdx:              c.winnerIdx,
+		ActionLog:              c.actionLog,
 	})
 }
 
@@ -567,6 +590,16 @@ func (c *Cucumber) UnmarshalJSON(data []byte) error {
 	var j cucumberJSON
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
+	}
+	var summaryKeys struct {
+		ResolvedTrickWinnerIdx *int `json:"rtw"`
+	}
+	if err := json.Unmarshal(data, &summaryKeys); err != nil {
+		return err
+	}
+	// Older saved games did not contain a completed-trick summary.
+	if summaryKeys.ResolvedTrickWinnerIdx == nil {
+		j.ResolvedTrickWinnerIdx = -1
 	}
 	if err := j.Config.Validate(); err != nil {
 		return err
@@ -605,6 +638,12 @@ func (c *Cucumber) UnmarshalJSON(data []byte) error {
 	}
 	if j.LastTrickWinnerIdx < -1 || j.LastTrickWinnerIdx >= len(j.Players) {
 		return fmt.Errorf("last trick winner index out of range: %d", j.LastTrickWinnerIdx)
+	}
+	if j.ResolvedTrickWinnerIdx < -1 || j.ResolvedTrickWinnerIdx >= len(j.Players) {
+		return fmt.Errorf("resolved trick winner index out of range: %d", j.ResolvedTrickWinnerIdx)
+	}
+	if j.LastTrickRank != 0 && (j.LastTrickRank < 2 || j.LastTrickRank > 14) {
+		return fmt.Errorf("last trick rank out of range: %d", j.LastTrickRank)
 	}
 	if j.WinnerIdx < -1 || j.WinnerIdx >= len(j.Players) {
 		return fmt.Errorf("winner index out of range: %d", j.WinnerIdx)
@@ -653,6 +692,8 @@ func (c *Cucumber) UnmarshalJSON(data []byte) error {
 	c.trickNumber = j.TrickNumber
 	c.roundNumber = j.RoundNumber
 	c.lastTrickWinnerIdx = j.LastTrickWinnerIdx
+	c.resolvedTrickWinnerIdx = j.ResolvedTrickWinnerIdx
+	c.lastTrickRank = j.LastTrickRank
 	c.lastPenalty = j.LastPenalty
 	c.gameEndFlag = j.GameEndFlag
 	c.winnerIdx = j.WinnerIdx

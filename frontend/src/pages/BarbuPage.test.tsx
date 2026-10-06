@@ -133,6 +133,18 @@ describe('BarbuPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('p', { handIndex: 0 }));
   });
 
+  it('shows the Japanese frontend hint translation when hints are enabled', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 'play', currentContract: 0, currentTurn: 0 }));
+    renderWithProviders(<BarbuPage />);
+
+    const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    fireEvent.click(toggle);
+
+    const tooltip = await screen.findByTestId('hint-tooltip');
+    expect(tooltip).toHaveTextContent('マイナス・コントラクトです。低いカードでトリックを避けましょう。');
+    expect(tooltip).not.toHaveTextContent('barbu.hint');
+  });
+
   it('labels each trick card with the player who played it and marks the lead', async () => {
     mockExec.mockResolvedValue(
       makeState({
@@ -154,6 +166,58 @@ describe('BarbuPage', () => {
     // Follow card was played by the human; no lead marker on it.
     expect(trickCards[1]).toHaveTextContent('あなた');
     expect(trickCards[1]).not.toHaveTextContent('▸');
+  });
+
+  it('shows the previous trick and its winner during a non-Dominoes play phase', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'play',
+        currentContract: 0,
+        currentTurn: 1,
+        currentTrick: [{ playerIdx: 1, card: card('CLUB', 4) }],
+        lastTrick: [
+          { playerIdx: 0, card: card('HEART', 5) },
+          { playerIdx: 2, card: card('HEART', 13) },
+        ],
+        lastTrickWinner: 2,
+      }),
+    );
+    const { unmount } = renderWithProviders(<BarbuPage />);
+
+    const reviewer = await screen.findByTestId('bb-previous-trick');
+    expect(reviewer).toHaveTextContent('前のトリック');
+    expect(reviewer).toHaveTextContent('CPU 2 が獲得');
+    expect(reviewer.querySelectorAll('[data-testid="bb-previous-trick-card"]')).toHaveLength(2);
+    expect(within(reviewer).getByAltText('♥ 5')).toBeInTheDocument();
+    expect(within(reviewer).getByAltText('♥ K')).toBeInTheDocument();
+
+    unmount();
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'play',
+        currentContract: 0,
+        currentTurn: 1,
+        lastTrick: [{ playerIdx: 0, card: card('HEART', 5) }],
+        lastTrickWinner: 0,
+      }),
+    );
+    renderWithProviders(<BarbuPage />);
+    expect(await screen.findByTestId('bb-previous-trick')).toHaveTextContent('あなた が獲得');
+  });
+
+  it('does not show the previous trick reviewer for Dominoes', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'play',
+        currentContract: 6,
+        currentTurn: 0,
+        lastTrick: [{ playerIdx: 0, card: card('HEART', 5) }],
+        lastTrickWinner: 0,
+      }),
+    );
+    renderWithProviders(<BarbuPage />);
+    await waitFor(() => expect(screen.getByTestId('pass-button')).toBeInTheDocument());
+    expect(screen.queryByTestId('bb-previous-trick')).not.toBeInTheDocument();
   });
 
   it('shows a pass button in Dominoes and passes when no card is playable', async () => {

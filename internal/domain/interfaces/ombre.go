@@ -63,6 +63,14 @@ type OmbreGame interface {
 	GetWinningBid() domain.OmbreBid
 	// GetHighestBid returns the highest bid declared so far, including during the auction.
 	GetHighestBid() domain.OmbreBid
+	// GetBids returns each seat's bid declaration.
+	GetBids() [domain.OmbrePlayerCnt]domain.OmbreBid
+	// GetBidActed returns whether each seat has declared in the current auction.
+	GetBidActed() [domain.OmbrePlayerCnt]bool
+	// GetBidTrump returns the trump suit selected with each declaration.
+	GetBidTrump() [domain.OmbrePlayerCnt]int
+	// GetHighestBidderIdx returns the highest bidder, or -1 when none has bid.
+	GetHighestBidderIdx() int
 	// GetTrumpSuit 切り札スートを取得する (-1=未確定, 1..4)
 	GetTrumpSuit() int
 	// GetCurrentBidderIdx 現在のビッド手番インデックスを取得する

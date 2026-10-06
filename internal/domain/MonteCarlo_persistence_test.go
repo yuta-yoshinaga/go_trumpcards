@@ -173,10 +173,9 @@ func TestMonteCarlo_SnapshotExcessiveDeckDrawCntRejected(t *testing.T) {
 	require.Error(t, err, "excessive deckDrawCnt must be rejected")
 }
 
-// TestMonteCarlo_SnapshotExcessiveActionLogLnRejected rejects snapshots with
-// ActionLogLn > monteCarloMaxSliceLen, consistent with the maxSliceLen defence
-// used across the codebase.
-func TestMonteCarlo_SnapshotExcessiveActionLogLnRejected(t *testing.T) {
+// TestMonteCarlo_SnapshotLargeActionLogMarkAccepted accepts snapshots with
+// ActionLogLn above the action-log cap because it is an absolute undo mark.
+func TestMonteCarlo_SnapshotLargeActionLogMarkAccepted(t *testing.T) {
 	t.Parallel()
 
 	payload := map[string]any{
@@ -188,5 +187,5 @@ func TestMonteCarlo_SnapshotExcessiveActionLogLnRejected(t *testing.T) {
 
 	var restored MonteCarlo
 	err = json.Unmarshal(data, &restored)
-	require.Error(t, err, "excessive actionLogLn must be rejected")
+	require.NoError(t, err, "large actionLogLn marks are valid")
 }

@@ -614,6 +614,60 @@ describe('WizardPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, 0));
   });
 
+  it('prevents selecting illegal cards on the human play turn', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      currentTrick: [{ playerIdx: 3, card: { design: 'HEART', value: 4 } }],
+    });
+    renderWithProviders(<WizardPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ A' })).toBeInTheDocument());
+
+    const illegalCard = screen.getByRole('button', { name: '♠ A' });
+    const legalCard = screen.getByRole('button', { name: '♥ J' });
+    expect(illegalCard).toHaveAttribute('aria-disabled', 'true');
+    expect(legalCard).not.toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(illegalCard);
+    expect(illegalCard).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(legalCard);
+    expect(legalCard).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('allows deselecting a selected card after it becomes illegal', async () => {
+    mockExec.mockResolvedValueOnce(playPhaseState).mockResolvedValueOnce({
+      ...followSuitState,
+      players: [
+        {
+          ...followSuitState.players[0],
+          cards: [playPhaseState.players[0].cards[0], playPhaseState.players[0].cards[1]],
+        },
+        ...followSuitState.players.slice(1),
+      ],
+    });
+    renderWithProviders(<WizardPage />);
+    const spade = await screen.findByRole('button', { name: '♠ A' });
+
+    fireEvent.click(spade);
+    expect(spade).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+
+    const illegalSelectedSpade = await screen.findByRole('button', { name: '♠ A' });
+    // Successful API actions clear selection, so this verifies the card is now
+    // illegal and remains unselected when clicked after the trick state changes.
+    expect(illegalSelectedSpade).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(illegalSelectedSpade);
+    expect(illegalSelectedSpade).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('keeps cards selectable off turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<WizardPage />);
+    const card = await screen.findByRole('button', { name: '♠ A' });
+
+    expect(card).not.toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(card);
+    expect(card).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('calls next when next trick button is clicked', async () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<WizardPage />);
@@ -682,7 +736,7 @@ describe('WizardPage', () => {
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.wizard).toHaveBeenCalledTimes(1));
-    expect(screen.getByText('棋譜')).toBeInTheDocument();
+    expect(await screen.findByText('棋譜')).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('閉じる'));
     await waitFor(() => expect(screen.queryByText(/^棋譜$/)).not.toBeInTheDocument());

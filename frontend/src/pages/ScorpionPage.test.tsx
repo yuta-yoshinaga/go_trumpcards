@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { scorpionApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, ScorpionResponse } from '../types/card';
@@ -584,6 +585,56 @@ describe('ScorpionPage', () => {
     await waitFor(() => {
       expect(screen.getByLabelText(/コマンドを入力/)).toBeInTheDocument();
     });
+  });
+
+  it('localizes CLI help and state output in Japanese and English', async () => {
+    renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByRole('button', { name: /CLI|GUI/i }));
+    const input = await screen.findByLabelText(/コマンドを入力/);
+    fireEvent.change(input, { target: { value: '?' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(screen.getByRole('log')).toHaveTextContent('列間で一番上の札を移動'));
+    expect(screen.getByRole('log')).toHaveTextContent('ストックから列0〜2に3枚配る');
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[], ...playingState.tableau.slice(1)],
+      completedSuits: 2,
+      stockCount: 5,
+      moveCount: 9,
+      phase: 1,
+    });
+    fireEvent.change(input, { target: { value: 'd' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(screen.getByRole('log')).toHaveTextContent(/完成スート数: 2\/4\s+ストック: 5/));
+    expect(screen.getByRole('log')).toHaveTextContent('列0:');
+    expect(screen.getByRole('log')).toHaveTextContent('列0: 空');
+    expect(screen.getByRole('log')).toHaveTextContent(/手数: 9\s+フェーズ: ゲームクリア/);
+
+    await i18n.changeLanguage('en');
+    await waitFor(() => expect(screen.getByLabelText(/Enter command/)).toBeInTheDocument());
+    fireEvent.change(input, { target: { value: '?' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(screen.getByRole('log')).toHaveTextContent('Move top card between tableau columns'));
+    mockExec.mockResolvedValueOnce({
+      ...playingState,
+      tableau: [[], ...playingState.tableau.slice(1)],
+      completedSuits: 1,
+      stockCount: 4,
+      moveCount: 10,
+      phase: 2,
+    });
+    fireEvent.change(input, { target: { value: 'd' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(screen.getByRole('log')).toHaveTextContent(/Completed suits: 1\/4\s+Stock: 4/));
+    expect(screen.getByRole('log')).toHaveTextContent('Column 0:');
+    expect(screen.getByRole('log')).toHaveTextContent('Column 0: (empty)');
+    expect(screen.getByRole('log')).toHaveTextContent(/Moves: 10\s+Phase: Game Over/);
+    mockExec.mockResolvedValueOnce({ ...playingState, moveCount: 11, phase: 0 });
+    fireEvent.change(input, { target: { value: 'd' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(screen.getByRole('log')).toHaveTextContent(/Moves: 11\s+Phase: Playing/));
+    await i18n.changeLanguage('ja');
   });
 
   it('renders WinCelebration on game clear', async () => {

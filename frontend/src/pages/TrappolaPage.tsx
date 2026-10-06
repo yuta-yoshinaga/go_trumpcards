@@ -309,7 +309,10 @@ function TrappolaPageContent() {
 
                 {/* Team score table */}
                 <div className="my-3 p-2 rounded bg-black/30" data-tutorial="tr-score-table">
-                  <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
+                  <div className="flex justify-between text-ds-text-muted text-sm mb-1">
+                    <span>{t('scores')}</span>
+                    <span>{t('targetPointsLabel', { points: state.config.targetPoints })}</span>
+                  </div>
                   <table className="w-full text-sm text-ds-text-muted">
                     <thead>
                       <tr>

@@ -27,6 +27,7 @@ const playPhaseState: NinetyNineResponse = {
       cumulativeScore: 0,
       trickCount: 0,
       buriedCount: 3,
+      buriedCards: [{ design: 'DIAMOND', value: 13 }],
     },
     {
       id: 1,
@@ -117,6 +118,15 @@ beforeEach(() => {
 });
 
 describe('NinetyNinePage', () => {
+  it('shows only the human player’s buried cards after the bid phase', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<NinetyNinePage />);
+
+    expect(await screen.findByRole('region', { name: '自分が埋めたカード' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '♦ K' })).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: '♥ 7' })).not.toBeInTheDocument();
+  });
+
   it('announces each player bid, won tricks, round score, and cumulative score at round end', async () => {
     mockExec.mockResolvedValue({
       ...roundEndState,

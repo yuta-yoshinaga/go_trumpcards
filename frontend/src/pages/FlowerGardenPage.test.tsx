@@ -179,6 +179,18 @@ describe('FlowerGardenPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /^♦ 7（リザーブ枠/ })).toBeInTheDocument());
   });
 
+  it('shows the hinted card name with its source and destination', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({
+      ...playingState,
+      hint: { card: card('HEART', 5), fromZone: 'tableau', fromCol: 0, cardIndex: 1, toZone: 'foundation', toCol: 0 },
+    });
+    renderWithProviders(<FlowerGardenPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'ヒント' }));
+    expect(await screen.findByTestId('fg-hint-live')).toHaveTextContent('♥ 5');
+    expect(screen.getByTestId('fg-hint-live')).toHaveTextContent('フラワーベッド0');
+    expect(screen.getByTestId('fg-hint-live')).toHaveTextContent('組札');
+  });
+
   it('labels all 16 bouquet slots with their 0-based index (matching hint text)', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<FlowerGardenPage />);

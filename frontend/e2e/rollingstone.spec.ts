@@ -2,7 +2,7 @@ import { expect, type Page, test } from '@playwright/test';
 import { navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION } from './helpers';
 
 /** Your hand. **The only signal that always moves** when you act. */
-const hand = (page: Page) => page.getByRole('button', { name: /を出す$/ });
+const hand = (page: Page) => page.getByRole('button', { name: /を出す/ });
 
 // **合法な札だけを選ぶ。** フォロー義務を満たさない札はサーバが拒否する。
 const legalCard = (page: Page) => page.locator('button.ring-ds-success');

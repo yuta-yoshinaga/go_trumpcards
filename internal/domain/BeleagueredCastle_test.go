@@ -529,3 +529,37 @@ func TestBeleagueredCastle_ActionLog(t *testing.T) {
 	log := bc.GetActionLog()
 	assert.NotEmpty(t, log)
 }
+
+func TestBeleagueredCastle_GetHint_SkipsSingletonToEmptyColumn(t *testing.T) {
+	t.Run("chooses a useful move", func(t *testing.T) {
+		bc := setupPlayingBeleagueredCastle()
+		bc.Reset()
+		clearBCTableau(bc)
+		var tableau [domain.BeleagueredCastleTableauCnt][]*domain.BeleagueredCastleTableauCard
+		tableau[0] = []*domain.BeleagueredCastleTableauCard{makeBCTableauCard(domain.CardDesignSpade, 13)}
+		tableau[2] = []*domain.BeleagueredCastleTableauCard{makeBCTableauCard(domain.CardDesignHeart, 13), makeBCTableauCard(domain.CardDesignHeart, 5)}
+		bc.SetTableau(tableau)
+		var foundation [domain.BeleagueredCastleFoundationCnt][]*domain.Card
+		for i, suit := range []int{domain.CardDesignSpade, domain.CardDesignHeart, domain.CardDesignDiamond, domain.CardDesignClover} {
+			foundation[i] = []*domain.Card{makeBCCard(suit, 1)}
+		}
+		bc.SetFoundation(foundation)
+		hint := bc.GetHint()
+		if assert.NotNil(t, hint) {
+			assert.Equal(t, 2, hint.FromCol)
+			assert.Equal(t, 1, hint.CardIndex)
+			assert.Equal(t, 1, hint.ToCol)
+		}
+	})
+	t.Run("no-op moves lead to stalemate", func(t *testing.T) {
+		bc := setupPlayingBeleagueredCastle()
+		bc.Reset()
+		clearBCTableau(bc)
+		var tableau [domain.BeleagueredCastleTableauCnt][]*domain.BeleagueredCastleTableauCard
+		tableau[0] = []*domain.BeleagueredCastleTableauCard{makeBCTableauCard(domain.CardDesignSpade, 13)}
+		bc.SetTableau(tableau)
+		assert.Nil(t, bc.GetHint())
+		require.NoError(t, bc.MoveTableauToTableau(0, 0, 1))
+		assert.True(t, bc.IsStalemate())
+	})
+}

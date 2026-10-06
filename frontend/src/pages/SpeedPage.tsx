@@ -160,6 +160,7 @@ function SpeedPageContent() {
   const isPlayPhase = state.phase === SpeedPhase.PLAY;
   const isStuck = state.phase === SpeedPhase.STUCK;
   const isGameEnd = state.phase === SpeedPhase.GAME_END || state.gameEndFlag;
+  const digitShortcutsActive = !cliEnabled && isPlayPhase && !loading;
   const humanPlayer = state.players[0];
   const cpuPlayer = state.players[1];
   const humanWon = state.winnerIdx === 0;
@@ -343,6 +344,7 @@ function SpeedPageContent() {
                     <button
                       type="button"
                       key={`${card.design}-${card.value}-${idx}`}
+                      aria-keyshortcuts={digitShortcutsActive && idx < 9 ? String(idx + 1) : undefined}
                       onClick={() => handleSmartClick(idx, humanPlayer.cards, state.centerPiles)}
                       disabled={!isPlayPhase || loading}
                       aria-label={playable ? `${cardAlt(card)} (${t('playable')})` : cardAlt(card)}

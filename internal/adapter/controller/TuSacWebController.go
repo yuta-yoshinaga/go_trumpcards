@@ -33,6 +33,13 @@ type TuSacWebOutputMeld struct {
 	Cards  []*WebOutputCard `json:"cards"`
 }
 
+// TuSacWebOutputHint is the server's recommended action and hand positions.
+type TuSacWebOutputHint struct {
+	Action  string `json:"action"`
+	Indexes []int  `json:"indexes"`
+	Reason  string `json:"reason"`
+}
+
 // TuSacWebOutputSeat は 1 席の状態
 type TuSacWebOutputSeat struct {
 	Name    string `json:"name"`
@@ -69,9 +76,10 @@ type TuSacWebOutput struct {
 	HandSize int `json:"handSize"`
 	DeckSize int `json:"deckSize"`
 	// MeldPointsByKind は種別ごとの得点 (添字 = 種別)。
-	MeldPointsByKind []int `json:"meldPointsByKind"`
-	WinnerSeat       int   `json:"winnerSeat"`
-	GameEndFlag      bool  `json:"gameEndFlag"`
+	MeldPointsByKind []int               `json:"meldPointsByKind"`
+	WinnerSeat       int                 `json:"winnerSeat"`
+	GameEndFlag      bool                `json:"gameEndFlag"`
+	ServerHint       *TuSacWebOutputHint `json:"serverHint,omitempty"`
 
 	Config *TuSacWebOutCfg `json:"config,omitempty"`
 	WebOutputBase

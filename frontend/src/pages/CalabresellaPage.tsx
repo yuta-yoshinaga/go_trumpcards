@@ -157,6 +157,7 @@ function CalabresellaPageContent() {
   // 12-card hand (CalabresellaHandSize in the backend).
   const REGULATION_HAND_SIZE = 12;
   const discardRemaining = humanPlayer ? Math.max(0, humanPlayer.cards.length - REGULATION_HAND_SIZE) : 0;
+  const discardSelectionRemaining = Math.max(0, discardRemaining - selectedCardIndices.length);
 
   const handleManualReset = () => {
     hideActionLog();
@@ -363,7 +364,7 @@ function CalabresellaPageContent() {
                   className="mb-1 text-center text-sm text-ds-accent font-semibold"
                   data-testid="calabresella-discard-prompt"
                 >
-                  {t('discardPhaseRemaining', { count: discardRemaining })}
+                  {t('discardPhaseRemaining', { count: discardSelectionRemaining })}
                 </div>
               )}
             </div>

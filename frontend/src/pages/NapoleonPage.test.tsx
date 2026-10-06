@@ -83,6 +83,7 @@ const playPhaseState: NapoleonResponse = {
   currentPlayerIdx: 0,
   bidPlayerIdx: 0,
   leadPlayerIdx: 0,
+  validPlayIndices: [0, 1],
   currentTrick: [],
   trumpSuit: 1,
   adjutantCard: { design: 'HEART', value: 1 },
@@ -659,6 +660,47 @@ describe('NapoleonPage', () => {
     expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('marks illegal plays and prevents selecting them', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, validPlayIndices: [0] });
+    renderWithProviders(<NapoleonPage />);
+    await waitFor(() => expect(screen.getByAltText('\u2665 J')).toBeInTheDocument());
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith(
+      'play',
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+    );
+    const illegal = screen.getByAltText('\u2665 J').closest('button') as HTMLButtonElement;
+    expect(illegal).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(illegal);
+    expect(illegal).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByAltText('\u2660 A').closest('button')).not.toHaveAttribute('aria-disabled');
+    fireEvent.click(screen.getByAltText('\u2660 A').closest('button') as HTMLButtonElement);
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('play', undefined, undefined, undefined, undefined, undefined, 0),
+    );
+  });
+
+  it('guards illegal card clicks in the desktop hand', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, validPlayIndices: [0] });
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
+    fireEvent(window, new Event('resize'));
+    renderWithProviders(<NapoleonPage />);
+    await waitFor(() => expect(screen.getByAltText('\u2665 J')).toBeInTheDocument());
+    const illegal = screen.getByAltText('\u2665 J').closest('button') as HTMLButtonElement;
+    expect(illegal).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(illegal);
+    expect(illegal).toHaveAttribute('aria-pressed', 'false');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 });
+    fireEvent(window, new Event('resize'));
+  });
+
   it('card buttons have aria-label with card name', async () => {
     renderWithProviders(<NapoleonPage />);
     await waitFor(() => expect(screen.getByAltText('\u2660 A')).toBeInTheDocument());
@@ -943,7 +985,7 @@ describe('NapoleonPage', () => {
     fireEvent.click(screen.getByText('\u68cb\u8b5c\u3092\u898b\u308b'));
 
     await waitFor(() => expect(actionLogApi.napoleon).toHaveBeenCalledTimes(1));
-    expect(screen.getByText('\u68cb\u8b5c')).toBeInTheDocument();
+    expect(await screen.findByText('\u68cb\u8b5c')).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('\u9589\u3058\u308b'));
     await waitFor(() => expect(screen.queryByText(/^\u68cb\u8b5c$/)).not.toBeInTheDocument());

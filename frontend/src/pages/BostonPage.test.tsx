@@ -178,6 +178,21 @@ describe('BostonPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 1 }));
   });
 
+  it('exposes hand card selection with pressed state while keeping card names', async () => {
+    renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(screen.getByTestId('boston-play-notice')).toBeInTheDocument());
+
+    const hand = handButtons();
+    expect(hand[0]).toHaveAccessibleName();
+    expect(hand[1]).toHaveAccessibleName();
+    expect(hand[0]).toHaveAttribute('aria-pressed', 'false');
+    expect(hand[1]).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(hand[1]);
+    expect(hand[0]).toHaveAttribute('aria-pressed', 'false');
+    expect(hand[1]).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('selects, plays, and clears cards with keyboard controls on the human play turn', async () => {
     renderWithProviders(<BostonPage />);
     await waitFor(() => expect(screen.getByTestId('boston-play-notice')).toBeInTheDocument());

@@ -34,12 +34,28 @@ describe('Perseverance stats reducer', () => {
       moveCount: 23,
       redealsLeft: 2,
     }).stats;
-    expect(first).toEqual({ starts: 1, games: 1, moves: 23, redeals: 2, clearRecorded: true, gameStarted: false });
+    expect(first).toEqual({
+      starts: 1,
+      games: 1,
+      moves: 23,
+      redeals: 2,
+      minMoves: 23,
+      clearRecorded: true,
+      gameStarted: false,
+    });
     expect(applyPerseveranceStatsAction(first, { type: 'clear', moveCount: 23, redealsLeft: 2 }).stats).toEqual(first);
   });
 
   it('allows a new clear after play starts and retains the clear guard when stats are cleared', () => {
-    const cleared = { starts: 1, games: 1, moves: 23, redeals: 2, clearRecorded: true, gameStarted: false };
+    const cleared = {
+      starts: 1,
+      games: 1,
+      moves: 23,
+      redeals: 2,
+      minMoves: 23,
+      clearRecorded: true,
+      gameStarted: false,
+    };
     const playing = applyPerseveranceStatsAction(cleared, { type: 'playing' }).stats;
     expect(playing.clearRecorded).toBe(false);
     expect(applyPerseveranceStatsAction(playing, { type: 'clear', moveCount: 4, redealsLeft: 1 }).stats).toEqual({
@@ -47,6 +63,7 @@ describe('Perseverance stats reducer', () => {
       starts: 2,
       moves: 27,
       redeals: 3,
+      minMoves: 4,
       clearRecorded: true,
       gameStarted: false,
     });
@@ -71,6 +88,7 @@ describe('usePerseveranceStats', () => {
       games: 2,
       moves: 25,
       redeals: 3,
+      minMoves: 15,
       clearRecorded: true,
       gameStarted: false,
     });
@@ -87,6 +105,7 @@ describe('usePerseveranceStats', () => {
       games: 1,
       moves: 10,
       redeals: 1,
+      minMoves: null,
       clearRecorded: false,
       gameStarted: false,
     });
@@ -105,6 +124,19 @@ describe('usePerseveranceStats', () => {
     act(() => result.current.clearStats());
     act(() => result.current.recordClear(8, 1));
     expect(result.current.stats).toEqual({ ...emptyPerseveranceStats(), clearRecorded: true });
+  });
+
+  it('keeps the lowest move count across clears and resets it when results are cleared', () => {
+    const { result } = renderHook(() => usePerseveranceStats());
+    act(() => result.current.recordClear(20, 1));
+    act(() => result.current.markPlaying());
+    act(() => result.current.recordClear(24, 1));
+    expect(result.current.stats.minMoves).toBe(20);
+    act(() => result.current.markPlaying());
+    act(() => result.current.recordClear(12, 1));
+    expect(result.current.stats.minMoves).toBe(12);
+    act(() => result.current.clearStats());
+    expect(result.current.stats.minMoves).toBeNull();
   });
 
   it('persists one start despite repeated playing notifications and clears the start total', () => {

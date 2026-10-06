@@ -48,6 +48,7 @@ const betPhaseState: PaiGowResponse = {
 const setHandsPhaseState: PaiGowResponse = {
   ...betPhaseState,
   phase: 2,
+  dealerCards: [],
   hint: { lowIdx0: 0, lowIdx1: 1, lowIsPair: false, reason: 'house_way' },
   playerCards: [
     card('SPADE', 10),
@@ -145,6 +146,14 @@ describe('PaiGowPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'セット' })).toBeInTheDocument());
     // 7 card buttons should be present
     expect(getCardButtons()).toHaveLength(7);
+  });
+
+  it('shows seven face-down dealer cards during set hands', async () => {
+    mockExec.mockResolvedValue(setHandsPhaseState);
+    renderWithProviders(<PaiGowPage />);
+    const dealerArea = await screen.findByTestId('dealer-cards');
+    expect(dealerArea.querySelectorAll('img')).toHaveLength(7);
+    expect(dealerArea).toHaveTextContent('ディーラー');
   });
 
   it('shows an accessible foul-rule help in the set-hands phase', async () => {

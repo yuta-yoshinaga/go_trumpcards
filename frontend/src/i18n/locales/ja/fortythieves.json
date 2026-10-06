@@ -18,7 +18,7 @@
   "landscapeBanner": "横画面での表示を推奨します",
   "hint": "ヒント",
   "autoComplete": "自動完成",
-  "autoCompleteNotReady": "山札とウェイストが空になるとクリックできます",
+  "autoCompleteNotReady": "山札が空になると使えます",
   "autoCompleteStarted": "自動完成を開始しました",
   "autoCompleteFinished": "自動完成が完了しました",
   "undo": "元に戻す",

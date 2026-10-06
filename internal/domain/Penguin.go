@@ -368,6 +368,10 @@ func (p *Penguin) GetHint() *PenguinHint {
 			if toCol == fromCol {
 				continue
 			}
+			// 列全体を空列へ移す手は列番号が入れ替わるだけで往復するため、ヒントにしない。
+			if seqStart == 0 && len(p.tableau[toCol]) == 0 {
+				continue
+			}
 			if len(p.tableau[toCol]) == 0 && card.GetValue() != emptyColRank {
 				continue
 			}

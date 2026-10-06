@@ -96,6 +96,12 @@ const ALS_TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     target: '[data-tutorial="als-stock-waste"]',
+    messageKey: 'tutorial.moveWasteToFoundation',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="als-stock-waste"]',
     messageKey: 'tutorial.stockWaste',
     placement: 'top',
     advanceOn: 'next',

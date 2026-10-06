@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Trans } from 'react-i18next';
 import { egyptianRatscrewApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -341,12 +342,17 @@ function EgyptianRatscrewPageContent() {
               data-tutorial="er-rule"
               data-testid="er-rule"
             >
-              {t('ruleLine', {
-                jack: state.faceChances.jack,
-                queen: state.faceChances.queen,
-                king: state.faceChances.king,
-                ace: state.faceChances.ace,
-              })}
+              <Trans
+                i18nKey="ruleLine"
+                ns="egyptianratscrew"
+                values={{
+                  jack: state.faceChances.jack,
+                  queen: state.faceChances.queen,
+                  king: state.faceChances.king,
+                  ace: state.faceChances.ace,
+                }}
+                components={{ strong: <strong className="font-bold underline decoration-2 underline-offset-2" /> }}
+              />
             </div>
 
             {/* Center pile / arena */}

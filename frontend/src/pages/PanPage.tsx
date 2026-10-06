@@ -403,6 +403,7 @@ function PanPageContent() {
                           {t('scoresPlayer')}
                         </th>
                         <th scope="col">{t('scoresChips')}</th>
+                        {isRoundEnd && <th scope="col">{t('scoresHandPoints')}</th>}
                         <th scope="col">{t('scoresRound')}</th>
                         <th scope="col">{t('scoresTotal')}</th>
                       </tr>
@@ -412,6 +413,7 @@ function PanPageContent() {
                         <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
                           <td>{playerName(p.id, p.isHuman)}</td>
                           <td className="text-center">{p.chips}</td>
+                          {isRoundEnd && <td className="text-center">{p.handPoints}</td>}
                           <td className="text-center">{p.roundScore}</td>
                           <td className="text-center">{p.cumulativeScore}</td>
                         </tr>

@@ -305,6 +305,22 @@ func TestCribbageCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestCribbageCuiPresenter_ShowsScoringCardEvidence(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	m, _ := setupCribbageCuiMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.On("GetPhase").Return(domain.CribbagePhaseShow)
+	hand := []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false), domain.NewCard(domain.CardDesignHeart, 10, false), domain.NewCard(domain.CardDesignDiamond, 3, false), domain.NewCard(domain.CardDesignClover, 4, false)}
+	detail := domain.CribbageScoreHand(hand, domain.NewCard(domain.CardDesignHeart, 5, false), false)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHandScoreDetails")
+	m.On("GetHandScoreDetails").Return([3]*domain.CribbageScoreDetail{&detail, nil, nil})
+	output := new(presenter.CribbageCuiPresenter).Output(m, nil)
+	assert.Contains(t, output, "15: ♠5、♥10")
+	assert.Contains(t, output, "ラン: ♦3、♣4、♥5")
+}
+
 func TestCribbageCuiPresenter_ActionLogOutput(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)

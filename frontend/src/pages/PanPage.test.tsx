@@ -338,7 +338,25 @@ describe('PanPage', () => {
       expect(screen.getByText('あなた')).toBeInTheDocument();
       expect(screen.getByText('CPU 1')).toBeInTheDocument();
       expect(screen.getByText('チップ')).toBeInTheDocument();
+      expect(screen.queryByText('手札点')).not.toBeInTheDocument();
     });
+  });
+
+  it('shows each player hand points in the score table at round end', async () => {
+    mockExec.mockResolvedValue({
+      ...roundEndState,
+      players: [
+        player({ handPoints: 0, roundScore: 0 }),
+        player({ id: 1, isHuman: false, handPoints: 12, roundScore: 12 }),
+      ],
+    });
+    renderWithProviders(<PanPage />);
+    await waitFor(() => expect(screen.getByText('手札点')).toBeInTheDocument());
+    const table = screen.getByText('スコア').parentElement?.querySelector('table');
+    expect(table).toBeInTheDocument();
+    expect(table).toHaveTextContent('手札点');
+    expect(table).toHaveTextContent('0');
+    expect(table).toHaveTextContent('12');
   });
 
   it('score table headers have scope="col"', async () => {
@@ -506,7 +524,7 @@ describe('PanPage', () => {
     vi.mocked(actionLogApi.pan).mockResolvedValueOnce({ entries: [] });
     fireEvent.click(screen.getByText('棋譜を見る'));
     await waitFor(() => expect(actionLogApi.pan).toHaveBeenCalledTimes(1));
-    expect(screen.getByText('棋譜')).toBeInTheDocument();
+    expect(await screen.findByText('棋譜')).toBeInTheDocument();
   });
 
   it('renders tutorial button and starts/skips tutorial', async () => {

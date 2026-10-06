@@ -37,12 +37,6 @@ import { classifyTienLenCombo, type TienLenCombo, tienLenPlayability } from '../
 
 // Values match the Go domain constants: 0=Normal, 1=Easy, 2=Hard
 // (see TienLenConfig.go / TienLenCuiController help text).
-const DIFFICULTY_OPTIONS = [
-  { value: '0', label: 'Normal' },
-  { value: '1', label: 'Easy' },
-  { value: '2', label: 'Hard' },
-];
-
 // Values match the Go domain constants: 0=Invalid, 1=Single, 2=Pair,
 // 3=Triple, 4=Straight, 5=ThreePairRun, 6=FourOfAKind.
 const TIENLEN_PLAY_TYPE_KEYS: Record<number, string> = {
@@ -88,6 +82,11 @@ export const TienLenPage = withTutorial(TienLenPageContent, 'tienlen', TL_TUTORI
 function TienLenPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('tienlen');
+  const difficultyOptions = [
+    { value: '0', label: t('settings.difficultyNormal') },
+    { value: '1', label: t('settings.difficultyEasy') },
+    { value: '2', label: t('settings.difficultyHard') },
+  ];
   const {
     state,
     loading,
@@ -284,7 +283,7 @@ function TienLenPageContent() {
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
                     value: String(configInput.cpuDifficulty ?? 1),
-                    options: DIFFICULTY_OPTIONS,
+                    options: difficultyOptions,
                     onSelect: (v: string) => handleConfigChange('cpuDifficulty', Number.parseInt(v, 10)),
                   },
                   hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),

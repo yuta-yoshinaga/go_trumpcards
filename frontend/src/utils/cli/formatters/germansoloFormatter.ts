@@ -1,4 +1,5 @@
 import type { GermanSoloResponse } from '../../../types/card';
+import { formatSignedDelta } from '../../formatSignedDelta';
 import {
   formatCard,
   formatHeader,
@@ -75,6 +76,9 @@ export function formatGermanSoloState(state: GermanSoloResponse): string {
 
   if ((state.phase === 4 || state.phase === 5) && state.outcome > 0) {
     lines.push(`round result: ${OUTCOME_NAMES[state.outcome] ?? state.outcome}`);
+    lines.push(
+      `deal change: ${state.playerScoreDeltas.map((delta, i) => `P${i}=${formatSignedDelta(delta)}`).join('  ')}`,
+    );
   }
 
   if (state.hint && isRequestedHint(state)) {

@@ -306,12 +306,36 @@ describe('DilotiPage', () => {
         hintHandIdx: 1,
         hintAction: 'capture',
         hintReason: 'capture',
+        hintTableIdxs: [0],
+        hintDeclIdxs: [0],
       }),
     );
     renderWithProviders(<DilotiPage />);
     await waitFor(() => {
       const lives = screen.getAllByTestId('diloti-hint-live');
       expect(lives[lives.length - 1]).not.toBeEmptyDOMElement();
+      expect(lives[lives.length - 1]).toHaveTextContent('対象の場札: [0] ♣ 3');
+      expect(lives[lives.length - 1]).toHaveTextContent('対象の宣言: 宣言0（5）');
+    });
+  });
+
+  it('announces the recommended declaration value and its table cards', async () => {
+    mockExec.mockResolvedValue(
+      makeDilotiState({
+        messageCode: 'diloti.hintRequested',
+        hintHandIdx: 1,
+        hintAction: 'declare',
+        hintReason: 'declare',
+        hintTableIdxs: [2, 3],
+        hintDeclValue: 8,
+      }),
+    );
+    renderWithProviders(<DilotiPage />);
+    await waitFor(() => {
+      const live = screen.getByTestId('diloti-hint-live');
+      expect(live).toHaveTextContent('宣言8の対象の場札:');
+      expect(live).toHaveTextContent('[2]');
+      expect(live).toHaveTextContent('[3]');
     });
   });
 

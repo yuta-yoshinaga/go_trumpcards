@@ -24,15 +24,18 @@ type BassetWebBet struct {
 
 // BassetWebOutput はバセットのWebアウトプット。
 type BassetWebOutput struct {
-	Phase       int            `json:"phase"`
-	Chips       int            `json:"chips"`
-	Bet         *BassetWebBet  `json:"bet,omitempty"`
-	BankerCard  *WebOutputCard `json:"bankerCard,omitempty"`
-	PlayerCard  *WebOutputCard `json:"playerCard,omitempty"`
-	Hit         bool           `json:"hit"`
-	TurnsPlayed int            `json:"turnsPlayed"`
-	TurnsTotal  int            `json:"turnsTotal"`
-	Remaining   int            `json:"remaining"`
+	Phase          int            `json:"phase"`
+	Chips          int            `json:"chips"`
+	Bet            *BassetWebBet  `json:"bet,omitempty"`
+	BankerCard     *WebOutputCard `json:"bankerCard,omitempty"`
+	PlayerCard     *WebOutputCard `json:"playerCard,omitempty"`
+	Hit            bool           `json:"hit"`
+	BankerHit      bool           `json:"bankerHit"`
+	PlayerHit      bool           `json:"playerHit"`
+	PayoutReceived int            `json:"payoutReceived"`
+	TurnsPlayed    int            `json:"turnsPlayed"`
+	TurnsTotal     int            `json:"turnsTotal"`
+	Remaining      int            `json:"remaining"`
 	// RemainingByRank は各ランクの残り枚数 (index 1..13 が A..K、0 は未使用)。
 	// **未配の山札から直接数えた値**で、クライアントが公開札を蓄えて再構成する
 	// 必要はない ── 蓄える形はリロードで消えて「全ランク満数」と嘘をつく (#6471)。

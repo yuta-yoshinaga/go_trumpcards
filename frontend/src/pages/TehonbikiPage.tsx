@@ -36,6 +36,12 @@ function TehonbikiPageContent() {
   const maxBet = Math.min(state.maxBet, state.chips);
   const betAmount = Number(bet);
   const betValid = bet !== '' && Number.isInteger(betAmount) && betAmount >= minBet && betAmount <= maxBet;
+  const requiredNumbers = betType === 'single' ? 1 : betType === 'double' ? 2 : 3;
+  const halfGroupValid =
+    betType !== 'half' ||
+    (numbers.length === 3 &&
+      ([1, 2, 3].every((n) => numbers.includes(n)) || [4, 5, 6].every((n) => numbers.includes(n))));
+  const selectionValid = numbers.length === requiredNumbers && halfGroupValid;
   const toggle = (n: number) => setNumbers((v) => (v.includes(n) ? v.filter((x) => x !== n) : [...v, n]));
   return (
     <GamePageShell
@@ -75,13 +81,21 @@ function TehonbikiPageContent() {
         </div>
         <div role="status" aria-live="polite" aria-atomic="true">
           {state.phase === 0 && (
-            <p className="mx-auto mb-4 max-w-xl rounded-lg border border-ds-border-subtle bg-ds-surface p-3">
-              {t('summary', {
-                numbers: numbers.length > 0 ? numbers.join(t('listSeparator')) : t('summary.noNumbers'),
-                betType: t(`betType.${betType}`),
-                bet: bet === '' ? t('summary.noBet') : bet,
-              })}
-            </p>
+            <>
+              <p className="mx-auto mb-4 max-w-xl rounded-lg border border-ds-border-subtle bg-ds-surface p-3">
+                {t('summary', {
+                  numbers: numbers.length > 0 ? numbers.join(t('listSeparator')) : t('summary.noNumbers'),
+                  betType: t(`betType.${betType}`),
+                  bet: bet === '' ? t('summary.noBet') : bet,
+                })}
+              </p>
+              <p className="mb-4">{t('selection.requirement', { count: requiredNumbers })}</p>
+              {betType === 'half' && (
+                <p className="mb-4">
+                  {numbers.length === 3 && !halfGroupValid ? t('selection.halfInvalid') : t('selection.halfValid')}
+                </p>
+              )}
+            </>
           )}
         </div>
         {state.phase === 0 ? (
@@ -116,9 +130,9 @@ function TehonbikiPageContent() {
             <button
               className={`${btnPrimary} aria-disabled:cursor-not-allowed aria-disabled:opacity-50`}
               type="button"
-              aria-disabled={loading || !betValid}
+              aria-disabled={loading || !betValid || !selectionValid}
               onClick={() => {
-                if (!loading && betValid) exec('bet', { numbers, betType, bet: betAmount });
+                if (!loading && betValid && selectionValid) exec('bet', { numbers, betType, bet: betAmount });
               }}
             >
               {t('button.bet')}

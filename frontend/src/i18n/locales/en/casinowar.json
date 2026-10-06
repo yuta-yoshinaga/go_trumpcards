@@ -5,6 +5,10 @@
   "warTieRule": "If War results in another tie, the player wins.",
   "warCost": "War = {{amount}} extra chips",
   "insufficientChips": "Not enough chips",
+  "betUnavailable": "At least 10 chips are required to bet.",
+  "betTooSmall": "The bet must be at least 10 chips.",
+  "betNotMultiple": "The bet must be a multiple of 10 chips.",
+  "betExceedsChips": "The bet exceeds your chip balance.",
   "previousBet": "Use last bet ({{amount}})",
   "label": {
     "chips": "Chips",

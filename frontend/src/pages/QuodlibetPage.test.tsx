@@ -35,6 +35,33 @@ beforeEach(() => {
 });
 
 describe('QuodlibetPage', () => {
+  it('shows each opponent hand count when cards are hidden', async () => {
+    mockExec.mockResolvedValue(
+      makeQuodlibetState({
+        players: contractState.players.map((p, i) => (i === 0 ? p : { ...p, cardCount: i + 3, cards: [] })),
+      }),
+    );
+    renderWithProviders(<QuodlibetPage />);
+
+    expect(await screen.findByTestId('quodlibet-opponent-hand-1')).toHaveTextContent('4枚');
+    expect(screen.getByTestId('quodlibet-opponent-hand-2')).toHaveTextContent('5枚');
+    expect(screen.getByTestId('quodlibet-opponent-hand-3')).toHaveTextContent('6枚');
+  });
+
+  it('reflects opponent hand counts from the latest game state', async () => {
+    const updatedState = makeQuodlibetState({
+      ...playState,
+      players: playState.players.map((p, i) => (i === 1 ? { ...p, cardCount: 7 } : p)),
+    });
+    mockExec.mockImplementation(async (command) => (command === 'play' ? updatedState : playState));
+    renderWithProviders(<QuodlibetPage />);
+
+    expect(await screen.findByTestId('quodlibet-opponent-hand-1')).toHaveTextContent('残り8枚');
+    fireEvent.click((await screen.findAllByRole('button', { name: /♠|♥|♦|♣/ }))[0]);
+    fireEvent.click(screen.getByTestId('quodlibet-play'));
+    expect(await screen.findByTestId('quodlibet-opponent-hand-1')).toHaveTextContent('残り7枚');
+  });
+
   it('shows every non-empty hand during Good Hunting', async () => {
     const huntState = makeQuodlibetState({
       currentContract: 9,
@@ -50,6 +77,7 @@ describe('QuodlibetPage', () => {
     expect(await screen.findByTestId('quodlibet-visible-hand-1')).toBeInTheDocument();
     expect(screen.getByTestId('quodlibet-visible-hand-2')).toBeInTheDocument();
     expect(screen.getByTestId('quodlibet-visible-hand-3')).toBeInTheDocument();
+    expect(screen.getByTestId('quodlibet-opponent-hand-1')).toHaveTextContent('残り8枚');
   });
 
   it('keeps the hidden human hand hidden for Open Trousers', async () => {

@@ -341,6 +341,26 @@ describe('GoStopPage', () => {
     expect(live).toContainElement(await screen.findByTestId('gostop-prompt'));
   });
 
+  it('announces the decision prompt and current points from an always-mounted live region', async () => {
+    mockExec.mockResolvedValue(decisionState);
+    renderWithProviders(<GoStopPage />);
+
+    const live = await screen.findByTestId('gostop-decision-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveClass('sr-only');
+    expect(live).toHaveTextContent('役ができました。現在の得点は7点です。ゴーかストップを選んでください。');
+  });
+
+  it('keeps the decision live region empty outside the decision phase', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<GoStopPage />);
+
+    const live = await screen.findByTestId('gostop-decision-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toBeEmptyDOMElement();
+  });
+
   it('announces the round winner and total from an always-mounted live region', async () => {
     mockExec.mockResolvedValueOnce(playState).mockResolvedValue(roundEndState);
     renderWithProviders(<GoStopPage />);

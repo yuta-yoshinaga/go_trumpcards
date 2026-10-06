@@ -217,3 +217,12 @@ func TestPrsiCuiPresenter_ActionLogOutput(t *testing.T) {
 	out := p.ActionLogOutput(m)
 	assert.Contains(t, out, "play")
 }
+
+func TestPrsiCuiPresenter_ActionLogOutputDuringPlay(t *testing.T) {
+	p := new(presenter.PrsiCuiPresenter)
+	m := new(interfaces.MockPrsiGame)
+	m.On("GetGameEndFlag").Return(false)
+	m.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "prsi.log.play", DetailParams: map[string]string{"name": "You", "card": "♠7"}}})
+	m.On("GetPlayer", mock.Anything).Return(domain.NewPrsiPlayer(true)).Maybe()
+	assert.Contains(t, p.ActionLogOutput(m), "play")
+}

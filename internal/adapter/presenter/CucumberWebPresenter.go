@@ -45,6 +45,8 @@ func (p *CucumberWebPresenter) buildBase(s interfaces.CucumberGame) *controller.
 	resObj.TotalTricks = domain.CucumberHandSize
 	resObj.RoundNumber = s.GetRoundNumber()
 	resObj.LastTrickWinnerIdx = s.GetLastTrickWinnerIdx()
+	resObj.ResolvedTrickWinnerIdx = s.GetResolvedTrickWinnerIdx()
+	resObj.LastTrickRank = s.GetLastTrickRank()
 	resObj.LastPenalty = s.GetLastPenalty()
 	resObj.GameEndFlag = s.GetGameEndFlag()
 	resObj.WinnerIdx = s.GetWinnerIdx()

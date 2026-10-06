@@ -39,6 +39,8 @@ type karnoffelMockOpts struct {
 	result    *domain.KarnoffelHandResult
 	gameEnd   bool
 	winner    int
+	trick     []*domain.Card
+	leader    int
 }
 
 func setupKarnoffelWebMock(o karnoffelMockOpts) *interfaces.MockKarnoffelGame {

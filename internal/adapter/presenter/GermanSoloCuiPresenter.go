@@ -177,6 +177,11 @@ func (p *GermanSoloCuiPresenter) Output(g interfaces.GermanSoloGame, lastErr err
 				"opp", strconv.Itoa(defenderTricks),
 				"need", strconv.Itoa(g.RequiredTricks())) + "\n")
 			b.WriteString(i18n.T("germansolo.promptRoundEndHelp") + "\n")
+			for i := 0; i < g.GetPlayerCnt(); i++ {
+				b.WriteString(i18n.Tf("germansolo.dealScoreDelta",
+					"name", cuiPlayerName(g.GetPlayer(i), i),
+					"score", formatSigned(g.GetPlayerScoreDeltas()[i])) + "\n")
+			}
 		}
 	})
 }

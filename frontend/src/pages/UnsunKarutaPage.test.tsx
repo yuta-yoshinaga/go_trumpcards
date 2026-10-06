@@ -20,6 +20,30 @@ beforeEach(() => {
 });
 
 describe('UnsunKarutaPage', () => {
+  it('wraps all eight cards in the current trick', async () => {
+    const state = makeUnsunKarutaState({
+      currentTrick: Array.from({ length: 8 }, (_, playerIdx) => ({
+        playerIdx,
+        card: {
+          design: 'JOKER',
+          value: playerIdx + 1,
+          deck: 'unsun',
+          glyph: '杯',
+          label: String(playerIdx + 1),
+          color: 'red',
+        },
+      })),
+    });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<UnsunKarutaPage />);
+
+    const cards = await screen.findByTestId('trick-display-cards');
+    expect(cards).toHaveClass('flex-wrap');
+    expect(cards.children).toHaveLength(8);
+    expect(cards).toHaveTextContent('CPU 1');
+    expect(cards).toHaveTextContent('CPU 7');
+  });
+
   it('shows the dealer badge in the mobile player list only for the dealer', async () => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
     renderWithProviders(<UnsunKarutaPage />);

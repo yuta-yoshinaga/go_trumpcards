@@ -92,20 +92,27 @@ func buildMachiavelliPlayers(n int) []*MachiavelliPlayer {
 
 // Machiavelli マキャヴェッリ（共有テーブル式イタリアンラミー）のゲームクラス。
 type Machiavelli struct {
-	trumpCards       *TrumpCards
-	players          []*MachiavelliPlayer
-	config           MachiavelliConfig
-	phase            MachiavelliPhase
-	currentPlayerIdx int
-	dealerIdx        int
-	table            [][]*Card // 共有テーブル上のメルド群
-	drawPile         []*Card
-	gameEndFlag      bool
-	winnerIdx        int
-	roundNumber      int
-	scored           bool // ラウンド終了スコアリングが完了したか（フェーズ再入時の二重加算防止）
-	roundWinnerIdx   int  // 直近ラウンドの勝者（-1 = 山切れ流局）
+	trumpCards        *TrumpCards
+	players           []*MachiavelliPlayer
+	config            MachiavelliConfig
+	phase             MachiavelliPhase
+	currentPlayerIdx  int
+	dealerIdx         int
+	table             [][]*Card // 共有テーブル上のメルド群
+	drawPile          []*Card
+	gameEndFlag       bool
+	winnerIdx         int
+	roundNumber       int
+	scored            bool // ラウンド終了スコアリングが完了したか（フェーズ再入時の二重加算防止）
+	roundWinnerIdx    int  // 直近ラウンドの勝者（-1 = 山切れ流局）
+	roundScoreHistory []MachiavelliRoundScore
 	actionLogBase
+}
+
+// MachiavelliRoundScore はラウンドごとのプレイヤー得点を保持する。
+type MachiavelliRoundScore struct {
+	RoundNumber int   `json:"roundNumber"`
+	Scores      []int `json:"scores"`
 }
 
 // NewMachiavelli コンストラクタ
@@ -137,6 +144,7 @@ func (g *Machiavelli) Reset() {
 	g.actionLog = nil
 	g.scored = false
 	g.roundWinnerIdx = -1
+	g.roundScoreHistory = nil
 
 	g.players = buildMachiavelliPlayers(g.config.PlayerCount)
 	g.currentPlayerIdx = (g.dealerIdx + 1) % len(g.players)
@@ -553,6 +561,11 @@ func (g *Machiavelli) finishRound(winnerIdx int) {
 	for i := range g.players {
 		g.players[i].CommitRoundScore()
 	}
+	scores := make([]int, len(g.players))
+	for i := range g.players {
+		scores[i] = g.players[i].GetRoundScore()
+	}
+	g.roundScoreHistory = append(g.roundScoreHistory, MachiavelliRoundScore{RoundNumber: g.roundNumber, Scores: scores})
 
 	if g.roundNumber >= g.config.TargetRounds {
 		g.finalizeGameEnd()
@@ -625,6 +638,15 @@ func (g *Machiavelli) GetWinnerIdx() int { return g.winnerIdx }
 
 // GetRoundWinnerIdx 直近ラウンドの勝者（-1 = 山切れ）
 func (g *Machiavelli) GetRoundWinnerIdx() int { return g.roundWinnerIdx }
+
+// GetRoundScoreHistory はラウンド別得点履歴を返す。
+func (g *Machiavelli) GetRoundScoreHistory() []MachiavelliRoundScore {
+	history := make([]MachiavelliRoundScore, len(g.roundScoreHistory))
+	for i, entry := range g.roundScoreHistory {
+		history[i] = MachiavelliRoundScore{RoundNumber: entry.RoundNumber, Scores: append([]int(nil), entry.Scores...)}
+	}
+	return history
+}
 
 // GetPlayerCnt プレイヤー数
 func (g *Machiavelli) GetPlayerCnt() int { return len(g.players) }
@@ -825,39 +847,41 @@ func machiavelliIsRun(cards []*Card) bool {
 
 // machiavelliJSON は Machiavelli の JSON 表現。
 type machiavelliJSON struct {
-	TrumpCards       *TrumpCards          `json:"tc"`
-	Players          []*MachiavelliPlayer `json:"pl"`
-	Config           MachiavelliConfig    `json:"cf"`
-	Phase            MachiavelliPhase     `json:"ps"`
-	CurrentPlayerIdx int                  `json:"ci"`
-	DealerIdx        int                  `json:"di"`
-	Table            [][]*Card            `json:"tb"`
-	DrawPile         []*Card              `json:"wp"`
-	GameEndFlag      bool                 `json:"ge"`
-	WinnerIdx        int                  `json:"wi"`
-	RoundNumber      int                  `json:"rn"`
-	Scored           bool                 `json:"sc"`
-	RoundWinnerIdx   int                  `json:"rw"`
-	ActionLog        []*ActionLogEntry    `json:"al"`
+	TrumpCards        *TrumpCards             `json:"tc"`
+	Players           []*MachiavelliPlayer    `json:"pl"`
+	Config            MachiavelliConfig       `json:"cf"`
+	Phase             MachiavelliPhase        `json:"ps"`
+	CurrentPlayerIdx  int                     `json:"ci"`
+	DealerIdx         int                     `json:"di"`
+	Table             [][]*Card               `json:"tb"`
+	DrawPile          []*Card                 `json:"wp"`
+	GameEndFlag       bool                    `json:"ge"`
+	WinnerIdx         int                     `json:"wi"`
+	RoundNumber       int                     `json:"rn"`
+	Scored            bool                    `json:"sc"`
+	RoundWinnerIdx    int                     `json:"rw"`
+	RoundScoreHistory []MachiavelliRoundScore `json:"rsh"`
+	ActionLog         []*ActionLogEntry       `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (g *Machiavelli) MarshalJSON() ([]byte, error) {
 	return json.Marshal(machiavelliJSON{
-		TrumpCards:       g.trumpCards,
-		Players:          g.players,
-		Config:           g.config,
-		Phase:            g.phase,
-		CurrentPlayerIdx: g.currentPlayerIdx,
-		DealerIdx:        g.dealerIdx,
-		Table:            g.table,
-		DrawPile:         g.drawPile,
-		GameEndFlag:      g.gameEndFlag,
-		WinnerIdx:        g.winnerIdx,
-		RoundNumber:      g.roundNumber,
-		Scored:           g.scored,
-		RoundWinnerIdx:   g.roundWinnerIdx,
-		ActionLog:        g.actionLog,
+		TrumpCards:        g.trumpCards,
+		Players:           g.players,
+		Config:            g.config,
+		Phase:             g.phase,
+		CurrentPlayerIdx:  g.currentPlayerIdx,
+		DealerIdx:         g.dealerIdx,
+		Table:             g.table,
+		DrawPile:          g.drawPile,
+		GameEndFlag:       g.gameEndFlag,
+		WinnerIdx:         g.winnerIdx,
+		RoundNumber:       g.roundNumber,
+		Scored:            g.scored,
+		RoundWinnerIdx:    g.roundWinnerIdx,
+		RoundScoreHistory: g.roundScoreHistory,
+		ActionLog:         g.actionLog,
 	})
 }
 
@@ -930,6 +954,10 @@ func (g *Machiavelli) UnmarshalJSON(data []byte) error {
 	}
 	g.winnerIdx = j.WinnerIdx
 	g.roundWinnerIdx = j.RoundWinnerIdx
+	g.roundScoreHistory = j.RoundScoreHistory
+	if g.roundScoreHistory == nil {
+		g.roundScoreHistory = make([]MachiavelliRoundScore, 0)
+	}
 
 	g.gameEndFlag = j.GameEndFlag
 	g.scored = j.Scored

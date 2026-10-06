@@ -3,6 +3,7 @@
     "chips": "チップ",
     "bet": "ベット",
     "dealer": "ディーラー",
+    "hiddenCard": "裏向きのカード",
     "hand": "ハンド",
     "switched": "スイッチ実行済み",
     "currentHand": "現在のハンド",

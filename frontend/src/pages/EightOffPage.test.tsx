@@ -169,6 +169,47 @@ describe('EightOffPage', () => {
     expect(status).toBeEmptyDOMElement();
   });
 
+  it('announces legal destinations for a selected free-cell card and when none exist', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[card('SPADE', 13)], [card('HEART', 12)], ...Array.from({ length: 6 }, () => [])],
+      freeCells: [card('HEART', 11), null, null, null, null, null, null, null],
+      foundation: [
+        [],
+        [],
+        [
+          card('HEART', 1),
+          card('HEART', 2),
+          card('HEART', 3),
+          card('HEART', 4),
+          card('HEART', 5),
+          card('HEART', 6),
+          card('HEART', 7),
+          card('HEART', 8),
+          card('HEART', 9),
+          card('HEART', 10),
+        ],
+        [],
+      ],
+    });
+    renderWithProviders(<EightOffPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    const status = screen.getByTestId('eo-move-guide');
+    fireEvent.click(screen.getByTestId('eo-freecell-0'));
+    expect(status).toHaveTextContent('列2');
+    expect(status).toHaveTextContent('組札');
+
+    cleanup();
+    mockExec.mockResolvedValue({
+      ...playingState,
+      freeCells: [card('DIAMOND', 7), null, null, null, null, null, null, null],
+    });
+    renderWithProviders(<EightOffPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('eo-freecell-0'));
+    expect(screen.getByTestId('eo-move-guide')).toHaveTextContent('移動できる先はありません');
+  });
+
   it('shows supermove limit tooltip with empty free-cell and column counts', async () => {
     mockExec.mockResolvedValue(supermoveBlockedState);
     renderWithProviders(<EightOffPage />);

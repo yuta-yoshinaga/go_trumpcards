@@ -53,6 +53,10 @@ type RamsGame interface {
 	GetActiveCount() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// GetLastTrick 最後に完了したトリックを取得する
+	GetLastTrick() []*domain.TrickCard
+	// GetLastTrickWinnerIdx 最後に完了したトリックの勝者を取得する
+	GetLastTrickWinnerIdx() int
 	// GetValidPlayIndices プレイ可能なカードのインデックスリストを返す
 	GetValidPlayIndices(playerIdx int) []int
 	// GetPlayerCnt プレイヤー数を取得する

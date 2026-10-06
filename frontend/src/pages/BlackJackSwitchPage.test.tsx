@@ -202,6 +202,16 @@ describe('BlackJackSwitchPage', () => {
     await screen.findByTestId('dealer-area');
     // Two dealer cards rendered, one of them is the face-down placeholder.
     expect(screen.getAllByTestId('card-back').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByRole('img', { name: '裏向きのカード' })).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: /[A-K]♠|[A-K]♥|[A-K]♦|[A-K]♣/ })).not.toBeInTheDocument();
+  });
+
+  it('uses the revealed dealer card alt text in END phase', async () => {
+    mockApi.mockResolvedValue(dealer22EndState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    await screen.findByTestId('dealer-area');
+    expect(screen.getByRole('img', { name: '♠ 5' })).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: '裏向きのカード' })).not.toBeInTheDocument();
   });
 
   it('renders Hit / Stand / Double Down in ACTION phase', async () => {

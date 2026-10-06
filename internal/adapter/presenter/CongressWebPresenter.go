@@ -116,5 +116,5 @@ func (p *CongressWebPresenter) HintOutput(c interfaces.CongressGame) string {
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *CongressWebPresenter) ActionLogOutput(c interfaces.CongressGame) string {
-	return actionLogOutputJSON(c)
+	return actionLogToJSON(c.GetActionLog())
 }

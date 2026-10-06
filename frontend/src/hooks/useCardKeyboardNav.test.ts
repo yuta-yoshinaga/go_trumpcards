@@ -5,12 +5,13 @@ import { useCardKeyboardNav } from './useCardKeyboardNav';
 
 let unregisterModal: (() => void) | undefined;
 
-function fire(key: string, target?: Partial<HTMLElement>) {
-  const event = new KeyboardEvent('keydown', { key, bubbles: true });
+function fire(key: string, target?: Partial<HTMLElement>, modifiers: KeyboardEventInit = {}) {
+  const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...modifiers });
   if (target) {
     Object.defineProperty(event, 'target', { value: target });
   }
   document.dispatchEvent(event);
+  return event;
 }
 
 describe('useCardKeyboardNav', () => {
@@ -75,6 +76,190 @@ describe('useCardKeyboardNav', () => {
 
     fire('Escape');
     expect(onClear).toHaveBeenCalledTimes(1);
+  });
+
+  it('moves focus within the hand and Enter confirms without toggling', () => {
+    const onToggle = vi.fn();
+    const onConfirm = vi.fn();
+    const onFocusIndexChange = vi.fn();
+    renderHook(() =>
+      useCardKeyboardNav({
+        cardCount: 13,
+        onToggle,
+        onConfirm,
+        onClear: vi.fn(),
+        enabled: true,
+        arrowSelection: true,
+        onFocusIndexChange,
+      }),
+    );
+
+    fire('ArrowLeft');
+    expect(onFocusIndexChange).toHaveBeenLastCalledWith(0);
+    for (let i = 0; i < 12; i++) fire('ArrowRight');
+    expect(onFocusIndexChange).toHaveBeenLastCalledWith(12);
+    fire('ArrowRight');
+    expect(onFocusIndexChange).toHaveBeenCalledTimes(14);
+    fire('Enter');
+    expect(onToggle).not.toHaveBeenCalled();
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the arrow position after Enter causes a callback change and rerender', () => {
+    const onToggleBefore = vi.fn();
+    const onToggleAfter = vi.fn();
+    const onConfirm = vi.fn();
+    const { rerender } = renderHook(
+      ({ onToggle }) =>
+        useCardKeyboardNav({
+          cardCount: 5,
+          onToggle,
+          onConfirm,
+          onClear: vi.fn(),
+          enabled: true,
+          arrowSelection: true,
+        }),
+      { initialProps: { onToggle: onToggleBefore } },
+    );
+
+    fire('ArrowRight');
+    fire('ArrowRight');
+    fire('Enter');
+    expect(onToggleBefore).not.toHaveBeenCalled();
+
+    rerender({ onToggle: onToggleAfter });
+    fire('ArrowRight');
+    const spaceEvent = fire(' ');
+    expect(spaceEvent.defaultPrevented).toBe(true);
+    fire('Enter');
+    expect(onToggleAfter).toHaveBeenCalledWith(3);
+    expect(onConfirm).toHaveBeenCalledTimes(2);
+  });
+
+  it('toggles the focused card with Space but leaves button Space to native click behavior', () => {
+    const onToggle = vi.fn();
+    renderHook(() =>
+      useCardKeyboardNav({
+        cardCount: 3,
+        onToggle,
+        onConfirm: vi.fn(),
+        onClear: vi.fn(),
+        enabled: true,
+        arrowSelection: true,
+      }),
+    );
+
+    fire('ArrowRight');
+    fire(' ');
+    expect(onToggle).toHaveBeenCalledWith(1);
+    onToggle.mockClear();
+    const buttonSpaceEvent = fire(' ', { tagName: 'BUTTON' });
+    expect(buttonSpaceEvent.defaultPrevented).toBe(false);
+    expect(onToggle).not.toHaveBeenCalled();
+  });
+
+  it('does nothing for Space when the hand is empty', () => {
+    const onToggle = vi.fn();
+    renderHook(() =>
+      useCardKeyboardNav({
+        cardCount: 0,
+        onToggle,
+        onConfirm: vi.fn(),
+        onClear: vi.fn(),
+        enabled: true,
+        arrowSelection: true,
+      }),
+    );
+
+    const event = fire(' ');
+    expect(onToggle).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it('ignores modified arrows without preventing their default behavior', () => {
+    const onFocusIndexChange = vi.fn();
+    renderHook(() =>
+      useCardKeyboardNav({
+        cardCount: 3,
+        onToggle: vi.fn(),
+        onConfirm: vi.fn(),
+        onClear: vi.fn(),
+        enabled: true,
+        arrowSelection: true,
+        onFocusIndexChange,
+      }),
+    );
+
+    for (const modifier of [{ altKey: true }, { ctrlKey: true }, { metaKey: true }, { shiftKey: true }]) {
+      const event = new KeyboardEvent('keydown', {
+        key: 'ArrowRight',
+        bubbles: true,
+        cancelable: true,
+        ...modifier,
+      });
+      document.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(false);
+    }
+    expect(onFocusIndexChange).not.toHaveBeenCalled();
+  });
+
+  it('clears keyboard focus with Escape', () => {
+    const onFocusIndexChange = vi.fn();
+    renderHook(() =>
+      useCardKeyboardNav({
+        cardCount: 3,
+        onToggle: vi.fn(),
+        onConfirm: vi.fn(),
+        onClear: vi.fn(),
+        enabled: true,
+        arrowSelection: true,
+        onFocusIndexChange,
+      }),
+    );
+    fire('ArrowRight');
+    fire('Escape');
+    expect(onFocusIndexChange).toHaveBeenLastCalledWith(null);
+  });
+
+  it('clamps the focused position when the hand gets smaller', () => {
+    const onFocusIndexChange = vi.fn();
+    const { rerender } = renderHook(
+      ({ cardCount }) =>
+        useCardKeyboardNav({
+          cardCount,
+          onToggle: vi.fn(),
+          onConfirm: vi.fn(),
+          onClear: vi.fn(),
+          enabled: true,
+          arrowSelection: true,
+          onFocusIndexChange,
+        }),
+      { initialProps: { cardCount: 5 } },
+    );
+
+    fire('ArrowRight');
+    fire('ArrowRight');
+    fire('ArrowRight');
+    fire('ArrowRight');
+    rerender({ cardCount: 2 });
+    expect(onFocusIndexChange).toHaveBeenLastCalledWith(1);
+  });
+
+  it('does not create a focused selection when the hand is empty', () => {
+    const onFocusIndexChange = vi.fn();
+    renderHook(() =>
+      useCardKeyboardNav({
+        cardCount: 0,
+        onToggle: vi.fn(),
+        onConfirm: vi.fn(),
+        onClear: vi.fn(),
+        enabled: true,
+        arrowSelection: true,
+        onFocusIndexChange,
+      }),
+    );
+    fire('ArrowRight');
+    expect(onFocusIndexChange).not.toHaveBeenCalled();
   });
 
   it('blocks board keys while a modal is open, then resumes them', () => {

@@ -641,7 +641,7 @@ func (g *Pan) SetPhase(p PanPhase) { g.phase = p }
 
 // appendLog records a Pan action with a locale-independent detail code.
 func (g *Pan) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // GetRoundNumber 現在のラウンド番号

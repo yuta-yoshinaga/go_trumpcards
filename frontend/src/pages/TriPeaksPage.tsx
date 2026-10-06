@@ -391,7 +391,9 @@ function TriPeaksPageContent() {
                               handleSelectCard(rowIdx, colIdx);
                             }}
                             disabled={!isPlaying || loading || !exposed}
-                            aria-label={cardAlt(tc2.card)}
+                            aria-label={
+                              isPlayable ? t('cardPlayableAria', { card: cardAlt(tc2.card) }) : cardAlt(tc2.card)
+                            }
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
                               isHinted ? 'ring-2 ring-ds-warning' : isPlayable ? 'ring-2 ring-ds-success/70' : ''
                             } ${!exposed ? 'opacity-60' : ''}`}

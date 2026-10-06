@@ -2,14 +2,18 @@ import { useCallback, useEffect, useState } from 'react';
 import { narcoticApi } from '../api/gameApi';
 import type { NarcoticHint } from '../types/card';
 import { describeApiFailure } from '../utils/describeApiFailure';
-import { useGameApi } from './useGameApi';
+import { isRejectedAction, useGameApi } from './useGameApi';
 import { useIsMounted } from './useIsMounted';
 
 /** Hook that manages Narcotic game state, hints, and the deal/discard/stack/redeal actions. */
 export function useNarcoticGame() {
-  const { state, loading, error, exec, retry } = useGameApi(narcoticApi.exec);
   const [hint, setHint] = useState<NarcoticHint | null>(null);
   const [hintError, setHintError] = useState<string | null>(null);
+  const { state, loading, error, exec, retry } = useGameApi(narcoticApi.exec, {
+    onSuccess: (res) => {
+      if (!isRejectedAction(res)) setHintError(null);
+    },
+  });
 
   useEffect(() => {
     exec('reset');

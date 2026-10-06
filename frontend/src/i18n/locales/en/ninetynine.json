@@ -26,6 +26,7 @@
   "bid": "Bid {{n}}",
   "bidNone": "No bid",
   "buried": "Buried: {{count}}",
+  "buriedCardsTitle": "Your buried cards",
   "bidProgress": "Bid: {{bid}} / Won: {{won}}",
   "roundScoreAnnouncementName": "{{name}} ({{result}})",
   "roundScoreAnnouncementResult": "bid {{bid}}, {{tricks}} tricks won",

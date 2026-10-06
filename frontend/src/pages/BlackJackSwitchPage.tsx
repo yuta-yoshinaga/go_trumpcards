@@ -204,7 +204,7 @@ function BlackJackSwitchPageContent() {
                 </div>
                 <div className="flex justify-center gap-2 flex-wrap">
                   {state.dealerCards.map((c, i) => (
-                    <CardSlot key={`dealer-${i}`} card={c} width={cardWidth} />
+                    <CardSlot key={`dealer-${i}`} card={c} width={cardWidth} hiddenCardLabel={t('label.hiddenCard')} />
                   ))}
                 </div>
               </div>
@@ -276,7 +276,12 @@ function BlackJackSwitchPageContent() {
                       </div>
                       <div className="flex justify-center gap-1 flex-wrap">
                         {hand.cards.map((c, j) => (
-                          <CardSlot key={`hand-${idx}-${j}`} card={c} width={cardWidth} />
+                          <CardSlot
+                            key={`hand-${idx}-${j}`}
+                            card={c}
+                            width={cardWidth}
+                            hiddenCardLabel={t('label.hiddenCard')}
+                          />
                         ))}
                       </div>
                       {isEndPhase && (
@@ -444,10 +449,12 @@ function BlackJackSwitchPageContent() {
 }
 
 /** Renders a face-up card or a face-down placeholder when card is null. */
-function CardSlot({ card, width }: { card: Card | null; width: number }) {
+function CardSlot({ card, width, hiddenCardLabel }: { card: Card | null; width: number; hiddenCardLabel: string }) {
   if (!card) {
     return (
       <div
+        role="img"
+        aria-label={hiddenCardLabel}
         data-testid="card-back"
         className="rounded-md border border-white/30 bg-game-card-back"
         style={{ width, height: width * 1.4 }}

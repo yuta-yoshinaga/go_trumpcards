@@ -64,6 +64,7 @@ type DoppelkopfWebOutput struct {
 	LiveKontraPoints int                `json:"liveKontraPoints"`
 	RoundReWon       bool               `json:"roundReWon"`
 	RoundGamePoints  int                `json:"roundGamePoints"`
+	RoundHistory     [][]int            `json:"roundScoreHistory"`
 	GameEndFlag      bool               `json:"gameEndFlag"`
 	WinnerIdx        int                `json:"winnerIdx"`
 	Hint             *WebOutputCardHint `json:"hint,omitempty"`

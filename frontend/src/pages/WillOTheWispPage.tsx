@@ -138,6 +138,9 @@ function WillOTheWispPageContent() {
 
   const tableau = useResponsiveTableau(TABLEAU_COLS, { padX: 32, gapPx: 2 });
   const isPlayingForKbd = state?.phase === WillOTheWispPhase.PLAYING;
+  const handleAutoCompleteGuarded = useCallback(() => {
+    if (state && state.stockCount === 0 && isTableauAllFaceUp(state.tableau)) handleAutoComplete();
+  }, [handleAutoComplete, state]);
 
   const [emptyDealAttemptKey, setEmptyDealAttemptKey] = useState(0);
   const hasEmptyColumn = useMemo(() => state?.tableau.some((col) => col.length === 0) ?? false, [state?.tableau]);
@@ -176,11 +179,11 @@ function WillOTheWispPageContent() {
     () => [
       { key: 'd', action: handleDealGuarded, label: 'deal' },
       { key: 'h', action: handleHint, label: 'hint' },
-      { key: 'a', action: handleAutoComplete, label: 'autoComplete' },
+      { key: 'a', action: handleAutoCompleteGuarded, label: 'autoComplete' },
       { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
       { key: 'z', action: handleUndo, label: 'undo' },
     ],
-    [handleDealGuarded, handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo],
+    [handleDealGuarded, handleHint, handleAutoCompleteGuarded, confirmGiveUpAction, handleUndo],
   );
 
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading });
@@ -235,6 +238,11 @@ function WillOTheWispPageContent() {
   // so round up rather than down (#1676 review).
   const dealsRemaining = Math.ceil(state.stockCount / TABLEAU_COLS);
   const autoCompleteReady = state.stockCount === 0 && isTableauAllFaceUp(state.tableau);
+  const autoCompleteReason = autoCompleteReady
+    ? ''
+    : state.stockCount > 0
+      ? t('autoCompleteStockRemaining')
+      : t('autoCompleteFaceDownCards');
 
   return (
     <GamePageShell
@@ -534,11 +542,12 @@ function WillOTheWispPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
-                    onClick={handleAutoComplete}
-                    disabled={loading || isAutoCompleting || !autoCompleteReady}
+                    onClick={handleAutoCompleteGuarded}
+                    disabled={loading || isAutoCompleting}
+                    aria-disabled={!autoCompleteReady || undefined}
+                    aria-describedby={!autoCompleteReady ? 'willothewisp-autocomplete-reason' : undefined}
                     data-testid="autocomplete-button"
-                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
+                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}${!autoCompleteReady ? ' aria-disabled:opacity-50 aria-disabled:cursor-not-allowed' : ''}`}
                   >
                     {t('autoComplete')}
                   </button>
@@ -559,6 +568,9 @@ function WillOTheWispPageContent() {
                 loading={loading}
                 dataTutorial="willothewisp-reset-button"
               />
+            </div>
+            <div id="willothewisp-autocomplete-reason" className="sr-only" role="status" aria-live="polite">
+              {autoCompleteReason}
             </div>
             <ActionShortcutsPanel bindings={actionBindings} data-testid="willothewisp-kbd-shortcuts" />
           </GameFooter>

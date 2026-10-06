@@ -55,6 +55,7 @@ func TestGrandfathersClockInteractorMoves(t *testing.T) {
 		{"autocomplete", "AutoComplete", nil, func(i *GrandfathersClockInteractor) string { return i.AutoComplete() }},
 		{"undo", "Undo", nil, func(i *GrandfathersClockInteractor) string { return i.Undo() }},
 		{"undo n", "UndoN", []any{3}, func(i *GrandfathersClockInteractor) string { return i.UndoN(3) }},
+		{"redo", "Redo", nil, func(i *GrandfathersClockInteractor) string { return i.Redo() }},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name+" success", func(t *testing.T) {

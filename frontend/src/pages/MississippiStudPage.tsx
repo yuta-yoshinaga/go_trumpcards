@@ -305,6 +305,18 @@ function MississippiStudPageContent() {
 
         {isEndPhase && (
           <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
+            <div>
+              {t('label.antePayout')}: {state.antePayout}
+            </div>
+            <div>
+              {t('label.street3Payout')}: {state.streetPayouts[0]}
+            </div>
+            <div>
+              {t('label.street4Payout')}: {state.streetPayouts[1]}
+            </div>
+            <div>
+              {t('label.street5Payout')}: {state.streetPayouts[2]}
+            </div>
             <div className="font-bold mt-1">
               {t('label.totalPayout')}: {state.totalPayout}
             </div>

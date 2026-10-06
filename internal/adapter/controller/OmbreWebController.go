@@ -42,31 +42,35 @@ type OmbreWebOutputPlayer struct {
 
 // OmbreWebOutput オンブルのWebアウトプット
 type OmbreWebOutput struct {
-	Players           []*OmbreWebOutputPlayer    `json:"players"`
-	Phase             int                        `json:"phase"`
-	RoundNumber       int                        `json:"roundNumber"`
-	TrickNumber       int                        `json:"trickNumber"`
-	CurrentPlayerIdx  int                        `json:"currentPlayerIdx"`
-	CurrentBidderIdx  int                        `json:"currentBidderIdx"`
-	LeadPlayerIdx     int                        `json:"leadPlayerIdx"`
-	DealerIdx         int                        `json:"dealerIdx"`
-	ForehandIdx       int                        `json:"forehandIdx"`
-	OmbreIdx          int                        `json:"ombreIdx"`
-	WinningBid        int                        `json:"winningBid"`
-	HighestBid        int                        `json:"highestBid"`
-	TrumpSuit         int                        `json:"trumpSuit"`
-	CurrentTrick      []*WebOutputTrickCard      `json:"currentTrick"`
-	PlayerScores      [domain.OmbrePlayerCnt]int `json:"playerScores"`
-	PlayerScoreDeltas [domain.OmbrePlayerCnt]int `json:"playerScoreDeltas"`
-	LastTrickWinner   int                        `json:"lastTrickWinner"`
-	Outcome           int                        `json:"outcome"`
-	Result            int                        `json:"result"`
-	PlayableIndices   []int                      `json:"playableIndices"`
-	GameEndFlag       bool                       `json:"gameEndFlag"`
-	WinnerPlayer      int                        `json:"winnerPlayer"`
-	IsHumanTurn       bool                       `json:"isHumanTurn"`
-	IsHumanBidTurn    bool                       `json:"isHumanBidTurn"`
-	Hint              *WebOutputCardHint         `json:"hint,omitempty"`
+	Players           []*OmbreWebOutputPlayer     `json:"players"`
+	Phase             int                         `json:"phase"`
+	RoundNumber       int                         `json:"roundNumber"`
+	TrickNumber       int                         `json:"trickNumber"`
+	CurrentPlayerIdx  int                         `json:"currentPlayerIdx"`
+	CurrentBidderIdx  int                         `json:"currentBidderIdx"`
+	LeadPlayerIdx     int                         `json:"leadPlayerIdx"`
+	DealerIdx         int                         `json:"dealerIdx"`
+	ForehandIdx       int                         `json:"forehandIdx"`
+	OmbreIdx          int                         `json:"ombreIdx"`
+	WinningBid        int                         `json:"winningBid"`
+	HighestBid        int                         `json:"highestBid"`
+	Bids              [domain.OmbrePlayerCnt]int  `json:"bids"`
+	BidActed          [domain.OmbrePlayerCnt]bool `json:"bidActed"`
+	BidTrump          [domain.OmbrePlayerCnt]int  `json:"bidTrump"`
+	HighestBidderIdx  int                         `json:"highestBidderIdx"`
+	TrumpSuit         int                         `json:"trumpSuit"`
+	CurrentTrick      []*WebOutputTrickCard       `json:"currentTrick"`
+	PlayerScores      [domain.OmbrePlayerCnt]int  `json:"playerScores"`
+	PlayerScoreDeltas [domain.OmbrePlayerCnt]int  `json:"playerScoreDeltas"`
+	LastTrickWinner   int                         `json:"lastTrickWinner"`
+	Outcome           int                         `json:"outcome"`
+	Result            int                         `json:"result"`
+	PlayableIndices   []int                       `json:"playableIndices"`
+	GameEndFlag       bool                        `json:"gameEndFlag"`
+	WinnerPlayer      int                         `json:"winnerPlayer"`
+	IsHumanTurn       bool                        `json:"isHumanTurn"`
+	IsHumanBidTurn    bool                        `json:"isHumanBidTurn"`
+	Hint              *WebOutputCardHint          `json:"hint,omitempty"`
 	WebOutputBase
 	Config OmbreWebOutputConfig `json:"config"`
 }
@@ -101,14 +105,16 @@ var NewOmbreWebController, NewOmbreWebControllerWithProvider = webControllerPair
 
 func newOmbreDefaultOutput(msg string) *OmbreWebOutput {
 	return &OmbreWebOutput{
-		Players:         make([]*OmbreWebOutputPlayer, 0),
-		CurrentTrick:    make([]*WebOutputTrickCard, 0),
-		PlayableIndices: make([]int, 0),
-		OmbreIdx:        -1,
-		TrumpSuit:       -1,
-		LastTrickWinner: -1,
-		WinnerPlayer:    -1,
-		WebOutputBase:   WebOutputBase{Message: msg},
+		Players:          make([]*OmbreWebOutputPlayer, 0),
+		CurrentTrick:     make([]*WebOutputTrickCard, 0),
+		PlayableIndices:  make([]int, 0),
+		OmbreIdx:         -1,
+		HighestBidderIdx: -1,
+		BidTrump:         [domain.OmbrePlayerCnt]int{-1, -1, -1},
+		TrumpSuit:        -1,
+		LastTrickWinner:  -1,
+		WinnerPlayer:     -1,
+		WebOutputBase:    WebOutputBase{Message: msg},
 	}
 }
 

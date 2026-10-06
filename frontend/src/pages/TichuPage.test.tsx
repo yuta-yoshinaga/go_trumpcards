@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tichuApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -86,7 +86,8 @@ describe('TichuPage', () => {
     );
     const { container } = renderWithProviders(<TichuPage />);
     await screen.findByRole('button', { name: '出す' });
-    const card = container.querySelector('[data-tutorial="tichu-hand"] button')!;
+    const card = container.querySelector('[data-tutorial="tichu-hand"] button');
+    if (!card) throw new Error('Expected a hand card');
     const cardName = card.getAttribute('aria-label');
 
     expect(card).toHaveAttribute('aria-pressed', 'false');
@@ -195,14 +196,31 @@ describe('TichuPage', () => {
   });
 
   it('declaration phase: all three buttons dispatch declare', async () => {
-    mockExec.mockResolvedValue(makeState({ phase: 'declare', currentTurn: 0 }));
-    renderWithProviders(<TichuPage />);
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'declare',
+        currentTurn: 0,
+        players: [
+          player({ id: 0, isHuman: true, cards: [{ design: 'SPADE', value: 9 }] }),
+          player({ id: 1, team: 1 }),
+          player({ id: 2, team: 0 }),
+          player({ id: 3, team: 1 }),
+        ],
+      }),
+    );
+    const { container } = renderWithProviders(<TichuPage />);
+    await screen.findByTestId('tichu-score-bar');
+    const handCard = container.querySelector('[data-tutorial="tichu-hand"] button');
+    if (!handCard) throw new Error('Expected a hand card');
+    expect(handCard).toBeDisabled();
+    expect(handCard).not.toHaveAttribute('aria-disabled');
     fireEvent.click(await screen.findByRole('button', { name: '宣言しない' }));
     fireEvent.click(screen.getByRole('button', { name: 'ティチュー宣言' }));
     fireEvent.click(screen.getByRole('button', { name: 'グランド宣言' }));
     await waitFor(() => {
-      expect(mockExec).toHaveBeenCalledWith(expect.objectContaining({ command: 'declare', declType: 2 }));
+      expect(mockExec).toHaveBeenCalledWith(expect.objectContaining({ command: 'declare', declType: 0 }));
     });
+    expect(mockExec).toHaveBeenCalledTimes(2);
   });
 
   it('play phase: selecting a card enables Play, and Pass is shown when following', async () => {
@@ -230,7 +248,7 @@ describe('TichuPage', () => {
     );
     const { container } = renderWithProviders(<TichuPage />);
     const playBtn = await screen.findByRole('button', { name: '出す' });
-    expect(playBtn).toBeDisabled();
+    expect(playBtn).toHaveAttribute('aria-disabled', 'true');
 
     const cardBtn = container.querySelector('[data-tutorial="tichu-hand"] button');
     expect(cardBtn).not.toBeNull();
@@ -246,6 +264,77 @@ describe('TichuPage', () => {
     await waitFor(() => {
       expect(mockExec).toHaveBeenCalledWith(expect.objectContaining({ command: 'p', indices: [] }));
     });
+  });
+
+  it('locks declaration controls during a request and unlocks them after completion', async () => {
+    let resolve!: (state: TichuResponse) => void;
+    mockExec
+      .mockResolvedValueOnce(makeState({ phase: 'declare', currentTurn: 0 }))
+      .mockReturnValueOnce(
+        new Promise((r) => {
+          resolve = r;
+        }),
+      )
+      .mockResolvedValueOnce(makeState({ phase: 'declare', currentTurn: 0 }));
+    renderWithProviders(<TichuPage />);
+    const noDeclare = await screen.findByRole('button', { name: '宣言しない' });
+    fireEvent.click(noDeclare);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(2));
+    const declarations = [
+      noDeclare,
+      screen.getByRole('button', { name: 'ティチュー宣言' }),
+      screen.getByRole('button', { name: 'グランド宣言' }),
+    ];
+    expect(declarations.every((button) => button.getAttribute('aria-disabled') === 'true')).toBe(true);
+    fireEvent.click(noDeclare);
+    expect(mockExec).toHaveBeenCalledTimes(2);
+
+    await act(async () => resolve(makeState({ phase: 'declare', currentTurn: 0 })));
+    expect(noDeclare).not.toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(noDeclare);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(3));
+  });
+
+  it('locks hand selection, play, and pass during a request', async () => {
+    let resolve!: (state: TichuResponse) => void;
+    mockExec
+      .mockResolvedValueOnce(
+        makeState({
+          tableCards: [{ design: 'HEART', value: 7 }],
+          players: [
+            player({ id: 0, isHuman: true, cards: [{ design: 'SPADE', value: 9 }] }),
+            player({ id: 1, team: 1 }),
+            player({ id: 2, team: 0 }),
+            player({ id: 3, team: 1 }),
+          ],
+        }),
+      )
+      .mockReturnValueOnce(
+        new Promise((r) => {
+          resolve = r;
+        }),
+      );
+    const { container } = renderWithProviders(<TichuPage />);
+    await screen.findByRole('button', { name: '出す' });
+    const card = container.querySelector('[data-tutorial="tichu-hand"] button');
+    if (!card) throw new Error('Expected a hand card');
+    const pass = screen.getByRole('button', { name: 'パス' });
+    fireEvent.click(pass);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(2));
+    const play = screen.getByRole('button', { name: '出す' });
+    expect(card).not.toBeDisabled();
+    expect(card).toHaveAttribute('aria-disabled', 'true');
+    expect(play).toHaveAttribute('aria-disabled', 'true');
+    expect(pass).toHaveAttribute('aria-disabled', 'true');
+    const pressed = card.getAttribute('aria-pressed');
+    fireEvent.click(card);
+    expect(card).toHaveAttribute('aria-pressed', pressed);
+    fireEvent.click(play);
+    fireEvent.click(pass);
+    expect(mockExec).toHaveBeenCalledTimes(2);
+
+    await act(async () => resolve(makeState({ tableCards: [{ design: 'HEART', value: 7 }] })));
+    expect(screen.getByRole('button', { name: 'パス' })).not.toHaveAttribute('aria-disabled', 'true');
   });
 
   it('play phase: marks the cards that form a bomb with a badge and aria-label', async () => {

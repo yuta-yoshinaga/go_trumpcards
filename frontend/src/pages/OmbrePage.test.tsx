@@ -21,6 +21,10 @@ const bidPhaseState = makeOmbreState({
   isHumanBidTurn: true,
   winningBid: 0,
   highestBid: 0,
+  bids: [0, 0, 0],
+  bidActed: [false, false, false],
+  bidTrump: [-1, -1, -1],
+  highestBidderIdx: -1,
   ombreIdx: -1,
   trumpSuit: -1,
 });
@@ -50,6 +54,27 @@ beforeEach(() => {
 });
 
 describe('OmbrePage', () => {
+  it('shows live auction declarations and the current highest bidder', async () => {
+    mockExec.mockResolvedValueOnce(bidPhaseState).mockResolvedValueOnce({
+      ...bidPhaseState,
+      bids: [0, 1, 2],
+      bidActed: [true, true, true],
+      bidTrump: [-1, 1, 4],
+      highestBid: 2,
+      highestBidderIdx: 2,
+    });
+
+    renderWithProviders(<OmbrePage />);
+
+    const auction = await screen.findByRole('region', { name: '入札状況' });
+    expect(auction).toHaveTextContent('あなた：未宣言');
+    fireEvent.click(screen.getByRole('button', { name: 'パス' }));
+    await waitFor(() => expect(auction).toHaveTextContent('現在の最高入札: CPU 2 — ソロ'));
+    expect(auction).toHaveTextContent('現在の最高入札: CPU 2 — ソロ');
+    expect(auction).toHaveTextContent('あなた：パス');
+    expect(auction).toHaveTextContent('CPU 1：エントラール（スペード）');
+    expect(auction).toHaveTextContent('CPU 2：ソロ（ダイヤ）（最高入札）');
+  });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<OmbrePage />);

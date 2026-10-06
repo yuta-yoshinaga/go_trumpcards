@@ -194,6 +194,13 @@ describe('BaseballPokerPage', () => {
     await waitFor(() => expect(screen.getByTestId('bb-bonus-0')).toHaveTextContent('2'));
   });
 
+  it('サーバのベット助言を日本語ツールチップに出す', async () => {
+    localStorage.setItem('hint_enabled_baseballpoker', 'true');
+    mockApi.mockResolvedValue(withState({ serverHint: { action: 'bet', reason: 'strongEnoughToBet' } }));
+    renderWithProviders(<BaseballPokerPage />);
+    expect(await screen.findByTestId('hint-tooltip')).toHaveTextContent('スリーカード以上あるので、賭けて構いません');
+  });
+
   // **買い増しの返事はベットの手と分ける。** 同じ列だと打ち間違いで払ってしまう。
   it('買い増しの場面でだけ支払いのボタンを出す', async () => {
     mockApi.mockResolvedValue(base);

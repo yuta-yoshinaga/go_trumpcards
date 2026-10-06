@@ -61,6 +61,20 @@ describe('SheepsheadPage', () => {
     );
   });
 
+  it('uses the selected base-chip unit when starting a new game', async () => {
+    renderWithProviders(<SheepsheadPage />);
+    fireEvent.click(await screen.findByText('設定'));
+    const baseChips = await screen.findByLabelText('基本チップ単位');
+    fireEvent.change(baseChips, { target: { value: '5' } });
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenLastCalledWith('reset', {
+        config: { cpuDifficulty: 1, baseChips: 5, startChips: 100, targetChips: 200 },
+      }),
+    );
+  });
+
   it('renders the play phase with the human cards', async () => {
     renderWithProviders(<SheepsheadPage />);
     await waitFor(() => {

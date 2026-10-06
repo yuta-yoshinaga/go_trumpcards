@@ -236,7 +236,11 @@ function ChineseTenPageContent() {
                       // announced rather than the control leaving the tab order.
                       aria-disabled={!canTake}
                       title={layoutBlocked}
-                      aria-label={[cardAlt(card), t('layoutPosition', { position: i }), layoutBlocked]
+                      aria-label={[
+                        cardAlt(card),
+                        t('layoutPosition', { position: i }),
+                        canTake ? t('layoutTakeAction') : layoutBlocked,
+                      ]
                         .filter(Boolean)
                         .join(' — ')}
                       data-hinted-layout={isHintedLayout || undefined}

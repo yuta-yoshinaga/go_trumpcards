@@ -8,5 +8,5 @@ import { createSolitaireMoveApi } from '../gameExec';
 export const grandfathersClockApi = createSolitaireMoveApi<
   GrandfathersClockResponse,
   GrandfathersClockMoveZone,
-  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n' | 'redo'
 >('grandfathersclock');

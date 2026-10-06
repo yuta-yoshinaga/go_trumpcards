@@ -1,5 +1,6 @@
 {
   "discardTop": "Discard",
+  "discardPileTop": "Top of discard pile",
   "phase": {
     "draw": "Draw",
     "meld": "Meld",

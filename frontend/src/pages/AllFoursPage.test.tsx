@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { allfoursApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -311,6 +311,10 @@ describe('AllFoursPage', () => {
     renderWithProviders(<AllFoursPage />);
     const panel = await screen.findByTestId('af-breakdown');
     expect(panel).toHaveTextContent('得点内訳');
+    const table = within(panel).getByRole('table', { name: '得点内訳' });
+    expect(within(table).getByRole('columnheader', { name: '得点項目' })).toBeInTheDocument();
+    expect(within(table).getByRole('columnheader', { name: '獲得者' })).toBeInTheDocument();
+    expect(within(table).getByRole('rowheader', { name: 'High' })).toBeInTheDocument();
     expect(panel).toHaveTextContent('High');
     expect(panel).toHaveTextContent('Jack');
     // Per-player Game pip totals are shown.

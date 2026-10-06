@@ -482,6 +482,17 @@ function ViraPageContent() {
                   })}
                 </span>
               )}
+              {isBidPhase && (
+                <div className="w-full text-xs text-ds-text-muted" data-testid="vira-bid-status">
+                  <span className="font-semibold text-ds-text-primary">{t('bidStatusTitle')}</span>
+                  {state.players.map((player) => (
+                    <div key={player.id}>
+                      {playerName(player.id, player.isHuman)}:{' '}
+                      {state.bidDone[player.id] ? t(`bid.${CONTRACT_KEYS[state.bids[player.id]]}`) : t('bidNotYet')}
+                    </div>
+                  ))}
+                </div>
+              )}
               {isBidPhase && isHumanBidTurn && (
                 <>
                   <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>

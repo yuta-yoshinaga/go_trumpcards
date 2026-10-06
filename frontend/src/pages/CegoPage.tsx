@@ -464,6 +464,11 @@ function CegoPageContent() {
                 dataTutorialPrefix="cego"
                 validIndices={handValidIndices}
                 restrictedTooltip={canExchange ? t('exchangeKeep') : t('playButton')}
+                highlightIndices={
+                  state.hint && isRequestedHint(state) && state.hint.cardIndices?.length
+                    ? state.hint.cardIndices
+                    : undefined
+                }
               />
             )}
 

@@ -46,7 +46,10 @@ export function isRejectedAction(res: unknown): boolean {
 /** Hook that wraps a game API function with loading, error, and state management. */
 export function useGameApi<TState, TArgs extends unknown[]>(
   apiFn: (...args: TArgs) => Promise<TState>,
-  options?: { onSuccess?: (res: TState, args: TArgs) => void | Promise<void> },
+  options?: {
+    onSuccess?: (res: TState, args: TArgs) => void | Promise<void>;
+    onError?: (error: unknown, args: TArgs) => void;
+  },
 ): {
   state: TState | null;
   setState: React.Dispatch<React.SetStateAction<TState | null>>;
@@ -83,6 +86,8 @@ export function useGameApi<TState, TArgs extends unknown[]>(
   apiFnRef.current = apiFn;
   const onSuccessRef = useRef(options?.onSuccess);
   onSuccessRef.current = options?.onSuccess;
+  const onErrorRef = useRef(options?.onError);
+  onErrorRef.current = options?.onError;
   const lastArgsRef = useRef<TArgs | null>(null);
   const sound = useOptionalSound();
   const soundRef = useRef(sound);
@@ -122,6 +127,7 @@ export function useGameApi<TState, TArgs extends unknown[]>(
       const failure = describeApiFailure(e);
       setError(failure.message);
       setRetryable(failure.retryable);
+      onErrorRef.current?.(e, args);
       try {
         soundRef.current?.consumeExecClaim?.();
       } catch {

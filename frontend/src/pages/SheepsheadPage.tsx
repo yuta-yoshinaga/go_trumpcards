@@ -25,6 +25,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import {
+  BASE_CHIPS_OPTIONS,
   CPU_DIFFICULTY_OPTIONS,
   SHEEPSHEAD_BURY_COUNT,
   TARGET_CHIPS_OPTIONS,
@@ -257,6 +258,14 @@ function SheepsheadPageContent() {
                     value: sheepsheadConfig.targetChips,
                     options: TARGET_CHIPS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('targetChips', v),
+                  },
+                  {
+                    type: 'select',
+                    id: 'baseChips',
+                    label: t('settings.baseChips'),
+                    value: sheepsheadConfig.baseChips,
+                    options: BASE_CHIPS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    onSelect: (v) => handleConfigChange('baseChips', v),
                   },
                   hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],

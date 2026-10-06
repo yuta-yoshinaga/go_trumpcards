@@ -29,6 +29,10 @@
     "bet": "Bet Phase",
     "end": "Result"
   },
+  "reveal": {
+    "thirdCard": "The third card was revealed for {{side}}. The updated total is {{value}}.",
+    "result": "Result details. {{result}} Payout: {{payout}}."
+  },
   "sideBet": {
     "title": "Side bets (optional)",
     "playerPair": "Player Pair",

@@ -269,6 +269,7 @@ function BuraPageContent() {
 
             <ActionLogSection
               isEndPhase={ended}
+              availableDuringPlay
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}

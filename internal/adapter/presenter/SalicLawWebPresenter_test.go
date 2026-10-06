@@ -162,12 +162,15 @@ func TestSalicLawWebPresenter_HintOutput(t *testing.T) {
 }
 
 func TestSalicLawWebPresenter_ActionLogOutput(t *testing.T) {
-	t.Run("playing phase returns empty", func(t *testing.T) {
+	t.Run("playing phase returns log", func(t *testing.T) {
 		g := new(interfaces.MockSalicLawGame)
 		g.On("GetPhase").Return(domain.SalicLawPhasePlaying)
 		g.On("GetGameEndFlag").Return(false)
+		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "draw", DetailCode: "saliclaw.log.draw", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 9, false)}},
+		})
 
-		assert.Contains(t, new(SalicLawWebPresenter).ActionLogOutput(g), "[]")
+		assert.Contains(t, new(SalicLawWebPresenter).ActionLogOutput(g), "draw")
 	})
 
 	t.Run("game over returns log", func(t *testing.T) {

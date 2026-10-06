@@ -43,10 +43,12 @@ The flows require `dele`, `gh`, `jq`, `flock`, `bun`, `go`, and `golangci-lint`,
 - `treehash.sh`: hash the worktree state for the gate stamp.
 - `receipt.sh`: run relevant Vitest files plus frontend and backend checks for a worktree.
 - `rc.sh`: save a concise receipt with test shrink and dead-code warnings.
+- `rc.sh` also records `WARN WORKER_BUILD`, `WARN UNUSED_NEW_SYMBOL`, and `WARN PATCH_BRANCH_GAP`; set `ALLOW_WORKER_BUILD=1`, `ALLOW_UNUSED="name ..."`, or `ALLOW_PATCH_GAPS=1` to allow known exceptions.
 - `rcg.sh`: serialize receipt gates with `flock` and write a fresh slot result.
 - `ship.sh`: commit a gated issue worktree and create a PR.
 - `fixpush.sh`: commit and push a gated fix and comment on its PR.
 - `sweep.sh`: land eligible reviewed batch PRs and report blocked ones.
+- `sweep.sh` reports `UNSWEPT` for open PRs outside `BATCH_BRANCH_RE`; set `BATCH_UNSWEPT_IGNORE="<pr ...>"` to ignore intentional non-batch PRs.
 - `triage.sh`: inspect automated review feedback and mark clean reviews as read.
 - `land.sh`: run the merge gate and squash-merge a PR.
 - `waitfor.sh`: wait for a shell condition up to a timeout.

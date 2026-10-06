@@ -29,6 +29,8 @@ export interface CasinoHoldemResponse extends BaseGameResponse {
   netChange: number;
   playerHandRank: number;
   dealerHandRank: number;
+  /** Estimated share of completed call outcomes, including ties; present during the flop decision. */
+  callWinRate?: number;
 }
 
 // --- Texas Hold'em Bonus Poker (テキサスホールデムボーナスポーカー) ---

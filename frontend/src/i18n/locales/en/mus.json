@@ -57,7 +57,11 @@
     "chica": "Chica",
     "pares": "Pares",
     "juego": "Juego",
-    "line": "{{round}}: team {{team}} +{{stake}}",
+    "line": "{{round}} ({{method}}): team {{team}} +{{stake}}",
+    "deferred": "Paso, then showdown",
+    "accepted": "Bet accepted, then showdown",
+    "awarded": "Bet declined, immediate award",
+    "ordago": "Órdago accepted, then showdown",
     "undecided": "undecided"
   },
   "nextRound": "Next Round",

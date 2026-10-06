@@ -55,6 +55,10 @@
   "skipMeldButton": "スキップ",
   "discardButton": "捨てる",
   "goOutButton": "上がる",
+  "listSeparator": "、",
+  "goOutRequirementPozzetto": "ポゼットの獲得",
+  "goOutRequirementBiriba": "ビリバの成立",
+  "goOutReason": "上がるには次が必要です: {{requirements}}",
   "nextRound": "次のラウンド",
   "selectPair": "捨て札のトップと一致するナチュラルカード2枚を選択してください",
   "drawDiscardReason": {

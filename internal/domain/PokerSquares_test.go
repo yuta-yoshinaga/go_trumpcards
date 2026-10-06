@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func newPokerSquaresForTest() *PokerSquares {
@@ -44,6 +45,22 @@ func TestPokerSquares_PlaceSuccess(t *testing.T) {
 	assert.Equal(t, first, g.GetBoard()[0][0])
 	assert.NotNil(t, g.GetCurrentCard())
 	assert.NotEqual(t, first, g.GetCurrentCard())
+}
+
+func TestPokerSquares_UndoAtActionLogCap(t *testing.T) {
+	g := newPokerSquaresForTest()
+	g.Reset()
+	for i := 0; i < MaxActionLog; i++ {
+		g.appendLog("prior", "prior", nil, nil)
+	}
+	priorLast := g.actionLog[len(g.actionLog)-1]
+	require.NoError(t, g.Place(0, 0))
+	require.Len(t, g.actionLog, MaxActionLog)
+	require.Equal(t, 1, g.dropped)
+	added := 1
+	require.NoError(t, g.Undo())
+	require.Len(t, g.actionLog, MaxActionLog-added)
+	require.Same(t, priorLast, g.actionLog[len(g.actionLog)-1])
 }
 
 func TestPokerSquares_PlaceErrors(t *testing.T) {

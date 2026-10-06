@@ -43,7 +43,7 @@ $body
    - 3 項目以上の新しいボタンや分岐を足すときも、既存のボタン・操作を隠したり意味を変えたりしない。
    - **画面の差分 (前回の state との比較) で「出た札」「勝者」を読み上げるときは**、usecase の Interactor が人間の操作の中で CPU を何手進めるか (runCpuTurns 等) を先に読む。1 回の応答で複数の札が増える・トリック確定と次のリードが同時に起きる前提で、増えた札すべてと勝者の両方を出す。
    - 札の画像 (CardImage の alt) を中に持つボタンに aria-label を足すと、alt はアクセシブル名に入らなくなる。札がある状態では aria-label にも札名 (cardAlt) を含める。
-   - api/openapi.yaml にプロパティを足すときは、既存プロパティの `type:` と `description:` の間に挿入しない (挿入位置の前後 5 行を必ず確認。`mapping key "description" already defined` で YAML が壊れる事故が 2 回)。共有スキーマ (複数の paths が $ref する) に足すと他ゲームでも宣言されるので、そのゲームの応答が参照するスキーマを paths から辿って確認する。
+   - api/openapi.yaml にプロパティを足すときは、既存プロパティの \`type:\` と \`description:\` の間に挿入しない (挿入位置の前後 5 行を必ず確認。\`mapping key "description" already defined\` で YAML が壊れる事故が 2 回)。共有スキーマ (複数の paths が \$ref する) に足すと他ゲームでも宣言されるので、そのゲームの応答が参照するスキーマを paths から辿って確認する。
    - **issue の「対象ファイル」は目安であり制約ではない。** 規則由来の値 (得点・必要点・増減・履歴) を出すのにドメイン・presenter・WebController・api/openapi.yaml・TS 型・stateFactories の変更が要るなら、それらも変更してよい (途中で止めて報告するのではなく、そこまで実装して試験を足す)。値の計算は 1 か所 (ドメインで実際に点を動かす所) にだけ書き、表示用 getter で同じ計算を繰り返さない。
    - 払戻額・純損益・精算額をページで計算しない (アンテや持ち越しが入る)。ドメインの精算が実際に動かしたチップを Web 応答 (roundPayout / netChange 等) に載せて表示する (#8791 の方針)。
    - コール額・不足額などの金額を表示するときは、ドメインが実際に請求する式 (例: Anaconda の need := currentBet - streetBet) を grep し、同じフィールドを使う。名前の近い累計 (roundBet 等) で代用しない。
@@ -53,6 +53,11 @@ $body
    - デザイントークンのみ (\`text-ds-*\`, \`bg-ds-*\`)。生のパレットや \`text-white/N\` は不可。
    - 追加した試験が**実装を壊すと落ちる**ことを確かめる (一時的に実装を戻して失敗を見て、元に戻す。戻しは手で行い git checkout を使わない)。
    - \`waitFor(() => expect(...).not...)\` のような、描画が空でも通る否定だけの assert を書かない。
+   - サーバ側のヒント (domain の GetHint) を画面で使う issue: ページに hint ボタン + useHintRequest が既にあれば、その経路 (hint コマンド → HintOutput → res.hint) を直すだけにする。無ければ state 変化ごとに hint コマンドを別リクエストで叩く形にはせず、Web 出力 struct に serverHint (omitempty) を足して状態応答 (Output) に GetHint() を詰め (openapi・types・stateFactories も)、getXxxHint(state) で state.serverHint を HintResult に写す (BlackHole / TuSac が先例)。共有の useGameHint / FrontendHintTooltip は外さない。
+   - Web 応答で札を伏せるとき: 偽の札 (design "BACK" など) を作らない (Card スキーマの enum 違反)。札は送らず空配列にし、枚数は定数か既存の count フィールドで表す。同じ札が別フィールド (例 dealerHighHand) から漏れていないか presenter の全フィールドを確認する。
+   - 判定ロジックをドメインへ移して フロントの試験を消すときは、消した試験の場面を同じ数だけドメイン試験に移植する。
+   - Go の presenter / domain を触ったら、そのファイルの //go:build にある worker タグで GOOS=js GOARCH=wasm go build -tags <worker> -o /dev/null ./cmd/workers/<worker> を通す。別タグのファイルの関数は使わず、共有したい関数はタグ無しの共有ヘルパへ移す。
+   - 新しく足した関数・export は、定義以外から使われていることを git grep で確かめる (使われないものは足さない)。
 3. 受け入れ条件 (issue の各項目) を 1 対 1 で満たすこと。範囲外の改名・整形・無関係なファイル変更をしない。
 
 ## 検証 (すべて通すこと)

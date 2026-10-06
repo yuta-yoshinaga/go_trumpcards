@@ -137,8 +137,7 @@ type GoFish struct {
 
 	cpuActions  []*GoFishCpuAction
 	humanAction *GoFishCpuAction
-	actionLog   []*ActionLogEntry
-
+	actionLogBase
 	// CPU記憶 (Hard難易度)
 	cpuMemories []goFishMemoryEntry
 }
@@ -152,7 +151,7 @@ func NewGoFish(trumpCards *TrumpCards, players []*GoFishPlayer) *GoFish {
 		lastAskPlayerIdx: -1,
 		lastAskTargetIdx: -1,
 		cpuActions:       make([]*GoFishCpuAction, 0),
-		actionLog:        make([]*ActionLogEntry, 0),
+		actionLogBase:    actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 		cpuMemories:      make([]goFishMemoryEntry, 0),
 	}
 }
@@ -328,14 +327,7 @@ func (g *GoFish) executeAsk(askerIdx, targetIdx, rank int) *GoFishCpuAction {
 		g.lastCardsReceived = cards
 
 		// 棋譜
-		g.actionLog = append(g.actionLog, &ActionLogEntry{
-			TurnNumber:   g.turnNumber,
-			PlayerIdx:    askerIdx,
-			ActionType:   "ask_hit",
-			DetailCode:   "gofish.log.askHit",
-			DetailParams: map[string]string{"asker": fmt.Sprintf("%d", askerIdx), "target": fmt.Sprintf("%d", targetIdx), "rank": fmt.Sprintf("%d", rank), "count": fmt.Sprintf("%d", len(cards))},
-			Cards:        cards,
-		})
+		g.appendLogCodeAt(g.turnNumber, askerIdx, "ask_hit", "gofish.log.askHit", map[string]string{"asker": fmt.Sprintf("%d", askerIdx), "target": fmt.Sprintf("%d", targetIdx), "rank": fmt.Sprintf("%d", rank), "count": fmt.Sprintf("%d", len(cards))}, cards)
 	} else {
 		// Go Fish! 山札から1枚引く
 		action.Success = false
@@ -351,13 +343,7 @@ func (g *GoFish) executeAsk(askerIdx, targetIdx, rank int) *GoFishCpuAction {
 		}
 
 		// 棋譜
-		g.actionLog = append(g.actionLog, &ActionLogEntry{
-			TurnNumber:   g.turnNumber,
-			PlayerIdx:    askerIdx,
-			ActionType:   "ask_miss",
-			DetailCode:   "gofish.log.askMiss",
-			DetailParams: map[string]string{"asker": fmt.Sprintf("%d", askerIdx), "target": fmt.Sprintf("%d", targetIdx), "rank": fmt.Sprintf("%d", rank)},
-		})
+		g.appendLogCodeAt(g.turnNumber, askerIdx, "ask_miss", "gofish.log.askMiss", map[string]string{"asker": fmt.Sprintf("%d", askerIdx), "target": fmt.Sprintf("%d", targetIdx), "rank": fmt.Sprintf("%d", rank)}, nil)
 	}
 
 	// ブックチェック
@@ -413,14 +399,7 @@ func (g *GoFish) checkAndFormBooks(playerIdx int) (bool, int) {
 				bookRank = rank
 				found = true
 
-				g.actionLog = append(g.actionLog, &ActionLogEntry{
-					TurnNumber:   g.turnNumber,
-					PlayerIdx:    playerIdx,
-					ActionType:   "book",
-					DetailCode:   "gofish.log.book",
-					DetailParams: map[string]string{"player": fmt.Sprintf("%d", playerIdx), "rank": fmt.Sprintf("%d", rank)},
-					Cards:        cards,
-				})
+				g.appendLogCodeAt(g.turnNumber, playerIdx, "book", "gofish.log.book", map[string]string{"player": fmt.Sprintf("%d", playerIdx), "rank": fmt.Sprintf("%d", rank)}, cards)
 				break
 			}
 		}
@@ -772,9 +751,6 @@ func (g *GoFish) GetKnownRanks() map[int][]int {
 
 // GetHumanAction 人間の最後の行動記録を取得する
 func (g *GoFish) GetHumanAction() *GoFishCpuAction { return g.humanAction }
-
-// GetActionLog 棋譜を取得する
-func (g *GoFish) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // goFishMaxSliceLen caps slice sizes during deserialisation, matching
 // ADR-0028's defensive policy for KV-restored session blobs.

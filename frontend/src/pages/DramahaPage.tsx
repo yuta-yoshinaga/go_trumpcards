@@ -401,17 +401,32 @@ function DramahaPageContent() {
                   player={player}
                   showCards={isShowdown}
                   faceDownCount={DRAMAHA_HOLE_CARDS}
-                  showHandName={isShowdown}
+                  showHandName={false}
                   extraInfo={
-                    player.totalHands > 0 ? (
-                      <HudStats
-                        namespace="dramaha"
-                        vpip={player.vpip}
-                        pfr={player.pfr}
-                        threeBet={player.threeBet}
-                        af={player.af}
-                      />
-                    ) : undefined
+                    <>
+                      {isShowdown && !player.folded && player.omahaHandName && player.drawHandName && (
+                        <span
+                          className="ml-2 inline-flex flex-wrap gap-1 text-xs"
+                          data-testid="cpu-showdown-hand-names"
+                        >
+                          <span className={`rounded px-2 py-0.5 font-bold ${handNameBadgeClass}`}>
+                            {t('omahaHand')}: {t(`hand.${player.omahaHandName}`)}
+                          </span>
+                          <span className={`rounded px-2 py-0.5 font-bold ${handNameBadgeClass}`}>
+                            {t('drawHand')}: {t(`hand.${player.drawHandName}`)}
+                          </span>
+                        </span>
+                      )}
+                      {player.totalHands > 0 && (
+                        <HudStats
+                          namespace="dramaha"
+                          vpip={player.vpip}
+                          pfr={player.pfr}
+                          threeBet={player.threeBet}
+                          af={player.af}
+                        />
+                      )}
+                    </>
                   }
                 />
               ));

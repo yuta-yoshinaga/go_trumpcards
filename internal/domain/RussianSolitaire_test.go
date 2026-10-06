@@ -755,3 +755,33 @@ func TestRussianSolitaire_UnmarshalJSON_invalid(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestRussianSolitaire_GetHint_SkipsWholeColumnToEmpty(t *testing.T) {
+	t.Run("chooses a useful move", func(t *testing.T) {
+		c := newTestRussianSolitaire()
+		c.Reset()
+		var tab [domain.RussianSolitaireTableauCnt][]*domain.KlondikeTableauCard
+		tab[0] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 13, true)}
+		tab[1] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignClover, 3, true), makeTableauCard(domain.CardDesignHeart, 13, true), makeTableauCard(domain.CardDesignSpade, 12, true)}
+		c.SetTableau(tab)
+		c.SetFoundation([domain.RussianSolitaireFoundationCnt][]*domain.Card{})
+		hint := c.GetHint()
+		if assert.NotNil(t, hint) {
+			assert.Equal(t, 1, hint.FromCol)
+			assert.Equal(t, 1, hint.CardIndex)
+			assert.Equal(t, 2, hint.ToCol)
+			assert.Equal(t, "tableau", hint.ToZone)
+		}
+	})
+	t.Run("no-op moves lead to stalemate", func(t *testing.T) {
+		c := newTestRussianSolitaire()
+		c.Reset()
+		var tab [domain.RussianSolitaireTableauCnt][]*domain.KlondikeTableauCard
+		tab[0] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 13, true)}
+		c.SetTableau(tab)
+		c.SetFoundation([domain.RussianSolitaireFoundationCnt][]*domain.Card{})
+		assert.Nil(t, c.GetHint())
+		assert.NoError(t, c.MoveTableauToTableau(0, 0, 1))
+		assert.True(t, c.IsStalemate())
+	})
+}

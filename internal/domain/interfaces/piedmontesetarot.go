@@ -64,6 +64,8 @@ type PiedmonteseTarotGame interface {
 	GetPlayerScores() []int
 	// GetDealScores 直近ディールの精算値を取得する
 	GetDealScores() []int
+	// GetDealScoreHistory ディールごとの精算履歴を取得する
+	GetDealScoreHistory() []domain.PiedmonteseTarotDealScore
 	// GetCardThirds 指定席の獲得点を 1/3 単位で取得する
 	GetCardThirds(i int) int
 	// GetScartoThirds 親がスカルトに埋めた札の点を 1/3 単位で取得する

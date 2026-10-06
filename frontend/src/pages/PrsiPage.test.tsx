@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, prsiApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import i18n from '../i18n';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { PrsiResponse } from '../types/card';
 import { PrsiPage } from './PrsiPage';
@@ -510,16 +511,39 @@ describe('PrsiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
   });
 
-  it('handles action log visibility and API fetch', async () => {
-    mockExec.mockResolvedValue(gameEndState);
+  it('opens the action log during play and disables card shortcuts while open', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<PrsiPage />);
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
 
-    vi.mocked(actionLogApi.prsi).mockResolvedValueOnce({ entries: [] });
+    // Select a card before opening the log. Enter must not play that selection
+    // while the log is open.
+    fireEvent.keyDown(document, { key: '1' });
+    expect(screen.getByRole('button', { name: /♠ A/ })).toHaveAttribute('aria-pressed', 'true');
+
+    vi.mocked(actionLogApi.prsi).mockResolvedValueOnce({
+      entries: [
+        {
+          turnNumber: 1,
+          playerIdx: 0,
+          actionType: 'play',
+          detail: 'You played ♠7',
+          detailCode: 'prsi.log.play',
+          detailParams: { name: 'You', card: '♠7' },
+          cards: [{ design: 'SPADE', value: 7 }],
+        },
+      ],
+    });
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.prsi).toHaveBeenCalledTimes(1));
-    expect(screen.getByText('棋譜')).toBeInTheDocument();
+    expect(await screen.findByText('棋譜')).toBeInTheDocument();
+    expect(screen.getByText(/♠7/)).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByText('棋譜を見る')).not.toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   it('renders tutorial button', async () => {

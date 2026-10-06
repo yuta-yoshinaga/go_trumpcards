@@ -29,7 +29,8 @@
     "reset": "リセット",
     "giveUp": "投了",
     "playAria": "{{card}} を出す",
-    "playUnavailable": "このカードは現在出せません。"
+    "playUnavailable": "このカードは現在出せません。",
+    "playUnavailableFollowSuit": "リードされたスートは{{suit}}です。手札にそのスートがあるため、{{suit}}に従って出してください。"
   },
   "result": {
     "you": "あなたの勝ち！ ノルマ達成回数がいちばん多いです。",

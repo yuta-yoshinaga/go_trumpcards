@@ -488,10 +488,27 @@ describe('SpadesPage', () => {
   it('score table headers have scope="col" for accessibility', async () => {
     const { container } = renderWithProviders(<SpadesPage />);
     await waitFor(() => expect(screen.getByText('\u3042\u306a\u305f')).toBeInTheDocument());
-    const ths = container.querySelectorAll('th');
+    const ths = container.querySelectorAll('thead th');
     ths.forEach((th) => {
       expect(th).toHaveAttribute('scope', 'col');
     });
+  });
+
+  it.each([375, 800])('score table player cells are row headers at viewport width %i', async (width) => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: width });
+    try {
+      const { container } = renderWithProviders(<SpadesPage />);
+      await waitFor(() => expect(screen.getByText('\u3042\u306a\u305f')).toBeInTheDocument());
+      const rows = container.querySelectorAll('[data-tutorial="sp-score-table"] tbody tr');
+      expect(rows).toHaveLength(4);
+      rows.forEach((row) => {
+        expect(row.querySelector('th')).toHaveAttribute('scope', 'row');
+        expect(row.querySelector('td')).toBeInTheDocument();
+      });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
   });
 
   it('score table has horizontal scroll wrapper', async () => {
@@ -678,7 +695,7 @@ describe('SpadesPage', () => {
     fireEvent.click(screen.getByText('\u68cb\u8b5c\u3092\u898b\u308b'));
 
     await waitFor(() => expect(actionLogApi.spades).toHaveBeenCalledTimes(1));
-    expect(screen.getByText('\u68cb\u8b5c')).toBeInTheDocument();
+    expect(await screen.findByText('\u68cb\u8b5c')).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('\u9589\u3058\u308b'));
     await waitFor(() => expect(screen.queryByText(/^\u68cb\u8b5c$/)).not.toBeInTheDocument());

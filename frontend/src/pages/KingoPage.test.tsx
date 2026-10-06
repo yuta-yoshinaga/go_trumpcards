@@ -119,6 +119,27 @@ describe('KingoPage', () => {
     expect(screen.getByTestId('kingo-won-0')).toHaveTextContent('10');
   });
 
+  it('決着では増減ゼロも表示し、張り中は結果を表示しない', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: KingoPhase.RESULT,
+        isHumanTurn: false,
+        seats: [seat({ bet: 10, wonAmount: 0 }), ...base.seats.slice(1)],
+      }),
+    );
+    const { unmount } = renderWithProviders(<KingoPage />);
+    await waitFor(() => expect(screen.getByTestId('kingo-won-0')).toBeInTheDocument());
+    expect(screen.getByTestId('kingo-won-0')).toHaveTextContent('増減なし');
+
+    mockApi.mockResolvedValue(
+      withState({ phase: KingoPhase.BET, seats: [seat({ wonAmount: 10 }), ...base.seats.slice(1)] }),
+    );
+    unmount();
+    renderWithProviders(<KingoPage />);
+    await waitFor(() => expect(screen.getByTestId('kingo-bet')).toBeInTheDocument());
+    expect(screen.queryByTestId('kingo-won-0')).not.toBeInTheDocument();
+  });
+
   // 知らない役番号が来ても表示が消えない（サーバが役を増やしたときの保険）。
   it('知らない役番号は役なし扱いで描く', async () => {
     mockApi.mockResolvedValue(

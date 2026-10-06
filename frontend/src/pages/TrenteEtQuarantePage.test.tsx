@@ -249,6 +249,42 @@ describe('TrenteEtQuarantePage', () => {
     expect(await screen.findByTestId('teq-result')).toHaveTextContent(`賭け内容: ${label}（賭け金 100）`);
   });
 
+  it.each([
+    [TrenteEtQuaranteBetType.COULEUR, false, 0, '最初のカードの色: 黒。勝ち色（黒）と一致'],
+    [TrenteEtQuaranteBetType.COULEUR, true, 0, '最初のカードの色: 赤。勝ち色（黒）と不一致'],
+    [TrenteEtQuaranteBetType.INVERSE, false, 1, '最初のカードの色: 黒。勝ち色（赤）と不一致'],
+    [TrenteEtQuaranteBetType.INVERSE, true, 1, '最初のカードの色: 赤。勝ち色（赤）と一致'],
+  ])(
+    'explains the color bet result from the first card and winning row',
+    async (currentBet, firstCardRed, winningRow, explanation) => {
+      mockApi.mockResolvedValue(makeTrenteEtQuaranteState({ ...endState, currentBet, firstCardRed, winningRow }));
+      renderWithProviders(<TrenteEtQuarantePage />);
+
+      expect(await screen.findByTestId('teq-color-result')).toHaveTextContent(explanation);
+    },
+  );
+
+  it.each([TrenteEtQuaranteBetType.NOIR, TrenteEtQuaranteBetType.ROUGE])(
+    'does not show a color result explanation for bet type %s',
+    async (currentBet) => {
+      mockApi.mockResolvedValue(makeTrenteEtQuaranteState({ ...endState, currentBet }));
+      renderWithProviders(<TrenteEtQuarantePage />);
+
+      await screen.findByTestId('teq-result');
+      expect(screen.queryByTestId('teq-color-result')).not.toBeInTheDocument();
+    },
+  );
+
+  it('does not show a color result explanation on a refait', async () => {
+    mockApi.mockResolvedValue(
+      makeTrenteEtQuaranteState({ ...refaitState, currentBet: TrenteEtQuaranteBetType.COULEUR }),
+    );
+    renderWithProviders(<TrenteEtQuarantePage />);
+
+    await screen.findByTestId('teq-result');
+    expect(screen.queryByTestId('teq-color-result')).not.toBeInTheDocument();
+  });
+
   it('shows the running cumulative total beneath each dealt card', async () => {
     mockApi.mockResolvedValue(crossState);
     renderWithProviders(<TrenteEtQuarantePage />);

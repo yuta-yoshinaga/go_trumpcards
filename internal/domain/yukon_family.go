@@ -47,7 +47,14 @@ func yukonFamilyGetHint[T any](tableau [][]T, foundationCount int, cardOf func(T
 				continue
 			}
 			for toCol := range tableau {
-				if toCol != fromCol && canPlaceTableau(cardOf(tc), toCol) {
+				if toCol == fromCol {
+					continue
+				}
+				// 列全体を空列へ移す手は配置が変わらず往復し、GetHint依存の手詰まり判定も妨げる。
+				if i == 0 && len(tableau[toCol]) == 0 {
+					continue
+				}
+				if canPlaceTableau(cardOf(tc), toCol) {
 					return &yukonFamilyHint{fromCol: fromCol, cardIndex: i, toZone: "tableau", toCol: toCol}
 				}
 			}

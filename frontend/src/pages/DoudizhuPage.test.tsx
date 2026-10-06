@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { doudizhuApi } from '../api/gameApi';
+import { actionLogApi, doudizhuApi } from '../api/gameApi';
 import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { DoudizhuResponse } from '../types/card';
@@ -12,6 +12,7 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(doudizhuApi.exec);
+const mockActionLog = vi.mocked(actionLogApi.doudizhu);
 
 const defaultState: DoudizhuResponse = {
   players: [
@@ -39,10 +40,21 @@ const defaultState: DoudizhuResponse = {
 
 beforeEach(() => {
   mockExec.mockReset();
+  mockActionLog.mockReset();
   mockExec.mockResolvedValue(defaultState);
 });
 
 describe('DoudizhuPage', () => {
+  it('opens the action log during play and shows its entry', async () => {
+    mockActionLog.mockResolvedValue({
+      entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'bid', detailCode: '', detail: '叫地主 1', cards: [] }],
+    });
+    renderWithProviders(<DoudizhuPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: '棋譜を見る' }));
+    expect(await screen.findByText(/叫地主 1/)).toBeInTheDocument();
+  });
+
   it('shows the last player to play only while cards remain on the table', async () => {
     mockExec.mockResolvedValue({
       ...defaultState,
@@ -585,6 +597,30 @@ describe('DoudizhuPage', () => {
     // Kitty label and the three kitty card images are rendered.
     expect(screen.getByText(/底牌/)).toBeInTheDocument();
     expect(screen.getByAltText('♠ 3')).toBeInTheDocument();
+  });
+
+  it('does not render kitty cards during bidding and renders them after bidding', async () => {
+    mockExec.mockResolvedValue({
+      ...defaultState,
+      phase: 'bid',
+      landlordIdx: -1,
+      kittyCards: [{ design: 'SPADE', value: 3 }],
+    });
+    const view = renderWithProviders(<DoudizhuPage />);
+    expect(await screen.findByTestId('phase-indicator')).toHaveTextContent('ビッド');
+    expect(screen.queryByAltText('♠ 3')).not.toBeInTheDocument();
+
+    view.unmount();
+    mockExec.mockResolvedValue({
+      ...defaultState,
+      phase: 'play',
+      kittyCards: [{ design: 'SPADE', value: 3 }],
+    });
+    renderWithProviders(<DoudizhuPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/底牌/)).toBeInTheDocument();
+      expect(screen.getByAltText('♠ 3')).toBeInTheDocument();
+    });
   });
 
   it('renders the CLI terminal when CLI mode is enabled', async () => {

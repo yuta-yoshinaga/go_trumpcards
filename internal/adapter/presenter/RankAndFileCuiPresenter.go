@@ -169,8 +169,5 @@ func (p *RankAndFileCuiPresenter) TargetsOutput(ft interfaces.RankAndFileGame, f
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *RankAndFileCuiPresenter) ActionLogOutput(ft interfaces.RankAndFileGame) string {
-	if ft.GetPhase() == domain.RankAndFilePhasePlaying {
-		return actionLogToText(nil)
-	}
 	return actionLogToText(ft.GetActionLog())
 }

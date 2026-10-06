@@ -363,8 +363,7 @@ func (gc *BigBen) foundationHint() *BigBenHint {
 
 // tableauHint タブローへ置ける手を 1 つ返す。
 //
-// 空き列への移動は、その列に 1 枚しかない場合は「出して戻す」だけで盤面が進ま
-// ないため提案しない。放置するとヒントが無限に同じ手を勧める。
+// このゲームは空き列に置けない (canPlaceOnTableau) ので、空き列への no-op 移動は起きない。
 func (gc *BigBen) tableauHint() *BigBenHint {
 	if gc.phase != BigBenPhasePlaying {
 		return nil

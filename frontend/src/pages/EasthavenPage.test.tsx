@@ -58,6 +58,38 @@ beforeEach(() => {
 });
 
 describe('EasthavenPage', () => {
+  it('exposes tableau card selection, switching, and clearing with aria-pressed', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [
+        playingState.tableau[0],
+        [
+          { card: card('HEART', 8), faceUp: true },
+          { card: card('CLOVER', 5), faceUp: true },
+        ],
+        ...playingState.tableau.slice(2),
+      ],
+    });
+    renderWithProviders(<EasthavenPage />);
+    const firstCard = await screen.findByTestId('eh-tableau-top-0');
+    const secondCard = screen.getByRole('button', { name: '♥ 8' });
+
+    expect(firstCard).toHaveAttribute('aria-pressed', 'false');
+    expect(secondCard).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(firstCard);
+    expect(firstCard).toHaveAttribute('aria-pressed', 'true');
+    expect(secondCard).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(secondCard);
+    expect(firstCard).toHaveAttribute('aria-pressed', 'false');
+    expect(secondCard).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(secondCard);
+    expect(firstCard).toHaveAttribute('aria-pressed', 'false');
+    expect(secondCard).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('shows the persistent double-click foundation hint', async () => {
     renderWithProviders(<EasthavenPage />);
     expect(await screen.findByTestId('eh-doubleclick-hint')).toHaveTextContent('ダブルクリック');

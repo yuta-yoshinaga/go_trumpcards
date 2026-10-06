@@ -107,6 +107,18 @@ describe('AcesUpPage', () => {
     expect(colDivs.length).toBe(4);
   });
 
+  it('shows the removal rule immediately after the column tutorial step', async () => {
+    renderWithProviders(<AcesUpPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+
+    await screen.findByText('4列の場札です。各列の一番上のカードが操作できます。');
+    fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    expect(
+      await screen.findByText('同じスートで数字が小さい方のカードを除去できます（Aが最強）。'),
+    ).toBeInTheDocument();
+  });
+
   it('renders the discard pile with progress and the top card', async () => {
     renderWithProviders(<AcesUpPage />);
     await waitFor(() => expect(screen.getByTestId('acesup-discard-pile')).toBeInTheDocument());

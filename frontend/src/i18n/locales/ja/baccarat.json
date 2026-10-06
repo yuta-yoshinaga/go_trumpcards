@@ -29,6 +29,10 @@
     "bet": "ベットフェーズ",
     "end": "結果"
   },
+  "reveal": {
+    "thirdCard": "{{side}}に3枚目のカードが公開されました。合計値は{{value}}です。",
+    "result": "結果詳細。{{result}} 配当は{{payout}}です。"
+  },
   "sideBet": {
     "title": "サイドベット（任意）",
     "playerPair": "プレイヤーペア",

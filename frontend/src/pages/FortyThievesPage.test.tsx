@@ -224,11 +224,10 @@ describe('FortyThievesPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
   });
 
-  it('clicking auto complete button dispatches autocomplete when ready', async () => {
+  it('clicking auto complete dispatches with an empty stock and cards in waste', async () => {
     const readyState: FortyThievesResponse = {
       ...playingState,
       stockCount: 0,
-      waste: [],
     };
     mockExec.mockResolvedValue(readyState);
     renderWithProviders(<FortyThievesPage />);
@@ -241,10 +240,27 @@ describe('FortyThievesPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
 
-  it('auto complete button is disabled while stock or waste has cards', async () => {
+  it('describes why auto complete is unavailable and ignores activation', async () => {
     renderWithProviders(<FortyThievesPage />);
-    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeInTheDocument());
-    expect(screen.getByTestId('autocomplete-button')).toBeDisabled();
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    const button = await screen.findByTestId('autocomplete-button');
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    const descriptionId = button.getAttribute('aria-describedby');
+    expect(descriptionId).toBeTruthy();
+    expect(document.getElementById(String(descriptionId))).toHaveTextContent('山札が空になると使えます');
+    mockExec.mockClear();
+    fireEvent.click(button);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('autocomplete');
+  });
+
+  it('enables auto complete with cards in waste once stock is empty', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0 });
+    renderWithProviders(<FortyThievesPage />);
+    const button = await screen.findByTestId('autocomplete-button');
+    await waitFor(() => expect(button).not.toHaveAttribute('aria-disabled', 'true'));
+    expect(button).not.toHaveAttribute('aria-describedby');
+    expect(button).not.toHaveAttribute('title');
   });
 
   it('announces auto-complete start and finish, with no announcement on initial render', async () => {
@@ -644,7 +660,7 @@ describe('FortyThievesPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
 
     expect(screen.queryByRole('button', { name: 'ヒント' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: '自動完成' })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('autocomplete-button')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'ギブアップ' })).not.toBeInTheDocument();
   });
 
@@ -756,11 +772,12 @@ describe('FortyThievesPage keyboard shortcuts', () => {
     ['a', 'autocomplete'],
     ['z', 'undo'],
   ])('pressing %s dispatches %s', async (key, command) => {
-    mockExec.mockResolvedValue(playingState);
+    const initialState = command === 'autocomplete' ? { ...playingState, stockCount: 0 } : playingState;
+    mockExec.mockResolvedValue(initialState);
     renderWithProviders(<FortyThievesPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     mockExec.mockClear();
-    mockExec.mockResolvedValue(playingState);
+    mockExec.mockResolvedValue(initialState);
     fireEvent.keyDown(document, { key });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith(command));
   });
@@ -788,4 +805,19 @@ describe('FortyThievesPage keyboard shortcuts', () => {
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
+
+  it.each([gameClearState, gameOverState])(
+    'keeps auto complete unavailable and ignores the a shortcut after the game ends',
+    async (endedState) => {
+      mockExec.mockResolvedValue({ ...endedState, stockCount: 0 });
+      renderWithProviders(<FortyThievesPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+      expect(screen.queryByTestId('autocomplete-button')).not.toBeInTheDocument();
+
+      mockExec.mockClear();
+      fireEvent.keyDown(document, { key: 'a' });
+      await flushPendingDispatch();
+      expect(mockExec).not.toHaveBeenCalledWith('autocomplete');
+    },
+  );
 });

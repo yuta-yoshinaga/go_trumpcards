@@ -57,12 +57,12 @@ describe('getRummy500Hint', () => {
 
   it('recommends discard top during Draw when pile non-empty', () => {
     const hint = getRummy500Hint(baseState({ discardPile: [card('SPADE', 7)] }));
-    expect(hint?.reason).toBe('rummy500.hint.drawDiscardTop');
+    expect(hint?.reason).toBe('hint.drawDiscardTop');
   });
 
   it('recommends stock during Draw when pile empty', () => {
     const hint = getRummy500Hint(baseState({ discardPile: [] }));
-    expect(hint?.reason).toBe('rummy500.hint.drawStock');
+    expect(hint?.reason).toBe('hint.drawStock');
   });
 
   it('recommends melding triples during Play', () => {
@@ -71,7 +71,7 @@ describe('getRummy500Hint', () => {
     });
     s.players[0].cards = [card('SPADE', 7), card('HEART', 7), card('CLOVER', 7)];
     const hint = getRummy500Hint(s);
-    expect(hint?.reason).toBe('rummy500.hint.meldSet');
+    expect(hint?.reason).toBe('hint.meldSet');
   });
 
   it('recommends discarding high card when no triple available', () => {
@@ -79,8 +79,34 @@ describe('getRummy500Hint', () => {
       phase: Rummy500Phase.PLAY,
     });
     s.players[0].cards = [card('SPADE', 5), card('HEART', 8), card('CLOVER', 11)];
+    s.layoffTargets = [[], [], []];
     const hint = getRummy500Hint(s);
-    expect(hint?.reason).toBe('rummy500.hint.discardHighCard');
+    expect(hint?.reason).toBe('hint.discardCard');
+    expect(hint?.targetPos).toBe(2);
+  });
+
+  it('recommends a specific high card that is not useful for a meld or layoff', () => {
+    const s = baseState({ phase: Rummy500Phase.PLAY });
+    s.players[0].cards = [card('SPADE', 5), card('SPADE', 6), card('HEART', 8), card('CLOVER', 11)];
+    s.layoffTargets = [[], [], [{ owner: 1, meldIdx: 0 }], []];
+    const hint = getRummy500Hint(s);
+    expect(hint?.reason).toBe('hint.discardCard');
+    expect(hint?.targetPos).toBe(3);
+    expect(hint?.reasonParams).toHaveProperty('card');
+  });
+
+  it('ranks discard candidates by hand penalty value', () => {
+    const s = baseState({ phase: Rummy500Phase.PLAY });
+    s.players[0].cards = [card('SPADE', 1), card('HEART', 11)];
+    s.layoffTargets = [[], []];
+    expect(getRummy500Hint(s)?.targetPos).toBe(1);
+  });
+
+  it('keeps the general discard hint when every card can extend a meld or layoff', () => {
+    const s = baseState({ phase: Rummy500Phase.PLAY });
+    s.players[0].cards = [card('SPADE', 5), card('SPADE', 6)];
+    s.layoffTargets = [[{ owner: 1, meldIdx: 0 }], [{ owner: 1, meldIdx: 0 }]];
+    expect(getRummy500Hint(s)?.reason).toBe('hint.discardHighCard');
   });
 
   it('returns null during RoundEnd', () => {

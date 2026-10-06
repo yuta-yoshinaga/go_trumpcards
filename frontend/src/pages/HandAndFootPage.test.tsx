@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { handandfootApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -148,6 +148,18 @@ const gameEndState: HandAndFootResponse = {
 };
 
 describe('HandAndFootPage', () => {
+  it('uses player names as row headers and keeps the score column headers', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<HandAndFootPage />);
+
+    const table = await screen.findByRole('table');
+    expect(within(table).getByRole('rowheader', { name: 'あなた' })).toHaveAttribute('scope', 'row');
+    expect(within(table).getByRole('rowheader', { name: 'CPU 1' })).toHaveAttribute('scope', 'row');
+    for (const heading of ['プレイヤー', 'チーム', 'フット', 'ラウンド', '累積']) {
+      expect(within(table).getByRole('columnheader', { name: heading })).toBeInTheDocument();
+    }
+  });
+
   it('shows the server score breakdown at round end and formats penalties as negative values', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<HandAndFootPage />);

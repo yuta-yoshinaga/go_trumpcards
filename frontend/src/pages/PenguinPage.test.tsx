@@ -178,6 +178,20 @@ describe('PenguinPage', () => {
     expect(movable.getAttribute('aria-label') ?? '').not.toContain('一度に動かせるのは');
   });
 
+  it('does not select an over-limit stack, while movable stacks remain selectable', async () => {
+    mockExec.mockResolvedValue(supermoveExceedState);
+    renderWithProviders(<PenguinPage />);
+    const blocked = await screen.findByTestId('pg-tableau-0-0');
+    const movable = screen.getByTestId('pg-tableau-0-1');
+
+    fireEvent.click(blocked);
+    expect(blocked).toHaveAttribute('aria-pressed', 'false');
+    expect(blocked).toHaveAccessibleName('♠ K — 一度に動かせるのは1枚まで（空きセル0・空き列0）');
+
+    fireEvent.click(movable);
+    expect(movable).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('shows a supermove-limit badge reflecting the free-cell/column counts', async () => {
     // 数字はサーバーが返した maxMovableCards をそのまま出す (#5614)。
     renderWithProviders(<PenguinPage />);

@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { braidApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BraidResponse, Card, CardDesign } from '../types/card';
@@ -141,7 +142,7 @@ describe('BraidPage', () => {
   it('draws from the stock', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BraidPage />);
-    const stock = await screen.findByRole('button', { name: /山札 残り71枚/ });
+    const stock = await screen.findByRole('button', { name: '山札 残り71枚、めくり直し残り2回' });
     mockExec.mockClear();
     fireEvent.click(stock);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
@@ -257,6 +258,24 @@ describe('BraidPage', () => {
     mockExec.mockResolvedValue({ ...playingState, redealsLeft: 1 });
     renderWithProviders(<BraidPage />);
     await waitFor(() => expect(screen.getByText(/めくり直し残り1回/)).toBeInTheDocument());
+  });
+
+  it('includes remaining redeals in the empty stock label', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0, canRedeal: true, redealsLeft: 1 });
+    renderWithProviders(<BraidPage />);
+    expect(await screen.findByRole('button', { name: '山札は空です、めくり直し残り1回' })).toBeInTheDocument();
+  });
+
+  it('includes stock and redeals in the English stock label', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(<BraidPage />);
+      expect(await screen.findByRole('button', { name: 'Stock, 71 cards left, 2 redeals left' })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   // An empty stock is still drawable while a redeal is left -- that is what

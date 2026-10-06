@@ -30,10 +30,10 @@ const roundEndState = makeMusState({
   phase: 7,
   isHumanTurn: false,
   results: [
-    { kind: 0, stake: 2, team: 0 },
-    { kind: 1, stake: 1, team: 1 },
-    { kind: 2, stake: 0, team: -1 },
-    { kind: 3, stake: 0, team: -1 },
+    { kind: 1, stake: 2, team: 0 },
+    { kind: 2, stake: 1, team: 1 },
+    { kind: 3, stake: 2, team: 0 },
+    { kind: 4, stake: 0, team: 1 },
   ],
 });
 const gameEndState = makeMusState({
@@ -229,6 +229,25 @@ describe('MusPage', () => {
     renderWithProviders(<MusPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
     expect(screen.getByText('賭けラウンド結果')).toBeInTheDocument();
+    expect(screen.getByText('グランデ: パソ後の勝負でチーム0 +2')).toBeInTheDocument();
+    expect(screen.getByText('チカ: 賭けを受けて勝負でチーム1 +1')).toBeInTheDocument();
+    expect(screen.getByText('パレス: 賭けを断って即時獲得でチーム0 +2')).toBeInTheDocument();
+    expect(screen.getByText('フエゴ: オルダゴ受諾後の勝負でチーム1 +0')).toBeInTheDocument();
+  });
+
+  it('localizes settlement methods in English', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(roundEndState);
+      renderWithProviders(<MusPage />);
+      await waitFor(() => expect(screen.getByText('Betting round results')).toBeInTheDocument());
+      expect(screen.getByText('Grande (Paso, then showdown): team 0 +2')).toBeInTheDocument();
+      expect(screen.getByText('Chica (Bet accepted, then showdown): team 1 +1')).toBeInTheDocument();
+      expect(screen.getByText('Pares (Bet declined, immediate award): team 0 +2')).toBeInTheDocument();
+      expect(screen.getByText('Juego (Órdago accepted, then showdown): team 1 +0')).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('renders the game end message', async () => {

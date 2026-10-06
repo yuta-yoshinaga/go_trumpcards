@@ -7,7 +7,7 @@
   "header": {
     "round": "Round",
     "trick": "Trick",
-    "pool": "Pool: {{pool}} chips (taken whole by the fewest penalty points; a tie carries it into the next round instead of splitting it)",
+    "pool": "Pool: {{pool}} chips (taken whole by the fewest penalty points; a tie in a regular round carries it into the next round, while a tie in the final round is split among tied players)",
     "penaltyRule": "No trump. A=4 K=3 Q=2 J=1 in penalties. The J♥ (Quinola) and the A♦ cost 5 more, plus 5 chips.",
     "you": "You",
     "cpu": "CPU{{idx}}",
@@ -44,7 +44,7 @@
     "reversisDumpHigh": "A safe trick — shed a high card while you can."
   },
   "tutorial": {
-    "pool": "Chips staked on this round. Whoever ends with the **fewest penalty points takes the pool whole**; a tie carries it into the next round.",
+    "pool": "Chips staked on this round. Whoever ends with the **fewest penalty points takes the pool whole**. A tie in a regular round carries it into the next round; a tie in the final round splits the pool among tied players.",
     "penalty": "The point scale: A=4 K=3 Q=2 J=1. On top of that the **Quinola (J♥) and the A♦** cost 5 more each and force 5 chips into the pool.",
     "trick": "Cards played this trick appear here. There is no trump — the highest card of the led suit wins.",
     "hand": "Your hand. Legal cards carry a green ring. You are not aiming for zero — only for fewer points than the other three."

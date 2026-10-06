@@ -10,6 +10,7 @@
     "rebuy": "Rebuy/Addon"
   },
   "doorCards": "Door Cards",
+  "latestDoorCard": "{{card}}, latest",
   "holeCards": "Hole Cards",
   "bestHandCard": "part of the best hand",
   "yourHand": "Your Hand",

@@ -113,8 +113,8 @@ function CaribbeanStudPageContent() {
   const isActionPhase = state?.phase === CaribbeanStudPhase.ACTION;
   const isEndPhase = state?.phase === CaribbeanStudPhase.END;
 
-  // Session stats persisted in localStorage; survive game resets, cleared only
-  // by the explicit clear button (or a page reload).
+  // Session stats persist in localStorage across resets and page reloads; the
+  // explicit clear button removes the saved history.
   const { tally, recordRound, clearHistory } = useCaribbeanStudStats();
   // Record each finished round exactly once. The guard keys on the END-phase
   // episode: it flips true when the round resolves and resets whenever the phase

@@ -35,6 +35,7 @@ export interface GrandfathersClockResponse extends BaseGameResponse {
   phase: number;
   moveCount: number;
   canUndo: boolean;
+  canRedo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;
   hint?: GrandfathersClockHint;

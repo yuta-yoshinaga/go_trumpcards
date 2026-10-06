@@ -217,6 +217,26 @@ function BidEuchrePageContent() {
               {t('noKittyNote')}
             </div>
 
+            {isBid && (
+              <div className="mb-2 p-2 rounded bg-ds-surface text-sm" data-testid="bideuchre-bid-history">
+                <div className="mb-1 text-ds-text-primary">{t('bidHistoryTitle')}</div>
+                <ol>
+                  {state.bids.map((bid, index) => {
+                    const bidder = state.players[bid.player];
+                    if (!bidder) return null;
+                    const player = playerLabel(bid.player, bidder.isHuman);
+                    return (
+                      <li key={`${bid.player}-${index}`}>
+                        {bid.value === 0
+                          ? t('bidHistoryPass', { player })
+                          : t('bidHistoryBid', { player, bid: t('contractTricks', { n: bid.value }) })}
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
+            )}
+
             {/* Score sheet */}
             <div className="mb-2 p-2 rounded bg-black/20 text-sm" data-testid="bideuchre-scores">
               <div className="mb-1 text-ds-text-primary">{t('scoreTitle')}</div>

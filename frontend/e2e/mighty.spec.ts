@@ -64,14 +64,12 @@ test.describe('Mighty E2E', () => {
       )
         break;
 
-      // Bid phase: bid or pass
+      // Bid phase: bid or pass. The bid grid defaults to 13, so once a CPU has
+      // bid 13 or more the Bid button is disabled; clicking it would wait for
+      // the button to become enabled until the test timed out (#10783).
       if (bidVisible || passVisible) {
         interactions++;
-        if (bidVisible) {
-          const bidInput = page.locator('input[aria-label="bid-input"]');
-          if (await bidInput.isVisible()) {
-            await bidInput.fill('13');
-          }
+        if (bidVisible && (await bidButton.isEnabled())) {
           await bidButton.click();
         } else {
           await passButton.click();
@@ -103,16 +101,24 @@ test.describe('Mighty E2E', () => {
         continue;
       }
 
-      // Play phase: select a card and play
+      // Try each card because the first card may not follow suit (#10783).
+      // Clear stale selections first; rejected plays otherwise leave the loop
+      // spinning on an unchanged hand until the E2E timeout.
       if (playVisible) {
         interactions++;
         const cardCount = await handCards.count();
-        if (cardCount > 0) {
-          await handCards.first().click();
-        }
-        if ((await playButton.isVisible()) && (await playButton.isEnabled())) {
+        for (let i = 0; i < cardCount; i++) {
+          const selectedCards = page.locator('button[aria-pressed="true"]:has(img)');
+          for (let j = await selectedCards.count(); j > 0; j--) {
+            await selectedCards.first().click();
+          }
+
+          await handCards.nth(i).click();
+          if (!(await playButton.isEnabled())) continue;
+
           await playButton.click();
           await waitForLoaded(page);
+          if (!(await playButton.isVisible()) || (await handCards.count()) < cardCount) break;
         }
         continue;
       }
@@ -125,11 +131,14 @@ test.describe('Mighty E2E', () => {
         continue;
       }
 
-      // Round end
+      // Round end: every phase has now been crossed once. Stop here rather
+      // than playing on to MAX_TURNS, which ran past the 90 s budget on a
+      // loaded CI runner (#10783).
       if (nextRoundVisible) {
         interactions++;
         await nextRoundButton.click();
         await waitForLoaded(page);
+        break;
       }
     }
 

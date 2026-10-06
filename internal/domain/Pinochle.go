@@ -154,7 +154,7 @@ type Pinochle struct {
 	gameEndFlag       bool
 	winnerTeam        int // 勝利チーム (-1 = 未確定)
 	playerMelds       [PinochlePlayerCnt][]*PinochleMeld
-	actionLog         []*ActionLogEntry
+	actionLogBase
 }
 
 // NewPinochle コンストラクタ
@@ -338,19 +338,9 @@ func (p *Pinochle) SetConfig(config PinochleConfig) { p.config = config }
 // GetPlayerMelds プレイヤーのメルドを取得
 func (p *Pinochle) GetPlayerMelds() [PinochlePlayerCnt][]*PinochleMeld { return p.playerMelds }
 
-// GetActionLog アクションログを取得
-func (p *Pinochle) GetActionLog() []*ActionLogEntry { return p.actionLog }
-
 // addLog アクションログを追加
 func (p *Pinochle) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	p.actionLog = append(p.actionLog, &ActionLogEntry{
-		TurnNumber:   p.trickNumber,
-		PlayerIdx:    playerIdx,
-		ActionType:   actionType,
-		DetailCode:   detailCode,
-		DetailParams: detailParams,
-		Cards:        cards,
-	})
+	p.appendLogCodeAt(p.trickNumber, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // ─── Card Ranking & Point Values ────────────────────────

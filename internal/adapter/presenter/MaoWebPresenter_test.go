@@ -201,7 +201,7 @@ func TestMaoWebPresenter_ActionLogOutput(t *testing.T) {
 	entries := []*domain.ActionLogEntry{
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	}
-	m.On("GetGameEndFlag").Return(true)
+	m.On("GetGameEndFlag").Return(false)
 	m.On("GetActionLog").Return(entries)
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)

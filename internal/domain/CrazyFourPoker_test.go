@@ -632,10 +632,10 @@ func TestCrazyFourPoker_Accessors(t *testing.T) {
 
 func TestCrazyFourPoker_ActionLogIsBounded(t *testing.T) {
 	g := newCrazyFourPokerForTest(t)
-	for range crazyFourPokerMaxSliceLen + 50 {
+	for range MaxActionLog + 50 {
 		g.appendLog("noise", "crazyfourpoker.log.start", nil, nil)
 	}
-	assert.Len(t, g.GetActionLog(), crazyFourPokerMaxSliceLen)
+	assert.Len(t, g.GetActionLog(), MaxActionLog)
 }
 
 // **賭ける前に見えなければ意味がない** (#5775)。表は 1 か所からしか引かない。

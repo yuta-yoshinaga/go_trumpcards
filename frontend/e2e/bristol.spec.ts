@@ -6,13 +6,13 @@ test.describe('Bristol E2E', () => {
     await navigateTo(page, '/bristol');
 
     await expect(page.getByText(/手数/).first()).toBeVisible();
-    await expect(page.getByRole('button', { name: '山札' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /山札（残り\d+枚）/ })).toBeVisible();
   });
 
   test('draw from stock advances the game', async ({ page }) => {
     await navigateTo(page, '/bristol');
 
-    const stockButton = page.getByRole('button', { name: '山札' });
+    const stockButton = page.getByRole('button', { name: /山札（残り\d+枚）/ });
     await expect(stockButton).toBeVisible();
     await stockButton.click();
     await waitForLoaded(page);

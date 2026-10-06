@@ -260,6 +260,8 @@ function GaigelPageContent() {
           players={state.players}
           cardWidth={cardWidth}
           label={t('currentTrick')}
+          winnerIdx={isTrickEnd && state.trickWinnerIdx >= 0 ? state.trickWinnerIdx : undefined}
+          winnerLabel={t('winnerBadge')}
           dataTutorial="gg-trick-display"
         />
 

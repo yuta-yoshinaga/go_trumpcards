@@ -9,7 +9,8 @@
     "playerCount": "Players",
     "ante": "Ante",
     "startingChips": "Starting chips",
-    "targetRounds": "Rounds"
+    "targetRounds": "Rounds",
+    "applyOnReset": "Setting changes apply on the next reset. Reset to start a new game with the updated settings."
   },
   "you": "You",
   "cpu": "CPU {{id}}",

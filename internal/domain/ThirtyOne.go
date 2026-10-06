@@ -692,7 +692,7 @@ func (g *ThirtyOne) GetRoundWinnerIdx() int { return g.roundWinnerIdx }
 
 // appendLog records a Thirty-One action with a locale-independent detail code.
 func (g *ThirtyOne) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // GetRoundLosers 直近ラウンドでライフを失ったプレイヤーのインデックス一覧を取得する

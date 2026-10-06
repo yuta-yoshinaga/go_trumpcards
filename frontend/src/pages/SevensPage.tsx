@@ -137,7 +137,7 @@ function SevensPageContent() {
     onToggle: noop,
     onConfirm: noop,
     onClear: noop,
-    enabled: isHumanTurnForKbd && !loading,
+    enabled: isHumanTurnForKbd && !loading && actionLog === null,
     onDirectPlay: directPlay,
     canDirectPlay,
   });
@@ -451,6 +451,7 @@ function SevensPageContent() {
 
             <ActionLogSection
               isEndPhase={state.gameEndFlag}
+              availableDuringPlay
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}

@@ -102,6 +102,16 @@ describe('DeucesWildPage', () => {
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
 
+  it('renders translated session stats and payout count heading', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<DeucesWildPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    expect(screen.getByTestId('vp-stats-summary')).toHaveTextContent('まだプレイ記録がありません');
+    expect(screen.getByRole('columnheader', { name: '回数' })).toBeInTheDocument();
+    expect(document.body).not.toHaveTextContent(/stats\.(summary|empty|clear)|payoutTable\.count/);
+  });
+
   it('toggles hold on card 0 when the "1" key is pressed in draw phase', async () => {
     mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(drawPhaseState);
     await enterDrawPhaseWithAutoHoldOff();

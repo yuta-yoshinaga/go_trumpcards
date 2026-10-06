@@ -161,6 +161,7 @@ function KalookiPageContent() {
   const isMeldPhase = isHumanTurn && state?.phase === KALOOKI_PHASE.MELD;
   const isRoundEnd = state?.phase === KALOOKI_PHASE.ROUND_END;
   const isGameEnd = !!state?.gameEndFlag;
+  const roundWinner = isRoundEnd && state.roundWinnerIdx >= 0 ? state.players[state.roundWinnerIdx] : undefined;
 
   // CLI mode wiring (mirrors ConquianPage).
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('kalooki');
@@ -343,6 +344,18 @@ function KalookiPageContent() {
                 </span>
               )}
             </section>
+
+            {isRoundEnd && (
+              <section className="px-4 py-2" aria-label={t('roundResult')}>
+                <p className={`inline-block rounded px-3 py-2 font-semibold ${badgeSuccessColors}`}>
+                  {roundWinner
+                    ? t('roundWinner', {
+                        player: roundWinner.isHuman ? tc('player.you') : tc('player.cpu', { id: roundWinner.id }),
+                      })
+                    : t('roundDraw')}
+                </p>
+              </section>
+            )}
 
             {isMeldPhase && humanPlayer && !humanPlayer.hasOpened && (
               <section className="px-4 py-1 text-sm" data-testid="kalooki-opening-hint">

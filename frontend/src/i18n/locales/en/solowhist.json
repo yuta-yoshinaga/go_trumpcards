@@ -6,6 +6,8 @@
     "abundance": "Abundance"
   },
   "bidHighest": "Highest bid: {{bid}} ({{player}})",
+  "bidHistory": "Bids",
+  "bidUnbid": "Not bid",
   "bidLabel": "Bid",
   "bidNone": "No bids yet",
   "bidPrompt": "Place a bid (only a higher bid is allowed):",

@@ -104,11 +104,15 @@ describe('SetteEMezzoPage', () => {
   it('renders a hand the server marked hidden as backs', async () => {
     mockExec.mockResolvedValue(
       makeState({
-        bankerHand: hand({ hidden: true, cards: [null], totalLabel: '' }),
+        bankerHand: hand({ hidden: true, hasMatta: true, mattaHalves: 14, cards: [null], totalLabel: '' }),
         seats: [
           { name: 'あなた', isCpu: false, hand: hand() },
           { name: 'CPU1', isCpu: true },
-          { name: 'CPU2', isCpu: true, hand: hand({ hidden: true, cards: [null], totalLabel: '', bet: 20 }) },
+          {
+            name: 'CPU2',
+            isCpu: true,
+            hand: hand({ hidden: true, hasMatta: true, mattaHalves: 14, cards: [null], totalLabel: '', bet: 20 }),
+          },
         ],
       }),
     );
@@ -213,6 +217,13 @@ describe('SetteEMezzoPage', () => {
     );
     renderWithProviders(<SetteEMezzoPage />);
     await waitFor(() => expect(screen.getByText(/マッタ = 3/)).toBeInTheDocument());
+    expect(screen.getByLabelText('あなた の手 合計7、マッタ 3')).toBeInTheDocument();
+  });
+
+  it('does not add a matta value to hands without a matta', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<SetteEMezzoPage />);
+    expect(await screen.findByLabelText('あなた の手 合計4')).toBeInTheDocument();
   });
 
   it('shows an unassigned matta as half a point', async () => {

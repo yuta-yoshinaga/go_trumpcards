@@ -193,6 +193,7 @@ function TwoTenJackPageContent() {
   // (domain の checkGameEnd も同じ数え方)、増分も両席の roundScore の合計。
   const team0RoundScore = (state.players[0]?.roundScore ?? 0) + (state.players[2]?.roundScore ?? 0);
   const team1RoundScore = (state.players[1]?.roundScore ?? 0) + (state.players[3]?.roundScore ?? 0);
+  const playersWithTeams = state.players.map((player, seatIdx) => ({ ...player, team: seatIdx % 2 }));
 
   return (
     <GamePageShell
@@ -262,7 +263,7 @@ function TwoTenJackPageContent() {
 
                 <TrickDisplay
                   currentTrick={state.currentTrick}
-                  players={state.players}
+                  players={playersWithTeams}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="tt-trick-display"
@@ -280,26 +281,29 @@ function TwoTenJackPageContent() {
                       {tc('label.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
                     </summary>
                     <div className="mt-1">
-                      {state.players
+                      {playersWithTeams
                         .filter((p) => !p.isHuman)
                         .map((p) => (
-                          <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                            {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
-                            {t('tricks', { count: p.trickCount })} | {t('capturedPoints', { count: p.capturedPoints })}
+                          <div key={p.id} data-cpu-team={p.team} className="text-ds-text-muted text-sm py-0.5">
+                            {playerName(p.id, p.isHuman)}:{' '}
+                            {t('playerTeam', { team: t(p.team === 0 ? 'team0' : 'team1') })} |{' '}
+                            {t('cards', { count: p.cardCount })} | {t('cumulativeScore', { score: p.cumulativeScore })}{' '}
+                            | {t('tricks', { count: p.trickCount })} |{' '}
+                            {t('capturedPoints', { count: p.capturedPoints })}
                           </div>
                         ))}
                     </div>
                   </details>
                 ) : (
-                  state.players
+                  playersWithTeams
                     .filter((p) => !p.isHuman)
                     .map((p) => (
-                      <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                      <div key={p.id} data-cpu-team={p.team} className="mb-2 p-2 rounded bg-black/30">
                         <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('cumulativeScore', { score: p.cumulativeScore })} | {t('tricks', { count: p.trickCount })}{' '}
-                          | {t('capturedPoints', { count: p.capturedPoints })}
+                          {playerName(p.id, p.isHuman)}:{' '}
+                          {t('playerTeam', { team: t(p.team === 0 ? 'team0' : 'team1') })} |{' '}
+                          {t('cards', { count: p.cardCount })} | {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
+                          {t('tricks', { count: p.trickCount })} | {t('capturedPoints', { count: p.capturedPoints })}
                         </div>
                       </div>
                     ))

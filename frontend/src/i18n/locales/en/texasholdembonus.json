@@ -38,7 +38,8 @@
     "ante": "Ante (incl. bonus)",
     "play": "Play bets",
     "bonus": "Side bonus",
-    "total": "Total"
+    "total": "Total",
+    "net": "Net profit/loss"
   },
   "handRank": {
     "0": "High Card",

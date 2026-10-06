@@ -1651,7 +1651,7 @@ var gameRegistry = []GameRegistryEntry{
 				"grandfathersclock.helpGiveUp",
 				"grandfathersclock.helpHint",
 				"grandfathersclock.helpAutoComplete",
-				"grandfathersclock.helpUndo",
+				"grandfathersclock.helpUndo", "grandfathersclock.helpRedo",
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),

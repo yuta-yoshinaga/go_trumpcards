@@ -414,7 +414,10 @@ function StHelenaPageContent() {
                                 disabled={!isPlaying || loading || (selectedSource !== null && !canReach(idx))}
                                 aria-disabled={!selectedSource || undefined}
                                 aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                                aria-label={t('emptyFoundationAriaLabel', { suit, direction: directionKey })}
+                                aria-label={t('emptyFoundationAriaLabel', {
+                                  suit,
+                                  direction: t(`direction.${directionKey}`),
+                                })}
                                 style={{ width: tableauDim.cw, height: tableauDim.ch }}
                                 className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                               >

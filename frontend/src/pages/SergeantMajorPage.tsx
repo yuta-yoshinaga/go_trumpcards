@@ -56,8 +56,21 @@ const SERGEANTMAJOR_TUTORIAL_STEPS: TutorialStep[] = [
  * bare score.
  */
 function SergeantMajorPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('sergeantmajor');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('sergeantmajor');
   const {
     state,
     loading,
@@ -114,10 +127,6 @@ function SergeantMajorPageContent() {
   const handleNextRound = useCallback(() => {
     setPicked([]);
     void dispatch('next');
-  }, [dispatch]);
-
-  const handleGiveUp = useCallback(() => {
-    void dispatch('giveup');
   }, [dispatch]);
 
   if (!state) {
@@ -178,6 +187,9 @@ function SergeantMajorPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
       {cliEnabled ? (
@@ -414,7 +426,12 @@ function SergeantMajorPageContent() {
                 {t('actions.reset')}
               </button>
               {!isGameEnd && (
-                <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnDanger}
+                  onClick={() => requestGiveUpConfirm(() => void dispatch('giveup'))}
+                  disabled={loading}
+                >
                   {t('actions.giveUp')}
                 </button>
               )}

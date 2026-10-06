@@ -343,6 +343,10 @@ func (s *SeahavenTowers) GetHint() *SeahavenTowersHint {
 			if toCol == fromCol {
 				continue
 			}
+			// 列全体を空列へ移す手は列番号が入れ替わるだけで往復するため、ヒントにしない。
+			if seqStart == 0 && len(s.tableau[toCol]) == 0 {
+				continue
+			}
 			// 空列は King のみ
 			if len(s.tableau[toCol]) == 0 && card.GetValue() != CardValueMax {
 				continue

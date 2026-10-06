@@ -3,6 +3,7 @@
     "chips": "chips",
     "bet": "bet",
     "dealer": "Dealer",
+    "hiddenCard": "Face-down card",
     "hand": "Hand",
     "switched": "switched",
     "currentHand": "current hand",

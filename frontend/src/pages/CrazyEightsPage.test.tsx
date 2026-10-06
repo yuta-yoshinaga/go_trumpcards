@@ -221,6 +221,14 @@ describe('CrazyEightsPage', () => {
     expect(screen.getByRole('button', { name: '出す' })).not.toBeDisabled();
   });
 
+  it('allows hand selection during the human play turn', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    const card = await screen.findByLabelText('♠ A');
+    expect(card.closest('button')).not.toHaveAttribute('aria-disabled');
+    fireEvent.click(card.closest('button') as HTMLButtonElement);
+    expect(card.closest('button')).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('calls play command when play button is clicked', async () => {
     renderWithProviders(<CrazyEightsPage />);
     await waitFor(() => expect(screen.getByAltText('\u2660 A')).toBeInTheDocument());
@@ -261,6 +269,18 @@ describe('CrazyEightsPage', () => {
       expect(screen.getByRole('button', { name: '♥ ハート' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '♦ ダイヤ' })).toBeInTheDocument();
     });
+  });
+
+  it('prevents hand selection while choosing a suit', async () => {
+    mockExec.mockResolvedValue(chooseSuitState);
+    renderWithProviders(<CrazyEightsPage />);
+    const card = await screen.findByLabelText('♠ A');
+    const cardButton = card.closest('button') as HTMLButtonElement;
+    expect(cardButton).toHaveAttribute('aria-disabled', 'true');
+    expect(cardButton).toHaveAttribute('aria-describedby', 'ce-card-selection-unavailable');
+    expect(cardButton).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(cardButton);
+    expect(cardButton).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('calls suit command when suit button is clicked', async () => {
@@ -484,11 +504,12 @@ describe('CrazyEightsPage', () => {
     expect(legal).not.toHaveAttribute('aria-describedby');
   });
 
-  it('does not set aria-describedby on cards during a CPU turn', async () => {
+  it('describes and disables cards during a CPU turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<CrazyEightsPage />);
     const card = await screen.findByLabelText('♠ A');
-    expect(card).not.toHaveAttribute('aria-describedby');
+    expect(card).toHaveAttribute('aria-disabled', 'true');
+    expect(card).toHaveAttribute('aria-describedby', 'ce-card-selection-unavailable');
   });
 
   it('card selection toggle via aria-pressed', async () => {
@@ -661,7 +682,7 @@ describe('CrazyEightsPage', () => {
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.crazyeights).toHaveBeenCalledTimes(1));
-    expect(screen.getByText('棋譜')).toBeInTheDocument();
+    expect(await screen.findByText('棋譜')).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('閉じる'));
     await waitFor(() => expect(screen.queryByText(/^棋譜$/)).not.toBeInTheDocument());
@@ -690,6 +711,24 @@ describe('CrazyEightsPage', () => {
 
     resolve(playPhaseState);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+  });
+
+  it('prevents hand selection while a request is loading', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    const card = await screen.findByLabelText('♠ A');
+    const cardButton = card.closest('button') as HTMLButtonElement;
+    let resolve!: (value: CrazyEightsResponse) => void;
+    mockExec.mockReturnValueOnce(
+      new Promise<CrazyEightsResponse>((r) => {
+        resolve = r;
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: '引く' }));
+    expect(cardButton).not.toHaveAttribute('aria-disabled');
+    expect(cardButton).not.toHaveAttribute('aria-describedby', 'ce-card-selection-unavailable');
+    fireEvent.click(cardButton);
+    expect(cardButton).toHaveAttribute('aria-pressed', 'false');
+    resolve(playPhaseState);
   });
 
   // -- PhaseIndicator coverage --

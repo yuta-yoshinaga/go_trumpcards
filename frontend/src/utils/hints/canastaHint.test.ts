@@ -33,6 +33,7 @@ function makeState(overrides: Partial<CanastaResponse> = {}): CanastaResponse {
     roundNumber: 1,
     currentPlayerIdx: 0,
     discardTop: null,
+    discardPile: [],
     drawPileCount: 40,
     discardPileCount: 0,
     isFrozen: false,

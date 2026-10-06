@@ -159,7 +159,7 @@ function HasenpfefferPageContent() {
     for (let n = state.minBid; n <= BID_MAX; n++) bidChoices.push(n);
   }
 
-  // 出せる札に緑の枠を足すだけで、押せなくはしない（サーバが必ず検証する）。
+  // 人間のプレイ手番では、有効な札だけ選べるようにする。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
 
   const resultBanner = (() => {
@@ -307,8 +307,12 @@ function HasenpfefferPageContent() {
                     <button
                       key={`${card.design}-${card.value}-${idx}`}
                       type="button"
-                      onClick={() => (isHumanDiscardTurn ? setPicked(idx) : handlePlay(idx))}
+                      onClick={() => {
+                        if (isHumanDiscardTurn) setPicked(idx);
+                        else if (legalRing.has(idx)) handlePlay(idx);
+                      }}
                       disabled={loading || (!isHumanTurn && !isHumanDiscardTurn)}
+                      aria-disabled={isHumanTurn && !legalRing.has(idx) ? true : undefined}
                       aria-pressed={isHumanDiscardTurn ? picked === idx : undefined}
                       aria-label={
                         isHumanDiscardTurn
@@ -317,7 +321,7 @@ function HasenpfefferPageContent() {
                             ? t('actions.playableAria', { card: cardAlt(card) })
                             : t('actions.playAria', { card: cardAlt(card) })
                       }
-                      className={`disabled:opacity-50 ${
+                      className={`${isHumanTurn && !legalRing.has(idx) ? 'opacity-50 cursor-not-allowed' : ''} ${
                         picked === idx
                           ? 'rounded-lg ring-2 ring-ds-warning'
                           : legalRing.has(idx)

@@ -130,6 +130,49 @@ beforeEach(() => {
 });
 
 describe('PiedmonteseTarotPage', () => {
+  it('shows empty deal score history at the start of a three-seat match', async () => {
+    mockExec.mockResolvedValueOnce(
+      makePiedmonteseTarotState({
+        config: { seats: 3, cpuDifficulty: 1, targetDeals: 2 },
+        players: makePiedmonteseTarotState().players.slice(0, 3),
+        playerScores: [0, 0, 0],
+        dealScores: [0, 0, 0],
+        dealScoreHistory: [],
+      }),
+    );
+    renderWithProviders(<PiedmonteseTarotPage />);
+    const history = await screen.findByTestId('piedmontesetarot-deal-score-history');
+    expect(within(history).getByText('完了したディールの得点履歴はありません')).toBeInTheDocument();
+  });
+
+  it('renders completed deal changes for all four seats', async () => {
+    mockExec.mockResolvedValue(
+      makePiedmonteseTarotState({
+        gameEndFlag: true,
+        phase: PiedmonteseTarotPhase.GAME_END,
+        playerScores: [4, -1, -3, 0],
+        dealScoreHistory: [{ roundNumber: 1, scores: [4, -1, -3, 0] }],
+      }),
+    );
+    renderWithProviders(<PiedmonteseTarotPage />);
+    const history = await screen.findByTestId('piedmontesetarot-deal-score-history');
+    expect(within(history).getByText('ディール 1: あなた +4、CPU 1 -1、CPU 2 -3、CPU 3 ±0')).toBeInTheDocument();
+  });
+
+  it('renders completed deal changes for three seats', async () => {
+    mockExec.mockResolvedValue(
+      makePiedmonteseTarotState({
+        config: { seats: 3, cpuDifficulty: 1, targetDeals: 2 },
+        players: makePiedmonteseTarotState().players.slice(0, 3),
+        playerScores: [2, -1, -1],
+        dealScoreHistory: [{ roundNumber: 1, scores: [2, -1, -1] }],
+      }),
+    );
+    renderWithProviders(<PiedmonteseTarotPage />);
+    const history = await screen.findByTestId('piedmontesetarot-deal-score-history');
+    expect(within(history).getByText('ディール 1: あなた +2、CPU 1 -1、CPU 2 -1')).toBeInTheDocument();
+  });
+
   it('shows the buried cards in the round result with accessible card names', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<PiedmonteseTarotPage />);

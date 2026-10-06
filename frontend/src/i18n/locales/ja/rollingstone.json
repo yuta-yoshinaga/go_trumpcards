@@ -25,7 +25,8 @@
     "players": "人数",
     "reset": "リセット",
     "giveUp": "投了",
-    "playAria": "{{card}} を出す"
+    "playAria": "{{card}} を出す",
+    "legalPlayAria": "{{card}} を出す（合法手）"
   },
   "result": {
     "you": "あなたの勝ち！ 先に手札を出し切りました。",

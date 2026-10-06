@@ -15,7 +15,7 @@
   "trumpUndecided": "Trump: undecided",
   "dealStageFirst": "4 cards dealt to each player. Please declare the trump suit.",
   "dealStageSecond": "Remaining 4 cards dealt. Hands are now 8 cards.",
-  "scoringRule": "Scoring: 1 pt for 5+ tricks, 2 pts for all 8 tricks (Omi), 0 pts for 4-4 draw",
+  "scoringRule": "Scoring: 1 pt for 5+ tricks, 2 pts for all 8 tricks (Omi), 0 pts for 4-4 draw. First to {{limit}} points wins",
   "teamScoreLine": "Team 0: {{t0}} ({{tricks0}} tricks)  Team 1: {{t1}} ({{tricks1}} tricks)",
   "playerLine": "{{name}}: Team {{team}} tricks={{tricks}} cards={{cards}}",
   "gameEnd": "Game over! Team {{team}} wins!",

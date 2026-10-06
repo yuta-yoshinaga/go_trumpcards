@@ -36,6 +36,7 @@
   },
   "turnAnnouncement": "{{name}}の{{action}}の番です",
   "cards": "手札{{count}}枚",
+  "tricks": "獲得トリック{{count}}回",
   "points": "今局{{points}}点",
   "score": "通算{{score}}",
   "currentTrick": "現在のトリック",

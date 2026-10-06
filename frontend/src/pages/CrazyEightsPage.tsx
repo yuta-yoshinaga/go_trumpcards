@@ -471,21 +471,36 @@ function CrazyEightsPageContent() {
                 <span id={ILLEGAL_REASON_ID} className="sr-only">
                   {t('illegalHint')}
                 </span>
+                <span id="ce-card-selection-unavailable" className="sr-only">
+                  {t('cardSelectionUnavailable')}
+                </span>
                 {sortedCrazyEightsHand(humanPlayer.cards, sortMode).map(({ card, index: idx }) => {
                   // On the human's turn, highlight playable cards (matching suit/rank or an 8)
                   // and dim the rest with a reason tooltip, so the rule is visible at a glance.
                   const legal = !isHumanTurn || isCrazyEightsLegalPlay(card, state.discardTop, state.chosenSuit);
+                  const canSelectCard = isHumanTurn && !loading;
                   return (
                     <button
                       type="button"
                       key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
+                      onClick={() => {
+                        if (canSelectCard) toggleCard(idx);
+                      }}
                       aria-label={cardAlt(card)}
                       aria-pressed={selectedCardIndices.includes(idx)}
+                      aria-disabled={!isHumanTurn ? 'true' : undefined}
                       title={isHumanTurn && !legal ? t('illegalHint') : undefined}
-                      aria-describedby={isHumanTurn && !legal ? ILLEGAL_REASON_ID : undefined}
+                      aria-describedby={
+                        !isHumanTurn
+                          ? 'ce-card-selection-unavailable'
+                          : isHumanTurn && !legal
+                            ? ILLEGAL_REASON_ID
+                            : undefined
+                      }
                       data-legal={isHumanTurn ? legal : undefined}
                       className={`transition-transform ${focusRingCard} ${
+                        !isHumanTurn ? 'cursor-not-allowed opacity-50' : ''
+                      } ${
                         isHumanTurn && legal ? 'rounded-lg ring-2 ring-ds-success' : ''
                       } ${isHumanTurn && !legal ? 'opacity-50' : ''}`}
                       style={{

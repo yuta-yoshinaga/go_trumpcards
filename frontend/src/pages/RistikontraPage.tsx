@@ -202,7 +202,8 @@ function RistikontraPageContent() {
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isGameEnd = state.phase === 'gameEnd' || state.gameEndFlag;
   const isHumanTurn = state.phase === 'play' && state.currentTurn === 0 && !isGameEnd;
-  const humanWon = isGameEnd && state.winners.includes(0);
+  const humanWon = isGameEnd && state.winners.some((winner) => winner % 2 === 0);
+  const isDraw = isGameEnd && state.winners.length === 0;
 
   // On the human's turn, ring the cards that actually do something:
   //
@@ -416,9 +417,7 @@ function RistikontraPageContent() {
             <div className="flex flex-wrap gap-2 items-center">
               {isGameEnd && (
                 <span className="text-ds-text-primary text-sm font-semibold mr-1">
-                  {humanWon
-                    ? t('win')
-                    : t('lose', { name: playerLabel(state.winners[0] ?? -1, state.winners[0] === 0) })}
+                  {isDraw ? t('draw') : humanWon ? t('win') : t('lose', { name: playerLabel(state.winners[0], false) })}
                 </span>
               )}
               {isGameEnd && (

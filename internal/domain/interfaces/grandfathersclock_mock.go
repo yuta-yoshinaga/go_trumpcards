@@ -114,3 +114,6 @@ func (_m *MockGrandfathersClockGame) GetGameEndFlag() bool {
 	ret := _m.Called()
 	return ret.Bool(0)
 }
+
+func (_m *MockGrandfathersClockGame) CanRedo() bool { return _m.Called().Bool(0) }
+func (_m *MockGrandfathersClockGame) Redo() error   { return _m.Called().Error(0) }

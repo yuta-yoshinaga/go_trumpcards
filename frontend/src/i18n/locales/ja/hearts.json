@@ -19,6 +19,7 @@
   "trick": "トリック {{n}}",
   "trickResult": "{{name}}がトリックを獲得し、ペナルティ点は{{points}}点で、次のリードを担当します。",
   "heartsBroken": "ハートブレイク済",
+  "heartsBrokenAnnouncement": "ハートブレイクが発生しました",
   "heartsNotBroken": "ハート未ブレイク",
   "passDirection": {
     "left": "パス方向: 左",

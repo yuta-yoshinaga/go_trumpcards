@@ -26,6 +26,7 @@ func newDoudizhuForPresenter() *domain.Doudizhu {
 func TestDoudizhuWebPresenter_Output_BidPhase(t *testing.T) {
 	dg := newDoudizhuForPresenter()
 	dg.Reset()
+	dg.SetKittyCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
 
 	p := new(presenter.DoudizhuWebPresenter)
 	out := p.Output(dg, nil)
@@ -33,6 +34,7 @@ func TestDoudizhuWebPresenter_Output_BidPhase(t *testing.T) {
 	var resp controller.DoudizhuWebOutput
 	require.NoError(t, json.Unmarshal([]byte(out), &resp))
 	assert.Equal(t, "bid", resp.Phase)
+	assert.Empty(t, resp.KittyCards, "kitty cards must remain hidden during bidding")
 	assert.Len(t, resp.Players, domain.DoudizhuPlayerCnt)
 	assert.False(t, resp.GameEndFlag)
 }
@@ -42,8 +44,14 @@ func TestDoudizhuWebPresenter_Output_PlayPhase(t *testing.T) {
 	dg.SetPhase(domain.DoudizhuPhasePlay)
 	dg.SetLandlordIdx(0)
 	dg.SetBaseBid(2)
-	dg.SetCurrentTurn(0)
+	for idx := 0; idx < domain.DoudizhuPlayerCnt; idx++ {
+		if dg.GetPlayer(idx).GetIsHuman() {
+			dg.SetCurrentTurn(idx)
+			break
+		}
+	}
 	dg.SetLastPlayIdx(2)
+	dg.SetKittyCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
 	dg.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
 	dg.SetTableCombo(&domain.DoudizhuCombo{Type: domain.DoudizhuComboSingle, Rank: 10, Length: 1, Cards: []*domain.Card{domain.NewCard(domain.CardDesignHeart, 10, false)}})
 
@@ -58,6 +66,7 @@ func TestDoudizhuWebPresenter_Output_PlayPhase(t *testing.T) {
 	assert.Equal(t, "single", resp.TableCombo)
 	assert.Len(t, resp.TableCards, 1)
 	assert.Equal(t, 2, resp.LastPlayIdx)
+	require.Len(t, resp.KittyCards, 1, "kitty cards become visible after the landlord is decided")
 }
 
 func TestDoudizhuWebPresenter_Output_Error(t *testing.T) {
@@ -77,7 +86,12 @@ func TestDoudizhuWebPresenter_Output_GameEnd(t *testing.T) {
 	dg.SetPhase(domain.DoudizhuPhasePlay)
 	dg.SetLandlordIdx(0)
 	dg.SetBaseBid(1)
-	dg.SetCurrentTurn(0)
+	for idx := 0; idx < domain.DoudizhuPlayerCnt; idx++ {
+		if dg.GetPlayer(idx).GetIsHuman() {
+			dg.SetCurrentTurn(idx)
+			break
+		}
+	}
 	dg.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 	dg.GetPlayer(1).AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
 	dg.GetPlayer(2).AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
@@ -125,10 +139,20 @@ func TestDoudizhuWebPresenter_Output_GameEndWinnerKeys(t *testing.T) {
 func TestDoudizhuWebPresenter_ActionLogOutput(t *testing.T) {
 	dg := newDoudizhuForPresenter()
 	dg.Reset()
+	for idx := 0; idx < domain.DoudizhuPlayerCnt; idx++ {
+		if dg.GetPlayer(idx).GetIsHuman() {
+			dg.SetCurrentTurn(idx)
+			break
+		}
+	}
+	require.NoError(t, dg.PlayerBid(1))
 
 	p := new(presenter.DoudizhuWebPresenter)
 	out := p.ActionLogOutput(dg)
-	assert.NotEmpty(t, out)
+	var resp controller.ActionLogWebOutput
+	require.NoError(t, json.Unmarshal([]byte(out), &resp))
+	require.Len(t, resp.Entries, 1)
+	assert.Equal(t, "doudizhu.log.bid", resp.Entries[0].DetailCode)
 }
 
 func TestDoudizhuWebPresenter_ComboNames(t *testing.T) {

@@ -1,5 +1,6 @@
 {
   "discardTop": "捨て札",
+  "discardPileTop": "捨て札の一番上",
   "phase": {
     "draw": "ドロー",
     "meld": "メルド",

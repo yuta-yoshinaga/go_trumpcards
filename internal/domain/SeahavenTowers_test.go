@@ -884,3 +884,39 @@ func TestSeahavenTowersCanAutoComplete(t *testing.T) {
 		assert.True(t, s.CanAutoComplete())
 	})
 }
+
+func TestSeahavenTowersGetHintSkipsWholeColumnToEmpty(t *testing.T) {
+	for _, useful := range []bool{true, false} {
+		s := setupPlayingSeahavenTowers()
+		s.Reset()
+		var tableau [SeahavenTowersTableauCnt][]*Card
+		tableau[0] = []*Card{makeCard(CardDesignSpade, 13)}
+		if useful {
+			tableau[2] = []*Card{makeCard(CardDesignClover, 3), makeCard(CardDesignHeart, 13), makeCard(CardDesignHeart, 12)}
+		}
+		s.SetTableau(tableau)
+		var cells [SeahavenTowersCellCnt]*Card
+		for i := range cells {
+			cells[i] = makeCard(CardDesignSpade, 9)
+		}
+		if useful {
+			cells[0] = nil
+		}
+		s.SetFreeCells(cells)
+		var foundation [SeahavenTowersFoundationCnt][]*Card
+		for i := range foundation {
+			foundation[i] = []*Card{makeCard(i+1, 13)}
+		}
+		s.SetFoundation(foundation)
+		hint := s.GetHint()
+		if !useful {
+			assert.Nil(t, hint)
+			continue
+		}
+		if assert.NotNil(t, hint) {
+			assert.Equal(t, 2, hint.FromCol)
+			assert.Equal(t, 1, hint.CardIndex)
+			assert.Equal(t, 1, hint.ToCol)
+		}
+	}
+}

@@ -184,13 +184,19 @@ function KingoPageContent() {
                     {t('label.chips')} {seat.chips}
                     {/* **親は張らないので額を出さない。** */}
                     {!seat.isBanker && seat.bet > 0 && ` · ${t('label.bet')} ${seat.bet}`}
-                    {seat.wonAmount !== 0 && (
+                    {state.phase === KingoPhase.RESULT && (
                       <span
                         data-testid={`kingo-won-${i}`}
-                        className={seat.wonAmount > 0 ? 'text-ds-success' : 'text-ds-error-text'}
+                        className={
+                          seat.wonAmount > 0
+                            ? 'text-ds-success'
+                            : seat.wonAmount < 0
+                              ? 'text-ds-error-text'
+                              : 'text-ds-text-muted'
+                        }
                       >
                         {' · '}
-                        {t('label.won', { amount: seat.wonAmount })}
+                        {seat.wonAmount === 0 ? t('label.noChange') : t('label.won', { amount: seat.wonAmount })}
                       </span>
                     )}
                   </span>

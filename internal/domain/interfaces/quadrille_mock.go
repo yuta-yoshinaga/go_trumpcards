@@ -232,6 +232,12 @@ func (_m *MockQuadrilleGame) GetBids() [domain.QuadrillePlayerCnt]domain.Quadril
 	return ret.Get(0).([domain.QuadrillePlayerCnt]domain.QuadrilleBid)
 }
 
+// GetBidTrump モック
+func (_m *MockQuadrilleGame) GetBidTrump() [domain.QuadrillePlayerCnt]int {
+	ret := _m.Called()
+	return ret.Get(0).([domain.QuadrillePlayerCnt]int)
+}
+
 // GetBidActed モック
 func (_m *MockQuadrilleGame) GetBidActed() [domain.QuadrillePlayerCnt]bool {
 	ret := _m.Called()

@@ -52,6 +52,7 @@ export interface NapoleonResponse extends BaseGameResponse {
   currentPlayerIdx: number;
   bidPlayerIdx: number;
   leadPlayerIdx: number;
+  validPlayIndices: number[];
   currentTrick: NapoleonTrickCard[];
   trumpSuit: number;
   adjutantCard: Card | null;

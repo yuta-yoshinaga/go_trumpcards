@@ -35080,6 +35080,8 @@ components:
           type: integer
         canUndo:
           type: boolean
+        canRedo:
+          type: boolean
         isStalemate:
           type: boolean
         undoToEscape:
@@ -41017,6 +41019,7 @@ components:
         - sequenceLocked
         - sortMode
         - playableCardIndices
+        - playableCardCombinations
       properties:
         entries:
           type: array
@@ -41146,6 +41149,15 @@ components:
           items:
             type: integer
           example: [0, 2]
+        playableCardCombinations:
+          type: array
+          nullable: true
+          description: Legal complete selections of hand indices, or null when the server cannot determine them.
+          items:
+            type: array
+            items:
+              type: integer
+          example: [[0, 2], [1, 3]]
 
     # -------------------------------------------------------------------------
     # Dou Dizhu (斗地主)
@@ -42840,6 +42852,14 @@ components:
           type: string
           description: Human-readable hand name (empty until showdown)
           example: ""
+        omahaHandName:
+          type: string
+          description: Dramaha Omaha-side hand translation key (showdown only)
+          example: twoPair
+        drawHandName:
+          type: string
+          description: Dramaha draw-side hand translation key (showdown only)
+          example: straight
         bestHand:
           type: array
           description: Best 5-card hand (only populated at showdown)
@@ -46639,6 +46659,13 @@ components:
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
           items:
             $ref: '#/components/schemas/ActionLogEntry'
+        roundScoreHistory:
+          type: array
+          description: Completed round scores, indexed by round and player.
+          items:
+            type: array
+            items:
+              type: integer
         players:
           type: array
           items:
@@ -48248,6 +48275,11 @@ components:
         drawPileCount:
           type: integer
           description: Number of cards remaining in the stock pile
+        discardPile:
+          type: array
+          description: Discard pile ordered oldest (bottom) first, current top last
+          items:
+            $ref: '#/components/schemas/Card'
         discardPileCount:
           type: integer
           description: Number of cards in the discard pile
@@ -49606,6 +49638,11 @@ components:
         adjutantIdx:
           type: integer
           description: "Seat holding the adjutant card, or -1 while it is still hidden."
+        validPlayIndices:
+          type: array
+          description: Card indices playable by the current player according to Napoleon follow-suit rules.
+          items:
+            type: integer
         adjutantRevealed:
           type: boolean
           description: "Whether the adjutant has been revealed by playing the named card."
@@ -50663,6 +50700,37 @@ components:
           type: integer
           description: Total points for this hand/crib
           example: 10
+        fifteenCards:
+          type: array
+          description: Card combinations that sum to 15
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        pairCards:
+          type: array
+          description: Card pairs that scored
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        runCards:
+          type: array
+          description: Card runs that scored
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        flushCards:
+          type: array
+          description: Cards that formed the flush
+          items:
+            $ref: '#/components/schemas/Card'
+        nobsCards:
+          type: array
+          description: Jack and starter cards that formed nobs
+          items:
+            $ref: '#/components/schemas/Card'
 
     CribbageResponse:
       type: object
@@ -51863,6 +51931,10 @@ components:
           type: integer
           description: Dealer's best 5-card hand rank (same encoding as `playerHandRank`)
           example: 0
+        callWinRate:
+          type: number
+          description: Estimated share of completed call outcomes, including ties; present during the flop decision.
+          example: 0.82
         message:
           type: string
           description: Game result or error message. Empty during pre-resolution phases.
@@ -52142,6 +52214,11 @@ components:
               buriedCount:
                 type: integer
                 description: Number of cards this player has buried this deal
+              buriedCards:
+                type: array
+                description: Cards buried by the human player this deal; omitted for CPU players
+                items:
+                  $ref: '#/components/schemas/Card'
         phase:
           type: integer
           description: "Game phase: 0 = Bid, 1 = Play, 2 = TrickEnd, 3 = RoundEnd, 4 = GameEnd"
@@ -54283,7 +54360,7 @@ components:
             $ref: '#/components/schemas/Card'
         dealerCards:
           type: array
-          description: Dealer's 7 dealt cards (hidden until End phase)
+          description: Dealer's 7 dealt cards (empty until the game ends)
           items:
             $ref: '#/components/schemas/Card'
         playerHighHand:
@@ -54298,12 +54375,12 @@ components:
             $ref: '#/components/schemas/Card'
         dealerHighHand:
           type: array
-          description: Dealer's 5-card high hand
+          description: Dealer's 5-card high hand; empty until the game ends
           items:
             $ref: '#/components/schemas/Card'
         dealerLowHand:
           type: array
-          description: Dealer's 2-card low hand
+          description: Dealer's 2-card low hand; empty until the game ends
           items:
             $ref: '#/components/schemas/Card'
         phase:
@@ -54352,11 +54429,11 @@ components:
           example: ""
         dealerHighRank:
           type: integer
-          description: Dealer's high hand rank name
+          description: Dealer's high hand rank name; unpublished until the game ends (-1)
           example: ""
         dealerLowRank:
           type: integer
-          description: Dealer's low hand rank name
+          description: Dealer's low hand rank name; unpublished until the game ends (-1)
           example: ""
         message:
           type: string
@@ -60114,6 +60191,14 @@ components:
       type: object
       description: Response payload for /baseballpoker/exec
       properties:
+        serverHint:
+          type: object
+          description: Server-computed recommendation for the human's current decision.
+          properties:
+            action:
+              type: string
+            reason:
+              type: string
         messageParams:
           type: object
           description: "Substitution values for `messageCode`. Absent when the message takes none."
@@ -60655,6 +60740,9 @@ components:
         highestBid:
           type: integer
           description: "0=pass, 1=Trois, 2=Solo, 3=Piccolo, 4=Misere"
+        highestBidder:
+          type: integer
+          description: Seat of the current highest bidder, or -1 when nobody has bid.
         declarerIdx:
           type: integer
           description: Declaring seat, or -1 for a thrown-in deal.
@@ -60894,6 +60982,18 @@ components:
       type: object
       description: Response payload for /tusac/exec
       properties:
+        serverHint:
+          type: object
+          description: Server-computed recommendation for a human turn or round end.
+          properties:
+            action:
+              type: string
+            indexes:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
         messageParams:
           type: object
           description: "Substitution values for `messageCode`. Absent when the message takes none."
@@ -62675,6 +62775,12 @@ components:
         lastTrickWinnerIdx:
           type: integer
           description: The seat that took the last trick of the previous round, or -1.
+        resolvedTrickWinnerIdx:
+          type: integer
+          description: The seat that took the most recently completed trick, or -1.
+        lastTrickRank:
+          type: integer
+          description: Highest rank in the most recently completed trick, or 0.
         lastPenalty:
           type: integer
           description: Penalty scored for that last trick.
@@ -63185,6 +63291,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RamsTrickCard'
+        lastTrick:
+          type: array
+          description: Most recently completed trick, cleared when the next round is dealt.
+          items:
+            $ref: '#/components/schemas/RamsTrickCard'
+        lastTrickWinner:
+          type: integer
+          description: Winner of lastTrick, or -1 when the round has no completed trick.
         validPlays:
           type: array
           description: Hand indices you may legally play. Following suit is compulsory.
@@ -63213,6 +63327,21 @@ components:
           additionalProperties:
             type: string
     JulepeResponse:
+      properties:
+        players:
+          type: array
+          description: Seats with round settlement values.
+          items:
+            allOf:
+              - $ref: '#/components/schemas/RamsPlayer'
+              - type: object
+                properties:
+                  roundPayout:
+                    type: integer
+                    description: Chips awarded from the pot in the completed round.
+                  roundPenalty:
+                    type: integer
+                    description: Extra chips paid into the pot for missing the required trick count.
       allOf:
         - $ref: '#/components/schemas/RamsResponse'
         - type: object
@@ -63551,6 +63680,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SlobberhannesTrickCard'
+        lastTrick:
+          type: array
+          description: Most recently resolved trick in the current round; empty when unavailable.
+          items:
+            $ref: '#/components/schemas/SlobberhannesTrickCard'
+        lastTrickWinner:
+          type: integer
+          description: Winner of lastTrick, or -1 when unavailable.
         validPlays:
           type: array
           description: Hand indices you may legally play. Following suit is compulsory.
@@ -63860,6 +63997,13 @@ components:
             stacked on it any more (the Ace itself can still go to a foundation).
           items:
             type: boolean
+        tableauMoveTargets:
+          type: array
+          description: Legal tableau destination columns for each tableau top, followed by the waste top at index 8.
+          items:
+            type: array
+            items:
+              type: integer
         foundation:
           type: array
           description: The eight foundations, each building up in suit from the Ace.
@@ -64661,6 +64805,7 @@ components:
         - roundNumber
         - totalRounds
         - currentPlayerIdx
+        - discardHistory
         - drawPileCount
         - gameEndFlag
         - winnerIdx
@@ -64689,6 +64834,11 @@ components:
           type: integer
         discardTop:
           $ref: '#/components/schemas/Card'
+        discardHistory:
+          type: array
+          description: Cards currently in the discard pile, oldest first; the last one is the discard top.
+          items:
+            $ref: '#/components/schemas/Card'
         drawPileCount:
           type: integer
         gameEndFlag:
@@ -65655,6 +65805,7 @@ components:
         - trumpSuit
         - currentTrick
         - playerScores
+        - playerScoreDeltas
         - outcome
         - result
         - playableIndices
@@ -65730,6 +65881,11 @@ components:
             $ref: '#/components/schemas/GermanSoloTrickCard'
         playerScores:
           type: array
+          items:
+            type: integer
+        playerScoreDeltas:
+          type: array
+          description: Score changes from the most recently settled deal, indexed by seat.
           items:
             type: integer
         outcome:
@@ -67867,6 +68023,13 @@ components:
         roundGamePoints:
           type: integer
           description: Game points awarded to the winning side this round (before chip settlement)
+        roundScoreHistory:
+          type: array
+          description: Completed rounds' chip changes, indexed by round then player.
+          items:
+            type: array
+            items:
+              type: integer
         gameEndFlag:
           type: boolean
         winnerIdx:
@@ -69164,7 +69327,12 @@ components:
           type: array
           items:
             type: integer
-          description: Bid placed by each player in seat order (0=Pass, 1=Solo, 2=Misère, 3=Abundance; -1=not yet bid)
+          description: Bid value per player in seat order (0=Pass or not yet bid; use bidDone to distinguish, 1=Solo, 2=Misère, 3=Abundance)
+        bidDone:
+          type: array
+          items:
+            type: boolean
+          description: Whether each player has completed bidding, distinguishing Pass from not yet bid
         currentTrick:
           type: array
           items:
@@ -70242,6 +70410,14 @@ components:
                 type: integer
               card:
                 $ref: '#/components/schemas/Card'
+        currentTrickPoints:
+          type: array
+          items:
+            type: integer
+          description: Card points for currentTrick, in the same order
+        isLastTrick:
+          type: boolean
+          description: Whether the current trick is the final trick of the round
         teamScores:
           type: array
           items:
@@ -71174,7 +71350,12 @@ components:
           type: array
           items:
             type: integer
-          description: Bid placed by each player in seat order (0=Pass, 1=Six, 2=Misere, 3=Seven, 4=Eight; -1=not yet bid)
+          description: Bid placed by each player in seat order (0=Pass, 1=Gask, 2=Solo, 3=Misere, 4=Vira)
+        bidDone:
+          type: array
+          items:
+            type: boolean
+          description: Whether each player has submitted a bid this round, in seat order
         currentTrick:
           type: array
           items:
@@ -72573,6 +72754,15 @@ components:
           nullable: true
         hit:
           type: boolean
+        bankerHit:
+          type: boolean
+          description: Whether the banker card matched the player's wager on the last turn.
+        playerHit:
+          type: boolean
+          description: Whether the player card matched the player's wager on the last turn.
+        payoutReceived:
+          type: integer
+          description: Amount credited when winnings were taken after the last turn; otherwise 0.
         turnsPlayed:
           type: integer
         turnsTotal:
@@ -73628,8 +73818,12 @@ components:
               type: integer
               description: >-
                 Legal moves that would remain after playing the recommended fan.
-                This is the score the recommendation was chosen by, so a larger
-                value is what makes one fan better than another.
+            canClear:
+              type: boolean
+              description: Whether the search found a path to clear the deal.
+            continuationMoves:
+              type: integer
+              description: Number of moves in the found clearing continuation, or zero when none was found.
         message:
           type: string
         messageCode:
@@ -74091,6 +74285,20 @@ components:
                 type: boolean
         phase:
           type: string
+        shoeComposition:
+          type: array
+          description: Remaining card counts by rank, from ace through king.
+          minItems: 13
+          maxItems: 13
+          items:
+            type: integer
+        drawWinPercent:
+          type: array
+          description: Chance that the next card beats the tableaux; index 0 = right, 1 = left.
+          minItems: 2
+          maxItems: 2
+          items:
+            type: integer
         lastResult:
           type: object
           properties:
@@ -76658,6 +76866,18 @@ components:
     DurakResponse:
       type: object
       properties:
+        hint:
+          type: object
+          description: Server-computed move recommendation, present in the reply to the `hint` command.
+          properties:
+            cardIndex:
+              type: integer
+            attackIdx:
+              type: integer
+            takeCards:
+              type: boolean
+            reason:
+              type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -77181,6 +77401,8 @@ components:
         hint:
           type: object
           properties:
+            card:
+              $ref: "#/components/schemas/Card"
             fromZone:
               type: string
             fromCol:
@@ -77600,6 +77822,9 @@ components:
           type: integer
         leadPlayerIdx:
           type: integer
+        trickWinnerIdx:
+          type: integer
+          description: Winning seat for the completed trick, or -1 when no trick is complete.
         hint:
           type: object
           properties:
@@ -78830,6 +79055,17 @@ components:
           type: integer
         roundWinnerIdx:
           type: integer
+        roundScoreHistory:
+          type: array
+          items:
+            type: object
+            properties:
+              roundNumber:
+                type: integer
+              scores:
+                type: array
+                items:
+                  type: integer
         config:
           type: object
           properties:
@@ -79297,6 +79533,24 @@ components:
           type: integer
         highestBid:
           type: integer
+        bids:
+          type: array
+          description: Bid declarations per seat (0 means pass or not yet declared; see bidActed).
+          items:
+            type: integer
+        bidActed:
+          type: array
+          description: Whether each seat has declared in the current auction.
+          items:
+            type: boolean
+        bidTrump:
+          type: array
+          description: Trump suit selected per declaration (-1 when absent).
+          items:
+            type: integer
+        highestBidderIdx:
+          type: integer
+          description: Seat of the highest declaration, or -1 when none.
         trumpSuit:
           type: integer
         currentTrick:
@@ -79621,6 +79875,18 @@ components:
           type: array
           items:
             type: integer
+        dealScoreHistory:
+          type: array
+          description: Settled score changes for each completed deal, in match order.
+          items:
+            type: object
+            properties:
+              roundNumber:
+                type: integer
+              scores:
+                type: array
+                items:
+                  type: integer
         lastTrickWinner:
           type: integer
         outcome:
@@ -79945,6 +80211,11 @@ components:
           description: Whether each seat has acted in the current auction.
           items:
             type: boolean
+        bidTrump:
+          type: array
+          description: Trump suit chosen with each declaration (1=spade, 2=club, 3=heart, 4=diamond; -1=none).
+          items:
+            type: integer
         leadPlayerIdx:
           type: integer
         dealerIdx:

@@ -211,6 +211,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
               className={props.hintEnabled ? btnSuccess : btnWarning}
               disabled={props.loading}
               onClick={props.onToggleHint}
+              aria-pressed={props.hintEnabled}
             >
               {t('hint')} {props.hintEnabled ? 'ON' : 'OFF'}
             </button>
@@ -220,6 +221,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
               disabled={props.loading}
               onClick={props.onToggleSoft17}
               aria-describedby="bj-soft17-help"
+              aria-pressed={props.dealerHitsSoft17}
             >
               {props.dealerHitsSoft17 ? 'H17' : 'S17'}
             </button>
@@ -228,6 +230,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
               className={props.countingEnabled ? btnSuccess : btnWarning}
               disabled={props.loading}
               onClick={props.onToggleCounting}
+              aria-pressed={props.countingEnabled}
             >
               {t('counting')} {props.countingEnabled ? 'ON' : 'OFF'}
             </button>
@@ -255,6 +258,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
               disabled={props.loading}
               onClick={props.onToggleDAS}
               aria-describedby="bj-das-help"
+              aria-pressed={props.doubleAfterSplit}
             >
               {t('das')} {props.doubleAfterSplit ? 'ON' : 'OFF'}
             </button>

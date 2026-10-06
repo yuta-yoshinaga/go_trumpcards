@@ -90,8 +90,8 @@ type MonteBank struct {
 	roundNo int
 
 	gameEndFlag bool
-	actionLog   []*ActionLogEntry
-	turnNumber  int
+	actionLogBase
+	turnNumber int
 }
 
 // NewMonteBank は指定の山・プレイヤー・設定で卓を構築する。
@@ -300,23 +300,10 @@ func (g *MonteBank) GetRoundNumber() int { return g.roundNo }
 // GetRemainingCards は山の残り枚数を返す。
 func (g *MonteBank) GetRemainingCards() int { return g.deck.GetRemainingCount() }
 
-// GetActionLog は棋譜を返す。
-func (g *MonteBank) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // appendLog は棋譜に 1 行足す。
 func (g *MonteBank) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber:   g.turnNumber,
-		PlayerIdx:    0,
-		ActionType:   actionType,
-		DetailCode:   detailCode,
-		DetailParams: detailParams,
-		Cards:        cards,
-	})
-	if len(g.actionLog) > monteBankMaxSliceLen {
-		g.actionLog = g.actionLog[len(g.actionLog)-monteBankMaxSliceLen:]
-	}
+	g.appendLogCodeAt(g.turnNumber, 0, actionType, detailCode, detailParams, cards)
 }
 
 // --- 助言 ---

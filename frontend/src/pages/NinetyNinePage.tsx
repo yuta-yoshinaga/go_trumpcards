@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ninetyNineApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -376,6 +377,17 @@ function NinetyNinePageContent() {
                         </div>
                       </div>
                     ))
+                )}
+
+                {humanPlayer?.buriedCards && humanPlayer.buriedCards.length > 0 && (
+                  <section aria-label={t('buriedCardsTitle')} className="mb-2 p-2 rounded bg-ds-surface">
+                    <div className="text-ds-text-muted text-sm mb-1">{t('buriedCardsTitle')}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {humanPlayer.buriedCards.map((card, index) => (
+                        <CardImage key={`${card.design}-${card.value}-${index}`} card={card} width={cardWidth} />
+                      ))}
+                    </div>
+                  </section>
                 )}
 
                 <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="nn-score-table">

@@ -14,6 +14,7 @@ function makeState(overrides?: Partial<DiplomatResponse>): DiplomatResponse {
     isStalemate: false,
     message: '',
     ...overrides,
+    tableauMoveTargets: overrides?.tableauMoveTargets ?? Array.from({ length: 9 }, () => []),
   };
 }
 

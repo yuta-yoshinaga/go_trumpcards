@@ -20,6 +20,7 @@
     "cpu": "CPU{{idx}}"
   },
   "currentTrick": "Current trick",
+  "trickCardByPlayer": "{{card}} played by {{name}}",
   "sentenceSeparator": " ",
   "handEnd": {
     "normal": "Team {{team}} reached {{need}} tricks and took the hand (+1).",

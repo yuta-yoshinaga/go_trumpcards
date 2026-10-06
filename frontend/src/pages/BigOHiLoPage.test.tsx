@@ -1574,7 +1574,7 @@ describe('BigOHiLoPage', () => {
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.bigohilo).toHaveBeenCalledTimes(1));
-    expect(screen.getByText('棋譜')).toBeInTheDocument();
+    expect(await screen.findByText('棋譜')).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('閉じる'));
     await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
@@ -1615,6 +1615,35 @@ describe('BigOHiLoPage', () => {
 
       fireEvent.click(screen.getByLabelText('ラーニングモード'));
       expect(screen.getByTestId('equity-display')).toBeInTheDocument();
+    });
+
+    it('shows the low share probability when equity data includes it', async () => {
+      mockExec.mockResolvedValue({
+        ...stateWithEquity,
+        equity: {
+          winProbability: 0.75,
+          handOdds: [
+            { handRank: 0, handName: 'High Card', probability: 0.1 },
+            { handRank: 1, handName: 'One Pair', probability: 0.9 },
+          ],
+          lowProbability: 0.35,
+        },
+      });
+      renderWithProviders(<BigOHiLoPage />);
+      await waitFor(() => expect(screen.getByTestId('learning-mode-toggle')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByLabelText('ラーニングモード'));
+      expect(screen.getByTestId('low-probability')).toHaveTextContent('ローの取り分: 35%');
+    });
+
+    it('does not show the low share probability when equity data omits it', async () => {
+      mockExec.mockResolvedValue(stateWithEquity);
+      renderWithProviders(<BigOHiLoPage />);
+      await waitFor(() => expect(screen.getByTestId('learning-mode-toggle')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByLabelText('ラーニングモード'));
+      expect(screen.getByTestId('equity-display')).toBeInTheDocument();
+      expect(screen.queryByTestId('low-probability')).not.toBeInTheDocument();
     });
 
     it('hides equity display when learning mode is toggled off', async () => {

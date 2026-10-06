@@ -247,6 +247,10 @@ func (bc *BeleagueredCastle) GetHint() *BeleagueredCastleHint {
 			if toCol == fromCol {
 				continue
 			}
+			// 1枚列を空列へ移す手は列番号が入れ替わるだけで往復し、GetHint依存の手詰まり判定も妨げる。
+			if len(fromCards) == 1 && len(bc.tableau[toCol]) == 0 {
+				continue
+			}
 			if bc.canPlaceOnTableau(card, toCol) {
 				return &BeleagueredCastleHint{
 					FromCol:   fromCol,

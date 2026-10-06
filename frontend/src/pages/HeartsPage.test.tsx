@@ -71,6 +71,24 @@ describe('HeartsPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
+  it('announces heartbreak once when it changes from false to true', async () => {
+    renderWithProviders(<HeartsPage />);
+    const liveRegion = await screen.findByTestId('hearts-broken-live');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    mockExec.mockResolvedValue(heartsBrokenState);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+
+    expect(await screen.findByTestId('hearts-broken-live')).toHaveTextContent('ハートブレイクが発生しました');
+  });
+
+  it('does not announce heartbreak on initial state', async () => {
+    mockExec.mockResolvedValue(heartsBrokenState);
+    renderWithProviders(<HeartsPage />);
+    expect(await screen.findByTestId('hearts-broken-live')).toBeEmptyDOMElement();
+  });
+
   it('announces the trick winner as the next leader without duplicating the status message', async () => {
     mockExec.mockResolvedValue(
       makeHeartsState({
@@ -934,7 +952,7 @@ describe('HeartsPage', () => {
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.hearts).toHaveBeenCalledTimes(1));
-    expect(screen.getByText('棋譜')).toBeInTheDocument();
+    expect(await screen.findByText('棋譜')).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('閉じる'));
     await waitFor(() => expect(screen.queryByText(/^棋譜$/)).not.toBeInTheDocument());

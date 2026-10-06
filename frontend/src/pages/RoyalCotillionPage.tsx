@@ -376,11 +376,20 @@ function RoyalCotillionPageContent() {
                             disabled={!isPlaying || loading || isAutoCompleting}
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('foundationAriaLabel', {
-                              suit: FOUNDATION_SUITS[idx],
-                              idx,
-                              count: pile.length,
-                            })}
+                            aria-label={
+                              nextRankLabel === null
+                                ? t('foundationAriaLabelComplete', {
+                                    suit: FOUNDATION_SUITS[idx],
+                                    idx,
+                                    count: pile.length,
+                                  })
+                                : t('foundationAriaLabel', {
+                                    suit: FOUNDATION_SUITS[idx],
+                                    idx,
+                                    count: pile.length,
+                                    rank: nextRankLabel,
+                                  })
+                            }
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
                           >
                             <AnimatedCard
@@ -397,7 +406,11 @@ function RoyalCotillionPageContent() {
                             disabled={!isPlaying || loading}
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx], idx })}
+                            aria-label={t('emptyFoundationAriaLabel', {
+                              suit: FOUNDATION_SUITS[idx],
+                              idx,
+                              rank: nextRankLabel,
+                            })}
                             style={{ width: dims.cw, height: dims.ch }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                           >

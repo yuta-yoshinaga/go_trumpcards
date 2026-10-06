@@ -31,6 +31,8 @@
   "score": "total {{score}}",
   "currentTrick": "Current trick",
   "trickWinner": "WIN",
+  "previousTrick": "Previous trick",
+  "previousTrickWinner": "Winner: {{name}}",
   "restricted": "You must follow the led suit",
   "bidDreier": "Dreier",
   "bidSolo": "Solo",

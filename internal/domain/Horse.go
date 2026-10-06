@@ -697,9 +697,6 @@ func (g *Horse) GetActionLog() []*ActionLogEntry { return g.actionLog }
 func (g *Horse) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
 	g.appendLogCodeAt(g.turnNumber, -1, actionType, detailCode, detailParams, cards)
-	if len(g.actionLog) > horseMaxSliceLen {
-		g.actionLog = g.actionLog[len(g.actionLog)-horseMaxSliceLen:]
-	}
 }
 
 // horseTableIdx は正本の席番号から卓の席番号を引く。座っていなければ -1。

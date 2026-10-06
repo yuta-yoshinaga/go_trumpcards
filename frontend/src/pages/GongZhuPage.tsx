@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { gongzhuApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
@@ -118,6 +118,18 @@ function GongZhuPageContent() {
     hintLoading,
     handleHint,
   } = useGongZhuGame();
+  const previousHeartsBroken = useRef<boolean | null>(null);
+  const [heartsBrokenAnnouncement, setHeartsBrokenAnnouncement] = useState('');
+
+  useEffect(() => {
+    if (!state) return;
+    if (previousHeartsBroken.current === false && state.heartsBroken) {
+      setHeartsBrokenAnnouncement(t('heartsBrokenAnnouncement'));
+    } else if (!state.heartsBroken) {
+      setHeartsBrokenAnnouncement('');
+    }
+    previousHeartsBroken.current = state.heartsBroken;
+  }, [state, t]);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('gongzhu');
@@ -255,6 +267,15 @@ function GongZhuPageContent() {
       >
         {trickAnnouncement}
       </div>
+      <div
+        data-testid="gongzhu-hearts-broken-live"
+        className="sr-only"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {heartsBrokenAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -296,6 +317,9 @@ function GongZhuPageContent() {
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
+              <span data-testid="gongzhu-hearts-broken-state">
+                {t(state.heartsBroken ? 'heartsBrokenYes' : 'heartsBrokenNo')}
+              </span>{' '}
               <span data-testid="exposure-summary" role="img" aria-label={t('exposed', { cards: exposureSummary })}>
                 {t('exposed', { cards: exposureSummary })}
               </span>

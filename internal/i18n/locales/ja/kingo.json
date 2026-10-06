@@ -11,6 +11,7 @@
   "betPrompt": "張ってください（{{min}} から、10 刻み）",
   "dealPrompt": "あなたが親です。子の張りが出そろいました。deal で配ってください",
   "wonLine": "{{name}}: {{amount}}",
+  "noChangeLine": "{{name}}: 増減なし",
   "gameEndLine": "勝者: {{name}}",
   "rank.arashi": "嵐",
   "rank.pair": "2枚そろい",

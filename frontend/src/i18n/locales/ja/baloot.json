@@ -8,6 +8,7 @@
   "header": {
     "round": "ラウンド",
     "trick": "トリック",
+    "trickCount": "獲得トリック数: {{count}}",
     "target": "{{target}}点先取",
     "modeUndecided": "モード未定: Sun か Hokom を宣言してください。",
     "modeSun": "モード: Sun（切り札なし・{{name}} が宣言）",

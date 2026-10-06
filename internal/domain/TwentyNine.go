@@ -679,6 +679,20 @@ func (g *TwentyNine) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 // GetCurrentTrick 現在のトリック取得
 func (g *TwentyNine) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
+// GetCurrentTrickPoints returns card points in current trick order.
+func (g *TwentyNine) GetCurrentTrickPoints() []int {
+	points := make([]int, len(g.currentTrick))
+	for i, trickCard := range g.currentTrick {
+		if trickCard != nil && trickCard.Card != nil {
+			points[i] = twentyNineCardPoints(trickCard.Card)
+		}
+	}
+	return points
+}
+
+// IsLastTrick reports whether the current trick is the round's final trick.
+func (g *TwentyNine) IsLastTrick() bool { return g.trickNumber >= TwentyNineTrickCount }
+
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *TwentyNine) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 

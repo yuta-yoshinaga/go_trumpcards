@@ -39,5 +39,22 @@
   "nav": {
     "scorpion": "スコーピオン"
   },
-  "hintExposes": "（裏カードが1枚開きます）"
+  "hintExposes": "（裏カードが1枚開きます）",
+  "cli": {
+    "stateSummary": "完成スート数: {{completedSuits}}/4  ストック: {{stockCount}}",
+    "tableau": "場札:",
+    "tableauColumn": "  列{{col}}: {{cards}}",
+    "stateFooter": "手数: {{moveCount}}  フェーズ: {{phase}}",
+    "empty": "空",
+    "help": {
+      "moveTop": "m <from> <to>  場札の列間で一番上の札を移動",
+      "moveIndex": "m <from> <idx> <to>  指定位置の札とその上の札を移動",
+      "deal": "d              ストックから列0〜2に3枚配る",
+      "giveUp": "g              ギブアップ",
+      "hint": "h              ヒント",
+      "autoComplete": "ac             自動完成",
+      "undo": "u              元に戻す",
+      "reset": "r              リセット"
+    }
+  }
 }

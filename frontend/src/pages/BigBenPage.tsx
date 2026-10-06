@@ -182,6 +182,7 @@ function BigBenPageContent() {
         <div className="text-center text-xs text-ds-text-muted mb-0.5" aria-hidden="true">
           #{colIdx}
         </div>
+        <span className="sr-only">{t('tableauColumnCount', { col: colIdx, count: col.length })}</span>
         <DropZone
           isDropTarget={dnd.isDropTarget(tableauColZone)}
           onDragOver={dnd.handleDragOver(tableauColZone)}
@@ -229,7 +230,12 @@ function BigBenPageContent() {
                           }
                         }}
                         disabled={!isPlaying || loading || (!isTop && !selectedSource)}
-                        aria-label={t('cardPosAria', { card: cardAlt(tc2.card), col: colIdx, pos: cardIdx + 1 })}
+                        aria-label={t('cardPosAria', {
+                          card: cardAlt(tc2.card),
+                          col: colIdx,
+                          count: col.length,
+                          pos: cardIdx + 1,
+                        })}
                         aria-pressed={isSelected}
                         draggable={isPlaying && !loading && isTop}
                         onDragStart={dnd.handleDragStart(tableauColZone)}

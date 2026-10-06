@@ -3,6 +3,7 @@ import type {
   AnacondaResponse,
   AndarBaharResponse,
   BaccaratBanqueResponse,
+  BaseballPokerResponse,
   BasraResponse,
   BatakResponse,
   BeziqueResponse,
@@ -23,6 +24,7 @@ import type {
   ContinentalRummyResponse,
   CostlyColoursResponse,
   CourtPieceResponse,
+  CribbageResponse,
   DehlaPakadResponse,
   DilotiResponse,
   DoppelkopfResponse,
@@ -32,6 +34,7 @@ import type {
   FiveHundredResponse,
   FortyFivesResponse,
   FrenchTarotResponse,
+  GaigelResponse,
   GanjifaResponse,
   GermanSoloResponse,
   GleekResponse,
@@ -49,6 +52,7 @@ import type {
   KoiKoiResponse,
   LaughAndLieDownResponse,
   LooResponse,
+  MachiavelliResponse,
   MadrassoResponse,
   ManilleResponse,
   MariasResponse,
@@ -79,6 +83,7 @@ import type {
   SchafkopfResponse,
   ScoponeResponse,
   SedmaResponse,
+  SevenBridgeResponse,
   SheepsheadResponse,
   ShelemResponse,
   SoloWhistResponse,
@@ -96,6 +101,7 @@ import type {
   TrenteEtQuaranteResponse,
   TressetteResponse,
   TrogguResponse,
+  TuSacResponse,
   TuteResponse,
   TwentyNineResponse,
   TwoTenJackResponse,
@@ -107,6 +113,87 @@ import type {
   ZwanzigerrufenResponse,
 } from '../types/card';
 import type { PaiGowHint } from '../types/games/paigow';
+
+/** Creates a default Gaigel response with no completed trick winner. */
+export function makeGaigelState(overrides: Partial<GaigelResponse> = {}): GaigelResponse {
+  return {
+    players: [],
+    phase: 0,
+    roundNumber: 1,
+    trickNumber: 1,
+    currentPlayerIdx: 0,
+    dealerIdx: 0,
+    trumpSuit: 0,
+    stockRemaining: 0,
+    isEndgame: false,
+    currentTrick: [],
+    teamScores: [0, 0],
+    roundPoints: [0, 0],
+    roundMarriage: [0, 0],
+    marriageIndices: [],
+    gameEndFlag: false,
+    winnerTeam: -1,
+    leadPlayerIdx: 0,
+    trickWinnerIdx: -1,
+    message: '',
+    config: { cpuDifficulty: 1, targetScore: 101 },
+    ...overrides,
+  };
+}
+
+/** Creates a default Baseball Poker state. */
+export function makeBaseballPokerState(overrides: Partial<BaseballPokerResponse> = {}): BaseballPokerResponse {
+  return {
+    phase: 0,
+    seats: [],
+    street: 1,
+    streetTotal: 4,
+    wildValues: [3, 9],
+    bonusValue: 4,
+    buyInValue: 3,
+    pot: 0,
+    currentBet: 0,
+    toCall: 0,
+    raiseCount: 0,
+    canRaise: true,
+    turnSeat: 0,
+    humanSeat: 0,
+    isHumanTurn: true,
+    buyerSeat: -1,
+    buyCost: 0,
+    isBuying: false,
+    handNumber: 1,
+    remainingCards: 0,
+    winnerSeat: 0,
+    gameEndFlag: false,
+    message: '',
+    ...overrides,
+  };
+}
+
+/** Creates a default Tu Sac state. */
+export function makeTuSacState(overrides: Partial<TuSacResponse> = {}): TuSacResponse {
+  return {
+    phase: 0,
+    seats: [],
+    discardTop: null,
+    discardCount: 0,
+    stockCount: 0,
+    turnSeat: 0,
+    humanSeat: 0,
+    isHumanTurn: true,
+    roundNumber: 1,
+    rounds: 1,
+    wentOutSeat: -1,
+    handSize: 20,
+    deckSize: 112,
+    meldPointsByKind: [0, 2, 3, 5],
+    winnerSeat: 0,
+    gameEndFlag: false,
+    message: '',
+    ...overrides,
+  };
+}
 
 /** Creates a Pai Gow set-hands response with no server split hint by default. */
 export function makePaiGowState(overrides: Partial<PaiGowResponse> = {}): PaiGowResponse {
@@ -130,6 +217,30 @@ export function makePaiGowState(overrides: Partial<PaiGowResponse> = {}): PaiGow
     dealerHighRank: 0,
     dealerLowRank: 0,
     hint: null satisfies PaiGowHint | null,
+    message: '',
+    ...overrides,
+  };
+}
+
+/** Creates a Machiavelli response with an empty score history. */
+export function makeMachiavelliState(overrides: Partial<MachiavelliResponse> = {}): MachiavelliResponse {
+  return {
+    players: [
+      { id: 0, isHuman: true, cardCount: 0, cards: [], roundScore: 0, cumulativeScore: 0, deadwood: 0 },
+      { id: 1, isHuman: false, cardCount: 0, cards: [], roundScore: 0, cumulativeScore: 0, deadwood: 0 },
+    ],
+    table: [],
+    phase: 0,
+    roundNumber: 1,
+    targetRounds: 3,
+    currentPlayerIdx: 0,
+    dealerIdx: 0,
+    drawPileCount: 0,
+    gameEndFlag: false,
+    winnerIdx: -1,
+    roundWinnerIdx: -1,
+    roundScoreHistory: [],
+    config: { playerCount: 2, targetRounds: 3 },
     message: '',
     ...overrides,
   };
@@ -181,6 +292,25 @@ export function makeChinchonState(overrides: Partial<ChinchonResponse> = {}): Ch
     layoffableIndices: [],
     message: '',
     config: { playerCount: 2, knockThreshold: 5, eliminationLimit: 100 },
+    ...overrides,
+  };
+}
+
+/** Creates a Seven Bridge response with round score history defaults. */
+export function makeSevenBridgeState(overrides: Partial<SevenBridgeResponse> = {}): SevenBridgeResponse {
+  return {
+    players: [],
+    phase: 0,
+    roundNumber: 1,
+    currentPlayerIdx: 0,
+    discardTop: null,
+    drawPileCount: 0,
+    gameEndFlag: false,
+    winnerIdx: -1,
+    roundWinnerIdx: -1,
+    roundScoreHistory: [],
+    config: { cpuDifficulty: 1, pointLimit: 1500 },
+    message: '',
     ...overrides,
   };
 }
@@ -1163,6 +1293,7 @@ const baseDoppelkopfState: DoppelkopfResponse = {
   liveKontraPoints: 0,
   roundReWon: false,
   roundGamePoints: 0,
+  roundScoreHistory: [],
   gameEndFlag: false,
   winnerIdx: -1,
   message: '',
@@ -1194,10 +1325,11 @@ const baseTuteState: TuteResponse = {
       ],
       trickCount: 0,
       teamScore: 0,
+      teamId: 0,
     },
-    { id: 1, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamScore: 0 },
-    { id: 2, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamScore: 0 },
-    { id: 3, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamScore: 0 },
+    { id: 1, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamScore: 0, teamId: 1 },
+    { id: 2, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamScore: 0, teamId: 0 },
+    { id: 3, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamScore: 0, teamId: 1 },
   ],
   phase: 0,
   roundNumber: 1,
@@ -1749,6 +1881,10 @@ const baseOmbreState: OmbreResponse = {
   ombreIdx: 0,
   winningBid: 1,
   highestBid: 1,
+  bids: [1, 0, 0],
+  bidActed: [true, false, false],
+  bidTrump: [1, -1, -1],
+  highestBidderIdx: 0,
   trumpSuit: 1,
   currentTrick: [],
   playerScores: [0, 0, 0],
@@ -1804,6 +1940,7 @@ const baseQuadrilleState: QuadrilleResponse = {
   currentBidderIdx: 0,
   bids: [0, 0, 0, 0],
   bidActed: [false, false, false, false],
+  bidTrump: [-1, -1, -1, -1],
   leadPlayerIdx: 0,
   dealerIdx: 3,
   forehandIdx: 0,
@@ -1880,6 +2017,7 @@ const baseGermanSoloState: GermanSoloResponse = {
   trumpSuit: 1,
   currentTrick: [],
   playerScores: [0, 0, 0, 0],
+  playerScoreDeltas: [0, 0, 0, 0],
   lastTrickWinner: -1,
   outcome: 0,
   result: 0,
@@ -2267,6 +2405,7 @@ const basePiedmonteseTarotState: PiedmonteseTarotResponse = {
   completedTricks: [],
   playerScores: [0, 0, 0, 0],
   dealScores: [0, 0, 0, 0],
+  dealScoreHistory: [],
   lastTrickWinner: -1,
   outcome: 0,
   result: 0,
@@ -3132,6 +3271,7 @@ const baseSoloWhistState: SoloWhistResponse = {
   contract: 0,
   trumpSuit: 0,
   bids: [0, 0, 0, 0],
+  bidDone: [false, false, false, false],
   currentTrick: [],
   playerScores: [0, 0, 0, 0],
   roundTricks: [0, 0, 0, 0],
@@ -3293,6 +3433,8 @@ const baseTwentyNineState: TwentyNineResponse = {
   trumpRevealed: false,
   bids: [0, 0, 0, 0],
   currentTrick: [],
+  currentTrickPoints: [],
+  isLastTrick: false,
   teamScores: [0, 0],
   roundTeamPoints: [0, 0],
   playableIndices: [],
@@ -3899,6 +4041,7 @@ const baseViraState: ViraResponse = {
   contract: 0,
   trumpSuit: 0,
   bids: [0, 0, 0],
+  bidDone: [false, false, false],
   pot: 3,
   lastRoundDelta: [0, 0, 0],
   lastRoundMade: false,
@@ -5026,6 +5169,7 @@ const baseTrogguState: TrogguResponse = {
   dealerIdx: 0,
   bidPlayerIdx: 0,
   highestBid: 0,
+  highestBidder: -1,
   declarerIdx: -1,
   contract: 0,
   contractName: 'pass',
@@ -5677,6 +5821,34 @@ export function makeCometState(overrides?: Partial<CometResponse>): CometRespons
   return { ...baseCometState, ...overrides };
 }
 
+const baseCribbageState: CribbageResponse = {
+  players: [
+    { id: 0, isHuman: true, cardCount: 0, cards: [], roundScore: 0, cumulativeScore: 0 },
+    { id: 1, isHuman: false, cardCount: 0, cards: [], roundScore: 0, cumulativeScore: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  currentPlayerIdx: 0,
+  dealerIdx: 0,
+  crib: [],
+  starter: null,
+  pegCount: 0,
+  pegPlayedCards: [],
+  pegPlayedBy: [],
+  pegScoreEvents: [],
+  showPhaseStep: 0,
+  handScoreDetails: [null, null, null],
+  gameEndFlag: false,
+  winnerIdx: -1,
+  message: '',
+  config: { cpuDifficulty: 1, pointLimit: 121 },
+};
+
+/** Creates a Cribbage API state with neutral defaults for page tests. */
+export function makeCribbageState(overrides?: Partial<CribbageResponse>): CribbageResponse {
+  return { ...baseCribbageState, ...overrides };
+}
+
 /** Face-up card helper for the Baccarat Banque factories. **Baccarat deals nothing hidden.** */
 const bbqCard = (design: 'SPADE' | 'CLOVER' | 'HEART' | 'DIAMOND', value: number) => ({
   design,
@@ -5727,6 +5899,8 @@ const baseBaccaratBanqueState: BaccaratBanqueResponse = {
   coupNumber: 2,
   bankHeld: 2,
   shoeRemaining: 141,
+  shoeComposition: [40, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 8, 8],
+  drawWinPercent: [68, 31],
   retired: false,
   gameEndFlag: false,
   winnerIdx: -1,

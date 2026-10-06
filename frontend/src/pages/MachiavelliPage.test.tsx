@@ -57,6 +57,7 @@ const turnState: MachiavelliResponse = {
   gameEndFlag: false,
   winnerIdx: -1,
   roundWinnerIdx: -1,
+  roundScoreHistory: [],
   message: '',
   config: { playerCount: 4, targetRounds: 3 },
 };
@@ -317,10 +318,17 @@ describe('MachiavelliPage', () => {
     });
   });
 
+  it('shows completed round scores by player', async () => {
+    mockExec.mockResolvedValue({ ...turnState, roundScoreHistory: [{ roundNumber: 1, scores: [0, 10] }] });
+    renderWithProviders(<MachiavelliPage />);
+    const historyTable = await screen.findByRole('table', { name: 'ラウンド別得点' });
+    expect(historyTable.textContent).toContain('110');
+  });
+
   it('score table headers have scope="col"', async () => {
     const { container } = renderWithProviders(<MachiavelliPage />);
     await waitFor(() => expect(screen.getByText('あなた')).toBeInTheDocument());
-    for (const th of container.querySelectorAll('th')) {
+    for (const th of container.querySelectorAll('thead th')) {
       expect(th).toHaveAttribute('scope', 'col');
     }
   });
@@ -459,7 +467,7 @@ describe('MachiavelliPage', () => {
     vi.mocked(actionLogApi.machiavelli).mockResolvedValueOnce({ entries: [] });
     fireEvent.click(screen.getByText('棋譜を見る'));
     await waitFor(() => expect(actionLogApi.machiavelli).toHaveBeenCalledTimes(1));
-    expect(screen.getByText('棋譜')).toBeInTheDocument();
+    expect(await screen.findByText('棋譜')).toBeInTheDocument();
     fireEvent.click(screen.getByText('閉じる'));
     await waitFor(() => expect(screen.queryByText(/^棋譜$/)).not.toBeInTheDocument());
   });

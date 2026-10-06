@@ -56,6 +56,25 @@ beforeEach(() => {
 });
 
 describe('RamschPage', () => {
+  it('shows you when the human player is the dealer', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      dealerIdx: 0,
+    });
+    renderWithProviders(<RamschPage />);
+    await waitFor(() => expect(screen.getByText(/ディーラー:/)).toBeInTheDocument());
+    expect(screen.getByText(/ディーラー:/)).toHaveTextContent('ディーラー: あなた');
+  });
+
+  it('shows the CPU name using its zero-based player number when the dealer is a CPU', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      dealerIdx: 2,
+    });
+    renderWithProviders(<RamschPage />);
+    await waitFor(() => expect(screen.getByText(/ディーラー:/)).toHaveTextContent('ディーラー: CPU 2'));
+  });
+
   it('shows the three-player trick-taking skeleton while loading', () => {
     mockExec.mockReturnValue(new Promise(() => {}));
     const { container } = renderWithProviders(<RamschPage />);

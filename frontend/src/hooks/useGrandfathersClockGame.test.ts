@@ -25,6 +25,7 @@ const baseState: GrandfathersClockResponse = {
   phase: 0,
   moveCount: 0,
   canUndo: false,
+  canRedo: false,
   isStalemate: false,
   message: '',
 };
@@ -42,6 +43,17 @@ describe('useGrandfathersClockGame', () => {
   it('calls reset on mount', async () => {
     renderHook(() => useGrandfathersClockGame(), { wrapper: makeWrapper() });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('dispatches redo and clears the current selection and hint', async () => {
+    const { result } = renderHook(() => useGrandfathersClockGame(), { wrapper: makeWrapper() });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    act(() => result.current.handleSelectSource({ zone: 'tableau', col: 0 }));
+    mockExec.mockClear();
+    act(() => result.current.handleRedo());
+    await flushPendingDispatch();
+    expect(mockExec).toHaveBeenCalledWith('redo');
+    expect(result.current.selectedSource).toBeNull();
   });
 
   it('forwards the simple commands', async () => {

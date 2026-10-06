@@ -797,11 +797,12 @@ describe('WaspPage autocomplete readiness', () => {
   const button = () => screen.getByTestId('autocomplete-button');
 
   it('stays disabled with a reason while a card is still face down', async () => {
-    mockExec.mockResolvedValue(playingState); // 先頭2列に裏カードがある
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0 }); // 先頭2列に裏カードがある
     renderWithProviders(<WaspPage />);
     await waitFor(() => expect(button()).toBeInTheDocument());
     expect(button()).toBeDisabled();
     expect(button()).toHaveAttribute('title', expect.stringContaining('表向き'));
+    expect(button()).toHaveAttribute('title', expect.not.stringContaining('ストック'));
     expect(button().className).not.toContain('animate-pulse');
   });
 
@@ -817,7 +818,18 @@ describe('WaspPage autocomplete readiness', () => {
     renderWithProviders(<WaspPage />);
     await waitFor(() => expect(button()).toBeInTheDocument());
     expect(button()).toBeDisabled();
+    expect(button()).toHaveAttribute('title', expect.stringContaining('ストック'));
+    expect(button()).toHaveAttribute('title', expect.not.stringContaining('表向き'));
     expect(button().className).not.toContain('animate-pulse');
+  });
+
+  it('explains both unmet conditions when stock and face-down cards remain', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(button()).toBeInTheDocument());
+    expect(button()).toBeDisabled();
+    expect(button()).toHaveAttribute('title', expect.stringContaining('ストック'));
+    expect(button()).toHaveAttribute('title', expect.stringContaining('表向き'));
   });
 
   it('pulses once every card is face up', async () => {

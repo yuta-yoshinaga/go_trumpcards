@@ -24,6 +24,7 @@
   "score": "{{count}}点",
   "currentTrick": "現在のトリック",
   "players": "プレイヤー",
+  "dealer": "ディーラー",
   "you": "あなた",
   "cpu": "CPU {{id}}",
   "leader": "リーダー",

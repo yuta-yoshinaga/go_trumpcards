@@ -21,12 +21,11 @@
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",
   "noHint": "No hint available",
-  "hintAvailable": "Hint available",
-  "hintType": {
-    "pair": "Remove pyramid pair",
-    "king": "Remove pyramid King",
-    "waste_pair": "Remove waste + pyramid pair",
-    "waste_king": "Remove waste King"
+  "hintAnnouncement": {
+    "pair": "Hint: remove the pyramid pair at row {{row1}}, column {{col1}} and row {{row2}}, column {{col2}}",
+    "king": "Hint: remove the pyramid King at row {{row1}}, column {{col1}}",
+    "waste_pair": "Hint: pair the waste with the pyramid card at row {{row1}}, column {{col1}}",
+    "waste_king": "Hint: remove the King from the waste"
   },
   "tutorial": {
     "pyramid": "This is the pyramid. Click exposed cards to select them.",

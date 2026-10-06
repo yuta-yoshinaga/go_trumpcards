@@ -62,13 +62,33 @@ func (p *CribbageWebPresenter) Output(g interfaces.CribbageGame, lastErr error) 
 	details := g.GetHandScoreDetails()
 	for i, d := range details {
 		if d != nil {
+			toGroups := func(groups [][]*domain.Card) [][]*controller.WebOutputCard {
+				out := make([][]*controller.WebOutputCard, 0, len(groups))
+				for _, group := range groups {
+					cards := make([]*controller.WebOutputCard, 0, len(group))
+					for _, card := range group {
+						cards = append(cards, cardToOutput(card))
+					}
+					out = append(out, cards)
+				}
+				return out
+			}
+			toCards := func(cards []*domain.Card) []*controller.WebOutputCard {
+				out := make([]*controller.WebOutputCard, 0, len(cards))
+				for _, card := range cards {
+					out = append(out, cardToOutput(card))
+				}
+				return out
+			}
 			resObj.HandScoreDetails[i] = &controller.CribbageWebOutputScoreDetail{
-				Fifteens: d.Fifteens,
-				Pairs:    d.Pairs,
-				Runs:     d.Runs,
-				Flush:    d.Flush,
-				Nobs:     d.Nobs,
-				Total:    d.Total,
+				Fifteens:     d.Fifteens,
+				Pairs:        d.Pairs,
+				Runs:         d.Runs,
+				Flush:        d.Flush,
+				Nobs:         d.Nobs,
+				Total:        d.Total,
+				FifteenCards: toGroups(d.FifteenCards), PairCards: toGroups(d.PairCards), RunCards: toGroups(d.RunCards),
+				FlushCards: toCards(d.FlushCards), NobsCards: toCards(d.NobsCards),
 			}
 		}
 	}

@@ -12,24 +12,34 @@ const CribbageJackValue = 11
 
 // CribbageScoreDetail クリベッジのスコア内訳
 type CribbageScoreDetail struct {
-	Fifteens int
-	Pairs    int
-	Runs     int
-	Flush    int
-	Nobs     int
-	Total    int
-	Cards    []*Card // スコア対象カード (hand + starter)
+	Fifteens     int
+	Pairs        int
+	Runs         int
+	Flush        int
+	Nobs         int
+	Total        int
+	Cards        []*Card // スコア対象カード (hand + starter)
+	FifteenCards [][]*Card
+	PairCards    [][]*Card
+	RunCards     [][]*Card
+	FlushCards   []*Card
+	NobsCards    []*Card
 }
 
 // cribbageScoreDetailJSON is the JSON wire format for CribbageScoreDetail.
 type cribbageScoreDetailJSON struct {
-	Fifteens int     `json:"f"`
-	Pairs    int     `json:"p"`
-	Runs     int     `json:"r"`
-	Flush    int     `json:"fl"`
-	Nobs     int     `json:"n"`
-	Total    int     `json:"t"`
-	Cards    []*Card `json:"cs"`
+	Fifteens     int       `json:"f"`
+	Pairs        int       `json:"p"`
+	Runs         int       `json:"r"`
+	Flush        int       `json:"fl"`
+	Nobs         int       `json:"n"`
+	Total        int       `json:"t"`
+	Cards        []*Card   `json:"cs"`
+	FifteenCards [][]*Card `json:"fc,omitempty"`
+	PairCards    [][]*Card `json:"pc,omitempty"`
+	RunCards     [][]*Card `json:"rc,omitempty"`
+	FlushCards   []*Card   `json:"flc,omitempty"`
+	NobsCards    []*Card   `json:"nc,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -50,6 +60,8 @@ func (d *CribbageScoreDetail) UnmarshalJSON(data []byte) error {
 	d.Nobs = j.Nobs
 	d.Total = j.Total
 	d.Cards = j.Cards
+	d.FifteenCards, d.PairCards, d.RunCards = j.FifteenCards, j.PairCards, j.RunCards
+	d.FlushCards, d.NobsCards = j.FlushCards, j.NobsCards
 	return nil
 }
 
@@ -181,15 +193,106 @@ func CribbageScoreHand(hand []*Card, starter *Card, isCrib bool) CribbageScoreDe
 	}
 
 	detail := CribbageScoreDetail{
-		Fifteens: CribbageScoreFifteens(allCards),
-		Pairs:    CribbageScorePairs(allCards),
-		Runs:     CribbageScoreRuns(allCards),
-		Flush:    CribbageScoreFlush(hand, starter, isCrib),
-		Nobs:     CribbageScoreNobs(hand, starter),
-		Cards:    allCards,
+		Flush:        CribbageScoreFlush(hand, starter, isCrib),
+		Nobs:         CribbageScoreNobs(hand, starter),
+		Cards:        allCards,
+		FifteenCards: cribbageFifteenCombinations(allCards),
+		PairCards:    cribbagePairCombinations(allCards),
+		RunCards:     cribbageRunCombinations(allCards),
 	}
+	if detail.Flush > 0 {
+		detail.FlushCards = append([]*Card(nil), hand...)
+		if starter != nil && detail.Flush == 5 {
+			detail.FlushCards = append(detail.FlushCards, starter)
+		}
+	}
+	if detail.Nobs > 0 {
+		for _, card := range hand {
+			if card.GetValue() == CribbageJackValue && card.GetDesign() == starter.GetDesign() {
+				detail.NobsCards = []*Card{card, starter}
+				break
+			}
+		}
+	}
+	detail.Fifteens = CribbageScoreFifteens(allCards)
+	detail.Pairs = CribbageScorePairs(allCards)
+	detail.Runs = CribbageScoreRuns(allCards)
 	detail.Total = detail.Fifteens + detail.Pairs + detail.Runs + detail.Flush + detail.Nobs
 	return detail
+}
+
+func cribbageFifteenCombinations(cards []*Card) [][]*Card {
+	var out [][]*Card
+	for mask := 1; mask < 1<<len(cards); mask++ {
+		sum := 0
+		var combo []*Card
+		for i, c := range cards {
+			if mask&(1<<i) != 0 {
+				sum += cribbageCardValue(c)
+				combo = append(combo, c)
+			}
+		}
+		if sum == 15 {
+			out = append(out, combo)
+		}
+	}
+	return out
+}
+
+func cribbagePairCombinations(cards []*Card) [][]*Card {
+	var out [][]*Card
+	for i := range cards {
+		for j := i + 1; j < len(cards); j++ {
+			if cards[i].GetValue() == cards[j].GetValue() {
+				out = append(out, []*Card{cards[i], cards[j]})
+			}
+		}
+	}
+	return out
+}
+
+func cribbageRunCombinations(cards []*Card) [][]*Card {
+	var candidates [][]*Card
+	max := 0
+	for mask := 1; mask < 1<<len(cards); mask++ {
+		var combo []*Card
+		ranks := make([]int, 0)
+		seen := map[int]bool{}
+		valid := true
+		for i, c := range cards {
+			if mask&(1<<i) != 0 {
+				v := c.GetValue()
+				if seen[v] {
+					valid = false
+					break
+				}
+				seen[v] = true
+				combo = append(combo, c)
+				ranks = append(ranks, v)
+			}
+		}
+		if !valid || len(combo) < 3 {
+			continue
+		}
+		sortInts(ranks)
+		for i := 1; i < len(ranks); i++ {
+			if ranks[i] != ranks[i-1]+1 {
+				valid = false
+				break
+			}
+		}
+		if !valid {
+			continue
+		}
+		if len(combo) > max {
+			max = len(combo)
+			candidates = nil
+		}
+		if len(combo) == max {
+			candidates = append(candidates, combo)
+		}
+	}
+	return candidates
 }
 
 // CribbageScorePegging ペギングのスコアを計算する

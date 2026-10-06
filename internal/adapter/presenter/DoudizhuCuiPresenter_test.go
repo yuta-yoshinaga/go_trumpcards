@@ -18,6 +18,7 @@ import (
 func TestDoudizhuCuiPresenter_Output_BidPhase(t *testing.T) {
 	dg := newDoudizhuForPresenter()
 	dg.Reset()
+	dg.SetKittyCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
 	// Put the human on turn so the bid prompt renders.
 	humanIdx := 0
 	for i := 0; i < dg.GetPlayerCnt(); i++ {
@@ -35,13 +36,19 @@ func TestDoudizhuCuiPresenter_Output_BidPhase(t *testing.T) {
 	bidderPrefix := strings.SplitN(i18n.T("doudizhu.currentBidder"), "{{", 2)[0]
 	assert.Contains(t, out, bidderPrefix)
 	assert.Contains(t, out, i18n.T("doudizhu.promptBid"))
+	assert.NotContains(t, out, i18n.T("doudizhu.kittyCards"), "kitty cards must remain hidden during bidding")
 }
 
 func TestDoudizhuCuiPresenter_Output_PlayPhase(t *testing.T) {
 	dg := newDoudizhuForPresenter()
 	dg.SetPhase(domain.DoudizhuPhasePlay)
 	dg.SetLandlordIdx(0)
-	dg.SetCurrentTurn(0)
+	for idx := 0; idx < domain.DoudizhuPlayerCnt; idx++ {
+		if dg.GetPlayer(idx).GetIsHuman() {
+			dg.SetCurrentTurn(idx)
+			break
+		}
+	}
 	dg.SetKittyCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
 	dg.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
 	dg.SetTableCombo(&domain.DoudizhuCombo{Type: domain.DoudizhuComboSingle, Rank: 10, Length: 1, Cards: []*domain.Card{domain.NewCard(domain.CardDesignHeart, 10, false)}})
@@ -49,6 +56,7 @@ func TestDoudizhuCuiPresenter_Output_PlayPhase(t *testing.T) {
 	p := new(presenter.DoudizhuCuiPresenter)
 	out := p.Output(dg, nil)
 	assert.NotEmpty(t, out)
+	assert.Contains(t, out, i18n.T("doudizhu.kittyCards"), "kitty cards become visible after the landlord is decided")
 }
 
 // 最終得点の倍率はビッド額とボム回数で決まるのに、CUI はどちらも終局まで
@@ -59,7 +67,12 @@ func TestDoudizhuCuiPresenter_ShowsTheBidAndBombCountDuringPlay(t *testing.T) {
 	dg := newDoudizhuForPresenter()
 	dg.SetPhase(domain.DoudizhuPhasePlay)
 	dg.SetLandlordIdx(0)
-	dg.SetCurrentTurn(0)
+	for idx := 0; idx < domain.DoudizhuPlayerCnt; idx++ {
+		if dg.GetPlayer(idx).GetIsHuman() {
+			dg.SetCurrentTurn(idx)
+			break
+		}
+	}
 	dg.SetKittyCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
 
 	p := new(presenter.DoudizhuCuiPresenter)
@@ -114,9 +127,16 @@ func TestDoudizhuCuiPresenter_Output_Error(t *testing.T) {
 func TestDoudizhuCuiPresenter_ActionLogOutput(t *testing.T) {
 	dg := newDoudizhuForPresenter()
 	dg.Reset()
+	for idx := 0; idx < domain.DoudizhuPlayerCnt; idx++ {
+		if dg.GetPlayer(idx).GetIsHuman() {
+			dg.SetCurrentTurn(idx)
+			break
+		}
+	}
+	assert.NoError(t, dg.PlayerBid(1))
 
 	p := new(presenter.DoudizhuCuiPresenter)
-	assert.NotEmpty(t, p.ActionLogOutput(dg))
+	assert.Contains(t, p.ActionLogOutput(dg), "T1")
 }
 
 // #5617: 地主の行だけ `Player %d` を直接組み立てており、日本語ロケールでも

@@ -36,7 +36,7 @@ import { isRequestedHint } from '../utils/hintRequest';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { buildWattenStakeHistory, WATTEN_BASE_STAKE } from '../utils/wattenStakeHistory';
-import { wattenTrumpCards } from '../utils/wattenTrumps';
+import { wattenTrumpCards, wattenTrumpInfo } from '../utils/wattenTrumps';
 
 /** Watten tutorial step definitions. */
 const WATTEN_TUTORIAL_STEPS: TutorialStep[] = [
@@ -221,6 +221,31 @@ function WattenPageContent() {
   const effectiveSuit = selectedSuit ?? state.criticalSuit;
   const humanTrumps = humanPlayer ? wattenTrumpCards(humanPlayer.cards, effectiveRank, effectiveSuit) : [];
   const trumpIndices = humanTrumps.map((tc) => tc.index);
+
+  const leadCard = state.currentTrick[0]?.card;
+  const leadIsTrump = leadCard != null && wattenTrumpInfo(leadCard, effectiveRank, effectiveSuit) !== null;
+  const followSuit = leadCard?.design;
+  const canFollowTrump =
+    humanPlayer != null &&
+    leadIsTrump &&
+    humanPlayer.cards.some((card) => wattenTrumpInfo(card, effectiveRank, effectiveSuit) !== null);
+  const canFollowSuit =
+    humanPlayer != null &&
+    !leadIsTrump &&
+    followSuit != null &&
+    humanPlayer.cards.some(
+      (card) => card.design === followSuit && wattenTrumpInfo(card, effectiveRank, effectiveSuit) === null,
+    );
+  const legalIndices =
+    canPlay && humanPlayer
+      ? humanPlayer.cards.flatMap((card, idx) => {
+          const isTrump = wattenTrumpInfo(card, effectiveRank, effectiveSuit) !== null;
+          const legal = canFollowTrump ? isTrump : canFollowSuit ? !isTrump && card.design === followSuit : true;
+          return legal ? [idx] : [];
+        })
+      : undefined;
+  const restrictedReason =
+    canPlay && canFollowTrump ? t('mustFollowTrump') : canPlay && canFollowSuit ? t('mustFollowSuit') : undefined;
 
   const handleManualReset = () => {
     hideActionLog();
@@ -482,6 +507,12 @@ function WattenPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="watten"
+                validIndices={legalIndices}
+                legalIndices={legalIndices}
+                restrictedTooltip={restrictedReason}
+                cardStatusFor={(idx) =>
+                  legalIndices != null && !legalIndices.includes(idx) ? restrictedReason : undefined
+                }
                 trumpIndices={trumpIndices.length > 0 ? trumpIndices : undefined}
                 trumpTitle={t('trumpRing')}
                 trumpAccessibleLabel={t('trumpCardDescription')}

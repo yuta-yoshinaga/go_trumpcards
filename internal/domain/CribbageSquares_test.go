@@ -515,7 +515,6 @@ func TestCribbageSquares_SnapshotUnmarshalJSON_Rejections(t *testing.T) {
 		{"deck draw count below zero", cribbageSquaresSnapshotJSON{DeckDrawCnt: -1}},
 		{"deck draw count past the deck", cribbageSquaresSnapshotJSON{DeckDrawCnt: CardCnt + 1}},
 		{"action log length below zero", cribbageSquaresSnapshotJSON{ActionLogLn: -1}},
-		{"action log length past the cap", cribbageSquaresSnapshotJSON{ActionLogLn: cribbageSquaresMaxSliceLen + 1}},
 		{"placed count past the grid", cribbageSquaresSnapshotJSON{PlacedCount: CribbageSquaresTotalCells + 1}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

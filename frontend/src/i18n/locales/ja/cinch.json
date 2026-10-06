@@ -33,6 +33,8 @@
   "bidStrength": {
     "range": "手札の推定獲得点: {{min}}〜{{max}}点（切り札次第の目安）",
     "best": "最有力の切り札: {{symbol}} {{suit}}（{{points}}点分を保持）",
+    "suitEstimate": "得点札 {{points}}点・切り札 {{trumps}}枚・支配力 {{control}}",
+    "controlMethod": "支配力の目安 = 切り札の枚数 + A/K/Q/J/10各1。トリック獲得を保証するものではありません。",
     "legendTitle": "14点の構成",
     "legend": "High(A)=1 / King(K)=1 / Ten(10)=1 / Jack(J)=1 / Right Pedro(切5)=5 / Left Pedro(同色5)=5",
     "note": "あくまで目安です。実際の獲得点は切り札宣言後のプレイ次第で変わります。"

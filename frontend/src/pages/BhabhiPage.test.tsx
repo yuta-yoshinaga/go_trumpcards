@@ -365,4 +365,15 @@ describe('BhabhiPage long pile layout', () => {
     expect(row.className).toContain('flex-wrap');
     expect(screen.getAllByTestId('animated-card')).toHaveLength(24);
   });
+
+  it('keeps repeated cards associated with the player who played them', async () => {
+    const firstPile = [
+      { playerIdx: 1, card: card('SPADE', 1) },
+      { playerIdx: 1, card: card('HEART', 2) },
+    ];
+    mockExec.mockResolvedValue(makeState({ pile: firstPile } as unknown as Partial<BhabhiResponse>));
+    renderWithProviders(<BhabhiPage />);
+    expect(await screen.findByRole('img', { name: 'CPU 1が出した♠ A' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'CPU 1が出した♥ 2' })).toBeInTheDocument();
+  });
 });

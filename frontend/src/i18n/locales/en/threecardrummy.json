@@ -48,6 +48,11 @@
     "title": "Settings"
   },
   "betGuide": "Set the ante and any low bonus, then bet",
+  "betSummary": {
+    "total": "Total: {{amount}}",
+    "remaining": "Chips remaining: {{amount}}",
+    "shortfall": "Chips short: {{amount}}"
+  },
   "foldConsequence": "Folding loses the ante ({{ante}}). The independent Low Bonus ({{lowBonus}}) is still evaluated.",
   "foldConsequenceNoLowBonus": "Folding loses the ante ({{ante}}).",
   "scoringNote": "The three cards total as low as possible; 0 is best. Face cards are 10, an ace is 1. Three of a rank, or three in suit and sequence, count 0.",

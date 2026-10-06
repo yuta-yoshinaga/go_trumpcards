@@ -153,6 +153,7 @@
     "win": "Win",
     "lose": "Loss",
     "push": "Push",
-    "chips": "chips"
+    "chips": "chips",
+    "roundNetChange": "Round net: {{amount}} chips"
   }
 }

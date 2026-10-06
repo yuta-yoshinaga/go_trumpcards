@@ -296,6 +296,25 @@ describe('EuchrePage', () => {
     });
   });
 
+  it('clears go alone after calling trump and sends false when unchecked', async () => {
+    mockExec.mockResolvedValue(callTrumpPhaseState);
+    renderWithProviders(<EuchrePage />);
+    const checkbox = await screen.findByLabelText('一人で勝負');
+
+    fireEvent.click(checkbox);
+    expect(checkbox).toBeChecked();
+    mockExec.mockClear();
+    const nextRoundCallTrumpState = { ...callTrumpPhaseState, roundNumber: 2 };
+    mockExec.mockResolvedValue(nextRoundCallTrumpState);
+    fireEvent.click(screen.getByRole('button', { name: '♠ スペード' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('calltrump', undefined, 1, true));
+    expect(await screen.findByLabelText('一人で勝負')).not.toBeChecked();
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '♠ スペード' }));
+    await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('calltrump', undefined, 1, false));
+  });
+
   it('shows the turned-down suit as a disabled, explained button', async () => {
     mockExec.mockResolvedValue(callTrumpPhaseState); // faceUpCard is HEART
     renderWithProviders(<EuchrePage />);
@@ -723,7 +742,7 @@ describe('EuchrePage', () => {
     fireEvent.click(screen.getByText('\u68cb\u8b5c\u3092\u898b\u308b'));
 
     await waitFor(() => expect(actionLogApi.euchre).toHaveBeenCalledTimes(1));
-    expect(screen.getByText('\u68cb\u8b5c')).toBeInTheDocument();
+    expect(await screen.findByText('\u68cb\u8b5c')).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('\u9589\u3058\u308b'));
     await waitFor(() => expect(screen.queryByText(/^\u68cb\u8b5c$/)).not.toBeInTheDocument());

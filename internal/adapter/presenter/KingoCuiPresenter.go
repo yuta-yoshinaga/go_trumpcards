@@ -97,6 +97,7 @@ func (cp *KingoCuiPresenter) writeResult(sb *strings.Builder, c interfaces.Kingo
 			break
 		}
 		if r.WonAmount == 0 {
+			sb.WriteString(i18n.Tf("kingo.noChangeLine", "name", players[i].GetName()) + "\n")
 			continue
 		}
 		line := i18n.Tf("kingo.wonLine",

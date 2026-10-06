@@ -67,6 +67,9 @@
     "total": "合計ベット（アンテ×2＋トリップス）",
     "overBalance": "合計ベット額がチップ残高を超えています"
   },
+  "currentBets": {
+    "title": "プレイ中のベット内訳"
+  },
   "preflopEval": {
     "strong": "評価: 強い手札 → 4× 推奨",
     "moderate": "評価: 微妙な手札 → 3× 推奨",

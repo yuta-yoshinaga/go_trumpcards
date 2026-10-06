@@ -234,7 +234,7 @@ function BakersDozenPageContent() {
   const destinationAnnouncement = previewedCard
     ? t('destinationAnnouncement', {
         card: cardAlt(previewedCard),
-        tableau: [...legalTargets.tableau].map((col) => col + 1).join(t('listSeparator')) || t('noDestination'),
+        tableau: [...legalTargets.tableau].join(t('listSeparator')) || t('noDestination'),
         foundation:
           [...legalTargets.foundation].map((idx) => FOUNDATION_SUITS[idx]).join(t('listSeparator')) ||
           t('noDestination'),
@@ -424,7 +424,7 @@ function BakersDozenPageContent() {
                                       }
                                     }}
                                     disabled={!isPlaying || loading || (!isTop && !selectedSource)}
-                                    aria-label={cardAlt(tc.card)}
+                                    aria-label={t('tableauCardAriaLabel', { card: cardAlt(tc.card), col: colIdx })}
                                     aria-pressed={isSelected}
                                     draggable={isPlaying && !loading && isTop}
                                     onDragStart={dnd.handleDragStart(cardZone)}

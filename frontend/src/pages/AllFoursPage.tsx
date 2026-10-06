@@ -286,24 +286,39 @@ function AllFoursPageContent() {
                 data-provisional={state.roundBreakdown.provisional ? 'true' : undefined}
                 className="border border-ds-border-subtle rounded p-2 mb-3 text-ds-text-primary"
               >
-                <div className="text-xs uppercase opacity-60 mb-1">
-                  {t('breakdown.title')}
-                  {/* **暫定値を確定値として見せない (#4771)。**まだ出ていない
-                      トランプで High も Low も引っくり返る。 */}
-                  {state.roundBreakdown.provisional && (
-                    <span className="ml-2 normal-case text-ds-warning" data-testid="af-breakdown-provisional">
-                      {t('breakdown.provisional')}
-                    </span>
-                  )}
-                </div>
                 <div className="overflow-x-auto">
                   <table className="text-sm w-full border-collapse">
+                    <caption className="caption-top text-left text-xs uppercase opacity-60 mb-1">
+                      {t('breakdown.title')}
+                      {/* **暫定値を確定値として見せない (#4771)。**まだ出ていない
+                          トランプで High も Low も引っくり返る。 */}
+                      {state.roundBreakdown.provisional && (
+                        <span className="ml-2 normal-case text-ds-warning" data-testid="af-breakdown-provisional">
+                          {t('breakdown.provisional')}
+                        </span>
+                      )}
+                    </caption>
+                    <thead>
+                      <tr className="border-b border-white/20">
+                        <th scope="col" className="text-left p-1">
+                          {t('breakdown.item')}
+                        </th>
+                        <th scope="col" className="text-left p-1">
+                          {t('breakdown.winner')}
+                        </th>
+                        <th scope="col" className="text-left p-1">
+                          {t('breakdown.detail')}
+                        </th>
+                      </tr>
+                    </thead>
                     <tbody>
                       {(['high', 'low'] as const).map((k) => {
                         const award = state.roundBreakdown?.[k];
                         return (
                           <tr key={k} className="border-b border-white/10">
-                            <td className="p-1 opacity-80 whitespace-nowrap">{t(`breakdown.${k}`)}</td>
+                            <th scope="row" className="text-left font-normal p-1 opacity-80 whitespace-nowrap">
+                              {t(`breakdown.${k}`)}
+                            </th>
                             <td className="p-1">
                               {!award || award.winnerIdx < 0
                                 ? t('breakdown.none')
@@ -316,7 +331,9 @@ function AllFoursPageContent() {
                         );
                       })}
                       <tr className="border-b border-white/10">
-                        <td className="p-1 opacity-80 whitespace-nowrap">{t('breakdown.jack')}</td>
+                        <th scope="row" className="text-left font-normal p-1 opacity-80 whitespace-nowrap">
+                          {t('breakdown.jack')}
+                        </th>
                         <td className="p-1" colSpan={2}>
                           {state.roundBreakdown.jack.winnerIdx < 0
                             ? t('breakdown.none')
@@ -324,7 +341,9 @@ function AllFoursPageContent() {
                         </td>
                       </tr>
                       <tr>
-                        <td className="p-1 opacity-80 whitespace-nowrap">{t('breakdown.game')}</td>
+                        <th scope="row" className="text-left font-normal p-1 opacity-80 whitespace-nowrap">
+                          {t('breakdown.game')}
+                        </th>
                         <td className="p-1" colSpan={2}>
                           {state.roundBreakdown.game.winnerIdx < 0
                             ? t('breakdown.none')

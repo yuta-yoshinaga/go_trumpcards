@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { indianRummyApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
@@ -121,6 +121,7 @@ function IndianRummyPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('indianrummy', state);
   const { cardWidth } = useCardDimensions();
+  const [keyboardFocusIndex, setKeyboardFocusIndex] = useState<number | null>(null);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('indianrummy');
   const cliConfig: CliGameConfig<IndianRummyResponse, Parameters<typeof indianRummyApi.exec>> = useMemo(
@@ -149,6 +150,8 @@ function IndianRummyPageContent() {
     onConfirm: confirmAction,
     onClear: clearSelection,
     enabled: !!isHumanTurnForKbd && !loading,
+    arrowSelection: true,
+    onFocusIndexChange: setKeyboardFocusIndex,
   });
 
   const phaseNames = usePhaseNames('indianrummy', INDIANRUMMY_PHASE_KEYS);
@@ -410,7 +413,7 @@ function IndianRummyPageContent() {
                     aria-pressed={selectedCardIndices.includes(idx)}
                     className={`relative transition-transform ${focusRingCard} ${
                       isWildCard(card) ? 'ring-2 ring-ds-info' : ''
-                    }`}
+                    } ${keyboardFocusIndex === idx ? 'outline-2 outline-offset-2 outline-ds-accent' : ''}`}
                     style={{
                       background: 'none',
                       padding: 0,
@@ -542,7 +545,7 @@ function IndianRummyPageContent() {
                 dataTutorial="ir-reset-button"
               />
             </div>
-            <CardNavShortcutsPanel data-testid="indian-rummy-kbd-shortcuts" />
+            <CardNavShortcutsPanel arrowSelection data-testid="indian-rummy-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

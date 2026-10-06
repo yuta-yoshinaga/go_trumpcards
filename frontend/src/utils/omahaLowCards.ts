@@ -6,6 +6,46 @@ export interface LowCardIndexSets {
   loBoardSet: Set<number>;
 }
 
+/** Indices of the strongest qualifying Omaha low available from the current cards. */
+export interface OmahaLowCandidate {
+  holeIdx: number[];
+  boardIdx: number[];
+  /** Distinct low ranks in descending order, with ace represented as 1. */
+  ranks: number[];
+}
+
+/** Finds the strongest 8-or-better hand using exactly two hole and three board cards. */
+export function omahaLowCandidate(hole: readonly Card[], board: readonly Card[]): OmahaLowCandidate | null {
+  if (hole.length < 2 || board.length < 3) return null;
+  let best: OmahaLowCandidate | null = null;
+  let bestRanks: number[] = [];
+  for (let h1 = 0; h1 < hole.length - 1; h1 += 1) {
+    for (let h2 = h1 + 1; h2 < hole.length; h2 += 1) {
+      for (let b1 = 0; b1 < board.length - 2; b1 += 1) {
+        for (let b2 = b1 + 1; b2 < board.length - 1; b2 += 1) {
+          for (let b3 = b2 + 1; b3 < board.length; b3 += 1) {
+            const values = [hole[h1].value, hole[h2].value, board[b1].value, board[b2].value, board[b3].value];
+            if (values.some((value) => value < 1 || value > 8) || new Set(values).size !== 5) continue;
+            const ranks = [...values].sort((a, b) => b - a);
+            if (best && !isStrongerLow(ranks, bestRanks)) continue;
+            bestRanks = ranks;
+            best = { holeIdx: [h1, h2], boardIdx: [b1, b2, b3], ranks };
+          }
+        }
+      }
+    }
+  }
+  return best;
+}
+
+/** Compares ace-to-five low ranks, where the lower high card wins. */
+function isStrongerLow(candidate: number[], current: number[]): boolean {
+  for (let i = 0; i < candidate.length; i += 1) {
+    if (candidate[i] !== current[i]) return candidate[i] < current[i];
+  }
+  return false;
+}
+
 /**
  * Whether the community board can still yield a qualifying Omaha Hi-Lo (8-or-better) low.
  *

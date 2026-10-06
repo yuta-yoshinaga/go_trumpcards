@@ -55,6 +55,10 @@
   "skipMeldButton": "Skip",
   "discardButton": "Discard",
   "goOutButton": "Go out",
+  "listSeparator": ", ",
+  "goOutRequirementPozzetto": "take the pozzetto",
+  "goOutRequirementBiriba": "complete a biriba",
+  "goOutReason": "To go out, you must {{requirements}}.",
   "nextRound": "Next round",
   "selectPair": "Select two natural cards matching the top discard",
   "drawDiscardReason": {

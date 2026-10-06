@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { heartsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
@@ -128,6 +128,18 @@ function HeartsPageContent() {
     hintLoading,
     handleHint,
   } = useHeartsGame();
+  const previousHeartsBroken = useRef<boolean | null>(null);
+  const [announceHeartsBroken, setAnnounceHeartsBroken] = useState(false);
+
+  useEffect(() => {
+    if (!state) return;
+    if (previousHeartsBroken.current !== null && !previousHeartsBroken.current && state.heartsBroken) {
+      setAnnounceHeartsBroken(true);
+    } else if (!state.heartsBroken) {
+      setAnnounceHeartsBroken(false);
+    }
+    previousHeartsBroken.current = state.heartsBroken;
+  }, [state]);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('hearts');
@@ -487,6 +499,9 @@ function HeartsPageContent() {
                   selected: selectedCardIndices.length,
                   remaining: 3 - selectedCardIndices.length,
                 })}
+            </div>
+            <div data-testid="hearts-broken-live" className="sr-only" role="status" aria-live="polite">
+              {announceHeartsBroken && t('heartsBrokenAnnouncement')}
             </div>
 
             {/* Action log */}

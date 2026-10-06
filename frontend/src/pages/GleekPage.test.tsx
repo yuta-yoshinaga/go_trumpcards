@@ -76,6 +76,22 @@ describe('GleekPage', () => {
     expect(screen.getByText('落札者')).toBeInTheDocument();
   });
 
+  it('shows the turn-up card and its role when one is present', async () => {
+    renderWithProviders(<GleekPage />);
+    expect(await screen.findByAltText('♥ 4')).toBeInTheDocument();
+    expect(screen.getByText('表向き札: ♥ 4')).toBeInTheDocument();
+    expect(
+      screen.getByText('この札で切り札が決まります。ストックの1枚ですが、落札者の手札には入らず場に残ります。'),
+    ).toBeInTheDocument();
+  });
+
+  it('safely omits the turn-up card when it is not set', async () => {
+    mockExec.mockResolvedValue(makeGleekState({ turnUp: null }));
+    renderWithProviders(<GleekPage />);
+    await screen.findByText('切り札: ハート');
+    expect(screen.queryByTestId('gleek-turn-up')).not.toBeInTheDocument();
+  });
+
   it('marks the CPU bidder row during the bidding phase', async () => {
     mockExec.mockResolvedValue(
       makeGleekState({

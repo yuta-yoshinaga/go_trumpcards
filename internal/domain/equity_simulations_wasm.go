@@ -6,8 +6,9 @@ package domain
 // ネイティブビルドでは2000回だが、Workers の CPU 時間制限 (10-30ms) では
 // 重いモンテカルロシミュレーションがタイムアウトするため200回に抑える。
 const (
-	holdemEquitySimulations    = 200
-	omahaEquitySimulations     = 200
-	omahaHiLoEquitySimulations = 100
-	shortDeckEquitySimulations = 200
+	holdemEquitySimulations            = 200
+	omahaEquitySimulations             = 200
+	omahaHiLoEquitySimulations         = 100
+	shortDeckEquitySimulations         = 200
+	casinoHoldemCallWinRateSimulations = 200
 )

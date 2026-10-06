@@ -71,7 +71,8 @@
     "nobs": "Nobs",
     "total": "Total",
     "caption": "Show scoring breakdown",
-    "subject": "Subject"
+    "subject": "Subject",
+    "evidence": "{{category}}: {{cards}}"
   },
   "handScoreLabels": {
     "you": "Your Hand",

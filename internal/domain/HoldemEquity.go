@@ -34,7 +34,54 @@ func CalcEquity(humanCards, communityCards []*Card, activePlayers, simulations i
 		evalHuman:            evalSevenCardHand,
 		evalOpponent:         evalSevenCardHand,
 		compareHighCards:     compareHighCardsSlice,
+		splitTies:            true,
 	})
+}
+
+// CasinoHoldemCallWinRate estimates the player's share of completed call outcomes.
+func CasinoHoldemCallWinRate(playerHole, community []*Card, simulations int, rng *rand.Rand) float64 {
+	if simulations <= 0 || len(playerHole) != 2 || len(community) != 3 {
+		return 0
+	}
+	used := make(map[[2]int]bool, 9)
+	for _, c := range append(append([]*Card{}, playerHole...), community...) {
+		if c != nil {
+			used[[2]int{c.GetDesign(), c.GetValue()}] = true
+		}
+	}
+	deck := make([]*Card, 0, CardCnt-5)
+	for design := CardDesignSpade; design <= CardDesignDiamond; design++ {
+		for value := 1; value <= CardValueMax; value++ {
+			if !used[[2]int{design, value}] {
+				deck = append(deck, NewCard(design, value, false))
+			}
+		}
+	}
+	twins := 0.0
+	for i := 0; i < simulations; i++ {
+		shuffleCards(deck, rng)
+		board := append(append([]*Card{}, community...), deck[:2]...)
+		pr, pb := evalBestFromSeven(append(append([]*Card{}, playerHole...), board...))
+		dr, db := evalBestFromSeven(append(append([]*Card{}, deck[2:4]...), board...))
+		if !casinoHoldemDealerQualifies(dr, db) {
+			twins++
+			continue
+		}
+		cmp := 0
+		if pr > dr {
+			cmp = 1
+		} else if pr < dr {
+			cmp = -1
+		} else {
+			cmp = compareHighCardsSlice(pb, db)
+		}
+		if cmp > 0 {
+			twins++
+		} else if cmp == 0 {
+			twins += 0.5
+		}
+	}
+	return twins / float64(simulations)
 }
 
 // CalcPotOdds ポットオッズを計算 (パーセンテージ 0-100)

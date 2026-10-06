@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
@@ -251,6 +252,42 @@ func TestTuSacWebPresenter_ErrorAndHint(t *testing.T) {
 	assert.Contains(t, []string{"meld", "discard"}, hint.Action)
 	assert.NotEmpty(t, hint.Reason)
 	assert.NotNil(t, hint.Indexes, "薦める札が null で返っている")
+}
+
+func TestTuSacWebPresenter_ServerHintOnlyForHumanTurn(t *testing.T) {
+	cp := new(TuSacWebPresenter)
+	g := newTuSacForPresenter(t)
+	var human struct {
+		ServerHint *domain.TuSacHint `json:"serverHint"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(cp.Output(g, nil)), &human))
+	require.NotNil(t, human.ServerHint)
+	assert.Equal(t, "draw", human.ServerHint.Action)
+
+	// A CPU-turn mock supplies a complete normal state response but must not
+	// receive GetHint: server guidance is private to the human player.
+	m := new(interfaces.MockTuSacGame)
+	m.On("GetPhase").Return(domain.TuSacPhaseDraw).Maybe()
+	m.On("GetPlayers").Return([]*domain.TuSacPlayer{}).Maybe()
+	m.On("GetResults").Return([]domain.TuSacResult{}).Maybe()
+	m.On("GetDiscardTop").Return((*domain.Card)(nil)).Maybe()
+	m.On("GetDiscardCount").Return(0).Maybe()
+	m.On("GetStockCount").Return(0).Maybe()
+	m.On("GetTurnSeat").Return(0).Maybe()
+	m.On("HumanSeat").Return(0).Maybe()
+	m.On("IsHumanTurn").Return(false).Maybe()
+	m.On("GetRoundNumber").Return(1).Maybe()
+	m.On("GetWentOutSeat").Return(-1).Maybe()
+	m.On("GetGameEndFlag").Return(false).Maybe()
+	m.On("GetConfig").Return(domain.TuSacConfig{Seats: 2, Rounds: 1}).Maybe()
+	m.On("WinnerSeat").Return(0).Maybe()
+	m.On("GetHint").Return(&domain.TuSacHint{Action: "draw"}).Maybe()
+	var cpu struct {
+		ServerHint *domain.TuSacHint `json:"serverHint"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(cp.Output(m, nil)), &cpu))
+	assert.Nil(t, cpu.ServerHint)
+	m.AssertNotCalled(t, "GetHint")
 }
 
 // **四色牌の札は手続き描画で送る。** 共有のカード絵はトランプのスートを

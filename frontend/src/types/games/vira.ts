@@ -55,6 +55,8 @@ export interface ViraResponse extends BaseGameResponse {
   trumpSuit: number;
   /** Each player's bid this round (0-4) — [p0, p1, p2]. */
   bids: number[];
+  /** Whether each player has submitted a bid this round, in seat order. */
+  bidDone: boolean[];
   /**
    * The running pot.
    *

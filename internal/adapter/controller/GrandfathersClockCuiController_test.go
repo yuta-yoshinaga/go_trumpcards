@@ -24,6 +24,7 @@ func TestGrandfathersClockCuiControllerSimpleCommands(t *testing.T) {
 		{"AutoComplete", []string{"ac", "autocomplete"}},
 		{"ActionLog", []string{"log", "l"}},
 		{"Undo", []string{"u", "undo"}},
+		{"Redo", []string{"redo"}},
 	}
 	for _, tc := range cases {
 		t.Run(tc.method, func(t *testing.T) {

@@ -171,6 +171,57 @@ func TestQuadrille_BidOrdering(t *testing.T) {
 	assert.Greater(t, int(domain.QuadrilleBidEntrar), int(domain.QuadrilleBidNone))
 }
 
+func TestQuadrille_BidTrumpTracksHumanAndCPUDeclarations(t *testing.T) {
+	// Easy CPUs always pass, so the human declaration and every pass are deterministic.
+	g := newTestQuadrille()
+	cfg := g.GetConfig()
+	cfg.CpuDifficulty = domain.QuadrilleCpuDifficultyEasy
+	g.SetConfig(cfg)
+
+	for !g.GetPlayer(g.GetCurrentBidderIdx()).GetIsHuman() {
+		g.CpuBid()
+	}
+	humanSeat := g.GetCurrentBidderIdx()
+	const chosenTrump = domain.CardDesignHeart
+	require.NoError(t, g.PlayerBid(domain.QuadrilleBidEntrar, chosenTrump))
+	assert.Equal(t, chosenTrump, g.GetBidTrump()[humanSeat])
+
+	for g.GetPhase() == domain.QuadrillePhaseBid {
+		seat := g.GetCurrentBidderIdx()
+		if g.GetPlayer(seat).GetIsHuman() {
+			require.NoError(t, g.PlayerBid(domain.QuadrilleBidNone, -1))
+		} else {
+			g.CpuBid()
+		}
+		if g.GetBids()[seat] == domain.QuadrilleBidNone {
+			assert.Equal(t, -1, g.GetBidTrump()[seat], "a passing seat has no declared trump")
+		}
+	}
+}
+
+func TestQuadrille_CPUDeclarationStoresChosenTrump(t *testing.T) {
+	foundCPUDeclaration := false
+	for attempt := 0; attempt < 1000 && !foundCPUDeclaration; attempt++ {
+		g := newTestQuadrille()
+		for g.GetPhase() == domain.QuadrillePhaseBid {
+			seat := g.GetCurrentBidderIdx()
+			if g.GetPlayer(seat).GetIsHuman() {
+				require.NoError(t, g.PlayerBid(domain.QuadrilleBidNone, -1))
+			} else {
+				g.CpuBid()
+				bid := g.GetBids()[seat]
+				if bid == domain.QuadrilleBidEntrar || bid == domain.QuadrilleBidSolo {
+					trump := g.GetBidTrump()[seat]
+					assert.GreaterOrEqual(t, trump, domain.CardDesignSpade)
+					assert.LessOrEqual(t, trump, domain.CardDesignDiamond)
+					foundCPUDeclaration = true
+				}
+			}
+		}
+	}
+	assert.True(t, foundCPUDeclaration, "expected a CPU declaration within 1000 shuffled deals")
+}
+
 func TestQuadrille_MatadorRanking(t *testing.T) {
 	resolve := func(trump int, trick []*domain.TrickCard) int {
 		g := newTestQuadrille()

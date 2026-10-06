@@ -12,6 +12,7 @@
     "title": "設定",
     "cpuDifficulty": "CPU難易度",
     "targetChips": "目標チップ",
+    "baseChips": "基本チップ単位",
     "easy": "Easy",
     "normal": "Normal",
     "hard": "Hard"

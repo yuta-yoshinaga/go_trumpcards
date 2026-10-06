@@ -1,7 +1,8 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { maoApi } from '../api/gameApi';
+import { actionLogApi, maoApi } from '../api/gameApi';
 import i18n from '../i18n';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { MaoResponse } from '../types/card';
 import { MaoPage } from './MaoPage';
@@ -492,6 +493,20 @@ describe('MaoPage', () => {
       expect(screen.getByText('Game end!')).toBeInTheDocument();
       expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
     });
+  });
+
+  it('opens an action log during play and disables card shortcuts while open', async () => {
+    vi.mocked(actionLogApi.mao).mockResolvedValue({
+      entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'play', detail: 'Alice played ♥ 7' }],
+    });
+    renderWithProviders(<MaoPage />);
+    const button = await screen.findByRole('button', { name: '棋譜を見る' });
+    fireEvent.click(button);
+    await waitFor(() => expect(screen.getByText(/Alice played ♥ 7/)).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: '1' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   it('reset button calls exec with confirm', async () => {

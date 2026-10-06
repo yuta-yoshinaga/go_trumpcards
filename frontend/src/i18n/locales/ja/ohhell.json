@@ -55,6 +55,7 @@
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",
   "bidPhase": "ビッド宣言 (0-{{max}})",
+  "bidOptions": "ビッド選択肢（0〜{{max}}）",
   "playPhase": {
     "lead": "リードしてください",
     "follow": "カードを出してください"

@@ -210,6 +210,15 @@ function CucumberPageContent() {
               {state.highestInTrick > 0 ? t('header.highest', { n: String(state.highestInTrick) }) : t('header.lead')}
             </div>
 
+            {state.resolvedTrickWinnerIdx >= 0 && (
+              <div className="mb-3 text-center text-ds-text-primary" data-testid="cu-last-trick-result">
+                {t('status.trickWinner', {
+                  name: seatName(state.resolvedTrickWinnerIdx),
+                  rank: String(state.lastTrickRank),
+                })}
+              </div>
+            )}
+
             {state.trickNumber + 1 === state.totalTricks && (
               <div className={`mb-3 text-center ${badgeWarning}`} data-testid="cu-final-trick">
                 {t('status.finalTrick')}

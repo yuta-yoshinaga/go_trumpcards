@@ -170,7 +170,7 @@ describe('PigPage', () => {
     mockExec.mockResolvedValue(liveSignal());
     renderWithProviders(<PigPage />);
 
-    expect(await screen.findByTestId('pig-signal-alert')).toHaveTextContent(/鼻に当てました/);
+    expect(await screen.findByTestId('pig-signal-alert')).toHaveTextContent(/1人.*気づ/);
     const btn = screen.getByTestId('pig-signal-btn');
     expect(btn).toBeEnabled();
     // 合図の場面では札を渡せない。
@@ -213,6 +213,7 @@ describe('PigPage', () => {
     );
     renderWithProviders(<PigPage />);
     expect(await screen.findByTestId('pig-signal-done')).toHaveTextContent('2');
+    expect(screen.getByTestId('pig-signal-done')).toHaveTextContent(/残りが出そろうまで待ちます/);
     expect(screen.queryByTestId('pig-signal-btn')).not.toBeInTheDocument();
   });
 

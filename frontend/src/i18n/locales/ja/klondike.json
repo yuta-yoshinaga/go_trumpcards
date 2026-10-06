@@ -19,6 +19,7 @@
   "autoCompleteNotReady": "山札が空で全カードが表向きになるとクリックできます",
   "undo": "元に戻す",
   "empty": "空",
+  "emptyTableauAriaLabel": "空の場札列、列{{col}}",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
   "playing": "プレイ中",

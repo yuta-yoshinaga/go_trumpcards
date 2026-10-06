@@ -83,6 +83,8 @@ type QuadrilleGame interface {
 	GetCurrentBidderIdx() int
 	// GetBids returns each seat's declaration.
 	GetBids() [domain.QuadrillePlayerCnt]domain.QuadrilleBid
+	// GetBidTrump returns each seat's chosen trump suit (-1 when none was chosen).
+	GetBidTrump() [domain.QuadrillePlayerCnt]int
 	// GetBidActed returns whether each seat has declared in this auction.
 	GetBidActed() [domain.QuadrillePlayerCnt]bool
 	// GetPlayerScores プレイヤー別累積点を取得する

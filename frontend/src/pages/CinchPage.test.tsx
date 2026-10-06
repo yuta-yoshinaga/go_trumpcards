@@ -188,6 +188,8 @@ describe('CinchPage', () => {
     // The 14-point composition legend is present.
     expect(guide).toHaveTextContent('14点の構成');
     expect(guide).toHaveTextContent('Right Pedro');
+    expect(screen.getByTestId('cinch-bid-strength-suits')).toHaveTextContent('得点札 1点・切り札 1枚・支配力 2');
+    expect(guide).toHaveTextContent('トリック獲得を保証するものではありません');
   });
 
   it('does not show the bid-strength guide outside the human bid turn', async () => {

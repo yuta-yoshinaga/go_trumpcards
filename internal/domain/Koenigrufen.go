@@ -1501,7 +1501,7 @@ func (g *Koenigrufen) isHumanBidTurn() bool {
 
 // appendLog 棋譜にエントリを追加する。
 func (g *Koenigrufen) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // koenigrufenBidKey は入札の i18n キーを返す。

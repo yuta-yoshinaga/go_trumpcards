@@ -492,7 +492,10 @@ function TarneebPageContent() {
                     number input: out-of-range / already-beaten values are simply disabled, so no
                     client-side clamping is needed.
                   */}
-                  <fieldset className="grid grid-cols-7 gap-1 border-0 p-0" aria-label={t('bidSelectLabel')}>
+                  <fieldset
+                    className="grid grid-cols-4 gap-1 border-0 p-0 min-w-0 sm:grid-cols-7"
+                    aria-label={t('bidSelectLabel')}
+                  >
                     {Array.from({ length: 13 - state.config.minBid + 1 }, (_, i) => i + state.config.minBid).map(
                       (n) => (
                         <button
@@ -502,7 +505,7 @@ function TarneebPageContent() {
                           disabled={loading || n <= state.highestBid}
                           aria-pressed={bidValue === n}
                           data-testid={`bid-option-${n}`}
-                          className={`h-9 w-9 rounded-lg font-medium text-sm transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
+                          className={`h-11 w-11 rounded-lg font-medium text-sm transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
                             bidValue === n
                               ? 'bg-ds-accent text-white ring-2 ring-ds-accent'
                               : 'bg-white/20 text-ds-text-primary hover:bg-white/30'

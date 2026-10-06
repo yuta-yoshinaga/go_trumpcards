@@ -83,7 +83,9 @@ func (p *DoudizhuCuiPresenter) Output(dg interfaces.DoudizhuGame, lastErr error)
 
 // ActionLogOutput 棋譜をCUI出力
 func (p *DoudizhuCuiPresenter) ActionLogOutput(dg interfaces.DoudizhuGame) string {
-	return actionLogOutputTextForSeats[*domain.DoudizhuPlayer](dg)
+	return actionLogToTextWithNames(dg.GetActionLog(), func(idx int) string {
+		return cuiPlayerName(dg.GetPlayer(idx), idx)
+	})
 }
 
 func doudizhuPlayerStr(player *domain.DoudizhuPlayer, idx int) string {

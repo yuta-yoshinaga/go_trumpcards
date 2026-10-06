@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { boliviaApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeBoliviaState } from '../test/stateFactories';
 import { BoliviaPage } from './BoliviaPage';
@@ -271,14 +272,114 @@ describe('BoliviaPage', () => {
     );
   });
 
-  it('enables the draw button and clears the reason when exactly 2 cards are selected', async () => {
+  it('explains when a natural pair matches the discard top', async () => {
+    mockExec.mockResolvedValue(makeBoliviaState({ discardTop: { design: 'SPADE', value: 7 } }));
     renderWithProviders(<BoliviaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument());
     const handCards = screen.getAllByRole('button', { pressed: false }).filter((b) => b.hasAttribute('aria-pressed'));
     fireEvent.click(handCards[0]);
     fireEvent.click(handCards[1]);
-    expect(screen.queryByTestId('sa-draw-discard-reason')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '捨て札を取る' })).not.toBeDisabled();
+    const button = screen.getByRole('button', { name: '捨て札を取る' });
+    expect(screen.getByTestId('sa-draw-discard-reason')).toHaveTextContent('ナチュラルカード2枚がトップと同ランクです');
+    expect(button).toHaveAttribute('aria-disabled', 'false');
+    mockExec.mockClear();
+    fireEvent.click(button);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawdiscard', undefined, undefined, [0, 1]));
+  });
+
+  it('blocks a selected pair with the wrong rank and shows why', async () => {
+    renderWithProviders(<BoliviaPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument());
+    const handCards = screen.getAllByRole('button', { pressed: false }).filter((b) => b.hasAttribute('aria-pressed'));
+    fireEvent.click(handCards[0]);
+    fireEvent.click(handCards[1]);
+    const button = screen.getByRole('button', { name: '捨て札を取る' });
+    expect(screen.getByTestId('sa-draw-discard-reason')).toHaveTextContent('同じランクである必要があります');
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    mockExec.mockClear();
+    fireEvent.click(button);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('explains why a pair cannot take an empty or unusable discard pile', async () => {
+    const handCards = () =>
+      screen.getAllByRole('button', { pressed: false }).filter((button) => button.hasAttribute('aria-pressed'));
+
+    mockExec.mockResolvedValue(makeBoliviaState({ discardTop: null }));
+    const emptyPile = renderWithProviders(<BoliviaPage />);
+    await screen.findByRole('button', { name: '捨て札を取る' });
+    fireEvent.click(handCards()[0]);
+    fireEvent.click(handCards()[1]);
+    expect(screen.getByTestId('sa-draw-discard-reason')).toHaveTextContent('捨て札のトップがないため取得できません');
+
+    emptyPile.unmount();
+    mockExec.mockResolvedValue(makeBoliviaState({ discardTop: { design: 'SPADE', value: 2 } }));
+    renderWithProviders(<BoliviaPage />);
+    await screen.findByRole('button', { name: '捨て札を取る' });
+    fireEvent.click(handCards()[0]);
+    fireEvent.click(handCards()[1]);
+    expect(screen.getByTestId('sa-draw-discard-reason')).toHaveTextContent(
+      'トップがワイルドカードまたは黒3のため取得できません',
+    );
+  });
+
+  it.each([
+    [{ design: 'JOKER' as const, value: 0 }, 'joker top'],
+    [{ design: 'CLOVER' as const, value: 3 }, 'black three top'],
+  ])('explains why a pair cannot take a discard pile with a %s', async (discardTop, _caseName) => {
+    mockExec.mockResolvedValue(makeBoliviaState({ discardTop }));
+    renderWithProviders(<BoliviaPage />);
+    await screen.findByRole('button', { name: '捨て札を取る' });
+    const handCards = screen
+      .getAllByRole('button', { pressed: false })
+      .filter((button) => button.hasAttribute('aria-pressed'));
+    fireEvent.click(handCards[0]);
+    fireEvent.click(handCards[1]);
+    expect(screen.getByTestId('sa-draw-discard-reason')).toHaveTextContent(
+      'トップがワイルドカードまたは黒3のため取得できません',
+    );
+  });
+
+  it('explains that a wild pair cannot take an unfrozen discard pile', async () => {
+    const base = makeBoliviaState({ discardTop: { design: 'SPADE', value: 7 } });
+    const human = {
+      ...base.players[0],
+      cards: [
+        { design: 'JOKER' as const, value: 0 },
+        { design: 'SPADE' as const, value: 7 },
+      ],
+    };
+    mockExec.mockResolvedValue(makeBoliviaState({ ...base, players: [human, ...base.players.slice(1)] }));
+    renderWithProviders(<BoliviaPage />);
+    await screen.findByRole('button', { name: '捨て札を取る' });
+    const handCards = screen
+      .getAllByRole('button', { pressed: false })
+      .filter((button) => button.hasAttribute('aria-pressed'));
+    fireEvent.click(handCards[0]);
+    fireEvent.click(handCards[1]);
+    expect(screen.getByTestId('sa-draw-discard-reason')).toHaveTextContent(
+      'ワイルドカードは使えません。ナチュラルカードを2枚選択してください',
+    );
+  });
+
+  it('blocks wild cards in a frozen pair and explains the frozen restriction', async () => {
+    const base = makeBoliviaState({ isFrozen: true, discardTop: { design: 'SPADE', value: 7 } });
+    const human = {
+      ...base.players[0],
+      cards: [
+        { design: 'JOKER' as const, value: 0 },
+        { design: 'SPADE' as const, value: 7 },
+      ],
+    };
+    mockExec.mockResolvedValue(makeBoliviaState({ ...base, players: [human, ...base.players.slice(1)] }));
+    renderWithProviders(<BoliviaPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument());
+    const handCards = screen.getAllByRole('button', { pressed: false }).filter((b) => b.hasAttribute('aria-pressed'));
+    fireEvent.click(handCards[0]);
+    fireEvent.click(handCards[1]);
+    expect(screen.getByTestId('sa-draw-discard-reason')).toHaveTextContent('フリーズ中は2枚ともナチュラルカード');
+    expect(screen.getByRole('button', { name: '捨て札を取る' })).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('shows canasta/bolivia progress and a completion pulse per meld', async () => {

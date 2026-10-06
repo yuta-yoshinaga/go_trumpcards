@@ -27,6 +27,8 @@
   "playing": "プレイ中",
   "noHint": "ヒントはありません",
   "hintAvailable": "ヒントがあります",
+  "moveToFoundationAriaLabel": "列{{col}}から組札へ移動",
+  "moveToColAriaLabel": "列{{fromCol}}から列{{toCol}}へ移動",
   "moveToFoundation": "→組",
   "moveToCol": "→{{col}}",
   "dragTargetColumn": "列{{col}}に移動できます",

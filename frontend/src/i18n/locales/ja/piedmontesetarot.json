@@ -1,5 +1,6 @@
 {
   "title": "ピエモンテ・タロッコ",
+  "listSeparator": "、",
   "phase": {
     "scarto": "スカルト（捨て札）",
     "play": "プレイ",
@@ -60,6 +61,11 @@
     "trickPoints": "{{name}}: トリック {{points}}点",
     "scartoPoints": "{{name}}: スカルト {{points}}点",
     "formula": "変動 = 席数（{{n}}人）× 自分のカード点 − 卓の合計"
+  },
+  "dealScoreHistory": {
+    "title": "ディール別得点推移",
+    "empty": "完了したディールの得点履歴はありません",
+    "row": "ディール {{round}}: {{scores}}"
   },
   "hintAvailable": "ヒント",
   "hint": {

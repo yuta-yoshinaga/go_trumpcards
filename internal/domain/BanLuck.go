@@ -615,9 +615,6 @@ func (g *BanLuck) GetActionLog() []*ActionLogEntry { return g.actionLog }
 func (g *BanLuck) appendLog(seat int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
 	g.appendLogCodeAt(g.turnNumber, seat, actionType, detailCode, detailParams, cards)
-	if len(g.actionLog) > banLuckMaxSliceLen {
-		g.actionLog = g.actionLog[len(g.actionLog)-banLuckMaxSliceLen:]
-	}
 }
 
 // --- 永続化 ---

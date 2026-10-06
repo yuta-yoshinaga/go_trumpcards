@@ -21,6 +21,11 @@ export interface CribbageScoreDetail {
   flush: number;
   nobs: number;
   total: number;
+  fifteenCards: Card[][];
+  pairCards: Card[][];
+  runCards: Card[][];
+  flushCards: Card[];
+  nobsCards: Card[];
 }
 
 /** Cribbage game configuration. */

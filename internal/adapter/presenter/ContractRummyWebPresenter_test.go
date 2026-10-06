@@ -15,7 +15,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
-func setupContractRummyWebMock() (*interfaces.MockContractRummyGame, []*domain.ContractRummyPlayer) {
+func setupContractRummyWebMock(discard ...*domain.Card) (*interfaces.MockContractRummyGame, []*domain.ContractRummyPlayer) {
 	m := new(interfaces.MockContractRummyGame)
 	players := []*domain.ContractRummyPlayer{
 		domain.NewContractRummyPlayer(true),
@@ -24,7 +24,13 @@ func setupContractRummyWebMock() (*interfaces.MockContractRummyGame, []*domain.C
 	}
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetDrawPileCount").Return(60)
-	m.On("GetDiscardTop").Return((*domain.Card)(nil))
+	m.On("GetDiscardTop").Return(func() *domain.Card {
+		if len(discard) == 0 {
+			return nil
+		}
+		return discard[len(discard)-1]
+	}())
+	m.On("GetDiscardPile").Return(discard)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.ContractRummyPhaseDraw)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -62,6 +68,16 @@ func TestContractRummyWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "contractrummy.drawPhase", out.MessageCode)
 	})
 
+	t.Run("discard history mirrors current pile", func(t *testing.T) {
+		a := domain.NewCard(domain.CardDesignSpade, 1, false)
+		b := domain.NewCard(domain.CardDesignHeart, 2, false)
+		c := domain.NewCard(domain.CardDesignClover, 3, false)
+		m, _ := setupContractRummyWebMock(a, b, c)
+		out := unmarshalContractRummy(t, p.Output(m, nil))
+		assert.Equal(t, []int{1, 2, 3}, []int{out.DiscardHistory[0].Value, out.DiscardHistory[1].Value, out.DiscardHistory[2].Value})
+		assert.Equal(t, out.DiscardTop, out.DiscardHistory[len(out.DiscardHistory)-1])
+	})
+
 	t.Run("with error", func(t *testing.T) {
 		m, _ := setupContractRummyWebMock()
 		out := unmarshalContractRummy(t, p.Output(m, errors.New("boom")))
@@ -84,6 +100,7 @@ func TestContractRummyWebPresenter_Output(t *testing.T) {
 		m.On("GetRoundNumber").Return(7)
 		m.On("GetDrawPileCount").Return(0)
 		m.On("GetDiscardTop").Return((*domain.Card)(nil))
+		m.On("GetDiscardPile").Return([]*domain.Card{})
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetPhase").Return(domain.ContractRummyPhaseGameEnd)
 		m.On("GetCurrentPlayerIdx").Return(0)

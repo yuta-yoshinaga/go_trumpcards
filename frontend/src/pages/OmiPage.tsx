@@ -348,6 +348,7 @@ function OmiPageContent() {
                   <div>{t('scoring.fiveOrMore')}</div>
                   <div>{t('scoring.allEight')}</div>
                   <div>{t('scoring.fourFour')}</div>
+                  <div>{t('scoring.winAt', { limit: state.config.pointLimit })}</div>
                 </div>
               </div>
 

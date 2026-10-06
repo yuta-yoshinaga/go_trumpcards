@@ -420,6 +420,7 @@ func TestPiedmonteseTarot_SurvivesASaveAndRestore(t *testing.T) {
 	assert.Equal(t, g.GetPhase(), restored.GetPhase())
 	assert.Equal(t, g.GetPlayerScores(), restored.GetPlayerScores())
 	assert.Equal(t, g.GetDealScores(), restored.GetDealScores())
+	assert.Equal(t, g.GetDealScoreHistory(), restored.GetDealScoreHistory())
 	assert.Equal(t, g.GetRoundNumber(), restored.GetRoundNumber())
 	assert.Equal(t, g.GetDealerIdx(), restored.GetDealerIdx())
 	assert.Equal(t, g.CapturedThirds(), restored.CapturedThirds())
@@ -482,6 +483,17 @@ func TestPiedmonteseTarot_MatchEndsAfterTheTargetDeals(t *testing.T) {
 	g.Reset()
 	for deal := 0; deal < cfg.TargetDeals; deal++ {
 		piedmonteseTarotPlayHand(t, g)
+		history := g.GetDealScoreHistory()
+		require.Len(t, history, deal+1)
+		assert.Equal(t, deal+1, history[deal].RoundNumber)
+		assert.Equal(t, g.GetDealScores(), history[deal].Scores)
+		for seat, score := range g.GetPlayerScores() {
+			var total int
+			for _, entry := range history {
+				total += entry.Scores[seat]
+			}
+			assert.Equal(t, total, score)
+		}
 		if g.GetGameEndFlag() {
 			break
 		}

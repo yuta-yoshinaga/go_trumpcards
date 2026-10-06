@@ -21,7 +21,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useNainJauneGame } from '../hooks/useNainJauneGame';
-import { btnPrimary } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { NainJauneResponse } from '../types/card';
 import { NainJaunePhase } from '../types/phases';
@@ -48,6 +48,7 @@ function NainJaunePageContent() {
   const { state, loading, error, retry } = game;
 
   const [handIdx, setHandIdx] = useState<number | null>(null);
+  const [showPlayedHistory, setShowPlayedHistory] = useState(false);
 
   // CPU の手番は無言で進むので、**手番が自分に回ってきたこと自体**が
   // スクリーンリーダー利用者に伝わらない (Zheng で確立した liveMsg と同じ形)。
@@ -237,7 +238,31 @@ function NainJaunePageContent() {
                   {t('played')}
                   {state.runRank === 0 && <span data-testid="nainjaune-run-stopped"> · {t('runStopped')}</span>}
                 </div>
-                <div className="flex gap-1 justify-center flex-wrap">
+                {state.playedPile.length > 10 && (
+                  <>
+                    <button
+                      type="button"
+                      className={`${btnSecondary} min-h-11 mb-2`}
+                      aria-expanded={showPlayedHistory}
+                      onClick={() => setShowPlayedHistory((shown) => !shown)}
+                    >
+                      {t(showPlayedHistory ? 'playedHistory.hide' : 'playedHistory.show')}
+                    </button>
+                    {showPlayedHistory && (
+                      <div className="flex gap-1 justify-center flex-wrap" data-testid="nainjaune-played-history">
+                        {state.playedPile.slice(0, -10).map((card, i) => (
+                          <AnimatedCard
+                            key={`past-pile-${i.toString()}`}
+                            card={card}
+                            width={Math.round(cardWidth * 0.7)}
+                            draggable={false}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+                <div className="flex gap-1 justify-center flex-wrap" data-testid="nainjaune-played-recent">
                   {state.playedPile.slice(-10).map((card, i) => (
                     <AnimatedCard
                       key={`pile-${i.toString()}`}

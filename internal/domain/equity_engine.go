@@ -18,6 +18,8 @@ type equityConfig struct {
 	evalOpponent func(oppHoleCards, simCommunity []*Card) (int, []*Card)
 	// compareHighCards ハイカード比較 (a, b) -> >0 if a wins
 	compareHighCards func(a, b []*Card) int
+	// splitTies divides the pot share among players with equal hands.
+	splitTies bool
 }
 
 // calcEquityCore エクイティ計算の共通エンジン
@@ -78,17 +80,30 @@ func calcEquityCore(humanCards, communityCards []*Card, activePlayers, simulatio
 
 				// 相手のハンド評価
 				humanWins := true
+				tieCount := 0
 				for o := 0; o < activePlayers; o++ {
 					oppHole := shufflePool[idx : idx+cfg.holeCardsPerOpponent]
 					idx += cfg.holeCardsPerOpponent
 					oppRank, oppBest := cfg.evalOpponent(oppHole, simCommunity)
-					if oppRank > humanRank || (oppRank == humanRank && cfg.compareHighCards(oppBest, humanBest) > 0) {
+					cmp := 0
+					if oppRank > humanRank {
+						cmp = 1
+					} else if oppRank == humanRank {
+						cmp = cfg.compareHighCards(oppBest, humanBest)
+					}
+					if cmp > 0 {
 						humanWins = false
 						break
+					} else if cfg.splitTies && oppRank == humanRank && cmp == 0 {
+						tieCount++
 					}
 				}
 				if humanWins {
-					wins++
+					if cfg.splitTies {
+						wins += 1 / float64(tieCount+1)
+					} else {
+						wins++
+					}
 				}
 			}
 			return wins, 0, handCounts

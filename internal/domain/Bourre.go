@@ -915,7 +915,7 @@ func (b *Bourre) GetValidPlayIndices(idx int) []int {
 
 // appendLog records a Bourré action with a locale-independent detail code.
 func (b *Bourre) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	b.appendLogCodeAt(len(b.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+	b.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // bourreJSON is the JSON wire format for Bourre.

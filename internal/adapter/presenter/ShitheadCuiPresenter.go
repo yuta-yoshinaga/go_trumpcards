@@ -175,6 +175,9 @@ func (p *ShitheadCuiPresenter) Output(sg interfaces.ShitheadGame, lastErr error)
 func formatShitheadAction(sg interfaces.ShitheadGame, action *domain.ShitheadCpuAction) string {
 	name := cuiPlayerName(sg.GetPlayer(action.PlayerIdx), action.PlayerIdx)
 	if action.Pickup {
+		if action.Source == domain.ShitheadSourceFaceDown {
+			return i18n.Tf("shithead.actionFacedownPickup", "name", name, "card", cuiCardSliceStr(action.PlayedCards)) + "\n"
+		}
 		return i18n.Tf("shithead.actionPickup", "name", name) + "\n"
 	}
 	suffix := ""

@@ -607,3 +607,32 @@ func TestSomerset_ActionLog(t *testing.T) {
 	assert.Equal(t, "somerset.log.moveTableauToFoundation", entry.DetailCode)
 	assert.Equal(t, map[string]string{"col": "0"}, entry.DetailParams)
 }
+
+func TestSomerset_GetHint_SkipsSingletonToEmptyColumn(t *testing.T) {
+	t.Run("chooses a useful move", func(t *testing.T) {
+		c := setupPlayingSomerset()
+		c.Reset()
+		var tab [domain.SomersetTableauCnt][]*domain.SomersetTableauCard
+		tab[0] = []*domain.SomersetTableauCard{makeSomersetTableauCard(domain.CardDesignSpade, 13)}
+		tab[1] = []*domain.SomersetTableauCard{makeSomersetTableauCard(domain.CardDesignHeart, 6), makeSomersetTableauCard(domain.CardDesignSpade, 5)}
+		c.SetTableau(tab)
+		c.SetFoundation([domain.SomersetFoundationCnt][]*domain.Card{})
+		hint := c.GetHint()
+		if assert.NotNil(t, hint) {
+			assert.Equal(t, 1, hint.FromCol)
+			assert.Equal(t, 1, hint.CardIndex)
+			assert.Equal(t, 2, hint.ToCol)
+		}
+	})
+	t.Run("no-op moves lead to stalemate", func(t *testing.T) {
+		c := setupPlayingSomerset()
+		c.Reset()
+		var tab [domain.SomersetTableauCnt][]*domain.SomersetTableauCard
+		tab[0] = []*domain.SomersetTableauCard{makeSomersetTableauCard(domain.CardDesignSpade, 13)}
+		c.SetTableau(tab)
+		c.SetFoundation([domain.SomersetFoundationCnt][]*domain.Card{})
+		assert.Nil(t, c.GetHint())
+		assert.NoError(t, c.MoveTableauToTableau(0, 0, 1))
+		assert.True(t, c.IsStalemate())
+	})
+}

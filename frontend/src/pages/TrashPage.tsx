@@ -312,6 +312,7 @@ function TrashPageContent() {
               <div className="flex items-center justify-center gap-6" data-tutorial="tr-stock">
                 <StockPile
                   size={state.stockSize}
+                  label={t('stockButtonAria', { count: state.stockSize })}
                   onClick={handleDraw}
                   disabled={!isHumanTurn || isAwaitWild || isGameOver}
                 />
@@ -507,13 +508,24 @@ function FaceDownSlot({ idx, width }: { idx: number; width: number }) {
   );
 }
 
-function StockPile({ size, onClick, disabled }: { size: number; onClick: () => void; disabled: boolean }) {
+function StockPile({
+  size,
+  label,
+  onClick,
+  disabled,
+}: {
+  size: number;
+  label: string;
+  onClick: () => void;
+  disabled: boolean;
+}) {
   return (
     <button
       type="button"
       className={`${focusRingWhite} flex flex-col items-center px-3 py-2 rounded-md border border-ds-accent bg-ds-surface/80 hover:bg-ds-surface disabled:opacity-50 disabled:cursor-not-allowed`}
       onClick={onClick}
       disabled={disabled}
+      aria-label={label}
     >
       <span className="text-3xl">🂠</span>
       <span className="text-xs text-ds-text-muted mt-1">{size}</span>

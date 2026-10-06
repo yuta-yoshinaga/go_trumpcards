@@ -357,7 +357,7 @@ function BadugiPageContent() {
                 )}
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {(humanPlayer.cards ?? []).map((card, i) => {
-                    const isSelected = selected.includes(i);
+                    const isSelected = canExchange && selected.includes(i);
                     // Only annotate cards during the draw phase; outside of it we don't want to
                     // distract the player with a "dead weight" hint they can't act on.
                     const inSubset = subsetIndices?.has(i) ?? false;
@@ -378,7 +378,7 @@ function BadugiPageContent() {
                         aria-label={`${cardAlt(card)}${
                           canExchange ? ` ${t(isSelected ? 'cardSelected' : 'cardNotSelected')}` : ''
                         }${subsetHint}`}
-                        aria-pressed={isSelected}
+                        aria-pressed={canExchange ? isSelected : undefined}
                         onClick={() => toggleCard(i)}
                         data-badugi-subset={showSubsetHint && inSubset ? 'true' : undefined}
                         className={`${focusRingAccent} rounded transition-transform ${liftOrDim}`}

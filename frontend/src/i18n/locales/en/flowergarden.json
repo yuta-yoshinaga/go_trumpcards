@@ -17,7 +17,7 @@
   "gameOverSummary": "Reached {{count}}/52 cards on the foundations ({{percent}}%)",
   "giveup": "Give Up",
   "hint": "Hint",
-  "hintAvailable": "Hint available",
+  "hintAvailable": "Hint: move {{card}}",
   "hintReason": {
     "toFoundation": "Send this card to the foundation to free up the flower bed.",
     "toTableau": "Apply the suggested flower-bed move to unlock buried cards."

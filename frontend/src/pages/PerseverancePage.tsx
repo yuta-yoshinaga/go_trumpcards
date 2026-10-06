@@ -514,6 +514,7 @@ function PerseverancePageContent() {
               <p>{t('stats.games', { count: stats.games })}</p>
               <p>{t('stats.clearRate', { rate: perseveranceClearRate(stats) })}</p>
               <p>{t('stats.moves', { count: stats.moves })}</p>
+              <p>{t('stats.minMoves', { count: stats.minMoves ?? t('stats.unrecorded') })}</p>
               <p>{t('stats.redeals', { count: stats.redeals })}</p>
               <button type="button" className={btnWarning} onClick={clearStats}>
                 {t('stats.clear')}

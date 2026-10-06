@@ -21,6 +21,15 @@ func (owp *DramahaWebPresenter) Output(o interfaces.DramahaGame, lastErr error) 
 func (owp *DramahaWebPresenter) buildOutput(o interfaces.DramahaGame, lastErr error) *controller.HoldemWebOutput {
 	resObj := buildCommunityCardBaseOutput(o)
 	resObj.Players = buildPokerPlayersOutput(o.GetPhase(), o.GetPlayerCnt(), func(i int) communityCardPresenterPlayer { return o.GetPlayer(i) }, domain.DramahaPhaseShowdown, domain.DramahaPhaseEnd, pokerHandName)
+	if o.GetPhase() == domain.DramahaPhaseShowdown || o.GetPhase() == domain.DramahaPhaseEnd {
+		for i := 0; i < o.GetPlayerCnt(); i++ {
+			player := o.GetPlayer(i)
+			if !player.GetFolded() {
+				resObj.Players[i].OmahaHandName = pokerHandKey(player.GetHandRank())
+				resObj.Players[i].DrawHandName = pokerHandKey(player.GetDrawRank())
+			}
+		}
+	}
 	resObj.IsHiLo = true /* ドラマハは常に二分する */
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = owp.buildMessage(o, lastErr)
 	return resObj

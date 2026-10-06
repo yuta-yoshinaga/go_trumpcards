@@ -119,6 +119,13 @@ describe('BakersDozenPage', () => {
     expect(mockExec.mock.calls[0]?.[0]).toBe('reset');
   });
 
+  it('includes the zero-based tableau column in each card button name', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BakersDozenPage />);
+    expect(await screen.findByRole('button', { name: '♠ 5、列0' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 6、列1' })).toBeInTheDocument();
+  });
+
   it('marks the last card in a column with a dashed warning ring', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BakersDozenPage />);
@@ -289,8 +296,8 @@ describe('BakersDozenPage', () => {
   it('selecting a tableau card marks it as selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BakersDozenPage />);
-    // Pick the top card of column 0 by its aria-label (cardAlt produces "♠ 5").
-    const sourceBtn = await screen.findByRole('button', { name: '♠ 5' });
+    // Pick the top card of column 0 by its card-and-column accessible name.
+    const sourceBtn = await screen.findByRole('button', { name: '♠ 5、列0' });
     fireEvent.click(sourceBtn);
     await waitFor(() => expect(sourceBtn).toHaveAttribute('aria-pressed', 'true'));
   });
@@ -313,7 +320,7 @@ describe('BakersDozenPage', () => {
     try {
       mockExec.mockResolvedValue(playingState);
       renderWithProviders(<BakersDozenPage />);
-      const sourceBtn = await screen.findByRole('button', { name: '♠ 5' });
+      const sourceBtn = await screen.findByRole('button', { name: '♠ 5、列0' });
       fireEvent.click(sourceBtn);
       await waitFor(() => expect(scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({ inline: 'center' })));
     } finally {
@@ -332,23 +339,23 @@ describe('BakersDozenPage', () => {
   it('plays the cardPlace sound when a move succeeds (moveCount advances)', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BakersDozenPage />);
-    const source = await screen.findByRole('button', { name: '♠ 5' });
+    const source = await screen.findByRole('button', { name: '♠ 5、列0' });
     fireEvent.click(source);
     mockPlaySound.mockClear();
     // The move resolves with an advanced moveCount, signalling a server-confirmed move.
     mockExec.mockResolvedValue({ ...playingState, moveCount: 4 });
-    fireEvent.click(screen.getByRole('button', { name: '♥ 6' }));
+    fireEvent.click(screen.getByRole('button', { name: '♥ 6、列1' }));
     await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('cardPlace'));
   });
 
   it('stays silent (no cardPlace) and buzzes when a move fails', async () => {
     mockExec.mockResolvedValueOnce(playingState); // initial reset succeeds
     renderWithProviders(<BakersDozenPage />);
-    const source = await screen.findByRole('button', { name: '♠ 5' });
+    const source = await screen.findByRole('button', { name: '♠ 5、列0' });
     fireEvent.click(source);
     mockPlaySound.mockClear();
     mockExec.mockRejectedValue(new Error('illegal move')); // move rejects → moveCount unchanged
-    fireEvent.click(screen.getByRole('button', { name: '♥ 6' }));
+    fireEvent.click(screen.getByRole('button', { name: '♥ 6、列1' }));
     await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('errorBuzz'));
     expect(mockPlaySound).not.toHaveBeenCalledWith('cardPlace');
   });
@@ -371,7 +378,7 @@ describe('BakersDozenPage legal targets', () => {
   const selectSpadeFive = async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BakersDozenPage />);
-    fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
+    fireEvent.click(await screen.findByRole('button', { name: '♠ 5、列0' }));
   };
 
   // ♠5 は ♥6 の列 (1) に乗る。スートは問われない。
@@ -379,7 +386,7 @@ describe('BakersDozenPage legal targets', () => {
     await selectSpadeFive();
     await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]').length).toBeGreaterThan(0));
     expect(screen.getByRole('status', { name: '移動先' })).toHaveTextContent(
-      '移動元のカード: ♠ 5。移動可能なタブロー列: 2',
+      '移動元のカード: ♠ 5。移動可能なタブロー列: 1',
     );
   });
 
@@ -389,7 +396,7 @@ describe('BakersDozenPage legal targets', () => {
       tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }]]),
     });
     renderWithProviders(<BakersDozenPage />);
-    fireEvent.click(await screen.findByRole('button', { name: '♠ A' }));
+    fireEvent.click(await screen.findByRole('button', { name: '♠ A、列0' }));
     const status = screen.getByTestId('bd-destination-live');
     await waitFor(() =>
       expect(status).toHaveTextContent('移動元のカード: ♠ A。移動可能なタブロー列: なし。組札の移動先: ♠、♣、♥、♦。'),
@@ -402,7 +409,7 @@ describe('BakersDozenPage legal targets', () => {
       tableau: makeTableau([[{ card: card('SPADE', 13), faceUp: true }]]),
     });
     renderWithProviders(<BakersDozenPage />);
-    fireEvent.click(await screen.findByRole('button', { name: '♠ K' }));
+    fireEvent.click(await screen.findByRole('button', { name: '♠ K、列0' }));
     expect(screen.getByTestId('bd-destination-live')).toHaveTextContent(
       '移動元のカード: ♠ K。移動可能なタブロー列: なし。組札の移動先: なし。',
     );
@@ -421,17 +428,17 @@ describe('BakersDozenPage legal targets', () => {
       ]),
     });
     renderWithProviders(<BakersDozenPage />);
-    fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
+    fireEvent.click(await screen.findByRole('button', { name: '♠ 5、列0' }));
     expect(screen.getByRole('status', { name: '移動先' })).toHaveTextContent(
-      '移動元のカード: ♠ 5。移動可能なタブロー列: 2、3',
+      '移動元のカード: ♠ 5。移動可能なタブロー列: 1、2',
     );
   });
 
   it('clears the announced destinations after moving the selected card', async () => {
     await selectSpadeFive();
     const status = screen.getByRole('status', { name: '移動先' });
-    expect(status).toHaveTextContent('移動元のカード: ♠ 5。移動可能なタブロー列: 2');
-    fireEvent.click(screen.getByRole('button', { name: '♥ 6' }));
+    expect(status).toHaveTextContent('移動元のカード: ♠ 5。移動可能なタブロー列: 1');
+    fireEvent.click(screen.getByRole('button', { name: '♥ 6、列1' }));
     await waitFor(() => expect(status).toBeEmptyDOMElement());
   });
 
@@ -450,7 +457,7 @@ describe('BakersDozenPage legal targets', () => {
       tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }]]),
     });
     renderWithProviders(<BakersDozenPage />);
-    fireEvent.click(await screen.findByRole('button', { name: '♠ A' }));
+    fireEvent.click(await screen.findByRole('button', { name: '♠ A、列0' }));
 
     await waitFor(() =>
       expect(screen.getByRole('button', { name: '空の組札 (♠)' }).closest('[data-legal-target="true"]')).not.toBeNull(),
@@ -462,7 +469,7 @@ describe('BakersDozenPage legal targets', () => {
   it('rings nothing before a card is selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BakersDozenPage />);
-    await screen.findByRole('button', { name: '♠ 5' });
+    await screen.findByRole('button', { name: '♠ 5、列0' });
     expect(document.querySelectorAll('[data-legal-target="true"]').length).toBe(0);
   });
 
@@ -520,7 +527,7 @@ describe('BakersDozenPage destination preview', () => {
   const render = async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BakersDozenPage />);
-    return screen.findByRole('button', { name: '♠ 5' });
+    return screen.findByRole('button', { name: '♠ 5、列0' });
   };
   const targets = () => document.querySelectorAll('[data-legal-target="true"]');
   const previews = () => document.querySelectorAll('[data-preview-target="true"]');
@@ -531,7 +538,7 @@ describe('BakersDozenPage destination preview', () => {
 
     fireEvent.mouseEnter(spadeFive);
     await waitFor(() => expect(targets().length).toBeGreaterThan(0));
-    expect(screen.getByTestId('bd-destination-live')).toHaveTextContent('移動可能なタブロー列: 2');
+    expect(screen.getByTestId('bd-destination-live')).toHaveTextContent('移動可能なタブロー列: 1');
     // プレビュー中は弱いリング。選択後と見分けが付く。
     expect(previews().length).toBe(targets().length);
     expect(targets()[0]?.className).toContain('ring-ds-success/70');
@@ -544,7 +551,7 @@ describe('BakersDozenPage destination preview', () => {
     const spadeFive = await render();
     fireEvent.focus(spadeFive);
     await waitFor(() => expect(previews().length).toBeGreaterThan(0));
-    expect(screen.getByTestId('bd-destination-live')).toHaveTextContent('移動可能なタブロー列: 2');
+    expect(screen.getByTestId('bd-destination-live')).toHaveTextContent('移動可能なタブロー列: 1');
     fireEvent.blur(spadeFive);
     await waitFor(() => expect(targets().length).toBe(0));
   });

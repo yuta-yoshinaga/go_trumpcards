@@ -482,7 +482,8 @@ func TestShitheadFaceDownPlay_PickupOnInvalid(t *testing.T) {
 	s := newTestShithead(DefaultShitheadConfig())
 	resetEmpty(s)
 	human := s.GetPlayer(0)
-	human.AddFaceDown(NewCard(CardDesignSpade, 3, false))
+	revealed := NewCard(CardDesignSpade, 3, false)
+	human.AddFaceDown(revealed)
 	s.round.discardPile = []*Card{NewCard(CardDesignClover, 13, false)} // K
 	s.round.currentTurn = 0
 
@@ -491,6 +492,7 @@ func TestShitheadFaceDownPlay_PickupOnInvalid(t *testing.T) {
 	require.NotNil(t, s.GetHumanAction())
 	assert.True(t, s.GetHumanAction().Pickup)
 	assert.Equal(t, ShitheadSourceFaceDown, s.GetHumanAction().Source)
+	assert.Equal(t, []*Card{revealed}, s.GetHumanAction().PlayedCards)
 	// Discard moved into hand (3 was taken into hand because not playable)
 	assert.True(t, human.GetCardsSize() >= 1)
 	assert.Empty(t, s.GetDiscardPile())

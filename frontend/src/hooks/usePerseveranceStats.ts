@@ -10,6 +10,8 @@ export interface PerseveranceStats {
   games: number;
   moves: number;
   redeals: number;
+  /** Lowest move count among cleared games, or null before a recorded clear. */
+  minMoves: number | null;
   /** Guards against recording the same cleared game more than once. */
   clearRecorded: boolean;
   /** Guards against counting repeated playing renders as new games. */
@@ -23,7 +25,7 @@ type PerseveranceStatsAction =
 
 /** Returns empty Perseverance statistics. */
 export function emptyPerseveranceStats(): PerseveranceStats {
-  return { starts: 0, games: 0, moves: 0, redeals: 0, clearRecorded: false, gameStarted: false };
+  return { starts: 0, games: 0, moves: 0, redeals: 0, minMoves: null, clearRecorded: false, gameStarted: false };
 }
 
 /** Returns the whole-number clear rate, or zero before the first game starts. */
@@ -38,6 +40,7 @@ function isValidStats(value: unknown): value is PerseveranceStats {
     typeof stats.games === 'number' &&
     typeof stats.moves === 'number' &&
     typeof stats.redeals === 'number' &&
+    (stats.minMoves === undefined || stats.minMoves === null || typeof stats.minMoves === 'number') &&
     typeof stats.clearRecorded === 'boolean' &&
     (stats.starts === undefined || typeof stats.starts === 'number') &&
     (stats.gameStarted === undefined || typeof stats.gameStarted === 'boolean')
@@ -58,6 +61,7 @@ export function readPerseveranceStats(): PerseveranceStats {
     ...stats,
     starts: stats.starts ?? stats.games,
     gameStarted: stats.gameStarted ?? false,
+    minMoves: stats.minMoves ?? null,
   };
 }
 
@@ -86,6 +90,7 @@ export function applyPerseveranceStatsAction(
       games: prev.games + 1,
       moves: prev.moves + action.moveCount,
       redeals: prev.redeals + action.redealsLeft,
+      minMoves: prev.minMoves == null ? action.moveCount : Math.min(prev.minMoves, action.moveCount),
       clearRecorded: true,
       gameStarted: false,
     },

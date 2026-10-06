@@ -10,6 +10,8 @@
     "placedCount": "配置済み",
     "row": "行",
     "col": "列",
+    "rowNumber": "行{{row}}",
+    "columnNumber": "列{{col}}",
     "empty": "空",
     "cellEmptyAria": "空、行 {{row}}、列 {{col}}",
     "cellCardAria": "{{card}}、行 {{row}}、列 {{col}}"

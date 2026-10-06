@@ -569,7 +569,6 @@ func TestSevensCuiPresenter_ActionLogOutput(t *testing.T) {
 		entries := []*domain.ActionLogEntry{
 			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
-		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
 		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 		mockGame.On("GetPlayer", mock.Anything).Return(domain.NewSevensPlayer(true)).Maybe()
@@ -584,7 +583,6 @@ func TestSevensCuiPresenter_ActionLogOutput(t *testing.T) {
 
 	t.Run("nil_entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockSevensGame)
-		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 		mockGame.On("GetPlayer", mock.Anything).Return(domain.NewSevensPlayer(true)).Maybe()
@@ -597,11 +595,14 @@ func TestSevensCuiPresenter_ActionLogOutput(t *testing.T) {
 
 	t.Run("game_not_ended", func(t *testing.T) {
 		mockGame := new(interfaces.MockSevensGame)
-		mockGame.On("GetGameEndFlag").Return(false)
+		entries := []*domain.ActionLogEntry{{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub"}}
+		mockGame.On("GetActionLog").Return(entries)
+		mockGame.On("GetPlayer", mock.Anything).Return(domain.NewSevensPlayer(true)).Maybe()
 
 		result := p.ActionLogOutput(mockGame)
 
-		assert.Contains(t, result, "棋譜はありません")
+		assert.NotContains(t, result, "棋譜はありません")
+		assert.Contains(t, result, "テスト用の棋譜行")
 		mockGame.AssertExpectations(t)
 	})
 }

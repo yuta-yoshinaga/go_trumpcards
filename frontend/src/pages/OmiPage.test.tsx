@@ -551,6 +551,7 @@ describe('OmiPage', () => {
       expect(screen.getByText(/8トリック全取り/)).toBeInTheDocument();
       // 4-4 → 0 points
       expect(screen.getByText(/4-4/)).toBeInTheDocument();
+      expect(screen.getByText('10点先取で勝利')).toBeInTheDocument();
     });
   });
 
@@ -849,7 +850,7 @@ describe('OmiPage', () => {
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.omi).toHaveBeenCalledTimes(1));
-    expect(screen.getByText('棋譜')).toBeInTheDocument();
+    expect(await screen.findByText('棋譜')).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('閉じる'));
     await waitFor(() => expect(screen.queryByText(/^棋譜$/)).not.toBeInTheDocument());

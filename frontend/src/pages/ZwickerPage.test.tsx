@@ -237,6 +237,27 @@ describe('ZwickerPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
   });
 
+  it("shows both teams' deal scoring breakdown", async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: ZwickerPhase.ROUND_END,
+        lastRound: { cardPoints: [17, 10], cards: [30, 25], majorityTeam: 0, zwicks: [1, 0], total: [21, 10] },
+      }),
+    );
+    renderWithProviders(<ZwickerPage />);
+    const result = await screen.findByTestId('zwicker-round-result');
+    expect(result).toHaveTextContent('味方:');
+    expect(result).toHaveTextContent('カード得点 17');
+    expect(result).toHaveTextContent('獲得枚数 30');
+    expect(result).toHaveTextContent('Zwick 1回');
+    expect(result).toHaveTextContent('合計 21');
+    expect(result).toHaveTextContent('相手:');
+    expect(result).toHaveTextContent('カード得点 10');
+    expect(result).toHaveTextContent('獲得枚数 25');
+    expect(result).toHaveTextContent('Zwick 0回');
+    expect(result).toHaveTextContent('合計 10');
+  });
+
   // 同数で 3 点が宙に浮いたことを黙って通すと、合計が合わないように見える。
   it('says when the card counts were level', async () => {
     mockExec.mockResolvedValue(

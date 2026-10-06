@@ -4,8 +4,9 @@
 //
 // Brusquembille はイタリアの古典的なトリックテイキングゲーム。32枚デッキ
 // (8,9,10 を除く) を使い、本実装では 2 人対戦のみを扱う。最大の特徴は
-// 「リードスートに従う義務 (must-follow) がない」ことで、validatePlay は
-// 常に成功する。トリックの勝者はトランプ (brusquembille) > リードスートの
+// 「山札が残っているあいだはリードスートに従う義務 (must-follow) がなく、
+// 山札と表向きの切り札を使い切ると追従必須に切り替わる」二相構造にある。
+// トリックの勝者はトランプ (brusquembille) > リードスートの
 // ブリュスカンビーユ順位 で決まり、ブリュスカンビーユ順位は A>3>K>Q>J>7>6>5>4>2 となる。
 // 各カードには独自の点数 (A=11, 10=10, K=4, Q=3, J=2, それ以外=0) が
 // あり、合計 120 点を 2 人で取り合う。60 点を超えた側が勝者で、
@@ -489,10 +490,7 @@ func (b *Brusquembille) playCard(playerIdx int, card *Card) {
 	}
 }
 
-// validatePlay カードのプレイがルール上有効かを検証する。
-// Brusquembille には must-follow がないため、プレイヤーが手札に持つカードであれば常に有効。
-// IsFollowRequired は「いまリードスートに追従する義務があるか」を返す。
-//
+// IsFollowRequired は、いまリードスートに追従する義務があるかを返す。
 // **ブリュスカンビーユの肝はこの二相構造。** 山札が残っているあいだは
 // クローン元のブリスコラと同じく自由に出せるが、**山札を使い切った時点で
 // 追従必須に切り替わる**。前半は手札を補充できるので自由に捨てられ、
@@ -526,6 +524,9 @@ func (b *Brusquembille) leadSuit() int {
 	return -1
 }
 
+// validatePlay カードのプレイがルール上有効かを検証する。
+// 山札が残っているあいだは自由に出せる。山札と表向きの切り札を使い切った後は、
+// リードスートを持っていればそのスートに従う必要がある。
 func (b *Brusquembille) validatePlay(playerIdx int, card *Card) error {
 	if card == nil {
 		return NewDomainErrorCode(ErrInvalidCard, "brusquembille.errCardNil", nil)

@@ -358,10 +358,12 @@ describe('OhHellPage', () => {
   it('renders bid phase as a button group of bid choices', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<OhHellPage />);
+    const group = await screen.findByRole('group', { name: 'ビッド選択肢（0〜5）' });
+    expect(group).toBeInTheDocument();
     await waitFor(() => {
       // handSize = 5 \u2192 buttons 0..5
       for (let i = 0; i <= 5; i++) {
-        expect(screen.getByRole('button', { name: `\u30d3\u30c3\u30c9 ${i}` })).toBeInTheDocument();
+        expect(group.querySelector(`button[aria-label="ビッド ${i}"]`)).toBeInTheDocument();
       }
       // No legacy number input
       expect(screen.queryByLabelText('bid-input')).not.toBeInTheDocument();
@@ -752,7 +754,7 @@ describe('OhHellPage', () => {
     fireEvent.click(screen.getByText('\u68cb\u8b5c\u3092\u898b\u308b'));
 
     await waitFor(() => expect(actionLogApi.ohhell).toHaveBeenCalledTimes(1));
-    expect(screen.getByText('\u68cb\u8b5c')).toBeInTheDocument();
+    expect(await screen.findByText('\u68cb\u8b5c')).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('\u9589\u3058\u308b'));
     await waitFor(() => expect(screen.queryByText(/^\u68cb\u8b5c$/)).not.toBeInTheDocument());

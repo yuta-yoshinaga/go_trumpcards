@@ -103,8 +103,8 @@ type IronCross struct {
 	handStartChips []int
 	results        []IronCrossResult
 	gameEndFlag    bool
-	actionLog      []*ActionLogEntry
-	turnNumber     int
+	actionLogBase
+	turnNumber int
 }
 
 // NewIronCross は指定の山・席・設定で卓を構築する。
@@ -605,23 +605,10 @@ func (g *IronCross) GetResults() []IronCrossResult { return g.results }
 // GetRemainingCards は山の残り枚数を返す。
 func (g *IronCross) GetRemainingCards() int { return g.deck.GetRemainingCount() }
 
-// GetActionLog は棋譜を返す。
-func (g *IronCross) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // appendLog は棋譜に 1 行足す。
 func (g *IronCross) appendLogCode(seat int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber:   g.turnNumber,
-		PlayerIdx:    seat,
-		ActionType:   actionType,
-		DetailCode:   detailCode,
-		DetailParams: detailParams,
-		Cards:        cards,
-	})
-	if len(g.actionLog) > ironCrossMaxSliceLen {
-		g.actionLog = g.actionLog[len(g.actionLog)-ironCrossMaxSliceLen:]
-	}
+	g.appendLogCodeAt(g.turnNumber, seat, actionType, detailCode, detailParams, cards)
 }
 
 // --- 助言 ---

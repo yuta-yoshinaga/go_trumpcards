@@ -220,6 +220,26 @@ describe('SlapjackPage', () => {
     expect(screen.getAllByText(/26/).length).toBeGreaterThan(0);
   });
 
+  it('announces newly revealed non-J cards and leaves Jack announcements to the slap notice', async () => {
+    renderWithProviders(<SlapjackPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    const liveRegion = screen.getByTestId('sj-card-announce');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      centerPileSize: 1,
+      topCard: { design: 'HEART', value: 5 },
+    });
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('カードが出ました。♥ 5'));
+
+    mockExec.mockResolvedValueOnce(jackOnTopState);
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() => expect(screen.getByTestId('sj-jack-announce')).toHaveTextContent('スラップ可能です'));
+    expect(liveRegion).toBeEmptyDOMElement();
+  });
+
   it('shows accessible stock progress for both players and clamps an empty stock to zero', async () => {
     mockExec.mockResolvedValueOnce(gameEndState);
     renderWithProviders(<SlapjackPage />);

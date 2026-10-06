@@ -245,7 +245,7 @@ function MaoPageContent() {
     onToggle: toggleCard,
     onConfirm: confirmAction,
     onClear: clearSelection,
-    enabled: !!isHumanTurnForKbd && !loading,
+    enabled: !!isHumanTurnForKbd && !loading && actionLog === null,
   });
 
   const phaseNames = usePhaseNames('mao', MAO_PHASE_KEYS);
@@ -380,6 +380,7 @@ function MaoPageContent() {
 
                 <ActionLogSection
                   isEndPhase={isGameEnd}
+                  availableDuringPlay
                   actionLog={actionLog}
                   showActionLog={showActionLog}
                   hideActionLog={hideActionLog}

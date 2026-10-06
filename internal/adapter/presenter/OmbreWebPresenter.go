@@ -44,6 +44,12 @@ func (p *OmbreWebPresenter) buildBase(g interfaces.OmbreGame) *controller.OmbreW
 	resObj.OmbreIdx = g.GetOmbreIdx()
 	resObj.WinningBid = int(g.GetWinningBid())
 	resObj.HighestBid = int(g.GetHighestBid())
+	for i, bid := range g.GetBids() {
+		resObj.Bids[i] = int(bid)
+	}
+	resObj.BidActed = g.GetBidActed()
+	resObj.BidTrump = g.GetBidTrump()
+	resObj.HighestBidderIdx = g.GetHighestBidderIdx()
 	resObj.TrumpSuit = g.GetTrumpSuit()
 	resObj.Outcome = int(g.GetOutcome())
 	resObj.Result = int(g.GetResult())

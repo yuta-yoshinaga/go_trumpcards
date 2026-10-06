@@ -336,7 +336,7 @@ func (t *TexasHoldemBonus) resolve() {
 
 // appendLog records a Texas Hold'em Bonus action with a locale-independent detail code.
 func (t *TexasHoldemBonus) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	t.appendLogCodeAt(len(t.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+	t.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // compareBest プレイヤーとディーラーの最良5枚を比較する

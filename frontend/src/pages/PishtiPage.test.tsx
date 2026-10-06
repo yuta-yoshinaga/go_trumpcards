@@ -430,6 +430,21 @@ describe('PishtiPage', () => {
     expect(screen.getByTestId('pishti-provisional-note')).toBeInTheDocument();
   });
 
+  it('gives the provisional captured-count leader star a localized accessible name', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          makePlayer({ id: 0, isHuman: true, capturedCount: 8, provisionalScore: 10 }),
+          makePlayer({ id: 1, capturedCount: 4 }),
+          makePlayer({ id: 2, capturedCount: 2 }),
+          makePlayer({ id: 3, capturedCount: 0 }),
+        ],
+      }),
+    );
+    renderWithProviders(<PishtiPage />);
+    expect(await screen.findByRole('img', { name: '暫定の最多捕獲者' })).toHaveTextContent('★');
+  });
+
   // 最多捕獲が同数なら誰にも星は付かない。**点そのものはサーバの値**なので、
   // ここで見るのは星印の側 (枚数から出す唯一の表示)。
   it('marks nobody as the leader when the captured-count leader is tied', async () => {
@@ -448,6 +463,7 @@ describe('PishtiPage', () => {
     expect(humanReadout).toHaveTextContent('暫定 10点');
     expect(humanReadout).not.toHaveTextContent('★');
     expect(screen.getByTestId('pishti-provisional-1')).not.toHaveTextContent('★');
+    expect(screen.queryByRole('img', { name: '暫定の最多捕獲者' })).not.toBeInTheDocument();
   });
 
   it('hides the provisional readout and shows the final score on game end', async () => {
@@ -456,6 +472,7 @@ describe('PishtiPage', () => {
     await waitFor(() => expect(screen.getByText(/11点/)).toBeInTheDocument());
     expect(screen.queryByTestId('pishti-provisional-0')).not.toBeInTheDocument();
     expect(screen.queryByTestId('pishti-provisional-note')).not.toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: '暫定の最多捕獲者' })).not.toBeInTheDocument();
   });
 
   // **ヒント経路はページ側からも踏む。**ファクトリ単体テストだけだと

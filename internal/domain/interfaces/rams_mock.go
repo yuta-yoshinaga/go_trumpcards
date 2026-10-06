@@ -65,6 +65,16 @@ func (m *MockRamsGame) GetCurrentTrick() []*domain.TrickCard {
 	return args.Get(0).([]*domain.TrickCard)
 }
 
+func (m *MockRamsGame) GetLastTrick() []*domain.TrickCard {
+	args := m.Called()
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).([]*domain.TrickCard)
+}
+
+func (m *MockRamsGame) GetLastTrickWinnerIdx() int { return m.Called().Int(0) }
+
 func (m *MockRamsGame) GetValidPlayIndices(playerIdx int) []int {
 	args := m.Called(playerIdx)
 	if args.Get(0) == nil {

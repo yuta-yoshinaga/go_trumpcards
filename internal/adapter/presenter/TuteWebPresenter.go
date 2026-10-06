@@ -106,6 +106,7 @@ func (p *TuteWebPresenter) buildPlayersOutput(g interfaces.TuteGame) []*controll
 			Cards:      playerCardsToOutput(player, player.GetIsHuman()),
 			TrickCount: player.GetTrickCount(),
 			TeamScore:  teamScores[team],
+			TeamID:     team,
 		})
 	}
 	return out

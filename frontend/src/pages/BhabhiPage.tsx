@@ -222,6 +222,7 @@ function BhabhiPageContent() {
                 cardAriaLabelFor={(player, card) =>
                   t('trickCardByPlayer', { card: cardAlt(card), name: playerName(player.id, player.isHuman) })
                 }
+                cardKeyFor={(_, index) => `bhabhi-pile-${index}`}
                 wrap
               />
             </div>

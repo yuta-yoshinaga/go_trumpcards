@@ -14,6 +14,7 @@
   "forehand": "Forehand: {{name}}",
   "contractLine": "Contract: {{bid}} (needs {{need}} tricks)  declarers {{tricks}} - defenders {{opp}}",
   "playerLine": "{{name}} ({{role}}): {{cards}} cards  score: {{score}}  tricks: {{tricks}}",
+  "dealScoreDelta": "{{name}}: deal change {{score}} points",
   "roleDeclarer": "declarer",
   "roleDefender": "defender",
   "rolePartner": "partner",

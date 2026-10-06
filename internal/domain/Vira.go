@@ -475,7 +475,7 @@ func (g *Vira) longestSuit(playerIdx int) int {
 
 // appendLog 棋譜に 1 行追加する。
 func (g *Vira) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // finishMatch マッチを終え、持ち点最大のプレイヤーを勝者にする。

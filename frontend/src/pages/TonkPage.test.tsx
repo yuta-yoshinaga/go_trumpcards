@@ -145,6 +145,12 @@ describe('TonkPage', () => {
     // Select the non-meld card (index 4) as the discard → the three 7s light up.
     fireEvent.click(screen.getByTestId('tonk-hand-4'));
     await waitFor(() => expect(screen.getByTestId('tonk-hand-0')).toHaveAttribute('data-meld', 'true'));
+    const meldCard = screen.getByTestId('tonk-hand-0');
+    const descriptions = meldCard.getAttribute('aria-describedby')?.split(' ') ?? [];
+    expect(descriptions).toContain('tonk-meld-description-0');
+    expect(descriptions).toContain('tonk-discard-candidate-0');
+    expect(document.getElementById('tonk-meld-description-0')).toHaveTextContent('残りの手札でメルドを構成しています');
+    expect(document.getElementById('tonk-discard-candidate-0')).toHaveTextContent('ノック');
     expect(screen.getByTestId('tonk-hand-1')).toHaveAttribute('data-meld', 'true');
     expect(screen.getByTestId('tonk-hand-2')).toHaveAttribute('data-meld', 'true');
     expect(screen.getByTestId('tonk-hand-3')).not.toHaveAttribute('data-meld');

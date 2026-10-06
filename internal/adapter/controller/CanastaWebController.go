@@ -57,6 +57,7 @@ type CanastaWebOutput struct {
 	RoundNumber      int                       `json:"roundNumber"`
 	CurrentPlayerIdx int                       `json:"currentPlayerIdx"`
 	DiscardTop       *WebOutputCard            `json:"discardTop"`
+	DiscardPile      []*WebOutputCard          `json:"discardPile"`
 	DrawPileCount    int                       `json:"drawPileCount"`
 	DiscardPileCount int                       `json:"discardPileCount"`
 	IsFrozen         bool                      `json:"isFrozen"`
@@ -97,6 +98,7 @@ var NewCanastaWebController, NewCanastaWebControllerWithProvider = webController
 func newCanastaDefaultOutput(msg string) *CanastaWebOutput {
 	return &CanastaWebOutput{
 		Players:       make([]*CanastaWebOutputPlayer, 0),
+		DiscardPile:   make([]*WebOutputCard, 0),
 		WinnerIdx:     -1,
 		WebOutputBase: WebOutputBase{Message: msg},
 	}

@@ -5,12 +5,15 @@ package presenter
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 // newBanLuckForPresenter は本物のドメインを返す。
@@ -118,15 +121,99 @@ func TestBanLuckCuiPresenter_NamesTheBankerObligation(t *testing.T) {
 
 func TestBanLuckCuiPresenter_ShowsResults(t *testing.T) {
 	cp := new(BanLuckCuiPresenter)
-	out := cp.Output(banLuckSettled(t), nil)
+	g := banLuckSettled(t)
+	out := cp.Output(g, nil)
 
 	assert.Contains(t, out, "→", "収支が出ていない")
 	assert.NotContains(t, out, "banluck.")
+	banker := g.GetBankerSeat()
+	bankerName := g.GetPlayers()[banker].GetName()
+	bankerScore := g.GetHands()[banker].GetScore()
+	for i, result := range g.GetResults() {
+		if i == banker {
+			continue
+		}
+		outcome := map[domain.BanLuckOutcome]string{
+			domain.BanLuckOutcomeWin:  "勝ち",
+			domain.BanLuckOutcomeLose: "負け",
+			domain.BanLuckOutcomePush: "引き分け",
+		}[result.Outcome]
+		comparison := "親" + bankerName + "と比較: " + strconv.Itoa(g.GetHands()[i].GetScore()) + "対" + strconv.Itoa(bankerScore) + "、" + outcome
+		assert.Contains(t, out, comparison)
+	}
+	assert.Equal(t, len(g.GetResults())-1, strings.Count(out, "（親"+bankerName+"と比較:"))
 	// 役の名前が生キーでなく訳されている。
 	for _, name := range []string{"バスト", "通常", "ファイブドラゴン", "バンラック", "バンバン"} {
 		if assert.NotContains(t, out, "rank."+name) {
 			continue
 		}
+	}
+}
+
+func TestBanLuckCuiPresenter_ShowsComparisonOnGameEnd(t *testing.T) {
+	g := banLuckSettled(t)
+	if g.GetPhase() == domain.BanLuckPhaseRoundEnd {
+		config := g.GetConfig()
+		config.Rounds = g.GetRoundNumber()
+		g.SetConfig(config)
+		require.NoError(t, g.NextRound())
+	}
+	require.Equal(t, domain.BanLuckPhaseGameEnd, g.GetPhase())
+	out := new(BanLuckCuiPresenter).Output(g, nil)
+	bankerName := g.GetPlayers()[g.GetBankerSeat()].GetName()
+	assert.Equal(t, len(g.GetResults())-1, strings.Count(out, "（親"+bankerName+"と比較:"))
+	outcomes := map[domain.BanLuckOutcome]string{
+		domain.BanLuckOutcomeWin:  "勝ち",
+		domain.BanLuckOutcomeLose: "負け",
+		domain.BanLuckOutcomePush: "引き分け",
+	}
+	for i, result := range g.GetResults() {
+		if i != g.GetBankerSeat() {
+			want := "（親" + bankerName + "と比較: " + strconv.Itoa(g.GetHands()[i].GetScore()) + "対" + strconv.Itoa(g.GetHands()[g.GetBankerSeat()].GetScore()) + "、" + outcomes[result.Outcome] + "）"
+			assert.Contains(t, out, want)
+		}
+	}
+}
+
+func TestBanLuckOutcomeName(t *testing.T) {
+	tests := []struct {
+		outcome domain.BanLuckOutcome
+		want    string
+	}{
+		{domain.BanLuckOutcomeWin, "win"},
+		{domain.BanLuckOutcomeLose, "lose"},
+		{domain.BanLuckOutcomePush, "push"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.want, func(t *testing.T) {
+			assert.Equal(t, tt.want, banLuckOutcomeName(tt.outcome))
+		})
+	}
+}
+
+func TestBanLuckCuiPresenter_OmitsComparisonForInvalidHandsOrBanker(t *testing.T) {
+	tests := []struct {
+		name   string
+		banker int
+		hands  []*domain.BlackJackHand
+	}{
+		{name: "hands が短い", banker: 1, hands: []*domain.BlackJackHand{domain.NewBlackJackHand()}},
+		{name: "親が範囲外", banker: 3, hands: []*domain.BlackJackHand{domain.NewBlackJackHand(), domain.NewBlackJackHand()}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := new(interfaces.MockBanLuckGame)
+			players := []*domain.BanLuckPlayer{domain.NewBanLuckPlayer("子", 100, true), domain.NewBanLuckPlayer("親", 100, false)}
+			g.On("GetPhase").Return(domain.BanLuckPhaseRoundEnd)
+			g.On("GetResults").Return([]domain.BanLuckSeatResult{{Rank: domain.BanLuckRankPoint}, {Rank: domain.BanLuckRankPoint}})
+			g.On("GetPlayers").Return(players)
+			g.On("GetHands").Return(tt.hands)
+			g.On("GetBankerSeat").Return(tt.banker)
+			var sb strings.Builder
+			new(BanLuckCuiPresenter).writeResult(&sb, g)
+			assert.NotContains(t, sb.String(), "と比較:")
+			g.AssertExpectations(t)
+		})
 	}
 }
 

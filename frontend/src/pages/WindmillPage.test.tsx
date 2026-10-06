@@ -123,7 +123,9 @@ describe('WindmillPage', () => {
   it('shows the current card count beside each corner pile', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<WindmillPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '四隅組札0 1/13枚' })).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '四隅組札0 1/13枚、一番上の札は♦ K' })).toBeInTheDocument(),
+    );
     expect(screen.getByText('1枚')).toBeInTheDocument();
     expect(screen.getAllByText('0枚')).toHaveLength(3);
   });
@@ -133,7 +135,7 @@ describe('WindmillPage', () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<WindmillPage />);
     await waitFor(() => expect(screen.getByText('1/52')).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '中央組札 1/52枚' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '中央組札 1/52枚、一番上の札は♣ A' })).toBeInTheDocument();
   });
 
   it('labels an unopened corner as Kings-only', async () => {
@@ -159,12 +161,16 @@ describe('WindmillPage', () => {
     const sail = await screen.findByRole('button', { name: /: ♠ 9$/ });
     fireEvent.click(sail);
     await waitFor(() => expect(sail).toHaveAttribute('aria-pressed', 'true'));
-    const hintId = screen.getByRole('button', { name: '中央組札 1/52枚' }).getAttribute('aria-describedby');
+    const hintId = screen
+      .getByRole('button', { name: '中央組札 1/52枚、一番上の札は♣ A' })
+      .getAttribute('aria-describedby');
     expect(hintId).toBeNull();
-    expect(screen.getByRole('button', { name: '中央組札 1/52枚' })).not.toHaveAttribute('aria-disabled');
+    expect(screen.getByRole('button', { name: '中央組札 1/52枚、一番上の札は♣ A' })).not.toHaveAttribute(
+      'aria-disabled',
+    );
     mockExec.mockClear();
 
-    fireEvent.click(screen.getByRole('button', { name: '中央組札 1/52枚' }));
+    fireEvent.click(screen.getByRole('button', { name: '中央組札 1/52枚、一番上の札は♣ A' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'sail', col: 0 }, { zone: 'center' }));
   });
 
@@ -190,12 +196,12 @@ describe('WindmillPage', () => {
   it('pulls a corner card back onto the centre', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<WindmillPage />);
-    const corner = await screen.findByRole('button', { name: '四隅組札0 1/13枚' });
+    const corner = await screen.findByRole('button', { name: '四隅組札0 1/13枚、一番上の札は♦ K' });
     fireEvent.click(corner);
     await waitFor(() => expect(corner).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
 
-    fireEvent.click(screen.getByRole('button', { name: '中央組札 1/52枚' }));
+    fireEvent.click(screen.getByRole('button', { name: '中央組札 1/52枚、一番上の札は♣ A' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'corner', col: 0 }, { zone: 'center' }));
   });
 
@@ -207,7 +213,7 @@ describe('WindmillPage', () => {
     await waitFor(() => expect(wasteTop).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
 
-    fireEvent.click(screen.getByRole('button', { name: '中央組札 1/52枚' }));
+    fireEvent.click(screen.getByRole('button', { name: '中央組札 1/52枚、一番上の札は♣ A' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'center' }));
   });
 
