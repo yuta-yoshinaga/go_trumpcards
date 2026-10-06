@@ -48,8 +48,8 @@ type Tehonbiki struct {
 	result      TehonbikiResult
 	roundNo     int
 	gameEndFlag bool
-	actionLog   []*ActionLogEntry
-	turnNumber  int
+	actionLogBase
+	turnNumber int
 }
 
 func NewDefaultTehonbiki() *Tehonbiki {
@@ -153,22 +153,21 @@ func (g *Tehonbiki) NextRound() error {
 	g.result = TehonbikiResultNone
 	return nil
 }
-func (g *Tehonbiki) GetConfig() TehonbikiConfig      { return g.config }
-func (g *Tehonbiki) SetConfig(c TehonbikiConfig)     { g.config = c }
-func (g *Tehonbiki) GetPhase() TehonbikiPhase        { return g.phase }
-func (g *Tehonbiki) GetGameEndFlag() bool            { return g.gameEndFlag }
-func (g *Tehonbiki) GetParentCard() int              { return g.parentCard }
-func (g *Tehonbiki) GetNumbers() []int               { return g.numbers }
-func (g *Tehonbiki) GetBetType() TehonbikiBetType    { return g.betType }
-func (g *Tehonbiki) GetBet() int                     { return g.bet }
-func (g *Tehonbiki) GetPayout() int                  { return g.payout }
-func (g *Tehonbiki) GetResult() TehonbikiResult      { return g.result }
-func (g *Tehonbiki) GetChips() int                   { return g.player.GetChips() }
-func (g *Tehonbiki) SetChips(n int)                  { g.player.SetChips(n) }
-func (g *Tehonbiki) GetPlayer() *TehonbikiPlayer     { return g.player }
-func (g *Tehonbiki) GetRoundNumber() int             { return g.roundNo }
-func (g *Tehonbiki) GetRemainingCards() int          { return len(g.deck) }
-func (g *Tehonbiki) GetActionLog() []*ActionLogEntry { return g.actionLog }
+func (g *Tehonbiki) GetConfig() TehonbikiConfig   { return g.config }
+func (g *Tehonbiki) SetConfig(c TehonbikiConfig)  { g.config = c }
+func (g *Tehonbiki) GetPhase() TehonbikiPhase     { return g.phase }
+func (g *Tehonbiki) GetGameEndFlag() bool         { return g.gameEndFlag }
+func (g *Tehonbiki) GetParentCard() int           { return g.parentCard }
+func (g *Tehonbiki) GetNumbers() []int            { return g.numbers }
+func (g *Tehonbiki) GetBetType() TehonbikiBetType { return g.betType }
+func (g *Tehonbiki) GetBet() int                  { return g.bet }
+func (g *Tehonbiki) GetPayout() int               { return g.payout }
+func (g *Tehonbiki) GetResult() TehonbikiResult   { return g.result }
+func (g *Tehonbiki) GetChips() int                { return g.player.GetChips() }
+func (g *Tehonbiki) SetChips(n int)               { g.player.SetChips(n) }
+func (g *Tehonbiki) GetPlayer() *TehonbikiPlayer  { return g.player }
+func (g *Tehonbiki) GetRoundNumber() int          { return g.roundNo }
+func (g *Tehonbiki) GetRemainingCards() int       { return len(g.deck) }
 
 func tehonbikiIsHalfGroup(seen map[int]bool) bool {
 	first := seen[tehonbikiHalfFirstStart] && seen[tehonbikiHalfFirstStart+1] && seen[tehonbikiHalfFirstEnd]

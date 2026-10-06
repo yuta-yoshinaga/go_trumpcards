@@ -64,7 +64,7 @@ type Memory struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	turnNumber       int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewMemory コンストラクタ
@@ -325,9 +325,6 @@ func (m *Memory) IsHumanTurn() bool {
 // GetTurnNumber ターン番号取得
 func (m *Memory) GetTurnNumber() int { return m.turnNumber }
 
-// GetActionLog 棋譜取得
-func (m *Memory) GetActionLog() []*ActionLogEntry { return m.actionLog }
-
 // --- Private helpers ---
 
 // flip 1枚めくる
@@ -442,14 +439,7 @@ func (m *Memory) determineWinner() {
 
 // appendLog 棋譜エントリを追加
 func (m *Memory) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	m.actionLog = append(m.actionLog, &ActionLogEntry{
-		TurnNumber:   m.turnNumber,
-		PlayerIdx:    m.currentPlayerIdx,
-		ActionType:   actionType,
-		DetailCode:   detailCode,
-		DetailParams: detailParams,
-		Cards:        cards,
-	})
+	m.appendLogCodeAt(m.turnNumber, m.currentPlayerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // memoryJSON is the JSON wire format for Memory.
