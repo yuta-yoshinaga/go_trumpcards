@@ -23,31 +23,14 @@ func NewMissMilliganCuiController(mi usecase.MissMilliganInteractorIF) *MissMill
 
 // Exec コマンド実行
 func (c *MissMilliganCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(_ []string) string {
-			return c.mi.Reset()
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset: c.mi.Reset, move: c.handleMove, giveUp: c.mi.GiveUp,
+		autoComplete: c.mi.AutoComplete, undo: c.mi.Undo, hint: c.mi.Hint, actionLog: c.mi.ActionLog,
+		extraCommands: map[string]func([]string) string{
+			"d": func([]string) string { return c.mi.Deal() }, "deal": func([]string) string { return c.mi.Deal() },
+			"wv": c.handleWaive, "waive": c.handleWaive,
 		},
-		[]string{"d", "deal", "m", "move", "wv", "waive", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "d", "deal":
-				return c.mi.Deal(), true
-			case "m", "move":
-				return c.handleMove(args), true
-			case "wv", "waive":
-				return c.handleWaive(args), true
-			case "g", "giveup":
-				return c.mi.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.mi.AutoComplete(), true
-			case "u", "undo":
-				return c.mi.Undo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.mi.Hint, c.mi.ActionLog)
-			}
-		},
-	)
+	})
 }
 
 // handleWaive ウェイブコマンドを処理: wv <col> [<idx>]

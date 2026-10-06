@@ -166,6 +166,9 @@ func TestSolitaireCuiCommandNamesMatchMigratedControllers(t *testing.T) {
 		{"Easthaven", []string{"m", "move", "d", "deal", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "deal"}},
 		{"EightOff", []string{"m", "move", "f", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"f"}},
 		{"FreeCell", []string{"m", "move", "f", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"f"}},
+		{"GrandfathersClock", []string{"m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo", "redo"}, []string{"redo"}},
+		{"Matrimony", []string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "draw"}},
+		{"MissMilligan", []string{"d", "deal", "m", "move", "wv", "waive", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "deal", "wv", "waive"}},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -181,19 +184,22 @@ func TestSolitaireCuiCommandNamesMatchMigratedControllers(t *testing.T) {
 	// Exercise each real Exec as well: this catches a command accidentally
 	// omitted from a controller's extraCommands map.
 	execs := map[string]func(string) string{
-		"Alaska":       (&AlaskaCuiController{ri: new(mockusecase.MockAlaskaInteractor)}).Exec,
-		"AmericanToad": (&AmericanToadCuiController{ai: new(mockusecase.MockAmericanToadInteractor)}).Exec,
-		"BigBen":       (&BigBenCuiController{gi: new(mockusecase.MockBigBenInteractor)}).Exec,
-		"Braid":        (&BraidCuiController{bi: new(mockusecase.MockBraidInteractor)}).Exec,
-		"Colorado":     (&ColoradoCuiController{ci: new(mockusecase.MockColoradoInteractor)}).Exec,
-		"Congress":     (&CongressCuiController{ci: new(mockusecase.MockCongressInteractor)}).Exec,
-		"CrazyQuilt":   (&CrazyQuiltCuiController{ci: new(mockusecase.MockCrazyQuiltInteractor)}).Exec,
-		"Cruel":        (&CruelCuiController{ci: new(mockusecase.MockCruelInteractor)}).Exec,
-		"Diplomat":     (&DiplomatCuiController{ci: new(mockusecase.MockDiplomatInteractor)}).Exec,
-		"Duchess":      (&DuchessCuiController{di: new(mockusecase.MockDuchessInteractor)}).Exec,
-		"Easthaven":    (&EasthavenCuiController{ei: new(mockusecase.MockEasthavenInteractor)}).Exec,
-		"EightOff":     (&EightOffCuiController{ei: new(mockusecase.MockEightOffInteractor)}).Exec,
-		"FreeCell":     (&FreeCellCuiController{fi: new(mockusecase.MockFreeCellInteractor)}).Exec,
+		"Alaska":            (&AlaskaCuiController{ri: new(mockusecase.MockAlaskaInteractor)}).Exec,
+		"AmericanToad":      (&AmericanToadCuiController{ai: new(mockusecase.MockAmericanToadInteractor)}).Exec,
+		"BigBen":            (&BigBenCuiController{gi: new(mockusecase.MockBigBenInteractor)}).Exec,
+		"Braid":             (&BraidCuiController{bi: new(mockusecase.MockBraidInteractor)}).Exec,
+		"Colorado":          (&ColoradoCuiController{ci: new(mockusecase.MockColoradoInteractor)}).Exec,
+		"Congress":          (&CongressCuiController{ci: new(mockusecase.MockCongressInteractor)}).Exec,
+		"CrazyQuilt":        (&CrazyQuiltCuiController{ci: new(mockusecase.MockCrazyQuiltInteractor)}).Exec,
+		"Cruel":             (&CruelCuiController{ci: new(mockusecase.MockCruelInteractor)}).Exec,
+		"Diplomat":          (&DiplomatCuiController{ci: new(mockusecase.MockDiplomatInteractor)}).Exec,
+		"Duchess":           (&DuchessCuiController{di: new(mockusecase.MockDuchessInteractor)}).Exec,
+		"Easthaven":         (&EasthavenCuiController{ei: new(mockusecase.MockEasthavenInteractor)}).Exec,
+		"EightOff":          (&EightOffCuiController{ei: new(mockusecase.MockEightOffInteractor)}).Exec,
+		"FreeCell":          (&FreeCellCuiController{fi: new(mockusecase.MockFreeCellInteractor)}).Exec,
+		"GrandfathersClock": (&GrandfathersClockCuiController{gi: new(mockusecase.MockGrandfathersClockInteractor)}).Exec,
+		"Matrimony":         (&MatrimonyCuiController{ci: new(mockusecase.MockMatrimonyInteractor)}).Exec,
+		"MissMilligan":      (&MissMilliganCuiController{mi: new(mockusecase.MockMissMilliganInteractor)}).Exec,
 	}
 	for _, tc := range cases {
 		t.Run(tc.name+" Exec candidates", func(t *testing.T) {
