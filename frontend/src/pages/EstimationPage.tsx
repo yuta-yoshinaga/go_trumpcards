@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { estimationApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { EstimationPlayer, EstimationResponse } from '../types/card';
@@ -87,9 +88,7 @@ function EstimationPageContent() {
   );
   const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    void dispatch('reset');
-  }, [dispatch]);
+  useMountReset(dispatch);
 
   const handleReset = useCallback(() => {
     hideActionLog();

@@ -16,6 +16,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -87,10 +88,7 @@ function DoubleKlondikePageContent() {
   const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
   const [selected, setSelected] = useState<Selection | null>(null);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    exec('reset');
-  }, []);
+  useMountReset(exec);
 
   // Clear a stale selection whenever the board changes (move, draw, undo).
   // biome-ignore lint/correctness/useExhaustiveDependencies: deps are the change-trigger, not read in the body.

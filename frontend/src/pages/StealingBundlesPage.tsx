@@ -17,6 +17,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { isRejectedAction, useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { btnDanger, btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { StealingBundlesResponse } from '../types/card';
@@ -107,9 +108,7 @@ function StealingBundlesPageContent() {
   );
   const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    void dispatch('reset');
-  }, [dispatch]);
+  useMountReset(dispatch);
 
   const handleReset = useCallback(() => {
     hideActionLog();
