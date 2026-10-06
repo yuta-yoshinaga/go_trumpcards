@@ -51,7 +51,7 @@ func (p *EgyptianRatscrewWebPresenter) Output(g interfaces.EgyptianRatscrewGame,
 		})
 	}
 
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = buildEgyptianRatscrewMessage(g, lastErr)
+	resObj.Message, resObj.MessageCode = buildEgyptianRatscrewMessage(g, lastErr)
 	return marshalOrError(resObj)
 }
 
@@ -62,19 +62,19 @@ func (p *EgyptianRatscrewWebPresenter) ActionLogOutput(g interfaces.EgyptianRats
 
 // buildEgyptianRatscrewMessage ゲーム状態に応じたメッセージを生成する。
 // 終局フラグはエラーより優先する。詰みで Step が ErrInvalidPlay を返してもゲーム終了画面を出すため。
-func buildEgyptianRatscrewMessage(g interfaces.EgyptianRatscrewGame, lastErr error) (string, string, map[string]string) {
+func buildEgyptianRatscrewMessage(g interfaces.EgyptianRatscrewGame, lastErr error) (string, string) {
 	if g.GetGameEndFlag() {
 		switch g.GetWinnerIdx() {
 		case 0:
-			return "", "egyptianratscrew.result.humanWin", nil
+			return "", "egyptianratscrew.result.humanWin"
 		case -1:
-			return "", "egyptianratscrew.result.draw", nil
+			return "", "egyptianratscrew.result.draw"
 		default:
-			return "", "egyptianratscrew.result.cpuWin", nil
+			return "", "egyptianratscrew.result.cpuWin"
 		}
 	}
 	if lastErr != nil {
-		return lastErr.Error(), "error", nil
+		return lastErr.Error(), "error"
 	}
-	return "", "", nil
+	return "", ""
 }

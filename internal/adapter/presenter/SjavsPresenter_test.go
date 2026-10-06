@@ -186,7 +186,7 @@ func TestSjavsWebPresenter_MessageCodesTellTheDoubleVictoryApart(t *testing.T) {
 // can be pinned without stubbing the whole state.
 func presenterMessageCode(t *testing.T, g interfaces.SjavsGame) string {
 	t.Helper()
-	_, code, _ := new(SjavsWebPresenter).buildMessage(g, nil)
+	_, code := new(SjavsWebPresenter).buildMessage(g, nil)
 	return code
 }
 

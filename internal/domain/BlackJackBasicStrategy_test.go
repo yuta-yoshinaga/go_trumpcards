@@ -89,7 +89,8 @@ func TestGetBasicStrategyAction_Pairs(t *testing.T) {
 }
 
 func TestGetBasicStrategyAction_SoftHands(t *testing.T) {
-	mkSoft := func(aceVal, otherVal int) *domain.BlackJackHand {
+	mkSoft := func(otherVal int) *domain.BlackJackHand {
+
 		h := domain.NewBlackJackHand()
 		h.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false)) // Ace
 		h.AddCard(domain.NewCard(domain.CardDesignHeart, otherVal, false))
@@ -97,44 +98,44 @@ func TestGetBasicStrategyAction_SoftHands(t *testing.T) {
 	}
 
 	// Soft 13 (A+2): double vs 5-6, hit otherwise
-	s13 := mkSoft(1, 2)
+	s13 := mkSoft(2)
 	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(s13, domain.NewCard(domain.CardDesignClover, 5, false), false))
 	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s13, domain.NewCard(domain.CardDesignClover, 2, false), false))
 
 	// Soft 14 (A+3): double vs 5-6
-	s14 := mkSoft(1, 3)
+	s14 := mkSoft(3)
 	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(s14, domain.NewCard(domain.CardDesignClover, 6, false), false))
 	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s14, domain.NewCard(domain.CardDesignClover, 7, false), false))
 
 	// Soft 15 (A+4): double vs 4-6
-	s15 := mkSoft(1, 4)
+	s15 := mkSoft(4)
 	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(s15, domain.NewCard(domain.CardDesignClover, 4, false), false))
 	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s15, domain.NewCard(domain.CardDesignClover, 3, false), false))
 
 	// Soft 16 (A+5): double vs 4-6
-	s16 := mkSoft(1, 5)
+	s16 := mkSoft(5)
 	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(s16, domain.NewCard(domain.CardDesignClover, 4, false), false))
 	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s16, domain.NewCard(domain.CardDesignClover, 7, false), false))
 
 	// Soft 17 (A+6): double vs 3-6, hit vs 2 and 7+
-	s17 := mkSoft(1, 6)
+	s17 := mkSoft(6)
 	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(s17, domain.NewCard(domain.CardDesignClover, 3, false), false))
 	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s17, domain.NewCard(domain.CardDesignClover, 2, false), false))
 	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s17, domain.NewCard(domain.CardDesignClover, 7, false), false))
 
 	// Soft 18 (A+7): Ds (double-else-stand) vs 2-6, stand vs 7-8, hit vs 9-A
-	s18 := mkSoft(1, 7)
+	s18 := mkSoft(7)
 	assert.Equal(t, domain.BJSuggestDoubleStand, domain.GetBasicStrategyAction(s18, domain.NewCard(domain.CardDesignClover, 2, false), false))
 	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(s18, domain.NewCard(domain.CardDesignClover, 7, false), false))
 	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s18, domain.NewCard(domain.CardDesignClover, 9, false), false))
 
 	// Soft 19 (A+8): S17 では常にスタンド。6 に対するダブルは H17 のときだけ (#4705)。
-	s19 := mkSoft(1, 8)
+	s19 := mkSoft(8)
 	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(s19, domain.NewCard(domain.CardDesignClover, 6, false), false))
 	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(s19, domain.NewCard(domain.CardDesignClover, 7, false), false))
 
 	// Soft 20 (A+9): always stand
-	s20 := mkSoft(1, 9)
+	s20 := mkSoft(9)
 	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(s20, domain.NewCard(domain.CardDesignClover, 5, false), false))
 	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(s20, domain.NewCard(domain.CardDesignClover, 1, false), false))
 }

@@ -332,24 +332,24 @@ func (g *RussianBank) sourcePlayer(src RussianBankSource) *RussianBankPlayer {
 }
 
 // takeSource 移動元のトップカードを取り出す。
-func (g *RussianBank) takeSource(src RussianBankSource) *Card {
+func (g *RussianBank) takeSource(src RussianBankSource) {
 	switch src.Zone {
 	case RussianBankZoneReserve:
-		return g.sourcePlayer(src).popReserve()
+		g.sourcePlayer(src).popReserve()
+		return
 	case RussianBankZoneWaste:
-		return g.sourcePlayer(src).popWaste()
+		g.sourcePlayer(src).popWaste()
+		return
 	case RussianBankZoneTableau:
 		if src.Col < 0 || src.Col >= RussianBankTableauCnt {
-			return nil
+			return
 		}
-		c := rbTopCard(g.tableau[src.Col])
-		if c != nil {
+		if rbTopCard(g.tableau[src.Col]) != nil {
 			g.tableau[src.Col][len(g.tableau[src.Col])-1] = nil
 			g.tableau[src.Col] = g.tableau[src.Col][:len(g.tableau[src.Col])-1]
 		}
-		return c
 	default:
-		return nil
+		return
 	}
 }
 

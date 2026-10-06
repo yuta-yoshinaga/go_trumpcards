@@ -238,7 +238,7 @@ func stateTransitionRefs(blocks []docBlock) []diagramRef {
 // and are skipped -- the check fires only where the receiver is unambiguous.
 func TestDesignDocSequenceCallsExistInGo(t *testing.T) {
 	blocks := readDesignDoc(t, designDocPath)
-	surface := parseGoSurface(t, goSourceRoot)
+	surface := parseGoSurface(t)
 
 	checked := 0
 	var missing []string
@@ -273,7 +273,7 @@ func TestDesignDocSequenceCallsExistInGo(t *testing.T) {
 // whose *values* were right, so nothing else would ever have flagged them.
 func TestDesignDocStateConstantsExistInGo(t *testing.T) {
 	blocks := readDesignDoc(t, designDocPath)
-	surface := parseGoSurface(t, goSourceRoot)
+	surface := parseGoSurface(t)
 
 	refs := stateConstantRefs(blocks)
 	if len(refs) < 120 {
@@ -307,7 +307,7 @@ func TestDesignDocStateConstantsExistInGo(t *testing.T) {
 // is defined 578 times. The owner is the whole point of the check.
 func TestDesignDocStateTransitionsExistInGo(t *testing.T) {
 	blocks := readDesignDoc(t, designDocPath)
-	surface := parseGoSurface(t, goSourceRoot)
+	surface := parseGoSurface(t)
 
 	checked := 0
 	var missing []string
@@ -372,7 +372,7 @@ func TestDesignDocDiagramParsersCatchBreakage(t *testing.T) {
 	if calls[0].owner != "DurakInteractor" || calls[0].name != "NoSuchMethod" {
 		t.Errorf("sequenceCalls resolved %v, want DurakInteractor.NoSuchMethod -- alias resolution broke", calls[0])
 	}
-	surface := parseGoSurface(t, goSourceRoot)
+	surface := parseGoSurface(t)
 	if surface.has("DurakInteractor", "NoSuchMethod", map[string]bool{}) {
 		t.Error("surface claims DurakInteractor.NoSuchMethod exists -- the resolver is too permissive")
 	}
@@ -459,7 +459,7 @@ func TestDesignDocHeadingTrackingFollowsNonASCIISections(t *testing.T) {
 // Without this, tightening a regex until it matches nothing would look like a
 // clean bill of health in every other test here.
 func TestDesignDocDiagramParsersAcceptCorrectInput(t *testing.T) {
-	surface := parseGoSurface(t, goSourceRoot)
+	surface := parseGoSurface(t)
 
 	good := []docBlock{{
 		heading: "2.14 Durak アタック・ディフェンスフロー",

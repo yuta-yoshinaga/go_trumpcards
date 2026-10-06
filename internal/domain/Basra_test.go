@@ -31,7 +31,8 @@ func newTestBasra(t *testing.T, diff domain.BasraCpuDifficulty) *domain.Basra {
 }
 
 // setBasraHand はプレイヤー idx の手札を指定カードで上書きする。
-func setBasraHand(g *domain.Basra, idx int, cards ...*domain.Card) {
+func setBasraHand(g *domain.Basra, cards ...*domain.Card) {
+	idx := 0
 	p := g.GetPlayer(idx)
 	p.Reset()
 	for _, c := range cards {
@@ -83,7 +84,7 @@ func TestBasraRankCaptureIsBasra(t *testing.T) {
 	g := newTestBasra(t, domain.BasraCpuDifficultyNormal)
 	g.SetCurrentTurn(0)
 	g.SetTableCards([]*domain.Card{basraCard(domain.CardDesignSpade, 5)})
-	setBasraHand(g, 0, basraCard(domain.CardDesignHeart, 5))
+	setBasraHand(g, basraCard(domain.CardDesignHeart, 5))
 
 	require.NoError(t, g.PlayerPlay(0, []int{0}))
 	assert.Empty(t, g.GetTableCards())
@@ -108,7 +109,7 @@ func TestBasraSumCapture(t *testing.T) {
 		basraCard(domain.CardDesignHeart, 3),
 		basraCard(domain.CardDesignClover, 9),
 	})
-	setBasraHand(g, 0, basraCard(domain.CardDesignDiamond, 5))
+	setBasraHand(g, basraCard(domain.CardDesignDiamond, 5))
 
 	require.NoError(t, g.PlayerPlay(0, []int{0, 1}))
 	// 2+3 = 5 captured; the 9 remains, so no Basra.
@@ -125,7 +126,7 @@ func TestBasraJackSweep(t *testing.T) {
 		basraCard(domain.CardDesignHeart, 9),
 		basraCard(domain.CardDesignClover, domain.BasraJackValue),
 	})
-	setBasraHand(g, 0, basraCard(domain.CardDesignDiamond, domain.BasraJackValue))
+	setBasraHand(g, basraCard(domain.CardDesignDiamond, domain.BasraJackValue))
 
 	// Jack sweeps everything except the other Jack; table selection is ignored.
 	require.NoError(t, g.PlayerPlay(0, nil))
@@ -139,7 +140,7 @@ func TestBasraTrail(t *testing.T) {
 	g := newTestBasra(t, domain.BasraCpuDifficultyNormal)
 	g.SetCurrentTurn(0)
 	g.SetTableCards([]*domain.Card{basraCard(domain.CardDesignSpade, 5)})
-	setBasraHand(g, 0, basraCard(domain.CardDesignHeart, 9))
+	setBasraHand(g, basraCard(domain.CardDesignHeart, 9))
 
 	require.NoError(t, g.PlayerPlay(0, nil))
 	assert.Len(t, g.GetTableCards(), 2)
@@ -150,7 +151,7 @@ func TestBasraInvalidSelection(t *testing.T) {
 	g := newTestBasra(t, domain.BasraCpuDifficultyNormal)
 	g.SetCurrentTurn(0)
 	g.SetTableCards([]*domain.Card{basraCard(domain.CardDesignSpade, 5)})
-	setBasraHand(g, 0, basraCard(domain.CardDesignHeart, 9))
+	setBasraHand(g, basraCard(domain.CardDesignHeart, 9))
 
 	err := g.PlayerPlay(0, []int{0})
 	require.Error(t, err, "9 cannot capture a lone 5")
@@ -166,7 +167,7 @@ func TestBasraFaceCardRankOnly(t *testing.T) {
 		basraCard(domain.CardDesignSpade, 12), // Q
 		basraCard(domain.CardDesignHeart, 3),
 	})
-	setBasraHand(g, 0, basraCard(domain.CardDesignDiamond, 12)) // Q
+	setBasraHand(g, basraCard(domain.CardDesignDiamond, 12)) // Q
 
 	// Cannot capture the 3 with a Queen.
 	require.Error(t, g.PlayerPlay(0, []int{1}))
@@ -224,7 +225,7 @@ func TestBasraScoringBonuses(t *testing.T) {
 	}
 	// Pre-load the human's capture pile with bonus cards via a rank capture, then
 	// exhaust the deck by playing until game end.
-	setBasraHand(g, 0, basraCard(domain.CardDesignHeart, 5))
+	setBasraHand(g, basraCard(domain.CardDesignHeart, 5))
 	require.NoError(t, g.PlayerPlay(0, []int{0})) // Basra: captures the lone 5
 	assert.GreaterOrEqual(t, g.GetPlayer(0).GetBasraCount(), 1)
 }
@@ -244,7 +245,7 @@ func TestBasraHint(t *testing.T) {
 	g := newTestBasra(t, domain.BasraCpuDifficultyNormal)
 	g.SetCurrentTurn(0)
 	g.SetTableCards([]*domain.Card{basraCard(domain.CardDesignSpade, 5)})
-	setBasraHand(g, 0, basraCard(domain.CardDesignHeart, 5), basraCard(domain.CardDesignClover, 9))
+	setBasraHand(g, basraCard(domain.CardDesignHeart, 5), basraCard(domain.CardDesignClover, 9))
 	hint := g.GetHint()
 	require.NotNil(t, hint)
 	assert.NotEmpty(t, hint.CardIndices)

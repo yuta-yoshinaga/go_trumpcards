@@ -21,22 +21,22 @@ func (owp *ShortDeckWebPresenter) Output(o interfaces.ShortDeckGame, lastErr err
 func (owp *ShortDeckWebPresenter) buildOutput(o interfaces.ShortDeckGame, lastErr error) *controller.HoldemWebOutput {
 	resObj := buildCommunityCardBaseOutput(o)
 	resObj.Players = buildPokerPlayersOutput(o.GetPhase(), o.GetPlayerCnt(), func(i int) communityCardPresenterPlayer { return o.GetPlayer(i) }, domain.ShortDeckPhaseShowdown, domain.ShortDeckPhaseEnd, shortDeckHandName)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = owp.buildMessage(o, lastErr)
+	resObj.Message, resObj.MessageCode = owp.buildMessage(o, lastErr)
 	return resObj
 }
 
-func (owp *ShortDeckWebPresenter) buildMessage(o interfaces.ShortDeckGame, lastErr error) (string, string, map[string]string) {
+func (owp *ShortDeckWebPresenter) buildMessage(o interfaces.ShortDeckGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if o.IsMuckAvailable() {
-		return "Muck or show your hand.", "shortdeck.muck.prompt", nil
+		return "Muck or show your hand.", "shortdeck.muck.prompt"
 	}
 	if o.GetGameEndFlag() {
 		msg, code := owp.buildResultMessage(o)
-		return msg, code, nil
+		return msg, code
 	}
-	return "", "", nil
+	return "", ""
 }
 
 func (owp *ShortDeckWebPresenter) buildResultMessage(o interfaces.ShortDeckGame) (string, string) {

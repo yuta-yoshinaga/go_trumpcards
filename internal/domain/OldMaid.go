@@ -226,7 +226,7 @@ func (o *OldMaid) getActivePlayerCnt() int {
 }
 
 // checkGameEnd ゲーム終了チェック (残り1人なら負け確定)
-func (o *OldMaid) checkGameEnd() bool {
+func (o *OldMaid) checkGameEnd() {
 	active := o.getActivePlayerCnt()
 	if active <= 1 {
 		for i, p := range o.players {
@@ -236,9 +236,7 @@ func (o *OldMaid) checkGameEnd() bool {
 			}
 		}
 		o.gameEndFlag = true
-		return true
 	}
-	return false
 }
 
 // drawCard playerIdxがカードを引く (内部処理)

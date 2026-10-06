@@ -12,13 +12,13 @@ import (
 
 // newTcrAtAction は「配り終わってアクション待ち」の卓を、手札を指定して作る。
 // Bet を通さないので配りの乱数に依存しない。
-func newTcrAtAction(t *testing.T, player, dealer []*Card, ante, lowBonus int) *ThreeCardRummy {
+func newTcrAtAction(t *testing.T, player, dealer []*Card, lowBonus int) *ThreeCardRummy {
 	t.Helper()
 	tc := NewDefaultThreeCardRummy()
 	tc.SetPhase(ThreeCardRummyPhaseAction)
 	tc.SetPlayerHand(player)
 	tc.SetDealerHand(dealer)
-	tc.SetAnteBet(ante)
+	tc.SetAnteBet(10)
 	tc.SetLowBonusBet(lowBonus)
 	return tc
 }
@@ -37,7 +37,7 @@ func TestThreeCardRummy_TheLowerTotalWins(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tc := newTcrAtAction(t, tt.player, tt.dealer, 10, 0)
+			tc := newTcrAtAction(t, tt.player, tt.dealer, 0)
 			require.NoError(t, tc.Play())
 			assert.Equal(t, tt.want, tc.GetResult())
 		})
@@ -48,7 +48,7 @@ func TestThreeCardRummy_AMeldBeatsEveryUnmeldedHand(t *testing.T) {
 	// K-K-K は素点 30 だが役なので 0 点 -- ディーラーの 3 点 (A-A-A ではない
 	// ばらけた低い手) にも勝つ。役を 0 点に落とす扱いが勝敗まで届いているか。
 	// ディーラーも同ランク3枚だと同じ 0 点になるので、役にならない低い手を渡す。
-	tc := newTcrAtAction(t, tcrHand(0, 13, 1, 13, 2, 13), tcrHand(0, 1, 1, 1, 2, 2 /*=1+1+2=4*/), 10, 0)
+	tc := newTcrAtAction(t, tcrHand(0, 13, 1, 13, 2, 13), tcrHand(0, 1, 1, 1, 2, 2 /*=1+1+2=4*/), 0)
 	require.NoError(t, tc.Play())
 	assert.Equal(t, 0, tc.GetPlayerScore())
 	assert.Equal(t, 4, tc.GetDealerScore())
@@ -60,18 +60,18 @@ func TestThreeCardRummy_DealerQualifiesOnTwentyOrLess(t *testing.T) {
 	overLimit := tcrHand(0, 13, 1, 13, 2, 1 /*=10+10+1=21*/)
 	require.Equal(t, 21, ThreeCardRummyScore(overLimit), "境界のすぐ外側であること")
 
-	tc := newTcrAtAction(t, tcrHand(0, 2, 1, 3, 2, 5), tcrHand(0, 13, 1, 13, 2, 1), 10, 0)
+	tc := newTcrAtAction(t, tcrHand(0, 2, 1, 3, 2, 5), tcrHand(0, 13, 1, 13, 2, 1), 0)
 	require.NoError(t, tc.Play())
 	assert.False(t, tc.GetDealerQualified(), "21 点はクオリファイ上限を超える")
 
-	tc = newTcrAtAction(t, tcrHand(0, 2, 1, 3, 2, 5), tcrHand(0, 13, 1, 9, 2, 1 /*=10+9+1=20*/), 10, 0)
+	tc = newTcrAtAction(t, tcrHand(0, 2, 1, 3, 2, 5), tcrHand(0, 13, 1, 9, 2, 1 /*=10+9+1=20*/), 0)
 	require.NoError(t, tc.Play())
 	assert.True(t, tc.GetDealerQualified(), "20 点ちょうどはクオリファイする")
 }
 
 func TestThreeCardRummy_AnUnqualifiedDealerPaysTheAnteAndPushesThePlay(t *testing.T) {
 	// **負けの手でも払い戻される。** ディーラーが降りているので勝敗は関係ない。
-	tc := newTcrAtAction(t, tcrHand(0, 13, 1, 12, 2, 5 /*=25*/), tcrHand(0, 13, 1, 12, 2, 1 /*=21 -> 未クオリファイ*/), 10, 0)
+	tc := newTcrAtAction(t, tcrHand(0, 13, 1, 12, 2, 5 /*=25*/), tcrHand(0, 13, 1, 12, 2, 1 /*=21 -> 未クオリファイ*/), 0)
 	tc.SetChips(10) // プレイベット分ちょうど。解決後の残高が配当そのものになる。
 	require.NoError(t, tc.Play())
 
@@ -100,7 +100,7 @@ func TestThreeCardRummy_AnteBonusPaysByHowLowTheHandIs(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// ディーラーは常に未クオリファイの高い手にして、ボーナス以外を固定する。
-			tc := newTcrAtAction(t, tt.hand, tcrHand(0, 13, 1, 12, 2, 6), 10, 0)
+			tc := newTcrAtAction(t, tt.hand, tcrHand(0, 13, 1, 12, 2, 6), 0)
 			require.NoError(t, tc.Play())
 			assert.Equal(t, tt.wantScore, tc.GetPlayerScore())
 			assert.Equal(t, tt.wantPayout, tc.GetAnteBonusPayout())
@@ -110,7 +110,7 @@ func TestThreeCardRummy_AnteBonusPaysByHowLowTheHandIs(t *testing.T) {
 
 func TestThreeCardRummy_LowBonusIsIndependentOfTheDealer(t *testing.T) {
 	// **降りても評価される。** 賭けたのは勝負ではなく自分の点の低さ。
-	tc := newTcrAtAction(t, tcrHand(0, 13, 1, 13, 2, 13), tcrHand(0, 1, 1, 2, 2, 4 /*=7*/), 10, 20)
+	tc := newTcrAtAction(t, tcrHand(0, 13, 1, 13, 2, 13), tcrHand(0, 1, 1, 2, 2, 4 /*=7*/), 20)
 	require.NoError(t, tc.Fold())
 	assert.Equal(t, GameResultLose, tc.GetResult(), "勝負そのものは降りたので負け")
 	assert.Equal(t, 0, tc.GetAnteBonusPayout(), "アンテボーナスは降りたら付かない")
@@ -130,7 +130,7 @@ func TestThreeCardRummy_LowBonusRatesStepWithTheScore(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tc := newTcrAtAction(t, tt.hand, tcrHand(0, 13, 1, 12, 2, 6), 10, 20)
+			tc := newTcrAtAction(t, tt.hand, tcrHand(0, 13, 1, 12, 2, 6), 20)
 			require.NoError(t, tc.Fold())
 			assert.Equal(t, tt.want, tc.GetLowBonusPayout())
 		})
@@ -138,7 +138,7 @@ func TestThreeCardRummy_LowBonusRatesStepWithTheScore(t *testing.T) {
 }
 
 func TestThreeCardRummy_NoLowBonusBetPaysNothingEvenOnAMeld(t *testing.T) {
-	tc := newTcrAtAction(t, tcrHand(0, 13, 1, 13, 2, 13), tcrHand(0, 1, 1, 1, 2, 2), 10, 0)
+	tc := newTcrAtAction(t, tcrHand(0, 13, 1, 13, 2, 13), tcrHand(0, 1, 1, 1, 2, 2), 0)
 	require.NoError(t, tc.Play())
 	assert.Equal(t, 0, tc.GetLowBonusPayout(), "賭けていない側注に配当は出ない")
 }
@@ -246,7 +246,7 @@ func TestThreeCardRummy_ResetLeavesAFundedPlayerAlone(t *testing.T) {
 }
 
 func TestThreeCardRummy_WinningCreditsEveryPayoutToTheStack(t *testing.T) {
-	tc := newTcrAtAction(t, tcrHand(0, 13, 1, 13, 2, 13 /*役 0*/), tcrHand(0, 13, 1, 9, 2, 1 /*=20, クオリファイ*/), 10, 20)
+	tc := newTcrAtAction(t, tcrHand(0, 13, 1, 13, 2, 13 /*役 0*/), tcrHand(0, 13, 1, 9, 2, 1 /*=20, クオリファイ*/), 20)
 	tc.SetChips(10) // プレイベット分ちょうど。
 	require.NoError(t, tc.Play())
 
@@ -293,7 +293,7 @@ func TestThreeCardRummy_GetNetChangeMatchesChipMovement(t *testing.T) {
 }
 
 func TestThreeCardRummy_LosingForfeitsTheAnteAndPlayBets(t *testing.T) {
-	tc := newTcrAtAction(t, tcrHand(0, 13, 1, 12, 2, 5 /*=25*/), tcrHand(0, 2, 1, 3, 2, 5 /*=10*/), 10, 0)
+	tc := newTcrAtAction(t, tcrHand(0, 13, 1, 12, 2, 5 /*=25*/), tcrHand(0, 2, 1, 3, 2, 5 /*=10*/), 0)
 	tc.SetChips(10)
 	require.NoError(t, tc.Play())
 	assert.Equal(t, GameResultLose, tc.GetResult())
@@ -303,7 +303,7 @@ func TestThreeCardRummy_LosingForfeitsTheAnteAndPlayBets(t *testing.T) {
 }
 
 func TestThreeCardRummy_APushReturnsBothBets(t *testing.T) {
-	tc := newTcrAtAction(t, tcrHand(0, 4, 1, 5, 2, 6), tcrHand(1, 6, 2, 4, 0, 5), 10, 0)
+	tc := newTcrAtAction(t, tcrHand(0, 4, 1, 5, 2, 6), tcrHand(1, 6, 2, 4, 0, 5), 0)
 	tc.SetChips(10)
 	require.NoError(t, tc.Play())
 	assert.Equal(t, GameResultDraw, tc.GetResult())
@@ -396,12 +396,12 @@ func tcrHugeCardArray() string {
 func TestThreeCardRummy_FoldingStillRecordsWhetherTheDealerQualified(t *testing.T) {
 	// 降りても結果画面はディーラーの手を開いて資格を書く。計算しないと
 	// dealerQualified が false のまま残り、4 点の手に「クオリファイせず」と出る。
-	tc := newTcrAtAction(t, tcrHand(0, 13, 1, 12, 2, 5), tcrHand(0, 1, 1, 1, 2, 2 /*=4*/), 10, 0)
+	tc := newTcrAtAction(t, tcrHand(0, 13, 1, 12, 2, 5), tcrHand(0, 1, 1, 1, 2, 2 /*=4*/), 0)
 	require.NoError(t, tc.Fold())
 	assert.Equal(t, 4, tc.GetDealerScore())
 	assert.True(t, tc.GetDealerQualified(), "4 点はクオリファイ上限の 20 を大きく下回る")
 
-	tc = newTcrAtAction(t, tcrHand(0, 13, 1, 12, 2, 5), tcrHand(0, 13, 1, 12, 2, 1 /*=21*/), 10, 0)
+	tc = newTcrAtAction(t, tcrHand(0, 13, 1, 12, 2, 5), tcrHand(0, 13, 1, 12, 2, 1 /*=21*/), 0)
 	require.NoError(t, tc.Fold())
 	assert.False(t, tc.GetDealerQualified(), "21 点は上限を超える")
 }
@@ -414,7 +414,7 @@ func TestThreeCardRummy_AnUnqualifiedDealerIsNeverAnnouncedAsALoss(t *testing.T)
 	// +10 されていた (全配り 8.7%)。
 	tc := newTcrAtAction(t,
 		tcrHand(0, 13, 1, 13, 2, 12 /*=30、最悪級の手*/),
-		tcrHand(0, 12, 1, 12, 2, 1 /*=21、クオリファイ上限のすぐ上*/), 10, 0)
+		tcrHand(0, 12, 1, 12, 2, 1 /*=21、クオリファイ上限のすぐ上*/), 0)
 	tc.SetChips(10) // プレイベット分ちょうど
 	require.NoError(t, tc.Play())
 
@@ -428,7 +428,7 @@ func TestThreeCardRummy_AnUnqualifiedDealerIsNeverAnnouncedAsALoss(t *testing.T)
 func TestThreeCardRummy_AQualifiedDealerStillDecidesOnTheScores(t *testing.T) {
 	// クオリファイした卓では従来どおり点数の大小で決める。上のショートカットが
 	// 通常の勝敗まで飲み込んでいないことを押さえる。
-	tc := newTcrAtAction(t, tcrHand(0, 13, 1, 12, 2, 5 /*=25*/), tcrHand(0, 2, 1, 3, 2, 5 /*=10*/), 10, 0)
+	tc := newTcrAtAction(t, tcrHand(0, 13, 1, 12, 2, 5 /*=25*/), tcrHand(0, 2, 1, 3, 2, 5 /*=10*/), 0)
 	tc.SetChips(10)
 	require.NoError(t, tc.Play())
 	require.True(t, tc.GetDealerQualified())

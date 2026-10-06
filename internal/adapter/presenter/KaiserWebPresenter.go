@@ -75,7 +75,7 @@ func (p *KaiserWebPresenter) Output(g interfaces.KaiserGame, lastErr error) stri
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(g, lastErr)
 
 	return marshalOrError(resObj)
 }
@@ -120,34 +120,34 @@ func (p *KaiserWebPresenter) buildPlayersOutput(g interfaces.KaiserGame) []*cont
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *KaiserWebPresenter) buildMessage(g interfaces.KaiserGame, lastErr error) (string, string, map[string]string) {
+func (p *KaiserWebPresenter) buildMessage(g interfaces.KaiserGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if g.GetGameEndFlag() {
 		// **チーム戦なので勝敗は席ではなくチームで見る。**人間は席 0 = チーム 0。
 		if g.GetWinnerTeam() == domain.KaiserTeamOf(0) {
-			return "your team wins", "kaiser.result.humanWin", nil
+			return "your team wins", "kaiser.result.humanWin"
 		}
-		return "your team loses", "kaiser.result.cpuWin", nil
+		return "your team loses", "kaiser.result.cpuWin"
 	}
 	switch g.GetPhase() {
 	case domain.KaiserPhaseBid:
-		return "", "kaiser.bidPhase", nil
+		return "", "kaiser.bidPhase"
 	case domain.KaiserPhaseDiscard:
 		if g.GetContract() == domain.KaiserContractTrump && g.GetTrumpSuit() == 0 {
-			return "", "kaiser.nameTrump", nil
+			return "", "kaiser.nameTrump"
 		}
-		return "", "kaiser.discardPhase", nil
+		return "", "kaiser.discardPhase"
 	case domain.KaiserPhasePlay:
-		return "", "kaiser.playPhase", nil
+		return "", "kaiser.playPhase"
 	case domain.KaiserPhaseHandEnd:
 		if g.IsBidMade() {
-			return "", "kaiser.handMade", nil
+			return "", "kaiser.handMade"
 		}
-		return "", "kaiser.handSet", nil
+		return "", "kaiser.handSet"
 	}
-	return "", "", nil
+	return "", ""
 }
 
 // ActionLogOutput 棋譜をJSON出力

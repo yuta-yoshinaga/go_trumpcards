@@ -2824,7 +2824,7 @@ func TestPoker_Reset_CpuCount(t *testing.T) {
 	})
 }
 
-func makePokerWithConfig(phase int, limit BettingLimitType) (*Poker, []*PokerPlayer) {
+func makePokerWithConfig(limit BettingLimitType) (*Poker, []*PokerPlayer) {
 	tc := NewTrumpCards(0)
 	players := []*PokerPlayer{
 		NewPokerPlayer(true, PokerStyleBalanced),
@@ -2839,7 +2839,7 @@ func makePokerWithConfig(phase int, limit BettingLimitType) (*Poker, []*PokerPla
 		p.SetChips(1000)
 	}
 	pk.setStartingChips([]int{1000, 1000, 1000, 1000})
-	pk.SetPhase(phase)
+	pk.SetPhase(PokerPhaseDeal)
 	pk.SetCurrentTurn(0)
 	pk.SetLastBet(0)
 	pk.SetMinRaise(10)
@@ -2862,7 +2862,7 @@ func TestPoker_GetRaiseCount(t *testing.T) {
 
 func TestPoker_BettingLimits_PotLimit(t *testing.T) {
 	t.Run("bet exceeding pot limit is rejected", func(t *testing.T) {
-		pk, _ := makePokerWithConfig(PokerPhaseDeal, BettingLimitPotLimit)
+		pk, _ := makePokerWithConfig(BettingLimitPotLimit)
 		pk.SetPot(100)
 		pk.SetLastBet(0)
 		// maxBetAmount = pot + lastBet = 100 + 0 = 100; bet 130 > 100
@@ -2872,7 +2872,7 @@ func TestPoker_BettingLimits_PotLimit(t *testing.T) {
 	})
 
 	t.Run("bet within pot limit succeeds", func(t *testing.T) {
-		pk, _ := makePokerWithConfig(PokerPhaseDeal, BettingLimitPotLimit)
+		pk, _ := makePokerWithConfig(BettingLimitPotLimit)
 		pk.SetPot(100)
 		pk.SetLastBet(0)
 		// maxBetAmount = pot + lastBet = 100 + 0 = 100; bet 100 is within limit
@@ -2883,7 +2883,7 @@ func TestPoker_BettingLimits_PotLimit(t *testing.T) {
 
 func TestPoker_cpuDecide_PotLimitClamp(t *testing.T) {
 	// PotLimit 時、CPUのベット額がポット上限を超えた場合にクランプされることを確認
-	pk, players := makePokerWithConfig(PokerPhaseDeal, BettingLimitPotLimit)
+	pk, players := makePokerWithConfig(BettingLimitPotLimit)
 	pk.SetPot(15)
 	pk.SetLastBet(0)
 	// maxBetAmount = pot + lastBet = 15
@@ -2903,7 +2903,7 @@ func TestPoker_cpuDecide_PotLimitClamp(t *testing.T) {
 
 func TestPoker_BettingLimits_NoLimit(t *testing.T) {
 	t.Run("bet succeeds even when raiseCount exceeds fixed limit cap", func(t *testing.T) {
-		pk, _ := makePokerWithConfig(PokerPhaseDeal, BettingLimitNoLimit)
+		pk, _ := makePokerWithConfig(BettingLimitNoLimit)
 		pk.setRaiseCount(10) // well past fixed limit of 4
 		// NoLimit has maxRaises=0, so no raise cap
 		err := pk.PlayerAction(PokerActionBet, 20, 0)

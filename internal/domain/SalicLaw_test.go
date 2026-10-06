@@ -43,10 +43,9 @@ func openAllSalicLawPiles(c *SalicLaw) {
 }
 
 // salicLawPush puts a card on top of an already-open column.
-func salicLawPush(c *SalicLaw, pile, design, value int) *Card {
+func salicLawPush(c *SalicLaw, pile, design, value int) {
 	card := NewCard(design, value, true)
 	c.tableau[pile] = append(c.tableau[pile], card)
-	return card
 }
 
 func TestNewSalicLaw(t *testing.T) {

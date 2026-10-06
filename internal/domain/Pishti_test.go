@@ -13,10 +13,10 @@ func pishtiCard(d, v int) *Card { return NewCard(d, v, false) }
 
 // pishtiNewGame は手札・場を空にした 2-4 人ゲームをセットアップする。
 // 山札はシャッフル済みだが、テストは手札/場を手動で組むため順序に依存しない。
-func pishtiNewGame(playerCnt int) *Pishti {
+func pishtiNewGame() *Pishti {
 	cfg := DefaultPishtiConfig()
-	cfg.PlayerCnt = playerCnt
-	players := makePishtiPlayers(playerCnt)
+	cfg.PlayerCnt = 2
+	players := makePishtiPlayers(2)
 	g := NewPishti(NewTrumpCards(0), players, cfg)
 	// 配札せず空の状態から開始する (手動セットアップ用)。
 	g.state.pile = []*Card{}
@@ -64,7 +64,7 @@ func TestPishti_Reset_DealsAndNonJackTop(t *testing.T) {
 }
 
 func TestPishti_Capture_RankMatch(t *testing.T) {
-	g := pishtiNewGame(2)
+	g := pishtiNewGame()
 	// 場: 5♠ (単独以外にするため 2 枚)。
 	g.state.pile = []*Card{pishtiCard(CardDesignDiamond, 9), pishtiCard(CardDesignSpade, 5)}
 	g.state.currentTurn = 0
@@ -87,7 +87,7 @@ func TestPishti_Capture_RankMatch(t *testing.T) {
 }
 
 func TestPishti_Capture_JackWild(t *testing.T) {
-	g := pishtiNewGame(2)
+	g := pishtiNewGame()
 	g.state.pile = []*Card{pishtiCard(CardDesignDiamond, 9), pishtiCard(CardDesignSpade, 5)}
 	g.state.currentTurn = 0
 	g.players[0].AddCard(pishtiCard(CardDesignClover, PishtiJackValue)) // Jack
@@ -103,7 +103,7 @@ func TestPishti_Capture_JackWild(t *testing.T) {
 }
 
 func TestPishti_Pisti_SingleCardBonus(t *testing.T) {
-	g := pishtiNewGame(2)
+	g := pishtiNewGame()
 	g.state.pile = []*Card{pishtiCard(CardDesignSpade, 7)} // lone single
 	g.state.currentTurn = 0
 	g.players[0].AddCard(pishtiCard(CardDesignHeart, 7)) // rank match
@@ -128,7 +128,7 @@ func TestPishti_Pisti_SingleCardBonus(t *testing.T) {
 }
 
 func TestPishti_Pisti_JackOnSingleNonJack(t *testing.T) {
-	g := pishtiNewGame(2)
+	g := pishtiNewGame()
 	g.state.pile = []*Card{pishtiCard(CardDesignSpade, 7)} // lone non-Jack
 	g.state.currentTurn = 0
 	g.players[0].AddCard(pishtiCard(CardDesignHeart, PishtiJackValue))
@@ -141,7 +141,7 @@ func TestPishti_Pisti_JackOnSingleNonJack(t *testing.T) {
 }
 
 func TestPishti_Pisti_JackOnSingleJack(t *testing.T) {
-	g := pishtiNewGame(2)
+	g := pishtiNewGame()
 	g.state.pile = []*Card{pishtiCard(CardDesignSpade, PishtiJackValue)} // lone Jack
 	g.state.currentTurn = 0
 	g.players[0].AddCard(pishtiCard(CardDesignHeart, PishtiJackValue))
@@ -154,7 +154,7 @@ func TestPishti_Pisti_JackOnSingleJack(t *testing.T) {
 }
 
 func TestPishti_NoCapture_Stacking(t *testing.T) {
-	g := pishtiNewGame(2)
+	g := pishtiNewGame()
 	g.state.pile = []*Card{pishtiCard(CardDesignSpade, 7)}
 	g.state.currentTurn = 0
 	g.players[0].AddCard(pishtiCard(CardDesignHeart, 3)) // no match, not jack
@@ -174,7 +174,7 @@ func TestPishti_NoCapture_Stacking(t *testing.T) {
 }
 
 func TestPishti_PlayerPlay_Guards(t *testing.T) {
-	g := pishtiNewGame(2)
+	g := pishtiNewGame()
 	g.state.currentTurn = 1 // CPU
 	g.players[1].AddCard(pishtiCard(CardDesignHeart, 3))
 	if err := g.PlayerPlay(0); err != ErrNotHumanTurn {
@@ -192,7 +192,7 @@ func TestPishti_PlayerPlay_Guards(t *testing.T) {
 }
 
 func TestPishti_FinalScore_AllBonuses(t *testing.T) {
-	g := pishtiNewGame(2)
+	g := pishtiNewGame()
 	// Player 0: most cards + an Ace + 2♣ + 10♦ + a Jack.
 	g.players[0].AddCaptured([]*Card{
 		pishtiCard(CardDesignSpade, 1),               // Ace +1
@@ -217,7 +217,7 @@ func TestPishti_FinalScore_AllBonuses(t *testing.T) {
 }
 
 func TestPishti_FinalScore_MostCardsTieNoBonus(t *testing.T) {
-	g := pishtiNewGame(2)
+	g := pishtiNewGame()
 	g.players[0].AddCaptured([]*Card{pishtiCard(CardDesignSpade, 4), pishtiCard(CardDesignSpade, 5)})
 	g.players[1].AddCaptured([]*Card{pishtiCard(CardDesignHeart, 4), pishtiCard(CardDesignHeart, 5)})
 	scores := g.calcFinalScore()
@@ -248,7 +248,7 @@ func TestPishti_CardPoints(t *testing.T) {
 }
 
 func TestPishti_ReDeal(t *testing.T) {
-	g := pishtiNewGame(2)
+	g := pishtiNewGame()
 	// 各プレイヤー手札 1 枚、山札を尽きていない状態にする。
 	g.trumpCards = NewTrumpCards(0) // 52 枚 (未配布)
 	g.state.pile = []*Card{pishtiCard(CardDesignSpade, 9)}

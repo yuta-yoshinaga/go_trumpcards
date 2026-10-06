@@ -524,7 +524,7 @@ func renderRow(cells []BJSuggestedAction) string {
 }
 
 // evOfAction は指定アクションの純益を返す (比較用)。
-func (r solverRules) evOfAction(h handState, upcard int, a BJSuggestedAction, isPair bool, pairValue int) float64 {
+func (r solverRules) evOfAction(h handState, upcard int, a BJSuggestedAction, pairValue int) float64 {
 	dealer := r.dealerDist(upcard)
 	memo := map[string]float64{}
 	switch a {

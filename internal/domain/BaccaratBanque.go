@@ -205,7 +205,7 @@ func (b *BaccaratBanque) resolvePunters() {
 		case BaccaratBanqueDrawMust:
 			b.dealThird(idx)
 		case BaccaratBanqueDrawFree:
-			if b.punterTakesOnFive(idx) {
+			if b.punterTakesOnFive() {
 				b.dealThird(idx)
 			}
 		}

@@ -29,7 +29,7 @@ func fbTampered(t *testing.T, base *FreeBetBlackjack, mutate func(m map[string]a
 // fbMidRound は無料スプリット済みでプレイ中の盤面を返す。
 func fbMidRound(t *testing.T) *FreeBetBlackjack {
 	t.Helper()
-	g := fbStaged(t, 100,
+	g := fbStaged(t,
 		[]*Card{fbCard(CardDesignSpade, 8), fbCard(CardDesignHeart, 8)},
 		[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 7)})
 	require.NoError(t, g.FreeSplit())

@@ -17,24 +17,24 @@ import (
 
 // newSambaGuardMocks builds a presenter/game pair whose Output always returns
 // the sentinel string, so each command's guard/error branch can be asserted.
-func newSambaGuardMocks() (*presenter.MockSambaPresenter, *interfaces.MockSambaGame, *usecase.SambaInteractor) {
+func newSambaGuardMocks() (*interfaces.MockSambaGame, *usecase.SambaInteractor) {
 	pMock := new(presenter.MockSambaPresenter)
 	pMock.On("Output", mock.Anything, mock.Anything).Return("out")
 	gameMock := new(interfaces.MockSambaGame)
 	ci := usecase.NewSambaInteractor(gameMock, pMock)
-	return pMock, gameMock, ci
+	return gameMock, ci
 }
 
 func TestSambaInteractor_GameEndedGuards(t *testing.T) {
 	t.Run("DrawFromDiscard blocked when game ended", func(t *testing.T) {
-		_, gameMock, ci := newSambaGuardMocks()
+		gameMock, ci := newSambaGuardMocks()
 		gameMock.On("GetGameEndFlag").Return(true)
 		assert.Equal(t, "out", ci.DrawFromDiscard([]int{0, 1}))
 		gameMock.AssertNotCalled(t, "PlayerDrawFromDiscard", mock.Anything)
 	})
 
 	t.Run("DrawFromDiscard blocked when not human", func(t *testing.T) {
-		_, gameMock, ci := newSambaGuardMocks()
+		gameMock, ci := newSambaGuardMocks()
 		gameMock.On("GetGameEndFlag").Return(false)
 		gameMock.On("IsHumanTurn").Return(false)
 		assert.Equal(t, "out", ci.DrawFromDiscard([]int{0, 1}))
@@ -42,7 +42,7 @@ func TestSambaInteractor_GameEndedGuards(t *testing.T) {
 	})
 
 	t.Run("Meld blocked when not human", func(t *testing.T) {
-		_, gameMock, ci := newSambaGuardMocks()
+		gameMock, ci := newSambaGuardMocks()
 		gameMock.On("GetGameEndFlag").Return(false)
 		gameMock.On("IsHumanTurn").Return(false)
 		assert.Equal(t, "out", ci.Meld([][]int{{0, 1, 2}}))
@@ -50,21 +50,21 @@ func TestSambaInteractor_GameEndedGuards(t *testing.T) {
 	})
 
 	t.Run("SkipMeld blocked when game ended", func(t *testing.T) {
-		_, gameMock, ci := newSambaGuardMocks()
+		gameMock, ci := newSambaGuardMocks()
 		gameMock.On("GetGameEndFlag").Return(true)
 		assert.Equal(t, "out", ci.SkipMeld())
 		gameMock.AssertNotCalled(t, "PlayerSkipMeld")
 	})
 
 	t.Run("Discard blocked when game ended", func(t *testing.T) {
-		_, gameMock, ci := newSambaGuardMocks()
+		gameMock, ci := newSambaGuardMocks()
 		gameMock.On("GetGameEndFlag").Return(true)
 		assert.Equal(t, "out", ci.Discard(0))
 		gameMock.AssertNotCalled(t, "PlayerDiscard", mock.Anything)
 	})
 
 	t.Run("GoOut blocked when game ended", func(t *testing.T) {
-		_, gameMock, ci := newSambaGuardMocks()
+		gameMock, ci := newSambaGuardMocks()
 		gameMock.On("GetGameEndFlag").Return(true)
 		assert.Equal(t, "out", ci.GoOut())
 		gameMock.AssertNotCalled(t, "PlayerGoOut")
@@ -75,8 +75,7 @@ func TestSambaInteractor_ErrorBranches(t *testing.T) {
 	someErr := errors.New("boom")
 
 	t.Run("SkipMeld error is returned", func(t *testing.T) {
-		pMock, gameMock, ci := newSambaGuardMocks()
-		_ = pMock
+		gameMock, ci := newSambaGuardMocks()
 		gameMock.On("GetGameEndFlag").Return(false)
 		gameMock.On("IsHumanTurn").Return(true)
 		gameMock.On("PlayerSkipMeld").Return(someErr)
@@ -84,7 +83,7 @@ func TestSambaInteractor_ErrorBranches(t *testing.T) {
 	})
 
 	t.Run("Discard error is returned", func(t *testing.T) {
-		_, gameMock, ci := newSambaGuardMocks()
+		gameMock, ci := newSambaGuardMocks()
 		gameMock.On("GetGameEndFlag").Return(false)
 		gameMock.On("IsHumanTurn").Return(true)
 		gameMock.On("PlayerDiscard", 2).Return(someErr)
@@ -92,7 +91,7 @@ func TestSambaInteractor_ErrorBranches(t *testing.T) {
 	})
 
 	t.Run("GoOut error is returned", func(t *testing.T) {
-		_, gameMock, ci := newSambaGuardMocks()
+		gameMock, ci := newSambaGuardMocks()
 		gameMock.On("GetGameEndFlag").Return(false)
 		gameMock.On("IsHumanTurn").Return(true)
 		gameMock.On("PlayerGoOut").Return(someErr)

@@ -741,7 +741,7 @@ func (h *Hearts) GetHint() *HeartsHint {
 			return nil
 		}
 		idx := h.cpuPlayHard(0, validIndices)
-		return &HeartsHint{CardIndices: []int{idx}, Reason: h.playHintReason(idx, validIndices)}
+		return &HeartsHint{CardIndices: []int{idx}, Reason: h.playHintReason(idx)}
 	}
 	return nil
 }
@@ -794,7 +794,7 @@ func (h *Hearts) scorePassIndices(player *HeartsPlayer) []int {
 }
 
 // playHintReason プレイヒントの理由を判定する
-func (h *Hearts) playHintReason(chosenIdx int, validIndices []int) string {
+func (h *Hearts) playHintReason(chosenIdx int) string {
 	player := h.players[0]
 	card := player.GetCard(chosenIdx)
 

@@ -55,9 +55,9 @@ func (c *Cassino) cpuNormalPlan(playerIdx int, hand []*Card) cpuPlan {
 		return cpuPlan{Type: CassinoActionTrail, handIdx: 0}
 	}
 	best := plans[0]
-	bestScore := c.scorePlan(playerIdx, hand, plans[0])
+	bestScore := c.scorePlan(hand, plans[0])
 	for _, p := range plans[1:] {
-		sc := c.scorePlan(playerIdx, hand, p)
+		sc := c.scorePlan(hand, p)
 		if sc > bestScore {
 			bestScore = sc
 			best = p
@@ -73,9 +73,9 @@ func (c *Cassino) cpuHardPlan(playerIdx int, hand []*Card) cpuPlan {
 		return cpuPlan{Type: CassinoActionTrail, handIdx: 0}
 	}
 	best := plans[0]
-	bestScore := c.scorePlanHard(playerIdx, hand, plans[0])
+	bestScore := c.scorePlanHard(hand, plans[0])
 	for _, p := range plans[1:] {
-		sc := c.scorePlanHard(playerIdx, hand, p)
+		sc := c.scorePlanHard(hand, p)
 		if sc > bestScore {
 			bestScore = sc
 			best = p
@@ -128,7 +128,7 @@ func (c *Cassino) enumerateCpuPlans(playerIdx int, hand []*Card) []cpuPlan {
 
 // scorePlan はプランの期待得点。take は捕獲カードで実質得点換算、
 // build は相手に渡さない価値、trail は残す手札の危険度を基準。
-func (c *Cassino) scorePlan(playerIdx int, hand []*Card, plan cpuPlan) int {
+func (c *Cassino) scorePlan(hand []*Card, plan cpuPlan) int {
 	switch plan.Type {
 	case CassinoActionTake:
 		sc := 3 // take 自体に基本点
@@ -164,8 +164,8 @@ func (c *Cassino) scorePlan(playerIdx int, hand []*Card, plan cpuPlan) int {
 }
 
 // scorePlanHard は Hard 難易度の評価。take は Normal と同じ、trail は相手の捕獲を深く減点。
-func (c *Cassino) scorePlanHard(playerIdx int, hand []*Card, plan cpuPlan) int {
-	base := c.scorePlan(playerIdx, hand, plan)
+func (c *Cassino) scorePlanHard(hand []*Card, plan cpuPlan) int {
+	base := c.scorePlan(hand, plan)
 	if plan.Type != CassinoActionTrail {
 		return base
 	}

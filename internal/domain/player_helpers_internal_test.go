@@ -1045,11 +1045,11 @@ func TestDealUpTo(t *testing.T) {
 	tc.Shuffle()
 	cards := []*Card{}
 
-	dealUpTo(&cards, tc, 5)
+	dealUpTo(&cards, tc)
 	assert.Len(t, cards, 5)
 
 	// Already at target: nothing more is drawn.
-	dealUpTo(&cards, tc, 5)
+	dealUpTo(&cards, tc)
 	assert.Len(t, cards, 5)
 }
 

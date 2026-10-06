@@ -30,7 +30,7 @@ func newTestKemps() *Kemps {
 }
 
 // 内部フィールドを直接操作するためのヘルパ (同一パッケージのテスト)。
-func kmSetPhase(g *Kemps, ph KempsPhase)   { g.phase = ph }
+func kmSetPhase(g *Kemps)                  { g.phase = KempsPhaseDeclare }
 func kmSetCurrentPlayer(g *Kemps, idx int) { g.currentPlayerIdx = idx }
 func kmSetFourHolder(g *Kemps, idx int)    { g.fourHolderIdx = idx }
 func kmSetField(g *Kemps, cards ...*Card)  { g.field = cards }
@@ -129,7 +129,7 @@ func TestKemps_PlayerSwapErrors(t *testing.T) {
 	kmSetCurrentPlayer(g, 1)
 	assert.ErrorIs(t, g.PlayerSwap(0, 0), ErrInvalidPlay)
 
-	kmSetPhase(g, KempsPhaseDeclare)
+	kmSetPhase(g)
 	kmSetCurrentPlayer(g, 0)
 	assert.ErrorIs(t, g.PlayerSwap(0, 0), ErrWrongPhase)
 
@@ -167,7 +167,7 @@ func TestKemps_DeclareKempsSuccess(t *testing.T) {
 	g.Reset()
 	// 人間チーム (席 0) が保持。
 	kmSetHand(g.GetPlayer(0), kmCard(1, 7), kmCard(2, 7), kmCard(3, 7), kmCard(4, 7))
-	kmSetPhase(g, KempsPhaseDeclare)
+	kmSetPhase(g)
 	kmSetFourHolder(g, 0)
 	require.NoError(t, g.PlayerDeclareKemps())
 	assert.Equal(t, 1, g.GetTeamScore(KempsTeamOf(0)))
@@ -179,7 +179,7 @@ func TestKemps_DeclareKempsMiss(t *testing.T) {
 	g := newTestKemps()
 	g.Reset()
 	// 相手チーム (席 1) が保持しているのに人間が Kemps を宣言 → 空振り。
-	kmSetPhase(g, KempsPhaseDeclare)
+	kmSetPhase(g)
 	kmSetFourHolder(g, 1)
 	require.NoError(t, g.PlayerDeclareKemps())
 	assert.Equal(t, 0, g.GetTeamScore(KempsTeamOf(0)))
@@ -199,7 +199,7 @@ func TestKemps_CounterKempsSuccess(t *testing.T) {
 	g.Reset()
 	// 相手 (席 1) がフォーオブアカインドを保持 → カウンター成功でチーム A に +1。
 	kmSetHand(g.GetPlayer(1), kmCard(1, 5), kmCard(2, 5), kmCard(3, 5), kmCard(4, 5))
-	kmSetPhase(g, KempsPhaseDeclare)
+	kmSetPhase(g)
 	kmSetFourHolder(g, 1)
 	require.NoError(t, g.PlayerDeclareCounterKemps(1))
 	assert.Equal(t, 1, g.GetTeamScore(KempsTeamOf(0)))
@@ -212,7 +212,7 @@ func TestKemps_CounterKempsFail(t *testing.T) {
 	// 席 0 (自チーム/A) に +1 してから、的外れなカウンターでペナルティ -1 を確認。
 	g.SetTeamScore(KempsTeamOf(0), 2)
 	kmSetHand(g.GetPlayer(1), kmCard(1, 5), kmCard(2, 6), kmCard(3, 7), kmCard(4, 8))
-	kmSetPhase(g, KempsPhaseDeclare)
+	kmSetPhase(g)
 	kmSetFourHolder(g, 0)
 	require.NoError(t, g.PlayerDeclareCounterKemps(1)) // 席 1 は四枚なし → 失敗
 	assert.Equal(t, 1, g.GetTeamScore(KempsTeamOf(0)))
@@ -222,7 +222,7 @@ func TestKemps_CounterKempsFail(t *testing.T) {
 func TestKemps_CounterKempsInvalidSeat(t *testing.T) {
 	g := newTestKemps()
 	g.Reset()
-	kmSetPhase(g, KempsPhaseDeclare)
+	kmSetPhase(g)
 	kmSetFourHolder(g, 1)
 	assert.ErrorIs(t, g.PlayerDeclareCounterKemps(99), ErrInvalidPlay)
 }
@@ -232,7 +232,7 @@ func TestKemps_PassDuringDeclareResolves(t *testing.T) {
 	g.Reset()
 	g.SetRand(rand.New(rand.NewSource(1)))
 	kmSetHand(g.GetPlayer(1), kmCard(1, 5), kmCard(2, 5), kmCard(3, 5), kmCard(4, 5))
-	kmSetPhase(g, KempsPhaseDeclare)
+	kmSetPhase(g)
 	kmSetFourHolder(g, 1)
 	require.NoError(t, g.PlayerPass()) // 見送り → 自動解決
 	assert.Equal(t, KempsPhaseRoundEnd, g.GetPhase())
@@ -243,7 +243,7 @@ func TestKemps_WinAtTargetScore(t *testing.T) {
 	g.Reset()
 	g.SetTeamScore(KempsTeamOf(0), KempsTargetScore-1)
 	kmSetHand(g.GetPlayer(0), kmCard(1, 7), kmCard(2, 7), kmCard(3, 7), kmCard(4, 7))
-	kmSetPhase(g, KempsPhaseDeclare)
+	kmSetPhase(g)
 	kmSetFourHolder(g, 0)
 	require.NoError(t, g.PlayerDeclareKemps())
 	assert.True(t, g.GetGameEndFlag())
@@ -301,7 +301,7 @@ func TestKemps_IsHumanTurn(t *testing.T) {
 	kmSetCurrentPlayer(g, 1)
 	assert.False(t, g.IsHumanTurn())
 
-	kmSetPhase(g, KempsPhaseDeclare)
+	kmSetPhase(g)
 	assert.True(t, g.IsHumanTurn())
 
 	// 全員 CPU のとき宣言フェーズでも人間手番ではない。
@@ -310,7 +310,7 @@ func TestKemps_IsHumanTurn(t *testing.T) {
 		NewKempsPlayer(false), NewKempsPlayer(false),
 	}, DefaultKempsConfig())
 	g2.Reset()
-	kmSetPhase(g2, KempsPhaseDeclare)
+	kmSetPhase(g2)
 	assert.False(t, g2.IsHumanTurn())
 
 	kmSetGameEnd(g2)

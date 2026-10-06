@@ -23,7 +23,7 @@ func assertChinchonDomainError(t *testing.T, err error, sentinel error, code str
 
 func TestChinchonDomainErrorsHaveMessageCodes(t *testing.T) {
 	t.Run("discard pile empty", func(t *testing.T) {
-		g := newTestChinchon(2)
+		g := newTestChinchon()
 		g.Reset()
 		chClearState(g)
 		g.SetCurrentPlayerIdx(0)
@@ -32,7 +32,7 @@ func TestChinchonDomainErrorsHaveMessageCodes(t *testing.T) {
 	})
 
 	t.Run("card index out of range", func(t *testing.T) {
-		g := newTestChinchon(2)
+		g := newTestChinchon()
 		g.Reset()
 		g.SetCurrentPlayerIdx(0)
 		g.SetPhase(domain.ChinchonPhaseDiscard)
@@ -40,7 +40,7 @@ func TestChinchonDomainErrorsHaveMessageCodes(t *testing.T) {
 	})
 
 	t.Run("knock deadwood too high", func(t *testing.T) {
-		g := newTestChinchon(2)
+		g := newTestChinchon()
 		g.Reset()
 		chClearState(g)
 		chSetHand(g.GetPlayer(0),
@@ -54,7 +54,7 @@ func TestChinchonDomainErrorsHaveMessageCodes(t *testing.T) {
 	})
 
 	t.Run("duplicate card index", func(t *testing.T) {
-		g := newTestChinchon(2)
+		g := newTestChinchon()
 		g.Reset()
 		chClearState(g)
 		chSetHand(g.GetPlayer(0), chCard(domain.CardDesignSpade, 1))
@@ -64,7 +64,7 @@ func TestChinchonDomainErrorsHaveMessageCodes(t *testing.T) {
 	})
 
 	t.Run("layoff card cannot add", func(t *testing.T) {
-		g := newTestChinchon(2)
+		g := newTestChinchon()
 		g.Reset()
 		chClearState(g)
 		g.SetKnockerMelds([][]*domain.Card{{chCard(domain.CardDesignSpade, 1), chCard(domain.CardDesignSpade, 2), chCard(domain.CardDesignSpade, 3)}})

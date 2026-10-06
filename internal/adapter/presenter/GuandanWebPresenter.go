@@ -70,7 +70,7 @@ func (p *GuandanWebPresenter) Output(g interfaces.GuandanGame, lastErr error) st
 	resObj.Config = controller.GuandanWebOutputConfig{}
 
 	resObj.Players = p.buildPlayersOutput(g)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(g, lastErr)
 
 	return marshalOrError(resObj)
 }
@@ -130,33 +130,33 @@ func (p *GuandanWebPresenter) buildPlayersOutput(g interfaces.GuandanGame) []*co
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *GuandanWebPresenter) buildMessage(g interfaces.GuandanGame, lastErr error) (string, string, map[string]string) {
+func (p *GuandanWebPresenter) buildMessage(g interfaces.GuandanGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if g.GetGameEndFlag() {
 		// **チーム戦なので勝敗は席ではなくチームで見る。**人間は席 0 = チーム 0。
 		if g.GetWinnerTeam() == domain.GuandanTeamOf(0) {
-			return "your team wins", "guandan.result.humanWin", nil
+			return "your team wins", "guandan.result.humanWin"
 		}
-		return "the other team wins", "guandan.result.cpuWin", nil
+		return "the other team wins", "guandan.result.cpuWin"
 	}
 	switch g.GetPhase() {
 	case domain.GuandanPhaseTribute:
 		if g.IsTributeCancelled() {
-			return "", "guandan.tributeCancelled", nil
+			return "", "guandan.tributeCancelled"
 		}
-		return "", "guandan.tributePhase", nil
+		return "", "guandan.tributePhase"
 	case domain.GuandanPhasePlay:
-		return "", "guandan.playPhase", nil
+		return "", "guandan.playPhase"
 	case domain.GuandanPhaseHandEnd:
 		if r := g.GetLastResult(); r != nil && r.FirstSecond {
 			// **上位独占は +4。**そこだけ別のメッセージにする。
-			return "", "guandan.handFirstSecond", nil
+			return "", "guandan.handFirstSecond"
 		}
-		return "", "guandan.handEnd", nil
+		return "", "guandan.handEnd"
 	}
-	return "", "", nil
+	return "", ""
 }
 
 // ActionLogOutput 棋譜をJSON出力

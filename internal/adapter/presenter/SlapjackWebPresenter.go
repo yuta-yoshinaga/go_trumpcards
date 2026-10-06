@@ -41,7 +41,7 @@ func (p *SlapjackWebPresenter) Output(g interfaces.SlapjackGame, lastErr error) 
 		})
 	}
 
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = buildSlapjackMessage(g, lastErr)
+	resObj.Message, resObj.MessageCode = buildSlapjackMessage(g, lastErr)
 	return marshalOrError(resObj)
 }
 
@@ -51,15 +51,15 @@ func (p *SlapjackWebPresenter) ActionLogOutput(g interfaces.SlapjackGame) string
 }
 
 // buildSlapjackMessage ゲーム状態に応じたメッセージを生成する
-func buildSlapjackMessage(g interfaces.SlapjackGame, lastErr error) (string, string, map[string]string) {
+func buildSlapjackMessage(g interfaces.SlapjackGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "error", nil
+		return lastErr.Error(), "error"
 	}
 	if g.GetGameEndFlag() {
 		if g.GetWinnerIdx() == 0 {
-			return "", "slapjack.result.humanWin", nil
+			return "", "slapjack.result.humanWin"
 		}
-		return "", "slapjack.result.cpuWin", nil
+		return "", "slapjack.result.cpuWin"
 	}
-	return "", "", nil
+	return "", ""
 }

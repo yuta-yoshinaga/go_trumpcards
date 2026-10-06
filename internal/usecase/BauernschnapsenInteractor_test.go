@@ -32,18 +32,18 @@ func TestNewBauernschnapsenInteractor_NilGuards(t *testing.T) {
 	})
 }
 
-func setupBauernschnapsenMocks(phase domain.BauernschnapsenPhase) (*interfaces.MockBauernschnapsenGame, *presenter.MockBauernschnapsenPresenter) {
+func setupBauernschnapsenMocks() (*interfaces.MockBauernschnapsenGame, *presenter.MockBauernschnapsenPresenter) {
 	gpMock := new(presenter.MockBauernschnapsenPresenter)
 	gpMock.On("Output", mock.Anything, mock.Anything).Return(`{"phase":0}`)
 	gameMock := new(interfaces.MockBauernschnapsenGame)
 	gameMock.On("GetGameEndFlag").Return(false)
-	gameMock.On("GetPhase").Return(phase)
+	gameMock.On("GetPhase").Return(domain.BauernschnapsenPhasePlay)
 	gameMock.On("IsHumanTurn").Return(true)
 	return gameMock, gpMock
 }
 
 func TestBauernschnapsenInteractor_Reset(t *testing.T) {
-	gameMock, gpMock := setupBauernschnapsenMocks(domain.BauernschnapsenPhasePlay)
+	gameMock, gpMock := setupBauernschnapsenMocks()
 	gameMock.On("Reset").Return()
 
 	gi := usecase.NewBauernschnapsenInteractor(gameMock, gpMock)
@@ -54,7 +54,7 @@ func TestBauernschnapsenInteractor_Reset(t *testing.T) {
 
 func TestBauernschnapsenInteractor_ResetWithConfig(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
-		gameMock, gpMock := setupBauernschnapsenMocks(domain.BauernschnapsenPhasePlay)
+		gameMock, gpMock := setupBauernschnapsenMocks()
 		cfg := domain.DefaultBauernschnapsenConfig()
 		gameMock.On("SetConfig", cfg).Return()
 		gameMock.On("Reset").Return()
@@ -65,7 +65,7 @@ func TestBauernschnapsenInteractor_ResetWithConfig(t *testing.T) {
 	})
 
 	t.Run("invalid config", func(t *testing.T) {
-		gameMock, gpMock := setupBauernschnapsenMocks(domain.BauernschnapsenPhasePlay)
+		gameMock, gpMock := setupBauernschnapsenMocks()
 		bad := domain.BauernschnapsenConfig{CpuDifficulty: 99, TargetScore: 101}
 
 		gi := usecase.NewBauernschnapsenInteractor(gameMock, gpMock)
@@ -75,7 +75,7 @@ func TestBauernschnapsenInteractor_ResetWithConfig(t *testing.T) {
 
 func TestBauernschnapsenInteractor_Play(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		gameMock, gpMock := setupBauernschnapsenMocks(domain.BauernschnapsenPhasePlay)
+		gameMock, gpMock := setupBauernschnapsenMocks()
 		gameMock.On("PlayerPlay", 0).Return(nil)
 
 		gi := usecase.NewBauernschnapsenInteractor(gameMock, gpMock)
@@ -83,7 +83,7 @@ func TestBauernschnapsenInteractor_Play(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		gameMock, gpMock := setupBauernschnapsenMocks(domain.BauernschnapsenPhasePlay)
+		gameMock, gpMock := setupBauernschnapsenMocks()
 		gameMock.On("PlayerPlay", 99).Return(errors.New("bad"))
 
 		gi := usecase.NewBauernschnapsenInteractor(gameMock, gpMock)
@@ -104,7 +104,7 @@ func TestBauernschnapsenInteractor_Play(t *testing.T) {
 
 func TestBauernschnapsenInteractor_DeclareMarriage(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		gameMock, gpMock := setupBauernschnapsenMocks(domain.BauernschnapsenPhasePlay)
+		gameMock, gpMock := setupBauernschnapsenMocks()
 		gameMock.On("PlayerDeclareMarriage", 0).Return(nil)
 
 		gi := usecase.NewBauernschnapsenInteractor(gameMock, gpMock)
@@ -112,7 +112,7 @@ func TestBauernschnapsenInteractor_DeclareMarriage(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		gameMock, gpMock := setupBauernschnapsenMocks(domain.BauernschnapsenPhasePlay)
+		gameMock, gpMock := setupBauernschnapsenMocks()
 		gameMock.On("PlayerDeclareMarriage", 1).Return(errors.New("bad"))
 
 		gi := usecase.NewBauernschnapsenInteractor(gameMock, gpMock)
@@ -132,7 +132,7 @@ func TestBauernschnapsenInteractor_DeclareMarriage(t *testing.T) {
 }
 
 func TestBauernschnapsenInteractor_NextTrick(t *testing.T) {
-	gameMock, gpMock := setupBauernschnapsenMocks(domain.BauernschnapsenPhasePlay)
+	gameMock, gpMock := setupBauernschnapsenMocks()
 	gameMock.On("ResolveTrick").Return()
 	gameMock.On("NextTrick").Return()
 
@@ -141,7 +141,7 @@ func TestBauernschnapsenInteractor_NextTrick(t *testing.T) {
 }
 
 func TestBauernschnapsenInteractor_NextRound(t *testing.T) {
-	gameMock, gpMock := setupBauernschnapsenMocks(domain.BauernschnapsenPhasePlay)
+	gameMock, gpMock := setupBauernschnapsenMocks()
 	gameMock.On("ScoreRound").Return()
 	gameMock.On("NextRound").Return()
 

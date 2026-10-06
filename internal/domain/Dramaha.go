@@ -629,7 +629,7 @@ func (o *Dramaha) dealRemainingCommunity() {
 	// 交換していない手」で決めることになる。オールインの席は操作できないので、
 	// 人間ぶんも CPU と同じ方針で自動的に引く。
 	o.runOutDraw()
-	dealUpTo(&o.communityCards, o.trumpCards, 5)
+	dealUpTo(&o.communityCards, o.trumpCards)
 }
 
 // runOutDraw は走り切りのときに、まだ引いていない席のドローを自動で済ませる。
@@ -1237,7 +1237,7 @@ func (o *Dramaha) evalPreFlopStrength(idx int) int {
 		score += 8
 	}
 
-	return clamp(score, 0, 100)
+	return clamp(score, 100)
 }
 
 // --- リバイ/アドオン ---

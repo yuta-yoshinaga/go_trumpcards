@@ -50,7 +50,7 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	resObj.TwentyOnePlus3Bet = bj.Get21Plus3Bet()
 	resObj.Bonuses = bj.GetBonusKeys()
 
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = bjp.buildMessage(bj, lastErr)
+	resObj.Message, resObj.MessageCode = bjp.buildMessage(bj, lastErr)
 
 	return marshalOrError(resObj)
 }
@@ -155,24 +155,24 @@ func (bjp *BlackJackWebPresenter) buildSideBetsOutput(bj interfaces.BlackJackGam
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (bjp *BlackJackWebPresenter) buildMessage(bj interfaces.BlackJackGame, lastErr error) (string, string, map[string]string) {
+func (bjp *BlackJackWebPresenter) buildMessage(bj interfaces.BlackJackGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if bj.GetGameEndFlag() {
 		switch bj.GameJudgment() {
 		case domain.GameResultDraw:
-			return "It is a draw.", "blackjack.result.draw", nil
+			return "It is a draw.", "blackjack.result.draw"
 		case domain.GameResultWin:
 			if spanish21Player21BeatsDealer21(bj) {
-				return "You win: in Spanish 21, a player 21 beats a dealer 21.", "spanish21.result.player21BeatsDealer21", nil
+				return "You win: in Spanish 21, a player 21 beats a dealer 21.", "spanish21.result.player21BeatsDealer21"
 			}
-			return "You are the winner.", "blackjack.result.win", nil
+			return "You are the winner.", "blackjack.result.win"
 		case domain.GameResultLose:
-			return "It is your loss.", "blackjack.result.lose", nil
+			return "It is your loss.", "blackjack.result.lose"
 		}
 	}
-	return "", "", nil
+	return "", ""
 }
 
 func spanish21Player21BeatsDealer21(bj interfaces.BlackJackGame) bool {

@@ -51,7 +51,7 @@ func tcrCard(design, value int) *domain.Card { return domain.NewCard(design, val
 // 10 < 20 なので **低いほうが勝つ**このゲームではプレイヤーの勝ち。10 点は
 // アンテボーナス (1 倍) とローボーナス (4 倍) の両方に掛かるので、4 つの配当
 // フィールドが全部埋まる。
-func tcrPlayedGame(t *testing.T) (*domain.ThreeCardRummy, *ThreeCardRummyInteractor, *stubThreeCardRummyPresenter) {
+func tcrPlayedGame(t *testing.T) (*domain.ThreeCardRummy, *ThreeCardRummyInteractor) {
 	t.Helper()
 
 	tc := domain.NewDefaultThreeCardRummy()
@@ -89,7 +89,7 @@ func tcrPlayedGame(t *testing.T) (*domain.ThreeCardRummy, *ThreeCardRummyInterac
 	require.NotEqual(t, domain.ThreeCardRummyDefaultChips, tc.GetChips())
 	require.NotEmpty(t, tc.GetActionLog())
 
-	return tc, ti, sp
+	return tc, ti
 }
 
 // assertSameHand compares two hands card for card, including the dealt flag.
@@ -108,7 +108,7 @@ func assertSameHand(t *testing.T, want, got []*domain.Card, what string) {
 // 持たないので、Snapshot が 1 フィールド落とすと卓が黙って組み直される
 // (エラーは出ない)。全フィールドを往復で突き合わせる。
 func TestThreeCardRummyInteractor_SnapshotRoundTripsEveryField(t *testing.T) {
-	tc, ti, _ := tcrPlayedGame(t)
+	tc, ti := tcrPlayedGame(t)
 
 	data, err := ti.Snapshot()
 	require.NoError(t, err)
@@ -157,7 +157,7 @@ func TestThreeCardRummyInteractor_SnapshotRoundTripsEveryField(t *testing.T) {
 // 落ちても上のフィールド比較は全部通ってしまうので、復元した卓で実際に
 // 賭け直して確かめる。
 func TestThreeCardRummyInteractor_SnapshotKeepsTheRebetStake(t *testing.T) {
-	_, ti, _ := tcrPlayedGame(t)
+	_, ti := tcrPlayedGame(t)
 
 	data, err := ti.Snapshot()
 	require.NoError(t, err)
@@ -179,7 +179,7 @@ func TestThreeCardRummyInteractor_SnapshotKeepsTheRebetStake(t *testing.T) {
 // 復元した卓はそのまま次のラウンドを配れる。デッキ (trumpCards) が
 // nil のまま戻ると、ここで初めて落ちる。
 func TestThreeCardRummyInteractor_RestoredTableCanDealAgain(t *testing.T) {
-	_, ti, _ := tcrPlayedGame(t)
+	_, ti := tcrPlayedGame(t)
 
 	data, err := ti.Snapshot()
 	require.NoError(t, err)

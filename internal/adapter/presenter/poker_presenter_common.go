@@ -164,7 +164,7 @@ func buildCommunityCardBaseOutput(g communityCardPresenterGame) *controller.Hold
 
 // buildPokerPlayersOutput はプレイヤー情報を共通ロジックで構築する。
 // handNameFn はハンドランクから名前を返す関数（ゲームごとに異なるハンド名テーブルに対応）。
-func buildPokerPlayersOutput(phase, playerCnt int, getPlayer func(int) communityCardPresenterPlayer, showdownPhase, endPhase int, handNameFn func(int) string) []*controller.HoldemWebOutputPlayer {
+func buildPokerPlayersOutput(phase, playerCnt int, getPlayer func(int) communityCardPresenterPlayer, showdownPhase, endPhase int, handNameFn func(int) string) []*controller.HoldemWebOutputPlayer { //nolint:unparam // 各ゲーム固有の showdown 定数を判定に使うため引数が必要。
 	out := make([]*controller.HoldemWebOutputPlayer, 0)
 	isShowdown := phase == endPhase || phase == showdownPhase
 	for i := 0; i < playerCnt; i++ {

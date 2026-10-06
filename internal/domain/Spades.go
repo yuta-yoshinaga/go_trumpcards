@@ -644,12 +644,12 @@ func (s *Spades) cpuSelectBid(playerIdx int) int {
 	case SpadesCpuDifficultyNormal:
 		return s.cpuBidNormal(playerIdx)
 	default:
-		return s.cpuBidEasy(playerIdx)
+		return s.cpuBidEasy()
 	}
 }
 
 // cpuBidEasy ランダムに1〜5のビッド
-func (s *Spades) cpuBidEasy(playerIdx int) int {
+func (s *Spades) cpuBidEasy() int {
 	return rand.Intn(5) + 1
 }
 

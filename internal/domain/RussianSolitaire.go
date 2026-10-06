@@ -344,7 +344,7 @@ func (y *RussianSolitaire) autoFlipTableau(col int) {
 
 // checkGameClear ゲームクリア判定
 func (y *RussianSolitaire) checkGameClear() {
-	yukonFamilyCheckGameClear(y.foundation[:], CardValueMax, func() { y.phase = RussianSolitairePhaseGameClear })
+	yukonFamilyCheckGameClear(y.foundation[:], func() { y.phase = RussianSolitairePhaseGameClear })
 }
 
 // checkRussianSolitaireStalemate 手詰まり判定

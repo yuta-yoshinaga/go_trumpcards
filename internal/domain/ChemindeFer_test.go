@@ -121,13 +121,13 @@ func TestChemindeFerIsNatural(t *testing.T) {
 // --- 張りと賭け ---
 
 // chemindeFerAtBet は席 0 が親で張り済み、席 1 の賭け待ちの卓を返す。
-func chemindeFerAtBet(t *testing.T, stake int) *ChemindeFer {
+func chemindeFerAtBet(t *testing.T) *ChemindeFer {
 	t.Helper()
 	g := newChemindeFerAllCpu(t, 7)
 	require.Equal(t, ChemindeFerPhaseStake, g.GetPhase())
 	// **CPU を進めない内部版を使う。** 公開版は次の人間の番まで走り切るので、
 	// 人間の居ない卓では賭けの途中を観察できない。
-	require.NoError(t, g.setStake(stake))
+	require.NoError(t, g.setStake(100))
 	require.Equal(t, ChemindeFerPhaseBet, g.GetPhase())
 	return g
 }
@@ -143,13 +143,13 @@ func TestChemindeFer_SetStakeRejectsOutOfRange(t *testing.T) {
 }
 
 func TestChemindeFer_SetStakeIsOnlyLegalInTheStakePhase(t *testing.T) {
-	g := chemindeFerAtBet(t, 100)
+	g := chemindeFerAtBet(t)
 	assert.ErrorIs(t, g.SetStake(50), errChemindeFerWrongPhase)
 }
 
 // **賭けの総額はバンク額を超えない。** 超えたら親が払えない額を晒すことになる。
 func TestChemindeFer_BetsCannotExceedTheBank(t *testing.T) {
-	g := chemindeFerAtBet(t, 100)
+	g := chemindeFerAtBet(t)
 
 	first := g.GetBetTurn()
 	require.GreaterOrEqual(t, first, 0)
@@ -169,7 +169,7 @@ func TestChemindeFer_BetsCannotExceedTheBank(t *testing.T) {
 
 // **バンク額が覆い尽くされたら、順番が残っていても賭けは締め切る。**
 func TestChemindeFer_BettingClosesOnceTheBankIsCovered(t *testing.T) {
-	g := chemindeFerAtBet(t, 100)
+	g := chemindeFerAtBet(t)
 
 	first := g.GetBetTurn()
 	require.NoError(t, g.placeBet(first, 100))
@@ -180,7 +180,7 @@ func TestChemindeFer_BettingClosesOnceTheBankIsCovered(t *testing.T) {
 }
 
 func TestChemindeFer_PlaceBetRejectsOtherSeats(t *testing.T) {
-	g := chemindeFerAtBet(t, 100)
+	g := chemindeFerAtBet(t)
 	turn := g.GetBetTurn()
 	other := (turn + 1) % ChemindeFerSeatCnt
 	if other == g.GetBankerIdx() {
@@ -192,7 +192,7 @@ func TestChemindeFer_PlaceBetRejectsOtherSeats(t *testing.T) {
 
 // **同額なら親に近い側が代表。**
 func TestChemindeFer_HighestBettorRepresentsTheseWithTiesToTheBankersRight(t *testing.T) {
-	g := chemindeFerAtBet(t, 100)
+	g := chemindeFerAtBet(t)
 
 	first := g.GetBetTurn()
 	require.NoError(t, g.placeBet(first, 30))
@@ -208,7 +208,7 @@ func TestChemindeFer_HighestBettorRepresentsTheseWithTiesToTheBankersRight(t *te
 
 // 誰も乗らなかったラウンドは流れ、**バンクが隣へ渡る**。
 func TestChemindeFer_RoundIsVoidWhenNobodyCovers(t *testing.T) {
-	g := chemindeFerAtBet(t, 100)
+	g := chemindeFerAtBet(t)
 	banker := g.GetBankerIdx()
 
 	for g.GetPhase() == ChemindeFerPhaseBet {
@@ -503,14 +503,14 @@ func TestChemindeFer_SessionEndsAfterTheConfiguredRounds(t *testing.T) {
 }
 
 func TestChemindeFer_NextRoundRejectsMidCoup(t *testing.T) {
-	g := chemindeFerAtBet(t, 100)
+	g := chemindeFerAtBet(t)
 	assert.ErrorIs(t, g.NextRound(), errChemindeFerWrongPhase)
 }
 
 // --- 親の持ち回りと手番 ---
 
 func TestChemindeFer_PassBankIsOnlyLegalAtRoundEnd(t *testing.T) {
-	g := chemindeFerAtBet(t, 100)
+	g := chemindeFerAtBet(t)
 	assert.ErrorIs(t, g.PassBank(), errChemindeFerWrongPhase)
 }
 

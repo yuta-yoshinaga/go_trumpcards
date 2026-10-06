@@ -82,7 +82,7 @@ func (p *VintWebPresenter) Output(g interfaces.VintGame, lastErr error) string {
 	resObj.Config = controller.VintWebOutputConfig{}
 
 	resObj.Players = p.buildPlayersOutput(g)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(g, lastErr)
 
 	return marshalOrError(resObj)
 }
@@ -139,29 +139,29 @@ func (p *VintWebPresenter) buildPlayersOutput(g interfaces.VintGame) []*controll
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *VintWebPresenter) buildMessage(g interfaces.VintGame, lastErr error) (string, string, map[string]string) {
+func (p *VintWebPresenter) buildMessage(g interfaces.VintGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if g.GetGameEndFlag() {
 		// **チーム戦なので勝敗は席ではなくチームで見る。**人間は席 0 = チーム 0。
 		if g.GetWinnerTeam() == domain.VintTeamOf(0) {
-			return "your team takes the rubber", "vint.result.humanWin", nil
+			return "your team takes the rubber", "vint.result.humanWin"
 		}
-		return "the other team takes the rubber", "vint.result.cpuWin", nil
+		return "the other team takes the rubber", "vint.result.cpuWin"
 	}
 	switch g.GetPhase() {
 	case domain.VintPhaseBid:
-		return "", "vint.bidPhase", nil
+		return "", "vint.bidPhase"
 	case domain.VintPhasePlay:
-		return "", "vint.playPhase", nil
+		return "", "vint.playPhase"
 	case domain.VintPhaseHandEnd:
 		if r := g.GetLastResult(); r != nil && !r.Made {
-			return "", "vint.handSet", nil
+			return "", "vint.handSet"
 		}
-		return "", "vint.handMade", nil
+		return "", "vint.handMade"
 	}
-	return "", "", nil
+	return "", ""
 }
 
 // ActionLogOutput 棋譜をJSON出力

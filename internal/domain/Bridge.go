@@ -1271,12 +1271,12 @@ func (b *Bridge) cpuSelectBid(playerIdx int) (BridgeBidType, int, int) {
 	case BridgeCpuDifficultyNormal:
 		return b.cpuBidNormal(playerIdx)
 	default:
-		return b.cpuBidEasy(playerIdx)
+		return b.cpuBidEasy()
 	}
 }
 
 // cpuBidEasy ランダムにビッド (50%パス、50%最低ビッド)
-func (b *Bridge) cpuBidEasy(playerIdx int) (BridgeBidType, int, int) {
+func (b *Bridge) cpuBidEasy() (BridgeBidType, int, int) {
 	if rand.Intn(2) == 0 || b.contractLevel >= 4 {
 		return BridgeBidPass, 0, 0
 	}

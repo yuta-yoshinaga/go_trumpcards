@@ -26,7 +26,7 @@ func makeKillePlayers(ranks ...domain.KilleRank) []*domain.KillePlayer {
 	return out
 }
 
-func setupKilleWebMock(phase domain.KillePhase) (*interfaces.MockKilleGame, []*domain.KillePlayer) {
+func setupKilleWebMock(phase domain.KillePhase) *interfaces.MockKilleGame {
 	m := new(interfaces.MockKilleGame)
 	players := makeKillePlayers(domain.KilleNum5, domain.KillePig, domain.KilleHarlequin, domain.KilleNum9)
 	m.On("GetPhase").Return(phase)
@@ -49,7 +49,7 @@ func setupKilleWebMock(phase domain.KillePhase) (*interfaces.MockKilleGame, []*d
 		m.On("KilleStrength", i).Return(int(domain.KilleRankOf(players[i].GetCard(0))))
 		m.On("KilleReentryCost", i).Return(1)
 	}
-	return m, players
+	return m
 }
 
 func parseKilleOutput(t *testing.T, s string) *controller.KilleWebOutput {
@@ -61,7 +61,7 @@ func parseKilleOutput(t *testing.T, s string) *controller.KilleWebOutput {
 
 // **他家の札は伏せる。**1 枚しか持たないゲームなので、漏れたら勝負が終わる。
 func TestKilleWebPresenter_HidesEveryoneElsesCard(t *testing.T) {
-	m, _ := setupKilleWebMock(domain.KillePhaseExchange)
+	m := setupKilleWebMock(domain.KillePhaseExchange)
 	out := parseKilleOutput(t, new(presenter.KilleWebPresenter).Output(m, nil))
 
 	assert.Len(t, out.Players, 4)
@@ -74,7 +74,7 @@ func TestKilleWebPresenter_HidesEveryoneElsesCard(t *testing.T) {
 }
 
 func TestKilleWebPresenter_RevealsAtShowdown(t *testing.T) {
-	m, _ := setupKilleWebMock(domain.KillePhaseShowdown)
+	m := setupKilleWebMock(domain.KillePhaseShowdown)
 	out := parseKilleOutput(t, new(presenter.KilleWebPresenter).Output(m, nil))
 
 	for i := range out.Players {
@@ -85,7 +85,7 @@ func TestKilleWebPresenter_RevealsAtShowdown(t *testing.T) {
 
 // 専用デッキなので手続き描画のフィールドが要る (ADR-0033)。
 func TestKilleWebPresenter_SendsProceduralCardFields(t *testing.T) {
-	m, _ := setupKilleWebMock(domain.KillePhaseShowdown)
+	m := setupKilleWebMock(domain.KillePhaseShowdown)
 	out := parseKilleOutput(t, new(presenter.KilleWebPresenter).Output(m, nil))
 
 	pig := out.Players[1].Card
@@ -100,7 +100,7 @@ func TestKilleWebPresenter_SendsProceduralCardFields(t *testing.T) {
 }
 
 func TestKilleWebPresenter_TopLevelFields(t *testing.T) {
-	m, _ := setupKilleWebMock(domain.KillePhaseExchange)
+	m := setupKilleWebMock(domain.KillePhaseExchange)
 	out := parseKilleOutput(t, new(presenter.KilleWebPresenter).Output(m, nil))
 
 	assert.Equal(t, int(domain.KillePhaseExchange), out.Phase)
@@ -120,7 +120,7 @@ func TestKilleWebPresenter_TopLevelFields(t *testing.T) {
 
 func TestKilleWebPresenter_Messages(t *testing.T) {
 	t.Run("an error wins over any phase message", func(t *testing.T) {
-		m, _ := setupKilleWebMock(domain.KillePhaseExchange)
+		m := setupKilleWebMock(domain.KillePhaseExchange)
 		out := parseKilleOutput(t, new(presenter.KilleWebPresenter).Output(m, errors.New("boom")))
 		assert.Equal(t, "boom", out.Message)
 		assert.Empty(t, out.MessageCode)
@@ -151,13 +151,13 @@ func TestKilleWebPresenter_Messages(t *testing.T) {
 	})
 
 	t.Run("showdown", func(t *testing.T) {
-		m, _ := setupKilleWebMock(domain.KillePhaseShowdown)
+		m := setupKilleWebMock(domain.KillePhaseShowdown)
 		out := parseKilleOutput(t, new(presenter.KilleWebPresenter).Output(m, nil))
 		assert.Equal(t, "kille.showdown", out.MessageCode)
 	})
 
 	t.Run("exchange", func(t *testing.T) {
-		m, _ := setupKilleWebMock(domain.KillePhaseExchange)
+		m := setupKilleWebMock(domain.KillePhaseExchange)
 		out := parseKilleOutput(t, new(presenter.KilleWebPresenter).Output(m, nil))
 		assert.Equal(t, "kille.exchangePhase", out.MessageCode)
 	})
@@ -202,7 +202,7 @@ func TestKilleWebPresenter_GameEnd(t *testing.T) {
 }
 
 func TestKilleWebPresenter_ActionLogOutput(t *testing.T) {
-	m, _ := setupKilleWebMock(domain.KillePhaseExchange)
+	m := setupKilleWebMock(domain.KillePhaseExchange)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 	assert.NotEmpty(t, new(presenter.KilleWebPresenter).ActionLogOutput(m))
 }

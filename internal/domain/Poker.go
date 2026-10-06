@@ -364,7 +364,7 @@ func (p *Poker) executeAction(playerIdx, action, amount int) error {
 	}
 
 	// アクションログ記録
-	p.logBettingAction(playerIdx, action, amount)
+	p.logBettingAction(playerIdx, action)
 
 	// フォールドでアクティブプレイヤーが1人になったらチェック
 	if p.countActivePlayers() == 1 {
@@ -1320,7 +1320,7 @@ func (p *Poker) UnmarshalJSON(data []byte) error {
 }
 
 // logBettingAction ベッティングアクションをログに記録する
-func (p *Poker) logBettingAction(playerIdx, action, amount int) {
+func (p *Poker) logBettingAction(playerIdx, action int) {
 	switch action {
 	case PokerActionFold:
 		p.appendLog(playerIdx, "fold", "poker.log.fold", nil, nil)

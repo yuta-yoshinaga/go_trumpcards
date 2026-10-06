@@ -16,7 +16,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-func setupMachiavelliCuiMock(phase domain.MachiavelliPhase, gameEnd bool, table [][]*domain.Card) (*interfaces.MockMachiavelliGame, []*domain.MachiavelliPlayer) {
+func setupMachiavelliCuiMock(phase domain.MachiavelliPhase, gameEnd bool, table [][]*domain.Card) *interfaces.MockMachiavelliGame {
 	m := new(interfaces.MockMachiavelliGame)
 	players := []*domain.MachiavelliPlayer{
 		domain.NewMachiavelliPlayer(true),
@@ -40,7 +40,7 @@ func setupMachiavelliCuiMock(phase domain.MachiavelliPhase, gameEnd bool, table 
 	m.On("GetPlayer", 0).Return(players[0])
 	m.On("GetPlayer", 1).Return(players[1])
 	m.On("PlayerDeadwoodValue", mock.Anything).Return(7)
-	return m, players
+	return m
 }
 
 func TestMachiavelliCuiPresenter_Output(t *testing.T) {
@@ -52,7 +52,7 @@ func TestMachiavelliCuiPresenter_Output(t *testing.T) {
 	}}
 
 	t.Run("turn phase with table", func(t *testing.T) {
-		m, _ := setupMachiavelliCuiMock(domain.MachiavelliPhaseTurn, false, table)
+		m := setupMachiavelliCuiMock(domain.MachiavelliPhaseTurn, false, table)
 		out := p.Output(m, nil)
 		assert.NotEmpty(t, out)
 		assert.Contains(t, out, "マキャヴェッリ")
@@ -65,7 +65,7 @@ func TestMachiavelliCuiPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("turn phase empty table", func(t *testing.T) {
-		m, _ := setupMachiavelliCuiMock(domain.MachiavelliPhaseTurn, false, nil)
+		m := setupMachiavelliCuiMock(domain.MachiavelliPhaseTurn, false, nil)
 		out := p.Output(m, nil)
 		assert.NotEmpty(t, out)
 		// With no melds, layoff is announced as unavailable.
@@ -74,19 +74,19 @@ func TestMachiavelliCuiPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("round end", func(t *testing.T) {
-		m, _ := setupMachiavelliCuiMock(domain.MachiavelliPhaseRoundEnd, false, table)
+		m := setupMachiavelliCuiMock(domain.MachiavelliPhaseRoundEnd, false, table)
 		out := p.Output(m, nil)
 		assert.NotEmpty(t, out)
 	})
 
 	t.Run("game end", func(t *testing.T) {
-		m, _ := setupMachiavelliCuiMock(domain.MachiavelliPhaseGameEnd, true, table)
+		m := setupMachiavelliCuiMock(domain.MachiavelliPhaseGameEnd, true, table)
 		out := p.Output(m, nil)
 		assert.NotEmpty(t, out)
 	})
 
 	t.Run("error block", func(t *testing.T) {
-		m, _ := setupMachiavelliCuiMock(domain.MachiavelliPhaseTurn, false, table)
+		m := setupMachiavelliCuiMock(domain.MachiavelliPhaseTurn, false, table)
 		out := p.Output(m, errors.New("err"))
 		assert.NotEmpty(t, out)
 	})
@@ -94,7 +94,7 @@ func TestMachiavelliCuiPresenter_Output(t *testing.T) {
 
 func TestMachiavelliCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.MachiavelliCuiPresenter)
-	m, _ := setupMachiavelliCuiMock(domain.MachiavelliPhaseTurn, false, nil)
+	m := setupMachiavelliCuiMock(domain.MachiavelliPhaseTurn, false, nil)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	out := p.ActionLogOutput(m)
 	assert.NotEmpty(t, out)

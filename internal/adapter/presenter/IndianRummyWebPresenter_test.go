@@ -16,7 +16,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
-func setupIndianRummyWebMock(phase domain.IndianRummyPhase, gameEnd bool, currentPlayerIdx ...int) (*interfaces.MockIndianRummyGame, []*domain.IndianRummyPlayer) {
+func setupIndianRummyWebMock(phase domain.IndianRummyPhase, gameEnd bool, currentPlayerIdx ...int) *interfaces.MockIndianRummyGame {
 	m := new(interfaces.MockIndianRummyGame)
 	players := []*domain.IndianRummyPlayer{
 		domain.NewIndianRummyPlayer(true),
@@ -66,7 +66,7 @@ func setupIndianRummyWebMock(phase domain.IndianRummyPhase, gameEnd bool, curren
 	m.On("PlayerDeadwoodValue", 1).Return(80)
 	m.On("PlayerHasPureSequence", 0).Return(true)
 	m.On("PlayerHasPureSequence", 1).Return(false)
-	return m, players
+	return m
 }
 
 func unmarshalIndianRummy(t *testing.T, s string) controller.IndianRummyWebOutput {
@@ -80,7 +80,7 @@ func TestIndianRummyWebPresenter_Output(t *testing.T) {
 	p := new(presenter.IndianRummyWebPresenter)
 
 	t.Run("draw phase", func(t *testing.T) {
-		m, _ := setupIndianRummyWebMock(domain.IndianRummyPhaseDraw, false)
+		m := setupIndianRummyWebMock(domain.IndianRummyPhaseDraw, false)
 		out := unmarshalIndianRummy(t, p.Output(m, nil))
 		assert.Len(t, out.Players, 2)
 		assert.Equal(t, 1, out.RoundNumber)
@@ -94,20 +94,20 @@ func TestIndianRummyWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("discard phase", func(t *testing.T) {
-		m, _ := setupIndianRummyWebMock(domain.IndianRummyPhaseDiscard, false)
+		m := setupIndianRummyWebMock(domain.IndianRummyPhaseDiscard, false)
 		out := unmarshalIndianRummy(t, p.Output(m, nil))
 		assert.Equal(t, "indianrummy.discardPhase", out.MessageCode)
 		assert.Equal(t, []int{13}, out.DeclarableDiscards)
 	})
 
 	t.Run("returns empty hints for a CPU discard turn", func(t *testing.T) {
-		m, _ := setupIndianRummyWebMock(domain.IndianRummyPhaseDiscard, false, 1)
+		m := setupIndianRummyWebMock(domain.IndianRummyPhaseDiscard, false, 1)
 		out := unmarshalIndianRummy(t, p.Output(m, nil))
 		assert.Equal(t, []int{}, out.DeclarableDiscards)
 	})
 
 	t.Run("round end reveals cpu and deadwood", func(t *testing.T) {
-		m, _ := setupIndianRummyWebMock(domain.IndianRummyPhaseRoundEnd, false)
+		m := setupIndianRummyWebMock(domain.IndianRummyPhaseRoundEnd, false)
 		out := unmarshalIndianRummy(t, p.Output(m, nil))
 		assert.Equal(t, "indianrummy.roundEnd", out.MessageCode)
 		assert.Equal(t, 80, out.Players[1].Deadwood)
@@ -115,13 +115,13 @@ func TestIndianRummyWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("game ended", func(t *testing.T) {
-		m, _ := setupIndianRummyWebMock(domain.IndianRummyPhaseGameEnd, true)
+		m := setupIndianRummyWebMock(domain.IndianRummyPhaseGameEnd, true)
 		out := unmarshalIndianRummy(t, p.Output(m, nil))
 		assert.True(t, out.GameEndFlag)
 	})
 
 	t.Run("with error", func(t *testing.T) {
-		m, _ := setupIndianRummyWebMock(domain.IndianRummyPhaseDraw, false)
+		m := setupIndianRummyWebMock(domain.IndianRummyPhaseDraw, false)
 		out := unmarshalIndianRummy(t, p.Output(m, errors.New("boom")))
 		assert.Equal(t, "boom", out.Message)
 	})
@@ -129,7 +129,7 @@ func TestIndianRummyWebPresenter_Output(t *testing.T) {
 
 // **CUI は毎ターン出しているのに、Web は狭い条件でしか出していなかった (#4824)。**
 func TestIndianRummyWebPresenter_HumanHandStatus(t *testing.T) {
-	m, _ := setupIndianRummyWebMock(domain.IndianRummyPhaseDiscard, false)
+	m := setupIndianRummyWebMock(domain.IndianRummyPhaseDiscard, false)
 
 	var out controller.IndianRummyWebOutput
 	assert.NoError(t, json.Unmarshal([]byte(new(presenter.IndianRummyWebPresenter).Output(m, nil)), &out))
@@ -143,13 +143,13 @@ func TestIndianRummyWebPresenter_HumanHandStatus(t *testing.T) {
 
 func TestIndianRummyWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.IndianRummyWebPresenter)
-	m, _ := setupIndianRummyWebMock(domain.IndianRummyPhaseDraw, false)
+	m := setupIndianRummyWebMock(domain.IndianRummyPhaseDraw, false)
 	out := p.ActionLogOutput(m)
 	assert.NotEmpty(t, out)
 }
 
 func TestIndianRummyWebPresenter_Output_CodedError(t *testing.T) {
-	m, _ := setupIndianRummyWebMock(domain.IndianRummyPhaseDraw, false)
+	m := setupIndianRummyWebMock(domain.IndianRummyPhaseDraw, false)
 	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "indianrummy.errDiscardPileEmpty", nil)
 	out := unmarshalIndianRummy(t, new(presenter.IndianRummyWebPresenter).Output(m, err))
 	require.Empty(t, out.Message)
@@ -158,6 +158,6 @@ func TestIndianRummyWebPresenter_Output_CodedError(t *testing.T) {
 
 func TestIndianRummyWebPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.IndianRummyWebPresenter)
-	m, _ := setupIndianRummyWebMock(domain.IndianRummyPhaseDraw, false)
+	m := setupIndianRummyWebMock(domain.IndianRummyPhaseDraw, false)
 	assert.Equal(t, p.Output(m, nil), p.HintOutput(m))
 }

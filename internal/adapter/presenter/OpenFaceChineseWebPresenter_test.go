@@ -17,7 +17,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
-func setupOpenFaceChineseWebMock() (*interfaces.MockOpenFaceChineseGame, []*domain.OpenFaceChinesePlayer) {
+func setupOpenFaceChineseWebMock() *interfaces.MockOpenFaceChineseGame {
 	m := new(interfaces.MockOpenFaceChineseGame)
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetGameEndFlag").Return(false)
@@ -33,7 +33,6 @@ func setupOpenFaceChineseWebMock() (*interfaces.MockOpenFaceChineseGame, []*doma
 	human := domain.NewOpenFaceChinesePlayer(true)
 	human.SetPending([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 13, false)})
 	cpu := domain.NewOpenFaceChinesePlayer(false)
-	players := []*domain.OpenFaceChinesePlayer{human, cpu}
 	m.On("GetPlayerCnt").Return(2)
 	m.On("GetPlayer", 0).Return(human)
 	m.On("GetPlayer", 1).Return(cpu)
@@ -41,14 +40,14 @@ func setupOpenFaceChineseWebMock() (*interfaces.MockOpenFaceChineseGame, []*doma
 	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
 	m.On("GetHint").Return(nil).Maybe()
 
-	return m, players
+	return m
 }
 
 func TestOpenFaceChineseWebPresenter_Output(t *testing.T) {
 	p := new(presenter.OpenFaceChineseWebPresenter)
 
 	t.Run("placing phase", func(t *testing.T) {
-		m, _ := setupOpenFaceChineseWebMock()
+		m := setupOpenFaceChineseWebMock()
 		result := p.Output(m, nil)
 		var out controller.OpenFaceChineseWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(result), &out))
@@ -61,7 +60,7 @@ func TestOpenFaceChineseWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("error message", func(t *testing.T) {
-		m, _ := setupOpenFaceChineseWebMock()
+		m := setupOpenFaceChineseWebMock()
 		result := p.Output(m, errors.New("boom"))
 		var out controller.OpenFaceChineseWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(result), &out))
@@ -69,7 +68,7 @@ func TestOpenFaceChineseWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("round end message", func(t *testing.T) {
-		m, _ := setupOpenFaceChineseWebMock()
+		m := setupOpenFaceChineseWebMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.OpenFaceChinesePhaseRoundEnd)
 		result := p.Output(m, nil)
@@ -79,7 +78,7 @@ func TestOpenFaceChineseWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("game end human win", func(t *testing.T) {
-		m, _ := setupOpenFaceChineseWebMock()
+		m := setupOpenFaceChineseWebMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerIdx")
 		m.On("GetGameEndFlag").Return(true)
@@ -91,7 +90,7 @@ func TestOpenFaceChineseWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("game end cpu win", func(t *testing.T) {
-		m, _ := setupOpenFaceChineseWebMock()
+		m := setupOpenFaceChineseWebMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerIdx")
 		m.On("GetGameEndFlag").Return(true)
@@ -103,7 +102,7 @@ func TestOpenFaceChineseWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("game end draw", func(t *testing.T) {
-		m, _ := setupOpenFaceChineseWebMock()
+		m := setupOpenFaceChineseWebMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
 		m.On("GetGameEndFlag").Return(true)
 		result := p.Output(m, nil)
@@ -117,7 +116,7 @@ func TestOpenFaceChineseWebPresenter_RoundBreakdownOutput(t *testing.T) {
 	p := new(presenter.OpenFaceChineseWebPresenter)
 
 	t.Run("placing phase has empty breakdown", func(t *testing.T) {
-		m, _ := setupOpenFaceChineseWebMock()
+		m := setupOpenFaceChineseWebMock()
 		result := p.Output(m, nil)
 		var out controller.OpenFaceChineseWebOutput
 		require.NoError(t, json.Unmarshal([]byte(result), &out))
@@ -133,7 +132,7 @@ func TestOpenFaceChineseWebPresenter_RoundBreakdownOutput(t *testing.T) {
 	})
 
 	t.Run("round end includes breakdown", func(t *testing.T) {
-		m, _ := setupOpenFaceChineseWebMock()
+		m := setupOpenFaceChineseWebMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.OpenFaceChinesePhaseRoundEnd)
 		rows := make([]domain.OpenFaceChineseRowBreakdown, 3)
@@ -180,7 +179,7 @@ func TestOpenFaceChineseWebPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.OpenFaceChineseWebPresenter)
 
 	t.Run("with hint", func(t *testing.T) {
-		m, _ := setupOpenFaceChineseWebMock()
+		m := setupOpenFaceChineseWebMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.OpenFaceChineseHint{Row: domain.OpenFaceChineseRowBack, Reason: "strong_back"})
 		result := p.HintOutput(m)
@@ -191,7 +190,7 @@ func TestOpenFaceChineseWebPresenter_HintOutput(t *testing.T) {
 	})
 
 	t.Run("no hint", func(t *testing.T) {
-		m, _ := setupOpenFaceChineseWebMock()
+		m := setupOpenFaceChineseWebMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.OpenFaceChineseHint)(nil))
 		result := p.HintOutput(m)
@@ -203,7 +202,7 @@ func TestOpenFaceChineseWebPresenter_HintOutput(t *testing.T) {
 
 func TestOpenFaceChineseWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.OpenFaceChineseWebPresenter)
-	m, _ := setupOpenFaceChineseWebMock()
+	m := setupOpenFaceChineseWebMock()
 	result := p.ActionLogOutput(m)
 	assert.NotEmpty(t, result)
 }
@@ -214,7 +213,7 @@ func TestOpenFaceChineseWebPresenter_ActionLogOutput(t *testing.T) {
 // Output 側にゲートは置きません。OpenFaceChinese.GetHint() が「人間の手番で、かつ
 // 行動を選べる状態か」を自分で確かめて nil を返します。
 func TestOpenFaceChineseWebPresenterOutputCarriesTheHint(t *testing.T) {
-	ofc, _ := setupOpenFaceChineseWebMock()
+	ofc := setupOpenFaceChineseWebMock()
 	ofc.ExpectedCalls = removeMockCall(ofc.ExpectedCalls, "GetHint")
 	ofc.On("GetHint").Return(&domain.OpenFaceChineseHint{Row: 1, Reason: "balance"})
 

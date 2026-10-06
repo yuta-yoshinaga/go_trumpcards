@@ -249,11 +249,11 @@ func (g *Canasta) autoLayRed3s(playerIdx int) {
 }
 
 // takePozzetto Burraco モードで、プレイヤーが手札を出し切ったときポゼット
-// （予備手札）を1山獲得して手札に加える。取得した場合 true を返す。
-func (g *Canasta) takePozzetto(playerIdx int) bool {
+// （予備手札）を1山獲得して手札に加える。取得しなかった場合は何もしない。
+func (g *Canasta) takePozzetto(playerIdx int) {
 	player := g.players[playerIdx]
 	if !g.usesPozzetto() || player.tookPozzetto || len(g.pozzetti) == 0 {
-		return false
+		return
 	}
 	pile := g.pozzetti[len(g.pozzetti)-1]
 	g.pozzetti = g.pozzetti[:len(g.pozzetti)-1]
@@ -265,7 +265,6 @@ func (g *Canasta) takePozzetto(playerIdx int) bool {
 	// 獲得した手札に赤3があれば自動的に場に出す
 	g.autoLayRed3s(playerIdx)
 	g.sortHand(playerIdx)
-	return true
 }
 
 // canGoOut 上がり条件を満たすか。Burraco モードではポゼット獲得済みかつ

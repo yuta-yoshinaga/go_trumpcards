@@ -57,7 +57,7 @@ func (p *SpeedWebPresenter) Output(s interfaces.SpeedGame, lastErr error) string
 	}
 
 	// メッセージ
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = buildSpeedMessage(s, lastErr)
+	resObj.Message, resObj.MessageCode = buildSpeedMessage(s, lastErr)
 
 	return marshalOrError(resObj)
 }
@@ -68,15 +68,15 @@ func (p *SpeedWebPresenter) ActionLogOutput(s interfaces.SpeedGame) string {
 }
 
 // buildSpeedMessage ゲーム状態に応じたメッセージを生成する
-func buildSpeedMessage(s interfaces.SpeedGame, lastErr error) (string, string, map[string]string) {
+func buildSpeedMessage(s interfaces.SpeedGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "error", nil
+		return lastErr.Error(), "error"
 	}
 	if s.GetGameEndFlag() {
-		return "", "gameEnd", nil
+		return "", "gameEnd"
 	}
 	if s.GetPhase() == domain.SpeedPhaseStuck {
-		return "", "stuck", nil
+		return "", "stuck"
 	}
-	return "", "play", nil
+	return "", "play"
 }

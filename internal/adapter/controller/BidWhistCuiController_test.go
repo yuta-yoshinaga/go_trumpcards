@@ -11,7 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
-func newBidWhistCui() (*controller.BidWhistCuiController, *usecase.MockBidWhistInteractor) {
+func newBidWhistCui() *controller.BidWhistCuiController {
 	biMock := new(usecase.MockBidWhistInteractor)
 	biMock.On("GetConfig").Return(domain.DefaultBidWhistConfig())
 	biMock.On("ResetWithConfig", domain.DefaultBidWhistConfig()).Return("reset")
@@ -25,11 +25,11 @@ func newBidWhistCui() (*controller.BidWhistCuiController, *usecase.MockBidWhistI
 	biMock.On("NextRound").Return("nextround")
 	biMock.On("Hint").Return("hint")
 	biMock.On("ActionLog").Return("log")
-	return controller.NewBidWhistCuiController(biMock), biMock
+	return controller.NewBidWhistCuiController(biMock)
 }
 
 func TestBidWhistCuiController_Exec(t *testing.T) {
-	c, _ := newBidWhistCui()
+	c := newBidWhistCui()
 	cases := []struct {
 		cmd  string
 		want string
@@ -58,14 +58,14 @@ func TestBidWhistCuiController_Exec(t *testing.T) {
 }
 
 func TestBidWhistCuiController_Quit(t *testing.T) {
-	c, _ := newBidWhistCui()
+	c := newBidWhistCui()
 	if got := c.Exec("q"); !strings.Contains(got, "bye") {
 		t.Errorf("quit = %q, want bye", got)
 	}
 }
 
 func TestBidWhistCuiController_Usage(t *testing.T) {
-	c, _ := newBidWhistCui()
+	c := newBidWhistCui()
 	if got := c.Exec("b"); !msgRejected(got) {
 		t.Errorf("bid without args should show usage, got %q", got)
 	}

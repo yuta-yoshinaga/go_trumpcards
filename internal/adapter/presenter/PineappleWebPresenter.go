@@ -21,7 +21,7 @@ func (pp *PineappleWebPresenter) Output(p interfaces.PineappleGame, lastErr erro
 func (pp *PineappleWebPresenter) buildOutput(p interfaces.PineappleGame, lastErr error) *controller.PineappleWebOutput {
 	base := buildCommunityCardBaseOutput(p)
 	base.Players = buildPokerPlayersOutput(p.GetPhase(), p.GetPlayerCnt(), func(i int) communityCardPresenterPlayer { return p.GetPlayer(i) }, domain.PineapplePhaseShowdown, domain.PineapplePhaseEnd, pokerHandName)
-	base.Message, base.MessageCode, base.MessageParams = pp.buildMessage(p, lastErr)
+	base.Message, base.MessageCode = pp.buildMessage(p, lastErr)
 	return &controller.PineappleWebOutput{
 		HoldemWebOutput:  *base,
 		IsDiscardPhase:   p.IsDiscardPhase(),
@@ -52,21 +52,21 @@ func (pp *PineappleWebPresenter) buildOutput(p interfaces.PineappleGame, lastErr
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (pp *PineappleWebPresenter) buildMessage(p interfaces.PineappleGame, lastErr error) (string, string, map[string]string) {
+func (pp *PineappleWebPresenter) buildMessage(p interfaces.PineappleGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if p.IsDiscardPhase() {
-		return "Select a card to discard.", "pineapple.discard.prompt", nil
+		return "Select a card to discard.", "pineapple.discard.prompt"
 	}
 	if p.IsMuckAvailable() {
-		return "Muck or show your hand.", "pineapple.muck.prompt", nil
+		return "Muck or show your hand.", "pineapple.muck.prompt"
 	}
 	if p.GetGameEndFlag() {
 		msg, code := pp.buildResultMessage(p)
-		return msg, code, nil
+		return msg, code
 	}
-	return "", "", nil
+	return "", ""
 }
 
 // buildResultMessage builds the end-of-round message and its i18n code

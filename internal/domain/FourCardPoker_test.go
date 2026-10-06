@@ -12,10 +12,10 @@ import (
 )
 
 // Helper to build the full game in the action phase with deterministic hands.
-func setupActionPhase(t *testing.T, player []*domain.Card, dealer []*domain.Card, ante, acesUp int) *domain.FourCardPoker {
+func setupActionPhase(t *testing.T, player []*domain.Card, dealer []*domain.Card, acesUp int) *domain.FourCardPoker {
 	t.Helper()
 	fcp := domain.NewDefaultFourCardPoker()
-	err := fcp.Bet(ante, acesUp)
+	err := fcp.Bet(100, acesUp)
 	require.NoError(t, err)
 	fcp.SetPlayerHand(player)
 	fcp.SetDealerHand(dealer)
@@ -201,7 +201,7 @@ func TestFourCardPoker_Fold_AcesUpStillEvaluated(t *testing.T) {
 		domain.NewCard(domain.CardDesignDiamond, 7, false),
 		domain.NewCard(domain.CardDesignClover, 9, false),
 	}
-	fcp := setupActionPhase(t, player, dealerLowSix(), 100, 50)
+	fcp := setupActionPhase(t, player, dealerLowSix(), 50)
 	require.NoError(t, fcp.Fold())
 	// Aces Up 1:1: 50 wager returned + 50 bonus = 100
 	assert.Equal(t, 100, fcp.GetAcesUpPayout())
@@ -216,7 +216,7 @@ func TestFourCardPoker_Payouts_PlayerWins(t *testing.T) {
 		domain.NewCard(domain.CardDesignDiamond, 5, false),
 		domain.NewCard(domain.CardDesignClover, 2, false),
 	}
-	fcp := setupActionPhase(t, player, dealerLowSix(), 100, 0)
+	fcp := setupActionPhase(t, player, dealerLowSix(), 0)
 	require.NoError(t, fcp.Play(1))
 	assert.Equal(t, domain.GameResultWin, fcp.GetResult())
 	assert.Equal(t, 200, fcp.GetAntePayout()) // 100 + 100 win
@@ -242,7 +242,7 @@ func TestFourCardPoker_Payouts_PlayerLoses(t *testing.T) {
 		domain.NewCard(domain.CardDesignClover, 8, false),
 		domain.NewCard(domain.CardDesignSpade, 10, false),
 	}
-	fcp := setupActionPhase(t, player, dealer, 100, 0)
+	fcp := setupActionPhase(t, player, dealer, 0)
 	require.NoError(t, fcp.Play(1))
 	assert.Equal(t, domain.GameResultLose, fcp.GetResult())
 	assert.Equal(t, 0, fcp.GetAntePayout())
@@ -267,7 +267,7 @@ func TestFourCardPoker_Payouts_Draw(t *testing.T) {
 		domain.NewCard(domain.CardDesignHeart, 3, false),
 		domain.NewCard(domain.CardDesignDiamond, 2, false),
 	}
-	fcp := setupActionPhase(t, player, dealer, 100, 0)
+	fcp := setupActionPhase(t, player, dealer, 0)
 	require.NoError(t, fcp.Play(1))
 	assert.Equal(t, domain.GameResultDraw, fcp.GetResult())
 	assert.Equal(t, 100, fcp.GetAntePayout()) // push
@@ -382,7 +382,7 @@ func TestFourCardPoker_AcesUp_Paytable(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fcp := setupActionPhase(t, tt.player, dealerLowSix(), 100, 50)
+			fcp := setupActionPhase(t, tt.player, dealerLowSix(), 50)
 			require.NoError(t, fcp.Play(1))
 			if tt.expectedMul == 0 {
 				assert.Equal(t, 0, fcp.GetAcesUpPayout())
@@ -401,7 +401,7 @@ func TestFourCardPoker_AcesUp_NoBetNoPayout(t *testing.T) {
 		domain.NewCard(domain.CardDesignDiamond, 9, false),
 		domain.NewCard(domain.CardDesignClover, 2, false),
 	}
-	fcp := setupActionPhase(t, player, dealerLowSix(), 100, 0)
+	fcp := setupActionPhase(t, player, dealerLowSix(), 0)
 	require.NoError(t, fcp.Play(1))
 	assert.Equal(t, 0, fcp.GetAcesUpPayout())
 }
@@ -459,7 +459,7 @@ func TestFourCardPoker_AnteBonus_Paytable(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fcp := setupActionPhase(t, tt.player, dealerLowSix(), 100, 0)
+			fcp := setupActionPhase(t, tt.player, dealerLowSix(), 0)
 			require.NoError(t, fcp.Play(1))
 			assert.Equal(t, tt.expectedMul*100, fcp.GetAnteBonusPayout())
 		})
@@ -645,7 +645,7 @@ func TestFourCardPoker_RecommendPlayMultiplier(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fcp := setupActionPhase(t, tt.playerHand, dealerLowSix(), 100, 0)
+			fcp := setupActionPhase(t, tt.playerHand, dealerLowSix(), 0)
 			// playerHandRank is NOT set during the action phase
 			assert.Equal(t, 0, fcp.GetPlayerHandRank())
 			assert.Equal(t, tt.expectedMul, fcp.RecommendPlayMultiplier())

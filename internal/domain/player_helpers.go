@@ -638,10 +638,10 @@ func bestSuitFrom(counts map[int]int) int {
 	return bestSuit
 }
 
-// dealUpTo appends cards from the deck until the slice holds target cards or
+// dealUpTo appends cards from the deck until the slice holds five cards or
 // the deck runs out. 4 games had this written out for the community cards.
-func dealUpTo(cards *[]*Card, deck *TrumpCards, target int) {
-	for len(*cards) < target {
+func dealUpTo(cards *[]*Card, deck *TrumpCards) {
+	for len(*cards) < 5 {
 		card := deck.DrawCard()
 		if card == nil {
 			break

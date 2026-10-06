@@ -24,23 +24,23 @@ func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) st
 func (hwp *HoldemWebPresenter) buildOutput(h interfaces.HoldemGame, lastErr error) *controller.HoldemWebOutput {
 	resObj := buildCommunityCardBaseOutput(h)
 	resObj.Players = buildPokerPlayersOutput(h.GetPhase(), h.GetPlayerCnt(), func(i int) communityCardPresenterPlayer { return h.GetPlayer(i) }, domain.HoldemPhaseShowdown, domain.HoldemPhaseEnd, pokerHandName)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = hwp.buildMessage(h, lastErr)
+	resObj.Message, resObj.MessageCode = hwp.buildMessage(h, lastErr)
 	return resObj
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (hwp *HoldemWebPresenter) buildMessage(h interfaces.HoldemGame, lastErr error) (string, string, map[string]string) {
+func (hwp *HoldemWebPresenter) buildMessage(h interfaces.HoldemGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if h.IsMuckAvailable() {
-		return "Muck or show your hand.", "holdem.muck.prompt", nil
+		return "Muck or show your hand.", "holdem.muck.prompt"
 	}
 	if h.GetGameEndFlag() {
 		msg, code := hwp.buildResultMessage(h)
-		return msg, code, nil
+		return msg, code
 	}
-	return "", "", nil
+	return "", ""
 }
 
 // buildResultMessage builds the end-of-round message and its i18n code

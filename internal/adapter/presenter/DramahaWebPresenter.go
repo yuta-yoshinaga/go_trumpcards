@@ -31,28 +31,27 @@ func (owp *DramahaWebPresenter) buildOutput(o interfaces.DramahaGame, lastErr er
 		}
 	}
 	resObj.IsHiLo = true /* ドラマハは常に二分する */
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = owp.buildMessage(o, lastErr)
+	resObj.Message, resObj.MessageCode = owp.buildMessage(o, lastErr)
 	return resObj
 }
 
-func (owp *DramahaWebPresenter) buildMessage(o interfaces.DramahaGame, lastErr error) (string, string, map[string]string) {
+func (owp *DramahaWebPresenter) buildMessage(o interfaces.DramahaGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if o.IsMuckAvailable() {
-		return "", "dramaha.muck.prompt", nil
+		return "", "dramaha.muck.prompt"
 	}
 	if o.GetGameEndFlag() {
-		msg, code := owp.buildResultMessage(o)
-		return msg, code, nil
+		return "", owp.buildResultMessage(o)
 	}
-	return "", "", nil
+	return "", ""
 }
 
-func (owp *DramahaWebPresenter) buildResultMessage(o interfaces.DramahaGame) (string, string) {
+func (owp *DramahaWebPresenter) buildResultMessage(o interfaces.DramahaGame) string {
 	results := o.GetRoundResults()
 	if len(results) == 0 {
-		return "", "dramaha.result.gameOver"
+		return "dramaha.result.gameOver"
 	}
 
 	hiLo := true /* ドラマハは常に二分する */
@@ -62,31 +61,31 @@ func (owp *DramahaWebPresenter) buildResultMessage(o interfaces.DramahaGame) (st
 				if hiLo {
 					switch {
 					case r.HiWonAmount > 0 && r.LowWonAmount > 0:
-						return "", "dramahahilo.result.scoop"
+						return "dramahahilo.result.scoop"
 					case r.LowWonAmount > 0:
-						return "", "dramahahilo.result.lowWin"
+						return "dramahahilo.result.lowWin"
 					case r.HiWonAmount > 0:
-						return "", "dramahahilo.result.hiWin"
+						return "dramahahilo.result.hiWin"
 					}
 				}
-				return "", "dramaha.result.win"
+				return "dramaha.result.win"
 			}
 		}
 	}
 
 	for i := 0; i < o.GetPlayerCnt(); i++ {
 		if o.GetPlayer(i).GetIsHuman() && o.GetPlayer(i).GetFolded() {
-			return "", "dramaha.result.folded"
+			return "dramaha.result.folded"
 		}
 	}
 
 	for _, r := range results {
 		if o.GetPlayer(r.PlayerIdx).GetIsHuman() && r.Mucked {
-			return "", "dramaha.result.mucked"
+			return "dramaha.result.mucked"
 		}
 	}
 
-	return "", "dramaha.result.lose"
+	return "dramaha.result.lose"
 }
 
 // ActionLogOutput 棋譜をJSON出力
