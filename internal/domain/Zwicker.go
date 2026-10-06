@@ -429,7 +429,7 @@ func (z *Zwicker) removeBuilds(idxs []int) {
 // advance は手番を進め、必要なら配り直しかディール終了に入る。
 func (z *Zwicker) advance() {
 	z.currentIdx = (z.currentIdx + 1) % len(z.players)
-	if !z.allHandsEmpty() {
+	if !allHandsEmpty(z.players) {
 		return
 	}
 	if z.dealStage < len(zwickerDealSizes) {
@@ -438,11 +438,6 @@ func (z *Zwicker) advance() {
 		return
 	}
 	z.finishRound()
-}
-
-// allHandsEmpty は全員の手札が空かを返す。
-func (z *Zwicker) allHandsEmpty() bool {
-	return allHandsEmpty(z.players)
 }
 
 // finishRound はディールを精算する。

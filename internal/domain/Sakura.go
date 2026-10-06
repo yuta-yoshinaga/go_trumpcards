@@ -382,7 +382,7 @@ func (g *Sakura) applyTurn(seat, handIdx, fieldIdx int) {
 
 // advanceTurn は手番を次に進め、全員の手札が尽きたらラウンドを終える。
 func (g *Sakura) advanceTurn() {
-	if g.allHandsEmpty() {
+	if allHandsEmpty(g.players) {
 		g.finishRound()
 		return
 	}
@@ -394,16 +394,6 @@ func (g *Sakura) advanceTurn() {
 	}
 	// 全員が空 (allHandsEmpty で捕まえているので通常は届かない)。
 	g.finishRound()
-}
-
-// allHandsEmpty は全員の手札が空かを返す。
-func (g *Sakura) allHandsEmpty() bool {
-	for _, p := range g.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
 }
 
 // finishRound は獲得札を集計してラウンドを終える。

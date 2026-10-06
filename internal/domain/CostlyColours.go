@@ -355,7 +355,7 @@ func (c *CostlyColours) applyPlay(seat, handIdx int) error {
 
 // advanceAfterPlay は次の手番を決め、必要なら数え上げを畳んでショーへ進む。
 func (c *CostlyColours) advanceAfterPlay(seat int) {
-	if c.handsEmpty() {
+	if allHandsEmpty(c.players) {
 		c.awardLatter(seat)
 		c.finishDeal()
 		return
@@ -385,7 +385,7 @@ func (c *CostlyColours) advanceAfterPlay(seat int) {
 	}
 	// どちらも出せない ── 数え上げを畳む。
 	c.awardLatter(seat)
-	if c.handsEmpty() {
+	if allHandsEmpty(c.players) {
 		c.finishDeal()
 		return
 	}
@@ -422,16 +422,6 @@ func (c *CostlyColours) canPlay(seat int) bool {
 		}
 	}
 	return false
-}
-
-// handsEmpty は全席の手札が尽きたかを返す。
-func (c *CostlyColours) handsEmpty() bool {
-	for _, p := range c.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
 }
 
 // PlayableIdxs は席 seat が出せる手札の位置を返す。

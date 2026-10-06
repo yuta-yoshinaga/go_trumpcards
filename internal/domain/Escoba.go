@@ -268,7 +268,7 @@ func (e *Escoba) postActionAdvance() {
 		return
 	}
 	e.currentTurn = (e.currentTurn + 1) % EscobaPlayerCnt
-	if e.allHandsEmpty() && e.trumpCards.GetRemainingCount() > 0 {
+	if allHandsEmpty(e.players) && e.trumpCards.GetRemainingCount() > 0 {
 		e.dealPack()
 		e.currentTurn = (e.dealerIdx + 1) % EscobaPlayerCnt
 	}
@@ -276,12 +276,12 @@ func (e *Escoba) postActionAdvance() {
 
 // isRoundOver は手札も山札も尽きたか。
 func (e *Escoba) isRoundOver() bool {
-	return e.allHandsEmpty() && e.trumpCards.GetRemainingCount() == 0
+	return allHandsEmpty(e.players) && e.trumpCards.GetRemainingCount() == 0
 }
 
 // isLastPlay は今の捕獲がラウンド最後の 1 手か (場全取りをエスコバに数えないため)。
 func (e *Escoba) isLastPlay() bool {
-	return e.allHandsEmpty() && e.trumpCards.GetRemainingCount() == 0
+	return allHandsEmpty(e.players) && e.trumpCards.GetRemainingCount() == 0
 }
 
 // finishRound はラウンド終了処理: 残り場札を最後の捕獲者へ渡し、得点集計と終了判定。
@@ -390,11 +390,6 @@ func (e *Escoba) removeTableCardsByIndex(idxs []int) {
 			e.tableCards = append(e.tableCards[:idx], e.tableCards[idx+1:]...)
 		}
 	}
-}
-
-// allHandsEmpty 全プレイヤーの手札が空か。
-func (e *Escoba) allHandsEmpty() bool {
-	return allHandsEmpty(e.players)
 }
 
 // chooseCpuPlay は CPU の手を選ぶ。15 で捕獲できるなら最大枚数 (エスコバ優先)、無ければ最大値を置く。

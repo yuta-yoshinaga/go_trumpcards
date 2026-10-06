@@ -992,8 +992,8 @@ func (b *Coinche) validatePlay(playerIdx int, card *Card) error {
 
 	// リードが非トランプ
 	if hasLead {
-		if cardSuit != leadSuit {
-			return NewDomainErrorCode(ErrInvalidPlay, "coinche.errFollowLeadSuit", nil)
+		if err := validateFollowSuit(b.currentTrick, b.players, playerIdx, card); err != nil {
+			return err
 		}
 		return nil
 	}

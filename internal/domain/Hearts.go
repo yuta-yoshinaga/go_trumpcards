@@ -596,11 +596,11 @@ func (h *Hearts) validatePlay(playerIdx int, card *Card) error {
 
 	// フォロースート
 	leadSuit := h.currentTrick[0].Card.GetDesign()
+	if err := validateFollowSuit(h.currentTrick, h.players, playerIdx, card); err != nil {
+		return err
+	}
+	// validateFollowSuit が通ったので、ここで off-suit なら手番の人はリードスートを持っていない。
 	if card.GetDesign() != leadSuit {
-		// そのスートを持っていない場合のみ許可
-		if h.playerHasSuit(playerIdx, leadSuit) {
-			return NewDomainErrorCode(ErrInvalidPlay, "hearts.errFollowLeadSuit", nil)
-		}
 		// 最初のトリックではハートとQ♠を出せない（強制される場合を除く）
 		if h.trickNumber == 1 {
 			if isPointCard(card, h.config.OmnibusJD) && h.playerHasNonPointCard(player) {

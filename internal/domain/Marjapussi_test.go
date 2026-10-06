@@ -216,7 +216,7 @@ func TestMarjapussi_FollowRules_MustFollowAndMustTrump(t *testing.T) {
 	heartAceIdx := 1
 	err := g.PlayerPlay(heartAceIdx)
 	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
-	assert.Equal(t, "marjapussi.errFollowLeadSuit", err.(*domain.DomainError).MessageCode())
+	assert.Equal(t, "shared.errFollowLeadSuit", err.(*domain.DomainError).MessageCode())
 
 	// Legal to play Spade 7
 	spade7Idx := 0

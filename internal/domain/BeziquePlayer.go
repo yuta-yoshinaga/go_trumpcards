@@ -23,10 +23,7 @@ func NewBeziquePlayer(isHuman bool) *BeziquePlayer {
 
 // ResetGame ゲーム単位の状態をリセット
 func (p *BeziquePlayer) ResetGame() {
-	p.SetRoundScore(0)
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundWithTricks(p)
 }
 
 // beziquePlayerJSON is the JSON wire format for BeziquePlayer.

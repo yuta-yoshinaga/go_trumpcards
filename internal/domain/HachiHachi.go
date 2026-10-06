@@ -483,11 +483,6 @@ func (g *HachiHachi) startRound() {
 		append([]*Card(nil), g.state.fieldCards...))
 }
 
-// allHandsEmpty は全員の手札が空かどうか。
-func (g *HachiHachi) allHandsEmpty() bool {
-	return allHandsEmpty(g.players)
-}
-
 // --- 捕獲ロジック ---
 
 // hachihachiFieldMatches は場札のうち card と同月のインデックスを返す。
@@ -637,7 +632,7 @@ func (g *HachiHachi) applyTurn(playerIdx, handIdx, fieldIdx int) {
 
 // advanceTurn は手番を次へ進め、全員の手札が尽きたらラウンドを精算する。
 func (g *HachiHachi) advanceTurn() {
-	if g.allHandsEmpty() {
+	if allHandsEmpty(g.players) {
 		g.endRound()
 		return
 	}

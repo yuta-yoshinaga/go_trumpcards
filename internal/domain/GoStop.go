@@ -595,11 +595,6 @@ func (g *GoStop) startRound() {
 		append([]*Card(nil), g.state.fieldCards...))
 }
 
-// allHandsEmpty は全員の手札が空かどうか。
-func (g *GoStop) allHandsEmpty() bool {
-	return allHandsEmpty(g.players)
-}
-
 // --- 捕獲ロジック (Koi-Koi と同一) ---
 
 // gostopFieldMatches は場札のうち card と同月のインデックスを返す。
@@ -813,7 +808,7 @@ func (g *GoStop) applyDecision(playerIdx int, goDecision bool) {
 
 // advanceTurn は手番を次へ進め、双方の手札が尽きたら引き分けでラウンドを終える。
 func (g *GoStop) advanceTurn() {
-	if g.allHandsEmpty() {
+	if allHandsEmpty(g.players) {
 		g.endRound(-1)
 		return
 	}

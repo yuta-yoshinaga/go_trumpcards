@@ -38,7 +38,6 @@
   "hintReasonTrumpCut": "cut with trump",
   "hintReasonDiscardWeak": "discard lowest card",
   "errInvalidSuit": "That suit is invalid.",
-  "errFollowLeadSuit": "You must follow the lead suit.",
   "log.dealFirstBatch": "round {{round}}: dealer={{dealer}}, caller={{caller}}, dealt {{cards}} cards each",
   "log.callTrump": "{{name}} calls {{suit}} as trump",
   "log.play": "{{name}} plays {{card}}",

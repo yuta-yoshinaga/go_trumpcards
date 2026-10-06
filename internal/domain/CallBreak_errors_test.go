@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func assertCallBreakDomainError(t *testing.T, err error, sentinel error, code string, params map[string]string) {
@@ -44,7 +45,7 @@ func TestCallBreakDomainErrorsHaveMessageCodes(t *testing.T) {
 			setup: func(cb *domain.CallBreak) {
 				setupCallBreakErrorPlay(cb, 0, []*domain.TrickCard{{PlayerIdx: 1, Card: callBreakCard(domain.CardDesignHeart, 9)}})
 				setCallBreakHand(cb, 0, callBreakCard(domain.CardDesignHeart, 2), callBreakCard(domain.CardDesignSpade, 3))
-			}, play: 1, code: "callbreak.errFollowLeadSuit", sentinel: domain.ErrInvalidPlay,
+			}, play: 1, code: "shared.errFollowLeadSuit", sentinel: domain.ErrInvalidPlay,
 		},
 		{
 			name: "must trump",
@@ -65,6 +66,10 @@ func TestCallBreakDomainErrorsHaveMessageCodes(t *testing.T) {
 				err = cb.PlayerPlay(tt.play)
 			}
 			assertCallBreakDomainError(t, err, tt.sentinel, tt.code, tt.params)
+			if tt.code == "shared.errFollowLeadSuit" {
+				assert.Equal(t, "リードスートに従ってください", i18n.TForLang("ja", tt.code))
+				assert.Equal(t, "Please follow the lead suit.", i18n.TForLang("en", tt.code))
+			}
 		})
 	}
 }

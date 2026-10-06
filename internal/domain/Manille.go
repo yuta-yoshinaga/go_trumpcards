@@ -249,12 +249,11 @@ func (g *Manille) validatePlay(playerIdx int, card *Card) error {
 		return nil
 	}
 	leadSuit := g.currentTrick[0].Card.GetDesign()
-	hasLeadSuit := g.playerHasSuit(playerIdx, leadSuit)
 	// リードスートを持っていれば必ず従う。
-	if hasLeadSuit && card.GetDesign() != leadSuit {
-		return NewDomainErrorCode(ErrInvalidPlay, "manille.errFollowLeadSuit", nil)
+	if err := validateFollowSuit(g.currentTrick, g.players, playerIdx, card); err != nil {
+		return err
 	}
-	if hasLeadSuit {
+	if handHasSuit(g.players[playerIdx], leadSuit) {
 		return nil
 	}
 	// リードスートのボイド。味方が現在トリックを取っているなら切り札温存可 (何でも捨てられる)。
@@ -262,7 +261,7 @@ func (g *Manille) validatePlay(playerIdx int, card *Card) error {
 		return nil
 	}
 	// 味方が勝っていない: 切り札を持っていれば切り札を出す義務がある。
-	if g.playerHasSuit(playerIdx, g.trumpSuit) && card.GetDesign() != g.trumpSuit {
+	if handHasSuit(g.players[playerIdx], g.trumpSuit) && card.GetDesign() != g.trumpSuit {
 		return NewDomainErrorCode(ErrInvalidPlay, "manille.errMustPlayTrump", nil)
 	}
 	return nil
@@ -275,11 +274,6 @@ func (g *Manille) partnerWinning(playerIdx int) bool {
 	}
 	winnerIdx := g.trickWinner()
 	return ManilleTeamOf(winnerIdx) == ManilleTeamOf(playerIdx)
-}
-
-// playerHasSuit プレイヤーが指定スートのカードを持っているか。
-func (g *Manille) playerHasSuit(playerIdx, design int) bool {
-	return handHasSuit(g.players[playerIdx], design)
 }
 
 // trickWinner トリックの勝者を決定する。切り札があれば最強切り札、なければ

@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func assertSpadesDomainError(t *testing.T, err error, sentinel error, code string, params map[string]string) {
@@ -48,5 +49,8 @@ func TestSpadesDomainErrorsHaveMessageCodes(t *testing.T) {
 	s.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 3, false)}})
 	s.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
 	s.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
-	assertSpadesDomainError(t, s.PlayerPlay(0), domain.ErrInvalidPlay, "spades.errFollowLeadSuit", nil)
+	err := s.PlayerPlay(0)
+	assertSpadesDomainError(t, err, domain.ErrInvalidPlay, "shared.errFollowLeadSuit", nil)
+	assert.Equal(t, "リードスートに従ってください", i18n.TForLang("ja", "shared.errFollowLeadSuit"))
+	assert.Equal(t, "Please follow the lead suit.", i18n.TForLang("en", "shared.errFollowLeadSuit"))
 }

@@ -33,12 +33,12 @@ func TestCallBreak_findHumanIdx(t *testing.T) {
 	assert.Equal(t, -1, findHumanIdx(cb2.players))
 }
 
-func TestCallBreak_playerHasSuit(t *testing.T) {
+func TestCallBreak_handHasSuit(t *testing.T) {
 	cb := newInternalCallBreak()
 	cb.players[0].Reset()
 	cb.players[0].AddCard(NewCard(CardDesignSpade, 5, false))
-	assert.True(t, cb.playerHasSuit(0, CardDesignSpade))
-	assert.False(t, cb.playerHasSuit(0, CardDesignHeart))
+	assert.True(t, handHasSuit(cb.players[0], CardDesignSpade))
+	assert.False(t, handHasSuit(cb.players[0], CardDesignHeart))
 }
 
 func TestCallBreak_playerHasNonSpade(t *testing.T) {

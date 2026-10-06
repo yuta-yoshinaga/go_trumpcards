@@ -132,11 +132,11 @@ func TestManilleWebPresenter_Output(t *testing.T) {
 
 	t.Run("coded error returns message code without message", func(t *testing.T) {
 		m, _ := setupManilleWebMockWithPlayers()
-		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "manille.errFollowLeadSuit", nil))
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "shared.errFollowLeadSuit", nil))
 		var resObj controller.ManilleWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Empty(t, resObj.Message)
-		assert.Equal(t, "manille.errFollowLeadSuit", resObj.MessageCode)
+		assert.Equal(t, "shared.errFollowLeadSuit", resObj.MessageCode)
 	})
 
 	t.Run("game end human team wins", func(t *testing.T) {

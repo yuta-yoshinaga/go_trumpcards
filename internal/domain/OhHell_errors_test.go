@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func assertOhHellDomainError(t *testing.T, err error, sentinel error, code string, params map[string]string) {
@@ -51,6 +52,9 @@ func TestOhHellDomainErrorsHaveMessageCodes(t *testing.T) {
 		o.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
 		o.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
 		o.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 9, false)}})
-		assertOhHellDomainError(t, o.PlayerPlay(1), domain.ErrInvalidPlay, "ohhell.errFollowLeadSuit", nil)
+		err := o.PlayerPlay(1)
+		assertOhHellDomainError(t, err, domain.ErrInvalidPlay, "shared.errFollowLeadSuit", nil)
+		assert.Equal(t, "リードスートに従ってください", i18n.TForLang("ja", "shared.errFollowLeadSuit"))
+		assert.Equal(t, "Please follow the lead suit.", i18n.TForLang("en", "shared.errFollowLeadSuit"))
 	})
 }

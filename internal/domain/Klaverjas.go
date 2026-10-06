@@ -307,8 +307,8 @@ func (g *Klaverjas) validatePlay(playerIdx int, card *Card) error {
 	leadSuit := g.currentTrick[0].Card.GetDesign()
 	hasLeadSuit := g.playerHasSuit(playerIdx, leadSuit)
 	// リードスートを持っていれば必ず従う。
-	if hasLeadSuit && card.GetDesign() != leadSuit {
-		return NewDomainErrorCode(ErrInvalidPlay, "klaverjas.errFollowLeadSuit", nil)
+	if err := validateFollowSuit(g.currentTrick, g.players, playerIdx, card); err != nil {
+		return err
 	}
 	// リードスートのボイド: 切り札を持っていれば切り札を出す義務がある。
 	if !hasLeadSuit && g.playerHasSuit(playerIdx, g.trumpSuit) && card.GetDesign() != g.trumpSuit {

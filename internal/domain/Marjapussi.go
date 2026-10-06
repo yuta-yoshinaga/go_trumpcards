@@ -425,15 +425,14 @@ func (g *Marjapussi) validatePlay(playerIdx int, card *Card) error {
 		return nil
 	}
 	leadSuit := g.currentTrick[0].Card.GetDesign()
-	hasLeadSuit := g.playerHasSuit(playerIdx, leadSuit)
-	if hasLeadSuit {
-		if card.GetDesign() != leadSuit {
-			return NewDomainErrorCode(ErrInvalidPlay, "marjapussi.errFollowLeadSuit", nil)
-		}
+	if err := validateFollowSuit(g.currentTrick, g.players, playerIdx, card); err != nil {
+		return err
+	}
+	if handHasSuit(g.players[playerIdx], leadSuit) {
 		return nil
 	}
 	// リードスートを持っていない場合
-	if g.trumpSuit != 0 && g.playerHasSuit(playerIdx, g.trumpSuit) {
+	if g.trumpSuit != 0 && handHasSuit(g.players[playerIdx], g.trumpSuit) {
 		if card.GetDesign() != g.trumpSuit {
 			return NewDomainErrorCode(ErrInvalidPlay, "marjapussi.errMustPlayTrump", nil)
 		}
@@ -441,11 +440,6 @@ func (g *Marjapussi) validatePlay(playerIdx int, card *Card) error {
 	}
 	// リードスートも切り札も持っていない (または切り札未決定): 任意の札を出せる
 	return nil
-}
-
-// playerHasSuit プレイヤーが指定スートのカードを持っているか。
-func (g *Marjapussi) playerHasSuit(playerIdx, design int) bool {
-	return handHasSuit(g.players[playerIdx], design)
 }
 
 // playerHasCard プレイヤーが指定スート・ランクの札を持っているか。

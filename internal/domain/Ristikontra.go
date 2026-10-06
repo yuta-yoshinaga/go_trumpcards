@@ -214,11 +214,6 @@ func (g *Ristikontra) pileTop() *Card {
 	return g.state.pile[len(g.state.pile)-1]
 }
 
-// allHandsEmpty は全員の手札が空かどうか。
-func (g *Ristikontra) allHandsEmpty() bool {
-	return allHandsEmpty(g.players)
-}
-
 // PlayerPlay は人間プレイヤーが手札 cardIndex を場へ出す。
 func (g *Ristikontra) PlayerPlay(cardIndex int) error {
 	if g.state.gameEndFlag {
@@ -323,7 +318,7 @@ func (g *Ristikontra) isCounter(card *Card) bool {
 // advanceTurn は手番を次に進め、必要なら配り直し・終局処理を行う。
 func (g *Ristikontra) advanceTurn() {
 	g.state.currentTurn = (g.state.currentTurn + 1) % len(g.players)
-	if !g.allHandsEmpty() {
+	if !allHandsEmpty(g.players) {
 		return
 	}
 	if g.trumpCards.GetRemainingCount() > 0 {

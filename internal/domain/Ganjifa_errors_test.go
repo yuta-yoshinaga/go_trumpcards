@@ -29,5 +29,5 @@ func TestGanjifaDomainErrorsHaveMessageCodes(t *testing.T) {
 	g.GetPlayer(0).AddCard(NewCard(1, 2, false))
 	g.GetPlayer(0).AddCard(NewCard(2, 2, false))
 	g.currentTrick = []*TrickCard{{PlayerIdx: 1, Card: NewCard(1, 3, false)}}
-	assertGanjifaCodedError(t, g.PlayerPlay(1), ErrInvalidPlay, "ganjifa.errFollowLeadSuit")
+	assertGanjifaCodedError(t, g.PlayerPlay(1), ErrInvalidPlay, "shared.errFollowLeadSuit")
 }

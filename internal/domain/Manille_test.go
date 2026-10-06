@@ -107,6 +107,8 @@ func TestManille_MustFollow(t *testing.T) {
 	manSetHand(g.GetPlayer(0), manCard(CardDesignClover, 13), manCard(CardDesignDiamond, 7))
 	if err := g.PlayerPlay(1); err == nil { // diamond while holding club
 		t.Error("expected must-follow error")
+	} else if err.(*DomainError).MessageCode() != "shared.errFollowLeadSuit" {
+		t.Errorf("must-follow error = %q", err.Error())
 	}
 	if err := g.PlayerPlay(0); err != nil { // K♣ follows
 		t.Fatalf("valid follow err: %v", err)

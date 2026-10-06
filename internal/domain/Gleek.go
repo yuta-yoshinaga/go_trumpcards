@@ -943,22 +943,10 @@ func (g *Gleek) validatePlay(playerIdx int, card *Card) error {
 	if len(g.currentTrick) == 0 || card == nil {
 		return nil
 	}
-	lead := g.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != lead && g.playerHasSuit(playerIdx, lead) {
-		return NewDomainErrorCode(ErrInvalidPlay, "gleek.errFollowLeadSuit", nil)
+	if err := validateFollowSuit(g.currentTrick, g.players, playerIdx, card); err != nil {
+		return err
 	}
 	return nil
-}
-
-// playerHasSuit プレイヤーが指定スートを持っているか。
-func (g *Gleek) playerHasSuit(playerIdx, suit int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if c := p.GetCard(i); c != nil && c.GetDesign() == suit {
-			return true
-		}
-	}
-	return false
 }
 
 // trickWinner トリックの勝者を決定する。切り札が最強、無ければリードスートの最強札。

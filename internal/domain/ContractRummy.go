@@ -142,10 +142,8 @@ func (g *ContractRummy) Reset() {
 	g.roundWinnerIdx = -1
 
 	for _, p := range g.players {
-		p.SetRoundScore(0)
 		p.SetCumulativeScore(0)
-		p.Reset()
-		p.SetIsFinished(false)
+		resetRoundScored(p)
 		p.ClearMelds()
 	}
 

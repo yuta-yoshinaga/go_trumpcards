@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
@@ -90,7 +92,11 @@ func TestHeartsDomainErrorsHaveMessageCodes(t *testing.T) {
 		g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 3, false)}})
 		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
 		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
-		assertHeartsDomainError(t, g.PlayerPlay(1), domain.ErrInvalidPlay, "hearts.errFollowLeadSuit", nil)
+		err := g.PlayerPlay(1)
+		assertHeartsDomainError(t, err, domain.ErrInvalidPlay, "shared.errFollowLeadSuit", nil)
+		code, _ := domain.ErrorMessageCode(err)
+		assert.Equal(t, "リードスートに従ってください", i18n.TForLang("ja", code))
+		assert.Equal(t, "Please follow the lead suit.", i18n.TForLang("en", code))
 	})
 
 	t.Run("first trick point card", func(t *testing.T) {

@@ -30,7 +30,6 @@
   "errBidRange": "ビッドは {{min}}〜{{max}} で指定してください",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errSpadesNotBroken": "スペードはまだブレイクされていません",
-  "errFollowLeadSuit": "リードスートに従ってください",
   "errMustTrump": "リードスートが無い場合はスペードで切らなければなりません",
   "log.bid": "{{name}} が {{bid}} をビッド",
   "log.trickWin": "{{name}} がトリック {{trick}} を獲得",

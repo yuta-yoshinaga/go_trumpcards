@@ -39,6 +39,6 @@ func TestOmiDomainErrorsHaveMessageCodes(t *testing.T) {
 			domain.NewCard(domain.CardDesignSpade, 9, false),
 			domain.NewCard(domain.CardDesignHeart, 7, false),
 		})
-		assertOmiCodedError(t, g.PlayerPlay(1), domain.ErrInvalidPlay, "omi.errFollowLeadSuit")
+		assertOmiCodedError(t, g.PlayerPlay(1), domain.ErrInvalidPlay, "shared.errFollowLeadSuit")
 	})
 }

@@ -373,8 +373,16 @@ func TestVira_PlayerPlayRejectsRenege(t *testing.T) {
 	setViraHand(t, g, 0, NewCard(CardDesignSpade, 5, false), NewCard(CardDesignHeart, 9, false))
 	g.currentTrick = []*TrickCard{{PlayerIdx: 2, Card: NewCard(CardDesignSpade, 8, false)}}
 
-	assert.Error(t, g.PlayerPlay(1), "holding the led suit, an off-suit card must be refused")
+	err := g.PlayerPlay(1)
+	assert.Error(t, err, "holding the led suit, an off-suit card must be refused")
+	code, _ := ErrorMessageCode(err)
+	assert.Equal(t, "shared.errFollowLeadSuit", code)
 	assert.NoError(t, g.PlayerPlay(0))
+
+	setViraHand(t, g, 0, NewCard(CardDesignDiamond, 8, false))
+	g.currentTrick = []*TrickCard{{PlayerIdx: 2, Card: NewCard(CardDesignSpade, 13, false)}}
+	g.SetCurrentPlayerIdx(0)
+	assert.NoError(t, g.PlayerPlay(0), "when void in the led suit, an off-suit card is legal")
 }
 
 func TestVira_PlayerPlayGuards(t *testing.T) {

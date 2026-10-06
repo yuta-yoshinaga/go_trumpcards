@@ -7,6 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func newInternalBatak() *Batak {
@@ -144,6 +146,9 @@ func TestBatak_validatePlay_MustFollowSuit(t *testing.T) {
 
 	err := cb.validatePlay(0, NewCard(CardDesignClover, 3, false))
 	assert.Error(t, err)
+	code, _ := ErrorMessageCode(err)
+	assert.Equal(t, "リードスートに従ってください", i18n.TForLang("ja", code))
+	assert.Equal(t, "Please follow the lead suit.", i18n.TForLang("en", code))
 
 	err = cb.validatePlay(0, NewCard(CardDesignHeart, 5, false))
 	assert.NoError(t, err)

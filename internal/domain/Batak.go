@@ -549,10 +549,10 @@ func (cb *Batak) validatePlay(playerIdx int, card *Card) error {
 	leadSuit := cb.currentTrick[0].Card.GetDesign()
 
 	// フォロースート優先
+	if err := validateFollowSuit(cb.currentTrick, cb.players, playerIdx, card); err != nil {
+		return err
+	}
 	if cb.playerHasSuit(playerIdx, leadSuit) {
-		if card.GetDesign() != leadSuit {
-			return NewDomainErrorCode(ErrInvalidPlay, "batak.errFollowLeadSuit", nil)
-		}
 		return nil
 	}
 

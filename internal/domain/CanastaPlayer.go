@@ -66,9 +66,7 @@ func NewCanastaPlayer(isHuman bool) *CanastaPlayer {
 // ResetRound ラウンドをリセット（手札・スコア・メルド・赤3を初期化）
 func (p *CanastaPlayer) ResetRound() {
 	p.scoreBreakdown = CanastaScoreBreakdown{}
-	p.SetRoundScore(0)
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundScored(p)
 	p.melds = make([]*CanastaMeld, 0)
 	p.red3s = make([]*Card, 0)
 	p.hasInitMeld = false

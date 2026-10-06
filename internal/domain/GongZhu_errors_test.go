@@ -60,5 +60,5 @@ func TestGongZhuDomainErrorsHaveMessageCodes(t *testing.T) {
 	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: gzCard(domain.CardDesignSpade, 5)}})
 	g.GetPlayer(0).AddCard(gzCard(domain.CardDesignHeart, 2))
 	g.GetPlayer(0).AddCard(gzCard(domain.CardDesignSpade, 3))
-	assertGongZhuDomainError(t, g.PlayerPlay(0), domain.ErrInvalidPlay, "gongzhu.errFollowLeadSuit")
+	assertGongZhuDomainError(t, g.PlayerPlay(0), domain.ErrInvalidPlay, "shared.errFollowLeadSuit")
 }

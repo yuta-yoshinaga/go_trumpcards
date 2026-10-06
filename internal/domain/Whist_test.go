@@ -153,10 +153,19 @@ func TestWhist_PlayerPlay(t *testing.T) {
 		// スペード（index 1）を出そうとする → フォロースート違反
 		err := w.PlayerPlay(1)
 		assert.Error(t, err)
+		code, _ := domain.ErrorMessageCode(err)
+		assert.Equal(t, "shared.errFollowLeadSuit", code)
 
 		// ハート（index 0）を出す → OK
 		err = w.PlayerPlay(0)
 		assert.NoError(t, err)
+
+		// A player without the led suit may play any card.
+		p.Reset()
+		p.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
+		w.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: leadCard}})
+		w.SetCurrentPlayerIdx(0)
+		assert.NoError(t, w.PlayerPlay(0))
 	})
 }
 

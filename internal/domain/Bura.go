@@ -456,7 +456,7 @@ func (b *Bura) resolveTrick() {
 	//
 	// 勝者の手札だけを見ないこと。2 人・均等補充では両者同時に尽きるので
 	// 今は等価だが、それは条件ではなく偶然の一致でしかない。
-	if b.allHandsEmpty() {
+	if allHandsEmpty(b.players) {
 		b.drawFlag = true
 		b.gameEndFlag = true
 		b.phase = BuraPhaseGameEnd
@@ -720,11 +720,6 @@ func clampPlayerIdx(idx, n int) int {
 		return -1
 	}
 	return idx
-}
-
-// allHandsEmpty 全プレイヤーの手札が尽きているかを返す。
-func (b *Bura) allHandsEmpty() bool {
-	return allHandsEmpty(b.players)
 }
 
 // ---- CPU ----

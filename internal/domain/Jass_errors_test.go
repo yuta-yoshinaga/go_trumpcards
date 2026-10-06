@@ -52,7 +52,7 @@ func TestJassDomainErrorsHaveMessageCodes(t *testing.T) {
 	setJassHand(g, 0, []*domain.Card{jcard(domain.CardDesignSpade, 7), jcard(domain.CardDesignHeart, 6)})
 	g.SetTrumpSuit(domain.CardDesignHeart)
 	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: jcard(domain.CardDesignSpade, 13)}})
-	assertJassDomainError(t, g.PlayerPlay(1), domain.ErrInvalidPlay, "jass.errFollowLeadSuit")
+	assertJassDomainError(t, g.PlayerPlay(1), domain.ErrInvalidPlay, "shared.errFollowLeadSuit")
 }
 
 func TestJassUnmarshalDomainErrors(t *testing.T) {

@@ -44,7 +44,7 @@ func TestBeloteDomainErrorsHaveMessageCodes(t *testing.T) {
 
 	b.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 1, false)}})
 	setupBeloteHand(b, 0, []*domain.Card{domain.NewCard(domain.CardDesignClover, 7, false), domain.NewCard(domain.CardDesignSpade, 7, false)})
-	assertBeloteDomainError(t, b.PlayerPlay(0), domain.ErrInvalidPlay, "belote.errFollowLeadSuit")
+	assertBeloteDomainError(t, b.PlayerPlay(0), domain.ErrInvalidPlay, "shared.errFollowLeadSuit")
 
 	b.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},

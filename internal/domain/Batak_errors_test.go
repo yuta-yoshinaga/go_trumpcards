@@ -47,7 +47,7 @@ func TestBatakDomainErrorsHaveMessageCodes(t *testing.T) {
 	cb.GetPlayer(0).Reset()
 	cb.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
 	cb.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
-	assertBatakDomainError(t, cb.PlayerPlay(1), domain.ErrInvalidPlay, "batak.errFollowLeadSuit", nil)
+	assertBatakDomainError(t, cb.PlayerPlay(1), domain.ErrInvalidPlay, "shared.errFollowLeadSuit", nil)
 
 	cb.Reset()
 	setupBatakPlay(cb, 0, 0, 1)

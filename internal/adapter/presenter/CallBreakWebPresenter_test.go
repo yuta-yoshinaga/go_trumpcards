@@ -77,11 +77,11 @@ func TestCallBreakWebPresenter_Output(t *testing.T) {
 
 	t.Run("coded error", func(t *testing.T) {
 		m, _ := setupCallBreakWebMockWithPlayers()
-		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "callbreak.errFollowLeadSuit", nil)
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "shared.errFollowLeadSuit", nil)
 		var resObj controller.CallBreakWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
 		assert.Empty(t, resObj.Message)
-		assert.Equal(t, "callbreak.errFollowLeadSuit", resObj.MessageCode)
+		assert.Equal(t, "shared.errFollowLeadSuit", resObj.MessageCode)
 	})
 
 	t.Run("bid phase message code", func(t *testing.T) {

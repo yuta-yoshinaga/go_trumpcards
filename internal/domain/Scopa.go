@@ -181,11 +181,6 @@ func (s *Scopa) dealNextPack() {
 	s.round.packsDealt++
 }
 
-// allHandsEmpty は全員の手札が空か。
-func (s *Scopa) allHandsEmpty() bool {
-	return allHandsEmpty(s.players)
-}
-
 // PlayerPlay は人間プレイヤーが手札 handIdx を出す。
 // tableIdxs が空の場合は「場に置く」。ただし捕獲可能な手なら捕獲が必須。
 func (s *Scopa) PlayerPlay(handIdx int, tableIdxs []int) error {
@@ -299,20 +294,20 @@ func (s *Scopa) postActionAdvance() {
 	}
 	s.round.currentTurn = (s.round.currentTurn + 1) % len(s.players)
 	// 手札切れ + 山札あり → 全員へ次のパックを配る。
-	if s.allHandsEmpty() && s.trumpCards.GetRemainingCount() > 0 {
+	if allHandsEmpty(s.players) && s.trumpCards.GetRemainingCount() > 0 {
 		s.dealNextPack()
 	}
 }
 
 // isRoundOver は現在のラウンドが終了しているか (手札 0 + 山札 0)。
 func (s *Scopa) isRoundOver() bool {
-	return s.allHandsEmpty() && s.trumpCards.GetRemainingCount() == 0
+	return allHandsEmpty(s.players) && s.trumpCards.GetRemainingCount() == 0
 }
 
 // isLastPlayOfRound は今の捕獲がラウンド最後の 1 手か。
 // ラウンド末の場全取りはスコパに数えないため、この判定で弾く。
 func (s *Scopa) isLastPlayOfRound() bool {
-	return s.allHandsEmpty() && s.trumpCards.GetRemainingCount() == 0
+	return allHandsEmpty(s.players) && s.trumpCards.GetRemainingCount() == 0
 }
 
 // finishRound はラウンド終了処理: 残りの場札を最後に捕獲したプレイヤーに渡し、スコア計算。
