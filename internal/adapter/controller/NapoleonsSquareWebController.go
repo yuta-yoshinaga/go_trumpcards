@@ -80,10 +80,7 @@ func napoleonsSquareDispatch(bc *baseController, w http.ResponseWriter, ni useca
 	case "u", "undo":
 		bc.writePresenterResponse(w, ni.Undo())
 	case "undo_n":
-		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, ni.UndoN(*param.N))
+		dispatchUndoN(bc, w, newDefault, param.N, ni.UndoN)
 	default:
 		return dispatchResetHintAndLog(param.Command, bc, w, ni.Reset, ni.Hint, ni.ActionLog)
 	}

@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_SCORE_OPTIONS, useKoiKoiGame } from '../hooks/useKoiKoiGame';
+import { useMountReset } from '../hooks/useMountReset';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, KoiKoiResponse, KoiKoiYaku } from '../types/card';
@@ -127,11 +128,7 @@ function KoiKoiPageContent() {
     setScoreAnnouncement('');
   };
 
-  // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    callApi('reset');
-  }, []);
+  useMountReset(callApi);
 
   useEffect(() => {
     if (!state) return;

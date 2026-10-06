@@ -32,7 +32,14 @@ import type { BridgeResponse } from '../types/card';
 import { BridgePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { buildBridgeAuctionGrid, finalContractBid } from '../utils/bridgeAuction';
-import { canBid, canDouble, canRedouble } from '../utils/bridgeBidRules';
+import {
+  BRIDGE_BID_DOUBLE,
+  BRIDGE_BID_PASS,
+  BRIDGE_BID_REDOUBLE,
+  canBid,
+  canDouble,
+  canRedouble,
+} from '../utils/bridgeBidRules';
 import { cardAlt } from '../utils/cardAlt';
 import { BRIDGE_HELP, parseBridgeCommand } from '../utils/cli/commands/bridgeCommands';
 import { formatBridgeState } from '../utils/cli/formatters/bridgeFormatter';
@@ -240,9 +247,9 @@ function BridgePageContent() {
   // Render one auction cell: pass/double/redouble labels, or level+strain.
   const bidCellLabel = (entry: { bidType: number; level: number; suit: number } | null) => {
     if (!entry) return '';
-    if (entry.bidType === 0) return t('passButton');
-    if (entry.bidType === 2) return t('doubleButton');
-    if (entry.bidType === 3) return t('redoubleButton');
+    if (entry.bidType === BRIDGE_BID_PASS) return t('passButton');
+    if (entry.bidType === BRIDGE_BID_DOUBLE) return t('doubleButton');
+    if (entry.bidType === BRIDGE_BID_REDOUBLE) return t('redoubleButton');
     return `${entry.level}${suitLabel(entry.suit)}`;
   };
 

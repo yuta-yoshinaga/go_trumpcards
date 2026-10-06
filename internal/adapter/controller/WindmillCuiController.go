@@ -22,29 +22,13 @@ func NewWindmillCuiController(wi usecase.WindmillInteractorIF) *WindmillCuiContr
 
 // Exec コマンド実行
 func (c *WindmillCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(_ []string) string {
-			return c.wi.Reset()
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset: c.wi.Reset, move: c.handleMove, giveUp: c.wi.GiveUp,
+		autoComplete: c.wi.AutoComplete, undo: c.wi.Undo, hint: c.wi.Hint, actionLog: c.wi.ActionLog,
+		extraCommands: map[string]func([]string) string{
+			"d": func([]string) string { return c.wi.Draw() }, "draw": func([]string) string { return c.wi.Draw() },
 		},
-		[]string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "d", "draw":
-				return c.wi.Draw(), true
-			case "m", "move":
-				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.wi.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.wi.AutoComplete(), true
-			case "u", "undo":
-				return c.wi.Undo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.wi.Hint, c.wi.ActionLog)
-			}
-		},
-	)
+	})
 }
 
 // handleMove 移動コマンドを処理。supported syntax:

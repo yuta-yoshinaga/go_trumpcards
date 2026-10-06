@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import type { hachihachiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -20,6 +20,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_ROUNDS_OPTIONS, useHachiHachiGame } from '../hooks/useHachiHachiGame';
+import { useMountReset } from '../hooks/useMountReset';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { HachiHachiResponse, HachiHachiYaku } from '../types/card';
@@ -79,11 +80,7 @@ function HachiHachiPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('hachihachi', state);
 
-  // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    callApi('reset');
-  }, []);
+  useMountReset(callApi);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('hachihachi');
   const cliConfig: CliGameConfig<HachiHachiResponse, Parameters<typeof hachihachiApi.exec>> = useMemo(

@@ -74,10 +74,7 @@ func triPeaksDispatch(bc *baseController, w http.ResponseWriter, ti usecase.TriP
 	case "u", "undo":
 		bc.writePresenterResponse(w, ti.Undo())
 	case "undo_n":
-		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, ti.UndoN(*param.N))
+		dispatchUndoN(bc, w, newDefault, param.N, ti.UndoN)
 	default:
 		return dispatchResetHintAndLog(param.Command, bc, w, ti.Reset, ti.Hint, ti.ActionLog)
 	}

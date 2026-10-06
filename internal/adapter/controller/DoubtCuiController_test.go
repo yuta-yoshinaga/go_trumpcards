@@ -34,6 +34,18 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		assert.Equal(t, "bye.", c.Exec("quit"))
 	})
 
+	// The CUI has no doubt window since #10909: sw/setwindow are unknown
+	// commands and must not touch the config.
+	for _, cmd := range []string{"sw", "setwindow"} {
+		t.Run(cmd+" is not a command", func(t *testing.T) {
+			m := newMock()
+			c := controller.NewDoubtCuiController(m)
+			result := c.Exec(cmd + " 5")
+			assert.Contains(t, result, "\x1eERR\x1eコマンドが不明です: "+cmd)
+			m.AssertNotCalled(t, "ResetWithConfig", mock.Anything, mock.Anything)
+		})
+	}
+
 	t.Run("reset command r preserves config", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewDoubtCuiController(m)
@@ -122,51 +134,6 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		result := c.Exec("skip")
 		assert.Equal(t, mockOutput, result)
 		m.AssertCalled(t, "SkipDoubt")
-	})
-
-	// setwindow tests
-	t.Run("setwindow sw valid", func(t *testing.T) {
-		m := newMock()
-		c := controller.NewDoubtCuiController(m)
-		result := c.Exec("sw 30")
-		assert.Equal(t, mockOutput, result)
-		expected := domain.DefaultDoubtConfig()
-		expected.DoubtWindowSec = 30
-		m.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
-	})
-
-	t.Run("setwindow long form", func(t *testing.T) {
-		m := newMock()
-		c := controller.NewDoubtCuiController(m)
-		result := c.Exec("setwindow 5")
-		assert.Equal(t, mockOutput, result)
-		expected := domain.DefaultDoubtConfig()
-		expected.DoubtWindowSec = 5
-		m.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
-	})
-
-	t.Run("setwindow no args", func(t *testing.T) {
-		c := controller.NewDoubtCuiController(newMock())
-		result := c.Exec("sw")
-		assert.True(t, msgRejected(result))
-	})
-
-	t.Run("setwindow invalid value", func(t *testing.T) {
-		c := controller.NewDoubtCuiController(newMock())
-		result := c.Exec("sw abc")
-		assert.Contains(t, result, msgStem("invalidDoubtWindow160"))
-	})
-
-	t.Run("setwindow zero", func(t *testing.T) {
-		c := controller.NewDoubtCuiController(newMock())
-		result := c.Exec("sw 0")
-		assert.Contains(t, result, msgStem("invalidDoubtWindow160"))
-	})
-
-	t.Run("setwindow over 60", func(t *testing.T) {
-		c := controller.NewDoubtCuiController(newMock())
-		result := c.Exec("sw 61")
-		assert.Contains(t, result, msgStem("invalidDoubtWindow160"))
 	})
 
 	// setmemory tests

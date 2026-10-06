@@ -3,9 +3,6 @@
 
 import type { BaseGameResponse, Card } from '../common';
 
-/** Phases, matching the Go domain. */
-export const CRAZY_FOUR_POKER_PHASE = { bet: 0, decide: 1, result: 2 } as const;
-
 /** Round outcomes, matching the Go domain. */
 export const CRAZY_FOUR_POKER_RESULT = {
   none: 0,

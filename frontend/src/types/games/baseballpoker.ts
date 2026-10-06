@@ -3,18 +3,6 @@
 
 import type { BaseGameResponse, Card } from '../common';
 
-/** Phases, matching the Go domain. */
-export const BASEBALL_PHASE = { betting: 0, buyIn: 1, showdown: 2, gameEnd: 3 } as const;
-
-/** Betting actions, matching the Go domain (shared betting constants). */
-export const BASEBALL_ACTION = {
-  fold: 0,
-  check: 1,
-  call: 2,
-  bet: 3,
-  raise: 4,
-} as const;
-
 /** A suggestion for the current decision. */
 export interface BaseballHint {
   /** `fold`, `check`, `call`, `bet`, `raise` or `pay`. */

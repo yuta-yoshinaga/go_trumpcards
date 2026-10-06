@@ -75,10 +75,7 @@ func gapsDispatch(bc *baseController, w http.ResponseWriter, gi usecase.GapsInte
 	case "u", "undo":
 		bc.writePresenterResponse(w, gi.Undo())
 	case "undo_n":
-		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, gi.UndoN(*param.N))
+		dispatchUndoN(bc, w, newDefault, param.N, gi.UndoN)
 	default:
 		return dispatchResetHintAndLog(param.Command, bc, w, gi.Reset, gi.Hint, gi.ActionLog)
 	}

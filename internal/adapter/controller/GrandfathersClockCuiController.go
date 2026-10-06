@@ -22,29 +22,11 @@ func NewGrandfathersClockCuiController(gi usecase.GrandfathersClockInteractorIF)
 
 // Exec コマンド実行
 func (c *GrandfathersClockCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(_ []string) string {
-			return c.gi.Reset()
-		},
-		[]string{"m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo", "redo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "m", "move":
-				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.gi.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.gi.AutoComplete(), true
-			case "u", "undo":
-				return c.gi.Undo(), true
-			case "redo":
-				return c.gi.Redo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.gi.Hint, c.gi.ActionLog)
-			}
-		},
-	)
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset: c.gi.Reset, move: c.handleMove, giveUp: c.gi.GiveUp,
+		autoComplete: c.gi.AutoComplete, undo: c.gi.Undo, hint: c.gi.Hint, actionLog: c.gi.ActionLog,
+		extraCommands: map[string]func([]string) string{"redo": func([]string) string { return c.gi.Redo() }},
+	})
 }
 
 // handleMove 移動コマンドを処理。supported syntax:

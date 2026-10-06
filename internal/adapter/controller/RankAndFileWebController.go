@@ -83,10 +83,7 @@ func rankAndFileDispatch(bc *baseController, w http.ResponseWriter, fi usecase.R
 	case "u", "undo":
 		bc.writePresenterResponse(w, fi.Undo())
 	case "undo_n":
-		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, fi.UndoN(*param.N))
+		dispatchUndoN(bc, w, newDefault, param.N, fi.UndoN)
 	default:
 		return dispatchResetHintAndLog(param.Command, bc, w, fi.Reset, fi.Hint, fi.ActionLog)
 	}

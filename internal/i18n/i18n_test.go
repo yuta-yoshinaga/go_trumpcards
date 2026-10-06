@@ -137,12 +137,12 @@ func TestTf_English_unknownCommand(t *testing.T) {
 func TestT_GameSpecific_ja(t *testing.T) {
 	i18n.SetLang("ja")
 	// doubt-specific key (prefixed with game name)
-	assert.Contains(t, i18n.T("doubt.doubtPrompt"), "ダウト")
+	assert.Equal(t, "Doubt (ダウト)", i18n.T("doubt.helpTitle"))
 }
 
 func TestT_GameSpecific_en(t *testing.T) {
 	i18n.SetLang("en")
-	assert.Equal(t, "Timeout: skipping doubt", i18n.T("doubt.timeout"))
+	assert.Equal(t, "Doubt", i18n.T("doubt.helpTitle"))
 }
 
 func TestT_CanastaErrorCodes_BothLangs(t *testing.T) {

@@ -23,29 +23,19 @@ func NewCruelCuiController(ci usecase.CruelInteractorIF) *CruelCuiController {
 
 // Exec コマンド実行
 func (c *CruelCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(_ []string) string {
-			return c.ci.Reset()
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset:        c.ci.Reset,
+		move:         c.handleMove,
+		giveUp:       c.ci.GiveUp,
+		autoComplete: c.ci.AutoComplete,
+		undo:         c.ci.Undo,
+		hint:         c.ci.Hint,
+		actionLog:    c.ci.ActionLog,
+		extraCommands: map[string]func([]string) string{
+			"s":     func([]string) string { return c.ci.Shift() },
+			"shift": func([]string) string { return c.ci.Shift() },
 		},
-		[]string{"m", "move", "s", "shift", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "m", "move":
-				return c.handleMove(args), true
-			case "s", "shift":
-				return c.ci.Shift(), true
-			case "g", "giveup":
-				return c.ci.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.ci.AutoComplete(), true
-			case "u", "undo":
-				return c.ci.Undo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.ci.Hint, c.ci.ActionLog)
-			}
-		},
-	)
+	})
 }
 
 // handleMove 移動コマンドを処理（Cruel は最上段のみ移動できるので cardIndex なし）

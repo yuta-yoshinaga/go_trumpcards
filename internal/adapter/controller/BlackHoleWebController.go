@@ -64,10 +64,7 @@ func blackHoleDispatch(bc *baseController, w http.ResponseWriter, li usecase.Bla
 	case "u", "undo":
 		bc.writePresenterResponse(w, li.Undo())
 	case "undo_n":
-		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, li.UndoN(*param.N))
+		dispatchUndoN(bc, w, newDefault, param.N, li.UndoN)
 	default:
 		return dispatchResetHintAndLog(param.Command, bc, w, li.Reset, li.Hint, li.ActionLog)
 	}

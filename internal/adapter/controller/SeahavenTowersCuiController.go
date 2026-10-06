@@ -23,29 +23,11 @@ func NewSeahavenTowersCuiController(si usecase.SeahavenTowersInteractorIF) *Seah
 
 // Exec コマンド実行
 func (c *SeahavenTowersCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(args []string) string {
-			return c.si.Reset()
-		},
-		[]string{"m", "move", "f", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "f":
-				return c.handleFoundationShorthand(args), true
-			case "m", "move":
-				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.si.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.si.AutoComplete(), true
-			case "u", "undo":
-				return c.si.Undo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.si.Hint, c.si.ActionLog)
-			}
-		},
-	)
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset: c.si.Reset, move: c.handleMove, giveUp: c.si.GiveUp,
+		autoComplete: c.si.AutoComplete, undo: c.si.Undo, hint: c.si.Hint, actionLog: c.si.ActionLog,
+		extraCommands: map[string]func([]string) string{"f": c.handleFoundationShorthand},
+	})
 }
 
 // handleMove 移動コマンドを処理

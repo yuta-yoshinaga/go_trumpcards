@@ -45,8 +45,6 @@ func (c *CribbageCuiController) Exec(command string) string {
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ci.Peg)
 			case "go":
 				return c.ci.Go(), true
-			case "h", "hint":
-				return c.ci.Hint(), true
 			case "sn", "shownext":
 				return c.ci.ShowNext(), true
 			case "nr", "nextround":
@@ -64,7 +62,7 @@ func (c *CribbageCuiController) Exec(command string) string {
 					return c.ci.ResetWithConfig(cfg)
 				})
 			default:
-				return handleCuiLog(cmd, c.ci.ActionLog)
+				return handleCuiHintAndLog(cmd, c.ci.Hint, c.ci.ActionLog)
 			}
 		},
 	)

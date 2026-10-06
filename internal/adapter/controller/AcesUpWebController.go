@@ -75,10 +75,7 @@ func acesUpDispatch(bc *baseController, w http.ResponseWriter, ai usecase.AcesUp
 	case "u", "undo":
 		bc.writePresenterResponse(w, ai.Undo())
 	case "undo_n":
-		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, ai.UndoN(*param.N))
+		dispatchUndoN(bc, w, newDefault, param.N, ai.UndoN)
 	default:
 		return dispatchResetHintAndLog(param.Command, bc, w, ai.Reset, ai.Hint, ai.ActionLog)
 	}

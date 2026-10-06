@@ -23,29 +23,18 @@ func NewEightOffCuiController(ei usecase.EightOffInteractorIF) *EightOffCuiContr
 
 // Exec コマンド実行
 func (c *EightOffCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(args []string) string {
-			return c.ei.Reset()
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset:        c.ei.Reset,
+		move:         c.handleMove,
+		giveUp:       c.ei.GiveUp,
+		autoComplete: c.ei.AutoComplete,
+		undo:         c.ei.Undo,
+		hint:         c.ei.Hint,
+		actionLog:    c.ei.ActionLog,
+		extraCommands: map[string]func([]string) string{
+			"f": c.handleFoundationShorthand,
 		},
-		[]string{"m", "move", "f", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "f":
-				return c.handleFoundationShorthand(args), true
-			case "m", "move":
-				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.ei.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.ei.AutoComplete(), true
-			case "u", "undo":
-				return c.ei.Undo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.ei.Hint, c.ei.ActionLog)
-			}
-		},
-	)
+	})
 }
 
 // handleMove 移動コマンドを処理

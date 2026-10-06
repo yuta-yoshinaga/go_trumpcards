@@ -23,29 +23,18 @@ func NewFreeCellCuiController(fi usecase.FreeCellInteractorIF) *FreeCellCuiContr
 
 // Exec コマンド実行
 func (c *FreeCellCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(args []string) string {
-			return c.fi.Reset()
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset:        c.fi.Reset,
+		move:         c.handleMove,
+		giveUp:       c.fi.GiveUp,
+		autoComplete: c.fi.AutoComplete,
+		undo:         c.fi.Undo,
+		hint:         c.fi.Hint,
+		actionLog:    c.fi.ActionLog,
+		extraCommands: map[string]func([]string) string{
+			"f": c.handleFoundationShorthand,
 		},
-		[]string{"m", "move", "f", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "f":
-				return c.handleFoundationShorthand(args), true
-			case "m", "move":
-				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.fi.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.fi.AutoComplete(), true
-			case "u", "undo":
-				return c.fi.Undo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.fi.Hint, c.fi.ActionLog)
-			}
-		},
-	)
+	})
 }
 
 // handleMove 移動コマンドを処理
