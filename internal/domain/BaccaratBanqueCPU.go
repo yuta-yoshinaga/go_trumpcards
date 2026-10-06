@@ -17,7 +17,7 @@ type BaccaratBanqueHint struct {
 // **裁量があるのはここだけ。** 慣習では引くほうが有利とされるので、Normal と
 // Hard は引く。Easy は五分五分で決める ── 難易度は CPU の腕の話であって、
 // 規則の話ではないので、必ず引く / 必ず止まるほうは difficulty に関わらず固定。
-func (b *BaccaratBanque) punterTakesOnFive(seat int) bool {
+func (b *BaccaratBanque) punterTakesOnFive() bool {
 	if b.config.CpuDifficulty == BaccaratBanqueCpuDifficultyEasy {
 		return rand.Intn(2) == 0 //nolint:gosec // ゲームの手選びに暗号強度は要らない
 	}

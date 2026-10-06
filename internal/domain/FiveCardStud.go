@@ -481,17 +481,17 @@ func (s *FiveCardStud) advancePhase() {
 	case FiveCardStudPhaseSecondStreet:
 		s.phase = FiveCardStudPhaseThirdStreet
 		s.minRaise = s.config.SmallBet
-		s.dealStreetCard(true) // 表向き
+		s.dealStreetCard() // 表向き
 		s.appendLog(-1, "deal", "fivecardstud.log.dealtThirdStreet", nil, nil)
 	case FiveCardStudPhaseThirdStreet:
 		s.phase = FiveCardStudPhaseFourthStreet
 		s.minRaise = s.config.BigBet
-		s.dealStreetCard(true)
+		s.dealStreetCard()
 		s.appendLog(-1, "deal", "fivecardstud.log.dealtFourthStreet", nil, nil)
 	case FiveCardStudPhaseFourthStreet:
 		s.phase = FiveCardStudPhaseFifthStreet
 		s.minRaise = s.config.BigBet
-		s.dealStreetCard(true)
+		s.dealStreetCard()
 		s.appendLog(-1, "deal", "fivecardstud.log.dealtFifthStreet", nil, nil)
 	case FiveCardStudPhaseFifthStreet:
 		s.phase = FiveCardStudPhaseShowdown
@@ -520,7 +520,7 @@ func (s *FiveCardStud) advancePhase() {
 }
 
 // dealStreetCard 各アクティブプレイヤーにカードを1枚配る
-func (s *FiveCardStud) dealStreetCard(faceUp bool) {
+func (s *FiveCardStud) dealStreetCard() {
 	activePlayers := 0
 	for _, p := range s.players {
 		if !p.GetFolded() {
@@ -547,11 +547,7 @@ func (s *FiveCardStud) dealStreetCard(faceUp bool) {
 		if card == nil {
 			break
 		}
-		if faceUp {
-			s.players[idx].AddDoorCard(card)
-		} else {
-			s.players[idx].AddHoleCard(card)
-		}
+		s.players[idx].AddDoorCard(card)
 	}
 }
 
@@ -569,7 +565,7 @@ func (s *FiveCardStud) dealRemainingStreets() {
 	for phase := s.phase + 1; phase <= FiveCardStudPhaseFifthStreet; phase++ {
 		switch phase {
 		case FiveCardStudPhaseThirdStreet, FiveCardStudPhaseFourthStreet, FiveCardStudPhaseFifthStreet:
-			s.dealStreetCard(true)
+			s.dealStreetCard()
 		}
 	}
 }

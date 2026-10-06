@@ -148,7 +148,7 @@ func (f *FourSeasons) MoveWasteToFoundation(fIdx int) error {
 	f.takeSnapshot()
 	f.waste = f.waste[:len(f.waste)-1]
 	f.foundation[fIdx] = append(f.foundation[fIdx], card)
-	f.afterMove("fourseasons.log.move", map[string]string{"value1": fmt.Sprint(fIdx + 1)}, card)
+	f.afterMove(map[string]string{"value1": fmt.Sprint(fIdx + 1)}, card)
 	return nil
 }
 
@@ -170,7 +170,7 @@ func (f *FourSeasons) MoveWasteToTableau(col int) error {
 	f.takeSnapshot()
 	f.waste = f.waste[:len(f.waste)-1]
 	f.tableau[col] = append(f.tableau[col], card)
-	f.afterMove("fourseasons.log.move", map[string]string{"value1": fmt.Sprint(col + 1)}, card)
+	f.afterMove(map[string]string{"value1": fmt.Sprint(col + 1)}, card)
 	return nil
 }
 
@@ -195,7 +195,7 @@ func (f *FourSeasons) MoveTableauToFoundation(col, fIdx int) error {
 	f.takeSnapshot()
 	f.tableau[col] = f.tableau[col][:len(f.tableau[col])-1]
 	f.foundation[fIdx] = append(f.foundation[fIdx], card)
-	f.afterMove("fourseasons.log.move", map[string]string{"value1": fmt.Sprint(col + 1), "value2": fmt.Sprint(fIdx + 1)}, card)
+	f.afterMove(map[string]string{"value1": fmt.Sprint(col + 1), "value2": fmt.Sprint(fIdx + 1)}, card)
 	return nil
 }
 
@@ -224,7 +224,7 @@ func (f *FourSeasons) MoveTableauToTableau(fromCol, toCol int) error {
 	f.takeSnapshot()
 	f.tableau[fromCol] = f.tableau[fromCol][:len(f.tableau[fromCol])-1]
 	f.tableau[toCol] = append(f.tableau[toCol], card)
-	f.afterMove("fourseasons.log.move", map[string]string{"value1": fmt.Sprint(fromCol + 1), "value2": fmt.Sprint(toCol + 1)}, card)
+	f.afterMove(map[string]string{"value1": fmt.Sprint(fromCol + 1), "value2": fmt.Sprint(toCol + 1)}, card)
 	return nil
 }
 
@@ -379,9 +379,9 @@ func (f *FourSeasons) wasteTop() (*Card, error) {
 }
 
 // afterMove は移動後の共通処理（手数・棋譜・クリア判定）。
-func (f *FourSeasons) afterMove(detailCode string, detailParams map[string]string, card *Card) {
+func (f *FourSeasons) afterMove(detailParams map[string]string, card *Card) {
 	f.moveCount++
-	f.appendLog("move", detailCode, detailParams, []*Card{card})
+	f.appendLog("move", "fourseasons.log.move", detailParams, []*Card{card})
 	f.checkGameClear()
 }
 

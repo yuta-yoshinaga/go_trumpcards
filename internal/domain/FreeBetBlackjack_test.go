@@ -30,7 +30,7 @@ func fbStackNext(g *FreeBetBlackjack, cards ...*Card) {
 }
 
 // fbStaged は指定の手を積んでプレイ待ちにした卓を返す。
-func fbStaged(t *testing.T, ante int, player, dealer []*Card) *FreeBetBlackjack {
+func fbStaged(t *testing.T, player, dealer []*Card) *FreeBetBlackjack {
 	t.Helper()
 	g := newFreeBetForTest(t)
 	// **最初の配りもこちらで決める。** ナチュラルが出ると PlaceBet がその場で
@@ -38,14 +38,14 @@ func fbStaged(t *testing.T, ante int, player, dealer []*Card) *FreeBetBlackjack 
 	// 捨てたクープの結果を持ったまま**になる。9-8 なら双方 17 で決着しない。
 	fbStackNext(g, fbCard(CardDesignSpade, 9), fbCard(CardDesignClover, 8),
 		fbCard(CardDesignHeart, 9), fbCard(CardDesignDiamond, 8))
-	require.NoError(t, g.PlaceBet(ante))
+	require.NoError(t, g.PlaceBet(100))
 	require.Equal(t, FreeBetPhasePlay, g.phase, "積んだ配りで決着してしまった")
 
 	h := NewBlackJackHand()
 	for _, c := range player {
 		h.AddCard(c)
 	}
-	h.SetBet(ante)
+	h.SetBet(100)
 	g.hands = []*BlackJackHand{h}
 	g.freeBets = []int{0}
 	g.results = []FreeBetResult{FreeBetResultNone}
@@ -117,7 +117,7 @@ func TestFreeBet_CanFreeSplit(t *testing.T) {
 
 // **プレイヤーはチップを出さない。** 勝てば倍額、負けても元の賭け金だけ。
 func TestFreeBet_FreeDoubleCostsNothing(t *testing.T) {
-	g := fbStaged(t, 100,
+	g := fbStaged(t,
 		[]*Card{fbCard(CardDesignSpade, 6), fbCard(CardDesignHeart, 5)}, // ハード 11
 		[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 7)})
 	before := g.GetChips()
@@ -135,7 +135,7 @@ func TestFreeBet_FreeDoubleCostsNothing(t *testing.T) {
 }
 
 func TestFreeBet_FreeDoubleRejectedOutsideTheRange(t *testing.T) {
-	g := fbStaged(t, 100,
+	g := fbStaged(t,
 		[]*Card{fbCard(CardDesignSpade, 10), fbCard(CardDesignHeart, 2)}, // ハード 12
 		[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 7)})
 	assert.False(t, g.CanFreeDouble())
@@ -144,7 +144,7 @@ func TestFreeBet_FreeDoubleRejectedOutsideTheRange(t *testing.T) {
 
 // **負けても元の賭け金しか失わない。**
 func TestFreeBet_FreeDoubleLosesOnlyTheOriginalBet(t *testing.T) {
-	g := fbStaged(t, 100,
+	g := fbStaged(t,
 		[]*Card{fbCard(CardDesignSpade, 6), fbCard(CardDesignHeart, 5)},
 		[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 9)}) // 19
 	g.freeBets[0] = 100
@@ -158,7 +158,7 @@ func TestFreeBet_FreeDoubleLosesOnlyTheOriginalBet(t *testing.T) {
 
 // **勝てばハウスのぶんも配当として付く。**
 func TestFreeBet_FreeDoubleWinPaysTheHouseShare(t *testing.T) {
-	g := fbStaged(t, 100,
+	g := fbStaged(t,
 		[]*Card{fbCard(CardDesignSpade, 6), fbCard(CardDesignHeart, 5)},
 		[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 7)}) // 17
 	g.hands[0].AddCard(fbCard(CardDesignSpade, 9)) // 20 で勝ち
@@ -174,7 +174,7 @@ func TestFreeBet_FreeDoubleWinPaysTheHouseShare(t *testing.T) {
 
 // **2 つ目の手札はまるごとハウスの金。**
 func TestFreeBet_FreeSplitCostsNothing(t *testing.T) {
-	g := fbStaged(t, 100,
+	g := fbStaged(t,
 		[]*Card{fbCard(CardDesignSpade, 8), fbCard(CardDesignHeart, 8)},
 		[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 7)})
 	before := g.GetChips()
@@ -191,7 +191,7 @@ func TestFreeBet_FreeSplitCostsNothing(t *testing.T) {
 }
 
 func TestFreeBet_FreeSplitRejectedOnTens(t *testing.T) {
-	g := fbStaged(t, 100,
+	g := fbStaged(t,
 		[]*Card{fbCard(CardDesignSpade, 13), fbCard(CardDesignHeart, 12)},
 		[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 7)})
 	assert.False(t, g.CanFreeSplit(), "10 点札のペアが割れてしまう")
@@ -199,7 +199,7 @@ func TestFreeBet_FreeSplitRejectedOnTens(t *testing.T) {
 }
 
 func TestFreeBet_SplitAcesGetOneCardEach(t *testing.T) {
-	g := fbStaged(t, 100,
+	g := fbStaged(t,
 		[]*Card{fbCard(CardDesignSpade, 1), fbCard(CardDesignHeart, 1)},
 		[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 7)})
 	fbStackNext(g, fbCard(CardDesignClover, 9), fbCard(CardDesignDiamond, 9))
@@ -217,7 +217,7 @@ func TestFreeBet_SplitAcesGetOneCardEach(t *testing.T) {
 // さらに悪いことに **bet が 0 のハウス持ちの手は「ブラックジャック」判定に
 // 落ちて払い戻しが 0** になる ── 勝ったのに何も戻らない。
 func TestFreeBet_SplitTwentyOneIsNotANatural(t *testing.T) {
-	g := fbStaged(t, 100,
+	g := fbStaged(t,
 		[]*Card{fbCard(CardDesignSpade, 1), fbCard(CardDesignHeart, 1)},
 		[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 7)}) // 17 で立つ
 	// 分けた両手に 10 を配って 2 枚 21 にする。
@@ -240,7 +240,7 @@ func TestFreeBet_SplitTwentyOneIsNotANatural(t *testing.T) {
 
 // **配ったままの 2 枚 21 はナチュラルのまま。** 上の修正で潰していないこと。
 func TestFreeBet_UnsplitTwentyOneIsStillANatural(t *testing.T) {
-	g := fbStaged(t, 100,
+	g := fbStaged(t,
 		[]*Card{fbCard(CardDesignSpade, 1), fbCard(CardDesignHeart, 13)},
 		[]*Card{fbCard(CardDesignClover, 10), fbCard(CardDesignDiamond, 9)})
 	before := g.GetChips()
@@ -252,7 +252,7 @@ func TestFreeBet_UnsplitTwentyOneIsStillANatural(t *testing.T) {
 
 // **ハウス持ちの手札で負けても、プレイヤーは何も失わない。**
 func TestFreeBet_FreeSplitHandLosesNothing(t *testing.T) {
-	g := fbStaged(t, 100,
+	g := fbStaged(t,
 		[]*Card{fbCard(CardDesignSpade, 8), fbCard(CardDesignHeart, 8)},
 		[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 9)})
 	// **引く札を決める。** 素の配りだと 8 にエースが付いて 19 になり、
@@ -300,7 +300,7 @@ func TestFreeBet_Dealer22Pushes(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := fbStaged(t, 100,
+			g := fbStaged(t,
 				[]*Card{fbCard(CardDesignSpade, 10), fbCard(CardDesignHeart, 9)}, // 19
 				tt.dealer)
 			g.hands[0].SetStood(true)
@@ -317,7 +317,7 @@ func TestFreeBet_Dealer22Pushes(t *testing.T) {
 
 // **プレイヤーがバストしていれば、ディーラーの 22 は関係ない。**
 func TestFreeBet_PlayerBustLosesEvenOnDealer22(t *testing.T) {
-	g := fbStaged(t, 100,
+	g := fbStaged(t,
 		[]*Card{fbCard(CardDesignSpade, 10), fbCard(CardDesignHeart, 9), fbCard(CardDesignClover, 5)},
 		[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 5), fbCard(CardDesignSpade, 7)})
 	g.hands[0].SetBusted(true)
@@ -330,7 +330,7 @@ func TestFreeBet_PlayerBustLosesEvenOnDealer22(t *testing.T) {
 
 // **22 プッシュではハウスのぶんは払われない。**
 func TestFreeBet_Dealer22DoesNotPayTheFreeShare(t *testing.T) {
-	g := fbStaged(t, 100,
+	g := fbStaged(t,
 		[]*Card{fbCard(CardDesignSpade, 6), fbCard(CardDesignHeart, 5)},
 		[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 5), fbCard(CardDesignSpade, 7)})
 	g.freeBets[0] = 100
@@ -347,7 +347,7 @@ func TestFreeBet_Dealer22DoesNotPayTheFreeShare(t *testing.T) {
 // --- 通常の配当 ---
 
 func TestFreeBet_BlackjackPaysThreeToTwo(t *testing.T) {
-	g := fbStaged(t, 100,
+	g := fbStaged(t,
 		[]*Card{fbCard(CardDesignSpade, 1), fbCard(CardDesignHeart, 13)},
 		[]*Card{fbCard(CardDesignClover, 10), fbCard(CardDesignDiamond, 9)})
 	before := g.GetChips()
@@ -385,7 +385,7 @@ func TestFreeBet_WinLosePush(t *testing.T) {
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			g := fbStaged(t, 100, tt.player, tt.dealer)
+			g := fbStaged(t, tt.player, tt.dealer)
 			g.hands[0].SetStood(true)
 			before := g.GetChips()
 			g.settle()
@@ -398,7 +398,7 @@ func TestFreeBet_WinLosePush(t *testing.T) {
 // --- ディーラーの進行 ---
 
 func TestFreeBet_DealerHitsSoft17(t *testing.T) {
-	g := fbStaged(t, 100,
+	g := fbStaged(t,
 		[]*Card{fbCard(CardDesignSpade, 10), fbCard(CardDesignHeart, 9)},
 		[]*Card{fbCard(CardDesignClover, 1), fbCard(CardDesignDiamond, 6)}) // ソフト 17
 	g.hands[0].SetStood(true)
@@ -407,7 +407,7 @@ func TestFreeBet_DealerHitsSoft17(t *testing.T) {
 }
 
 func TestFreeBet_DealerStandsOnHard17(t *testing.T) {
-	g := fbStaged(t, 100,
+	g := fbStaged(t,
 		[]*Card{fbCard(CardDesignSpade, 10), fbCard(CardDesignHeart, 9)},
 		[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 7)})
 	g.hands[0].SetStood(true)
@@ -500,7 +500,7 @@ func TestFreeBet_GetHint(t *testing.T) {
 
 	// **タダなら使う。** 負けても元の賭け金しか失わない。
 	t.Run("無料スプリットできるなら薦める", func(t *testing.T) {
-		g := fbStaged(t, 100,
+		g := fbStaged(t,
 			[]*Card{fbCard(CardDesignSpade, 8), fbCard(CardDesignHeart, 8)},
 			[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 7)})
 		h := g.GetHint()
@@ -510,7 +510,7 @@ func TestFreeBet_GetHint(t *testing.T) {
 	})
 
 	t.Run("無料ダブルできるなら薦める", func(t *testing.T) {
-		g := fbStaged(t, 100,
+		g := fbStaged(t,
 			[]*Card{fbCard(CardDesignSpade, 6), fbCard(CardDesignHeart, 5)},
 			[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 7)})
 		h := g.GetHint()
@@ -519,7 +519,7 @@ func TestFreeBet_GetHint(t *testing.T) {
 	})
 
 	t.Run("17 以上は立つ", func(t *testing.T) {
-		g := fbStaged(t, 100,
+		g := fbStaged(t,
 			[]*Card{fbCard(CardDesignSpade, 10), fbCard(CardDesignHeart, 8)},
 			[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 7)})
 		h := g.GetHint()
@@ -528,7 +528,7 @@ func TestFreeBet_GetHint(t *testing.T) {
 	})
 
 	t.Run("11 以下は引く", func(t *testing.T) {
-		g := fbStaged(t, 100,
+		g := fbStaged(t,
 			[]*Card{fbCard(CardDesignSpade, 4), fbCard(CardDesignHeart, 3)}, // 7 (無料ダブルの範囲外)
 			[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 7)})
 		h := g.GetHint()
@@ -550,7 +550,7 @@ func TestFreeBet_GetHint(t *testing.T) {
 			{"エースは 11 なので追いかける", fbCard(CardDesignClover, 1), "hit", "chaseDealer"},
 		} {
 			t.Run(tt.name, func(t *testing.T) {
-				g := fbStaged(t, 100,
+				g := fbStaged(t,
 					[]*Card{fbCard(CardDesignSpade, 10), fbCard(CardDesignHeart, 5)}, // 15
 					[]*Card{tt.up, fbCard(CardDesignDiamond, 7)})
 				h := g.GetHint()

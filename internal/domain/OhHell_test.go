@@ -27,11 +27,11 @@ func setupOhHellBidPhase(o *domain.OhHell, bidPlayerIdx int) {
 	o.SetBidPlayerIdx(bidPlayerIdx)
 }
 
-func setupOhHellPlayPhase(o *domain.OhHell, currentIdx, leadIdx, trickNum int) {
+func setupOhHellPlayPhase(o *domain.OhHell, currentIdx, leadIdx int) {
 	o.SetPhase(domain.OhHellPhasePlay)
 	o.SetCurrentPlayerIdx(currentIdx)
 	o.SetLeadPlayerIdx(leadIdx)
-	o.SetTrickNumber(trickNum)
+	o.SetTrickNumber(1)
 }
 
 // --- Config tests ---
@@ -362,7 +362,7 @@ func TestOhHell_PlayerPlay_Valid(t *testing.T) {
 	p.Reset()
 	p.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
 	p.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
-	setupOhHellPlayPhase(o, 0, 0, 1)
+	setupOhHellPlayPhase(o, 0, 0)
 	o.SetCurrentTrick(nil)
 
 	err := o.PlayerPlay(0)
@@ -373,7 +373,7 @@ func TestOhHell_PlayerPlay_Valid(t *testing.T) {
 func TestOhHell_PlayerPlay_InvalidIndex(t *testing.T) {
 	o := newTestOhHell()
 	o.Reset()
-	setupOhHellPlayPhase(o, 0, 0, 1)
+	setupOhHellPlayPhase(o, 0, 0)
 
 	assert.Error(t, o.PlayerPlay(-1))
 	assert.Error(t, o.PlayerPlay(999))
@@ -405,7 +405,7 @@ func TestOhHell_PlayerPlay_FollowSuit(t *testing.T) {
 	p.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
 	p.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
 
-	setupOhHellPlayPhase(o, 0, 1, 1)
+	setupOhHellPlayPhase(o, 0, 1)
 	// Lead card is a heart
 	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 8, false)},
@@ -428,7 +428,7 @@ func TestOhHell_PlayerPlay_NoFollowSuitWhenVoid(t *testing.T) {
 	p.Reset()
 	p.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
 
-	setupOhHellPlayPhase(o, 0, 1, 1)
+	setupOhHellPlayPhase(o, 0, 1)
 	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 8, false)},
 	})
@@ -446,7 +446,7 @@ func TestOhHell_CpuPlay(t *testing.T) {
 	p.Reset()
 	p.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
 	p.SetBid(1)
-	setupOhHellPlayPhase(o, 1, 1, 1)
+	setupOhHellPlayPhase(o, 1, 1)
 	o.SetCurrentTrick(nil)
 
 	o.CpuPlay()
@@ -471,7 +471,7 @@ func TestOhHell_CpuPlay_AllDifficulties(t *testing.T) {
 			p.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
 			p.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
 			p.SetBid(1)
-			setupOhHellPlayPhase(o, 1, 1, 1)
+			setupOhHellPlayPhase(o, 1, 1)
 			o.SetCurrentTrick(nil)
 
 			o.CpuPlay()
@@ -753,7 +753,7 @@ func TestOhHell_GetHint_PlayPhase(t *testing.T) {
 	p.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
 	p.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
 	p.SetBid(1)
-	setupOhHellPlayPhase(o, 0, 0, 1)
+	setupOhHellPlayPhase(o, 0, 0)
 	o.SetCurrentTrick(nil)
 
 	hint := o.GetHint()
@@ -942,7 +942,7 @@ func TestOhHell_GetValidPlayIndices(t *testing.T) {
 	p.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
 	p.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
 
-	setupOhHellPlayPhase(o, 0, 1, 1)
+	setupOhHellPlayPhase(o, 0, 1)
 	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 3, false)},
 	})
@@ -961,7 +961,7 @@ func TestOhHell_GetValidPlayIndices_Lead(t *testing.T) {
 	p.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
 	p.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
 
-	setupOhHellPlayPhase(o, 0, 0, 1)
+	setupOhHellPlayPhase(o, 0, 0)
 	o.SetCurrentTrick(nil)
 
 	valid := o.GetValidPlayIndices(0)
@@ -1002,7 +1002,7 @@ func TestOhHell_CpuPlay_FollowSuit(t *testing.T) {
 	p.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
 	p.SetBid(1)
 
-	setupOhHellPlayPhase(o, 1, 0, 1)
+	setupOhHellPlayPhase(o, 1, 0)
 	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 8, false)},
 	})
@@ -1017,7 +1017,7 @@ func TestOhHell_CpuPlay_FollowSuit(t *testing.T) {
 func TestOhHell_CpuPlay_HumanTurn(t *testing.T) {
 	o := newTestOhHell()
 	o.Reset()
-	setupOhHellPlayPhase(o, 0, 0, 1)
+	setupOhHellPlayPhase(o, 0, 0)
 
 	o.CpuPlay() // should do nothing (human's turn)
 }

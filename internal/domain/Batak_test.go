@@ -23,16 +23,16 @@ func newTestBatak() *domain.Batak {
 	return domain.NewBatak(domain.NewTrumpCards(0), players, domain.DefaultBatakConfig())
 }
 
-func setupBatakBid(cb *domain.Batak, idx int) {
+func setupBatakBid(cb *domain.Batak) {
 	cb.SetPhase(domain.BatakPhaseBid)
-	cb.SetBidPlayerIdx(idx)
+	cb.SetBidPlayerIdx(0)
 }
 
-func setupBatakPlay(cb *domain.Batak, current, lead, trickNum int) {
+func setupBatakPlay(cb *domain.Batak, current, lead int) {
 	cb.SetPhase(domain.BatakPhasePlay)
 	cb.SetCurrentPlayerIdx(current)
 	cb.SetLeadPlayerIdx(lead)
-	cb.SetTrickNumber(trickNum)
+	cb.SetTrickNumber(1)
 }
 
 func TestNewBatak(t *testing.T) {
@@ -91,7 +91,7 @@ func TestBatak_Reset_ClearsAccumulated(t *testing.T) {
 func TestBatak_PlayerBid_Valid(t *testing.T) {
 	cb := newTestBatak()
 	cb.Reset()
-	setupBatakBid(cb, 0)
+	setupBatakBid(cb)
 	err := cb.PlayerBid(5)
 	require.NoError(t, err)
 	assert.Equal(t, 5, cb.GetPlayer(0).GetBid())
@@ -101,7 +101,7 @@ func TestBatak_PlayerBid_Valid(t *testing.T) {
 func TestBatak_PlayerBid_Pass(t *testing.T) {
 	cb := newTestBatak()
 	cb.Reset()
-	setupBatakBid(cb, 0)
+	setupBatakBid(cb)
 	err := cb.PlayerBid(domain.BatakPassBid)
 	require.NoError(t, err)
 	assert.Equal(t, domain.BatakPassBid, cb.GetPlayer(0).GetBid())
@@ -111,7 +111,7 @@ func TestBatak_PlayerBid_Pass(t *testing.T) {
 func TestBatak_PlayerBid_MaxBid(t *testing.T) {
 	cb := newTestBatak()
 	cb.Reset()
-	setupBatakBid(cb, 0)
+	setupBatakBid(cb)
 	err := cb.PlayerBid(domain.BatakMaxBid)
 	require.NoError(t, err)
 	assert.Equal(t, domain.BatakMaxBid, cb.GetPlayer(0).GetBid())
@@ -121,7 +121,7 @@ func TestBatak_PlayerBid_MaxBid(t *testing.T) {
 func TestBatak_Auction_InvalidBids(t *testing.T) {
 	cb := newTestBatak()
 	cb.Reset()
-	setupBatakBid(cb, 0)
+	setupBatakBid(cb)
 
 	// BatakMinBid (5) 未満の非ゼロ宣言はエラー
 	assert.Error(t, cb.PlayerBid(4))
@@ -534,7 +534,7 @@ func TestBatak_PlayerPlay_WrongPhase(t *testing.T) {
 func TestBatak_PlayerPlay_NotHumanTurn(t *testing.T) {
 	cb := newTestBatak()
 	cb.Reset()
-	setupBatakPlay(cb, 1, 1, 1)
+	setupBatakPlay(cb, 1, 1)
 	err := cb.PlayerPlay(0)
 	assert.ErrorIs(t, err, domain.ErrNotHumanTurn)
 }
@@ -542,7 +542,7 @@ func TestBatak_PlayerPlay_NotHumanTurn(t *testing.T) {
 func TestBatak_PlayerPlay_InvalidIndex(t *testing.T) {
 	cb := newTestBatak()
 	cb.Reset()
-	setupBatakPlay(cb, 0, 0, 1)
+	setupBatakPlay(cb, 0, 0)
 	err := cb.PlayerPlay(99)
 	assert.Error(t, err)
 }

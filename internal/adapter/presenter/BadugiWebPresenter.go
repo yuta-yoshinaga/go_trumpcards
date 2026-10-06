@@ -48,7 +48,7 @@ func (bwp *BadugiWebPresenter) buildOutput(g interfaces.BadugiGame, lastErr erro
 	out.CpuActions = bwp.buildCpuActions(g)
 	out.CpuExchanges = bwp.buildCpuExchanges(g)
 	out.RoundResults = bwp.buildRoundResults(g)
-	out.Message, out.MessageCode, out.MessageParams = bwp.buildMessage(g, lastErr)
+	out.Message, out.MessageCode = bwp.buildMessage(g, lastErr)
 
 	if profile := g.GetHumanProfile(); profile != nil {
 		out.MetaAI = &controller.BadugiWebOutputMetaAI{
@@ -65,34 +65,33 @@ func (bwp *BadugiWebPresenter) buildOutput(g interfaces.BadugiGame, lastErr erro
 	return out
 }
 
-func (bwp *BadugiWebPresenter) buildMessage(g interfaces.BadugiGame, lastErr error) (string, string, map[string]string) {
+func (bwp *BadugiWebPresenter) buildMessage(g interfaces.BadugiGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if g.GetGameEndFlag() {
-		msg, code := bwp.buildResultMessage(g)
-		return msg, code, nil
+		return "", bwp.buildResultMessage(g)
 	}
-	return "", "", nil
+	return "", ""
 }
 
-func (bwp *BadugiWebPresenter) buildResultMessage(g interfaces.BadugiGame) (string, string) {
+func (bwp *BadugiWebPresenter) buildResultMessage(g interfaces.BadugiGame) string {
 	results := g.GetRoundResults()
 	if len(results) == 0 {
-		return "", "badugi.result.gameOver"
+		return "badugi.result.gameOver"
 	}
 	players := g.GetPlayers()
 	for _, r := range results {
 		if players[r.PlayerIdx].GetIsHuman() && r.WonAmount > 0 {
-			return "", "badugi.result.win"
+			return "badugi.result.win"
 		}
 	}
 	for _, pl := range players {
 		if pl.GetIsHuman() && pl.GetFolded() {
-			return "", "badugi.result.folded"
+			return "badugi.result.folded"
 		}
 	}
-	return "", "badugi.result.lose"
+	return "badugi.result.lose"
 }
 
 func (bwp *BadugiWebPresenter) buildSidePots(g interfaces.BadugiGame) []*controller.BadugiWebOutputSidePot {

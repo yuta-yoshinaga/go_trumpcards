@@ -14,7 +14,7 @@ type SjavsWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *SjavsWebPresenter) Output(c interfaces.SjavsGame, lastErr error) string {
 	resObj := p.buildBase(c)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(c, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(c, lastErr)
 	return marshalOrError(resObj)
 }
 
@@ -137,23 +137,23 @@ func (p *SjavsWebPresenter) buildPlayersOutput(c interfaces.SjavsGame) []*contro
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *SjavsWebPresenter) buildMessage(c interfaces.SjavsGame, lastErr error) (string, string, map[string]string) {
+func (p *SjavsWebPresenter) buildMessage(c interfaces.SjavsGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if !c.GetGameEndFlag() {
-		return "", "", nil
+		return "", ""
 	}
 	if c.GetWinnerTeam() == domain.SjavsTeamOf(0) {
 		if c.IsDoubleVictory() {
-			return "double victory", "sjavs.winDouble", nil
+			return "double victory", "sjavs.winDouble"
 		}
-		return "you win the rubber", "sjavs.win", nil
+		return "you win the rubber", "sjavs.win"
 	}
 	if c.IsDoubleVictory() {
-		return "double defeat", "sjavs.loseDouble", nil
+		return "double defeat", "sjavs.loseDouble"
 	}
-	return "you lose the rubber", "sjavs.lose", nil
+	return "you lose the rubber", "sjavs.lose"
 }
 
 // HintOutput ヒント情報を出力する

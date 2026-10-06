@@ -14,7 +14,7 @@ type RamschWebPresenter struct{}
 // Output renders the game state as a JSON string.
 func (p *RamschWebPresenter) Output(s interfaces.RamschGame, lastErr error) string {
 	resObj := p.buildBaseOutput(s)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(s, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(s, lastErr)
 	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
 	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
 	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
@@ -95,25 +95,25 @@ func (p *RamschWebPresenter) buildPlayersOutput(s interfaces.RamschGame) []*cont
 }
 
 // buildMessage produces a message and i18n message code for the current state.
-func (p *RamschWebPresenter) buildMessage(s interfaces.RamschGame, lastErr error) (string, string, map[string]string) {
+func (p *RamschWebPresenter) buildMessage(s interfaces.RamschGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if s.GetGameEndFlag() {
-		return "", "ramsch.gameEnd", nil
+		return "", "ramsch.gameEnd"
 	}
 	switch s.GetPhase() {
 	case domain.RamschPhasePlay:
 		if len(s.GetCurrentTrick()) == 0 {
-			return "", "ramsch.playPhase.lead", nil
+			return "", "ramsch.playPhase.lead"
 		}
-		return "", "ramsch.playPhase.follow", nil
+		return "", "ramsch.playPhase.follow"
 	case domain.RamschPhaseTrickEnd:
-		return "", "ramsch.trickEnd", nil
+		return "", "ramsch.trickEnd"
 	case domain.RamschPhaseRoundEnd:
-		return "", "ramsch.roundEnd", nil
+		return "", "ramsch.roundEnd"
 	}
-	return "", "", nil
+	return "", ""
 }
 
 // HintOutput renders the hint output.

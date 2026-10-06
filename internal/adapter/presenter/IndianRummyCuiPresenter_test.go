@@ -13,7 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
-func setupIndianRummyCuiMock(phase domain.IndianRummyPhase, gameEnd bool) (*interfaces.MockIndianRummyGame, []*domain.IndianRummyPlayer) {
+func setupIndianRummyCuiMock(phase domain.IndianRummyPhase, gameEnd bool) *interfaces.MockIndianRummyGame {
 	m := new(interfaces.MockIndianRummyGame)
 	players := []*domain.IndianRummyPlayer{
 		domain.NewIndianRummyPlayer(true),
@@ -41,14 +41,14 @@ func setupIndianRummyCuiMock(phase domain.IndianRummyPhase, gameEnd bool) (*inte
 	m.On("PlayerHasPureSequence", 0).Return(false).Maybe()
 	m.On("PlayerHasPureSequence", 1).Return(false).Maybe()
 	m.On("GetDeclarableDiscards").Return([]int{}).Maybe()
-	return m, players
+	return m
 }
 
 func TestIndianRummyCuiPresenter_Output(t *testing.T) {
 	p := new(presenter.IndianRummyCuiPresenter)
 
 	t.Run("draw phase", func(t *testing.T) {
-		m, _ := setupIndianRummyCuiMock(domain.IndianRummyPhaseDraw, false)
+		m := setupIndianRummyCuiMock(domain.IndianRummyPhaseDraw, false)
 		out := p.Output(m, nil)
 		assert.NotEmpty(t, out)
 		assert.Contains(t, out, "インドラミー")
@@ -57,7 +57,7 @@ func TestIndianRummyCuiPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("discard phase shows deadwood and unmet pure sequence", func(t *testing.T) {
-		m, _ := setupIndianRummyCuiMock(domain.IndianRummyPhaseDiscard, false)
+		m := setupIndianRummyCuiMock(domain.IndianRummyPhaseDiscard, false)
 		out := p.Output(m, nil)
 		assert.NotEmpty(t, out)
 		assert.Contains(t, out, "ディスカードフェーズ")
@@ -66,7 +66,7 @@ func TestIndianRummyCuiPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("discard phase explains the scale the deadwood number uses", func(t *testing.T) {
-		m, _ := setupIndianRummyCuiMock(domain.IndianRummyPhaseDiscard, false)
+		m := setupIndianRummyCuiMock(domain.IndianRummyPhaseDiscard, false)
 		out := p.Output(m, nil)
 		assert.Contains(t, out, "点数:")
 
@@ -85,7 +85,7 @@ func TestIndianRummyCuiPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("discard phase shows pure sequence met", func(t *testing.T) {
-		m, _ := setupIndianRummyCuiMock(domain.IndianRummyPhaseDiscard, false)
+		m := setupIndianRummyCuiMock(domain.IndianRummyPhaseDiscard, false)
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "PlayerHasPureSequence")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "PlayerDeadwoodValue")
 		m.On("PlayerHasPureSequence", 0).Return(true).Maybe()
@@ -97,19 +97,19 @@ func TestIndianRummyCuiPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("round end", func(t *testing.T) {
-		m, _ := setupIndianRummyCuiMock(domain.IndianRummyPhaseRoundEnd, false)
+		m := setupIndianRummyCuiMock(domain.IndianRummyPhaseRoundEnd, false)
 		out := p.Output(m, nil)
 		assert.NotEmpty(t, out)
 	})
 
 	t.Run("game end", func(t *testing.T) {
-		m, _ := setupIndianRummyCuiMock(domain.IndianRummyPhaseGameEnd, true)
+		m := setupIndianRummyCuiMock(domain.IndianRummyPhaseGameEnd, true)
 		out := p.Output(m, nil)
 		assert.NotEmpty(t, out)
 	})
 
 	t.Run("error block", func(t *testing.T) {
-		m, _ := setupIndianRummyCuiMock(domain.IndianRummyPhaseDraw, false)
+		m := setupIndianRummyCuiMock(domain.IndianRummyPhaseDraw, false)
 		out := p.Output(m, errors.New("err"))
 		assert.NotEmpty(t, out)
 	})
@@ -117,7 +117,7 @@ func TestIndianRummyCuiPresenter_Output(t *testing.T) {
 
 func TestIndianRummyCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.IndianRummyCuiPresenter)
-	m, _ := setupIndianRummyCuiMock(domain.IndianRummyPhaseDraw, false)
+	m := setupIndianRummyCuiMock(domain.IndianRummyPhaseDraw, false)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	out := p.ActionLogOutput(m)
 	assert.NotEmpty(t, out)

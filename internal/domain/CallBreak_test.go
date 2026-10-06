@@ -22,9 +22,9 @@ func newTestCallBreak() *domain.CallBreak {
 	return domain.NewCallBreak(domain.NewTrumpCards(0), players, domain.DefaultCallBreakConfig())
 }
 
-func setupCallBreakBid(cb *domain.CallBreak, idx int) {
+func setupCallBreakBid(cb *domain.CallBreak) {
 	cb.SetPhase(domain.CallBreakPhaseBid)
-	cb.SetBidPlayerIdx(idx)
+	cb.SetBidPlayerIdx(0)
 }
 
 func setupCallBreakPlay(cb *domain.CallBreak, current, lead, trickNum int) {
@@ -87,7 +87,7 @@ func TestCallBreak_Reset_ClearsAccumulated(t *testing.T) {
 func TestCallBreak_PlayerBid_Valid(t *testing.T) {
 	cb := newTestCallBreak()
 	cb.Reset()
-	setupCallBreakBid(cb, 0)
+	setupCallBreakBid(cb)
 	err := cb.PlayerBid(3)
 	require.NoError(t, err)
 	assert.Equal(t, 3, cb.GetPlayer(0).GetBid())
@@ -96,7 +96,7 @@ func TestCallBreak_PlayerBid_Valid(t *testing.T) {
 func TestCallBreak_PlayerBid_MaxBid(t *testing.T) {
 	cb := newTestCallBreak()
 	cb.Reset()
-	setupCallBreakBid(cb, 0)
+	setupCallBreakBid(cb)
 	err := cb.PlayerBid(domain.CallBreakHandSize)
 	require.NoError(t, err)
 	assert.Equal(t, domain.CallBreakHandSize, cb.GetPlayer(0).GetBid())
@@ -105,7 +105,7 @@ func TestCallBreak_PlayerBid_MaxBid(t *testing.T) {
 func TestCallBreak_PlayerBid_BelowMin_Errors(t *testing.T) {
 	cb := newTestCallBreak()
 	cb.Reset()
-	setupCallBreakBid(cb, 0)
+	setupCallBreakBid(cb)
 	err := cb.PlayerBid(0) // Nil ビッドは不可
 	assert.Error(t, err)
 }
@@ -113,7 +113,7 @@ func TestCallBreak_PlayerBid_BelowMin_Errors(t *testing.T) {
 func TestCallBreak_PlayerBid_AboveMax_Errors(t *testing.T) {
 	cb := newTestCallBreak()
 	cb.Reset()
-	setupCallBreakBid(cb, 0)
+	setupCallBreakBid(cb)
 	err := cb.PlayerBid(14)
 	assert.Error(t, err)
 }

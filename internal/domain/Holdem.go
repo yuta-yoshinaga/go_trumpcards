@@ -424,7 +424,7 @@ func (h *Holdem) advancePhase() {
 
 // dealRemainingCommunity 残りのコミュニティカードを全て配る
 func (h *Holdem) dealRemainingCommunity() {
-	dealUpTo(&h.communityCards, h.trumpCards, 5)
+	dealUpTo(&h.communityCards, h.trumpCards)
 }
 
 // findNextActive 指定インデックスの次のアクティブ (フォールド・オールインでない) プレイヤーを探す
@@ -516,9 +516,9 @@ func evalBoardTexture(communityCards []*Card) boardTexture {
 }
 
 // clamp 値を範囲内に収める
-func clamp(val, min, max int) int {
-	if val < min {
-		return min
+func clamp(val, max int) int {
+	if val < 0 {
+		return 0
 	}
 	if val > max {
 		return max

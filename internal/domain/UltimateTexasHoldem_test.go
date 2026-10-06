@@ -14,12 +14,12 @@ import (
 // uthSetup builds an UltimateTexasHoldem positioned at the river phase with the
 // given hands and bets, so the showdown payout logic can be exercised
 // deterministically by calling Play(1) or Fold.
-func uthSetup(t *testing.T, ante int, community, playerHand, dealerHand []*domain.Card, extraChipsForPlay int) *domain.UltimateTexasHoldem {
+func uthSetup(t *testing.T, community, playerHand, dealerHand []*domain.Card, extraChipsForPlay int) *domain.UltimateTexasHoldem {
 	t.Helper()
 	u := domain.NewDefaultUltimateTexasHoldem()
 	u.SetPhase(domain.UltimateTexasHoldemPhaseRiver)
-	u.SetAnteBet(ante)
-	u.SetBlindBet(ante)
+	u.SetAnteBet(100)
+	u.SetBlindBet(100)
 	u.SetCommunity(community)
 	u.SetPlayerHand(playerHand)
 	u.SetDealerHand(dealerHand)
@@ -362,7 +362,7 @@ func TestUltimateTexasHoldem_Fold_River_PaysTripsRegardlessOfFold(t *testing.T) 
 		cd{domain.CardDesignClover, 13},
 		cd{domain.CardDesignHeart, 13},
 	)
-	u := uthSetup(t, 100, community, playerHand, dealerHand, 1000)
+	u := uthSetup(t, community, playerHand, dealerHand, 1000)
 	u.SetTripsBet(20)
 
 	require.NoError(t, u.Fold())
@@ -390,7 +390,7 @@ func TestUltimateTexasHoldem_Showdown_PlayerWinsWithStraight_DealerQualifies(t *
 		cd{domain.CardDesignHeart, 13}, // pair of kings (qualifies)
 		cd{domain.CardDesignClover, 11},
 	)
-	u := uthSetup(t, 100, community, playerHand, dealerHand, 500)
+	u := uthSetup(t, community, playerHand, dealerHand, 500)
 
 	require.NoError(t, u.Play(domain.UltimateTexasHoldemPlayRiver1x))
 	assert.Equal(t, domain.GameResultWin, u.GetResult())
@@ -418,7 +418,7 @@ func TestUltimateTexasHoldem_Showdown_DealerDoesNotQualify_AntePushes(t *testing
 		cd{domain.CardDesignDiamond, 10},
 		cd{domain.CardDesignClover, 11},
 	)
-	u := uthSetup(t, 100, community, playerHand, dealerHand, 500)
+	u := uthSetup(t, community, playerHand, dealerHand, 500)
 
 	require.NoError(t, u.Play(domain.UltimateTexasHoldemPlayRiver1x))
 	assert.Equal(t, domain.GameResultWin, u.GetResult())
@@ -445,7 +445,7 @@ func TestUltimateTexasHoldem_Showdown_PlayerLoses(t *testing.T) {
 		cd{domain.CardDesignHeart, 13},
 		cd{domain.CardDesignClover, 11},
 	)
-	u := uthSetup(t, 100, community, playerHand, dealerHand, 500)
+	u := uthSetup(t, community, playerHand, dealerHand, 500)
 
 	require.NoError(t, u.Play(domain.UltimateTexasHoldemPlayRiver1x))
 	assert.Equal(t, domain.GameResultLose, u.GetResult())
@@ -470,7 +470,7 @@ func TestUltimateTexasHoldem_Showdown_Push(t *testing.T) {
 		cd{domain.CardDesignClover, 13},
 		cd{domain.CardDesignSpade, 11},
 	) // same pair of kings + same kickers (11, 6, 5).
-	u := uthSetup(t, 100, community, playerHand, dealerHand, 500)
+	u := uthSetup(t, community, playerHand, dealerHand, 500)
 
 	require.NoError(t, u.Play(domain.UltimateTexasHoldemPlayRiver1x))
 	assert.Equal(t, domain.GameResultDraw, u.GetResult())
@@ -498,7 +498,7 @@ func TestUltimateTexasHoldem_Blind_PaysFlush3to2(t *testing.T) {
 		cd{domain.CardDesignDiamond, 13}, // dealer K-high; doesn't qualify
 		cd{domain.CardDesignClover, 12},
 	)
-	u := uthSetup(t, 100, community, playerHand, dealerHand, 500)
+	u := uthSetup(t, community, playerHand, dealerHand, 500)
 	require.NoError(t, u.Play(domain.UltimateTexasHoldemPlayRiver1x))
 	assert.Equal(t, domain.GameResultWin, u.GetResult())
 	// Blind 3:2 on flush of 100 -> profit 150 + return 100 = 250
@@ -522,7 +522,7 @@ func TestUltimateTexasHoldem_Blind_BelowStraightPushesOnWin(t *testing.T) {
 		cd{domain.CardDesignClover, 4},
 		cd{domain.CardDesignDiamond, 5},
 	) // pair of 3s only (qualifies but loses to two pair).
-	u := uthSetup(t, 100, community, playerHand, dealerHand, 500)
+	u := uthSetup(t, community, playerHand, dealerHand, 500)
 	require.NoError(t, u.Play(domain.UltimateTexasHoldemPlayRiver1x))
 	assert.Equal(t, domain.GameResultWin, u.GetResult())
 	assert.Equal(t, 100, u.GetBlindPayout(), "Blind pushes on win when hand is below straight")
@@ -544,7 +544,7 @@ func TestUltimateTexasHoldem_Trips_StraightPayout(t *testing.T) {
 		cd{domain.CardDesignDiamond, 10},
 		cd{domain.CardDesignClover, 11},
 	)
-	u := uthSetup(t, 100, community, playerHand, dealerHand, 500)
+	u := uthSetup(t, community, playerHand, dealerHand, 500)
 	u.SetTripsBet(20)
 	require.NoError(t, u.Play(domain.UltimateTexasHoldemPlayRiver1x))
 	// Straight pays 4:1 on trips: 20 + 20*4 = 100
@@ -567,7 +567,7 @@ func TestUltimateTexasHoldem_Trips_NoPayoutForLessThanThreeOfAKind(t *testing.T)
 		cd{domain.CardDesignDiamond, 8},
 		cd{domain.CardDesignClover, 6},
 	)
-	u := uthSetup(t, 100, community, playerHand, dealerHand, 500)
+	u := uthSetup(t, community, playerHand, dealerHand, 500)
 	u.SetTripsBet(20)
 	require.NoError(t, u.Play(domain.UltimateTexasHoldemPlayRiver1x))
 	assert.Equal(t, 0, u.GetTripsPayout())

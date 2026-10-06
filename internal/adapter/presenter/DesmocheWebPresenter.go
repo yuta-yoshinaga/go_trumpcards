@@ -25,7 +25,7 @@ func desmocheCardsOutput(cards []*domain.Card) []*controller.WebOutputCard {
 // Output ゲーム状態をJSON出力
 func (p *DesmocheWebPresenter) Output(c interfaces.DesmocheGame, lastErr error) string {
 	resObj := p.buildBase(c)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(c, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(c, lastErr)
 	return marshalOrError(resObj)
 }
 
@@ -106,17 +106,17 @@ func (p *DesmocheWebPresenter) buildPlayersOutput(c interfaces.DesmocheGame) []*
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *DesmocheWebPresenter) buildMessage(c interfaces.DesmocheGame, lastErr error) (string, string, map[string]string) {
+func (p *DesmocheWebPresenter) buildMessage(c interfaces.DesmocheGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if !c.GetGameEndFlag() {
-		return "", "", nil
+		return "", ""
 	}
 	if c.GetWinnerIdx() == 0 {
-		return "you finish ahead", "desmoche.win", nil
+		return "you finish ahead", "desmoche.win"
 	}
-	return "you finish behind", "desmoche.lose", nil
+	return "you finish behind", "desmoche.lose"
 }
 
 // HintOutput ヒント情報を出力する

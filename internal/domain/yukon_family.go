@@ -74,9 +74,9 @@ func yukonFamilyAllFaceUp[T any](tableau [][]T, faceUp func(T) bool) bool {
 	return true
 }
 
-func yukonFamilyCheckGameClear(foundation [][]*Card, cardsPerSuit int, setCleared func()) {
+func yukonFamilyCheckGameClear(foundation [][]*Card, setCleared func()) {
 	for _, pile := range foundation {
-		if len(pile) != cardsPerSuit {
+		if len(pile) != CardValueMax {
 			return
 		}
 	}

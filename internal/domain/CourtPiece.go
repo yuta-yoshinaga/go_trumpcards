@@ -781,7 +781,7 @@ func (c *CourtPiece) cpuPlayNormal(playerIdx int, valid []int) int {
 		return c.pickHighest(p, valid)
 	}
 	leadSuit := c.currentTrick[0].Card.GetDesign()
-	maxLead, _, maxTrump, hasTrumpInTrick := c.summariseTrick(leadSuit)
+	maxLead, maxTrump, hasTrumpInTrick := c.summariseTrick(leadSuit)
 	leadIdxs := c.filterByDesign(p, valid, leadSuit)
 	if len(leadIdxs) > 0 {
 		if !hasTrumpInTrick {
@@ -828,7 +828,7 @@ func (c *CourtPiece) cpuPlayHard(playerIdx int, valid []int) int {
 		return bestIdx
 	}
 	leadSuit := c.currentTrick[0].Card.GetDesign()
-	maxLead, _, maxTrump, hasTrumpInTrick := c.summariseTrick(leadSuit)
+	maxLead, maxTrump, hasTrumpInTrick := c.summariseTrick(leadSuit)
 	partnerWinning := c.isPartnerCurrentlyWinning(playerIdx)
 
 	leadIdxs := c.filterByDesign(p, valid, leadSuit)
@@ -888,13 +888,12 @@ func (c *CourtPiece) isPartnerCurrentlyWinning(playerIdx int) bool {
 	return c.players[winnerIdx].GetTeam() == c.players[playerIdx].GetTeam()
 }
 
-// summariseTrick 現トリックの最高リードスート rank、リードスート所持フラグ、最高トランプ rank、トランプ所持フラグを返す。
-func (c *CourtPiece) summariseTrick(leadSuit int) (maxLead int, hasLead bool, maxTrump int, hasTrump bool) {
+// summariseTrick 現トリックの最高リードスート rank、最高トランプ rank、トランプ所持フラグを返す。
+func (c *CourtPiece) summariseTrick(leadSuit int) (maxLead int, maxTrump int, hasTrump bool) {
 	for _, tc := range c.currentTrick {
 		d := tc.Card.GetDesign()
 		r := courtPieceRank(tc.Card.GetValue())
 		if d == leadSuit {
-			hasLead = true
 			if r > maxLead {
 				maxLead = r
 			}

@@ -32,18 +32,18 @@ func TestNewGaigelInteractor_NilGuards(t *testing.T) {
 	})
 }
 
-func setupGaigelMocks(phase domain.GaigelPhase) (*interfaces.MockGaigelGame, *presenter.MockGaigelPresenter) {
+func setupGaigelMocks() (*interfaces.MockGaigelGame, *presenter.MockGaigelPresenter) {
 	gpMock := new(presenter.MockGaigelPresenter)
 	gpMock.On("Output", mock.Anything, mock.Anything).Return(`{"phase":0}`)
 	gameMock := new(interfaces.MockGaigelGame)
 	gameMock.On("GetGameEndFlag").Return(false)
-	gameMock.On("GetPhase").Return(phase)
+	gameMock.On("GetPhase").Return(domain.GaigelPhasePlay)
 	gameMock.On("IsHumanTurn").Return(true)
 	return gameMock, gpMock
 }
 
 func TestGaigelInteractor_Reset(t *testing.T) {
-	gameMock, gpMock := setupGaigelMocks(domain.GaigelPhasePlay)
+	gameMock, gpMock := setupGaigelMocks()
 	gameMock.On("Reset").Return()
 
 	gi := usecase.NewGaigelInteractor(gameMock, gpMock)
@@ -54,7 +54,7 @@ func TestGaigelInteractor_Reset(t *testing.T) {
 
 func TestGaigelInteractor_ResetWithConfig(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
-		gameMock, gpMock := setupGaigelMocks(domain.GaigelPhasePlay)
+		gameMock, gpMock := setupGaigelMocks()
 		cfg := domain.DefaultGaigelConfig()
 		gameMock.On("SetConfig", cfg).Return()
 		gameMock.On("Reset").Return()
@@ -65,7 +65,7 @@ func TestGaigelInteractor_ResetWithConfig(t *testing.T) {
 	})
 
 	t.Run("invalid config", func(t *testing.T) {
-		gameMock, gpMock := setupGaigelMocks(domain.GaigelPhasePlay)
+		gameMock, gpMock := setupGaigelMocks()
 		bad := domain.GaigelConfig{CpuDifficulty: 99, TargetScore: 101}
 
 		gi := usecase.NewGaigelInteractor(gameMock, gpMock)
@@ -75,7 +75,7 @@ func TestGaigelInteractor_ResetWithConfig(t *testing.T) {
 
 func TestGaigelInteractor_Play(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		gameMock, gpMock := setupGaigelMocks(domain.GaigelPhasePlay)
+		gameMock, gpMock := setupGaigelMocks()
 		gameMock.On("PlayerPlay", 0).Return(nil)
 
 		gi := usecase.NewGaigelInteractor(gameMock, gpMock)
@@ -83,7 +83,7 @@ func TestGaigelInteractor_Play(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		gameMock, gpMock := setupGaigelMocks(domain.GaigelPhasePlay)
+		gameMock, gpMock := setupGaigelMocks()
 		gameMock.On("PlayerPlay", 99).Return(errors.New("bad"))
 
 		gi := usecase.NewGaigelInteractor(gameMock, gpMock)
@@ -104,7 +104,7 @@ func TestGaigelInteractor_Play(t *testing.T) {
 
 func TestGaigelInteractor_DeclareMarriage(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		gameMock, gpMock := setupGaigelMocks(domain.GaigelPhasePlay)
+		gameMock, gpMock := setupGaigelMocks()
 		gameMock.On("PlayerDeclareMarriage", 0).Return(nil)
 
 		gi := usecase.NewGaigelInteractor(gameMock, gpMock)
@@ -112,7 +112,7 @@ func TestGaigelInteractor_DeclareMarriage(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		gameMock, gpMock := setupGaigelMocks(domain.GaigelPhasePlay)
+		gameMock, gpMock := setupGaigelMocks()
 		gameMock.On("PlayerDeclareMarriage", 1).Return(errors.New("bad"))
 
 		gi := usecase.NewGaigelInteractor(gameMock, gpMock)
@@ -132,7 +132,7 @@ func TestGaigelInteractor_DeclareMarriage(t *testing.T) {
 }
 
 func TestGaigelInteractor_NextTrick(t *testing.T) {
-	gameMock, gpMock := setupGaigelMocks(domain.GaigelPhasePlay)
+	gameMock, gpMock := setupGaigelMocks()
 	gameMock.On("ResolveTrick").Return()
 	gameMock.On("NextTrick").Return()
 
@@ -141,7 +141,7 @@ func TestGaigelInteractor_NextTrick(t *testing.T) {
 }
 
 func TestGaigelInteractor_NextRound(t *testing.T) {
-	gameMock, gpMock := setupGaigelMocks(domain.GaigelPhasePlay)
+	gameMock, gpMock := setupGaigelMocks()
 	gameMock.On("ScoreRound").Return()
 	gameMock.On("NextRound").Return()
 

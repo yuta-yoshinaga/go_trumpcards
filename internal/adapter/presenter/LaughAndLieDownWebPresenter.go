@@ -25,7 +25,7 @@ func laughAndLieDownCardsOutput(cards []*domain.Card) []*controller.WebOutputCar
 // Output ゲーム状態をJSON出力
 func (p *LaughAndLieDownWebPresenter) Output(c interfaces.LaughAndLieDownGame, lastErr error) string {
 	resObj := p.buildBase(c)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(c, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(c, lastErr)
 	return marshalOrError(resObj)
 }
 
@@ -102,20 +102,20 @@ func (p *LaughAndLieDownWebPresenter) buildPlayersOutput(c interfaces.LaughAndLi
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *LaughAndLieDownWebPresenter) buildMessage(c interfaces.LaughAndLieDownGame, lastErr error) (string, string, map[string]string) {
+func (p *LaughAndLieDownWebPresenter) buildMessage(c interfaces.LaughAndLieDownGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if !c.GetGameEndFlag() {
-		return "", "", nil
+		return "", ""
 	}
 	switch {
 	case c.GetScore(0) > 0:
-		return "you finish ahead", "laughandliedown.win", nil
+		return "you finish ahead", "laughandliedown.win"
 	case c.GetScore(0) == 0:
-		return "you break even", "laughandliedown.even", nil
+		return "you break even", "laughandliedown.even"
 	default:
-		return "you finish behind", "laughandliedown.lose", nil
+		return "you finish behind", "laughandliedown.lose"
 	}
 }
 

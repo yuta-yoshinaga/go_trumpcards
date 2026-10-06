@@ -72,7 +72,7 @@ func (bp *BlackJackSwitchWebPresenter) Output(g interfaces.BlackJackSwitchGame, 
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else if g.GetGameEndFlag() {
-		resObj.Message, resObj.MessageCode = blackJackSwitchEndMessage(g)
+		resObj.MessageCode = blackJackSwitchEndMessage(g)
 	}
 
 	return marshalOrError(resObj)
@@ -87,15 +87,15 @@ func (bp *BlackJackSwitchWebPresenter) ActionLogOutput(g interfaces.BlackJackSwi
 // dealerPushed22 はバナーで別途表示されるため、トップレベルメッセージは
 // 常にプレイヤーから見た総合結果を反映する（ナチュラル21がディーラー22に勝つ
 // ようなケースで「全プッシュ」と誤認されないようにする）。
-func blackJackSwitchEndMessage(g interfaces.BlackJackSwitchGame) (string, string) {
+func blackJackSwitchEndMessage(g interfaces.BlackJackSwitchGame) string {
 	switch g.GetOverallResult() {
 	case domain.GameResultWin:
-		return "", "blackjackswitch.result.overallWin"
+		return "blackjackswitch.result.overallWin"
 	case domain.GameResultLose:
-		return "", "blackjackswitch.result.overallLose"
+		return "blackjackswitch.result.overallLose"
 	}
 	if g.IsDealerPushed22() {
-		return "", "blackjackswitch.result.dealer22Push"
+		return "blackjackswitch.result.dealer22Push"
 	}
-	return "", "blackjackswitch.result.overallDraw"
+	return "blackjackswitch.result.overallDraw"
 }

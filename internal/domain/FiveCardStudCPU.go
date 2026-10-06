@@ -240,7 +240,7 @@ func (s *FiveCardStud) evalThirdStreetStrength(idx int) int {
 		score += 10
 	}
 
-	return clamp(score, 0, 100)
+	return clamp(score, 100)
 }
 
 // cpuDecideThirdStreet 開始ストリートのCPU意思決定

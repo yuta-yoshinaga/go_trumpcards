@@ -275,7 +275,7 @@ func TestPitchCuiPresenter_HidesTheBreakdownMidRound(t *testing.T) {
 	assert.NotContains(t, out, strings.SplitN(i18n.T("pitch.scoringLine"), "{{", 2)[0])
 }
 
-func setupPitchCuiMockCustom(phase domain.PitchPhase, trickNumber int, log []*domain.ActionLogEntry) (*interfaces.MockPitchGame, []*domain.PitchPlayer) {
+func setupPitchCuiMockCustom(phase domain.PitchPhase, trickNumber int, log []*domain.ActionLogEntry) *interfaces.MockPitchGame {
 	m := setupPitchCuiMock()
 	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrickNumber")
@@ -290,7 +290,7 @@ func setupPitchCuiMockCustom(phase domain.PitchPhase, trickNumber int, log []*do
 	for i := 0; i < 4; i++ {
 		m.On("GetPlayer", i).Return(players[i])
 	}
-	return m, players
+	return m
 }
 
 func TestPitchCuiPresenter_LastTrick(t *testing.T) {
@@ -309,7 +309,7 @@ func TestPitchCuiPresenter_LastTrick(t *testing.T) {
 	}
 
 	t.Run("displays four played cards and the winner in TrickEnd phase", func(t *testing.T) {
-		m, _ := setupPitchCuiMockCustom(domain.PitchPhaseTrickEnd, 1, trickLog)
+		m := setupPitchCuiMockCustom(domain.PitchPhaseTrickEnd, 1, trickLog)
 		out := p.Output(m, nil)
 
 		assert.Contains(t, out, i18n.T("pitch.previousTrick"))
@@ -329,7 +329,7 @@ func TestPitchCuiPresenter_LastTrick(t *testing.T) {
 			&domain.ActionLogEntry{TurnNumber: 2, PlayerIdx: 1, ActionType: "trick_win"},
 		)
 
-		m, _ := setupPitchCuiMockCustom(domain.PitchPhaseTrickEnd, 2, twoTricks)
+		m := setupPitchCuiMockCustom(domain.PitchPhaseTrickEnd, 2, twoTricks)
 		out := p.Output(m, nil)
 
 		assert.Contains(t, out, "あなた: ♣13")
@@ -338,7 +338,7 @@ func TestPitchCuiPresenter_LastTrick(t *testing.T) {
 	})
 
 	t.Run("hidden on the round first trick during play phase", func(t *testing.T) {
-		m, _ := setupPitchCuiMockCustom(domain.PitchPhasePlay, 1, trickLog)
+		m := setupPitchCuiMockCustom(domain.PitchPhasePlay, 1, trickLog)
 		out := p.Output(m, nil)
 
 		assert.NotContains(t, out, i18n.T("pitch.previousTrick"))
@@ -358,14 +358,14 @@ func TestPitchCuiPresenter_LastTrick(t *testing.T) {
 			{TurnNumber: 1, PlayerIdx: 2, ActionType: "play", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}},
 			{TurnNumber: 1, PlayerIdx: 2, ActionType: "trick_win"},
 		}
-		m, _ := setupPitchCuiMockCustom(domain.PitchPhaseTrickEnd, 1, partialPlays)
+		m := setupPitchCuiMockCustom(domain.PitchPhaseTrickEnd, 1, partialPlays)
 		out := p.Output(m, nil)
 
 		assert.NotContains(t, out, i18n.T("pitch.previousTrick"))
 	})
 
 	t.Run("hidden when log has no trick_win", func(t *testing.T) {
-		m, _ := setupPitchCuiMockCustom(domain.PitchPhaseTrickEnd, 1, nil)
+		m := setupPitchCuiMockCustom(domain.PitchPhaseTrickEnd, 1, nil)
 		out := p.Output(m, nil)
 
 		assert.NotContains(t, out, i18n.T("pitch.previousTrick"))

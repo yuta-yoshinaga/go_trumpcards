@@ -102,7 +102,7 @@ func TestCourtPieceCuiPresenter_MarksPlayableCards(t *testing.T) {
 	p := new(presenter.CourtPieceCuiPresenter)
 
 	// 人間が持っているスートをリードさせると、そのスートだけが合法になる。
-	setup := func(t *testing.T) (*domain.CourtPiece, int) {
+	setup := func(t *testing.T) *domain.CourtPiece {
 		t.Helper()
 		cp := newCourtPieceForCuiTest()
 		cp.SetPhase(domain.CourtPiecePhasePlay)
@@ -115,11 +115,11 @@ func TestCourtPieceCuiPresenter_MarksPlayableCards(t *testing.T) {
 		cp.SetCurrentTrick([]*domain.TrickCard{
 			{PlayerIdx: 1, Card: domain.NewCard(leadSuit, 5, false)},
 		})
-		return cp, leadSuit
+		return cp
 	}
 
 	t.Run("human play turn marks only the legal cards", func(t *testing.T) {
-		cp, _ := setup(t)
+		cp := setup(t)
 		playable := cp.GetPlayableIndices(0)
 		// **配りに賭けてはいない。**leadSuit は人間の1枚目のスートなので合法手は
 		// 必ず1枚以上あり、「全部合法」になるのは13枚が同一スートの配りのときだけ
@@ -138,7 +138,7 @@ func TestCourtPieceCuiPresenter_MarksPlayableCards(t *testing.T) {
 
 	// **目印を出さない側も踏む。**トランプ宣言中は制限そのものが決まっていない。
 	t.Run("trump declaration phase leaves the hand unmarked", func(t *testing.T) {
-		cp, _ := setup(t)
+		cp := setup(t)
 		cp.SetPhase(domain.CourtPiecePhaseTrumpDeclaration)
 
 		assert.NotContains(t, p.Output(cp, nil), presenter.CuiLegalMark,
@@ -146,7 +146,7 @@ func TestCourtPieceCuiPresenter_MarksPlayableCards(t *testing.T) {
 	})
 
 	t.Run("cpu turn leaves the human hand unmarked", func(t *testing.T) {
-		cp, _ := setup(t)
+		cp := setup(t)
 		cp.SetCurrentPlayerIdx(1)
 
 		assert.NotContains(t, p.Output(cp, nil), presenter.CuiLegalMark,

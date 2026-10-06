@@ -688,7 +688,7 @@ func TestOmahaWebPresenter_LiveBestHandIndices(t *testing.T) {
 func TestOmahaWebPresenter_Output_RebuyAddonFields(t *testing.T) {
 	p := new(presenter.OmahaWebPresenter)
 
-	setup := func() (*domain.Omaha, []*domain.OmahaPlayer) {
+	setup := func() *domain.Omaha {
 		tc := domain.NewTrumpCards(0)
 		players := []*domain.OmahaPlayer{
 			domain.NewOmahaPlayer(true, domain.HoldemStyleTAG),
@@ -697,11 +697,11 @@ func TestOmahaWebPresenter_Output_RebuyAddonFields(t *testing.T) {
 			domain.NewOmahaPlayer(false, domain.HoldemStyleGTO),
 		}
 		h := domain.NewOmaha(tc, players, domain.DefaultOmahaConfig())
-		return h, players
+		return h
 	}
 
 	t.Run("default values when rebuy/addon disabled", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.OmahaPhasePreFlop)
 
 		result := p.Output(h, nil)
@@ -723,7 +723,7 @@ func TestOmahaWebPresenter_Output_RebuyAddonFields(t *testing.T) {
 	})
 
 	t.Run("values when rebuy/addon enabled with config", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.OmahaPhaseRebuy)
 		cfg := domain.OmahaConfig{
 			SmallBlind:       10,
@@ -829,7 +829,7 @@ func TestOmahaWebPresenter_Output_BettingLimitFields(t *testing.T) {
 func TestOmahaWebPresenter_Output_MuckFields(t *testing.T) {
 	p := new(presenter.OmahaWebPresenter)
 
-	setup := func() (*domain.Omaha, []*domain.OmahaPlayer) {
+	setup := func() *domain.Omaha {
 		tc := domain.NewTrumpCards(0)
 		players := []*domain.OmahaPlayer{
 			domain.NewOmahaPlayer(true, domain.HoldemStyleTAG),
@@ -838,11 +838,11 @@ func TestOmahaWebPresenter_Output_MuckFields(t *testing.T) {
 			domain.NewOmahaPlayer(false, domain.HoldemStyleGTO),
 		}
 		h := domain.NewOmaha(tc, players, domain.DefaultOmahaConfig())
-		return h, players
+		return h
 	}
 
 	t.Run("muckAvailable true when showdown and human lost", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.OmahaPhaseShowdown)
 		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
@@ -857,7 +857,7 @@ func TestOmahaWebPresenter_Output_MuckFields(t *testing.T) {
 	})
 
 	t.Run("muckAvailable false when not showdown", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.OmahaPhaseEnd)
 		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
@@ -871,7 +871,7 @@ func TestOmahaWebPresenter_Output_MuckFields(t *testing.T) {
 	})
 
 	t.Run("mucked result: handRank=0 handName empty bestHand empty mucked=true", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.OmahaPhaseEnd)
 		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", Kickers: []int{14, 13}, WonAmount: 0, Mucked: true, BestHand: []*domain.Card{
@@ -895,7 +895,7 @@ func TestOmahaWebPresenter_Output_MuckFields(t *testing.T) {
 	})
 
 	t.Run("muck prompt message when IsMuckAvailable", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.OmahaPhaseShowdown)
 		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
@@ -911,7 +911,7 @@ func TestOmahaWebPresenter_Output_MuckFields(t *testing.T) {
 	})
 
 	t.Run("error takes priority over muck prompt", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.OmahaPhaseShowdown)
 		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
@@ -926,7 +926,7 @@ func TestOmahaWebPresenter_Output_MuckFields(t *testing.T) {
 	})
 
 	t.Run("You mucked message in buildResultMessage", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.OmahaPhaseEnd)
 		h.SetGameEndFlag(true)
 		h.SetRoundResults([]domain.HoldemResult{

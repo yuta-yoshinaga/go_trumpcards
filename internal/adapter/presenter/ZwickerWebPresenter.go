@@ -50,7 +50,7 @@ func zwickerPlainCards(cards []*domain.Card) []*controller.WebOutputCard {
 // Output ゲーム状態をJSON出力
 func (p *ZwickerWebPresenter) Output(c interfaces.ZwickerGame, lastErr error) string {
 	resObj := p.buildBase(c)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(c, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(c, lastErr)
 	return marshalOrError(resObj)
 }
 
@@ -140,17 +140,17 @@ func (p *ZwickerWebPresenter) buildPlayersOutput(c interfaces.ZwickerGame) []*co
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *ZwickerWebPresenter) buildMessage(c interfaces.ZwickerGame, lastErr error) (string, string, map[string]string) {
+func (p *ZwickerWebPresenter) buildMessage(c interfaces.ZwickerGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if !c.GetGameEndFlag() {
-		return "", "", nil
+		return "", ""
 	}
 	if c.GetWinnerTeam() == domain.ZwickerTeamOf(0) {
-		return "your team wins", "zwicker.win", nil
+		return "your team wins", "zwicker.win"
 	}
-	return "the other team wins", "zwicker.lose", nil
+	return "the other team wins", "zwicker.lose"
 }
 
 // HintOutput ヒント情報を出力する

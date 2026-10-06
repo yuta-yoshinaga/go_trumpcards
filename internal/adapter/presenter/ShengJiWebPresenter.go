@@ -74,7 +74,7 @@ func (p *ShengJiWebPresenter) Output(g interfaces.ShengJiGame, lastErr error) st
 	resObj.Config = controller.ShengJiWebOutputConfig{}
 
 	resObj.Players = p.buildPlayersOutput(g)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(g, lastErr)
 
 	return marshalOrError(resObj)
 }
@@ -150,32 +150,32 @@ func (p *ShengJiWebPresenter) buildDeclarableSuits(g interfaces.ShengJiGame) map
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *ShengJiWebPresenter) buildMessage(g interfaces.ShengJiGame, lastErr error) (string, string, map[string]string) {
+func (p *ShengJiWebPresenter) buildMessage(g interfaces.ShengJiGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if g.GetGameEndFlag() {
 		// **チーム戦なので勝敗は席ではなくチームで見る。**人間は席 0 = チーム 0。
 		if g.GetWinnerTeam() == domain.ShengJiTeamOf(0) {
-			return "your team wins", "shengji.result.humanWin", nil
+			return "your team wins", "shengji.result.humanWin"
 		}
-		return "the other team wins", "shengji.result.cpuWin", nil
+		return "the other team wins", "shengji.result.cpuWin"
 	}
 	switch g.GetPhase() {
 	case domain.ShengJiPhaseDeclare:
-		return "", "shengji.declarePhase", nil
+		return "", "shengji.declarePhase"
 	case domain.ShengJiPhaseKitty:
-		return "", "shengji.kittyPhase", nil
+		return "", "shengji.kittyPhase"
 	case domain.ShengJiPhasePlay:
-		return "", "shengji.playPhase", nil
+		return "", "shengji.playPhase"
 	case domain.ShengJiPhaseHandEnd:
 		if r := g.GetLastResult(); r != nil && !r.DeclarerHeld {
 			// **80 点で宣言側が交代する。**守りきった局とは別のメッセージにする。
-			return "", "shengji.handTaken", nil
+			return "", "shengji.handTaken"
 		}
-		return "", "shengji.handHeld", nil
+		return "", "shengji.handHeld"
 	}
-	return "", "", nil
+	return "", ""
 }
 
 // ActionLogOutput 棋譜をJSON出力

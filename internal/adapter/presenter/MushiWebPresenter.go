@@ -71,7 +71,7 @@ func mushiCardsOutput(cards []*domain.Card) []*controller.MushiWebOutputCard {
 // Output ゲーム状態をJSON出力
 func (p *MushiWebPresenter) Output(m interfaces.MushiGame, lastErr error) string {
 	resObj := p.buildBase(m)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(m, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(m, lastErr)
 	return marshalOrError(resObj)
 }
 
@@ -152,24 +152,24 @@ func (p *MushiWebPresenter) buildPlayersOutput(m interfaces.MushiGame) []*contro
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *MushiWebPresenter) buildMessage(m interfaces.MushiGame, lastErr error) (string, string, map[string]string) {
+func (p *MushiWebPresenter) buildMessage(m interfaces.MushiGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if m.GetGameEndFlag() {
 		switch m.GetWinnerIdx() {
 		case 0:
-			return "you win", "mushi.win", nil
+			return "you win", "mushi.win"
 		case -1:
-			return "draw", "mushi.draw", nil
+			return "draw", "mushi.draw"
 		default:
-			return "you lose", "mushi.lose", nil
+			return "you lose", "mushi.lose"
 		}
 	}
 	if m.GetPhase() == domain.MushiPhaseRoundEnd {
-		return "round over", "mushi.round_end", nil
+		return "round over", "mushi.round_end"
 	}
-	return "", "", nil
+	return "", ""
 }
 
 // HintOutput ヒント情報を出力する

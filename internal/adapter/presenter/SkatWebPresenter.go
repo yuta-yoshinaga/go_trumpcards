@@ -14,7 +14,7 @@ type SkatWebPresenter struct{}
 // Output renders the game state as a JSON string.
 func (p *SkatWebPresenter) Output(s interfaces.SkatGame, lastErr error) string {
 	resObj := p.buildBaseOutput(s)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(s, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(s, lastErr)
 	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
 	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
 	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
@@ -138,33 +138,33 @@ func (p *SkatWebPresenter) buildPlayersOutput(s interfaces.SkatGame) []*controll
 }
 
 // buildMessage produces a message and i18n message code for the current state.
-func (p *SkatWebPresenter) buildMessage(s interfaces.SkatGame, lastErr error) (string, string, map[string]string) {
+func (p *SkatWebPresenter) buildMessage(s interfaces.SkatGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if s.GetGameEndFlag() {
-		return "", "skat.gameEnd", nil
+		return "", "skat.gameEnd"
 	}
 	switch s.GetPhase() {
 	case domain.SkatPhaseBid:
-		return "", "skat.bidPhase", nil
+		return "", "skat.bidPhase"
 	case domain.SkatPhaseSkatPickup:
-		return "", "skat.skatPickup", nil
+		return "", "skat.skatPickup"
 	case domain.SkatPhaseDiscard:
-		return "", "skat.discard", nil
+		return "", "skat.discard"
 	case domain.SkatPhaseGameDeclaration:
-		return "", "skat.gameDeclaration", nil
+		return "", "skat.gameDeclaration"
 	case domain.SkatPhasePlay:
 		if len(s.GetCurrentTrick()) == 0 {
-			return "", "skat.playPhase.lead", nil
+			return "", "skat.playPhase.lead"
 		}
-		return "", "skat.playPhase.follow", nil
+		return "", "skat.playPhase.follow"
 	case domain.SkatPhaseTrickEnd:
-		return "", "skat.trickEnd", nil
+		return "", "skat.trickEnd"
 	case domain.SkatPhaseRoundEnd:
-		return "", "skat.roundEnd", nil
+		return "", "skat.roundEnd"
 	}
-	return "", "", nil
+	return "", ""
 }
 
 // HintOutput renders the hint output.

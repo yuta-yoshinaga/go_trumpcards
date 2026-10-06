@@ -24,11 +24,11 @@ func newTestCatchTen() *domain.CatchTen {
 	return domain.NewCatchTen(domain.NewTrumpCardsShortDeck(), players, domain.DefaultCatchTenConfig())
 }
 
-func setupCatchTenPlayPhase(g *domain.CatchTen, currentIdx, leadIdx, trickNum int) {
+func setupCatchTenPlayPhase(g *domain.CatchTen, currentIdx, leadIdx int) {
 	g.SetPhase(domain.CatchTenPhasePlay)
 	g.SetCurrentPlayerIdx(currentIdx)
 	g.SetLeadPlayerIdx(leadIdx)
-	g.SetTrickNumber(trickNum)
+	g.SetTrickNumber(1)
 }
 
 func TestNewCatchTen(t *testing.T) {
@@ -94,7 +94,7 @@ func TestCatchTen_PlayerPlay(t *testing.T) {
 	t.Run("valid play", func(t *testing.T) {
 		g := newTestCatchTen()
 		g.Reset()
-		setupCatchTenPlayPhase(g, 0, 0, 1)
+		setupCatchTenPlayPhase(g, 0, 0)
 		err := g.PlayerPlay(0)
 		assert.NoError(t, err)
 		assert.Equal(t, 8, g.GetPlayer(0).GetCardsSize())
@@ -103,7 +103,7 @@ func TestCatchTen_PlayerPlay(t *testing.T) {
 	t.Run("game ended", func(t *testing.T) {
 		g := newTestCatchTen()
 		g.Reset()
-		setupCatchTenPlayPhase(g, 0, 0, 1)
+		setupCatchTenPlayPhase(g, 0, 0)
 		g.SetGameEndFlag(true)
 		err := g.PlayerPlay(0)
 		assert.ErrorIs(t, err, domain.ErrGameEnded)
@@ -120,7 +120,7 @@ func TestCatchTen_PlayerPlay(t *testing.T) {
 	t.Run("not human turn", func(t *testing.T) {
 		g := newTestCatchTen()
 		g.Reset()
-		setupCatchTenPlayPhase(g, 1, 0, 1)
+		setupCatchTenPlayPhase(g, 1, 0)
 		err := g.PlayerPlay(0)
 		assert.ErrorIs(t, err, domain.ErrNotHumanTurn)
 	})
@@ -128,7 +128,7 @@ func TestCatchTen_PlayerPlay(t *testing.T) {
 	t.Run("invalid card index", func(t *testing.T) {
 		g := newTestCatchTen()
 		g.Reset()
-		setupCatchTenPlayPhase(g, 0, 0, 1)
+		setupCatchTenPlayPhase(g, 0, 0)
 		err := g.PlayerPlay(99)
 		assert.Error(t, err)
 		code, _ := domain.ErrorMessageCode(err)
@@ -138,7 +138,7 @@ func TestCatchTen_PlayerPlay(t *testing.T) {
 	t.Run("must follow suit", func(t *testing.T) {
 		g := newTestCatchTen()
 		g.Reset()
-		setupCatchTenPlayPhase(g, 0, 1, 1)
+		setupCatchTenPlayPhase(g, 0, 1)
 
 		leadCard := domain.NewCard(domain.CardDesignHeart, 10, false)
 		g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: leadCard}})
@@ -162,7 +162,7 @@ func TestCatchTen_PlayerPlay(t *testing.T) {
 func TestCatchTen_CpuPlay(t *testing.T) {
 	g := newTestCatchTen()
 	g.Reset()
-	setupCatchTenPlayPhase(g, 1, 1, 1)
+	setupCatchTenPlayPhase(g, 1, 1)
 	initial := g.GetPlayer(1).GetCardsSize()
 	g.CpuPlay()
 	assert.Equal(t, initial-1, g.GetPlayer(1).GetCardsSize())
@@ -171,7 +171,7 @@ func TestCatchTen_CpuPlay(t *testing.T) {
 func TestCatchTen_CpuPlay_SkipsWhenHuman(t *testing.T) {
 	g := newTestCatchTen()
 	g.Reset()
-	setupCatchTenPlayPhase(g, 0, 0, 1)
+	setupCatchTenPlayPhase(g, 0, 0)
 	initial := g.GetPlayer(0).GetCardsSize()
 	g.CpuPlay()
 	assert.Equal(t, initial, g.GetPlayer(0).GetCardsSize())
@@ -340,7 +340,7 @@ func TestCatchTen_PlayCardDoesNotAutoResolve(t *testing.T) {
 	g := newTestCatchTen()
 	g.Reset()
 	g.SetTrumpSuit(domain.CardDesignSpade)
-	setupCatchTenPlayPhase(g, 3, 0, 1) // seat 3 (a CPU) plays the 4th card
+	setupCatchTenPlayPhase(g, 3, 0) // seat 3 (a CPU) plays the 4th card
 	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 7, false)},
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
@@ -494,7 +494,7 @@ func TestCatchTen_GetTeamScore_OutOfBounds(t *testing.T) {
 func TestCatchTen_GetHint(t *testing.T) {
 	g := newTestCatchTen()
 	g.Reset()
-	setupCatchTenPlayPhase(g, 0, 0, 1)
+	setupCatchTenPlayPhase(g, 0, 0)
 	hint := g.GetHint()
 	assert.NotNil(t, hint)
 	assert.NotNil(t, hint.CardIndex)
@@ -504,7 +504,7 @@ func TestCatchTen_GetHint(t *testing.T) {
 func TestCatchTen_GetHint_NilWhenNotHumanTurn(t *testing.T) {
 	g := newTestCatchTen()
 	g.Reset()
-	setupCatchTenPlayPhase(g, 1, 1, 1)
+	setupCatchTenPlayPhase(g, 1, 1)
 	assert.Nil(t, g.GetHint())
 }
 
@@ -541,7 +541,7 @@ func TestCatchTen_DealerAndPlayerCntAccessors(t *testing.T) {
 func TestCatchTen_GetValidPlayIndices(t *testing.T) {
 	g := newTestCatchTen()
 	g.Reset()
-	setupCatchTenPlayPhase(g, 0, 0, 1)
+	setupCatchTenPlayPhase(g, 0, 0)
 	indices := g.GetValidPlayIndices(0)
 	assert.Equal(t, 9, len(indices))
 }
@@ -682,7 +682,7 @@ func TestCatchTen_CpuDifficulties(t *testing.T) {
 		cfg.CpuDifficulty = diff
 		g.SetConfig(cfg)
 		g.Reset()
-		setupCatchTenPlayPhase(g, 1, 1, 1)
+		setupCatchTenPlayPhase(g, 1, 1)
 		initial := g.GetPlayer(1).GetCardsSize()
 		g.CpuPlay()
 		assert.Equal(t, initial-1, g.GetPlayer(1).GetCardsSize())

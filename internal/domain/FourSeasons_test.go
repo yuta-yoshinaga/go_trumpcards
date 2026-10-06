@@ -19,13 +19,13 @@ func newTestFourSeasons() *FourSeasons {
 // setFourSeasonsBoard installs an exact board. Reset shuffles, so nothing may be
 // asserted on top of it.
 func setFourSeasonsBoard(f *FourSeasons, base int, tableau [FourSeasonsTableauCnt][]*Card,
-	foundation [FourSeasonsFoundationCnt][]*Card, waste, stock []*Card,
+	foundation [FourSeasonsFoundationCnt][]*Card, waste []*Card,
 ) {
 	f.baseRank = base
 	f.tableau = tableau
 	f.foundation = foundation
 	f.waste = waste
-	f.stock = stock
+	f.stock = nil
 	f.phase = FourSeasonsPhasePlaying
 	f.moveCount = 0
 	f.actionLog = nil
@@ -86,7 +86,7 @@ func TestFourSeasons_Draw(t *testing.T) {
 
 func TestFourSeasons_Draw_EmptyStock(t *testing.T) {
 	f := newTestFourSeasons()
-	setFourSeasonsBoard(f, 5, [FourSeasonsTableauCnt][]*Card{}, [FourSeasonsFoundationCnt][]*Card{}, nil, nil)
+	setFourSeasonsBoard(f, 5, [FourSeasonsTableauCnt][]*Card{}, [FourSeasonsFoundationCnt][]*Card{}, nil)
 	assert.Error(t, f.Draw())
 }
 
@@ -103,7 +103,7 @@ func TestFourSeasons_Foundation_AscendsInSuitAndWraps(t *testing.T) {
 	var fnd [FourSeasonsFoundationCnt][]*Card
 	fnd[0] = []*Card{sp(12)} // base = Q of spades
 	var tab [FourSeasonsTableauCnt][]*Card
-	setFourSeasonsBoard(f, 12, tab, fnd, []*Card{sp(13)}, nil)
+	setFourSeasonsBoard(f, 12, tab, fnd, []*Card{sp(13)})
 
 	require.NoError(t, f.MoveWasteToFoundation(0), "K follows Q")
 	f.waste = []*Card{sp(1)}
@@ -130,7 +130,7 @@ func TestFourSeasons_Foundation_Rejections(t *testing.T) {
 			f := newTestFourSeasons()
 			var fnd [FourSeasonsFoundationCnt][]*Card
 			fnd[0] = []*Card{sp(12)}
-			setFourSeasonsBoard(f, 12, [FourSeasonsTableauCnt][]*Card{}, fnd, []*Card{tt.card}, nil)
+			setFourSeasonsBoard(f, 12, [FourSeasonsTableauCnt][]*Card{}, fnd, []*Card{tt.card})
 			assert.Error(t, f.MoveWasteToFoundation(tt.fIdx))
 			assert.Equal(t, 0, f.GetMoveCount())
 		})
@@ -142,12 +142,12 @@ func TestFourSeasons_Foundation_Rejections(t *testing.T) {
 func TestFourSeasons_Foundation_EmptyOpensOnBaseRankOnly(t *testing.T) {
 	f := newTestFourSeasons()
 	var fnd [FourSeasonsFoundationCnt][]*Card
-	setFourSeasonsBoard(f, 7, [FourSeasonsTableauCnt][]*Card{}, fnd, []*Card{he(7)}, nil)
+	setFourSeasonsBoard(f, 7, [FourSeasonsTableauCnt][]*Card{}, fnd, []*Card{he(7)})
 	require.NoError(t, f.MoveWasteToFoundation(1))
 	assert.Len(t, f.GetFoundations()[1], 1)
 
 	f2 := newTestFourSeasons()
-	setFourSeasonsBoard(f2, 7, [FourSeasonsTableauCnt][]*Card{}, [FourSeasonsFoundationCnt][]*Card{}, []*Card{he(8)}, nil)
+	setFourSeasonsBoard(f2, 7, [FourSeasonsTableauCnt][]*Card{}, [FourSeasonsFoundationCnt][]*Card{}, []*Card{he(8)})
 	assert.Error(t, f2.MoveWasteToFoundation(1), "an 8 cannot open a base-7 foundation")
 }
 
@@ -157,7 +157,7 @@ func TestFourSeasons_Tableau_DescendsIgnoringSuitAndWraps(t *testing.T) {
 	f := newTestFourSeasons()
 	var tab [FourSeasonsTableauCnt][]*Card
 	tab[0] = []*Card{sp(2)}
-	setFourSeasonsBoard(f, 5, tab, [FourSeasonsFoundationCnt][]*Card{}, []*Card{he(1)}, nil)
+	setFourSeasonsBoard(f, 5, tab, [FourSeasonsFoundationCnt][]*Card{}, []*Card{he(1)})
 
 	require.NoError(t, f.MoveWasteToTableau(0), "A goes on 2, suit ignored")
 	f.waste = []*Card{cl(13)}
@@ -169,7 +169,7 @@ func TestFourSeasons_Tableau_RejectsWrongRank(t *testing.T) {
 	f := newTestFourSeasons()
 	var tab [FourSeasonsTableauCnt][]*Card
 	tab[0] = []*Card{sp(9)}
-	setFourSeasonsBoard(f, 5, tab, [FourSeasonsFoundationCnt][]*Card{}, []*Card{he(7)}, nil)
+	setFourSeasonsBoard(f, 5, tab, [FourSeasonsFoundationCnt][]*Card{}, []*Card{he(7)})
 	assert.Error(t, f.MoveWasteToTableau(0), "7 does not follow 9")
 }
 
@@ -177,7 +177,7 @@ func TestFourSeasons_Tableau_RejectsWrongRank(t *testing.T) {
 func TestFourSeasons_Tableau_EmptySpaceTakesAnyCard(t *testing.T) {
 	f := newTestFourSeasons()
 	var tab [FourSeasonsTableauCnt][]*Card
-	setFourSeasonsBoard(f, 5, tab, [FourSeasonsFoundationCnt][]*Card{}, []*Card{he(7)}, nil)
+	setFourSeasonsBoard(f, 5, tab, [FourSeasonsFoundationCnt][]*Card{}, []*Card{he(7)})
 	require.NoError(t, f.MoveWasteToTableau(3))
 	assert.Len(t, f.GetTableau()[3], 1)
 }
@@ -189,7 +189,7 @@ func TestFourSeasons_TableauToTableau_MovesOnlyTheTopCard(t *testing.T) {
 	var tab [FourSeasonsTableauCnt][]*Card
 	tab[0] = []*Card{sp(9), he(8)} // top is the 8
 	tab[1] = []*Card{cl(9)}
-	setFourSeasonsBoard(f, 5, tab, [FourSeasonsFoundationCnt][]*Card{}, nil, nil)
+	setFourSeasonsBoard(f, 5, tab, [FourSeasonsFoundationCnt][]*Card{}, nil)
 
 	require.NoError(t, f.MoveTableauToTableau(0, 1))
 	assert.Len(t, f.GetTableau()[0], 1, "the buried 9 stays put")
@@ -201,7 +201,7 @@ func TestFourSeasons_TableauToTableau_Rejections(t *testing.T) {
 	f := newTestFourSeasons()
 	var tab [FourSeasonsTableauCnt][]*Card
 	tab[0] = []*Card{sp(9)}
-	setFourSeasonsBoard(f, 5, tab, [FourSeasonsFoundationCnt][]*Card{}, nil, nil)
+	setFourSeasonsBoard(f, 5, tab, [FourSeasonsFoundationCnt][]*Card{}, nil)
 
 	assert.Error(t, f.MoveTableauToTableau(0, 0), "a pile cannot move onto itself")
 	assert.Error(t, f.MoveTableauToTableau(-1, 1))
@@ -215,7 +215,7 @@ func TestFourSeasons_TableauToFoundation(t *testing.T) {
 	tab[2] = []*Card{sp(13)}
 	var fnd [FourSeasonsFoundationCnt][]*Card
 	fnd[0] = []*Card{sp(12)}
-	setFourSeasonsBoard(f, 12, tab, fnd, nil, nil)
+	setFourSeasonsBoard(f, 12, tab, fnd, nil)
 
 	require.NoError(t, f.MoveTableauToFoundation(2, 0))
 	assert.Empty(t, f.GetTableau()[2])
@@ -233,7 +233,7 @@ func TestFourSeasons_GameClear(t *testing.T) {
 	}
 	var tab [FourSeasonsTableauCnt][]*Card
 	tab[0] = []*Card{NewCard(1, CardValueMax, true)}
-	setFourSeasonsBoard(f, 1, tab, fnd, nil, nil)
+	setFourSeasonsBoard(f, 1, tab, fnd, nil)
 	// Three foundations are already 12 long; complete the fourth's last card.
 	for i := 1; i < FourSeasonsFoundationCnt; i++ {
 		f.foundation[i] = append(f.foundation[i], NewCard(i+1, CardValueMax, true))
@@ -260,7 +260,7 @@ func TestFourSeasons_GetHint(t *testing.T) {
 	tab[1] = []*Card{sp(13)}
 	var fnd [FourSeasonsFoundationCnt][]*Card
 	fnd[0] = []*Card{sp(12)}
-	setFourSeasonsBoard(f, 12, tab, fnd, nil, nil)
+	setFourSeasonsBoard(f, 12, tab, fnd, nil)
 
 	h := f.GetHint()
 	require.NotNil(t, h)
@@ -269,7 +269,7 @@ func TestFourSeasons_GetHint(t *testing.T) {
 	assert.Equal(t, "foundation", h.ToZone)
 
 	f2 := newTestFourSeasons()
-	setFourSeasonsBoard(f2, 12, [FourSeasonsTableauCnt][]*Card{}, [FourSeasonsFoundationCnt][]*Card{}, nil, nil)
+	setFourSeasonsBoard(f2, 12, [FourSeasonsTableauCnt][]*Card{}, [FourSeasonsFoundationCnt][]*Card{}, nil)
 	assert.Nil(t, f2.GetHint(), "nothing to move")
 }
 
@@ -285,7 +285,7 @@ func TestFourSeasons_AutoComplete(t *testing.T) {
 	tab[0] = []*Card{sp(1), sp(13)} // K on top, A beneath — both go once the K lands
 	var fnd [FourSeasonsFoundationCnt][]*Card
 	fnd[0] = []*Card{sp(12)}
-	setFourSeasonsBoard(f, 12, tab, fnd, nil, nil)
+	setFourSeasonsBoard(f, 12, tab, fnd, nil)
 
 	require.NoError(t, f.AutoComplete())
 	assert.Empty(t, f.GetTableau()[0])
@@ -294,7 +294,7 @@ func TestFourSeasons_AutoComplete(t *testing.T) {
 
 func TestFourSeasons_AutoComplete_NoMove(t *testing.T) {
 	f := newTestFourSeasons()
-	setFourSeasonsBoard(f, 12, [FourSeasonsTableauCnt][]*Card{}, [FourSeasonsFoundationCnt][]*Card{}, nil, nil)
+	setFourSeasonsBoard(f, 12, [FourSeasonsTableauCnt][]*Card{}, [FourSeasonsFoundationCnt][]*Card{}, nil)
 	assert.Error(t, f.AutoComplete())
 }
 
@@ -395,7 +395,7 @@ func TestFourSeasons_WasteMovesRejectedWhenWasteEmpty(t *testing.T) {
 	f := newTestFourSeasons()
 	var fnd [FourSeasonsFoundationCnt][]*Card
 	fnd[0] = []*Card{sp(12)}
-	setFourSeasonsBoard(f, 12, [FourSeasonsTableauCnt][]*Card{}, fnd, nil, nil)
+	setFourSeasonsBoard(f, 12, [FourSeasonsTableauCnt][]*Card{}, fnd, nil)
 	assert.Error(t, f.MoveWasteToFoundation(0))
 	assert.Error(t, f.MoveWasteToTableau(0))
 }
@@ -406,7 +406,7 @@ func TestFourSeasons_TableauMoveRejections(t *testing.T) {
 	tab[0] = []*Card{sp(5)}
 	var fnd [FourSeasonsFoundationCnt][]*Card
 	fnd[0] = []*Card{sp(12)}
-	setFourSeasonsBoard(f, 12, tab, fnd, nil, nil)
+	setFourSeasonsBoard(f, 12, tab, fnd, nil)
 
 	assert.Error(t, f.MoveTableauToFoundation(1, 0), "empty source pile")
 	assert.Error(t, f.MoveTableauToFoundation(-1, 0), "tableau index below range")
@@ -425,7 +425,7 @@ func TestFourSeasons_Foundation_RejectsWhenComplete(t *testing.T) {
 	for i := range fnd[0] {
 		fnd[0][i] = sp(5) // top value 5, so a 6 would otherwise follow
 	}
-	setFourSeasonsBoard(f, 5, [FourSeasonsTableauCnt][]*Card{}, fnd, []*Card{sp(6)}, nil)
+	setFourSeasonsBoard(f, 5, [FourSeasonsTableauCnt][]*Card{}, fnd, []*Card{sp(6)})
 	assert.Error(t, f.MoveWasteToFoundation(0))
 }
 
@@ -445,7 +445,7 @@ func TestFourSeasons_GetHint_PrefersTableauOverWaste(t *testing.T) {
 	tab[2] = []*Card{sp(13)}
 	var fnd [FourSeasonsFoundationCnt][]*Card
 	fnd[0] = []*Card{sp(12)}
-	setFourSeasonsBoard(f, 12, tab, fnd, []*Card{sp(13)}, nil)
+	setFourSeasonsBoard(f, 12, tab, fnd, []*Card{sp(13)})
 
 	h := f.GetHint()
 	require.NotNil(t, h)
@@ -457,7 +457,7 @@ func TestFourSeasons_GetHint_FallsBackToWaste(t *testing.T) {
 	f := newTestFourSeasons()
 	var fnd [FourSeasonsFoundationCnt][]*Card
 	fnd[0] = []*Card{sp(12)}
-	setFourSeasonsBoard(f, 12, [FourSeasonsTableauCnt][]*Card{}, fnd, []*Card{sp(13)}, nil)
+	setFourSeasonsBoard(f, 12, [FourSeasonsTableauCnt][]*Card{}, fnd, []*Card{sp(13)})
 
 	h := f.GetHint()
 	require.NotNil(t, h)

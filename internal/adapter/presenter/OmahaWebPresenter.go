@@ -42,28 +42,27 @@ func (owp *OmahaWebPresenter) buildOutput(o interfaces.OmahaGame, lastErr error)
 	for _, a := range o.GetPotAwards() {
 		resObj.PotAwards = append(resObj.PotAwards, &controller.HoldemWebOutputPotAward{Amount: a.Amount, Eligible: a.Eligible, HiWinners: a.HiWinners, HiPayouts: a.HiPayouts, LoWinners: a.LoWinners, LoPayouts: a.LoPayouts})
 	}
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = owp.buildMessage(o, lastErr)
+	resObj.Message, resObj.MessageCode = owp.buildMessage(o, lastErr)
 	return resObj
 }
 
-func (owp *OmahaWebPresenter) buildMessage(o interfaces.OmahaGame, lastErr error) (string, string, map[string]string) {
+func (owp *OmahaWebPresenter) buildMessage(o interfaces.OmahaGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if o.IsMuckAvailable() {
-		return "", "omaha.muck.prompt", nil
+		return "", "omaha.muck.prompt"
 	}
 	if o.GetGameEndFlag() {
-		msg, code := owp.buildResultMessage(o)
-		return msg, code, nil
+		return "", owp.buildResultMessage(o)
 	}
-	return "", "", nil
+	return "", ""
 }
 
-func (owp *OmahaWebPresenter) buildResultMessage(o interfaces.OmahaGame) (string, string) {
+func (owp *OmahaWebPresenter) buildResultMessage(o interfaces.OmahaGame) string {
 	results := o.GetRoundResults()
 	if len(results) == 0 {
-		return "", "omaha.result.gameOver"
+		return "omaha.result.gameOver"
 	}
 
 	hiLo := o.GetIsHiLo()
@@ -73,31 +72,31 @@ func (owp *OmahaWebPresenter) buildResultMessage(o interfaces.OmahaGame) (string
 				if hiLo {
 					switch {
 					case r.HiWonAmount > 0 && r.LowWonAmount > 0:
-						return "", "omahahilo.result.scoop"
+						return "omahahilo.result.scoop"
 					case r.LowWonAmount > 0:
-						return "", "omahahilo.result.lowWin"
+						return "omahahilo.result.lowWin"
 					case r.HiWonAmount > 0:
-						return "", "omahahilo.result.hiWin"
+						return "omahahilo.result.hiWin"
 					}
 				}
-				return "", "omaha.result.win"
+				return "omaha.result.win"
 			}
 		}
 	}
 
 	for i := 0; i < o.GetPlayerCnt(); i++ {
 		if o.GetPlayer(i).GetIsHuman() && o.GetPlayer(i).GetFolded() {
-			return "", "omaha.result.folded"
+			return "omaha.result.folded"
 		}
 	}
 
 	for _, r := range results {
 		if o.GetPlayer(r.PlayerIdx).GetIsHuman() && r.Mucked {
-			return "", "omaha.result.mucked"
+			return "omaha.result.mucked"
 		}
 	}
 
-	return "", "omaha.result.lose"
+	return "omaha.result.lose"
 }
 
 // ActionLogOutput 棋譜をJSON出力

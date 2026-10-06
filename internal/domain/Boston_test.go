@@ -10,7 +10,8 @@ import (
 func bsCard(suit, value int) *Card { return NewCard(suit, value, true) }
 
 // bsPlaying puts a game into the play phase with a fixed contract.
-func bsPlaying(t *testing.T, declarer, partner int, level BostonBidLevel, suit int) *Boston {
+func bsPlaying(t *testing.T, partner int, level BostonBidLevel, suit int) *Boston {
+	declarer := 0
 	t.Helper()
 	b := NewDefaultBoston()
 	b.Reset()
@@ -416,7 +417,7 @@ func TestBostonLeadIsTheDealersLeft(t *testing.T) {
 
 // 追随は強制。切札は強制ではない。
 func TestBostonFollowingSuitIsCompulsory(t *testing.T) {
-	b := bsPlaying(t, 0, -1, BostonBidSix, CardDesignSpade)
+	b := bsPlaying(t, -1, BostonBidSix, CardDesignSpade)
 	b.SetHandForTest(0, []*Card{bsCard(CardDesignHeart, 1)})
 	b.SetHandForTest(1, []*Card{
 		bsCard(CardDesignHeart, 13), bsCard(CardDesignSpade, 2), bsCard(CardDesignDiamond, 5),
@@ -433,7 +434,7 @@ func TestBostonFollowingSuitIsCompulsory(t *testing.T) {
 	}
 
 	// フォローできなければ何でも出せる。切札は強制ではない。
-	b2 := bsPlaying(t, 0, -1, BostonBidSix, CardDesignSpade)
+	b2 := bsPlaying(t, -1, BostonBidSix, CardDesignSpade)
 	b2.SetHandForTest(0, []*Card{bsCard(CardDesignHeart, 1)})
 	b2.SetHandForTest(1, []*Card{bsCard(CardDesignSpade, 2), bsCard(CardDesignDiamond, 5)})
 	if err := b2.PlayCard(0, 0); err != nil {
@@ -445,7 +446,7 @@ func TestBostonFollowingSuitIsCompulsory(t *testing.T) {
 }
 
 func TestBostonPlayGuards(t *testing.T) {
-	b := bsPlaying(t, 0, -1, BostonBidSix, CardDesignSpade)
+	b := bsPlaying(t, -1, BostonBidSix, CardDesignSpade)
 	b.SetHandForTest(0, []*Card{bsCard(CardDesignHeart, 1)})
 	if err := b.PlayCard(1, 0); err == nil {
 		t.Error("playing out of turn must be refused")
@@ -464,7 +465,7 @@ func TestBostonPlayGuards(t *testing.T) {
 
 // **切札なしの宣言では切札が効かない。**ミゼールはノートランプ。
 func TestBostonTrumpOnlyAppliesWhenTheContractHasOne(t *testing.T) {
-	withTrump := bsPlaying(t, 0, -1, BostonBidSix, CardDesignSpade)
+	withTrump := bsPlaying(t, -1, BostonBidSix, CardDesignSpade)
 	withTrump.SetHandForTest(0, []*Card{bsCard(CardDesignHeart, 1)})
 	withTrump.SetHandForTest(1, []*Card{bsCard(CardDesignSpade, 2)})
 	withTrump.SetHandForTest(2, []*Card{bsCard(CardDesignHeart, 2)})
@@ -478,7 +479,7 @@ func TestBostonTrumpOnlyAppliesWhenTheContractHasOne(t *testing.T) {
 		t.Errorf("the low trump takes the trick, tricks for seat 1 = %d", got)
 	}
 
-	noTrump := bsPlaying(t, 0, -1, BostonBidGrandMisere, 0)
+	noTrump := bsPlaying(t, -1, BostonBidGrandMisere, 0)
 	noTrump.SetHandForTest(0, []*Card{bsCard(CardDesignHeart, 1)})
 	noTrump.SetHandForTest(1, []*Card{bsCard(CardDesignSpade, 2)})
 	noTrump.SetHandForTest(2, []*Card{bsCard(CardDesignHeart, 2)})
@@ -497,7 +498,7 @@ func TestBostonTrumpOnlyAppliesWhenTheContractHasOne(t *testing.T) {
 // TestBostonSettlement covers the per-player payment.
 func TestBostonSettlement(t *testing.T) {
 	t.Run("making a solo bid collects from all three", func(t *testing.T) {
-		b := bsPlaying(t, 0, -1, BostonBidSix, CardDesignSpade)
+		b := bsPlaying(t, -1, BostonBidSix, CardDesignSpade)
 		b.SetTricksWonForTest(0, 6)
 		b.FinishHandForTest()
 
@@ -516,7 +517,7 @@ func TestBostonSettlement(t *testing.T) {
 	})
 
 	t.Run("failing pays each opponent", func(t *testing.T) {
-		b := bsPlaying(t, 0, -1, BostonBidSix, CardDesignSpade)
+		b := bsPlaying(t, -1, BostonBidSix, CardDesignSpade)
 		b.SetTricksWonForTest(0, 5)
 		b.FinishHandForTest()
 
@@ -531,7 +532,7 @@ func TestBostonSettlement(t *testing.T) {
 
 	// **パートナーの取ったトリックも数える。**2 対 2 なので合算しないと判定が狂う。
 	t.Run("a partner's tricks count toward the contract", func(t *testing.T) {
-		b := bsPlaying(t, 0, 2, BostonBidSix, CardDesignSpade)
+		b := bsPlaying(t, 2, BostonBidSix, CardDesignSpade)
 		b.SetTricksWonForTest(0, 3)
 		b.SetTricksWonForTest(2, 3)
 		if got := b.BostonDeclarerTricks(); got != 6 {
@@ -552,7 +553,7 @@ func TestBostonSettlement(t *testing.T) {
 	})
 
 	t.Run("a misere is broken by a single trick", func(t *testing.T) {
-		b := bsPlaying(t, 0, -1, BostonBidGrandMisere, 0)
+		b := bsPlaying(t, -1, BostonBidGrandMisere, 0)
 		b.SetTricksWonForTest(0, 1)
 		b.FinishHandForTest()
 		if b.IsBidMade() {
@@ -562,14 +563,14 @@ func TestBostonSettlement(t *testing.T) {
 
 	// **ピッコリッシモは 0 でも失敗。**
 	t.Run("piccolissimo fails on zero as well as on two", func(t *testing.T) {
-		zero := bsPlaying(t, 0, -1, BostonBidPiccolissimo, 0)
+		zero := bsPlaying(t, -1, BostonBidPiccolissimo, 0)
 		zero.SetTricksWonForTest(0, 0)
 		zero.FinishHandForTest()
 		if zero.IsBidMade() {
 			t.Error("zero tricks fails Piccolissimo")
 		}
 
-		one := bsPlaying(t, 0, -1, BostonBidPiccolissimo, 0)
+		one := bsPlaying(t, -1, BostonBidPiccolissimo, 0)
 		one.SetTricksWonForTest(0, 1)
 		one.FinishHandForTest()
 		if !one.IsBidMade() {
@@ -591,7 +592,7 @@ func TestBostonSettlement(t *testing.T) {
 }
 
 func TestBostonNextHandAndGameEnd(t *testing.T) {
-	b := bsPlaying(t, 0, -1, BostonBidSix, CardDesignSpade)
+	b := bsPlaying(t, -1, BostonBidSix, CardDesignSpade)
 	b.SetTricksWonForTest(0, 6)
 	b.FinishHandForTest()
 
@@ -604,7 +605,7 @@ func TestBostonNextHandAndGameEnd(t *testing.T) {
 	}
 
 	// 規定局数に達すると決着する。
-	end := bsPlaying(t, 0, -1, BostonBidSix, CardDesignSpade)
+	end := bsPlaying(t, -1, BostonBidSix, CardDesignSpade)
 	end.SetHandNumberForTest(end.GetTargetHands())
 	end.SetTricksWonForTest(0, 6)
 	end.FinishHandForTest()
@@ -620,7 +621,7 @@ func TestBostonNextHandAndGameEnd(t *testing.T) {
 }
 
 func TestBostonNextHandGuards(t *testing.T) {
-	b := bsPlaying(t, 0, -1, BostonBidSix, CardDesignSpade)
+	b := bsPlaying(t, -1, BostonBidSix, CardDesignSpade)
 	if err := b.NextHand(); err == nil {
 		t.Error("dealing again mid-hand must be refused")
 	}
@@ -694,7 +695,7 @@ func TestBostonCpuDrivesAFullHand(t *testing.T) {
 }
 
 func TestBostonCpuEdges(t *testing.T) {
-	b := bsPlaying(t, 0, -1, BostonBidSix, CardDesignSpade)
+	b := bsPlaying(t, -1, BostonBidSix, CardDesignSpade)
 	b.SetHandForTest(0, []*Card{})
 	if got := b.BostonCpuPlay(0); got != -1 {
 		t.Errorf("an empty hand has no play, got %d", got)
@@ -707,7 +708,7 @@ func TestBostonCpuEdges(t *testing.T) {
 	}
 
 	// **ミゼール側は取らないことが目的。**常に一番安い札を出す。
-	mis := bsPlaying(t, 0, -1, BostonBidGrandMisere, 0)
+	mis := bsPlaying(t, -1, BostonBidGrandMisere, 0)
 	mis.SetHandForTest(0, []*Card{bsCard(CardDesignHeart, 1), bsCard(CardDesignHeart, 2)})
 	if got := mis.BostonCpuPlay(0); got != 1 {
 		t.Errorf("a misere declarer leads its lowest card, got index %d", got)

@@ -38,7 +38,7 @@ func chineseTenCardsOutput(cards []*domain.Card) []*controller.ChineseTenWebOutp
 // Output ゲーム状態をJSON出力
 func (p *ChineseTenWebPresenter) Output(c interfaces.ChineseTenGame, lastErr error) string {
 	resObj := p.buildBase(c)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(c, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(c, lastErr)
 	return marshalOrError(resObj)
 }
 
@@ -107,20 +107,20 @@ func (p *ChineseTenWebPresenter) buildPlayersOutput(c interfaces.ChineseTenGame)
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *ChineseTenWebPresenter) buildMessage(c interfaces.ChineseTenGame, lastErr error) (string, string, map[string]string) {
+func (p *ChineseTenWebPresenter) buildMessage(c interfaces.ChineseTenGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if !c.GetGameEndFlag() {
-		return "", "", nil
+		return "", ""
 	}
 	switch c.GetWinnerIdx() {
 	case 0:
-		return "you win", "chineseten.win", nil
+		return "you win", "chineseten.win"
 	case -1:
-		return "draw", "chineseten.draw", nil
+		return "draw", "chineseten.draw"
 	default:
-		return "you lose", "chineseten.lose", nil
+		return "you lose", "chineseten.lose"
 	}
 }
 

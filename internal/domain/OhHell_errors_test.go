@@ -42,13 +42,13 @@ func TestOhHellDomainErrorsHaveMessageCodes(t *testing.T) {
 
 	t.Run("card index out of range", func(t *testing.T) {
 		o := newTestOhHell()
-		setupOhHellPlayPhase(o, 0, 0, 1)
+		setupOhHellPlayPhase(o, 0, 0)
 		assertOhHellDomainError(t, o.PlayerPlay(0), domain.ErrInvalidCard, "ohhell.errCardIndexOutOfRange", nil)
 	})
 
 	t.Run("must follow lead suit", func(t *testing.T) {
 		o := newTestOhHell()
-		setupOhHellPlayPhase(o, 0, 0, 1)
+		setupOhHellPlayPhase(o, 0, 0)
 		o.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
 		o.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
 		o.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 9, false)}})

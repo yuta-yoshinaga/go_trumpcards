@@ -408,7 +408,7 @@ func (sd *ShortDeck) advancePhase() {
 
 // dealRemainingCommunity 残りのコミュニティカードを全て配る
 func (sd *ShortDeck) dealRemainingCommunity() {
-	dealUpTo(&sd.communityCards, sd.trumpCards, 5)
+	dealUpTo(&sd.communityCards, sd.trumpCards)
 }
 
 // findNextActive 指定インデックスの次のアクティブプレイヤーを探す
@@ -843,7 +843,7 @@ func (sd *ShortDeck) evalPreFlopStrength(idx int) int {
 		if v1 >= 10 {
 			score += 15
 		}
-		return clamp(score, 0, 100)
+		return clamp(score, 100)
 	}
 
 	// ハイカード値
@@ -873,7 +873,7 @@ func (sd *ShortDeck) evalPreFlopStrength(idx int) int {
 		score += 10
 	}
 
-	return clamp(score, 0, 100)
+	return clamp(score, 100)
 }
 
 // --- リバイ/アドオン ---

@@ -655,7 +655,7 @@ func (g *Botifarra) GetHint() *BotifarraHint {
 		if g.currentTurn != 0 {
 			return nil
 		}
-		suit := g.longestSuitOf(0)
+		suit := g.longestSuitOf()
 		return &BotifarraHint{Suit: &suit, Reason: "botifarraDeclareLongest"}
 	case BotifarraPhasePlay:
 		if g.currentTurn != 0 {
@@ -668,10 +668,10 @@ func (g *Botifarra) GetHint() *BotifarraHint {
 	}
 }
 
-// longestSuitOf は席 idx のいちばん長いスートを返す。
-func (g *Botifarra) longestSuitOf(idx int) int {
+// longestSuitOf は席 0 のいちばん長いスートを返す。
+func (g *Botifarra) longestSuitOf() int {
 	best, bestLen := CardDesignSpade, -1
-	p := g.players[idx]
+	p := g.players[0]
 	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
 		n := 0
 		for i := range p.GetCardsSize() {

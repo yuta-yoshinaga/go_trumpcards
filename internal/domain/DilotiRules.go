@@ -275,7 +275,7 @@ func dilotiCanPartition(values []int, target int) bool {
 
 // dilotiFillBuckets は need を埋めながら束を作る。
 // target は束ひとつぶんの目標値、remaining は未使用の枚数。
-func dilotiFillBuckets(values []int, used []bool, need, target, start, remaining int) bool {
+func dilotiFillBuckets(values []int, used []bool, need, target, start, remaining int) bool { //nolint:unparam // 束が埋まるたび need を次の束の目標値へ戻すため target が必要。
 	if need == 0 {
 		if remaining == 0 {
 			return true

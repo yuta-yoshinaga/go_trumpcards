@@ -25,7 +25,7 @@ func lobaCardsOutput(cards []*domain.Card) []*controller.WebOutputCard {
 // Output ゲーム状態をJSON出力
 func (p *LobaWebPresenter) Output(c interfaces.LobaGame, lastErr error) string {
 	resObj := p.buildBase(c)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(c, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(c, lastErr)
 	return marshalOrError(resObj)
 }
 
@@ -105,17 +105,17 @@ func (p *LobaWebPresenter) buildPlayersOutput(c interfaces.LobaGame) []*controll
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *LobaWebPresenter) buildMessage(c interfaces.LobaGame, lastErr error) (string, string, map[string]string) {
+func (p *LobaWebPresenter) buildMessage(c interfaces.LobaGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if !c.GetGameEndFlag() {
-		return "", "", nil
+		return "", ""
 	}
 	if c.GetWinnerIdx() == 0 {
-		return "you are the last one standing", "loba.win", nil
+		return "you are the last one standing", "loba.win"
 	}
-	return "you were knocked out", "loba.lose", nil
+	return "you were knocked out", "loba.lose"
 }
 
 // HintOutput ヒント情報を出力する

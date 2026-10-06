@@ -47,7 +47,7 @@ func (dwp *DeuceToSevenWebPresenter) buildOutput(g interfaces.DeuceToSevenGame, 
 	out.CpuActions = dwp.buildCpuActions(g)
 	out.CpuExchanges = dwp.buildCpuExchanges(g)
 	out.RoundResults = dwp.buildRoundResults(g)
-	out.Message, out.MessageCode, out.MessageParams = dwp.buildMessage(g, lastErr)
+	out.Message, out.MessageCode = dwp.buildMessage(g, lastErr)
 
 	if profile := g.GetHumanProfile(); profile != nil {
 		out.MetaAI = &controller.DeuceToSevenWebOutputMetaAI{
@@ -64,34 +64,33 @@ func (dwp *DeuceToSevenWebPresenter) buildOutput(g interfaces.DeuceToSevenGame, 
 	return out
 }
 
-func (dwp *DeuceToSevenWebPresenter) buildMessage(g interfaces.DeuceToSevenGame, lastErr error) (string, string, map[string]string) {
+func (dwp *DeuceToSevenWebPresenter) buildMessage(g interfaces.DeuceToSevenGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if g.GetGameEndFlag() {
-		msg, code := dwp.buildResultMessage(g)
-		return msg, code, nil
+		return "", dwp.buildResultMessage(g)
 	}
-	return "", "", nil
+	return "", ""
 }
 
-func (dwp *DeuceToSevenWebPresenter) buildResultMessage(g interfaces.DeuceToSevenGame) (string, string) {
+func (dwp *DeuceToSevenWebPresenter) buildResultMessage(g interfaces.DeuceToSevenGame) string {
 	results := g.GetRoundResults()
 	if len(results) == 0 {
-		return "", "deucetoseven.result.gameOver"
+		return "deucetoseven.result.gameOver"
 	}
 	players := g.GetPlayers()
 	for _, r := range results {
 		if players[r.PlayerIdx].GetIsHuman() && r.WonAmount > 0 {
-			return "", "deucetoseven.result.win"
+			return "deucetoseven.result.win"
 		}
 	}
 	for _, pl := range players {
 		if pl.GetIsHuman() && pl.GetFolded() {
-			return "", "deucetoseven.result.folded"
+			return "deucetoseven.result.folded"
 		}
 	}
-	return "", "deucetoseven.result.lose"
+	return "deucetoseven.result.lose"
 }
 
 func (dwp *DeuceToSevenWebPresenter) buildSidePots(g interfaces.DeuceToSevenGame) []*controller.DeuceToSevenWebOutputSidePot {

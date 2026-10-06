@@ -14,7 +14,7 @@ type ToepenWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *ToepenWebPresenter) Output(t interfaces.ToepenGame, lastErr error) string {
 	resObj := p.buildBase(t)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(t, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(t, lastErr)
 	return marshalOrError(resObj)
 }
 
@@ -86,20 +86,20 @@ func (p *ToepenWebPresenter) buildPlayersOutput(t interfaces.ToepenGame) []*cont
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *ToepenWebPresenter) buildMessage(t interfaces.ToepenGame, lastErr error) (string, string, map[string]string) {
+func (p *ToepenWebPresenter) buildMessage(t interfaces.ToepenGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if t.GetGameEndFlag() {
 		if t.GetWinnerIdx() == 0 {
-			return "you win", "toepen.win", nil
+			return "you win", "toepen.win"
 		}
-		return "you lose", "toepen.lose", nil
+		return "you lose", "toepen.lose"
 	}
 	if t.GetPhase() == domain.ToepenPhaseHandEnd {
-		return "hand over", "toepen.hand_end", nil
+		return "hand over", "toepen.hand_end"
 	}
-	return "", "", nil
+	return "", ""
 }
 
 // HintOutput ヒント情報を出力する

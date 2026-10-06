@@ -18,14 +18,14 @@ func TestYukonFamilyReadHelpers(t *testing.T) {
 	}
 	foundation := make([][]*Card, 4)
 	cleared := false
-	yukonFamilyCheckGameClear(foundation, CardValueMax, func() { cleared = true })
+	yukonFamilyCheckGameClear(foundation, func() { cleared = true })
 	if cleared {
 		t.Fatal("incomplete foundations marked clear")
 	}
 	for i := range foundation {
 		foundation[i] = make([]*Card, CardValueMax)
 	}
-	yukonFamilyCheckGameClear(foundation, CardValueMax, func() { cleared = true })
+	yukonFamilyCheckGameClear(foundation, func() { cleared = true })
 	if !cleared {
 		t.Fatal("complete foundations not marked clear")
 	}

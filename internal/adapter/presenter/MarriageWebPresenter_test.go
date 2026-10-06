@@ -15,7 +15,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
-func setupMarriageWebMock(phase domain.MarriagePhase, gameEnd bool) (*interfaces.MockMarriageGame, []*domain.MarriagePlayer) {
+func setupMarriageWebMock(phase domain.MarriagePhase, gameEnd bool) *interfaces.MockMarriageGame {
 	m := new(interfaces.MockMarriageGame)
 	players := []*domain.MarriagePlayer{
 		domain.NewMarriagePlayer(true),
@@ -55,7 +55,7 @@ func setupMarriageWebMock(phase domain.MarriagePhase, gameEnd bool) (*interfaces
 	m.On("PlayerMaalValue", 1).Return(4)
 	m.On("PlayerHasPureSequence", 0).Return(true)
 	m.On("PlayerHasPureSequence", 1).Return(false)
-	return m, players
+	return m
 }
 
 func unmarshalMarriage(t *testing.T, s string) controller.MarriageWebOutput {
@@ -69,7 +69,7 @@ func TestMarriageWebPresenter_Output(t *testing.T) {
 	p := new(presenter.MarriageWebPresenter)
 
 	t.Run("draw phase", func(t *testing.T) {
-		m, _ := setupMarriageWebMock(domain.MarriagePhaseDraw, false)
+		m := setupMarriageWebMock(domain.MarriagePhaseDraw, false)
 		out := unmarshalMarriage(t, p.Output(m, nil))
 		assert.Len(t, out.Players, 2)
 		assert.Equal(t, 1, out.RoundNumber)
@@ -84,13 +84,13 @@ func TestMarriageWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("discard phase", func(t *testing.T) {
-		m, _ := setupMarriageWebMock(domain.MarriagePhaseDiscard, false)
+		m := setupMarriageWebMock(domain.MarriagePhaseDiscard, false)
 		out := unmarshalMarriage(t, p.Output(m, nil))
 		assert.Equal(t, "marriage.discardPhase", out.MessageCode)
 	})
 
 	t.Run("round end reveals cpu and deadwood", func(t *testing.T) {
-		m, _ := setupMarriageWebMock(domain.MarriagePhaseRoundEnd, false)
+		m := setupMarriageWebMock(domain.MarriagePhaseRoundEnd, false)
 		out := unmarshalMarriage(t, p.Output(m, nil))
 		assert.Equal(t, "marriage.roundEnd", out.MessageCode)
 		assert.Equal(t, 80, out.Players[1].Deadwood)
@@ -99,19 +99,19 @@ func TestMarriageWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("game ended", func(t *testing.T) {
-		m, _ := setupMarriageWebMock(domain.MarriagePhaseGameEnd, true)
+		m := setupMarriageWebMock(domain.MarriagePhaseGameEnd, true)
 		out := unmarshalMarriage(t, p.Output(m, nil))
 		assert.True(t, out.GameEndFlag)
 	})
 
 	t.Run("with error", func(t *testing.T) {
-		m, _ := setupMarriageWebMock(domain.MarriagePhaseDraw, false)
+		m := setupMarriageWebMock(domain.MarriagePhaseDraw, false)
 		out := unmarshalMarriage(t, p.Output(m, errors.New("boom")))
 		assert.Equal(t, "boom", out.Message)
 	})
 
 	t.Run("with coded error", func(t *testing.T) {
-		m, _ := setupMarriageWebMock(domain.MarriagePhaseDraw, false)
+		m := setupMarriageWebMock(domain.MarriagePhaseDraw, false)
 		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "marriage.errDiscardCardIndexOutOfRange", nil)
 		out := unmarshalMarriage(t, p.Output(m, err))
 		assert.Empty(t, out.Message)
@@ -121,7 +121,7 @@ func TestMarriageWebPresenter_Output(t *testing.T) {
 
 // **CUI は毎ターン出しているのに、Web は狭い条件でしか出していなかった (#4824)。**
 func TestMarriageWebPresenter_HumanHandStatus(t *testing.T) {
-	m, _ := setupMarriageWebMock(domain.MarriagePhaseDiscard, false)
+	m := setupMarriageWebMock(domain.MarriagePhaseDiscard, false)
 
 	var out controller.MarriageWebOutput
 	assert.NoError(t, json.Unmarshal([]byte(new(presenter.MarriageWebPresenter).Output(m, nil)), &out))
@@ -135,7 +135,7 @@ func TestMarriageWebPresenter_HumanHandStatus(t *testing.T) {
 
 func TestMarriageWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.MarriageWebPresenter)
-	m, _ := setupMarriageWebMock(domain.MarriagePhaseDraw, false)
+	m := setupMarriageWebMock(domain.MarriagePhaseDraw, false)
 	out := p.ActionLogOutput(m)
 	assert.NotEmpty(t, out)
 }

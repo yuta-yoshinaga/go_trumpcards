@@ -27,9 +27,9 @@ func newTestLoo(t *testing.T, diff domain.LooCpuDifficulty) *domain.Loo {
 	return g
 }
 
-// setLooHand はプレイヤー idx の手札を指定カードで上書きする。
-func setLooHand(g *domain.Loo, idx int, cards ...*domain.Card) {
-	p := g.GetPlayer(idx)
+// setLooHand はプレイヤー 0 の手札を指定カードで上書きする。
+func setLooHand(g *domain.Loo, cards ...*domain.Card) {
+	p := g.GetPlayer(0)
 	p.Reset()
 	for _, c := range cards {
 		p.AddCard(c)
@@ -247,7 +247,7 @@ func TestLoo_MustFollowAndHead(t *testing.T) {
 		{PlayerIdx: 1, Card: looCard(domain.CardDesignHeart, 7)},
 	})
 	// player 0 は ハート A と ハート 3 を持つ。マストヘッドで A を出す義務がある。
-	setLooHand(g, 0, looCard(domain.CardDesignHeart, 1), looCard(domain.CardDesignHeart, 3))
+	setLooHand(g, looCard(domain.CardDesignHeart, 1), looCard(domain.CardDesignHeart, 3))
 	// ハート 3 (index 1) はヘッドできないので拒否される。
 	err := g.PlayerPlay(1)
 	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
@@ -268,7 +268,7 @@ func TestLoo_MustTrumpWhenVoid(t *testing.T) {
 		{PlayerIdx: 1, Card: looCard(domain.CardDesignHeart, 9)},
 	})
 	// player 0 は ハートなし。スペード (切り札) K とクラブ 4 を持つ。切り札を出す義務。
-	setLooHand(g, 0, looCard(domain.CardDesignSpade, 13), looCard(domain.CardDesignClover, 4))
+	setLooHand(g, looCard(domain.CardDesignSpade, 13), looCard(domain.CardDesignClover, 4))
 	// クラブ 4 (index 1) は切り札を持つのに切り札でないため拒否。
 	err := g.PlayerPlay(1)
 	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
@@ -288,7 +288,7 @@ func TestLoo_DiscardWhenNoLeadNoTrump(t *testing.T) {
 	g.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: looCard(domain.CardDesignHeart, 9)},
 	})
-	setLooHand(g, 0, looCard(domain.CardDesignClover, 4), looCard(domain.CardDesignDiamond, 2))
+	setLooHand(g, looCard(domain.CardDesignClover, 4), looCard(domain.CardDesignDiamond, 2))
 	require.NoError(t, g.PlayerPlay(0))
 }
 
@@ -378,7 +378,7 @@ func TestLoo_GetHint_Play(t *testing.T) {
 	g.SetPhase(domain.LooPhasePlay)
 	g.SetCurrentTurn(0)
 	g.GetPlayer(0).SetPlaying(true)
-	setLooHand(g, 0, looCard(domain.CardDesignHeart, 1), looCard(domain.CardDesignClover, 3))
+	setLooHand(g, looCard(domain.CardDesignHeart, 1), looCard(domain.CardDesignClover, 3))
 	// リード状況 (空トリック)。
 	g.SetCurrentTrick(nil)
 	g.SetLeadPlayerIdx(0)

@@ -64,7 +64,7 @@ func (p *LiteratureWebPresenter) Output(g interfaces.LiteratureGame, lastErr err
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(g, lastErr)
 
 	return marshalOrError(resObj)
 }
@@ -115,39 +115,39 @@ func (p *LiteratureWebPresenter) buildPlayersOutput(g interfaces.LiteratureGame)
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *LiteratureWebPresenter) buildMessage(g interfaces.LiteratureGame, lastErr error) (string, string, map[string]string) {
+func (p *LiteratureWebPresenter) buildMessage(g interfaces.LiteratureGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if g.GetGameEndFlag() {
 		switch g.GetWinnerTeam() {
 		case domain.LiteratureTeamOf(0):
-			return "your team wins", "literature.result.humanWin", nil
+			return "your team wins", "literature.result.humanWin"
 		case -1:
 			// **無効が絡むと同数で終わることがある。**
-			return "nobody wins", "literature.result.draw", nil
+			return "nobody wins", "literature.result.draw"
 		default:
-			return "the other team wins", "literature.result.cpuWin", nil
+			return "the other team wins", "literature.result.cpuWin"
 		}
 	}
 	// **直前の宣言の結末は 3 通り。**「無効」は「相手に渡る」とは違う。
 	if c := g.GetLastClaim(); c != nil {
 		switch c.Outcome {
 		case domain.LiteratureClaimCancelled:
-			return "", "literature.claimCancelled", nil
+			return "", "literature.claimCancelled"
 		case domain.LiteratureClaimLost:
-			return "", "literature.claimLost", nil
+			return "", "literature.claimLost"
 		case domain.LiteratureClaimWon:
-			return "", "literature.claimWon", nil
+			return "", "literature.claimWon"
 		}
 	}
 	if a := g.GetLastAsk(); a != nil {
 		if a.Success {
-			return "", "literature.askHit", nil
+			return "", "literature.askHit"
 		}
-		return "", "literature.askMiss", nil
+		return "", "literature.askMiss"
 	}
-	return "", "literature.playPhase", nil
+	return "", "literature.playPhase"
 }
 
 // ActionLogOutput 棋譜をJSON出力

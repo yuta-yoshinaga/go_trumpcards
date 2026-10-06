@@ -37,7 +37,7 @@ func (p *BeggarMyNeighbourWebPresenter) Output(g interfaces.BeggarMyNeighbourGam
 		})
 	}
 
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = buildBeggarMyNeighbourMessage(g, lastErr)
+	resObj.Message, resObj.MessageCode = buildBeggarMyNeighbourMessage(g, lastErr)
 	return marshalOrError(resObj)
 }
 
@@ -47,19 +47,19 @@ func (p *BeggarMyNeighbourWebPresenter) ActionLogOutput(g interfaces.BeggarMyNei
 }
 
 // buildBeggarMyNeighbourMessage ゲーム状態に応じたメッセージを生成する
-func buildBeggarMyNeighbourMessage(g interfaces.BeggarMyNeighbourGame, lastErr error) (string, string, map[string]string) {
+func buildBeggarMyNeighbourMessage(g interfaces.BeggarMyNeighbourGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "error", nil
+		return lastErr.Error(), "error"
 	}
 	if g.GetGameEndFlag() {
 		switch g.GetWinnerIdx() {
 		case 0:
-			return "", "beggarmyneighbour.result.humanWin", nil
+			return "", "beggarmyneighbour.result.humanWin"
 		case 1:
-			return "", "beggarmyneighbour.result.cpuWin", nil
+			return "", "beggarmyneighbour.result.cpuWin"
 		default:
-			return "", "beggarmyneighbour.result.draw", nil
+			return "", "beggarmyneighbour.result.draw"
 		}
 	}
-	return "", "", nil
+	return "", ""
 }

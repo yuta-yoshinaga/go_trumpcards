@@ -6,7 +6,8 @@ import "testing"
 func bcard(design, value int) *Card { return NewCard(design, value, false) }
 
 // bmkPlayer はテスト用の BourrePlayer を構築する
-func bmkPlayer(isHuman bool, chips int, folded, finished bool, tricks int) *BourrePlayer {
+func bmkPlayer(isHuman bool, chips int, folded bool, tricks int) *BourrePlayer {
+	finished := false
 	p := NewBourrePlayer(isHuman)
 	p.SetChips(chips)
 	p.SetFolded(folded)
@@ -155,8 +156,8 @@ func TestBourreLegalPlays(t *testing.T) {
 func TestBourreScoreHandSingleWinner(t *testing.T) {
 	b := &Bourre{
 		players: []*BourrePlayer{
-			bmkPlayer(true, 100, false, false, 3),
-			bmkPlayer(false, 100, false, false, 2),
+			bmkPlayer(true, 100, false, 3),
+			bmkPlayer(false, 100, false, 2),
 		},
 		pot: 20,
 	}
@@ -178,8 +179,8 @@ func TestBourreScoreHandSingleWinner(t *testing.T) {
 func TestBourreScoreHandBourrePenalty(t *testing.T) {
 	b := &Bourre{
 		players: []*BourrePlayer{
-			bmkPlayer(true, 100, false, false, 5),
-			bmkPlayer(false, 100, false, false, 0),
+			bmkPlayer(true, 100, false, 5),
+			bmkPlayer(false, 100, false, 0),
 		},
 		pot: 20,
 	}
@@ -201,9 +202,9 @@ func TestBourreScoreHandBourrePenalty(t *testing.T) {
 func TestBourreScoreHandTieCarries(t *testing.T) {
 	b := &Bourre{
 		players: []*BourrePlayer{
-			bmkPlayer(true, 100, false, false, 2),
-			bmkPlayer(false, 100, false, false, 2),
-			bmkPlayer(false, 100, false, false, 1),
+			bmkPlayer(true, 100, false, 2),
+			bmkPlayer(false, 100, false, 2),
+			bmkPlayer(false, 100, false, 1),
 		},
 		pot: 30,
 	}
@@ -222,8 +223,8 @@ func TestBourreResolveNoContest(t *testing.T) {
 	t.Run("sole player takes pot", func(t *testing.T) {
 		b := &Bourre{
 			players: []*BourrePlayer{
-				bmkPlayer(true, 100, false, false, 0),
-				bmkPlayer(false, 100, true, false, 0), // folded
+				bmkPlayer(true, 100, false, 0),
+				bmkPlayer(false, 100, true, 0), // folded
 			},
 			pot: 15,
 		}
@@ -236,8 +237,8 @@ func TestBourreResolveNoContest(t *testing.T) {
 	t.Run("all folded carries", func(t *testing.T) {
 		b := &Bourre{
 			players: []*BourrePlayer{
-				bmkPlayer(true, 100, true, false, 0),
-				bmkPlayer(false, 100, true, false, 0),
+				bmkPlayer(true, 100, true, 0),
+				bmkPlayer(false, 100, true, 0),
 			},
 			pot: 15,
 		}
@@ -251,9 +252,9 @@ func TestBourreResolveNoContest(t *testing.T) {
 func TestBourreCheckGameEndHumanBroke(t *testing.T) {
 	b := &Bourre{
 		players: []*BourrePlayer{
-			bmkPlayer(true, 0, false, false, 0),
-			bmkPlayer(false, 250, false, false, 0),
-			bmkPlayer(false, 250, false, false, 0),
+			bmkPlayer(true, 0, false, 0),
+			bmkPlayer(false, 250, false, 0),
+			bmkPlayer(false, 250, false, 0),
 		},
 	}
 	b.checkGameEnd()

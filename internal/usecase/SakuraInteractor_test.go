@@ -42,10 +42,10 @@ func (p *sakuraPassThroughPresenter) HintOutput(g interfaces.SakuraGame) string 
 }
 
 // newSakuraRealInteractor は本物のドメインを載せたインタラクターを返す。
-func newSakuraRealInteractor() (*usecase.SakuraInteractor, *domain.Sakura, *sakuraPassThroughPresenter) {
+func newSakuraRealInteractor() (*usecase.SakuraInteractor, *domain.Sakura) {
 	g := domain.NewDefaultSakura()
 	p := &sakuraPassThroughPresenter{}
-	return usecase.NewSakuraInteractor(g, p), g, p
+	return usecase.NewSakuraInteractor(g, p), g
 }
 
 func TestNewSakuraInteractor_NilGuards(t *testing.T) {
@@ -93,7 +93,7 @@ func TestSakuraInteractor_ResetWithConfig_Invalid(t *testing.T) {
 }
 
 func TestSakuraInteractor_ResetWithConfig_AppliesSeats(t *testing.T) {
-	si, g, _ := newSakuraRealInteractor()
+	si, g := newSakuraRealInteractor()
 	require.Equal(t, "ok", si.ResetWithConfig(domain.SakuraConfig{Seats: 4, Rounds: 2}))
 
 	assert.Equal(t, 4, g.GetPlayerCnt(), "席数が反映されていない")
@@ -117,7 +117,7 @@ func TestSakuraInteractor_HintAndLog(t *testing.T) {
 // **Reset は人間の手番まで進める。** CPU が親の局面で止まると、画面には打てる手が
 // 無いのに人間の入力を待つ盤面が出る。
 func TestSakuraInteractor_Reset_StopsOnTheHumanTurn(t *testing.T) {
-	si, g, _ := newSakuraRealInteractor()
+	si, g := newSakuraRealInteractor()
 	require.Equal(t, "ok", si.Reset())
 	assert.True(t, g.IsHumanTurn(), "人間の手番で止まっていない")
 	assert.Equal(t, domain.SakuraPhasePlay, g.GetPhase())
@@ -125,7 +125,7 @@ func TestSakuraInteractor_Reset_StopsOnTheHumanTurn(t *testing.T) {
 
 // 人間が 1 手打つと、次に人間の番が回るまで CPU が打ち切る。
 func TestSakuraInteractor_Play_RunsTheCpusUntilTheHumanIsBack(t *testing.T) {
-	si, g, _ := newSakuraRealInteractor()
+	si, g := newSakuraRealInteractor()
 	require.Equal(t, "ok", si.Reset())
 	seat := g.HumanSeat()
 	handBefore := g.GetPlayer(seat).GetCardsSize()
@@ -142,7 +142,7 @@ func TestSakuraInteractor_Play_RunsTheCpusUntilTheHumanIsBack(t *testing.T) {
 
 // ラウンド終了で止まり、NextRound で配り直す。
 func TestSakuraInteractor_NextRound_DealsAgain(t *testing.T) {
-	si, g, _ := newSakuraRealInteractor()
+	si, g := newSakuraRealInteractor()
 	require.Equal(t, "ok", si.Reset())
 	for range 200 {
 		if g.GetPhase() != domain.SakuraPhasePlay {
@@ -161,7 +161,7 @@ func TestSakuraInteractor_NextRound_DealsAgain(t *testing.T) {
 
 // 終局まで進めても入力を受け付け続ける (打ち止めで固まらない)。
 func TestSakuraInteractor_PlaysThroughToTheEnd(t *testing.T) {
-	si, g, _ := newSakuraRealInteractor()
+	si, g := newSakuraRealInteractor()
 	require.Equal(t, "ok", si.Reset())
 	for range 2000 {
 		if g.GetGameEndFlag() {
@@ -182,7 +182,7 @@ func TestSakuraInteractor_PlaysThroughToTheEnd(t *testing.T) {
 }
 
 func TestSakuraInteractor_SnapshotRoundTrip(t *testing.T) {
-	si, g, _ := newSakuraRealInteractor()
+	si, g := newSakuraRealInteractor()
 	require.Equal(t, "ok", si.Reset())
 	h := g.GetHint()
 	require.Equal(t, "ok", si.Play(h.CardIndex, h.FieldIndex))

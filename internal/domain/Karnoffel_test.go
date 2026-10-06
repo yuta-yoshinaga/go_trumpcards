@@ -10,12 +10,12 @@ import (
 func knCard(suit, value int) *Card { return NewCard(suit, value, true) }
 
 // knPlaying puts a game into the play phase with a fixed chosen suit.
-func knPlaying(t *testing.T, chosenSuit int) *Karnoffel {
+func knPlaying(t *testing.T) *Karnoffel {
 	t.Helper()
 	k := NewDefaultKarnoffel()
 	k.Reset()
 	k.SetPhaseForTest(KarnoffelPhasePlay)
-	k.SetChosenSuitForTest(chosenSuit)
+	k.SetChosenSuitForTest(CardDesignHeart)
 	k.SetCurrentPlayerForTest(0)
 	k.SetTrickLeaderForTest(0)
 	// 第 1 トリックの悪魔制限を外して、比較そのものを見る。
@@ -207,7 +207,7 @@ func TestKarnoffelDevilCannotLeadTheFirstTrick(t *testing.T) {
 	}
 
 	// 2 トリック目以降なら出せる。
-	k2 := knPlaying(t, CardDesignHeart)
+	k2 := knPlaying(t)
 	k2.SetHandForTest(0, []*Card{knCard(CardDesignHeart, KarnoffelDevil)})
 	if got := len(k2.KarnoffelValidPlays(0)); got != 1 {
 		t.Errorf("%d plays are legal from the second trick on, want 1", got)
@@ -374,7 +374,7 @@ func TestKarnoffelLeadingCardIsSharedBetweenReadAndResolve(t *testing.T) {
 
 // 平札どうしはリードスートに追随したものだけが争う。
 func TestKarnoffelPlainTrickResolution(t *testing.T) {
-	k := knPlaying(t, CardDesignHeart)
+	k := knPlaying(t)
 	k.SetHandForTest(0, []*Card{knCard(CardDesignSpade, 9)})
 	k.SetHandForTest(1, []*Card{knCard(CardDesignSpade, 13)})
 	k.SetHandForTest(2, []*Card{knCard(CardDesignClover, 13)}) // 追随していない
@@ -395,7 +395,7 @@ func TestKarnoffelPlainTrickResolution(t *testing.T) {
 
 // **追随の義務は無い。**好きな札を出せる。
 func TestKarnoffelHasNoFollowSuitRequirement(t *testing.T) {
-	k := knPlaying(t, CardDesignHeart)
+	k := knPlaying(t)
 	k.SetHandForTest(0, []*Card{knCard(CardDesignSpade, 9)})
 	k.SetHandForTest(1, []*Card{knCard(CardDesignSpade, 13), knCard(CardDesignClover, 2)})
 	if err := k.PlayCard(0, 0); err != nil {
@@ -414,7 +414,7 @@ func TestKarnoffelHasNoFollowSuitRequirement(t *testing.T) {
 
 // **3 トリック取った時点で局は決まる。**5 トリック全部を打つ必要はない。
 func TestKarnoffelHandEndsAtThreeTricks(t *testing.T) {
-	k := knPlaying(t, CardDesignHeart)
+	k := knPlaying(t)
 	// チーム 0 (席 0 と 2) が既に 2 トリック。
 	k.SetTricksWonForTest(0, 1)
 	k.SetTricksWonForTest(2, 1)
@@ -449,7 +449,7 @@ func TestKarnoffelHandEndsAtThreeTricks(t *testing.T) {
 }
 
 func TestKarnoffelTeamTricks(t *testing.T) {
-	k := knPlaying(t, CardDesignHeart)
+	k := knPlaying(t)
 	k.SetTricksWonForTest(0, 2)
 	k.SetTricksWonForTest(2, 1)
 	k.SetTricksWonForTest(1, 1)
@@ -477,7 +477,7 @@ func TestKarnoffelTeamTricks(t *testing.T) {
 }
 
 func TestKarnoffelPlayGuards(t *testing.T) {
-	k := knPlaying(t, CardDesignHeart)
+	k := knPlaying(t)
 	k.SetHandForTest(0, []*Card{knCard(CardDesignSpade, 9)})
 	if err := k.PlayCard(1, 0); err == nil {
 		t.Error("playing out of turn must be refused")
@@ -493,7 +493,7 @@ func TestKarnoffelPlayGuards(t *testing.T) {
 }
 
 func TestKarnoffelNextHandRotatesTheDealer(t *testing.T) {
-	k := knPlaying(t, CardDesignHeart)
+	k := knPlaying(t)
 	k.SetTricksWonForTest(0, 3)
 	k.FinishHandForTest()
 
@@ -512,7 +512,7 @@ func TestKarnoffelNextHandRotatesTheDealer(t *testing.T) {
 }
 
 func TestKarnoffelNextHandGuards(t *testing.T) {
-	k := knPlaying(t, CardDesignHeart)
+	k := knPlaying(t)
 	if err := k.NextHand(); err == nil {
 		t.Error("dealing again mid-hand must be refused")
 	}
@@ -520,7 +520,7 @@ func TestKarnoffelNextHandGuards(t *testing.T) {
 
 // 規定局数を取ったチームが勝つ。
 func TestKarnoffelGameEnd(t *testing.T) {
-	k := knPlaying(t, CardDesignHeart)
+	k := knPlaying(t)
 	k.SetHandsWonForTest(0, k.GetConfig().TargetHands-1)
 	k.SetTricksWonForTest(0, 3)
 	k.FinishHandForTest()
@@ -541,7 +541,7 @@ func TestKarnoffelGameEnd(t *testing.T) {
 
 // 5 トリック打ち切っても 3 に届かなければ勝者なし。
 func TestKarnoffelHandWithoutAWinner(t *testing.T) {
-	k := knPlaying(t, CardDesignHeart)
+	k := knPlaying(t)
 	k.SetTricksWonForTest(0, 2)
 	k.SetTricksWonForTest(1, 2)
 	k.FinishHandForTest()
@@ -579,7 +579,7 @@ func TestKarnoffelIsHumanTurnAndCpuPlay(t *testing.T) {
 	}
 	over.CpuPlay()
 
-	settled := knPlaying(t, CardDesignHeart)
+	settled := knPlaying(t)
 	settled.SetPhaseForTest(KarnoffelPhaseHandEnd)
 	if settled.IsHumanTurn() {
 		t.Error("the settlement is nobody's turn")
@@ -625,7 +625,7 @@ func TestKarnoffelCpuDrivesAFullHand(t *testing.T) {
 }
 
 func TestKarnoffelCpuEdges(t *testing.T) {
-	k := knPlaying(t, CardDesignHeart)
+	k := knPlaying(t)
 	k.SetHandForTest(0, []*Card{})
 	if got := k.KarnoffelCpuPlay(0); got != -1 {
 		t.Errorf("an empty hand has no play, got %d", got)
@@ -635,7 +635,7 @@ func TestKarnoffelCpuEdges(t *testing.T) {
 	}
 
 	// **悪魔はリードしてこそ強い。**第 1 トリック以外なら真っ先に出す。
-	lead := knPlaying(t, CardDesignHeart)
+	lead := knPlaying(t)
 	lead.SetHandForTest(0, []*Card{
 		knCard(CardDesignSpade, 13),
 		knCard(CardDesignHeart, KarnoffelDevil),

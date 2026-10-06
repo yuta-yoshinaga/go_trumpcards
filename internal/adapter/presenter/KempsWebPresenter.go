@@ -57,7 +57,7 @@ func (p *KempsWebPresenter) Output(g interfaces.KempsGame, lastErr error) string
 		})
 	}
 
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = buildKempsMessage(g, lastErr)
+	resObj.Message, resObj.MessageCode = buildKempsMessage(g, lastErr)
 	return marshalOrError(resObj)
 }
 
@@ -67,15 +67,15 @@ func (p *KempsWebPresenter) ActionLogOutput(g interfaces.KempsGame) string {
 }
 
 // buildKempsMessage はゲーム状態に応じたメッセージを生成する。
-func buildKempsMessage(g interfaces.KempsGame, lastErr error) (string, string, map[string]string) {
+func buildKempsMessage(g interfaces.KempsGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "error", nil
+		return lastErr.Error(), "error"
 	}
 	if g.GetGameEndFlag() {
 		if g.GetWinnerTeam() == domain.KempsTeamOf(0) {
-			return "", "kemps.result.humanWin", nil
+			return "", "kemps.result.humanWin"
 		}
-		return "", "kemps.result.cpuWin", nil
+		return "", "kemps.result.cpuWin"
 	}
-	return "", "", nil
+	return "", ""
 }

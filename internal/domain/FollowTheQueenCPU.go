@@ -221,7 +221,7 @@ func (s *FollowTheQueen) evalThirdStreetStrength(idx int) int {
 		score += 10
 	}
 
-	return clamp(score, 0, 100)
+	return clamp(score, 100)
 }
 
 // cpuDecideThirdStreet サードストリートのCPU意思決定

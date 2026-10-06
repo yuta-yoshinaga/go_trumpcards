@@ -13,10 +13,11 @@ import (
 )
 
 // gutsWebSetHand は player の手札を 2 枚に差し替える (プレゼンターテスト用ヘルパー)。
-func gutsWebSetHand(p *domain.GutsPlayer, d1, v1, d2, v2 int) {
+func gutsWebSetHand(p *domain.GutsPlayer, v1, v2 int) {
+	d1 := 0
 	p.ClearHand()
 	p.AddCard(domain.NewCard(d1, v1, false))
-	p.AddCard(domain.NewCard(d2, v2, false))
+	p.AddCard(domain.NewCard(1, v2, false))
 }
 
 // gutsWebResultGame は決定的な結果フェーズのゲームを組み立てる。
@@ -24,8 +25,8 @@ func gutsWebSetHand(p *domain.GutsPlayer, d1, v1, d2, v2 int) {
 // 他の座席はアウト宣言にして乱数配札の影響を排除する。
 func gutsWebResultGame() *domain.Guts {
 	g := domain.NewDefaultGuts()
-	gutsWebSetHand(g.GetPlayer(0), 0, 5, 1, 8) // 8-high, no pair
-	gutsWebSetHand(g.GetPlayer(1), 0, 1, 1, 1) // pair of aces
+	gutsWebSetHand(g.GetPlayer(0), 5, 8) // 8-high, no pair
+	gutsWebSetHand(g.GetPlayer(1), 1, 1) // pair of aces
 	g.GetPlayer(0).SetIn(true)
 	g.GetPlayer(1).SetIn(true)
 	for i := 2; i < g.GetPlayerCnt(); i++ {
@@ -87,8 +88,8 @@ func TestGutsWebPresenter_ResultHumanLose(t *testing.T) {
 
 func TestGutsWebPresenter_ResultHumanWin(t *testing.T) {
 	g := domain.NewDefaultGuts()
-	gutsWebSetHand(g.GetPlayer(0), 0, 1, 1, 1) // pair of aces (win)
-	gutsWebSetHand(g.GetPlayer(1), 0, 5, 1, 8) // 8-high, no pair
+	gutsWebSetHand(g.GetPlayer(0), 1, 1) // pair of aces (win)
+	gutsWebSetHand(g.GetPlayer(1), 5, 8) // 8-high, no pair
 	g.GetPlayer(0).SetIn(true)
 	g.GetPlayer(1).SetIn(true)
 	for i := 2; i < g.GetPlayerCnt(); i++ {

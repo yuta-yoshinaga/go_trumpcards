@@ -481,7 +481,7 @@ func (o *Omaha) advancePhase() {
 
 // dealRemainingCommunity 残りのコミュニティカードを全て配る
 func (o *Omaha) dealRemainingCommunity() {
-	dealUpTo(&o.communityCards, o.trumpCards, 5)
+	dealUpTo(&o.communityCards, o.trumpCards)
 }
 
 // findNextActive 指定インデックスの次のアクティブプレイヤーを探す
@@ -1092,7 +1092,7 @@ func (o *Omaha) evalPreFlopStrength(idx int) int {
 		score += 8
 	}
 
-	return clamp(score, 0, 100)
+	return clamp(score, 100)
 }
 
 // --- リバイ/アドオン ---

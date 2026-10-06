@@ -371,7 +371,7 @@ func (y *Alaska) autoFlipTableau(col int) {
 
 // checkGameClear ゲームクリア判定
 func (y *Alaska) checkGameClear() {
-	yukonFamilyCheckGameClear(y.foundation[:], CardValueMax, func() { y.phase = AlaskaPhaseGameClear })
+	yukonFamilyCheckGameClear(y.foundation[:], func() { y.phase = AlaskaPhaseGameClear })
 }
 
 // checkAlaskaStalemate 手詰まり判定

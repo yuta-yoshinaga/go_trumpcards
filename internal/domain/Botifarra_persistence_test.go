@@ -62,7 +62,7 @@ func TestBotifarra_EveryReachableStateSurvivesARoundTrip(t *testing.T) {
 
 			switch g.GetPhase() {
 			case BotifarraPhaseDeclare, BotifarraPhaseDelegated:
-				require.NoError(t, g.Declare(g.longestSuitOf(0)))
+				require.NoError(t, g.Declare(g.longestSuitOf()))
 			case BotifarraPhaseDouble:
 				require.NoError(t, g.PassDouble())
 			case BotifarraPhasePlay:

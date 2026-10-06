@@ -20,7 +20,7 @@ func newBotifarraWithHuman(t *testing.T, seed int64) *Botifarra {
 	g.SetRand(rand.New(rand.NewSource(seed)))
 	g.Reset()
 	if g.GetPhase() == BotifarraPhaseDeclare || g.GetPhase() == BotifarraPhaseDelegated {
-		require.NoError(t, g.Declare(g.longestSuitOf(0)))
+		require.NoError(t, g.Declare(g.longestSuitOf()))
 	}
 	for g.GetPhase() == BotifarraPhaseDouble && g.IsHumanTurn() {
 		require.NoError(t, g.PassDouble())
@@ -37,7 +37,7 @@ func botifarraDriveHuman(t *testing.T, g *Botifarra, rounds int, observe func(*B
 		if g.GetPhase() == BotifarraPhaseRoundEnd {
 			require.NoError(t, g.NextRound())
 			if g.GetPhase() == BotifarraPhaseDeclare || g.GetPhase() == BotifarraPhaseDelegated {
-				require.NoError(t, g.Declare(g.longestSuitOf(0)))
+				require.NoError(t, g.Declare(g.longestSuitOf()))
 			}
 			for g.GetPhase() == BotifarraPhaseDouble && g.IsHumanTurn() {
 				require.NoError(t, g.PassDouble())

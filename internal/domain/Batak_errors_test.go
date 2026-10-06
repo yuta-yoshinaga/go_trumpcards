@@ -24,17 +24,17 @@ func assertBatakDomainError(t *testing.T, err error, sentinel error, code string
 func TestBatakDomainErrorsHaveMessageCodes(t *testing.T) {
 	cb := newTestBatak()
 	cb.Reset()
-	setupBatakBid(cb, 0)
+	setupBatakBid(cb)
 	assertBatakDomainError(t, cb.PlayerBid(4), domain.ErrInvalidPlay, "batak.errBidRange", map[string]string{
 		"pass": "0", "min": "5", "max": "13",
 	})
 
 	cb.Reset()
-	setupBatakPlay(cb, 0, 0, 1)
+	setupBatakPlay(cb, 0, 0)
 	assertBatakDomainError(t, cb.PlayerPlay(-1), domain.ErrInvalidCard, "batak.errCardIndexOutOfRange", nil)
 
 	cb.Reset()
-	setupBatakPlay(cb, 0, 0, 1)
+	setupBatakPlay(cb, 0, 0)
 	cb.GetPlayer(0).Reset()
 	cb.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
 	cb.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
@@ -42,7 +42,7 @@ func TestBatakDomainErrorsHaveMessageCodes(t *testing.T) {
 	assertBatakDomainError(t, cb.PlayerPlay(0), domain.ErrInvalidPlay, "batak.errSpadesNotBroken", nil)
 
 	cb.Reset()
-	setupBatakPlay(cb, 0, 0, 1)
+	setupBatakPlay(cb, 0, 0)
 	cb.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 2, false)}})
 	cb.GetPlayer(0).Reset()
 	cb.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
@@ -50,7 +50,7 @@ func TestBatakDomainErrorsHaveMessageCodes(t *testing.T) {
 	assertBatakDomainError(t, cb.PlayerPlay(1), domain.ErrInvalidPlay, "shared.errFollowLeadSuit", nil)
 
 	cb.Reset()
-	setupBatakPlay(cb, 0, 0, 1)
+	setupBatakPlay(cb, 0, 0)
 	cb.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 2, false)}})
 	cb.GetPlayer(0).Reset()
 	cb.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))

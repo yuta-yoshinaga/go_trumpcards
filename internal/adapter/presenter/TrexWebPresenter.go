@@ -17,7 +17,7 @@ var trexSuits = []int{domain.CardDesignSpade, domain.CardDesignClover, domain.Ca
 // Output ゲーム状態をJSON出力
 func (p *TrexWebPresenter) Output(c interfaces.TrexGame, lastErr error) string {
 	resObj := p.buildBase(c)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(c, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(c, lastErr)
 	return marshalOrError(resObj)
 }
 
@@ -125,17 +125,17 @@ func (p *TrexWebPresenter) buildPlayersOutput(c interfaces.TrexGame) []*controll
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *TrexWebPresenter) buildMessage(c interfaces.TrexGame, lastErr error) (string, string, map[string]string) {
+func (p *TrexWebPresenter) buildMessage(c interfaces.TrexGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if !c.GetGameEndFlag() {
-		return "", "", nil
+		return "", ""
 	}
 	if c.GetWinnerIdx() == 0 {
-		return "you win", "trex.win", nil
+		return "you win", "trex.win"
 	}
-	return "you lose", "trex.lose", nil
+	return "you lose", "trex.lose"
 }
 
 // HintOutput ヒント情報を出力する

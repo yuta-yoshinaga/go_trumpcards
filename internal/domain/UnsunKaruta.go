@@ -393,7 +393,7 @@ func (g *UnsunKaruta) CpuPlay() {
 	cardIdx := g.cpuSelectPlayCard(idx)
 	card := g.players[idx].GetCard(cardIdx)
 	if len(g.currentTrick) == 0 {
-		g.setDeclaration(g.cpuDeclares(idx, card), card)
+		g.setDeclaration(g.cpuDeclares(card), card)
 	}
 	played := g.players[idx].RemoveCard(cardIdx)
 	if played == nil {
@@ -669,7 +669,7 @@ func (g *UnsunKaruta) cpuPlaySmart(playerIdx int, valid []int) int {
 //
 // **強い台札でだけ宣言する。** フォロー義務は「その台札で押し切れる」ときの
 // 武器で、弱い札で宣言すると相手に確実に取られる。
-func (g *UnsunKaruta) cpuDeclares(playerIdx int, lead *Card) bool {
+func (g *UnsunKaruta) cpuDeclares(lead *Card) bool {
 	if g.config.CpuDifficulty == UnsunKarutaCpuDifficultyEasy || lead == nil {
 		return false
 	}
