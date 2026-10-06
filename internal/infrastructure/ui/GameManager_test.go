@@ -319,6 +319,18 @@ func TestGameManager_SwitchAliasTypoSuggestion(t *testing.T) {
 	}
 }
 
+// TestGameManager_SwitchSuggestionIsDeterministic pins the tie-break between
+// aliases at the same edit distance (issue #10910). "7tud" is distance 1 from
+// both "7stud" (sevencardstud) and "stud" (caribbeanstud); ranging over the
+// GameAliases map made the winner change from run to run.
+func TestGameManager_SwitchSuggestionIsDeterministic(t *testing.T) {
+	for range 50 {
+		mgr := NewGameManager("blackjack")
+		res := mgr.Exec("switch 7tud")
+		assert.Contains(t, res, `Did you mean "7stud"`)
+	}
+}
+
 func TestGameAliases_AllPointToValidGames(t *testing.T) {
 	gameSet := make(map[string]bool, len(GameNames()))
 	for _, name := range GameNames() {
