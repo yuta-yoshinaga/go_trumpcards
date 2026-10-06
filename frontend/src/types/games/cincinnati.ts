@@ -4,19 +4,10 @@
 import type { BaseGameResponse, Card } from '../common';
 
 /** Phases, matching the Go domain. */
-export const CINCINNATI_PHASE = { deal: 0, betting: 1, showdown: 2, gameEnd: 3 } as const;
 
 /** Betting actions, matching the Go domain (shared betting constants). */
-export const CINCINNATI_ACTION = {
-  fold: 0,
-  check: 1,
-  call: 2,
-  bet: 3,
-  raise: 4,
-} as const;
 
 /** Hole cards per seat. **Five, not Hold'em's two.** */
-export const CINCINNATI_HOLE_CARDS = 5;
 
 /** A suggestion for the current decision. */
 export interface CincinnatiHint {

@@ -4,7 +4,6 @@
 import type { BaseGameResponse, Card } from '../common';
 
 /** Phases, matching the Go domain. */
-export const FREE_BET_PHASE = { bet: 0, play: 1, result: 2 } as const;
 
 /** Per-hand outcomes, matching the Go domain. */
 export const FREE_BET_RESULT = {

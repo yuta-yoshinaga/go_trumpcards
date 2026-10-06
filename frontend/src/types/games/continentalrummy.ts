@@ -4,13 +4,10 @@
 import type { BaseGameResponse, Card } from '../common';
 
 /** Seats at the table: one human and three CPUs. */
-export const CONTINENTAL_RUMMY_SEATS = 4;
 
 /** The seat the human occupies. */
-export const CONTINENTAL_RUMMY_HUMAN_SEAT = 0;
 
 /** Cards dealt to each seat, three at a time. */
-export const CONTINENTAL_RUMMY_HAND_SIZE = 15;
 
 /**
  * Phases, matching the Go domain.

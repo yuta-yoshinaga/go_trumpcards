@@ -10,7 +10,6 @@ export const BOTIFARRA_NO_TRUMP = -1;
 export const BOTIFARRA_TOTAL_POINTS = 72;
 
 /** Half of the round's points. Only the excess over this scores. */
-export const BOTIFARRA_HALF_POINTS = 36;
 
 /** One seat at a Botifarra table. */
 export interface BotifarraPlayer {

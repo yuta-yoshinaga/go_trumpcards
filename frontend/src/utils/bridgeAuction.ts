@@ -1,4 +1,5 @@
 import type { BridgeBidEntry } from '../types/card';
+import { BRIDGE_BID_NORMAL } from './bridgeBidRules';
 
 /** Number of seats (players) in a Bridge auction. */
 export const BRIDGE_SEAT_COUNT = 4;
@@ -38,13 +39,13 @@ export function buildBridgeAuctionGrid(bidHistory: BridgeBidEntry[]): BridgeAuct
 }
 
 /**
- * Returns the final contract bid (the last level bid, `bidType === 1`) in the
+ * Returns the final contract bid (the last normal bid) in the
  * auction, or `null` when the auction contains no contract bid. The returned
  * reference can be compared by identity to highlight the winning cell.
  */
 export function finalContractBid(bidHistory: BridgeBidEntry[]): BridgeBidEntry | null {
   for (let i = bidHistory.length - 1; i >= 0; i--) {
-    if (bidHistory[i].bidType === 1) return bidHistory[i];
+    if (bidHistory[i].bidType === BRIDGE_BID_NORMAL) return bidHistory[i];
   }
   return null;
 }

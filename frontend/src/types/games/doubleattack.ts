@@ -4,7 +4,6 @@
 import type { BaseGameResponse, Card } from '../common';
 
 /** Phases, matching the Go domain. */
-export const DOUBLE_ATTACK_PHASE = { bet: 0, attack: 1, play: 2, result: 3 } as const;
 
 /** Per-hand outcomes, matching the Go domain. */
 export const DOUBLE_ATTACK_RESULT = {
@@ -16,7 +15,6 @@ export const DOUBLE_ATTACK_RESULT = {
 } as const;
 
 /** Maximum hands after splitting. */
-export const DOUBLE_ATTACK_MAX_HANDS = 4;
 
 /** A suggestion for the current decision. */
 export interface DoubleAttackHint {

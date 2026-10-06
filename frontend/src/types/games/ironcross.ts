@@ -4,30 +4,12 @@
 import type { BaseGameResponse, Card } from '../common';
 
 /** Phases, matching the Go domain. */
-export const IRONCROSS_PHASE = { betting: 0, chooseLine: 1, showdown: 2, gameEnd: 3 } as const;
 
 /** Betting actions, matching the Go domain (shared betting constants). */
-export const IRONCROSS_ACTION = {
-  fold: 0,
-  check: 1,
-  call: 2,
-  bet: 3,
-  raise: 4,
-} as const;
-
-/**
- * The two arms of the cross, matching the Go domain.
- *
- * **`none` is a real value, not "unset".** A seat that has not chosen yet is
- * `none`; sending it as a choice is rejected by the server.
- */
-export const IRONCROSS_LINE = { none: 0, vertical: 1, horizontal: 2 } as const;
 
 /** Hole cards per seat. */
-export const IRONCROSS_HOLE_CARDS = 4;
 
 /** Cards in the cross. */
-export const IRONCROSS_CROSS_CARDS = 5;
 
 /** A suggestion for the current decision. */
 export interface IronCrossHint {

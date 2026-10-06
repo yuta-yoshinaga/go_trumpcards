@@ -19,7 +19,6 @@ export const COLOUR_WHIST_BIDDABLE = [
 ] as const;
 
 /** Troel's contract value. Shown, never bid. */
-export const COLOUR_WHIST_TROEL = 4;
 
 /** One seat at a Colour Whist table. */
 export interface ColourWhistPlayer {

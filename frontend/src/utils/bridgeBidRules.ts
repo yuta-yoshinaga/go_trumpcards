@@ -7,6 +7,7 @@
  */
 
 /** Bid types, matching the Go domain `BridgeBidType` enum. */
+/** Pass bid. */
 export const BRIDGE_BID_PASS = 0;
 /** A normal contract bid (level + denomination). */
 export const BRIDGE_BID_NORMAL = 1;

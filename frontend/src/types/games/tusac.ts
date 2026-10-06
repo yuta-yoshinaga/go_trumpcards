@@ -4,29 +4,10 @@
 import type { BaseGameResponse, Card } from '../common';
 
 /** Phases, matching the Go domain. */
-export const TUSAC_PHASE = { draw: 0, discard: 1, roundEnd: 2, gameEnd: 3 } as const;
 
 /** Combination kinds, matching the Go domain. */
-export const TUSAC_MELD = { none: 0, sameColorSet: 1, chariotTrio: 2, soldierSet: 3 } as const;
-
-/**
- * Colours, as `design` values on the shared `Card`.
- *
- * **The deck is not a 52-card pack.** Suits are colours and ranks are
- * chess-piece names, so the usual suit symbols do not apply.
- */
-export const TUSAC_COLOR = { yellow: 1, red: 2, green: 3, white: 4 } as const;
 
 /** Piece types, as `value` on the shared `Card`. */
-export const TUSAC_PIECE = {
-  general: 1,
-  advisor: 2,
-  elephant: 3,
-  chariot: 4,
-  horse: 5,
-  cannon: 6,
-  soldier: 7,
-} as const;
 
 /** A suggestion for the current decision. */
 export interface TuSacHint {
