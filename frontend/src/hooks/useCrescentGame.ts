@@ -1,70 +1,48 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { type CrescentMoveZone, crescentApi } from '../api/gameApi';
 import type { CrescentHint } from '../types/card';
-import { useAutoCompleteState } from './useAutoCompleteState';
-import { useGameApi } from './useGameApi';
-import { useHintRequest } from './useHintRequest';
+
+import { useSolitaireGameBase } from './useSolitaireGameBase';
 
 /** Hook that manages Crescent Solitaire state, source selection, hints, and moves. */
 export function useCrescentGame() {
-  const { state, loading, error, exec: rawExec, retry } = useGameApi(crescentApi.exec);
   const [selectedSource, setSelectedSource] = useState<CrescentMoveZone | null>(null);
-  const [hint, setHint] = useState<CrescentHint | null>(null);
-  const [hintError, setHintError] = useState<string | null>(null);
-  const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
 
-  const exec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
-
-  useEffect(() => {
-    exec('reset');
-  }, [exec]);
-
-  const handleReset = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    exec('reset');
-  }, [exec]);
+  const onClearSelection = useCallback(() => setSelectedSource(null), []);
+  const {
+    state,
+    loading,
+    error,
+    retry,
+    apiCall: exec,
+    hint,
+    hintError,
+    isAutoCompleting,
+    setHint,
+    handleReset,
+    handleGiveUp,
+    handleHint,
+    handleAutoComplete,
+    handleUndo,
+  } = useSolitaireGameBase<
+    Awaited<ReturnType<typeof crescentApi.exec>>,
+    Parameters<typeof crescentApi.exec>,
+    CrescentHint
+  >(crescentApi.exec, { onClearSelection, hintApi: () => crescentApi.exec('hint'), selectHint: (res) => res.hint });
 
   const handleRedeal = useCallback(() => {
     setSelectedSource(null);
     setHint(null);
     exec('redeal');
-  }, [exec]);
+  }, [exec, setHint]);
 
-  const handleGiveUp = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    exec('giveup');
-  }, [exec]);
-
-  const handleHint = useHintRequest({
-    fetchHint: () => crescentApi.exec('hint'),
-    selectHint: (res) => res.hint,
-    setHint,
-    setHintError,
-  });
-
-  const handleAutoComplete = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    startAutoComplete();
-    exec('autocomplete');
-  }, [exec, startAutoComplete]);
-
-  const handleUndo = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    exec('undo');
-  }, [exec]);
-
-  /** Undo N moves at once to escape a stalemate. */
   const handleUndoEscape = useCallback(
     (n: number) => {
       setSelectedSource(null);
       setHint(null);
       exec('undo_n', undefined, undefined, n);
     },
-    [exec],
+    [exec, setHint],
   );
 
   const handleSelectSource = useCallback((zone: CrescentMoveZone) => {
@@ -83,7 +61,7 @@ export function useCrescentGame() {
       exec('move', selectedSource, zone);
       setSelectedSource(null);
     },
-    [selectedSource, exec],
+    [selectedSource, exec, setHint],
   );
 
   return {

@@ -1,61 +1,44 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { grandfathersClockApi } from '../api/gameApi';
 import type { GrandfathersClockHint, GrandfathersClockMoveZone } from '../types/card';
-import { useAutoCompleteState } from './useAutoCompleteState';
-import { useGameApi } from './useGameApi';
-import { useHintRequest } from './useHintRequest';
+
+import { useSolitaireGameBase } from './useSolitaireGameBase';
 
 /** Hook that manages Grandfather's Clock game state, source selection, hints, and moves. */
 export function useGrandfathersClockGame() {
-  const { state, loading, error, exec: rawExec, retry } = useGameApi(grandfathersClockApi.exec);
   const [selectedSource, setSelectedSource] = useState<GrandfathersClockMoveZone | null>(null);
-  const [hint, setHint] = useState<GrandfathersClockHint | null>(null);
-  const [hintError, setHintError] = useState<string | null>(null);
-  const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
 
-  const runApi = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
-
-  useEffect(() => {
-    runApi('reset');
-  }, [runApi]);
-
-  const handleReset = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    runApi('reset');
-  }, [runApi]);
-
-  const handleGiveUp = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    runApi('giveup');
-  }, [runApi]);
-
-  const handleHint = useHintRequest({
-    fetchHint: () => grandfathersClockApi.exec('hint'),
-    selectHint: (res) => res.hint,
+  const onClearSelection = useCallback(() => setSelectedSource(null), []);
+  const {
+    state,
+    loading,
+    error,
+    retry,
+    apiCall: runApi,
+    hint,
+    hintError,
+    isAutoCompleting,
     setHint,
-    setHintError,
+    handleReset,
+    handleGiveUp,
+    handleHint,
+    handleAutoComplete,
+    handleUndo,
+  } = useSolitaireGameBase<
+    Awaited<ReturnType<typeof grandfathersClockApi.exec>>,
+    Parameters<typeof grandfathersClockApi.exec>,
+    GrandfathersClockHint
+  >(grandfathersClockApi.exec, {
+    onClearSelection,
+    hintApi: () => grandfathersClockApi.exec('hint'),
+    selectHint: (res) => res.hint,
   });
-
-  const handleAutoComplete = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    startAutoComplete();
-    runApi('autocomplete');
-  }, [runApi, startAutoComplete]);
-
-  const handleUndo = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    runApi('undo');
-  }, [runApi]);
 
   const handleRedo = useCallback(() => {
     setSelectedSource(null);
     setHint(null);
     runApi('redo');
-  }, [runApi]);
+  }, [runApi, setHint]);
 
   /** Undo N moves at once to escape a stalemate. */
   const handleUndoEscape = useCallback(
@@ -64,7 +47,7 @@ export function useGrandfathersClockGame() {
       setHint(null);
       runApi('undo_n', undefined, undefined, n);
     },
-    [runApi],
+    [runApi, setHint],
   );
 
   const handleSelectSource = useCallback((zone: GrandfathersClockMoveZone) => {
@@ -83,7 +66,7 @@ export function useGrandfathersClockGame() {
       runApi('move', selectedSource, zone);
       setSelectedSource(null);
     },
-    [selectedSource, runApi],
+    [selectedSource, runApi, setHint],
   );
 
   return {
