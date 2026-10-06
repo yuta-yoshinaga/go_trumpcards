@@ -22,31 +22,21 @@ func NewBraidCuiController(bi usecase.BraidInteractorIF) *BraidCuiController {
 
 // Exec コマンド実行
 func (c *BraidCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(_ []string) string {
-			return c.bi.Reset()
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset:        c.bi.Reset,
+		move:         c.handleMove,
+		giveUp:       c.bi.GiveUp,
+		autoComplete: c.bi.AutoComplete,
+		undo:         c.bi.Undo,
+		hint:         c.bi.Hint,
+		actionLog:    c.bi.ActionLog,
+		extraCommands: map[string]func([]string) string{
+			"d":         func([]string) string { return c.bi.Draw() },
+			"draw":      func([]string) string { return c.bi.Draw() },
+			"dir":       c.handleDirection,
+			"direction": c.handleDirection,
 		},
-		[]string{"d", "draw", "dir", "direction", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "d", "draw":
-				return c.bi.Draw(), true
-			case "dir", "direction":
-				return c.handleDirection(args), true
-			case "m", "move":
-				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.bi.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.bi.AutoComplete(), true
-			case "u", "undo":
-				return c.bi.Undo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.bi.Hint, c.bi.ActionLog)
-			}
-		},
-	)
+	})
 }
 
 // handleDirection 積む向きを決める。`dir a` / `dir d`。

@@ -23,29 +23,19 @@ func NewAmericanToadCuiController(ai usecase.AmericanToadInteractorIF) *American
 
 // Exec コマンド実行
 func (c *AmericanToadCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(_ []string) string {
-			return c.ai.Reset()
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset:        c.ai.Reset,
+		move:         c.handleMove,
+		giveUp:       c.ai.GiveUp,
+		autoComplete: c.ai.AutoComplete,
+		undo:         c.ai.Undo,
+		hint:         c.ai.Hint,
+		actionLog:    c.ai.ActionLog,
+		extraCommands: map[string]func([]string) string{
+			"d":    func([]string) string { return c.ai.Draw() },
+			"draw": func([]string) string { return c.ai.Draw() },
 		},
-		[]string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "d", "draw":
-				return c.ai.Draw(), true
-			case "m", "move":
-				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.ai.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.ai.AutoComplete(), true
-			case "u", "undo":
-				return c.ai.Undo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.ai.Hint, c.ai.ActionLog)
-			}
-		},
-	)
+	})
 }
 
 // handleMove 移動コマンドを処理。supported syntax:
