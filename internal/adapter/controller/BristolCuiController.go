@@ -3,8 +3,6 @@
 package controller
 
 import (
-	"strconv"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -66,18 +64,18 @@ func (c *BristolCuiController) handleTargets(args []string) string {
 		if len(args) < 2 {
 			return cuiutil.PromptRequest(i18n.T("bristol.promptFromColumn"), "t t {0}")
 		}
-		col, err := strconv.Atoi(args[1])
-		if err != nil {
-			return invalidArg("invalidColumn", "val", args[1])
+		col, msg, ok := cuiutil.ParseIntArgKeys(args[1:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+		if !ok {
+			return msg
 		}
 		return c.bi.Targets("tableau", col)
 	case "n":
 		if len(args) < 2 {
 			return cuiutil.PromptRequest(i18n.T("bristol.promptFan"), "t n {0}")
 		}
-		col, err := strconv.Atoi(args[1])
-		if err != nil {
-			return invalidArg("invalidColumn", "val", args[1])
+		col, msg, ok := cuiutil.ParseIntArgKeys(args[1:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+		if !ok {
+			return msg
 		}
 		return c.bi.Targets("fan", col)
 	default:
@@ -113,9 +111,9 @@ func (c *BristolCuiController) handleMoveFromTableau(args []string) string {
 	if len(args) < 1 {
 		return cuiutil.PromptRequest(i18n.T("bristol.promptFromColumn"), "m t {0}")
 	}
-	fromCol, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[0])
+	fromCol, msg, ok := cuiutil.ParseIntArgKeys(args[0:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("bristol.promptDestination"), "m t "+args[0]+" {0}")
@@ -125,9 +123,9 @@ func (c *BristolCuiController) handleMoveFromTableau(args []string) string {
 		if len(args) < 3 {
 			return cuiutil.PromptRequest(i18n.T("bristol.promptToColumn"), "m t "+args[0]+" t {0}")
 		}
-		toCol, err := strconv.Atoi(args[2])
-		if err != nil {
-			return invalidArg("invalidColumn", "val", args[2])
+		toCol, msg, ok := cuiutil.ParseIntArgKeys(args[2:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+		if !ok {
+			return msg
 		}
 		return c.bi.MoveTableauToTableau(fromCol, toCol)
 	case "f":
@@ -142,9 +140,9 @@ func (c *BristolCuiController) handleMoveFromFan(args []string) string {
 	if len(args) < 1 {
 		return cuiutil.PromptRequest(i18n.T("bristol.promptFan"), "m n {0}")
 	}
-	fanIdx, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[0])
+	fanIdx, msg, ok := cuiutil.ParseIntArgKeys(args[0:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("bristol.promptDestination"), "m n "+args[0]+" {0}")
@@ -154,9 +152,9 @@ func (c *BristolCuiController) handleMoveFromFan(args []string) string {
 		if len(args) < 3 {
 			return cuiutil.PromptRequest(i18n.T("bristol.promptToColumn"), "m n "+args[0]+" t {0}")
 		}
-		toCol, err := strconv.Atoi(args[2])
-		if err != nil {
-			return invalidArg("invalidColumn", "val", args[2])
+		toCol, msg, ok := cuiutil.ParseIntArgKeys(args[2:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+		if !ok {
+			return msg
 		}
 		return c.bi.MoveFanToTableau(fanIdx, toCol)
 	case "f":

@@ -70,9 +70,9 @@ func (c *PiquetCuiController) handlePlay(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("piquet.promptCardIndex"), "p {0}")
 	}
-	idx, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[0])
+	idx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.pi.Play(idx)
 }

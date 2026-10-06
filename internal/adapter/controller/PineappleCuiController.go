@@ -90,18 +90,18 @@ func (c *PineappleCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("pineapple.discardIdxRequired"), true
 				}
-				idx, err := strconv.Atoi(args[0])
-				if err != nil {
-					return invalidArg("pineapple.invalidDiscardIdx", "val", args[0]), true
+				idx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "pineapple.invalidDiscardIdx", cuiutil.NoMin, cuiutil.NoMax)
+				if !parseOK {
+					return parseMsg, true
 				}
 				return c.pi.Discard(idx), true
 			case "bl", "bettinglimit":
 				if len(args) < 1 {
 					return i18n.T("holdem.bettingLimitRequired"), true
 				}
-				bl, err := strconv.Atoi(args[0])
-				if err != nil {
-					return invalidArg("holdem.invalidBettingLimit", "val", args[0]), true
+				bl, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "holdem.invalidBettingLimit", cuiutil.NoMin, cuiutil.NoMax)
+				if !parseOK {
+					return parseMsg, true
 				}
 				cfg := c.pi.GetConfig()
 				cfg.BettingLimit = domain.BettingLimitType(bl)
@@ -121,9 +121,9 @@ func (c *PineappleCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("holdem.smallBlindRequired"), true
 				}
-				v, err := strconv.Atoi(args[0])
-				if err != nil {
-					return invalidArg("holdem.invalidSmallBlind", "val", args[0]), true
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "holdem.invalidSmallBlind", cuiutil.NoMin, cuiutil.NoMax)
+				if !parseOK {
+					return parseMsg, true
 				}
 				cfg := c.pi.GetConfig()
 				cfg.SmallBlind = v
@@ -132,9 +132,9 @@ func (c *PineappleCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("holdem.bigBlindRequired"), true
 				}
-				v, err := strconv.Atoi(args[0])
-				if err != nil {
-					return invalidArg("holdem.invalidBigBlind", "val", args[0]), true
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "holdem.invalidBigBlind", cuiutil.NoMin, cuiutil.NoMax)
+				if !parseOK {
+					return parseMsg, true
 				}
 				cfg := c.pi.GetConfig()
 				cfg.BigBlind = v
@@ -143,9 +143,9 @@ func (c *PineappleCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("holdem.levelHandRequired"), true
 				}
-				v, err := strconv.Atoi(args[0])
-				if err != nil {
-					return invalidArg("holdem.invalidLevelHand", "val", args[0]), true
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "holdem.invalidLevelHand", cuiutil.NoMin, cuiutil.NoMax)
+				if !parseOK {
+					return parseMsg, true
 				}
 				cfg := c.pi.GetConfig()
 				cfg.BlindLevelHands = v
@@ -154,9 +154,9 @@ func (c *PineappleCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("holdem.tableSizeRequired"), true
 				}
-				v, err := strconv.Atoi(args[0])
-				if err != nil {
-					return invalidArg("holdem.invalidTableSize", "val", args[0]), true
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "holdem.invalidTableSize", cuiutil.NoMin, cuiutil.NoMax)
+				if !parseOK {
+					return parseMsg, true
 				}
 				cfg := c.pi.GetConfig()
 				cfg.TableSize = v

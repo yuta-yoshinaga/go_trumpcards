@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"strconv"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -69,9 +67,9 @@ func (c *NertzCuiController) handleDraw(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptPlayerIdx"), "d {0}")
 	}
-	p, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[0])
+	p, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.ni.Draw(p)
 }
@@ -80,16 +78,16 @@ func (c *NertzCuiController) handleMoveNF(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptPlayerIdx"), "mnf {0} {1}")
 	}
-	p, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[0])
+	p, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptFoundationIdx"), "mnf "+args[0]+" {0}")
 	}
-	f, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[1])
+	f, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.ni.MoveNertzToFoundation(p, f)
 }
@@ -98,16 +96,16 @@ func (c *NertzCuiController) handleMoveNT(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptPlayerIdx"), "mnt {0} {1}")
 	}
-	p, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[0])
+	p, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptTableauCol"), "mnt "+args[0]+" {0}")
 	}
-	col, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[1])
+	col, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.ni.MoveNertzToTableau(p, col)
 }
@@ -116,16 +114,16 @@ func (c *NertzCuiController) handleMoveWF(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptPlayerIdx"), "mwf {0} {1}")
 	}
-	p, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[0])
+	p, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptFoundationIdx"), "mwf "+args[0]+" {0}")
 	}
-	f, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[1])
+	f, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.ni.MoveWasteToFoundation(p, f)
 }
@@ -134,16 +132,16 @@ func (c *NertzCuiController) handleMoveWT(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptPlayerIdx"), "mwt {0} {1}")
 	}
-	p, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[0])
+	p, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptTableauCol"), "mwt "+args[0]+" {0}")
 	}
-	col, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[1])
+	col, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.ni.MoveWasteToTableau(p, col)
 }
@@ -152,23 +150,23 @@ func (c *NertzCuiController) handleMoveTF(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptPlayerIdx"), "mtf {0} {1} {2}")
 	}
-	p, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[0])
+	p, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptTableauCol"), "mtf "+args[0]+" {0} {1}")
 	}
-	col, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[1])
+	col, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) < 3 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptFoundationIdx"), "mtf "+args[0]+" "+args[1]+" {0}")
 	}
-	f, err := strconv.Atoi(args[2])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[2])
+	f, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[2:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.ni.MoveTableauToFoundation(p, col, f)
 }
@@ -177,30 +175,30 @@ func (c *NertzCuiController) handleMoveTT(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptPlayerIdx"), "mtt {0} {1} {2} {3}")
 	}
-	p, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[0])
+	p, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptTableauCol"), "mtt "+args[0]+" {0} {1} {2}")
 	}
-	fromCol, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[1])
+	fromCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) < 3 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptTableauFromIdx"), "mtt "+args[0]+" "+args[1]+" {0} {1}")
 	}
-	fromIdx, err := strconv.Atoi(args[2])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[2])
+	fromIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[2:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) < 4 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptTableauToCol"), "mtt "+args[0]+" "+args[1]+" "+args[2]+" {0}")
 	}
-	toCol, err := strconv.Atoi(args[3])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[3])
+	toCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[3:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.ni.MoveTableauToTableau(p, fromCol, fromIdx, toCol)
 }

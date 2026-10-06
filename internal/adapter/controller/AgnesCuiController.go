@@ -4,7 +4,6 @@ package controller
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -63,9 +62,9 @@ func (c *AgnesCuiController) handleMove(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "m {0}")
 	}
-	fromCol, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[0])
+	fromCol, msg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return msg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("agnes.promptToZone"), fmt.Sprintf("m %s {0}", args[0]))
@@ -73,9 +72,9 @@ func (c *AgnesCuiController) handleMove(args []string) string {
 	if args[1] == "f" {
 		return c.ci.MoveTableauToFoundation(fromCol)
 	}
-	toCol, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[1])
+	toCol, msg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return msg
 	}
 	return c.ci.MoveTableauToTableau(fromCol, -1, toCol)
 }

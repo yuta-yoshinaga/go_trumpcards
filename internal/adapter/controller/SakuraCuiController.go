@@ -72,9 +72,9 @@ func (c *SakuraCuiController) handlePlay(args []string) string {
 	if len(args) == 0 {
 		return invalidArg("cardIndexRequiredField")
 	}
-	handIdx, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidCardIndex", "val", args[0])
+	handIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	fieldIdx := -1
 	if len(args) >= 2 {

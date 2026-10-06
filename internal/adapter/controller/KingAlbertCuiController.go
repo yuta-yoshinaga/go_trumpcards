@@ -59,9 +59,9 @@ func (c *KingAlbertCuiController) handleMove(args []string) string {
 		if args[1] == "f" {
 			return c.bi.MoveReserveToFoundation(reserveIdx)
 		}
-		toCol, err := strconv.Atoi(args[1])
-		if err != nil {
-			return invalidArg("invalidColumn", "val", args[1])
+		toCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+		if !parseOK {
+			return parseMsg
 		}
 		return c.bi.MoveReserveToTableau(reserveIdx, toCol)
 	}
@@ -76,9 +76,9 @@ func (c *KingAlbertCuiController) handleMove(args []string) string {
 	if args[1] == "f" {
 		return c.bi.MoveTableauToFoundation(fromCol)
 	}
-	toCol, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[1])
+	toCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.bi.MoveTableauToTableau(fromCol, -1, toCol)
 }

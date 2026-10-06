@@ -90,9 +90,9 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("holdem.bettingLimitRequired"), true
 				}
-				bl, err := strconv.Atoi(args[0])
-				if err != nil {
-					return invalidArg("holdem.invalidBettingLimit", "val", args[0]), true
+				bl, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "holdem.invalidBettingLimit", cuiutil.NoMin, cuiutil.NoMax)
+				if !parseOK {
+					return parseMsg, true
 				}
 				cfg := c.si.GetConfig()
 				cfg.BettingLimit = domain.BettingLimitType(bl)
@@ -112,9 +112,9 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("sevencardstud.anteRequired"), true
 				}
-				v, err := strconv.Atoi(args[0])
-				if err != nil {
-					return invalidArg("sevencardstud.invalidAnte", "val", args[0]), true
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "sevencardstud.invalidAnte", cuiutil.NoMin, cuiutil.NoMax)
+				if !parseOK {
+					return parseMsg, true
 				}
 				cfg := c.si.GetConfig()
 				cfg.Ante = v
@@ -123,9 +123,9 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("sevencardstud.bringInRequired"), true
 				}
-				v, err := strconv.Atoi(args[0])
-				if err != nil {
-					return invalidArg("sevencardstud.invalidBringIn", "val", args[0]), true
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "sevencardstud.invalidBringIn", cuiutil.NoMin, cuiutil.NoMax)
+				if !parseOK {
+					return parseMsg, true
 				}
 				cfg := c.si.GetConfig()
 				cfg.BringIn = v
@@ -134,9 +134,9 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("sevencardstud.smallBetRequired"), true
 				}
-				v, err := strconv.Atoi(args[0])
-				if err != nil {
-					return invalidArg("sevencardstud.invalidSmallBet", "val", args[0]), true
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "sevencardstud.invalidSmallBet", cuiutil.NoMin, cuiutil.NoMax)
+				if !parseOK {
+					return parseMsg, true
 				}
 				cfg := c.si.GetConfig()
 				cfg.SmallBet = v
@@ -145,9 +145,9 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("sevencardstud.bigBetRequired"), true
 				}
-				v, err := strconv.Atoi(args[0])
-				if err != nil {
-					return invalidArg("sevencardstud.invalidBigBet", "val", args[0]), true
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "sevencardstud.invalidBigBet", cuiutil.NoMin, cuiutil.NoMax)
+				if !parseOK {
+					return parseMsg, true
 				}
 				cfg := c.si.GetConfig()
 				cfg.BigBet = v
@@ -156,9 +156,9 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("holdem.levelHandRequired"), true
 				}
-				v, err := strconv.Atoi(args[0])
-				if err != nil {
-					return invalidArg("holdem.invalidLevelHand", "val", args[0]), true
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "holdem.invalidLevelHand", cuiutil.NoMin, cuiutil.NoMax)
+				if !parseOK {
+					return parseMsg, true
 				}
 				cfg := c.si.GetConfig()
 				cfg.AnteLevelHands = v
@@ -167,9 +167,9 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("holdem.tableSizeRequired"), true
 				}
-				v, err := strconv.Atoi(args[0])
-				if err != nil {
-					return invalidArg("holdem.invalidTableSize", "val", args[0]), true
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "holdem.invalidTableSize", cuiutil.NoMin, cuiutil.NoMax)
+				if !parseOK {
+					return parseMsg, true
 				}
 				cfg := c.si.GetConfig()
 				cfg.TableSize = v

@@ -3,8 +3,6 @@
 package controller
 
 import (
-	"strconv"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -75,9 +73,9 @@ func (c *ColoradoCuiController) handleMoveFromTableau(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("colorado.promptFromPile"), "m t {0}")
 	}
-	fromPile, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("colorado.invalidPile", "val", args[0])
+	fromPile, msg, ok := cuiutil.ParseIntArgKeys(args[0:], "", "colorado.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	if len(args) >= 2 && args[1] != "f" {
 		return invalidArg("colorado.invalidToZone", "val", args[1])
@@ -96,9 +94,9 @@ func (c *ColoradoCuiController) handleMoveFromWaste(args []string) string {
 		if len(args) < 2 {
 			return cuiutil.PromptRequest(i18n.T("colorado.promptToPile"), "m w t {0}")
 		}
-		pile, err := strconv.Atoi(args[1])
-		if err != nil {
-			return invalidArg("colorado.invalidPile", "val", args[1])
+		pile, msg, ok := cuiutil.ParseIntArgKeys(args[1:], "", "colorado.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+		if !ok {
+			return msg
 		}
 		return c.ci.MoveWasteToTableau(pile)
 	default:
@@ -117,9 +115,9 @@ func (c *ColoradoCuiController) handleMoveFromStock(args []string) string {
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("colorado.promptToPile"), "m s t {0}")
 	}
-	pile, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("colorado.invalidPile", "val", args[1])
+	pile, msg, ok := cuiutil.ParseIntArgKeys(args[1:], "", "colorado.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	return c.ci.MoveStockToTableau(pile)
 }

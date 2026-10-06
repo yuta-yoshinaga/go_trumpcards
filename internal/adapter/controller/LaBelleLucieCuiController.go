@@ -3,8 +3,6 @@
 package controller
 
 import (
-	"strconv"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -64,16 +62,16 @@ func (c *LaBelleLucieCuiController) handleMove(args []string) string {
 	if len(args) < 2 {
 		return invalidArg("usageMFromToF")
 	}
-	from, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidSourceFanDot", "val", args[0])
+	from, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidSourceFanDot", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if args[1] == "f" || args[1] == "F" {
 		return c.li.MoveFanToFoundation(from)
 	}
-	to, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidDestinationFanOrF", "val", args[1])
+	to, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidDestinationFanOrF", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.li.MoveFanToFan(from, to)
 }

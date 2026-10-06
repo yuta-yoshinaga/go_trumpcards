@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"strconv"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -58,16 +56,16 @@ func (c *SpiteAndMaliceCuiController) handlePlayFromHand(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("spiteandmalice.promptHandIdx"), "ph {0} {1}")
 	}
-	handIdx, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[0])
+	handIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("spiteandmalice.promptFoundationIdx"), "ph "+args[0]+" {0}")
 	}
-	fIdx, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[1])
+	fIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.si.PlayFromHand(handIdx, fIdx)
 }
@@ -76,9 +74,9 @@ func (c *SpiteAndMaliceCuiController) handlePlayFromGoal(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("spiteandmalice.promptFoundationIdx"), "pg {0}")
 	}
-	fIdx, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[0])
+	fIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.si.PlayFromGoal(fIdx)
 }
@@ -87,16 +85,16 @@ func (c *SpiteAndMaliceCuiController) handlePlayFromSide(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("spiteandmalice.promptSideIdx"), "ps {0} {1}")
 	}
-	sideIdx, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[0])
+	sideIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("spiteandmalice.promptFoundationIdx"), "ps "+args[0]+" {0}")
 	}
-	fIdx, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[1])
+	fIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.si.PlayFromSide(sideIdx, fIdx)
 }
@@ -105,16 +103,16 @@ func (c *SpiteAndMaliceCuiController) handleDiscard(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("spiteandmalice.promptHandIdx"), "d {0} {1}")
 	}
-	handIdx, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[0])
+	handIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("spiteandmalice.promptSideIdx"), "d "+args[0]+" {0}")
 	}
-	sideIdx, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[1])
+	sideIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.si.Discard(handIdx, sideIdx)
 }

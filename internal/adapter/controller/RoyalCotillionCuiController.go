@@ -3,8 +3,6 @@
 package controller
 
 import (
-	"strconv"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -78,9 +76,9 @@ func (c *RoyalCotillionCuiController) handleMoveFromTableau(args []string) strin
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("royalcotillion.promptFromPile"), "m t {0}")
 	}
-	slot, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("royalcotillion.invalidPile", "val", args[0])
+	slot, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "royalcotillion.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) >= 2 && args[1] != "f" {
 		return invalidArg("royalcotillion.invalidToZone", "val", args[1])
@@ -93,9 +91,9 @@ func (c *RoyalCotillionCuiController) handleMoveFromReserve(args []string) strin
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("royalcotillion.promptFromReserve"), "m r {0}")
 	}
-	pile, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("royalcotillion.invalidReserve", "val", args[0])
+	pile, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "royalcotillion.invalidReserve", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) >= 2 && args[1] != "f" {
 		return invalidArg("royalcotillion.invalidToZone", "val", args[1])
@@ -114,9 +112,9 @@ func (c *RoyalCotillionCuiController) handleMoveFromWaste(args []string) string 
 		if len(args) < 2 {
 			return cuiutil.PromptRequest(i18n.T("royalcotillion.promptToPile"), "m w t {0}")
 		}
-		pile, err := strconv.Atoi(args[1])
-		if err != nil {
-			return invalidArg("royalcotillion.invalidPile", "val", args[1])
+		pile, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "royalcotillion.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+		if !parseOK {
+			return parseMsg
 		}
 		return c.ci.MoveWasteToTableau(pile)
 	default:
@@ -135,9 +133,9 @@ func (c *RoyalCotillionCuiController) handleMoveFromStock(args []string) string 
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("royalcotillion.promptToPile"), "m s t {0}")
 	}
-	pile, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("royalcotillion.invalidPile", "val", args[1])
+	pile, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "royalcotillion.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.ci.MoveStockToTableau(pile)
 }

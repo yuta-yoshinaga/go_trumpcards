@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
@@ -42,9 +41,9 @@ func (c *OldMaidCuiController) Exec(command string) string {
 				// 17 of 30 deals.
 				idx := -1
 				if len(args) > 0 {
-					v, err := strconv.Atoi(args[0])
-					if err != nil {
-						return invalidArg("invalidCardIndex", "val", args[0]), true
+					v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
+					if !parseOK {
+						return parseMsg, true
 					}
 					idx = v
 				}

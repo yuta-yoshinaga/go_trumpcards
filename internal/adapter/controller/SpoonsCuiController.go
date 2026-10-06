@@ -3,8 +3,7 @@
 package controller
 
 import (
-	"strconv"
-
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -39,9 +38,9 @@ func (c *SpoonsCuiController) Exec(command string) string {
 				// card the player never chose (issue #5390).
 				idx := 0
 				if len(args) > 0 {
-					v, err := strconv.Atoi(args[0])
-					if err != nil {
-						return invalidArg("invalidCardIndex", "val", args[0]), true
+					v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
+					if !parseOK {
+						return parseMsg, true
 					}
 					idx = v
 				}

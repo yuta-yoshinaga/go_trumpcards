@@ -4,7 +4,6 @@ package controller
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -72,9 +71,9 @@ func (c *CrazyQuiltCuiController) handleMoveFromQuilt(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("crazyquilt.promptCell"), "m q {0}")
 	}
-	idx, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("crazyquilt.invalidCell", "val", args[0])
+	idx, msg, ok := cuiutil.ParseIntArgKeys(args[0:], "", "crazyquilt.invalidCell", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("crazyquilt.promptToZone"), fmt.Sprintf("m q %s {0}", args[0]))
