@@ -19,7 +19,7 @@ linters:
       # frontend/scripts read the arguments by position, so trimming one
       # game's helper breaks them.
       - linters: [unparam]
-        source: '^func \([a-z]+ \*\w+\) (appendLog|addLog)\w*\('
+        source: '^func (\([^)]*\) )?(appendLog|addLog)\w*\('
 
 formatters:
   enable:
