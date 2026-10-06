@@ -423,20 +423,7 @@ func (w *Whist) validatePlay(playerIdx int, card *Card) error {
 		return nil
 	}
 
-	// フォロースート
-	leadSuit := w.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != leadSuit {
-		if w.playerHasSuit(playerIdx, leadSuit) {
-			return NewDomainErrorCode(ErrInvalidPlay, "whist.errFollowLeadSuit", nil)
-		}
-	}
-
-	return nil
-}
-
-// playerHasSuit プレイヤーが特定のスートを持っているか
-func (w *Whist) playerHasSuit(playerIdx int, design int) bool {
-	return handHasSuit(w.players[playerIdx], design)
+	return validateFollowSuit(w.currentTrick, w.players, playerIdx, card)
 }
 
 // trickWinner トリックの勝者を決定する

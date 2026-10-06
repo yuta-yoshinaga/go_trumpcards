@@ -9,6 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
@@ -149,7 +151,9 @@ func TestCatchTen_PlayerPlay(t *testing.T) {
 		err := g.PlayerPlay(1) // spade, must-follow violation
 		assert.Error(t, err)
 		code, _ := domain.ErrorMessageCode(err)
-		assert.Equal(t, "catchten.errFollowLeadSuit", code)
+		assert.Equal(t, "shared.errFollowLeadSuit", code)
+		assert.Equal(t, "リードスートに従ってください", i18n.TForLang("ja", code))
+		assert.Equal(t, "Please follow the lead suit.", i18n.TForLang("en", code))
 		err = g.PlayerPlay(0) // heart, ok
 		assert.NoError(t, err)
 	})

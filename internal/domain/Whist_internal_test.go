@@ -117,9 +117,9 @@ func TestWhist_playerHasSuit(t *testing.T) {
 	w.players[0].AddCard(NewCard(CardDesignHeart, 5, false))
 	w.players[0].AddCard(NewCard(CardDesignSpade, 10, false))
 
-	assert.True(t, w.playerHasSuit(0, CardDesignHeart))
-	assert.True(t, w.playerHasSuit(0, CardDesignSpade))
-	assert.False(t, w.playerHasSuit(0, CardDesignDiamond))
+	assert.True(t, handHasSuit(w.players[0], CardDesignHeart))
+	assert.True(t, handHasSuit(w.players[0], CardDesignSpade))
+	assert.False(t, handHasSuit(w.players[0], CardDesignDiamond))
 }
 
 func TestWhist_checkGameEnd_NoWinner(t *testing.T) {

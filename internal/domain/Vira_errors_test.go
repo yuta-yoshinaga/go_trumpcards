@@ -58,7 +58,7 @@ func TestViraDomainErrorsHaveMessageCodes(t *testing.T) {
 		g.SetPhase(ViraPhasePlay)
 		g.SetCurrentPlayerIdx(0)
 		g.currentTrick = []*TrickCard{{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 13, false)}}
-		assertViraDomainError(t, g.PlayerPlay(1), ErrInvalidPlay, "vira.errFollowLeadSuit", nil)
+		assertViraDomainError(t, g.PlayerPlay(1), ErrInvalidPlay, "shared.errFollowLeadSuit", nil)
 	})
 
 	t.Run("player index out of range", func(t *testing.T) {

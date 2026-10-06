@@ -491,16 +491,10 @@ func (g *Ganjifa) validatePlay(playerIdx int, card *Card) error {
 	if len(g.currentTrick) == 0 {
 		return nil
 	}
-	leadSuit := g.currentTrick[0].Card.GetDesign()
-	if g.playerHasSuit(playerIdx, leadSuit) && card.GetDesign() != leadSuit {
-		return NewDomainErrorCode(ErrInvalidPlay, "ganjifa.errFollowLeadSuit", nil)
+	if err := validateFollowSuit(g.currentTrick, g.players, playerIdx, card); err != nil {
+		return err
 	}
 	return nil
-}
-
-// playerHasSuit プレイヤーが指定スートを持っているか。
-func (g *Ganjifa) playerHasSuit(playerIdx, design int) bool {
-	return handHasSuit(g.players[playerIdx], design)
 }
 
 // GetValidPlayIndices 出せる手札の位置を返す。

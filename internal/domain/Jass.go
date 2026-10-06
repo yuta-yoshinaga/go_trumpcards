@@ -829,7 +829,7 @@ func (g *Jass) validatePlay(playerIdx int, card *Card) error {
 	leadSuit := g.currentTrick[0].Card.GetDesign()
 	cardSuit := card.GetDesign()
 
-	hasLead := g.playerHasSuit(player, leadSuit)
+	hasLead := handHasSuit(player, leadSuit)
 	if !hasLead {
 		// フォロー不可: 任意のカード可 (トランプ含む)
 		return nil
@@ -850,10 +850,7 @@ func (g *Jass) validatePlay(playerIdx int, card *Card) error {
 	// リードが非トランプ かつ リードスートを持っている: フォロー必須。
 	// (フォロー可能なときにトランプで切り上げるのは不可。トランプ切りは
 	//  リードスートを持たない=void のときのみ — その分岐は上で処理済み)
-	if cardSuit == leadSuit {
-		return nil
-	}
-	return NewDomainErrorCode(ErrInvalidPlay, "jass.errFollowLeadSuit", nil)
+	return validateFollowSuit(g.currentTrick, g.players, playerIdx, card)
 }
 
 // onlyTrumpIsJack プレイヤーの手札中のトランプが J (Bauer) 1枚のみか
@@ -871,16 +868,6 @@ func (g *Jass) onlyTrumpIsJack(p *JassPlayer) bool {
 		}
 	}
 	return trumpCount == 1 && jackOnly
-}
-
-// playerHasSuit プレイヤーが特定スートを持っているか
-func (g *Jass) playerHasSuit(p *JassPlayer, suit int) bool {
-	for i := range p.GetCardsSize() {
-		if p.GetCard(i).GetDesign() == suit {
-			return true
-		}
-	}
-	return false
 }
 
 // currentLeader 現在のトリック先頭時点での仮勝者を返す

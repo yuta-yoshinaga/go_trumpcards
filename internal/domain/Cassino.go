@@ -192,11 +192,6 @@ func (c *Cassino) dealNextPack() {
 	c.round.packsDealt++
 }
 
-// allHandsEmpty は全員の手札が空か。
-func (c *Cassino) allHandsEmpty() bool {
-	return allHandsEmpty(c.players)
-}
-
 // PlayerTake は人間プレイヤーが take を実行する。
 func (c *Cassino) PlayerTake(handIdx int, tableIdxs []int, buildIdxs []int) error {
 	if err := c.guardHumanTurn(); err != nil {
@@ -454,7 +449,7 @@ func (c *Cassino) postActionAdvance() {
 	// 手番を次へ
 	c.round.currentTurn = (c.round.currentTurn + 1) % len(c.players)
 	// 手札切れ + 山札あり → 全員へ次のパックを配る
-	if c.allHandsEmpty() && c.trumpCards.GetRemainingCount() > 0 {
+	if allHandsEmpty(c.players) && c.trumpCards.GetRemainingCount() > 0 {
 		c.dealNextPack()
 	}
 }
@@ -462,7 +457,7 @@ func (c *Cassino) postActionAdvance() {
 // isRoundOver は現在のラウンドが終了しているか。
 // 手札 0 + 山札 0 の時点で終了。
 func (c *Cassino) isRoundOver() bool {
-	return c.allHandsEmpty() && c.trumpCards.GetRemainingCount() == 0
+	return allHandsEmpty(c.players) && c.trumpCards.GetRemainingCount() == 0
 }
 
 // finishRound はラウンド終了処理: 残りの場札を最後に捕獲したプレイヤーに渡し、スコア計算。
@@ -592,7 +587,7 @@ func (c *Cassino) lastTakeInRound() bool {
 	// postActionAdvance 直前の判定なのでこの時点では仮に true / false いずれでも良いが、
 	// 「手札が全員 0 かつ山札 0」であれば以降のカードプレイはなくなり、
 	// その最終 take をスイープに含めないという規則を表現。
-	return c.allHandsEmpty() && c.trumpCards.GetRemainingCount() == 0
+	return allHandsEmpty(c.players) && c.trumpCards.GetRemainingCount() == 0
 }
 
 // playerHasCaptureCard は player が handIdx 以外に declaredValue と一致する値のカードを持っているか。

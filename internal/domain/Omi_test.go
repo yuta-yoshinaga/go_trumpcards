@@ -345,6 +345,8 @@ func TestOmi_FollowRules(t *testing.T) {
 	err := game.PlayerPlay(2) // Diamond 7
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
+	code, _ := domain.ErrorMessageCode(err)
+	assert.Equal(t, "shared.errFollowLeadSuit", code)
 
 	// 2. リードスート (Heart) を持っているのに切り札 (Spade) を出そうとしてもエラー
 	err = game.PlayerPlay(3) // Spade 8

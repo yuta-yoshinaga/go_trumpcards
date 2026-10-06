@@ -210,11 +210,6 @@ func (g *Cuarenta) dealNextPack() {
 	}
 }
 
-// allHandsEmpty は全員の手札が空か。
-func (g *Cuarenta) allHandsEmpty() bool {
-	return allHandsEmpty(g.players)
-}
-
 // PlayerPlay は人間プレイヤーが手札 handIdx を出す。
 func (g *Cuarenta) PlayerPlay(handIdx int) error {
 	if err := g.guardHumanTurn(); err != nil {
@@ -340,19 +335,19 @@ func (g *Cuarenta) postActionAdvance() {
 		return
 	}
 	g.round.currentTurn = (g.round.currentTurn + 1) % len(g.players)
-	if g.allHandsEmpty() && g.trumpCards.GetRemainingCount() > 0 {
+	if allHandsEmpty(g.players) && g.trumpCards.GetRemainingCount() > 0 {
 		g.dealNextPack()
 	}
 }
 
 // isRoundOver は現在のラウンドが終了しているか (手札 0 + 山札 0)。
 func (g *Cuarenta) isRoundOver() bool {
-	return g.allHandsEmpty() && g.trumpCards.GetRemainingCount() == 0
+	return allHandsEmpty(g.players) && g.trumpCards.GetRemainingCount() == 0
 }
 
 // isLastPlayOfRound は今の手がラウンド最後の 1 手か (掃きボーナス除外用)。
 func (g *Cuarenta) isLastPlayOfRound() bool {
-	return g.allHandsEmpty() && g.trumpCards.GetRemainingCount() == 0
+	return allHandsEmpty(g.players) && g.trumpCards.GetRemainingCount() == 0
 }
 
 // finishRound はラウンド終了処理: 残り場札を最後の捕獲者に渡し、得点計算。

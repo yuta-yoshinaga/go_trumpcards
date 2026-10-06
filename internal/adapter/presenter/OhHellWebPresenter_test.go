@@ -110,12 +110,12 @@ func TestOhHellWebPresenter_Output(t *testing.T) {
 
 	t.Run("coded error", func(t *testing.T) {
 		m, _ := setupOhHellWebMockWithPlayers()
-		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "ohhell.errFollowLeadSuit", nil)
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "shared.errFollowLeadSuit", nil)
 		result := p.Output(m, err)
 		var resObj controller.OhHellWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Empty(t, resObj.Message)
-		assert.Equal(t, "ohhell.errFollowLeadSuit", resObj.MessageCode)
+		assert.Equal(t, "shared.errFollowLeadSuit", resObj.MessageCode)
 	})
 
 	t.Run("bid phase message", func(t *testing.T) {

@@ -224,11 +224,6 @@ func (g *Tablanet) dealInitialTable() {
 		append([]*Card(nil), g.state.tableCards...))
 }
 
-// allHandsEmpty は全員の手札が空かどうか。
-func (g *Tablanet) allHandsEmpty() bool {
-	return allHandsEmpty(g.players)
-}
-
 // --- 捕獲ロジック (インライン) ---
 
 // tablanetCardValue はカードのキャプチャ用の値を返す (A=1 … K=13)。
@@ -515,7 +510,7 @@ func (g *Tablanet) applyPlay(playerIdx, handIdx int, tableIdxs []int) {
 // advanceTurn は手番を次に進め、必要なら配り直し・終局処理を行う。
 func (g *Tablanet) advanceTurn() {
 	g.state.currentTurn = (g.state.currentTurn + 1) % len(g.players)
-	if !g.allHandsEmpty() {
+	if !allHandsEmpty(g.players) {
 		return
 	}
 	if g.trumpCards.GetRemainingCount() > 0 {

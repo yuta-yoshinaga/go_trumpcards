@@ -642,13 +642,12 @@ func (g *Tysiac) validatePlay(playerIdx int, card *Card) error {
 	if len(g.currentTrick) == 0 {
 		return nil
 	}
-	leadSuit := g.currentTrick[0].Card.GetDesign()
-	hasLeadSuit := g.playerHasSuit(playerIdx, leadSuit)
-	if hasLeadSuit && card.GetDesign() != leadSuit {
-		return NewDomainErrorCode(ErrInvalidPlay, "tysiac.errFollowLeadSuit", nil)
+	if err := validateFollowSuit(g.currentTrick, g.players, playerIdx, card); err != nil {
+		return err
 	}
+	hasLeadSuit := handHasSuit(g.players[playerIdx], g.currentTrick[0].Card.GetDesign())
 	if !hasLeadSuit {
-		hasTrump := g.trumpSuit != 0 && g.playerHasSuit(playerIdx, g.trumpSuit)
+		hasTrump := g.trumpSuit != 0 && handHasSuit(g.players[playerIdx], g.trumpSuit)
 		if hasTrump && card.GetDesign() != g.trumpSuit {
 			return NewDomainErrorCode(ErrInvalidPlay, "tysiac.errMustPlayTrump", nil)
 		}
@@ -688,11 +687,6 @@ func (g *Tysiac) canOvertrump(playerIdx, rank int) bool {
 		}
 	}
 	return false
-}
-
-// playerHasSuit プレイヤーが指定スートのカードを持っているか。
-func (g *Tysiac) playerHasSuit(playerIdx, design int) bool {
-	return handHasSuit(g.players[playerIdx], design)
 }
 
 // playerHasCard プレイヤーが指定スート・ランクの札を持っているか。

@@ -645,7 +645,7 @@ func (g *Bauernschnapsen) NextTrick() {
 		return
 	}
 
-	if g.allHandsEmpty() {
+	if allHandsEmpty(g.players) {
 		g.phase = BauernschnapsenPhaseRoundEnd
 		return
 	}
@@ -718,9 +718,6 @@ func (g *Bauernschnapsen) contractMade(declarerTeam int) bool {
 }
 
 // allHandsEmpty 全プレイヤーの手札が空かを返す
-func (g *Bauernschnapsen) allHandsEmpty() bool {
-	return allHandsEmpty(g.players)
-}
 
 // IsEndgame は常に true。**このゲームは最初から「終盤」**。
 //

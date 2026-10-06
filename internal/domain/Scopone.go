@@ -215,7 +215,7 @@ func (s *Scopone) applyPlay(playerIdx, handIdx int, tableIdxs []int) error {
 	player.AddCaptured(pile)
 	s.lastCaptureIdx = playerIdx
 
-	if len(s.tableCards) == 0 && !s.allHandsEmpty() {
+	if len(s.tableCards) == 0 && !allHandsEmpty(s.players) {
 		player.IncrementScopa()
 		s.appendLog(playerIdx, "scopa", "scopone.log.scopa", nil, pile)
 	} else {
@@ -227,7 +227,7 @@ func (s *Scopone) applyPlay(playerIdx, handIdx int, tableIdxs []int) error {
 
 // postActionAdvance はアクション後の進行処理。
 func (s *Scopone) postActionAdvance() {
-	if s.allHandsEmpty() {
+	if allHandsEmpty(s.players) {
 		s.finishRound()
 		return
 	}
@@ -331,9 +331,6 @@ func (s *Scopone) removeTableCardsByIndex(idxs []int) {
 }
 
 // allHandsEmpty 全プレイヤーの手札が空か。
-func (s *Scopone) allHandsEmpty() bool {
-	return allHandsEmpty(s.players)
-}
 
 // --- CPU ---
 

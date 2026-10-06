@@ -641,9 +641,8 @@ func (g *GongZhu) validatePlay(playerIdx int, card *Card) error {
 	}
 
 	// フォロースート
-	leadSuit := g.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != leadSuit && g.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainErrorCode(ErrInvalidPlay, "gongzhu.errFollowLeadSuit", nil)
+	if err := validateFollowSuit(g.currentTrick, g.players, playerIdx, card); err != nil {
+		return err
 	}
 	return nil
 }
@@ -664,11 +663,6 @@ func (g *GongZhu) GetPlayableIndices(playerIdx int) []int {
 		}
 	}
 	return out
-}
-
-// playerHasSuit プレイヤーが特定のスートを持っているか
-func (g *GongZhu) playerHasSuit(playerIdx int, design int) bool {
-	return handHasSuit(g.players[playerIdx], design)
 }
 
 // playerHasNonHeart プレイヤーがハート以外のカードを持っているか

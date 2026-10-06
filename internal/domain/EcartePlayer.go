@@ -23,10 +23,7 @@ func NewEcartePlayer(isHuman bool) *EcartePlayer {
 
 // ResetGame ゲーム単位の状態をリセット
 func (p *EcartePlayer) ResetGame() {
-	p.SetRoundScore(0)
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundWithTricks(p)
 }
 
 // ecartePlayerJSON is the JSON wire format for EcartePlayer.

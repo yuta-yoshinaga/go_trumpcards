@@ -553,7 +553,7 @@ func (b *Bezique) resolveTrick() {
 
 	if b.IsEndgame() {
 		// 第2フェーズ: 役宣言・補充なし。
-		if b.allHandsEmpty() {
+		if allHandsEmpty(b.players) {
 			b.dealPoints[winnerIdx] += BeziqueLastTrickBonus
 			b.lastTrickBonus[winnerIdx] += BeziqueLastTrickBonus
 			b.appendLogCode(winnerIdx, "last_trick", "bezique.log.lastTrick", map[string]string{"name": playerName(b.players, winnerIdx), "bonus": strconv.Itoa(BeziqueLastTrickBonus)}, nil)
@@ -572,7 +572,7 @@ func (b *Bezique) resolveTrick() {
 // afterMeld 役宣言/パス後の補充・次トリック準備。
 func (b *Bezique) afterMeld() {
 	b.drawReplenish()
-	if b.allHandsEmpty() {
+	if allHandsEmpty(b.players) {
 		b.scoreDeal()
 		return
 	}
@@ -634,9 +634,6 @@ func (b *Bezique) finishGame() {
 }
 
 // allHandsEmpty 全プレイヤーの手札が空かを返す
-func (b *Bezique) allHandsEmpty() bool {
-	return allHandsEmpty(b.players)
-}
 
 // validatePlay カードのプレイがルール上有効かを検証する。
 func (b *Bezique) validatePlay(playerIdx int, card *Card) error {

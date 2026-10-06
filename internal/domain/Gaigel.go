@@ -408,7 +408,7 @@ func (g *Gaigel) NextTrick() {
 
 	g.drawReplenish()
 
-	if g.allHandsEmpty() {
+	if allHandsEmpty(g.players) {
 		g.phase = GaigelPhaseRoundEnd
 		return
 	}
@@ -459,9 +459,6 @@ func (g *Gaigel) drawOne() *Card {
 }
 
 // allHandsEmpty 全プレイヤーの手札が空かを返す
-func (g *Gaigel) allHandsEmpty() bool {
-	return allHandsEmpty(g.players)
-}
 
 // IsEndgame 第2フェーズ (山札と切り札表示カードが尽きてマストフォローになる) かを返す
 func (g *Gaigel) IsEndgame() bool {

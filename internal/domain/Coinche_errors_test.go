@@ -51,7 +51,7 @@ func TestCoinchePlayErrorsHaveMessageCodes(t *testing.T) {
 	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
 	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 7, false)}})
 	g.SetTrumpSuit(domain.CardDesignDiamond)
-	assertCoincheDomainError(t, g.PlayerPlay(0), domain.ErrInvalidPlay, "coinche.errFollowLeadSuit")
+	assertCoincheDomainError(t, g.PlayerPlay(0), domain.ErrInvalidPlay, "shared.errFollowLeadSuit")
 
 	g.GetPlayer(0).ResetRound()
 	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))

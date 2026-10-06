@@ -101,10 +101,7 @@ func (cb *CallBreak) Reset() {
 
 	for _, p := range cb.players {
 		p.bid = -1
-		p.SetRoundScore(0)
-		p.ResetTricks()
-		p.Reset()
-		p.SetIsFinished(false)
+		resetRoundWithTricks(p)
 	}
 	// 累積スコアはラウンド跨ぎで保持する値だが、Reset はゲーム開始時のみ呼ばれるので 0 に戻す
 	for _, p := range cb.players {
@@ -458,13 +455,12 @@ func (cb *CallBreak) validatePlay(playerIdx int, card *Card) error {
 		return nil
 	}
 
-	leadSuit := cb.currentTrick[0].Card.GetDesign()
-
 	// フォロースート優先
-	if cb.playerHasSuit(playerIdx, leadSuit) {
-		if card.GetDesign() != leadSuit {
-			return NewDomainErrorCode(ErrInvalidPlay, "callbreak.errFollowLeadSuit", nil)
-		}
+	leadSuit := cb.currentTrick[0].Card.GetDesign()
+	if err := validateFollowSuit(cb.currentTrick, cb.players, playerIdx, card); err != nil {
+		return err
+	}
+	if handHasSuit(cb.players[playerIdx], cb.currentTrick[0].Card.GetDesign()) {
 		return nil
 	}
 
@@ -477,11 +473,11 @@ func (cb *CallBreak) validatePlay(playerIdx int, card *Card) error {
 	return nil
 }
 
-// playerHasSuit プレイヤーが特定のスートを持っているか
 func (cb *CallBreak) playerHasSuit(playerIdx, design int) bool {
 	return handHasSuit(cb.players[playerIdx], design)
 }
 
+// playerHasSuit プレイヤーが特定のスートを持っているか
 // playerHasNonSpade プレイヤーがスペード以外のカードを持っているか
 func (cb *CallBreak) playerHasNonSpade(playerIdx int) bool {
 	p := cb.players[playerIdx]

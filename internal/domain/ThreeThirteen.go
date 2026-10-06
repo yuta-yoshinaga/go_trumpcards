@@ -162,9 +162,7 @@ func (g *ThreeThirteen) NextRound() {
 	g.knockerIdx = -1
 	g.finalTurnsLeft = 0
 	for _, p := range g.players {
-		p.SetRoundScore(0)
-		p.Reset()
-		p.SetIsFinished(false)
+		resetRoundScored(p)
 	}
 	g.dealRound()
 	g.phase = ThreeThirteenPhaseDraw

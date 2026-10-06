@@ -123,8 +123,5 @@ func (p *MightyPlayer) ResetRound() {
 	p.isPartner = false
 	p.partnerRevealed = false
 	p.pointCards = 0
-	p.SetRoundScore(0)
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundWithTricks(p)
 }

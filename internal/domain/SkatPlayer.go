@@ -116,8 +116,5 @@ func (p *SkatPlayer) ResetRound() {
 	p.bid = -1
 	p.isDeclarer = false
 	p.cardPoints = 0
-	p.SetRoundScore(0)
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundWithTricks(p)
 }

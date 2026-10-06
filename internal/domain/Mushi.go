@@ -574,19 +574,9 @@ func (m *Mushi) afterResolve(player int, wasFlip bool) {
 		return
 	}
 	m.currentIdx = (player + 1) % len(m.players)
-	if m.handsEmpty() {
+	if allHandsEmpty(m.players) {
 		m.finishRound()
 	}
-}
-
-// handsEmpty は全員の手札が尽きたかを返す。
-func (m *Mushi) handsEmpty() bool {
-	for _, p := range m.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
 }
 
 // finishRound はラウンドを精算する。

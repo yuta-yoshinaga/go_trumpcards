@@ -566,22 +566,14 @@ func (o *OhHell) validatePlay(playerIdx int, card *Card) error {
 		return nil
 	}
 
-	// フォロースート
-	leadSuit := o.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != leadSuit {
-		if o.playerHasSuit(playerIdx, leadSuit) {
-			return NewDomainErrorCode(ErrInvalidPlay, "ohhell.errFollowLeadSuit", nil)
-		}
+	if err := validateFollowSuit(o.currentTrick, o.players, playerIdx, card); err != nil {
+		return err
 	}
 
 	return nil
 }
 
 // playerHasSuit プレイヤーが特定のスートを持っているか
-func (o *OhHell) playerHasSuit(playerIdx int, design int) bool {
-	return handHasSuit(o.players[playerIdx], design)
-}
-
 // trickWinner トリックの勝者を決定する
 func (o *OhHell) trickWinner() int {
 	return ResolveTrickWinner(o.currentTrick, o.trumpSuit, nil)

@@ -534,8 +534,8 @@ func (g *Loo) validatePlay(playerIdx int, card *Card) error {
 	hasTrump := g.playerHasSuit(playerIdx, g.trumpSuit)
 
 	if hasLead {
-		if card.GetDesign() != leadSuit {
-			return NewDomainErrorCode(ErrInvalidPlay, "loo.errFollowLeadSuit", nil)
+		if err := validateFollowSuit(g.currentTrick, g.players, playerIdx, card); err != nil {
+			return err
 		}
 		// マストヘッド: 現在勝っている札を上回れるなら上回る義務がある。
 		if g.canBeatWithSuit(playerIdx, leadSuit) && !g.beatsCurrentBest(card) {

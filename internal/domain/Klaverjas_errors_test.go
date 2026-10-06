@@ -35,7 +35,7 @@ func TestKlaverjasDomainErrorsHaveMessageCodes(t *testing.T) {
 		g.SetTrumpSuit(CardDesignDiamond)
 		g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 3, Card: klavCard(CardDesignClover, 1)}})
 		klavSetHand(g.GetPlayer(0), klavCard(CardDesignClover, 13), klavCard(CardDesignDiamond, 7))
-		assertKlaverjasDomainError(t, g.PlayerPlay(1), ErrInvalidPlay, "klaverjas.errFollowLeadSuit")
+		assertKlaverjasDomainError(t, g.PlayerPlay(1), ErrInvalidPlay, "shared.errFollowLeadSuit")
 	})
 
 	t.Run("must play trump when void", func(t *testing.T) {

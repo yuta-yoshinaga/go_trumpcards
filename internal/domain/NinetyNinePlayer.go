@@ -35,10 +35,7 @@ func (p *NinetyNinePlayer) SetBuried(cards []*Card) { p.buried = cards }
 func (p *NinetyNinePlayer) ResetRound() {
 	p.bid = -1
 	p.buried = nil
-	p.SetRoundScore(0)
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundWithTricks(p)
 }
 
 // ninetyNinePlayerJSON is the JSON wire format for NinetyNinePlayer.

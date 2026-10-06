@@ -263,7 +263,7 @@ func (s *Schnapsen) NextTrick() {
 
 	s.drawReplenish()
 
-	if s.allHandsEmpty() {
+	if allHandsEmpty(s.players) {
 		s.finishGame()
 		return
 	}
@@ -671,9 +671,6 @@ func (s *Schnapsen) drawOne() *Card {
 }
 
 // allHandsEmpty 全プレイヤーの手札が空かを返す
-func (s *Schnapsen) allHandsEmpty() bool {
-	return allHandsEmpty(s.players)
-}
 
 // finishGame ゲームを終了させ、勝者を決定する
 func (s *Schnapsen) finishGame() {

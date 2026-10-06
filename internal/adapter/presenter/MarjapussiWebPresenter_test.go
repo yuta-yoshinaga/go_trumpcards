@@ -160,11 +160,11 @@ func TestMarjapussiWebPresenter_Output(t *testing.T) {
 
 	t.Run("coded error returns message code without message", func(t *testing.T) {
 		m, _ := setupMarjapussiWebMockWithPlayers()
-		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "marjapussi.errFollowLeadSuit", nil))
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "shared.errFollowLeadSuit", nil))
 		var resObj controller.MarjapussiWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Empty(t, resObj.Message)
-		assert.Equal(t, "marjapussi.errFollowLeadSuit", resObj.MessageCode)
+		assert.Equal(t, "shared.errFollowLeadSuit", resObj.MessageCode)
 	})
 
 	t.Run("game end human wins", func(t *testing.T) {

@@ -148,10 +148,7 @@ func (g *CatchTen) Reset() {
 	g.actionLog = nil
 
 	for _, p := range g.players {
-		p.SetRoundScore(0)
-		p.ResetTricks()
-		p.Reset()
-		p.SetIsFinished(false)
+		resetRoundWithTricks(p)
 	}
 
 	g.trumpCards.Shuffle()
@@ -464,19 +461,11 @@ func (g *CatchTen) validatePlay(playerIdx int, card *Card) error {
 	}
 
 	// フォロースート
-	leadSuit := g.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != leadSuit {
-		if g.playerHasSuit(playerIdx, leadSuit) {
-			return NewDomainErrorCode(ErrInvalidPlay, "catchten.errFollowLeadSuit", nil)
-		}
+	if err := validateFollowSuit(g.currentTrick, g.players, playerIdx, card); err != nil {
+		return err
 	}
 
 	return nil
-}
-
-// playerHasSuit プレイヤーが特定のスートを持っているか
-func (g *CatchTen) playerHasSuit(playerIdx int, design int) bool {
-	return handHasSuit(g.players[playerIdx], design)
 }
 
 // cardStrength はカードのトリック内での強さ (大きいほど強い) を返す。

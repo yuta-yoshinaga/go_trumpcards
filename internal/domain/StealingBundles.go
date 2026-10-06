@@ -363,7 +363,7 @@ func (s *StealingBundles) trail(playerIdx, cardIndex int) error {
 // finishTurn は手番を進め、必要なら配り直しと終局判定を行う。
 func (s *StealingBundles) finishTurn() {
 	s.turnNumber++
-	if s.allHandsEmpty() {
+	if allHandsEmpty(s.players) {
 		if s.trumpCards.GetRemainingCount() > 0 {
 			s.dealPack()
 		} else {
@@ -372,16 +372,6 @@ func (s *StealingBundles) finishTurn() {
 		}
 	}
 	s.currentPlayerIdx = (s.currentPlayerIdx + 1) % len(s.players)
-}
-
-// allHandsEmpty は全員の手札が尽きたかを返す。
-func (s *StealingBundles) allHandsEmpty() bool {
-	for _, p := range s.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
 }
 
 // finish は場札を清算して終局する。

@@ -25,7 +25,6 @@
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
   "helpHint": "  h                    助言を表示",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "errFollowLeadSuit": "リードスートに従ってください",
   "log.trickWin": "{{name}}が{{trick}}トリックに勝利",
   "log.roundScore": "チーム{{team}}: {{points}}点（トリック: {{tricks}}、合計: {{total}}）",
   "log.trump": "トランプスート: {{suit}}",

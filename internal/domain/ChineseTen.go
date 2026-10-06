@@ -322,19 +322,9 @@ func (c *ChineseTen) afterResolve(player int, wasFlip bool) {
 		return
 	}
 	c.currentIdx = (player + 1) % len(c.players)
-	if c.handsEmpty() {
+	if allHandsEmpty(c.players) {
 		c.finishGame()
 	}
-}
-
-// handsEmpty は全員の手札が尽きたかを返す。
-func (c *ChineseTen) handsEmpty() bool {
-	for _, p := range c.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
 }
 
 // finishGame は終局処理。得点は赤札の合計で、105 (総点の半分) が引き分け。

@@ -449,24 +449,7 @@ func (e *Omi) validatePlay(playerIdx int, card *Card) error {
 		return nil // リードは自由
 	}
 
-	leadSuit := e.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != leadSuit {
-		if e.playerHasSuit(playerIdx, leadSuit) {
-			return NewDomainErrorCode(ErrInvalidPlay, "omi.errFollowLeadSuit", nil)
-		}
-	}
-	return nil
-}
-
-// playerHasSuit プレイヤーが指定スートのカードを持っているか
-func (e *Omi) playerHasSuit(playerIdx int, suit int) bool {
-	p := e.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == suit {
-			return true
-		}
-	}
-	return false
+	return validateFollowSuit(e.currentTrick, e.players, playerIdx, card)
 }
 
 // trickWinner トリックの勝者を決定する。

@@ -266,7 +266,7 @@ func (b *Brusquembille) NextTrick() {
 
 	b.drawReplenish()
 
-	if b.allHandsEmpty() {
+	if allHandsEmpty(b.players) {
 		b.finishGame()
 		return
 	}
@@ -616,9 +616,6 @@ func (b *Brusquembille) drawOne() *Card {
 }
 
 // allHandsEmpty 全プレイヤーの手札が空かを返す
-func (b *Brusquembille) allHandsEmpty() bool {
-	return allHandsEmpty(b.players)
-}
 
 // finishGame ゲームを終了させ、勝者を決定する
 func (b *Brusquembille) finishGame() {

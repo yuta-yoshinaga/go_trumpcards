@@ -499,12 +499,8 @@ func (s *Spades) validatePlay(playerIdx int, card *Card) error {
 		return nil
 	}
 
-	// フォロースート
-	leadSuit := s.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != leadSuit {
-		if s.playerHasSuit(playerIdx, leadSuit) {
-			return NewDomainErrorCode(ErrInvalidPlay, "spades.errFollowLeadSuit", nil)
-		}
+	if err := validateFollowSuit(s.currentTrick, s.players, playerIdx, card); err != nil {
+		return err
 	}
 
 	return nil
@@ -523,10 +519,6 @@ func (s *Spades) playerHasCard(playerIdx int, design, value int) bool {
 }
 
 // playerHasSuit プレイヤーが特定のスートを持っているか
-func (s *Spades) playerHasSuit(playerIdx int, design int) bool {
-	return handHasSuit(s.players[playerIdx], design)
-}
-
 // playerHasNonSpade プレイヤーがスペード以外のカードを持っているか
 func (s *Spades) playerHasNonSpade(playerIdx int) bool {
 	p := s.players[playerIdx]

@@ -24,9 +24,7 @@ func NewHandAndFootPlayer(isHuman bool) *HandAndFootPlayer {
 
 // ResetRound ラウンドをリセット（手札・スコア・フットを初期化）
 func (p *HandAndFootPlayer) ResetRound() {
-	p.SetRoundScore(0)
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundScored(p)
 	p.foot = make([]*Card, 0)
 	p.inFoot = false
 }
