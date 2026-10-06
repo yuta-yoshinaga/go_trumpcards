@@ -23,27 +23,10 @@ func NewYukonCuiController(yi usecase.YukonInteractorIF) *YukonCuiController {
 
 // Exec コマンド実行
 func (c *YukonCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(_ []string) string {
-			return c.yi.Reset()
-		},
-		[]string{"m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "m", "move":
-				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.yi.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.yi.AutoComplete(), true
-			case "u", "undo":
-				return c.yi.Undo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.yi.Hint, c.yi.ActionLog)
-			}
-		},
-	)
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset: c.yi.Reset, move: c.handleMove, giveUp: c.yi.GiveUp,
+		autoComplete: c.yi.AutoComplete, undo: c.yi.Undo, hint: c.yi.Hint, actionLog: c.yi.ActionLog,
+	})
 }
 
 // handleMove 移動コマンドを処理

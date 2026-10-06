@@ -169,6 +169,16 @@ func TestSolitaireCuiCommandNamesMatchMigratedControllers(t *testing.T) {
 		{"GrandfathersClock", []string{"m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo", "redo"}, []string{"redo"}},
 		{"Matrimony", []string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "draw"}},
 		{"MissMilligan", []string{"d", "deal", "m", "move", "wv", "waive", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "deal", "wv", "waive"}},
+		{"NapoleonsSquare", []string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "draw"}},
+		{"Penguin", []string{"m", "move", "f", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"f"}},
+		{"RoyalCotillion", []string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "draw"}},
+		{"RussianSolitaire", []string{"m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, nil},
+		{"SalicLaw", []string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "draw"}},
+		{"SeahavenTowers", []string{"m", "move", "f", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"f"}},
+		{"SlyFox", []string{"d", "deal", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "deal"}},
+		{"Stalactites", []string{"m", "move", "f", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"f"}},
+		{"Windmill", []string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "draw"}},
+		{"Yukon", []string{"m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, nil},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -200,6 +210,16 @@ func TestSolitaireCuiCommandNamesMatchMigratedControllers(t *testing.T) {
 		"GrandfathersClock": (&GrandfathersClockCuiController{gi: new(mockusecase.MockGrandfathersClockInteractor)}).Exec,
 		"Matrimony":         (&MatrimonyCuiController{ci: new(mockusecase.MockMatrimonyInteractor)}).Exec,
 		"MissMilligan":      (&MissMilliganCuiController{mi: new(mockusecase.MockMissMilliganInteractor)}).Exec,
+		"NapoleonsSquare":   (&NapoleonsSquareCuiController{ni: new(mockusecase.MockNapoleonsSquareInteractor)}).Exec,
+		"Penguin":           (&PenguinCuiController{pi: new(mockusecase.MockPenguinInteractor)}).Exec,
+		"RoyalCotillion":    (&RoyalCotillionCuiController{ci: new(mockusecase.MockRoyalCotillionInteractor)}).Exec,
+		"RussianSolitaire":  (&RussianSolitaireCuiController{ri: new(mockusecase.MockRussianSolitaireInteractor)}).Exec,
+		"SalicLaw":          (&SalicLawCuiController{ci: new(mockusecase.MockSalicLawInteractor)}).Exec,
+		"SeahavenTowers":    (&SeahavenTowersCuiController{si: new(mockusecase.MockSeahavenTowersInteractor)}).Exec,
+		"SlyFox":            (&SlyFoxCuiController{ci: new(mockusecase.MockSlyFoxInteractor)}).Exec,
+		"Stalactites":       (&StalactitesCuiController{fi: new(mockusecase.MockStalactitesInteractor)}).Exec,
+		"Windmill":          (&WindmillCuiController{wi: new(mockusecase.MockWindmillInteractor)}).Exec,
+		"Yukon":             (&YukonCuiController{yi: new(mockusecase.MockYukonInteractor)}).Exec,
 	}
 	for _, tc := range cases {
 		t.Run(tc.name+" Exec candidates", func(t *testing.T) {
