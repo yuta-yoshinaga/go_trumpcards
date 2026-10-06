@@ -3,14 +3,8 @@
 
 import type { BaseGameResponse, Card } from '../common';
 
-/** Phases, matching the Go domain. */
-export const MONTE_BANK_PHASE = { bet: 0, result: 1, gameEnd: 2 } as const;
-
 /** Round outcomes, matching the Go domain. */
 export const MONTE_BANK_RESULT = { none: 0, win: 1, lose: 2 } as const;
-
-/** Multiplier paid on a suit match. */
-export const MONTE_BANK_PAYOUT = 3;
 
 /** A suggestion for which layout card to back. */
 export interface MonteBankHint {

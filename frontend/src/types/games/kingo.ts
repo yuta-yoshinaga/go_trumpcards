@@ -3,15 +3,6 @@
 
 import type { BaseGameResponse, Card } from '../common';
 
-/** Phases, matching the Go domain. */
-export const KINGO_PHASE = { bet: 0, result: 1, gameEnd: 2 } as const;
-
-/** Hand ranks, matching the Go domain. */
-export const KINGO_RANK = { none: 0, pair: 1, arashi: 2 } as const;
-
-/** Cards dealt to each seat. */
-export const KINGO_HAND_SIZE = 3;
-
 /** A suggestion for the current decision. */
 export interface KingoHint {
   /** `bet`, `deal` or `next`. */

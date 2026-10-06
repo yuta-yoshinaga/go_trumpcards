@@ -3,9 +3,6 @@
 
 import type { BaseGameResponse, Card } from '../common';
 
-/** Phases, matching the Go domain. */
-export const BAN_LUCK_PHASE = { bet: 0, play: 1, roundEnd: 2, gameEnd: 3 } as const;
-
 /**
  * Hand ranks, matching the Go domain. **Higher is stronger.**
  *
@@ -22,9 +19,6 @@ export const BAN_LUCK_RANK = {
 
 /** Outcome against the banker. The banker's own seat is always `push`. */
 export const BAN_LUCK_OUTCOME = { lose: 0, push: 1, win: 2 } as const;
-
-/** The banker cannot stand below this total. */
-export const BAN_LUCK_BANKER_MUST_HIT_UNDER = 15;
 
 /** A suggestion for the current decision. */
 export interface BanLuckHint {
