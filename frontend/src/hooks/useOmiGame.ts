@@ -39,6 +39,8 @@ export function useOmiGame() {
     [apiExec],
   );
 
+  // Not the base hook's handlePlay: Omi's API takes the card index in slot 2,
+  // where useTrickGameBase sends it in slot 3.
   const handlePlay = useCallback(() => {
     if (selectedCardIndices.length !== 1) return;
     apiExec('play', selectedCardIndices[0]);
