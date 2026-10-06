@@ -3,14 +3,6 @@
 
 import type { BaseGameResponse, Card } from '../common';
 
-/** Phases, matching the Go domain. */
-
-/** Betting actions, matching the Go domain (shared betting constants). */
-
-/** Hole cards per seat. */
-
-/** Cards in the cross. */
-
 /** A suggestion for the current decision. */
 export interface IronCrossHint {
   /** `fold`, `check`, `call`, `bet`, `raise` or `line`. */

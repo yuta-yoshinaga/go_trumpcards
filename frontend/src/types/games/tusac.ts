@@ -3,12 +3,6 @@
 
 import type { BaseGameResponse, Card } from '../common';
 
-/** Phases, matching the Go domain. */
-
-/** Combination kinds, matching the Go domain. */
-
-/** Piece types, as `value` on the shared `Card`. */
-
 /** A suggestion for the current decision. */
 export interface TuSacHint {
   /** `draw`, `meld`, `discard` or `next`. */

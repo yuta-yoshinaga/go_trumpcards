@@ -3,8 +3,6 @@
 
 import type { BaseGameResponse, Card } from '../common';
 
-/** Phases, matching the Go domain. */
-
 /** Per-hand outcomes, matching the Go domain. */
 export const FREE_BET_RESULT = {
   none: 0,

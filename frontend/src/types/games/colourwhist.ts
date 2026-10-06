@@ -18,8 +18,6 @@ export const COLOUR_WHIST_BIDDABLE = [
   { contract: 3, key: 'contract.miserie' },
 ] as const;
 
-/** Troel's contract value. Shown, never bid. */
-
 /** One seat at a Colour Whist table. */
 export interface ColourWhistPlayer {
   id: number;

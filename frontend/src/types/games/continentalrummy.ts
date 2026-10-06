@@ -3,12 +3,6 @@
 
 import type { BaseGameResponse, Card } from '../common';
 
-/** Seats at the table: one human and three CPUs. */
-
-/** The seat the human occupies. */
-
-/** Cards dealt to each seat, three at a time. */
-
 /**
  * Phases, matching the Go domain.
  *

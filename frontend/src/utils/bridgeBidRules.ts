@@ -6,8 +6,7 @@
  * illegal bid controls before a request is sent.
  */
 
-/** Bid types, matching the Go domain `BridgeBidType` enum. */
-/** Pass bid. */
+/** Pass bid. Bid types match the Go domain `BridgeBidType` enum. */
 export const BRIDGE_BID_PASS = 0;
 /** A normal contract bid (level + denomination). */
 export const BRIDGE_BID_NORMAL = 1;

@@ -8,12 +8,6 @@ export const ANDAR = 0;
 /** Bahar — the outer column. */
 export const BAHAR = 1;
 
-/** Payout multipliers are stored in tenths so 0.9:1 stays exact in integer chips. */
-
-/** Total returned (stake included) when the first-dealt column wins: 1.9x. */
-
-/** Total returned (stake included) when the second column wins: 2.0x. */
-
 /** One side-bet band: the inclusive card-count range and its payout in tenths. */
 export interface AndarBaharSideBand {
   band: number;

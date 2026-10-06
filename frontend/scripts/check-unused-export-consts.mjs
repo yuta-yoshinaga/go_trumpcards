@@ -8,7 +8,7 @@ const ROOT = resolve(process.cwd());
 export function findUnusedExportConsts(files) {
   const declarations = [];
   for (const [file, source] of files) {
-    for (const match of source.matchAll(/^export const ([A-Z][A-Z0-9_]*)\s*=/gm)) {
+    for (const match of source.matchAll(/^export const ([A-Z][A-Z0-9_]*)\s*(?::[^=]+)?=/gm)) {
       declarations.push({ name: match[1], file });
     }
   }
@@ -28,7 +28,7 @@ if (process.argv[1]?.endsWith('check-unused-export-consts.mjs')) {
   const paths = await Array.fromAsync(new Bun.Glob('{src,e2e}/**/*.{ts,tsx}').scan({ cwd: ROOT }));
   const files = await Promise.all(paths.map(async (path) => [path, await readFile(resolve(ROOT, path), 'utf8')]));
   const declarations = files.reduce(
-    (total, [, source]) => total + [...source.matchAll(/^export const [A-Z][A-Z0-9_]*\s*=/gm)].length,
+    (total, [, source]) => total + [...source.matchAll(/^export const [A-Z][A-Z0-9_]*\s*(?::[^=]+)?=/gm)].length,
     0,
   );
   assertFloor('unused-export-consts', declarations, 300, 'exported constants scanned');

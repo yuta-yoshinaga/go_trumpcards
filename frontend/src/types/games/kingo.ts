@@ -3,12 +3,6 @@
 
 import type { BaseGameResponse, Card } from '../common';
 
-/** Phases, matching the Go domain. */
-
-/** Hand ranks, matching the Go domain. */
-
-/** Cards dealt to each seat. */
-
 /** A suggestion for the current decision. */
 export interface KingoHint {
   /** `bet`, `deal` or `next`. */

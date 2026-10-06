@@ -3,12 +3,6 @@
 
 import type { BaseGameResponse, Card } from '../common';
 
-/** Phases, matching the Go domain. */
-
-/** Betting actions, matching the Go domain (shared betting constants). */
-
-/** Hole cards per seat. **Five, not Hold'em's two.** */
-
 /** A suggestion for the current decision. */
 export interface CincinnatiHint {
   /** `fold`, `check`, `call`, `bet` or `raise`. */

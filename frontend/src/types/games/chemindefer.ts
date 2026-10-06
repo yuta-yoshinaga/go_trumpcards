@@ -3,12 +3,8 @@
 
 import type { BaseGameResponse, Card } from '../common';
 
-/** Number of seats at a Chemin de Fer table. The bank travels between them. */
-
 /** The seat the human occupies. */
 export const CHEMIN_DE_FER_HUMAN_SEAT = 0;
-
-/** Phases, matching the Go domain. */
 
 /** Round outcomes, matching the Go domain. */
 export const CHEMIN_DE_FER_RESULT = {

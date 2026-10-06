@@ -8,6 +8,12 @@ describe('findUnusedExportConsts', () => {
     ]);
   });
 
+  it('reports a type-annotated declaration with no references', () => {
+    expect(findUnusedExportConsts([['constants.ts', 'export const TYPED: number = 1;']])).toEqual([
+      { name: 'TYPED', file: 'constants.ts' },
+    ]);
+  });
+
   it('keeps a declaration referenced in another source file', () => {
     expect(
       findUnusedExportConsts([
