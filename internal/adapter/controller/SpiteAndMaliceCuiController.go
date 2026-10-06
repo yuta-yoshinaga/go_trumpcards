@@ -56,7 +56,7 @@ func (c *SpiteAndMaliceCuiController) handlePlayFromHand(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("spiteandmalice.promptHandIdx"), "ph {0} {1}")
 	}
-	handIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	handIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}
@@ -74,7 +74,7 @@ func (c *SpiteAndMaliceCuiController) handlePlayFromGoal(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("spiteandmalice.promptFoundationIdx"), "pg {0}")
 	}
-	fIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	fIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}
@@ -85,7 +85,7 @@ func (c *SpiteAndMaliceCuiController) handlePlayFromSide(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("spiteandmalice.promptSideIdx"), "ps {0} {1}")
 	}
-	sideIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	sideIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}
@@ -103,7 +103,7 @@ func (c *SpiteAndMaliceCuiController) handleDiscard(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("spiteandmalice.promptHandIdx"), "d {0} {1}")
 	}
-	handIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	handIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}

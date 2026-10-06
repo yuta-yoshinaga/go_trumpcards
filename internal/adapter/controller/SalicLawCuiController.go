@@ -51,7 +51,7 @@ func (c *SalicLawCuiController) handleMoveFromTableau(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("saliclaw.promptFromPile"), "m t {0}")
 	}
-	fromPile, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "saliclaw.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+	fromPile, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "saliclaw.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}

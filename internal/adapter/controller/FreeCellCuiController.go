@@ -73,7 +73,7 @@ func (c *FreeCellCuiController) handleMoveFromTableau(args []string) string {
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("freecell.promptToZone"), fmt.Sprintf("m t %s {0}", args[0]))
 	}
-	fromCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	fromCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}
@@ -131,7 +131,7 @@ func (c *FreeCellCuiController) handleMoveFromFreeCell(args []string) string {
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("freecell.promptToZoneFromCell"), fmt.Sprintf("m c %s {0}", args[0]))
 	}
-	cell, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidCell", cuiutil.NoMin, cuiutil.NoMax)
+	cell, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidCell", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}
@@ -158,7 +158,7 @@ func (c *FreeCellCuiController) handleFoundationShorthand(args []string) string 
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "f {0}")
 	}
-	col, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	col, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}

@@ -58,7 +58,7 @@ func (c *WindmillCuiController) handleMoveFromSail(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("windmill.promptSail"), "m s {0}")
 	}
-	sail, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "windmill.invalidSailIdx", cuiutil.NoMin, cuiutil.NoMax)
+	sail, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "windmill.invalidSailIdx", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}
@@ -109,7 +109,7 @@ func (c *WindmillCuiController) handleMoveFromCorner(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("windmill.promptCorner"), "m k {0}")
 	}
-	corner, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "windmill.invalidCornerIdx", cuiutil.NoMin, cuiutil.NoMax)
+	corner, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "windmill.invalidCornerIdx", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}

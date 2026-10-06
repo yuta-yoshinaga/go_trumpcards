@@ -64,7 +64,7 @@ func (c *CongressCuiController) handleMoveFromTableau(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("congress.promptFromPile"), "m t {0}")
 	}
-	fromPile, msg, ok := cuiutil.ParseIntArgKeys(args[0:], "", "congress.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+	fromPile, msg, ok := cuiutil.ParseIntArgKeys(args, "", "congress.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
 	if !ok {
 		return msg
 	}

@@ -55,7 +55,7 @@ func (c *MatrimonyCuiController) handleMoveFromTableau(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("matrimony.promptFromPile"), "m t {0}")
 	}
-	slot, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "matrimony.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+	slot, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "matrimony.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}

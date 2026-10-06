@@ -61,7 +61,7 @@ func (c *CrazyQuiltCuiController) handleMoveFromQuilt(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("crazyquilt.promptCell"), "m q {0}")
 	}
-	idx, msg, ok := cuiutil.ParseIntArgKeys(args[0:], "", "crazyquilt.invalidCell", cuiutil.NoMin, cuiutil.NoMax)
+	idx, msg, ok := cuiutil.ParseIntArgKeys(args, "", "crazyquilt.invalidCell", cuiutil.NoMin, cuiutil.NoMax)
 	if !ok {
 		return msg
 	}

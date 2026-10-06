@@ -59,7 +59,7 @@ func (c *RussianSolitaireCuiController) handleMoveFromTableau(args []string) str
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("russiansolitaire.promptToZone"), fmt.Sprintf("m t %s {0}", args[0]))
 	}
-	fromCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	fromCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}

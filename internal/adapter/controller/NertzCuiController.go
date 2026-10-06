@@ -67,7 +67,7 @@ func (c *NertzCuiController) handleDraw(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptPlayerIdx"), "d {0}")
 	}
-	p, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	p, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}
@@ -78,7 +78,7 @@ func (c *NertzCuiController) handleMoveNF(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptPlayerIdx"), "mnf {0} {1}")
 	}
-	p, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	p, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}
@@ -96,7 +96,7 @@ func (c *NertzCuiController) handleMoveNT(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptPlayerIdx"), "mnt {0} {1}")
 	}
-	p, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	p, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}
@@ -114,7 +114,7 @@ func (c *NertzCuiController) handleMoveWF(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptPlayerIdx"), "mwf {0} {1}")
 	}
-	p, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	p, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}
@@ -132,7 +132,7 @@ func (c *NertzCuiController) handleMoveWT(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptPlayerIdx"), "mwt {0} {1}")
 	}
-	p, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	p, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}
@@ -150,7 +150,7 @@ func (c *NertzCuiController) handleMoveTF(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptPlayerIdx"), "mtf {0} {1} {2}")
 	}
-	p, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	p, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}
@@ -175,7 +175,7 @@ func (c *NertzCuiController) handleMoveTT(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptPlayerIdx"), "mtt {0} {1} {2} {3}")
 	}
-	p, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	p, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}

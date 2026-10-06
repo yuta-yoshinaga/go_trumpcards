@@ -111,7 +111,7 @@ func (c *BristolCuiController) handleMoveFromTableau(args []string) string {
 	if len(args) < 1 {
 		return cuiutil.PromptRequest(i18n.T("bristol.promptFromColumn"), "m t {0}")
 	}
-	fromCol, msg, ok := cuiutil.ParseIntArgKeys(args[0:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	fromCol, msg, ok := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
 	if !ok {
 		return msg
 	}
@@ -140,7 +140,7 @@ func (c *BristolCuiController) handleMoveFromFan(args []string) string {
 	if len(args) < 1 {
 		return cuiutil.PromptRequest(i18n.T("bristol.promptFan"), "m n {0}")
 	}
-	fanIdx, msg, ok := cuiutil.ParseIntArgKeys(args[0:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	fanIdx, msg, ok := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
 	if !ok {
 		return msg
 	}

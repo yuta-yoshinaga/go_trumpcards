@@ -59,7 +59,7 @@ func (c *StealingBundlesCuiController) execSteal(args []string) (string, bool) {
 	if len(args) < 1 {
 		return invalidArg("cardIndexRequired"), true
 	}
-	cardIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
+	cardIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg, true
 	}

@@ -95,7 +95,7 @@ func (c *BraidCuiController) handleMoveFromSlot(args []string, zone string, move
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("braid.promptSlotIdx"), "m "+zone+" {0}")
 	}
-	idx, msg, ok := cuiutil.ParseIntArgKeys(args[0:], "", "braid.invalidSlot", cuiutil.NoMin, cuiutil.NoMax)
+	idx, msg, ok := cuiutil.ParseIntArgKeys(args, "", "braid.invalidSlot", cuiutil.NoMin, cuiutil.NoMax)
 	if !ok {
 		return msg
 	}

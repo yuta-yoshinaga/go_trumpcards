@@ -38,7 +38,7 @@ func (c *SpoonsCuiController) Exec(command string) string {
 				// card the player never chose (issue #5390).
 				idx := 0
 				if len(args) > 0 {
-					v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
+					v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
 					if !parseOK {
 						return parseMsg, true
 					}

@@ -44,7 +44,7 @@ func (c *CruelCuiController) handleMove(args []string) string {
 		return cuiutil.PromptRequest(i18n.T("cruel.promptSourceColumn"), "m {0}")
 	}
 
-	fromCol, msg, ok := cuiutil.ParseIntArgKeys(args[0:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	fromCol, msg, ok := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
 	if !ok {
 		return msg
 	}

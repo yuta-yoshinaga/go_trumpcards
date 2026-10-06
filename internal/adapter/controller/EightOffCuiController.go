@@ -72,7 +72,7 @@ func (c *EightOffCuiController) handleMoveFromTableau(args []string) string {
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("eightoff.promptToZone"), fmt.Sprintf("m t %s {0}", args[0]))
 	}
-	fromCol, msg, ok := cuiutil.ParseIntArgKeys(args[0:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	fromCol, msg, ok := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
 	if !ok {
 		return msg
 	}
@@ -124,7 +124,7 @@ func (c *EightOffCuiController) handleMoveFromFreeCell(args []string) string {
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("eightoff.promptToZoneFromCell"), fmt.Sprintf("m c %s {0}", args[0]))
 	}
-	cell, msg, ok := cuiutil.ParseIntArgKeys(args[0:], "", "invalidCell", cuiutil.NoMin, cuiutil.NoMax)
+	cell, msg, ok := cuiutil.ParseIntArgKeys(args, "", "invalidCell", cuiutil.NoMin, cuiutil.NoMax)
 	if !ok {
 		return msg
 	}
@@ -151,7 +151,7 @@ func (c *EightOffCuiController) handleFoundationShorthand(args []string) string 
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "f {0}")
 	}
-	col, msg, ok := cuiutil.ParseIntArgKeys(args[0:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	col, msg, ok := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
 	if !ok {
 		return msg
 	}

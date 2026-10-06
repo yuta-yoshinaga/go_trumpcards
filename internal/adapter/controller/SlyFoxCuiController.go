@@ -49,7 +49,7 @@ func (c *SlyFoxCuiController) handleDeal(args []string) string {
 		}
 		return c.ci.DealToFoundation(fIdx)
 	}
-	pile, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "slyfox.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+	pile, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "slyfox.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}
@@ -78,7 +78,7 @@ func (c *SlyFoxCuiController) handleMoveFromTableau(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("slyfox.promptFromPile"), "m t {0}")
 	}
-	fromPile, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "slyfox.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+	fromPile, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "slyfox.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}

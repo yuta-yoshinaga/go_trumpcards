@@ -63,7 +63,7 @@ func (c *ColoradoCuiController) handleMoveFromTableau(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("colorado.promptFromPile"), "m t {0}")
 	}
-	fromPile, msg, ok := cuiutil.ParseIntArgKeys(args[0:], "", "colorado.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+	fromPile, msg, ok := cuiutil.ParseIntArgKeys(args, "", "colorado.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
 	if !ok {
 		return msg
 	}

@@ -64,7 +64,7 @@ func (c *HachiHachiCuiController) handlePlay(args []string) string {
 	if len(args) == 0 {
 		return invalidArg("cardIndexRequiredField")
 	}
-	handIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
+	handIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}

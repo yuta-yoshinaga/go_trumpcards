@@ -112,7 +112,7 @@ func (c *FortyAndEightCuiController) handleMoveFromTableau(args []string) string
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("fortyandeight.promptToZone"), fmt.Sprintf("m t %s {0}", args[0]))
 	}
-	fromCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	fromCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}
@@ -130,19 +130,13 @@ func (c *FortyAndEightCuiController) handleMoveFromTableau(args []string) string
 	}
 
 	cardIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
-
 	if !parseOK {
-
 		return parseMsg
-
 	}
 
 	toCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[3:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
-
 	if !parseOK {
-
 		return parseMsg
-
 	}
 
 	return c.fi.MoveTableauToTableau(fromCol, cardIdx, toCol)

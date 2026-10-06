@@ -103,7 +103,7 @@ func (c *WaspCuiController) handleLegal(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("wasp.promptFromColumn"), "legal {0}")
 	}
-	col, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	col, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}

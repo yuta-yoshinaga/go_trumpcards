@@ -60,7 +60,7 @@ func (c *ShamrocksCuiController) handleMove(args []string) string {
 	if len(args) < 2 {
 		return invalidArg("usageMFromToF")
 	}
-	from, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidSourceFanDot", cuiutil.NoMin, cuiutil.NoMax)
+	from, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidSourceFanDot", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}

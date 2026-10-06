@@ -68,7 +68,7 @@ func (c *EasthavenCuiController) handleMoveFromTableau(args []string) string {
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("easthaven.promptToZone"), fmt.Sprintf("m t %s {0}", args[0]))
 	}
-	fromCol, msg, ok := cuiutil.ParseIntArgKeys(args[0:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	fromCol, msg, ok := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
 	if !ok {
 		return msg
 	}

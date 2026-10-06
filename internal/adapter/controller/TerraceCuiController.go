@@ -122,7 +122,7 @@ func (c *TerraceCuiController) handleMoveFromTableau(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("terrace.promptFromPile"), "m t {0}")
 	}
-	fromPile, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "terrace.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+	fromPile, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "terrace.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}

@@ -90,7 +90,7 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("holdem.bettingLimitRequired"), true
 				}
-				bl, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "holdem.invalidBettingLimit", cuiutil.NoMin, cuiutil.NoMax)
+				bl, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "holdem.invalidBettingLimit", cuiutil.NoMin, cuiutil.NoMax)
 				if !parseOK {
 					return parseMsg, true
 				}
@@ -112,7 +112,7 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("sevencardstud.anteRequired"), true
 				}
-				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "sevencardstud.invalidAnte", cuiutil.NoMin, cuiutil.NoMax)
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "sevencardstud.invalidAnte", cuiutil.NoMin, cuiutil.NoMax)
 				if !parseOK {
 					return parseMsg, true
 				}
@@ -123,7 +123,7 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("sevencardstud.bringInRequired"), true
 				}
-				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "sevencardstud.invalidBringIn", cuiutil.NoMin, cuiutil.NoMax)
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "sevencardstud.invalidBringIn", cuiutil.NoMin, cuiutil.NoMax)
 				if !parseOK {
 					return parseMsg, true
 				}
@@ -134,7 +134,7 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("sevencardstud.smallBetRequired"), true
 				}
-				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "sevencardstud.invalidSmallBet", cuiutil.NoMin, cuiutil.NoMax)
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "sevencardstud.invalidSmallBet", cuiutil.NoMin, cuiutil.NoMax)
 				if !parseOK {
 					return parseMsg, true
 				}
@@ -145,7 +145,7 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("sevencardstud.bigBetRequired"), true
 				}
-				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "sevencardstud.invalidBigBet", cuiutil.NoMin, cuiutil.NoMax)
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "sevencardstud.invalidBigBet", cuiutil.NoMin, cuiutil.NoMax)
 				if !parseOK {
 					return parseMsg, true
 				}
@@ -156,7 +156,7 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("holdem.levelHandRequired"), true
 				}
-				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "holdem.invalidLevelHand", cuiutil.NoMin, cuiutil.NoMax)
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "holdem.invalidLevelHand", cuiutil.NoMin, cuiutil.NoMax)
 				if !parseOK {
 					return parseMsg, true
 				}
@@ -167,7 +167,7 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("holdem.tableSizeRequired"), true
 				}
-				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "holdem.invalidTableSize", cuiutil.NoMin, cuiutil.NoMax)
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "holdem.invalidTableSize", cuiutil.NoMin, cuiutil.NoMax)
 				if !parseOK {
 					return parseMsg, true
 				}

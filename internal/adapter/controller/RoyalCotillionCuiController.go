@@ -65,7 +65,7 @@ func (c *RoyalCotillionCuiController) handleMoveFromTableau(args []string) strin
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("royalcotillion.promptFromPile"), "m t {0}")
 	}
-	slot, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "royalcotillion.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+	slot, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "royalcotillion.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}
@@ -80,7 +80,7 @@ func (c *RoyalCotillionCuiController) handleMoveFromReserve(args []string) strin
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("royalcotillion.promptFromReserve"), "m r {0}")
 	}
-	pile, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "royalcotillion.invalidReserve", cuiutil.NoMin, cuiutil.NoMax)
+	pile, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "royalcotillion.invalidReserve", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}

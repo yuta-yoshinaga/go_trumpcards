@@ -44,7 +44,7 @@ func (c *DuchessCuiController) handleBase(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("duchess.promptBaseFan"), "b {0}")
 	}
-	fan, msg, ok := cuiutil.ParseIntArgKeys(args[0:], "", "duchess.invalidFanIdx", cuiutil.NoMin, cuiutil.NoMax)
+	fan, msg, ok := cuiutil.ParseIntArgKeys(args, "", "duchess.invalidFanIdx", cuiutil.NoMin, cuiutil.NoMax)
 	if !ok {
 		return msg
 	}
@@ -79,7 +79,7 @@ func (c *DuchessCuiController) handleMoveFromReserve(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("duchess.promptBaseFan"), "m r {0}")
 	}
-	fan, msg, ok := cuiutil.ParseIntArgKeys(args[0:], "", "duchess.invalidFanIdx", cuiutil.NoMin, cuiutil.NoMax)
+	fan, msg, ok := cuiutil.ParseIntArgKeys(args, "", "duchess.invalidFanIdx", cuiutil.NoMin, cuiutil.NoMax)
 	if !ok {
 		return msg
 	}
@@ -128,7 +128,7 @@ func (c *DuchessCuiController) handleMoveFromTableau(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "m t {0}")
 	}
-	fromCol, msg, ok := cuiutil.ParseIntArgKeys(args[0:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	fromCol, msg, ok := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
 	if !ok {
 		return msg
 	}

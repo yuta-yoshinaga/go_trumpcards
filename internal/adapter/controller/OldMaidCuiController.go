@@ -41,7 +41,7 @@ func (c *OldMaidCuiController) Exec(command string) string {
 				// 17 of 30 deals.
 				idx := -1
 				if len(args) > 0 {
-					v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
+					v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
 					if !parseOK {
 						return parseMsg, true
 					}

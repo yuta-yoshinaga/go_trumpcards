@@ -89,7 +89,7 @@ func (c *OmahaCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("holdem.bettingLimitRequired"), true
 				}
-				bl, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "holdem.invalidBettingLimit", cuiutil.NoMin, cuiutil.NoMax)
+				bl, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "holdem.invalidBettingLimit", cuiutil.NoMin, cuiutil.NoMax)
 				if !parseOK {
 					return parseMsg, true
 				}
@@ -111,7 +111,7 @@ func (c *OmahaCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("holdem.smallBlindRequired"), true
 				}
-				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "holdem.invalidSmallBlind", cuiutil.NoMin, cuiutil.NoMax)
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "holdem.invalidSmallBlind", cuiutil.NoMin, cuiutil.NoMax)
 				if !parseOK {
 					return parseMsg, true
 				}
@@ -122,7 +122,7 @@ func (c *OmahaCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("holdem.bigBlindRequired"), true
 				}
-				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "holdem.invalidBigBlind", cuiutil.NoMin, cuiutil.NoMax)
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "holdem.invalidBigBlind", cuiutil.NoMin, cuiutil.NoMax)
 				if !parseOK {
 					return parseMsg, true
 				}
@@ -133,7 +133,7 @@ func (c *OmahaCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("holdem.levelHandRequired"), true
 				}
-				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "holdem.invalidLevelHand", cuiutil.NoMin, cuiutil.NoMax)
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "holdem.invalidLevelHand", cuiutil.NoMin, cuiutil.NoMax)
 				if !parseOK {
 					return parseMsg, true
 				}
@@ -144,7 +144,7 @@ func (c *OmahaCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("holdem.tableSizeRequired"), true
 				}
-				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "holdem.invalidTableSize", cuiutil.NoMin, cuiutil.NoMax)
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "holdem.invalidTableSize", cuiutil.NoMin, cuiutil.NoMax)
 				if !parseOK {
 					return parseMsg, true
 				}

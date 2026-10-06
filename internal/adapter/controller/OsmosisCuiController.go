@@ -92,7 +92,7 @@ func (c *OsmosisCuiController) handleMoveFromReserve(args []string) string {
 	if len(args) < 1 {
 		return cuiutil.PromptRequest(i18n.T("osmosis.promptReserve"), "m r {0}")
 	}
-	rIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	rIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}

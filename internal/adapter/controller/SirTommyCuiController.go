@@ -72,7 +72,7 @@ func (c *SirTommyCuiController) handleWasteMove(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("sirtommy.promptWasteIdx"), "w {0} f {1}")
 	}
-	wasteIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	wasteIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
 	if !parseOK {
 		return parseMsg
 	}

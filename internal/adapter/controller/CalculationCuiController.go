@@ -72,7 +72,7 @@ func (c *CalculationCuiController) handleWasteMove(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("calculation.promptWasteIdx"), "w {0} f {1}")
 	}
-	wasteIdx, msg, ok := cuiutil.ParseIntArgKeys(args[0:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	wasteIdx, msg, ok := cuiutil.ParseIntArgKeys(args, "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
 	if !ok {
 		return msg
 	}
