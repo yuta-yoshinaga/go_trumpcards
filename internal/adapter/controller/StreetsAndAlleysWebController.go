@@ -73,10 +73,7 @@ func streetsAndAlleysDispatch(bc *baseController, w http.ResponseWriter, bi usec
 	case "u", "undo":
 		bc.writePresenterResponse(w, bi.Undo())
 	case "undo_n":
-		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, bi.UndoN(*param.N))
+		dispatchUndoN(bc, w, newDefault, param.N, bi.UndoN)
 	default:
 		return dispatchResetHintAndLog(param.Command, bc, w, bi.Reset, bi.Hint, bi.ActionLog)
 	}

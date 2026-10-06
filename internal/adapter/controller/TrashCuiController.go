@@ -37,8 +37,7 @@ func (c *TrashCuiController) Exec(command string) string {
 			case "h", "hint":
 				return c.ti.Hint(), true
 			default:
-				result, handled := handleCuiLog(cmd, c.ti.ActionLog)
-				return result, handled
+				return handleCuiHintAndLog(cmd, c.ti.Hint, c.ti.ActionLog)
 			}
 		},
 	)

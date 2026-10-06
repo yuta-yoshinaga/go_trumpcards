@@ -52,10 +52,8 @@ func (c *GoFishCuiController) Exec(command string) string {
 					cfg.CpuDifficulty = domain.GoFishCpuDifficulty(v)
 					return c.gi.Reset(cfg)
 				})
-			case "h", "hint":
-				return c.gi.Hint(), true
 			default:
-				return handleCuiLog(cmd, c.gi.ActionLog)
+				return handleCuiHintAndLog(cmd, c.gi.Hint, c.gi.ActionLog)
 			}
 		},
 	)
