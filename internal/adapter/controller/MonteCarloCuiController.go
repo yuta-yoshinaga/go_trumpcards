@@ -35,10 +35,8 @@ func (c *MonteCarloCuiController) Exec(command string) string {
 				return c.mi.Undo(), true
 			case "g", "giveup":
 				return c.mi.GiveUp(), true
-			case "h", "hint":
-				return c.mi.Hint(), true
 			default:
-				return handleCuiLog(cmd, c.mi.ActionLog)
+				return handleCuiHintAndLog(cmd, c.mi.Hint, c.mi.ActionLog)
 			}
 		},
 	)

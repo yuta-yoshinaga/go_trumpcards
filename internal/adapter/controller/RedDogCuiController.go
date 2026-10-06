@@ -42,10 +42,8 @@ func (rc *RedDogCuiController) Exec(command string) string {
 				return rc.ci.Raise(amount), true
 			case "s", "stay":
 				return rc.ci.Stay(), true
-			case "h", "hint":
-				return rc.ci.Hint(), true
 			default:
-				return handleCuiLog(cmd, rc.ci.ActionLog)
+				return handleCuiHintAndLog(cmd, rc.ci.Hint, rc.ci.ActionLog)
 			}
 		},
 	)

@@ -23,31 +23,21 @@ func NewDuchessCuiController(di usecase.DuchessInteractorIF) *DuchessCuiControll
 
 // Exec コマンド実行
 func (c *DuchessCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(_ []string) string {
-			return c.di.Reset()
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset:        c.di.Reset,
+		move:         c.handleMove,
+		giveUp:       c.di.GiveUp,
+		autoComplete: c.di.AutoComplete,
+		undo:         c.di.Undo,
+		hint:         c.di.Hint,
+		actionLog:    c.di.ActionLog,
+		extraCommands: map[string]func([]string) string{
+			"b":    c.handleBase,
+			"base": c.handleBase,
+			"d":    func([]string) string { return c.di.Draw() },
+			"draw": func([]string) string { return c.di.Draw() },
 		},
-		[]string{"b", "base", "d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "b", "base":
-				return c.handleBase(args), true
-			case "d", "draw":
-				return c.di.Draw(), true
-			case "m", "move":
-				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.di.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.di.AutoComplete(), true
-			case "u", "undo":
-				return c.di.Undo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.di.Hint, c.di.ActionLog)
-			}
-		},
-	)
+	})
 }
 
 // handleBase 開始ランクの選択: b <fan>

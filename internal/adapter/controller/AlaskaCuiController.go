@@ -23,27 +23,15 @@ func NewAlaskaCuiController(ri usecase.AlaskaInteractorIF) *AlaskaCuiController 
 
 // Exec コマンド実行
 func (c *AlaskaCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(_ []string) string {
-			return c.ri.Reset()
-		},
-		[]string{"m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "m", "move":
-				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.ri.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.ri.AutoComplete(), true
-			case "u", "undo":
-				return c.ri.Undo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.ri.Hint, c.ri.ActionLog)
-			}
-		},
-	)
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset:        c.ri.Reset,
+		move:         c.handleMove,
+		giveUp:       c.ri.GiveUp,
+		autoComplete: c.ri.AutoComplete,
+		undo:         c.ri.Undo,
+		hint:         c.ri.Hint,
+		actionLog:    c.ri.ActionLog,
+	})
 }
 
 // handleMove 移動コマンドを処理

@@ -23,29 +23,18 @@ func NewPenguinCuiController(pi usecase.PenguinInteractorIF) *PenguinCuiControll
 
 // Exec コマンド実行
 func (c *PenguinCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(args []string) string {
-			return c.pi.Reset()
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset:        c.pi.Reset,
+		move:         c.handleMove,
+		giveUp:       c.pi.GiveUp,
+		autoComplete: c.pi.AutoComplete,
+		undo:         c.pi.Undo,
+		hint:         c.pi.Hint,
+		actionLog:    c.pi.ActionLog,
+		extraCommands: map[string]func([]string) string{
+			"f": c.handleFoundationShorthand,
 		},
-		[]string{"m", "move", "f", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "f":
-				return c.handleFoundationShorthand(args), true
-			case "m", "move":
-				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.pi.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.pi.AutoComplete(), true
-			case "u", "undo":
-				return c.pi.Undo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.pi.Hint, c.pi.ActionLog)
-			}
-		},
-	)
+	})
 }
 
 // handleMove 移動コマンドを処理

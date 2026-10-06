@@ -22,29 +22,13 @@ func NewSlyFoxCuiController(ci usecase.SlyFoxInteractorIF) *SlyFoxCuiController 
 
 // Exec コマンド実行
 func (c *SlyFoxCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(_ []string) string {
-			return c.ci.Reset()
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset: c.ci.Reset, move: c.handleMove, giveUp: c.ci.GiveUp,
+		autoComplete: c.ci.AutoComplete, undo: c.ci.Undo, hint: c.ci.Hint, actionLog: c.ci.ActionLog,
+		extraCommands: map[string]func([]string) string{
+			"d": c.handleDeal, "deal": c.handleDeal,
 		},
-		[]string{"d", "deal", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "d", "deal":
-				return c.handleDeal(args), true
-			case "m", "move":
-				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.ci.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.ci.AutoComplete(), true
-			case "u", "undo":
-				return c.ci.Undo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.ci.Hint, c.ci.ActionLog)
-			}
-		},
-	)
+	})
 }
 
 // handleDeal 配りコマンドを処理。supported syntax:

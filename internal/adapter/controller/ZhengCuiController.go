@@ -46,10 +46,8 @@ func (c *ZhengCuiController) Exec(command string) string {
 					cfg.CpuDifficulty = domain.ZhengCpuDifficulty(v)
 					return c.zi.ResetWithConfig(cfg)
 				})
-			case "h", "hint":
-				return c.zi.Hint(), true
 			default:
-				return handleCuiLog(cmd, c.zi.ActionLog)
+				return handleCuiHintAndLog(cmd, c.zi.Hint, c.zi.ActionLog)
 			}
 		},
 	)

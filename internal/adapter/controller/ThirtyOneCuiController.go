@@ -43,8 +43,6 @@ func (c *ThirtyOneCuiController) Exec(command string) string {
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ci.Discard)
 			case "k", "knock":
 				return c.ci.Knock(), true
-			case "h", "hint":
-				return c.ci.Hint(), true
 			case "nr", "nextround":
 				return c.ci.NextRound(), true
 			case "sd", "setdifficulty":
@@ -60,7 +58,7 @@ func (c *ThirtyOneCuiController) Exec(command string) string {
 					return c.ci.ResetWithConfig(cfg)
 				})
 			default:
-				return handleCuiLog(cmd, c.ci.ActionLog)
+				return handleCuiHintAndLog(cmd, c.ci.Hint, c.ci.ActionLog)
 			}
 		},
 	)

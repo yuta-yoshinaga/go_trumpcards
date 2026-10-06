@@ -23,29 +23,18 @@ func NewNapoleonsSquareCuiController(ni usecase.NapoleonsSquareInteractorIF) *Na
 
 // Exec コマンド実行
 func (c *NapoleonsSquareCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(_ []string) string {
-			return c.ni.Reset()
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset:        c.ni.Reset,
+		move:         c.handleMove,
+		giveUp:       c.ni.GiveUp,
+		autoComplete: c.ni.AutoComplete,
+		undo:         c.ni.Undo,
+		hint:         c.ni.Hint,
+		actionLog:    c.ni.ActionLog,
+		extraCommands: map[string]func([]string) string{
+			"d": func([]string) string { return c.ni.Draw() }, "draw": func([]string) string { return c.ni.Draw() },
 		},
-		[]string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "d", "draw":
-				return c.ni.Draw(), true
-			case "m", "move":
-				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.ni.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.ni.AutoComplete(), true
-			case "u", "undo":
-				return c.ni.Undo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.ni.Hint, c.ni.ActionLog)
-			}
-		},
-	)
+	})
 }
 
 // handleMove 移動コマンドを処理。supported syntax:
