@@ -20,7 +20,10 @@ const MaxActionLog = 200
 // silently drop history rather than fail loudly.
 type actionLogBase struct {
 	actionLog []*ActionLogEntry
-	// dropped counts entries trimmed from the front; most games do not persist it in KV.
+	// dropped counts entries trimmed from the front. Only games whose undo
+	// snapshots carry a mark persist it in KV: Spiderette, WillOTheWisp,
+	// CribbageSquares, PokerSquares, MonteCarlo, and FourteenOut. It resets to 0
+	// after restore for all other games.
 	dropped int
 }
 
@@ -32,11 +35,12 @@ func (b *actionLogBase) appendLogCode(playerIdx int, actionType, detailCode stri
 	b.appendLogCodeAt(b.nextTurnNumber(), playerIdx, actionType, detailCode, detailParams, cards)
 }
 
-// nextTurnNumber preserves len+1 numbering below the cap. At the cap it
-// continues from the last TurnNumber+1. It does not use dropped because most
-// games do not persist dropped in KV.
+// nextTurnNumber preserves len+1 numbering below the cap. After the cap, or
+// after an undo in a game that tracks dropped entries, it continues from the
+// last TurnNumber+1. Even when dropped resets to 0, games that do not persist it
+// continue from the last number, so numbering remains uninterrupted.
 func (b *actionLogBase) nextTurnNumber() int {
-	if len(b.actionLog) >= MaxActionLog {
+	if len(b.actionLog) > 0 && (b.dropped > 0 || len(b.actionLog) >= MaxActionLog) {
 		return b.actionLog[len(b.actionLog)-1].TurnNumber + 1
 	}
 	return len(b.actionLog) + 1
@@ -47,7 +51,9 @@ func (b *actionLogBase) actionLogMark() int { return b.dropped + len(b.actionLog
 
 // truncateActionLog restores an undo snapshot's log position. The mark includes
 // dropped entries, so undo removes the right number even when the cap trimmed
-// entries from the front after the snapshot was taken.
+// entries from the front after the snapshot was taken. If mark is less than
+// dropped (older than every retained entry), the log is cleared; only moves after
+// that snapshot remain, so clearing them is intended.
 func (b *actionLogBase) truncateActionLog(mark int) {
 	keep := mark - b.dropped
 	if keep < 0 {

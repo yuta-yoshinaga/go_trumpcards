@@ -90,6 +90,18 @@ func TestActionLogBaseCapsAndMarks(t *testing.T) {
 	require.Equal(t, 801, b.dropped)
 }
 
+func TestActionLogBaseTurnNumberAfterUndoWithDroppedEntries(t *testing.T) {
+	var b actionLogBase
+	for i := 0; i < 250; i++ {
+		b.appendLogCode(0, "move", "", nil, nil)
+	}
+	b.truncateActionLog(b.actionLogMark() - 3)
+	b.appendLogCode(0, "move", "", nil, nil)
+
+	require.Equal(t, 248, b.actionLog[len(b.actionLog)-1].TurnNumber)
+	require.Greater(t, b.actionLog[len(b.actionLog)-1].TurnNumber, b.actionLog[len(b.actionLog)-2].TurnNumber)
+}
+
 func TestActionLogBaseUsesLegacyNumberingBelowCap(t *testing.T) {
 	var b actionLogBase
 	require.Equal(t, 1, b.nextTurnNumber())
