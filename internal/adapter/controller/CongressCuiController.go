@@ -4,7 +4,6 @@ package controller
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -23,29 +22,19 @@ func NewCongressCuiController(ci usecase.CongressInteractorIF) *CongressCuiContr
 
 // Exec コマンド実行
 func (c *CongressCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(_ []string) string {
-			return c.ci.Reset()
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset:        c.ci.Reset,
+		move:         c.handleMove,
+		giveUp:       c.ci.GiveUp,
+		autoComplete: c.ci.AutoComplete,
+		undo:         c.ci.Undo,
+		hint:         c.ci.Hint,
+		actionLog:    c.ci.ActionLog,
+		extraCommands: map[string]func([]string) string{
+			"d":    func([]string) string { return c.ci.Draw() },
+			"draw": func([]string) string { return c.ci.Draw() },
 		},
-		[]string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "d", "draw":
-				return c.ci.Draw(), true
-			case "m", "move":
-				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.ci.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.ci.AutoComplete(), true
-			case "u", "undo":
-				return c.ci.Undo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.ci.Hint, c.ci.ActionLog)
-			}
-		},
-	)
+	})
 }
 
 // handleMove 移動コマンドを処理。supported syntax:
@@ -75,9 +64,9 @@ func (c *CongressCuiController) handleMoveFromTableau(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("congress.promptFromPile"), "m t {0}")
 	}
-	fromPile, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("congress.invalidPile", "val", args[0])
+	fromPile, msg, ok := cuiutil.ParseIntArgKeys(args, "", "congress.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("congress.promptToZone"), fmt.Sprintf("m t %s {0}", args[0]))
@@ -89,9 +78,9 @@ func (c *CongressCuiController) handleMoveFromTableau(args []string) string {
 		if len(args) < 3 {
 			return cuiutil.PromptRequest(i18n.T("congress.promptToPile"), fmt.Sprintf("m t %s t {0}", args[0]))
 		}
-		toPile, err := strconv.Atoi(args[2])
-		if err != nil {
-			return invalidArg("congress.invalidPile", "val", args[2])
+		toPile, msg, ok := cuiutil.ParseIntArgKeys(args[2:], "", "congress.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+		if !ok {
+			return msg
 		}
 		return c.ci.MoveTableauToTableau(fromPile, toPile)
 	default:
@@ -110,9 +99,9 @@ func (c *CongressCuiController) handleMoveFromWaste(args []string) string {
 		if len(args) < 2 {
 			return cuiutil.PromptRequest(i18n.T("congress.promptToPile"), "m w t {0}")
 		}
-		pile, err := strconv.Atoi(args[1])
-		if err != nil {
-			return invalidArg("congress.invalidPile", "val", args[1])
+		pile, msg, ok := cuiutil.ParseIntArgKeys(args[1:], "", "congress.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+		if !ok {
+			return msg
 		}
 		return c.ci.MoveWasteToTableau(pile)
 	default:
@@ -131,9 +120,9 @@ func (c *CongressCuiController) handleMoveFromStock(args []string) string {
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("congress.promptToPile"), "m s t {0}")
 	}
-	pile, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("congress.invalidPile", "val", args[1])
+	pile, msg, ok := cuiutil.ParseIntArgKeys(args[1:], "", "congress.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	return c.ci.MoveStockToTableau(pile)
 }

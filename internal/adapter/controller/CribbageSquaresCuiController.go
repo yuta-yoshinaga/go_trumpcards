@@ -33,10 +33,8 @@ func (c *CribbageSquaresCuiController) Exec(command string) string {
 				return c.pi.Undo(), true
 			case "g", "giveup":
 				return c.pi.GiveUp(), true
-			case "h", "hint":
-				return c.pi.Hint(), true
 			default:
-				return handleCuiLog(cmd, c.pi.ActionLog)
+				return handleCuiHintAndLog(cmd, c.pi.Hint, c.pi.ActionLog)
 			}
 		},
 	)

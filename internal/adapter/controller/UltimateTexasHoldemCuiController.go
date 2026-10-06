@@ -53,10 +53,8 @@ func (uc *UltimateTexasHoldemCuiController) Exec(command string) string {
 				return uc.ui.Check(), true
 			case "f", "fold":
 				return uc.ui.Fold(), true
-			case "h", "hint":
-				return uc.ui.Hint(), true
 			default:
-				return handleCuiLog(cmd, uc.ui.ActionLog)
+				return handleCuiHintAndLog(cmd, uc.ui.Hint, uc.ui.ActionLog)
 			}
 		},
 	)

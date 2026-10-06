@@ -47,10 +47,8 @@ func (c *SixBidSoloCuiController) Exec(command string) string {
 					})
 			case "n", "next":
 				return c.si.NextHand(), true
-			case "h", "hint":
-				return c.si.Hint(), true
 			default:
-				return handleCuiLog(cmd, c.si.ActionLog)
+				return handleCuiHintAndLog(cmd, c.si.Hint, c.si.ActionLog)
 			}
 		},
 	)

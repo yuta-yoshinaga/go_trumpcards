@@ -51,10 +51,8 @@ func (pgc *PaiGowCuiController) Exec(command string) string {
 				return pgc.pi.SetHands(low0, low1), true
 			case "a", "auto":
 				return pgc.pi.AutoSetHands(), true
-			case "h", "hint":
-				return pgc.pi.Hint(), true
 			default:
-				return handleCuiLog(cmd, pgc.pi.ActionLog)
+				return handleCuiHintAndLog(cmd, pgc.pi.Hint, pgc.pi.ActionLog)
 			}
 		},
 	)

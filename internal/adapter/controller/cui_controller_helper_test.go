@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
@@ -144,4 +145,88 @@ func TestExecSolitaireCui(t *testing.T) {
 		assert.Empty(t, calls, "no interactor method should have run")
 		assert.NotEmpty(t, out, "the shared helper still answers with a suggestion")
 	})
+}
+
+func TestSolitaireCuiCommandNamesMatchMigratedControllers(t *testing.T) {
+	cases := []struct {
+		name          string
+		oldCommands   []string
+		extraCommands []string
+	}{
+		{"Alaska", []string{"m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, nil},
+		{"AmericanToad", []string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "draw"}},
+		{"BigBen", []string{"d", "deal", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "deal"}},
+		{"Braid", []string{"d", "draw", "dir", "direction", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "draw", "dir", "direction"}},
+		{"Colorado", []string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "draw"}},
+		{"Congress", []string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "draw"}},
+		{"CrazyQuilt", []string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "draw"}},
+		{"Cruel", []string{"m", "move", "s", "shift", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"s", "shift"}},
+		{"Diplomat", []string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "draw"}},
+		{"Duchess", []string{"b", "base", "d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"b", "base", "d", "draw"}},
+		{"Easthaven", []string{"m", "move", "d", "deal", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "deal"}},
+		{"EightOff", []string{"m", "move", "f", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"f"}},
+		{"FreeCell", []string{"m", "move", "f", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"f"}},
+		{"GrandfathersClock", []string{"m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo", "redo"}, []string{"redo"}},
+		{"Matrimony", []string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "draw"}},
+		{"MissMilligan", []string{"d", "deal", "m", "move", "wv", "waive", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "deal", "wv", "waive"}},
+		{"NapoleonsSquare", []string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "draw"}},
+		{"Penguin", []string{"m", "move", "f", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"f"}},
+		{"RoyalCotillion", []string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "draw"}},
+		{"RussianSolitaire", []string{"m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, nil},
+		{"SalicLaw", []string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "draw"}},
+		{"SeahavenTowers", []string{"m", "move", "f", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"f"}},
+		{"SlyFox", []string{"d", "deal", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "deal"}},
+		{"Stalactites", []string{"m", "move", "f", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"f"}},
+		{"Windmill", []string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, []string{"d", "draw"}},
+		{"Yukon", []string{"m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}, nil},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			extra := make(map[string]func([]string) string, len(tc.extraCommands))
+			for _, name := range tc.extraCommands {
+				extra[name] = func([]string) string { return "" }
+			}
+			fns := solitaireCuiFns{extraCommands: extra}
+			assert.ElementsMatch(t, tc.oldCommands, solitaireCuiCommandNames(fns))
+		})
+	}
+
+	// Exercise each real Exec as well: this catches a command accidentally
+	// omitted from a controller's extraCommands map.
+	execs := map[string]func(string) string{
+		"Alaska":            (&AlaskaCuiController{ri: new(mockusecase.MockAlaskaInteractor)}).Exec,
+		"AmericanToad":      (&AmericanToadCuiController{ai: new(mockusecase.MockAmericanToadInteractor)}).Exec,
+		"BigBen":            (&BigBenCuiController{gi: new(mockusecase.MockBigBenInteractor)}).Exec,
+		"Braid":             (&BraidCuiController{bi: new(mockusecase.MockBraidInteractor)}).Exec,
+		"Colorado":          (&ColoradoCuiController{ci: new(mockusecase.MockColoradoInteractor)}).Exec,
+		"Congress":          (&CongressCuiController{ci: new(mockusecase.MockCongressInteractor)}).Exec,
+		"CrazyQuilt":        (&CrazyQuiltCuiController{ci: new(mockusecase.MockCrazyQuiltInteractor)}).Exec,
+		"Cruel":             (&CruelCuiController{ci: new(mockusecase.MockCruelInteractor)}).Exec,
+		"Diplomat":          (&DiplomatCuiController{ci: new(mockusecase.MockDiplomatInteractor)}).Exec,
+		"Duchess":           (&DuchessCuiController{di: new(mockusecase.MockDuchessInteractor)}).Exec,
+		"Easthaven":         (&EasthavenCuiController{ei: new(mockusecase.MockEasthavenInteractor)}).Exec,
+		"EightOff":          (&EightOffCuiController{ei: new(mockusecase.MockEightOffInteractor)}).Exec,
+		"FreeCell":          (&FreeCellCuiController{fi: new(mockusecase.MockFreeCellInteractor)}).Exec,
+		"GrandfathersClock": (&GrandfathersClockCuiController{gi: new(mockusecase.MockGrandfathersClockInteractor)}).Exec,
+		"Matrimony":         (&MatrimonyCuiController{ci: new(mockusecase.MockMatrimonyInteractor)}).Exec,
+		"MissMilligan":      (&MissMilliganCuiController{mi: new(mockusecase.MockMissMilliganInteractor)}).Exec,
+		"NapoleonsSquare":   (&NapoleonsSquareCuiController{ni: new(mockusecase.MockNapoleonsSquareInteractor)}).Exec,
+		"Penguin":           (&PenguinCuiController{pi: new(mockusecase.MockPenguinInteractor)}).Exec,
+		"RoyalCotillion":    (&RoyalCotillionCuiController{ci: new(mockusecase.MockRoyalCotillionInteractor)}).Exec,
+		"RussianSolitaire":  (&RussianSolitaireCuiController{ri: new(mockusecase.MockRussianSolitaireInteractor)}).Exec,
+		"SalicLaw":          (&SalicLawCuiController{ci: new(mockusecase.MockSalicLawInteractor)}).Exec,
+		"SeahavenTowers":    (&SeahavenTowersCuiController{si: new(mockusecase.MockSeahavenTowersInteractor)}).Exec,
+		"SlyFox":            (&SlyFoxCuiController{ci: new(mockusecase.MockSlyFoxInteractor)}).Exec,
+		"Stalactites":       (&StalactitesCuiController{fi: new(mockusecase.MockStalactitesInteractor)}).Exec,
+		"Windmill":          (&WindmillCuiController{wi: new(mockusecase.MockWindmillInteractor)}).Exec,
+		"Yukon":             (&YukonCuiController{yi: new(mockusecase.MockYukonInteractor)}).Exec,
+	}
+	for _, tc := range cases {
+		t.Run(tc.name+" Exec candidates", func(t *testing.T) {
+			for _, command := range tc.oldCommands {
+				out := execs[tc.name](command + "x")
+				assert.Contains(t, out, "'"+command+"'", "command %q should remain a typo suggestion", command)
+			}
+		})
+	}
 }

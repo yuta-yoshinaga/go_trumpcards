@@ -2,9 +2,6 @@ import type { Card } from '../types/card';
 import { suitSymbol } from './cardAlt';
 import { valueName } from './cardUtils';
 
-/** Backend's default Chinchón knock threshold (config.knockThreshold, default 5). */
-export const CHINCHON_DEFAULT_KNOCK_THRESHOLD = 5;
-
 /**
  * Adjacency position of a rank in the 40-card Latin deck (8/9/10 removed).
  * Runs treat A,2,3,4,5,6,7,J,Q,K as consecutive, so 7 and J are adjacent.

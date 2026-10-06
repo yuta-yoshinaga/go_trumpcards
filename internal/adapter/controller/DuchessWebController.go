@@ -94,10 +94,7 @@ func duchessDispatch(bc *baseController, w http.ResponseWriter, di usecase.Duche
 	case "u", "undo":
 		bc.writePresenterResponse(w, di.Undo())
 	case "undo_n":
-		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, di.UndoN(*param.N))
+		dispatchUndoN(bc, w, newDefault, param.N, di.UndoN)
 	default:
 		return dispatchResetHintAndLog(param.Command, bc, w, di.Reset, di.Hint, di.ActionLog)
 	}

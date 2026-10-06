@@ -89,9 +89,9 @@ func (c *OmahaCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("holdem.bettingLimitRequired"), true
 				}
-				bl, err := strconv.Atoi(args[0])
-				if err != nil {
-					return invalidArg("holdem.invalidBettingLimit", "val", args[0]), true
+				bl, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "holdem.invalidBettingLimit", cuiutil.NoMin, cuiutil.NoMax)
+				if !parseOK {
+					return parseMsg, true
 				}
 				cfg := c.oi.GetConfig()
 				cfg.BettingLimit = domain.BettingLimitType(bl)
@@ -111,9 +111,9 @@ func (c *OmahaCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("holdem.smallBlindRequired"), true
 				}
-				v, err := strconv.Atoi(args[0])
-				if err != nil {
-					return invalidArg("holdem.invalidSmallBlind", "val", args[0]), true
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "holdem.invalidSmallBlind", cuiutil.NoMin, cuiutil.NoMax)
+				if !parseOK {
+					return parseMsg, true
 				}
 				cfg := c.oi.GetConfig()
 				cfg.SmallBlind = v
@@ -122,9 +122,9 @@ func (c *OmahaCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("holdem.bigBlindRequired"), true
 				}
-				v, err := strconv.Atoi(args[0])
-				if err != nil {
-					return invalidArg("holdem.invalidBigBlind", "val", args[0]), true
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "holdem.invalidBigBlind", cuiutil.NoMin, cuiutil.NoMax)
+				if !parseOK {
+					return parseMsg, true
 				}
 				cfg := c.oi.GetConfig()
 				cfg.BigBlind = v
@@ -133,9 +133,9 @@ func (c *OmahaCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("holdem.levelHandRequired"), true
 				}
-				v, err := strconv.Atoi(args[0])
-				if err != nil {
-					return invalidArg("holdem.invalidLevelHand", "val", args[0]), true
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "holdem.invalidLevelHand", cuiutil.NoMin, cuiutil.NoMax)
+				if !parseOK {
+					return parseMsg, true
 				}
 				cfg := c.oi.GetConfig()
 				cfg.BlindLevelHands = v
@@ -144,9 +144,9 @@ func (c *OmahaCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return i18n.T("holdem.tableSizeRequired"), true
 				}
-				v, err := strconv.Atoi(args[0])
-				if err != nil {
-					return invalidArg("holdem.invalidTableSize", "val", args[0]), true
+				v, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "holdem.invalidTableSize", cuiutil.NoMin, cuiutil.NoMax)
+				if !parseOK {
+					return parseMsg, true
 				}
 				cfg := c.oi.GetConfig()
 				cfg.TableSize = v

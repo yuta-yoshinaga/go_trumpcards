@@ -7,6 +7,9 @@ import {
   BJ_COUNTING_KO,
   BJ_COUNTING_OMEGA2,
   BJ_COUNTING_ZEN,
+  BJ_SURRENDER_EARLY,
+  BJ_SURRENDER_LATE,
+  BJ_SURRENDER_NONE,
   BJ_VALID_PENETRATIONS,
 } from './bjConstants';
 
@@ -14,7 +17,7 @@ const VALID_DECK_COUNTS = [1, 2, 4, 6, 8] as const;
 const VALID_CPU_COUNTS = [0, 1, 2, 3] as const;
 const VALID_HAND_COUNTS = [1, 2, 3] as const;
 const COUNTING_SYSTEMS = [BJ_COUNTING_HILO, BJ_COUNTING_KO, BJ_COUNTING_ZEN, BJ_COUNTING_OMEGA2] as const;
-const VALID_SURRENDER_RULES = [0, 1, 2] as const;
+const VALID_SURRENDER_RULES = [BJ_SURRENDER_LATE, BJ_SURRENDER_EARLY, BJ_SURRENDER_NONE] as const;
 
 /** Props for BlackJack bet phase controls. */
 export interface BjBetPhaseControlsProps {

@@ -3,8 +3,6 @@
 package controller
 
 import (
-	"strconv"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -22,29 +20,13 @@ func NewSlyFoxCuiController(ci usecase.SlyFoxInteractorIF) *SlyFoxCuiController 
 
 // Exec コマンド実行
 func (c *SlyFoxCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(_ []string) string {
-			return c.ci.Reset()
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset: c.ci.Reset, move: c.handleMove, giveUp: c.ci.GiveUp,
+		autoComplete: c.ci.AutoComplete, undo: c.ci.Undo, hint: c.ci.Hint, actionLog: c.ci.ActionLog,
+		extraCommands: map[string]func([]string) string{
+			"d": c.handleDeal, "deal": c.handleDeal,
 		},
-		[]string{"d", "deal", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "d", "deal":
-				return c.handleDeal(args), true
-			case "m", "move":
-				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.ci.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.ci.AutoComplete(), true
-			case "u", "undo":
-				return c.ci.Undo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.ci.Hint, c.ci.ActionLog)
-			}
-		},
-	)
+	})
 }
 
 // handleDeal 配りコマンドを処理。supported syntax:
@@ -61,15 +43,15 @@ func (c *SlyFoxCuiController) handleDeal(args []string) string {
 		if len(args) < 2 {
 			return cuiutil.PromptRequest(i18n.T("slyfox.promptFoundationId"), "d f {0}")
 		}
-		fIdx, err := strconv.Atoi(args[1])
-		if err != nil {
-			return invalidArg("slyfox.invalidFoundation", "val", args[1])
+		fIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "slyfox.invalidFoundation", cuiutil.NoMin, cuiutil.NoMax)
+		if !parseOK {
+			return parseMsg
 		}
 		return c.ci.DealToFoundation(fIdx)
 	}
-	pile, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("slyfox.invalidPile", "val", args[0])
+	pile, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "slyfox.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.ci.DealToPile(pile)
 }
@@ -96,9 +78,9 @@ func (c *SlyFoxCuiController) handleMoveFromTableau(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("slyfox.promptFromPile"), "m t {0}")
 	}
-	fromPile, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("slyfox.invalidPile", "val", args[0])
+	fromPile, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "slyfox.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) >= 2 && args[1] != "f" {
 		return invalidArg("slyfox.invalidToZone", "val", args[1])

@@ -3,18 +3,6 @@
 
 import type { BaseGameResponse, Card } from '../common';
 
-/** Seats at a Baccarat Banque table: one bank and two tableaux. */
-export const BACCARAT_BANQUE_SEATS = 3;
-
-/** The banker's seat. The human always holds the bank. */
-export const BACCARAT_BANQUE_BANKER_SEAT = 0;
-
-/** The right tableau. */
-export const BACCARAT_BANQUE_RIGHT_SEAT = 1;
-
-/** The left tableau. */
-export const BACCARAT_BANQUE_LEFT_SEAT = 2;
-
 /**
  * Phases, matching the Go domain.
  *

@@ -4,7 +4,6 @@ package controller
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -23,29 +22,19 @@ func NewBigBenCuiController(gi usecase.BigBenInteractorIF) *BigBenCuiController 
 
 // Exec コマンド実行
 func (c *BigBenCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(_ []string) string {
-			return c.gi.Reset()
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset:        c.gi.Reset,
+		move:         c.handleMove,
+		giveUp:       c.gi.GiveUp,
+		autoComplete: c.gi.AutoComplete,
+		undo:         c.gi.Undo,
+		hint:         c.gi.Hint,
+		actionLog:    c.gi.ActionLog,
+		extraCommands: map[string]func([]string) string{
+			"d":    func([]string) string { return c.gi.Deal() },
+			"deal": func([]string) string { return c.gi.Deal() },
 		},
-		[]string{"d", "deal", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "d", "deal":
-				return c.gi.Deal(), true
-			case "m", "move":
-				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.gi.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.gi.AutoComplete(), true
-			case "u", "undo":
-				return c.gi.Undo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.gi.Hint, c.gi.ActionLog)
-			}
-		},
-	)
+	})
 }
 
 // handleMove 移動コマンドを処理。supported syntax:
@@ -59,9 +48,9 @@ func (c *BigBenCuiController) handleMove(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "m {0}")
 	}
-	fromCol, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[0])
+	fromCol, msg, ok := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("bigben.promptToZone"), fmt.Sprintf("m %s {0}", args[0]))
@@ -71,15 +60,15 @@ func (c *BigBenCuiController) handleMove(args []string) string {
 			return cuiutil.PromptRequest(i18n.T("bigben.promptFaceIdx"),
 				fmt.Sprintf("m %s f {0}", args[0]))
 		}
-		fIdx, err := strconv.Atoi(args[2])
-		if err != nil {
-			return invalidArg("bigben.invalidFaceIdx", "val", args[2])
+		fIdx, msg, ok := cuiutil.ParseIntArgKeys(args[2:], "", "bigben.invalidFaceIdx", cuiutil.NoMin, cuiutil.NoMax)
+		if !ok {
+			return msg
 		}
 		return c.gi.MoveTableauToFoundation(fromCol, fIdx)
 	}
-	toCol, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[1])
+	toCol, msg, ok := cuiutil.ParseIntArgKeys(args[1:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	return c.gi.MoveTableauToTableau(fromCol, toCol)
 }

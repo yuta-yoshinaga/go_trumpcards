@@ -586,6 +586,23 @@ describe('BridgePage', () => {
     expect(cells[3]).toHaveTextContent('\u30d1\u30b9'); // seat 3 Pass
   });
 
+  it('labels a redouble in its seat cell of the auction table', async () => {
+    mockExec.mockResolvedValue({
+      ...auctionTableState,
+      bidHistory: [
+        { playerIdx: 0, bidType: 1, level: 1, suit: 5 },
+        { playerIdx: 1, bidType: 2, level: 0, suit: 0 },
+        { playerIdx: 2, bidType: 3, level: 0, suit: 0 },
+        { playerIdx: 3, bidType: 0, level: 0, suit: 0 },
+      ],
+    });
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByTestId('bridge-auction-table')).toBeInTheDocument());
+    const cells = within(screen.getByTestId('bridge-auction-table')).getAllByRole('cell');
+    expect(cells[1]).toHaveTextContent('\u30c0\u30d6\u30eb'); // Double
+    expect(cells[2]).toHaveTextContent('\u30ea\u30c0\u30d6\u30eb'); // Redouble
+  });
+
   it('highlights the winning contract cell', async () => {
     mockExec.mockResolvedValue(auctionTableState);
     renderWithProviders(<BridgePage />);

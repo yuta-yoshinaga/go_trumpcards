@@ -4,7 +4,6 @@ package controller
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -23,29 +22,11 @@ func NewGrandfathersClockCuiController(gi usecase.GrandfathersClockInteractorIF)
 
 // Exec コマンド実行
 func (c *GrandfathersClockCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(_ []string) string {
-			return c.gi.Reset()
-		},
-		[]string{"m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo", "redo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "m", "move":
-				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.gi.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.gi.AutoComplete(), true
-			case "u", "undo":
-				return c.gi.Undo(), true
-			case "redo":
-				return c.gi.Redo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.gi.Hint, c.gi.ActionLog)
-			}
-		},
-	)
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset: c.gi.Reset, move: c.handleMove, giveUp: c.gi.GiveUp,
+		autoComplete: c.gi.AutoComplete, undo: c.gi.Undo, hint: c.gi.Hint, actionLog: c.gi.ActionLog,
+		extraCommands: map[string]func([]string) string{"redo": func([]string) string { return c.gi.Redo() }},
+	})
 }
 
 // handleMove 移動コマンドを処理。supported syntax:
@@ -59,9 +40,9 @@ func (c *GrandfathersClockCuiController) handleMove(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "m {0}")
 	}
-	fromCol, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[0])
+	fromCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("grandfathersclock.promptToZone"), fmt.Sprintf("m %s {0}", args[0]))
@@ -71,15 +52,15 @@ func (c *GrandfathersClockCuiController) handleMove(args []string) string {
 			return cuiutil.PromptRequest(i18n.T("grandfathersclock.promptFaceIdx"),
 				fmt.Sprintf("m %s f {0}", args[0]))
 		}
-		fIdx, err := strconv.Atoi(args[2])
-		if err != nil {
-			return invalidArg("grandfathersclock.invalidFaceIdx", "val", args[2])
+		fIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[2:], "", "grandfathersclock.invalidFaceIdx", cuiutil.NoMin, cuiutil.NoMax)
+		if !parseOK {
+			return parseMsg
 		}
 		return c.gi.MoveTableauToFoundation(fromCol, fIdx)
 	}
-	toCol, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[1])
+	toCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.gi.MoveTableauToTableau(fromCol, toCol)
 }

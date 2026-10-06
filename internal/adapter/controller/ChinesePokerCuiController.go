@@ -55,10 +55,8 @@ func (cc *ChinesePokerCuiController) Exec(command string) string {
 					middleIndices[i] = v
 				}
 				return cc.ci.SetHands(frontIndices, middleIndices), true
-			case "h", "hint":
-				return cc.ci.Hint(), true
 			default:
-				return handleCuiLog(cmd, cc.ci.ActionLog)
+				return handleCuiHintAndLog(cmd, cc.ci.Hint, cc.ci.ActionLog)
 			}
 		},
 	)

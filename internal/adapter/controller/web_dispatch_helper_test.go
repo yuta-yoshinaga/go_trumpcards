@@ -61,6 +61,32 @@ func TestDispatchResetStepLog(t *testing.T) {
 	}
 }
 
+func TestDispatchUndoN(t *testing.T) {
+	t.Run("missing n writes the required parameter error", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		dispatchUndoN(&baseController{}, w, func(msg string) map[string]string {
+			return map[string]string{"message": msg}
+		}, nil, func(int) string { return `{"method":"undo"}` })
+		assert.Equal(t, 400, w.Code)
+		assert.JSONEq(t, `{"message":"param error: n is required."}`, w.Body.String())
+	})
+
+	t.Run("writes UndoN result", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		n := 3
+		gotN := 0
+		dispatchUndoN(&baseController{}, w, func(msg string) map[string]string {
+			return map[string]string{"message": msg}
+		}, &n, func(got int) string {
+			gotN = got
+			return `{"method":"undo_n"}`
+		})
+		assert.Equal(t, 200, w.Code)
+		assert.Equal(t, 3, gotN)
+		assert.Equal(t, `{"method":"undo_n"}`, w.Body.String())
+	})
+}
+
 func TestDispatchResetStepLog_Unknown(t *testing.T) {
 	bc := &baseController{}
 	w := httptest.NewRecorder()

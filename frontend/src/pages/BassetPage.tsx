@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { bassetApi } from '../api/games/basset';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -12,6 +12,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { gameTheme } from '../styles/gameTheme';
 import type { BassetResponse } from '../types/games/basset';
 import type { TutorialStep } from '../types/tutorial';
@@ -35,9 +36,7 @@ function BassetPageContent() {
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('basset');
   const [rank, setRank] = useState(1);
   const [amount, setAmount] = useState(10);
-  useEffect(() => {
-    exec('reset');
-  }, [exec]);
+  useMountReset(exec);
   const config: CliGameConfig<BassetResponse, Parameters<typeof bassetApi.exec>> = useMemo(
     () => ({
       gameName: 'basset',

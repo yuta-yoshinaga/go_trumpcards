@@ -3,8 +3,7 @@
 package controller
 
 import (
-	"strconv"
-
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -53,10 +52,9 @@ func (c *AcesUpCuiController) handleColCommand(args []string, name string, fn fu
 	if len(args) != 1 {
 		return i18n.Tf("acesup.usageCol", "cmd", name)
 	}
-	col, err := strconv.Atoi(args[0])
-	if err != nil {
-		// 列番号のエラーは共通キーがある。ゲームごとに文言を割らない。
-		return invalidArg("invalidColumn", "val", args[0])
+	col, msg, ok := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	return fn(col)
 }

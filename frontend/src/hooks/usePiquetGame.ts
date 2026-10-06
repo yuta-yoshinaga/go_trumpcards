@@ -9,9 +9,6 @@ export const DEFAULT_PIQUET_CONFIG: PiquetConfig = {
   dealsPerPartie: 6,
 };
 
-/** Deal-count options for Piquet partie length. */
-export const DEALS_PER_PARTIE_OPTIONS = [1, 3, 6] as const;
-
 /** Hook that manages Piquet game state and player actions. */
 export function usePiquetGame() {
   const { config: piquetConfig, handleConfigChange } = useGameConfig<PiquetConfig>(DEFAULT_PIQUET_CONFIG);

@@ -70,9 +70,9 @@ func (c *TrenteEtQuaranteCuiController) handleBet(args []string) string {
 	if err != nil || bet < int(domain.TrenteEtQuaranteBetNoir) || bet > int(domain.TrenteEtQuaranteBetInverse) {
 		return invalidArg("invalidBetTypeNoir", "val", args[0])
 	}
-	stake, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidStakeDot", "val", args[1])
+	stake, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidStakeDot", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.bi.Bet(domain.TrenteEtQuaranteBet(bet), stake)
 }

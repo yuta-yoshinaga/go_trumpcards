@@ -41,8 +41,6 @@ func (c *TongitsCuiController) Exec(command string) string {
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
-			case "h", "hint":
-				return c.ci.Hint(), true
 			case "ds", "drawstock":
 				return c.ci.DrawFromStock(), true
 			case "dd", "drawdiscard":
@@ -90,7 +88,7 @@ func (c *TongitsCuiController) Exec(command string) string {
 					return c.ci.ResetWithConfig(cfg)
 				})
 			default:
-				return handleCuiLog(cmd, c.ci.ActionLog)
+				return handleCuiHintAndLog(cmd, c.ci.Hint, c.ci.ActionLog)
 			}
 		},
 	)

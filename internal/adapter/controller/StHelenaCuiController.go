@@ -78,9 +78,9 @@ func (c *StHelenaCuiController) handleMove(args []string) string {
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("sthelena.promptFromColumn"), "m t {0}")
 	}
-	fromCol, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[1])
+	fromCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) < 3 {
 		return cuiutil.PromptRequest(i18n.T("sthelena.promptToZone"), fmt.Sprintf("m t %s {0}", args[1]))
@@ -90,18 +90,18 @@ func (c *StHelenaCuiController) handleMove(args []string) string {
 		if len(args) < 4 {
 			return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m t %s t {0}", args[1]))
 		}
-		toCol, err := strconv.Atoi(args[3])
-		if err != nil {
-			return invalidArg("invalidColumn", "val", args[3])
+		toCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[3:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+		if !parseOK {
+			return parseMsg
 		}
 		return c.ci.MoveTableauToTableau(fromCol, toCol)
 	case "f":
 		if len(args) < 4 {
 			return cuiutil.PromptRequest(i18n.T("sthelena.promptFoundationId"), fmt.Sprintf("m t %s f {0}", args[1]))
 		}
-		fIdx, err := strconv.Atoi(args[3])
-		if err != nil {
-			return invalidArg("sthelena.invalidFoundationId", "val", args[3])
+		fIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[3:], "", "sthelena.invalidFoundationId", cuiutil.NoMin, cuiutil.NoMax)
+		if !parseOK {
+			return parseMsg
 		}
 		return c.ci.MoveTableauToFoundation(fromCol, fIdx)
 	default:
@@ -114,9 +114,9 @@ func (c *StHelenaCuiController) handleMoveShorthand(args []string) string {
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m %s {0}", args[0]))
 	}
-	toCol, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[1])
+	toCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.ci.MoveTableauToTableau(fromCol, toCol)
 }

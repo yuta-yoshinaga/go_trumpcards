@@ -3,8 +3,6 @@
 package controller
 
 import (
-	"strconv"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -22,29 +20,11 @@ func NewMatrimonyCuiController(ci usecase.MatrimonyInteractorIF) *MatrimonyCuiCo
 
 // Exec コマンド実行
 func (c *MatrimonyCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(_ []string) string {
-			return c.ci.Reset()
-		},
-		[]string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "d", "draw":
-				return c.ci.Draw(), true
-			case "m", "move":
-				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.ci.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.ci.AutoComplete(), true
-			case "u", "undo":
-				return c.ci.Undo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.ci.Hint, c.ci.ActionLog)
-			}
-		},
-	)
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset: c.ci.Reset, move: c.handleMove, giveUp: c.ci.GiveUp,
+		autoComplete: c.ci.AutoComplete, undo: c.ci.Undo, hint: c.ci.Hint, actionLog: c.ci.ActionLog,
+		extraCommands: map[string]func([]string) string{"d": func([]string) string { return c.ci.Draw() }, "draw": func([]string) string { return c.ci.Draw() }},
+	})
 }
 
 // handleMove 移動コマンドを処理。supported syntax:
@@ -75,9 +55,9 @@ func (c *MatrimonyCuiController) handleMoveFromTableau(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("matrimony.promptFromPile"), "m t {0}")
 	}
-	slot, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("matrimony.invalidPile", "val", args[0])
+	slot, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "matrimony.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) >= 2 && args[1] != "f" {
 		return invalidArg("matrimony.invalidToZone", "val", args[1])
@@ -96,9 +76,9 @@ func (c *MatrimonyCuiController) handleMoveFromWaste(args []string) string {
 		if len(args) < 2 {
 			return cuiutil.PromptRequest(i18n.T("matrimony.promptToPile"), "m w t {0}")
 		}
-		pile, err := strconv.Atoi(args[1])
-		if err != nil {
-			return invalidArg("matrimony.invalidPile", "val", args[1])
+		pile, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "matrimony.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+		if !parseOK {
+			return parseMsg
 		}
 		return c.ci.MoveWasteToTableau(pile)
 	default:
@@ -117,9 +97,9 @@ func (c *MatrimonyCuiController) handleMoveFromStock(args []string) string {
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("matrimony.promptToPile"), "m s t {0}")
 	}
-	pile, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("matrimony.invalidPile", "val", args[1])
+	pile, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "matrimony.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.ci.MoveStockToTableau(pile)
 }

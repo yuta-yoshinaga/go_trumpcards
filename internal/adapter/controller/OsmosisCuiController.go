@@ -3,8 +3,6 @@
 package controller
 
 import (
-	"strconv"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -82,9 +80,9 @@ func (c *OsmosisCuiController) handleMoveFromWaste(args []string) string {
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("osmosis.promptFoundation"), "m w f {0}")
 	}
-	fIdx, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[1])
+	fIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.oi.MoveWasteToFoundation(fIdx)
 }
@@ -94,9 +92,9 @@ func (c *OsmosisCuiController) handleMoveFromReserve(args []string) string {
 	if len(args) < 1 {
 		return cuiutil.PromptRequest(i18n.T("osmosis.promptReserve"), "m r {0}")
 	}
-	rIdx, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[0])
+	rIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) < 2 || args[1] != "f" {
 		return i18n.MarkError(i18n.T("osmosis.moveUsage"))
@@ -104,9 +102,9 @@ func (c *OsmosisCuiController) handleMoveFromReserve(args []string) string {
 	if len(args) < 3 {
 		return cuiutil.PromptRequest(i18n.T("osmosis.promptFoundation"), "m r "+args[0]+" f {0}")
 	}
-	fIdx, err := strconv.Atoi(args[2])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[2])
+	fIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[2:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.oi.MoveReserveToFoundation(rIdx, fIdx)
 }
