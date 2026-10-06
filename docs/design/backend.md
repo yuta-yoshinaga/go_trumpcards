@@ -162,7 +162,7 @@ classDiagram
 
 #### 共有ミックスイン
 
-337 ゲームの多くが同じ関心事を持つので、以下は**埋め込みで共有**している。
+383 ゲームの多くが同じ関心事を持つので、以下は**埋め込みで共有**している。
 §1.2 以降の per-game クラス図に現れる `GetActionLog()` / `GetTricksTaken()` /
 `GetRoundScore()` などは、たいていここから昇格してきたメソッドで、
 per-game 型が自前で定義しているわけではない。
@@ -192,9 +192,9 @@ classDiagram
         +UnmarshalJSON(data) error
     }
 
-    note for actionLogBase "272 ファイルが埋め込む (domain/action_log_base.go)。\n非公開の appendLog / appendLogAt で行を足し\nGetActionLog で読み出す"
-    note for TrickHolder "89 ファイル (domain/TrickHolder.go)。\nトリックテイキング系の取り札を保持"
-    note for RoundScoreHolder "39 ファイル (domain/RoundScoreHolder.go)。\nラウンド得点と累計得点、CommitRoundScore で確定"
+    note for actionLogBase "364 ファイルが埋め込む (domain/action_log_base.go)。\n非公開の appendLogCode / appendLogCodeAt で行を足し\nGetActionLog で読み出す。KV に毎回保存されるため\nMaxActionLog (200) 件を超えると古い順に捨てる (#10148)"
+    note for TrickHolder "110 ファイル (domain/TrickHolder.go)。\nトリックテイキング系の取り札を保持"
+    note for RoundScoreHolder "44 ファイル (domain/RoundScoreHolder.go)。\nラウンド得点と累計得点、CommitRoundScore で確定"
 ```
 
 `TrickHolder` と `RoundScoreHolder` が自前の `MarshalJSON` / `UnmarshalJSON` を
