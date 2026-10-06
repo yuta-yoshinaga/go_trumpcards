@@ -633,8 +633,6 @@ func (b *Bezique) finishGame() {
 	b.appendLogCode(-1, "game_end", "bezique.log.gameEnd", map[string]string{"score0": strconv.Itoa(b.matchScore[0]), "score1": strconv.Itoa(b.matchScore[1])}, nil)
 }
 
-// allHandsEmpty 全プレイヤーの手札が空かを返す
-
 // validatePlay カードのプレイがルール上有効かを検証する。
 func (b *Bezique) validatePlay(playerIdx int, card *Card) error {
 	return validateEndgameFollow(b.currentTrick, b, playerIdx, card)

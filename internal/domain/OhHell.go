@@ -573,7 +573,6 @@ func (o *OhHell) validatePlay(playerIdx int, card *Card) error {
 	return nil
 }
 
-// playerHasSuit プレイヤーが特定のスートを持っているか
 // trickWinner トリックの勝者を決定する
 func (o *OhHell) trickWinner() int {
 	return ResolveTrickWinner(o.currentTrick, o.trumpSuit, nil)

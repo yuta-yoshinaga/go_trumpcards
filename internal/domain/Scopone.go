@@ -330,8 +330,6 @@ func (s *Scopone) removeTableCardsByIndex(idxs []int) {
 	}
 }
 
-// allHandsEmpty 全プレイヤーの手札が空か。
-
 // --- CPU ---
 
 // chooseCpuPlay は CPU の手 (handIdx, tableIdxs) を選ぶ。捕獲できるなら最大枚数 (スコパ優先)、

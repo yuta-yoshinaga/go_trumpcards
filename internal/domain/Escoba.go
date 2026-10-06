@@ -392,8 +392,6 @@ func (e *Escoba) removeTableCardsByIndex(idxs []int) {
 	}
 }
 
-// allHandsEmpty 全プレイヤーの手札が空か。
-
 // chooseCpuPlay は CPU の手を選ぶ。15 で捕獲できるなら最大枚数 (エスコバ優先)、無ければ最大値を置く。
 func (e *Escoba) chooseCpuPlay(playerIdx int) (int, []int) {
 	p := e.players[playerIdx]

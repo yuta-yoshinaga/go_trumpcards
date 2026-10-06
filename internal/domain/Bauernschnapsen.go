@@ -717,8 +717,6 @@ func (g *Bauernschnapsen) contractMade(declarerTeam int) bool {
 	}
 }
 
-// allHandsEmpty 全プレイヤーの手札が空かを返す
-
 // IsEndgame は常に true。**このゲームは最初から「終盤」**。
 //
 // クローン元のガイゲルは山札がある間は自由出しで、尽きてから追従必須の

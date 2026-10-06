@@ -458,8 +458,6 @@ func (g *Gaigel) drawOne() *Card {
 	return drawOrTakeTrump(g.trumpCards, &g.trumpCard)
 }
 
-// allHandsEmpty 全プレイヤーの手札が空かを返す
-
 // IsEndgame 第2フェーズ (山札と切り札表示カードが尽きてマストフォローになる) かを返す
 func (g *Gaigel) IsEndgame() bool {
 	return g.trumpCards.GetRemainingCount() == 0 && g.trumpCard == nil

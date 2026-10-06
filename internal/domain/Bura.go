@@ -722,8 +722,6 @@ func clampPlayerIdx(idx, n int) int {
 	return idx
 }
 
-// allHandsEmpty 全プレイヤーの手札が尽きているかを返す。
-
 // ---- CPU ----
 
 // BuraCpuAction CPU が選んだ手。

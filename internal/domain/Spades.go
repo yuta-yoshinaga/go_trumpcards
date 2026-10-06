@@ -518,7 +518,6 @@ func (s *Spades) playerHasCard(playerIdx int, design, value int) bool {
 	return false
 }
 
-// playerHasSuit プレイヤーが特定のスートを持っているか
 // playerHasNonSpade プレイヤーがスペード以外のカードを持っているか
 func (s *Spades) playerHasNonSpade(playerIdx int) bool {
 	p := s.players[playerIdx]

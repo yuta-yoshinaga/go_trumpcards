@@ -59,3 +59,34 @@ func TestPlayerHelpersDomainErrorsHaveMessageCodes(t *testing.T) {
 		validateEndgameFollow(trick, playerHelpersErrorTestEndgame{endgame: true}, 0, offSuit),
 		ErrInvalidCard, "shared.errMustFollowEndgameRule")
 }
+
+func TestValidateFollowSuit(t *testing.T) {
+	spade := NewCard(CardDesignSpade, 5, false)
+	heart := NewCard(CardDesignHeart, 6, false)
+	trick := []*TrickCard{{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 9, false)}}
+	holdsLead := &playerHelpersErrorTestHand{cards: []*Card{spade, heart}}
+	void := &playerHelpersErrorTestHand{cards: []*Card{heart}}
+
+	tests := []struct {
+		name    string
+		trick   []*TrickCard
+		hand    *playerHelpersErrorTestHand
+		card    *Card
+		wantErr bool
+	}{
+		{"empty trick allows any card", nil, holdsLead, heart, false},
+		{"following the lead suit is legal", trick, holdsLead, spade, false},
+		{"off-suit while holding the lead suit is rejected", trick, holdsLead, heart, true},
+		{"off-suit while void in the lead suit is legal", trick, void, heart, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateFollowSuit(tt.trick, []*playerHelpersErrorTestHand{tt.hand}, 0, tt.card)
+			if tt.wantErr {
+				assertPlayerHelpersDomainError(t, err, ErrInvalidPlay, "shared.errFollowLeadSuit")
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}

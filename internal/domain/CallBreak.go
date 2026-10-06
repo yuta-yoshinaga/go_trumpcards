@@ -460,12 +460,12 @@ func (cb *CallBreak) validatePlay(playerIdx int, card *Card) error {
 	if err := validateFollowSuit(cb.currentTrick, cb.players, playerIdx, card); err != nil {
 		return err
 	}
-	if handHasSuit(cb.players[playerIdx], cb.currentTrick[0].Card.GetDesign()) {
+	if handHasSuit(cb.players[playerIdx], leadSuit) {
 		return nil
 	}
 
 	// ボイド: スペード (トランプ) を持っている場合は必ず切る必要がある
-	if leadSuit != CardDesignSpade && cb.playerHasSuit(playerIdx, CardDesignSpade) {
+	if leadSuit != CardDesignSpade && handHasSuit(cb.players[playerIdx], CardDesignSpade) {
 		if card.GetDesign() != CardDesignSpade {
 			return NewDomainErrorCode(ErrInvalidPlay, "callbreak.errMustTrump", nil)
 		}
@@ -473,11 +473,6 @@ func (cb *CallBreak) validatePlay(playerIdx int, card *Card) error {
 	return nil
 }
 
-func (cb *CallBreak) playerHasSuit(playerIdx, design int) bool {
-	return handHasSuit(cb.players[playerIdx], design)
-}
-
-// playerHasSuit プレイヤーが特定のスートを持っているか
 // playerHasNonSpade プレイヤーがスペード以外のカードを持っているか
 func (cb *CallBreak) playerHasNonSpade(playerIdx int) bool {
 	p := cb.players[playerIdx]

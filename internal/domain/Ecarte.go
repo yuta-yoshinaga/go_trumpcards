@@ -512,8 +512,6 @@ func (e *Ecarte) appendLog(playerIdx int, actionType, detailCode string, detailP
 	e.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
-// allHandsEmpty 全プレイヤーの手札が空かを返す
-
 // validatePlay マストフォロー (フォロー→勝てるなら勝つ→出せないなら切り札) を検証する。
 func (e *Ecarte) validatePlay(playerIdx int, card *Card) error {
 	if card == nil {

@@ -599,6 +599,7 @@ func (h *Hearts) validatePlay(playerIdx int, card *Card) error {
 	if err := validateFollowSuit(h.currentTrick, h.players, playerIdx, card); err != nil {
 		return err
 	}
+	// validateFollowSuit が通ったので、ここで off-suit なら手番の人はリードスートを持っていない。
 	if card.GetDesign() != leadSuit {
 		// 最初のトリックではハートとQ♠を出せない（強制される場合を除く）
 		if h.trickNumber == 1 {

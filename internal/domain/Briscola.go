@@ -498,8 +498,6 @@ func (b *Briscola) drawOne() *Card {
 	return drawOrTakeTrump(b.trumpCards, &b.trumpCard)
 }
 
-// allHandsEmpty 全プレイヤーの手札が空かを返す
-
 // finishGame ゲームを終了させ、勝者を決定する
 func (b *Briscola) finishGame() {
 	b.gameEndFlag = true
