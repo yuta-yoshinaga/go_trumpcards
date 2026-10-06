@@ -19,6 +19,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnSuccess } from '../styles/buttonStyles';
@@ -107,11 +108,7 @@ function CuarentaPageContent() {
   // that card would capture (equal-rank sweep). Clicking still plays instantly.
   const [previewHandIndex, setPreviewHandIndex] = useState<number | null>(null);
 
-  // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    exec('reset');
-  }, []);
+  useMountReset(exec);
 
   const handleDifficultyChange = (value: string) => {
     const level = Number(value);

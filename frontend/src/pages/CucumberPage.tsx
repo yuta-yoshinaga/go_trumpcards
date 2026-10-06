@@ -19,6 +19,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { badgeWarning } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -82,9 +83,7 @@ function CucumberPageContent() {
   );
   const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    void dispatch('reset');
-  }, [dispatch]);
+  useMountReset(dispatch);
 
   useEffect(() => {
     if (!state || previousStateRef.current === state) return;

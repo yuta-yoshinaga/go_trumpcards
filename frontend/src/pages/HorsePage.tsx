@@ -21,6 +21,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { HorseResponse } from '../types/card';
@@ -153,11 +154,7 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint(gameKey, state);
 
-  // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    callApi('reset');
-  }, []);
+  useMountReset(callApi);
 
   const resetWithConfig = useCallback(() => {
     callApi('reset', { config: { seats, handsPerDiscipline } });

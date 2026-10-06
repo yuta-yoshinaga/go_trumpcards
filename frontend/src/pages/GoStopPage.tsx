@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import type { gostopApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_SCORE_OPTIONS, useGoStopGame } from '../hooks/useGoStopGame';
+import { useMountReset } from '../hooks/useMountReset';
 import { badgeInfoColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -74,11 +75,7 @@ function GoStopPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('gostop', state);
 
-  // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    callApi('reset');
-  }, []);
+  useMountReset(callApi);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('gostop');
   const cliConfig: CliGameConfig<GoStopResponse, Parameters<typeof gostopApi.exec>> = useMemo(

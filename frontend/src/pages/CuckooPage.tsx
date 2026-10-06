@@ -21,6 +21,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { badgeWarningColors } from '../styles/badgeStyles';
@@ -107,11 +108,7 @@ function CuckooPageContent() {
   const [cpuDifficulty, setCpuDifficulty] = useState(1);
   const [initialLives, setInitialLives] = useState(3);
 
-  // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    exec('reset');
-  }, []);
+  useMountReset(exec);
 
   const handleDifficultyChange = (value: string) => {
     const level = Number(value);
