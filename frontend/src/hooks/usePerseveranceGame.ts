@@ -1,48 +1,37 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { type PerseveranceMoveZone, perseveranceApi } from '../api/gameApi';
 import type { PerseveranceHint } from '../types/card';
-import { useAutoCompleteState } from './useAutoCompleteState';
-import { useGameApi } from './useGameApi';
-import { useHintRequest } from './useHintRequest';
+import { useSolitaireGameBase } from './useSolitaireGameBase';
 
 /** Hook that manages Perseverance game state, source selection, hints, and moves. */
 export function usePerseveranceGame() {
-  const { state, loading, error, exec: rawExec, retry } = useGameApi(perseveranceApi.exec);
   const [selectedSource, setSelectedSource] = useState<PerseveranceMoveZone | null>(null);
-  const [hint, setHint] = useState<PerseveranceHint | null>(null);
-  const [hintError, setHintError] = useState<string | null>(null);
-  const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
-  const exec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
-
-  useEffect(() => {
-    exec('reset');
-  }, [exec]);
-
-  const handleReset = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    exec('reset');
-  }, [exec]);
-
-  const handleGiveUp = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    exec('giveup');
-  }, [exec]);
-
-  const handleHint = useHintRequest({
-    fetchHint: () => perseveranceApi.exec('hint'),
-    selectHint: (res) => res.hint,
+  const onClearSelection = useCallback(() => setSelectedSource(null), []);
+  const {
+    apiCall: exec,
+    runAction,
+    state,
+    loading,
+    error,
+    retry,
+    hint,
+    hintError,
+    isAutoCompleting,
     setHint,
-    setHintError,
+    handleReset,
+    handleGiveUp,
+    handleHint,
+    handleAutoComplete,
+    handleUndo,
+  } = useSolitaireGameBase<
+    Awaited<ReturnType<typeof perseveranceApi.exec>>,
+    Parameters<typeof perseveranceApi.exec>,
+    PerseveranceHint
+  >(perseveranceApi.exec, {
+    onClearSelection,
+    hintApi: () => perseveranceApi.exec('hint'),
+    selectHint: (res) => res.hint,
   });
-
-  const handleAutoComplete = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    startAutoComplete();
-    exec('autocomplete');
-  }, [exec, startAutoComplete]);
 
   // **リディールは Perseverance だけの救済手段** (クローン元の Baker's Dozen には無い)。
   // 選択とヒントを落としてから投げる ── 盤が総入れ替えになるので、残した索引は
@@ -51,23 +40,10 @@ export function usePerseveranceGame() {
     setSelectedSource(null);
     setHint(null);
     exec('redeal');
-  }, [exec]);
-
-  const handleUndo = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    exec('undo');
-  }, [exec]);
+  }, [exec, setHint]);
 
   /** Undo N moves at once to escape a stalemate. */
-  const handleUndoEscape = useCallback(
-    (n: number) => {
-      setSelectedSource(null);
-      setHint(null);
-      exec('undo_n', undefined, undefined, n);
-    },
-    [exec],
-  );
+  const handleUndoEscape = useCallback((n: number) => runAction('undo_n', undefined, undefined, n), [runAction]);
 
   const handleSelectSource = useCallback((zone: PerseveranceMoveZone) => {
     setSelectedSource((prev) => {
@@ -85,7 +61,7 @@ export function usePerseveranceGame() {
       exec('move', selectedSource, zone);
       setSelectedSource(null);
     },
-    [selectedSource, exec],
+    [selectedSource, exec, setHint],
   );
 
   return {

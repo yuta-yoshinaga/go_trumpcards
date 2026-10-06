@@ -1,65 +1,38 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { bisleyApi } from '../api/gameApi';
 import type { BisleyHint, BisleyMoveZone } from '../types/card';
-import { useAutoCompleteState } from './useAutoCompleteState';
-import { useGameApi } from './useGameApi';
-import { useHintRequest } from './useHintRequest';
+import { useSolitaireGameBase } from './useSolitaireGameBase';
 
 /** Hook that manages Bisley game state, source selection, hints, and moves. */
 export function useBisleyGame() {
-  const { state, loading, error, exec: rawExec, retry } = useGameApi(bisleyApi.exec);
   const [selectedSource, setSelectedSource] = useState<BisleyMoveZone | null>(null);
-  const [hint, setHint] = useState<BisleyHint | null>(null);
-  const [hintError, setHintError] = useState<string | null>(null);
-  const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
-
-  const runApi = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
-
-  useEffect(() => {
-    runApi('reset');
-  }, [runApi]);
-
-  const handleReset = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    runApi('reset');
-  }, [runApi]);
-
-  const handleGiveUp = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    runApi('giveup');
-  }, [runApi]);
-
-  const handleHint = useHintRequest({
-    fetchHint: () => bisleyApi.exec('hint'),
-    selectHint: (res) => res.hint,
+  const onClearSelection = useCallback(() => setSelectedSource(null), []);
+  const {
+    apiCall,
+    runAction,
+    state,
+    loading,
+    error,
+    retry,
+    hint,
+    hintError,
+    isAutoCompleting,
     setHint,
-    setHintError,
-  });
-
-  const handleAutoComplete = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    startAutoComplete();
-    runApi('autocomplete');
-  }, [runApi, startAutoComplete]);
-
-  const handleUndo = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    runApi('undo');
-  }, [runApi]);
-
-  /** Undo N moves at once to escape a stalemate. */
-  const handleUndoEscape = useCallback(
-    (n: number) => {
-      setSelectedSource(null);
-      setHint(null);
-      runApi('undo_n', undefined, undefined, n);
+    handleReset,
+    handleGiveUp,
+    handleHint,
+    handleAutoComplete,
+    handleUndo,
+  } = useSolitaireGameBase<Awaited<ReturnType<typeof bisleyApi.exec>>, Parameters<typeof bisleyApi.exec>, BisleyHint>(
+    bisleyApi.exec,
+    {
+      onClearSelection,
+      hintApi: () => bisleyApi.exec('hint'),
+      selectHint: (res) => res.hint,
     },
-    [runApi],
   );
+  /** Undo N moves at once to escape a stalemate. */
+  const handleUndoEscape = useCallback((n: number) => runAction('undo_n', undefined, undefined, n), [runAction]);
 
   const handleSelectSource = useCallback((zone: BisleyMoveZone) => {
     setSelectedSource((prev) => {
@@ -74,10 +47,10 @@ export function useBisleyGame() {
     (zone: BisleyMoveZone) => {
       if (!selectedSource) return;
       setHint(null);
-      runApi('move', selectedSource, zone);
+      apiCall('move', selectedSource, zone);
       setSelectedSource(null);
     },
-    [selectedSource, runApi],
+    [selectedSource, apiCall, setHint],
   );
 
   return {
@@ -85,7 +58,7 @@ export function useBisleyGame() {
     loading,
     error,
     hintError,
-    exec: runApi,
+    exec: apiCall,
     selectedSource,
     hint,
     handleReset,

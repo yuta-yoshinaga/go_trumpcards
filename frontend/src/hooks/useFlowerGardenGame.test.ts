@@ -60,6 +60,19 @@ describe('useFlowerGardenGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
   });
 
+  it('clears the selected source before a shared action', async () => {
+    const { result } = renderHook(() => useFlowerGardenGame(), { wrapper: makeWrapper() });
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    act(() => result.current.handleSelectSource({ zone: 'reserve', col: 0 }));
+    expect(result.current.selectedSource).toEqual({ zone: 'reserve', col: 0 });
+
+    act(() => result.current.handleGiveUp());
+
+    expect(result.current.selectedSource).toBeNull();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
+  });
+
   it('handleAutoComplete dispatches autocomplete', async () => {
     const { result } = renderHook(() => useFlowerGardenGame(), { wrapper: makeWrapper() });
     await waitFor(() => expect(mockExec).toHaveBeenCalled());

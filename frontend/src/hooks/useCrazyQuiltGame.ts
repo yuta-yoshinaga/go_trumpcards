@@ -1,71 +1,45 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { crazyquiltApi } from '../api/gameApi';
 import type { CrazyQuiltHint, CrazyQuiltMoveZone } from '../types/card';
-import { useAutoCompleteState } from './useAutoCompleteState';
-import { useGameApi } from './useGameApi';
-import { useHintRequest } from './useHintRequest';
+import { useSolitaireGameBase } from './useSolitaireGameBase';
 
 /** Hook that manages CrazyQuilt game state, source selection, hints, and moves. */
 export function useCrazyQuiltGame() {
-  const { state, loading, error, exec: rawExec, retry } = useGameApi(crazyquiltApi.exec);
   const [selectedSource, setSelectedSource] = useState<CrazyQuiltMoveZone | null>(null);
-  const [hint, setHint] = useState<CrazyQuiltHint | null>(null);
-  const [hintError, setHintError] = useState<string | null>(null);
-  const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
-
-  const runApi = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
-
-  useEffect(() => {
-    runApi('reset');
-  }, [runApi]);
-
-  const handleReset = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    runApi('reset');
-  }, [runApi]);
-
+  const onClearSelection = useCallback(() => setSelectedSource(null), []);
+  const {
+    apiCall,
+    runAction,
+    state,
+    loading,
+    error,
+    retry,
+    hint,
+    hintError,
+    isAutoCompleting,
+    setHint,
+    handleReset,
+    handleGiveUp,
+    handleHint,
+    handleAutoComplete,
+    handleUndo,
+  } = useSolitaireGameBase<
+    Awaited<ReturnType<typeof crazyquiltApi.exec>>,
+    Parameters<typeof crazyquiltApi.exec>,
+    CrazyQuiltHint
+  >(crazyquiltApi.exec, {
+    onClearSelection,
+    hintApi: () => crazyquiltApi.exec('hint'),
+    selectHint: (res) => res.hint,
+  });
   const handleDraw = useCallback(() => {
     setSelectedSource(null);
     setHint(null);
-    runApi('draw');
-  }, [runApi]);
-
-  const handleGiveUp = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    runApi('giveup');
-  }, [runApi]);
-
-  const handleHint = useHintRequest({
-    fetchHint: () => crazyquiltApi.exec('hint'),
-    selectHint: (res) => res.hint,
-    setHint,
-    setHintError,
-  });
-
-  const handleAutoComplete = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    startAutoComplete();
-    runApi('autocomplete');
-  }, [runApi, startAutoComplete]);
-
-  const handleUndo = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    runApi('undo');
-  }, [runApi]);
+    apiCall('draw');
+  }, [apiCall, setHint]);
 
   /** Undo N moves at once to escape a stalemate. */
-  const handleUndoEscape = useCallback(
-    (n: number) => {
-      setSelectedSource(null);
-      setHint(null);
-      runApi('undo_n', undefined, undefined, n);
-    },
-    [runApi],
-  );
+  const handleUndoEscape = useCallback((n: number) => runAction('undo_n', undefined, undefined, n), [runAction]);
 
   const handleSelectSource = useCallback((zone: CrazyQuiltMoveZone) => {
     setSelectedSource((prev) => {
@@ -78,10 +52,10 @@ export function useCrazyQuiltGame() {
     (zone: CrazyQuiltMoveZone) => {
       if (!selectedSource) return;
       setHint(null);
-      runApi('move', selectedSource, zone);
+      apiCall('move', selectedSource, zone);
       setSelectedSource(null);
     },
-    [selectedSource, runApi],
+    [selectedSource, apiCall, setHint],
   );
 
   return {
@@ -89,7 +63,7 @@ export function useCrazyQuiltGame() {
     loading,
     error,
     hintError,
-    exec: runApi,
+    exec: apiCall,
     selectedSource,
     hint,
     handleReset,

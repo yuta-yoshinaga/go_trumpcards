@@ -1,72 +1,45 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { bigBenApi } from '../api/gameApi';
 import type { BigBenHint, BigBenMoveZone } from '../types/card';
-import { useAutoCompleteState } from './useAutoCompleteState';
-import { useGameApi } from './useGameApi';
-import { useHintRequest } from './useHintRequest';
+import { useSolitaireGameBase } from './useSolitaireGameBase';
 
 /** Hook that manages Big Ben game state, source selection, hints, and moves. */
 export function useBigBenGame() {
-  const { state, loading, error, exec: rawExec, retry } = useGameApi(bigBenApi.exec);
   const [selectedSource, setSelectedSource] = useState<BigBenMoveZone | null>(null);
-  const [hint, setHint] = useState<BigBenHint | null>(null);
-  const [hintError, setHintError] = useState<string | null>(null);
-  const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
-
-  const runApi = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
-
-  useEffect(() => {
-    runApi('reset');
-  }, [runApi]);
-
-  const handleReset = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    runApi('reset');
-  }, [runApi]);
-
-  const handleGiveUp = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    runApi('giveup');
-  }, [runApi]);
-
-  const handleHint = useHintRequest({
-    fetchHint: () => bigBenApi.exec('hint'),
-    selectHint: (res) => res.hint,
+  const onClearSelection = useCallback(() => setSelectedSource(null), []);
+  const {
+    apiCall,
+    runAction,
+    state,
+    loading,
+    error,
+    retry,
+    hint,
+    hintError,
+    isAutoCompleting,
     setHint,
-    setHintError,
-  });
-
+    handleReset,
+    handleGiveUp,
+    handleHint,
+    handleAutoComplete,
+    handleUndo,
+  } = useSolitaireGameBase<Awaited<ReturnType<typeof bigBenApi.exec>>, Parameters<typeof bigBenApi.exec>, BigBenHint>(
+    bigBenApi.exec,
+    {
+      onClearSelection,
+      hintApi: () => bigBenApi.exec('hint'),
+      selectHint: (res) => res.hint,
+    },
+  );
   // **補充がこのゲームの逃げ道。**手が尽きたら各列を 3 枚まで戻す。
   const handleDeal = useCallback(() => {
     setSelectedSource(null);
     setHint(null);
-    runApi('deal');
-  }, [runApi]);
-
-  const handleAutoComplete = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    startAutoComplete();
-    runApi('autocomplete');
-  }, [runApi, startAutoComplete]);
-
-  const handleUndo = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    runApi('undo');
-  }, [runApi]);
+    apiCall('deal');
+  }, [apiCall, setHint]);
 
   /** Undo N moves at once to escape a stalemate. */
-  const handleUndoEscape = useCallback(
-    (n: number) => {
-      setSelectedSource(null);
-      setHint(null);
-      runApi('undo_n', undefined, undefined, n);
-    },
-    [runApi],
-  );
+  const handleUndoEscape = useCallback((n: number) => runAction('undo_n', undefined, undefined, n), [runAction]);
 
   const handleSelectSource = useCallback((zone: BigBenMoveZone) => {
     setSelectedSource((prev) => {
@@ -81,10 +54,10 @@ export function useBigBenGame() {
     (zone: BigBenMoveZone) => {
       if (!selectedSource) return;
       setHint(null);
-      runApi('move', selectedSource, zone);
+      apiCall('move', selectedSource, zone);
       setSelectedSource(null);
     },
-    [selectedSource, runApi],
+    [selectedSource, apiCall, setHint],
   );
 
   return {
@@ -92,7 +65,7 @@ export function useBigBenGame() {
     loading,
     error,
     hintError,
-    exec: runApi,
+    exec: apiCall,
     selectedSource,
     hint,
     handleReset,

@@ -1,71 +1,53 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { type FortyThievesMoveZone, fortyThievesApi } from '../api/gameApi';
 import type { Card, FortyThievesHint } from '../types/card';
 import { fortyThievesFoundationTarget } from '../utils/fortyThievesFoundationTarget';
-import { useAutoCompleteState } from './useAutoCompleteState';
-import { useGameApi } from './useGameApi';
-import { useHintRequest } from './useHintRequest';
+
+import { useSolitaireGameBase } from './useSolitaireGameBase';
 
 /** Hook that manages Forty Thieves game state, source selection, hints, and moves. */
 export function useFortyThievesGame() {
-  const { state, loading, error, exec: rawExec, retry } = useGameApi(fortyThievesApi.exec);
   const [selectedSource, setSelectedSource] = useState<FortyThievesMoveZone | null>(null);
-  const [hint, setHint] = useState<FortyThievesHint | null>(null);
-  const [hintError, setHintError] = useState<string | null>(null);
-  const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
 
-  const exec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
-
-  useEffect(() => {
-    exec('reset');
-  }, [exec]);
+  const onClearSelection = useCallback(() => setSelectedSource(null), []);
+  const {
+    state,
+    loading,
+    error,
+    retry,
+    apiCall: exec,
+    hint,
+    hintError,
+    isAutoCompleting,
+    setHint,
+    handleReset,
+    handleGiveUp,
+    handleHint,
+    handleAutoComplete,
+    handleUndo,
+  } = useSolitaireGameBase<
+    Awaited<ReturnType<typeof fortyThievesApi.exec>>,
+    Parameters<typeof fortyThievesApi.exec>,
+    FortyThievesHint
+  >(fortyThievesApi.exec, {
+    onClearSelection,
+    hintApi: () => fortyThievesApi.exec('hint'),
+    selectHint: (res) => res.hint,
+  });
 
   const handleDraw = useCallback(() => {
     setSelectedSource(null);
     setHint(null);
     exec('draw');
-  }, [exec]);
+  }, [exec, setHint]);
 
-  const handleReset = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    exec('reset');
-  }, [exec]);
-
-  const handleGiveUp = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    exec('giveup');
-  }, [exec]);
-
-  const handleHint = useHintRequest({
-    fetchHint: () => fortyThievesApi.exec('hint'),
-    selectHint: (res) => res.hint,
-    setHint,
-    setHintError,
-  });
-
-  const handleAutoComplete = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    startAutoComplete();
-    exec('autocomplete');
-  }, [exec, startAutoComplete]);
-
-  const handleUndo = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    exec('undo');
-  }, [exec]);
-
-  /** Undo N moves at once to escape a stalemate. */
   const handleUndoEscape = useCallback(
     (n: number) => {
       setSelectedSource(null);
       setHint(null);
       exec('undo_n', undefined, undefined, n);
     },
-    [exec],
+    [exec, setHint],
   );
 
   const handleSelectSource = useCallback((zone: FortyThievesMoveZone) => {
@@ -84,7 +66,7 @@ export function useFortyThievesGame() {
       exec('move', selectedSource, zone);
       setSelectedSource(null);
     },
-    [selectedSource, exec],
+    [selectedSource, exec, setHint],
   );
 
   /**
@@ -101,7 +83,7 @@ export function useFortyThievesGame() {
       exec('move', source, target);
       setSelectedSource(null);
     },
-    [state?.foundation, exec],
+    [state?.foundation, exec, setHint],
   );
 
   return {
