@@ -4,7 +4,6 @@ package controller
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -88,9 +87,9 @@ func (c *FourSeasonsCuiController) handleFromWaste(args []string) string {
 	if len(args) < 3 {
 		return cuiutil.PromptRequest(i18n.T("fourseasons.promptIndex"), fmt.Sprintf("m w %s {0}", dest))
 	}
-	idx, err := strconv.Atoi(args[2])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[2])
+	idx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[2:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if dest == "f" {
 		return c.ci.MoveWasteToFoundation(idx)
@@ -102,9 +101,9 @@ func (c *FourSeasonsCuiController) handleFromTableau(args []string) string {
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "m t {0}")
 	}
-	fromCol, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[1])
+	fromCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) < 3 {
 		return cuiutil.PromptRequest(i18n.T("fourseasons.promptToZone"), fmt.Sprintf("m t %d {0}", fromCol))
@@ -116,9 +115,9 @@ func (c *FourSeasonsCuiController) handleFromTableau(args []string) string {
 	if len(args) < 4 {
 		return cuiutil.PromptRequest(i18n.T("fourseasons.promptIndex"), fmt.Sprintf("m t %d %s {0}", fromCol, dest))
 	}
-	toIdx, err := strconv.Atoi(args[3])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[3])
+	toIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[3:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if dest == "f" {
 		return c.ci.MoveTableauToFoundation(fromCol, toIdx)

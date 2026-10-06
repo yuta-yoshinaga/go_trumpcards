@@ -4,7 +4,6 @@ package controller
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -52,9 +51,9 @@ func (c *SalicLawCuiController) handleMoveFromTableau(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("saliclaw.promptFromPile"), "m t {0}")
 	}
-	fromPile, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("saliclaw.invalidPile", "val", args[0])
+	fromPile, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "saliclaw.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("saliclaw.promptToZone"), fmt.Sprintf("m t %s {0}", args[0]))
@@ -66,9 +65,9 @@ func (c *SalicLawCuiController) handleMoveFromTableau(args []string) string {
 		if len(args) < 3 {
 			return cuiutil.PromptRequest(i18n.T("saliclaw.promptToPile"), fmt.Sprintf("m t %s t {0}", args[0]))
 		}
-		toPile, err := strconv.Atoi(args[2])
-		if err != nil {
-			return invalidArg("saliclaw.invalidPile", "val", args[2])
+		toPile, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[2:], "", "saliclaw.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+		if !parseOK {
+			return parseMsg
 		}
 		return c.ci.MoveTableauToTableau(fromPile, toPile)
 	default:

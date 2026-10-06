@@ -75,9 +75,9 @@ func (c *SultanCuiController) handleMove(args []string) string {
 		if len(args) < 2 {
 			return cuiutil.PromptRequest(i18n.T("sultan.promptDivanIndex"), "m d {0}")
 		}
-		idx, err := strconv.Atoi(args[1])
-		if err != nil {
-			return invalidArg("sultan.invalidDivanIndex", "val", args[1])
+		idx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "sultan.invalidDivanIndex", cuiutil.NoMin, cuiutil.NoMax)
+		if !parseOK {
+			return parseMsg
 		}
 		return c.si.MoveDivanToFoundation(idx)
 	default:

@@ -4,7 +4,6 @@ package controller
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -59,9 +58,9 @@ func (c *WindmillCuiController) handleMoveFromSail(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("windmill.promptSail"), "m s {0}")
 	}
-	sail, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("windmill.invalidSailIdx", "val", args[0])
+	sail, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "windmill.invalidSailIdx", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("windmill.promptToZone"), fmt.Sprintf("m s %s {0}", args[0]))
@@ -73,9 +72,9 @@ func (c *WindmillCuiController) handleMoveFromSail(args []string) string {
 		if len(args) < 3 {
 			return cuiutil.PromptRequest(i18n.T("windmill.promptCorner"), fmt.Sprintf("m s %s k {0}", args[0]))
 		}
-		corner, err := strconv.Atoi(args[2])
-		if err != nil {
-			return invalidArg("windmill.invalidCornerIdx", "val", args[2])
+		corner, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[2:], "", "windmill.invalidCornerIdx", cuiutil.NoMin, cuiutil.NoMax)
+		if !parseOK {
+			return parseMsg
 		}
 		return c.wi.MoveSailToCorner(sail, corner)
 	default:
@@ -94,9 +93,9 @@ func (c *WindmillCuiController) handleMoveFromWaste(args []string) string {
 		if len(args) < 2 {
 			return cuiutil.PromptRequest(i18n.T("windmill.promptCorner"), "m w k {0}")
 		}
-		corner, err := strconv.Atoi(args[1])
-		if err != nil {
-			return invalidArg("windmill.invalidCornerIdx", "val", args[1])
+		corner, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "windmill.invalidCornerIdx", cuiutil.NoMin, cuiutil.NoMax)
+		if !parseOK {
+			return parseMsg
 		}
 		return c.wi.MoveWasteToCorner(corner)
 	default:
@@ -110,9 +109,9 @@ func (c *WindmillCuiController) handleMoveFromCorner(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("windmill.promptCorner"), "m k {0}")
 	}
-	corner, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("windmill.invalidCornerIdx", "val", args[0])
+	corner, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "windmill.invalidCornerIdx", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("windmill.promptToZone"), fmt.Sprintf("m k %s {0}", args[0]))

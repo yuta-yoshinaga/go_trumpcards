@@ -72,9 +72,9 @@ func (c *PenguinCuiController) handleMoveFromTableau(args []string) string {
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("penguin.promptToZone"), fmt.Sprintf("m t %s {0}", args[0]))
 	}
-	fromCol, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[0])
+	fromCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 
 	switch args[1] {
@@ -84,18 +84,18 @@ func (c *PenguinCuiController) handleMoveFromTableau(args []string) string {
 		if len(args) < 3 {
 			return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m t %d t {0}", fromCol))
 		}
-		toCol, err := strconv.Atoi(args[2])
-		if err != nil {
-			return invalidArg("invalidColumn", "val", args[2])
+		toCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[2:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+		if !parseOK {
+			return parseMsg
 		}
 		return c.pi.MoveTableauToTableau(fromCol, -1, toCol)
 	case "c":
 		if len(args) < 3 {
 			return cuiutil.PromptRequest(i18n.T("promptCell"), fmt.Sprintf("m t %d c {0}", fromCol))
 		}
-		cell, err := strconv.Atoi(args[2])
-		if err != nil {
-			return invalidArg("invalidCell", "val", args[2])
+		cell, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[2:], "", "invalidCell", cuiutil.NoMin, cuiutil.NoMax)
+		if !parseOK {
+			return parseMsg
 		}
 		return c.pi.MoveTableauToFreeCell(fromCol, cell)
 	default:
@@ -109,9 +109,9 @@ func (c *PenguinCuiController) handleMoveFromTableau(args []string) string {
 			}
 			return i18n.MarkError(i18n.T("penguin.moveUsage"))
 		}
-		toCol, err := strconv.Atoi(args[3])
-		if err != nil {
-			return invalidArg("invalidColumn", "val", args[3])
+		toCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[3:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+		if !parseOK {
+			return parseMsg
 		}
 		return c.pi.MoveTableauToTableau(fromCol, cardIdx, toCol)
 	}
@@ -124,9 +124,9 @@ func (c *PenguinCuiController) handleMoveFromFreeCell(args []string) string {
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("penguin.promptToZoneFromCell"), fmt.Sprintf("m c %s {0}", args[0]))
 	}
-	cell, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidCell", "val", args[0])
+	cell, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidCell", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 
 	switch args[1] {
@@ -134,9 +134,9 @@ func (c *PenguinCuiController) handleMoveFromFreeCell(args []string) string {
 		if len(args) < 3 {
 			return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m c %d t {0}", cell))
 		}
-		col, err := strconv.Atoi(args[2])
-		if err != nil {
-			return invalidArg("invalidColumn", "val", args[2])
+		col, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[2:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+		if !parseOK {
+			return parseMsg
 		}
 		return c.pi.MoveFreeCellToTableau(cell, col)
 	case "f":
@@ -150,9 +150,9 @@ func (c *PenguinCuiController) handleFoundationShorthand(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "f {0}")
 	}
-	col, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[0])
+	col, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.pi.MoveTableauToFoundation(col)
 }
@@ -162,9 +162,9 @@ func (c *PenguinCuiController) handleMoveShorthand(args []string) string {
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m %s {0}", args[0]))
 	}
-	toCol, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[1])
+	toCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.pi.MoveTableauToTableau(fromCol, -1, toCol)
 }

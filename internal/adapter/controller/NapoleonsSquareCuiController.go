@@ -4,7 +4,6 @@ package controller
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -69,9 +68,9 @@ func (c *NapoleonsSquareCuiController) handleMoveFromWaste(args []string) string
 		if len(args) < 2 {
 			return cuiutil.PromptRequest(i18n.T("promptToColumn"), "m w t {0}")
 		}
-		col, err := strconv.Atoi(args[1])
-		if err != nil {
-			return invalidArg("invalidColumn", "val", args[1])
+		col, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+		if !parseOK {
+			return parseMsg
 		}
 		return c.ni.MoveWasteToTableau(col)
 	default:
@@ -83,9 +82,9 @@ func (c *NapoleonsSquareCuiController) handleMoveFromTableau(args []string) stri
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "m t {0}")
 	}
-	fromCol, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[0])
+	fromCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("napoleonssquare.promptToZone"), fmt.Sprintf("m t %s {0}", args[0]))
@@ -97,16 +96,16 @@ func (c *NapoleonsSquareCuiController) handleMoveFromTableau(args []string) stri
 		if len(args) < 3 {
 			return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m t %s t {0}", args[0]))
 		}
-		toCol, err := strconv.Atoi(args[2])
-		if err != nil {
-			return invalidArg("invalidColumn", "val", args[2])
+		toCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[2:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+		if !parseOK {
+			return parseMsg
 		}
 		// 連番グループの先頭。省略時は -1 = 最上段 1 枚。
 		cardIndex := -1
 		if len(args) >= 4 {
-			idx, err := strconv.Atoi(args[3])
-			if err != nil {
-				return invalidArg("napoleonssquare.invalidCardIndex", "val", args[3])
+			idx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[3:], "", "napoleonssquare.invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
+			if !parseOK {
+				return parseMsg
 			}
 			cardIndex = idx
 		}

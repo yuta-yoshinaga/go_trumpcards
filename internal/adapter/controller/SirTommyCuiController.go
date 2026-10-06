@@ -4,7 +4,6 @@ package controller
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -58,9 +57,9 @@ func (c *SirTommyCuiController) handleStockMove(args []string) string {
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("sirtommy.promptIndex"), fmt.Sprintf("s %s {0}", dest))
 	}
-	idx, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[1])
+	idx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if dest == "f" {
 		return c.ci.PlayStockToFoundation(idx)
@@ -73,16 +72,16 @@ func (c *SirTommyCuiController) handleWasteMove(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("sirtommy.promptWasteIdx"), "w {0} f {1}")
 	}
-	wasteIdx, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[0])
+	wasteIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) < 3 || args[1] != "f" {
 		return cuiutil.PromptRequest(i18n.T("sirtommy.promptFoundationIdx"), fmt.Sprintf("w %d f {0}", wasteIdx))
 	}
-	fIdx, err := strconv.Atoi(args[2])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[2])
+	fIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[2:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.ci.PlayWasteToFoundation(wasteIdx, fIdx)
 }

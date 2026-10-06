@@ -59,9 +59,9 @@ func (c *RussianSolitaireCuiController) handleMoveFromTableau(args []string) str
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("russiansolitaire.promptToZone"), fmt.Sprintf("m t %s {0}", args[0]))
 	}
-	fromCol, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[0])
+	fromCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 
 	if args[1] == "f" {
@@ -76,14 +76,14 @@ func (c *RussianSolitaireCuiController) handleMoveFromTableau(args []string) str
 		return i18n.MarkError(i18n.T("russiansolitaire.moveUsage"))
 	}
 
-	cardIdx, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidCardIndex", "val", args[1])
+	cardIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 
-	toCol, err := strconv.Atoi(args[3])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[3])
+	toCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[3:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 
 	return c.ri.MoveTableauToTableau(fromCol, cardIdx, toCol)
@@ -94,9 +94,9 @@ func (c *RussianSolitaireCuiController) handleMoveShorthand(args []string) strin
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m %s {0}", args[0]))
 	}
-	toCol, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[1])
+	toCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.ri.MoveTableauToTableau(fromCol, -1, toCol)
 }

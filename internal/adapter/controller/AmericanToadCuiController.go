@@ -4,7 +4,6 @@ package controller
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -75,9 +74,9 @@ func (c *AmericanToadCuiController) handleMoveFromPile(args []string, prefix str
 		if len(args) < 2 {
 			return cuiutil.PromptRequest(i18n.T("promptToColumn"), prefix+" t {0}")
 		}
-		col, err := strconv.Atoi(args[1])
-		if err != nil {
-			return invalidArg("invalidColumn", "val", args[1])
+		col, msg, ok := cuiutil.ParseIntArgKeys(args[1:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+		if !ok {
+			return msg
 		}
 		return toTableau(col)
 	default:
@@ -89,9 +88,9 @@ func (c *AmericanToadCuiController) handleMoveFromTableau(args []string) string 
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "m t {0}")
 	}
-	fromCol, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[0])
+	fromCol, msg, ok := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("americantoad.promptToZone"), fmt.Sprintf("m t %s {0}", args[0]))
@@ -103,16 +102,16 @@ func (c *AmericanToadCuiController) handleMoveFromTableau(args []string) string 
 		if len(args) < 3 {
 			return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m t %s t {0}", args[0]))
 		}
-		toCol, err := strconv.Atoi(args[2])
-		if err != nil {
-			return invalidArg("invalidColumn", "val", args[2])
+		toCol, msg, ok := cuiutil.ParseIntArgKeys(args[2:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+		if !ok {
+			return msg
 		}
 		// 連番グループの先頭。省略時は -1 = 最上段 1 枚。
 		cardIndex := -1
 		if len(args) >= 4 {
-			idx, err := strconv.Atoi(args[3])
-			if err != nil {
-				return invalidArg("americantoad.invalidCardIndex", "val", args[3])
+			idx, msg, ok := cuiutil.ParseIntArgKeys(args[3:], "", "americantoad.invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
+			if !ok {
+				return msg
 			}
 			cardIndex = idx
 		}

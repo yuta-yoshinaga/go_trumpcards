@@ -3,8 +3,6 @@
 package controller
 
 import (
-	"strconv"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -97,9 +95,9 @@ func (c *BraidCuiController) handleMoveFromSlot(args []string, zone string, move
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("braid.promptSlotIdx"), "m "+zone+" {0}")
 	}
-	idx, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("braid.invalidSlot", "val", args[0])
+	idx, msg, ok := cuiutil.ParseIntArgKeys(args, "", "braid.invalidSlot", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("braid.promptBraidTo"), "m "+zone+" "+args[0]+" {0}")
@@ -121,9 +119,9 @@ func (c *BraidCuiController) handleMoveFromWaste(args []string) string {
 		if len(args) < 2 {
 			return cuiutil.PromptRequest(i18n.T("braid.promptSlotIdx"), "m w hp {0}")
 		}
-		idx, err := strconv.Atoi(args[1])
-		if err != nil {
-			return invalidArg("braid.invalidSlot", "val", args[1])
+		idx, msg, ok := cuiutil.ParseIntArgKeys(args[1:], "", "braid.invalidSlot", cuiutil.NoMin, cuiutil.NoMax)
+		if !ok {
+			return msg
 		}
 		return c.bi.MoveWasteToHelper(idx)
 	default:

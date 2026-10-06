@@ -3,8 +3,6 @@
 package controller
 
 import (
-	"strconv"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -45,15 +43,15 @@ func (c *SlyFoxCuiController) handleDeal(args []string) string {
 		if len(args) < 2 {
 			return cuiutil.PromptRequest(i18n.T("slyfox.promptFoundationId"), "d f {0}")
 		}
-		fIdx, err := strconv.Atoi(args[1])
-		if err != nil {
-			return invalidArg("slyfox.invalidFoundation", "val", args[1])
+		fIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "slyfox.invalidFoundation", cuiutil.NoMin, cuiutil.NoMax)
+		if !parseOK {
+			return parseMsg
 		}
 		return c.ci.DealToFoundation(fIdx)
 	}
-	pile, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("slyfox.invalidPile", "val", args[0])
+	pile, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "slyfox.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.ci.DealToPile(pile)
 }
@@ -80,9 +78,9 @@ func (c *SlyFoxCuiController) handleMoveFromTableau(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("slyfox.promptFromPile"), "m t {0}")
 	}
-	fromPile, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("slyfox.invalidPile", "val", args[0])
+	fromPile, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "slyfox.invalidPile", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) >= 2 && args[1] != "f" {
 		return invalidArg("slyfox.invalidToZone", "val", args[1])

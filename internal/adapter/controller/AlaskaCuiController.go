@@ -64,9 +64,9 @@ func (c *AlaskaCuiController) handleMoveFromTableau(args []string) string {
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("alaska.promptToZone"), fmt.Sprintf("m t %s {0}", args[0]))
 	}
-	fromCol, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[0])
+	fromCol, msg, ok := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 
 	if args[1] == "f" {
@@ -81,14 +81,14 @@ func (c *AlaskaCuiController) handleMoveFromTableau(args []string) string {
 		return i18n.MarkError(i18n.T("alaska.moveUsage"))
 	}
 
-	cardIdx, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidCardIndex", "val", args[1])
+	cardIdx, msg, ok := cuiutil.ParseIntArgKeys(args[1:], "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 
-	toCol, err := strconv.Atoi(args[3])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[3])
+	toCol, msg, ok := cuiutil.ParseIntArgKeys(args[3:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 
 	return c.ri.MoveTableauToTableau(fromCol, cardIdx, toCol)
@@ -99,9 +99,9 @@ func (c *AlaskaCuiController) handleMoveShorthand(args []string) string {
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m %s {0}", args[0]))
 	}
-	toCol, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[1])
+	toCol, msg, ok := cuiutil.ParseIntArgKeys(args[1:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	return c.ri.MoveTableauToTableau(fromCol, -1, toCol)
 }

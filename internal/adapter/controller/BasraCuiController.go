@@ -3,8 +3,6 @@
 package controller
 
 import (
-	"strconv"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -65,9 +63,9 @@ func (c *BasraCuiController) handlePlay(args []string) string {
 	if len(args) == 0 {
 		return invalidArg("cardIndexRequiredCapture")
 	}
-	handIdx, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidCardIndex", "val", args[0])
+	handIdx, msg, ok := cuiutil.ParseIntArgKeys(args, "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	tableIdxs, _ := cuiutil.ParseIntSlice(args[1:])
 	return c.bi.Play(handIdx, tableIdxs)
