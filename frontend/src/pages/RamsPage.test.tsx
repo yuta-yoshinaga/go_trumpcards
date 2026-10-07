@@ -9,7 +9,11 @@ import { RamsPage } from './RamsPage';
 
 vi.mock('../api/gameApi', () => ({
   ramsApi: { exec: vi.fn() },
-  actionLogApi: { rams: vi.fn() },
+  actionLogApi: {
+    rams: vi.fn().mockResolvedValue({
+      entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'play', detail: 'あなたが ♥ A を出しました' }],
+    }),
+  },
 }));
 
 vi.mock('../hooks/useGameHint', () => ({
@@ -74,6 +78,14 @@ beforeEach(() => {
 });
 
 describe('RamsPage', () => {
+  it('opens the action log during play and shows its entries', async () => {
+    mockExec.mockResolvedValue(playing());
+    renderWithProviders(<RamsPage />);
+    const button = await screen.findByRole('button', { name: '棋譜を見る' });
+    fireEvent.click(button);
+    expect(await screen.findByText(/play: あなたが ♥ A を出しました/)).toBeInTheDocument();
+  });
+
   it('shows the last completed trick and winner when the current trick is empty', async () => {
     const previous = card('SPADE', 14);
     mockExec.mockResolvedValue(
