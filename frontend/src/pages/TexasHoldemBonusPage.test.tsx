@@ -153,6 +153,9 @@ describe('TexasHoldemBonusPage', () => {
     const anteInput = (await screen.findByLabelText('アンテ')) as HTMLInputElement;
     const bonusInput = screen.getByLabelText('ボーナス') as HTMLInputElement;
     expect(screen.getByTestId('thb-bet-summary')).toHaveTextContent('合計: 100 / 残り: 900');
+    expect(screen.getByTestId('thb-maximum-investment')).toHaveTextContent(
+      '全てのアクションを行った場合の最大投資額: 500 / 残り: 500',
+    );
 
     fireEvent.change(anteInput, { target: { value: '900' } });
     expect(anteInput).toHaveValue('330');
@@ -160,6 +163,9 @@ describe('TexasHoldemBonusPage', () => {
     fireEvent.change(bonusInput, { target: { value: '10' } });
     expect(bonusInput).toHaveValue('10');
     expect(screen.getByTestId('thb-bet-summary')).toHaveTextContent('合計: 340 / 残り: 660');
+    expect(screen.getByTestId('thb-maximum-investment')).toHaveTextContent(
+      '全てのアクションを行った場合の最大投資額: 1660 / 660 足りません',
+    );
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
     await waitFor(() => expect(mockApi).toHaveBeenLastCalledWith('bet', 330, 10));
   });
