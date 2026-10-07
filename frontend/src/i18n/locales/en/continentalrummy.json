@@ -53,5 +53,9 @@
   "scoreHistory": "Score history",
   "historyRound": "Round",
   "historyRoundScore": "Round score",
-  "historyCumulativeScore": "Cumulative score"
+  "historyCumulativeScore": "Cumulative score",
+  "finalRanking": "Final ranking",
+  "finalRank": "Rank",
+  "finalSeat": "Seat",
+  "finalScore": "Final score"
 }

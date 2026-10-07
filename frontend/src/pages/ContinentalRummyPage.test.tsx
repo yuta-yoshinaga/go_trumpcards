@@ -27,6 +27,53 @@ beforeEach(() => {
 });
 
 describe('ContinentalRummyPage', () => {
+  it('shows every final score in descending order with shared ranks for ties', async () => {
+    mockExec.mockResolvedValue(
+      makeContinentalRummyState({
+        phase: 'gameEnd',
+        gameEndFlag: true,
+        players: makeContinentalRummyState().players.map((player, index) => ({
+          ...player,
+          score: [20, 45, 45, 10][index],
+        })),
+      }),
+    );
+    renderWithProviders(<ContinentalRummyPage />);
+    const ranking = await screen.findByTestId('cont-final-ranking');
+    expect(ranking).toHaveTextContent('最終順位');
+    expect(
+      Array.from(ranking.querySelectorAll('tbody tr')).map((row) =>
+        Array.from(row.children).map((cell) => cell.textContent),
+      ),
+    ).toEqual([
+      ['1', 'CPU 1', '45'],
+      ['1', 'CPU 2', '45'],
+      ['3', 'あなた', '20'],
+      ['4', 'CPU 3', '10'],
+    ]);
+  });
+
+  it('shows the complete final ranking when the game ends in a tie', async () => {
+    mockExec.mockResolvedValue(
+      makeContinentalRummyState({
+        phase: 'gameEnd',
+        gameEndFlag: true,
+        winnerIdx: -1,
+        players: makeContinentalRummyState().players.map((player) => ({ ...player, score: 12 })),
+      }),
+    );
+    renderWithProviders(<ContinentalRummyPage />);
+    const ranking = await screen.findByTestId('cont-final-ranking');
+    expect(ranking.querySelectorAll('tbody tr')).toHaveLength(4);
+    expect(Array.from(ranking.querySelectorAll('tbody tr')).map((row) => row.textContent?.match(/^\d+/)?.[0])).toEqual([
+      '1',
+      '1',
+      '1',
+      '1',
+    ]);
+    expect(ranking).toHaveTextContent('12');
+  });
+
   it('shows completed round score gains in a round by player table', async () => {
     mockExec.mockResolvedValue(
       makeContinentalRummyState({

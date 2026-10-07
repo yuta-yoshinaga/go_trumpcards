@@ -154,6 +154,11 @@ function ContinentalRummyPageContent() {
     totalsByRound.push(state.players.map((_, playerIdx) => previous[playerIdx] + round.scores[playerIdx]));
     return totalsByRound;
   }, []);
+  const finalPlayers = gameOver ? [...state.players].sort((a, b) => b.score - a.score || a.id - b.id) : [];
+  const finalRanking = finalPlayers.map((player) => ({
+    player,
+    rank: finalPlayers.findIndex((candidate) => candidate.score === player.score) + 1,
+  }));
 
   return (
     <GamePageShell
@@ -333,6 +338,38 @@ function ContinentalRummyPageContent() {
                 </table>
               </div>
             </section>
+
+            {gameOver && (
+              <section className="mt-3" data-testid="cont-final-ranking" aria-label={t('finalRanking')}>
+                <h3 className="text-ds-text-primary text-sm font-semibold">{t('finalRanking')}</h3>
+                <table className="w-full text-center text-sm">
+                  <thead>
+                    <tr>
+                      <th scope="col" className="p-1">
+                        {t('finalRank')}
+                      </th>
+                      <th scope="col" className="p-1">
+                        {t('finalSeat')}
+                      </th>
+                      <th scope="col" className="p-1">
+                        {t('finalScore')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {finalRanking.map(({ player, rank }) => (
+                      <tr key={player.id}>
+                        <th scope="row" className="p-1">
+                          {rank}
+                        </th>
+                        <td className="p-1">{player.isHuman ? t('label.you') : t('label.cpu', { n: player.id })}</td>
+                        <td className="p-1">{player.score}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </section>
+            )}
 
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
           </div>
