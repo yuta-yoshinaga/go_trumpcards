@@ -32,6 +32,7 @@
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
   "currentTrick": "現在のトリック",
+  "leadSuit": "リードスート",
   "previousTrickWinner": "{{name}} が獲得",
   "monteLabel": "モンテ（伏せ札）",
   "players": "プレイヤー",
