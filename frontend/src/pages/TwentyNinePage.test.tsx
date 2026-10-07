@@ -81,6 +81,24 @@ describe('TwentyNinePage', () => {
     );
   });
 
+  it('shows the pending reset notice only after a reset-bound setting changes', async () => {
+    renderWithProviders(<TwentyNinePage />);
+    expect(screen.queryByText('設定の変更は次のリセットから適用されます。')).not.toBeInTheDocument();
+
+    fireEvent.click(await screen.findByText('設定'));
+    fireEvent.change(await screen.findByLabelText('CPU難易度'), { target: { value: '2' } });
+
+    expect(await screen.findByText('設定の変更は次のリセットから適用されます。')).toBeInTheDocument();
+  });
+
+  it('shows the pending reset notice when the target game points change', async () => {
+    renderWithProviders(<TwentyNinePage />);
+    fireEvent.click(await screen.findByText('設定'));
+    fireEvent.change(await screen.findByLabelText('目標ゲーム点'), { target: { value: '8' } });
+
+    expect(await screen.findByText('設定の変更は次のリセットから適用されます。')).toBeInTheDocument();
+  });
+
   it('shows bid buttons on a human bid turn', async () => {
     renderWithProviders(<TwentyNinePage />);
     await waitFor(() => expect(screen.getByTestId('bid-0')).toBeInTheDocument());

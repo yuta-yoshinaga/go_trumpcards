@@ -12,7 +12,8 @@
     "targetPoints": "Target Game Points",
     "easy": "Easy",
     "normal": "Normal",
-    "hard": "Hard"
+    "hard": "Hard",
+    "pendingReset": "Setting changes will apply from the next reset."
   },
   "round": "Round {{n}}",
   "trick": "Trick {{n}}",
