@@ -49,6 +49,14 @@ const DECL_KIND_KEYS: Record<number, string> = {
   [PiquetDeclarationKind.SET]: 'declKindSet',
 };
 
+/** i18n keys for the four card suits used by Sequence claims. */
+const SUIT_I18N_KEYS: Record<number, string> = {
+  1: 'common.suit.spade',
+  2: 'common.suit.club',
+  3: 'common.suit.heart',
+  4: 'common.suit.diamond',
+};
+
 function declKindLabel(kind: number, t: TFunction): string {
   const key = DECL_KIND_KEYS[kind];
   return key ? t(key) : '?';
@@ -421,15 +429,9 @@ function formatPiquetClaim(kind: number, claim: PiquetClaim | undefined, tc: TFu
   if (!claim) return t('noClaim');
   if (kind === PiquetDeclarationKind.POINT) return t('pointClaim', { count: claim.length, total: claim.pipTotal });
   if (kind === PiquetDeclarationKind.SEQUENCE) {
-    const suitKeys: Record<number, string> = {
-      1: 'common.suit.spade',
-      2: 'common.suit.club',
-      3: 'common.suit.heart',
-      4: 'common.suit.diamond',
-    };
     const rankValue = claim.cards.length === 0 ? 0 : strongestPiquetClaimValue(claim);
     return t('sequenceClaim', {
-      suit: suitKeys[claim.suit] ? tc(suitKeys[claim.suit]) : tc('common.suit.unknown'),
+      suit: tc(SUIT_I18N_KEYS[claim.suit]),
       length: claim.length,
       rank: valueName(rankValue),
     });
