@@ -136,6 +136,13 @@ function MariasPageContent() {
 
   const canPlay = isPlayPhase && isHumanTurn;
   const trumpSymbol = suitSymbolAt(state.trumpSuit, '');
+  const trumpDesign = ['', 'SPADE', 'CLOVER', 'HEART', 'DIAMOND'][state.trumpSuit];
+  const trumpIndices = humanPlayer
+    ? humanPlayer.cards.reduce<number[]>((indices, card, index) => {
+        if (card.design === trumpDesign) indices.push(index);
+        return indices;
+      }, [])
+    : [];
   const marriageDetails = (playerIdx: number) =>
     (state.roundMarriageSuits[playerIdx] ?? [])
       .map(
@@ -394,6 +401,8 @@ function MariasPageContent() {
                 dataTutorialPrefix="marias"
                 validIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}
+                trumpIndices={trumpIndices}
+                trumpAccessibleLabel={t('trumpCardDescription')}
               />
             )}
 

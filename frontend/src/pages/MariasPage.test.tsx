@@ -50,6 +50,7 @@ describe('MariasPage', () => {
       renderWithProviders(<MariasPage />);
 
       expect(await screen.findByText(/You: Soloist/)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '♥ Q (trump)' })).toHaveAttribute('data-trump', 'true');
       expect(screen.getByText(/CPU 1: Defender/)).toBeInTheDocument();
       expect(screen.getByText(/CPU 2: Defender/)).toBeInTheDocument();
     } finally {
@@ -80,6 +81,28 @@ describe('MariasPage', () => {
     });
     // The human (seat 0) is the default Soloist.
     expect(screen.getByText('ソリスト')).toBeInTheDocument();
+  });
+
+  it('marks trump cards in the hand and adds the trump label to their accessible names', async () => {
+    renderWithProviders(<MariasPage />);
+    const queen = await screen.findByRole('button', { name: '♥ Q (切り札)' });
+    const king = screen.getByRole('button', { name: '♥ K (切り札)' });
+    const ace = screen.getByRole('button', { name: '♠ A' });
+
+    expect(queen).toHaveAttribute('data-trump', 'true');
+    expect(king).toHaveAttribute('data-trump', 'true');
+    expect(ace).not.toHaveAttribute('data-trump');
+  });
+
+  it('renders without a hand when the state has no human player', async () => {
+    mockExec.mockResolvedValue(
+      makeMariasState({
+        players: makeMariasState().players.map((player) => ({ ...player, isHuman: false })),
+      }),
+    );
+    renderWithProviders(<MariasPage />);
+
+    expect(await screen.findByTestId('phase-indicator')).toBeInTheDocument();
   });
 
   it('shows each player role in the card and trick list and follows the next round Soloist', async () => {
