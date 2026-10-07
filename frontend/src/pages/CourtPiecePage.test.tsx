@@ -92,6 +92,21 @@ beforeEach(() => {
 });
 
 describe('CourtPiecePage', () => {
+  it('shows the lead suit for the first card in the current trick', async () => {
+    mockExec.mockResolvedValue(followSuitState);
+    renderWithProviders(<CourtPiecePage />);
+
+    expect(await screen.findByTestId('trick-lead-suit')).toHaveTextContent('リードスート: ハート');
+  });
+
+  it('does not show a lead suit when the current trick is empty', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<CourtPiecePage />);
+
+    await screen.findByTestId('phase-indicator');
+    expect(screen.queryByText(/リードスート:/)).not.toBeInTheDocument();
+  });
+
   it('keeps the winner announcement region mounted before a trick ends', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<CourtPiecePage />);
