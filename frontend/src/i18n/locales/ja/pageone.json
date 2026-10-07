@@ -11,7 +11,8 @@
     "pointLimit": "目標スコア",
     "easy": "Easy",
     "normal": "Normal",
-    "hard": "Hard"
+    "hard": "Hard",
+    "pendingReset": "設定の変更は次のリセットから適用されます。"
   },
   "round": "ラウンド {{n}}",
   "drawPile": "山札: {{count}}枚",
