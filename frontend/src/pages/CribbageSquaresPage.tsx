@@ -383,9 +383,24 @@ function CribbageSquaresPageContent() {
                             ? cribbageBreakdownParts(state.rowPartialDetails?.[i], breakdownLabel)
                             : [];
                           return (
-                            <div
+                            <section
                               key={`row-score-${i}`}
                               data-testid={`row-score-${i}`}
+                              aria-label={
+                                partial.length > 0
+                                  ? t('label.rowScoreWithParts', {
+                                      index: i + 1,
+                                      score: s,
+                                      parts: partial.join(t('listSeparator')),
+                                    })
+                                  : parts.length > 0
+                                    ? t('label.rowScoreWithParts', {
+                                        index: i + 1,
+                                        score: s,
+                                        parts: parts.join(t('listSeparator')),
+                                      })
+                                    : t('label.rowScore', { index: i + 1, score: s })
+                              }
                               data-cross-hover={crossHover?.row === i ? 'true' : undefined}
                               title={parts.join(' ')}
                               style={{ height: Math.round(cardWidth * 1.4) }}
@@ -421,7 +436,7 @@ function CribbageSquaresPageContent() {
                                   {t('partialPrefix')} {partial.join(' ')}
                                 </div>
                               )}
-                            </div>
+                            </section>
                           );
                         })}
                       </div>
@@ -439,9 +454,24 @@ function CribbageSquaresPageContent() {
                           ? cribbageBreakdownParts(state.colPartialDetails?.[i], breakdownLabel)
                           : [];
                         return (
-                          <div
+                          <section
                             key={`col-score-${i}`}
                             data-testid={`col-score-${i}`}
+                            aria-label={
+                              partial.length > 0
+                                ? t('label.colScoreWithParts', {
+                                    index: i + 1,
+                                    score: s,
+                                    parts: partial.join(t('listSeparator')),
+                                  })
+                                : parts.length > 0
+                                  ? t('label.colScoreWithParts', {
+                                      index: i + 1,
+                                      score: s,
+                                      parts: parts.join(t('listSeparator')),
+                                    })
+                                  : t('label.colScore', { index: i + 1, score: s })
+                            }
                             data-cross-hover={crossHover?.col === i ? 'true' : undefined}
                             title={parts.join(' ')}
                             style={{ width: cardWidth }}
@@ -477,7 +507,7 @@ function CribbageSquaresPageContent() {
                                 {t('partialPrefix')} {partial.join(' ')}
                               </div>
                             )}
-                          </div>
+                          </section>
                         );
                       })}
                     </div>

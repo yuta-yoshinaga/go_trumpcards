@@ -286,6 +286,36 @@ describe('CribbageSquaresPage', () => {
     expect(screen.queryByTestId('row-breakdown-1')).not.toBeInTheDocument();
   });
 
+  it('names row and column scores with one-based positions matching the cell labels and displayed breakdowns', async () => {
+    const rowDetails = [
+      { cards: [], fifteens: 4, pairs: 2, runs: 0, flush: 0, nobs: 0, total: 6 },
+      zero(),
+      zero(),
+      zero(),
+    ];
+    const colPartialDetails = [zero(), { ...zero(), runs: 3, total: 3 }, zero(), zero()];
+    mockExec.mockResolvedValue(
+      makeState({ rowDetails, rowScores: [6, 0, 0, 0], colPartialDetails, colScores: [0, 0, 0, 0] }),
+    );
+    renderWithProviders(<CribbageSquaresPage />);
+
+    await waitFor(() => expect(screen.getByTestId('row-score-0')).toHaveAttribute('aria-label'));
+    expect(screen.getByTestId('row-score-0')).toHaveAttribute('aria-label', '行1、得点6点、内訳15が4、ペア2');
+    expect(screen.getByTestId('col-score-1')).toHaveAttribute('aria-label', '列2、得点0点、内訳ラン3');
+  });
+
+  it('provides English accessible names for row and column scores', async () => {
+    const originalLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue(makeState({ rowScores: [6, 0, 0, 0], colScores: [0, 3, 0, 0] }));
+    renderWithProviders(<CribbageSquaresPage />);
+
+    await waitFor(() => expect(screen.getByTestId('row-score-0')).toHaveAttribute('aria-label'));
+    expect(screen.getByTestId('row-score-0')).toHaveAttribute('aria-label', 'row 1, score 6');
+    expect(screen.getByTestId('col-score-1')).toHaveAttribute('aria-label', 'column 2, score 3');
+    await i18n.changeLanguage(originalLanguage);
+  });
+
   it('shows cards for a scored column and omits them for an empty one', async () => {
     const details = [
       zero(),
