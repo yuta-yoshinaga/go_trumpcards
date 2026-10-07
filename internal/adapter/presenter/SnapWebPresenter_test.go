@@ -39,6 +39,7 @@ func TestSnapWebPresenterOutput(t *testing.T) {
 	assert.Equal(t, float64(-1), m["winnerIdx"])
 	assert.Equal(t, float64(0), m["centerPileSize"], "まだ誰もめくっていない")
 	assert.Nil(t, m["topCard"])
+	assert.Nil(t, m["previousCard"])
 	assert.False(t, m["snapAvailable"].(bool))
 	assert.Equal(t, float64(domain.SnapDefaultPlayerCnt), m["playerCnt"])
 
@@ -61,6 +62,7 @@ func TestSnapWebPresenterCarriesWhetherSnapIsOn(t *testing.T) {
 	assert.False(t, m["snapAvailable"].(bool), "**1 枚では成立しない**")
 	assert.Equal(t, float64(1), m["centerPileSize"])
 	require.NotNil(t, m["topCard"])
+	assert.Nil(t, m["previousCard"], "1 枚では比較札がない")
 
 	g.SetCenterPileForTest([]*domain.Card{
 		domain.NewCard(domain.CardDesignSpade, 7, false),
@@ -68,6 +70,7 @@ func TestSnapWebPresenterCarriesWhetherSnapIsOn(t *testing.T) {
 	})
 	m = decodeSnap(t, p.Output(g, nil))
 	assert.True(t, m["snapAvailable"].(bool))
+	assert.Equal(t, float64(7), m["previousCard"].(map[string]any)["value"])
 	assert.Equal(t, "snap.available", m["messageCode"])
 }
 

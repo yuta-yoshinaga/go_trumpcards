@@ -6,6 +6,8 @@
   "header": {
     "pile": "Pile: {{n}}",
     "pileEmpty": "Pile empty",
+    "previousCard": "Previous card",
+    "topCard": "Top card",
     "rule": "Players turn cards over in turn, and whoever calls first when a card matches the one before it takes the whole pile. The trigger is not fixed -- it is always a comparison with the previous card, so nothing can be called while a single card is showing. Calling wrongly costs you a card from your stock, face up onto the pile.",
     "available": "SNAP IS ON!",
     "stock": "{{n}} in stock",

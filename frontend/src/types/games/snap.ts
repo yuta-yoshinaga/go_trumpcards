@@ -35,6 +35,8 @@ export interface SnapResponse extends BaseGameResponse {
   snapAvailable: boolean;
   centerPileSize: number;
   topCard?: Card;
+  /** The card immediately before topCard, omitted when the pile has fewer than two cards. */
+  previousCard?: Card;
   players: SnapPlayer[];
   playerCnt: number;
   /** `0` = easy, `1` = normal, `2` = hard. Drives the CPU's reaction time. */

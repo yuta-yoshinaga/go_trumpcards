@@ -203,8 +203,19 @@ function SnapPageContent() {
                   ? t('header.pile', { n: String(state.centerPileSize) })
                   : t('header.pileEmpty')}
               </div>
-              <div className="flex justify-center">
-                {state.topCard && <CardImage card={state.topCard} width={cardWidth} />}
+              <div className="flex justify-center gap-3">
+                {state.previousCard && (
+                  <div className="text-center">
+                    <div className="text-ds-text-muted text-xs">{t('header.previousCard')}</div>
+                    <CardImage card={state.previousCard} width={cardWidth} />
+                  </div>
+                )}
+                {state.topCard && (
+                  <div className="text-center">
+                    <div className="text-ds-text-muted text-xs">{t('header.topCard')}</div>
+                    <CardImage card={state.topCard} width={cardWidth} />
+                  </div>
+                )}
               </div>
               {/* **成立しているかは一目で分かる必要がある。** 反射ゲームなので。 */}
               {state.snapAvailable && (
