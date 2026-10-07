@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { sjavsApi } from '../api/gameApi';
+import { actionLogApi, sjavsApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, SjavsPlayer, SjavsResponse } from '../types/card';
@@ -13,6 +13,7 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(sjavsApi.exec);
+const mockActionLog = vi.mocked(actionLogApi.sjavs);
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
@@ -66,6 +67,27 @@ describe('SjavsPage', () => {
     // すり替わる (レビュー指摘 #5033)。
     localStorage.clear();
     mockExec.mockResolvedValue(makeState());
+    mockActionLog.mockResolvedValue({ entries: [] });
+  });
+
+  it('opens the action log during bidding and shows its entries', async () => {
+    mockActionLog.mockResolvedValueOnce({
+      entries: [
+        {
+          turnNumber: 1,
+          playerIdx: 1,
+          actionType: 'bid',
+          detailCode: 'sjavs.log.bid',
+          detail: '',
+          detailParams: { length: '6' },
+          cards: [],
+        },
+      ],
+    });
+    renderWithProviders(<SjavsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '棋譜を見る' }));
+    await waitFor(() => expect(screen.getByText(/6 枚をビッドしました/)).toBeInTheDocument());
   });
 
   it('resets on mount', async () => {
