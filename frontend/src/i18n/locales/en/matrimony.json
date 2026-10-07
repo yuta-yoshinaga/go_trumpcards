@@ -6,6 +6,7 @@
   },
   "foundation": "Foundation",
   "tableau": "Tableau",
+  "tableauGroupAriaLabel": "16 tableau slots",
   "stock": "Stock",
   "waste": "Waste",
   "redealsRemaining_one": "{{count}} redeal left",

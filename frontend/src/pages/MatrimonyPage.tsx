@@ -395,14 +395,15 @@ function MatrimonyPageContent() {
                 : t('redealsRemaining', { count: state.maxRedeals - state.redealCount })}
             </p>
 
-            <div
+            <section
+              aria-label={t('tableauGroupAriaLabel')}
               className="grid gap-1 sm:gap-2 justify-center"
               style={{ gridTemplateColumns: `repeat(${SLOTS_PER_ROW}, minmax(0, 1fr))` }}
               data-tutorial="cg-tableau"
               data-testid="matrimony-tableau"
             >
               {Array.from({ length: TABLEAU_SLOTS }, (_, i) => i).map(renderSlot)}
-            </div>
+            </section>
 
             {/*
               ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、

@@ -533,3 +533,22 @@ describe('MatrimonyPage slot numbers in the accessible names', () => {
     expect(screen.getByRole('button', { name: /^空の枠 3/ })).toBeInTheDocument();
   });
 });
+
+describe('MatrimonyPage tableau group', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    mockExec.mockResolvedValue(playingState);
+  });
+
+  it.each([
+    ['ja', '場札16枠'],
+    ['en', '16 tableau slots'],
+  ])('exposes all sixteen slots in a named %s region', async (language, name) => {
+    await i18n.changeLanguage(language);
+    renderWithProviders(<MatrimonyPage />);
+
+    const tableau = await screen.findByRole('region', { name });
+    expect(tableau.querySelectorAll(':scope > div')).toHaveLength(16);
+  });
+});
