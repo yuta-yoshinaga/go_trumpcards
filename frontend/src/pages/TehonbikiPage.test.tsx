@@ -159,8 +159,35 @@ describe('TehonbikiPage', () => {
     } as never);
     renderWithProviders(<TehonbikiPage />);
     await waitFor(() => expect(screen.getByText('親の札: 6')).toBeInTheDocument());
+    expect(screen.getByText('的中')).toBeInTheDocument();
+    expect(screen.getByText('払戻利益: 225チップ')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '次の勝負' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '張る' })).not.toBeInTheDocument();
+  });
+
+  it('shows the lost bet on a miss and keeps the final result visible at game end', () => {
+    mockUseGameApi.mockReturnValue({
+      state: state({
+        phase: 2,
+        parentCard: 6,
+        numbers: [2],
+        betType: 'single',
+        bet: 50,
+        result: 2,
+        payout: 0,
+        gameEndFlag: true,
+      }),
+      loading: false,
+      error: null,
+      exec: mockExec,
+      retry: vi.fn(),
+    } as never);
+    renderWithProviders(<TehonbikiPage />);
+    expect(screen.getByText('外れ')).toBeInTheDocument();
+    expect(screen.getByText('賭け金 50チップを失いました')).toBeInTheDocument();
+    expect(screen.queryByText(/払戻利益/)).not.toBeInTheDocument();
+    expect(screen.getByText('親の札: 6')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '次の勝負' })).not.toBeInTheDocument();
   });
 
   it('clears selected numbers when the wager kind changes', async () => {

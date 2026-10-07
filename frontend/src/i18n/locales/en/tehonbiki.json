@@ -25,5 +25,7 @@
   "phase.gameEnd": "Finished",
   "result.win": "Hit",
   "result.lose": "Miss",
+  "result.payout": "Payout profit: {{amount}} chips",
+  "result.lostBet": "Lost your {{amount}}-chip bet",
   "frontendHint.tehonbiki": "Choose numbers and wager your chips"
 }

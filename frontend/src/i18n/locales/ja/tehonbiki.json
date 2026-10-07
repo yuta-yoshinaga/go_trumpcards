@@ -24,5 +24,7 @@
   "phase.gameEnd": "終了",
   "result.win": "的中",
   "result.lose": "外れ",
+  "result.payout": "払戻利益: {{amount}}チップ",
+  "result.lostBet": "賭け金 {{amount}}チップを失いました",
   "frontendHint.tehonbiki": "数字を選んでチップを張ります"
 }

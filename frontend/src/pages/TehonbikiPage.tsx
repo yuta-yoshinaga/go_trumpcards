@@ -96,6 +96,18 @@ function TehonbikiPageContent() {
               )}
             </>
           )}
+          {state.phase !== 0 && state.result !== 0 && (
+            <div className="mx-auto mb-4 max-w-xl rounded-lg border border-ds-border-subtle bg-ds-surface p-3">
+              <p className={state.result === 1 ? 'text-ds-success' : 'text-ds-error-text'}>
+                {t(state.result === 1 ? 'result.win' : 'result.lose')}
+              </p>
+              <p>
+                {state.result === 1
+                  ? t('result.payout', { amount: state.payout })
+                  : t('result.lostBet', { amount: state.bet })}
+              </p>
+            </div>
+          )}
         </div>
         {state.phase === 0 ? (
           <>
