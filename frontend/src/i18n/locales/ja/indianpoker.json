@@ -13,6 +13,8 @@
   "faceUpCardAriaLabel": "{{name}}のカード: {{card}}",
   "winnerCardAriaLabel": "勝者のカード",
   "ante": "アンティ",
+  "sidePot": "ポット{{number}}: {{amount}}チップ — 対象: {{players}}",
+  "listSeparator": "、",
   "settings": {
     "ante": "アンティ",
     "anteAmount": "アンティ額（次のゲームから反映）",
