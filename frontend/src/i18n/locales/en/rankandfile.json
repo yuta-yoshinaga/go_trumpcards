@@ -31,7 +31,7 @@
   "tutorial": {
     "stockWaste": "Click the stock pile to draw one card. No recycling allowed.",
     "foundation": "Build 8 foundation piles by suit from Ace to King.",
-    "tableau": "10 tableau columns. Move single cards in descending order of the same suit. Any card can fill an empty column.",
+    "tableau": "10 tableau columns. Build down in alternating colors, one rank at a time. Move a single face-up card, or a face-up card together with the alternating-color descending sequence stacked on it. Any card can fill an empty column.",
     "controls": "Use hint, undo, and auto-complete buttons."
   },
   "frontendHint": {
