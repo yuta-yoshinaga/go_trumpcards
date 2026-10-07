@@ -650,6 +650,7 @@ function ShortDeckPageContent() {
                     {t('settings.tournamentMode')}
                   </label>
                 </div>
+                <p className="text-ds-text-muted text-xs">{t('settings.pendingReset')}</p>
               </div>
             </details>
             <details className="mb-1" data-testid="sd-handrank-reference">

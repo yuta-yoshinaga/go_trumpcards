@@ -77,7 +77,8 @@
   },
   "settings": {
     "cpuMetaAI": "Meta-AI (CPU learns your play style)",
-    "tournamentMode": "Tournament mode (blinds go up)"
+    "tournamentMode": "Tournament mode (blinds go up)",
+    "pendingReset": "Setting changes will apply from the next reset."
   },
   "tutorial": {
     "communityCards": "Community cards shared by all players. Five cards are revealed progressively.",
