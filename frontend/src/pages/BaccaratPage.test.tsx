@@ -256,6 +256,51 @@ describe('BaccaratPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 100, 0, 10, 20));
   });
 
+  it('updates all three bet limits to the chips remaining after the other bets', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, chips: 100 });
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 100')).toBeInTheDocument());
+
+    const main = screen.getByLabelText('ベット額:');
+    const details = screen.getByTestId('baccarat-sidebet-details');
+    const playerPair = within(details).getByLabelText('プレイヤーペア');
+    const bankerPair = within(details).getByLabelText('バンカーペア');
+
+    fireEvent.change(main, { target: { value: '60' } });
+    expect(main).toHaveAttribute('max', '100');
+    expect(playerPair).toHaveAttribute('max', '40');
+    expect(bankerPair).toHaveAttribute('max', '40');
+
+    fireEvent.change(playerPair, { target: { value: '30' } });
+    expect(main).toHaveAttribute('max', '70');
+    expect(playerPair).toHaveAttribute('max', '40');
+    expect(bankerPair).toHaveAttribute('max', '10');
+
+    fireEvent.change(bankerPair, { target: { value: '10' } });
+    expect(main).toHaveAttribute('max', '60');
+    expect(playerPair).toHaveAttribute('max', '30');
+    expect(bankerPair).toHaveAttribute('max', '10');
+
+    fireEvent.change(bankerPair, { target: { value: '50' } });
+    expect(bankerPair).toHaveValue('10');
+  });
+
+  it('sets other bet limits to zero when the chips are fully allocated', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, chips: 100 });
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 100')).toBeInTheDocument());
+    const details = screen.getByTestId('baccarat-sidebet-details');
+    const main = screen.getByLabelText('ベット額:');
+    const playerPair = within(details).getByLabelText('プレイヤーペア');
+    const bankerPair = within(details).getByLabelText('バンカーペア');
+
+    fireEvent.change(main, { target: { value: '100' } });
+    expect(playerPair).toHaveAttribute('max', '0');
+    expect(bankerPair).toHaveAttribute('max', '0');
+    fireEvent.change(playerPair, { target: { value: '10' } });
+    expect(playerPair).toHaveValue('0');
+  });
+
   it('resets after end phase', async () => {
     mockExec
       .mockResolvedValueOnce(betPhaseState)

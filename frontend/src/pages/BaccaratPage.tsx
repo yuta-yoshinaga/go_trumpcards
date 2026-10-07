@@ -332,6 +332,9 @@ function BaccaratPageContentInner({ onRevealAnnouncement }: { onRevealAnnounceme
 
   const isBetPhase = state?.phase === BaccaratPhase.BET;
   const isEndPhase = state?.phase === BaccaratPhase.END;
+  const mainBetMax = state ? Math.max(0, state.chips - playerPairBet - bankerPairBet) : 0;
+  const playerPairBetMax = state ? Math.max(0, state.chips - betAmount - bankerPairBet) : 0;
+  const bankerPairBetMax = state ? Math.max(0, state.chips - betAmount - playerPairBet) : 0;
 
   // Staged reveal for the showdown so the third-card rule isn't a black box (#1892).
   // Steps: 1 = initial 2+2 cards, 2 = player's 3rd, 3 = banker's 3rd, 4 = payout/result.
@@ -584,7 +587,7 @@ function BaccaratPageContentInner({ onRevealAnnouncement }: { onRevealAnnounceme
                   label={t('label.betAmount')}
                   value={betAmount}
                   onChange={setBetAmount}
-                  max={state.chips}
+                  max={mainBetMax}
                 />
                 <div className="flex items-center gap-2">
                   <label htmlFor="baccarat-bet-type" className="text-ds-text-primary text-sm">
@@ -618,7 +621,7 @@ function BaccaratPageContentInner({ onRevealAnnouncement }: { onRevealAnnounceme
                       label={t('sideBet.playerPair')}
                       value={playerPairBet}
                       onChange={setPlayerPairBet}
-                      max={state.chips}
+                      max={playerPairBetMax}
                       min={0}
                       widthClass="w-20"
                     />
@@ -627,7 +630,7 @@ function BaccaratPageContentInner({ onRevealAnnouncement }: { onRevealAnnounceme
                       label={t('sideBet.bankerPair')}
                       value={bankerPairBet}
                       onChange={setBankerPairBet}
-                      max={state.chips}
+                      max={bankerPairBetMax}
                       min={0}
                       widthClass="w-20"
                     />
