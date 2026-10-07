@@ -47,6 +47,23 @@ describe('LooPage', () => {
     expect(screen.getByText('♠ 7')).toBeInTheDocument();
   });
 
+  it('shows the lead suit for a non-empty trick', async () => {
+    mockExec.mockResolvedValue(
+      makeLooState({
+        currentTrick: [{ playerIdx: 1, card: { design: 'HEART', value: 10 } }],
+      }),
+    );
+    renderWithProviders(<LooPage />);
+    expect(await screen.findByText('リードスート: ハート')).toBeInTheDocument();
+  });
+
+  it('does not show a lead suit for an empty trick', async () => {
+    mockExec.mockResolvedValue(makeLooState({ currentTrick: [] }));
+    renderWithProviders(<LooPage />);
+    expect(await screen.findByText('ディール 1')).toBeInTheDocument();
+    expect(screen.queryByTestId('trick-lead-suit')).not.toBeInTheDocument();
+  });
+
   it('keeps the trump display stable when there is no turn-up card', async () => {
     mockExec.mockResolvedValue(makeLooState({ trumpSuit: 0, turnUp: null }));
     renderWithProviders(<LooPage />);
