@@ -70,7 +70,9 @@ function PochPageContent() {
 
   const [handIdx, setHandIdx] = useState<number | null>(null);
   const previousPools = useRef<PochResponse['pools'] | null>(null);
+  const previousStakingAwards = useRef<PochResponse['stakingAwards'] | null>(null);
   const [poolAnnouncement, setPoolAnnouncement] = useState('');
+  const [stakingAnnouncement, setStakingAnnouncement] = useState('');
   const execHumanAction = (...args: Parameters<typeof game.exec>) => {
     if (args[0] === 'reset') return game.exec(...args);
     setTurnAnnouncement('');
@@ -79,14 +81,17 @@ function PochPageContent() {
 
   const resetWithQuietPoolBaseline = (reset: () => void) => {
     previousPools.current = null;
+    previousStakingAwards.current = null;
     setPoolAnnouncement('');
+    setStakingAnnouncement('');
     reset();
   };
 
   useEffect(() => {
     if (!state) return;
-    if (previousPools.current === null) {
+    if (previousPools.current === null || previousStakingAwards.current === null) {
       previousPools.current = state.pools;
+      previousStakingAwards.current = state.stakingAwards;
       return;
     }
 
@@ -96,6 +101,19 @@ function PochPageContent() {
       .map((pool) => t('poolUpdate', { pool: t(`pool.${pool.name}`), chips: pool.chips }));
     previousPools.current = state.pools;
     setPoolAnnouncement(changedPools.join(t('listSeparator')));
+
+    const previousAwards = new Map(
+      previousStakingAwards.current.map((award) => [award.pool, `${award.player}:${award.chips}`]),
+    );
+    const newAwards = state.stakingAwards
+      .filter((award) => previousAwards.get(award.pool) !== `${award.player}:${award.chips}`)
+      .map((award) =>
+        award.player === 0
+          ? t('awardLineYou', { pool: t(`pool.${award.pool}`), chips: award.chips })
+          : t('awardLine', { player: award.player, pool: t(`pool.${award.pool}`), chips: award.chips }),
+      );
+    previousStakingAwards.current = state.stakingAwards;
+    setStakingAnnouncement(newAwards.join(t('listSeparator')));
   }, [state, t]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('poch');
@@ -159,7 +177,7 @@ function PochPageContent() {
       <LandscapeBanner message={t('landscapeBanner')} />
 
       <div role="status" aria-live="polite" className="sr-only" data-testid="poch-pool-live">
-        {[poolAnnouncement, turnAnnouncement].filter(Boolean).join(t('listSeparator'))}
+        {[poolAnnouncement, stakingAnnouncement, turnAnnouncement].filter(Boolean).join(t('listSeparator'))}
       </div>
 
       <SettingsPanel
