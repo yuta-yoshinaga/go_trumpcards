@@ -285,6 +285,18 @@ function PiedmonteseTarotPageContent() {
                   winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
                   dataTutorial="piedmontesetarot-trick-display"
                 />
+                <span
+                  className="sr-only"
+                  role="status"
+                  aria-live="polite"
+                  data-testid="piedmontesetarot-trick-winner-live"
+                >
+                  {isTrickEnd
+                    ? t('trickWinnerAnnouncement', {
+                        name: playerName(state.lastTrickWinner, state.players[state.lastTrickWinner]?.isHuman ?? false),
+                      })
+                    : ''}
+                </span>
 
                 {/* Completed trick history: lets players review past tricks and cards */}
                 <details

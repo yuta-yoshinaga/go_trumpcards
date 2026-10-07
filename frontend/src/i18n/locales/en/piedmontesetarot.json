@@ -24,6 +24,7 @@
   "points": "{{points}} pts",
   "score": "Score: {{score}}",
   "currentTrick": "Current trick",
+  "trickWinnerAnnouncement": "Trick winner: {{name}}",
   "trickHistory": {
     "title": "Trick history",
     "empty": "No completed tricks yet",
