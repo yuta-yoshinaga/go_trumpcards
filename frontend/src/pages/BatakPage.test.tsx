@@ -99,6 +99,40 @@ describe('BatakPage', () => {
     });
   });
 
+  it('shows the translated lead suit only when the trick contains cards', async () => {
+    mockExec.mockResolvedValue(
+      makeBatakState({
+        currentTrick: [{ playerIdx: 0, card: { design: 'DIAMOND', value: 3 } }],
+      }),
+    );
+    renderWithProviders(<BatakPage />);
+
+    expect(await screen.findByText('リードスート: ダイヤ')).toBeInTheDocument();
+  });
+
+  it('does not show a lead suit when the trick is empty', async () => {
+    mockExec.mockResolvedValue(makeBatakState({ currentTrick: [] }));
+    renderWithProviders(<BatakPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    expect(screen.queryByText(/リードスート:/)).not.toBeInTheDocument();
+  });
+
+  it('labels the lead suit in English', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(
+        makeBatakState({
+          currentTrick: [{ playerIdx: 0, card: { design: 'HEART', value: 3 } }],
+        }),
+      );
+      renderWithProviders(<BatakPage />);
+
+      expect(await screen.findByText(`Led suit: ${i18n.t('common.suit.heart')}`)).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it.each([false, true])('shows score breakdown in the %s layout without negative zero', async (isMobile) => {
     mobileFlag.value = isMobile;
     const scoredState = makeBatakState({
