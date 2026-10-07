@@ -246,6 +246,29 @@ beforeEach(() => {
 });
 
 describe('KoenigrufenPage', () => {
+  it('marks the current dealer in the player seat list', async () => {
+    mockExec.mockResolvedValue(makeKoenigrufenState({ dealerIdx: 3 }));
+    renderWithProviders(<KoenigrufenPage />);
+
+    const badge = await screen.findByTestId('koenigrufen-dealer-badge');
+    expect(badge).toHaveTextContent('ディーラー');
+    expect(badge.parentElement).toHaveTextContent('CPU 3: 12枚');
+    expect(screen.getAllByTestId('koenigrufen-dealer-badge')).toHaveLength(1);
+  });
+
+  it('marks the current dealer in the mobile player seat list', async () => {
+    const originalWidth = window.innerWidth;
+    window.innerWidth = 375;
+    mockExec.mockResolvedValue(makeKoenigrufenState({ dealerIdx: 3 }));
+    renderWithProviders(<KoenigrufenPage />);
+
+    const badge = await screen.findByTestId('koenigrufen-dealer-badge');
+    expect(badge).toHaveTextContent('ディーラー');
+    expect(badge.parentElement).toHaveTextContent('CPU 3: 12枚');
+    expect(screen.getByText('プレイヤー').closest('details')).toBeInTheDocument();
+    window.innerWidth = originalWidth;
+  });
+
   it('shows declarer-side team points in the round result', async () => {
     mockExec.mockResolvedValue(
       makeKoenigrufenState({
