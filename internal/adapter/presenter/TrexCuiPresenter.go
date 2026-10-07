@@ -189,5 +189,7 @@ var trexHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *TrexCuiPresenter) ActionLogOutput(c interfaces.TrexGame) string {
-	return actionLogOutputTextForSeats[*domain.TrexPlayer](c)
+	return actionLogToTextWithNames(c.GetActionLog(), func(idx int) string {
+		return cuiPlayerName(c.GetPlayer(idx), idx)
+	})
 }
