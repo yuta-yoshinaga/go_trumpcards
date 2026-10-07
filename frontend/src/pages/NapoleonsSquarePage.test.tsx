@@ -182,6 +182,27 @@ describe('NapoleonsSquarePage', () => {
     }
   });
 
+  it('keeps all twelve tableau columns in a horizontally scrollable, touch-sized layout', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<NapoleonsSquarePage />);
+    const scrollArea = await screen.findByTestId('ns-tableau-scroll');
+    expect(scrollArea.className).toContain('overflow-x-auto');
+    const columns = screen.getAllByText(/^#\d+$/).map((label) => label.parentElement);
+    expect(columns).toHaveLength(12);
+    for (const column of columns) {
+      expect(column?.className).toContain('w-11');
+      expect(column?.className).toContain('flex-none');
+    }
+    const cardButtons = screen.getAllByRole('button', { name: /列\d+・上から\d+枚目/ });
+    expect(cardButtons.length).toBeGreaterThan(0);
+    for (const button of cardButtons) {
+      expect(button.className).toContain('min-h-11');
+    }
+    fireEvent.dragStart(cardButtons[0]!, { dataTransfer: { setData: vi.fn(), effectAllowed: 'none' } });
+    expect(cardButtons[0]).toHaveClass('opacity-50');
+    expect(screen.getByRole('button', { name: '空のタブロー列 2' }).className).toContain('min-h-11');
+  });
+
   it('shows the stock count and lets the player draw', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<NapoleonsSquarePage />);
