@@ -166,6 +166,7 @@ function GoofspielPageContent() {
   const isGameEnd = state.phase === GoofspielPhase.GAME_END || state.gameEndFlag;
   const isReveal = state.phase === GoofspielPhase.REVEAL && !isGameEnd;
   const canBid = state.phase === GoofspielPhase.BID && !isGameEnd && human?.hasBid === false;
+  const hasPendingSettings = playerCnt !== state.config.playerCnt || tieRule !== state.config.tieRule;
 
   const seatName = (idx: number) => (idx === 0 ? t('header.you') : t('header.cpu', { idx: String(idx) }));
 
@@ -425,6 +426,7 @@ function GoofspielPageContent() {
                       id: 'goofspiel-tie',
                       label: t('actions.tieRule'),
                       value: String(tieRule),
+                      description: hasPendingSettings ? t('actions.pendingReset') : undefined,
                       options: [
                         { value: '0', label: t('actions.tieDiscard') },
                         { value: '1', label: t('actions.tieCarry') },

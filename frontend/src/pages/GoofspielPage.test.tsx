@@ -357,6 +357,22 @@ describe('GoofspielPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { playerCnt: 3, tieRule: 1 }));
   });
 
+  it('shows the pending reset note only when a reset setting differs from the running game', async () => {
+    renderWithProviders(<GoofspielPage />);
+    const players = await screen.findByTestId('gs-players-select');
+    const note = () => screen.queryByText('設定の変更は次のリセットから適用されます。');
+    expect(note()).not.toBeInTheDocument();
+
+    fireEvent.change(players, { target: { value: '3' } });
+    expect(note()).toHaveTextContent('設定の変更は次のリセットから適用されます。');
+
+    fireEvent.change(players, { target: { value: '2' } });
+    expect(note()).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByTestId('gs-tie-select'), { target: { value: '1' } });
+    expect(note()).toBeInTheDocument();
+  });
+
   it('shows the hint when one is enabled', async () => {
     vi.mocked(useGameHint).mockReturnValue({
       hint: { targetAction: 'card-2', reason: 'hint.goofspielHighPrize', confidence: 'moderate' },
