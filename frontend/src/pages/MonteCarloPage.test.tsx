@@ -170,6 +170,42 @@ describe('MonteCarloPage', () => {
     expect(screen.getByTestId('mc-pair-announcement')).toBeEmptyDOMElement();
   });
 
+  it('moves focus to a remaining card after a pair is removed', async () => {
+    const afterRemoval = emptyBoard();
+    afterRemoval[1][1] = { card: card('SPADE', 3) };
+    mockExec.mockImplementation((...args) =>
+      Promise.resolve(args[0] === 'remove' ? { ...playingState, board: afterRemoval, removedCount: 2 } : playingState),
+    );
+    renderWithProviders(<MonteCarloPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByTestId('mc-cell-0-0'));
+    fireEvent.click(screen.getByTestId('mc-cell-0-1'));
+    await waitFor(() => expect(screen.getByTestId('mc-cell-1-1')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('mc-cell-1-1')).toHaveFocus());
+  });
+
+  it('returns focus to the first card when pair removal is rejected', async () => {
+    mockExec.mockResolvedValue({ ...playingState, message: 'rejected', messageCode: '' });
+    renderWithProviders(<MonteCarloPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByTestId('mc-cell-0-0'));
+    fireEvent.click(screen.getByTestId('mc-cell-0-1'));
+    await waitFor(() => expect(screen.getByTestId('mc-cell-0-0')).toHaveFocus());
+  });
+
+  it('moves focus to Deal when no cards remain after removal', async () => {
+    mockExec.mockImplementation((...args) =>
+      Promise.resolve(
+        args[0] === 'remove' ? { ...playingState, board: emptyBoard(), stockCount: 4, removedCount: 4 } : playingState,
+      ),
+    );
+    renderWithProviders(<MonteCarloPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByTestId('mc-cell-0-0'));
+    fireEvent.click(screen.getByTestId('mc-cell-0-1'));
+    await waitFor(() => expect(screen.getByTestId('mc-deal-button')).toHaveFocus());
+  });
+
   it('does not show the removal toast when the selected pair is locally invalid', async () => {
     renderWithProviders(<MonteCarloPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

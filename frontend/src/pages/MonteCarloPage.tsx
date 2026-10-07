@@ -135,6 +135,16 @@ function MonteCarloPageContent() {
   const isGameOver = state?.phase === MonteCarloPhase.GAME_OVER;
   const gameEnded = isGameClear || isGameOver;
 
+  const focusNextAction = useCallback(() => {
+    const remainingCard = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-testid^="mc-cell-"]')).find(
+      (button) => !button.disabled && button.querySelector('img'),
+    );
+    const fallback = document.querySelector<HTMLButtonElement>(
+      '[data-testid="mc-deal-button"]:not(:disabled), [data-testid="mc-undo-button"]:not(:disabled), [data-tutorial="mc-controls"] button:not(:disabled)',
+    );
+    (remainingCard ?? fallback)?.focus();
+  }, []);
+
   const handleCellClick = useCallback(
     (row: number, col: number) => {
       if (!state || !isPlaying) return;
@@ -157,10 +167,10 @@ function MonteCarloPageContent() {
       const isValidPair =
         firstCard != null && firstCard.value === cell.card.value && isAdjacent(selected, { row, col });
       pendingPairToast.current = isValidPair;
-      void execApi('remove', selected.row, selected.col, row, col);
+      void execApi('remove', selected.row, selected.col, row, col).then(() => setTimeout(focusNextAction, 0));
       setSelected(null);
     },
-    [execApi, isPlaying, selected, state],
+    [execApi, focusNextAction, isPlaying, selected, state],
   );
 
   const handleDeal = useCallback(() => {
@@ -390,6 +400,7 @@ function MonteCarloPageContent() {
                   </button>
                   <button
                     type="button"
+                    data-testid="mc-undo-button"
                     className={btnOutline}
                     onClick={handleUndo}
                     disabled={loading || !state.canUndo}
