@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { estimationApi } from '../api/gameApi';
+import { actionLogApi, estimationApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, EstimationResponse } from '../types/card';
@@ -16,6 +16,7 @@ vi.mock('../hooks/useGameHint', () => ({
 }));
 
 const mockExec = vi.mocked(estimationApi.exec);
+const mockActionLog = vi.mocked(actionLogApi.estimation);
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
@@ -62,9 +63,22 @@ const playing = (over: Partial<EstimationResponse> = {}) =>
 beforeEach(() => {
   vi.clearAllMocks();
   mockExec.mockResolvedValue(makeState());
+  mockActionLog.mockResolvedValue({
+    entries: [
+      { turnNumber: 1, playerIdx: 0, actionType: 'bid', detail: 'あなたが3を宣言', detailParams: {}, cards: [] },
+    ],
+  });
 });
 
 describe('EstimationPage', () => {
+  it('opens the action log during play and shows its entry', async () => {
+    mockExec.mockResolvedValue(playing());
+    renderWithProviders(<EstimationPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '棋譜を見る' }));
+    await waitFor(() => expect(mockActionLog).toHaveBeenCalled());
+    expect(await screen.findByText(/あなたが3を宣言/)).toBeInTheDocument();
+  });
+
   it('keeps on-turn illegal cards focusable, blocks play, and explains why', async () => {
     mockExec.mockResolvedValue(playing({ validPlays: [0] }));
     renderWithProviders(<EstimationPage />);
