@@ -66,7 +66,7 @@
     "cpuMetaAI": "Meta-AI (CPU learns your play style)"
   },
   "tutorial": {
-    "communityCards": "Community cards revealed progressively.",
+    "communityCards": "The first community card is face up from the start of pre-flop, before the opening bet. The remaining four cards are revealed progressively.",
     "playerHand": "Your 5 hole cards. You must use exactly 2 of them.",
     "combinationRule": "In Big O (5 Card Omaha), you must use exactly 2 hole cards and 3 community cards to form your hand.",
     "actionButtons": "Choose your betting action.",
