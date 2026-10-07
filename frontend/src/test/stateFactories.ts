@@ -912,6 +912,7 @@ const baseTressetteState: TressetteResponse = {
   teamScores: [0, 0],
   teamRoundThirds: [0, 0],
   playableIndices: [0, 1],
+  handCardThirds: [1, 1],
   gameEndFlag: false,
   winnerTeam: -1,
   message: '',

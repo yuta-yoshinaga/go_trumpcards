@@ -62,7 +62,9 @@ func TestTressetteWebPresenter_Output(t *testing.T) {
 
 	t.Run("initial state", func(t *testing.T) {
 		m, players := setupTressetteWebMockWithPlayers()
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
 		result := p.Output(m, nil)
@@ -76,7 +78,8 @@ func TestTressetteWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "tressette.playPhase.lead", resObj.MessageCode)
 		assert.Equal(t, []int{0}, resObj.PlayableIndices)
 		// human cards visible, cpu hidden
-		assert.Len(t, resObj.Players[0].Cards, 1)
+		assert.Len(t, resObj.Players[0].Cards, 3)
+		assert.Equal(t, []int{3, 1, 0}, resObj.HandCardThirds)
 		assert.Len(t, resObj.Players[1].Cards, 0)
 	})
 

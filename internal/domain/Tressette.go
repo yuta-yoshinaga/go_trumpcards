@@ -444,6 +444,9 @@ func tressetteThirds(value int) int {
 	}
 }
 
+// TressetteCardThirds returns a card's point value in thirds of a point.
+func TressetteCardThirds(value int) int { return tressetteThirds(value) }
+
 // --- Hint ---
 
 // GetHint 人間プレイヤーの手番における推奨プレイを返す。

@@ -47910,6 +47910,11 @@ components:
           items:
             type: integer
           description: Hand indices the human may legally play (must-follow filtered)
+        handCardThirds:
+          type: array
+          description: Point values of the human player's hand cards, in thirds of a point and in hand order.
+          items:
+            type: integer
         gameEndFlag:
           type: boolean
         winnerTeam:

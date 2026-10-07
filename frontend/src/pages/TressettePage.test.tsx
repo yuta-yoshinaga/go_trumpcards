@@ -115,9 +115,31 @@ describe('TressettePage', () => {
   it('renders play phase with human cards', async () => {
     renderWithProviders(<TressettePage />);
     await waitFor(() => {
-      expect(screen.getByAltText('♠ 3')).toBeInTheDocument();
-      expect(screen.getByAltText('♦ K')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '♠ 3 (カード自体は1/3点)' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '♦ K (カード自体は1/3点)' })).toBeInTheDocument();
     });
+  });
+
+  it('announces one point for an ace and zero points for other cards', async () => {
+    mockExec.mockResolvedValue(
+      makeTressetteState({
+        players: [
+          {
+            ...playPhaseState.players[0],
+            cards: [
+              { design: 'SPADE', value: 1 },
+              { design: 'HEART', value: 7 },
+            ],
+          },
+          ...playPhaseState.players.slice(1),
+        ],
+        handCardThirds: [3, 0],
+      }),
+    );
+    renderWithProviders(<TressettePage />);
+
+    expect(await screen.findByRole('button', { name: '♠ A (カード自体は1点)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 7 (カード自体は0点)' })).toBeInTheDocument();
   });
 
   it('selecting a card then playing dispatches play', async () => {

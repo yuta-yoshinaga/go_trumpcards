@@ -48,6 +48,7 @@ type TressetteWebOutput struct {
 	TeamScores         []int                       `json:"teamScores"`
 	TeamRoundThirds    []int                       `json:"teamRoundThirds"`
 	PlayableIndices    []int                       `json:"playableIndices"`
+	HandCardThirds     []int                       `json:"handCardThirds"`
 	GameEndFlag        bool                        `json:"gameEndFlag"`
 	WinnerTeam         int                         `json:"winnerTeam"`
 	Hint               *WebOutputCardHint          `json:"hint,omitempty"`
@@ -92,6 +93,7 @@ func newTressetteDefaultOutput(msg string) *TressetteWebOutput {
 		TeamScores:      make([]int, 0),
 		TeamRoundThirds: make([]int, 0),
 		PlayableIndices: make([]int, 0),
+		HandCardThirds:  make([]int, 0),
 		WinnerTeam:      -1,
 		WebOutputBase:   WebOutputBase{Message: msg},
 	}
