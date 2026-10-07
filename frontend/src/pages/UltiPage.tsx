@@ -319,11 +319,11 @@ function UltiPageContent() {
                           {t('coinDelta', { delta: formatSignedDelta(coinDeltas[i]) })}
                         </span>
                       )}
-                      {p.isDeclarer && (
-                        <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
-                          {t('declarerBadge')}
-                        </span>
-                      )}
+                      <span
+                        className={`px-1.5 py-0.5 rounded text-xs ${p.isDeclarer ? badgeWarningColors : 'bg-ds-surface-elevated text-ds-text-muted'}`}
+                      >
+                        {p.isDeclarer ? t('declarerBadge') : t('roleCoalition')}
+                      </span>
                     </div>
                   ))}
                 </div>

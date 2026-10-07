@@ -168,6 +168,14 @@ describe('UltiPage', () => {
     expect(screen.getAllByText('デクレアラー').length).toBeGreaterThan(0);
   });
 
+  it('shows a role badge for the declarer and both coalition players', async () => {
+    renderWithProviders(<UltiPage />);
+
+    await screen.findByAltText('♥ Q');
+    expect(screen.getAllByText('デクレアラー', { exact: true })).toHaveLength(1);
+    expect(screen.getAllByText('連合', { exact: true })).toHaveLength(2);
+  });
+
   it('renders the bid phase with Party, Ulti, Betli and Durchmarsch buttons', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<UltiPage />);
