@@ -97,6 +97,35 @@ describe('AgnesPage', () => {
     await waitFor(() => expect(screen.getAllByText('ゲームオーバー').length).toBeGreaterThan(0));
   });
 
+  it('explains auto-complete requirements and keeps the unavailable action focusable', async () => {
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const button = screen.getByRole('button', { name: 'オートコンプリート' });
+    const explanation = screen.getByText('山札を配り切り、全カードが表向きになると使えます');
+    expect(explanation).toBeVisible();
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(button).toHaveAttribute('aria-describedby', explanation.id);
+    expect(button).not.toBeDisabled();
+    mockExec.mockClear();
+    fireEvent.click(button);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('updates the auto-complete explanation when its requirements are met', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: playingState.tableau.map((column) => column.filter((item) => item.faceUp)),
+      stockCount: 0,
+    });
+    renderWithProviders(<AgnesPage />);
+    const button = await screen.findByRole('button', { name: 'オートコンプリート' });
+    const explanation = screen.getByText('オートコンプリートを実行できます');
+    expect(explanation).toBeVisible();
+    expect(button).toHaveAttribute('aria-disabled', 'false');
+    expect(button).toHaveAttribute('aria-describedby', explanation.id);
+  });
+
   it('clicks stock card to fire deal command', async () => {
     renderWithProviders(<AgnesPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -383,7 +412,8 @@ describe('AgnesPage', () => {
   it('disables auto-complete while the stock is not empty', async () => {
     renderWithProviders(<AgnesPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    expect(screen.getByTestId('ag-autocomplete-button')).toBeDisabled();
+    expect(screen.getByTestId('ag-autocomplete-button')).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByTestId('ag-autocomplete-button')).not.toBeDisabled();
   });
 
   it('enables auto-complete once stock is empty and all cards are face up, then sweeps to foundation', async () => {
