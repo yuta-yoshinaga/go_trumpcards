@@ -308,7 +308,7 @@ function CinchPageContent() {
                       {state.players.map((p) => (
                         <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                           {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('tricks', { count: p.trickCount })}
+                          {t('tricks', { count: p.trickCount })} | {t('dealPoints', { points: p.dealPoints })}
                         </div>
                       ))}
                     </div>
@@ -318,7 +318,7 @@ function CinchPageContent() {
                     {state.players.map((p) => (
                       <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                         {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('tricks', { count: p.trickCount })}
+                        {t('tricks', { count: p.trickCount })} | {t('dealPoints', { points: p.dealPoints })}
                       </div>
                     ))}
                   </div>

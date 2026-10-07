@@ -145,6 +145,34 @@ func TestCinch_PointScoring(t *testing.T) {
 	assert.Equal(t, 14, g.GetPlayer(0).GetTotalScore())
 }
 
+func TestCinch_GetDealPoints(t *testing.T) {
+	g := newTestCinch(t, domain.CinchDifficultyNormal)
+	g.GetPlayer(0).AddTrick([]*domain.Card{
+		cinchCard(domain.CardDesignHeart, 1), cinchCard(domain.CardDesignHeart, 11),
+		cinchCard(domain.CardDesignHeart, 10), cinchCard(domain.CardDesignHeart, 13),
+		cinchCard(domain.CardDesignHeart, 5), cinchCard(domain.CardDesignDiamond, 5),
+	})
+	assert.Equal(t, 0, g.GetDealPoints(0), "unset trump has no score")
+	g.SetTrumpSuit(domain.CardDesignHeart)
+	logCount := len(g.GetActionLog())
+	assert.Equal(t, 14, g.GetDealPoints(0))
+	assert.Len(t, g.GetActionLog(), logCount, "reading deal points has no log side effects")
+	assert.Equal(t, 0, g.GetDealPoints(-1))
+	assert.Equal(t, 0, g.GetDealPoints(domain.CinchPlayerCnt))
+	g.SetBidWinnerIdx(0)
+	g.SetCurrentBid(3)
+	g.SetPhase(domain.CinchPhaseRoundEnd)
+	g.ScoreRound()
+	assert.Equal(t, g.GetLastDealDetail().Points[0], g.GetDealPoints(0), "settlement uses the same trick-card total")
+	scorePointLogs := 0
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "cinch.log.scorePoint" {
+			scorePointLogs++
+		}
+	}
+	assert.Equal(t, 6, scorePointLogs, "settlement logs each point card")
+}
+
 // TestCinch_SetBack はビッダーが宣言未達でセットバックされることを検証する。
 func TestCinch_SetBack(t *testing.T) {
 	g := newTestCinch(t, domain.CinchDifficultyNormal)

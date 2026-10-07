@@ -56,6 +56,21 @@ const gameEndState = makeCinchState({
 });
 const cpuTurnState = makeCinchState({ currentTurn: 1, isHumanTurn: false });
 
+describe('Cinch deal points', () => {
+  it("shows each player's current deal points alongside trick counts", async () => {
+    mockExec.mockResolvedValue(
+      makeCinchState({
+        players: makeCinchState().players.map((player, index) => ({ ...player, dealPoints: index * 2 })),
+      }),
+    );
+    renderWithProviders(<CinchPage />);
+    expect(await screen.findByText(/獲得点: 0/)).toBeInTheDocument();
+    expect(screen.getByText(/獲得点: 2/)).toBeInTheDocument();
+    expect(screen.getByText(/獲得点: 4/)).toBeInTheDocument();
+    expect(screen.getByText(/獲得点: 6/)).toBeInTheDocument();
+  });
+});
+
 beforeEach(() => {
   mockExec.mockReset();
   mockExec.mockResolvedValue(playPhaseState);
@@ -124,10 +139,10 @@ describe('CinchPage', () => {
         bidWinnerIdx: -1,
         currentBid: 0,
         players: [
-          { id: 0, isHuman: true, cardCount: 9, cards: [], trickCount: 0, bid: -1, totalScore: 0 },
-          { id: 1, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: 0, totalScore: 0 },
-          { id: 2, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: 4, totalScore: 0 },
-          { id: 3, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: -1, totalScore: 0 },
+          { id: 0, isHuman: true, cardCount: 9, cards: [], trickCount: 0, bid: -1, totalScore: 0, dealPoints: 0 },
+          { id: 1, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: 0, totalScore: 0, dealPoints: 0 },
+          { id: 2, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: 4, totalScore: 0, dealPoints: 0 },
+          { id: 3, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: -1, totalScore: 0, dealPoints: 0 },
         ],
       }),
     );
@@ -145,10 +160,10 @@ describe('CinchPage', () => {
         phase: 0,
         bidPlayerIdx: 1,
         players: [
-          { id: 0, isHuman: true, cardCount: 9, cards: [], trickCount: 0, bid: 5, totalScore: 0 },
-          { id: 1, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: -1, totalScore: 0 },
-          { id: 2, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: 4, totalScore: 0 },
-          { id: 3, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: 0, totalScore: 0 },
+          { id: 0, isHuman: true, cardCount: 9, cards: [], trickCount: 0, bid: 5, totalScore: 0, dealPoints: 0 },
+          { id: 1, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: -1, totalScore: 0, dealPoints: 0 },
+          { id: 2, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: 4, totalScore: 0, dealPoints: 0 },
+          { id: 3, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: 0, totalScore: 0, dealPoints: 0 },
         ],
       }),
     );

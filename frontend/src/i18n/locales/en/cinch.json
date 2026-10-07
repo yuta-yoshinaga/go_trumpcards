@@ -49,6 +49,7 @@
   "you": "You",
   "cpu": "CPU {{id}}",
   "score": "Score: {{score}}",
+  "dealPoints": "Deal points: {{points}}",
   "playButton": "Play",
   "nextTrick": "Next Trick",
   "nextDeal": "Next Deal",

@@ -95,6 +95,7 @@ func (p *CinchWebPresenter) buildBase(g interfaces.CinchGame) *controller.CinchW
 			TrickCount: player.GetTrickCount(),
 			Bid:        player.GetBid(),
 			TotalScore: player.GetTotalScore(),
+			DealPoints: g.GetDealPoints(i),
 		})
 	}
 

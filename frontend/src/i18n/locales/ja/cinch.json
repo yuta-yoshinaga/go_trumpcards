@@ -49,6 +49,7 @@
   "you": "あなた",
   "cpu": "CPU {{id}}",
   "score": "得点: {{score}}",
+  "dealPoints": "獲得点: {{points}}",
   "playButton": "出す",
   "nextTrick": "次のトリック",
   "nextDeal": "次のディール",
