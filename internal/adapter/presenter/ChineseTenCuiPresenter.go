@@ -129,5 +129,7 @@ var chineseTenHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ChineseTenCuiPresenter) ActionLogOutput(c interfaces.ChineseTenGame) string {
-	return actionLogOutputTextForSeats[*domain.ChineseTenPlayer](c)
+	return actionLogToTextWithNames(c.GetActionLog(), func(idx int) string {
+		return cuiPlayerName(c.GetPlayer(idx), idx)
+	})
 }
