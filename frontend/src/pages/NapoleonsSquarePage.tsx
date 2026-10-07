@@ -128,6 +128,7 @@ function NapoleonsSquarePageContent() {
     const co = Math.max(44, Math.round(cw * 0.32));
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+  const tableauTapHeight = Math.max(dims.ch, 44);
 
   const isPlayingForKbd = state?.phase === NapoleonsSquarePhase.PLAYING;
 
@@ -222,7 +223,7 @@ function NapoleonsSquarePageContent() {
           onDragLeave={dnd.handleDragLeave}
           className={`relative block ${isLegalTarget(tableauColZone) ? 'rounded ring-2 ring-ds-success' : ''}`}
         >
-          <div className="relative" style={{ minHeight: dims.ch }}>
+          <div className="relative" style={{ minHeight: tableauTapHeight }}>
             {col.length === 0 ? (
               <button
                 type="button"
@@ -287,7 +288,9 @@ function NapoleonsSquarePageContent() {
                 );
               })
             )}
-            {col.length > 0 && <div style={{ height: (col.length - 1) * dims.co + dims.ch }} />}
+            {col.length > 0 && (
+              <div data-testid="ns-tableau-spacer" style={{ height: (col.length - 1) * dims.co + tableauTapHeight }} />
+            )}
           </div>
         </DropZone>
       </div>
