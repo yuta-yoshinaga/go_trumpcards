@@ -29,6 +29,8 @@
   "points": "{{points}} pts",
   "score": "Score: {{score}}",
   "currentTrick": "Current Trick",
+  "leadSuit": "Led suit",
+  "leadTrump": "Trump",
   "previousTrickWinner": "Won by {{name}}",
   "players": "Players",
   "you": "You",

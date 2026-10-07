@@ -29,6 +29,8 @@
   "points": "{{points}}点",
   "score": "得点: {{score}}",
   "currentTrick": "現在のトリック",
+  "leadSuit": "リードスート",
+  "leadTrump": "切り札",
   "previousTrickWinner": "{{name}} が獲得",
   "players": "プレイヤー",
   "you": "あなた",
