@@ -93,6 +93,15 @@ beforeEach(() => {
 });
 
 describe('AllFoursPage', () => {
+  it('names the player score table and associates each column heading', async () => {
+    renderWithProviders(<AllFoursPage />);
+
+    const table = await screen.findByRole('table', { name: 'プレイヤー別スコア表' });
+    for (const heading of ['プレイヤー', 'トリック', 'ディール', '累計']) {
+      expect(within(table).getByRole('columnheader', { name: heading })).toHaveAttribute('scope', 'col');
+    }
+  });
+
   it('keeps an unplayable card focusable and describes the follow-suit rule', async () => {
     mockExec.mockResolvedValue({
       ...playState,

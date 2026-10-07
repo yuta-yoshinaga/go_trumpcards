@@ -27,6 +27,7 @@
   "trickUnplayed": "まだカードが出ていません",
   "trickComplete": "トリックが終了しました",
   "trickCard": "{{player}}: {{card}}",
+  "scoresCaption": "プレイヤー別スコア表",
   "scoresPlayer": "プレイヤー",
   "scoresTricks": "トリック",
   "scoresRound": "ディール",
