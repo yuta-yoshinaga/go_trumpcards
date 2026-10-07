@@ -34,7 +34,7 @@
     "cells": "Free cells. Four temporary storage slots. More empty cells allow moving more cards at once.",
     "foundation": "Foundation piles. Build each suit from Ace to King.",
     "tableau": "Tableau columns. Stack in alternating colors, descending order. All cards are face up.",
-    "controls": "Control buttons: Undo, Hint, Auto-complete.",
+    "controls": "Control buttons: Undo, Hint, Auto-complete, and Give Up. Giving up ends the game after confirmation.",
     "resetButton": "Press the reset button to start a new game."
   },
   "landscapeBanner": "Landscape mode recommended",
