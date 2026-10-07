@@ -163,6 +163,10 @@ function TrogguPageContent() {
   }
 
   const human = state.players.find((p) => p.isHuman) ?? state.players[0] ?? null;
+  // French Tarot trumps use the purple tarot face; the gold Excuse is separate.
+  const trogguTrumpIndices = human?.cards.flatMap((card, index) =>
+    card.deck === 'tarot' && card.color === 'purple' ? [index] : [],
+  );
   const isBid = state.phase === TrogguPhase.BID;
   const isPlay = state.phase === TrogguPhase.PLAY;
   const isTrickEnd = state.phase === TrogguPhase.TRICK_END;
@@ -318,6 +322,9 @@ function TrogguPageContent() {
                 dataTutorialPrefix="tg"
                 validIndices={isPlay && isHumanTurn ? state.playableIndices : undefined}
                 restrictedTooltip={t('restricted')}
+                trumpIndices={trogguTrumpIndices}
+                trumpTitle={t('trump')}
+                trumpAccessibleLabel={t('trump')}
               />
             )}
 

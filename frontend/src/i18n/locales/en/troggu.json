@@ -39,6 +39,7 @@
   "previousTrickWinner": "Winner: {{name}}",
   "trickWinner": "WIN",
   "restricted": "You must follow the led suit",
+  "trump": "trump",
   "bid": "Bid",
   "pass": "Pass",
   "nextTrick": "Next trick",

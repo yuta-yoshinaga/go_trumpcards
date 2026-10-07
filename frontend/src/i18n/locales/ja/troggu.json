@@ -39,6 +39,7 @@
   "previousTrickWinner": "勝者: {{name}}",
   "trickWinner": "勝ち",
   "restricted": "リードスートに従う必要があります",
+  "trump": "切り札",
   "bid": "入札",
   "pass": "パス",
   "nextTrick": "次のトリック",

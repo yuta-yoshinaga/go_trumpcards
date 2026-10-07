@@ -33,6 +33,33 @@ beforeEach(() => {
 });
 
 describe('TrogguPage', () => {
+  it('marks ordinary trumps visually and in accessible names, but not the Excuse', async () => {
+    mockExec.mockResolvedValue(
+      makeTrogguState({
+        players: makeTrogguState().players.map((player) =>
+          player.isHuman
+            ? {
+                ...player,
+                cards: [
+                  { design: 'JOKER', value: 21, glyph: '✦', label: '21', color: 'purple', deck: 'tarot' },
+                  { design: 'JOKER', value: 0, glyph: '★', label: 'Excuse', color: 'gold', deck: 'tarot' },
+                ],
+              }
+            : player,
+        ),
+      }),
+    );
+    renderWithProviders(<TrogguPage />);
+    await screen.findAllByRole('button');
+    const hand = handButtons();
+    const trump = hand.find((button) => button.getAttribute('data-trump') === 'true');
+    const excuse = hand.find((button) => button.getAttribute('aria-label')?.includes('Excuse'));
+    expect(trump).toHaveAttribute('data-trump', 'true');
+    expect(trump?.getAttribute('aria-label')).toContain('切り札');
+    expect(excuse).not.toHaveAttribute('data-trump');
+    expect(excuse?.getAttribute('aria-label')).not.toContain('切り札');
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<TrogguPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
