@@ -136,6 +136,27 @@ describe('FiftyOnePage', () => {
     expect(screen.getByRole('option', { name: '難しい' })).toBeInTheDocument();
   });
 
+  it('says a changed CPU difficulty waits for the next reset, only while it differs from the game', async () => {
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByText('設定の変更は次のリセットから適用されます。')).toBeNull();
+
+    fireEvent.change(screen.getAllByRole('combobox')[0], { target: { value: '2' } });
+    expect(await screen.findByText('設定の変更は次のリセットから適用されます。')).toBeInTheDocument();
+
+    await i18n.changeLanguage('en');
+    try {
+      expect(await screen.findByText('Setting changes will apply from the next reset.')).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+
+    fireEvent.change(screen.getAllByRole('combobox')[0], { target: { value: '1' } });
+    await waitFor(() => expect(screen.queryByText('設定の変更は次のリセットから適用されます。')).toBeNull());
+  });
+
   it('uses the selected CPU difficulty on the next reset', async () => {
     const { FiftyOnePage } = await import('./FiftyOnePage');
     renderWithProviders(<FiftyOnePage />);

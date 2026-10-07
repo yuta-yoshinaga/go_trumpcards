@@ -30,6 +30,7 @@
     "stopCalledBy": "Stop is in effect ({{name}}) — this is the final round"
   },
   "settings": {
+    "pendingReset": "Setting changes will apply from the next reset.",
     "cpuDifficulty": "CPU Difficulty",
     "difficultyEasy": "Easy",
     "difficultyNormal": "Normal",
