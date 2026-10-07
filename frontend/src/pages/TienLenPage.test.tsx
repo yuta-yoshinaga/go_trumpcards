@@ -48,6 +48,24 @@ beforeEach(() => {
 });
 
 describe('TienLenPage', () => {
+  it('shows the rules during a turn in Japanese and English without replacing play feedback', async () => {
+    mockExec.mockResolvedValue(makeState({ tableCards: [card('SPADE', 4)], tablePlayType: 1 }));
+    renderWithProviders(<TienLenPage />);
+
+    expect(await screen.findByTestId('tl-rules')).toHaveTextContent('役の強さ');
+    expect(screen.getByTestId('tl-table-playtype')).toHaveTextContent('役: シングル');
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    expect(screen.getByTestId('tl-combo-type')).toBeInTheDocument();
+
+    try {
+      await i18n.changeLanguage('en');
+      expect(screen.getByTestId('tl-rules')).toHaveTextContent('Combo strength');
+      expect(screen.getByTestId('tl-table-playtype')).toHaveTextContent('Combo: Single');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('localizes CPU difficulty options in Japanese and English', async () => {
     renderWithProviders(<TienLenPage />);
     const difficulty = await screen.findByRole('combobox', { name: 'CPU難易度:' });
