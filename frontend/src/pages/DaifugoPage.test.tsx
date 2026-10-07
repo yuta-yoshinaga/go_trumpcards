@@ -420,12 +420,25 @@ describe('DaifugoPage', () => {
     await waitFor(
       () => {
         expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument();
-        expect(screen.getByText(/CPU 1が出しました/)).toBeInTheDocument();
-        expect(screen.getByText(/CPU 2がパスしました/)).toBeInTheDocument();
+        expect(screen.getByTestId('daifugo-cpu-actions')).toHaveTextContent(/CPU 1が出しました/);
+        expect(screen.getByTestId('daifugo-cpu-actions')).toHaveTextContent(/CPU 2がパスしました/);
+        expect(screen.getByTestId('daifugo-cpu-actions-announcement')).toHaveTextContent(
+          /CPU 1が出しました.*CPU 2がパスしました/,
+        );
       },
       { timeout: 4000 },
     );
   }, 10000);
+
+  it('keeps the CPU action live region mounted and empty when there are no actions', async () => {
+    mockExec.mockResolvedValue(humanTurnState);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const announcement = screen.getByTestId('daifugo-cpu-actions-announcement');
+    expect(announcement).toHaveAttribute('role', 'status');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toBeEmptyDOMElement();
+  });
 
   it('shows intermediate human action state before CPU replay (humanAction with playedCards)', async () => {
     const stateWithHumanAndCpu: DaifugoResponse = {
@@ -442,7 +455,9 @@ describe('DaifugoPage', () => {
     };
     mockExec.mockResolvedValue(stateWithHumanAndCpu);
     renderWithProviders(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByText(/CPU 1が出しました/)).toBeInTheDocument(), { timeout: 4000 });
+    await waitFor(() => expect(screen.getByTestId('daifugo-cpu-actions')).toHaveTextContent(/CPU 1が出しました/), {
+      timeout: 4000,
+    });
   }, 10000);
 
   it('shows intermediate human action state before CPU replay (humanAction with empty playedCards)', async () => {
@@ -462,7 +477,9 @@ describe('DaifugoPage', () => {
     };
     mockExec.mockResolvedValue(stateWithPassAndCpu);
     renderWithProviders(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByText(/CPU 1が出しました/)).toBeInTheDocument(), { timeout: 4000 });
+    await waitFor(() => expect(screen.getByTestId('daifugo-cpu-actions')).toHaveTextContent(/CPU 1が出しました/), {
+      timeout: 4000,
+    });
   }, 10000);
 
   it('shows intermediate CPU action during replay animation', async () => {
@@ -476,9 +493,11 @@ describe('DaifugoPage', () => {
     mockExec.mockResolvedValue(stateWithCpuActions);
     renderWithProviders(<DaifugoPage />);
     // First intermediate state (CPU 1's action) appears before the second
-    await waitFor(() => expect(screen.getByText(/CPU 1が出しました/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('daifugo-cpu-actions')).toHaveTextContent(/CPU 1が出しました/));
     // After all animation steps, CPU 2's action also appears
-    await waitFor(() => expect(screen.getByText(/CPU 2がパスしました/)).toBeInTheDocument(), { timeout: 4000 });
+    await waitFor(() => expect(screen.getByTestId('daifugo-cpu-actions')).toHaveTextContent(/CPU 2がパスしました/), {
+      timeout: 4000,
+    });
   }, 10000);
 
   it('enables play button after CPU replay animation completes', async () => {
