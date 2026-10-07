@@ -408,14 +408,18 @@ function EgyptianRatscrewPageContent() {
                         <span key={`dot${i}`} className="inline-block h-2 w-2 rounded-full bg-ds-warning" />
                       ))}
                     </div>
-                    <div className="text-xs text-ds-warning" role="status">
+                    <div className="text-xs text-ds-warning" role="status" aria-atomic="true">
                       {t('label.chanceRemaining', { count: state.chanceRemaining })}
                       {' — '}
                       {t('chanceResponder', {
                         player: state.isHumanTurn ? tc('player.you') : tc('player.cpu', { id: state.currentTurnIdx }),
                       })}
-                      {chanceSeconds > 0 && <> — {t('chanceTimeRemaining', { seconds: chanceSeconds })}</>}
                     </div>
+                    {chanceSeconds > 0 && (
+                      <div className="text-xs text-ds-warning" role="timer" aria-live="off">
+                        {t('chanceTimeRemaining', { seconds: chanceSeconds })}
+                      </div>
+                    )}
                   </div>
                 )}
                 <div className="mt-2">
