@@ -229,6 +229,8 @@ function TutePageContent() {
                   players={state.players.map((p) => ({ ...p, team: p.teamId }))}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  winnerIdx={isTrickEnd || isRoundEnd ? state.leadPlayerIdx : undefined}
+                  winnerLabel={t('trickWinner')}
                   dataTutorial="tute-trick-display"
                 />
               </div>
