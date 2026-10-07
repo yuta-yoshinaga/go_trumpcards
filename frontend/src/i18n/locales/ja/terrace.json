@@ -17,7 +17,7 @@
   "baseRankLabel": "開始ランク",
   "baseRankUnset": "未決定",
   "chooseBaseBanner": "最初に組札へ送った札のランクが、8つの組札すべての開始ランクになります",
-  "foundationAriaLabel": "組札{{idx}} {{count}}枚",
+  "foundationAriaLabel": "組札{{idx}} {{count}}枚、一番上は{{card}}",
   "emptyFoundationAriaLabel": "空の組札{{idx}}",
   "emptyPileAriaLabel": "空の山 {{pile}}",
   "tableauCardAriaLabel": "{{card}}、山{{pile}}",
