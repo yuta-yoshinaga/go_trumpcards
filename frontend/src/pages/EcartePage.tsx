@@ -280,6 +280,16 @@ function EcartePageContent() {
                         deal: state.dealPoints[p.id] ?? 0,
                         tricks: p.trickCount,
                       })}
+                      {(p.id === state.dealerIdx || p.id === state.elderIdx) && (
+                        <span className="ml-1 text-ds-text-muted text-xs">
+                          (
+                          {[
+                            ...(p.id === state.dealerIdx ? [t('dealer')] : []),
+                            ...(p.id === state.elderIdx ? [t('elder')] : []),
+                          ].join(t('listSeparator'))}
+                          )
+                        </span>
+                      )}
                     </div>
                   ))}
                   {hasTrumpKingBonus && (
