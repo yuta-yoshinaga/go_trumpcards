@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { soloWhistApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeSoloWhistState } from '../test/stateFactories';
-import { SoloWhistContract } from '../types/phases';
+import { SoloWhistContract, SoloWhistPhase } from '../types/phases';
 import { SoloWhistPage } from './SoloWhistPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -103,6 +103,8 @@ describe('SoloWhistPage', () => {
     const badge = await screen.findByText('ディーラー', { selector: 'span' });
     expect(badge.parentElement).toHaveTextContent('CPU 3');
     expect(screen.getAllByText('ディーラー', { selector: 'span' })).toHaveLength(1);
+    expect(screen.getByTestId('solowhist-trick-winner-status')).toHaveAttribute('aria-live', 'polite');
+    expect(screen.getByTestId('solowhist-trick-winner-status')).toBeEmptyDOMElement();
   });
 
   it('shows the dealer badge only beside the dealer seat on mobile', async () => {
@@ -265,6 +267,31 @@ describe('SoloWhistPage', () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<SoloWhistPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+  });
+
+  it.each([
+    [SoloWhistPhase.TRICK_END, 'トリック終了'],
+    [SoloWhistPhase.ROUND_END, 'ラウンド終了'],
+  ])('announces and highlights the resolved trick winner in phase %i (%s)', async (phase, _phaseName) => {
+    mockExec.mockResolvedValue(
+      makeSoloWhistState({
+        phase,
+        leadPlayerIdx: 2,
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'HEART', value: 2 } },
+          { playerIdx: 1, card: { design: 'CLOVER', value: 3 } },
+          { playerIdx: 2, card: { design: 'SPADE', value: 1 } },
+          { playerIdx: 3, card: { design: 'DIAMOND', value: 4 } },
+        ],
+      }),
+    );
+    renderWithProviders(<SoloWhistPage />);
+
+    expect(await screen.findByTestId('solowhist-trick-winner-status')).toHaveTextContent('CPU 2がトリックを獲得');
+    expect(screen.getByTestId('trick-winner-badge').closest('[data-player-idx="2"]')).toHaveAttribute(
+      'data-trick-winner',
+      'true',
+    );
   });
 
   it('renders round end with the next round button and the round result', async () => {
