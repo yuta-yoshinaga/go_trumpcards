@@ -46,6 +46,15 @@ func (p *TressetteWebPresenter) buildBase(g interfaces.TressetteGame) *controlle
 	thirds := g.GetTeamRoundThirds()
 	resObj.TeamRoundThirds = thirds[:]
 	resObj.PlayableIndices = p.playableIndices(g)
+	resObj.HandCardThirds = make([]int, 0)
+	if g.GetPlayerCnt() > 0 {
+		if human := g.GetPlayer(0); human != nil {
+			for i := 0; i < human.GetCardsSize(); i++ {
+				card := human.GetCard(i)
+				resObj.HandCardThirds = append(resObj.HandCardThirds, domain.TressetteCardThirds(card.GetValue()))
+			}
+		}
+	}
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.TressetteWebOutputConfig{

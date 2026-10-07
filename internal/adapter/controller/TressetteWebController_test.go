@@ -24,6 +24,7 @@ func mustTressetteOutputJSON(msg string) string {
 		TeamScores:         []int{},
 		TeamRoundThirds:    []int{},
 		PlayableIndices:    []int{},
+		HandCardThirds:     []int{},
 		WinnerTeam:         -1,
 		WebOutputBase:      controller.WebOutputBase{Message: msg},
 	}

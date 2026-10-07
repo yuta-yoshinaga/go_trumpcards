@@ -20,6 +20,7 @@
   "teamScore": "Team {{team}}: {{points}} pts (this round {{thirds}}/3)",
   "scoreAnnouncement": "Team {{team}} gained {{gained}} points. Total {{points}} points, {{thirds}}/3 this round",
   "listSeparator": ", ",
+  "cardAccessibleStatus": "card worth {{points}}, excluding last-trick bonus",
   "yourTeam": "Your team",
   "partner": "Partner",
   "opponent": "Opponent",

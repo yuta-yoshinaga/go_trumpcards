@@ -506,6 +506,11 @@ function TressettePageContent() {
                 dataTutorialPrefix="tr"
                 validIndices={isHumanTurn ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}
+                cardStatusFor={(idx) => {
+                  const thirds = state.handCardThirds[idx];
+                  const pointKey = thirds === 3 ? 'aceValue' : thirds === 1 ? 'figuresValue' : 'othersValue';
+                  return t('cardAccessibleStatus', { points: t(`pointLegend.${pointKey}`) });
+                }}
               />
             )}
 

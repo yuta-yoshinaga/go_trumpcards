@@ -46,6 +46,7 @@ export interface TressetteResponse extends BaseGameResponse {
   teamScores: number[];
   teamRoundThirds: number[];
   playableIndices: number[];
+  handCardThirds: number[];
   gameEndFlag: boolean;
   winnerTeam: number;
   config: TressetteConfig;
