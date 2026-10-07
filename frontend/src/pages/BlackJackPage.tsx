@@ -430,6 +430,9 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
             {phase === BjPhase.BET && (
               <div className="flex flex-col items-center justify-center py-6 gap-4">
                 <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
+                {variant === 'spanish21' && (
+                  <p className="text-ds-text-muted text-sm text-center">{t('betBonusGuide')}</p>
+                )}
                 <details className="bg-black/30 rounded-lg w-full max-w-sm" data-tutorial="bj-payout-ref">
                   <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
                     {t('payoutRef.title')}
