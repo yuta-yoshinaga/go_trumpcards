@@ -167,13 +167,15 @@ function BuraPageContent() {
               </span>
               {opponents.map((o) => (
                 <span key={`pts-${o.id.toString()}`}>
-                  {t('opponent')}: <span className="font-bold">{o.points}</span>
+                  {findPlayerName(state.players, state.players.indexOf(o))}:{' '}
+                  <span className="font-bold">{o.points}</span>
                 </span>
               ))}
             </div>
 
             <div className="flex justify-center gap-4 mb-4">
               {opponents.map((o) => {
+                const opponentName = findPlayerName(state.players, state.players.indexOf(o));
                 const revealed = ended && o.cards.length > 0;
                 const handCards = revealed
                   ? o.cards.map((card, i) => (
@@ -189,11 +191,13 @@ function BuraPageContent() {
                     ));
                 return (
                   <div key={`opp-${o.id.toString()}`} className="text-center">
-                    <div className="text-game-text-muted text-xs mb-1">{t('opponentHand', { n: o.cardCount })}</div>
+                    <div className="text-game-text-muted text-xs mb-1">
+                      {t('opponentHand', { name: opponentName, n: o.cardCount })}
+                    </div>
                     {revealed ? (
                       <fieldset
                         className="m-0 flex gap-1 justify-center border-0 p-0"
-                        aria-label={t('opponentHandRevealedAriaLabel')}
+                        aria-label={t('opponentHandRevealedAriaLabel', { name: opponentName })}
                       >
                         {handCards}
                       </fieldset>
@@ -201,7 +205,7 @@ function BuraPageContent() {
                       <div
                         className="flex gap-1 justify-center"
                         role="img"
-                        aria-label={t('opponentHandAriaLabel', { n: o.cardCount })}
+                        aria-label={t('opponentHandAriaLabel', { name: opponentName, n: o.cardCount })}
                       >
                         {handCards}
                       </div>
