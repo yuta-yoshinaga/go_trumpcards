@@ -852,6 +852,8 @@ describe('KlondikePage', () => {
     expect(select).toHaveAttribute('id', 'draw-mode-select');
     const label = document.querySelector('label[for="draw-mode-select"]');
     expect(label).toBeInTheDocument();
+    expect(select).toHaveClass('min-h-[44px]');
+    expect(screen.getByLabelText('スコアモード')).toHaveClass('min-h-[44px]');
   });
 
   it('changing draw mode mid-game asks for confirmation before resetting', async () => {
