@@ -38,6 +38,7 @@
   },
   "dealerPolicy": {
     "label": "親のドロー方針",
+    "drawRule": "親は目6以下で3枚目を引く",
     "drew": "親は目が規定値（{{threshold}}）以下だったため3枚目を引いた",
     "stood": "親は目{{rank}}で規定値（{{threshold}}）を超えていたため引かなかった"
   },

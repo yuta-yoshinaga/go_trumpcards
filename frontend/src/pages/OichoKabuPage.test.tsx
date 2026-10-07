@@ -103,6 +103,7 @@ describe('OichoKabuPage', () => {
     mockApi.mockResolvedValue(betState);
     renderWithProviders(<OichoKabuPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /ベット/ })).toBeInTheDocument());
+    expect(screen.queryByTestId('dealer-draw-rule')).not.toBeInTheDocument();
   });
 
   it('describes the current maximum bet and updates it when the chip balance changes', async () => {
@@ -249,6 +250,13 @@ describe('OichoKabuPage', () => {
     renderWithProviders(<OichoKabuPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
     expect(screen.getByTestId('dealer-policy')).toHaveTextContent('親は目が規定値（6）以下だったため3枚目を引いた');
+    expect(screen.queryByTestId('dealer-draw-rule')).not.toBeInTheDocument();
+  });
+
+  it('shows the banker draw rule while deciding', async () => {
+    mockApi.mockResolvedValue(drawState);
+    renderWithProviders(<OichoKabuPage />);
+    expect(await screen.findByTestId('dealer-draw-rule')).toHaveTextContent('親は目6以下で3枚目を引く');
   });
 
   it('hides the banker draw policy before the result phase', async () => {
