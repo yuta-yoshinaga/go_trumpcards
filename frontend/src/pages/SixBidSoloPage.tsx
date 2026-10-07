@@ -31,6 +31,7 @@ import { parseSixBidSoloCommand, SIXBIDSOLO_HELP } from '../utils/cli/commands/s
 import { formatSixBidSoloState } from '../utils/cli/formatters/sixbidsoloFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 
 /** The six bids, in ascending order. Index 0 is a pass and is never offered. */
 const BIDS = [1, 2, 3, 4, 5, 6];
@@ -324,6 +325,19 @@ function SixBidSoloPageContent() {
                 {/* **ウィドウは宣言者に入る。ミゼール系だけは 0。** */}
                 <div data-testid="sixbidsolo-widow-credit">{t('widowCredit', { n: result.widowPoints })}</div>
                 <div>{t('valueLine', { n: result.value })}</div>
+                <ul aria-label={t('deltasTitle')}>
+                  {state.players.map((player) => {
+                    const delta = result.deltas[player.id];
+                    return (
+                      <li key={player.id}>
+                        {t('deltaLine', {
+                          player: playerLabel(player.id, player.isHuman),
+                          delta: formatSignedDelta(delta),
+                        })}
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
             )}
 
