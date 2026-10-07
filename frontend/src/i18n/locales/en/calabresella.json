@@ -32,6 +32,7 @@
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",
+  "leadSuit": "Lead Suit",
   "previousTrickWinner": "Won by {{name}}",
   "monteLabel": "Monte (widow)",
   "players": "Players",
