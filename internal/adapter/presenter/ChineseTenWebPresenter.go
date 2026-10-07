@@ -133,7 +133,7 @@ func (p *ChineseTenWebPresenter) HintOutput(c interfaces.ChineseTenGame) string 
 
 // ActionLogOutput 棋譜を出力する
 func (p *ChineseTenWebPresenter) ActionLogOutput(c interfaces.ChineseTenGame) string {
-	return actionLogOutputJSON(c)
+	return actionLogToJSON(c.GetActionLog())
 }
 
 // chineseTenHint 人間プレイヤーへの推奨手を返す。CPU と同じ意思決定を通す。

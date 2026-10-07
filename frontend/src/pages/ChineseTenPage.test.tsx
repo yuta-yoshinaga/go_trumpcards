@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { chinesetenApi } from '../api/gameApi';
+import { actionLogApi, chinesetenApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { CardDesign, ChineseTenCard, ChineseTenPlayer, ChineseTenResponse } from '../types/card';
@@ -80,6 +80,44 @@ describe('ChineseTenPage', () => {
     renderWithProviders(<ChineseTenPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.getByText(/A〜9は合計10で取る/)).toBeInTheDocument();
+  });
+
+  it('opens the action log during active play', async () => {
+    vi.mocked(actionLogApi.chineseten).mockResolvedValue({
+      entries: [
+        {
+          turnNumber: 1,
+          playerIdx: 0,
+          actionType: 'place',
+          detail: 'テスト用の棋譜行 ♥ 9',
+          detailCode: 'test.log.stub',
+          detailParams: { value: '♥ 9' },
+          cards: [],
+        },
+      ],
+    });
+    renderWithProviders(<ChineseTenPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: '棋譜を見る' }));
+    const panel = await screen.findByRole('region', { name: '棋譜' });
+    expect(within(panel).getByText(/テスト用の棋譜行 ♥ 9/)).toBeInTheDocument();
+  });
+
+  it('does not dispatch keyboard actions while the action log is open', async () => {
+    vi.mocked(actionLogApi.chineseten).mockResolvedValue({ entries: [] });
+    renderWithProviders(<ChineseTenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    mockExec.mockClear();
+
+    fireEvent.click(await screen.findByRole('button', { name: '棋譜を見る' }));
+    await screen.findByRole('region', { name: '棋譜' });
+    fireEvent.keyDown(document, { key: '1' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('play', 0);
+
+    fireEvent.click(screen.getByRole('button', { name: '閉じる' }));
+    fireEvent.keyDown(document, { key: '1' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
   });
 
   it('reveals the opponent hand after the game ends', async () => {

@@ -50,7 +50,7 @@ func ctStub(phase domain.ChineseTenPhase, winner int, gameEnd bool) *interfaces.
 	g.On("GetPlayer", mock.Anything).Return(domain.NewChineseTenPlayer(false))
 	g.On("GetCaptured", mock.Anything).Return([]*domain.Card{})
 	g.On("GetScore", mock.Anything).Return(0)
-	g.On("GetActionLog").Return([]*domain.ActionLogEntry{})
+	g.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, PlayerIdx: 0, ActionType: "place", DetailCode: "chineseten.log.place"}})
 	g.On("ChineseTenCpuDecide", mock.Anything).Return(domain.ChineseTenCpuAction{HandIdx: 0, LayoutIdx: 0})
 	return g
 }
@@ -285,11 +285,12 @@ func TestChineseTenWebPresenter_SkipsANilSeatAndRendersTheLog(t *testing.T) {
 	g.On("GetPlayers").Return([]*domain.ChineseTenPlayer{domain.NewChineseTenPlayer(true), nil})
 	g.On("GetCaptured", mock.Anything).Return([]*domain.Card{})
 	g.On("GetScore", mock.Anything).Return(0)
-	g.On("GetActionLog").Return([]*domain.ActionLogEntry{})
+	g.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, PlayerIdx: 0, ActionType: "place", DetailCode: "chineseten.log.place"}})
 
 	out := ctDecode(t, new(ChineseTenWebPresenter).Output(g, nil))
 	assert.Len(t, out["players"], 1, "the nil seat is dropped, not rendered")
-	assert.NotEmpty(t, new(ChineseTenWebPresenter).ActionLogOutput(g))
+	logOutput := ctDecode(t, new(ChineseTenWebPresenter).ActionLogOutput(g))
+	assert.Len(t, logOutput["entries"], 1, "active games must include their action log")
 	assert.Nil(t, chineseTenCardOutput(nil))
 }
 
@@ -319,6 +320,18 @@ func TestChineseTenCuiPresenter_RendersEachPhaseAndAnnotatesRedCards(t *testing.
 	assert.NotEmpty(t, p.Output(ctStub(domain.ChineseTenPhaseGameEnd, -1, true), nil))
 	assert.NotEmpty(t, p.Output(ctStub(domain.ChineseTenPhaseGameEnd, 1, true), nil))
 	assert.NotEmpty(t, p.ActionLogOutput(ctTestGame(t)))
+}
+
+func TestChineseTenCuiPresenter_RendersActionLogDuringActivePlay(t *testing.T) {
+	g := ctStub(domain.ChineseTenPhasePlay, -1, false)
+	g.ExpectedCalls = nil
+	g.On("GetGameEndFlag").Return(false)
+	g.On("GetActionLog").Return([]*domain.ActionLogEntry{{
+		TurnNumber: 1, PlayerIdx: 0, ActionType: "place", DetailCode: "chineseten.log.place",
+	}})
+	g.On("GetPlayer", 0).Return(domain.NewChineseTenPlayer(true))
+
+	assert.Contains(t, new(ChineseTenCuiPresenter).ActionLogOutput(g), "T1 [")
 }
 
 func TestChineseTenCuiPresenter_HintResolvesItsReasonKey(t *testing.T) {
