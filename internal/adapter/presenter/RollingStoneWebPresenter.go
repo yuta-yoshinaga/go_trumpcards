@@ -119,5 +119,5 @@ func (p *RollingStoneWebPresenter) HintOutput(s interfaces.RollingStoneGame) str
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *RollingStoneWebPresenter) ActionLogOutput(s interfaces.RollingStoneGame) string {
-	return actionLogOutputJSON(s)
+	return actionLogToJSON(s.GetActionLog())
 }
