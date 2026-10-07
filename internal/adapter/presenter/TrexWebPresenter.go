@@ -147,7 +147,7 @@ func (p *TrexWebPresenter) HintOutput(c interfaces.TrexGame) string {
 
 // ActionLogOutput 棋譜を出力する
 func (p *TrexWebPresenter) ActionLogOutput(c interfaces.TrexGame) string {
-	return actionLogOutputJSON(c)
+	return actionLogToJSON(c.GetActionLog())
 }
 
 // trexHint 人間プレイヤーへの推奨手を返す。CPU と同じ意思決定を通す。

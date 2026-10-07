@@ -34,7 +34,7 @@ func txDecode(t *testing.T, raw string) map[string]any {
 
 // txStub wires a MockTrexGame with every accessor the presenters touch, so a
 // test can pin an exact phase/contract rather than shuffling until one appears.
-func txStub(phase domain.TrexPhase, contract domain.TrexContract, king int, gameEnd bool, winner int) *interfaces.MockTrexGame {
+func txStub(phase domain.TrexPhase, contract domain.TrexContract, king int, gameEnd bool, winner int, logs ...*domain.ActionLogEntry) *interfaces.MockTrexGame {
 	g := new(interfaces.MockTrexGame)
 	g.On("GetPhase").Return(phase)
 	g.On("GetContract").Return(contract)
@@ -61,7 +61,7 @@ func txStub(phase domain.TrexPhase, contract domain.TrexContract, king int, game
 	}
 	g.On("GetPlayers").Return(players)
 	g.On("GetPlayer", mock.Anything).Return(domain.NewTrexPlayer(false))
-	g.On("GetActionLog").Return([]*domain.ActionLogEntry{})
+	g.On("GetActionLog").Return(logs)
 	g.On("TrexCpuDecide", mock.Anything).Return(domain.TrexCpuAction{Contract: domain.TrexContractQueens, HandIdx: 0})
 	return g
 }
@@ -190,6 +190,18 @@ func TestTrexWebPresenter_HintOutputAndActionLog(t *testing.T) {
 	assert.NotEmpty(t, new(TrexWebPresenter).ActionLogOutput(tr))
 }
 
+func TestTrexWebPresenter_ActionLogOutputDuringPlay(t *testing.T) {
+	g := txStub(domain.TrexPhasePlay, domain.TrexContractQueens, 0, false, -1,
+		&domain.ActionLogEntry{TurnNumber: 1, PlayerIdx: 0, ActionType: "play"})
+
+	var out struct {
+		Entries []map[string]any `json:"entries"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(new(TrexWebPresenter).ActionLogOutput(g)), &out))
+	require.Len(t, out.Entries, 1)
+	assert.Equal(t, "play", out.Entries[0]["actionType"])
+}
+
 func TestTrexCuiPresenter_ListsWhatIsLeftToChoose(t *testing.T) {
 	// 何が残っているかが見えていないと選べない。
 	g := txStub(domain.TrexPhaseChoose, domain.TrexContractNone, 0, false, -1)
@@ -279,6 +291,14 @@ func TestTrexCuiPresenter_HintReasonKeysAreAllMapped(t *testing.T) {
 
 func TestTrexCuiPresenter_ActionLog(t *testing.T) {
 	assert.NotEmpty(t, new(TrexCuiPresenter).ActionLogOutput(txTestGame(t)))
+}
+
+func TestTrexCuiPresenter_ActionLogOutputDuringPlay(t *testing.T) {
+	g := txStub(domain.TrexPhasePlay, domain.TrexContractQueens, 0, false, -1,
+		&domain.ActionLogEntry{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "trex.log.play"})
+	g.On("GetPlayer", 0).Return(&domain.TrexPlayer{})
+
+	assert.Contains(t, new(TrexCuiPresenter).ActionLogOutput(g), "play")
 }
 
 // #5572: どの札が失点かは 5 つの契約で入れ替わるので覚えられない (#4911)。Web は
