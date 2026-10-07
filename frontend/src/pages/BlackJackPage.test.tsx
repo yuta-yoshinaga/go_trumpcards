@@ -396,6 +396,59 @@ describe('BlackJackPage', () => {
     );
   });
 
+  it('announces changed running and true counts when counting is enabled', async () => {
+    mockExec.mockResolvedValueOnce({ ...actionPhaseState, countingEnabled: true, runningCount: 2, trueCount: 0.5 });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockResolvedValue({ ...actionPhaseState, countingEnabled: true, runningCount: 3, trueCount: 0.8 });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒット' }));
+    expect(await screen.findByTestId('bj-count-announcement')).toHaveTextContent(
+      'ランニングカウントは3、トゥルーカウントは0.8です。',
+    );
+  });
+
+  it('announces only the running count for KO', async () => {
+    mockExec.mockResolvedValueOnce({ ...actionPhaseState, countingEnabled: true, countingSystem: 1, runningCount: 2 });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockResolvedValue({
+      ...actionPhaseState,
+      countingEnabled: true,
+      countingSystem: 1,
+      runningCount: 3,
+      trueCount: 0.8,
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒット' }));
+    const announcement = await screen.findByTestId('bj-count-announcement');
+    expect(announcement).toHaveTextContent('ランニングカウントは3です。');
+    expect(announcement).not.toHaveTextContent('トゥルーカウント');
+  });
+
+  it.each([
+    ['spanish21', mockSpanish21Exec],
+    ['doubleexposure', mockDoubleExposureExec],
+  ] as const)('uses translated count announcements for the %s namespace', async (variant, execMock) => {
+    execMock.mockResolvedValueOnce({ ...actionPhaseState, countingEnabled: true, runningCount: 2, trueCount: 0.5 });
+    renderWithProviders(<BlackJackPage variant={variant} />);
+    await waitFor(() => expect(execMock).toHaveBeenCalledWith('reset'));
+    execMock.mockResolvedValue({ ...actionPhaseState, countingEnabled: true, runningCount: 3, trueCount: 0.8 });
+
+    fireEvent.click(screen.getByRole('button', { name: 'ヒット' }));
+
+    const announcement = await screen.findByTestId('bj-count-announcement');
+    expect(announcement).toHaveTextContent('ランニングカウントは3、トゥルーカウントは0.8です。');
+    expect(announcement).not.toHaveTextContent('countAnnouncement');
+  });
+
+  it('does not announce count changes when counting is disabled', async () => {
+    mockExec.mockResolvedValueOnce({ ...actionPhaseState, countingEnabled: false, runningCount: 2, trueCount: 0.5 });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockResolvedValue({ ...actionPhaseState, countingEnabled: false, runningCount: 3, trueCount: 0.8 });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒット' }));
+    expect(await screen.findByTestId('bj-count-announcement')).toBeEmptyDOMElement();
+  });
+
   it('calls stand command when Stand button is clicked', async () => {
     mockExec.mockResolvedValue(actionPhaseState);
     renderWithProviders(<BlackJackPage />);

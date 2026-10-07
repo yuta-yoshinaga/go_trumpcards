@@ -198,6 +198,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
   const { cardWidth, isMobile } = useCardDimensions();
   const [message, setMessage] = useState('');
   const [hitAnnouncement, setHitAnnouncement] = useState('');
+  const [countAnnouncement, setCountAnnouncement] = useState('');
   const [endAnnouncement, setEndAnnouncement] = useState('');
   const previousStateRef = useRef<BlackJackResponse | null>(null);
   const [betAmount, setBetAmount] = useState(10);
@@ -217,6 +218,22 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
     (res: BlackJackResponse, args: Parameters<typeof apiClient.exec>) => {
       setMessage(res.message);
       const previous = previousStateRef.current;
+      if (
+        res.countingEnabled &&
+        previous &&
+        (res.runningCount !== previous.runningCount || res.trueCount !== previous.trueCount)
+      ) {
+        setCountAnnouncement(
+          res.countingSystem === BJ_COUNTING_KO
+            ? t('runningCountAnnouncement', { runningCount: res.runningCount })
+            : t('countAnnouncement', {
+                runningCount: res.runningCount,
+                trueCount: res.trueCount.toFixed(1),
+              }),
+        );
+      } else {
+        setCountAnnouncement('');
+      }
       if (res.phase === BjPhase.END && previous?.phase !== BjPhase.END) {
         const dealerFinalScore = res.dealer.score ?? 0;
         const dealerScoreAnnouncement = t('dealerFinalScore', { score: dealerFinalScore });
@@ -686,6 +703,16 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
               aria-atomic="true"
             >
               {hitAnnouncement}
+            </div>
+
+            <div
+              className="sr-only"
+              data-testid="bj-count-announcement"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {countAnnouncement}
             </div>
 
             <div
