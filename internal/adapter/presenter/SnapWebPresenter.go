@@ -48,6 +48,10 @@ func (p *SnapWebPresenter) buildBase(s interfaces.SnapGame) *controller.SnapWebO
 	if top := s.GetTopCard(); top != nil {
 		resObj.TopCard = cardToOutput(top)
 	}
+	pile := s.GetCenterPile()
+	if len(pile) > 1 {
+		resObj.PreviousCard = cardToOutput(pile[len(pile)-2])
+	}
 	resObj.Players = p.buildPlayersOutput(s)
 	resObj.PlayerCnt = cfg.PlayerCnt
 	resObj.CpuDifficulty = int(cfg.CpuDifficulty)

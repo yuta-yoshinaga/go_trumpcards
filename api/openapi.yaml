@@ -59859,6 +59859,8 @@ components:
           type: integer
         topCard:
           $ref: '#/components/schemas/Card'
+        previousCard:
+          $ref: '#/components/schemas/Card'
         players:
           type: array
           items:

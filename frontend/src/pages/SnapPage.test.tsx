@@ -29,6 +29,7 @@ function makeState(overrides: Partial<SnapResponse> = {}): SnapResponse {
     snapAvailable: false,
     centerPileSize: 3,
     topCard: card('SPADE', 7),
+    previousCard: card('HEART', 7),
     players: [
       { id: 0, isHuman: true, stockSize: 24 },
       { id: 1, isHuman: false, stockSize: 25 },
@@ -82,6 +83,23 @@ describe('SnapPage', () => {
     expect(await screen.findByTestId('sp-pile')).toHaveTextContent('3');
     expect(screen.getByTestId('sp-seat-0')).toHaveTextContent('24');
     expect(screen.getByTestId('sp-seat-1')).toHaveTextContent('25');
+  });
+
+  it('shows the previous and top cards with labels, and omits the previous card for a single card pile', async () => {
+    renderWithProviders(<SnapPage />);
+    const pile = await screen.findByTestId('sp-pile');
+    expect(pile).toHaveTextContent('直前の札');
+    expect(pile).toHaveTextContent('最上札');
+    expect(pile.querySelectorAll('img')).toHaveLength(2);
+  });
+
+  it('does not render a comparison card when only one card is in the pile', async () => {
+    mockExec.mockResolvedValue(makeState({ centerPileSize: 1, previousCard: undefined }));
+    renderWithProviders(<SnapPage />);
+    const pile = await screen.findByTestId('sp-pile');
+    expect(pile).toHaveTextContent('最上札');
+    expect(pile).not.toHaveTextContent('直前の札');
+    expect(pile.querySelectorAll('img')).toHaveLength(1);
   });
 
   it('structures seat summaries as a list with a heading for each seat', async () => {
