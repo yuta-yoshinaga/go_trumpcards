@@ -357,6 +357,7 @@ function RollingStonePageContent() {
 
           <ActionLogSection
             isEndPhase={isGameEnd}
+            availableDuringPlay
             actionLog={actionLog}
             showActionLog={showActionLog}
             hideActionLog={hideActionLog}

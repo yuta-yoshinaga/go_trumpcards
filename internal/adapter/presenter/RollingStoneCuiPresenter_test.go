@@ -163,6 +163,11 @@ func TestRollingStoneCuiPresenterHintOutput(t *testing.T) {
 func TestRollingStoneCuiPresenterActionLogOutput(t *testing.T) {
 	p := new(RollingStoneCuiPresenter)
 	r := newRollingStoneForCui(t)
-	r.GiveUp()
-	assert.NotEmpty(t, p.ActionLogOutput(r))
+	r.SetLeadPlayerIdxForTest(0)
+	r.SetCurrentPlayerIdxForTest(0)
+	r.GiveHandForTest(0, domain.NewCard(domain.CardDesignSpade, 8, false))
+	require.NoError(t, r.PlayForTest(0, 0))
+	out := p.ActionLogOutput(r)
+	assert.Contains(t, out, "あなた")
+	assert.Contains(t, out, "♠8")
 }

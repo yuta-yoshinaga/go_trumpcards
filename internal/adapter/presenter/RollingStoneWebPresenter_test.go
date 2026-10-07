@@ -187,12 +187,13 @@ func TestRollingStoneWebPresenterHintOutput(t *testing.T) {
 	assert.Nil(t, decodeRollingStone(t, p.HintOutput(r))["hint"], "終局後は助言しない")
 }
 
-// **棋譜は終局まで伏せる。**
+// **対局中の棋譜も公開済みのプレイだけを含む。**
 func TestRollingStoneWebPresenterActionLogOutput(t *testing.T) {
 	p := new(RollingStoneWebPresenter)
 	r := newRollingStoneForWeb(t)
-	assert.Empty(t, decodeRollingStone(t, p.ActionLogOutput(r))["entries"])
-
-	r.GiveUp()
+	r.SetLeadPlayerIdxForTest(0)
+	r.SetCurrentPlayerIdxForTest(0)
+	r.GiveHandForTest(0, domain.NewCard(domain.CardDesignSpade, 8, false))
+	require.NoError(t, r.PlayForTest(0, 0))
 	assert.NotEmpty(t, decodeRollingStone(t, p.ActionLogOutput(r))["entries"])
 }
