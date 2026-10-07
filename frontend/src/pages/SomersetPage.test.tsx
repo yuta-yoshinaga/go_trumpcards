@@ -539,7 +539,7 @@ describe('SomersetPage destination preview', () => {
 
     // **同じ要素**の中身が変わる (別の要素が現れるのではない) ことが読み上げの条件。
     await waitFor(() => expect(region).toHaveTextContent(/→/));
-    expect(region.textContent).toBe('ヒントがあります: タブロー列1 → 組札');
+    expect(region.textContent).toBe('♥ 6を移動: タブロー列1 → 組札');
   });
 
   // hover と選択で同じ集合を指す ── プレビューが嘘をつかないことの検証。

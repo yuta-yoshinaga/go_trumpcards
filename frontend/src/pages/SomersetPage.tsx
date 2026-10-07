@@ -451,8 +451,11 @@ function SomersetPageContent() {
             >
               {hint && (
                 <div className="text-ds-warning text-sm mb-2 mt-3">
-                  {t('hintAvailable')}: {formatHintZone(t, 'tableau', hint.fromCol)} →{' '}
-                  {formatHintZone(t, hint.toZone, hint.toCol)}
+                  {t('hintMove', {
+                    card: cardAlt(state.tableau[hint.fromCol][hint.cardIndex].card!),
+                    from: formatHintZone(t, 'tableau', hint.fromCol),
+                    to: formatHintZone(t, hint.toZone, hint.toCol),
+                  })}
                 </div>
               )}
             </div>

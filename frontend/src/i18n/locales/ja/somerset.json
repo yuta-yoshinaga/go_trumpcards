@@ -25,6 +25,7 @@
   "gameOver": "ゲームオーバー",
   "gameOverSummary": "組札 {{count}}/{{total}} 枚（{{percent}}%）まで到達",
   "hintAvailable": "ヒントがあります",
+  "hintMove": "{{card}}を移動: {{from}} → {{to}}",
   "noHint": "ヒントはありません",
   "tutorial": {
     "foundation": "中央の4つの組札は**空の状態で始まります**。同じスートでA→Kの順に積み上げます。",
