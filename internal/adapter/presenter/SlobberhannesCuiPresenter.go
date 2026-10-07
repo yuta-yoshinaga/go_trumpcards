@@ -138,5 +138,7 @@ var slobberhannesHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SlobberhannesCuiPresenter) ActionLogOutput(s interfaces.SlobberhannesGame) string {
-	return actionLogOutputTextForSeats[*domain.SlobberhannesPlayer](s)
+	return actionLogToTextWithNames(s.GetActionLog(), func(idx int) string {
+		return cuiPlayerName(s.GetPlayer(idx), idx)
+	})
 }

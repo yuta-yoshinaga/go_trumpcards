@@ -184,6 +184,8 @@ func TestSlobberhannesCuiPresenterHintNoneAfterGameEnd(t *testing.T) {
 func TestSlobberhannesCuiPresenterActionLogOutput(t *testing.T) {
 	p := new(SlobberhannesCuiPresenter)
 	s := newSlobberhannesForCui(t)
+	during := p.ActionLogOutput(s)
+	assert.Contains(t, during, fixedPart("slobberhannes.log.roundStarted"), "進行中も配札イベントを表示")
 	s.GiveUp()
 	require.NotEmpty(t, p.ActionLogOutput(s))
 }

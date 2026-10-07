@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { slobberhannesApi } from '../api/gameApi';
+import { actionLogApi, slobberhannesApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, SlobberhannesResponse } from '../types/card';
@@ -16,6 +16,7 @@ vi.mock('../hooks/useGameHint', () => ({
 }));
 
 const mockExec = vi.mocked(slobberhannesApi.exec);
+const mockActionLog = vi.mocked(actionLogApi.slobberhannes);
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
@@ -56,9 +57,18 @@ function makeState(overrides: Partial<SlobberhannesResponse> = {}): Slobberhanne
 beforeEach(() => {
   vi.clearAllMocks();
   mockExec.mockResolvedValue(makeState());
+  mockActionLog.mockResolvedValue({
+    entries: [{ turnNumber: 0, playerIdx: -1, actionType: 'deal', detail: '配札を開始' }],
+  });
 });
 
 describe('SlobberhannesPage', () => {
+  it('opens the action log during play and shows its entries', async () => {
+    renderWithProviders(<SlobberhannesPage />);
+    const button = await screen.findByRole('button', { name: '棋譜を見る' });
+    fireEvent.click(button);
+    expect(await screen.findByText(/配札を開始/)).toBeInTheDocument();
+  });
   it('shows the resolved trick and its winner until the next trick has cards', async () => {
     const trick = [0, 1, 2, 3].map((playerIdx) => ({ playerIdx, card: card('spade', 7 + playerIdx) }));
     mockExec.mockResolvedValue(makeState({ lastTrick: trick, lastTrickWinner: 2 }));
