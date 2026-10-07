@@ -359,8 +359,16 @@ function StreetsAndAlleysPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
-            <div className="flex gap-2 sm:gap-3 items-start">
+          <div
+            className="flex-1 overflow-x-auto overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8"
+            data-testid="sa-board-scroll"
+          >
+            <div
+              className="flex gap-2 sm:gap-3 items-start"
+              data-testid="sa-board-content"
+              // 9 card columns + gaps: 2 outer gap-2 (8px) + 6 inner gap-1 (4px) = 40px.
+              style={{ minWidth: isMobile ? `${9 * dims.cw + 40}px` : undefined }}
+            >
               <div className="flex-1 flex gap-1 sm:gap-2" data-tutorial="sa-tableau">
                 {[0, 1, 2, 3].map(renderTableauColumn)}
               </div>
