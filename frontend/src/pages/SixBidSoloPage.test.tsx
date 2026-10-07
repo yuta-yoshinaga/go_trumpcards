@@ -298,6 +298,22 @@ describe('SixBidSoloPage', () => {
     expect(screen.getAllByTestId('sixbidsolo-widow-credit')[1]).toHaveTextContent('0');
   });
 
+  it('shows each player name with their signed settlement delta', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: SixBidSoloPhase.HAND_END,
+        lastResult: result(),
+      }),
+    );
+
+    renderWithProviders(<SixBidSoloPage />);
+
+    const settlement = await screen.findByTestId('sixbidsolo-settlement');
+    expect(settlement).toHaveTextContent('あなた: +20');
+    expect(settlement).toHaveTextContent('CPU 1: -10');
+    expect(settlement).toHaveTextContent('CPU 2: -10');
+  });
+
   // **スプレッド・ミゼールでは宣言者の手札が公開される。**
   it('says when the declarer hand is exposed', async () => {
     mockExec.mockResolvedValue(makeState({ spreadOpen: true }));
