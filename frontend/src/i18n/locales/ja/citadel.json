@@ -23,6 +23,7 @@
   "gameOver": "ゲームオーバー",
   "gameOverSummary": "組札 {{count}}/52 枚（{{percent}}%）まで到達",
   "hintAvailable": "ヒントがあります",
+  "hintAnnouncement": "ヒント: {{from}}の{{card}}を{{to}}へ移動",
   "noHint": "ヒントはありません",
   "selectionTableauSource": "列{{col}}",
   "selectionMoves": "{{card}}を{{source}}から選択しました。置ける場所が{{count}}箇所あります",
