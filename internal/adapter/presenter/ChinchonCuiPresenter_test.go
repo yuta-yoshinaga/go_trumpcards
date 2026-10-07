@@ -47,6 +47,19 @@ func setupChinchonCuiMock(phase domain.ChinchonPhase, ended bool, winner int) (*
 	return m, players
 }
 
+func TestChinchonCuiPresenter_ActionLogOutputDuringPlay(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	m, _ := setupChinchonCuiMock(domain.ChinchonPhaseDraw, false, -1)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetActionLog")
+	m.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", DetailCode: "chinchon.log.drawStock", DetailParams: map[string]string{"name": "あなた"}}})
+	p := new(presenter.ChinchonCuiPresenter)
+	out := p.ActionLogOutput(m)
+	assert.Contains(t, out, "あなた")
+	assert.Contains(t, out, "山札から引いた")
+}
+
 // **どの札が成立しているかは捨て札選びの前提。**Web は緑/破線で色分けし
 // 「5 + 3 + 2 = 10」の内訳まで出しているのに、CUI は合計点だけだった (#4838)。
 func TestChinchonCuiPresenter_MeldSplit(t *testing.T) {
