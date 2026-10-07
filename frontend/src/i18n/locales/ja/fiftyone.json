@@ -30,6 +30,7 @@
     "stopCalledBy": "ストップ宣言中（{{name}}）— 残り1巡が最終ラウンドです"
   },
   "settings": {
+    "pendingReset": "設定の変更は次のリセットから適用されます。",
     "cpuDifficulty": "CPU難易度",
     "difficultyEasy": "簡単",
     "difficultyNormal": "普通",
