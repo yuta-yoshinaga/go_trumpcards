@@ -123,9 +123,14 @@ describe('EgyptianRatscrewPage', () => {
       .mockResolvedValueOnce({ ...chanceState, isHumanTurn: true, pendingDeadlineMs: Date.now() + 2_000 })
       .mockResolvedValueOnce(baseState);
     renderWithProviders(<EgyptianRatscrewPage />);
-    await waitFor(() => expect(screen.getByTestId('er-chance-row')).toHaveTextContent('残り2秒'));
+    const timer = await screen.findByRole('timer');
+    await waitFor(() => expect(timer).toHaveTextContent('残り2秒'));
+    expect(timer).toHaveAttribute('aria-live', 'off');
+    const chanceStatus = screen.getByTestId('er-chance-row').querySelector('[role="status"]');
+    expect(chanceStatus).toHaveTextContent('残りチャンス: 2 — 応答: あなた');
+    expect(chanceStatus).not.toHaveTextContent('残り2秒');
     await new Promise((resolve) => setTimeout(resolve, 1_100));
-    expect(screen.getByTestId('er-chance-row')).toHaveTextContent('残り1秒');
+    expect(timer).toHaveTextContent('残り1秒');
     fireEvent.click(screen.getByTestId('step-button'));
     await waitFor(() => expect(screen.queryByTestId('er-chance-row')).not.toBeInTheDocument());
     expect(screen.getByText('場に0枚')).toBeInTheDocument();
