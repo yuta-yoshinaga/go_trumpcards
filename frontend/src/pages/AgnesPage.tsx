@@ -542,18 +542,29 @@ function AgnesPageContent() {
                     {t('hint')}
                     <KbdBadge label={t('kbd.hint')} />
                   </button>
-                  <button
-                    type="button"
-                    className={`${btnSuccess} ${focusRingWhite}${autoCompleteReady && !loading && !isAutoCompleting ? ' motion-safe:animate-pulse ring-2 ring-ds-success' : ''}`}
-                    onClick={handleAutoComplete}
-                    disabled={loading || isAutoCompleting || !autoCompleteReady}
-                    aria-keyshortcuts="a"
-                    data-testid="ag-autocomplete-button"
-                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
-                  >
-                    {t('autoComplete')}
-                    <KbdBadge label={t('kbd.autoComplete')} />
-                  </button>
+                  <div className="inline-flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      className={`${btnSuccess} ${focusRingWhite}${autoCompleteReady && !loading && !isAutoCompleting ? ' motion-safe:animate-pulse ring-2 ring-ds-success' : ''}${loading || isAutoCompleting || !autoCompleteReady ? ' opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={() => {
+                        if (!loading && !isAutoCompleting && autoCompleteReady) handleAutoComplete();
+                      }}
+                      aria-disabled={loading || isAutoCompleting || !autoCompleteReady}
+                      aria-describedby="agnes-autocomplete-description"
+                      aria-keyshortcuts="a"
+                      data-testid="ag-autocomplete-button"
+                    >
+                      {t('autoComplete')}
+                      <KbdBadge label={t('kbd.autoComplete')} />
+                    </button>
+                    <span id="agnes-autocomplete-description" className="text-sm text-ds-text-muted">
+                      {loading || isAutoCompleting
+                        ? t('autoCompleteBusy')
+                        : autoCompleteReady
+                          ? t('autoCompleteReady')
+                          : t('autoCompleteNotReady')}
+                    </span>
+                  </div>
                   <button
                     type="button"
                     className={`${btnOutline} ${focusRingWhite}`}

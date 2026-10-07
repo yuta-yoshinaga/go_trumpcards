@@ -19,6 +19,8 @@
   "autoCompleteProgress": "オートコンプリート進行中、手数{{count}}",
   "autoCompleteCompleted": "オートコンプリートが完了しました",
   "autoCompleteNotReady": "山札を配り切り、全カードが表向きになると使えます",
+  "autoCompleteReady": "オートコンプリートを実行できます",
+  "autoCompleteBusy": "オートコンプリートを実行中です",
   "stalemate": "手詰まりです。元に戻すかギブアップしてください。",
   "stalemateUndo": "元に戻して脱出",
   "empty": "空",
