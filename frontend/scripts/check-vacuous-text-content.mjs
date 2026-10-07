@@ -6,7 +6,7 @@ import { assertFloor } from './lib/floor.mjs';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const SRC = join(SCRIPT_DIR, '../src');
-const CEILING = 75; // Exact count: lower it (never raise it) when vacuous assertions are fixed.
+const CEILING = 74; // Exact count: lower it (never raise it) when vacuous assertions are fixed.
 const VACUOUS = /(?<!\.not\.)\btoHaveTextContent\(\s*(['"]{2})\s*\)/g;
 
 async function* testFiles(dir) {

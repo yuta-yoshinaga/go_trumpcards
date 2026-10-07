@@ -447,23 +447,45 @@ describe('CitadelPage destination preview', () => {
     expect(region).toHaveTextContent('');
   });
 
-  it('announces the recommended move through that same region', async () => {
-    mockExec.mockResolvedValue(playingState);
-    renderWithProviders(<CitadelPage />);
-    await waitFor(() => expect(screen.getByText(/シタデル/)).toBeInTheDocument());
+  it.each([
+    ['tableau', 'タブロー列3'],
+    ['foundation', '組札'],
+  ] as const)(
+    'announces the card, source column, and %s destination through that same region',
+    async (toZone, destination) => {
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(<CitadelPage />);
+      await waitFor(() => expect(screen.getByText(/シタデル/)).toBeInTheDocument());
 
-    const region = screen.getByTestId('bc-hint-live');
-    expect(region).toHaveTextContent('');
+      const region = screen.getByTestId('bc-hint-live');
+      expect(region).toBeEmptyDOMElement();
 
+      mockExec.mockResolvedValue({
+        ...playingState,
+        hint: { fromCol: 1, cardIndex: 0, toZone, toCol: toZone === 'foundation' ? 2 : 3 },
+      });
+      fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+      // **同じ要素**の中身が変わる (別の要素が現れるのではない) ことが読み上げの条件。
+      await waitFor(() => expect(region).toHaveTextContent('♥ 6'));
+      expect(region.textContent).toBe(`ヒント: タブロー列1の♥ 6を${destination}へ移動`);
+    },
+  );
+
+  it('renders the complete hint in English', async () => {
+    await i18n.changeLanguage('en');
     mockExec.mockResolvedValue({
       ...playingState,
-      hint: { fromCol: 1, cardIndex: 0, toZone: 'foundation', toCol: 2 },
+      hint: { fromCol: 1, cardIndex: 0, toZone: 'tableau', toCol: 3 },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
-
-    // **同じ要素**の中身が変わる (別の要素が現れるのではない) ことが読み上げの条件。
-    await waitFor(() => expect(region).toHaveTextContent(/→/));
-    expect(region.textContent).toBe('ヒントがあります: タブロー列1 → 組札');
+    renderWithProviders(<CitadelPage />);
+    try {
+      const region = await screen.findByTestId('bc-hint-live');
+      fireEvent.click(screen.getByRole('button', { name: 'Hint' }));
+      await waitFor(() => expect(region).toHaveTextContent('Hint: move ♥ 6 from Tableau column 1 to Tableau column 3'));
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   // hover と選択で同じ集合を指す ── プレビューが嘘をつかないことの検証。
