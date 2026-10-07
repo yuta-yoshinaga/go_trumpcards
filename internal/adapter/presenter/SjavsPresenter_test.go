@@ -193,7 +193,7 @@ func presenterMessageCode(t *testing.T, g interfaces.SjavsGame) string {
 func TestSjavsWebPresenter_HintOutputAndActionLog(t *testing.T) {
 	s := sjTestGame(t)
 	assert.NotNil(t, sjDecode(t, new(SjavsWebPresenter).HintOutput(s))["hint"])
-	assert.NotEmpty(t, new(SjavsWebPresenter).ActionLogOutput(s))
+	assert.Contains(t, new(SjavsWebPresenter).ActionLogOutput(s), "sjavs.log.deal", "entries are returned before game end")
 }
 
 func TestSjavsCuiPresenter_ShowsThePermanentTrumpsEveryFrame(t *testing.T) {
@@ -300,7 +300,7 @@ func TestSjavsCuiPresenter_HintReasonKeysAreAllMapped(t *testing.T) {
 }
 
 func TestSjavsCuiPresenter_ActionLog(t *testing.T) {
-	assert.NotEmpty(t, new(SjavsCuiPresenter).ActionLogOutput(sjTestGame(t)))
+	assert.Contains(t, new(SjavsCuiPresenter).ActionLogOutput(sjTestGame(t)), "カードを配りました", "entries are returned before game end")
 }
 
 // #5575: **常時切札の 6 枚 (♣Q ♠Q ♣J ♠J ♥J ♦J) はスートを見ても分からない。**
