@@ -36,6 +36,7 @@
   "you": "あなた",
   "cpu": "CPU {{id}}",
   "declarerBadge": "デクレアラー",
+  "dealerBadge": "ディーラー",
   "partnerBadge": "パートナー",
   "calledKing": "呼ばれた王: {{suit}}",
   "partnerRevealed": "パートナー: {{name}}",

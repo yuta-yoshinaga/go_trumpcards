@@ -36,6 +36,7 @@
   "you": "You",
   "cpu": "CPU {{id}}",
   "declarerBadge": "Declarer",
+  "dealerBadge": "Dealer",
   "partnerBadge": "Partner",
   "calledKing": "Called King: {{suit}}",
   "partnerRevealed": "Partner: {{name}}",
