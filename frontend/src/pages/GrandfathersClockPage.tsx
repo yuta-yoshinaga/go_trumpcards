@@ -175,6 +175,7 @@ function GrandfathersClockPageContent() {
   // Every face is seeded at the deal, so progress means a pile grew past its
   // starter — that is when auto-complete is worth pulsing.
   const autoCompleteReady = state.foundation.some((f) => f.cards.length > 1);
+  const autoCompleteUnavailable = loading || isAutoCompleting || !autoCompleteReady;
 
   const isSourceSelected = (zone: string, col?: number) =>
     selectedSource !== null && selectedSource.zone === zone && selectedSource.col === col;
@@ -485,14 +486,22 @@ function GrandfathersClockPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
-                    onClick={game.handleAutoComplete}
-                    disabled={loading || isAutoCompleting || !autoCompleteReady}
+                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''} ${autoCompleteUnavailable ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    onClick={() => {
+                      if (autoCompleteUnavailable) return;
+                      game.handleAutoComplete();
+                    }}
+                    aria-disabled={autoCompleteUnavailable || undefined}
+                    aria-describedby={!autoCompleteReady ? 'gc-autocomplete-reason' : undefined}
                     data-testid="autocomplete-button"
-                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
                   >
                     {t('autoComplete')}
                   </button>
+                  {!autoCompleteReady && (
+                    <p id="gc-autocomplete-reason" className="text-ds-text-muted text-xs self-center">
+                      {t('autoCompleteNotReady')}
+                    </p>
+                  )}
                   <button
                     type="button"
                     className={btnDanger}
