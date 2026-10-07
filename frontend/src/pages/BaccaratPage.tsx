@@ -335,6 +335,9 @@ function BaccaratPageContentInner({ onRevealAnnouncement }: { onRevealAnnounceme
   const mainBetMax = state ? Math.max(0, state.chips - playerPairBet - bankerPairBet) : 0;
   const playerPairBetMax = state ? Math.max(0, state.chips - betAmount - bankerPairBet) : 0;
   const bankerPairBetMax = state ? Math.max(0, state.chips - betAmount - playerPairBet) : 0;
+  const totalBet = betAmount + playerPairBet + bankerPairBet;
+  const betExceedsChips = state !== null && totalBet > state.chips;
+  const betLimitDescriptionId = 'baccarat-bet-limit-description';
 
   // Staged reveal for the showdown so the third-card rule isn't a black box (#1892).
   // Steps: 1 = initial 2+2 cards, 2 = player's 3rd, 3 = banker's 3rd, 4 = payout/result.
@@ -381,9 +384,10 @@ function BaccaratPageContentInner({ onRevealAnnouncement }: { onRevealAnnounceme
   const visibleBankerValue = isEndPhase ? baccaratHandValue(bankerHand.slice(0, bankerCardsShown)) : 0;
 
   const handleBet = useCallback(() => {
+    if (!state || betAmount + playerPairBet + bankerPairBet > state.chips) return;
     setLastBet({ amount: betAmount, type: betType, pp: playerPairBet, bp: bankerPairBet });
     execApi('bet', betAmount, betType, playerPairBet, bankerPairBet);
-  }, [execApi, betAmount, betType, playerPairBet, bankerPairBet]);
+  }, [execApi, state, betAmount, betType, playerPairBet, bankerPairBet]);
 
   const handleReset = useCallback(() => {
     execApi('reset');
@@ -636,9 +640,21 @@ function BaccaratPageContentInner({ onRevealAnnouncement }: { onRevealAnnounceme
                     />
                   </div>
                 </details>
-                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+                <button
+                  type="button"
+                  className={`${btnPrimary} ${betExceedsChips ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  onClick={handleBet}
+                  disabled={loading}
+                  aria-disabled={betExceedsChips || undefined}
+                  aria-describedby={betExceedsChips ? betLimitDescriptionId : undefined}
+                >
                   {t('button.bet')}
                 </button>
+                {betExceedsChips && state && (
+                  <span id={betLimitDescriptionId} className="text-ds-warning text-sm">
+                    {t('betLimitExceeded', { total: totalBet, chips: state.chips })}
+                  </span>
+                )}
               </div>
             )}
             {isEndPhase && (

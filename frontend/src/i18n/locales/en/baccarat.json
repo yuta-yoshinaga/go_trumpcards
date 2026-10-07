@@ -64,6 +64,7 @@
     "title": "Settings"
   },
   "betGuide": "Place your bet to start",
+  "betLimitExceeded": "Total bet exceeds available chips: total {{total}} / available {{chips}}",
   "hintReason": {
     "bankerBestOdds": "Banker bet has the lowest house edge (1.06%) — recommended",
     "avoidTie": "Tie bet has a very high house edge (14.36%) — Banker bet recommended"
