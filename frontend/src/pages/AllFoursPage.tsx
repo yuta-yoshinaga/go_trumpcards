@@ -259,12 +259,21 @@ function AllFoursPageContent() {
 
             <div data-tutorial="af-score-table" className="overflow-x-auto mb-3">
               <table className="text-sm w-full border-collapse text-ds-text-primary">
+                <caption className="sr-only">{t('scoresCaption')}</caption>
                 <thead>
                   <tr className="border-b border-white/20">
-                    <th className="text-left p-1">{t('scoresPlayer')}</th>
-                    <th className="text-right p-1">{t('scoresTricks')}</th>
-                    <th className="text-right p-1">{t('scoresRound')}</th>
-                    <th className="text-right p-1">{t('scoresTotal')}</th>
+                    <th scope="col" className="text-left p-1">
+                      {t('scoresPlayer')}
+                    </th>
+                    <th scope="col" className="text-right p-1">
+                      {t('scoresTricks')}
+                    </th>
+                    <th scope="col" className="text-right p-1">
+                      {t('scoresRound')}
+                    </th>
+                    <th scope="col" className="text-right p-1">
+                      {t('scoresTotal')}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
