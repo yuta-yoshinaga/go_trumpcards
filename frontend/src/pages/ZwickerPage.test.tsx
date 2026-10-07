@@ -361,4 +361,31 @@ describe('ZwickerPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(live).toHaveTextContent('');
   });
+
+  it('announces the deal totals and breakdown once when ROUND_END begins', async () => {
+    renderWithProviders(<ZwickerPage />);
+    const live = await screen.findByTestId('zwicker-round-announce');
+    expect(live.textContent).toBe('');
+
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        phase: ZwickerPhase.ROUND_END,
+        lastRound: { cardPoints: [17, 10], cards: [30, 25], majorityTeam: 0, zwicks: [1, 0], total: [21, 10] },
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => {
+      expect(live.textContent).toContain('このディール: 味方21点 相手10点');
+      expect(live.textContent).toContain('カード得点 17');
+      expect(live.textContent).toContain('カード得点 10');
+    });
+
+    // Leaving ROUND_END clears the region, so ordinary turns do not re-read the breakdown
+    // and the next deal's result is announced even if its text is identical.
+    mockExec.mockResolvedValueOnce(makeState());
+    fireEvent.click(screen.getByRole('button', { name: '次のディールへ' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
+    await waitFor(() => expect(live).toBeEmptyDOMElement());
+  });
 });
