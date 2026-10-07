@@ -409,9 +409,16 @@ function PanPageContent() {
                       </tr>
                     </thead>
                     <tbody>
-                      {state.players.map((p) => (
+                      {state.players.map((p, playerIdx) => (
                         <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                          <td>{playerName(p.id, p.isHuman)}</td>
+                          <td>
+                            {playerName(p.id, p.isHuman)}
+                            {playerIdx === state.dealerIdx && (
+                              <span className="ml-1 rounded-sm bg-ds-surface px-1 text-ds-accent">
+                                {t('dealerBadge')}
+                              </span>
+                            )}
+                          </td>
                           <td className="text-center">{p.chips}</td>
                           {isRoundEnd && <td className="text-center">{p.handPoints}</td>}
                           <td className="text-center">{p.roundScore}</td>
