@@ -13,6 +13,8 @@
   "faceUpCardAriaLabel": "{{name}}'s card: {{card}}",
   "winnerCardAriaLabel": "Winning card",
   "ante": "Ante",
+  "sidePot": "Pot {{number}}: {{amount}} chips — eligible: {{players}}",
+  "listSeparator": ", ",
   "settings": {
     "ante": "Ante",
     "anteAmount": "Ante (applies next game)",

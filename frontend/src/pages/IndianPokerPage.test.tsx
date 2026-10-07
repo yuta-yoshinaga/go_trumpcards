@@ -188,6 +188,58 @@ describe('IndianPokerPage', () => {
     expect(screen.queryByText(/Player 3/)).not.toBeInTheDocument();
   });
 
+  it('shows side pot amounts and eligible player names during showdown', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      sidePots: [
+        { amount: 120, eligiblePlayers: [0, 1] },
+        { amount: 80, eligiblePlayers: [1] },
+      ],
+    });
+    renderWithProviders(<IndianPokerPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('ポット1: 120チップ — 対象: あなた、CPU 1')).toBeInTheDocument();
+      expect(screen.getByText('ポット2: 80チップ — 対象: CPU 1')).toBeInTheDocument();
+    });
+  });
+
+  it.each([
+    ['ショーダウン', showdownState],
+    ['終了', endState],
+  ])('does not show the main pot breakdown during %s when there is only one pot', async (_, state) => {
+    mockExec.mockResolvedValue({
+      ...state,
+      sidePots: [{ amount: 200, eligiblePlayers: [0, 1] }],
+    });
+    renderWithProviders(<IndianPokerPage />);
+
+    await waitFor(() => expect(screen.getByText(/ポット:/)).toBeInTheDocument());
+    expect(screen.queryByText(/ポット1:/)).not.toBeInTheDocument();
+  });
+
+  it('does not show side pot breakdown when there are no side pots', async () => {
+    mockExec.mockResolvedValue(bettingState);
+    renderWithProviders(<IndianPokerPage />);
+
+    await waitFor(() => expect(screen.getByText(/ポット:/)).toBeInTheDocument());
+    expect(screen.queryByText(/ポット[12]:/)).not.toBeInTheDocument();
+  });
+
+  it('does not show side pots outside betting and showdown phases', async () => {
+    mockExec.mockResolvedValue({
+      ...anteState,
+      sidePots: [
+        { amount: 80, eligiblePlayers: [0, 1] },
+        { amount: 30, eligiblePlayers: [0] },
+      ],
+    });
+    renderWithProviders(<IndianPokerPage />);
+
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('アンティ'));
+    expect(screen.queryByText(/ポット1:/)).not.toBeInTheDocument();
+  });
+
   it('shows あなた as the dealer name when the human is the dealer', async () => {
     mockExec.mockResolvedValue({ ...bettingState, dealerIdx: 0 }); // player 0 is the human
     renderWithProviders(<IndianPokerPage />);
