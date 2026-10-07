@@ -147,6 +147,10 @@ func TestChinchonWebPresenter_Output(t *testing.T) {
 
 func TestChinchonWebPresenter_ActionLogOutput(t *testing.T) {
 	m, _ := setupChinchonWebMock(domain.ChinchonPhaseDraw, false, -1)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetActionLog")
+	m.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock"}})
 	p := new(presenter.ChinchonWebPresenter)
-	assert.NotPanics(t, func() { p.ActionLogOutput(m) })
+	var parsed controller.ActionLogWebOutput
+	require.NoError(t, json.Unmarshal([]byte(p.ActionLogOutput(m)), &parsed))
+	assert.Len(t, parsed.Entries, 1)
 }

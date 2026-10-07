@@ -119,5 +119,5 @@ func (p *ChinchonWebPresenter) buildMessage(g interfaces.ChinchonGame, lastErr e
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *ChinchonWebPresenter) ActionLogOutput(g interfaces.ChinchonGame) string {
-	return actionLogOutputJSON(g)
+	return actionLogToJSON(g.GetActionLog())
 }

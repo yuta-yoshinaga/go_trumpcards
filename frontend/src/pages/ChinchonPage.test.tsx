@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, chinchonApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { ChinchonResponse } from '../types/card';
 import { ChinchonPage } from './ChinchonPage';
@@ -563,15 +564,32 @@ describe('ChinchonPage', () => {
   });
 
   it('handles action log visibility and API fetch', async () => {
-    mockExec.mockResolvedValue(gameEndState);
+    mockExec.mockResolvedValue(drawPhaseState);
     renderWithProviders(<ChinchonPage />);
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
 
-    vi.mocked(actionLogApi.chinchon).mockResolvedValueOnce({ entries: [] });
+    vi.mocked(actionLogApi.chinchon).mockResolvedValueOnce({
+      entries: [
+        {
+          turnNumber: 1,
+          playerIdx: 0,
+          actionType: 'draw_stock',
+          detail: 'あなたが山札から引いた',
+          detailCode: 'chinchon.log.drawStock',
+          detailParams: { name: 'あなた' },
+          cards: [],
+        },
+      ],
+    });
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.chinchon).toHaveBeenCalledTimes(1));
     expect(await screen.findByText('棋譜')).toBeInTheDocument();
+    expect(await screen.findByText(/draw_stock: あなたが山札から引いた/)).toBeInTheDocument();
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: '1' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   // Hand with a ♠5-6-7 run (idx 0-2) plus ♥5, ♥6 deadwood (idx 3-4).

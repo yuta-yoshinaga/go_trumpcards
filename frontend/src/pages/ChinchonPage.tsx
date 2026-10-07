@@ -158,7 +158,7 @@ function ChinchonPageContent() {
     onToggle: toggleCard,
     onConfirm: confirmAction,
     onClear: clearSelection,
-    enabled: !!isHumanTurnForKbd && !loading,
+    enabled: !!isHumanTurnForKbd && !loading && actionLog === null,
   });
 
   const phaseNames = usePhaseNames('chinchon', CHINCHON_PHASE_KEYS);
@@ -471,6 +471,7 @@ function ChinchonPageContent() {
 
             <ActionLogSection
               isEndPhase={isGameEnd}
+              availableDuringPlay
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
