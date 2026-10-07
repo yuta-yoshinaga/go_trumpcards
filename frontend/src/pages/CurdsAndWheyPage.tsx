@@ -136,6 +136,16 @@ function CurdsAndWheyPageContent() {
   // Transient notice shown when a double-click auto-move finds no destination.
   const [autoMoveNotice, setAutoMoveNotice] = useState<string | null>(null);
 
+  // Escape drops the chosen source without moving (same binding shape as CanfieldPage).
+  const escapeBindings = useMemo(
+    () => [{ key: 'Escape', action: () => setSelected(null), enabled: selected !== null }],
+    [selected],
+  );
+  useActionKeyboardNav({
+    bindings: escapeBindings,
+    enabled: !loading && !confirmOpen && !giveUpConfirmOpen && actionLog === null,
+  });
+
   useMountReset(exec);
 
   // Clear a stale selection and any auto-move notice whenever the board changes
