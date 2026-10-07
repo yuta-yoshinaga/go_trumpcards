@@ -203,6 +203,7 @@ function TonkPageContent() {
   // 閾値はサーバから。画面に 2 を書くと、変えたとき CUI と警告の出る局面がずれる (#5582)。
   const undercutRisk = Number.isFinite(minOpponentCards) && minOpponentCards <= state.undercutRiskMax;
   const knockBtnClass = undercutRisk ? `${btnPrimary} ring-2 ring-ds-warning motion-safe:animate-pulse` : btnPrimary;
+  const knockLegal = state.bestDeadwood >= 0 && state.bestDeadwood <= state.knockThreshold;
 
   return (
     <GamePageShell
@@ -570,9 +571,13 @@ function TonkPageContent() {
                   )}
                   <button
                     type="button"
-                    className={knockBtnClass}
-                    onClick={handleKnock}
-                    disabled={loading || selectedCardIndices.length !== 1}
+                    className={`${knockBtnClass} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+                    onClick={() => {
+                      if (knockLegal && selectedCardIndices.length === 1) handleKnock();
+                    }}
+                    disabled={loading}
+                    aria-disabled={!knockLegal || selectedCardIndices.length !== 1 || undefined}
+                    aria-describedby={!knockLegal && state.bestDeadwood >= 0 ? 'tonk-deadwood' : undefined}
                     data-tutorial="tonk-knock-button"
                     data-undercut-risk={undercutRisk ? 'true' : undefined}
                     title={undercutRisk ? t('knockUndercutWarning') : undefined}

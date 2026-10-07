@@ -278,6 +278,42 @@ describe('TonkPage', () => {
     expect(badge).not.toHaveAttribute('data-knockable');
   });
 
+  it('blocks knock when the server deadwood exceeds its threshold, even with one card selected', async () => {
+    mockExec.mockResolvedValue(makeState({ bestDeadwood: 6, knockThreshold: 5 }));
+    renderWithProviders(<TonkPage />);
+
+    const knock = await screen.findByRole('button', { name: /ノック/ });
+    fireEvent.click(screen.getByTestId('tonk-hand-0'));
+    expect(knock).toHaveAttribute('aria-disabled', 'true');
+    mockExec.mockClear();
+    fireEvent.click(knock);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('blocks knock when server deadwood is not calculated', async () => {
+    renderWithProviders(<TonkPage />);
+
+    const knock = await screen.findByRole('button', { name: /ノック/ });
+    fireEvent.click(screen.getByTestId('tonk-hand-0'));
+    expect(knock).toHaveAttribute('aria-disabled', 'true');
+    mockExec.mockClear();
+    fireEvent.click(knock);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('allows knock at the server threshold when exactly one card is selected', async () => {
+    mockExec.mockResolvedValue(makeState({ bestDeadwood: 5, knockThreshold: 5 }));
+    renderWithProviders(<TonkPage />);
+
+    const knock = await screen.findByRole('button', { name: /ノック/ });
+    fireEvent.click(screen.getByTestId('tonk-hand-0'));
+    expect(knock).not.toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(knock);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('knock', 0));
+  });
+
   it('shows deadwood and knock eligibility for each discard candidate using the server threshold', async () => {
     mockExec.mockResolvedValue(
       makeState({
