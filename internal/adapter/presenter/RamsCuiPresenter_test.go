@@ -255,8 +255,11 @@ func TestRamsCuiPresenterHintNoneAfterGameEnd(t *testing.T) {
 func TestRamsCuiPresenterActionLogOutput(t *testing.T) {
 	p := new(RamsCuiPresenter)
 	r := newRamsForCui(t)
-	r.GiveUp()
-	require.NotEmpty(t, p.ActionLogOutput(r))
+	assert.Contains(t, p.ActionLogOutput(r), fixedPart("rams.log.roundStart"), "進行中も棋譜を返す")
+
+	// The human's decision is a seated entry, named the way the rest of the CUI names seat 0.
+	require.NoError(t, r.Decide(true))
+	assert.Contains(t, p.ActionLogOutput(r), cuiPlayerName(r.GetPlayer(0), 0))
 }
 
 // **参加判断もリードも親の左隣から始まる** (#5748)。誰が親かが出ていないと、
