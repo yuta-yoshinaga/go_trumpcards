@@ -17,6 +17,8 @@ export interface CinchPlayer {
   bid: number;
   /** Cumulative match score of this individual player. */
   totalScore: number;
+  /** Card points captured during the current deal. */
+  dealPoints: number;
 }
 
 /** A card played into the current Cinch trick. */

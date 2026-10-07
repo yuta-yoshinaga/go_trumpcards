@@ -11,6 +11,7 @@ function makePlayer(overrides?: Partial<CinchPlayer>): CinchPlayer {
     trickCount: 2,
     bid: 3,
     totalScore: 14,
+    dealPoints: 0,
     ...overrides,
   };
 }

@@ -55636,6 +55636,9 @@ components:
               totalScore:
                 type: integer
                 description: Cumulative match score for this player
+              dealPoints:
+                type: integer
+                description: Card points captured during the current deal
         phase:
           type: integer
           description: "Game phase: 0=Bid, 1=NameTrump, 2=Play, 3=TrickEnd, 4=RoundEnd, 5=GameEnd"

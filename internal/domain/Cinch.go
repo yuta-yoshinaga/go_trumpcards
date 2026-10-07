@@ -733,6 +733,30 @@ func (g *Cinch) ScoreRound() {
 	g.checkGameEnd()
 }
 
+// GetDealPoints は指定プレイヤーが現在のディールで獲得したカード点を返す。
+// 切り札未決定時、または範囲外のプレイヤーインデックスでは 0 を返す。
+func (g *Cinch) GetDealPoints(idx int) int {
+	if g.trumpSuit == CinchTrumpUnset || idx < 0 || idx >= len(g.players) {
+		return 0
+	}
+	return g.dealPointsForPlayer(idx, nil)
+}
+
+func (g *Cinch) dealPointsForPlayer(idx int, onPoint func(*Card, int)) int {
+	total := 0
+	for _, trick := range g.players[idx].GetTricksTaken() {
+		for _, card := range trick {
+			if pv := cinchPointValue(card, g.trumpSuit); pv > 0 {
+				total += pv
+				if onPoint != nil {
+					onPoint(card, pv)
+				}
+			}
+		}
+	}
+	return total
+}
+
 // computeRoundPoints は各プレイヤーが獲得したポイント数を返す。
 // High(切り札 A)=1 King(切り札 K)=1 Ten(切り札 10, Game)=1 Jack(切り札 J)=1
 // Right Pedro(切り札 5)=5 Left Pedro(同色 5)=5, 計 14 点。
@@ -744,15 +768,10 @@ func (g *Cinch) computeRoundPoints() map[int]int {
 	if g.trumpSuit == CinchTrumpUnset {
 		return points
 	}
-	for playerIdx, p := range g.players {
-		for _, trick := range p.GetTricksTaken() {
-			for _, card := range trick {
-				if pv := cinchPointValue(card, g.trumpSuit); pv > 0 {
-					points[playerIdx] += pv
-					g.appendLog(playerIdx, "score_point", "cinch.log.scorePoint", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card), "points": fmt.Sprintf("%d", pv)}, nil)
-				}
-			}
-		}
+	for playerIdx := range g.players {
+		points[playerIdx] = g.dealPointsForPlayer(playerIdx, func(card *Card, pv int) {
+			g.appendLog(playerIdx, "score_point", "cinch.log.scorePoint", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card), "points": fmt.Sprintf("%d", pv)}, nil)
+		})
 	}
 	return points
 }

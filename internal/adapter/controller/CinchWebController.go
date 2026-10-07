@@ -48,6 +48,7 @@ type CinchWebOutputPlayer struct {
 	TrickCount int              `json:"trickCount"`
 	Bid        int              `json:"bid"`
 	TotalScore int              `json:"totalScore"`
+	DealPoints int              `json:"dealPoints"`
 }
 
 // CinchWebOutputDealDetail は 1 ディールの得点内訳。
