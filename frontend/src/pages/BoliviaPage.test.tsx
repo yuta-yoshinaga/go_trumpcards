@@ -710,4 +710,23 @@ describe('BoliviaPage', () => {
     expect(opponentBreakdown).not.toHaveTextContent('あなたのチーム');
     expect(opponentBreakdown).not.toHaveTextContent('−0');
   });
+
+  it('marks each player name as a row header for that player’s scores', async () => {
+    const state = makeBoliviaState({
+      players: makeBoliviaState().players.map((player, index) => ({
+        ...player,
+        roundScore: 100 + index,
+        cumulativeScore: 1000 + index,
+      })),
+    });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<BoliviaPage />);
+
+    const playerHeader = await screen.findByRole('rowheader', { name: 'あなた' });
+    expect(playerHeader).toHaveAttribute('scope', 'row');
+    const playerRow = playerHeader.closest('tr');
+    expect(playerRow).toHaveTextContent('100');
+    expect(playerRow).toHaveTextContent('1000');
+    expect(playerRow?.querySelectorAll('td')).toHaveLength(3);
+  });
 });
