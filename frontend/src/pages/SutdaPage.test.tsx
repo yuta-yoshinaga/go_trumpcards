@@ -20,6 +20,15 @@ beforeEach(() => {
 });
 
 describe('SutdaPage', () => {
+  it('shows the pending-reset notice only after a setting changes', async () => {
+    renderWithProviders(<SutdaPage />);
+    await screen.findByText('ハンド 1');
+    expect(screen.queryByText('設定の変更は次のリセットから適用されます。')).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('席数'), { target: { value: '4' } });
+    expect(screen.getByText('設定の変更は次のリセットから適用されます。')).toBeInTheDocument();
+  });
+
   it('calls reset on mount with the configured table', async () => {
     renderWithProviders(<SutdaPage />);
     await waitFor(() =>
