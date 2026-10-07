@@ -343,6 +343,16 @@ function DaifugoPageContent() {
               {pendingBanner ?? ''}
             </div>
 
+            <div role="status" aria-live="polite" className="sr-only" data-testid="daifugo-cpu-actions-announcement">
+              {state.cpuActions && state.cpuActions.length > 0
+                ? t('cpuActionsAnnouncement', {
+                    actions: state.cpuActions
+                      .map((action) => actionDescription(state.players, action))
+                      .join(t('listSeparator')),
+                  })
+                : ''}
+            </div>
+
             {pendingBanner && (
               <div
                 className={`${badgeWarningColors} rounded-[10px] text-center py-2 px-4 text-sm font-bold my-2`}
@@ -383,7 +393,10 @@ function DaifugoPageContent() {
             )}
 
             {state.cpuActions && state.cpuActions.length > 0 && (
-              <div className="bg-black/40 rounded-lg text-ds-text-primary py-2 px-3.5 my-2 whitespace-pre-line text-xs">
+              <div
+                className="bg-black/40 rounded-lg text-ds-text-primary py-2 px-3.5 my-2 whitespace-pre-line text-xs"
+                data-testid="daifugo-cpu-actions"
+              >
                 {[tc('label.cpuActions'), ...state.cpuActions.map((a) => actionDescription(state.players, a))].join(
                   '\n',
                 )}

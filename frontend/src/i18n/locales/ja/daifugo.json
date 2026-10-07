@@ -30,6 +30,8 @@
   "queenBomberBanner": "【12ボンバー】除去するカードの数字を選択してください",
   "actionPlayed": "{{name}}が出しました: {{cards}}",
   "actionPassed": "{{name}}がパスしました",
+  "cpuActionsAnnouncement": "CPUの行動: {{actions}}",
+  "listSeparator": "、",
   "badge": {
     "revolution": "革命中",
     "elevenBack": "11バック",
