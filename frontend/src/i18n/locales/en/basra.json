@@ -45,7 +45,7 @@
     "title": "Final Scores",
     "winner": "Winner: {{names}}",
     "breakdownTitle": "Score breakdown",
-    "breakdownRow": "{{name}}: {{aces}} ace(s) / {{basras}} basra(s) / {{cards}} card(s)",
+    "breakdownRow": "{{name}}: This deal {{gained}} pts / {{aces}} ace(s) / {{basras}} basra(s) / {{cards}} card(s)",
     "sevenDiamonds": "7♦: {{name}}",
     "tenDiamonds": "10♦: {{name}}",
     "mostCards": "Most cards: {{name}}",

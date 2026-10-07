@@ -420,6 +420,7 @@ function BasraPageContent() {
                       <div key={p.id} data-testid={`basra-breakdown-${p.id}`}>
                         {t('result.breakdownRow', {
                           name: seatName(p.id),
+                          gained: detail.gained[p.id],
                           aces: detail.aces[p.id],
                           basras: detail.basras[p.id],
                           cards: detail.cards[p.id],
