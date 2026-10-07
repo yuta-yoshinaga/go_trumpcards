@@ -17,6 +17,7 @@
   "trick": "Trick {{n}}",
   "trump": "Trump: {{suit}}",
   "trumpRule": "Trump is the Soloist’s longest suit, chosen automatically",
+  "trumpCardDescription": "trump",
   "marriageAvailable": "Marriage available: {{list}}",
   "suitName": {
     "spade": "Spade",
