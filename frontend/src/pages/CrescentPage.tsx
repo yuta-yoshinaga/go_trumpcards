@@ -447,7 +447,7 @@ function CrescentPageContent() {
                                       }
                                     }}
                                     disabled={!isPlaying || loading || !isTop}
-                                    aria-label={cardAlt(tc.card)}
+                                    aria-label={t('tableauCardAriaLabel', { col: colIdx, card: cardAlt(tc.card) })}
                                     aria-pressed={isTop && isSourceSelected('tableau', colIdx)}
                                     draggable={isPlaying && !loading && isTop}
                                     onDragStart={isTop ? dnd.handleDragStart(tableauColZone) : undefined}

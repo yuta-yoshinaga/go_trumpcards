@@ -46,6 +46,7 @@
   "stalemateAlert": "手詰まりです。アンドゥ {{count}} 回で脱出できます",
   "stalemateRedealAvailable": "手詰まりです。再配りできます（残り{{count}}回）",
   "tableau": "タブロー",
+  "tableauCardAriaLabel": "タブロー列{{col}}、{{card}}",
   "tutorial": {
     "foundations": "中央には 8 つの組札。前 4 つは A から昇順、後 4 つは K から降順 (各スート 1 列ずつ) です。",
     "tableau": "周りを囲む 16 のタブロー山。最上段のカードのみ移動でき、同じスートで値差 ±1 (A↔K は wrap) で重ねます。",

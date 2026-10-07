@@ -279,6 +279,12 @@ describe('CrescentPage', () => {
     await waitFor(() => expect(cardButton.className).toContain('ring-2'));
   });
 
+  it('includes the zero-based tableau column and card in each face-up card name', async () => {
+    renderWithProviders(<CrescentPage />);
+    expect(await screen.findByRole('button', { name: 'タブロー列0、♠ 4' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'タブロー列1、♥ 6' })).toBeInTheDocument();
+  });
+
   it('selecting source then foundation dispatches move', async () => {
     renderWithProviders(<CrescentPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
