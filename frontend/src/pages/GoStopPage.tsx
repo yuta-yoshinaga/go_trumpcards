@@ -107,6 +107,8 @@ function GoStopPageContent() {
   const isHumanTurn = state.isHumanTurn && !isGameEnd;
   const isHumanWinner = (winnerId: number) => winnerId === (human?.id ?? 0);
   const humanWon = isGameEnd && isHumanWinner(state.winner);
+  const hasPendingSettings =
+    configInput.cpuDifficulty !== state.config.cpuDifficulty || configInput.targetScore !== state.config.targetScore;
   const phaseName = isGameEnd
     ? t('phase.gameEnd')
     : isRoundEnd
@@ -465,6 +467,7 @@ function GoStopPageContent() {
               },
             ]}
           />
+          {hasPendingSettings && <p className="px-4 text-xs text-ds-text-muted">{t('settings.pendingReset')}</p>}
 
           <GameFooter className={`${gameTheme.gostop.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="gostop-actions">
