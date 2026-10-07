@@ -121,5 +121,5 @@ func (p *EstimationWebPresenter) HintOutput(e interfaces.EstimationGame) string 
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *EstimationWebPresenter) ActionLogOutput(e interfaces.EstimationGame) string {
-	return actionLogOutputJSON(e)
+	return actionLogToJSON(e.GetActionLog())
 }
