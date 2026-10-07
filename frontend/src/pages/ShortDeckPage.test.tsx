@@ -244,6 +244,12 @@ describe('ShortDeckPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('shows that setting changes take effect on the next reset', async () => {
+    renderWithProviders(<ShortDeckPage />);
+    expect(await screen.findByText('設定の変更は次のリセットから適用されます。')).toBeInTheDocument();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
   // ---- phase name display ----
   it('shows "初期化中" when phase is INIT (not in PHASE_NAMES)', async () => {
     renderWithProviders(<ShortDeckPage />);
@@ -1185,6 +1191,9 @@ describe('ShortDeckPage', () => {
     const allSummaries = container.querySelectorAll('details summary');
     const settingsSummary = Array.from(allSummaries).find((s) => s.textContent?.includes('設定'));
     expect(settingsSummary).toBeTruthy();
+    const pendingReset = screen.getByText('設定の変更は次のリセットから適用されます。');
+    expect(settingsSummary).not.toContainElement(pendingReset);
+    expect(pendingReset.parentElement).toHaveClass('flex-col');
   });
 
   it('renders the Flush > Full House rule reminder chip near the community cards', async () => {

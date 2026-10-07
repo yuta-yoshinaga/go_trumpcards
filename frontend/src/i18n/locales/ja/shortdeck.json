@@ -77,7 +77,8 @@
   },
   "settings": {
     "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）",
-    "tournamentMode": "トーナメントモード (ブラインドが上がる)"
+    "tournamentMode": "トーナメントモード (ブラインドが上がる)",
+    "pendingReset": "設定の変更は次のリセットから適用されます。"
   },
   "tutorial": {
     "communityCards": "コミュニティカードです。全プレイヤー共有の5枚のカードが順次公開されます。",
