@@ -125,9 +125,10 @@ function NapoleonsSquarePageContent() {
     const colW = Math.floor((windowWidth - padX - (TABLEAU_COLS - 1) * gapPx) / TABLEAU_COLS);
     const cw = Math.min(Math.max(colW, 24), cardWidth);
     const ch = Math.round(cw * 1.5);
-    const co = Math.round(cw * 0.32);
+    const co = Math.max(44, Math.round(cw * 0.32));
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+  const tableauTapHeight = Math.max(dims.ch, 44);
 
   const isPlayingForKbd = state?.phase === NapoleonsSquarePhase.PLAYING;
 
@@ -211,7 +212,7 @@ function NapoleonsSquarePageContent() {
     const col = state.tableau[colIdx] ?? [];
     const tableauColZone: NapoleonsSquareMoveZone = { zone: 'tableau', col: colIdx };
     return (
-      <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+      <div key={`col-${colIdx.toString()}`} className="w-11 flex-none sm:flex-1 sm:min-w-0">
         <div className="text-center text-xs text-ds-text-muted mb-0.5" aria-hidden="true">
           #{colIdx}
         </div>
@@ -222,7 +223,7 @@ function NapoleonsSquarePageContent() {
           onDragLeave={dnd.handleDragLeave}
           className={`relative block ${isLegalTarget(tableauColZone) ? 'rounded ring-2 ring-ds-success' : ''}`}
         >
-          <div className="relative" style={{ minHeight: dims.ch }}>
+          <div className="relative" style={{ minHeight: tableauTapHeight }}>
             {col.length === 0 ? (
               <button
                 type="button"
@@ -232,7 +233,7 @@ function NapoleonsSquarePageContent() {
                 aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                 aria-label={t('emptyColumnAriaLabel', { col: colIdx })}
                 style={{ height: dims.ch }}
-                className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite} ${isLegalTarget(tableauColZone) ? 'ring-2 ring-ds-success' : ''}`}
+                className={`w-full min-h-11 rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite} ${isLegalTarget(tableauColZone) ? 'ring-2 ring-ds-success' : ''}`}
               >
                 {t('empty')}
               </button>
@@ -247,7 +248,7 @@ function NapoleonsSquarePageContent() {
                 return (
                   <div
                     key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
-                    className="absolute left-0 right-0"
+                    className="absolute left-0 right-0 min-h-11"
                     style={{ top: cardIdx * dims.co }}
                   >
                     {tc2.card ? (
@@ -267,14 +268,14 @@ function NapoleonsSquarePageContent() {
                         draggable={isPlaying && !loading}
                         onDragStart={dnd.handleDragStart(cardZone)}
                         onDragEnd={dnd.handleDragEnd}
-                        className={`p-0 border-0 bg-transparent w-full rounded cursor-pointer ${focusRingWhite} ${runLength > 0 && !isSelected ? 'ring-2 ring-ds-success' : ''} ${isSelected ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                        className={`p-0 border-0 bg-transparent w-full min-h-11 rounded cursor-pointer ${focusRingWhite} ${runLength > 0 && !isSelected ? 'ring-2 ring-ds-success' : ''} ${isSelected ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                       >
                         <AnimatedCard
                           card={tc2.card}
                           width={dims.cw}
                           draggable={false}
-                          style={{ width: '100%' }}
-                          wrapperClassName="block w-full"
+                          style={{ width: dims.cw, maxWidth: '100%' }}
+                          wrapperClassName="block"
                         />
                         {runLength > 0 && (
                           <span id={runHintId} className="sr-only" data-testid="ns-run-hint">
@@ -287,7 +288,9 @@ function NapoleonsSquarePageContent() {
                 );
               })
             )}
-            {col.length > 0 && <div style={{ height: (col.length - 1) * dims.co + dims.ch }} />}
+            {col.length > 0 && (
+              <div data-testid="ns-tableau-spacer" style={{ height: (col.length - 1) * dims.co + tableauTapHeight }} />
+            )}
           </div>
         </DropZone>
       </div>
@@ -443,8 +446,10 @@ function NapoleonsSquarePageContent() {
               </div>
             </div>
 
-            <div className="flex gap-0.5 sm:gap-2 items-start" data-tutorial="ns-tableau">
-              {Array.from({ length: TABLEAU_COLS }, (_, i) => i).map(renderTableauColumn)}
+            <div className="overflow-x-auto" data-testid="ns-tableau-scroll">
+              <div className="flex gap-0.5 sm:gap-2 items-start" data-tutorial="ns-tableau">
+                {Array.from({ length: TABLEAU_COLS }, (_, i) => i).map(renderTableauColumn)}
+              </div>
             </div>
 
             {/*
