@@ -278,6 +278,20 @@ describe('TonkPage', () => {
     expect(badge).not.toHaveAttribute('data-knockable');
   });
 
+  it('describes the unavailable knock button with the current deadwood status', async () => {
+    mockExec.mockResolvedValue(makeState({ bestDeadwood: 6, knockThreshold: 5 }));
+    renderWithProviders(<TonkPage />);
+
+    const knock = await screen.findByRole('button', { name: /ノック/ });
+    const describedBy = knock.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+
+    const description = document.getElementById(describedBy as string);
+    expect(description).toBeInTheDocument();
+    expect(description).toHaveTextContent('6');
+    expect(description).toHaveTextContent('ノック不可');
+  });
+
   it('blocks knock when the server deadwood exceeds its threshold, even with one card selected', async () => {
     mockExec.mockResolvedValue(makeState({ bestDeadwood: 6, knockThreshold: 5 }));
     renderWithProviders(<TonkPage />);

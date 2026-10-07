@@ -560,6 +560,7 @@ function TonkPageContent() {
                       }`}
                       role="status"
                       aria-live="polite"
+                      id="tonk-deadwood"
                       data-testid="tonk-deadwood"
                       data-knockable={state.bestDeadwood <= state.knockThreshold ? 'true' : undefined}
                     >
