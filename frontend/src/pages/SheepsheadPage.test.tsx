@@ -46,6 +46,40 @@ beforeEach(() => {
 });
 
 describe('SheepsheadPage', () => {
+  it('shows team labels in player rows only after the partner is revealed', async () => {
+    Object.defineProperty(window, 'innerWidth', { value: 1024, configurable: true });
+    const hidden = makeSheepsheadState({ pickerIdx: 0, partnerIdx: 2, partnerRevealed: false });
+    mockExec.mockResolvedValue(hidden);
+    const { unmount } = renderWithProviders(<SheepsheadPage />);
+    await screen.findByText(/あなた: .*0トリック/);
+    expect(screen.queryByText('ピッカー組')).not.toBeInTheDocument();
+    unmount();
+
+    Object.defineProperty(window, 'innerWidth', { value: 1024, configurable: true });
+    mockExec.mockResolvedValue(makeSheepsheadState({ pickerIdx: 0, partnerIdx: 2, partnerRevealed: true }));
+    const { unmount: unmountDesktop } = renderWithProviders(<SheepsheadPage />);
+    await screen.findAllByText(/ピッカー組/);
+    const playerRows = Array.from(document.querySelectorAll('div')).filter(
+      (element) =>
+        /^(あなた|CPU [1-4]):/.test(element.textContent ?? '') &&
+        !Array.from(element.children).some((child) => /^(あなた|CPU [1-4]):/.test(child.textContent ?? '')),
+    );
+    expect(playerRows.map((row) => row.textContent)).toEqual([
+      'あなた: 100チップ | 0トリック | ピッカー組',
+      'CPU 1: 100チップ | 0トリック | 守備組',
+      'CPU 2: 100チップ | 0トリック | ピッカー組',
+      'CPU 3: 100チップ | 0トリック | 守備組',
+      'CPU 4: 100チップ | 0トリック | 守備組',
+    ]);
+    unmountDesktop();
+
+    Object.defineProperty(window, 'innerWidth', { value: 375, configurable: true });
+    mockExec.mockResolvedValue(makeSheepsheadState({ pickerIdx: 0, partnerIdx: 2, partnerRevealed: true }));
+    renderWithProviders(<SheepsheadPage />);
+    expect(await screen.findAllByText(/ピッカー組/)).toHaveLength(3);
+    expect(screen.getAllByText(/守備組/)).toHaveLength(4);
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SheepsheadPage />);
