@@ -6,6 +6,7 @@
   },
   "foundation": "組札",
   "tableau": "場札",
+  "tableauGroupAriaLabel": "場札16枠",
   "stock": "山札",
   "waste": "捨て札",
   "redealsRemaining": "配り直し残り: {{count}}回",
