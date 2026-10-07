@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { israeliwhistApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -72,6 +72,20 @@ beforeEach(() => {
 });
 
 describe('IsraeliWhistPage', () => {
+  it('shows the dealer badge only at dealerIdx and follows the server state', async () => {
+    renderWithProviders(<IsraeliWhistPage />);
+    await screen.findByTestId('iw-seat-0');
+    expect(screen.getByTestId('iw-seat-3')).toHaveTextContent('ディーラー');
+    expect(screen.getByTestId('iw-seat-0')).not.toHaveTextContent('ディーラー');
+
+    cleanup();
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 1 }));
+    renderWithProviders(<IsraeliWhistPage />);
+    await screen.findByTestId('iw-seat-1');
+    expect(screen.getByTestId('iw-seat-1')).toHaveTextContent('ディーラー');
+    expect(screen.getByTestId('iw-seat-3')).not.toHaveTextContent('ディーラー');
+  });
+
   it('keeps on-turn illegal cards focusable, blocks play, and explains why', async () => {
     mockExec.mockResolvedValue(playing({ validPlays: [0] }));
     renderWithProviders(<IsraeliWhistPage />);
