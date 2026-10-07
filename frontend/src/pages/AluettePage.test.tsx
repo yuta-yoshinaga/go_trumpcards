@@ -12,6 +12,14 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(aluetteApi.exec);
+const mockPlaySound = vi.fn();
+const mockSoundValue = { playSound: mockPlaySound, muted: false, toggleMute: vi.fn() };
+
+vi.mock('../providers/SoundProvider', () => ({
+  SoundProvider: ({ children }: { children: React.ReactNode }) => children,
+  useSound: () => mockSoundValue,
+  useOptionalSound: () => mockSoundValue,
+}));
 
 const playState = makeAluetteState();
 const cpuTurnState = makeAluetteState({ isHumanTurn: false, currentPlayerIdx: 1, playableIndices: [] });
@@ -26,9 +34,28 @@ const roundEndState = makeAluetteState({
 beforeEach(() => {
   mockExec.mockReset();
   mockExec.mockResolvedValue(playState);
+  mockPlaySound.mockClear();
 });
 
 describe('AluettePage', () => {
+  it.each([
+    { winnerTeam: 0, sound: 'winFanfare', description: 'human team wins' },
+    { winnerTeam: 1, sound: 'lossThud', description: 'human team loses' },
+    { winnerTeam: -1, sound: null, description: 'game ends in a draw' },
+  ])('plays only the matching end sound when $description', async ({ winnerTeam, sound }) => {
+    mockExec.mockResolvedValue(makeAluetteState({ phase: 3, gameEndFlag: true, isHumanTurn: false, winnerTeam }));
+
+    renderWithProviders(<AluettePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', expect.anything()));
+    if (sound) {
+      await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith(sound));
+    }
+    expect(mockPlaySound.mock.calls.filter(([name]) => name === 'winFanfare')).toHaveLength(
+      sound === 'winFanfare' ? 1 : 0,
+    );
+    expect(mockPlaySound.mock.calls.filter(([name]) => name === 'lossThud')).toHaveLength(sound === 'lossThud' ? 1 : 0);
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<AluettePage />);
