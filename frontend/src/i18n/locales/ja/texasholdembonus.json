@@ -66,6 +66,8 @@
   },
   "betGuide": "アンテと任意のボーナスを設定してベット",
   "betSummary": "合計: {{total}} / 残り: {{remaining}}",
+  "maximumInvestment": "全てのアクションを行った場合の最大投資額: {{total}} / 残り: {{remaining}}",
+  "maximumInvestmentShort": "全てのアクションを行った場合の最大投資額: {{total}} / {{short}} 足りません",
   "payoutRef": {
     "title": "配当表",
     "anteHeader": "アンテボーナス（ストレート以上）",
