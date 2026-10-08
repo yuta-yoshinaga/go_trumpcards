@@ -16,6 +16,7 @@
   "cardUsed": "使用",
   "cardUsedAria": "最善役に使用するカード: {{card}}",
   "cardUnused": "未使用",
+  "cardUnusedAria": "最善役に未使用のカード: {{card}}",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "rebuy": {
     "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",

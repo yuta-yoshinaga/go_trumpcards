@@ -278,6 +278,30 @@ describe('BigOPage', () => {
     );
   });
 
+  it('announces every community card as used or unused when the best hand is known', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    const { container } = renderWithProviders(<BigOPage />);
+    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+
+    const statuses = [...container.querySelectorAll<HTMLElement>('[data-best5-board-status]')];
+    expect(statuses).toHaveLength(5);
+    expect(statuses.map((card) => card.dataset.best5BoardStatus)).toEqual(['used', 'used', 'used', 'unused', 'unused']);
+    expect(statuses.map((card) => card.querySelector('.sr-only')?.textContent)).toEqual([
+      '最善役に使用するカード: ♠ 10',
+      '最善役に使用するカード: ♥ 5',
+      '最善役に使用するカード: ♦ 8',
+      '最善役に未使用のカード: ♣ 2',
+      '最善役に未使用のカード: ♥ 9',
+    ]);
+  });
+
+  it('does not announce community card usage before the best board indices are known', async () => {
+    mockExec.mockResolvedValue(flopState);
+    const { container } = renderWithProviders(<BigOPage />);
+    await waitFor(() => expect(screen.getByTestId('community-cards-announcement')).toHaveTextContent('♠ 10'));
+    expect(container.querySelectorAll('[data-best5-board-status]')).toHaveLength(0);
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<BigOPage />);

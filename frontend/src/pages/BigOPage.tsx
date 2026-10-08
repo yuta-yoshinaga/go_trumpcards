@@ -248,13 +248,22 @@ function BigOPageContent() {
                                 inBest ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
                               } ${dim ? 'opacity-50' : ''}`}
                               data-best5-board={inBest || undefined}
+                              data-best5-board-status={
+                                liveBest5.boardSet.size > 0 ? (inBest ? 'used' : 'unused') : undefined
+                              }
                             >
                               <AnimatedCard
                                 card={card}
                                 width={cardWidth}
                                 style={inBest ? highlightCardStyle() : placeholderCardStyle}
                               />
-                              {inBest && <span className="sr-only">{t('cardUsedAria', { card: cardAlt(card) })}</span>}
+                              {liveBest5.boardSet.size > 0 && (
+                                <span className="sr-only">
+                                  {inBest
+                                    ? t('cardUsedAria', { card: cardAlt(card) })
+                                    : t('cardUnusedAria', { card: cardAlt(card) })}
+                                </span>
+                              )}
                             </div>
                           );
                         })
