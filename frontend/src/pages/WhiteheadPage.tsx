@@ -515,7 +515,7 @@ function WhiteheadPageContent() {
                             disabled={!isPlaying || loading}
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('emptyColumnAriaLabel', { col: colIdx + 1 })}
+                            aria-label={t('emptyColumnAriaLabel', { col: colIdx })}
                             style={{ height: kl.ch }}
                             className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                           >
