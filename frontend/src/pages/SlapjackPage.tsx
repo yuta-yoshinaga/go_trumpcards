@@ -149,9 +149,9 @@ function SlapjackPageContent() {
       const slapper = player === 0 ? tc('player.you') : tc('player.cpu', { id: player });
       const label =
         outcome === 'wrong'
-          ? t('slapjack.burst.miss')
+          ? t('slapjack.burst.miss', { player: slapper })
           : count > 0
-            ? t('slapjack.burst.jack', { count })
+            ? t('slapjack.burst.jack', { player: slapper, count })
             : t('slapjack.slapAnnounce.correctLegacy', { player: slapper });
       // Counter (not Date.now()) keeps repeated slap events distinct even
       // when they happen within the same millisecond.
