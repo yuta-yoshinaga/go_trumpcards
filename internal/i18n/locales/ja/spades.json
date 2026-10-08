@@ -21,6 +21,7 @@
   "promptTrickEndHelp": "next・・・次のトリックへ",
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
+  "scoreBreakdown": "{{name}} 得点内訳: ビッド={{bid}} オーバートリック={{overtrick}} ニル={{nil}} バッグペナルティ=-{{bagPenalty}} 合計={{total}}",
   "hintNone": "ヒントはありません。",
   "hintBid": "[ヒント: ビッド {{bid}} を推奨 ({{reason}})]",
   "hintCard": "[ヒント: [{{idx}}]{{card}} ({{reason}})]",
