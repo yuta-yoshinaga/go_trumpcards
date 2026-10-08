@@ -267,6 +267,21 @@ function DoubtPageContent() {
             })
           : ''}
       </div>
+      <div
+        className="sr-only"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        data-testid="doubt-cpu-judgment-announcement"
+      >
+        {isDoubtPhase && state.lastAction !== null && state.players[state.lastAction.playerIdx]?.isHuman
+          ? state.cpuDoubters.length > 0
+            ? t('cpuDoubtExclaim', {
+                names: state.cpuDoubters.map((idx) => playerName(idx, false)).join(t('listSeparator')),
+              })
+            : t('cpuDidNotDoubt')
+          : ''}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (

@@ -16,6 +16,8 @@
   "skipButton": "Skip",
   "cpuJudging": "CPUs are judging...",
   "cpuDoubtExclaim": "Doubt! {{names}}",
+  "cpuDidNotDoubt": "The CPUs did not doubt",
+  "listSeparator": ", ",
   "confirmButton": "Confirm",
   "doubtResult": {
     "title": "Doubt Result",
