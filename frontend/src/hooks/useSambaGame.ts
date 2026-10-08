@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { sambaApi } from '../api/gameApi';
 import type { SambaConfig } from '../types/card';
 import { useCardSelection } from './useCardSelection';
@@ -24,10 +24,12 @@ export const POINT_LIMIT_OPTIONS = [5000, 7500, 10000, 15000] as const;
 /** Hook that manages Samba game state and player actions. */
 export function useSambaGame() {
   const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
+  const [meldGroups, setMeldGroups] = useState<number[][]>([]);
   const { config: sambaConfig, handleConfigChange } = useGameConfig<SambaConfig>(DEFAULT_SAMBA_CONFIG);
 
   const onSuccess = useCallback(() => {
     clearSelection();
+    setMeldGroups([]);
   }, [clearSelection]);
   const { state, loading, error, exec: rawExec, retry } = useGameApi(sambaApi.exec, { onSuccess });
 
@@ -47,9 +49,24 @@ export function useSambaGame() {
   }, [gameExec, selectedCardIndices]);
 
   const handleMeldSelected = useCallback(() => {
+    if (meldGroups.length === 0) {
+      if (selectedCardIndices.length < 3) return;
+      gameExec('meld', undefined, undefined, undefined, [selectedCardIndices]);
+      return;
+    }
+    if (selectedCardIndices.length >= 3) return;
+    gameExec('meld', undefined, undefined, undefined, meldGroups);
+  }, [gameExec, meldGroups, selectedCardIndices]);
+
+  const handleAddMeldGroup = useCallback(() => {
     if (selectedCardIndices.length < 3) return;
-    gameExec('meld', undefined, undefined, undefined, [selectedCardIndices]);
-  }, [gameExec, selectedCardIndices]);
+    setMeldGroups((groups) => [...groups, selectedCardIndices]);
+    clearSelection();
+  }, [clearSelection, selectedCardIndices]);
+
+  const handleRemoveMeldGroup = useCallback((groupIndex: number) => {
+    setMeldGroups((groups) => groups.filter((_, index) => index !== groupIndex));
+  }, []);
 
   const handleSkipMeld = useCallback(() => {
     gameExec('skipmeld');
@@ -76,11 +93,14 @@ export function useSambaGame() {
     sambaConfig,
     handleConfigChange,
     selectedCardIndices,
+    meldGroups,
     toggleCard,
     clearSelection,
     handleDrawStock,
     handleDrawDiscard,
     handleMeldSelected,
+    handleAddMeldGroup,
+    handleRemoveMeldGroup,
     handleSkipMeld,
     handleDiscard,
     handleGoOut,
