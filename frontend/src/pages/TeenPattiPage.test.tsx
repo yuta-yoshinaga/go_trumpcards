@@ -63,13 +63,17 @@ describe('TeenPattiPage', () => {
   it('marks only the current player row as taking a turn', async () => {
     renderWithProviders(<TeenPattiPage />);
     const turnIndicator = await screen.findByText('手番中');
-    const playerRows = screen.getByText('プレイヤー').parentElement;
-    expect(playerRows).not.toBeNull();
-    const rows = within(playerRows as HTMLElement)
-      .getAllByText(/あなた|CPU/)
-      .map((name) => name.parentElement);
-    expect(turnIndicator.parentElement?.parentElement).toBe(rows[0]);
-    expect(within(playerRows as HTMLElement).getAllByText('手番中')).toHaveLength(1);
+    expect(turnIndicator.parentElement).toHaveTextContent('あなた');
+    expect(screen.getAllByText('手番中')).toHaveLength(1);
+  });
+
+  it('marks the CPU row as taking a turn when seat 1 is current', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<TeenPattiPage />);
+    const turnIndicator = await screen.findByText('手番中');
+    expect(turnIndicator.parentElement).toHaveTextContent('CPU 1');
+    expect(turnIndicator.parentElement).not.toHaveTextContent('あなた');
+    expect(screen.getAllByText('手番中')).toHaveLength(1);
   });
 
   it('renders skeleton when no state', () => {
