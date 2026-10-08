@@ -245,6 +245,42 @@ describe('HeartsPage', () => {
     mockExec.mockResolvedValue(moonState);
     renderWithProviders(<HeartsPage />);
     await waitFor(() => expect(screen.getAllByTestId('hearts-shoot-the-moon-badge').length).toBeGreaterThan(0));
+    expect(await screen.findByTestId('hearts-shoot-the-moon-live')).toHaveTextContent(
+      'CPU 2がシュート・ザ・ムーンを狙っている可能性があります',
+    );
+  });
+
+  it('keeps the shoot-the-moon live region empty when no player is alerting', async () => {
+    renderWithProviders(<HeartsPage />);
+    expect(await screen.findByTestId('hearts-shoot-the-moon-live')).toBeEmptyDOMElement();
+  });
+
+  it('announces a changed shoot-the-moon target by name in English', async () => {
+    const previousLanguage = i18n.language;
+    try {
+      await i18n.changeLanguage('en');
+      const stateFor = (target: number) =>
+        makeHeartsState({
+          players: makeHeartsState().players.map((player) => ({
+            ...player,
+            roundScore: player.id === target ? 14 : 0,
+          })),
+        });
+      mockExec.mockResolvedValueOnce(stateFor(1)).mockResolvedValueOnce(stateFor(2));
+      renderWithProviders(<HeartsPage />);
+      expect(await screen.findByTestId('hearts-shoot-the-moon-live')).toHaveTextContent(
+        'CPU 1 may be trying to shoot the moon.',
+      );
+      fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+      fireEvent.click(screen.getByRole('button', { name: 'Play' }));
+      await waitFor(() =>
+        expect(screen.getByTestId('hearts-shoot-the-moon-live')).toHaveTextContent(
+          'CPU 2 may be trying to shoot the moon.',
+        ),
+      );
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('does not show shoot-the-moon alert when points are split between players', async () => {
