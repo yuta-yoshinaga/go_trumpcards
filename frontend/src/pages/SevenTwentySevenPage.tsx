@@ -148,6 +148,29 @@ function SevenTwentySevenPageContent() {
 
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
 
+  const roundAnnouncement = !isResultPhase
+    ? ''
+    : state.lowWinner < 0 && state.highWinner < 0
+      ? t('roundResult.carry', { pot: state.carryPot, count: state.carryCount })
+      : state.lowWinner >= 0 && state.lowWinner === state.highWinner
+        ? t('roundResult.scoop', {
+            name: playerLabel(state.lowWinner, state.players[state.lowWinner].isHuman),
+          })
+        : [
+            state.lowWinner >= 0
+              ? t('roundResult.lowWinner', {
+                  name: playerLabel(state.lowWinner, state.players[state.lowWinner].isHuman),
+                  score: state.players[state.lowWinner].lowScore,
+                })
+              : t('roundResult.lowEmpty'),
+            state.highWinner >= 0
+              ? t('roundResult.highWinner', {
+                  name: playerLabel(state.highWinner, state.players[state.highWinner].isHuman),
+                  score: state.players[state.highWinner].highScore,
+                })
+              : t('roundResult.highEmpty'),
+          ].join(t('listSeparator'));
+
   /** 「6.5 / 21」の形。超過した側はサーバが "-" を返す。 */
   const scoreLabel = (p: SevenTwentySevenResponse['players'][number]): string =>
     p.lowScore || p.highScore ? `${p.lowScore || '?'} / ${p.highScore || '?'}` : '';
@@ -185,6 +208,15 @@ function SevenTwentySevenPageContent() {
       cancelReset={cancelReset}
       headerExtra={
         <>
+          <div
+            className="sr-only"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            data-testid="s27-result-announcement"
+          >
+            {roundAnnouncement}
+          </div>
           <span>{t('chips', { amount: state.chips })}</span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
