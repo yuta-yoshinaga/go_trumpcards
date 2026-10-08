@@ -95,6 +95,27 @@ describe('RookPage', () => {
     );
   });
 
+  it.each([
+    ['ja', 300, '設定した目標スコアに先に到達したチームの勝ちです'],
+    ['ja', 700, '設定した目標スコアに先に到達したチームの勝ちです'],
+    ['en', 300, 'The first team to reach the target score wins.'],
+    ['en', 700, 'The first team to reach the target score wins.'],
+  ])('describes the configured target score in %s when set to %i', async (language, targetScore, description) => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage(language);
+    mockExec.mockResolvedValue(makeState({ config: { cpuDifficulty: 1, targetScore } }));
+    try {
+      renderWithProviders(<RookPage />);
+
+      const tutorialButtonName = language === 'ja' ? 'チュートリアル' : 'Tutorial';
+      fireEvent.click(await screen.findByRole('button', { name: tutorialButtonName }));
+      expect(await screen.findByText(new RegExp(description))).toBeInTheDocument();
+      expect(screen.queryByText(/500点|500 points/)).not.toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('shows bid controls on the human bid turn', async () => {
     renderWithProviders(<RookPage />);
     expect(await screen.findByTestId('pass-button')).toBeEnabled();

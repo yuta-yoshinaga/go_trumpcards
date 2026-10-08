@@ -57,7 +57,7 @@
     "hard": "Hard"
   },
   "tutorial": {
-    "info": "Round, contract, trump color, and team scores show here. The first team to reach 500 points wins.",
+    "info": "Round, contract, trump color, and team scores show here. The first team to reach the target score wins.",
     "trick": "Cards played to the table appear here. The highest trump (or lead-color) card wins the trick.",
     "hand": "Your hand. To play, select a card then press Play. In nest exchange, select 5 cards and declare a trump color.",
     "actions": "Phase-specific action buttons (bid, nest exchange, play) appear here."
