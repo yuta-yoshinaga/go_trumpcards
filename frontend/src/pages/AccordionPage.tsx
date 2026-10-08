@@ -145,6 +145,12 @@ function AccordionPageContent() {
   useMountReset(apiCall);
 
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  const phase = state?.phase;
+  useEffect(() => {
+    if (phase === AccordionPhase.GAME_CLEAR || phase === AccordionPhase.GAME_OVER) {
+      setSelectedIdx(null);
+    }
+  }, [phase]);
   const pileButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
   // Tracks the pile under cursor/focus so we can paint legal -1/-3 targets
   // (same suit OR same rank) without waiting for click. Reset by mouseleave/blur
