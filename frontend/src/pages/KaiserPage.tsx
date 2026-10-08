@@ -4,6 +4,7 @@ import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -97,9 +98,15 @@ function KaiserPageContent() {
   const { state, loading, error, exec, retry } = useGameApi(kaiserApi.exec);
 
   const [contract, setContract] = useState(0);
+  const [allowNoTrump, setAllowNoTrump] = useState(true);
   const [selected, setSelected] = useState<number[]>([]);
   const [scoreAnnouncement, setScoreAnnouncement] = useState('');
   const previousScores = useRef<{ hand: [number, number]; total: [number, number] } | null>(null);
+  const serverAllowNoTrump = state?.config.allowNoTrump;
+
+  useEffect(() => {
+    if (serverAllowNoTrump !== undefined) setAllowNoTrump(serverAllowNoTrump);
+  }, [serverAllowNoTrump]);
 
   useEffect(() => {
     if (!state) return;
@@ -200,7 +207,7 @@ function KaiserPageContent() {
   const handleManualReset = () => {
     hideActionLog();
     setSelected([]);
-    exec('reset');
+    exec('reset', { config: { allowNoTrump } });
   };
 
   const bidValues: number[] = [];
@@ -376,6 +383,23 @@ function KaiserPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.kaiser.footer} px-4 py-2.5`}>
+            <SettingsPanel
+              title={t('settings.title')}
+              groups={[
+                {
+                  items: [
+                    {
+                      type: 'checkbox',
+                      id: 'kaiser-allow-no-trump',
+                      label: t('settings.allowNoTrump'),
+                      checked: allowNoTrump,
+                      onToggle: setAllowNoTrump,
+                    },
+                  ],
+                },
+              ]}
+            />
+            <p className="px-4 text-xs text-ds-text-muted">{t('settings.newHandNotice')}</p>
             <div className="mb-2" data-tutorial="kaiser-hand">
               <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
               <div className="flex flex-wrap gap-1">
