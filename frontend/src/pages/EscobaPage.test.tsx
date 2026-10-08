@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import i18n from 'i18next';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { escobaApi } from '../api/gameApi';
@@ -262,11 +262,43 @@ describe('EscobaPage', () => {
     expect(headers[0]).toHaveTextContent('あなた');
     expect(headers[1]).toHaveTextContent('CPU 1');
     expect(headers[3]).toHaveTextContent('CPU 3');
+    const roundDetail = screen.getByTestId('round-detail');
+    const aceRow = within(roundDetail).getByRole('row', { name: /Ace♠を取得/ });
+    const sevenRow = within(roundDetail).getByRole('row', { name: /7♠を取得/ });
+    expect(aceRow).toHaveTextContent('あなた');
+    expect(sevenRow).toHaveTextContent('CPU 1');
     // 各列がどの席かを支援技術にも伝える。
     for (const th of headers) {
       expect(th).toHaveAttribute('scope', 'col');
       expect(th.textContent).not.toMatch(/^P\d/);
     }
+  });
+
+  it('shows unclaimed special cards without a player number', async () => {
+    mockExec.mockResolvedValue(
+      makeEscobaState({
+        phase: 'roundEnd',
+        isHumanTurn: false,
+        lastRoundDetail: {
+          cards: [0, 0, 0, 0],
+          espadas: [0, 0, 0, 0],
+          sevens: [0, 0, 0, 0],
+          oros: [0, 0, 0, 0],
+          escobas: [0, 0, 0, 0],
+          gained: [0, 0, 0, 0],
+          aceEspada: -1,
+          seteEspada: -1,
+        },
+      }),
+    );
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('round-detail')).toBeInTheDocument());
+    const roundDetail = screen.getByTestId('round-detail');
+    const aceRow = within(roundDetail).getByRole('row', { name: /Ace♠を取得/ });
+    const sevenRow = within(roundDetail).getByRole('row', { name: /7♠を取得/ });
+    expect(aceRow).toHaveTextContent('未獲得');
+    expect(sevenRow).toHaveTextContent('未獲得');
+    expect(roundDetail).not.toHaveTextContent('プレイヤー-1');
   });
 
   it('omits the last capturer when there was no valid capture', async () => {

@@ -16,7 +16,6 @@
     "tableCards": "場札",
     "tableEmpty": "場札なし",
     "scores": "スコア",
-    "player": "プレイヤー{{id}}",
     "you": "あなた",
     "stockRemaining": "山札残り{{count}}枚",
     "cpuStats": "手札{{cards}}枚 / 捕獲{{captured}}枚 / エスコバ{{escoba}}",
@@ -60,7 +59,8 @@
     "escobas": "エスコバ",
     "gained": "獲得点",
     "aceEspada": "Ace♠を取得",
-    "seteEspada": "7♠を取得"
+    "seteEspada": "7♠を取得",
+    "unclaimed": "未獲得"
   },
   "tutorial": {
     "cpuArea": "他のプレイヤーの手札枚数・捕獲数・エスコバ数・得点です。",
