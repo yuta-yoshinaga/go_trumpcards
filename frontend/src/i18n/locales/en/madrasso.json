@@ -29,7 +29,7 @@
   "previousTrickWinner": "Won by {{name}}",
   "scores": "Scores",
   "scoresTeam": "Team",
-  "scoresPoints": "Points",
+  "scoresPoints": "Deals Won (Target: {{target}})",
   "scoresTricks": "Tricks",
   "playButton": "Play",
   "nextTrick": "Next Trick",

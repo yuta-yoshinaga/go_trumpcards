@@ -34,13 +34,22 @@ beforeEach(() => {
 });
 
 describe('MadrassoPage', () => {
-  it('uses team names as row headers while retaining score column headers', async () => {
+  it('labels cumulative deals against the target separately from round card points', async () => {
+    mockExec.mockResolvedValue(
+      makeMadrassoState({
+        teamScores: [4, 2],
+        teamRoundPoints: [70, 51],
+        config: { cpuDifficulty: 1, targetPoints: 21 },
+      }),
+    );
     renderWithProviders(<MadrassoPage />);
 
     expect(await screen.findByRole('rowheader', { name: 'チームA' })).toHaveClass('text-left', 'font-normal');
     expect(screen.getByRole('rowheader', { name: 'チームB' })).toHaveClass('text-left', 'font-normal');
-    expect(screen.getByRole('columnheader', { name: '得点' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: '獲得ディール数（目標: 21）' })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: '今ラウンド' })).toBeInTheDocument();
+    expect(screen.getByRole('row', { name: /チームA/ })).toHaveTextContent('4');
+    expect(screen.getByTestId('tr-round-points-0')).toHaveTextContent('70 / 121');
   });
 
   it('renders skeleton when no state', () => {
