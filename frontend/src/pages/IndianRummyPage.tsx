@@ -404,28 +404,31 @@ function IndianRummyPageContent() {
           <GameFooter className={`${gameTheme.indianrummy.footer} px-4 py-2.5`}>
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ir-player-hand">
-                {humanPlayer.cards.map((card, idx) => (
-                  <button
-                    type="button"
-                    key={`${card.design}-${card.value}-${idx}`}
-                    onClick={() => toggleCard(idx)}
-                    aria-label={`${cardAlt(card)}${isWildCard(card) ? ` ${t('wildAria')}` : ''}`}
-                    aria-pressed={selectedCardIndices.includes(idx)}
-                    className={`relative transition-transform ${focusRingCard} ${
-                      isWildCard(card) ? 'ring-2 ring-ds-info' : ''
-                    } ${keyboardFocusIndex === idx ? 'outline-2 outline-offset-2 outline-ds-accent' : ''}`}
-                    style={{
-                      background: 'none',
-                      padding: 0,
-                      borderRadius: 8,
-                      ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                      boxSizing: 'border-box',
-                    }}
-                  >
-                    <AnimatedCard card={card} width={cardWidth} />
-                    {wildBadge(card)}
-                  </button>
-                ))}
+                {humanPlayer.cards.map((card, idx) => {
+                  const isDeclarableDiscard = isDiscardPhase && isHumanTurn && state.declarableDiscards.includes(idx);
+                  return (
+                    <button
+                      type="button"
+                      key={`${card.design}-${card.value}-${idx}`}
+                      onClick={() => toggleCard(idx)}
+                      aria-label={`${cardAlt(card)}${isWildCard(card) ? ` ${t('wildAria')}` : ''}${isDeclarableDiscard ? ` ${t('declarableDiscardAria')}` : ''}`}
+                      aria-pressed={selectedCardIndices.includes(idx)}
+                      className={`relative transition-transform ${focusRingCard} ${
+                        isWildCard(card) ? 'ring-2 ring-ds-info' : ''
+                      } ${isDeclarableDiscard ? 'ring-2 ring-ds-success' : ''} ${keyboardFocusIndex === idx ? 'outline-2 outline-offset-2 outline-ds-accent' : ''}`}
+                      style={{
+                        background: 'none',
+                        padding: 0,
+                        borderRadius: 8,
+                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      <AnimatedCard card={card} width={cardWidth} />
+                      {wildBadge(card)}
+                    </button>
+                  );
+                })}
               </div>
             )}
 
