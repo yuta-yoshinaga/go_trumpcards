@@ -9,6 +9,7 @@
   "waste": "捨て札",
   "wasteCount": "{{count}}枚",
   "playableAria": "{{card}}。出せるカード",
+  "unplayableCardReason": "捨て札と隣接していないため出せません",
   "moveCount": "手数",
   "combo": "コンボ ×{{count}}",
   "draw": "引く",

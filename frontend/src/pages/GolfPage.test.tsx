@@ -84,6 +84,28 @@ describe('GolfPage', () => {
     expect(screen.getAllByTestId('golf-playable')).toHaveLength(2);
   });
 
+  it('prevents selecting exposed cards that are not adjacent to the waste top', async () => {
+    renderWithProviders(<GolfPage />);
+    await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());
+
+    const unplayable = screen.getByRole('button', { name: '♠ 2' });
+    expect(unplayable).toHaveAttribute('aria-disabled', 'true');
+    expect(unplayable).toHaveAttribute('aria-describedby', 'golf-unplayable-card-reason');
+    expect(unplayable).toHaveAccessibleDescription('捨て札と隣接していないため出せません');
+    unplayable.focus();
+    expect(unplayable).toHaveFocus();
+
+    mockExec.mockClear();
+    fireEvent.click(unplayable);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('remove', expect.anything());
+
+    const playable = screen.getByRole('button', { name: /♠ 3。出せるカード/ });
+    expect(playable).not.toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(playable);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('remove', 2));
+  });
+
   it('announces playable exposed cards with the card name in Japanese and English', async () => {
     renderWithProviders(<GolfPage />);
     await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());
@@ -239,9 +261,8 @@ describe('GolfPage', () => {
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playingState);
-    // Find an exposed card button (col 0 bottom card is ♠A)
-    const cardButtons = screen.getAllByRole('button', { name: /♠/ });
-    fireEvent.click(cardButtons[0]);
+    // Select an exposed card adjacent to the waste top.
+    fireEvent.click(screen.getAllByTestId('golf-playable')[0]);
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('remove', expect.any(Number)));
   });

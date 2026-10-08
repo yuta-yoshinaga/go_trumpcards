@@ -344,6 +344,9 @@ function GolfPageContent() {
             )}
 
             {/* Tableau: 7 columns */}
+            <span id="golf-unplayable-card-reason" className="sr-only">
+              {t('unplayableCardReason')}
+            </span>
             <div data-tutorial="golf-columns" className="flex justify-center mb-3">
               {Array.from({ length: COL_COUNT }, (_, colIdx) => (
                 <div
@@ -371,21 +374,25 @@ function GolfPageContent() {
                     const isHinted = hint?.type === 'remove' && hint.col === colIdx;
                     const isPlayable =
                       exposed && wasteTopValue !== undefined && isGolfAdjacent(gc.card.value, wasteTopValue);
+                    const isCardDisabled = !isPlaying || loading || !exposed || !isPlayable;
                     return (
                       <div key={`gc-${colIdx.toString()}-${rowIdx.toString()}`} className="absolute" style={{ top }}>
                         <button
                           type="button"
-                          onClick={() => handleSelectCard(colIdx)}
-                          disabled={!isPlaying || loading || !exposed}
+                          onClick={() => {
+                            if (!isCardDisabled) handleSelectCard(colIdx);
+                          }}
+                          aria-disabled={isCardDisabled || undefined}
+                          aria-describedby={exposed && !isPlayable ? 'golf-unplayable-card-reason' : undefined}
                           aria-label={isPlayable ? t('playableAria', { card: cardAlt(gc.card) }) : cardAlt(gc.card)}
                           data-testid={isPlayable ? 'golf-playable' : undefined}
-                          className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
+                          className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${
                             isHinted && exposed
                               ? 'ring-2 ring-ds-warning motion-safe:animate-pulse'
                               : isPlayable
                                 ? 'ring-2 ring-ds-success'
                                 : ''
-                          } ${!exposed ? 'opacity-60' : ''}`}
+                          } ${isCardDisabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                         >
                           <AnimatedCard card={gc.card} width={effectiveCardWidth} />
                         </button>
