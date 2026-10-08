@@ -399,6 +399,38 @@ describe('MrsMopPage', () => {
     await waitFor(() => expect(cardButton.className).toContain('ring-2'));
   });
 
+  it('announces the selected movable run count while keeping legal destinations', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 13), faceUp: true },
+          { card: card('SPADE', 12), faceUp: true },
+          { card: card('SPADE', 11), faceUp: true },
+        ],
+        [{ card: card('DIAMOND', 13), faceUp: true }],
+      ]),
+    });
+    renderWithProviders(<MrsMopPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    const queenButton = screen.getByAltText('♠ Q').closest('button');
+    expect(queenButton).not.toBeNull();
+    fireEvent.click(queenButton as HTMLButtonElement);
+    expect(screen.getByTestId('mrsMop-selection-status')).toHaveTextContent('2枚をまとめて移動できます。移動先は');
+    expect(screen.getByTestId('mrsMop-selection-status')).toHaveTextContent('列1');
+  });
+
+  it('announces a single card when its selected run has no continuation', async () => {
+    renderWithProviders(<MrsMopPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    const kingButton = screen.getByAltText('♠ K').closest('button');
+    expect(kingButton).not.toBeNull();
+    fireEvent.click(kingButton as HTMLButtonElement);
+    expect(screen.getByTestId('mrsMop-selection-status')).toHaveTextContent('1枚をまとめて移動できます');
+  });
+
   it('tableau face-up card button has aria-pressed false initially and true when selected', async () => {
     renderWithProviders(<MrsMopPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
