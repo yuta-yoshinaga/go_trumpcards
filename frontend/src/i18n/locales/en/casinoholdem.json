@@ -39,7 +39,9 @@
     "bonus": "AA Bonus",
     "total": "Total",
     "netChange": "Net change",
-    "noNetChange": "No net change"
+    "noNetChange": "No net change",
+    "zeroPayout": "No payout (0)",
+    "noBet": "No bet"
   },
   "handRank": {
     "0": "High Card",

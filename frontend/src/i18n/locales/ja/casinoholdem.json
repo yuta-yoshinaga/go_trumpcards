@@ -39,7 +39,9 @@
     "bonus": "AAボーナス",
     "total": "合計",
     "netChange": "純増減",
-    "noNetChange": "増減なし"
+    "noNetChange": "増減なし",
+    "zeroPayout": "払戻しなし (0)",
+    "noBet": "ベットなし"
   },
   "handRank": {
     "0": "ハイカード",
