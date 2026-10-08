@@ -375,6 +375,9 @@ function FortyFivesPageContent() {
               message={state.message}
               messageCode={state.messageCode}
               messageParams={state.messageParams}
+              alwaysVisible
+              bareWhenEmpty
+              testId="forty-fives-game-message"
             />
 
             <ActionLogSection
