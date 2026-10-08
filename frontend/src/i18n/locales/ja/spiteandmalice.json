@@ -21,6 +21,7 @@
     "completed": "完成済み",
     "wild": "ワイルド"
   },
+  "stockRefillInfo": "ストックが空になると、完成済みのカードをシャッフルしてストックに戻します。",
   "moveCount": "手数",
   "endTurn": "ターン終了",
   "discard": "ディスカード",

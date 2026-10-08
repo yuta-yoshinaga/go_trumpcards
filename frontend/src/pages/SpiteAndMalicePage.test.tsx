@@ -96,6 +96,25 @@ beforeEach(() => {
 describe('SpiteAndMalicePage', () => {
   const foundationButtons = () => screen.getAllByRole('button', { name: /組札|Foundation/ });
 
+  it('explains when completed cards return to stock and highlights low stock', async () => {
+    await i18n.changeLanguage('ja');
+    mockExec.mockResolvedValue({ ...baseState, stockSize: 3, completedSize: 24 });
+    renderWithProviders(<SpiteAndMalicePage />);
+
+    expect(
+      await screen.findByText('ストックが空になると、完成済みのカードをシャッフルしてストックに戻します。'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        (_, element) => element?.tagName === 'DIV' && element.textContent === 'ストック: 3 / 完成済み: 24',
+      ),
+    ).toHaveClass('text-ds-warning');
+
+    await i18n.changeLanguage('en');
+    expect(screen.getByText('When the stock is empty, completed cards are shuffled back into it.')).toBeInTheDocument();
+    await i18n.changeLanguage('ja');
+  });
+
   it('highlights the human goal pile cards remaining', async () => {
     renderWithProviders(<SpiteAndMalicePage />);
 
