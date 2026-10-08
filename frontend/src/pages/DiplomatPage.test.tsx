@@ -83,6 +83,20 @@ describe('DiplomatPage', () => {
     }
   });
 
+  it('announces the top card and required next rank for a non-empty foundation', async () => {
+    const state: DiplomatResponse = {
+      ...playingState,
+      foundation: [[card('SPADE', 5)], ...Array.from({ length: 7 }, () => [])],
+    };
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<DiplomatPage />);
+
+    expect(
+      await screen.findByRole('button', { name: '♠ 組札0 1枚 (スペード)。上: ♠ 5。次に置ける札: 6' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /空の組札1/ })).toHaveAccessibleName('空の組札1 (♣、A から)');
+  });
+
   it('draws from the stock', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<DiplomatPage />);

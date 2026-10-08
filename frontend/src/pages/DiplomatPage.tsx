@@ -40,6 +40,12 @@ import { diplomatFoundationRequirement } from '../utils/diplomatFoundation';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'] as const;
+const FOUNDATION_SUIT_I18N_KEYS = [
+  'common.suit.spade',
+  'common.suit.club',
+  'common.suit.heart',
+  'common.suit.diamond',
+] as const;
 const TABLEAU_PILES = 8;
 const TOTAL_CARDS = 104;
 
@@ -357,10 +363,13 @@ function DiplomatPageContent() {
                             }}
                             disabled={!isLegalTarget}
                             data-legal-target={isLegalTarget ? 'true' : undefined}
-                            aria-label={t('foundationAriaLabel', {
+                            aria-label={t(nextRankLabel ? 'foundationAriaLabel' : 'completedFoundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
+                              suitName: tc(FOUNDATION_SUIT_I18N_KEYS[idx % 4]),
                               idx,
                               count: pile.length,
+                              card: cardAlt(pile[pile.length - 1]),
+                              nextRank: nextRankLabel,
                             })}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isLegalTarget ? 'ring-2 ring-ds-success' : ''}`}
                           >
