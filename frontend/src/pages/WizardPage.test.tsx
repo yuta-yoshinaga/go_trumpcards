@@ -796,6 +796,28 @@ describe('WizardPage', () => {
     }
   });
 
+  it('shows remaining tricks for bid players in the mobile summary only', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      mockExec.mockResolvedValue({
+        ...playPhaseState,
+        players: [
+          { ...playPhaseState.players[0], cardCount: 4, bid: 2, trickCount: 0 },
+          { ...playPhaseState.players[1], cardCount: 4, bid: -1, trickCount: 0 },
+          ...playPhaseState.players.slice(2),
+        ],
+      });
+      renderWithProviders(<WizardPage />);
+      const rows = await screen.findAllByTestId('bid-achievement-row');
+      expect(rows[0]).toHaveTextContent('残り 4 トリック');
+      expect(rows[1]).toHaveTextContent('未ビッド');
+      expect(rows[1]).not.toHaveTextContent('残り');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
+
   it('renders score table as collapsible details on mobile', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
