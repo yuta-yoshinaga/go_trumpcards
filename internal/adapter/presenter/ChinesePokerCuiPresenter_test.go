@@ -3,11 +3,13 @@
 package presenter
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestChinesePokerCuiPresenter_Output_BetPhase(t *testing.T) {
@@ -181,6 +183,22 @@ func TestChinesePokerCuiPresenter_FrontRankIsTranslated(t *testing.T) {
 	// 範囲外は未知ランクの文言に落ちる。キー文字列を出さない。
 	assert.NotContains(t, pp.frontRankStr(99), "pokerhand.")
 	assert.NotEmpty(t, pp.frontRankStr(99))
+}
+
+func TestChinesePokerCuiPresenter_FiveCardRankIsTranslated(t *testing.T) {
+	originalLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(originalLang) })
+	pp := new(ChinesePokerCuiPresenter)
+
+	for _, lang := range []string{"ja", "en"} {
+		i18n.SetLang(lang)
+		for rank := domain.PokerHandHighCard; rank <= domain.PokerHandFiveOfAKind; rank++ {
+			assert.False(t, strings.HasPrefix(pp.fiveCardRankStr(rank), "pokerhand."), "lang=%s rank=%d", lang, rank)
+		}
+	}
+	i18n.SetLang("ja")
+	assert.Equal(t, i18n.T("pokerhand.pair"), pp.fiveCardRankStr(domain.PokerHandOnePair))
+	assert.Equal(t, "ペア", pp.fiveCardRankStr(domain.PokerHandOnePair))
 }
 
 // **CUI には推奨分割もファウル警告も無かった (#4717)。**Web には
