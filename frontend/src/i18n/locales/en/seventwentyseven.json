@@ -19,6 +19,7 @@
   "ante": "Ante {{amount}}",
   "chips": "Chips {{amount}}",
   "roundBet": "Bet {{amount}}",
+  "listSeparator": ", ",
   "playersTitle": "Players",
   "targetsNote": "Two targets: 7 and 27. Go over and that side is out. Face cards are 0.5, an ace is 1 or 11.",
   "handLabel": "Your hand",
