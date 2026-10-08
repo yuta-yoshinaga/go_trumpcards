@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { beloteApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -103,6 +103,37 @@ describe('BelotePage', () => {
     expect(teamHeaders[1].querySelector('span')).toHaveTextContent('CPU 1、CPU 3');
     expect(teamHeaders[0].className).toContain('break-words');
     expect(teamHeaders[0].closest('table')?.className).toContain('table-fixed');
+  });
+
+  it('associates cumulative score cells with translated row and team headers', async () => {
+    renderWithProviders(<BelotePage />);
+
+    const cumulativeHeader = await screen.findByRole('rowheader', { name: '累計得点' });
+    expect(cumulativeHeader).toHaveAttribute('id', 'belote-cumulative-score-header');
+    const teamHeaders = screen.getAllByRole('columnheader');
+    const scoreRow = cumulativeHeader.closest('tr');
+    expect(scoreRow?.querySelectorAll('td')).toHaveLength(2);
+    expect(scoreRow?.querySelector('td')).toHaveAttribute(
+      'headers',
+      `${teamHeaders[0].id} belote-cumulative-score-header`,
+    );
+    expect(scoreRow?.querySelectorAll('td')[1]).toHaveAttribute(
+      'headers',
+      `${teamHeaders[1].id} belote-cumulative-score-header`,
+    );
+    expect(screen.getByRole('row', { name: /累計得点/ })).toHaveTextContent('0');
+    expect(screen.getByRole('row', { name: /ラウンド: 0点/ })).toBeInTheDocument();
+  });
+
+  it('aligns round points cells under their team columns', async () => {
+    mockExec.mockResolvedValue(makeState({ roundPoints: [82, 70] }));
+    renderWithProviders(<BelotePage />);
+
+    const row = await screen.findByRole('row', { name: /ラウンド: 82点.*ラウンド: 70点/ });
+    const cells = within(row).getAllByRole('cell');
+    expect(cells).toHaveLength(3);
+    expect(cells[1]).toHaveTextContent('ラウンド: 82点');
+    expect(cells[2]).toHaveTextContent('ラウンド: 70点');
   });
 
   it('calls reset on mount with default config', async () => {
@@ -269,6 +300,28 @@ describe('BelotePage', () => {
     const scoreTable = container.querySelector('[data-tutorial="be-score-table"]');
     expect(scoreTable).not.toBeNull();
     expect(scoreTable).toHaveTextContent('チーム1に20点');
+  });
+
+  it('aligns the score row with the team headers', async () => {
+    const { container } = renderWithProviders(<BelotePage />);
+    const scoreTable = await waitFor(() => {
+      const table = container.querySelector('[data-tutorial="be-score-table"] table');
+      expect(table).not.toBeNull();
+      return table as HTMLTableElement;
+    });
+    const headerRow = scoreTable.querySelector('thead tr');
+    const scoreRow = scoreTable.querySelector('tbody tr');
+    expect(headerRow).toBeDefined();
+    expect(scoreRow).toBeDefined();
+    expect(headerRow?.querySelectorAll(':scope > th, :scope > td').length).toBe(
+      scoreRow?.querySelectorAll(':scope > th, :scope > td').length,
+    );
+
+    const teamZeroHeader = scoreTable.querySelector('#belote-team-0-header');
+    const teamZeroScore = scoreRow?.querySelector('[headers~="belote-team-0-header"]');
+    expect(teamZeroHeader).not.toBeNull();
+    expect(teamZeroScore).not.toBeNull();
+    expect((teamZeroScore as HTMLTableCellElement).cellIndex).toBe((teamZeroHeader as HTMLTableCellElement).cellIndex);
   });
 
   it('chimes and shows a confirmation banner when the belote bonus is freshly earned', async () => {

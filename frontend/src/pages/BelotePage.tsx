@@ -341,7 +341,8 @@ function BelotePageContent() {
           <table className="w-full table-fixed text-sm text-ds-text-muted">
             <thead>
               <tr>
-                <th scope="col" className="text-left break-words">
+                <td />
+                <th id="belote-team-0-header" scope="col" className="text-left break-words">
                   {t('team', { n: 0 })}
                   <span className="block text-xs leading-tight">
                     {state.players
@@ -350,7 +351,7 @@ function BelotePageContent() {
                       .join(t('listSeparator'))}
                   </span>
                 </th>
-                <th scope="col" className="text-center break-words">
+                <th id="belote-team-1-header" scope="col" className="text-center break-words">
                   {t('team', { n: 1 })}
                   <span className="block text-xs leading-tight">
                     {state.players
@@ -363,10 +364,18 @@ function BelotePageContent() {
             </thead>
             <tbody>
               <tr>
-                <td className="text-ds-accent">{state.teamScores[0]}</td>
-                <td className="text-center">{state.teamScores[1]}</td>
+                <th id="belote-cumulative-score-header" scope="row" className="text-left">
+                  {t('cumulativeScore')}
+                </th>
+                <td headers="belote-team-0-header belote-cumulative-score-header" className="text-ds-accent">
+                  {state.teamScores[0]}
+                </td>
+                <td headers="belote-team-1-header belote-cumulative-score-header" className="text-center">
+                  {state.teamScores[1]}
+                </td>
               </tr>
               <tr>
+                <td />
                 {[0, 1].map((team) => (
                   <td key={team} className={`text-xs${team === 1 ? ' text-center' : ''}`}>
                     {t('roundPoints', { points: state.roundPoints[team] })}
