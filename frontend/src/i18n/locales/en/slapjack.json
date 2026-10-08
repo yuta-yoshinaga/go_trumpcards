@@ -42,8 +42,8 @@
     "slapUnavailableAnnounce": "Slapping is no longer available",
     "cardAnnounce": "Card revealed: {{card}}",
     "burst": {
-      "jack": "JACK! {{count}} cards won",
-      "miss": "MISS!"
+      "jack": "{{player}}: JACK! {{count}} cards won",
+      "miss": "{{player}}: MISS!"
     },
     "slapAnnounce": {
       "correct": "Slap won by {{player}}: {{count}} cards",
