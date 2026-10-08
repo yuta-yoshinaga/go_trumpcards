@@ -222,7 +222,7 @@ describe('PinochlePage', () => {
     const playerInfo = () => container.querySelector('[data-tutorial="pn-player-info"]') as HTMLElement;
 
     await waitFor(() => expect(within(playerInfo()).getByText('CPU 1')).toBeInTheDocument());
-    expect(within(playerInfo()).queryByText('パス済み')).not.toBeInTheDocument();
+    expect(within(playerInfo()).queryByText(/パス済み/)).not.toBeInTheDocument();
   });
 
   it('shows the dealer label on the human or CPU dealer row only', async () => {
