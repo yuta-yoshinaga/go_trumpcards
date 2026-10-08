@@ -83,8 +83,9 @@
   },
   "hint": {
     "pairOrBetter": "ペア以上 — コール推奨",
-    "aceKingHigh": "A-K ハイ — コール推奨",
-    "weakHand": "弱い手札 — フォールド推奨"
+    "weakHand": "弱い手札 — フォールド推奨",
+    "aceKingHighDealerLower": "A-K ハイで、ディーラーの表向き札がクイーン以下 — コール推奨",
+    "aceKingHighDealerHigh": "A-K ハイだが、ディーラーの表向き札がキングかエース — フォールド推奨"
   },
   "hiddenCard": "非公開のカード",
   "session": {

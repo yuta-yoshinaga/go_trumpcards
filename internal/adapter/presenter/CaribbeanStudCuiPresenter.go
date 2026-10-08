@@ -134,8 +134,10 @@ func (cp *CaribbeanStudCuiPresenter) HintOutput(cs interfaces.CaribbeanStudGame)
 	switch {
 	case cs.GetPlayerHandRank() >= domain.PokerHandOnePair:
 		action, reason = i18n.T("caribbeanstud.hintPlay"), "caribbeanstud.hintPairOrBetter"
+	case caribbeanStudHasAceKing(cs.GetPlayerHand()) && len(cs.GetDealerHand()) > 0 && cs.GetDealerHand()[0].GetValue() != caribbeanStudAceValue && cs.GetDealerHand()[0].GetValue() <= 12:
+		action, reason = i18n.T("caribbeanstud.hintPlay"), "caribbeanstud.hintAceKingHighDealerLower"
 	case caribbeanStudHasAceKing(cs.GetPlayerHand()):
-		action, reason = i18n.T("caribbeanstud.hintPlay"), "caribbeanstud.hintAceKingHigh"
+		action, reason = i18n.T("caribbeanstud.hintFold"), "caribbeanstud.hintAceKingHighDealerHigh"
 	}
 	return color.Yellow(i18n.Tf("caribbeanstud.hintDecision",
 		"action", action, "reason", i18n.T(reason))) + "\n"
