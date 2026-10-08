@@ -44,6 +44,22 @@ func TestT_KeyFound_ReturnsValue(t *testing.T) {
 	assert.Equal(t, "コマンドが不明です: {{cmd}}", result)
 }
 
+func TestSpeedHelp_JapaneseTranslations(t *testing.T) {
+	originalLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(originalLang) })
+	i18n.SetLang("ja")
+
+	play := i18n.T("speed.helpPlay")
+	flip := i18n.T("speed.helpFlip")
+	assert.Contains(t, play, "カード")
+	assert.Contains(t, play, "0始まり")
+	assert.NotContains(t, play, "play card")
+	assert.NotEqual(t, "speed.helpPlay", play)
+	assert.Contains(t, flip, "中央のカード")
+	assert.NotContains(t, flip, "play card")
+	assert.NotEqual(t, "speed.helpFlip", flip)
+}
+
 func TestTForLang(t *testing.T) {
 	originalLang := i18n.Lang()
 	t.Cleanup(func() { i18n.SetLang(originalLang) })
