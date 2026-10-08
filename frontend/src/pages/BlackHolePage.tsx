@@ -205,6 +205,7 @@ function BlackHolePageContent() {
       ) : (
         fan.map((c, i) => {
           const isTop = i === fan.length - 1;
+          const isPlayable = legalFans.has(idx);
           const isHintedLegal = showLegalHint && isTop && legalFans.has(idx);
           // The backend's recommended fan gets an additive, distinct emphasis
           // (a gold outline + ★ badge) layered on top of the green legal ring.
@@ -217,12 +218,13 @@ function BlackHolePageContent() {
             <button
               type="button"
               key={`fan-${idx}-${i}`}
-              className={`relative rounded ${isHintedLegal ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${
+              className={`relative rounded ${isTop && canAct && !isPlayable ? 'opacity-50 cursor-not-allowed' : ''} ${isHintedLegal ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${
                 isRecommended ? 'outline outline-2 outline-offset-2 outline-ds-warning' : ''
               }`}
               style={{ marginTop: i === 0 ? 0 : -Math.round(w * 1.05) }}
-              onClick={canAct && isTop ? () => playFan(idx) : undefined}
+              onClick={canAct && isTop && isPlayable ? () => playFan(idx) : undefined}
               disabled={!canAct || !isTop}
+              aria-disabled={isTop && canAct && !isPlayable ? true : undefined}
               data-testid={`card-${idx}-${i}`}
               data-hinted-legal={isHintedLegal ? 'true' : undefined}
               data-hinted-recommended={isRecommended ? 'true' : undefined}
