@@ -78,6 +78,15 @@ describe('ShelemPage', () => {
     expect(await screen.findByTestId('sh-last-trick')).toHaveTextContent('直前のトリック: T0 が +15 点 (合計 40 点)');
   });
 
+  it('shows both teams’ current-round trick counts, including zero at round end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 3, teamTricks: [0, 12] } as Partial<ShelemResponse>));
+    renderWithProviders(<ShelemPage />);
+    const counts = await screen.findByTestId('sh-team-tricks');
+    expect(counts).toHaveTextContent('今ラウンドの獲得トリック数');
+    expect(counts).toHaveTextContent('T0: 0トリック');
+    expect(counts).toHaveTextContent('T1: 12トリック');
+  });
+
   it('hides the last trick result before a trick resolves', async () => {
     mockExec.mockResolvedValue(playing({ lastTrickWinner: -1, lastTrickPoints: 0 }));
     renderWithProviders(<ShelemPage />);

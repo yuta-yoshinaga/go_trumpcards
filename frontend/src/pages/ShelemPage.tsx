@@ -284,6 +284,19 @@ function ShelemPageContent() {
             <div className="text-ds-text-muted text-sm text-center mb-3" data-testid="sh-score">
               {t('header.score', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
             </div>
+            <div className="text-ds-text-muted text-sm text-center mb-3" data-testid="sh-team-tricks">
+              <div>{t('header.teamTricksLabel')}</div>
+              <div className="flex justify-center gap-3">
+                {[0, 1].map((team) => (
+                  <span key={team}>
+                    {t('header.teamTricks', {
+                      team: String(team),
+                      count: state.teamTricks[team],
+                    })}
+                  </span>
+                ))}
+              </div>
+            </div>
             {state.lastTrickWinner >= 0 && (
               <div className="text-ds-text-primary text-sm text-center mb-3" data-testid="sh-last-trick">
                 {t('lastTrick', {
