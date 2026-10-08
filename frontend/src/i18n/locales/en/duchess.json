@@ -15,7 +15,8 @@
   "emptyWasteAriaLabel": "The waste is empty",
   "fanTopAriaLabel": "{{card}} (top of fan {{idx}}, {{count}} remaining)",
   "foundation": "Foundation",
-  "foundationAriaLabel": "{{suit}} foundation {{idx}}, {{count}} cards",
+  "foundationAriaLabel_one": "{{suit}} foundation {{idx}}, {{count}} card, top card {{card}}",
+  "foundationAriaLabel_other": "{{suit}} foundation {{idx}}, {{count}} cards, top card {{card}}",
   "frontendHint": {
     "tableau": "tableau column {{col}}",
     "foundation": "foundation {{idx}}",
