@@ -629,6 +629,24 @@ describe('SevenCardStudPage', () => {
     expect(screen.getByRole('button', { name: 'ショー' })).toBeInTheDocument();
   });
 
+  it('moves focus to Chicago muck choices and back to the page heading after selection', async () => {
+    vi.mocked(chicagoApi.exec).mockResolvedValue({ ...showdownState, muckAvailable: true, phase: 6 });
+    renderWithProviders(<ChicagoPage />);
+    const muckButton = await screen.findByRole('button', { name: 'マック' });
+    await waitFor(() => expect(muckButton).toHaveFocus());
+
+    vi.mocked(chicagoApi.exec).mockResolvedValue({ ...showdownState, phase: 7, muckAvailable: false });
+    fireEvent.click(muckButton);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toHaveFocus());
+  });
+
+  it('does not move focus to muck choices in non-Chicago stud games', async () => {
+    mockExec.mockResolvedValue({ ...showdownState, muckAvailable: true, phase: 6 });
+    renderWithProviders(<SevenCardStudPage />);
+    const muckButton = await screen.findByRole('button', { name: 'マック' });
+    expect(muckButton).not.toHaveFocus();
+  });
+
   it('calls muck command when muck button clicked', async () => {
     mockExec.mockResolvedValue({
       ...showdownState,
