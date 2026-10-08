@@ -513,7 +513,7 @@ describe('BeleagueredCastlePage selection status announcement', () => {
     expect(status).toHaveAttribute('aria-live', 'polite');
   });
 
-  it('announces the number of legal destinations when selecting a card with multiple targets', async () => {
+  it('announces the suit and zero-based columns of legal destinations', async () => {
     mockExec.mockResolvedValue(mixedBoardState);
     renderWithProviders(<BeleagueredCastlePage />);
     await waitFor(() => expect(screen.getByText(/包囲された城/)).toBeInTheDocument());
@@ -524,7 +524,12 @@ describe('BeleagueredCastlePage selection status announcement', () => {
 
     // ♠2 can go to ♠ foundation (top ♠1) and tableau cols 1 (♥3) and 2 (♦3) -> 3 legal destinations
     fireEvent.click(screen.getByRole('button', { name: /^♠ 2/ }));
-    await waitFor(() => expect(status).toHaveTextContent('選択中のカードを置ける場所が3箇所あります'));
+    await waitFor(() => expect(status).toHaveTextContent('移動先: スペードの組札、列1、列2'));
+    await i18n.changeLanguage('en');
+    await waitFor(() => expect(status).toHaveTextContent('Destinations: Spade foundation, column 1, column 2'));
+    await i18n.changeLanguage('ja');
+    fireEvent.click(screen.getByRole('button', { name: /^♠ 2/ }));
+    await waitFor(() => expect(status).toBeEmptyDOMElement());
   });
 
   it('announces no legal moves when selecting a card with zero destinations', async () => {

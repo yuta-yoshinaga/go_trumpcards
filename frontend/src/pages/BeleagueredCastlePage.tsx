@@ -39,6 +39,7 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
+const SUIT_I18N_KEYS = ['common.suit.spade', 'common.suit.club', 'common.suit.heart', 'common.suit.diamond'] as const;
 
 const BC_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -223,6 +224,10 @@ function BeleagueredCastlePageContent() {
       : undefined;
   const selectedTargets = beleagueredCastleLegalTargets(state.tableau, state.foundation, selectedCard);
   const legalTargetCount = selectedTargets.tableau.size + selectedTargets.foundation.size;
+  const selectedDestinations = [
+    ...[...selectedTargets.foundation].map((idx) => t('destinationFoundation', { suit: tc(SUIT_I18N_KEYS[idx]) })),
+    ...[...selectedTargets.tableau].map((col) => t('destinationTableau', { col })),
+  ];
   /** Ring for a legal destination: softer while it is only a hover preview. */
   const targetRing = preview.isPreview ? ' rounded ring-2 ring-ds-success/70' : ' rounded ring-2 ring-ds-success';
 
@@ -349,7 +354,7 @@ function BeleagueredCastlePageContent() {
           <span className="sr-only" role="status" aria-live="polite" data-testid="bc-selection-status">
             {isPlaying && selectedSource !== null
               ? legalTargetCount > 0
-                ? t('selectionMoves', { count: legalTargetCount })
+                ? t('selectionMoves', { destinations: selectedDestinations.join(t('listSeparator')) })
                 : t('selectionNoMoves')
               : ''}
           </span>
