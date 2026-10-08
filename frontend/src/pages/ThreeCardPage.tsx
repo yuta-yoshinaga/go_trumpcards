@@ -286,7 +286,7 @@ function ThreeCardPageContent() {
               <div className="mb-4" data-tutorial="tc-results">
                 <div className="text-ds-warning font-bold text-center mb-1">
                   <span aria-hidden="true">🟡</span> {t('player')}
-                  {isEndPhase && state.playerHandRank > 0 && (
+                  {(isActionPhase || isEndPhase) && state.playerHandRank > 0 && (
                     <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.playerHandRank])})</span>
                   )}
                 </div>
