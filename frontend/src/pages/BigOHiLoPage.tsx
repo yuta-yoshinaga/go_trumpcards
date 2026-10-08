@@ -498,7 +498,9 @@ function BigOHiLoPageContent() {
                   {isActive && !humanPlayer.folded && state?.communityCards && state.communityCards.length >= 3 && (
                     <span className={`inline-block text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
                       {liveLowCandidate
-                        ? t('liveLow', { ranks: liveLowCandidate.ranks.join(t('listSeparator')) })
+                        ? t('liveLow', {
+                            ranks: liveLowCandidate.ranks.map((rank) => (rank === 1 ? 'A' : rank)).join('-'),
+                          })
                         : t('noLiveLow')}
                     </span>
                   )}

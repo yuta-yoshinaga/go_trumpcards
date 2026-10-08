@@ -1854,8 +1854,7 @@ describe('BigOHiLoPage', () => {
       ],
     });
     const { container } = renderWithProviders(<BigOHiLoPage />);
-    expect(await screen.findByTestId('bigohilo-live-low')).toHaveTextContent('ロー');
-    expect(screen.getByTestId('bigohilo-live-low')).toHaveTextContent('8');
+    expect(await screen.findByTestId('bigohilo-live-low')).toHaveTextContent('ロー: 8-4-3-2-A');
     expect(container.querySelectorAll('[data-hilo-usage="lo"], [data-hilo-usage="both"]').length).toBeGreaterThan(0);
     expect(container.querySelectorAll('[data-low-aria]').length).toBe(5);
   });
