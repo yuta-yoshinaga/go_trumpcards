@@ -167,6 +167,12 @@ describe('CrazyFourPokerPage', () => {
     const lowBalanceAnte = await screen.findByLabelText('アンティ');
     expect(lowBalanceAnte).toHaveAttribute('max', '0');
     expect(lowBalanceAnte).toHaveValue('0');
+    const queensUpInput = screen.getByLabelText('Queens Up');
+    expect(queensUpInput).toHaveAttribute('max', '0');
+    fireEvent.change(queensUpInput, { target: { value: '10' } });
+    mockApi.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '配る' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', { ante: 0, queensUp: 0 }));
     expect(screen.getByTestId('c4p-wager-summary')).toHaveTextContent('合計: 0');
   });
 

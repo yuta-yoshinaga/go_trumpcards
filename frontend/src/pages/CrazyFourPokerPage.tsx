@@ -125,7 +125,7 @@ function CrazyFourPokerPageContent() {
   const phase = state?.phase;
   const maxAnte = state ? Math.floor(state.chips / (2 * CRAZY_FOUR_POKER_ANTE_UNIT)) * CRAZY_FOUR_POKER_ANTE_UNIT : 0;
   const effectiveAnte = Math.min(ante, maxAnte);
-  const maxQueensUp = state ? Math.max(0, state.chips - effectiveAnte * 2) : 0;
+  const maxQueensUp = state && maxAnte > 0 ? Math.max(0, state.chips - effectiveAnte * 2) : 0;
   const effectiveQueensUp = Math.min(queensUp, maxQueensUp);
   const isBetPhase = phase === CrazyFourPokerPhase.BET;
   const isDecidePhase = phase === CrazyFourPokerPhase.DECIDE;
