@@ -7,7 +7,7 @@ test.describe('Golf Solitaire E2E', () => {
 
     // Verify stock and waste labels are visible
     await expect(page.getByText('山札')).toBeVisible();
-    await expect(page.getByText('捨て札', { exact: true })).toBeVisible();
+    await expect(page.locator('[data-tutorial="golf-stock-waste"]').getByText('捨て札')).toBeVisible();
 
     // Verify move count is displayed
     await expect(page.getByText(/手数/)).toBeVisible();
