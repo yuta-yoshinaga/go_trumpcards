@@ -2,6 +2,7 @@
   "title": "Tu Sac",
   "notice": "112 four-colour cards. With no numeric order, only three combinations exist",
   "label.round": "Round {{round}} of {{total}}",
+  "settings.rounds": "Rounds",
   "label.stock": "Stock {{count}}",
   "label.discardCount": "Discard pile {{count}}",
   "label.discard": "Discard",
