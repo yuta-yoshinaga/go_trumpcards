@@ -107,6 +107,27 @@ describe('PyramidPage', () => {
     expect(screen.getByRole('button', { name: /♦ 3.*2行0列.*合計13の相手/ })).toBeInTheDocument();
   });
 
+  it('announces when the waste card is a pair candidate, in Japanese and English', async () => {
+    renderWithProviders(<PyramidPage />);
+    expect(await screen.findByRole('button', { name: '♣ 3' })).toBeInTheDocument();
+    const card10 = screen.getByAltText('♠ 10').closest('button') as HTMLButtonElement;
+    fireEvent.click(card10);
+    expect(await screen.findByRole('button', { name: /♣ 3.*合計13の相手/ })).toHaveAttribute(
+      'data-pair-candidate',
+      'true',
+    );
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      expect(await screen.findByRole('button', { name: /♣ 3.*pairs to 13/ })).toHaveAttribute(
+        'data-pair-candidate',
+        'true',
+      );
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('includes the zero-based row and column in pyramid card names', async () => {
     renderWithProviders(<PyramidPage />);
     expect(await screen.findByRole('button', { name: /♦ 3.*2行0列/ })).toBeInTheDocument();
@@ -389,7 +410,7 @@ describe('PyramidPage', () => {
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
     const card10 = screen.getByAltText('♠ 10').closest('button') as HTMLButtonElement;
     fireEvent.click(card10);
-    const wasteButton = screen.getByRole('button', { name: '♣ 3' });
+    const wasteButton = screen.getByRole('button', { name: /♣ 3/ });
     await waitFor(() => expect(wasteButton).toHaveAttribute('data-pair-candidate', 'true'));
   });
 
