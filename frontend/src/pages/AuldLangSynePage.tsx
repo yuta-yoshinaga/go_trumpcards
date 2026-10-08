@@ -553,6 +553,14 @@ function AuldLangSynePageContent() {
               </div>
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
+              <div data-testid="auldlangsyne-selection-live" role="status" aria-live="polite">
+                {selectedWaste !== null && (
+                  <span className="sr-only">
+                    {t('selectTarget')}: {t('waste')} {selectedWaste}
+                  </span>
+                )}
+              </div>
+
               {selectedWaste !== null && (
                 <div className="mt-2 text-xs text-ds-text-muted">
                   {t('selectTarget')}: {t('waste')} {selectedWaste}{' '}
