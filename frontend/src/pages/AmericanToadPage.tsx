@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useRef } from 'react';
+import { useCallback, useId, useMemo, useRef } from 'react';
 import type { americanToadApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -112,11 +112,6 @@ function AmericanToadPageContent() {
     tableauCardRefs.current.get(`${col}:${cardIndex}`)?.focus();
   };
 
-  useEffect(() => {
-    if (!selectedSource) return;
-    document.querySelector<HTMLButtonElement>('[data-legal-target="true"] button')?.focus();
-  }, [selectedSource]);
-
   const dims = useMemo(() => {
     if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: cardOverlap };
     const padX = 16;
@@ -187,6 +182,7 @@ function AmericanToadPageContent() {
   const reserveTop = reserveHolds ? state.reserve[state.reserve.length - 1] : null;
   // The stock button doubles as the redeal once the stock runs out.
   const stockActs = state.stockCount > 0 || state.canRedeal;
+  const firstCard = state.tableau.findIndex((column) => column.length > 0);
 
   // **選択後は押すまで正誤が分からず、クリック→サーバーエラーのループになる
   // (#5559)。**8列 + 8組札 + リザーブ + 捨て札と候補が多く、組札は同スート
@@ -262,7 +258,6 @@ function AmericanToadPageContent() {
                 // Any card can head a run, so every card is a potential source.
                 const cardZone: AmericanToadMoveZone = { zone: 'tableau', col: colIdx, cardIndex: cardIdx };
                 const isSelected = isSourceSelected('tableau', colIdx, cardIdx);
-                const firstCard = state.tableau.findIndex((column) => column.length > 0);
                 return (
                   <div
                     key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
