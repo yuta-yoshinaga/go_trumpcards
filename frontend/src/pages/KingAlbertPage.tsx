@@ -246,6 +246,7 @@ function KingAlbertPageContent() {
                 type="button"
                 onClick={() => game.handleSelectTarget(tableauColZone)}
                 disabled={!isPlaying || loading}
+                aria-label={t('emptyTableauAriaLabel', { col: colIdx })}
                 aria-disabled={!selectedSource || undefined}
                 aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                 style={{ height: dims.ch }}

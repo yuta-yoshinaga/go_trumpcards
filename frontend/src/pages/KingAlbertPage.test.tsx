@@ -119,9 +119,8 @@ describe('KingAlbertPage', () => {
   it('keeps an empty tableau target focusable and explains the missing source', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<KingAlbertPage />);
-    const [target] = await screen.findAllByRole('button', { name: '空' });
+    const target = await screen.findByRole('button', { name: '空のタブロー列 2' });
     expect(target).toBeDefined();
-    if (!target) return;
     expect(target).not.toBeDisabled();
     expect(target).toHaveAttribute('aria-disabled', 'true');
     const hintId = target.getAttribute('aria-describedby');
@@ -129,7 +128,23 @@ describe('KingAlbertPage', () => {
     expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
     mockExec.mockClear();
     fireEvent.click(target);
+    await flushPendingDispatch();
     await waitFor(() => expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything()));
+  });
+
+  it('names empty tableau columns with zero-based column numbers in both languages', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<KingAlbertPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '空のタブロー列 2' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '空のタブロー列 8' })).toBeInTheDocument();
+
+    try {
+      await i18n.changeLanguage('en');
+      expect(screen.getByRole('button', { name: 'Empty tableau column 2' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Empty tableau column 8' })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('renders a reserve card', async () => {
