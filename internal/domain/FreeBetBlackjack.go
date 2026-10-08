@@ -96,6 +96,7 @@ type FreeBetBlackjack struct {
 	dealerHand  *BlackJackHand
 	anteBet     int
 	payout      int
+	netChange   int
 	// dealerPushed22 はディーラーが 22 でバストしたか (表示用)。
 	dealerPushed22 bool
 	roundNumber    int
@@ -142,6 +143,7 @@ func (g *FreeBetBlackjack) startRound() {
 	g.dealerHand = nil
 	g.anteBet = 0
 	g.payout = 0
+	g.netChange = 0
 	g.dealerPushed22 = false
 	g.phase = FreeBetPhaseBet
 	g.ensureShoe()
@@ -434,6 +436,7 @@ func (g *FreeBetBlackjack) settle() {
 		total += ret
 	}
 	g.payout = total
+	g.netChange = total - g.anteBet
 	g.player.AddChips(g.payout)
 	g.appendLog("result", "freebetblackjack.log.payout", map[string]string{"payout": strconv.Itoa(g.payout)}, nil)
 	g.phase = FreeBetPhaseResult
@@ -603,6 +606,9 @@ func (g *FreeBetBlackjack) GetResults() []FreeBetResult { return g.results }
 // GetPayout はこのラウンドで戻ってきた総額を返す。
 func (g *FreeBetBlackjack) GetPayout() int { return g.payout }
 
+// GetNetChange はこのラウンドでプレイヤーのチップが増減した額を返す。
+func (g *FreeBetBlackjack) GetNetChange() int { return g.netChange }
+
 // GetHandPayouts は手札ごとの払い戻し (賭け金の返却を含む) を返す。
 func (g *FreeBetBlackjack) GetHandPayouts() []int { return g.handPayouts }
 
@@ -646,6 +652,7 @@ type freeBetJSON struct {
 	DealerHand     *BlackJackHand          `json:"dh"`
 	AnteBet        int                     `json:"an"`
 	Payout         int                     `json:"po"`
+	NetChange      int                     `json:"nc,omitempty"`
 	DealerPushed22 bool                    `json:"d22"`
 	RoundNumber    int                     `json:"rn"`
 	GameEndFlag    bool                    `json:"ge"`
@@ -663,7 +670,7 @@ func (g *FreeBetBlackjack) MarshalJSON() ([]byte, error) {
 		Shoe: g.shoe, Player: g.player, Config: g.config,
 		Phase: int(g.phase), Hands: g.hands, FreeBets: g.freeBets, Results: results, HandPayouts: g.handPayouts,
 		ActiveHand: g.activeHand, DealerHand: g.dealerHand, AnteBet: g.anteBet,
-		Payout: g.payout, DealerPushed22: g.dealerPushed22,
+		Payout: g.payout, NetChange: g.netChange, DealerPushed22: g.dealerPushed22,
 		RoundNumber: g.roundNumber, GameEndFlag: g.gameEndFlag,
 		ActionLog: g.actionLog, TurnNumber: g.turnNumber,
 	})
@@ -707,6 +714,7 @@ func (g *FreeBetBlackjack) UnmarshalJSON(data []byte) error {
 	g.dealerHand = j.DealerHand
 	g.anteBet = j.AnteBet
 	g.payout = j.Payout
+	g.netChange = j.NetChange
 	g.dealerPushed22 = j.DealerPushed22
 	g.roundNumber = j.RoundNumber
 	g.gameEndFlag = j.GameEndFlag

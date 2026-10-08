@@ -75,6 +75,8 @@ export interface FreeBetResponse extends BaseGameResponse {
   canFreeSplit: boolean;
   anteBet: number;
   payout: number;
+  /** Player chip change settled by the server for this round. */
+  netChange: number;
   chips: number;
   roundNumber: number;
   remainingCards: number;

@@ -61933,6 +61933,9 @@ components:
           type: integer
         payout:
           type: integer
+        netChange:
+          type: integer
+          description: Player chip change settled for this round, excluding house-funded free bets.
         chips:
           type: integer
         roundNumber:
