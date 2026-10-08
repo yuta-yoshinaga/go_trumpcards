@@ -285,10 +285,13 @@ function PresidentPageContent() {
                       {p.isFinished ? (
                         <RankStamp rank={p.rank} label={t(PRESIDENT_RANK_KEYS[p.rank] ?? 'rank.unknown')} />
                       ) : (
-                        <span>— {p.cardCount}</span>
+                        <span>
+                          <span aria-hidden="true">— {p.cardCount}</span>
+                          <span className="sr-only">{t('label.cpuCardCount', { count: p.cardCount })}</span>
+                        </span>
                       )}
                     </div>
-                    <div className="flex gap-0.5 justify-center">
+                    <div className="flex gap-0.5 justify-center" aria-hidden="true">
                       {Array.from({ length: Math.min(p.cardCount, 13) }, (_, i) => (
                         <AnimatedCardBack key={i} width={cardWidth * 0.45} />
                       ))}
