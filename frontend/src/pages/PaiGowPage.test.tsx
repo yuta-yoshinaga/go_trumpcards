@@ -178,6 +178,29 @@ describe('PaiGowPage', () => {
     expect(screen.queryByRole('button', { name: /Card \d/ })).not.toBeInTheDocument();
   });
 
+  it('sorts the displayed hand while card selection keeps original server indices', async () => {
+    mockExec.mockResolvedValue(setHandsPhaseState);
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'セット' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'ランク順' }));
+    const buttons = screen
+      .getAllByRole('button')
+      .filter((button) => setHandsPhaseState.playerCards.some((c) => button.getAttribute('aria-label') === cardAlt(c)));
+    expect(buttons.map((button) => button.getAttribute('aria-label'))).toEqual(
+      [5, 3, 4, 6, 0, 1, 2].map((index) => cardAlt(setHandsPhaseState.playerCards[index])),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: cardAlt(setHandsPhaseState.playerCards[5]) }));
+    fireEvent.click(screen.getByRole('button', { name: cardAlt(setHandsPhaseState.playerCards[3]) }));
+    expect(screen.getByRole('button', { name: cardAlt(setHandsPhaseState.playerCards[5]) })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'セット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('set', undefined, 5, 3));
+  });
+
   it('set button is disabled until 2 cards are selected', async () => {
     mockExec.mockResolvedValue(setHandsPhaseState);
     renderWithProviders(<PaiGowPage />);
