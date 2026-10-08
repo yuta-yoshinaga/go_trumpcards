@@ -142,6 +142,12 @@ function ChemindeFerPageContent() {
   // 賭けていない回 (親のときや張らなかった回) は 0。行を落とさず「増減なし」と
   // 言うのは、勝ったのか賭けていなかったのかを区別させるため。
   const humanNet = state.players.find((p) => p.isHuman)?.lastNet ?? 0;
+  const humanNetMessage =
+    humanNet > 0
+      ? t('result.netWin', { n: humanNet })
+      : humanNet < 0
+        ? t('result.netLoss', { n: -humanNet })
+        : t('result.netFlat');
 
   const resultName =
     {
@@ -198,6 +204,9 @@ function ChemindeFerPageContent() {
         </>
       }
     >
+      <div className="sr-only" data-testid="cdf-result-live" role="status" aria-live="polite" aria-atomic="true">
+        {resultName ? t('result.announcement', { result: resultName, net: humanNetMessage }) : ''}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -270,11 +279,7 @@ function ChemindeFerPageContent() {
                 }`}
                 data-testid="cdf-net"
               >
-                {humanNet > 0
-                  ? t('result.netWin', { n: humanNet })
-                  : humanNet < 0
-                    ? t('result.netLoss', { n: -humanNet })
-                    : t('result.netFlat')}
+                {humanNetMessage}
               </div>
             )}
 

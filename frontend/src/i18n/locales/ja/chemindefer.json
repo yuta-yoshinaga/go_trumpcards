@@ -52,6 +52,7 @@
   "frontendHint.chemindeferPunterFive": "合計 5 は引くのが定石です",
   "frontendHint.chemindeferBankerFree": "親は表に縛られません。子の 3 枚目から判断します",
   "result": {
+    "announcement": "{{result}}。{{net}}",
     "netWin": "あなたの結果: +{{n}} チップ",
     "netLoss": "あなたの結果: -{{n}} チップ",
     "netFlat": "あなたの結果: 増減なし"
