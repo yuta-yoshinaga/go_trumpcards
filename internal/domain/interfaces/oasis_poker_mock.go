@@ -121,6 +121,11 @@ func (m *MockOasisPokerGame) GetTotalPayout() int {
 	return args.Int(0)
 }
 
+func (m *MockOasisPokerGame) GetNetChange() int {
+	args := m.Called()
+	return args.Int(0)
+}
+
 func (m *MockOasisPokerGame) GetDealerQualified() bool {
 	args := m.Called()
 	return args.Bool(0)

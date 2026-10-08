@@ -30,6 +30,7 @@ const betPhaseState: OasisPokerResponse = {
   playPayout: 0,
   jackpotPayout: 0,
   totalPayout: 0,
+  netChange: 0,
   dealerQualified: false,
   playerHandRank: 0,
   dealerHandRank: 0,
@@ -70,6 +71,7 @@ const endPhasePlayerWins: OasisPokerResponse = {
   playPayout: 800,
   jackpotPayout: 0,
   totalPayout: 1000,
+  netChange: 600,
   dealerQualified: true,
   playerHandRank: 3,
   dealerHandRank: 1,
@@ -84,6 +86,7 @@ const endPhaseFold: OasisPokerResponse = {
   antePayout: 0,
   playPayout: 0,
   totalPayout: 0,
+  netChange: -200,
   dealerHand: [],
   dealerQualified: false,
   dealerHandRank: 0,
@@ -251,6 +254,7 @@ describe('OasisPokerPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /^コール(?:\s|$)/ }));
     await waitFor(() => expect(screen.getByText('勝利！')).toBeInTheDocument());
     expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument();
+    expect(screen.getByTestId('round-net-change')).toHaveTextContent('ラウンド収支: +600');
   });
 
   it('end phase shows fold message', async () => {
@@ -260,6 +264,7 @@ describe('OasisPokerPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'フォールド' }));
     await waitFor(() => expect(screen.getByText('フォールド')).toBeInTheDocument());
+    expect(screen.getByTestId('round-net-change')).toHaveTextContent('ラウンド収支: -200');
   });
 
   it('can change ante and jackpot amounts', async () => {

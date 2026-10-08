@@ -425,6 +425,11 @@ func (op *OasisPoker) GetTotalPayout() int {
 	return op.antePayout + op.playPayout + op.jackpotPayout
 }
 
+// GetNetChange はこのラウンドで増減したチップ数を返す。
+func (op *OasisPoker) GetNetChange() int {
+	return op.GetTotalPayout() - op.anteBet - op.jackpotBet - op.playBet - op.exchangeFee
+}
+
 // GetDealerQualified ディーラークオリファイ
 func (op *OasisPoker) GetDealerQualified() bool { return op.dealerQualified }
 

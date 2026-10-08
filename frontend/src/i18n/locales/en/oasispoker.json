@@ -38,7 +38,8 @@
     "play": "Play",
     "jackpot": "Jackpot",
     "exchange": "Exchange fee",
-    "total": "Total"
+    "total": "Total payout",
+    "netChange": "Round net change"
   },
   "handRank": {
     "0": "High Card",

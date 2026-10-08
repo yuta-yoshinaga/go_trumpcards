@@ -32,6 +32,7 @@ type OasisPokerWebOutput struct {
 	PlayPayout      int              `json:"playPayout"`
 	JackpotPayout   int              `json:"jackpotPayout"`
 	TotalPayout     int              `json:"totalPayout"`
+	NetChange       int              `json:"netChange"`
 	DealerQualified bool             `json:"dealerQualified"`
 	PlayerHandRank  int              `json:"playerHandRank"`
 	DealerHandRank  int              `json:"dealerHandRank"`
