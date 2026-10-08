@@ -52384,6 +52384,11 @@ components:
       type: object
       description: Current state of the Contract Bridge game
       properties:
+        legalPlayIndices:
+          type: array
+          description: Legal card indices for the human-controlled hand during a play turn.
+          items:
+            type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."

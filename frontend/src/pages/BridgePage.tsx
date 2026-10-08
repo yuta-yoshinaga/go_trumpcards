@@ -219,6 +219,7 @@ function BridgePageContent() {
     state.currentPlayerIdx === state.dummyIdx &&
     humanPlayer?.id === state.declarerIdx;
   const activeHand = isDummyTurn ? (state.dummyHand ?? []) : (humanPlayer?.cards ?? []);
+  const activeLegalIndices = state.legalPlayIndices;
   const humanTeam = humanPlayer?.team ?? 0;
   const isBidPhase = state.phase === BridgePhase.BID;
   const isPlayPhase = state.phase === BridgePhase.PLAY;
@@ -615,6 +616,9 @@ function BridgePageContent() {
                   onToggle={toggleCard}
                   cardWidth={cardWidth}
                   dataTutorial="br-player-hand"
+                  validIndices={activeLegalIndices}
+                  legalIndices={activeLegalIndices}
+                  restrictedTooltip={t('followSuit')}
                 />
               ) : (
                 <div
@@ -625,10 +629,13 @@ function BridgePageContent() {
                     <button
                       type="button"
                       key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
+                      onClick={() => {
+                        if (activeLegalIndices.includes(idx)) toggleCard(idx);
+                      }}
                       aria-label={cardAlt(card)}
+                      aria-disabled={(isHumanTurn && !activeLegalIndices.includes(idx)) || undefined}
                       aria-pressed={selectedCardIndices.includes(idx)}
-                      className={`transition-transform ${focusRingCard}`}
+                      className={`transition-transform ${focusRingCard} ${isHumanTurn && !activeLegalIndices.includes(idx) ? 'opacity-50 cursor-not-allowed' : ''}`}
                       style={{
                         background: 'none',
                         padding: 0,

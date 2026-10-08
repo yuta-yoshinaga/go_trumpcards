@@ -5,6 +5,7 @@ import { createElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { bridgeApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
+import { makeBridgeState } from '../test/stateFactories';
 import type { BridgeResponse } from '../types/card';
 import { DEFAULT_BRIDGE_CONFIG, useBridgeGame } from './useBridgeGame';
 
@@ -20,39 +21,15 @@ function createWrapper() {
     createElement(QueryClientProvider, { client: queryClient }, children);
 }
 
-const baseBridgeState: BridgeResponse = {
+const baseBridgeState: BridgeResponse = makeBridgeState({
   players: [
     { id: 0, isHuman: true, cardCount: 13, cards: [], team: 0, trickCount: 0 },
     { id: 1, isHuman: false, cardCount: 13, cards: [], team: 1, trickCount: 0 },
     { id: 2, isHuman: false, cardCount: 13, cards: [], team: 0, trickCount: 0 },
     { id: 3, isHuman: false, cardCount: 13, cards: [], team: 1, trickCount: 0 },
   ],
-  phase: 0,
-  roundNumber: 1,
-  trickNumber: 0,
-  currentPlayerIdx: 0,
-  bidPlayerIdx: 0,
-  dealerIdx: 0,
-  trumpSuit: 0,
-  contractLevel: 0,
-  contractSuit: 0,
-  doubled: 0,
-  declarerIdx: -1,
-  dummyIdx: -1,
-  bidHistory: [],
-  vulnerability: [false, false],
-  currentTrick: [],
-  teamScores: [0, 0],
-  gamesWon: [0, 0],
-  belowLine: [0, 0],
-  gameEndFlag: false,
-  winnerTeam: -1,
-  leadPlayerIdx: -1,
-  openingLeadDone: false,
   dummyHand: null,
-  message: '',
-  config: { cpuDifficulty: 1 },
-};
+});
 
 describe('useBridgeGame', () => {
   it('calls reset on mount', async () => {

@@ -17,14 +17,15 @@ import (
 
 func mustBridgeOutputJSON(msg string) string {
 	out := &controller.BridgeWebOutput{
-		Players:       []*controller.BridgeWebOutputPlayer{},
-		BidHistory:    []*controller.BridgeWebOutputBidEntry{},
-		CurrentTrick:  []*controller.WebOutputTrickCard{},
-		DummyHand:     []*controller.WebOutputCard{},
-		WinnerTeam:    -1,
-		DeclarerIdx:   -1,
-		DummyIdx:      -1,
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Players:          []*controller.BridgeWebOutputPlayer{},
+		BidHistory:       []*controller.BridgeWebOutputBidEntry{},
+		CurrentTrick:     []*controller.WebOutputTrickCard{},
+		DummyHand:        []*controller.WebOutputCard{},
+		LegalPlayIndices: []int{},
+		WinnerTeam:       -1,
+		DeclarerIdx:      -1,
+		DummyIdx:         -1,
+		WebOutputBase:    controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {
@@ -34,7 +35,7 @@ func mustBridgeOutputJSON(msg string) string {
 }
 
 func TestBridgeWebController_Method(t *testing.T) {
-	mockOutput := `{"players":[],"phase":0,"roundNumber":0,"trickNumber":0,"currentPlayerIdx":0,"bidPlayerIdx":0,"dealerIdx":0,"trumpSuit":0,"contractLevel":0,"contractSuit":0,"doubled":0,"declarerIdx":0,"dummyIdx":0,"bidHistory":[],"vulnerability":[false,false],"currentTrick":[],"teamScores":[0,0],"gamesWon":[0,0],"belowLine":[0,0],"gameEndFlag":false,"winnerTeam":0,"leadPlayerIdx":0,"openingLeadDone":false,"dummyHand":[],"message":"","config":{"cpuDifficulty":0}}`
+	mockOutput := `{"players":[],"phase":0,"roundNumber":0,"trickNumber":0,"currentPlayerIdx":0,"bidPlayerIdx":0,"dealerIdx":0,"trumpSuit":0,"contractLevel":0,"contractSuit":0,"doubled":0,"declarerIdx":0,"dummyIdx":0,"bidHistory":[],"vulnerability":[false,false],"currentTrick":[],"teamScores":[0,0],"gamesWon":[0,0],"belowLine":[0,0],"gameEndFlag":false,"winnerTeam":0,"leadPlayerIdx":0,"openingLeadDone":false,"dummyHand":[],"legalPlayIndices":[],"message":"","config":{"cpuDifficulty":0}}`
 	expectedBody := mockOutput
 
 	biMock := new(usecase.MockBridgeInteractor)
