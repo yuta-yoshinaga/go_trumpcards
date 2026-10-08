@@ -551,7 +551,9 @@ function CalculationPageContent() {
                 // previously unlabeled, unlike the always-labeled foundations).
                 const wasteRanksLabel =
                   pile.length > 0 ? t('wasteRanksTooltip', { idx, ranks: wasteRanks }) : undefined;
-                const wasteAriaLabel = wasteRanksLabel ?? t('wasteEmptyAria', { idx });
+                const wasteAriaLabel = top
+                  ? t('wasteAria', { idx, card: cardAlt(top), ranks: wasteRanks })
+                  : t('wasteEmptyAria', { idx });
                 return (
                   <div key={`w-${idx.toString()}`} className="flex flex-col items-center">
                     <div className="text-[11px] mb-0.5 text-ds-text-muted">
