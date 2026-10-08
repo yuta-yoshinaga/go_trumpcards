@@ -9,9 +9,9 @@
     "title": "設定",
     "cpuDifficulty": "CPU難易度",
     "targetPoints": "目標ポイント",
-    "easy": "Easy",
-    "normal": "Normal",
-    "hard": "Hard"
+    "easy": "やさしい",
+    "normal": "ふつう",
+    "hard": "むずかしい"
   },
   "round": "ラウンド {{n}}",
   "trick": "トリック {{n}}",
