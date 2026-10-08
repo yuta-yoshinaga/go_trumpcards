@@ -32,6 +32,7 @@
     "drawHalf": "ドロー側",
     "scoop": "🏆 スクープ! 両取り",
     "wonHalves": "獲得: {{halves}}",
+    "splitAmounts": "（オマハ側: {{omahaAmount}}、ドロー側: {{drawAmount}}）",
     "wonNone": "獲得なし"
   },
   "hand": {
