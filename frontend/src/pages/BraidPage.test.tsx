@@ -102,6 +102,13 @@ describe('BraidPage', () => {
     expect(screen.getByRole('button', { name: '♠ 6' })).toHaveAccessibleDescription('2枚');
   });
 
+  it('includes the zone and zero-based slot index in occupied field and helper names', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BraidPage />);
+    expect(await screen.findByRole('button', { name: 'ブレイド札0 ♥ 8' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ヘルパー0 ♦ 4' })).toBeInTheDocument();
+  });
+
   it('renders eight foundations, four fields and eight helpers', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BraidPage />);
@@ -237,7 +244,7 @@ describe('BraidPage', () => {
   it('sends a braid field to a foundation', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BraidPage />);
-    const fieldCard = await screen.findByRole('button', { name: '♥ 8' });
+    const fieldCard = await screen.findByRole('button', { name: 'ブレイド札0 ♥ 8' });
     fireEvent.click(fieldCard);
     await waitFor(() => expect(fieldCard).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
