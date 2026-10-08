@@ -40,6 +40,12 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
+const FOUNDATION_SUIT_I18N_KEYS = [
+  'common.suit.spade',
+  'common.suit.club',
+  'common.suit.heart',
+  'common.suit.diamond',
+] as const;
 
 /** Baker's Dozen tutorial step definitions. */
 const BD_TUTORIAL_STEPS: TutorialStep[] = [
@@ -315,7 +321,7 @@ function BakersDozenPageContent() {
                           aria-disabled={!selectedSource || undefined}
                           aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                           aria-label={t('foundationAriaLabel', {
-                            suit: FOUNDATION_SUITS[idx],
+                            suit: tc(FOUNDATION_SUIT_I18N_KEYS[idx]),
                             count: pile.length,
                           })}
                           className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
@@ -334,7 +340,9 @@ function BakersDozenPageContent() {
                           disabled={!isPlaying || loading}
                           aria-disabled={!selectedSource || undefined}
                           aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                          aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
+                          aria-label={t('emptyFoundationAriaLabel', {
+                            suit: tc(FOUNDATION_SUIT_I18N_KEYS[idx]),
+                          })}
                           style={{ width: bd.cw, height: bd.ch }}
                           className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                         >
