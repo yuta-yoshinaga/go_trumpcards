@@ -328,6 +328,7 @@ function PishtiPageContent() {
                   } ${p.isHuman ? 'font-semibold' : ''}`}
                 >
                   <span>{playerLabel(p.id, p.isHuman)}</span>
+                  <span>{t('handCount', { count: p.cardCount })}</span>
                   <span>{t('captured', { count: p.capturedCount })}</span>
                   {p.pistiBonus > 0 && <span className="text-ds-accent">{t('pisti', { count: p.pistiBonus })}</span>}
                   {!isGameEnd && (
