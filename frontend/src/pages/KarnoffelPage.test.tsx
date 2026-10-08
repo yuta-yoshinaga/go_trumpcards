@@ -77,6 +77,18 @@ describe('KarnoffelPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('shows the active target and applies the selected target on reset', async () => {
+    renderWithProviders(<KarnoffelPage />);
+    await screen.findByTestId('karnoffel-scores');
+    expect(screen.getByTestId('karnoffel-scores')).toHaveTextContent('3局先取');
+
+    fireEvent.change(screen.getByLabelText('目標局数'), { target: { value: '5' } });
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('reset', { config: { targetHands: 5 } }));
+  });
+
   // **切札は表向きの4枚のうち最も低い札が決める。**「最後の1枚をめくる」ではない。
   it('explains how the chosen suit was picked', async () => {
     renderWithProviders(<KarnoffelPage />);
