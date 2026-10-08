@@ -422,7 +422,7 @@ function ThirtyOnePageContent() {
           />
 
           <GameFooter className={`${gameTheme.thirtyone.footer} px-4 py-2.5`}>
-            {isRoundEnd && (
+            {(isRoundEnd || isGameEnd) && (
               <div
                 role="status"
                 data-testid="thirtyone-round-summary"
