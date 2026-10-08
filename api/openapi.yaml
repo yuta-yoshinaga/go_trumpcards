@@ -71154,6 +71154,22 @@ components:
               defendingContract:
                 type: integer
                 description: Points awarded to defenders when the declarer fails.
+        scoreHistory:
+          type: array
+          description: Per completed round scores and cumulative totals in player seat order.
+          items:
+            type: object
+            properties:
+              roundNumber:
+                type: integer
+              roundScores:
+                type: array
+                items:
+                  type: integer
+              cumulativeScores:
+                type: array
+                items:
+                  type: integer
         roundTricks:
           type: array
           items:

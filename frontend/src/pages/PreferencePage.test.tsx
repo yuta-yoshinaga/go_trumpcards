@@ -84,6 +84,21 @@ beforeEach(() => {
 });
 
 describe('PreferencePage', () => {
+  it('shows per-round scores and cumulative totals by player', async () => {
+    mockExec.mockResolvedValue(
+      makePreferenceState({
+        scoreHistory: [
+          { roundNumber: 1, roundScores: [6, 0, 0], cumulativeScores: [6, 0, 0] },
+          { roundNumber: 2, roundScores: [0, 7, 7], cumulativeScores: [6, 7, 7] },
+        ],
+      }),
+    );
+    renderWithProviders(<PreferencePage />);
+    expect(await screen.findByRole('region', { name: '得点履歴' })).toBeInTheDocument();
+    expect(screen.getByText('6（累計 6）')).toBeInTheDocument();
+    expect(screen.getAllByText('7（累計 7）')).toHaveLength(2);
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<PreferencePage />);

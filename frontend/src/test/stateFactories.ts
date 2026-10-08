@@ -3991,6 +3991,7 @@ const basePreferenceState: PreferenceResponse = {
     { declarerContract: 0, defendingContract: 0 },
     { declarerContract: 0, defendingContract: 0 },
   ],
+  scoreHistory: [],
   roundTricks: [0, 0, 0],
   playableIndices: [],
   gameEndFlag: false,

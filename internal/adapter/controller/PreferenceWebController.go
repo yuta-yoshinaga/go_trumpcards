@@ -41,6 +41,7 @@ type PreferenceWebOutputPlayer struct {
 // PreferenceWebOutput プレフェランスのWebアウトプット
 type PreferenceWebOutput struct {
 	ScoreBreakdown   [domain.PreferencePlayerCnt]domain.PreferenceScoreBreakdown `json:"scoreBreakdown"`
+	ScoreHistory     []domain.PreferenceRoundScore                               `json:"scoreHistory"`
 	Players          []*PreferenceWebOutputPlayer                                `json:"players"`
 	Phase            int                                                         `json:"phase"`
 	RoundNumber      int                                                         `json:"roundNumber"`

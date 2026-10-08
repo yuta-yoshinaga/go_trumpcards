@@ -67,6 +67,8 @@ type PreferenceGame interface {
 	GetPlayerScores() [domain.PreferencePlayerCnt]int
 	// GetScoreBreakdown 直近ラウンドのプレイヤー別得点内訳を取得する。
 	GetScoreBreakdown() [domain.PreferencePlayerCnt]domain.PreferenceScoreBreakdown
+	// GetScoreHistory returns scores recorded for completed rounds.
+	GetScoreHistory() []domain.PreferenceRoundScore
 	// GetRoundTricks 現ラウンドのプレイヤー別獲得トリック数を取得する
 	GetRoundTricks() [domain.PreferencePlayerCnt]int
 	// GetWinnerPlayer 勝利プレイヤーを取得する (-1=未確定)

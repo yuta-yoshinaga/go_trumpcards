@@ -182,6 +182,7 @@ func TestPreference_ScoreRoundMadeAndFailed(t *testing.T) {
 	// Made: bid Six, took 6 -> declarer +6.
 	g := newPrefGame(false)
 	g.SetPhase(PreferencePhaseRoundEnd)
+	g.SetRoundNumber(1)
 	g.SetDeclarerIdx(0)
 	g.SetContract(PreferenceBidSix)
 	g.SetRoundTricks([PreferencePlayerCnt]int{6, 2, 2})
@@ -191,6 +192,14 @@ func TestPreference_ScoreRoundMadeAndFailed(t *testing.T) {
 	}
 	if bd := g.GetScoreBreakdown(); bd[0].Total() != 6 || bd[1].Total() != 0 || bd[2].Total() != 0 || bd[0].DeclarerContract != 6 {
 		t.Errorf("made contract breakdown = %+v, want declarer +6", bd)
+	}
+	history := g.GetScoreHistory()
+	if len(history) != 1 || history[0].RoundNumber != 1 || history[0].RoundScores != [PreferencePlayerCnt]int{6, 0, 0} || history[0].CumulativeScores != [PreferencePlayerCnt]int{6, 0, 0} {
+		t.Fatalf("score history = %+v, want round 1 [6 0 0] cumulative [6 0 0]", history)
+	}
+	g.ScoreRound()
+	if len(g.GetScoreHistory()) != 1 {
+		t.Fatal("scoring the same round twice should not append history twice")
 	}
 	// Failed: bid Seven, took 5 -> each defender +7.
 	g2 := newPrefGame(false)
@@ -211,6 +220,35 @@ func TestPreference_ScoreRoundMadeAndFailed(t *testing.T) {
 	}
 	if bd[1].DefendingContract != 7 || bd[2].DefendingContract != 7 {
 		t.Errorf("failed contract breakdown = %+v, want defenders +7", bd)
+	}
+}
+
+func TestPreference_ScoreHistoryResetsWithNewGame(t *testing.T) {
+	g := newPrefGame(false)
+	g.SetPhase(PreferencePhaseRoundEnd)
+	g.SetDeclarerIdx(0)
+	g.SetContract(PreferenceBidSix)
+	g.SetRoundTricks([PreferencePlayerCnt]int{6, 2, 2})
+	g.ScoreRound()
+	g.Reset()
+	if history := g.GetScoreHistory(); len(history) != 0 {
+		t.Fatalf("history after reset = %+v, want empty", history)
+	}
+}
+
+func TestPreference_ScoreHistoryIsEmptyNotNil(t *testing.T) {
+	g := newPrefGame(false)
+	history := g.GetScoreHistory()
+	if history == nil || len(history) != 0 {
+		t.Fatalf("score history = %#v, want non-nil empty slice", history)
+	}
+
+	data, err := json.Marshal(history)
+	if err != nil {
+		t.Fatalf("marshal score history: %v", err)
+	}
+	if string(data) != "[]" {
+		t.Fatalf("marshaled score history = %s, want []", data)
 	}
 }
 

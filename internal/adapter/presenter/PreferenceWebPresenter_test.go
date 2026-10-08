@@ -32,6 +32,7 @@ func setupPreferenceWebMock() *interfaces.MockPreferenceGame {
 	m.On("GetBidDone").Return([domain.PreferencePlayerCnt]bool{true, false, true})
 	m.On("GetPlayerScores").Return([domain.PreferencePlayerCnt]int{0, 0, 0})
 	m.On("GetScoreBreakdown").Return([domain.PreferencePlayerCnt]domain.PreferenceScoreBreakdown{})
+	m.On("GetScoreHistory").Return([]domain.PreferenceRoundScore{})
 	m.On("GetRoundTricks").Return([domain.PreferencePlayerCnt]int{0, 0, 0})
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetPlayableIndices", 0).Return([]int{0})

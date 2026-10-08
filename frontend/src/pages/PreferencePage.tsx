@@ -365,6 +365,44 @@ function PreferencePageContent() {
                   ))}
                 </div>
 
+                {state.scoreHistory.length > 0 && (
+                  <section
+                    aria-label={t('scoreHistory.title')}
+                    className="mb-2 overflow-x-auto rounded bg-ds-surface p-2 text-sm"
+                  >
+                    <h3 className="mb-1 text-ds-text-primary">{t('scoreHistory.title')}</h3>
+                    <table className="w-full text-ds-text-muted">
+                      <thead>
+                        <tr>
+                          <th scope="col">{t('scoreHistory.player')}</th>
+                          {state.scoreHistory.map((round) => (
+                            <th scope="col" key={round.roundNumber}>
+                              {t('scoreHistory.round', { n: round.roundNumber })}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {state.players.map((player) => (
+                          <tr key={player.id}>
+                            <th scope="row" className="text-left">
+                              {playerName(player.id, player.isHuman)}
+                            </th>
+                            {state.scoreHistory.map((round) => (
+                              <td key={round.roundNumber} className="text-center">
+                                {t('scoreHistory.points', {
+                                  round: formatBreakdownScore(round.roundScores[player.id]),
+                                  total: formatBreakdownScore(round.cumulativeScores[player.id]),
+                                })}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </section>
+                )}
+
                 {/* Players: cards / tricks */}
                 {isMobile ? (
                   <details className="mb-2 p-2 rounded bg-black/30">
