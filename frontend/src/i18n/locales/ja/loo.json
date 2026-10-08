@@ -34,6 +34,7 @@
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
   "currentTrick": "現在のトリック",
+  "leadSuit": "リードスート",
   "players": "プレイヤー",
   "dealerBadge": "ディーラー",
   "you": "あなた",
