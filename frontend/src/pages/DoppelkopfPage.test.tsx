@@ -76,6 +76,24 @@ beforeEach(() => {
 });
 
 describe('DoppelkopfPage', () => {
+  it('shows each player’s remaining hand count and refreshes it from the response', async () => {
+    const initial = makeDoppelkopfState({
+      players: makeDoppelkopfState().players.map((player, index) => ({ ...player, cardCount: 12 - index })),
+    });
+    const updated = makeDoppelkopfState({
+      players: makeDoppelkopfState().players.map((player, index) => ({ ...player, cardCount: 8 - index })),
+    });
+    mockExec.mockResolvedValueOnce(initial).mockResolvedValue(updated);
+    const { container } = renderWithProviders(<DoppelkopfPage />);
+    await waitFor(() => expect(container).toHaveTextContent('12枚'));
+    expect(container).toHaveTextContent('11枚');
+    expect(container).toHaveTextContent('10枚');
+    expect(container).toHaveTextContent('9枚');
+    fireEvent.click(await screen.findByAltText('♥ 10'));
+    fireEvent.click(await screen.findByRole('button', { name: '出す' }));
+    await waitFor(() => expect(container).toHaveTextContent('8枚'));
+  });
+
   it('renders the server supplied round by player chip history', async () => {
     mockExec.mockResolvedValue(makeDoppelkopfState({ roundScoreHistory: [[2, -2, 2, -2]] }));
     renderWithProviders(<DoppelkopfPage />);
