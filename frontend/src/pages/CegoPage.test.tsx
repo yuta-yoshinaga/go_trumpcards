@@ -1,9 +1,11 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cegoApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeCegoState } from '../test/stateFactories';
+import type { Card } from '../types/card';
 import { CegoPage } from './CegoPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -19,6 +21,15 @@ const suit = (value: number, design: 'HEART' | 'SPADE' | 'CLOVER' | 'DIAMOND', g
   glyph,
   label,
   color: design === 'HEART' || design === 'DIAMOND' ? 'red' : 'black',
+  deck: 'tarot',
+});
+
+const tarotSpecial = (color: 'purple' | 'gold', value: number, design: Card['design']): Card => ({
+  design,
+  value,
+  glyph: color === 'purple' ? '🂠' : '★',
+  label: color === 'purple' ? `Tarock ${value}` : 'Sküs',
+  color,
   deck: 'tarot',
 });
 
@@ -133,6 +144,48 @@ beforeEach(() => {
 });
 
 describe('CegoPage', () => {
+  it('shows the led suit in Japanese and English only while the trick has a card', async () => {
+    mockExec.mockResolvedValue(
+      makeCegoState({
+        currentTrick: [{ playerIdx: 1, card: suit(7, 'HEART', '♥', 'Q') }],
+      }),
+    );
+    const { unmount } = renderWithProviders(<CegoPage />);
+    expect(await screen.findByTestId('trick-lead-suit')).toHaveTextContent('リードスート: ハート');
+
+    const previousLanguage = i18n.language;
+    try {
+      await i18n.changeLanguage('en');
+      expect(screen.getByTestId('trick-lead-suit')).toHaveTextContent('Led suit: Heart');
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+
+    unmount();
+    mockExec.mockResolvedValue(makeCegoState({ currentTrick: [] }));
+    renderWithProviders(<CegoPage />);
+    expect(await screen.findByText('ディール 1')).toBeVisible();
+    expect(screen.queryByTestId('trick-lead-suit')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['trump', tarotSpecial('purple', 12, 'JOKER')],
+    ['Sküs', tarotSpecial('gold', 0, 'JOKER')],
+  ])('shows the trump lead for %s', async (_name, card) => {
+    mockExec.mockResolvedValue(makeCegoState({ currentTrick: [{ playerIdx: 1, card }] }));
+    const { unmount } = renderWithProviders(<CegoPage />);
+    expect(await screen.findByTestId('trick-lead-suit')).toHaveTextContent('リードスート: 切り札');
+
+    const previousLanguage = i18n.language;
+    try {
+      await i18n.changeLanguage('en');
+      expect(screen.getByTestId('trick-lead-suit')).toHaveTextContent('Led suit: Trump');
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+    unmount();
+  });
+
   it('shows the CPU name when a CPU is bidding', async () => {
     mockExec.mockResolvedValue(cpuBidState);
     renderWithProviders(<CegoPage />);
