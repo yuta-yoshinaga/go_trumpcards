@@ -413,7 +413,7 @@ function NapPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="nap"
-                validIndices={canPlay ? state.playableIndices : undefined}
+                validIndices={canPlay ? state.playableIndices : []}
                 restrictedTooltip={t('playButton')}
               />
             )}
