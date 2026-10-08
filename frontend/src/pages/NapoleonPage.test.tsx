@@ -262,6 +262,19 @@ describe('NapoleonPage', () => {
     });
   });
 
+  it('shows the highest bidder name with the highest bid, and hides it without a bid', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    const { unmount } = renderWithProviders(<NapoleonPage />);
+    expect(await screen.findByText('最高ビッド: 13')).toBeInTheDocument();
+    expect(screen.getByText('最高ビッダー: あなた')).toBeInTheDocument();
+
+    unmount();
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<NapoleonPage />);
+    await screen.findByRole('button', { name: 'ビッド' });
+    expect(screen.queryByText(/最高ビッダー/)).not.toBeInTheDocument();
+  });
+
   it('sets the bid input minimum above the current highest bid', async () => {
     mockExec.mockResolvedValue({ ...bidPhaseState, highestBid: 15 });
     renderWithProviders(<NapoleonPage />);
