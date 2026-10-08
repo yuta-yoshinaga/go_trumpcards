@@ -155,11 +155,17 @@ describe('BristolPage', () => {
 
   it('gives tableau columns a contextual aria-label (1-based number, role, depth) and a rule header', async () => {
     renderWithProviders(<BristolPage />);
-    // Column 1 (0-based idx 0) holds 1 card → "降順ビルド列 1（1枚）".
-    await waitFor(() => expect(screen.getByRole('button', { name: '降順ビルド列 1（1枚）' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '降順ビルド列 8（1枚）' })).toBeInTheDocument();
+    // Column labels identify the top card as well as the column and its depth.
+    await waitFor(() => expect(screen.getByRole('button', { name: '降順ビルド列 1、♠ 8（1枚）' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '降順ビルド列 8、♦ 7（1枚）' })).toBeInTheDocument();
     // The tableau header conveys the build-down rule with the actual column count (8).
     expect(screen.getByTestId('br-tableau-rule')).toHaveTextContent('8列の降順ビルド');
+  });
+
+  it('uses a dedicated empty label for empty tableau columns', async () => {
+    mockExec.mockResolvedValue({ ...playingState, tableau: [...playingState.tableau.slice(0, 7), []] });
+    renderWithProviders(<BristolPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '降順ビルド列 8（空）' })).toBeInTheDocument());
   });
 
   it('shows a stacked-count badge on fans with 2+ cards and hides it otherwise', async () => {
@@ -485,7 +491,7 @@ describe('BristolPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryAllByTestId('bristol-legal-target')).toHaveLength(0);
 
-    fireEvent.click(screen.getByRole('button', { name: '降順ビルド列 1（1枚）' }));
+    fireEvent.click(screen.getByRole('button', { name: '降順ビルド列 1、♠ 8（1枚）' }));
 
     // 合法な移動先は 2 つ (タブロー 3 と組札 1) だけ。
     await waitFor(() => expect(screen.queryAllByTestId('bristol-legal-target')).toHaveLength(2));
@@ -504,7 +510,7 @@ describe('BristolPage destination preview', () => {
       legalTargets: { 'tableau-0': { tableau: [3], foundation: [1] } },
     });
     renderWithProviders(<BristolPage />);
-    return screen.findByRole('button', { name: '降順ビルド列 1（1枚）' });
+    return screen.findByRole('button', { name: '降順ビルド列 1、♠ 8（1枚）' });
   };
   const targets = () => screen.queryAllByTestId('bristol-legal-target');
   const previews = () => document.querySelectorAll('[data-preview-target="true"]');
@@ -549,7 +555,7 @@ describe('BristolPage destination preview', () => {
     });
     renderWithProviders(<BristolPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    fireEvent.mouseEnter(screen.getByRole('button', { name: '降順ビルド列 2（1枚）' }));
+    fireEvent.mouseEnter(screen.getByRole('button', { name: '降順ビルド列 2、♥ 9（1枚）' }));
     expect(targets()).toHaveLength(0);
   });
 });
