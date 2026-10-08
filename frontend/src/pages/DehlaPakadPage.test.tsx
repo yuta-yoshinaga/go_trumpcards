@@ -87,6 +87,43 @@ describe('DehlaPakadPage', () => {
     expect(screen.getByTestId('dehlapakad-trump')).toHaveTextContent('ハート');
   });
 
+  it('shows the previous trick and its winner when no trick is in progress', async () => {
+    const previousTrick = [
+      { playerIdx: 0, card: { design: 'HEART' as const, value: 10, color: 'red' as const } },
+      { playerIdx: 2, card: { design: 'HEART' as const, value: 9, color: 'red' as const } },
+    ];
+    mockExec.mockResolvedValue(
+      makeDehlaPakadState({ ...playState, currentTrick: [], lastTrick: previousTrick, lastTrickWinner: 0 }),
+    );
+    renderWithProviders(<DehlaPakadPage />);
+
+    expect(await screen.findByText('直前のトリック')).toBeInTheDocument();
+    const cards = screen.getByTestId('trick-display-cards');
+    expect(cards).toHaveTextContent('あなた');
+    expect(cards).toHaveTextContent('CPU 2');
+    expect(cards.querySelector('.ring-ds-warning')).toBeInTheDocument();
+  });
+
+  it('shows only the current trick while it has cards', async () => {
+    const currentTrick = [{ playerIdx: 0, card: { design: 'HEART' as const, value: 10, color: 'red' as const } }];
+    const previousTrick = [{ playerIdx: 1, card: { design: 'SPADE' as const, value: 9, color: 'black' as const } }];
+    mockExec.mockResolvedValue(
+      makeDehlaPakadState({ ...playState, currentTrick, lastTrick: previousTrick, lastTrickWinner: 1 }),
+    );
+    renderWithProviders(<DehlaPakadPage />);
+
+    expect(await screen.findByText('現在のトリック')).toBeInTheDocument();
+    expect(screen.getByTestId('trick-display-cards')).not.toHaveTextContent('CPU 1');
+  });
+
+  it('does not render a trick area before the first trick', async () => {
+    mockExec.mockResolvedValue(makeDehlaPakadState({ ...playState, currentTrick: [], lastTrick: [] }));
+    renderWithProviders(<DehlaPakadPage />);
+
+    await screen.findByTestId('dehlapakad-play');
+    expect(screen.queryByTestId('trick-display-cards')).not.toBeInTheDocument();
+  });
+
   it('plays the selected card', async () => {
     mockExec.mockResolvedValue(playState);
     renderWithProviders(<DehlaPakadPage />);
