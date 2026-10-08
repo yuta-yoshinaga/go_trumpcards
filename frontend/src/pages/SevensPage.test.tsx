@@ -159,6 +159,87 @@ beforeEach(() => {
 });
 
 describe('SevensPage', () => {
+  it('announces a normally played human card in the live region', async () => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      humanAction: {
+        playerIdx: 0,
+        playedCard: { design: 'SPADE', value: 6 },
+        targetSuit: 1,
+        targetValue: 6,
+        forcedPass: false,
+      },
+    });
+    renderWithProviders(<SevensPage />);
+    expect(await screen.findByTestId('card-placement-live')).toHaveTextContent('あなたが♠ 6を配置しました');
+  });
+
+  it('announces the latest normally played CPU card', async () => {
+    mockExec.mockResolvedValue({
+      ...cpuTurnState,
+      cpuActions: [
+        {
+          playerIdx: 1,
+          playedCard: { design: 'CLOVER', value: 8 },
+          targetSuit: 2,
+          targetValue: 8,
+          forcedPass: false,
+        },
+      ],
+    });
+    renderWithProviders(<SevensPage />);
+    expect(await screen.findByTestId('card-placement-live')).toHaveTextContent('CPU 1が♣ 8を配置しました');
+  });
+
+  it('announces every normally played card in response order, skipping passes and jokers', async () => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      humanAction: {
+        playerIdx: 0,
+        playedCard: { design: 'SPADE', value: 6 },
+        targetSuit: 1,
+        targetValue: 6,
+        forcedPass: false,
+      },
+      cpuActions: [
+        {
+          playerIdx: 1,
+          playedCard: { design: 'CLOVER', value: 8 },
+          targetSuit: 2,
+          targetValue: 8,
+          forcedPass: false,
+        },
+        { playerIdx: 2, playedCard: null, targetSuit: 0, targetValue: 0, forcedPass: false },
+        {
+          playerIdx: 3,
+          playedCard: { design: 'JOKER', value: 0 },
+          targetSuit: 3,
+          targetValue: 8,
+          forcedPass: false,
+        },
+      ],
+    });
+    renderWithProviders(<SevensPage />);
+    expect(await screen.findByTestId('card-placement-live')).toHaveTextContent(
+      'あなたが♠ 6を配置しました、CPU 1が♣ 8を配置しました',
+    );
+  });
+
+  it('does not duplicate joker placements in the regular card announcement', async () => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      humanAction: {
+        playerIdx: 0,
+        playedCard: { design: 'JOKER', value: 0 },
+        targetSuit: 1,
+        targetValue: 6,
+        forcedPass: false,
+      },
+    });
+    renderWithProviders(<SevensPage />);
+    expect(await screen.findByTestId('card-placement-live')).toBeEmptyDOMElement();
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SevensPage />);
@@ -793,6 +874,7 @@ describe('SevensPage', () => {
     // exec is called as: sevensApi.exec('joker', 0, suit, 6)
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('joker', 0, expect.any(Number), 6));
     expect(await screen.findByTestId('joker-placement-live')).toHaveTextContent('ジョーカーを♠の6に配置しました');
+    expect(screen.getByTestId('card-placement-live')).toBeEmptyDOMElement();
   }, 10000);
 
   it('does not announce a rejected joker placement', async () => {

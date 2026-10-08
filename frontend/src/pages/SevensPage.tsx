@@ -329,6 +329,20 @@ function SevensPageContent() {
     },
   ];
 
+  const regularPlacementAnnouncement = [...(state.humanAction ? [state.humanAction] : []), ...state.cpuActions]
+    .flatMap((action) => {
+      const card = action.playedCard;
+      if (!card || card.design === 'JOKER') return [];
+      const player = state.players[action.playerIdx];
+      return [
+        t('cardPlacedAnnouncement', {
+          player: playerName(player.id, player.isHuman),
+          card: cardAlt(card),
+        }),
+      ];
+    })
+    .join(t('listSeparator'));
+
   return (
     <GamePageShell
       title={tc('nav.sevens')}
@@ -392,6 +406,15 @@ function SevensPageContent() {
                 jokerSelecting={jokerCardIdx !== null}
                 onJokerPlace={handleJokerPlace}
               />
+            </div>
+            <div
+              className="sr-only"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              data-testid="card-placement-live"
+            >
+              {regularPlacementAnnouncement}
             </div>
             <div
               className="sr-only"

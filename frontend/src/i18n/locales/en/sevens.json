@@ -5,6 +5,8 @@
   "actionPlayedJoker": "{{name}} played: {{design}} {{value}} → {{targetSuit}} {{targetValue}}",
   "board": "Board",
   "cardCount": "{{count}} cards",
+  "cardPlacedAnnouncement": "{{player}} placed {{card}}",
+  "listSeparator": ", ",
   "cardDisabledReason": "This card cannot be played now",
   "cellEmptyAria": "{{suit}} {{value}} empty",
   "cellPlacedAria": "{{suit}} {{value}} placed",
