@@ -76,6 +76,23 @@ beforeEach(() => {
 });
 
 describe('SeahavenTowersPage', () => {
+  it('labels tableau cards with their zero-based column and one-based position', async () => {
+    const originalLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    renderWithProviders(<SeahavenTowersPage />);
+    expect(await screen.findByRole('button', { name: '♠ K — column 0, position 1' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ Q — column 1, position 1' })).toBeInTheDocument();
+    await i18n.changeLanguage(originalLanguage);
+  });
+
+  it('labels tableau card positions in Japanese', async () => {
+    const originalLanguage = i18n.language;
+    await i18n.changeLanguage('ja');
+    renderWithProviders(<SeahavenTowersPage />);
+    expect(await screen.findByRole('button', { name: '♠ K、列0、位置1' })).toBeInTheDocument();
+    await i18n.changeLanguage(originalLanguage);
+  });
+
   it('renders skeleton when state is null', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SeahavenTowersPage />);
@@ -132,7 +149,7 @@ describe('SeahavenTowersPage', () => {
 
   it('moves a selected tableau card to an empty reserved cell without source hints', async () => {
     renderWithProviders(<SeahavenTowersPage />);
-    const source = await screen.findByRole('button', { name: '♠ K' });
+    const source = await screen.findByRole('button', { name: /♠ K.*(?:column 0, position 1|列0、位置1)/ });
     fireEvent.click(source);
     await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
 
@@ -157,7 +174,7 @@ describe('SeahavenTowersPage', () => {
     };
     mockExec.mockResolvedValue(aceState);
     renderWithProviders(<SeahavenTowersPage />);
-    const source = await screen.findByRole('button', { name: '♠ A' });
+    const source = await screen.findByRole('button', { name: /♠ A.*(?:column 0, position 1|列0、位置1)/ });
     fireEvent.click(source);
     await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
 
@@ -378,7 +395,7 @@ describe('SeahavenTowersPage', () => {
     // 3 枚を動かすことになる一番上の札は上限 2 を超える。
     const blocked = screen.getByAltText('♠ K').closest('button') as HTMLButtonElement;
     expect(blocked).toHaveAttribute('data-supermove-blocked', 'true');
-    expect(blocked.getAttribute('aria-label')).toContain('一度に動かせるのは2枚までです');
+    expect(blocked).toHaveAccessibleName('♠ K、列0、位置1。一度に動かせるのは2枚までです');
 
     // **負のコントロール: 上限内の札はカード名のみ。** ここに理由が混ざると、
     // 動かせる札まで動かせないように読み上げられる。

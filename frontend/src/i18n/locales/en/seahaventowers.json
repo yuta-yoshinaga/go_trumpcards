@@ -21,6 +21,8 @@
   "emptyFoundationAriaLabel": "{{suit}} Foundation (empty)",
   "emptyReservedAriaLabel": "Reserved cell {{idx}} (empty)",
   "emptyColumnAriaLabel": "Empty tableau column {{idx}} (Kings only)",
+  "tableauCardAriaLabel": "{{card}} — column {{col}}, position {{position}}",
+  "tableauCardAriaLabelWithLimit": "{{card}} — column {{col}}, position {{position}}. {{limit}}",
   "supermoveLimitTooltip": "Only {{limit}} card(s) can be moved at once",
   "tutorial": {
     "reservedCells": "Reserved cells (towers). Two temporary slots — Seahaven gives you fewer than FreeCell.",
