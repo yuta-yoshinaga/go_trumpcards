@@ -51,6 +51,7 @@
   "settings": {
     "title": "設定",
     "cpuDifficulty": "CPU難易度",
+    "failContractPenalty": "コントラクト未達ペナルティ",
     "easy": "Easy",
     "normal": "Normal",
     "hard": "Hard"

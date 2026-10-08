@@ -270,11 +270,22 @@ function ContractRummyPageContent() {
   // **リセットでも難易度を持ち越す。**config を付けずに reset すると、サーバは
   // 既定値 (Normal) に戻す。選んだ直後は効くのに、次に「最初から」を押した時点で
   // 黙って戻る形になっていた (#5588 のレビュー指摘)。
-  const cpuDifficulty = state?.config.cpuDifficulty;
   const handleReset = useCallback(() => {
-    void execApi('reset', cpuDifficulty === undefined ? undefined : { config: { cpuDifficulty } });
+    // This callback is only reachable after the page has rendered the game state.
+    const config = (state as ContractRummyResponse).config;
+    void execApi('reset', {
+      config: { cpuDifficulty: config.cpuDifficulty, failContractPenalty: config.failContractPenalty },
+    });
     clearSelection();
-  }, [execApi, clearSelection, cpuDifficulty]);
+  }, [execApi, clearSelection, state]);
+
+  const handleConfigChange = useCallback(
+    (config: { cpuDifficulty: number; failContractPenalty: number }) => {
+      void execApi('reset', { config });
+      clearSelection();
+    },
+    [execApi, clearSelection],
+  );
 
   const phaseName = useMemo(() => {
     if (!state) return '';
@@ -383,7 +394,23 @@ function ContractRummyPageContent() {
                       label: t(`settings.${o.label}`),
                     })),
                     // 難易度は配り直しでしか効かないので、reset に載せて渡す。
-                    onSelect: (v) => void execApi('reset', { config: { cpuDifficulty: Number(v) } }),
+                    onSelect: (v) =>
+                      handleConfigChange({
+                        cpuDifficulty: Number(v),
+                        failContractPenalty: state.config.failContractPenalty,
+                      }),
+                  },
+                  {
+                    type: 'select',
+                    id: 'failContractPenalty',
+                    label: t('settings.failContractPenalty'),
+                    value: state.config.failContractPenalty,
+                    options: [0, 25, 50, 100].map((value) => ({ value, label: String(value) })),
+                    onSelect: (v) =>
+                      handleConfigChange({
+                        cpuDifficulty: state.config.cpuDifficulty,
+                        failContractPenalty: Number(v),
+                      }),
                   },
                   hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
