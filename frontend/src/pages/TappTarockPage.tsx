@@ -256,7 +256,7 @@ function TappTarockPageContent() {
                       ? state.discardableIndices
                       : undefined
                 }
-                restrictedTooltip={t('restricted')}
+                restrictedTooltip={t(isTalon ? 'restrictedTalon' : 'restricted')}
               />
             )}
 
