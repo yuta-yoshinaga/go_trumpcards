@@ -166,6 +166,14 @@ describe('OhHellPage', () => {
     });
   });
 
+  it('includes each player name in the trick card accessible name', async () => {
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<OhHellPage />);
+
+    expect(await screen.findByRole('img', { name: 'あなた、♦ 3' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'CPU 1、♥ 5' })).toBeInTheDocument();
+  });
+
   it('marks only legal follow-suit cards and ignores selection of illegal cards', async () => {
     mockExec.mockResolvedValue({
       ...playPhaseState,
@@ -650,8 +658,8 @@ describe('OhHellPage', () => {
     renderWithProviders(<OhHellPage />);
     await waitFor(() => {
       expect(screen.getByText('\u73fe\u5728\u306e\u30c8\u30ea\u30c3\u30af')).toBeInTheDocument();
-      expect(screen.getByAltText('\u2666 3')).toBeInTheDocument();
-      expect(screen.getByAltText('\u2665 5')).toBeInTheDocument();
+      expect(screen.getByRole('img', { name: 'あなた、♦ 3' })).toBeInTheDocument();
+      expect(screen.getByRole('img', { name: 'CPU 1、♥ 5' })).toBeInTheDocument();
     });
   });
 
