@@ -54,6 +54,20 @@ func TestGermanWhistWebPresenterOutput(t *testing.T) {
 	assert.Equal(t, float64(13), cpu["cardCount"], "枚数だけは分かる")
 }
 
+func TestGermanWhistWebPresenterOutputIncludesLastTrick(t *testing.T) {
+	p := new(GermanWhistWebPresenter)
+	g := newGermanWhistForWeb(t)
+	require.NoError(t, g.PlayerPlay(0))
+	g.CpuPlay()
+
+	m := decodeGermanWhist(t, p.Output(g, nil))
+	trick, ok := m["lastTrick"].([]any)
+	require.True(t, ok)
+	require.Len(t, trick, domain.GermanWhistPlayerCnt)
+	assert.GreaterOrEqual(t, m["lastTrickWinner"].(float64), float64(0))
+	assert.Less(t, m["lastTrickWinner"].(float64), float64(domain.GermanWhistPlayerCnt))
+}
+
 // validPlays は nil ではなく空配列で出る。JSON の null はフロントで
 // `.includes` を落とす。
 func TestGermanWhistWebPresenterValidPlaysNeverNull(t *testing.T) {

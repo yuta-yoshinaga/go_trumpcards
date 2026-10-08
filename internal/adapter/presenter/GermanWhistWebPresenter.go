@@ -45,6 +45,8 @@ func (p *GermanWhistWebPresenter) buildBase(g interfaces.GermanWhistGame) *contr
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerIdx = g.GetWinnerIdx()
 	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
+	resObj.LastTrick = trickCardsToOutput(g.GetLastTrick())
+	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
