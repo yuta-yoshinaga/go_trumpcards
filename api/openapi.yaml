@@ -57033,6 +57033,11 @@ components:
                 items:
                   $ref: '#/components/schemas/Card'
               capturedCount: { type: integer }
+              capturedCards:
+                type: array
+                description: Captured cards for the human's team; empty for opponents to preserve hidden information.
+                items:
+                  $ref: '#/components/schemas/Card'
               scopaCount: { type: integer }
         currentTurn:
           type: integer

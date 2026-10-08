@@ -22,6 +22,7 @@ import { useSound } from '../providers/SoundProvider';
 import { gameTheme } from '../styles/gameTheme';
 import type { ScoponeResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import {
   formatScoponeState,
   parseScoponeCommand,
@@ -192,6 +193,9 @@ function ScoponePageContent() {
   );
   const phaseName = isGameEnd ? t('phase.gameEnd') : t(`phase.${state.phase}`, t('phase.play'));
   const detail = state.lastRoundDetail;
+  const ownTeamCapturedCards = state.players
+    .filter((player) => player.team === humanTeam)
+    .flatMap((player) => player.capturedCards ?? []);
 
   return (
     <GamePageShell
@@ -228,6 +232,15 @@ function ScoponePageContent() {
                 </span>
               ))}
             </div>
+
+            <section aria-label={t('capturedCards.title')} className="rounded-lg bg-ds-surface px-3 py-2">
+              <div className="text-center text-xs font-semibold text-ds-text-primary">{t('capturedCards.title')}</div>
+              <div className="text-center text-xs text-ds-text-muted" data-testid="scopone-team-captured-cards">
+                {ownTeamCapturedCards.length > 0
+                  ? ownTeamCapturedCards.map((card) => cardAlt(card)).join(t('listSeparator'))
+                  : t('capturedCards.empty')}
+              </div>
+            </section>
 
             {lastCapturer && (
               <div className="text-center text-xs text-ds-text-muted" data-testid="last-capturer">

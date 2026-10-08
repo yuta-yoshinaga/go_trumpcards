@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -47,6 +48,26 @@ func TestScoponeWebPresenter_OutputJSON(t *testing.T) {
 			t.Errorf("missing key %q in output", k)
 		}
 	}
+}
+
+func TestScoponeWebPresenter_ExposesOnlyHumanTeamCapturedCards(t *testing.T) {
+	p := &presenter.ScoponeWebPresenter{}
+	s := spBuildScoredScopone(t)
+	s.GetPlayer(2).AddCaptured([]*domain.Card{domain.NewCard(domain.CardDesignDiamond, 7, false)})
+	s.GetPlayer(1).AddCaptured([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, false)})
+	var parsed struct {
+		Players []struct {
+			CapturedCount int                         `json:"capturedCount"`
+			CapturedCards []*controller.WebOutputCard `json:"capturedCards"`
+		} `json:"players"`
+	}
+	if err := json.Unmarshal([]byte(p.Output(s, nil)), &parsed); err != nil {
+		t.Fatalf("output is not valid JSON: %v", err)
+	}
+	assert.Len(t, parsed.Players[2].CapturedCards, 1)
+	assert.Equal(t, 7, parsed.Players[2].CapturedCards[0].Value)
+	assert.Equal(t, 1, parsed.Players[1].CapturedCount)
+	assert.Empty(t, parsed.Players[1].CapturedCards)
 }
 
 func TestScoponeWebPresenter_OutputError(t *testing.T) {

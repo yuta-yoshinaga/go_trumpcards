@@ -25,6 +25,11 @@
     "scopaBadge": "Scopa!",
     "scopaBadgeOwn": "Scopa! Your team"
   },
+  "capturedCards": {
+    "title": "Your team's captured cards",
+    "empty": "No cards captured yet"
+  },
+  "listSeparator": ", ",
   "scoreRules": {
     "title": "Scoring categories (1 point each)",
     "cards": "Most cards (1 point)",
