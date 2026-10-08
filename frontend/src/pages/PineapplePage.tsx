@@ -368,10 +368,11 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
     ],
     [apiExec, hasOutstandingBet, betAmount, getElapsed],
   );
+  const availableActionBindings = canAct && !loading ? actionBindings : [];
 
   useActionKeyboardNav({
-    bindings: actionBindings,
-    enabled: canAct && !loading,
+    bindings: availableActionBindings,
+    enabled: true,
   });
 
   // Discard phase control shared by mouse and keyboard: toggle a hole card into
@@ -1036,7 +1037,11 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
               dataTutorial="pn-reset-button"
               className="min-w-[90px]"
             />
-            <ActionShortcutsPanel bindings={actionBindings} includeCardNav data-testid="pineapple-kbd-shortcuts" />
+            <ActionShortcutsPanel
+              bindings={availableActionBindings}
+              includeCardNav
+              data-testid="pineapple-kbd-shortcuts"
+            />
           </GameFooter>
         </>
       )}
