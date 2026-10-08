@@ -20,6 +20,8 @@
   "foundationAriaLabel": "{{suit}} 組札 ({{cardCount}}枚)",
   "emptyFoundationAriaLabel": "{{suit}} 組札 (空)",
   "emptyFreecellAriaLabel": "フリーセル {{idx}} (空)",
+  "tableauCardAriaLabel": "{{card}}、列{{col}}・位置{{pos}}",
+  "tableauCardAriaLabelWithLimit": "{{card}}、列{{col}}・位置{{pos}}。{{limit}}",
   "supermoveLimitTooltip": "一度に動かせるのは{{limit}}枚までです",
   "supermoveLimitLabel": "一括移動上限: {{limit}}枚",
   "supermoveToEmpty": "（空き列へは{{limit}}枚）",

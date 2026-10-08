@@ -789,12 +789,26 @@ describe('FreeCellPage', () => {
 
   // --- Tableau card aria ---
 
-  it('tableau face-up card button has aria-label with card name', async () => {
+  it('tableau face-up card button names the card, zero-based column, and position', async () => {
     renderWithProviders(<FreeCellPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
-    const cardButton = screen.getByRole('button', { name: '♠ K' });
-    expect(cardButton).toHaveAttribute('aria-label', '♠ K');
+    const cardButton = screen.getByRole('button', { name: '♠ K、列0・位置1' });
+    expect(cardButton).toHaveAttribute('aria-label', '♠ K、列0・位置1');
+  });
+
+  it('names a tableau card by its position within its column', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[card('SPADE', 13), card('HEART', 12)], [card('CLOVER', 11)], [], [], [], [], [], []],
+    });
+    renderWithProviders(<FreeCellPage />);
+
+    expect(await screen.findByRole('button', { name: '♥ Q、列0・位置2' })).toHaveAttribute(
+      'aria-label',
+      '♥ Q、列0・位置2',
+    );
+    expect(screen.getByRole('button', { name: '♣ J、列1・位置1' })).toHaveAttribute('aria-label', '♣ J、列1・位置1');
   });
 
   it('tableau face-up card button has aria-pressed false initially and true when selected', async () => {
