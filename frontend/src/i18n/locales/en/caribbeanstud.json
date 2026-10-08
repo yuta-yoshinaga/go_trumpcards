@@ -83,8 +83,9 @@
   },
   "hint": {
     "pairOrBetter": "Pair or better — call recommended",
-    "aceKingHigh": "Ace-King high — call recommended",
-    "weakHand": "Weak hand — fold recommended"
+    "weakHand": "Weak hand — fold recommended",
+    "aceKingHighDealerLower": "Ace-King high, with the dealer showing a Queen or lower — call recommended",
+    "aceKingHighDealerHigh": "Ace-King high, but the dealer shows a King or Ace — fold recommended"
   },
   "hiddenCard": "Hidden card",
   "session": {

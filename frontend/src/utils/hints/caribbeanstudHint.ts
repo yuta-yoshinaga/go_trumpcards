@@ -1,4 +1,5 @@
 import type { Card, CaribbeanStudResponse } from '../../types/card';
+import { isMaskedCard } from '../../types/common';
 import type { HintResult } from '../../types/hint';
 import { CaribbeanStudPhase } from '../../types/phases';
 
@@ -25,7 +26,11 @@ export function getCaribbeanStudHint(state: CaribbeanStudResponse): HintResult |
   }
 
   if (hasAceKing(state.playerHand)) {
-    return { targetAction: 'play', reason: 'hint.aceKingHigh', confidence: 'moderate' };
+    const upCard = state.dealerHand[0];
+    if (upCard && !isMaskedCard(upCard) && upCard.value !== ACE_VALUE && upCard.value <= 12) {
+      return { targetAction: 'play', reason: 'hint.aceKingHighDealerLower', confidence: 'moderate' };
+    }
+    return { targetAction: 'fold', reason: 'hint.aceKingHighDealerHigh', confidence: 'moderate' };
   }
 
   return { targetAction: 'fold', reason: 'hint.weakHand', confidence: 'moderate' };

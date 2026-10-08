@@ -28,7 +28,6 @@
   "hintPlay": "プレイ (レイズ)",
   "hintFold": "フォールド",
   "hintPairOrBetter": "ワンペア以上ある",
-  "hintAceKingHigh": "役は無いが A と K を持っている",
   "hintWeakHand": "役が無く A-K にも届かない",
   "helpExampleBet": "  b 10                 アンテ 10 で参加する",
   "helpExamplePlay": "  p                    勝負する (アンテの 2 倍を追加)",
@@ -42,5 +41,7 @@
   "log.deal": "各プレイヤーに5枚ずつ配った",
   "log.playerWins": "プレイヤーの勝ち",
   "log.push": "プッシュ",
-  "log.dealerWins": "ディーラーの勝ち"
+  "log.dealerWins": "ディーラーの勝ち",
+  "hintAceKingHighDealerLower": "役は無いが A と K を持ち、ディーラーの表向き札は Q 以下",
+  "hintAceKingHighDealerHigh": "A と K はあるが、ディーラーの表向き札は K か A"
 }
