@@ -105,6 +105,43 @@ function HachiHachiPageContent() {
   const candidates = hachiHachiPendingCandidates(captureOptions, handIndex);
   const needsFieldPick = candidates.length > 1;
   const candidateSet = new Set(candidates);
+  const announcementPlayerName = (players: HachiHachiResponse['players'], playerId: number): string => {
+    const player = players.find((p) => p.id === playerId);
+    return player ? (player.isHuman ? t('you') : t('cpu', { n: player.id })) : `P${playerId}`;
+  };
+  const resultAnnouncement = !state
+    ? ''
+    : state.phase === HachiHachiPhase.GAME_END || state.gameEndFlag
+      ? t('result.announcement', {
+          outcome:
+            state.winner < 0
+              ? t('result.tie')
+              : t('result.winner', { name: announcementPlayerName(state.players, state.winner) }),
+          scores: state.players
+            .map((p) =>
+              t('result.score', {
+                name: p.isHuman ? t('you') : t('cpu', { n: p.id }),
+                score: p.score,
+              }),
+            )
+            .join(t('listSeparator')),
+        })
+      : state.phase === HachiHachiPhase.ROUND_END && state.lastRoundResult
+        ? t('roundResult.announcement', {
+            results: state.lastRoundResult.scores
+              .map((score) => {
+                const delta =
+                  score.delta >= 0
+                    ? t('roundResult.deltaGain', { n: score.delta })
+                    : t('roundResult.deltaLoss', { n: -score.delta });
+                return t('roundResult.announcementItem', {
+                  name: announcementPlayerName(state.players, score.playerIdx),
+                  delta,
+                });
+              })
+              .join(t('listSeparator')),
+          })
+        : '';
 
   /**
    * Activates hand or field index `idx`. Which row it addresses is decided by
@@ -132,12 +169,27 @@ function HachiHachiPageContent() {
 
   if (!state) {
     return (
-      <div
-        className={`flex-1 flex items-center justify-center ${gameTheme.hachihachi.bg} text-ds-text-muted`}
-        aria-busy
+      <GamePageShell
+        title={tc('nav.hachihachi')}
+        gameThemeBg={gameTheme.hachihachi.bg}
+        phaseName=""
+        gamePath="/hachihachi"
+        gameEndFlag={false}
+        winShow={false}
+        loading
+        confirmOpen={confirmOpen}
+        confirmReset={confirmReset}
+        cancelReset={cancelReset}
+        headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
       >
-        {tc('skeleton.loading')}
-      </div>
+        <div role="status" aria-live="polite" className="sr-only" data-testid="hachihachi-result-live" />
+        <div
+          className={`flex-1 flex items-center justify-center ${gameTheme.hachihachi.bg} text-ds-text-muted`}
+          aria-busy
+        >
+          {tc('skeleton.loading')}
+        </div>
+      </GamePageShell>
     );
   }
 
@@ -170,7 +222,6 @@ function HachiHachiPageContent() {
     }`;
 
   const winnerName = state.winner < 0 ? '' : (state.players.find((p) => p.id === state.winner) ?? null);
-
   return (
     <GamePageShell
       title={tc('nav.hachihachi')}
@@ -186,6 +237,9 @@ function HachiHachiPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div role="status" aria-live="polite" className="sr-only" data-testid="hachihachi-result-live">
+        {resultAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
