@@ -91,6 +91,20 @@ describe('getSevenbridgeHint', () => {
     });
   });
 
+  it('returns meld hint when 3 consecutive cards of the same suit are held in play phase', () => {
+    const state = base(SevenBridgePhase.PLAY, null, [c('SPADE', 3), c('SPADE', 4), c('SPADE', 5), c('HEART', 10)]);
+    expect(getSevenbridgeHint(state)).toEqual({
+      targetAction: 'meld',
+      reason: 'frontendHint.sevenbridgeMeld',
+      confidence: 'strong',
+    });
+  });
+
+  it('does not return a meld hint for non-consecutive suited cards in play phase', () => {
+    const state = base(SevenBridgePhase.PLAY, null, [c('SPADE', 3), c('SPADE', 5), c('SPADE', 6), c('HEART', 9)]);
+    expect(getSevenbridgeHint(state)).toBeNull();
+  });
+
   it('returns null in play phase when no 3-card set', () => {
     const state = base(SevenBridgePhase.PLAY, c('HEART', 2), [c('SPADE', 3), c('CLOVER', 4), c('HEART', 9)]);
     expect(getSevenbridgeHint(state)).toBeNull();
