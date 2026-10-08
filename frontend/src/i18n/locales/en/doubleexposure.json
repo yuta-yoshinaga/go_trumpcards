@@ -106,6 +106,7 @@
   "tutorial": {
     "betControls": "Set your bet amount here. Adjust the slider to choose how much to wager.",
     "betButton": "Once you've set your bet, press this button to start the game.",
+    "payoutRef": "Before betting, open the payout table and review the Double Exposure rules: blackjack pays 1:1, and ties go to the dealer, except that a player natural blackjack beats a dealer natural blackjack.",
     "dealerHand": "Both of the dealer's cards are face up from the deal, so you can read the total before deciding.",
     "playerHand": "This is your hand. Check the total point value of your cards.",
     "actionButtons": "Choose Hit (draw a card) or Stand (keep your hand). The goal is to get close to 21.",
