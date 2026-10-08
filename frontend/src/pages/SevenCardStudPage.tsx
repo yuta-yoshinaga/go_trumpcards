@@ -494,7 +494,10 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                 nothing on screen says why. Only rendered for Hi-Lo, which the
                 server marks with isHiLo rather than the page guessing from the
                 route. */}
-            {isShowdown && state.isHiLo && <StudHiLoSplit results={state.roundResults} players={state.players ?? []} />}
+            <StudHiLoSplit
+              results={isShowdown && state.isHiLo ? state.roundResults : undefined}
+              players={state.players}
+            />
             {state.isChicago && (
               <StudChicagoSplit results={isShowdown ? state.roundResults : undefined} players={state.players ?? []} />
             )}

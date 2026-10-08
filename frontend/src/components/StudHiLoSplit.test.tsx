@@ -24,14 +24,16 @@ function result(overrides: Partial<SevenCardStudResult> & { playerIdx: number })
 }
 
 describe('StudHiLoSplit', () => {
-  it('renders nothing without results', () => {
-    const { container } = renderWithProviders(<StudHiLoSplit results={undefined} players={players} />);
-    expect(container).toBeEmptyDOMElement();
+  it('keeps a single live region mounted while there are no results', () => {
+    renderWithProviders(<StudHiLoSplit results={undefined} players={players} />);
+    const liveRegion = screen.getByTestId('studhilo-live-region');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
   });
 
   it('renders nothing when nobody won anything', () => {
     const { container } = renderWithProviders(<StudHiLoSplit results={[result({ playerIdx: 0 })]} players={players} />);
-    expect(container).toBeEmptyDOMElement();
+    expect(container.querySelector('[data-testid="studhilo-live-region"]')).toBeInTheDocument();
   });
 
   it('derives the high half from wonAmount minus wonLow', () => {
@@ -104,6 +106,10 @@ describe('StudHiLoSplit', () => {
     expect(scoop).toHaveTextContent('400');
     // 合計 400 のうちハイは 200。バッジが 400 と出てはいけない。
     expect(screen.getByTestId('studhilo-hi-badge')).toHaveTextContent('200');
+    expect(screen.getByTestId('studhilo-scoop-badge')).not.toHaveAttribute('role', 'status');
+    expect(screen.getByTestId('studhilo-live-region').textContent?.match(/スクープ/g)).toBeNull();
+    expect(screen.getByTestId('studhilo-live-region')).toHaveTextContent('ハイ');
+    expect(screen.getByTestId('studhilo-live-region')).toHaveTextContent('ロー');
   });
 
   it('says the high took it all when no low qualified', () => {
@@ -111,6 +117,7 @@ describe('StudHiLoSplit', () => {
     renderWithProviders(<StudHiLoSplit results={[result({ playerIdx: 0, wonAmount: 400 })]} players={players} />);
     expect(screen.getByTestId('studhilo-hi-takes-all')).toBeInTheDocument();
     expect(screen.queryByTestId('studhilo-lo-badge')).not.toBeInTheDocument();
+    expect(screen.getByTestId('studhilo-live-region')).toHaveTextContent('ハイの総取り');
   });
 
   it('shows the cards that made the low', () => {
