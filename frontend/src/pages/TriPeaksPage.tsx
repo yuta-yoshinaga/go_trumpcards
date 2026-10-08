@@ -156,6 +156,7 @@ function TriPeaksPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('tripeaks', state);
+  const hintedCard = hint?.type === 'remove' ? state?.layout[hint.row]?.[hint.col]?.card : undefined;
   const { cardHeight, cardWidth, isMobile } = useCardDimensions();
   const windowWidth = useWindowWidth();
   // CLI mode
@@ -460,7 +461,13 @@ function TriPeaksPageContent() {
             <div data-tutorial="tp-hint-display" data-testid="tp-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2 text-center">
-                  {t('hintAvailable')}: {t(`hintType.${hint.type}`)}
+                  {hint.type === 'remove' && hintedCard
+                    ? t('removeHint', {
+                        card: cardAlt(hintedCard),
+                        row: hint.row,
+                        col: hint.col,
+                      })
+                    : `${t('hintAvailable')}: ${t(`hintType.${hint.type}`)}`}
                 </div>
               )}
             </div>
