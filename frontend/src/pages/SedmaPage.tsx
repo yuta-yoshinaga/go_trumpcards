@@ -151,13 +151,15 @@ function SedmaPageContent() {
 
   const canPlay = isPlayPhase && isHumanTurn;
   const humanTeam = humanIdx % 2;
+  const teamLabel = (team: number) => t(team === 0 ? 'team.a' : 'team.b');
+  const relationLabel = (team: number) => t(team === humanTeam ? 'ally' : 'opponent');
 
   // One info-sidebar row per player, colour-coded by team (A = even ids = blue,
   // B = odd ids = red), matching the trick display's ally/opponent relationship.
   // Shared by the mobile (<details>) and desktop layouts.
   const renderPlayerRow = (p: (typeof state.players)[number]) => {
     const team = p.id % 2;
-    const teamName = team === 0 ? t('team.a') : t('team.b');
+    const teamName = teamLabel(team);
     return (
       <div
         key={p.id}
@@ -266,15 +268,15 @@ function SedmaPageContent() {
                   dataTutorial="sedma-trick-display"
                   playerLabelFor={(player) => {
                     const team = player.id % 2;
-                    return `${t(team === humanTeam ? 'team.a' : 'team.b')} · ${playerName(player.id, player.isHuman)} · ${t(team === humanTeam ? 'ally' : 'opponent')}`;
+                    return `${teamLabel(team)} · ${playerName(player.id, player.isHuman)} · ${relationLabel(team)}`;
                   }}
                   cardAriaLabelFor={(player, card) => {
                     const team = player.id % 2;
                     return t('trickCardLabel', {
                       card: cardAlt(card),
                       player: playerName(player.id, player.isHuman),
-                      team: t(team === humanTeam ? 'team.a' : 'team.b'),
-                      relation: t(team === humanTeam ? 'ally' : 'opponent'),
+                      team: teamLabel(team),
+                      relation: relationLabel(team),
                     });
                   }}
                 />
@@ -295,13 +297,13 @@ function SedmaPageContent() {
                     const remaining = state.config.targetPoints - score;
                     return (
                       <div key={team}>
-                        {t('teamScore', { team: team === 0 ? t('team.a') : t('team.b'), score })}
+                        {t('teamScore', { team: teamLabel(team), score })}
                         {remaining > 0 && t('remainingPoints', { count: remaining })}
                       </div>
                     );
                   })}
                   <div className="mt-1">
-                    {t('yourTeam')}: {humanTeam === 0 ? t('team.a') : t('team.b')}
+                    {t('yourTeam')}: {teamLabel(humanTeam)}
                   </div>
                 </div>
 
