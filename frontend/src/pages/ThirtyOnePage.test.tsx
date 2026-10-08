@@ -183,6 +183,21 @@ describe('ThirtyOnePage', () => {
     expect(screen.queryByTestId('eliminated-1')).not.toBeInTheDocument();
   });
 
+  it('shows the final round summary when the game ends', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: ThirtyOnePhase.GAME_END,
+        gameEndFlag: true,
+        thirtyOneIdx: 2,
+        roundLosers: [1],
+      }),
+    );
+    renderWithProviders(<ThirtyOnePage />);
+    expect(await screen.findByTestId('thirtyone-round-summary')).toBeInTheDocument();
+    expect(screen.getByTestId('thirtyone-achiever')).toHaveTextContent('CPU 2 が31達成');
+    expect(screen.getByTestId('life-loss-1')).toHaveTextContent('CPU 1 がライフを1つ失った');
+  });
+
   it('states when nobody lost a life at round end', async () => {
     mockExec.mockResolvedValue(makeState({ phase: ThirtyOnePhase.ROUND_END, roundLosers: [] }));
     renderWithProviders(<ThirtyOnePage />);
