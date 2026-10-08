@@ -13,6 +13,8 @@
     "winner": "勝ち列",
     "red": "赤",
     "black": "黒",
+    "remainingDeck": "シューの残り枚数: {{count}}",
+    "reshuffleNotice": "残り52枚未満のため、次のラウンド開始時に自動でシャッフルされます",
     "crossing": "31到達",
     "crossingAria": "累積 {{total}}、{{card}}で31到達"
   },

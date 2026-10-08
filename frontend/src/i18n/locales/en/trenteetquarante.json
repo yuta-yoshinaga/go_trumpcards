@@ -13,6 +13,8 @@
     "winner": "Winner",
     "red": "red",
     "black": "black",
+    "remainingDeck": "Cards remaining in shoe: {{count}}",
+    "reshuffleNotice": "Fewer than 52 cards remain; the shoe will be shuffled automatically at the start of the next round.",
     "crossing": "Reaches 31",
     "crossingAria": "Cumulative {{total}}, reaches 31 on {{card}}"
   },
