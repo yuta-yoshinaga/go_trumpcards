@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo } from 'react';
+import { useCallback, useId, useMemo, useRef } from 'react';
 import type { americanToadApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -106,6 +106,11 @@ function AmericanToadPageContent() {
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
   const windowWidth = useWindowWidth();
+  const tableauCardRefs = useRef(new Map<string, HTMLButtonElement>());
+
+  const focusTableauCard = (col: number, cardIndex: number) => {
+    tableauCardRefs.current.get(`${col}:${cardIndex}`)?.focus();
+  };
 
   const dims = useMemo(() => {
     if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: cardOverlap };
@@ -177,6 +182,7 @@ function AmericanToadPageContent() {
   const reserveTop = reserveHolds ? state.reserve[state.reserve.length - 1] : null;
   // The stock button doubles as the redeal once the stock runs out.
   const stockActs = state.stockCount > 0 || state.canRedeal;
+  const firstCard = state.tableau.findIndex((column) => column.length > 0);
 
   // **選択後は押すまで正誤が分からず、クリック→サーバーエラーのループになる
   // (#5559)。**8列 + 8組札 + リザーブ + 捨て札と候補が多く、組札は同スート
@@ -261,6 +267,30 @@ function AmericanToadPageContent() {
                     {tc2.card ? (
                       <button
                         type="button"
+                        ref={(element) => {
+                          const key = `${colIdx}:${cardIdx}`;
+                          if (element) tableauCardRefs.current.set(key, element);
+                          else tableauCardRefs.current.delete(key);
+                        }}
+                        tabIndex={colIdx === firstCard && cardIdx === 0 ? 0 : -1}
+                        onKeyDown={(event) => {
+                          if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;
+                          event.preventDefault();
+                          const columns = state.tableau;
+                          if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+                            const delta = event.key === 'ArrowUp' ? -1 : 1;
+                            focusTableauCard(colIdx, Math.max(0, Math.min(col.length - 1, cardIdx + delta)));
+                            return;
+                          }
+                          for (let step = 1; step < TABLEAU_COLS; step += 1) {
+                            const nextCol =
+                              (colIdx + (event.key === 'ArrowRight' ? step : TABLEAU_COLS - step)) % TABLEAU_COLS;
+                            if (columns[nextCol] && columns[nextCol].length > 0) {
+                              focusTableauCard(nextCol, Math.min(cardIdx, columns[nextCol].length - 1));
+                              return;
+                            }
+                          }
+                        }}
                         onClick={() => {
                           if (selectedSource) {
                             game.handleSelectTarget(tableauColZone);
