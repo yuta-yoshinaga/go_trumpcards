@@ -235,6 +235,13 @@ function StHelenaPageContent() {
   const isGameClear = state.phase === StHelenaPhase.GAME_CLEAR;
   const isGameOver = state.phase === StHelenaPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+  const restrictionStatus = state.restrictionsActive
+    ? t('restrictionsActive', {
+        topCols: STHELENA_BANDS[0].cols.join(t('listSeparator')),
+        sideCols: STHELENA_BANDS[1].cols.join(t('listSeparator')),
+        bottomCols: STHELENA_BANDS[2].cols.join(t('listSeparator')),
+      })
+    : t('restrictionsLifted');
   // 組札に収まった枚数。**種札 (各組札の A / K) も 1 枚として数える** ──
   // 盤面に見えている枚数と一致しないと、達成率が信用されない。
   const foundationCount = state.foundation.reduce((sum, pile) => sum + pile.length, 0);
@@ -320,6 +327,9 @@ function StHelenaPageContent() {
           </span>
           <span role="status" aria-live="polite">
             {t('redealsLeft', { count: state.redealsRemaining })}
+          </span>
+          <span className="sr-only" role="status" aria-live="polite" data-testid="sthelena-restriction-status">
+            {restrictionStatus}
           </span>
           <span className="sr-only" role="status" aria-live="polite" data-testid="cr-selection-status">
             {isPlaying && selectedCard !== null

@@ -53,7 +53,7 @@
     "side": "横の4列 — どちらの段へも送れます",
     "bottom": "下の4列 — A段(昇順)へのみ送れます"
   },
-  "restrictionsActive": "初回の配り: 上4列→K段のみ / 下4列→A段のみ / 横4列→どちらでも",
+  "restrictionsActive": "初回の配り: 上の列 ({{topCols}}) は K 段のみ、下の列 ({{bottomCols}}) は A 段のみ、横の列 ({{sideCols}}) はどちらの段へも送れます",
   "restrictionsLifted": "送り先の制限は解けています",
   "listSeparator": "、",
   "foundationDestination": "{{suit}}の{{direction}}組札",
