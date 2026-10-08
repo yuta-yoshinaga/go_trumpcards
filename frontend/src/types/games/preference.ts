@@ -44,6 +44,13 @@ export interface PreferenceScoreBreakdown {
   defendingContract: number;
 }
 
+/** Scores awarded and accumulated for one completed round. */
+export interface PreferenceRoundScore {
+  roundNumber: number;
+  roundScores: number[];
+  cumulativeScores: number[];
+}
+
 /** Full Préférence game state returned from the API. */
 export interface PreferenceResponse extends BaseGameResponse {
   players: PreferencePlayer[];
@@ -68,6 +75,7 @@ export interface PreferenceResponse extends BaseGameResponse {
   playerScores: number[];
   /** Round score components per player — [p0, p1, p2]. */
   scoreBreakdown: PreferenceScoreBreakdown[];
+  scoreHistory: PreferenceRoundScore[];
   /** Tricks captured per player this round — [p0, p1, p2]. */
   roundTricks: number[];
   /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */

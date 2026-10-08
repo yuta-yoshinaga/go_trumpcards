@@ -60,6 +60,12 @@
     "declarerContract": "Declarer contract",
     "defendingContract": "Defending contract"
   },
+  "scoreHistory": {
+    "title": "Score history",
+    "player": "Player",
+    "round": "Round {{n}}",
+    "points": "{{round}} (total {{total}})"
+  },
   "progress": {
     "line": "Declarer progress: {{won}} / {{needed}} tricks",
     "misere": "Declarer progress: {{won}} tricks (Misère, target 0)",
