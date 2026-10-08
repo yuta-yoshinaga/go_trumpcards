@@ -183,6 +183,50 @@ describe('SevenCardStudPage', () => {
     expect(liveRegion).toBeEmptyDOMElement();
   });
 
+  it('keeps the Hi-Lo result live region mounted before showdown and announces the split at showdown', async () => {
+    vi.mocked(sevenCardStudHiLoApi.exec).mockResolvedValueOnce({
+      ...thirdStreetState,
+      isHiLo: true,
+    } as SevenCardStudResponse);
+    renderWithProviders(<SevenCardStudHiLoPage />);
+    const liveRegion = await screen.findByTestId('studhilo-live-region');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
+  });
+
+  it('announces Hi-Lo winners and payouts at showdown', async () => {
+    vi.mocked(sevenCardStudHiLoApi.exec).mockResolvedValueOnce({
+      ...showdownState,
+      isHiLo: true,
+      roundResults: [
+        {
+          playerIdx: 0,
+          handRank: 1,
+          handName: 'ワンペア',
+          kickers: '',
+          bestHand: [],
+          wonAmount: 200,
+          wonLow: 0,
+          mucked: false,
+        },
+        {
+          playerIdx: 1,
+          handRank: 2,
+          handName: 'ツーペア',
+          kickers: '',
+          bestHand: [],
+          wonAmount: 200,
+          wonLow: 200,
+          mucked: false,
+        },
+      ],
+    } as SevenCardStudResponse);
+    renderWithProviders(<SevenCardStudHiLoPage />);
+    const liveRegion = await screen.findByTestId('studhilo-live-region');
+    await waitFor(() => expect(liveRegion).toHaveTextContent('ハイの勝者: あなた +200'));
+    expect(liveRegion).toHaveTextContent('ローの勝者: CPU 1 +200');
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SevenCardStudPage />);
