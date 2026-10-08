@@ -35,7 +35,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { GUTS_HELP, parseGutsCommand } from '../utils/cli/commands/gutsCommands';
 import { formatGutsState } from '../utils/cli/formatters/gutsFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { evaluateGutsGuide } from '../utils/gutsGuideUtils';
+import * as gutsGuideUtils from '../utils/gutsGuideUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Guts tutorial step definitions. */
@@ -118,28 +118,37 @@ function GutsPageContent() {
   const { cardWidth } = useCardDimensions();
   const phaseNames = usePhaseNames('guts', GUTS_PHASE_KEYS);
 
-  if (!state)
-    return <GameSkeleton gameKey="guts" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 2 }} />;
-
-  const humanPlayer = state.players.find((p) => p.isHuman);
-  const humanIdx = state.players.findIndex((p) => p.isHuman);
-
-  const isDeclarePhase = state.phase === GutsPhase.DECLARE;
-  const isResultPhase = state.phase === GutsPhase.RESULT;
-  const isGameEnd = state.gameEndFlag;
+  const humanPlayer = state?.players.find((p) => p.isHuman);
+  const humanIdx = state?.players.findIndex((p) => p.isHuman) ?? -1;
+  const humanCards = humanPlayer?.cards;
+  const humanChips = humanPlayer?.chips;
+  const pot = state?.pot;
+  const isDeclarePhase = state?.phase === GutsPhase.DECLARE;
+  const isResultPhase = state?.phase === GutsPhase.RESULT;
+  const isGameEnd = state?.gameEndFlag ?? false;
+  const cpuSeatOutKey = JSON.stringify(state?.players.filter((p) => !p.isHuman).map((p) => [p.id, p.out]) ?? []);
 
   // Rough hand-name + win-chance readout shown while the human must call In/Out.
-  const declareGuide =
-    isDeclarePhase && !isGameEnd && humanPlayer && humanPlayer.cards.length > 0
-      ? {
-          ...evaluateGutsGuide(
-            humanPlayer.cards,
-            state.players.filter((p) => !p.isHuman).map((p) => ({ seat: p.id, out: p.out })),
-            humanIdx,
-          ),
-          maxPayment: Math.min(state.pot, humanPlayer.chips),
-        }
-      : null;
+  const declareGuide = useMemo(() => {
+    if (
+      !isDeclarePhase ||
+      isGameEnd ||
+      !humanCards ||
+      humanCards.length === 0 ||
+      pot === undefined ||
+      humanChips === undefined
+    )
+      return null;
+    const cpuPlayers = JSON.parse(cpuSeatOutKey) as [number, boolean][];
+    const opponents = cpuPlayers.map(([seat, out]) => ({ seat, out }));
+    return {
+      ...gutsGuideUtils.evaluateGutsGuide(humanCards, opponents, humanIdx),
+      maxPayment: Math.min(pot, humanChips),
+    };
+  }, [isDeclarePhase, isGameEnd, humanCards, cpuSeatOutKey, humanIdx, pot, humanChips]);
+
+  if (!state)
+    return <GameSkeleton gameKey="guts" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 2 }} />;
   const humanWonMatch = state.matchWinnerIdx >= 0 && (state.players[state.matchWinnerIdx]?.isHuman ?? false);
 
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
