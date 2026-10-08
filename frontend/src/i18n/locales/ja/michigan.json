@@ -18,6 +18,7 @@
   "ante": "アンティ: {{amount}}",
   "chips": "チップ: {{amount}}",
   "roundBet": "ベット: {{amount}}",
+  "listSeparator": "、",
   "handCount": "手札: {{count}}",
   "deadHand": "デッドハンド: {{count}}",
   "boodlesTitle": "ブードル（A♥ K♣ Q♦ J♠）",
