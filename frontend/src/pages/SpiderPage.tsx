@@ -456,11 +456,18 @@ function SpiderPageContent() {
                                         }
                                       }}
                                       disabled={!isPlaying || loading}
-                                      aria-label={t('cardPosAria', {
-                                        card: cardAlt(tc.card),
-                                        col: colIdx,
-                                        pos: cardIdx + 1,
-                                      })}
+                                      aria-label={(() => {
+                                        const movableCount = spiderMovableRun(col, cardIdx).length;
+                                        const values = {
+                                          card: cardAlt(tc.card),
+                                          col: colIdx,
+                                          pos: cardIdx + 1,
+                                          count: movableCount,
+                                        };
+                                        return movableCount > 0
+                                          ? t('cardPosAriaWithMovableCount', values)
+                                          : t('cardPosAria', values);
+                                      })()}
                                       aria-pressed={isSourceSelected(colIdx, cardIdx)}
                                       draggable={isPlaying && !loading}
                                       onDragStart={dnd.handleDragStart(cardZone)}
