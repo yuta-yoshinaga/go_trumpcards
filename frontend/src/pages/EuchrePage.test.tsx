@@ -553,6 +553,13 @@ describe('EuchrePage', () => {
     await waitFor(() => {
       expect(screen.getByText('\u30c1\u30fc\u30e0\u30b9\u30b3\u30a2')).toBeInTheDocument();
     });
+    expect(screen.getByText(/目標: 10点/)).toBeInTheDocument();
+  });
+
+  it('shows the point limit from the current game state in the score heading', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, config: { ...playPhaseState.config, pointLimit: 21 } });
+    renderWithProviders(<EuchrePage />);
+    expect(await screen.findByText(/目標: 21点/)).toBeInTheDocument();
   });
 
   it('score table headers have scope="col" for accessibility', async () => {
@@ -957,6 +964,7 @@ describe('EuchrePage', () => {
       expect(scoreDetails).toBeInTheDocument();
       const summary = scoreDetails?.querySelector('summary');
       expect(summary).toHaveTextContent('チームスコア');
+      expect(scoreDetails).toHaveTextContent('目標: 10点');
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }

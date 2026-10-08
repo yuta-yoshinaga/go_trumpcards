@@ -394,7 +394,7 @@ function EuchrePageContent() {
                     open={isRoundEnd || isGameEnd || undefined}
                   >
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
-                      {t('teamScores')}
+                      <span>{t('teamScores')}</span> · {t('target', { points: state.config.pointLimit })}
                     </summary>
                     <table className="w-full text-sm text-ds-text-muted mt-1">
                       <thead>
@@ -417,7 +417,9 @@ function EuchrePageContent() {
                   </details>
                 ) : (
                   <div className="my-3 p-2 rounded bg-black/30" data-tutorial="eu-score-table">
-                    <div className="text-ds-text-muted text-sm mb-1">{t('teamScores')}</div>
+                    <div className="text-ds-text-muted text-sm mb-1">
+                      <span>{t('teamScores')}</span> · {t('target', { points: state.config.pointLimit })}
+                    </div>
                     <table className="w-full text-sm text-ds-text-muted">
                       <thead>
                         <tr>
