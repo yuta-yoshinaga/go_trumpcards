@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { anacondaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack, CardImage } from '../components/CardImage';
@@ -36,6 +36,7 @@ import type { AnacondaResponse } from '../types/card';
 import { AnacondaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { anacondaPassRecipient } from '../utils/anacondaPass';
+import { cardAlt } from '../utils/cardAlt';
 import { ANACONDA_HELP, parseAnacondaCommand } from '../utils/cli/commands/anacondaCommands';
 import { formatAnacondaState } from '../utils/cli/formatters/anacondaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -108,6 +109,8 @@ function AnacondaPageContent() {
   } = useAnacondaGame();
 
   const { selected, toggle, clear } = useCardSelection();
+  const previousRevealedCounts = useRef<Map<number, number>>(new Map());
+  const [revealedCardsAnnouncement, setRevealedCardsAnnouncement] = useState('');
 
   // Fetch a fresh game on mount (applies the current config).
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset is stable per render of the hook; run once on mount.
@@ -160,6 +163,30 @@ function AnacondaPageContent() {
       for (const timer of timers) clearTimeout(timer);
     };
   }, [isRollReveal, rollIndex]);
+
+  useEffect(() => {
+    if (!state || state.phase !== AnacondaPhase.ROLL) {
+      previousRevealedCounts.current.clear();
+      setRevealedCardsAnnouncement('');
+      return;
+    }
+
+    const announcements: string[] = [];
+    for (const player of state.players) {
+      const previousCount = previousRevealedCounts.current.get(player.id) ?? 0;
+      const newlyRevealed = player.cards.slice(previousCount);
+      if (!player.isHuman && !player.out && !player.folded && newlyRevealed.length > 0) {
+        announcements.push(
+          t('rollCardsRevealed', {
+            name: t('cpu', { id: player.id }),
+            cards: newlyRevealed.map(cardAlt).join(t('listSeparator')),
+          }),
+        );
+      }
+      previousRevealedCounts.current.set(player.id, player.cards.length);
+    }
+    setRevealedCardsAnnouncement(announcements.join(t('listSeparator')));
+  }, [state, t]);
   // Slot index of the card currently emphasized by the staged sweep (-1 = none yet).
   const emphasizedRevealIdx = revealStep - 1;
 
@@ -336,6 +363,7 @@ function AnacondaPageContent() {
               testId="anaconda-current-bet-live"
               message={isRollPhase ? t('currentBet', { amount: state.currentBet }) : ''}
             />
+            <LiveAnnouncement testId="anaconda-revealed-cards-live" message={revealedCardsAnnouncement} />
 
             {isPassPhase && humanTurn && (
               <div

@@ -293,6 +293,20 @@ describe('AnacondaPage', () => {
     expect(screen.getByTestId('anaconda-roll-1').children).toHaveLength(5);
   });
 
+  it('announces every newly revealed CPU card without mixing it with call amount notices', async () => {
+    mockExec.mockResolvedValueOnce(rollRevealState(1)).mockResolvedValueOnce(rollRevealState(3));
+    renderWithProviders(<AnacondaPage />);
+
+    const live = await screen.findByTestId('anaconda-revealed-cards-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    await waitFor(() => expect(live).toHaveTextContent('CPU 1が公開したカード: ♠ 14'));
+    expect(screen.getByTestId('anaconda-current-bet-live')).toHaveTextContent('コール額: 10');
+
+    fireEvent.click(screen.getByRole('button', { name: 'コール / チェック' }));
+    await waitFor(() => expect(live).toHaveTextContent('CPU 1が公開したカード: ♥ K、♣ 5'));
+  });
+
   it('advances the roll-reveal emphasis one card at a time through the exposed cards', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     try {

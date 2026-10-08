@@ -33,6 +33,8 @@
   "passNoticeTo": "パスフェーズ — {{name}} へ渡すカードを {{count}} 枚選んでください。",
   "setNotice": "セットフェーズ — 残す5枚を選んでください（2枚を捨てる）。",
   "rollNotice": "ロールフェーズ — {{revealed}}/5 公開。コール・レイズ・フォールドを選択。",
+  "rollCardsRevealed": "{{name}}が公開したカード: {{cards}}",
+  "listSeparator": "、",
   "badge": {
     "folded": "フォールド",
     "out": "脱落",
