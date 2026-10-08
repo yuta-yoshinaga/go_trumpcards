@@ -86,6 +86,26 @@ describe('GanjifaPage', () => {
     expect(screen.getByRole('button', { name: /7.*Shamsher.*数字が大きいほど強い/ })).toBeInTheDocument();
   });
 
+  it('announces the must-follow restriction in the inaccessible card name and tooltip', async () => {
+    mockExec.mockResolvedValue(
+      makeGanjifaState({
+        currentTrick: [{ playerIdx: 1, card: { design: 'SPADE', value: 5 } }],
+        playableIndices: [0],
+      }),
+    );
+    renderWithProviders(<GanjifaPage />);
+
+    const restrictedCard = await screen.findByRole('button', {
+      name: /1.*リードスートに従う必要があります/,
+    });
+    expect(restrictedCard).toHaveAttribute('aria-disabled', 'true');
+    expect(restrictedCard).toHaveAttribute('title', 'リードスートに従う必要があります');
+    expect(screen.getByRole('button', { name: /7.*リードスートに従う必要があります/ })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+  });
+
   // **色と文字だけでは反転が届かない。**向きはラウンドごとに入れ替わるので、
   // 支援技術の利用者は気づかないまま前の並び順で打ってしまう (#6449)。
   it('announces the rank direction through a live region when the round flips it', async () => {
