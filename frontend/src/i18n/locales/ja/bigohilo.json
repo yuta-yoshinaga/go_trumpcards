@@ -109,6 +109,11 @@
     "both": "ハイ・ロー"
   },
   "livePreview": "現在の役:",
+  "liveLow": "ロー: {{ranks}}",
+  "noLiveLow": "ロー不成立",
+  "lowHoleCardUsedAria": "ローに使用する手札: {{card}}",
+  "lowBoardCardUsedAria": "ローに使用する場札: {{card}}",
+  "listSeparator": "、",
   "hand": {
     "highCard": "ハイカード",
     "onePair": "ワンペア",

@@ -109,6 +109,11 @@
     "both": "Hi+Lo"
   },
   "livePreview": "Current hand:",
+  "liveLow": "Low: {{ranks}}",
+  "noLiveLow": "No qualifying low",
+  "lowHoleCardUsedAria": "Hole card used in the low hand: {{card}}",
+  "lowBoardCardUsedAria": "Board card used in the low hand: {{card}}",
+  "listSeparator": ", ",
   "hand": {
     "highCard": "High Card",
     "onePair": "One Pair",

@@ -397,7 +397,11 @@ describe('BigOHiLoPage', () => {
     const { container } = renderWithProviders(<BigOHiLoPage />);
     await waitFor(() => expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(2));
     expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(3);
-    expect(container.querySelectorAll('[data-best5-hole] .sr-only, [data-best5-board] .sr-only')).toHaveLength(5);
+    expect(
+      container.querySelectorAll(
+        '[data-best5-hole] .sr-only:not([data-low-aria]), [data-best5-board] .sr-only:not([data-low-aria])',
+      ),
+    ).toHaveLength(5);
   });
 
   it('shows green Hi and blue Lo split badges (Lo omitted when none qualifies)', async () => {
@@ -1827,5 +1831,48 @@ describe('BigOHiLoPage', () => {
     renderWithProviders(<BigOHiLoPage />);
     await waitFor(() => expect(screen.getByText('コミュニティカード')).toBeInTheDocument());
     expect(screen.queryByTestId('bigohilo-live-besthand')).not.toBeInTheDocument();
+  });
+
+  it('shows the live qualifying low and identifies its hole and board cards', async () => {
+    mockExec.mockResolvedValue({
+      ...flopState,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 2 },
+            { design: 'DIAMOND', value: 9 },
+            { design: 'CLOVER', value: 11 },
+            { design: 'SPADE', value: 13 },
+          ],
+        }),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 3 },
+        { design: 'HEART', value: 4 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+    });
+    const { container } = renderWithProviders(<BigOHiLoPage />);
+    expect(await screen.findByTestId('bigohilo-live-low')).toHaveTextContent('ロー');
+    expect(screen.getByTestId('bigohilo-live-low')).toHaveTextContent('8');
+    expect(container.querySelectorAll('[data-hilo-usage="lo"], [data-hilo-usage="both"]').length).toBeGreaterThan(0);
+    expect(container.querySelectorAll('[data-low-aria]').length).toBe(5);
+  });
+
+  it('states when no qualifying low is available during play', async () => {
+    mockExec.mockResolvedValue({
+      ...flopState,
+      players: [
+        humanPlayer({
+          cards: [1, 2, 3, 4, 5].map((value, idx) => ({
+            design: (['SPADE', 'HEART', 'DIAMOND', 'CLOVER', 'SPADE'] as const)[idx],
+            value: value + 8,
+          })),
+        }),
+      ],
+    });
+    renderWithProviders(<BigOHiLoPage />);
+    expect(await screen.findByTestId('bigohilo-live-low')).toHaveTextContent('ロー不成立');
   });
 });
