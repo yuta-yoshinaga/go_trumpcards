@@ -95,6 +95,7 @@ function SomersetPageContent() {
   } = useGamePageSetup('somerset');
   const game = useSomersetGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
+  const hintedCard = hint && state ? (state.tableau[hint.fromCol]?.[hint.cardIndex]?.card ?? null) : null;
 
   const {
     hint: frontendHint,
@@ -449,10 +450,10 @@ function SomersetPageContent() {
               role="status"
               aria-live="polite"
             >
-              {hint && (
+              {hint && hintedCard && (
                 <div className="text-ds-warning text-sm mb-2 mt-3">
                   {t('hintMove', {
-                    card: cardAlt(state.tableau[hint.fromCol][hint.cardIndex].card!),
+                    card: cardAlt(hintedCard),
                     from: formatHintZone(t, 'tableau', hint.fromCol),
                     to: formatHintZone(t, hint.toZone, hint.toCol),
                   })}
