@@ -189,6 +189,11 @@ describe('IronCrossPage', () => {
     for (const i of [0, 1, 2, 3, 4]) {
       expect(screen.getByTestId(`ic-cross-${i}`)).toBeInTheDocument();
     }
+    expect(screen.getByTestId('ic-cross-0')).toHaveAccessibleName('中央、伏せ');
+    expect(screen.getByTestId('ic-cross-1')).toHaveAccessibleName('上、伏せ');
+    expect(screen.getByTestId('ic-cross-2')).toHaveAccessibleName('下、伏せ');
+    expect(screen.getByTestId('ic-cross-3')).toHaveAccessibleName('左、伏せ');
+    expect(screen.getByTestId('ic-cross-4')).toHaveAccessibleName('右、伏せ');
   });
 
   // **開いた札は届いた位置に出る。** 詰めて描くと縦横の選択が成り立たない。
@@ -199,7 +204,8 @@ describe('IronCrossPage', () => {
     await waitFor(() => expect(screen.getByTestId('ic-cross-0')).toBeInTheDocument());
     const exposedCard = screen.getByAltText('♠ K');
     expect(exposedCard).toBeInTheDocument();
-    expect(exposedCard.parentElement).not.toHaveAttribute('role', 'img');
+    expect(screen.getByTestId('ic-cross-0')).toHaveAccessibleName('中央、♠ K');
+    expect(screen.getByTestId('ic-cross-1')).toHaveAccessibleName('上、♠ Q');
     // 開いている位置には札があり、伏せている位置には無い。
     expect(screen.getByTestId('ic-cross-0').querySelector('img,svg,div')).not.toBeNull();
     expect(screen.getByTestId('ic-cross-2')).toBeEmptyDOMElement();
@@ -332,15 +338,15 @@ describe('IronCrossPage', () => {
     await waitFor(() => expect(screen.getByTestId('ic-vertical')).toBeInTheDocument());
 
     fireEvent.focus(screen.getByTestId('ic-vertical'));
-    expect(screen.getByTestId('ic-cross-1')).toHaveAccessibleName('縦');
-    expect(screen.getByTestId('ic-cross-0')).toHaveAccessibleName('縦、横');
+    expect(screen.getByTestId('ic-cross-1')).toHaveAccessibleName('上、♠ Q、縦');
+    expect(screen.getByTestId('ic-cross-0')).toHaveAccessibleName('中央、♠ K、縦、横');
     expect(screen.getAllByText('縦')).toHaveLength(2);
     expect(screen.getByText('縦、横')).toBeInTheDocument();
 
     fireEvent.blur(screen.getByTestId('ic-vertical'));
     fireEvent.focus(screen.getByTestId('ic-horizontal'));
-    expect(screen.getByTestId('ic-cross-3')).toHaveAccessibleName('横');
-    expect(screen.getByTestId('ic-cross-0')).toHaveAccessibleName('縦、横');
+    expect(screen.getByTestId('ic-cross-3')).toHaveAccessibleName('左、♠ 10、横');
+    expect(screen.getByTestId('ic-cross-0')).toHaveAccessibleName('中央、♠ K、縦、横');
   });
 
   it('縦はフォーカスでも、横はホバーでも光る', async () => {
