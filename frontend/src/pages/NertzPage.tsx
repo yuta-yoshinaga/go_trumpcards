@@ -28,6 +28,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, NertzFoundationData, NertzPlayerData, NertzResponse, NertzTableauCard } from '../types/card';
 import { NertzPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { NERTZ_HELP, parseNertzCommand } from '../utils/cli/commands/nertzCommands';
 import { formatNertzState } from '../utils/cli/formatters/nertzFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -929,6 +930,7 @@ function TableauColumn({
   validTarget = false,
   selectionActive = false,
 }: TableauColumnProps) {
+  const { t } = useTranslation('nertz');
   const { cardWidth } = useCardDimensions();
   const w = Math.max(44, Math.round(cardWidth * 0.6));
   const isSource = selection?.kind === 'tableau' && selection.col === colIdx;
@@ -970,6 +972,11 @@ function TableauColumn({
             type="button"
             onClick={() => (isLast && selection && !isSelected ? onTarget() : onSelectCard(colIdx, i))}
             disabled={disabled || !tc.card}
+            aria-label={
+              tc.card
+                ? t('labels.tableauCardAria', { card: cardAlt(tc.card), col: colIdx, position: i + 1 })
+                : undefined
+            }
             className="rounded disabled:opacity-50"
           >
             {tc.card ? (

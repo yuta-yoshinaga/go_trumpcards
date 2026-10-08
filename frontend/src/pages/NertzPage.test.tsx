@@ -129,6 +129,25 @@ describe('NertzPage', () => {
     expect(screen.getByRole('button', { name: 'ストックを引く、残り35枚' })).toBeInTheDocument();
   });
 
+  it('labels human tableau card buttons with their card, zero-based column, and one-based position in both languages', async () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    expect(await screen.findByRole('button', { name: 'タブローのカード♠ 5、列0・位置1' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'タブローのカード♣ 6、列1・位置1' })).toBeInTheDocument();
+
+    await act(async () => {
+      await i18n.changeLanguage('en');
+    });
+    expect(await screen.findByRole('button', { name: 'Tableau card ♠ 5, column 0, position 1' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Tableau card ♣ 6, column 1, position 1' })).toBeInTheDocument();
+    await act(async () => {
+      await i18n.changeLanguage('ja');
+    });
+  });
+
   it('renders each CPU tableau and visible waste card', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
