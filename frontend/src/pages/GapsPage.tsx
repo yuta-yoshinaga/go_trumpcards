@@ -266,7 +266,7 @@ function GapsPageContent() {
         </span>
         <div
           data-tutorial="gaps-grid"
-          className="mx-auto mb-3 flex w-fit max-w-full flex-col items-start gap-1 overflow-x-auto"
+          className="mx-auto mb-3 flex w-fit max-w-full flex-col items-start gap-1 overflow-x-auto p-1"
         >
           {state.grid.map((row, rIdx) => {
             const lockedCount = lockedPrefixLengths[rIdx] ?? 0;
