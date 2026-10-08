@@ -253,6 +253,20 @@ func TestCuarenta_MostCardsBonus(t *testing.T) {
 	}
 }
 
+func TestCuarenta_RoundDetailIncludesRoundBonusTotals(t *testing.T) {
+	g := cuNewGame(DefaultCuarentaConfig())
+	g.round.caidaPoints[0] = CuarentaScoreCaida
+	g.round.rondaPoints[0] = 2 * CuarentaScoreRondaPerExtra
+	g.round.limpiaPoints[1] = CuarentaScoreLimpia
+	detail := g.scoreRound()
+	if detail.Caida[0] != CuarentaScoreCaida || detail.Ronda[0] != 2*CuarentaScoreRondaPerExtra || detail.Limpia[1] != CuarentaScoreLimpia {
+		t.Fatalf("round bonus breakdown = caida %v, ronda %v, limpia %v", detail.Caida, detail.Ronda, detail.Limpia)
+	}
+	if detail.Gained[0] != CuarentaScoreCaida+2*CuarentaScoreRondaPerExtra || detail.Gained[1] != CuarentaScoreLimpia {
+		t.Fatalf("round points gained = %v", detail.Gained)
+	}
+}
+
 // TestCuarenta_TargetScoreWin はチームが目標点に達すると勝利することを検証する。
 func TestCuarenta_TargetScoreWin(t *testing.T) {
 	cfg := DefaultCuarentaConfig()

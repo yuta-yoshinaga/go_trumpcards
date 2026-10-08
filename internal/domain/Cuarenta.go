@@ -106,6 +106,9 @@ type cuarentaRoundState struct {
 	gameEndFlag  bool
 	roundWinners []int // ゲーム終了時の勝者チーム
 	lastDetail   *CuarentaRoundDetail
+	caidaPoints  [CuarentaTeamCnt]int
+	rondaPoints  [CuarentaTeamCnt]int
+	limpiaPoints [CuarentaTeamCnt]int
 }
 
 // Cuarenta はクアレンタゲームの状態を保持する集約ルート。
@@ -179,6 +182,9 @@ func (g *Cuarenta) NextRound() {
 	g.round.lastLaidCard = nil
 	g.round.humanAction = nil
 	g.round.cpuActions = nil
+	g.round.caidaPoints = [CuarentaTeamCnt]int{}
+	g.round.rondaPoints = [CuarentaTeamCnt]int{}
+	g.round.limpiaPoints = [CuarentaTeamCnt]int{}
 	g.startRound()
 }
 
@@ -295,6 +301,7 @@ func (g *Cuarenta) applyPlay(playerIdx, handIdx int, record func(*CuarentaAction
 		g.round.lastLaidCard.GetValue() == handCard.GetValue()
 	if isCaida {
 		g.teamScore[team] += CuarentaScoreCaida
+		g.round.caidaPoints[team] += CuarentaScoreCaida
 	}
 
 	// ronda: 同ランク 3 枚以上 (出したカード + 捕獲枚数) を一度に取ると 3 枚目以降 +1/枚。
@@ -303,12 +310,14 @@ func (g *Cuarenta) applyPlay(playerIdx, handIdx int, record func(*CuarentaAction
 	if totalSameRank >= 3 {
 		rondaBonus = (totalSameRank - 2) * CuarentaScoreRondaPerExtra
 		g.teamScore[team] += rondaBonus
+		g.round.rondaPoints[team] += rondaBonus
 	}
 
 	// limpia: 場札を全て掃いた (ラウンド最後の 1 手を除く)。
 	isLimpia := len(g.round.tableCards) == 0 && !g.isLastPlayOfRound()
 	if isLimpia {
 		g.teamScore[team] += CuarentaScoreLimpia
+		g.round.limpiaPoints[team] += CuarentaScoreLimpia
 	}
 
 	// この手は捕獲だったので caída 連鎖の起点をリセット。
@@ -362,8 +371,8 @@ func (g *Cuarenta) finishRound() {
 
 	detail := g.scoreRound()
 	g.round.lastDetail = detail
-	for t := 0; t < CuarentaTeamCnt; t++ {
-		g.teamScore[t] += detail.Gained[t]
+	if detail.MostCards >= 0 {
+		g.teamScore[detail.MostCards] += CuarentaScoreMostCards
 	}
 
 	maxScore := 0
@@ -388,9 +397,9 @@ func (g *Cuarenta) finishRound() {
 	}
 }
 
-// scoreRound はラウンド終了時の最多取りボーナスのみを集計する。
-// caída/ronda/limpia は applyPlay 内で即時加点済みのため、ここでは内訳の
-// 表示用に再計上しつつ、Gained には最多取りボーナスだけを入れる。
+// scoreRound はラウンド中のボーナス内訳と最多取りボーナスを集計する。
+// caída/ronda/limpia は applyPlay 内で即時加点済みのため、Gained に加算して
+// 表示用の合計を作るが、実スコアには finishRound で最多取り分だけを加算する。
 func (g *Cuarenta) scoreRound() *CuarentaRoundDetail {
 	det := &CuarentaRoundDetail{
 		CapturedCount: make(map[int]int),
@@ -402,9 +411,12 @@ func (g *Cuarenta) scoreRound() *CuarentaRoundDetail {
 	}
 	for t := 0; t < CuarentaTeamCnt; t++ {
 		det.CapturedCount[t] = g.GetTeamCapturedCount(t)
+		det.Caida[t] = g.round.caidaPoints[t]
+		det.Ronda[t] = g.round.rondaPoints[t]
+		det.Limpia[t] = g.round.limpiaPoints[t]
+		det.Gained[t] = det.Caida[t] + det.Ronda[t] + det.Limpia[t]
 	}
-	// 即時加点の内訳をログ用に再構成 (humanAction + cpuActions では網羅できないため
-	// 表示は概算。Gained は最多取りボーナスのみを担当する)。
+	// 20 枚を超えて捕獲したチームに最多取りボーナスを加算する。
 	mostTeam := -1
 	for t := 0; t < CuarentaTeamCnt; t++ {
 		if det.CapturedCount[t] > CuarentaMostCardsThreshold {
@@ -586,6 +598,9 @@ type cuarentaJSON struct {
 	GameEndFlag    bool                 `json:"ge"`
 	RoundWinners   []int                `json:"rw"`
 	LastDetail     *CuarentaRoundDetail `json:"ld"`
+	CaidaPoints    []int                `json:"cp,omitempty"`
+	RondaPoints    []int                `json:"rp,omitempty"`
+	LimpiaPoints   []int                `json:"lp,omitempty"`
 }
 
 // cuarentaMaxSliceLen caps slice sizes during deserialisation.
@@ -612,6 +627,9 @@ func (g *Cuarenta) MarshalJSON() ([]byte, error) {
 		GameEndFlag:    g.round.gameEndFlag,
 		RoundWinners:   g.round.roundWinners,
 		LastDetail:     g.round.lastDetail,
+		CaidaPoints:    g.round.caidaPoints[:],
+		RondaPoints:    g.round.rondaPoints[:],
+		LimpiaPoints:   g.round.limpiaPoints[:],
 	})
 }
 
@@ -674,6 +692,17 @@ func (g *Cuarenta) UnmarshalJSON(data []byte) error {
 		gameEndFlag:    j.GameEndFlag,
 		roundWinners:   j.RoundWinners,
 		lastDetail:     j.LastDetail,
+	}
+	for t := 0; t < CuarentaTeamCnt; t++ {
+		if t < len(j.CaidaPoints) {
+			g.round.caidaPoints[t] = j.CaidaPoints[t]
+		}
+		if t < len(j.RondaPoints) {
+			g.round.rondaPoints[t] = j.RondaPoints[t]
+		}
+		if t < len(j.LimpiaPoints) {
+			g.round.limpiaPoints[t] = j.LimpiaPoints[t]
+		}
 	}
 	if g.round.actionLog == nil {
 		g.round.actionLog = make([]*ActionLogEntry, 0)
