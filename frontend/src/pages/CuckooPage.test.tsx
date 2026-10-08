@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, cuckooApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { CuckooPlayer, CuckooResponse } from '../types/card';
@@ -110,6 +111,41 @@ beforeEach(() => {
 });
 
 describe('CuckooPage', () => {
+  it('shows the swap initiator in Japanese and English refusal notices', async () => {
+    mockExec.mockResolvedValue(refuseState);
+    renderWithProviders(<CuckooPage />);
+
+    expect(
+      await screen.findByText('CPU 3 があなたと交換しようとしています。キングを持っているので、公開して拒否できます。'),
+    ).toBeInTheDocument();
+
+    await i18n.changeLanguage('en');
+    expect(
+      screen.getByText('CPU 3 is trying to swap with you. You hold a King, so you can reveal it and refuse.'),
+    ).toBeInTheDocument();
+    await i18n.changeLanguage('ja');
+  });
+
+  it('keeps the existing refusal notice when the swap initiator is invalid', async () => {
+    mockExec.mockResolvedValue(makeState({ ...refuseState, pendingSwapFrom: -1 }));
+    renderWithProviders(<CuckooPage />);
+
+    expect(
+      await screen.findByText('誰かがあなたと交換しようとしています。キングを持っているので、公開して拒否できます。'),
+    ).toBeInTheDocument();
+  });
+
+  it('keeps the existing no-King refusal notice when the swap initiator is invalid', async () => {
+    mockExec.mockResolvedValue(makeState({ ...refuseNoKingState, pendingSwapFrom: -1 }));
+    renderWithProviders(<CuckooPage />);
+
+    expect(
+      await screen.findByText(
+        '誰かがあなたと交換しようとしています。キングを持っていないため拒否できません。受け入れてください。',
+      ),
+    ).toBeInTheDocument();
+  });
+
   it.each([
     ['turn', turnState],
     ['refuse', refuseState],

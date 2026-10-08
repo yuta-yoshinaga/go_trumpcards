@@ -21,6 +21,8 @@
   "refuseNoKingReason": "拒否できるのはキングを持っているときだけです。",
   "refuseNoticeKing": "誰かがあなたと交換しようとしています。キングを持っているので、公開して拒否できます。",
   "refuseNoticeNoKing": "誰かがあなたと交換しようとしています。キングを持っていないため拒否できません。受け入れてください。",
+  "refuseNoticeKingFrom": "{{name}} があなたと交換しようとしています。キングを持っているので、公開して拒否できます。",
+  "refuseNoticeNoKingFrom": "{{name}} があなたと交換しようとしています。キングを持っていないため拒否できません。受け入れてください。",
   "acceptButton": "受け入れる",
   "nextRound": "次のラウンドへ",
   "roundLoser": "{{name}} が最も低いカードでライフを失いました。現在のライフ {{lives}}",
