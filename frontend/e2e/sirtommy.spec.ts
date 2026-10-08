@@ -11,8 +11,8 @@ test.describe('SirTommy E2E', () => {
     // Foundations row. Use the JA-locale label ("組札") since PR #1971
     // localised the aria-label and the Playwright suite runs against the
     // JA-default browser. No step suffix: every Sir Tommy foundation builds +1.
-    await expect(page.getByLabel(/組札 0 /).first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
-    await expect(page.getByLabel(/組札 3 /).first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+    await expect(page.getByLabel(/組札 0:/).first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+    await expect(page.getByLabel(/組札 3:/).first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
 
     // Control buttons while playing
     await expect(page.getByRole('button', { name: 'ヒント' }).first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
