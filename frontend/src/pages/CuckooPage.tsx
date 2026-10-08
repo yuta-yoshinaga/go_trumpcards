@@ -206,6 +206,13 @@ function CuckooPageContent() {
   const humanHasKing = humanPlayer?.card?.value === CUCKOO_KING_VALUE;
 
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
+  const swapInitiator = state.players.find((player) => player.id === state.pendingSwapFrom);
+  const refuseNotice = (hasKing: boolean): string =>
+    swapInitiator
+      ? t(hasKing ? 'refuseNoticeKingFrom' : 'refuseNoticeNoKingFrom', {
+          name: playerLabel(swapInitiator.id, swapInitiator.isHuman),
+        })
+      : t(hasKing ? 'refuseNoticeKing' : 'refuseNoticeNoKing');
   // **脱落者はターン順から飛ばされるので「隣」が席順の隣とは限らない** (#5671)。
   // ディーラーは山札と交換する。
   const swapTargetLabel = (() => {
@@ -366,7 +373,7 @@ function CuckooPageContent() {
             {isHumanRefuseTarget && (
               <>
                 <div className="text-ds-text-muted text-xs mb-2" data-testid="cuckoo-refuse-notice">
-                  {humanHasKing ? t('refuseNoticeKing') : t('refuseNoticeNoKing')}
+                  {refuseNotice(humanHasKing)}
                 </div>
                 {!humanHasKing && (
                   <p id={CUCKOO_REFUSE_NO_KING_REASON_ID} className="sr-only">
