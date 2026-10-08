@@ -35,6 +35,7 @@
   "kingsOnly": "K only",
   "landscapeBanner": "Landscape mode recommended",
   "moveCount": "Moves",
+  "moveAnnouncement": "Moved from {{source}} to {{target}}",
   "foundationProgress": "Foundations: {{count}}/{{total}} ({{percent}}%)",
   "noHint": "No hint available",
   "phase": {
