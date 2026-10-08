@@ -18,6 +18,7 @@
   "stockEmptyAriaLabel": "ストックをめくる、空",
   "moveCount": "手数: {{count}}",
   "progress": "組札: {{count}}/{{total}}枚",
+  "progressAnnouncement": "手数: {{moves}}。組札: {{count}}/{{total}}枚。",
   "draw": "めくる",
   "auto": "オートコンプリート",
   "giveup": "ギブアップ",
