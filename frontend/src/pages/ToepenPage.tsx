@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { toepenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack, CardImage } from '../components/CardImage';
@@ -58,6 +58,27 @@ function ToepenPageContent() {
     useGamePageSetup('toepen');
   const game = useToepenGame();
   const { state, loading, error, retry } = game;
+  const previousLives = useRef<Map<number, { lives: number; eliminated: boolean }> | null>(null);
+  const [lifeAnnouncement, setLifeAnnouncement] = useState('');
+  useEffect(() => {
+    if (!state) return;
+    const previous = previousLives.current;
+    const changes = previous
+      ? state.players.flatMap((player) => {
+          const old = previous.get(player.id);
+          if (!old) return [];
+          if (!old.eliminated && player.eliminated)
+            return [t('lifeEliminated', { name: player.isHuman ? t('you') : t('cpu', { n: player.id }) })];
+          if (old.lives === player.lives) return [];
+          const name = player.isHuman ? t('you') : t('cpu', { n: player.id });
+          return [t(player.lives < old.lives ? 'lifeLost' : 'lifeGained', { name, lives: player.lives })];
+        })
+      : [];
+    previousLives.current = new Map(
+      state.players.map((player) => [player.id, { lives: player.lives, eliminated: player.eliminated }]),
+    );
+    setLifeAnnouncement(changes.join(t('listSeparator')));
+  }, [state, t]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('toepen');
   const cliConfig: CliGameConfig<ToepenResponse, Parameters<typeof toepenApi.exec>> = useMemo(
@@ -113,6 +134,9 @@ function ToepenPageContent() {
         </>
       }
     >
+      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+        {lifeAnnouncement}
+      </div>
       <LandscapeBanner message={t('landscapeBanner')} />
 
       <SettingsPanel

@@ -113,6 +113,40 @@ describe('ToepenPage', () => {
     expect(screen.getByText(/10 > 9 > 8 > 7 > A > K > Q > J/)).toBeInTheDocument();
   });
 
+  it('announces life changes and elimination once, without announcing the initial state', async () => {
+    const initial = makeState({
+      players: [human({ lives: 2 }), cpu(1, { lives: 2 }), cpu(2), cpu(3)],
+    });
+    const changed = makeState({
+      players: [human({ lives: 1 }), cpu(1, { lives: 1, eliminated: true }), cpu(2, { lives: 1 }), cpu(3), cpu(4)],
+    });
+    const humanEliminated = makeState({
+      players: [
+        human({ lives: 1, eliminated: true }),
+        cpu(1, { lives: 1, eliminated: true }),
+        cpu(2, { lives: 1 }),
+        cpu(3),
+        cpu(4),
+      ],
+    });
+    mockExec.mockResolvedValueOnce(initial).mockResolvedValueOnce(changed).mockResolvedValueOnce(humanEliminated);
+    renderWithProviders(<ToepenPage />);
+
+    await screen.findByText(/10 > 9 > 8 > 7 > A > K > Q > J/);
+    const status = screen.getByRole('status');
+    expect(status).toBeEmptyDOMElement();
+
+    fireEvent.click(await screen.findByTestId('toepen-hand-0'));
+    await waitFor(() =>
+      expect(status).toHaveTextContent(
+        'あなたのライフが減り、残り1です、CPU1が脱落しました、CPU2のライフが増え、残り1です',
+      ),
+    );
+    fireEvent.click(screen.getByTestId('toepen-hand-0'));
+    await waitFor(() => expect(status).toHaveTextContent('あなたが脱落しました'));
+    expect(status).toHaveClass('sr-only');
+  });
+
   it('never renders the opponent hands as cards', async () => {
     renderWithProviders(<ToepenPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
