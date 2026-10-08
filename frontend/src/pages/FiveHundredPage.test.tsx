@@ -62,6 +62,7 @@ function makeState(overrides: Partial<FiveHundredResponse> = {}): FiveHundredRes
     jokerLeadSuit: -1,
     kittyCount: 3,
     currentTrick: [],
+    validPlayIndices: [0, 1, 2],
     teamScores: [0, 0],
     gameEndFlag: false,
     winnerTeam: -1,
@@ -248,6 +249,63 @@ describe('FiveHundredPage', () => {
     expect(card0).not.toBeDisabled();
     fireEvent.click(card0);
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toHaveAttribute('aria-pressed', 'true'));
+  });
+
+  it('distinguishes cards that must follow the led suit, while allowing any card when void', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        currentPlayerIdx: 0,
+        currentTrick: [{ playerIdx: 1, card: card('HEART', 8) }],
+        validPlayIndices: [1],
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+    const spade = await screen.findByTestId('hand-card-0');
+    const heart = screen.getByTestId('hand-card-1');
+    expect(spade).toHaveAttribute('aria-disabled', 'true');
+    expect(spade).not.toBeDisabled();
+    expect(spade).toHaveAttribute('aria-describedby', 'fh-illegal-play-reason');
+    expect(spade).toHaveClass('opacity-40');
+    expect(heart).toHaveAttribute('aria-disabled', 'false');
+    fireEvent.click(spade);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
+    fireEvent.click(heart);
+    expect(spade).toHaveAttribute('aria-pressed', 'false');
+    expect(heart).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('fh-illegal-play-reason')).toHaveTextContent('リードされたスートに従ってください。');
+  });
+
+  it('uses the joker nominated suit as the lead suit in a no-trump contract', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        currentPlayerIdx: 0,
+        contractKind: FiveHundredContract.NO_TRUMP,
+        currentTrick: [{ playerIdx: 1, card: card('JOKER', 0) }],
+        jokerLeadSuit: 3,
+        validPlayIndices: [1],
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+    expect(await screen.findByTestId('hand-card-0')).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByTestId('hand-card-1')).toHaveAttribute('aria-disabled', 'false');
+  });
+
+  it('marks every card playable when the hand has none of the led suit', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        currentPlayerIdx: 0,
+        currentTrick: [{ playerIdx: 1, card: card('CLUB', 8) }],
+        validPlayIndices: [0, 1, 2],
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+    for (const i of [0, 1, 2]) {
+      expect(await screen.findByTestId(`hand-card-${i}`)).toHaveAttribute('aria-disabled', 'false');
+    }
   });
 
   it('keeps hand cards labeled but disabled in a non-selectable phase (bid)', async () => {

@@ -3391,6 +3391,7 @@ const baseFiveHundredState: FiveHundredResponse = {
   jokerLeadSuit: -1,
   kittyCount: 3,
   currentTrick: [],
+  validPlayIndices: [],
   teamScores: [0, 0],
   gameEndFlag: false,
   winnerTeam: -1,

@@ -77400,6 +77400,11 @@ components:
           type: integer
         currentTrick:
           type: array
+        validPlayIndices:
+          type: array
+          description: "Hand indices the human player may legally play during their play turn."
+          items:
+            type: integer
         teamScores:
           type: array
           items:
