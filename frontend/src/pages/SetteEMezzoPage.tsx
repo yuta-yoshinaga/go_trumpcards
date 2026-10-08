@@ -114,45 +114,47 @@ function SetteEMezzoPageContent() {
    * Render one hand. Visibility comes from the server's `hidden` flag; the page
    * never re-derives it, so there is one place that can be wrong instead of two.
    */
-  const renderHand = (hand: SetteEMezzoHand, label: string, keyPrefix: string) => (
-    <div className="text-center">
-      <div
-        className="flex gap-1 justify-center"
-        role="img"
-        aria-label={
-          hand.hidden
-            ? label
-            : hand.hasMatta
-              ? t('seatAriaLabelWithMatta', {
-                  name: label,
-                  total: hand.totalLabel,
-                  value: halvesToLabel(hand.mattaHalves || 1),
-                })
-              : t('seatAriaLabel', { name: label, total: hand.totalLabel })
-        }
-      >
-        {hand.cards.map((card, i) =>
-          hand.hidden || !card ? (
-            <CardBack key={`${keyPrefix}-c${i.toString()}`} width={cardWidth} />
-          ) : (
-            <AnimatedCard key={`${keyPrefix}-c${i.toString()}`} card={card} width={cardWidth} draggable={false} />
-          ),
-        )}
-      </div>
-      {!hand.hidden && (
-        <div className="text-game-text-muted text-xs mt-1">
-          {t('total')}: {hand.totalLabel}
-          {/* The matta stays adjustable until the hand stands, so its current
-              value has to be visible or the choice is blind. */}
-          {hand.hasMatta && (
-            <span className="ml-1 text-ds-warning">
-              {t('mattaValue', { value: halvesToLabel(hand.mattaHalves || 1) })}
-            </span>
+  const renderHand = (hand: SetteEMezzoHand, label: string, keyPrefix: string, onTurn = false) => {
+    const baseLabel = hand.hidden
+      ? label
+      : hand.hasMatta
+        ? t('seatAriaLabelWithMatta', {
+            name: label,
+            total: hand.totalLabel,
+            value: halvesToLabel(hand.mattaHalves || 1),
+          })
+        : t('seatAriaLabel', { name: label, total: hand.totalLabel });
+
+    return (
+      <div className="text-center">
+        <div
+          className="flex gap-1 justify-center"
+          role="img"
+          aria-label={onTurn ? t('seatAriaLabelOnTurn', { label: baseLabel }) : baseLabel}
+        >
+          {hand.cards.map((card, i) =>
+            hand.hidden || !card ? (
+              <CardBack key={`${keyPrefix}-c${i.toString()}`} width={cardWidth} />
+            ) : (
+              <AnimatedCard key={`${keyPrefix}-c${i.toString()}`} card={card} width={cardWidth} draggable={false} />
+            ),
           )}
         </div>
-      )}
-    </div>
-  );
+        {!hand.hidden && (
+          <div className="text-game-text-muted text-xs mt-1">
+            {t('total')}: {hand.totalLabel}
+            {/* The matta stays adjustable until the hand stands, so its current
+              value has to be visible or the choice is blind. */}
+            {hand.hasMatta && (
+              <span className="ml-1 text-ds-warning">
+                {t('mattaValue', { value: halvesToLabel(hand.mattaHalves || 1) })}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <GamePageShell
@@ -236,6 +238,7 @@ function SetteEMezzoPageContent() {
                           ? t('hiddenHandAriaLabel', { name: seat.name, count: seat.hand.cards.length })
                           : seat.name,
                         `s${seatIdx.toString()}`,
+                        onTurn,
                       )}
                       <div className="text-game-text-muted text-xs mt-1">
                         {t('bet')}: {seat.hand.bet}
