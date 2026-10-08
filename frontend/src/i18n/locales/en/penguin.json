@@ -34,7 +34,7 @@
     "freeCells": "Seven free cells. Three start occupied after the deal. More empty cells allow moving more cards at once.",
     "foundation": "Foundation piles. Build each suit from the base rank upward, wrapping K to A.",
     "tableau": "Tableau columns. Cards must be stacked in the SAME suit descending, wrapping K to A. Only the rank before the base rank may move to empty columns.",
-    "controls": "Control buttons: Undo, Hint, Auto-complete.",
+    "controls": "Control buttons: Undo, Hint, and Auto-complete. When no legal moves remain, you are stuck and an Escape button appears here. Press it to undo the number of moves shown and resume playing.",
     "resetButton": "Press the reset button to start a new game."
   },
   "landscapeBanner": "Landscape mode recommended",

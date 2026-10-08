@@ -706,6 +706,21 @@ describe('PenguinPage', () => {
     renderWithProviders(<PenguinPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
   });
+
+  it('explains the stalemate escape button in the controls tutorial step', async () => {
+    localStorage.removeItem('tutorial_progress_penguin');
+    localStorage.removeItem('tutorial_completed_penguin');
+    renderWithProviders(<PenguinPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'チュートリアル' }));
+
+    await screen.findByText(/7つのフリーセルです/);
+    for (const expected of [/組札です/, /タブローです/, /操作ボタンです/]) {
+      fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+      await screen.findByText(expected);
+    }
+
+    expect(await screen.findByRole('dialog')).toHaveTextContent(/行き詰まり/);
+  });
 });
 
 // #5614: 空き列へ動かすときの上限はドメインが別に持っている (その空き列自身を
