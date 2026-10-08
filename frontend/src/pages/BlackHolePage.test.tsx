@@ -123,11 +123,24 @@ describe('BlackHolePage', () => {
   });
 
   it('plays a fan top into the black hole', async () => {
+    mockExec.mockResolvedValue(makeState({ blackHole: [card('SPADE', 7)] }));
     renderWithProviders(<BlackHolePage />);
     const top = await screen.findByTestId('card-0-1');
+    expect(top).not.toHaveAttribute('aria-disabled', 'true');
     mockExec.mockClear();
     fireEvent.click(top);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('mb', { fan: 0 }));
+  });
+
+  it('does not play a non-adjacent fan top', async () => {
+    mockExec.mockResolvedValue(makeState({ blackHole: [card('SPADE', 7)] }));
+    renderWithProviders(<BlackHolePage />);
+    const illegalTop = await screen.findByTestId('card-1-0');
+    expect(illegalTop).toHaveAttribute('aria-disabled', 'true');
+    mockExec.mockClear();
+    fireEvent.click(illegalTop);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   it('does not play a non-top card', async () => {
@@ -293,6 +306,12 @@ describe('BlackHolePage', () => {
     const count = await screen.findByTestId('bh-legal-count');
     expect(count).toHaveTextContent('合法手: 0');
     expect(count.className).toContain('text-ds-warning');
+    const topCards = [screen.getByTestId('card-0-0'), screen.getByTestId('card-1-0')];
+    for (const top of topCards) expect(top).toHaveAttribute('aria-disabled', 'true');
+    mockExec.mockClear();
+    fireEvent.click(topCards[0]);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   it('does not ring an A-K wrap (no wrap in Black Hole)', async () => {
