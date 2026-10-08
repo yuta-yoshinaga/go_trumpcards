@@ -302,11 +302,23 @@ function BalootPageContent() {
                       }}
                       disabled={loading || !isHumanTurn}
                       aria-label={
-                        canAnnotatePlays
-                          ? t(legalRing.has(idx) ? 'actions.playableAria' : 'actions.notPlayableAria', {
-                              card: cardAlt(card),
-                            })
-                          : t('actions.playAria', { card: cardAlt(card) })
+                        state.mode !== BalootMode.NONE
+                          ? canAnnotatePlays
+                            ? t(
+                                legalRing.has(idx)
+                                  ? 'actions.playableAriaWithPoints'
+                                  : 'actions.notPlayableAriaWithPoints',
+                                { card: cardAlt(card), points: balootCardPoints(card, state.mode, state.trumpSuit) },
+                              )
+                            : t('actions.playAriaWithPoints', {
+                                card: cardAlt(card),
+                                points: balootCardPoints(card, state.mode, state.trumpSuit),
+                              })
+                          : canAnnotatePlays
+                            ? t(legalRing.has(idx) ? 'actions.playableAria' : 'actions.notPlayableAria', {
+                                card: cardAlt(card),
+                              })
+                            : t('actions.playAria', { card: cardAlt(card) })
                       }
                       aria-disabled={canAnnotatePlays && !legalRing.has(idx) ? true : undefined}
                       aria-describedby={

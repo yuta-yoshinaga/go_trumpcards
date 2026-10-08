@@ -37,8 +37,11 @@
     "reset": "Reset",
     "giveUp": "Give up",
     "playAria": "Play {{card}}",
+    "playAriaWithPoints": "{{card}}, worth {{points}} points",
     "playableAria": "{{card}}. Playable",
     "notPlayableAria": "{{card}}. Not playable",
+    "playableAriaWithPoints": "{{card}}, worth {{points}} points. Playable",
+    "notPlayableAriaWithPoints": "{{card}}, worth {{points}} points. Not playable",
     "notPlayableReason": "This card cannot be played now."
   },
   "dealerStuck": "You are the dealer. The dealer cannot pass.",
