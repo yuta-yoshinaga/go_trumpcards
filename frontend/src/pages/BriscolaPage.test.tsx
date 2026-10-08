@@ -87,6 +87,54 @@ describe('BriscolaPage', () => {
     expect(screen.getByText(/得点/)).toBeInTheDocument();
   });
 
+  it('exposes each score as accessible progress capped at the 61-point win target', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        gameEndFlag: true,
+        winnerIdx: 0,
+        players: [
+          { id: 0, isHuman: true, cardCount: 0, cards: [], points: 70, trickCount: 10 },
+          { id: 1, isHuman: false, cardCount: 0, cards: [], points: 50, trickCount: 10 },
+        ],
+      }),
+    );
+    renderWithProviders(<BriscolaPage />);
+
+    const humanProgress = await screen.findByRole('progressbar', { name: 'あなたの得点70点、目標61点' });
+    const cpuProgress = screen.getByRole('progressbar', { name: 'CPUの得点50点、目標61点' });
+    expect(humanProgress).toHaveAttribute('max', '61');
+    expect(humanProgress).toHaveAttribute('value', '61');
+    expect(cpuProgress).toHaveAttribute('max', '61');
+    expect(cpuProgress).toHaveAttribute('value', '50');
+    expect(screen.getByText(/あなたの勝ち！.*70.*50/)).toBeInTheDocument();
+
+    await i18n.changeLanguage('en');
+    expect(screen.getByRole('progressbar', { name: 'You score: 70 points, target 61 points' })).toBeInTheDocument();
+    expect(screen.getByRole('progressbar', { name: 'CPU score: 50 points, target 61 points' })).toBeInTheDocument();
+  });
+
+  it('shows tied scores as separate progress values', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        gameEndFlag: true,
+        winnerIdx: -1,
+        players: [
+          { id: 0, isHuman: true, cardCount: 0, cards: [], points: 60, trickCount: 10 },
+          { id: 1, isHuman: false, cardCount: 0, cards: [], points: 60, trickCount: 10 },
+        ],
+      }),
+    );
+    renderWithProviders(<BriscolaPage />);
+    expect(await screen.findByRole('progressbar', { name: 'あなたの得点60点、目標61点' })).toHaveAttribute(
+      'value',
+      '60',
+    );
+    expect(screen.getByRole('progressbar', { name: 'CPUの得点60点、目標61点' })).toHaveAttribute('value', '60');
+    expect(screen.getByText(/引き分け/)).toBeInTheDocument();
+  });
+
   it('exposes the tutorial target elements for the guided tour', async () => {
     // A card on the table so the trick area (conditionally rendered) is present.
     mockExec.mockResolvedValue(makeState({ currentTrick: [{ playerIdx: 1, card: card('CLOVER', 4) }] }));

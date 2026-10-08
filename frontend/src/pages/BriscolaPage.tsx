@@ -180,6 +180,22 @@ function BriscolaPageContent() {
             {t('header.points')} — {t('header.you')}: {human?.points ?? 0} / {t('header.cpu')}: {cpu?.points ?? 0}
           </span>
         </div>
+        <section aria-label={t('header.scoreProgress')} className="flex justify-center gap-6 mb-4">
+          {state.players.map(({ isHuman: playerIsHuman, points }) => {
+            const label = playerIsHuman ? t('header.you') : t('header.cpu');
+            return (
+              <div key={label} className="flex items-center gap-2">
+                <span className="text-ds-text-muted text-sm">{label}</span>
+                <progress
+                  aria-label={t('header.scoreProgressLabel', { player: label, points, target: 61 })}
+                  className="w-24 accent-ds-accent"
+                  max={61}
+                  value={Math.min(points, 61)}
+                />
+              </div>
+            );
+          })}
+        </section>
 
         {/* CPU info + trump card */}
         <div className="flex flex-wrap items-start gap-4 mb-4">

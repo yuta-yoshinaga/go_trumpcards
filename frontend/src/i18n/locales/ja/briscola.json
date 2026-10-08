@@ -8,6 +8,8 @@
     "you": "あなた",
     "cpu": "CPU",
     "points": "得点",
+    "scoreProgress": "得点の進捗",
+    "scoreProgressLabel": "{{player}}の得点{{points}}点、目標{{target}}点",
     "trump": "切り札 (ブリスコラ): {{suit}}",
     "trumpNone": "切り札なし",
     "tricks": "獲得"
