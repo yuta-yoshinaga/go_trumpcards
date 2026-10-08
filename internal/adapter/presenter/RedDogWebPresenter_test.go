@@ -23,6 +23,7 @@ func setupRedDogWebMockDefaults(m *interfaces.MockRedDogGame) {
 	m.On("GetSpread").Return(0).Maybe()
 	m.On("GetResult").Return(domain.GameResult(0)).Maybe()
 	m.On("GetTotalPayout").Return(0).Maybe()
+	m.On("GetNetChange").Return(0).Maybe()
 	m.On("GetAppliedMultiplier").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 }
@@ -74,6 +75,8 @@ func TestRedDogWebPresenter_Output_EndWin(t *testing.T) {
 	m.On("GetSpread").Return(4)
 	m.On("GetResult").Return(domain.GameResultWin)
 	m.On("GetTotalPayout").Return(400)
+	m.On("GetNetChange").Return(200)
+	m.On("GetNetChange").Return(200)
 	m.On("GetAppliedMultiplier").Return(1)
 
 	r := parseRedDogOutput(t, p.Output(m, nil))
@@ -82,6 +85,7 @@ func TestRedDogWebPresenter_Output_EndWin(t *testing.T) {
 	assert.Len(t, r.InitialCards, 2)
 	assert.NotNil(t, r.ThirdCard)
 	assert.Equal(t, 400, r.TotalPayout)
+	assert.Equal(t, 200, r.NetChange)
 	assert.Equal(t, 1, r.AppliedMultiplier)
 }
 
@@ -100,6 +104,7 @@ func TestRedDogWebPresenter_Output_EndLose(t *testing.T) {
 	m.On("GetSpread").Return(3)
 	m.On("GetResult").Return(domain.GameResultLose)
 	m.On("GetTotalPayout").Return(0)
+	m.On("GetNetChange").Return(0)
 	m.On("GetAppliedMultiplier").Return(0)
 	r := parseRedDogOutput(t, p.Output(m, nil))
 	assert.Equal(t, "Player loses.", r.Message)
@@ -124,6 +129,7 @@ func TestRedDogWebPresenter_Output_EndPairWin(t *testing.T) {
 	m.On("GetRaise").Return(0)
 	m.On("GetSpread").Return(0)
 	m.On("GetTotalPayout").Return(1200)
+	m.On("GetNetChange").Return(1100)
 	m.On("GetAppliedMultiplier").Return(11)
 
 	r := parseRedDogOutput(t, p.Output(m, nil))
@@ -149,6 +155,7 @@ func TestRedDogWebPresenter_Output_EndPairLose(t *testing.T) {
 	m.On("GetRaise").Return(0)
 	m.On("GetSpread").Return(0)
 	m.On("GetTotalPayout").Return(0)
+	m.On("GetNetChange").Return(0)
 	m.On("GetAppliedMultiplier").Return(0)
 
 	r := parseRedDogOutput(t, p.Output(m, nil))
@@ -173,6 +180,7 @@ func TestRedDogWebPresenter_Output_EndPairPush(t *testing.T) {
 	m.On("GetRaise").Return(0)
 	m.On("GetSpread").Return(0)
 	m.On("GetTotalPayout").Return(100)
+	m.On("GetNetChange").Return(0)
 	m.On("GetAppliedMultiplier").Return(0)
 
 	r := parseRedDogOutput(t, p.Output(m, nil))
@@ -197,6 +205,7 @@ func TestRedDogWebPresenter_Output_EndNonPairKeepsResultCode(t *testing.T) {
 	m.On("GetRaise").Return(0)
 	m.On("GetSpread").Return(0)
 	m.On("GetTotalPayout").Return(0)
+	m.On("GetNetChange").Return(0)
 	m.On("GetAppliedMultiplier").Return(0)
 
 	r := parseRedDogOutput(t, p.Output(m, nil))
@@ -216,6 +225,7 @@ func TestRedDogWebPresenter_Output_EndPush(t *testing.T) {
 	m.On("GetSpread").Return(0)
 	m.On("GetResult").Return(domain.GameResultDraw)
 	m.On("GetTotalPayout").Return(100)
+	m.On("GetNetChange").Return(0)
 	m.On("GetAppliedMultiplier").Return(0)
 	r := parseRedDogOutput(t, p.Output(m, nil))
 	assert.Equal(t, "Push.", r.Message)
@@ -240,6 +250,7 @@ func TestRedDogWebPresenter_Output_EndConsecutivePush(t *testing.T) {
 	m.On("GetSpread").Return(0)
 	m.On("GetResult").Return(domain.GameResultDraw)
 	m.On("GetTotalPayout").Return(100)
+	m.On("GetNetChange").Return(0)
 	m.On("GetAppliedMultiplier").Return(0)
 
 	r := parseRedDogOutput(t, p.Output(m, nil))

@@ -113,6 +113,7 @@ func TestRedDog_Bet_Consecutive_Push(t *testing.T) {
 	assert.True(t, rd.GetGameEndFlag())
 	assert.Equal(t, domain.GameResultDraw, rd.GetResult())
 	assert.Equal(t, 100, rd.GetTotalPayout()) // ante refunded
+	assert.Equal(t, 0, rd.GetNetChange())
 	assert.Equal(t, 0, rd.GetAppliedMultiplier())
 	assert.Equal(t, domain.RedDogDefaultChips, rd.GetChips())
 }
@@ -135,6 +136,7 @@ func TestRedDog_Bet_PairThenMatch_Win(t *testing.T) {
 	assert.Equal(t, domain.GameResultWin, rd.GetResult())
 	// 11:1 on ante: 100 + 100*11 = 1200
 	assert.Equal(t, 1200, rd.GetTotalPayout())
+	assert.Equal(t, 1100, rd.GetNetChange())
 	assert.Equal(t, 11, rd.GetAppliedMultiplier())
 }
 
@@ -151,6 +153,7 @@ func TestRedDog_Bet_PairThenNoMatch_Push(t *testing.T) {
 	assert.True(t, rd.GetGameEndFlag())
 	assert.Equal(t, domain.GameResultDraw, rd.GetResult())
 	assert.Equal(t, 100, rd.GetTotalPayout()) // ante refunded
+	assert.Equal(t, 0, rd.GetNetChange())
 	assert.Equal(t, 0, rd.GetAppliedMultiplier())
 }
 
@@ -267,6 +270,7 @@ func TestRedDog_SpreadDecision_LossOutside(t *testing.T) {
 	require.NoError(t, rd.Stay())
 	assert.Equal(t, domain.GameResultLose, rd.GetResult())
 	assert.Equal(t, 0, rd.GetTotalPayout())
+	assert.Equal(t, -100, rd.GetNetChange())
 }
 
 func TestRedDog_SpreadDecision_LossOnBoundary(t *testing.T) {
@@ -312,6 +316,7 @@ func TestRedDog_Raise_LossLosesAllBets(t *testing.T) {
 	require.NoError(t, rd.Raise(100))
 	assert.Equal(t, domain.GameResultLose, rd.GetResult())
 	assert.Equal(t, 0, rd.GetTotalPayout())
+	assert.Equal(t, -200, rd.GetNetChange())
 	assert.Equal(t, chipsBefore-100, rd.GetChips())
 }
 

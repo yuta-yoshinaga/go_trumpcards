@@ -30,6 +30,7 @@ func (rp *RedDogWebPresenter) Output(rd interfaces.RedDogGame, lastErr error) st
 	resObj.Spread = rd.GetSpread()
 	resObj.Result = int(rd.GetResult())
 	resObj.TotalPayout = rd.GetTotalPayout()
+	resObj.NetChange = rd.GetNetChange()
 	resObj.AppliedMultiplier = rd.GetAppliedMultiplier()
 
 	if lastErr != nil {

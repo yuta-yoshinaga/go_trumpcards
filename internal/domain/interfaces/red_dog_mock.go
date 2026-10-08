@@ -91,6 +91,11 @@ func (m *MockRedDogGame) GetTotalPayout() int {
 	return args.Int(0)
 }
 
+func (m *MockRedDogGame) GetNetChange() int {
+	args := m.Called()
+	return args.Int(0)
+}
+
 func (m *MockRedDogGame) GetAppliedMultiplier() int {
 	args := m.Called()
 	return args.Int(0)

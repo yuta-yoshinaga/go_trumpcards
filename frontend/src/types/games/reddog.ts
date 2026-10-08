@@ -17,6 +17,7 @@ export interface RedDogResponse extends BaseGameResponse {
   spread: number;
   result: number;
   totalPayout: number;
+  netChange: number;
   /** Multiplier used for the settled winning payout, or 0 otherwise. */
   appliedMultiplier: number;
 }

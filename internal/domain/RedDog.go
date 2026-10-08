@@ -47,6 +47,7 @@ type RedDog struct {
 	gameEndFlag       bool
 	result            GameResult
 	totalPayout       int
+	netChange         int
 	appliedMultiplier int
 	actionLogBase
 }
@@ -78,6 +79,7 @@ func (rd *RedDog) Reset() {
 	rd.spread = 0
 	rd.result = 0
 	rd.totalPayout = 0
+	rd.netChange = 0
 	rd.appliedMultiplier = 0
 	rd.actionLog = nil
 	if rd.chips.GetChips() < RedDogMinBet {
@@ -150,6 +152,7 @@ func (rd *RedDog) ResolveInitial() {
 		rd.spread = 0
 		rd.result = GameResultDraw
 		rd.totalPayout = rd.ante
+		rd.netChange = 0
 		rd.chips.AddChips(rd.ante)
 		rd.gameEndFlag = true
 		rd.phase = RedDogPhaseEnd
@@ -210,9 +213,11 @@ func (rd *RedDog) ResolveThird() {
 			rd.result = GameResultWin
 			rd.appliedMultiplier = RedDogPayPair
 			rd.totalPayout = rd.ante + rd.ante*RedDogPayPair
+			rd.netChange = rd.totalPayout - rd.ante
 		} else {
 			rd.result = GameResultDraw
 			rd.totalPayout = rd.ante // 返金
+			rd.netChange = 0
 		}
 	case RedDogPhaseSpreadDecision:
 		r1, r2 := rankOf(rd.initialCards[0]), rankOf(rd.initialCards[1])
@@ -226,9 +231,11 @@ func (rd *RedDog) ResolveThird() {
 			rd.appliedMultiplier = multiplier
 			totalBet := rd.ante + rd.raise
 			rd.totalPayout = totalBet + totalBet*multiplier
+			rd.netChange = rd.totalPayout - totalBet
 		} else {
 			rd.result = GameResultLose
 			rd.totalPayout = 0
+			rd.netChange = -(rd.ante + rd.raise)
 		}
 	}
 	if rd.totalPayout > 0 {
@@ -292,6 +299,9 @@ func (rd *RedDog) GetResult() GameResult { return rd.result }
 // GetTotalPayout 合計配当
 func (rd *RedDog) GetTotalPayout() int { return rd.totalPayout }
 
+// GetNetChange returns the settled profit or loss for the current round.
+func (rd *RedDog) GetNetChange() int { return rd.netChange }
+
 // GetAppliedMultiplier returns the multiplier used for the settled winning payout, or 0 otherwise.
 func (rd *RedDog) GetAppliedMultiplier() int { return rd.appliedMultiplier }
 
@@ -329,6 +339,7 @@ type redDogJSON struct {
 	GameEndFlag       bool              `json:"ge"`
 	Result            GameResult        `json:"gr"`
 	TotalPayout       int               `json:"tp"`
+	NetChange         int               `json:"nc"`
 	AppliedMultiplier int               `json:"am"`
 	ActionLog         []*ActionLogEntry `json:"al"`
 }
@@ -347,6 +358,7 @@ func (rd *RedDog) MarshalJSON() ([]byte, error) {
 		GameEndFlag:       rd.gameEndFlag,
 		Result:            rd.result,
 		TotalPayout:       rd.totalPayout,
+		NetChange:         rd.netChange,
 		AppliedMultiplier: rd.appliedMultiplier,
 		ActionLog:         rd.actionLog,
 	})
@@ -383,6 +395,7 @@ func (rd *RedDog) UnmarshalJSON(data []byte) error {
 	rd.gameEndFlag = j.GameEndFlag
 	rd.result = j.Result
 	rd.totalPayout = j.TotalPayout
+	rd.netChange = j.NetChange
 	rd.appliedMultiplier = j.AppliedMultiplier
 	rd.actionLog = j.ActionLog
 	if rd.actionLog == nil {

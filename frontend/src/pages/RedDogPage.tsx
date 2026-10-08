@@ -238,6 +238,9 @@ function RedDogPageContent() {
                 <div className="font-bold">
                   {t('payout.total')}: {state.totalPayout}
                 </div>
+                <div className="font-bold">
+                  {t('payout.netChange')}: {state.netChange}
+                </div>
               </div>
             )}
 
