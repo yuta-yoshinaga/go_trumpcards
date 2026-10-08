@@ -248,7 +248,9 @@ function SultanPageContent() {
                       type="button"
                       onClick={() => handlePlay({ zone: 'waste' })}
                       disabled={!isPlaying || loading || isAutoCompleting}
-                      aria-label={cardAlt(wasteDisplay[0])}
+                      aria-label={t(wastePlayable ? 'wastePlayableCard' : 'wasteUnplayableCard', {
+                        label: cardAlt(wasteDisplay[0]),
+                      })}
                       className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}${wastePlayable ? ' ring-2 ring-ds-success' : ''}`}
                       data-playable={wastePlayable ? 'true' : undefined}
                     >
