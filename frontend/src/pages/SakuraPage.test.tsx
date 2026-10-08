@@ -70,6 +70,24 @@ describe('SakuraPage', () => {
     expect(within(screen.getByTestId('sakura-human')).getAllByTestId('sakura-card-points')[0]).toHaveTextContent('1');
   });
 
+  it('announces each hand card name and its presenter-provided points while preserving selection', async () => {
+    const handCard = { ...playState.players[0].cards[0], points: 20 };
+    mockExec.mockResolvedValue(
+      makeSakuraState({
+        players: [{ ...playState.players[0], cards: [handCard] }, playState.players[1], playState.players[2]],
+        captureOptions: { 0: [0, 1] },
+        choiceOptions: { 0: [0, 1] },
+      }),
+    );
+    renderWithProviders(<SakuraPage />);
+
+    const button = await screen.findByRole('button', { name: `${cardAlt(handCard)}、20点` });
+    expect(button).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(button);
+    expect(button).toHaveAttribute('aria-pressed', 'true');
+    expect(button).toHaveAccessibleName(`${cardAlt(handCard)}、20点`);
+  });
+
   it('includes the field card name, zero-based position, points, and choice status in its accessible name', async () => {
     mockExec.mockResolvedValue(
       makeSakuraState({

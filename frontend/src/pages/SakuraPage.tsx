@@ -300,6 +300,9 @@ function SakuraPageContent() {
                   }`}
                   data-testid={`hand-card-${i}`}
                   data-can-capture={(state.captureOptions[i]?.length ?? 0) > 0 || undefined}
+                  aria-label={
+                    c.points != null ? t('handCardPoints', { cardName: cardAlt(c), points: c.points }) : undefined
+                  }
                 >
                   <SakuraCard card={c} width={cardWidth} />
                 </button>
