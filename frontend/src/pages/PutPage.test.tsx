@@ -1,6 +1,7 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { putApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, PutResponse } from '../types/card';
@@ -196,6 +197,27 @@ describe('PutPage', () => {
     expect(counts).toHaveTextContent('あなた30');
     expect(counts).toHaveTextContent('CPU30');
     expect(screen.getByRole('button', { name: '♠ A を出す' })).toBeInTheDocument();
+  });
+
+  it('names the player card and trick comparison table accessibly', async () => {
+    const previousLanguage = i18n.language;
+    try {
+      await i18n.changeLanguage('ja');
+      const { unmount } = renderWithProviders(<PutPage />);
+      const jaTable = await screen.findByRole('table', { name: 'プレイヤー別の手札枚数と獲得トリック数' });
+      expect(jaTable).toHaveAttribute('data-testid', 'put-player-counts');
+      expect(within(jaTable).getByRole('columnheader', { name: '手札' })).toBeInTheDocument();
+      expect(within(jaTable).getByRole('columnheader', { name: '獲得トリック' })).toBeInTheDocument();
+      unmount();
+
+      await i18n.changeLanguage('en');
+      renderWithProviders(<PutPage />);
+      const enTable = await screen.findByRole('table', { name: 'Player hand counts and tricks won' });
+      expect(within(enTable).getByRole('columnheader', { name: 'Cards' })).toBeInTheDocument();
+      expect(within(enTable).getByRole('columnheader', { name: 'Tricks won' })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('hides the comparison table in the match result phase', async () => {
