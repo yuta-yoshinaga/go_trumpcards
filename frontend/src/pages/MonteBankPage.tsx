@@ -246,6 +246,17 @@ function MonteBankPageContent() {
                           : `${((entry.remainingOfSuit / state.remainingCards) * 100).toFixed(1)}%`,
                     })}
                   </span>
+                  <span className="text-ds-text-muted text-xs" data-testid={`mb-expected-net-${i}`}>
+                    {t('label.nextGateExpectedNet', {
+                      amount:
+                        state.remainingCards === 0
+                          ? t('label.probabilityUnavailable')
+                          : (
+                              bet *
+                              ((state.payoutMultiplier + 1) * (entry.remainingOfSuit / state.remainingCards) - 1)
+                            ).toFixed(1),
+                    })}
+                  </span>
                 </button>
               ))}
             </div>

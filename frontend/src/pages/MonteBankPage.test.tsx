@@ -206,6 +206,30 @@ describe('MonteBankPage', () => {
     expect(screen.getByTestId('mb-probability-0')).toHaveTextContent('—');
   });
 
+  it('現在の賭け金と次ゲート確率から場札ごとの期待純収支を表示し、賭け金変更に追従する', async () => {
+    mockApi.mockResolvedValue({
+      ...base,
+      remainingCards: 36,
+      layout: [entry({ remainingOfSuit: 8 }), entry({ card: card('HEART', 5), remainingOfSuit: 9 })],
+    });
+    renderWithProviders(<MonteBankPage />);
+
+    await waitFor(() => expect(screen.getByTestId('mb-expected-net-0')).toBeInTheDocument());
+    expect(screen.getByTestId('mb-expected-net-0')).toHaveTextContent('-5.6');
+    expect(screen.getByTestId('mb-expected-net-1')).toHaveTextContent('0.0');
+
+    fireEvent.change(screen.getByLabelText('賭け金'), { target: { value: '100' } });
+    expect(screen.getByTestId('mb-expected-net-0')).toHaveTextContent('-11.1');
+  });
+
+  it('山札が空なら期待純収支を算出不能として表示する', async () => {
+    mockApi.mockResolvedValue(withState({ remainingCards: 0 }));
+    renderWithProviders(<MonteBankPage />);
+
+    await waitFor(() => expect(screen.getByTestId('mb-expected-net-0')).toBeInTheDocument());
+    expect(screen.getByTestId('mb-expected-net-0')).toHaveTextContent('—');
+  });
+
   // **選んだ位置は 0 始まりでそのまま送る。** 0 は正当な値。
   it('既定では場札0に賭ける', async () => {
     mockApi.mockResolvedValue(base);
