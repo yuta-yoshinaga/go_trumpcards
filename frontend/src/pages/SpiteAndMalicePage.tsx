@@ -400,9 +400,12 @@ function SpiteAndMalicePageContent() {
               ))}
             </div>
 
-            <div className="text-center text-xs text-ds-text-muted">
+            <div
+              className={`text-center text-xs ${state.stockSize <= 5 ? 'font-semibold text-ds-warning' : 'text-ds-text-muted'}`}
+            >
               {t('label.stock')}: {state.stockSize} / {t('label.completed')}: {state.completedSize}
             </div>
+            <p className="text-center text-xs text-ds-text-muted">{t('stockRefillInfo')}</p>
 
             <div className="flex items-end justify-center gap-3" data-tutorial="sam-goal">
               <GoalPile
