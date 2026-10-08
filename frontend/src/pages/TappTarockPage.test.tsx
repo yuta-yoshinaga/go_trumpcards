@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tapptarockApi } from '../api/gameApi';
 import enTappTarock from '../i18n/locales/en/tapptarock.json';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeTappTarockState } from '../test/stateFactories';
 import { TappTarockPage } from './TappTarockPage';
@@ -65,6 +66,7 @@ describe('TappTarockPage', () => {
     expect(enTappTarock.tutorial.playerHand).toContain('16 cards');
     expect(enTappTarock.tutorial.playerHand).toContain('six-card talon');
     expect(enTappTarock.tutorial.playerHand).toContain('bury six');
+    expect(enTappTarock.restrictedTalon).toBe('Kings and trull cards cannot be buried');
   });
 
   it('calls reset on mount', async () => {
@@ -192,7 +194,13 @@ describe('TappTarockPage', () => {
     await screen.findByTestId('zw-discard');
     const cards = handButtons();
     expect(cards[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[0]).toHaveAttribute('title', 'キングとトゥルルは伏せられません');
     expect(cards[1]).not.toHaveAttribute('aria-disabled', 'true');
+
+    mockExec.mockClear();
+    fireEvent.click(cards[0]);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   it('plays a card immediately during the play phase', async () => {
@@ -215,6 +223,7 @@ describe('TappTarockPage', () => {
     await screen.findByTestId('zw-info');
     const cards = handButtons();
     expect(cards[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[0]).toHaveAttribute('title', 'リードスートに従う必要があります');
     expect(cards[1]).not.toHaveAttribute('aria-disabled', 'true');
   });
 
