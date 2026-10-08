@@ -464,8 +464,17 @@ function SeahavenTowersPageContent() {
                                       // 動かせない理由が分からない (#5495)。
                                       aria-label={
                                         exceedsSupermove
-                                          ? `${cardAlt(card)} — ${t('supermoveLimitTooltip', { limit: supermoveLimit })}`
-                                          : cardAlt(card)
+                                          ? t('tableauCardAriaLabelWithLimit', {
+                                              card: cardAlt(card),
+                                              col: String(colIdx),
+                                              position: String(cardIdx + 1),
+                                              limit: t('supermoveLimitTooltip', { limit: supermoveLimit }),
+                                            })
+                                          : t('tableauCardAriaLabel', {
+                                              card: cardAlt(card),
+                                              col: String(colIdx),
+                                              position: String(cardIdx + 1),
+                                            })
                                       }
                                       aria-pressed={isSourceSelected('tableau', colIdx, undefined, cardIdx)}
                                       draggable={isPlaying && !loading && !exceedsSupermove}
