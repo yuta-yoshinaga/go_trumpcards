@@ -182,6 +182,21 @@ describe('ScartoPage', () => {
     expect(screen.getAllByText('親（ディーラー）').length).toBeGreaterThan(0);
   });
 
+  it('shows the card point reference during play without revealing CPU hands', async () => {
+    renderWithProviders(<ScartoPage />);
+    const reference = await screen.findByTestId('scarto-point-reference');
+    expect(reference).toHaveTextContent('スート札のキング: 4.5点');
+    expect(reference).toHaveTextContent('スート札のクイーン: 3.5点');
+    expect(reference).toHaveTextContent('スート札のナイト: 2.5点');
+    expect(reference).toHaveTextContent('スート札のジャック: 1.5点');
+    expect(reference).toHaveTextContent('ブー（切り札の1・21とエクスキューズ）: 各4.5点');
+    expect(reference).toHaveTextContent('その他の札: 各0.5点');
+    expect(screen.getByText(/CPU 1: 25枚/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 2: 25枚/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /CPU 1/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /CPU 2/ })).not.toBeInTheDocument();
+  });
+
   it('renders the scarto phase discard prompt and buries exactly 3 pip cards', async () => {
     mockExec.mockResolvedValue(scartoPhaseState);
     renderWithProviders(<ScartoPage />);

@@ -22,6 +22,15 @@
   "tricks": "{{count}} tricks",
   "points": "{{points}} pts",
   "score": "Score: {{score}}",
+  "pointReference": {
+    "title": "Captured card points",
+    "king": "Suit King: 4.5 pts",
+    "queen": "Suit Queen: 3.5 pts",
+    "knight": "Suit Knight: 2.5 pts",
+    "jack": "Suit Jack: 1.5 pts",
+    "bouts": "Bouts (trumps 1 and 21, and the Excuse): 4.5 pts each",
+    "other": "Other cards: 0.5 pts each"
+  },
   "currentTrick": "Current trick",
   "previousTrickWinner": "Won by {{name}}",
   "players": "Players",
