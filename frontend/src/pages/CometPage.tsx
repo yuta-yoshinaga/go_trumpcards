@@ -228,37 +228,49 @@ function CometPageContent() {
             </div>
 
             <div className={lgTwoColGrid}>
-              <div data-tutorial="comet-pile">
-                <div className="mb-1 text-ds-text-muted text-sm">{t('pileLabel')}</div>
+              <section data-tutorial="comet-pile" aria-labelledby="comet-pile-label">
+                <div id="comet-pile-label" className="mb-1 text-ds-text-muted text-sm">
+                  {t('pileLabel')}
+                </div>
                 <div
                   className="mb-2 p-2 rounded bg-black/30 flex flex-wrap gap-1 items-center"
                   data-testid="comet-pile"
                 >
                   {omittedPileCount > 0 && (
-                    <span className="text-ds-text-muted text-sm" data-testid="comet-pile-omitted">
+                    <span
+                      id="comet-pile-omitted"
+                      className="text-ds-text-muted text-sm"
+                      data-testid="comet-pile-omitted"
+                    >
                       {t('pileOmitted', { count: omittedPileCount })}
                     </span>
                   )}
                   {shownPile.length === 0 ? (
                     <span className="text-ds-text-muted text-sm">{t('pileEmpty')}</span>
                   ) : (
-                    shownPile.map((c, i) => (
-                      <span key={`${c.design}-${c.value}-${i}`} className="relative">
-                        <CardImage
-                          card={c}
-                          width={cardWidth}
-                          ariaLabel={isCometWild(c) ? `${cardAlt(c)} (${t('wildMark')})` : undefined}
-                        />
-                        {isCometWild(c) && <CardRoleBadge idx={i} glyph="★" title={t('wildMark')} />}
-                      </span>
-                    ))
+                    <ol
+                      aria-labelledby="comet-pile-label"
+                      aria-describedby={omittedPileCount > 0 ? 'comet-pile-omitted' : undefined}
+                      className="flex flex-wrap gap-1 items-center"
+                    >
+                      {shownPile.map((c, i) => (
+                        <li key={`${c.design}-${c.value}-${i}`} className="relative list-none">
+                          <CardImage
+                            card={c}
+                            width={cardWidth}
+                            ariaLabel={isCometWild(c) ? `${cardAlt(c)} (${t('wildMark')})` : undefined}
+                          />
+                          {isCometWild(c) && <CardRoleBadge idx={i} glyph="★" title={t('wildMark')} />}
+                        </li>
+                      ))}
+                    </ol>
                   )}
                 </div>
                 {/* **スートは問わない。** 数字だけで昇ることを毎回書く。 */}
                 <div className="text-ds-text-primary text-sm" data-testid="comet-need">
                   {state.need > 0 ? t('need', { rank: state.need }) : t('needAny')}
                 </div>
-              </div>
+              </section>
 
               <div data-tutorial="comet-scores">
                 <div className="mb-2 p-2 rounded bg-black/30" data-testid="comet-scores">
