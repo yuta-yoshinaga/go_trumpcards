@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { beggarmyneighbourApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BeggarMyNeighbourResponse } from '../types/card';
 import { BeggarMyNeighbourPhase } from '../types/phases';
@@ -461,6 +462,31 @@ describe('BeggarMyNeighbourPage', () => {
     mockExec.mockResolvedValueOnce(gameEndState);
     renderWithProviders(<BeggarMyNeighbourPage />);
     await waitFor(() => expect(screen.getByTestId('autoplay-button')).toBeDisabled());
+  });
+
+  it('prevents starting autoplay while a step request is loading', async () => {
+    let finishStep: (state: BeggarMyNeighbourResponse) => void = () => {};
+    mockExec.mockImplementation((command) => {
+      if (command === 'reset') return Promise.resolve(baseState);
+      return new Promise((resolve) => {
+        finishStep = resolve;
+      });
+    });
+    renderWithProviders(<BeggarMyNeighbourPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    fireEvent.click(await screen.findByTestId('step-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('step'));
+    const autoplayButton = screen.getByTestId('autoplay-button');
+    const stepCallsBeforeToggle = mockExec.mock.calls.filter(([command]) => command === 'step').length;
+    expect(autoplayButton).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(autoplayButton);
+    await flushPendingDispatch();
+    expect(autoplayButton).toHaveAttribute('aria-pressed', 'false');
+    expect(mockExec.mock.calls.filter(([command]) => command === 'step')).toHaveLength(stepCallsBeforeToggle);
+
+    await act(async () => finishStep(baseState));
+    await waitFor(() => expect(autoplayButton).toHaveAttribute('aria-disabled', 'false'));
   });
 
   it('renders CLI terminal when enabled', async () => {
