@@ -31,6 +31,8 @@
   },
   "step": "ステップ",
   "stepAnnouncement": "{{card}}を{{hour}}時の山に配置しました",
+  "undoAnnouncement": "移動を取り消しました。手持ちカードは{{returnedCard}}です。",
+  "undoAnnouncementNoCard": "移動を取り消しました。",
   "stepCount": "ステップ数",
   "stepKingAnnouncement": "{{card}}を中央（K）の山に配置しました",
   "stopAutoplay": "停止",

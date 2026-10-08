@@ -202,8 +202,14 @@ function ClockSolitairePageContent() {
             ? t('stepKingAnnouncement', { card: cardName })
             : t('stepAnnouncement', { card: cardName, hour: previous.currentCard.value }),
         );
+      } else if (state.stepCount < previous.stepCount) {
+        setStepAnnouncement(
+          state.currentCard
+            ? t('undoAnnouncement', { returnedCard: cardAlt(state.currentCard) })
+            : t('undoAnnouncementNoCard'),
+        );
       } else {
-        // Undo and reset change the step count without placing the current card.
+        // Reset changes the step count without undoing a placed card.
         setStepAnnouncement('');
       }
     }
