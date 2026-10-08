@@ -25,6 +25,12 @@
     "setHands": "Set Hands",
     "end": "Result"
   },
+  "sort": {
+    "label": "Sort hand",
+    "original": "Original order",
+    "rank": "Rank",
+    "suit": "Suit"
+  },
   "result": {
     "playerWins": "You win!",
     "dealerWins": "Dealer wins!",
