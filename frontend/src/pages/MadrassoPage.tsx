@@ -334,7 +334,7 @@ function MadrassoPageContent() {
                         <th scope="col" className="text-left">
                           {t('scoresTeam')}
                         </th>
-                        <th scope="col">{t('scoresPoints')}</th>
+                        <th scope="col">{t('scoresPoints', { target: state.config.targetPoints })}</th>
                         <th scope="col">{t('scoresRoundPoints')}</th>
                       </tr>
                     </thead>
