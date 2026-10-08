@@ -9,6 +9,7 @@ function makeState(overrides?: Partial<SalicLawResponse>): SalicLawResponse {
     stockCount: 95,
     queens: [],
     openPiles: 2,
+    canAutoComplete: false,
     phase: 0,
     moveCount: 0,
     canUndo: false,

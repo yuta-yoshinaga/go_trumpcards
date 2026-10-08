@@ -49,6 +49,7 @@ const playingState: SalicLawResponse = {
   stockCount: 95,
   queens: [card('SPADE', 12), card('HEART', 12)],
   openPiles: 3,
+  canAutoComplete: false,
   phase: 0,
   moveCount: 3,
   canUndo: false,
@@ -426,20 +427,22 @@ describe('SalicLawPage', () => {
     expect(screen.queryByTestId('sl-gameover-summary')).not.toBeInTheDocument();
   });
 
-  it('disables auto-complete until a foundation is open', async () => {
-    mockExec.mockResolvedValue(playingState);
+  it('uses the server move availability for auto-complete readiness', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('SPADE', 1)], [], [], [], [], [], [], []],
+      canAutoComplete: false,
+    });
     const { unmount } = renderWithProviders(<SalicLawPage />);
     const btn = await screen.findByTestId('autocomplete-button');
     expect(btn).toBeDisabled();
     expect(btn).toHaveAttribute('title');
     unmount();
 
-    mockExec.mockResolvedValue({
-      ...playingState,
-      foundation: [[card('SPADE', 1)], [], [], [], [], [], [], []],
-    });
+    mockExec.mockResolvedValue({ ...playingState, canAutoComplete: true });
     renderWithProviders(<SalicLawPage />);
     await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
+    expect(screen.getByTestId('autocomplete-button').className).toContain('animate-pulse');
   });
 
   it('shows StalemateEscapeButton when the stalemate flag is set', async () => {

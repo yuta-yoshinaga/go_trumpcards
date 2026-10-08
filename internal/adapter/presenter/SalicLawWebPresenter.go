@@ -40,6 +40,7 @@ func (p *SalicLawWebPresenter) Output(c interfaces.SalicLawGame, lastErr error) 
 
 	resObj.StockCount = c.GetStockCount()
 	resObj.OpenPiles = c.GetOpenPiles()
+	resObj.CanAutoComplete = c.CanAutoComplete()
 	queens := c.GetQueens()
 	resObj.Queens = make([]*controller.WebOutputCard, len(queens))
 	for i, card := range queens {

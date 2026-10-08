@@ -39,8 +39,9 @@ type SalicLawWebOutput struct {
 	// Queens 場から抜いたクイーン 8 枚。飾りとして表示するだけで動かせない。
 	Queens []*WebOutputCard `json:"queens"`
 	// OpenPiles 土台の K が据わって使えるようになった列の数。
-	OpenPiles int                    `json:"openPiles"`
-	Hint      *SalicLawWebOutputHint `json:"hint,omitempty"`
+	OpenPiles       int                    `json:"openPiles"`
+	CanAutoComplete bool                   `json:"canAutoComplete"`
+	Hint            *SalicLawWebOutputHint `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }

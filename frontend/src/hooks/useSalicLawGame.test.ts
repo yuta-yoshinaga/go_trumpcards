@@ -25,6 +25,7 @@ const baseState: SalicLawResponse = {
   stockCount: 95,
   queens: [],
   openPiles: 1,
+  canAutoComplete: false,
   phase: 0,
   moveCount: 0,
   canUndo: false,

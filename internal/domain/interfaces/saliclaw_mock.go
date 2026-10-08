@@ -32,6 +32,11 @@ func (_m *MockSalicLawGame) MoveTableauToTableau(fromPile, toPile int) error {
 	return ret.Error(0)
 }
 
+func (_m *MockSalicLawGame) CanAutoComplete() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
 func (_m *MockSalicLawGame) GiveUp() {
 	_m.Called()
 }
