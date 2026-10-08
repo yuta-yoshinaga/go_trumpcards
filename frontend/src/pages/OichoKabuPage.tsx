@@ -293,6 +293,9 @@ function OichoKabuPageContent() {
                   {t('label.bet')}: {state.bet}
                 </p>
                 <p className="text-ds-text-muted text-sm">{t('drawGuide')}</p>
+                <p className="text-ds-text-muted text-sm" data-testid="dealer-draw-rule">
+                  {t('dealerPolicy.drawRule')}
+                </p>
                 <div className="flex justify-center gap-2">
                   <button type="button" className={btnSuccess} onClick={handleDraw} disabled={loading}>
                     {t('button.draw')}
