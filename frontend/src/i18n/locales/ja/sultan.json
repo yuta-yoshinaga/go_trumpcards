@@ -18,6 +18,8 @@
   "divanCard": "ディヴァン枠 {{idx}} {{card}}",
   "divanPlayableCard": "{{label}}、配置できます",
   "divanUnplayableCard": "{{label}}、配置できません",
+  "wastePlayableCard": "{{label}}、配置できます",
+  "wasteUnplayableCard": "{{label}}、配置できません",
   "foundationSlot": "組札{{idx}} 一番上 {{top}}",
   "foundationSlotComplete": "組札{{idx}} 一番上 {{top}}（完成）",
   "emptyFoundationSlot": "組札{{idx}} 空（Kから積む）",
