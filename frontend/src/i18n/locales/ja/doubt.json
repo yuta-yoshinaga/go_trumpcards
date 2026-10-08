@@ -16,6 +16,8 @@
   "skipButton": "スルー",
   "cpuJudging": "CPUがダウトを判定中...",
   "cpuDoubtExclaim": "ダウト！ {{names}}",
+  "cpuDidNotDoubt": "CPUはダウトしませんでした",
+  "listSeparator": "、",
   "confirmButton": "確認",
   "doubtResult": {
     "title": "ダウト結果",
