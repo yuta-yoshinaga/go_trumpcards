@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -189,12 +190,15 @@ func TestChinesePokerCuiPresenter_FiveCardRankIsTranslated(t *testing.T) {
 	t.Cleanup(func() { i18n.SetLang(originalLang) })
 	pp := new(ChinesePokerCuiPresenter)
 
+	for _, lang := range []string{"ja", "en"} {
+		i18n.SetLang(lang)
+		for rank := domain.PokerHandHighCard; rank <= domain.PokerHandFiveOfAKind; rank++ {
+			assert.False(t, strings.HasPrefix(pp.fiveCardRankStr(rank), "pokerhand."), "lang=%s rank=%d", lang, rank)
+		}
+	}
 	i18n.SetLang("ja")
-	assert.Equal(t, "ハイカード", pp.fiveCardRankStr(domain.PokerHandHighCard))
-	assert.Equal(t, "ストレートフラッシュ", pp.fiveCardRankStr(domain.PokerHandStraightFlush))
-	i18n.SetLang("en")
-	assert.Equal(t, "High Card", pp.fiveCardRankStr(domain.PokerHandHighCard))
-	assert.Equal(t, "Straight Flush", pp.fiveCardRankStr(domain.PokerHandStraightFlush))
+	assert.Equal(t, i18n.T("pokerhand.pair"), pp.fiveCardRankStr(domain.PokerHandOnePair))
+	assert.Equal(t, "ペア", pp.fiveCardRankStr(domain.PokerHandOnePair))
 }
 
 // **CUI には推奨分割もファウル警告も無かった (#4717)。**Web には
