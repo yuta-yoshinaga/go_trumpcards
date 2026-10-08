@@ -77,6 +77,20 @@ describe('QuinzePage', () => {
     expect(screen.getByText(/目標: 15/)).toBeInTheDocument();
   });
 
+  it('exposes the tutorial targets for seats, banker hand, and controls', async () => {
+    mockExec.mockResolvedValue(makeState());
+    const { container } = renderWithProviders(<QuinzePage />);
+
+    await waitFor(() => expect(screen.getByTestId('quinze-chips')).toBeInTheDocument());
+    for (const selector of [
+      '[data-tutorial="sm-seats"]',
+      '[data-tutorial="sm-banker"]',
+      '[data-tutorial="sm-controls"]',
+    ]) {
+      expect(container.querySelector(selector)).not.toBeNull();
+    }
+  });
+
   it('announces the active player seat as the current turn', async () => {
     mockExec.mockResolvedValue(makeState({ activeSeat: 2 }));
     renderWithProviders(<QuinzePage />);

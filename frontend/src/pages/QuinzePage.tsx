@@ -39,9 +39,9 @@ const MIN_BET = 10;
 const MAX_BET = 10000;
 
 const QUINZE_TUTORIAL_STEPS: TutorialStep[] = [
-  { target: '[data-tutorial="quinze-seats"]', messageKey: 'tutorial.seats', placement: 'top', advanceOn: 'next' },
-  { target: '[data-tutorial="quinze-banker"]', messageKey: 'tutorial.banker', placement: 'bottom', advanceOn: 'next' },
-  { target: '[data-tutorial="quinze-controls"]', messageKey: 'tutorial.controls', placement: 'top', advanceOn: 'next' },
+  { target: '[data-tutorial="sm-seats"]', messageKey: 'tutorial.seats', placement: 'top', advanceOn: 'next' },
+  { target: '[data-tutorial="sm-banker"]', messageKey: 'tutorial.banker', placement: 'bottom', advanceOn: 'next' },
+  { target: '[data-tutorial="sm-controls"]', messageKey: 'tutorial.controls', placement: 'top', advanceOn: 'next' },
 ];
 
 /** Renders the Quinze page and its banking-game controls. */
