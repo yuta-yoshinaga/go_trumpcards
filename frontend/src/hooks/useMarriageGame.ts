@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { marriageApi } from '../api/games/marriage';
 import type { MarriageConfig } from '../types/games/marriage';
 import { useCardSelection } from './useCardSelection';
@@ -36,10 +36,6 @@ export function useMarriageGame() {
   const { state, loading, error, exec: rawExec, retry } = useGameApi(marriageApi.exec, { onSuccess });
 
   const exec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
-
-  useEffect(() => {
-    void exec('reset', undefined, DEFAULT_MARRIAGE_CONFIG);
-  }, [exec]);
 
   const handleDrawStock = useCallback(() => {
     exec('drawstock');
