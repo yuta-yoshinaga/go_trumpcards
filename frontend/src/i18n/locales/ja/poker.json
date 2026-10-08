@@ -25,7 +25,7 @@
   "drawOdds": "ドローオッズ:",
   "oddsRetry": "再試行",
   "cpuExchange": "CPU交換:",
-  "cpuExchangeEntry": "Player {{idx}}: {{count}}枚交換",
+  "cpuExchangeEntry": "プレイヤー{{idx}}: {{count}}枚交換",
   "exchangeCount": "交換: {{count}}枚",
   "lowball": "2-7 ローボール",
   "lowballRank": {

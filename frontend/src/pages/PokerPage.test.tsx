@@ -312,6 +312,7 @@ describe('PokerPage', () => {
   it('does not show CPU exchange count when exchangeCount < 0 in SECOND_BET', async () => {
     mockExec.mockResolvedValue({
       ...secondBetState,
+      cpuExchanges: [],
       players: [humanPlayer(), cpuPlayer(1, { exchangeCount: -1 }), cpuPlayer(2)],
     });
     renderWithProviders(<PokerPage />);
@@ -439,8 +440,13 @@ describe('PokerPage', () => {
     mockExec.mockResolvedValue(secondBetState);
     renderWithProviders(<PokerPage />);
     await waitFor(() => expect(screen.getByText('CPU交換:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: 2枚交換/)).toBeInTheDocument();
-    expect(screen.getByText(/Player 2: 0枚交換/)).toBeInTheDocument();
+    const exchangeLog = screen.getByText('CPU交換:').parentElement;
+    expect(exchangeLog).toHaveTextContent('プレイヤー1: 2枚交換');
+    expect(exchangeLog).toHaveTextContent('プレイヤー2: 0枚交換');
+    const liveRegion = screen.getByTestId('pk-exchanged-cards-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toHaveTextContent('プレイヤー1: 2枚交換、プレイヤー2: 0枚交換');
   });
 
   it('does not show CPU exchanges log when cpuExchanges is empty', async () => {
