@@ -1899,10 +1899,12 @@ describe('DramahaPage showdown split', () => {
     });
     renderWithProviders(<DramahaPage />);
     const table = await screen.findByTestId('dramaha-split-results');
-    expect(within(table).getByTestId('dramaha-split-result-0')).toHaveTextContent('オマハ側: 125');
-    expect(within(table).getByTestId('dramaha-split-result-0')).toHaveTextContent('ドロー側: 0');
-    expect(within(table).getByTestId('dramaha-split-result-1')).toHaveTextContent('オマハ側: 0');
-    expect(within(table).getByTestId('dramaha-split-result-1')).toHaveTextContent('ドロー側: 125');
+    const firstRow = within(table).getByTestId('dramaha-split-result-0');
+    const secondRow = within(table).getByTestId('dramaha-split-result-1');
+    expect(within(firstRow).getByTestId('dramaha-split-amounts-0').textContent).toBe('（オマハ側: 125、ドロー側: 0）');
+    expect(within(secondRow).getByTestId('dramaha-split-amounts-1').textContent).toBe('（オマハ側: 0、ドロー側: 125）');
+    expect(firstRow.textContent).not.toContain('オマハ側オマハ側');
+    expect(secondRow.textContent).not.toContain('ドロー側オマハ側');
     expect(screen.getByTestId('round-results-visible')).toHaveTextContent('125');
   });
 
