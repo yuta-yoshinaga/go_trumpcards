@@ -38,6 +38,12 @@ import { duchessLegalTargets } from '../utils/duchessLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
+const FOUNDATION_SUIT_I18N_KEYS = [
+  'common.suit.spade',
+  'common.suit.club',
+  'common.suit.heart',
+  'common.suit.diamond',
+] as const;
 const TABLEAU_COLS = 4;
 const RESERVE_FANS = 4;
 const TOTAL_CARDS = 52;
@@ -408,9 +414,10 @@ function DuchessPageContent() {
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('foundationAriaLabel', {
-                              suit: FOUNDATION_SUITS[idx],
+                              suit: tc(FOUNDATION_SUIT_I18N_KEYS[idx]),
                               idx,
                               count: pile.length,
+                              card: cardAlt(pile[pile.length - 1]),
                             })}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
                           >
@@ -428,7 +435,10 @@ function DuchessPageContent() {
                             disabled={!isPlaying || loading}
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx], idx })}
+                            aria-label={t('emptyFoundationAriaLabel', {
+                              suit: tc(FOUNDATION_SUIT_I18N_KEYS[idx]),
+                              idx,
+                            })}
                             style={{ width: dims.cw, height: dims.ch }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                           >
