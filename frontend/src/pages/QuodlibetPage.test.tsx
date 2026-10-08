@@ -126,6 +126,47 @@ describe('QuodlibetPage', () => {
     expect(screen.queryByTestId('quodlibet-contract-11')).not.toBeInTheDocument();
   });
 
+  it('shows the contract named by the requested hint', async () => {
+    mockExec.mockResolvedValue(
+      makeQuodlibetState({
+        messageCode: 'quodlibet.hintRequested',
+        hintContract: 2,
+        availableContractNames: ['plus', 'badNeighbour', 'alarich'],
+      }),
+    );
+    renderWithProviders(<QuodlibetPage />);
+
+    expect(await screen.findByTestId('quodlibet-hint-live')).toHaveTextContent('ヒント [アラリック]');
+    expect(screen.getByTestId('quodlibet-hint-live')).not.toHaveTextContent('プラス');
+  });
+
+  it('does not show a contract name when the requested hint has no contract', async () => {
+    mockExec.mockResolvedValue(
+      makeQuodlibetState({
+        messageCode: 'quodlibet.hintRequested',
+        hintContract: -1,
+        hint: { cardIndices: [], reason: 'test' },
+      }),
+    );
+    renderWithProviders(<QuodlibetPage />);
+
+    expect(await screen.findByTestId('quodlibet-hint-live')).toHaveTextContent('ヒント');
+    expect(screen.getByTestId('quodlibet-hint-live')).not.toHaveTextContent('[');
+  });
+
+  it('uses the unknown contract label when a hinted contract is not available', async () => {
+    mockExec.mockResolvedValue(
+      makeQuodlibetState({
+        messageCode: 'quodlibet.hintRequested',
+        hintContract: 2,
+        availableContracts: [0, 1, 3, 4],
+      }),
+    );
+    renderWithProviders(<QuodlibetPage />);
+
+    expect(await screen.findByTestId('quodlibet-hint-live')).toHaveTextContent('ヒント [-]');
+  });
+
   it('sends the chosen contract', async () => {
     renderWithProviders(<QuodlibetPage />);
     fireEvent.click(await screen.findByTestId('quodlibet-contract-2'));
