@@ -52,6 +52,8 @@
   },
   "betGuide": "アンテと任意のエースズアップを設定してベット",
   "foldWarning": "フォールドするとアンテ {{amount}} を失います",
+  "maxPlayableMultiplier": "残高で可能な最大倍率: {{mult}}倍",
+  "playUnaffordable": "残高不足のため、この倍率は選択できません。",
   "actionBets": "アンテ: {{ante}}、エースズアップ: {{acesUp}}",
   "betError": "アンテは10以上、ベットは10単位で、残高以内で指定してください",
   "payoutRef": {
