@@ -26,13 +26,19 @@ export const CPU_DIFFICULTY_OPTIONS = [
  * directly on {@link useGameApi}.
  */
 export function useTablanetGame() {
-  const [handIndex, setHandIndex] = useState<number | null>(null);
+  const [handIndex, setHandIndexState] = useState<number | null>(null);
   const [tableIndices, setTableIndices] = useState<number[]>([]);
   const [configInput, setConfigInput] = useState<Required<TablanetConfigInput>>(DEFAULT_TABLANET_CONFIG);
 
+  /** Selects or deselects a hand card and clears table cards tied to the prior selection. */
+  const setHandIndex = useCallback((index: number) => {
+    setHandIndexState((current) => (current === index ? null : index));
+    setTableIndices([]);
+  }, []);
+
   /** Clears the current hand-card and table-card selection. */
   const clearSelection = useCallback(() => {
-    setHandIndex(null);
+    setHandIndexState(null);
     setTableIndices([]);
   }, []);
 

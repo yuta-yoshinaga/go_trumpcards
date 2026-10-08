@@ -373,7 +373,7 @@ function TablanetPageContent() {
                       recommendedHandIndices.has(i) ? t('handRecommendedAria', { card: cardAlt(c) }) : undefined
                     }
                     aria-pressed={handIndex === i}
-                    onClick={() => isHumanTurn && setHandIndex(handIndex === i ? null : i)}
+                    onClick={() => isHumanTurn && setHandIndex(i)}
                     disabled={!isHumanTurn}
                     className={`rounded transition-all ${
                       handIndex === i
