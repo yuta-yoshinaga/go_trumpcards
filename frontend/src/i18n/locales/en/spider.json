@@ -9,6 +9,8 @@
   "completed": "Completed",
   "tableau": "Tableau",
   "cardPosAria": "{{card}} (column {{col}}, position {{pos}})",
+  "cardPosAriaWithMovableCount_one": "{{card}} (column {{col}}, position {{pos}}, {{count}} movable same-suit consecutive card)",
+  "cardPosAriaWithMovableCount_other": "{{card}} (column {{col}}, position {{pos}}, {{count}} movable same-suit consecutive cards)",
   "moveCount": "Moves",
   "deal": "Deal",
   "giveup": "Give Up",
