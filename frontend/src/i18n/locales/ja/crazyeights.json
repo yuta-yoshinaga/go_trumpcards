@@ -72,6 +72,7 @@
   },
   "illegalHint": "このカードは出せません（スート・数字・8 のいずれも不一致）",
   "cardSelectionUnavailable": "プレイ手番中のみ手札を選択できます",
+  "handLabel": "あなたの手札",
   "sort": {
     "label": "手札の並べ替え",
     "original": "元の順",
