@@ -128,6 +128,19 @@ describe('DoubleKlondikePage', () => {
     expect(progress).toHaveTextContent('組札: 2/104枚');
   });
 
+  it('announces changed move and foundation progress, but not the initial values', async () => {
+    const foundation: Card[][] = Array.from({ length: 8 }, () => []);
+    foundation[0] = [card('SPADE', 1)];
+    mockExec.mockResolvedValueOnce(makeState()).mockResolvedValueOnce(makeState({ moveCount: 1, foundation }));
+    renderWithProviders(<DoubleKlondikePage />);
+
+    await screen.findByTestId('column-0');
+    const announcement = screen.getByTestId('progress-announcement');
+    expect(announcement).toBeEmptyDOMElement();
+    fireEvent.click(screen.getByRole('button', { name: 'ストックをめくる、残り59枚' }));
+    await waitFor(() => expect(announcement).toHaveTextContent('手数: 1。組札: 1/104枚。'));
+  });
+
   it('renders face-down tableau cards as a card-back image, not "##"', async () => {
     renderWithProviders(<DoubleKlondikePage />);
     // makeState seeds a face-down card at tableau[1][0].
