@@ -517,9 +517,10 @@ function CrazyQuiltPageContent() {
                     type="button"
                     className={btnPrimary}
                     onClick={game.handleDraw}
-                    disabled={loading || isAutoCompleting || state.stockCount === 0}
+                    disabled={loading || isAutoCompleting || (state.stockCount === 0 && state.redealsLeft === 0)}
+                    aria-label={state.stockCount === 0 && state.redealsLeft > 0 ? t('redealAction') : t('draw')}
                   >
-                    {t('draw')}
+                    {state.stockCount === 0 && state.redealsLeft > 0 ? t('redealAction') : t('draw')}
                   </button>
                   <button
                     type="button"
