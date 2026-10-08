@@ -150,6 +150,7 @@ func (tc *ThreeCard) Bet(ante, pairPlus int) error {
 
 	// ディール: 3枚ずつ配る
 	tc.deal()
+	tc.playerHandRank = evalThreeCardHand(tc.playerHand)
 	tc.phase = ThreeCardPhaseAction
 	return nil
 }
