@@ -19,6 +19,7 @@
   "wildJoker": "Wild Joker",
   "wildBadge": "WILD",
   "wildAria": "(wild)",
+  "declarableDiscardAria": "(winning discard candidate)",
   "discardTop": "Discard",
   "discardHistory": "Discard history (oldest first)",
   "discardLatest": "Latest",
