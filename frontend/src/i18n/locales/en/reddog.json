@@ -32,6 +32,7 @@
   },
   "payout": {
     "total": "Total Payout",
+    "netChange": "Net Profit/Loss",
     "winningRank": "Winning rank",
     "multiplier": "Multiplier",
     "none": "No payout",

@@ -54799,6 +54799,10 @@ components:
           type: integer
           description: Total payout returned to the player.
           example: 0
+        netChange:
+          type: integer
+          description: Net profit or loss for the settled round after subtracting the ante and any raise.
+          example: 0
         appliedMultiplier:
           type: integer
           description: Multiplier used for the settled winning payout, or 0 otherwise.

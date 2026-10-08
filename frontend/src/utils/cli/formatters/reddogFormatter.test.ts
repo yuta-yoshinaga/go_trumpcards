@@ -13,6 +13,7 @@ const betPhaseState: RedDogResponse = {
   spread: 0,
   result: 0,
   totalPayout: 0,
+  netChange: 0,
   appliedMultiplier: 0,
   chips: 1000,
   message: '',
