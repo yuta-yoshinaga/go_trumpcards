@@ -29,6 +29,7 @@ const defaultState: DoudizhuResponse = {
   landlordIdx: 0,
   baseBid: 1,
   highestBid: 1,
+  highestBidder: 0,
   bombCount: 0,
   scores: [0, 0, 0],
   gameEndFlag: false,
@@ -45,6 +46,13 @@ beforeEach(() => {
 });
 
 describe('DoudizhuPage', () => {
+  it('shows the highest bidder name during bidding', async () => {
+    mockExec.mockResolvedValue({ ...defaultState, phase: 'bid', highestBid: 2, highestBidder: 1 });
+    renderWithProviders(<DoudizhuPage />);
+
+    expect(await screen.findByText('最高ビッド: 2（CPU 1）')).toBeInTheDocument();
+  });
+
   it('opens the action log during play and shows its entry', async () => {
     mockActionLog.mockResolvedValue({
       entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'bid', detailCode: '', detail: '叫地主 1', cards: [] }],
@@ -246,6 +254,36 @@ describe('DoudizhuPage', () => {
     await waitFor(() => {
       expect(mockExec).toHaveBeenCalledWith(expect.objectContaining({ command: 'bid', bidValue: 2 }));
     });
+  });
+
+  it('shows the current highest bid during bidding and hides it during play', async () => {
+    mockExec.mockResolvedValue({
+      ...defaultState,
+      phase: 'bid',
+      landlordIdx: -1,
+      highestBid: 0,
+      currentTurn: 0,
+    });
+    const view = renderWithProviders(<DoudizhuPage />);
+
+    expect(await screen.findByText('最高ビッド: まだ入札なし')).toBeInTheDocument();
+
+    view.unmount();
+    mockExec.mockResolvedValue({
+      ...defaultState,
+      phase: 'bid',
+      landlordIdx: -1,
+      highestBid: 2,
+      currentTurn: 0,
+    });
+    const bidView = renderWithProviders(<DoudizhuPage />);
+    expect(await screen.findByText('最高ビッド: 2（あなた）')).toBeInTheDocument();
+
+    bidView.unmount();
+    mockExec.mockResolvedValue(defaultState);
+    renderWithProviders(<DoudizhuPage />);
+    expect(await screen.findByText('ビッド: 1 | 爆弾: 0')).toBeInTheDocument();
+    expect(screen.queryByText(/最高ビッド:/)).not.toBeInTheDocument();
   });
 
   it('shows the human hand during the bid phase as display-only (no selection)', async () => {

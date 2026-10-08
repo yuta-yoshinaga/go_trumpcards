@@ -41276,6 +41276,7 @@ components:
         - landlordIdx
         - baseBid
         - highestBid
+        - highestBidder
         - bombCount
         - scores
         - gameEndFlag
@@ -41321,6 +41322,9 @@ components:
           type: integer
         highestBid:
           type: integer
+        highestBidder:
+          type: integer
+          description: Seat index of the player with the highest bid (-1 if none)
         bombCount:
           type: integer
         scores:

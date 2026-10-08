@@ -438,6 +438,9 @@ func (d *Doudizhu) GetBidValues() [DoudizhuPlayerCnt]int { return d.round.bidVal
 // GetHighestBid 現在の最高ビッド値取得
 func (d *Doudizhu) GetHighestBid() int { return d.round.highestBid }
 
+// GetHighestBidder 現在の最高ビッドプレイヤーインデックス取得
+func (d *Doudizhu) GetHighestBidder() int { return d.round.highestBidder }
+
 // GetCpuActions CPUターンの行動履歴取得
 func (d *Doudizhu) GetCpuActions() []*DoudizhuCpuAction { return d.round.cpuActions }
 

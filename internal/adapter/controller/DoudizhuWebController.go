@@ -48,22 +48,23 @@ type DoudizhuWebOutputAction struct {
 
 // DoudizhuWebOutput 斗地主Webアウトプット
 type DoudizhuWebOutput struct {
-	Players     []*DoudizhuWebOutputPlayer    `json:"players"`
-	Phase       string                        `json:"phase"`
-	CurrentTurn int                           `json:"currentTurn"`
-	LastPlayIdx int                           `json:"lastPlayIdx"`
-	TableCards  []*WebOutputCard              `json:"tableCards"`
-	TableCombo  string                        `json:"tableCombo"`
-	KittyCards  []*WebOutputCard              `json:"kittyCards"`
-	LandlordIdx int                           `json:"landlordIdx"`
-	BaseBid     int                           `json:"baseBid"`
-	HighestBid  int                           `json:"highestBid"`
-	BombCount   int                           `json:"bombCount"`
-	Scores      [domain.DoudizhuPlayerCnt]int `json:"scores"`
-	GameEndFlag bool                          `json:"gameEndFlag"`
-	Config      DoudizhuWebConfig             `json:"config"`
-	CpuActions  []*DoudizhuWebOutputAction    `json:"cpuActions"`
-	HumanAction *DoudizhuWebOutputAction      `json:"humanAction"`
+	Players       []*DoudizhuWebOutputPlayer    `json:"players"`
+	Phase         string                        `json:"phase"`
+	CurrentTurn   int                           `json:"currentTurn"`
+	LastPlayIdx   int                           `json:"lastPlayIdx"`
+	TableCards    []*WebOutputCard              `json:"tableCards"`
+	TableCombo    string                        `json:"tableCombo"`
+	KittyCards    []*WebOutputCard              `json:"kittyCards"`
+	LandlordIdx   int                           `json:"landlordIdx"`
+	BaseBid       int                           `json:"baseBid"`
+	HighestBid    int                           `json:"highestBid"`
+	HighestBidder int                           `json:"highestBidder"`
+	BombCount     int                           `json:"bombCount"`
+	Scores        [domain.DoudizhuPlayerCnt]int `json:"scores"`
+	GameEndFlag   bool                          `json:"gameEndFlag"`
+	Config        DoudizhuWebConfig             `json:"config"`
+	CpuActions    []*DoudizhuWebOutputAction    `json:"cpuActions"`
+	HumanAction   *DoudizhuWebOutputAction      `json:"humanAction"`
 	WebOutputBase
 }
 

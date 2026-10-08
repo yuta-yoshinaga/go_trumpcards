@@ -26,6 +26,8 @@ func newDoudizhuForPresenter() *domain.Doudizhu {
 func TestDoudizhuWebPresenter_Output_BidPhase(t *testing.T) {
 	dg := newDoudizhuForPresenter()
 	dg.Reset()
+	dg.SetHighestBid(1)
+	dg.SetHighestBidder(2)
 	dg.SetKittyCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
 
 	p := new(presenter.DoudizhuWebPresenter)
@@ -34,6 +36,7 @@ func TestDoudizhuWebPresenter_Output_BidPhase(t *testing.T) {
 	var resp controller.DoudizhuWebOutput
 	require.NoError(t, json.Unmarshal([]byte(out), &resp))
 	assert.Equal(t, "bid", resp.Phase)
+	assert.Equal(t, dg.GetHighestBidder(), resp.HighestBidder)
 	assert.Empty(t, resp.KittyCards, "kitty cards must remain hidden during bidding")
 	assert.Len(t, resp.Players, domain.DoudizhuPlayerCnt)
 	assert.False(t, resp.GameEndFlag)
