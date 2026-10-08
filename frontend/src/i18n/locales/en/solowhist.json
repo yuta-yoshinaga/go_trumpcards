@@ -23,6 +23,8 @@
   "contractUndecided": "Contract: undecided",
   "cpu": "CPU {{id}}",
   "currentTrick": "Current Trick",
+  "trickWinnerBadge": "Winner",
+  "trickWinnerAnnouncement": "{{name}} won the trick",
   "declarerBadge": "Declarer",
   "dealerBadge": "Dealer",
   "declarerLine": "Declarer: {{name}} — {{contract}}",
