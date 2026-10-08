@@ -329,6 +329,23 @@ describe('KlaberjassPage', () => {
     );
   });
 
+  it('keeps the current schmeiss setting on manual reset', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: KlaberjassPhase.PLAY, validPlays: [1] }));
+    renderWithProviders(<KlaberjassPage />);
+    const toggle = await screen.findByRole('checkbox', { name: '投げを許す' });
+    fireEvent.click(toggle);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', { config: { targetScore: 501, allowSchmeiss: false } }),
+    );
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', { config: { targetScore: 501, allowSchmeiss: false } }),
+    );
+  });
+
   // **最終トリックには 10 点が付く。**書かないと、ベラや宣言点を足しても
   // handPoints と合わない理由が説明できない (#4937)。
   describe('last-trick bonus', () => {
