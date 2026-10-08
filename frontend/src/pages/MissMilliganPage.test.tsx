@@ -103,6 +103,24 @@ describe('MissMilliganPage', () => {
     }
   });
 
+  it('keeps mobile tableau cards at the mobile card width inside a tableau-only scroll area', async () => {
+    const previousWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(playingState);
+    const rendered = renderWithProviders(<MissMilliganPage />);
+
+    const scrollArea = (await screen.findByTestId('mm-tableau-col-0')).closest('[data-tutorial="mm-tableau"]');
+    expect(scrollArea).toHaveClass('overflow-x-auto');
+    for (let col = 0; col < 8; col++) {
+      expect(screen.getByTestId(`mm-tableau-col-${col}`)).toHaveStyle({ width: '40px' });
+    }
+
+    rendered.unmount();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: previousWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('deals a row from the stock', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<MissMilliganPage />);
