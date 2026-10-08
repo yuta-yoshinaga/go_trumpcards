@@ -1940,6 +1940,25 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 
+  it('Double Exposure tutorial opens the payout table before the bet button step', async () => {
+    mockDoubleExposureExec.mockResolvedValue(betPhaseState);
+    const { container } = renderWithProviders(<BlackJackPage variant="doubleexposure" />);
+    fireEvent.click(await screen.findByRole('button', { name: 'チュートリアル' }));
+    fireEvent.click(await screen.findByRole('button', { name: '次へ' }));
+
+    expect(
+      await screen.findByText(
+        'ベットを始める前に配当表を開き、ダブルエクスポージャーのルールを確認しましょう。ブラックジャックの配当は1:1で、同点はディーラーの勝ちです (ナチュラルブラックジャック同士のときだけプレイヤーの勝ち)。',
+      ),
+    ).toBeInTheDocument();
+    const details = container.querySelector('details[data-tutorial="bj-payout-ref"]');
+    expect(details).not.toBeNull();
+    fireEvent.click(details?.querySelector('summary') as HTMLElement);
+
+    await waitFor(() => expect(details).toHaveAttribute('open'));
+    expect(await screen.findByText('ベット額を決めたら、このボタンを押してゲームを開始します。')).toBeInTheDocument();
+  });
+
   it('renders accessible h1 heading', async () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderWithProviders(<BlackJackPage />);
