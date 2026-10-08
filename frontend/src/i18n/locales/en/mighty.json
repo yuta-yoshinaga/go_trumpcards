@@ -95,7 +95,7 @@
     "declarerWins": "Declarer side wins!",
     "oppositionWins": "Opposition wins!"
   },
-  "highestBid": "Highest bid: {{bid}}",
+  "highestBid": "Highest bid: {{bid}} ({{name}})",
   "highestBidder": "Highest bidder",
   "demandSuit": "Demand suit",
   "hintBid": "Suggested bid",

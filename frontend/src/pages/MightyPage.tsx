@@ -43,7 +43,7 @@ import { MIGHTY_HELP, parseMightyCommand } from '../utils/cli/commands/mightyCom
 import { formatMightyState } from '../utils/cli/formatters/mightyFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { mightyRoleGlyph, mightySpecialRole } from '../utils/mightySpecialRole';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Mighty tutorial step definitions. */
@@ -373,7 +373,10 @@ function MightyPageContent() {
                 {/* Highest bid info */}
                 {state.highestBid > 0 && (
                   <div className="text-ds-text-muted text-center text-sm mb-2">
-                    {t('highestBid', { bid: state.highestBid })}
+                    {t('highestBid', {
+                      bid: state.highestBid,
+                      name: findPlayerName(state.players, state.highestBidder),
+                    })}
                     {state.winningBidNoTrump ? ` (${t('noTrump')})` : ''}
                   </div>
                 )}
