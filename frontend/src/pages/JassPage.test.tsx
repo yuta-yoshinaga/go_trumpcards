@@ -229,6 +229,38 @@ describe('JassPage', () => {
     await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
   });
 
+  it('marks the human team in its score heading without changing team order or scores', async () => {
+    for (const [humanTeam, expectedHeadings] of [
+      [0, ['チーム0 (あなた)', 'チーム1']],
+      [1, ['チーム0', 'チーム1 (あなた)']],
+    ] as const) {
+      mockExec.mockResolvedValue(
+        makeState({
+          players: initialState.players.map((player, index) => (index === 0 ? { ...player, team: humanTeam } : player)),
+          teamScores: [40, 25],
+        }),
+      );
+      const { unmount } = renderWithProviders(<JassPage />);
+      const headers = await screen.findAllByRole('columnheader');
+      expect(headers.slice(1).map((header) => header.textContent)).toEqual(expectedHeadings);
+      const scoreRow = screen.getByRole('row', { name: /累計/ });
+      expect(Array.from(scoreRow.querySelectorAll('td')).map((cell) => cell.textContent)).toEqual(['40', '25']);
+      unmount();
+    }
+  });
+
+  it('uses the English teamYou translation in the score heading', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<JassPage />);
+      const headers = await screen.findAllByRole('columnheader');
+      expect(headers.slice(1).map((header) => header.textContent)).toEqual(['Team 0 (You)', 'Team 1']);
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('associates every score row with a row heading, including conditional rows', async () => {
     mockExec.mockResolvedValue(
       makeState({
