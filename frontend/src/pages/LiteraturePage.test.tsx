@@ -153,6 +153,65 @@ describe('LiteraturePage', () => {
     expect(options.map((o) => o.textContent)).not.toContain('♠2');
   });
 
+  it('excludes only cards previously missed against the selected opponent', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        asks: [
+          { from: 0, to: 1, card: card('SPADE', 2), success: false },
+          { from: 0, to: 1, card: card('SPADE', 3), success: true },
+          { from: 0, to: 3, card: card('SPADE', 4), success: false },
+          { from: 2, to: 1, card: card('SPADE', 5), success: false },
+        ],
+      }),
+    );
+    renderWithProviders(<LiteraturePage />);
+
+    const target = await screen.findByLabelText(/相手/);
+    const cards = screen.getByLabelText(/^札/) as HTMLSelectElement;
+    const options = () => Array.from(cards.options).map((option) => option.textContent);
+    expect(options()).toHaveLength(47);
+    expect(options()).not.toContain('♠2');
+    expect(options()).toContain('♠3');
+    expect(options()).toContain('♠4');
+    expect(options()).toContain('♠5');
+
+    fireEvent.change(target, { target: { value: '3' } });
+    expect(options()).toHaveLength(47);
+    expect(options()).toContain('♠2');
+    expect(options()).not.toContain('♠4');
+
+    fireEvent.change(target, { target: { value: '1' } });
+    expect(options()).not.toContain('♠2');
+  });
+
+  it('keeps the fallback target when no opponents have cards', async () => {
+    mockExec.mockResolvedValue(makeState({ players: [seat(0, true)] }));
+    renderWithProviders(<LiteraturePage />);
+
+    expect(((await screen.findByLabelText(/相手/)) as HTMLSelectElement).options).toHaveLength(0);
+    expect(screen.getByLabelText(/^札/).querySelectorAll('option')).toHaveLength(48);
+  });
+
+  it('shows the existing empty state and disables asking when every candidate was missed', async () => {
+    const asks = Array.from({ length: 48 }, (_, index) => {
+      const half = Math.floor(index / 6);
+      const cardIndex = index % 6;
+      return {
+        from: 0,
+        to: 1,
+        card: halfSuitCards(half)[cardIndex] ?? null,
+        success: false,
+      };
+    });
+    mockExec.mockResolvedValue(makeState({ asks }));
+    renderWithProviders(<LiteraturePage />);
+
+    expect(await screen.findByText('要求できる札がありません')).toBeInTheDocument();
+    expect(screen.getByLabelText(/^札/)).toBeDisabled();
+    expect(screen.getByRole('button', { name: '要求する' })).toBeDisabled();
+    expect(screen.getByTestId('literature-ask-status')).toHaveTextContent('要求できる札がありません');
+  });
+
   it('explains when no cards can be asked for and restores the form when cards return', async () => {
     mockExec.mockResolvedValueOnce(makeState({ halfSuits: Array(8).fill(1), openCount: 0 }));
     mockExec.mockResolvedValue(makeState());
