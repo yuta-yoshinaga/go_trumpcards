@@ -63840,6 +63840,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/GermanWhistTrickCard'
+        lastTrick:
+          type: array
+          description: Most recently resolved trick; empty before the first resolution.
+          items:
+            $ref: '#/components/schemas/GermanWhistTrickCard'
+        lastTrickWinner:
+          type: integer
+          description: Winner of lastTrick, or -1 when no trick has resolved.
         trumpSuit:
           type: integer
           description: Suit of the first face-up card; trump for the whole hand.

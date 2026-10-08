@@ -30,6 +30,10 @@ type GermanWhistGame interface {
 	GetLeadPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// GetLastTrick returns the most recently resolved trick.
+	GetLastTrick() []*domain.TrickCard
+	// GetLastTrickWinner returns its winner, or -1 when no trick has resolved.
+	GetLastTrickWinner() int
 	// GetTrumpSuit 切り札のスートを取得する
 	GetTrumpSuit() int
 	// GetUpCard 場に表向きで置かれている札を取得する (前半が終われば nil)

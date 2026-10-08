@@ -52,6 +52,8 @@ func TestGermanWhist_Reset(t *testing.T) {
 	assert.Equal(t, 25, g.GetStockCount())
 	assert.False(t, g.GetGameEndFlag())
 	assert.Equal(t, -1, g.GetWinnerIdx())
+	assert.Empty(t, g.GetLastTrick())
+	assert.Equal(t, -1, g.GetLastTrickWinner())
 }
 
 // **The rule #5232 omits.** The suit of the first exposed card is trump for the
@@ -191,6 +193,9 @@ func TestGermanWhist_DrawStage_WinnerTakesTheUpCard(t *testing.T) {
 
 	require.NoError(t, g.PlayerPlay(0))
 	require.NoError(t, g.play(1, 0))
+	assert.Len(t, g.GetLastTrick(), 2)
+	assert.Equal(t, 0, g.GetLastTrickWinner())
+	assert.Empty(t, g.GetCurrentTrick())
 
 	// Player 0 won with the ten.
 	assert.Equal(t, 1, g.GetPlayer(0).GetCardsSize())
@@ -202,6 +207,9 @@ func TestGermanWhist_DrawStage_WinnerTakesTheUpCard(t *testing.T) {
 	require.NotNil(t, g.GetUpCard())
 	assert.Equal(t, 3, g.GetUpCard().GetValue())
 	assert.Equal(t, 0, g.GetStockCount())
+	g.Reset()
+	assert.Empty(t, g.GetLastTrick())
+	assert.Equal(t, -1, g.GetLastTrickWinner())
 }
 
 // No trick in the first stage counts towards the score.
@@ -478,6 +486,35 @@ func TestGermanWhist_JSONRoundTripKeepsScoringTricks(t *testing.T) {
 	assert.Equal(t, 3, restored.GetPlayer(1).GetScoringTricks())
 }
 
+func TestGermanWhist_JSONRoundTripKeepsLastTrick(t *testing.T) {
+	g := newTestGermanWhist()
+	setGermanWhistHands(g, [][]*Card{
+		{NewCard(CardDesignHeart, 10, true)},
+		{NewCard(CardDesignHeart, 4, true)},
+	})
+	g.trumpSuit = CardDesignSpade
+	require.NoError(t, g.PlayerPlay(0))
+	g.CpuPlay()
+
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	restored := NewDefaultGermanWhist()
+	require.NoError(t, json.Unmarshal(data, restored))
+	assert.Equal(t, g.GetLastTrick(), restored.GetLastTrick())
+	assert.Equal(t, g.GetLastTrickWinner(), restored.GetLastTrickWinner())
+}
+
+func TestGermanWhist_UnmarshalJSON_LastTrickWinnerDefaultsToUnset(t *testing.T) {
+	var snapshot map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal([]byte(`{"ph":0,"tn":0,"cp":0,"lp":0,"wi":-1}`), &snapshot))
+	delete(snapshot, "lw")
+	data, err := json.Marshal(snapshot)
+	require.NoError(t, err)
+	restored := NewDefaultGermanWhist()
+	require.NoError(t, json.Unmarshal(data, restored))
+	assert.Equal(t, -1, restored.GetLastTrickWinner())
+}
+
 func TestGermanWhist_UnmarshalJSON_Rejections(t *testing.T) {
 	for _, tc := range []struct{ name, data string }{
 		{"broken json", `{`},
@@ -488,11 +525,25 @@ func TestGermanWhist_UnmarshalJSON_Rejections(t *testing.T) {
 		{"current player out of range", `{"cp":5}`},
 		{"lead player out of range", `{"lp":-2}`},
 		{"winner out of range", `{"wi":7}`},
+		{"last trick winner negative", `{"lw":-1}`},
+		{"last trick winner too high", `{"lw":2}`},
+		{"last trick too long", `{"lt":[{}, {}, {}]}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			assert.Error(t, json.Unmarshal([]byte(tc.data), NewDefaultGermanWhist()))
 		})
 	}
+}
+
+func TestGermanWhist_UnmarshalJSON_RejectsInvalidLastTrickMetadata(t *testing.T) {
+	t.Run("last trick too long", func(t *testing.T) {
+		err := json.Unmarshal([]byte(`{"lt":[{}, {}, {}]}`), NewDefaultGermanWhist())
+		require.EqualError(t, err, "last trick holds 3 cards")
+	})
+	t.Run("last trick winner out of range", func(t *testing.T) {
+		err := json.Unmarshal([]byte(`{"lw":2}`), NewDefaultGermanWhist())
+		require.EqualError(t, err, "invalid last trick winner: 2")
+	})
 }
 
 func TestGermanWhist_UnmarshalJSON_RejectsOversizedArrays(t *testing.T) {
