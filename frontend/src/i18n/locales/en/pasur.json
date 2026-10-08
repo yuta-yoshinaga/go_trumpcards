@@ -8,6 +8,7 @@
     "deck": "Deck: {{n}} left",
     "rule": "Take a set of table numerals that, with the card you play, adds to 11. Aces count 1 through tens 10; J, Q and K never join the sum and only take the same rank from the table. Capturing is compulsory when a capture exists. Emptying the table is a \"soor\": the cards from that capture score double.",
     "table": "Table",
+    "tableCard": "Table card {{idx}}",
     "tableEmpty": "Table: empty",
     "captured": "{{n}} taken",
     "soors": "{{n}} soor",
@@ -20,6 +21,7 @@
   "actions": {
     "pick": "Choose what to take",
     "take": "Take {{cards}}",
+    "indexedCard": "{{idx}}: {{card}}",
     "trail": "Lay it down",
     "mustCapture": "A capture is available, so this card cannot be laid down",
     "cancel": "Choose again",
@@ -32,6 +34,7 @@
     "takeSoorAria": "this choice empties the table, doubling the cards you take",
     "scoreBreakdown": "Base {{normal}} + soor bonus {{bonus}} = {{total}} points"
   },
+  "listSeparator": ", ",
   "result": {
     "you": "You win!",
     "cpu": "{{name}} wins.",

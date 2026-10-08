@@ -158,7 +158,14 @@ function PasurPageContent() {
               </div>
               <div className="flex flex-wrap gap-2 justify-center">
                 {state.table.map((card, idx) => (
-                  <CardImage key={`table-${card.design}-${card.value}-${idx}`} card={card} width={cardWidth} />
+                  <div
+                    key={`table-${card.design}-${card.value}-${idx}`}
+                    className="flex flex-col items-center gap-1"
+                    data-testid={`ps-table-card-${idx}`}
+                  >
+                    <span className="text-ds-text-muted text-xs">{t('header.tableCard', { idx: String(idx) })}</span>
+                    <CardImage card={card} width={cardWidth} />
+                  </div>
                 ))}
               </div>
             </div>
@@ -310,7 +317,9 @@ function PasurPageContent() {
                         data-testid={`ps-take-${option.join('-')}-btn`}
                       >
                         {t('actions.take', {
-                          cards: option.map((i) => cardAlt(state.table[i])).join(', '),
+                          cards: option
+                            .map((i) => t('actions.indexedCard', { idx: String(i), card: cardAlt(state.table[i]) }))
+                            .join(t('listSeparator')),
                         })}
                         <span className="ml-2 text-ds-text-muted" data-testid={`ps-score-${option.join('-')}`}>
                           {t('actions.scoreBreakdown', {
