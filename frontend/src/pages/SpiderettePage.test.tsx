@@ -167,6 +167,9 @@ describe('SpiderettePage', () => {
     const status = hintLiveRegion();
     expect(status).toHaveAttribute('aria-live', 'polite');
     expect(status?.textContent).toContain('場札');
+    expect(status?.textContent).toContain('♥ 5');
+    expect(status?.textContent).toContain('列1');
+    expect(status?.textContent).toContain('列0');
   });
 
   it('hides the frontend hint tooltip when hints are disabled', async () => {
