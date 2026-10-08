@@ -19,6 +19,7 @@ function PlayerChip({ name, idx }: { name: string; idx: number }) {
   const background = PLAYER_PALETTE[idx % PLAYER_PALETTE.length];
   return (
     <span
+      aria-hidden="true"
       className="inline-flex items-center justify-center rounded-full text-white text-[10px] font-bold px-1.5 py-0.5 min-w-[2.25rem]"
       style={{ background }}
       data-player-idx={idx}
@@ -75,6 +76,7 @@ export function OldMaidDrawHistory({
               data-suspect-target={targetIsSuspect ? 'true' : 'false'}
             >
               <span className="tabular-nums text-ds-text-muted">{i + 1}.</span>
+              <span className="sr-only">{t('history.entry', { from: fromName, target: targetName })}</span>
               <PlayerChip name={fromName} idx={fromPlayer?.id ?? entry.drawPlayerIdx} />
               <span aria-hidden="true" className={arrowClass}>
                 ➔

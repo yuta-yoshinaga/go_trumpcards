@@ -50,6 +50,20 @@ describe('OldMaidDrawHistory (graphical timeline)', () => {
     expect(screen.getAllByTestId('draw-history-entry')).toHaveLength(2);
   });
 
+  it('announces the draw relationship while hiding the visual chips from screen readers', () => {
+    render(<OldMaidDrawHistory entries={[baseEntry()]} players={players} />);
+    const entry = screen.getByTestId('draw-history-entry');
+
+    expect(screen.getByText('あなたがCPU 1から引いた')).toHaveClass('sr-only');
+    expect(entry.querySelectorAll('[data-player-idx]')).toHaveLength(2);
+    for (const chip of entry.querySelectorAll('[data-player-idx]')) {
+      expect(chip).toHaveAttribute('aria-hidden', 'true');
+    }
+    expect(
+      Array.from(entry.querySelectorAll('[aria-hidden="true"]')).find((element) => element.textContent === '➔'),
+    ).toBeInTheDocument();
+  });
+
   it('shows a discard burst when discardedPairs > 0', () => {
     render(<OldMaidDrawHistory entries={[baseEntry({ discardedPairs: 1 })]} players={players} />);
     expect(screen.getByTestId('discard-burst').textContent).toBe('💥');
