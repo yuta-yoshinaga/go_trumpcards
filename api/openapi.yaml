@@ -56865,6 +56865,10 @@ components:
                 items:
                   $ref: '#/components/schemas/Card'
               capturedCount: { type: integer }
+              capturedCards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
               scopaCount: { type: integer }
               totalScore: { type: integer }
         currentTurn:
