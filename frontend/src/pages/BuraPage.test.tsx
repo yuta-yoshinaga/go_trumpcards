@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, buraApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BuraPlayer, BuraResponse, Card, CardDesign } from '../types/card';
 import { BuraPage } from './BuraPage';
@@ -75,7 +76,7 @@ describe('BuraPage', () => {
     renderWithProviders(<BuraPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
 
-    const opponentHandContainer = screen.getByRole('img', { name: /CPU.*手札/ });
+    const opponentHandContainer = screen.getByRole('img', { name: /CPU 1.*手札/ });
     const opponentHand = within(opponentHandContainer);
     expect(opponentHand.getAllByAltText('カード裏面')).toHaveLength(2);
     expect(screen.queryByAltText('♥ A')).not.toBeInTheDocument();
@@ -98,10 +99,55 @@ describe('BuraPage', () => {
     renderWithProviders(<BuraPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
 
-    const opponentHand = within(screen.getByRole('group', { name: 'CPU の手札（公開）' }));
+    const opponentHand = within(screen.getByRole('group', { name: 'CPU 1の手札（公開）' }));
     expect(opponentHand.getByRole('img', { name: '♥ A' })).toBeInTheDocument();
     expect(opponentHand.getByRole('img', { name: '♦ 10' })).toBeInTheDocument();
     expect(screen.queryAllByAltText('カード裏面')).toHaveLength(0);
+  });
+
+  it('uses the lead player name for each opponent score and hand', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [human(), cpu({ id: 1, points: 12 }), cpu({ id: 2, points: 8, cardCount: 2 })],
+        currentLead: [card('DIAMOND', 13)],
+        leadPlayerIdx: 2,
+      }),
+    );
+    renderWithProviders(<BuraPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.getByText('12').parentElement).toHaveTextContent('CPU 1: 12');
+    expect(screen.getByText('8').parentElement).toHaveTextContent('CPU 2: 8');
+    expect(screen.getByText('CPU 2が出しました')).toBeInTheDocument();
+    expect(screen.getByText('CPU 1の手札 3 枚')).toBeInTheDocument();
+    expect(screen.getByText('CPU 2の手札 2 枚')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'CPU 1の手札 3 枚（裏向き）' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'CPU 2の手札 2 枚（裏向き）' })).toBeInTheDocument();
+  });
+
+  it('formats opponent names in English for scores, hands, and leads', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [human(), cpu({ id: 1, points: 12 }), cpu({ id: 2, points: 8, cardCount: 2 })],
+        currentLead: [card('DIAMOND', 13)],
+        leadPlayerIdx: 2,
+      }),
+    );
+
+    try {
+      renderWithProviders(<BuraPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+      expect(screen.getByText('12').parentElement).toHaveTextContent('CPU 1: 12');
+      expect(screen.getByText('8').parentElement).toHaveTextContent('CPU 2: 8');
+      expect(screen.getByText("CPU 1's hand: 3 cards")).toBeInTheDocument();
+      expect(screen.getByText("CPU 2's hand: 2 cards")).toBeInTheDocument();
+      expect(screen.getByText('Led by CPU 2')).toBeInTheDocument();
+      expect(screen.getByRole('img', { name: "CPU 2's hand, 2 cards face down" })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('identifies the lead player visually and in each card label, and hides it with no lead', async () => {
