@@ -6,7 +6,7 @@ test.describe('Aces Up E2E', () => {
     await navigateTo(page, '/acesup');
 
     // Verify stock label and move count are visible
-    await expect(page.getByText('山札')).toBeVisible();
+    await expect(page.getByText(/^山札 \(\d+\)$/)).toBeVisible();
     await expect(page.getByText(/手数/)).toBeVisible();
 
     // Deal a card to each column
@@ -34,7 +34,7 @@ test.describe('Aces Up E2E', () => {
     await waitForLoaded(page);
 
     // Verify game restarted
-    await expect(page.getByText('山札')).toBeVisible();
+    await expect(page.getByText(/^山札 \(\d+\)$/)).toBeVisible();
   });
 
   test('give up ends the game', async ({ page }) => {
