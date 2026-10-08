@@ -24,6 +24,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, KoiKoiResponse, KoiKoiYaku } from '../types/card';
 import { KoiKoiPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { KOIKOI_HELP, parseKoiKoiCommand } from '../utils/cli/commands/koikoiCommands';
 import { formatKoiKoiState } from '../utils/cli/formatters/koikoiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -328,6 +329,7 @@ function KoiKoiPageContent() {
                         type="button"
                         onClick={() => onFieldClick(i)}
                         disabled={!needsFieldPick || !isCandidate}
+                        aria-label={isCandidate ? t('fieldCardCandidate', { card: cardAlt(c) }) : undefined}
                         className={`rounded transition-all ${
                           isCandidate ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''
                         } ${needsFieldPick && isCandidate ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
