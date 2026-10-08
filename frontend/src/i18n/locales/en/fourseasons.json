@@ -25,6 +25,8 @@
   "nextRankBadge": "next:{{rank}}",
   "nextRankAria": "next required card {{rank}}",
   "foundationCompleteAria": "complete",
+  "foundationTopAria": "Foundation {{idx}}: {{top}}. {{next}}",
+  "foundationTopCompleteAria": "Foundation {{idx}}: {{top}}. {{complete}}",
   "acceptsTooltip": "Accepts {{rank}}",
   "crossCardAria": "Cross column {{col}}: {{card}}. {{accepts}}",
   "acceptsAny": "Accepts any card",
