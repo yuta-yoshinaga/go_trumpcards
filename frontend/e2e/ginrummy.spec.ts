@@ -24,7 +24,7 @@ test.describe('Gin Rummy E2E', () => {
     const layoffButton = page.getByRole('button', { name: 'レイオフ', exact: true });
     const skipButton = page.getByRole('button', { name: 'スキップ' });
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });
-    const handCards = page.locator('button[aria-pressed]:has(img)');
+    const handCards = page.locator('button[aria-pressed]:not([aria-disabled="true"]):has(img)');
     const anyResetButton = page.getByRole('button', { name: /リセット|次のゲーム/ });
 
     // Play through several interactions to verify phase transitions
