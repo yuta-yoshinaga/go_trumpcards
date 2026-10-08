@@ -193,6 +193,8 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
   const [tournamentMode, setTournamentMode] = useState(false);
   const [bettingLimit, setBettingLimit] = useState(0);
   const turnStartRef = useRef(0);
+  const muckButtonRef = useRef<HTMLButtonElement>(null);
+  const wasMuckPhaseRef = useRef(false);
 
   useMountReset(execApi);
 
@@ -237,6 +239,17 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
       : undefined;
   const minRaise = state?.minRaise ?? 0;
   const isMuckPhase = phase === SevenCardStudPhase.SHOWDOWN && state?.muckAvailable === true;
+  useEffect(() => {
+    if (gameKey !== 'chicago') return;
+    if (isMuckPhase && !wasMuckPhaseRef.current) {
+      muckButtonRef.current?.focus();
+    } else if (!isMuckPhase && wasMuckPhaseRef.current) {
+      const heading = document.querySelector<HTMLElement>('h1')!;
+      heading.tabIndex = -1;
+      heading.focus();
+    }
+    wasMuckPhaseRef.current = isMuckPhase;
+  }, [gameKey, isMuckPhase]);
   const isRebuyPhase =
     phase === SevenCardStudPhase.REBUY && state?.rebuyPhaseType === SevenCardStudRebuyPhaseType.REBUY;
   const isAddonPhase =
@@ -673,6 +686,7 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
               <div className="mb-2 text-center" data-testid="muck-controls">
                 <div className="flex justify-center gap-2">
                   <button
+                    ref={muckButtonRef}
                     type="button"
                     className={`${btnPrimary} min-w-[90px]`}
                     disabled={loading}
