@@ -129,6 +129,15 @@ describe('JulepePage', () => {
     expect(screen.getByTestId('rm-ante-3')).toHaveTextContent('今回のアンティ: 6チップ');
   });
 
+  it('hides ante displays when round antes are missing during the decision phase', async () => {
+    mockExec.mockResolvedValue(makeState({ roundAntes: [] }));
+    renderWithProviders(<JulepePage />);
+
+    expect(await screen.findByTestId('rm-decision-status')).toBeInTheDocument();
+    expect(screen.queryByTestId('rm-ante-0')).not.toBeInTheDocument();
+    expect(screen.queryByText(/undefined/)).not.toBeInTheDocument();
+  });
+
   it('keeps only the reachable decision announcement translations', () => {
     expect(Object.keys(i18n.getResourceBundle('ja', 'julepe').decision)).toEqual(['undecided']);
     expect(Object.keys(i18n.getResourceBundle('en', 'julepe').decision)).toEqual(['undecided']);

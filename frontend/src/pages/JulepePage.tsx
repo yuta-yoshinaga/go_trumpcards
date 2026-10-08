@@ -261,7 +261,7 @@ function JulepePageContent() {
                   )}
                   {': '}
                   {t('header.seat', { chips: String(p.chips), tricks: String(p.roundTricks) })} [{statusStr(p)}]
-                  {isDecide && (
+                  {isDecide && state.roundAntes[p.id] !== undefined && (
                     <span className="ml-1" data-testid={`rm-ante-${p.id.toString()}`}>
                       {t('ante', { amount: String(state.roundAntes[p.id]) })}
                     </span>
