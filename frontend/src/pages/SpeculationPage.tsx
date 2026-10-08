@@ -157,7 +157,7 @@ function SpeculationPageContent() {
   const humanBuys = state.offerFrom === SPECULATION_HUMAN_SEAT;
   const offerOpen = isAuctionPhase && state.offerFrom !== SPECULATION_NO_SEAT && state.offerTo !== SPECULATION_NO_SEAT;
   const liveAnnouncement = [
-    isFlipPhase
+    isFlipPhase && !gameOver
       ? state.turnSeat === SPECULATION_HUMAN_SEAT
         ? t('guide.yourTurn')
         : t('guide.cpuTurn', { name: state.seats[state.turnSeat].name })
