@@ -308,6 +308,23 @@ function KingPageContent() {
                   ))}
                 </div>
 
+                {isGameEnd && state.roundWinners.length > 0 && (
+                  <div
+                    className="mb-2 p-2 rounded bg-ds-surface text-ds-text-primary text-sm font-semibold"
+                    data-testid="king-final-result"
+                  >
+                    {state.roundWinners.length > 1
+                      ? t('finalResult.tie', {
+                          names: state.roundWinners
+                            .map((winner) => findPlayerName(state.players, winner))
+                            .join(t('listSeparator')),
+                        })
+                      : t('finalResult.winner', {
+                          name: findPlayerName(state.players, state.roundWinners[0]),
+                        })}
+                  </div>
+                )}
+
                 {/* Players: cards / tricks */}
                 {isMobile ? (
                   <details className="mb-2 p-2 rounded bg-black/30">
