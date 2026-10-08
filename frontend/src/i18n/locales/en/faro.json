@@ -9,6 +9,7 @@
   "copperOn": "Copper: on",
   "copperOff": "Copper: off",
   "betAmountLabel": "Bet amount",
+  "chipAmountUnavailable": "No rank can accept this bet amount.",
   "copperTag": "copper",
   "copperModeHint": "Copper mode: your next bet wagers that rank to LOSE",
   "betsTitle": "Current bets",
