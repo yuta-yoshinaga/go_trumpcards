@@ -1772,6 +1772,7 @@ const baseMarjapussiState: MarjapussiResponse = {
   roundCardPoints: [0, 0],
   roundMarriage: [0, 0],
   pussiCount: 4,
+  pussiPoints: 0,
   pussiWinnerTeam: -1,
   lastTrickWinner: -1,
   playableIndices: [0, 1, 2, 3, 4, 5, 6, 7],
