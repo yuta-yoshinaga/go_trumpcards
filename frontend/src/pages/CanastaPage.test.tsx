@@ -180,6 +180,16 @@ describe('CanastaPage', () => {
     expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument();
   });
 
+  it('keeps the human meld tutorial target visible when no melds or red threes exist', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<CanastaPage />);
+
+    await screen.findByText(/メルド/);
+    expect(document.querySelector('[data-tutorial="ca-meld-area"]')).toBeInTheDocument();
+    expect(screen.queryByTestId(/^ca-meld-\d+-\d+$/)).not.toBeInTheDocument();
+    expect(screen.queryByText('赤3')).not.toBeInTheDocument();
+  });
+
   it('calls drawstock command when button clicked', async () => {
     renderWithProviders(<CanastaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
@@ -454,6 +464,7 @@ describe('CanastaPage', () => {
     // Count badge shows the number of cards in the meld.
     expect(screen.getByTestId('ca-meld-badge-0-0')).toHaveTextContent('7');
     expect(screen.getByTestId('ca-meld-badge-0-1')).toHaveTextContent('3');
+    expect(document.querySelector('[data-tutorial="ca-meld-area"]')).toBeInTheDocument();
     // Canasta type (with the ★) is visible at a glance for the completed canasta.
     expect(within(canastaMeld).getByText(/ナチュラルカナスタ/)).toBeInTheDocument();
   });

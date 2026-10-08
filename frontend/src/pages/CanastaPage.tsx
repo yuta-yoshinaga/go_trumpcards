@@ -312,11 +312,12 @@ function CanastaPageContent() {
 
                 {/* Player melds */}
                 {state.players.map((p, pi) => {
-                  if (p.melds.length === 0 && p.red3s.length === 0) return null;
+                  const hasMeldContent = p.melds.length > 0 || p.red3s.length > 0;
+                  if (!hasMeldContent && !p.isHuman) return null;
                   return (
                     <div
                       key={pi}
-                      className="my-2 p-2 rounded bg-black/30"
+                      className={hasMeldContent ? 'my-2 p-2 rounded bg-black/30' : ''}
                       data-tutorial={pi === 0 ? 'ca-meld-area' : undefined}
                     >
                       <div className="text-ds-text-muted text-sm mb-1">
