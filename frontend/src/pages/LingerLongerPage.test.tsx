@@ -302,6 +302,18 @@ describe('LingerLongerPage', () => {
 
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '投了' }));
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(screen.queryByText('投了確認')).not.toBeInTheDocument();
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: '投了' }));
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
   });
 
