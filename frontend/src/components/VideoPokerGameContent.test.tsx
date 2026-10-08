@@ -303,6 +303,43 @@ describe('VideoPokerGameContent', () => {
     }
   });
 
+  it('announces signed net change for Joker Poker wins and losses in Japanese and English', async () => {
+    try {
+      await i18n.changeLanguage('en');
+      mockExec.mockResolvedValue({
+        ...resultPhaseWin,
+        variantName: 'jokerpoker',
+        handName: 'Kings or Better',
+        handKey: 'kingsOrBetter',
+      });
+      const englishWin = renderContent('jokerpoker');
+      await waitFor(() => expect(screen.getByTestId('vp-result-announce')).toHaveTextContent(/net change \+4$/));
+      englishWin.unmount();
+
+      mockExec.mockResolvedValue({ ...resultPhaseLose, variantName: 'jokerpoker' });
+      const englishLose = renderContent('jokerpoker');
+      await waitFor(() => expect(screen.getByTestId('vp-result-announce')).toHaveTextContent(/net change -1$/));
+      englishLose.unmount();
+
+      await i18n.changeLanguage('ja');
+      mockExec.mockResolvedValue({
+        ...resultPhaseWin,
+        variantName: 'jokerpoker',
+        handName: 'Kings or Better',
+        handKey: 'kingsOrBetter',
+      });
+      const japaneseWin = renderContent('jokerpoker');
+      await waitFor(() => expect(screen.getByTestId('vp-result-announce')).toHaveTextContent(/純増減 \+4$/));
+      japaneseWin.unmount();
+
+      mockExec.mockResolvedValue({ ...resultPhaseLose, variantName: 'jokerpoker' });
+      renderContent('jokerpoker');
+      await waitFor(() => expect(screen.getByTestId('vp-result-announce')).toHaveTextContent(/純増減 -1$/));
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('re-announces identical consecutive hand results', async () => {
     mockExec.mockImplementation(async () => ({ ...resultPhaseWin }));
     renderContent();
