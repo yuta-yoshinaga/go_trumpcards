@@ -630,7 +630,13 @@ function CariocaPageContent() {
             )}
           </section>
 
-          <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+          <GameMessageBox
+            message={state.message}
+            messageCode={state.messageCode}
+            messageParams={state.messageParams}
+            alwaysVisible
+            bareWhenEmpty
+          />
 
           <ActionLogSection
             isEndPhase={state.gameEndFlag || isRoundEnd}
