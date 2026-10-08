@@ -51,6 +51,12 @@ const SUITS: { id: number; glyph: string }[] = [
   { id: 4, glyph: '♦' },
   { id: 3, glyph: '♥' },
 ];
+const SUIT_I18N_KEYS: Record<number, string> = {
+  1: 'common.suit.spade',
+  2: 'common.suit.club',
+  3: 'common.suit.heart',
+  4: 'common.suit.diamond',
+};
 
 /**
  * Cards exchanged with the kitty (`domain.BidWhistKittySize`).
@@ -543,6 +549,7 @@ function BidWhistPageContent() {
                     <button
                       key={s.id}
                       type="button"
+                      aria-label={t('trumpSuitButtonAriaLabel', { glyph: s.glyph, suit: tc(SUIT_I18N_KEYS[s.id]) })}
                       onClick={() => declareTrump(s.id)}
                       disabled={loading}
                       className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
