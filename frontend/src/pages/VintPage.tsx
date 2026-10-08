@@ -447,6 +447,9 @@ function VintPageContent() {
                   >
                     {t('bidButton')}
                   </button>
+                  <span className="text-ds-text-primary text-sm" data-testid="vint-selected-trick-value">
+                    {t('selectedTrickValue', { n: state.trickValues[bidDenom] + (bidLevel - 1) * 10 })}
+                  </span>
                   {!bidIsLegal && (
                     <span className="text-ds-warning text-xs" data-testid="vint-bid-too-low">
                       {t('bidMustBeat')}
