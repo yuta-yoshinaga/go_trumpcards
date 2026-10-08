@@ -57,6 +57,7 @@ function makeState(overrides: Partial<JulepeResponse> = {}): JulepeResponse {
     config: { playerCnt: 4, rounds: 4 },
     requiredTricks: 2,
     beast: [false, false, false, false],
+    roundAntes: [3, 6, 3, 6],
     message: '',
     ...overrides,
   } as unknown as JulepeResponse;
@@ -119,6 +120,13 @@ describe('JulepePage', () => {
       '参加するか降りるかを選んでください。未決定: 4人。',
     );
     expect(screen.getByTestId('rm-seat-0')).toHaveTextContent('未定');
+  });
+
+  it('shows each seat the ante paid this round during the decision phase', async () => {
+    renderWithProviders(<JulepePage />);
+    expect(await screen.findByTestId('rm-ante-0')).toHaveTextContent('今回のアンティ: 3チップ');
+    expect(screen.getByTestId('rm-ante-1')).toHaveTextContent('今回のアンティ: 6チップ');
+    expect(screen.getByTestId('rm-ante-3')).toHaveTextContent('今回のアンティ: 6チップ');
   });
 
   it('keeps only the reachable decision announcement translations', () => {
