@@ -7,6 +7,7 @@
   "fieldCaptureCandidate": "capture candidate",
   "fieldEmpty": "(empty)",
   "fieldNotCaptureCandidate": "not a capture candidate",
+  "listSeparator": ", ",
   "handNotPlayable": "not playable",
   "handPlayable": "playable",
   "hint": {
@@ -23,6 +24,7 @@
   "pickField": "Pick the field card to capture (two cards match).",
   "rawScore": "Raw: {{raw}}",
   "result": {
+    "announcement": "{{outcome}} Final scores: {{scores}}",
     "title": "Final Scores",
     "winner": "Winner: {{name}}",
     "tie": "The game is a draw.",
@@ -30,6 +32,8 @@
   },
   "round": "Round {{n}} / {{total}}",
   "roundResult": {
+    "announcement": "Round settlement. {{results}}",
+    "announcementItem": "{{name}} {{delta}}",
     "title": "Round settlement (delta from the 88 baseline)",
     "player": "Player",
     "raw": "Raw",

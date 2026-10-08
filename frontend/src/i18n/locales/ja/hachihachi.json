@@ -7,6 +7,7 @@
   "fieldCaptureCandidate": "捕獲候補",
   "fieldEmpty": "（なし）",
   "fieldNotCaptureCandidate": "捕獲候補ではありません",
+  "listSeparator": "、",
   "handNotPlayable": "出せません",
   "handPlayable": "出せます",
   "hint": {
@@ -23,6 +24,7 @@
   "pickField": "捕獲する場札を選んでください（2枚が一致しています）。",
   "rawScore": "素点: {{raw}}",
   "result": {
+    "announcement": "{{outcome}} 最終得点: {{scores}}",
     "title": "最終得点",
     "winner": "勝者: {{name}}",
     "tie": "引き分けです。",
@@ -30,6 +32,8 @@
   },
   "round": "ラウンド {{n}} / {{total}}",
   "roundResult": {
+    "announcement": "ラウンド精算。{{results}}",
+    "announcementItem": "{{name}} {{delta}}",
     "title": "ラウンド精算（基準点 88 との差）",
     "player": "プレイヤー",
     "raw": "素点",
