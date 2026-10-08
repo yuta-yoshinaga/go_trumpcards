@@ -118,6 +118,25 @@ describe('DurakPage', () => {
     expect(log).toHaveAttribute('role', 'status');
   });
 
+  it('shows cards and the zero-based attack index in CPU action logs', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      cpuActions: [
+        { playerIdx: 1, actionType: 0, card: { design: 'SPADE', value: 1 }, attackIdx: -1 },
+        { playerIdx: 2, actionType: 1, card: { design: 'HEART', value: 11 }, attackIdx: 0 },
+        { playerIdx: 3, actionType: 4, card: { design: 'DIAMOND', value: 10 }, attackIdx: -1 },
+        { playerIdx: 1, actionType: 2, card: null, attackIdx: -1 },
+      ],
+    });
+    renderWithProviders(<DurakPage />);
+
+    const log = await screen.findByTestId('durak-cpu-actions');
+    expect(log).toHaveTextContent('CPU 1: 攻撃: ♠ A');
+    expect(log).toHaveTextContent('CPU 2: 防御: ♥ J（攻撃 0）');
+    expect(log).toHaveTextContent('CPU 3: 転送: ♦ 10');
+    expect(log).toHaveTextContent('CPU 1: パス');
+  });
+
   it('renders CPU player areas', async () => {
     renderWithProviders(<DurakPage />);
     await waitFor(() => {
