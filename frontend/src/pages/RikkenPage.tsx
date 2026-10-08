@@ -110,9 +110,9 @@ function RikkenPageContent() {
   const actionBindings = useMemo(
     () => [
       { key: 'n', action: () => execApi('next'), enabled: isRoundEnd },
-      { key: 'g', action: () => execApi('giveup'), enabled: !!state && !state.gameEndFlag },
+      { key: 'g', action: confirmGiveUpAction, enabled: !!state && !state.gameEndFlag },
     ],
-    [execApi, isRoundEnd, state],
+    [confirmGiveUpAction, execApi, isRoundEnd, state],
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 
