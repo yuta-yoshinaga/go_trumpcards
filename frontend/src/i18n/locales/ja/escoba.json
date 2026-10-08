@@ -60,7 +60,8 @@
     "escobas": "エスコバ",
     "gained": "獲得点",
     "aceEspada": "Ace♠を取得",
-    "seteEspada": "7♠を取得"
+    "seteEspada": "7♠を取得",
+    "unclaimed": "未獲得"
   },
   "tutorial": {
     "cpuArea": "他のプレイヤーの手札枚数・捕獲数・エスコバ数・得点です。",

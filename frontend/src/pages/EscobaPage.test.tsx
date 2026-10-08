@@ -262,11 +262,41 @@ describe('EscobaPage', () => {
     expect(headers[0]).toHaveTextContent('あなた');
     expect(headers[1]).toHaveTextContent('CPU 1');
     expect(headers[3]).toHaveTextContent('CPU 3');
+    const rows = screen.getByTestId('round-detail').querySelectorAll('tr');
+    expect(rows[7]).toHaveTextContent('Ace♠を取得');
+    expect(rows[7]).toHaveTextContent('あなた');
+    expect(rows[8]).toHaveTextContent('7♠を取得');
+    expect(rows[8]).toHaveTextContent('CPU 1');
     // 各列がどの席かを支援技術にも伝える。
     for (const th of headers) {
       expect(th).toHaveAttribute('scope', 'col');
       expect(th.textContent).not.toMatch(/^P\d/);
     }
+  });
+
+  it('shows unclaimed special cards without a player number', async () => {
+    mockExec.mockResolvedValue(
+      makeEscobaState({
+        phase: 'roundEnd',
+        isHumanTurn: false,
+        lastRoundDetail: {
+          cards: [0, 0, 0, 0],
+          espadas: [0, 0, 0, 0],
+          sevens: [0, 0, 0, 0],
+          oros: [0, 0, 0, 0],
+          escobas: [0, 0, 0, 0],
+          gained: [0, 0, 0, 0],
+          aceEspada: -1,
+          seteEspada: -1,
+        },
+      }),
+    );
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('round-detail')).toBeInTheDocument());
+    const rows = screen.getByTestId('round-detail').querySelectorAll('tr');
+    expect(rows[7]).toHaveTextContent('未獲得');
+    expect(rows[8]).toHaveTextContent('未獲得');
+    expect(screen.getByTestId('round-detail')).not.toHaveTextContent('プレイヤー-1');
   });
 
   it('omits the last capturer when there was no valid capture', async () => {

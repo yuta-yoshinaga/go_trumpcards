@@ -60,7 +60,8 @@
     "escobas": "Escoba",
     "gained": "Points gained",
     "aceEspada": "Took the Ace♠",
-    "seteEspada": "Took the 7♠"
+    "seteEspada": "Took the 7♠",
+    "unclaimed": "Unclaimed"
   },
   "tutorial": {
     "cpuArea": "Other players' hand count, captures, escobas, and score.",
