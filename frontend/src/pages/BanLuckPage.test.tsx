@@ -233,24 +233,32 @@ describe('BanLuckPage', () => {
   });
 
   it('決着で役と収支を出す', async () => {
-    mockApi.mockResolvedValue(
-      withState({
-        phase: BanLuckPhase.ROUND_END,
-        seats: [
-          seat({
-            name: 'YOU',
-            cards: [card(1), card(1)],
-            score: 12,
-            rank: BAN_LUCK_RANK.banBan,
-            outcome: 2,
-            delta: 150,
-          }),
-          seat({ name: 'CPU1', isHuman: false, isBanker: true, cards: [card(10), card(7)], score: 17, delta: -150 }),
-        ],
-      }),
-    );
+    const settled = withState({
+      phase: BanLuckPhase.ROUND_END,
+      seats: [
+        seat({
+          name: 'YOU',
+          cards: [card(1), card(1)],
+          score: 12,
+          rank: BAN_LUCK_RANK.banBan,
+          outcome: 2,
+          delta: 150,
+        }),
+        seat({ name: 'CPU1', isHuman: false, isBanker: true, cards: [card(10), card(7)], score: 17, delta: -150 }),
+      ],
+    });
+    mockApi
+      .mockResolvedValueOnce(settled)
+      .mockResolvedValueOnce({ ...settled, seats: settled.seats.map((entry) => ({ ...entry })) });
     renderWithProviders(<BanLuckPage />);
     await waitFor(() => expect(screen.getByTestId('bl-result-0')).toHaveTextContent('バンバン'));
+    const live = screen.getByTestId('bl-result-live');
+    await waitFor(() => expect(live).toHaveTextContent('YOU、バンバン、収支150'));
+    expect(live).toHaveTextContent('CPU1、通常、収支-150');
+    expect(live).toHaveClass('sr-only');
+    fireEvent.click(screen.getByRole('button', { name: '次のラウンドへ' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('next'));
+    expect(live).toHaveTextContent('YOU、バンバン、収支150');
     expect(screen.getByTestId('bl-result-0')).toHaveTextContent('150');
     expect(screen.getByTestId('bl-result-0')).toHaveTextContent('3倍');
     expect(screen.getByRole('button', { name: '次のラウンドへ' })).toBeInTheDocument();

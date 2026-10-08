@@ -39,6 +39,8 @@
   "tutorial.banker": "親だけが15未満で止まれません。子は何点でも止められます",
   "result.gameEnd": "全ラウンドが終わりました",
   "result.comparison": "親{{banker}}との比較: {{playerScore}}点 / {{bankerScore}}点 — {{outcome}}",
+  "result.seatAnnouncement": "{{name}}、{{rank}}、収支{{delta}}",
+  "listSeparator": "、",
   "frontendHint.banLuckBankerMustHit": "親は15未満では止まれません",
   "frontendHint.banLuckHandFull": "5枚あるのでこれ以上引けません",
   "frontendHint.banLuckChaseFiveDragon": "あと1枚でファイブドラゴンになります",
