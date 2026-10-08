@@ -34,6 +34,7 @@
   "frontendHint.monteBankAllDuplicated": "どのスートも2枚以上出ているので、どれを選んでも不利です",
   "label.remainingOfSuit": "山残り{{count}}枚",
   "label.nextGateProbability": "次のゲートの的中確率 {{probability}}",
+  "label.nextGateExpectedNet": "期待純収支 {{amount}} チップ",
   "label.probabilityUnavailable": "—",
   "selection.changed": "{{prev}}の選択を解除し、{{card}}を選択"
 }
