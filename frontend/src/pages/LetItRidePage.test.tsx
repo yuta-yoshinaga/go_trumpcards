@@ -298,6 +298,27 @@ describe('LetItRidePage', () => {
     expect(screen.getByRole('button', { name: 'レットイットライド' })).toBeInTheDocument();
   });
 
+  it('announces a community card when it changes from masked to revealed', async () => {
+    mockApi
+      .mockResolvedValueOnce(firstDecisionState)
+      .mockResolvedValueOnce(secondDecisionState)
+      .mockResolvedValueOnce({ ...secondDecisionState });
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'レットイットライド' })).toBeInTheDocument());
+
+    const liveRegion = screen.getByTestId('community-card-revealed-live');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toHaveClass('sr-only');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByRole('button', { name: 'レットイットライド' }));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('公開されたコミュニティカード: ♣ Q'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'レットイットライド' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledTimes(3));
+    expect(liveRegion).toHaveTextContent('公開されたコミュニティカード: ♣ Q');
+  });
+
   it('previews pull and let-it-ride outcomes from the active bets', async () => {
     mockApi.mockResolvedValue(firstDecisionState);
     renderWithProviders(<LetItRidePage />);
