@@ -499,6 +499,7 @@ function RussianSolitairePageContent() {
                                       onFocus={() => setHoveredBlock({ col: colIdx, cardIdx })}
                                       onBlur={() => setHoveredBlock(null)}
                                       data-block-member={inHoverBlock || undefined}
+                                      aria-pressed={isSelected}
                                       className={`${focusRingWhite} rounded-lg transition-all ${
                                         isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
                                       } ${isDragSrc ? 'opacity-50' : ''} ${
