@@ -321,10 +321,26 @@ describe('ConquianPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, [[0, 1, 2]], undefined));
   });
 
-  it('discard button disabled when not exactly 1 card selected', async () => {
+  it('discard button is aria-disabled when not exactly 1 card selected', async () => {
     mockExec.mockResolvedValue(meldPhaseState);
     renderWithProviders(<ConquianPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '捨てる' })).toBeDisabled());
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '捨てる' })).toHaveAttribute('aria-disabled', 'true'),
+    );
+  });
+
+  it('blocks discard after taking the discard even when one card is selected', async () => {
+    mockExec.mockResolvedValue(meldPhaseTookDiscard);
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    const discardButton = screen.getByRole('button', { name: '捨てる' });
+    expect(discardButton).toHaveAttribute('aria-disabled', 'true');
+    mockExec.mockClear();
+    fireEvent.click(discardButton);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   it('calls discard command when discard button clicked', async () => {
@@ -333,6 +349,7 @@ describe('ConquianPage', () => {
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
     fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    expect(screen.getByRole('button', { name: '捨てる' })).not.toHaveAttribute('aria-disabled');
     mockExec.mockClear();
     mockExec.mockResolvedValue(drawPhaseState);
     fireEvent.click(screen.getByRole('button', { name: '捨てる' }));
