@@ -335,6 +335,7 @@ function GermanSoloPageContent() {
                   {state.players.map((p) => (
                     <div key={p.id} className="py-0.5 flex items-center gap-2">
                       <span className={p.isDeclarer ? 'text-ds-warning font-semibold' : ''}>
+                        {t('matchRank', { rank: state.players.filter((other) => other.score > p.score).length + 1 })}{' '}
                         {playerName(p.id, p.isHuman)}: {t('score', { score: p.score })}
                       </span>
                       {p.id === state.dealerIdx && (

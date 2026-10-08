@@ -115,6 +115,23 @@ describe('GermanSoloPage', () => {
     expect(forehandBadge).toHaveTextContent('このディールの先手');
   });
 
+  it('shows tied cumulative scores at the same competition rank and updates ranks with scores', async () => {
+    mockExec.mockResolvedValue(
+      makeGermanSoloState({
+        players: makeGermanSoloState().players.map((player, id) => ({
+          ...player,
+          score: [12, 4, 4, -3][id],
+        })),
+      }),
+    );
+    renderWithProviders(<GermanSoloPage />);
+
+    await waitFor(() => expect(screen.getByText('1位 あなた: 得点: 12')).toBeInTheDocument());
+    expect(screen.getByText('2位 CPU 1: 得点: 4')).toBeInTheDocument();
+    expect(screen.getByText('2位 CPU 2: 得点: 4')).toBeInTheDocument();
+    expect(screen.getByText('4位 CPU 3: 得点: -3')).toBeInTheDocument();
+  });
+
   it('updates dealer and forehand badges when seats rotate', async () => {
     mockExec.mockResolvedValue(makeGermanSoloState({ dealerIdx: 1, forehandIdx: 2 }));
     renderWithProviders(<GermanSoloPage />);
