@@ -122,7 +122,7 @@ describe('FlowerGardenPage', () => {
   it('keeps move targets focusable and explains that a source must be selected first', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<FlowerGardenPage />);
-    const target = await screen.findByRole('button', { name: '♠ 組札 1枚' });
+    const target = await screen.findByRole('button', { name: 'スペード 組札 ♠ A 1枚' });
     expect(target).not.toBeDisabled();
     expect(target).toHaveAttribute('aria-disabled', 'true');
     const hintId = target.getAttribute('aria-describedby');
@@ -135,10 +135,30 @@ describe('FlowerGardenPage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
+  it('names empty and occupied foundations with translated suit names in Japanese and English', async () => {
+    const state: FlowerGardenResponse = {
+      ...playingState,
+      foundation: [[], [card('CLOVER', 1)], [], [card('DIAMOND', 1)]],
+    };
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<FlowerGardenPage />);
+
+    expect(await screen.findByRole('button', { name: '空の組札 (スペード)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'クラブ 組札 ♣ A 1枚' })).toBeInTheDocument();
+
+    try {
+      await i18n.changeLanguage('en');
+      expect(await screen.findByRole('button', { name: 'Empty foundation (Spade)' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Club foundation ♣ A 1 card' })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('renders 4 foundation suits', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<FlowerGardenPage />);
-    await waitFor(() => expect(screen.getAllByLabelText(/組札 1枚/).length).toBe(4));
+    await waitFor(() => expect(screen.getAllByLabelText(/組札 .* 1枚/).length).toBe(4));
   });
 
   it('renders per-foundation progress counters (n/13) for all four piles', async () => {

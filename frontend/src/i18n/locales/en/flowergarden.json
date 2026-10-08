@@ -5,7 +5,8 @@
   "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
   "emptyReserveSlot": "Empty reserve slot {{idx}}",
   "foundation": "Foundation",
-  "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
+  "foundationAriaLabel_one": "{{suit}} foundation {{card}} {{count}} card",
+  "foundationAriaLabel_other": "{{suit}} foundation {{card}} {{count}} cards",
   "foundationProgress": "{{count}}/13",
   "frontendHint": {
     "tableau": "Flower bed {{col}}",

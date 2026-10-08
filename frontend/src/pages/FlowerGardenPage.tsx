@@ -38,6 +38,12 @@ import { flowerGardenLegalTargets } from '../utils/flowerGardenLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
+const FOUNDATION_SUIT_I18N_KEYS = [
+  'common.suit.spade',
+  'common.suit.club',
+  'common.suit.heart',
+  'common.suit.diamond',
+] as const;
 
 const FG_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -415,7 +421,8 @@ function FlowerGardenPageContent() {
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('foundationAriaLabel', {
-                              suit: FOUNDATION_SUITS[idx],
+                              suit: tc(FOUNDATION_SUIT_I18N_KEYS[idx]),
+                              card: cardAlt(pile[pile.length - 1]),
                               count: pile.length,
                             })}
                             data-target-candidate={legalTargets.foundation.has(idx) || undefined}
@@ -437,7 +444,9 @@ function FlowerGardenPageContent() {
                             disabled={!isPlaying || loading}
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
+                            aria-label={t('emptyFoundationAriaLabel', {
+                              suit: tc(FOUNDATION_SUIT_I18N_KEYS[idx]),
+                            })}
                             style={{ width: dims.cw, height: dims.ch }}
                             data-target-candidate={legalTargets.foundation.has(idx) || undefined}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${
