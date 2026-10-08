@@ -101,13 +101,31 @@ describe('KillePage', () => {
     expect(screen.getByTestId('kille-rules-note')).toHaveTextContent('最強ではなく最弱');
   });
 
-  it('shows the strength ladder', async () => {
+  it('shows Japanese card names in the strength ladder and effect guide', async () => {
     renderWithProviders(<KillePage />);
     await waitFor(() => expect(screen.getByTestId('kille-ladder')).toBeInTheDocument());
     const ladder = screen.getByTestId('kille-ladder');
+    for (const name of ['道化', 'カッコウ', '軽騎兵', '豚', '騎兵', '宿屋', '仮面']) {
+      expect(ladder).toHaveTextContent(name);
+    }
+    const legend = screen.getByTestId('kille-effect-legend');
+    for (const name of ['カッコウ', '軽騎兵', '豚', '騎兵', '宿屋']) {
+      expect(legend).toHaveTextContent(name);
+    }
+  });
+
+  it('keeps English card names when the page language is English', async () => {
+    await i18n.changeLanguage('en');
+    renderWithProviders(<KillePage />);
+    const ladder = await screen.findByTestId('kille-ladder');
     for (const name of ['Harlequin', 'Cuckoo', 'Hussar', 'Pig', 'Cavalier', 'Inn', 'Mask']) {
       expect(ladder).toHaveTextContent(name);
     }
+    const legend = screen.getByTestId('kille-effect-legend');
+    for (const name of ['Cuckoo', 'Hussar', 'Pig', 'Cavalier', 'Inn']) {
+      expect(legend).toHaveTextContent(name);
+    }
+    await i18n.changeLanguage('ja');
   });
 
   it('shows every number rank in strength order between the special cards', async () => {
@@ -117,12 +135,12 @@ describe('KillePage', () => {
       (rank) => rank.textContent,
     );
     expect(ranks).toEqual([
-      'Harlequin',
-      'Cuckoo',
-      'Hussar',
-      'Pig',
-      'Cavalier',
-      'Inn',
+      '道化',
+      'カッコウ',
+      '軽騎兵',
+      '豚',
+      '騎兵',
+      '宿屋',
       '12',
       '11',
       '10',
@@ -135,9 +153,9 @@ describe('KillePage', () => {
       '3',
       '2',
       '1',
-      'Wreath',
-      'Flowerpot',
-      'Mask',
+      '花輪',
+      '植木鉢',
+      '仮面',
     ]);
   });
 
@@ -145,9 +163,9 @@ describe('KillePage', () => {
     renderWithProviders(<KillePage />);
     const legend = await screen.findByTestId('kille-effect-legend');
     expect(legend).toHaveTextContent('効果札の説明');
-    expect(legend).toHaveTextContent('🐦 Cuckoo: 交換は成立せず、その場でラウンド終了');
-    expect(legend).toHaveTextContent('⚔ Hussar: 仕掛けた側が脱落');
-    expect(legend).toHaveTextContent('🐖 Pig: 交換を巻き戻し、豚の元の持ち主が脱落');
+    expect(legend).toHaveTextContent('🐦 カッコウ: 交換は成立せず、その場でラウンド終了');
+    expect(legend).toHaveTextContent('⚔ 軽騎兵: 仕掛けた側が脱落');
+    expect(legend).toHaveTextContent('🐖 豚: 交換を巻き戻し、豚の元の持ち主が脱落');
   });
 
   // 何が起きたか判らないと、いきなり落ちた理由が説明できない。

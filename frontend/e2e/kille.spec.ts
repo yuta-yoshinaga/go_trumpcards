@@ -11,9 +11,9 @@ test.describe('Kille E2E', () => {
 
     // A single suit means the denomination ladder is the whole of the ranking.
     const ladder = page.getByTestId('kille-ladder');
-    await expect(ladder).toContainText('Harlequin');
-    await expect(ladder).toContainText('Cuckoo');
-    await expect(ladder).toContainText('Mask');
+    await expect(ladder).toContainText('道化');
+    await expect(ladder).toContainText('カッコウ');
+    await expect(ladder).toContainText('仮面');
 
     await expect(page.getByTestId('kille-player')).toHaveCount(4, { timeout: TIMEOUT_GAME_LOOP });
 
