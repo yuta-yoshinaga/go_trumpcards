@@ -14,7 +14,13 @@
     "columnNumber": "column {{col}}",
     "empty": "Empty",
     "cellEmptyAria": "Empty, row {{row}}, column {{col}}",
-    "cellCardAria": "{{card}}, row {{row}}, column {{col}}"
+    "cellCardAria": "{{card}}, row {{row}}, column {{col}}",
+    "rowScoreAria": "Row {{row}}, {{score}} points",
+    "colScoreAria": "Column {{col}}, {{score}} points",
+    "rowScorePreviewAria": "Row {{row}}, currently {{score}} points, {{projected}} points ({{hand}}) if placed",
+    "colScorePreviewAria": "Column {{col}}, currently {{score}} points, {{projected}} points ({{hand}}) if placed",
+    "rowScorePartialAria": "Row {{row}}, {{score}} points, developing {{hand}}",
+    "colScorePartialAria": "Column {{col}}, {{score}} points, developing {{hand}}"
   },
   "button": {
     "reset": "Reset",
