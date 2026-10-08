@@ -105,16 +105,17 @@ func (p *NainJauneWebPresenter) buildBase(c interfaces.NainJauneGame) *controlle
 
 // buildPlayersOutput プレイヤー情報を構築する。
 //
-// CPU の手札は伏せるが、**枚数と失点は公開**する。支払いは枚数ではなく点数な
-// ので、枚数だけでは相手がいくら抱えているのか読めない。
+// CPU の手札はディール終了まで伏せる。**枚数と失点は公開**する。支払いは枚数
+// ではなく点数なので、枚数だけでは相手がいくら抱えているのか読めない。
 func (p *NainJauneWebPresenter) buildPlayersOutput(c interfaces.NainJauneGame) []*controller.NainJauneWebOutputPlayer {
 	players := c.GetPlayers()
 	out := make([]*controller.NainJauneWebOutputPlayer, 0, len(players))
+	revealCPUHands := c.GetPhase() == domain.NainJaunePhaseDealEnd || c.GetGameEndFlag()
 	for i, player := range players {
 		if player == nil {
 			continue
 		}
-		reveal := player.GetIsHuman() || c.GetGameEndFlag()
+		reveal := player.GetIsHuman() || revealCPUHands
 		cards := make([]*controller.WebOutputCard, 0, player.GetCardsSize())
 		points := 0
 		for j := range player.GetCardsSize() {

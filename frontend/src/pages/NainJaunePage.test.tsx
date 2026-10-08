@@ -83,6 +83,65 @@ describe('NainJaunePage', () => {
     expect(screen.getByText(/枚数ではなく【点数】/)).toBeInTheDocument();
   });
 
+  it('reveals CPU hands only after a deal ends, while preserving the game-end reveal', async () => {
+    const cpuCards = [card('HEART', 4), card('SPADE', 12)];
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          seat(0, true),
+          seat(1, false, { cards: cpuCards, cardCount: cpuCards.length }),
+          seat(2, false),
+          seat(3, false),
+        ],
+      }),
+    );
+    const { unmount } = renderWithProviders(<NainJaunePage />);
+    const hiddenHand = await screen.findByRole('img', { name: /CPU1 の手札 2 枚/ });
+    expect([...hiddenHand.querySelectorAll('img')].every((img) => img.getAttribute('src') === '/images/z01.png')).toBe(
+      true,
+    );
+    unmount();
+
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: NainJaunePhase.DEAL_END,
+        dealWinner: 0,
+        players: [
+          seat(0, true),
+          seat(1, false, { cards: cpuCards, cardCount: cpuCards.length, hidden: false }),
+          seat(2, false),
+          seat(3, false),
+        ],
+      }),
+    );
+    const { unmount: unmountDeal } = renderWithProviders(<NainJaunePage />);
+    const cpuHand = await screen.findByRole('img', { name: /CPU1 の手札 2 枚/ });
+    expect([...cpuHand.querySelectorAll('img')].map((img) => img.getAttribute('src'))).toEqual([
+      '/images/h04.png',
+      '/images/s12.png',
+    ]);
+    unmountDeal();
+
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: NainJaunePhase.GAME_END,
+        gameEndFlag: true,
+        players: [
+          seat(0, true),
+          seat(1, false, { cards: cpuCards, cardCount: cpuCards.length, hidden: false }),
+          seat(2, false),
+          seat(3, false),
+        ],
+      }),
+    );
+    renderWithProviders(<NainJaunePage />);
+    const gameEndHand = await screen.findByRole('img', { name: /CPU1 の手札 2 枚/ });
+    expect([...gameEndHand.querySelectorAll('img')].map((img) => img.getAttribute('src'))).toEqual([
+      '/images/h04.png',
+      '/images/s12.png',
+    ]);
+  });
+
   it('lets the player expand and collapse cards older than the latest ten', async () => {
     const playedPile = Array.from({ length: 12 }, (_, i) => card('SPADE', i + 1));
     mockExec.mockResolvedValue(makeState({ playedPile }));
