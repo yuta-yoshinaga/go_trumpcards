@@ -291,7 +291,7 @@ function BinokelPageContent() {
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
                     value: binokelConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({ value: o.value, label: o.label })),
+                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({ value: o.value, label: t(o.labelKey) })),
                     onSelect: (v: string) => handleConfigChange('cpuDifficulty', v),
                   },
                   {
