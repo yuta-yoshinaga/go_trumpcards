@@ -476,6 +476,10 @@ func TestSkatCuiPresenter_ShowsTheHandBidEstimate(t *testing.T) {
 // #5561: ラウンド終了行は最終値しか出さず、「なぜこの点数なのか」— とくに
 // マタドール — を説明していなかった。
 func TestSkatCuiPresenter_Output_ScoreBreakdown(t *testing.T) {
+	// Pin English so the expected translation is an explicit locale contract.
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
+
 	build := func(bd *domain.SkatScoreBreakdown) string {
 		m := setupSkatCuiMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetScoreBreakdown")
@@ -489,9 +493,12 @@ func TestSkatCuiPresenter_Output_ScoreBreakdown(t *testing.T) {
 		"base", "11", "matadors", "2", "multiplier", "4", "value", "44",
 		"bonuses", " ("+i18n.T("skat.bonusHand")+")"))
 
-	// **ヌル契約には乗数の概念が無い。**内訳を出すと嘘になる。
-	assert.NotContains(t, build(&domain.SkatScoreBreakdown{Base: 23, Multiplier: 1, Value: 23, Null: true}),
-		strings.SplitN(i18n.T("skat.scoreBreakdownLine"), "{{", 2)[0])
+	// ヌルは乗数ではなく、基礎点と最終得点を示す専用の内訳を使う。
+	nullOut := build(&domain.SkatScoreBreakdown{Base: 23, Multiplier: 1, Value: 23, Null: true})
+	assert.Contains(t, nullOut, "Breakdown: base 23 = 23 (Null game)")
+	assert.NotContains(t, nullOut, "skat.scoreBreakdownLineNull")
+	assert.NotContains(t, nullOut,
+		i18n.T("skat.scoreBreakdownLine"))
 
 	// 内訳が無いラウンド (未計算) でも落ちない。
 	assert.NotContains(t, build(nil), strings.SplitN(i18n.T("skat.scoreBreakdownLine"), "{{", 2)[0])
