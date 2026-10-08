@@ -254,12 +254,12 @@ describe('FortyAndEightPage', () => {
     expect(aElements.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('tableau face-up card button has aria-label with card name', async () => {
+  it('tableau face-up card button announces card, zero-based column, and one-based position', async () => {
     renderWithProviders(<FortyAndEightPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
-    const cardButton = screen.getByRole('button', { name: '♠ K' });
-    expect(cardButton).toHaveAttribute('aria-label', '♠ K');
+    const cardButton = screen.getByRole('button', { name: '♠ K、列0、1枚目' });
+    expect(cardButton).toHaveAttribute('aria-label', '♠ K、列0、1枚目');
   });
 
   it('renders empty tableau column with empty placeholder', async () => {
