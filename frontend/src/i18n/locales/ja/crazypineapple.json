@@ -12,6 +12,7 @@
   },
   "communityCards": "コミュニティカード",
   "yourHand": "あなたの手札",
+  "callAmount": "（{{amount}}チップ）",
   "discardUpcoming": "フロップベット終了後にカードを1枚捨てます",
   "cpuDiscard": {
     "logLabel": "CPUのディスカード",
