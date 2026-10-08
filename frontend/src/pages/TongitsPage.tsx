@@ -379,6 +379,7 @@ function TongitsPageContent() {
                   )}
                   <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                   <table className="w-full text-sm text-ds-text-muted">
+                    <caption className="sr-only">{t('scoresCaption')}</caption>
                     <thead>
                       <tr>
                         <th scope="col" className="text-left">
