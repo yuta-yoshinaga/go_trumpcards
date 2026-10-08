@@ -392,8 +392,13 @@ function RussianBankPageContent() {
                   data-hint-dest={isHintDest ? 'true' : undefined}
                   aria-label={
                     n > 0
-                      ? t('slotCardZone', { card: cardAlt(col[n - 1]), zone: t('srcTableau', { col: i + 1 }) })
-                      : t('slotEmptyZone', { zone: t('srcTableau', { col: i + 1 }) })
+                      ? t(tableauTargets.has(i) ? 'slotCardZonePlaceable' : 'slotCardZone', {
+                          card: cardAlt(col[n - 1]),
+                          zone: t('srcTableau', { col: i + 1 }),
+                        })
+                      : t(tableauTargets.has(i) ? 'slotEmptyZonePlaceable' : 'slotEmptyZone', {
+                          zone: t('srcTableau', { col: i + 1 }),
+                        })
                   }
                 >
                   {tableauTargets.has(i) && (
