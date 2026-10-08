@@ -134,6 +134,7 @@ function ClockSolitairePageContent() {
   const [autoPlaySpeed, setAutoPlaySpeed] = useState<AutoPlaySpeed>(loadAutoPlaySpeed);
   const [autoPlaying, setAutoPlaying] = useState(false);
   const previousStepStateRef = useRef<ClockSolitaireResponse | null | undefined>(undefined);
+  const undoPendingRef = useRef(false);
   const [stepAnnouncement, setStepAnnouncement] = useState('');
 
   const handleStep = useCallback(() => execApi('step'), [execApi]);
@@ -141,6 +142,7 @@ function ClockSolitairePageContent() {
   // race the rewind.
   const handleUndo = useCallback(() => {
     setAutoPlaying(false);
+    undoPendingRef.current = true;
     return execApi('undo');
   }, [execApi]);
   // Autoplay is driven client-side as a timed sequence of `step` calls (see the
@@ -194,24 +196,26 @@ function ClockSolitairePageContent() {
   useMountReset(execApi);
   useEffect(() => {
     const previous = previousStepStateRef.current;
-    if (state && previous && state.stepCount !== previous.stepCount) {
-      if (state.stepCount === previous.stepCount + 1 && previous.currentCard) {
-        const cardName = cardAlt(previous.currentCard);
-        setStepAnnouncement(
-          previous.currentCard.value === 13
-            ? t('stepKingAnnouncement', { card: cardName })
-            : t('stepAnnouncement', { card: cardName, hour: previous.currentCard.value }),
-        );
-      } else if (state.stepCount < previous.stepCount) {
-        setStepAnnouncement(
-          state.currentCard
-            ? t('undoAnnouncement', { returnedCard: cardAlt(state.currentCard) })
-            : t('undoAnnouncementNoCard'),
-        );
-      } else {
-        // Reset changes the step count without undoing a placed card.
-        setStepAnnouncement('');
+    if (state && previous && state !== previous) {
+      if (state.stepCount !== previous.stepCount) {
+        if (state.stepCount === previous.stepCount + 1 && previous.currentCard) {
+          const cardName = cardAlt(previous.currentCard);
+          setStepAnnouncement(
+            previous.currentCard.value === 13
+              ? t('stepKingAnnouncement', { card: cardName })
+              : t('stepAnnouncement', { card: cardName, hour: previous.currentCard.value }),
+          );
+        } else if (state.stepCount < previous.stepCount && undoPendingRef.current) {
+          setStepAnnouncement(
+            state.currentCard
+              ? t('undoAnnouncement', { returnedCard: cardAlt(state.currentCard) })
+              : t('undoAnnouncementNoCard'),
+          );
+        } else {
+          setStepAnnouncement('');
+        }
       }
+      undoPendingRef.current = false;
     }
     previousStepStateRef.current = state;
   }, [state, t]);
@@ -230,7 +234,10 @@ function ClockSolitairePageContent() {
         if (cmd === 'reset' || cmd === 'r') return { args: ['reset'] };
         if (cmd === 'step' || cmd === 's') return { args: ['step'] };
         if (cmd === 'autoplay' || cmd === 'auto' || cmd === 'a') return { args: ['autoplay'] };
-        if (cmd === 'undo' || cmd === 'u') return { args: ['undo'] };
+        if (['undo', 'u'].includes(cmd)) {
+          undoPendingRef.current = true;
+          return { args: ['undo'] };
+        }
         if (cmd === 'log' || cmd === 'l') return { args: ['log'] };
         return { error: `Unknown command: ${cmd}` };
       },
