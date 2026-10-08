@@ -17,6 +17,8 @@
   "label.yourHands": "Your hands",
   "label.hand": "Hand {{idx}}",
   "label.activeHand": "Your turn",
+  "label.activeHandAnnouncement_one": "Hand {{idx}}, {{score}} point",
+  "label.activeHandAnnouncement_other": "Hand {{idx}}, {{score}} points",
   "label.score": "pts",
   "label.bet": "bet",
   "label.net": "Net",

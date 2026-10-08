@@ -91,6 +91,33 @@ beforeEach(() => {
 });
 
 describe('DoubleAttackPage', () => {
+  it('announces the newly active hand and score only when the active hand changes during play', async () => {
+    mockApi
+      .mockResolvedValueOnce(
+        withState({
+          phase: DoubleAttackPhase.PLAY,
+          hands: [hand(), hand({ score: 19 })],
+          activeHand: 0,
+          canDouble: false,
+          canSplit: false,
+        }),
+      )
+      .mockResolvedValueOnce(
+        withState({
+          phase: DoubleAttackPhase.PLAY,
+          hands: [hand({ score: 18 }), hand({ score: 19 })],
+          activeHand: 1,
+        }),
+      );
+    renderWithProviders(<DoubleAttackPage />);
+
+    const announcement = await screen.findByTestId('da-active-hand-announcement');
+    expect(announcement).toBeEmptyDOMElement();
+    fireEvent.click(screen.getByRole('button', { name: 'ヒット' }));
+    await waitFor(() => expect(announcement).toHaveTextContent('手札2'));
+    expect(announcement).toHaveTextContent('19点');
+  });
+
   it('marks the final Bust It payout row as covering that many cards or more', async () => {
     mockApi.mockResolvedValue(withState({ phase: DoubleAttackPhase.BET }));
     renderWithProviders(<DoubleAttackPage />);
