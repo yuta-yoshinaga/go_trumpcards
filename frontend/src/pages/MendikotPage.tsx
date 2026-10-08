@@ -53,8 +53,21 @@ const MENDIKOT_TUTORIAL_STEPS: TutorialStep[] = [
  * page states outright because otherwise trump appears from nowhere mid-hand.
  */
 function MendikotPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('mendikot');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('mendikot');
   const {
     state,
     loading,
@@ -134,6 +147,9 @@ function MendikotPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
       {cliEnabled ? (
@@ -314,7 +330,12 @@ function MendikotPageContent() {
                 {t('actions.reset')}
               </button>
               {!isGameEnd && (
-                <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnDanger}
+                  onClick={() => requestGiveUpConfirm(handleGiveUp)}
+                  disabled={loading}
+                >
                   {t('actions.giveUp')}
                 </button>
               )}
