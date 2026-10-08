@@ -64,7 +64,8 @@
   "announce": {
     "yourTurn": "あなたの手番です",
     "yourTurnLead": "あなたの手番です。リードなのでパスできません。",
-    "finished": "あがりました（{{rank}}）"
+    "finished": "あがりました（{{rank}}）",
+    "cpuFinished": "{{name}} が {{rank}}であがりました"
   },
   "passDisabledLead": "リード番なのでパスできません（必ず何か出します）"
 }
