@@ -62,6 +62,8 @@ type FreeBetBlackjackGame interface {
 	GetResults() []domain.FreeBetResult
 	// GetPayout このラウンドで戻ってきた総額
 	GetPayout() int
+	// GetNetChange このラウンドでプレイヤーのチップが増減した額
+	GetNetChange() int
 	// GetHandPayouts 手札ごとの払い戻し
 	GetHandPayouts() []int
 	// GetChips 保有チップ数
