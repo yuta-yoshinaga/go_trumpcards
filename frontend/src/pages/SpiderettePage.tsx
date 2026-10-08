@@ -217,7 +217,7 @@ function SpiderettePageContent() {
     selectedSource.cardIndex === cardIndex;
 
   // Visual hint highlighting: ring the suggested source card and target column.
-  const hintedCard = hint ? state.tableau[hint.fromCol][hint.cardIndex].card : null;
+  const hintedCard = hint ? (state.tableau[hint.fromCol]?.[hint.cardIndex]?.card ?? null) : null;
   const isHintSource = (col: number, cardIndex: number) =>
     hint != null && hint.fromCol === col && hint.cardIndex === cardIndex;
   const isHintTargetCol = (col: number) => hint != null && hint.toCol === col;

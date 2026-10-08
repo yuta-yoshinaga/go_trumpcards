@@ -172,6 +172,31 @@ describe('SpiderettePage', () => {
     expect(status?.textContent).toContain('列0');
   });
 
+  it('hides a stale hint when its source card is missing from the returned board', async () => {
+    renderWithProviders(<SpiderettePage />);
+    await screen.findByTestId('spdt-card-1-1');
+
+    mockSend.mockResolvedValueOnce({
+      ...playingState,
+      hint: { fromCol: 1, cardIndex: 1, toCol: 0 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByTestId('spiderette-hint-live').textContent).toContain('♥ 5'));
+
+    mockSend.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([[], [], [], [], [], [], []]),
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    const commandInput = screen.getByRole('textbox');
+    fireEvent.change(commandInput, { target: { value: 'move 1 1 0' } });
+    fireEvent.keyDown(commandInput, { key: 'Enter' });
+    await waitFor(() => expect(mockSend).toHaveBeenCalledWith('move', expect.anything(), expect.anything()));
+    await waitFor(() => expect(screen.queryByTestId('spdt-card-1-1')).not.toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
+    await waitFor(() => expect(screen.getByTestId('spiderette-hint-live')).toBeEmptyDOMElement());
+  });
+
   it('hides the frontend hint tooltip when hints are disabled', async () => {
     vi.mocked(useGameHint).mockReturnValue({
       hint: { targetAction: 'move', reason: 'frontendHint.buildSameSuit', confidence: 'strong' },
