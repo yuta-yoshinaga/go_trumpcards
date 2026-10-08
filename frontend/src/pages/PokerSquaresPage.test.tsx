@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pokersquaresApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -522,6 +522,9 @@ describe('PokerSquaresPage', () => {
     await waitFor(() => expect(screen.getByTestId('ps-row-scores')).toBeInTheDocument());
     expect(screen.getByTestId('row-score-0')).toHaveTextContent('10');
     expect(screen.getByTestId('col-score-4')).toHaveTextContent('8');
+    expect(screen.getByTestId('row-score-0')).toHaveTextContent('行0、10点');
+    expect(screen.getByTestId('col-score-4')).toHaveTextContent('列4、8点');
+    expect(within(screen.getByTestId('row-score-0')).queryByRole('status')).not.toBeInTheDocument();
   });
 
   it('cross-highlights the row, column, and matching score badges when an empty cell is hovered', async () => {
@@ -611,6 +614,8 @@ describe('PokerSquaresPage', () => {
     fireEvent.pointerEnter(cell);
     const partial = await screen.findByTestId('row-partial-preview-0');
     expect(partial).toHaveTextContent('スリーカード');
+    expect(screen.getByTestId('row-score-0')).toHaveTextContent('行0、0点');
+    expect(screen.getByTestId('row-score-0')).toHaveTextContent('見込みスリーカード');
     // No completed-line +N preview should be present for the incomplete row.
     expect(screen.queryByTestId('row-score-preview-0')).not.toBeInTheDocument();
   });
@@ -686,6 +691,8 @@ describe('PokerSquaresPage', () => {
     await waitFor(() => expect(screen.getByTestId('cell-0-4')).toHaveAttribute('data-cross-hover', 'true'));
     const preview = await screen.findByTestId('row-score-preview-0');
     expect(preview.textContent).toContain('+50');
+    expect(screen.getByTestId('row-score-0')).toHaveTextContent('行0、現在0点');
+    expect(screen.getByTestId('row-score-0')).toHaveTextContent('配置すると50点 (フォーカード)');
   });
 
   // ゲーム状態が存在するときのみ盤面ラッパーを表示する。

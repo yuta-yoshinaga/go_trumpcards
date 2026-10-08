@@ -507,6 +507,21 @@ function PokerSquaresPageContent() {
                           const highlighted = crossHover?.row === i;
                           const rowPreview = highlighted ? preview?.row : null;
                           const rowPartial = highlighted ? preview?.rowPartial : null;
+                          const rowPreviewLabel =
+                            rowPreview && rowPreview.score - s !== 0
+                              ? t('label.rowScorePreviewAria', {
+                                  row: i,
+                                  score: s,
+                                  projected: rowPreview.score,
+                                  hand: t(`hand.${pokerHandKey(rowPreview.rank)}`),
+                                })
+                              : rowPartial != null
+                                ? t('label.rowScorePartialAria', {
+                                    row: i,
+                                    score: s,
+                                    hand: t(`hand.${pokerHandKey(rowPartial)}`),
+                                  })
+                                : t('label.rowScoreAria', { row: i, score: s });
                           return (
                             <div
                               key={`row-score-${i}`}
@@ -519,25 +534,28 @@ function PokerSquaresPageContent() {
                                   : 'text-ds-text-primary bg-black/30'
                               }`}
                             >
-                              <span>{s}</span>
-                              {rowPreview && rowPreview.score - s !== 0 && (
-                                <div
-                                  data-testid={`row-score-preview-${i}`}
-                                  className="text-[10px] text-ds-success leading-none mt-0.5"
-                                >
-                                  +{rowPreview.score - s}
-                                  <div>{t(`hand.${pokerHandKey(rowPreview.rank)}`)}</div>
-                                </div>
-                              )}
-                              {rowPartial != null && (
-                                <div
-                                  data-testid={`row-partial-preview-${i}`}
-                                  className="text-[10px] text-ds-text-muted leading-none mt-0.5"
-                                >
-                                  {t('previewPartialPrefix')}
-                                  {t(`hand.${pokerHandKey(rowPartial)}`)}
-                                </div>
-                              )}
+                              <span className="sr-only">{rowPreviewLabel}</span>
+                              <div aria-hidden="true">
+                                <span>{s}</span>
+                                {rowPreview && rowPreview.score - s !== 0 && (
+                                  <div
+                                    data-testid={`row-score-preview-${i}`}
+                                    className="text-[10px] text-ds-success leading-none mt-0.5"
+                                  >
+                                    +{rowPreview.score - s}
+                                    <div>{t(`hand.${pokerHandKey(rowPreview.rank)}`)}</div>
+                                  </div>
+                                )}
+                                {rowPartial != null && (
+                                  <div
+                                    data-testid={`row-partial-preview-${i}`}
+                                    className="text-[10px] text-ds-text-muted leading-none mt-0.5"
+                                  >
+                                    {t('previewPartialPrefix')}
+                                    {t(`hand.${pokerHandKey(rowPartial)}`)}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           );
                         })}
@@ -552,6 +570,21 @@ function PokerSquaresPageContent() {
                         const highlighted = crossHover?.col === i;
                         const colPreview = highlighted ? preview?.col : null;
                         const colPartial = highlighted ? preview?.colPartial : null;
+                        const colPreviewLabel =
+                          colPreview && colPreview.score - s !== 0
+                            ? t('label.colScorePreviewAria', {
+                                col: i,
+                                score: s,
+                                projected: colPreview.score,
+                                hand: t(`hand.${pokerHandKey(colPreview.rank)}`),
+                              })
+                            : colPartial != null
+                              ? t('label.colScorePartialAria', {
+                                  col: i,
+                                  score: s,
+                                  hand: t(`hand.${pokerHandKey(colPartial)}`),
+                                })
+                              : t('label.colScoreAria', { col: i, score: s });
                         return (
                           <div
                             key={`col-score-${i}`}
@@ -564,25 +597,28 @@ function PokerSquaresPageContent() {
                                 : 'text-ds-text-primary bg-black/30'
                             }`}
                           >
-                            {s}
-                            {colPreview && colPreview.score - s !== 0 && (
-                              <div
-                                data-testid={`col-score-preview-${i}`}
-                                className="text-[10px] text-ds-success leading-none mt-0.5"
-                              >
-                                +{colPreview.score - s}
-                                <div>{t(`hand.${pokerHandKey(colPreview.rank)}`)}</div>
-                              </div>
-                            )}
-                            {colPartial != null && (
-                              <div
-                                data-testid={`col-partial-preview-${i}`}
-                                className="text-[10px] text-ds-text-muted leading-none mt-0.5"
-                              >
-                                {t('previewPartialPrefix')}
-                                {t(`hand.${pokerHandKey(colPartial)}`)}
-                              </div>
-                            )}
+                            <span className="sr-only">{colPreviewLabel}</span>
+                            <div aria-hidden="true">
+                              <span>{s}</span>
+                              {colPreview && colPreview.score - s !== 0 && (
+                                <div
+                                  data-testid={`col-score-preview-${i}`}
+                                  className="text-[10px] text-ds-success leading-none mt-0.5"
+                                >
+                                  +{colPreview.score - s}
+                                  <div>{t(`hand.${pokerHandKey(colPreview.rank)}`)}</div>
+                                </div>
+                              )}
+                              {colPartial != null && (
+                                <div
+                                  data-testid={`col-partial-preview-${i}`}
+                                  className="text-[10px] text-ds-text-muted leading-none mt-0.5"
+                                >
+                                  {t('previewPartialPrefix')}
+                                  {t(`hand.${pokerHandKey(colPartial)}`)}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         );
                       })}
