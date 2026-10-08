@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import { prsiApi } from '../api/gameApi';
 import type { PrsiConfig } from '../types/card';
+import { isPrsiLegalPlay } from '../utils/prsiLegal';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
@@ -27,14 +28,22 @@ export function usePrsiGame() {
   }, [clearSelection]);
   const { state, loading, error, exec, retry } = useGameApi(prsiApi.exec, { onSuccess });
 
+  const humanPlayer = state?.players.find((player) => player.isHuman);
+  const selectedCard = selectedCardIndices.length === 1 ? humanPlayer?.cards[selectedCardIndices[0]] : undefined;
+  const canPlay =
+    !loading &&
+    selectedCard !== undefined &&
+    state !== null &&
+    isPrsiLegalPlay(selectedCard, state.discardTop, state.penaltyDrawCount);
+
   useEffect(() => {
     exec('reset', undefined, DEFAULT_PRSI_CONFIG);
   }, [exec]);
 
   const handlePlay = useCallback(() => {
-    if (selectedCardIndices.length !== 1) return;
+    if (!canPlay) return;
     exec('play', selectedCardIndices[0]);
-  }, [exec, selectedCardIndices]);
+  }, [canPlay, exec, selectedCardIndices]);
 
   const handleDraw = useCallback(() => {
     exec('draw');
@@ -47,6 +56,7 @@ export function usePrsiGame() {
     exec,
     prsiConfig,
     selectedCardIndices,
+    canPlay,
     toggleCard,
     clearSelection,
     handleConfigChange,
