@@ -59,6 +59,8 @@ type HokmGame interface {
 	GetLeadPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// GetLastTrick returns the most recently resolved trick and winning seat.
+	GetLastTrick() ([]*domain.TrickCard, int)
 	// GetValidPlayIndices プレイ可能なカードのインデックスリストを返す
 	GetValidPlayIndices(playerIdx int) []int
 	// GetPlayerCnt プレイヤー数を取得する
