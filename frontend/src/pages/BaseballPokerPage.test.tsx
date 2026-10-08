@@ -104,6 +104,20 @@ beforeEach(() => {
 });
 
 describe('BaseballPokerPage', () => {
+  it('設定した卓の値を reset に渡す', async () => {
+    mockApi.mockResolvedValue({ ...base, gameEndFlag: true });
+    renderWithProviders(<BaseballPokerPage />);
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByText('設定'));
+    fireEvent.change(screen.getByLabelText('席数'), { target: { value: '3' } });
+    fireEvent.change(screen.getByLabelText('初期チップ'), { target: { value: '500' } });
+    fireEvent.change(screen.getByLabelText('アンティ'), { target: { value: '15' } });
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    await waitFor(() =>
+      expect(mockApi).toHaveBeenLastCalledWith('reset', { config: { seats: 3, initialChips: 500, ante: 15 } }),
+    );
+  });
+
   it('マウント時に reset を呼ぶ', async () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<BaseballPokerPage />);

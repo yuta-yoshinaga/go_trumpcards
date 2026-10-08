@@ -145,6 +145,18 @@ func TestBaseballPokerWebController_Method(t *testing.T) {
 	})
 }
 
+func TestBaseballPokerWebController_ResetWithConfig(t *testing.T) {
+	m := newBbMock()
+	cfg := domain.BaseballPokerConfig{Seats: 3, InitialChips: 500, Ante: 15}
+	m.On("ResetWithConfig", cfg).Return(`{"phase":0,"seats":[],"message":""}`)
+	ctrl := controller.NewBaseballPokerWebController(func() uc.BaseballPokerInteractorIF { return m })
+	defer ctrl.Stop()
+	var input controller.BaseballPokerWebInput
+	_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":"cfg","config":{"seats":3,"initialChips":500,"ante":15}}`), &input)
+	execRequest(t, ctrl.Exec, &input).CodeIs(http.StatusOK)
+	m.AssertCalled(t, "ResetWithConfig", cfg)
+}
+
 // **額が要る手では未送信を弾く。** 額の要らない手では送られても無視する。
 func TestBaseballPokerWebController_AmountIsRequiredOnlyWhereItMatters(t *testing.T) {
 	m := newBbMock()

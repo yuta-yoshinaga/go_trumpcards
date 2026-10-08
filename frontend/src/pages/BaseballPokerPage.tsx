@@ -26,6 +26,7 @@ import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/butt
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BaseballPokerResponse, BaseballSeat } from '../types/card';
+import type { BaseballConfig } from '../types/games/baseballpoker';
 import { BaseballPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { BASEBALLPOKER_CLI_HELP, parseBaseballPokerCommand } from '../utils/cli/commands/baseballpokerCommands';
@@ -52,6 +53,7 @@ function BaseballPokerPageContent() {
     useGamePageSetup('baseballpoker');
 
   const [amount, setAmount] = useState(20);
+  const [tableConfig, setTableConfig] = useState<BaseballConfig>({ seats: 4, initialChips: 1000, ante: 10 });
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(baseballpokerApi.exec);
 
@@ -302,7 +304,41 @@ function BaseballPokerPageContent() {
             <ErrorAlert message={error} onRetry={retry} />
             <SettingsPanel
               title={tc('settings.title')}
-              groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+              groups={[
+                {
+                  items: [
+                    {
+                      type: 'number',
+                      id: 'bb-seats',
+                      label: t('settings.seats'),
+                      value: tableConfig.seats,
+                      min: 2,
+                      max: 6,
+                      onSelect: (v) => setTableConfig({ ...tableConfig, seats: Number(v) }),
+                    },
+                    {
+                      type: 'number',
+                      id: 'bb-initial-chips',
+                      label: t('settings.initialChips'),
+                      value: tableConfig.initialChips,
+                      min: 100,
+                      max: 100000,
+                      step: 100,
+                      onSelect: (v) => setTableConfig({ ...tableConfig, initialChips: Number(v) }),
+                    },
+                    {
+                      type: 'number',
+                      id: 'bb-ante',
+                      label: t('settings.ante'),
+                      value: tableConfig.ante,
+                      min: 5,
+                      max: 100,
+                      onSelect: (v) => setTableConfig({ ...tableConfig, ante: Number(v) }),
+                    },
+                    hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
+                  ],
+                },
+              ]}
             />
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
@@ -435,7 +471,7 @@ function BaseballPokerPageContent() {
                 </button>
                 <GameResetButton
                   isGameEnd={gameOver}
-                  onReset={() => execApi('reset')}
+                  onReset={() => execApi('reset', { config: tableConfig })}
                   requestConfirm={requestConfirm}
                   loading={loading}
                 />

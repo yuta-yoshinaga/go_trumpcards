@@ -11170,6 +11170,16 @@ paths:
                   description: Stake for bet and raise. Ignored by the other actions.
                 sessionId:
                   type: string
+                config:
+                  type: object
+                  description: Table settings applied when command is reset.
+                  properties:
+                    seats:
+                      type: integer
+                    initialChips:
+                      type: integer
+                    ante:
+                      type: integer
               example:
                 command: pay
                 sessionId: my-session-001
