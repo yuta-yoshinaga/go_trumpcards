@@ -25,6 +25,7 @@
   "handLabel": "あなたの手札",
   "blindHandDescription": "ブラインド中の手札。カードは伏せられています。",
   "currentTurn": "現在の手番: {{name}}",
+  "turnIndicator": "手番中",
   "playersTitle": "プレイヤー",
   "dealerBadge": "ディーラー",
   "badge": {

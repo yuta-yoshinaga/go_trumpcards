@@ -60,6 +60,18 @@ describe('TeenPattiPage', () => {
     expect(screen.getAllByText('ディーラー', { selector: 'span' })).toHaveLength(1);
   });
 
+  it('marks only the current player row as taking a turn', async () => {
+    renderWithProviders(<TeenPattiPage />);
+    const turnIndicator = await screen.findByText('手番中');
+    const playerRows = screen.getByText('プレイヤー').parentElement;
+    expect(playerRows).not.toBeNull();
+    const rows = within(playerRows as HTMLElement)
+      .getAllByText(/あなた|CPU/)
+      .map((name) => name.parentElement);
+    expect(turnIndicator.parentElement?.parentElement).toBe(rows[0]);
+    expect(within(playerRows as HTMLElement).getAllByText('手番中')).toHaveLength(1);
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<TeenPattiPage />);
