@@ -75,6 +75,31 @@ beforeEach(() => {
 });
 
 describe('RussianSolitairePage', () => {
+  it('announces selected tableau cards with aria-pressed while preserving card and block names', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: playingState.tableau.map((column, index) =>
+        index === 1
+          ? [
+              { card: card('HEART', 8), faceUp: true },
+              { card: card('SPADE', 7), faceUp: true },
+            ]
+          : column,
+      ),
+    });
+    renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const source = screen.getByRole('button', { name: '♥ 8 2枚まとめて移動' });
+    expect(source).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(source);
+    expect(source).toHaveAttribute('aria-pressed', 'true');
+    expect(source).toHaveAccessibleName('♥ 8 2枚まとめて移動');
+
+    fireEvent.click(source);
+    expect(source).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('highlights legal tableau destinations and removes highlights when deselected', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
