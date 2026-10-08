@@ -22,6 +22,15 @@
   "tricks": "{{count}}トリック",
   "points": "{{points}}点",
   "score": "得点: {{score}}",
+  "pointReference": {
+    "title": "取り札の点数",
+    "king": "スート札のキング: 4.5点",
+    "queen": "スート札のクイーン: 3.5点",
+    "knight": "スート札のナイト: 2.5点",
+    "jack": "スート札のジャック: 1.5点",
+    "bouts": "ブー（切り札の1・21とエクスキューズ）: 各4.5点",
+    "other": "その他の札: 各0.5点"
+  },
   "currentTrick": "現在のトリック",
   "previousTrickWinner": "{{name}} が獲得",
   "players": "プレイヤー",
