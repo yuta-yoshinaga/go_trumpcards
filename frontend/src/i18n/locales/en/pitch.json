@@ -20,6 +20,7 @@
   "currentBid": "Bid: {{n}}",
   "bidWinner": "Bidder: {{name}}",
   "trumpSuit": "Trump: {{suit}}",
+  "trumpSuitNamed": "Trump: {{suit}} ({{suitName}})",
   "trumpUnset": "(not set)",
   "cards": "{{count}}",
   "gamePips": "Game pips: {{pips}}",

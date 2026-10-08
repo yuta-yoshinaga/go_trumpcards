@@ -92,6 +92,13 @@ const SUIT_LABELS: Readonly<Record<number, string>> = {
   4: '♦',
 };
 
+const SUIT_I18N_KEYS: Readonly<Record<number, string>> = {
+  1: 'common.suit.spade',
+  2: 'common.suit.club',
+  3: 'common.suit.heart',
+  4: 'common.suit.diamond',
+};
+
 /** Maps the numeric `trumpSuit` (1–4) to the matching card `design` string. */
 const SUIT_NUM_TO_DESIGN: Readonly<Record<number, string>> = {
   1: 'SPADE',
@@ -300,9 +307,12 @@ function PitchPageContent() {
                     : 'rounded px-1.5 py-0.5 font-semibold ring-1 ring-ds-warning text-ds-warning'
                 }
               >
-                {t('trumpSuit', {
-                  suit: state.trumpSuit === 0 ? t('trumpUnset') : (SUIT_LABELS[state.trumpSuit] ?? '?'),
-                })}
+                {state.trumpSuit === 0
+                  ? t('trumpSuit', { suit: t('trumpUnset') })
+                  : t('trumpSuitNamed', {
+                      suit: SUIT_LABELS[state.trumpSuit],
+                      suitName: tc(SUIT_I18N_KEYS[state.trumpSuit]),
+                    })}
               </span>
               <span>{t('currentBid', { n: state.currentBid })}</span>
               {state.bidWinnerIdx >= 0 && (

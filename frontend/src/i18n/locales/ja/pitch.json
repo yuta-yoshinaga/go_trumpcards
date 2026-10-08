@@ -20,6 +20,7 @@
   "currentBid": "ビッド: {{n}}",
   "bidWinner": "ビッド勝者: {{name}}",
   "trumpSuit": "切り札: {{suit}}",
+  "trumpSuitNamed": "切り札: {{suit}}（{{suitName}}）",
   "trumpUnset": "未確定",
   "cards": "{{count}}枚",
   "gamePips": "Game値: {{pips}}",
