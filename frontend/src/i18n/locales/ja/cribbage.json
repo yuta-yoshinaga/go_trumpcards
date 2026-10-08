@@ -61,6 +61,7 @@
   "cards": "{{count}}枚",
   "cumulativeScore": "累計: {{score}}",
   "roundScore": "ラウンド: {{score}}",
+  "scoreUpdateAnnouncement": "{{name}}のラウンド得点は{{roundScore}}点、累計得点は{{cumulativeScore}}点",
   "pegBoard": "ペグボード",
   "score": "スコア",
   "scoreDetail": {
