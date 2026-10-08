@@ -308,6 +308,18 @@ describe('MightyPage', () => {
     });
   });
 
+  it('shows the highest bidder with the bid and hides the bidder when there is no bid', async () => {
+    mockCall.mockResolvedValue(playPhaseState);
+    const { unmount } = renderWithProviders(<MightyPage />);
+    expect(await screen.findByText('最高ビッド: 14（あなた）')).toBeInTheDocument();
+    unmount();
+
+    mockCall.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<MightyPage />);
+    await screen.findByTestId('mighty-notrump-explain');
+    expect(screen.queryByText(/最高ビッド/)).not.toBeInTheDocument();
+  });
+
   it('badges Mighty and partner cards in the human hand', async () => {
     // With trumpSuit=3 (HEART) the Mighty card is ♠A.
     const heartTrump: MightyResponse = {
@@ -887,7 +899,7 @@ describe('MightyPage', () => {
 
   it('shows highest bid info', async () => {
     renderWithProviders(<MightyPage />);
-    await waitFor(() => expect(screen.getByText('最高ビッド: 14')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('最高ビッド: 14（あなた）')).toBeInTheDocument());
   });
 
   it('shows current trick cards in trick end state', async () => {
