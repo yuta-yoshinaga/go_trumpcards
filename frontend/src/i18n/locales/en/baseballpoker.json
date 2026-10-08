@@ -1,6 +1,9 @@
 {
   "title": "Baseball Poker",
   "wildNotice": "{{wilds}}s are wild. A face-up {{bonus}} pays a card, a face-up {{buyIn}} buys the pot",
+  "settings.seats": "Seats",
+  "settings.initialChips": "Starting chips",
+  "settings.ante": "Ante",
   "label.chips": "Chips",
   "label.bet": "Bet",
   "label.pot": "Pot",
