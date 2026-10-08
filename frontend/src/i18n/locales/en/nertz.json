@@ -10,6 +10,7 @@
     "cpu": "CPU",
     "nertz": "Nertz pile",
     "tableau": "Tableau",
+    "tableauCardAria": "Tableau card {{card}}, column {{col}}, position {{position}}",
     "waste": "Waste",
     "stock": "Stock",
     "stockDrawAria_one": "Draw from stock, {{count}} card remaining",
