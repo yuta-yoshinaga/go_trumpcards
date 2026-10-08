@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { rikkenApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
 import i18n from '../i18n';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, RikkenResponse } from '../types/card';
 import { RIKKEN_NO_TRUMP } from '../types/games/rikken';
@@ -401,6 +402,37 @@ describe('RikkenPage', () => {
 
     await waitFor(() => expect(screen.queryByText('投了確認')).not.toBeInTheDocument());
     expect(mockApi).not.toHaveBeenCalled();
+  });
+
+  it('asks before giving up from the G key', async () => {
+    mockApi.mockResolvedValue(bidState);
+    renderWithProviders(<RikkenPage />);
+    await screen.findByTestId('giveup-button');
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'g' });
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalledWith('giveup');
+
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('giveup'));
+  });
+
+  it('keeps the game active when the give-up dialog opened by G is cancelled', async () => {
+    mockApi.mockResolvedValue(bidState);
+    renderWithProviders(<RikkenPage />);
+    await screen.findByTestId('giveup-button');
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'g' });
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+
+    await waitFor(() => expect(screen.queryByText('投了確認')).not.toBeInTheDocument());
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalled();
+    expect(screen.getByTestId('rikken-hand')).toBeInTheDocument();
   });
 
   // トリック進行中に出されたカードがある場合のみ現在のトリック表示エリアを描画する
