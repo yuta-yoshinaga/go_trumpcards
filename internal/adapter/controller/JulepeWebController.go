@@ -59,6 +59,7 @@ type JulepeWebOutput struct {
 	RequiredTricks int `json:"requiredTricks"`
 	// Beast は次ラウンドのアンティが倍になる席。
 	Beast            []bool                `json:"beast"`
+	RoundAntes       []int                 `json:"roundAntes"`
 	TrumpSuit        int                   `json:"trumpSuit"`
 	UpCard           *WebOutputCard        `json:"upCard,omitempty"`
 	CurrentPlayerIdx int                   `json:"currentPlayerIdx"`

@@ -59,6 +59,9 @@ func (r *Julepe) GetRequiredTricks() int {
 // GetBeast は次ラウンドのアンティが倍になる席を返す。
 func (r *Julepe) GetBeast() []bool { return r.beast }
 
+// GetRoundAntes returns the ante each seat paid in the current round.
+func (r *Julepe) GetRoundAntes() []int { return r.roundAntes }
+
 // JulepeRequiredTricks は参加人数 n に対する規定トリック数を返す。
 //
 // **人数で変わる。** クローン元のラムスは「1 トリックも取れなければ罰」
@@ -126,7 +129,8 @@ type Julepe struct {
 	pot int
 	// beast は規定トリック数に届かなかった席。**次ラウンドのアンティが倍**に
 	// なるので、ラウンドをまたいで持ち越す盤面の一部。
-	beast []bool
+	beast      []bool
+	roundAntes []int
 	// trumpSuit 表向きにした 1 枚で決まる切り札
 	trumpSuit int
 	// upCard 切り札を決めた表向きの 1 枚
@@ -190,6 +194,7 @@ func (r *Julepe) dealRound() {
 	r.currentTrick = nil
 	r.lastTrick = nil
 	r.lastTrickWinner = -1
+	r.roundAntes = make([]int, len(r.players))
 	for i, p := range r.players {
 		p.ResetRound()
 		// **beast は倍払い。** 前ラウンドで規定トリック数に届かなかった席。
@@ -199,6 +204,7 @@ func (r *Julepe) dealRound() {
 			r.appendLog(i, "beast_ante", "julepe.log.beastAnte", map[string]string{"ante": strconv.Itoa(ante)}, nil)
 		}
 		p.AddChips(-ante)
+		r.roundAntes[i] = ante
 		r.pot += ante
 	}
 
@@ -814,6 +820,7 @@ type julepeJSON struct {
 	// **beast はラウンドをまたぐ。** 落とすと復元後に倍払いが消え、
 	// 規定に届かなかった席が普通のアンティで済んでしまう。
 	Beast            []bool            `json:"bs"`
+	RoundAntes       []int             `json:"ra,omitempty"`
 	TrumpSuit        int               `json:"ts"`
 	UpCard           *Card             `json:"uc"`
 	CurrentTrick     []*TrickCard      `json:"ct"`
@@ -838,6 +845,7 @@ func (r *Julepe) MarshalJSON() ([]byte, error) {
 		TrickNumber:      r.trickNumber,
 		Pot:              r.pot,
 		Beast:            r.beast,
+		RoundAntes:       r.roundAntes,
 		TrumpSuit:        r.trumpSuit,
 		UpCard:           r.upCard,
 		CurrentTrick:     r.currentTrick,
@@ -910,6 +918,7 @@ func (r *Julepe) UnmarshalJSON(data []byte) error {
 	r.trickNumber = j.TrickNumber
 	r.pot = j.Pot
 	r.beast = j.Beast
+	r.roundAntes = j.RoundAntes
 	r.trumpSuit = j.TrumpSuit
 	r.upCard = j.UpCard
 	r.currentTrick = j.CurrentTrick

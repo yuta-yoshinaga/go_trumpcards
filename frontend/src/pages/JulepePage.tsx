@@ -261,6 +261,11 @@ function JulepePageContent() {
                   )}
                   {': '}
                   {t('header.seat', { chips: String(p.chips), tricks: String(p.roundTricks) })} [{statusStr(p)}]
+                  {isDecide && state.roundAntes[p.id] !== undefined && (
+                    <span className="ml-1" data-testid={`rm-ante-${p.id.toString()}`}>
+                      {t('ante', { amount: String(state.roundAntes[p.id]) })}
+                    </span>
+                  )}
                   {isRoundEnd && (p.roundPayout > 0 || p.roundPenalty > 0) && (
                     <span className="ml-2 text-ds-text-primary" data-testid={`rm-chip-change-${p.id.toString()}`}>
                       {p.roundPayout > 0 && t('roundResult.payout', { amount: String(p.roundPayout) })}
