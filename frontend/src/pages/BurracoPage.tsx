@@ -234,7 +234,13 @@ function BurracoPageContent() {
       setPulsingScoreIds(new Set(changedScoreIds));
       setScoreAnnouncement(
         changedScores
-          .map((p) => t('score.update', { player: playerName(p.id, p.isHuman), score: p.roundScore }))
+          .map((p) =>
+            t('score.update', {
+              player: playerName(p.id, p.isHuman),
+              score: p.roundScore,
+              cumulativeScore: p.cumulativeScore,
+            }),
+          )
           .join(t('listSeparator')),
       );
       clearTimeout(pulseTimerRef.current ?? undefined);
