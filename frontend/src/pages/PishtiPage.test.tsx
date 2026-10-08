@@ -104,6 +104,13 @@ describe('PishtiPage', () => {
     renderWithProviders(<PishtiPage />);
     await waitFor(() => expect(screen.getByText('プレイヤー')).toBeInTheDocument());
     expect(screen.getAllByText(/捕獲 0枚/).length).toBe(4);
+    expect(screen.getAllByText('残り手札 4枚')).toHaveLength(4);
+  });
+
+  it('shows zero remaining cards for every player after the game ends', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<PishtiPage />);
+    await waitFor(() => expect(screen.getAllByText('残り手札 0枚')).toHaveLength(4));
   });
 
   it('renders the human hand cards', async () => {

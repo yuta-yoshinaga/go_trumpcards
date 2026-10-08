@@ -3,6 +3,7 @@
   "cpu": "CPU {{id}}",
   "deck": "山札: {{count}}枚",
   "playersTitle": "プレイヤー",
+  "handCount": "残り手札 {{count}}枚",
   "captured": "捕獲 {{count}}枚",
   "pisti": "Pişti {{count}}点",
   "pistiCelebration": "PİŞTİ +10!",
