@@ -84,6 +84,7 @@ const endDealerWins: CasinoHoldemResponse = {
 const endFold: CasinoHoldemResponse = {
   ...flopState,
   phase: 3,
+  callBet: 0,
   result: -1,
   message: 'フォールド',
   messageCode: 'casinoholdem.result.fold',
@@ -228,6 +229,38 @@ describe('CasinoHoldemPage', () => {
     } finally {
       await i18n.changeLanguage(previousLanguage);
     }
+  });
+
+  it('shows a positive bonus payout', async () => {
+    mockApi.mockResolvedValue({ ...endPlayerWins, bonusBet: 10, bonusPayout: 50 });
+    renderWithProviders(<CasinoHoldemPage />);
+    expect(await screen.findByTestId('payout-breakdown')).toHaveTextContent('AAボーナス: 50');
+  });
+
+  it('shows zero payouts for losing showdown bets', async () => {
+    mockApi.mockResolvedValue({ ...endDealerWins, bonusBet: 10, bonusPayout: 0 });
+    renderWithProviders(<CasinoHoldemPage />);
+    const breakdown = await screen.findByTestId('payout-breakdown');
+    expect(breakdown).toHaveTextContent('アンテ: 払戻しなし (0)');
+    expect(breakdown).toHaveTextContent('コール: 払戻しなし (0)');
+    expect(breakdown).toHaveTextContent('AAボーナス: 払戻しなし (0)');
+  });
+
+  it('shows no bet for the bonus row when bonusBet is zero', async () => {
+    mockApi.mockResolvedValue({ ...endDealerWins, bonusBet: 0, bonusPayout: 0 });
+    renderWithProviders(<CasinoHoldemPage />);
+    const breakdown = await screen.findByTestId('payout-breakdown');
+    expect(breakdown).toHaveTextContent('AAボーナス: ベットなし');
+    expect(breakdown).not.toHaveTextContent('AAボーナス: 払戻しなし');
+  });
+
+  it('distinguishes no call bet on fold from zero ante and bonus payouts', async () => {
+    mockApi.mockResolvedValue({ ...endFold, anteBet: 100, bonusBet: 10 });
+    renderWithProviders(<CasinoHoldemPage />);
+    const breakdown = await screen.findByTestId('payout-breakdown');
+    expect(breakdown).toHaveTextContent('アンテ: 払戻しなし (0)');
+    expect(breakdown).toHaveTextContent('コール: ベットなし');
+    expect(breakdown).toHaveTextContent('AAボーナス: 払戻しなし (0)');
   });
 
   it('shows end phase with dealer wins', async () => {
