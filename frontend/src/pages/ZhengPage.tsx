@@ -107,21 +107,31 @@ function ZhengPageContent() {
   // Announce turn arrival, the lead-can't-pass rule, and the human's own finish —
   // CPU turns advance silently otherwise, leaving SR users unaware their turn came.
   const [liveMsg, setLiveMsg] = useState('');
-  const prevAnnounceRef = useRef<{ turn: boolean; finished: boolean } | null>(null);
+  const prevAnnounceRef = useRef<{ turn: boolean; finished: boolean[] } | null>(null);
   useEffect(() => {
     if (!state || state.players.length < 4) return;
     const turn = state.currentTurn === 0 && !state.gameEndFlag;
-    const finished = state.players[0]?.isFinished ?? false;
+    const finished = state.players.map((player) => player.isFinished);
     const lead = state.tableCards.length === 0;
     const prev = prevAnnounceRef.current;
     prevAnnounceRef.current = { turn, finished };
     if (!prev) return;
-    if (finished && !prev.finished) {
-      setLiveMsg(t('announce.finished', { rank: t(`rank.${state.players[0]?.rank}`) }));
+    const newlyFinishedHuman = finished[0] && !prev.finished[0];
+    const newlyFinishedCpu = state.players.filter(
+      (player, index) => !player.isHuman && player.isFinished && !prev.finished[index],
+    );
+    if (newlyFinishedHuman || newlyFinishedCpu.length > 0) {
+      const messages = [
+        ...(newlyFinishedHuman ? [t('announce.finished', { rank: t(`rank.${state.players[0]?.rank}`) })] : []),
+        ...newlyFinishedCpu.map((player) =>
+          t('announce.cpuFinished', { name: tc('player.cpu', { id: player.id }), rank: t(`rank.${player.rank}`) }),
+        ),
+      ];
+      setLiveMsg(messages.join(t('listSeparator')));
     } else if (turn && !prev.turn) {
       setLiveMsg(lead ? t('announce.yourTurnLead') : t('announce.yourTurn'));
     }
-  }, [state, t]);
+  }, [state, t, tc]);
 
   // Values match the Go domain constants: 0=Normal, 1=Easy, 2=Hard (ZhengConfig.go).
   const difficultyOptions = useMemo(
