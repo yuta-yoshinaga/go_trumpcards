@@ -408,7 +408,7 @@ describe('ClockSolitairePage', () => {
     await waitFor(() => expect(screen.getByTestId('cs-live-region')).toHaveTextContent(/3時/));
   });
 
-  it('announces the card just moved and clears it after undo', async () => {
+  it('announces the moved card and returned current card after undo', async () => {
     restoreCliModeDefault();
     mockExec
       .mockReset()
@@ -422,7 +422,132 @@ describe('ClockSolitairePage', () => {
     expect(live).toHaveTextContent('5時');
     expect(live).not.toHaveTextContent('♥ 3');
     fireEvent.click(await screen.findByTestId('cs-undo-button'));
-    await waitFor(() => expect(live).not.toHaveTextContent('♠ 5'));
+    await waitFor(() => expect(live).toHaveTextContent('移動を取り消しました'));
+    expect(live).toHaveTextContent('手持ちカードは♠ 5です');
+  });
+
+  it('announces CLI undo commands', async () => {
+    mockUseCliMode.mockReturnValue({
+      cliEnabled: true,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput: vi.fn(),
+      addOutput: vi.fn(),
+      addError: vi.fn(),
+      clearLog: vi.fn(),
+    });
+    mockExec
+      .mockReset()
+      .mockResolvedValueOnce({ ...playingState, stepCount: 1, canUndo: true, currentCard: card('HEART', 3) })
+      .mockResolvedValueOnce({ ...playingState, stepCount: 2, canUndo: true, currentCard: card('DIAMOND', 7) })
+      .mockResolvedValueOnce({ ...playingState, canUndo: false, currentCard: card('SPADE', 5) });
+    renderWithProviders(<ClockSolitairePage />);
+    const input = await screen.findByRole('textbox');
+    fireEvent.change(input, { target: { value: 'step' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    fireEvent.change(input, { target: { value: 'undo' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+  });
+
+  it('handles a CLI log command without treating it as undo', async () => {
+    mockUseCliMode.mockReturnValue({
+      cliEnabled: true,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput: vi.fn(),
+      addOutput: vi.fn(),
+      addError: vi.fn(),
+      clearLog: vi.fn(),
+    });
+    mockExec
+      .mockReset()
+      .mockResolvedValueOnce(playingState)
+      .mockResolvedValueOnce({ ...playingState, stepCount: 1, canUndo: true });
+    renderWithProviders(<ClockSolitairePage />);
+    const input = await screen.findByRole('textbox');
+    fireEvent.change(input, { target: { value: 'log' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('log'));
+    expect(screen.queryByText('移動を取り消しました')).not.toBeInTheDocument();
+  });
+
+  it('announces both consecutive undos without throwing', async () => {
+    restoreCliModeDefault();
+    mockExec
+      .mockReset()
+      .mockResolvedValueOnce({ ...playingState, currentCard: card('SPADE', 5) })
+      .mockResolvedValueOnce({ ...playingState, stepCount: 1, canUndo: true, currentCard: card('HEART', 3) })
+      .mockResolvedValueOnce({ ...playingState, stepCount: 2, canUndo: true, currentCard: card('DIAMOND', 7) })
+      .mockResolvedValueOnce({ ...playingState, stepCount: 1, canUndo: true, currentCard: card('HEART', 3) })
+      .mockResolvedValueOnce({ ...playingState, canUndo: false, currentCard: card('SPADE', 5) });
+    renderWithProviders(<ClockSolitairePage />);
+    const live = await screen.findByTestId('cs-live-region');
+
+    fireEvent.click(await screen.findByTestId('cs-step-button'));
+    await waitFor(() => expect(live).toHaveTextContent('♠ 5を5時の山に配置しました'));
+    fireEvent.click(await screen.findByTestId('cs-step-button'));
+    await waitFor(() => expect(live).toHaveTextContent('♥ 3を3時の山に配置しました'));
+    fireEvent.click(await screen.findByTestId('cs-undo-button'));
+    await waitFor(() => expect(live).toHaveTextContent('手持ちカードは♥ 3です'));
+    fireEvent.click(await screen.findByTestId('cs-undo-button'));
+    await waitFor(() => expect(live).toHaveTextContent('移動を取り消しました。手持ちカードは♠ 5です。'));
+  });
+
+  it('announces an undo without a current card when none is returned', async () => {
+    restoreCliModeDefault();
+    mockExec
+      .mockReset()
+      .mockResolvedValueOnce({ ...playingState, currentCard: card('SPADE', 5) })
+      .mockResolvedValueOnce({ ...playingState, stepCount: 1, canUndo: true, currentCard: card('HEART', 3) })
+      .mockResolvedValueOnce({ ...playingState, canUndo: false, currentCard: undefined });
+    renderWithProviders(<ClockSolitairePage />);
+    const live = await screen.findByTestId('cs-live-region');
+
+    fireEvent.click(await screen.findByTestId('cs-step-button'));
+    await waitFor(() => expect(live).toHaveTextContent('♠ 5を5時の山に配置しました'));
+    fireEvent.click(await screen.findByTestId('cs-undo-button'));
+    await waitFor(() => expect(live).toHaveTextContent('移動を取り消しました。'));
+    expect(live).not.toHaveTextContent('手持ちカードは');
+  });
+
+  it('does not announce success when undo leaves the step count unchanged', async () => {
+    restoreCliModeDefault();
+    mockExec
+      .mockReset()
+      .mockResolvedValueOnce({ ...playingState, currentCard: card('SPADE', 5) })
+      .mockResolvedValueOnce({ ...playingState, stepCount: 1, canUndo: true, currentCard: card('HEART', 3) })
+      .mockResolvedValueOnce({ ...playingState, stepCount: 1, canUndo: true, currentCard: card('HEART', 3) });
+    renderWithProviders(<ClockSolitairePage />);
+    const live = await screen.findByTestId('cs-live-region');
+    fireEvent.click(await screen.findByTestId('cs-step-button'));
+    await waitFor(() => expect(live).toHaveTextContent('♠ 5を5時の山に配置しました'));
+    fireEvent.click(await screen.findByTestId('cs-undo-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+    expect(live).not.toHaveTextContent('移動を取り消しました');
+  });
+
+  it('does not announce an undo after resetting when an undo leaves the step count unchanged', async () => {
+    restoreCliModeDefault();
+    mockExec
+      .mockReset()
+      .mockResolvedValueOnce(playingState)
+      .mockResolvedValueOnce({ ...playingState, stepCount: 1, canUndo: true, currentCard: card('HEART', 3) })
+      .mockResolvedValueOnce({ ...playingState, stepCount: 1, canUndo: true, currentCard: card('HEART', 3) })
+      .mockResolvedValueOnce(playingState);
+    renderWithProviders(<ClockSolitairePage />);
+    const live = await screen.findByTestId('cs-live-region');
+
+    fireEvent.click(await screen.findByTestId('cs-step-button'));
+    await waitFor(() => expect(live).toHaveTextContent('♠ 5を5時の山に配置しました'));
+    fireEvent.click(await screen.findByTestId('cs-undo-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    const confirm = await screen.findByRole('alertdialog');
+    fireEvent.click(within(confirm).getByRole('button', { name: '確認' }));
+
+    await waitFor(() => expect(live).not.toHaveTextContent('移動を取り消しました'));
   });
 
   it('announces the center pile when the moved card is a king', async () => {
@@ -452,6 +577,23 @@ describe('ClockSolitairePage', () => {
     const confirm = await screen.findByRole('alertdialog');
     fireEvent.click(within(confirm).getByRole('button', { name: '確認' }));
     await waitFor(() => expect(live).not.toHaveTextContent('♠ 5を5時の山に配置しました'));
+  });
+
+  it('does not announce an undo when resetting after one move', async () => {
+    restoreCliModeDefault();
+    mockExec
+      .mockReset()
+      .mockResolvedValueOnce(playingState)
+      .mockResolvedValueOnce({ ...playingState, stepCount: 1, canUndo: true, currentCard: card('HEART', 3) })
+      .mockResolvedValueOnce(playingState);
+    renderWithProviders(<ClockSolitairePage />);
+    const live = await screen.findByTestId('cs-live-region');
+    fireEvent.click(await screen.findByTestId('cs-step-button'));
+    await waitFor(() => expect(live).toHaveTextContent('♠ 5を5時の山に配置しました'));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    const confirm = await screen.findByRole('alertdialog');
+    fireEvent.click(within(confirm).getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(live).not.toHaveTextContent('移動を取り消しました'));
   });
 
   it('announces the centre pile for a king', async () => {

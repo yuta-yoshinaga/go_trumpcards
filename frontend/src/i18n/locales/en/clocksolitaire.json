@@ -32,6 +32,8 @@
   },
   "step": "Step",
   "stepAnnouncement": "Moved {{card}} to the {{hour}} o’clock pile",
+  "undoAnnouncement": "Undid the last move. The current card is {{returnedCard}}.",
+  "undoAnnouncementNoCard": "Undid the last move.",
   "stepCount": "Steps",
   "stepKingAnnouncement": "Moved {{card}} to the center (K) pile",
   "stopAutoplay": "Stop",
