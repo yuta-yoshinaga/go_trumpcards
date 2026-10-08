@@ -23,6 +23,8 @@
   "button": {
     "bet": "アンティ",
     "playMult": "{{mult}}倍 +{{amount}}",
+    "insufficientChips": "所持チップが不足しています",
+    "processing": "処理中です",
     "fold": "フォールド",
     "reset": "リセット"
   },

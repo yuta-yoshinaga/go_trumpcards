@@ -112,13 +112,28 @@ function MississippiStudPageContent() {
   const actionBindings = useMemo(
     () => [
       { key: 'b', action: () => execApi('bet', anteAmount), enabled: isAntePhase, label: 'bet' },
-      { key: '1', action: () => execApi('play', undefined, 1), enabled: isStreetPhase, label: 'play' },
-      { key: '2', action: () => execApi('play', undefined, 2), enabled: isStreetPhase, label: 'play' },
-      { key: '3', action: () => execApi('play', undefined, 3), enabled: isStreetPhase, label: 'play' },
+      {
+        key: '1',
+        action: () => execApi('play', undefined, 1),
+        enabled: isStreetPhase && !!state && state.anteAmount <= state.chips,
+        label: 'play',
+      },
+      {
+        key: '2',
+        action: () => execApi('play', undefined, 2),
+        enabled: isStreetPhase && !!state && state.anteAmount * 2 <= state.chips,
+        label: 'play',
+      },
+      {
+        key: '3',
+        action: () => execApi('play', undefined, 3),
+        enabled: isStreetPhase && !!state && state.anteAmount * 3 <= state.chips,
+        label: 'play',
+      },
       { key: 'f', action: () => execApi('fold'), enabled: isStreetPhase, label: 'fold' },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, label: 'reset' },
     ],
-    [execApi, anteAmount, isAntePhase, isStreetPhase, isEndPhase],
+    [execApi, anteAmount, isAntePhase, isStreetPhase, isEndPhase, state],
   );
 
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
@@ -132,7 +147,10 @@ function MississippiStudPageContent() {
   if (!state) return <GameSkeleton gameKey="mississippistud" layout={{ kind: 'casino-table', sections: [3, 2] }} />;
 
   const handleBet = () => execApi('bet', anteAmount);
-  const handlePlay = (multiplier: 1 | 2 | 3) => execApi('play', undefined, multiplier);
+  const handlePlay = (multiplier: 1 | 2 | 3) => {
+    if (!state || loading || state.anteAmount * multiplier > state.chips) return;
+    return execApi('play', undefined, multiplier);
+  };
   const handleFold = () => execApi('fold');
   const handleReset = () => execApi('reset');
 
@@ -361,21 +379,32 @@ function MississippiStudPageContent() {
                   { m: 2, cls: btnPrimary },
                   { m: 3, cls: btnSuccess },
                 ] as const
-              ).map(({ m, cls }) => (
-                <button
-                  key={m}
-                  type="button"
-                  className={`${cls} min-h-[44px]`}
-                  onClick={() => handlePlay(m)}
-                  disabled={loading}
-                  data-testid={`ms-play-${m}x`}
-                >
-                  {t('button.playMult', { mult: m, amount: state.anteAmount * m })}
-                  <span className="block text-xs font-normal">
-                    {t('label.totalAfterBet')}: {state.totalBet + state.anteAmount * m}
-                  </span>
-                </button>
-              ))}
+              ).map(({ m, cls }) => {
+                const insufficient = state.anteAmount * m > state.chips;
+                const disabled = loading || insufficient;
+                const reasonId = `ms-play-disabled-reason-${m}`;
+                return (
+                  <button
+                    key={m}
+                    type="button"
+                    className={`${cls} min-h-[44px] ${disabled ? 'aria-disabled:opacity-50 aria-disabled:cursor-not-allowed' : ''}`}
+                    onClick={() => handlePlay(m)}
+                    aria-disabled={disabled || undefined}
+                    aria-describedby={disabled ? reasonId : undefined}
+                    data-testid={`ms-play-${m}x`}
+                  >
+                    {t('button.playMult', { mult: m, amount: state.anteAmount * m })}
+                    <span className="block text-xs font-normal">
+                      {t('label.totalAfterBet')}: {state.totalBet + state.anteAmount * m}
+                    </span>
+                    {disabled && (
+                      <span id={reasonId} className={insufficient ? 'block text-xs font-normal' : 'sr-only'}>
+                        {t(insufficient ? 'button.insufficientChips' : 'button.processing')}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
               <button type="button" className={`${btnDanger} min-h-[44px]`} onClick={handleFold} disabled={loading}>
                 {t('button.fold')}
               </button>

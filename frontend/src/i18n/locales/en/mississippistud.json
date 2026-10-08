@@ -23,6 +23,8 @@
   "button": {
     "bet": "Ante",
     "playMult": "{{mult}}x +{{amount}}",
+    "insufficientChips": "Not enough chips",
+    "processing": "Processing",
     "fold": "Fold",
     "reset": "Reset"
   },
