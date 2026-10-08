@@ -272,7 +272,13 @@ function ShitheadPageContent() {
                   {t('labels.you')} —{' '}
                   {humanPlayer.isFinished
                     ? `${t('labels.rank')} ${humanPlayer.rank}`
-                    : `${t('labels.currentSource')}: ${state.currentSource}`}
+                    : `${t('labels.currentSource')}: ${
+                        state.currentSource === SOURCE_HAND
+                          ? t('labels.hand')
+                          : state.currentSource === SOURCE_FACE_UP
+                            ? t('labels.faceUp')
+                            : t('labels.faceDown')
+                      }`}
                 </div>
                 {humanPlayer.handCards.length > 0 && (
                   <CardRow
