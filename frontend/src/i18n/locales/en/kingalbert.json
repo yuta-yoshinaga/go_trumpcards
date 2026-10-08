@@ -13,6 +13,7 @@
   "selectedReserveAnnouncement": "Selected: {{card}}, reserve slot {{idx}}",
   "giveup": "Give Up",
   "empty": "Empty",
+  "emptyTableauAriaLabel": "Empty tableau column {{col}}",
   "emptyReserveSlot": "Empty reserve slot {{idx}}",
   "reserveCardAriaLabel": "{{card}} (reserve slot {{idx}})",
   "tableauCardAriaLabel": "{{card}}, column {{col}}, position {{pos}}",

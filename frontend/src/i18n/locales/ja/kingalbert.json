@@ -13,6 +13,7 @@
   "selectedReserveAnnouncement": "選択中: {{card}}、リザーブ枠 {{idx}}",
   "giveup": "ギブアップ",
   "empty": "空",
+  "emptyTableauAriaLabel": "空のタブロー列 {{col}}",
   "emptyReserveSlot": "空のリザーブ枠 {{idx}}",
   "reserveCardAriaLabel": "{{card}}（リザーブ枠 {{idx}}）",
   "tableauCardAriaLabel": "{{card}}、列{{col}}・位置{{pos}}",
