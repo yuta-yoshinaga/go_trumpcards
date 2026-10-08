@@ -268,6 +268,7 @@ function GaigelPageContent() {
         {/* Team scores */}
         <div className="my-3 p-2 rounded bg-black/30" data-tutorial="gg-score-table">
           <div className="text-ds-text-muted text-sm mb-1">{t('teamScores')}</div>
+          <div className="text-ds-text-muted text-xs mb-1">{t('target', { points: state.config.targetScore })}</div>
           <table className="w-full text-sm text-ds-text-muted">
             <thead>
               <tr>
@@ -306,6 +307,16 @@ function GaigelPageContent() {
               )}
             </tbody>
           </table>
+          <div className="grid grid-cols-2 text-xs text-ds-text-muted">
+            {[0, 1].map((team) => (
+              <div key={team} className={team === 1 ? 'text-center' : undefined}>
+                {t('remainingTeam', {
+                  n: team,
+                  points: Math.max(0, state.config.targetScore - state.teamScores[team]),
+                })}
+              </div>
+            ))}
+          </div>
         </div>
 
         <RoundScoreAnnouncement
