@@ -158,8 +158,11 @@ func TestKemps_FourOfAKindOpensDeclareWindow(t *testing.T) {
 	require.NoError(t, g.PlayerSwap(3, 0)) // 8 を出して 7 を取る
 	assert.Equal(t, KempsPhaseDeclare, g.GetPhase())
 	assert.Equal(t, 0, g.GetFourHolderIdx())
-	assert.True(t, g.IsPartnerSignaling())
+	assert.False(t, g.IsPartnerSignaling())
 	assert.False(t, g.IsOpponentSignaling())
+	kmSetHand(g.GetPlayer(0), kmCard(1, 7), kmCard(2, 7), kmCard(3, 7), kmCard(4, 7))
+	kmSetFourHolder(g, 2)
+	assert.True(t, g.IsPartnerSignaling())
 }
 
 func TestKemps_DeclareKempsSuccess(t *testing.T) {
