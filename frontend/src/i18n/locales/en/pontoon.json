@@ -40,6 +40,8 @@
     "cpuStick": "The banker draws until {{cpuMin}} or more. A CPU seat sticks at {{min}} or more (on four cards it takes one more below {{cpuMin}})"
   },
   "betLabel": "Choose your stake",
+  "outOfChips": "Not enough chips to bet. Reset to start again with the initial chips.",
+  "restart": "Restart",
   "betAmount": "{{amount}}",
   "dealAsBanker": "You are the banker — deal the round",
   "placeBet": "Choose your stake",
