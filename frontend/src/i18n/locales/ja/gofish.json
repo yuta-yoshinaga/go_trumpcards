@@ -23,6 +23,11 @@
     "miss": "{{asker}} が {{target}} にランク {{rank}} を要求 → Go Fish!",
     "bookFormed": "ブック完成！ ランク {{rank}}"
   },
+  "cpuActions": {
+    "title": "CPUの要求結果",
+    "hit": "{{asker}} が {{target}} にランク {{rank}} を要求 → {{count}}枚もらった！",
+    "miss": "{{asker}} が {{target}} にランク {{rank}} を要求 → Go Fish!"
+  },
   "bubble": {
     "askHit": "{{rank}} → {{count}}枚！",
     "askMiss": "{{rank}}? → Go Fish!"

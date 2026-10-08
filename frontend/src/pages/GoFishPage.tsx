@@ -38,7 +38,7 @@ import { GOFISH_HELP, parseGofishCommand } from '../utils/cli/commands/gofishCom
 import { formatGofishState } from '../utils/cli/formatters/gofishFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** CPU difficulty options for Go Fish. */
@@ -296,6 +296,34 @@ function GoFishPageContent() {
                 );
               })}
             </div>
+
+            {state.cpuActions.length > 0 && (
+              <section
+                aria-label={t('cpuActions.title')}
+                data-testid="gofish-cpu-actions"
+                className="my-3 rounded-lg bg-ds-surface p-3"
+              >
+                <h2 className="mb-2 text-sm font-semibold text-ds-text-primary">{t('cpuActions.title')}</h2>
+                <ul className="space-y-1 text-sm text-ds-text-primary">
+                  {state.cpuActions.map((action, index) => (
+                    <li key={`${action.askPlayerIdx}-${action.askTargetIdx}-${action.askRank}-${index}`}>
+                      {action.success
+                        ? t('cpuActions.hit', {
+                            asker: findPlayerName(state.players, action.askPlayerIdx),
+                            target: findPlayerName(state.players, action.askTargetIdx),
+                            rank: valueName(action.askRank),
+                            count: action.cardsReceived,
+                          })
+                        : t('cpuActions.miss', {
+                            asker: findPlayerName(state.players, action.askPlayerIdx),
+                            target: findPlayerName(state.players, action.askTargetIdx),
+                            rank: valueName(action.askRank),
+                          })}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
 
             {/* Rank selector */}
             {isHumanTurn && humanRanks.length > 0 && (
