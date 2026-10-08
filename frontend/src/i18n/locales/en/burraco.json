@@ -73,7 +73,7 @@
   "score": {
     "cumulative": "Total",
     "round": "Round",
-    "update": "{{player}}'s round score: {{score}}"
+    "update": "{{player}}'s round score: {{score}}; cumulative score: {{cumulativeScore}}"
   },
   "tutorial": {
     "drawArea": "The stock and discard area. Draw cards from here.",

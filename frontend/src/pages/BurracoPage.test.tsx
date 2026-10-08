@@ -447,7 +447,7 @@ describe('BurracoPage', () => {
     await waitFor(() => expect(screen.getByTestId('bu-round-score-0')).toHaveClass('motion-safe:animate-pulse'));
   });
 
-  it('announces changed round scores but stays silent on initial and unchanged renders', async () => {
+  it('announces changed round and cumulative scores but stays silent on initial and unchanged renders', async () => {
     mockExec.mockResolvedValue(drawPhaseState);
     renderWithProviders(<BurracoPage />);
     const status = await screen.findByTestId('bu-score-announcement');
@@ -458,23 +458,29 @@ describe('BurracoPage', () => {
     mockExec.mockResolvedValue({
       ...roundEndState,
       players: [
-        { ...basePlayers[0], roundScore: 120 },
-        { ...basePlayers[1], roundScore: 80 },
+        { ...basePlayers[0], roundScore: 120, cumulativeScore: 620 },
+        { ...basePlayers[1], roundScore: 80, cumulativeScore: 380 },
       ],
     });
     fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
-    await waitFor(() => expect(status).toHaveTextContent('あなたのラウンド得点は120点、CPU 1のラウンド得点は80点'));
+    await waitFor(() =>
+      expect(status).toHaveTextContent(
+        'あなたのラウンド得点は120点、累積得点は620点、CPU 1のラウンド得点は80点、累積得点は380点',
+      ),
+    );
 
     mockExec.mockResolvedValue({
       ...roundEndState,
       players: [
-        { ...basePlayers[0], roundScore: 120 },
-        { ...basePlayers[1], roundScore: 80 },
+        { ...basePlayers[0], roundScore: 120, cumulativeScore: 620 },
+        { ...basePlayers[1], roundScore: 80, cumulativeScore: 380 },
       ],
     });
     fireEvent.click(screen.getByRole('button', { name: '次のラウンド' }));
     await waitFor(() => expect(screen.getByTestId('bu-round-score-0')).toHaveTextContent('120'));
-    expect(status).toHaveTextContent('あなたのラウンド得点は120点、CPU 1のラウンド得点は80点');
+    expect(status).toHaveTextContent(
+      'あなたのラウンド得点は120点、累積得点は620点、CPU 1のラウンド得点は80点、累積得点は380点',
+    );
   });
 
   it('reorders the displayed hand when the suit-sort toggle is pressed', async () => {
