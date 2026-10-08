@@ -95,6 +95,19 @@ beforeEach(() => {
 });
 
 describe('CariocaPage', () => {
+  it('keeps a bare status live region mounted while empty and shows messages when present', async () => {
+    renderWithProviders(<CariocaPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await screen.findByRole('button', { name: /Draw from stock|山札から引く/ });
+    const liveRegion = screen.getByRole('status');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValueOnce({ ...drawState, message: 'Cards drawn' });
+    fireEvent.click(screen.getByRole('button', { name: /Draw from stock|山札から引く/ }));
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Cards drawn'));
+    expect(screen.getByRole('status').querySelector('.glass-panel')).toHaveTextContent('Cards drawn');
+  });
+
   describe('ignores repeated actions while loading', () => {
     const pendingAction = () => {
       mockExec.mockImplementationOnce(() => new Promise<CariocaResponse>(() => {}));
