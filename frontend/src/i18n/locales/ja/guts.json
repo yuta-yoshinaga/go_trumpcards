@@ -54,7 +54,9 @@
   },
   "guide": {
     "handLabel": "手役",
-    "tierLabel": "勝率目安",
+    "tierLabel": "手札評価",
+    "probability": "推定勝率: {{percent}}%",
+    "assumptions": "残っているCPUはランダムな手札で、ペアまたはJ以上ならインすると仮定します。同率は座席番号の小さい側が勝ちます。",
     "tier": {
       "high": "高い",
       "medium": "普通",

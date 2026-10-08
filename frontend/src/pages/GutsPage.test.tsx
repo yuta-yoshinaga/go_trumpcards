@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { gutsApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeGutsState } from '../test/stateFactories';
+import * as gutsGuideUtils from '../utils/gutsGuideUtils';
 import { GutsPage } from './GutsPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -241,6 +242,8 @@ describe('GutsPage', () => {
     const guide = await screen.findByTestId('guts-declare-guide');
     expect(guide).toHaveTextContent('手役: ペア');
     expect(screen.getByTestId('guts-guide-tier')).toHaveTextContent('高い');
+    expect(screen.getByTestId('guts-guide-probability')).toHaveTextContent(/推定勝率: \d+\.\d+%/);
+    expect(screen.getByText(/残っているCPUはランダムな手札/)).toBeInTheDocument();
     // The maximum match-loss payment is the smaller of the pot and chip balance.
     expect(screen.getByTestId('guts-guide-risk')).toHaveTextContent('敗北時の最大支払額: 40');
   });
@@ -255,6 +258,19 @@ describe('GutsPage', () => {
     renderWithProviders(<GutsPage />);
 
     expect(await screen.findByTestId('guts-guide-risk')).toHaveTextContent('敗北時の最大支払額: 25');
+  });
+
+  it('does not reevaluate the declaration guide on unrelated rerenders', async () => {
+    const evaluateGuide = vi.spyOn(gutsGuideUtils, 'evaluateGutsGuide');
+    renderWithProviders(<GutsPage />);
+    await screen.findByTestId('guts-declare-guide');
+    expect(evaluateGuide).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByText('CLI'));
+    fireEvent.click(screen.getByText('GUI'));
+
+    expect(evaluateGuide).toHaveBeenCalledTimes(1);
+    evaluateGuide.mockRestore();
   });
 
   it('shows a weak (low) win-chance guideline and the high-card name for a low hand', async () => {
@@ -284,6 +300,7 @@ describe('GutsPage', () => {
     const guide = await screen.findByTestId('guts-declare-guide');
     expect(guide).toHaveTextContent('手役: ハイカード');
     expect(screen.getByTestId('guts-guide-tier')).toHaveTextContent('低い');
+    expect(screen.getByTestId('guts-guide-probability')).toHaveTextContent(/推定勝率: \d+\.\d+%/);
   });
 
   it('hides the declaration guideline on the result phase', async () => {
