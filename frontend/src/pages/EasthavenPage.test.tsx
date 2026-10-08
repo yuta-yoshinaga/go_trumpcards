@@ -94,6 +94,20 @@ describe('EasthavenPage', () => {
     renderWithProviders(<EasthavenPage />);
     expect(await screen.findByTestId('eh-doubleclick-hint')).toHaveTextContent('ダブルクリック');
   });
+
+  it('announces when auto-complete becomes ready', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: playingState.tableau.map((column) => column.filter((entry) => entry.card !== null)),
+      stockCount: 0,
+    });
+    renderWithProviders(<EasthavenPage />);
+
+    const badge = await screen.findByTestId('autocomplete-ready-badge');
+    expect(badge).toHaveAttribute('aria-live', 'polite');
+    expect(badge).toHaveTextContent('オートコンプリート可能！');
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<EasthavenPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
