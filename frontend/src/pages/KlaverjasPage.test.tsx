@@ -275,6 +275,22 @@ describe('KlaverjasPage', () => {
     expect(roem).toHaveTextContent('20');
   });
 
+  it("shows each team's round card points in a live region during play", async () => {
+    mockExec.mockResolvedValue(makeKlaverjasState({ phase: 0, roundCardPoints: [70, 50] }));
+    renderWithProviders(<KlaverjasPage />);
+    const points = await screen.findByTestId('klaverjas-round-card-points');
+    expect(points).toHaveAttribute('role', 'status');
+    expect(points).toHaveAttribute('aria-live', 'polite');
+    expect(points).toHaveTextContent('チームAのカード点: 70');
+    expect(points).toHaveTextContent('チームBのカード点: 50');
+
+    fireEvent.click(await screen.findByAltText('♥ Q'));
+    const playButton = await screen.findByRole('button', { name: '出す' });
+    mockExec.mockResolvedValue(makeKlaverjasState({ phase: 0, roundCardPoints: [90, 50] }));
+    fireEvent.click(playButton);
+    await waitFor(() => expect(points).toHaveTextContent('チームAのカード点: 90'));
+  });
+
   it('exposes the live Roem panel as a polite live region', async () => {
     mockExec.mockResolvedValue(makeKlaverjasState({ phase: 0, roundRoem: [20, 0] }));
     renderWithProviders(<KlaverjasPage />);
