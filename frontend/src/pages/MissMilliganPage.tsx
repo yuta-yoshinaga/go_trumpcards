@@ -18,7 +18,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -103,18 +103,13 @@ function MissMilliganPageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
-  const windowWidth = useWindowWidth();
-
   const dims = useMemo(() => {
     if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: cardOverlap };
-    const padX = 16;
-    const gapPx = 4;
-    const colW = Math.floor((windowWidth - padX - (TABLEAU_COLS - 1) * gapPx) / TABLEAU_COLS);
-    const cw = Math.min(Math.max(colW, 30), cardWidth);
+    const cw = cardWidth;
     const ch = Math.round(cw * 1.5);
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
-  }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+  }, [isMobile, cardWidth, cardHeight, cardOverlap]);
 
   const isPlayingForKbd = state?.phase === MissMilliganPhase.PLAYING;
 
@@ -209,7 +204,8 @@ function MissMilliganPageContent() {
     return (
       <div
         key={`col-${colIdx.toString()}`}
-        className={`flex-1 min-w-0 ${legalTargets.tableau.has(colIdx) ? 'rounded ring-2 ring-ds-success' : ''}`}
+        className={`${isMobile ? 'shrink-0' : 'flex-1 min-w-0'} ${legalTargets.tableau.has(colIdx) ? 'rounded ring-2 ring-ds-success' : ''}`}
+        style={isMobile ? { width: dims.cw } : undefined}
         data-testid={`mm-tableau-col-${colIdx}`}
       >
         <div className="text-center text-xs text-ds-text-muted mb-0.5" aria-hidden="true">
@@ -450,8 +446,10 @@ function MissMilliganPageContent() {
               </div>
             </div>
 
-            <div className="flex gap-1 sm:gap-2 items-start" data-tutorial="mm-tableau">
-              {Array.from({ length: TABLEAU_COLS }, (_, i) => i).map(renderTableauColumn)}
+            <div className={isMobile ? 'overflow-x-auto' : ''} data-tutorial="mm-tableau">
+              <div className={`flex gap-1 sm:gap-2 items-start ${isMobile ? 'flex-nowrap w-max' : ''}`}>
+                {Array.from({ length: TABLEAU_COLS }, (_, i) => i).map(renderTableauColumn)}
+              </div>
             </div>
 
             {/*
