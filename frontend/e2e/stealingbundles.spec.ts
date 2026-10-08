@@ -2,7 +2,7 @@ import { expect, type Page, test } from '@playwright/test';
 import { navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION } from './helpers';
 
 /** Your hand. Selecting a card is the first half of every move. */
-const hand = (page: Page) => page.getByRole('button', { name: /を選ぶ$/ });
+const hand = (page: Page) => page.locator('button[aria-pressed]:has(img):not([aria-disabled="true"])');
 
 test.describe('Stealing Bundles E2E', () => {
   test('navigates to stealingbundles and renders initial game state', async ({ page }) => {
