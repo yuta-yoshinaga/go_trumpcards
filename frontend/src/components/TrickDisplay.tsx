@@ -57,6 +57,8 @@ export interface TrickDisplayProps {
   cardBadgeFor?: (card: Card) => { glyph: string; title: string } | null;
   /** Optional localized accessible name for each card, including its player. */
   cardAriaLabelFor?: (player: TrickDisplayPlayer, card: Card) => string;
+  /** Optional localized player caption for partner-team games. */
+  playerLabelFor?: (player: TrickDisplayPlayer) => string;
   /** Optional localized per-card detail, such as points and trump status. */
   cardDetailFor?: (card: Card, trickCard: TrickDisplayCard) => string;
   /** Optional stable key override for games where a player can contribute multiple cards. */
@@ -89,6 +91,7 @@ export function TrickDisplay({
   wrap = false,
   cardBadgeFor,
   cardAriaLabelFor,
+  playerLabelFor,
   cardDetailFor,
   cardKeyFor,
 }: TrickDisplayProps) {
@@ -163,7 +166,8 @@ export function TrickDisplay({
                 </span>
               )}
               <div className={`text-xs mt-1 ${labelClass}`}>
-                {playerName(player?.id ?? trickCard.playerIdx, player?.isHuman ?? false)}
+                {playerLabelFor?.(displayPlayer) ??
+                  playerName(player?.id ?? trickCard.playerIdx, player?.isHuman ?? false)}
               </div>
               {cardDetail && <div className="text-ds-text-primary text-xs">{cardDetail}</div>}
             </div>

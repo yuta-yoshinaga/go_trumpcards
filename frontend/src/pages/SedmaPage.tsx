@@ -28,6 +28,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, SedmaResponse } from '../types/card';
 import { SedmaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseSedmaCommand, SEDMA_HELP } from '../utils/cli/commands/sedmaCommands';
 import { formatSedmaState } from '../utils/cli/formatters/sedmaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -259,10 +260,23 @@ function SedmaPageContent() {
               <div>
                 <TrickDisplay
                   currentTrick={state.currentTrick}
-                  players={state.players}
+                  players={state.players.map((player) => ({ ...player, team: player.id % 2 }))}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="sedma-trick-display"
+                  playerLabelFor={(player) => {
+                    const team = player.id % 2;
+                    return `${t(team === humanTeam ? 'team.a' : 'team.b')} · ${playerName(player.id, player.isHuman)} · ${t(team === humanTeam ? 'ally' : 'opponent')}`;
+                  }}
+                  cardAriaLabelFor={(player, card) => {
+                    const team = player.id % 2;
+                    return t('trickCardLabel', {
+                      card: cardAlt(card),
+                      player: playerName(player.id, player.isHuman),
+                      team: t(team === humanTeam ? 'team.a' : 'team.b'),
+                      relation: t(team === humanTeam ? 'ally' : 'opponent'),
+                    });
+                  }}
                 />
               </div>
 

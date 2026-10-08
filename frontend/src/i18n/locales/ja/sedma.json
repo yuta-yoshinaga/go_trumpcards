@@ -28,6 +28,9 @@
     "a": "チームA",
     "b": "チームB"
   },
+  "ally": "味方",
+  "opponent": "相手",
+  "trickCardLabel": "{{card}}、{{player}}、{{team}}、{{relation}}",
   "teamScore": "{{team}}: {{score}}点",
   "remainingPoints": "（残り{{count}}点）",
   "playButton": "出す",
