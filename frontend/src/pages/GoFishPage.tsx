@@ -189,6 +189,7 @@ function GoFishPageContent() {
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
+  const cpuActions = state.cpuActions ?? [];
 
   const isPlayPhase = state.phase === GoFishPhase.PLAY;
   const isGameEnd = state.phase === GoFishPhase.GAME_END || state.gameEndFlag;
@@ -297,7 +298,7 @@ function GoFishPageContent() {
               })}
             </div>
 
-            {state.cpuActions.length > 0 && (
+            {cpuActions.length > 0 && (
               <section
                 aria-label={t('cpuActions.title')}
                 data-testid="gofish-cpu-actions"
@@ -305,7 +306,7 @@ function GoFishPageContent() {
               >
                 <h2 className="mb-2 text-sm font-semibold text-ds-text-primary">{t('cpuActions.title')}</h2>
                 <ul className="space-y-1 text-sm text-ds-text-primary">
-                  {state.cpuActions.map((action, index) => (
+                  {cpuActions.map((action, index) => (
                     <li key={`${action.askPlayerIdx}-${action.askTargetIdx}-${action.askRank}-${index}`}>
                       {action.success
                         ? t('cpuActions.hit', {

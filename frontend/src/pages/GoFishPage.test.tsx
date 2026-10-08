@@ -159,6 +159,17 @@ describe('GoFishPage', () => {
     expect(screen.queryByTestId('gofish-cpu-actions')).not.toBeInTheDocument();
   });
 
+  it('does not crash or show the CPU action summary when cpuActions is missing', async () => {
+    const response = { ...baseState };
+    delete (response as Partial<GoFishResponse>).cpuActions;
+    mockExec.mockResolvedValue(response);
+
+    renderWithProviders(<GoFishPage />);
+
+    await screen.findByText(/CPU 2/);
+    expect(screen.queryByTestId('gofish-cpu-actions')).not.toBeInTheDocument();
+  });
+
   it('shows you when a CPU asks the human player', async () => {
     mockExec.mockResolvedValue({
       ...baseState,
