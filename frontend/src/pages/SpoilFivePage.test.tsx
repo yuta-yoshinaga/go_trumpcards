@@ -217,6 +217,18 @@ describe('SpoilFivePage', () => {
     expect(screen.getByTestId('sf-tricks-0')).toHaveTextContent('1/3');
   });
 
+  it('shows the remaining hand count for the human and CPU players', async () => {
+    const players = makeSpoilFiveState().players.map((player) => ({
+      ...player,
+      cardCount: player.id === 0 ? 4 : player.id === 1 ? 2 : 5,
+    }));
+    mockExec.mockResolvedValue(makeSpoilFiveState({ players }));
+    renderWithProviders(<SpoilFivePage />);
+
+    expect(await screen.findByTestId('sf-tricks-0')).toHaveTextContent('手札4枚');
+    expect(screen.getByTestId('sf-tricks-1')).toHaveTextContent('手札2枚');
+  });
+
   // **2トリック取ったら次で決まる。**そこが見えないと終盤の緊張が伝わらない。
   it('flags the player one trick away from taking the round', async () => {
     mockExec.mockResolvedValue(makeSpoilFiveState({ players: playersWithTricks([2, 1, 0, 0, 0]) }));

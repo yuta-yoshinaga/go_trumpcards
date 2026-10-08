@@ -20,7 +20,7 @@
   "potIncrease": "+{{n}}",
   "potIncreaseAnnounce": "ポット +{{delta}}（合計 {{total}}）",
   "target": "目標 {{n}}点",
-  "cards": "{{count}}枚",
+  "cards": "手札{{count}}枚",
   "score": "{{count}}点",
   "currentTrick": "現在のトリック",
   "players": "プレイヤー",
