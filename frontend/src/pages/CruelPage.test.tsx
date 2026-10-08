@@ -91,6 +91,25 @@ describe('CruelPage', () => {
     await screen.findByRole('button', { name: '♠ 2、列0' });
   });
 
+  it('announces tableau selection and clears it after reselection or a move', async () => {
+    renderWithProviders(<CruelPage />);
+    const source = await screen.findByRole('button', { name: '♠ 5、列0' });
+    expect(source).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(source);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+
+    fireEvent.click(source);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'false'));
+
+    fireEvent.click(source);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+    const target = screen.getByRole('button', { name: '♠ 9、列4' });
+    fireEvent.click(target);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'false'));
+    expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'tableau', col: 4 });
+  });
+
   it('uses an empty aria-label for a tableau card without a card value', async () => {
     const stateWithNullCard: CruelResponse = {
       ...playingState,
