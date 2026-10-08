@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { threeCardBragApi } from '../api/gameApi';
+import enThreeCardBrag from '../i18n/locales/en/threecardbrag.json';
 import jaThreeCardBrag from '../i18n/locales/ja/threecardbrag.json';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeThreeCardBragState } from '../test/stateFactories';
@@ -32,6 +33,18 @@ beforeEach(() => {
 });
 
 describe('ThreeCardBragPage', () => {
+  it('marks only the current player in the player list with a translated turn badge', async () => {
+    mockExec.mockResolvedValue(makeThreeCardBragState({ currentPlayerIdx: 1 }));
+    renderWithProviders(<ThreeCardBragPage />);
+
+    const turnBadges = await screen.findAllByText(jaThreeCardBrag.turnBadge);
+    expect(turnBadges).toHaveLength(1);
+    expect(turnBadges[0].parentElement).toHaveTextContent('CPU 1');
+    expect(turnBadges[0].parentElement).not.toHaveTextContent('CPU 2');
+    expect(jaThreeCardBrag.turnBadge).toBe('手番');
+    expect(enThreeCardBrag.turnBadge).toBe('Turn');
+  });
+
   it('marks the dealer in the player list for assistive technology', async () => {
     mockExec.mockResolvedValue(makeThreeCardBragState({ dealerIdx: 1 }));
     renderWithProviders(<ThreeCardBragPage />);
