@@ -16,7 +16,6 @@
     "tableCards": "Table",
     "tableEmpty": "No table cards",
     "scores": "Scores",
-    "player": "Player {{id}}",
     "you": "You",
     "stockRemaining": "Stock {{count}} left",
     "cpuStats": "Hand {{cards}} / Captured {{captured}} / Escoba {{escoba}}",
