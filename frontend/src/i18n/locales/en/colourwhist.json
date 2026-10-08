@@ -58,8 +58,8 @@
     "gameEnd": "Finished"
   },
   "result": {
-    "win": "You win",
-    "lose": "Another seat wins"
+    "win": "You win (winning seat #{{seat}})",
+    "lose": "Another seat wins (winning seat #{{seat}})"
   },
   "tutorial": {
     "bid": "You may only bid a stronger contract (troel cannot be bid)",
