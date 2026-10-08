@@ -155,9 +155,38 @@ describe('BhabhiPage', () => {
     renderWithProviders(<BhabhiPage />);
     const live = await screen.findByTestId('bh-pile-change-live');
     expect(live).toBeEmptyDOMElement();
-    mockExec.mockResolvedValueOnce({ ...initial });
+
+    const increasedPile = makeState({
+      leadSuit: 3,
+      pile: [
+        { playerIdx: 1, card: card('HEART', 5) },
+        { playerIdx: 0, card: card('HEART', 10) },
+      ],
+    } as Partial<BhabhiResponse>);
+    mockExec.mockResolvedValueOnce(increasedPile);
     fireEvent.click(screen.getAllByRole('button', { name: /出せる札/ })[0]);
-    await waitFor(() => expect(screen.getByTestId('bh-pile-change-live')).toBeEmptyDOMElement());
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+    expect(await screen.findByTestId('bh-pile')).toHaveTextContent('2');
+    await waitFor(() => expect(live).toHaveTextContent('場札は2枚です。'));
+
+    const resetState = makeState({
+      leadSuit: 0,
+      pile: [],
+    });
+    mockExec.mockResolvedValueOnce(resetState);
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(await screen.findByTestId('bh-pile')).toHaveTextContent(/場は空/);
+    expect(live).toHaveTextContent('場札は2枚です。');
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValueOnce({ ...resetState });
+    fireEvent.click(screen.getAllByRole('button', { name: /出せる札/ })[0]);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+    expect(await screen.findByTestId('bh-pile')).toHaveTextContent(/場は空/);
+    await waitFor(() => expect(live).toBeEmptyDOMElement());
   });
 
   it('shows how many players are still in', async () => {
