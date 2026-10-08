@@ -20,6 +20,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useTutorialMessageParams } from '../providers/TutorialProvider';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -100,6 +101,7 @@ function CirullaPageContent() {
     handleNextRound,
     reset,
   } = useCirullaGame();
+  useTutorialMessageParams({ targetScore: state ? state.config.targetScore : cirullaConfig.targetScore });
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset is stable per render of the hook; run once on mount.
