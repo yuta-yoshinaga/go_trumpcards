@@ -80,6 +80,17 @@ afterEach(() => {
 });
 
 describe('TwoTenJackPage', () => {
+  it('shows the declarer and their team during play and updates for a new round', async () => {
+    mockExec.mockResolvedValue(makeTwoTenJackState({ phase: 3, declarerIdx: 0 }));
+    renderWithProviders(<TwoTenJackPage />);
+
+    expect(await screen.findByText('宣言者: あなた（あなたのチーム (0,2)）')).toBeInTheDocument();
+
+    mockExec.mockResolvedValue(makeTwoTenJackState({ roundNumber: 2, declarerIdx: 1, phase: 1 }));
+    fireEvent.click(screen.getByRole('button', { name: '次のラウンド' }));
+    expect(await screen.findByText('宣言者: CPU 1（相手チーム (1,3)）')).toBeInTheDocument();
+  });
+
   it('shows each CPU team and marks trick cards by their seat team', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
