@@ -28,6 +28,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, IronCrossResponse } from '../types/card';
 import { IronCrossPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { IRONCROSS_CLI_HELP, parseIronCrossCommand } from '../utils/cli/commands/ironcrossCommands';
 import { formatIronCrossState } from '../utils/cli/formatters/ironcrossFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -157,6 +158,14 @@ function IronCrossPageContent() {
   const previewIndexes =
     previewLine === 'vertical' ? state.verticalIndexes : previewLine === 'horizontal' ? state.horizontalIndexes : [];
   const isArmedLineHovered = armedLine !== null && armedLine === previewLine;
+  const positionLabel = (index: number) =>
+    ({
+      [CENTER]: t('label.center'),
+      [TOP]: t('label.top'),
+      [BOTTOM]: t('label.bottom'),
+      [LEFT]: t('label.left'),
+      [RIGHT]: t('label.right'),
+    })[index];
 
   const crossSlot = (index: number) => {
     const card: Card | null = state.cross[index] ?? null;
@@ -185,7 +194,7 @@ function IronCrossPageContent() {
           data-testid={`ic-cross-${index}`}
           data-previewed={previewed ? 'true' : undefined}
           role="img"
-          aria-label={[t('label.hidden'), ...previewLines].join(t('listSeparator'))}
+          aria-label={[positionLabel(index), t('label.hidden'), ...previewLines].join(t('listSeparator'))}
         >
           {marker}
         </div>
@@ -196,7 +205,8 @@ function IronCrossPageContent() {
         className={`relative${ring}`}
         data-testid={`ic-cross-${index}`}
         data-previewed={previewed ? 'true' : undefined}
-        {...(previewName ? { role: 'img' as const, 'aria-label': previewName } : {})}
+        role="img"
+        aria-label={[positionLabel(index), cardAlt(card), ...previewLines].join(t('listSeparator'))}
       >
         {marker}
         <AnimatedCard card={card} width={cardWidth} />
