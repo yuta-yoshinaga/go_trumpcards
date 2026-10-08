@@ -43,6 +43,24 @@ func chClearState(g *domain.Chinchon) {
 	}
 	g.SetStock(nil)
 	g.SetDiscardPile(nil)
+	g.SetGameEndFlag(false)
+	g.SetWinnerIdx(-1)
+}
+
+func TestChinchon_ClearStateRecoversFromDealtChinchon(t *testing.T) {
+	g := newTestChinchon()
+	g.Reset()
+	g.SetGameEndFlag(true)
+	g.SetWinnerIdx(1)
+
+	chClearState(g)
+	g.SetCurrentPlayerIdx(0)
+	g.SetPhase(domain.ChinchonPhaseDraw)
+	g.SetStock([]*domain.Card{chCard(domain.CardDesignHeart, 7)})
+
+	require.NoError(t, g.PlayerDrawFromStock())
+	assert.False(t, g.GetGameEndFlag())
+	assert.Equal(t, -1, g.GetWinnerIdx())
 }
 
 func TestChinchonConfig_Validate(t *testing.T) {

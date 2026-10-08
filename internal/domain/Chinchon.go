@@ -753,8 +753,14 @@ func (g *Chinchon) SetStock(pile []*Card) {
 // GetGameEndFlag ゲーム終了フラグ取得
 func (g *Chinchon) GetGameEndFlag() bool { return g.gameEndFlag }
 
+// SetGameEndFlag は試験用にゲーム終了フラグを設定する。
+func (g *Chinchon) SetGameEndFlag(ended bool) { g.gameEndFlag = ended }
+
 // GetWinnerIdx マッチ勝者インデックス取得 (-1 = 未確定/勝者なし)
 func (g *Chinchon) GetWinnerIdx() int { return g.winnerIdx }
+
+// SetWinnerIdx は試験用にマッチ勝者インデックスを設定する。
+func (g *Chinchon) SetWinnerIdx(idx int) { g.winnerIdx = idx }
 
 // GetPlayerCnt プレイヤー数取得
 func (g *Chinchon) GetPlayerCnt() int { return len(g.players) }
