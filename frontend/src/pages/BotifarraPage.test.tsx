@@ -268,6 +268,43 @@ describe('BotifarraPage', () => {
     expect(screen.getByTestId('botifarra-trick')).toHaveTextContent('#1');
   });
 
+  it('announces newly played cards with localized seat roles without announcing the initial trick', async () => {
+    const nextTrick = [
+      ...playState.currentTrick,
+      { playerIdx: 0, card: { design: 'SPADE' as const, value: 1 } },
+      { playerIdx: 2, card: { design: 'HEART' as const, value: 2 } },
+      { playerIdx: 3, card: { design: 'DIAMOND' as const, value: 3 } },
+    ];
+    mockApi.mockResolvedValueOnce(playState).mockResolvedValueOnce({ ...playState, currentTrick: nextTrick });
+    renderWithProviders(<BotifarraPage />);
+
+    await screen.findByTestId('botifarra-trick');
+    const status = screen.getByRole('status');
+    expect(status).toBeEmptyDOMElement();
+    const playableCard = (await screen.findByTestId('botifarra-hand')).querySelector('button[aria-disabled="false"]');
+    if (!playableCard) throw new Error('Expected a playable card button');
+    fireEvent.click(playableCard);
+    await waitFor(() =>
+      expect(status).toHaveTextContent('あなたが♠ Aを出しました、相方が♥ 2を出しました、相手が♦ 3を出しました'),
+    );
+  });
+
+  it('does not announce a same-length trick replacement', async () => {
+    mockApi.mockResolvedValueOnce(playState).mockResolvedValueOnce({
+      ...playState,
+      currentTrick: [{ playerIdx: 1, card: { design: 'HEART', value: 3 } }],
+    });
+    renderWithProviders(<BotifarraPage />);
+
+    await screen.findByTestId('botifarra-trick');
+    const status = screen.getByRole('status');
+    const playableCard = (await screen.findByTestId('botifarra-hand')).querySelector('button[aria-disabled="false"]');
+    if (!playableCard) throw new Error('Expected a playable card button');
+    fireEvent.click(playableCard);
+    await waitFor(() => expect(mockApi).toHaveBeenCalledTimes(2));
+    expect(status).toBeEmptyDOMElement();
+  });
+
   it('offers the next round only at a round boundary', async () => {
     mockApi.mockResolvedValue(playState);
     const { unmount } = renderWithProviders(<BotifarraPage />);
