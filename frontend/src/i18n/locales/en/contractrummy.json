@@ -51,6 +51,7 @@
   "settings": {
     "title": "Settings",
     "cpuDifficulty": "CPU difficulty",
+    "failContractPenalty": "Failed contract penalty",
     "easy": "Easy",
     "normal": "Normal",
     "hard": "Hard"
