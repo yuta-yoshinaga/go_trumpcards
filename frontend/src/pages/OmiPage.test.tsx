@@ -298,6 +298,30 @@ describe('OmiPage', () => {
     expect(liveRegion).not.toHaveTextContent('あなた: ♠ A');
   });
 
+  it('clears the previous trick announcement when the trick becomes empty', async () => {
+    const firstPlayedState: OmiResponse = {
+      ...playPhaseState,
+      currentTrick: [{ playerIdx: 0, card: { design: 'SPADE', value: 1 } }],
+      currentPlayerIdx: 0,
+    };
+    mockExec
+      .mockResolvedValueOnce(playPhaseState)
+      .mockResolvedValueOnce(firstPlayedState)
+      .mockResolvedValueOnce(playPhaseState);
+    renderWithProviders(<OmiPage />);
+
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    const liveRegion = screen.getAllByRole('status').find((status) => status.classList.contains('sr-only'));
+    expect(liveRegion).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: '♠ A: 出せるカード' }));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('あなた: ♠ A'));
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ A: 出せるカード' }));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(liveRegion).toBeEmptyDOMElement());
+  });
+
   it('announces a new trick in full when the previous trick is taken in the same response', async () => {
     // A completed trick comes back as TRICK_END (phase 2), where no card is playable, so the next
     // trick is reached through 次のトリック rather than another play.
