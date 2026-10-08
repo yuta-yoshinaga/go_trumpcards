@@ -60,6 +60,12 @@ function makeState(overrides?: Partial<SetteEMezzoResponse>): SetteEMezzoRespons
 const bettingState = makeState({ phase: 1, bankerHand: undefined });
 
 describe('SetteEMezzoPage', () => {
+  it('identifies only the active seat hand as taking its turn', async () => {
+    mockExec.mockResolvedValue(makeState({ activeSeat: 0 }));
+    renderWithProviders(<SetteEMezzoPage />);
+    expect(await screen.findByLabelText('あなた の手 合計4、手番中')).toBeInTheDocument();
+    expect(screen.getByLabelText('CPU2 の手 合計4')).toBeInTheDocument();
+  });
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -217,13 +223,13 @@ describe('SetteEMezzoPage', () => {
     );
     renderWithProviders(<SetteEMezzoPage />);
     await waitFor(() => expect(screen.getByText(/マッタ = 3/)).toBeInTheDocument());
-    expect(screen.getByLabelText('あなた の手 合計7、マッタ 3')).toBeInTheDocument();
+    expect(screen.getByLabelText('あなた の手 合計7、マッタ 3、手番中')).toBeInTheDocument();
   });
 
   it('does not add a matta value to hands without a matta', async () => {
     mockExec.mockResolvedValue(makeState());
     renderWithProviders(<SetteEMezzoPage />);
-    expect(await screen.findByLabelText('あなた の手 合計4')).toBeInTheDocument();
+    expect(await screen.findByLabelText('あなた の手 合計4、手番中')).toBeInTheDocument();
   });
 
   it('shows an unassigned matta as half a point', async () => {
