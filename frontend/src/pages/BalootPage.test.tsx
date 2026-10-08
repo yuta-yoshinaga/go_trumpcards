@@ -138,10 +138,54 @@ describe('BalootPage', () => {
     expect(await screen.findByTestId('bl-points-0')).toHaveTextContent(String(expectedPoints));
   });
 
+  it('includes settled card points in the accessible name and keeps playability', async () => {
+    mockExec.mockResolvedValue(
+      playing({
+        mode: 2,
+        trumpSuit: 3,
+        validPlays: [0],
+        players: [seat(0, { cards: [card('HEART', 11)], cardCount: 1 }), seat(1), seat(2), seat(3)],
+      } as Partial<BalootResponse>),
+    );
+    renderWithProviders(<BalootPage />);
+
+    const pointBadge = await screen.findByTestId('bl-points-0');
+    const cardButton = pointBadge.closest('button');
+    expect(cardButton).toHaveAccessibleName(/出せる札.*♥ J.*20点/);
+  });
+
+  it('uses neutral point labels during the CPU turn after the mode is settled', async () => {
+    mockExec.mockResolvedValue(
+      playing({
+        mode: 2,
+        trumpSuit: 3,
+        currentPlayerIdx: 1,
+        validPlays: [0],
+        players: [seat(0, { cards: [card('HEART', 11), card('SPADE', 9)], cardCount: 2 }), seat(1), seat(2), seat(3)],
+      } as Partial<BalootResponse>),
+    );
+    renderWithProviders(<BalootPage />);
+
+    const pointBadge = await screen.findByTestId('bl-points-0');
+    const cardButton = pointBadge.closest('button');
+    expect(cardButton).toHaveAccessibleName('♥ J（20点）');
+    expect(cardButton).not.toHaveAccessibleName(/出せる札|出せない札/);
+  });
+
   it('does not show card points before the mode is settled', async () => {
     renderWithProviders(<BalootPage />);
 
     await screen.findByTestId('bl-mode');
+    expect(screen.queryByTestId('bl-points-0')).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /を出す$/ })[0]).toBeInTheDocument();
+  });
+
+  it('keeps playability labels without points when the mode is undecided during play', async () => {
+    mockExec.mockResolvedValue(playing({ mode: 0, validPlays: [0] } as Partial<BalootResponse>));
+    renderWithProviders(<BalootPage />);
+
+    expect(await screen.findByRole('button', { name: /出せる札/ })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /出せない札/ })).toHaveLength(2);
     expect(screen.queryByTestId('bl-points-0')).not.toBeInTheDocument();
   });
 
@@ -340,7 +384,8 @@ describe('BalootPage', () => {
     renderWithProviders(<BalootPage />);
     const cards = await screen.findAllByRole('button', { name: /♠|♥|♦|♣/ });
     expect(cards[0]).toBeDisabled();
-    expect(cards[0]).toHaveAccessibleName(/を出す$/);
+    expect(cards[0]).toHaveAccessibleName(/（\d+点）/);
+    expect(cards[0]).not.toHaveAccessibleName(/出せない札/);
   });
 
   it('shows the hint when one is enabled', async () => {
