@@ -51,7 +51,10 @@
   "betSummary": {
     "total": "Total: {{amount}}",
     "remaining": "Chips remaining: {{amount}}",
-    "shortfall": "Chips short: {{amount}}"
+    "shortfall": "Chips short: {{amount}}",
+    "additionalPlayAnte": "Additional ante to play: {{amount}}",
+    "playShortfall": "Short for the play bet: {{amount}}",
+    "foldStillAvailable": "You can still fold if you cannot cover the play bet."
   },
   "foldConsequence": "Folding loses the ante ({{ante}}). The independent Low Bonus ({{lowBonus}}) is still evaluated.",
   "foldConsequenceNoLowBonus": "Folding loses the ante ({{ante}}).",
