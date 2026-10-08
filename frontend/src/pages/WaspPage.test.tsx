@@ -15,7 +15,9 @@ import { WaspPage } from './WaspPage';
  * from `glass-panel`, so the hint region is the other one.
  */
 const hintLiveRegion = () =>
-  screen.queryAllByRole('status').find((el) => !el.classList.contains('glass-panel')) ?? null;
+  screen
+    .queryAllByRole('status')
+    .find((el) => !el.classList.contains('glass-panel') && !el.classList.contains('sr-only')) ?? null;
 
 vi.mock('../api/gameApi', () => ({
   waspApi: { exec: vi.fn() },
@@ -197,7 +199,58 @@ describe('WaspPage', () => {
     await waitFor(() => {
       expect(screen.getByTestId('sc-empty-col-1').className).toContain('animate-shake');
     });
+    await waitFor(() =>
+      expect(screen.getAllByRole('status').find((el) => el.classList.contains('sr-only'))).toHaveTextContent(
+        '空の列をすべて埋めないと配れません',
+      ),
+    );
     expect(mockExec).not.toHaveBeenCalledWith('deal');
+  });
+
+  it('does not announce the empty-column reason when dealing is allowed', async () => {
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByRole('button', { name: '配る' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('deal'));
+    expect(screen.getAllByRole('status').find((el) => el.classList.contains('sr-only'))).toBeEmptyDOMElement();
+  });
+
+  it('clears the empty-column announcement after a blocked deal is followed by a successful deal', async () => {
+    const stateWithEmptyCol: WaspResponse = {
+      ...playingState,
+      tableau: [playingState.tableau[0], [], ...playingState.tableau.slice(2)],
+    };
+    mockExec.mockImplementation(async (command) => {
+      if (command === 'reset') return stateWithEmptyCol;
+      return playingState;
+    });
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(screen.getByTestId('sc-empty-col-1')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: '配る' }));
+    fireEvent.click(screen.getByRole('button', { name: '配る' }));
+    const announcement = screen.getAllByRole('status').find((el) => el.classList.contains('sr-only'));
+    await waitFor(() => expect(announcement).toHaveTextContent('空の列をすべて埋めないと配れません'));
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ K、列0・位置1' }));
+    fireEvent.click(screen.getByTestId('sc-empty-col-1'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.anything(), expect.anything()));
+    await waitFor(() => expect(screen.queryByTestId('sc-empty-col-1')).not.toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: '配る' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('deal'));
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
+  it('clears a pending deal-block announcement timer on unmount', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [playingState.tableau[0], [], ...playingState.tableau.slice(2)],
+    });
+    const { unmount } = renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(screen.getByTestId('sc-empty-col-1')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '配る' }));
+    unmount();
   });
 
   it('keeps an empty move target focusable and explains the required source', async () => {
