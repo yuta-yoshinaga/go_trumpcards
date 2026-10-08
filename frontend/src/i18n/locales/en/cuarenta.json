@@ -7,6 +7,17 @@
   "teamScore": "{{name}}: {{score}} / {{target}}",
   "teamCaptured": "Captured {{count}}",
   "teamUpdateAnnouncement": "Team {{name}} now has {{score}} points and {{captured}} captured cards",
+  "roundBreakdown": {
+    "title": "Points earned this round",
+    "gained": "Points earned this round: {{points}}",
+    "caida": "Caída: {{points}}",
+    "ronda": "Ronda: {{points}}",
+    "limpia": "Limpia: {{points}}",
+    "mostCards": "Most cards bonus",
+    "awarded": "Awarded (+6 points)",
+    "none": "None",
+    "unavailable": "No score breakdown is available for this round."
+  },
   "captured": "captured {{count}}",
   "table": "Table",
   "tableCount": "{{count}} cards",
