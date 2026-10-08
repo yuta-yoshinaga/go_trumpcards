@@ -168,6 +168,19 @@ describe('MusPage', () => {
     expect(opponentRows.at(-1)).not.toHaveTextContent('味方');
   });
 
+  it('marks the mano player in Japanese and English', async () => {
+    mockExec.mockResolvedValue(makeMusState({ manoIdx: 2 }));
+    renderWithProviders(<MusPage />);
+    const manoPlayer = await screen.findByTestId('mus-player-2');
+    expect(manoPlayer).toHaveTextContent('親（マノ）');
+    expect(screen.getByTestId('mus-player-1')).not.toHaveTextContent('親（マノ）');
+
+    await i18n.changeLanguage('en');
+    expect(manoPlayer).toHaveTextContent('Mano');
+    expect(screen.getByTestId('mus-player-1')).not.toHaveTextContent('Mano');
+    await i18n.changeLanguage('ja');
+  });
+
   it('renders mus / corte buttons in the mus phase and dispatches mus', async () => {
     mockExec.mockResolvedValue(musPhaseState);
     renderWithProviders(<MusPage />);

@@ -281,6 +281,7 @@ function MusPageContent() {
                           role: t(isTeammate ? 'partner' : 'opponent'),
                           cards: p.cardCount,
                         })}
+                    {p.id === state.manoIdx && <span className="ml-2 text-ds-accent">{t('mano')}</span>}
                   </div>
                 );
               })}
