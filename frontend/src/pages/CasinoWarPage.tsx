@@ -256,6 +256,12 @@ function CasinoWarPageContent() {
 
             {isEndPhase && (
               <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
+                <div>
+                  {t('label.ante')}: {state.ante}
+                </div>
+                <div>
+                  {t('label.warBet')}: {state.warBet}
+                </div>
                 <div className="font-bold">
                   {t('payout.total')}: {state.totalPayout}
                 </div>

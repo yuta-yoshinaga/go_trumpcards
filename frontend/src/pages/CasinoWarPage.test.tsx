@@ -457,6 +457,8 @@ describe('CasinoWarPage', () => {
     renderWithProviders(<CasinoWarPage />);
     await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
     expect(screen.getByTestId('net-change')).toHaveTextContent('+100');
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('アンテ: 100');
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('ウォーベット: 0');
   });
 
   it.each([
@@ -467,6 +469,7 @@ describe('CasinoWarPage', () => {
     mockApi.mockResolvedValue(state as CasinoWarResponse);
     renderWithProviders(<CasinoWarPage />);
     expect(await screen.findByTestId('net-change')).toHaveTextContent(String(state.netChange));
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent(`ウォーベット: ${state.warBet}`);
   });
 
   // ベットフェーズなど決着前は配当内訳を表示しない。
