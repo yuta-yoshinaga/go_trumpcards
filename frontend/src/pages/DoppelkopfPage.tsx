@@ -276,7 +276,8 @@ function DoppelkopfPageContent() {
                         <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                           {playerName(p.id, p.isHuman)}
                           {(state.teamsRevealed || p.teamKnown) && ` [${p.isRe ? t('team.re') : t('team.kontra')}]`}:{' '}
-                          {t('chips', { count: p.chips })} | {t('tricks', { count: p.trickCount })}
+                          {t('chips', { count: p.chips })} | {t('cards', { count: p.cardCount })} |{' '}
+                          {t('tricks', { count: p.trickCount })}
                         </div>
                       ))}
                     </div>
@@ -287,7 +288,8 @@ function DoppelkopfPageContent() {
                       <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                         {playerName(p.id, p.isHuman)}
                         {(state.teamsRevealed || p.teamKnown) && ` [${p.isRe ? t('team.re') : t('team.kontra')}]`}:{' '}
-                        {t('chips', { count: p.chips })} | {t('tricks', { count: p.trickCount })}
+                        {t('chips', { count: p.chips })} | {t('cards', { count: p.cardCount })} |{' '}
+                        {t('tricks', { count: p.trickCount })}
                       </div>
                     ))}
                   </div>
