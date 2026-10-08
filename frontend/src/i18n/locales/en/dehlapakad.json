@@ -25,6 +25,7 @@
     "unknown": "-"
   },
   "currentTrick": "Current trick",
+  "lastTrick": "Previous trick",
   "centrePile": "{{n}} card(s) in the centre, {{tens}} of them ten(s)",
   "pileGoesTo": "{{name}} takes the whole pile by winning the next trick too.",
   "teamTens": "Tens - yours {{a}} / theirs {{b}}",

@@ -264,9 +264,11 @@ function DehlaPakadPageContent() {
               <div data-tutorial="dehlapakad-centre">
                 <TrickDisplay
                   currentTrick={state.currentTrick}
+                  lastTrick={state.lastTrick}
+                  lastTrickWinner={state.lastTrickWinner}
                   players={state.players}
                   cardWidth={cardWidth}
-                  label={t('currentTrick')}
+                  label={t(state.currentTrick.length > 0 ? 'currentTrick' : 'lastTrick')}
                   dataTutorial="dehlapakad-trick-display"
                 />
                 {/* **これがこのゲームの心臓部。** 取っただけでは札は手に入らず、
