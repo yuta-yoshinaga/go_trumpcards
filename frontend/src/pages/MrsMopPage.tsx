@@ -206,6 +206,13 @@ function MrsMopPageContent() {
         : [],
     [state, selectedSource],
   );
+  const selectedRunCount =
+    state &&
+    selectedSource?.zone === 'tableau' &&
+    selectedSource.col !== undefined &&
+    selectedSource.cardIndex !== undefined
+      ? spiderMovableRun(state.tableau[selectedSource.col], selectedSource.cardIndex).length
+      : 1;
   useEffect(() => {
     const ended = currentPhase === MrsMopPhase.GAME_CLEAR || currentPhase === MrsMopPhase.GAME_OVER;
     if (!ended) {
@@ -479,10 +486,11 @@ function MrsMopPageContent() {
               {selectedSource
                 ? legalTargets.length > 0
                   ? t('selectionTargets', {
+                      runCount: t('selectionRunCount', { count: selectedRunCount }),
                       count: legalTargets.length,
                       targets: legalTargets.map((col) => t('tableauColumn', { col })).join(t('listSeparator')),
                     })
-                  : t('selectionNoTargets')
+                  : t('selectionNoTargets', { runCount: t('selectionRunCount', { count: selectedRunCount }) })
                 : ''}
             </div>
             <div className="flex justify-center">
