@@ -144,21 +144,36 @@ describe('PrsiPage', () => {
     });
   });
 
-  it('play button disabled when not 1 card selected', async () => {
+  it('marks play unavailable when not 1 legal card is selected', async () => {
     renderWithProviders(<PrsiPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeDisabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toHaveAttribute('aria-disabled', 'true'));
+  });
+
+  it('does not send an illegal selected card by button or keyboard confirmation', async () => {
+    renderWithProviders(<PrsiPage />);
+    const illegalCard = await screen.findByAltText('♠ A');
+    fireEvent.click(illegalCard.closest('button') as HTMLButtonElement);
+    const playButton = screen.getByRole('button', { name: '出す' });
+    expect(playButton).toHaveAttribute('aria-disabled', 'true');
+
+    mockExec.mockClear();
+    fireEvent.click(playButton);
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   it('calls play command when play button is clicked', async () => {
     renderWithProviders(<PrsiPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♥ J').closest('button') as HTMLButtonElement);
+    expect(screen.getByRole('button', { name: '出す' })).toHaveAttribute('aria-disabled', 'false');
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 1));
   });
 
   it('calls draw command when draw button is clicked', async () => {
@@ -503,12 +518,12 @@ describe('PrsiPage', () => {
     renderWithProviders(<PrsiPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
-    fireEvent.keyDown(document, { key: '1' });
+    fireEvent.keyDown(document, { key: '2' });
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
 
     fireEvent.keyDown(document, { key: 'Enter' });
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 1));
   });
 
   it('opens the action log during play and disables card shortcuts while open', async () => {
@@ -560,7 +575,7 @@ describe('PrsiPage', () => {
     renderWithProviders(<PrsiPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♥ J').closest('button') as HTMLButtonElement);
     mockPlaySound.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
 

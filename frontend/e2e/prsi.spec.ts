@@ -17,6 +17,7 @@ test.describe('Prší E2E', () => {
 
     const playButton = page.getByRole('button', { name: '出す' });
     const drawButton = page.getByRole('button', { name: '引く' });
+    const turnAction = playButton.or(drawButton).first();
     const endResetButton = page.getByRole('button', { name: '次のゲーム' });
     const handCards = page.locator('button[aria-pressed]:has(img)');
 
@@ -27,11 +28,10 @@ test.describe('Prší E2E', () => {
       // Break cleanly once the game reaches end state (only 次のゲーム remains).
       if (await endResetButton.isVisible()) break;
 
-      const playVisible = await isVisibleWithin(playButton, TIMEOUT_GAME_LOOP);
-      const drawVisible = await drawButton.isVisible();
+      const turnActionVisible = await isVisibleWithin(turnAction, TIMEOUT_GAME_LOOP);
 
       // Not the human's turn (CPUs auto-play); wait briefly and re-check.
-      if (!playVisible && !drawVisible) {
+      if (!turnActionVisible) {
         if (await endResetButton.isVisible()) break;
         await page.waitForTimeout(300);
         continue;
@@ -39,14 +39,21 @@ test.describe('Prší E2E', () => {
 
       interactions++;
       const cardCount = await handCards.count();
-      if (cardCount > 0) {
-        await handCards.first().click();
+      let played = false;
+      for (let cardIndex = 0; cardIndex < cardCount; cardIndex++) {
+        const card = handCards.nth(cardIndex);
+        await card.click();
+        if ((await playButton.getAttribute('aria-disabled')) === 'false') {
+          await playButton.click();
+          await waitForLoaded(page);
+          played = true;
+          break;
+        }
+        // Illegal selections still toggle on click, so clear this card before trying the next.
+        await card.click();
       }
-      if ((await playButton.isVisible()) && (await playButton.isEnabled())) {
-        await playButton.click();
-        await waitForLoaded(page);
-        continue;
-      }
+      if (played) continue;
+
       // If play is not possible, draw.
       if ((await drawButton.isVisible()) && (await drawButton.isEnabled())) {
         await drawButton.click();
