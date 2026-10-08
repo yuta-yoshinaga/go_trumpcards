@@ -101,7 +101,8 @@ export const OmahaPage = withTutorial(OmahaPageContent, 'omaha', OH_TUTORIAL_STE
 function OmahaPageContent() {
   // 0 = fixed, the DefaultHoldemConfig zero value the server already used.
   const [bettingLimit, setBettingLimit] = useState(0);
-  const omahaResetConfig = useMemo(() => ({ bettingLimit }), [bettingLimit]);
+  const [tournamentMode, setTournamentMode] = useState(false);
+  const omahaResetConfig = useMemo(() => ({ bettingLimit, tournamentMode }), [bettingLimit, tournamentMode]);
   const {
     t,
     tc,
@@ -566,6 +567,14 @@ function OmahaPageContent() {
                   <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
                 )}
                 <div className="flex items-center gap-3">
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
+                    <input
+                      type="checkbox"
+                      checked={tournamentMode}
+                      onChange={(e) => setTournamentMode(e.target.checked)}
+                    />
+                    {t('settings.tournamentMode')}
+                  </label>
                   <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
                     <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
                     {tc('hint.toggle', { ns: 'tutorial' })}
