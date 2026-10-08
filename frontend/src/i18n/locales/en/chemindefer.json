@@ -52,6 +52,7 @@
   "frontendHint.chemindeferPunterFive": "Drawing on 5 is the standard play",
   "frontendHint.chemindeferBankerFree": "The banker is not bound by the table. Read the punter's third card",
   "result": {
+    "announcement": "{{result}}. {{net}}",
     "netWin": "Your result: +{{n}} chips",
     "netLoss": "Your result: -{{n}} chips",
     "netFlat": "Your result: no change"

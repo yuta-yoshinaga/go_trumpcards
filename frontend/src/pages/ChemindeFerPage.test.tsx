@@ -199,6 +199,50 @@ describe('ChemindeFerPage', () => {
     expect(screen.getByTestId('cdf-result')).toHaveTextContent('親の勝ち');
   });
 
+  it('クープの結果と自分の損益を常設ライブ領域で通知する', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: ChemindeFerPhase.ROUND_END,
+        result: 2,
+        isHumanTurn: false,
+        players: [seat(0, { isHuman: true, lastNet: 200 }), seat(1, { isBanker: true, lastNet: -200 })],
+      }),
+    );
+    renderWithProviders(<ChemindeFerPage />);
+
+    const announcement = await screen.findByTestId('cdf-result-live');
+    expect(announcement).toHaveAttribute('role', 'status');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toHaveClass('sr-only');
+    expect(announcement).toHaveTextContent('子側の勝ち。あなたの結果: +200 チップ');
+  });
+
+  it('未決着の間は常設ライブ領域を空に保つ', async () => {
+    mockApi.mockResolvedValue(base);
+    renderWithProviders(<ChemindeFerPage />);
+
+    await screen.findByRole('button', { name: '張る' });
+    expect(screen.getByTestId('cdf-result-live')).toBeEmptyDOMElement();
+  });
+
+  it('ライブ領域の結果と損益を英語で通知する', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: ChemindeFerPhase.ROUND_END,
+        result: 3,
+        isHumanTurn: false,
+        players: [seat(0, { isHuman: true, lastNet: -40 })],
+      }),
+    );
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<ChemindeFerPage />);
+      expect(await screen.findByTestId('cdf-result-live')).toHaveTextContent('A tie (egalite). Your result: -40 chips');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   // **卓の結果と自分の損益は別の情報** (#5774)。
   it('自分の賭けが勝ったか負けたかを金額付きで出す', async () => {
     mockApi.mockResolvedValue(
