@@ -56,6 +56,7 @@ function trumpSuitText(design: string): string {
 const TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="bourre-hand"]', messageKey: 'tutorial.intro', placement: 'top', advanceOn: 'next' },
   { target: '[data-tutorial="bourre-controls"]', messageKey: 'tutorial.decide', placement: 'top', advanceOn: 'next' },
+  { target: '[data-tutorial="bourre-draw"]', messageKey: 'tutorial.draw', placement: 'top', advanceOn: 'next' },
   { target: '[data-tutorial="bourre-table"]', messageKey: 'tutorial.play', placement: 'bottom', advanceOn: 'next' },
 ];
 
@@ -411,7 +412,7 @@ function BourrePageContent() {
           {/* Human hand */}
           {humanPlayer && !humanPlayer.isFinished && humanPlayer.cards.length > 0 && (
             <div data-tutorial="bourre-hand">
-              <div className="flex flex-wrap justify-center gap-1">
+              <div className="flex flex-wrap justify-center gap-1" data-tutorial="bourre-draw">
                 {humanPlayer.cards.map((c, i) => {
                   const selectable =
                     (phase === 'draw' && isHumanTurn) || (phase === 'play' && isHumanTurn && validPlays.has(i));
