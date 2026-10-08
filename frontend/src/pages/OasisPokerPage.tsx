@@ -432,6 +432,10 @@ function OasisPokerPageContent() {
                 <div className="font-bold mt-1">
                   {t('payout.total')}: {state.totalPayout}
                 </div>
+                <div className="font-bold" data-testid="round-net-change">
+                  {t('payout.netChange')}: {state.netChange > 0 ? '+' : ''}
+                  {state.netChange}
+                </div>
               </div>
             )}
 

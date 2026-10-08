@@ -48,6 +48,8 @@ type OasisPokerGame interface {
 	GetJackpotPayout() int
 	// GetTotalPayout 合計配当を取得する
 	GetTotalPayout() int
+	// GetNetChange このラウンドで増減したチップ数を取得する
+	GetNetChange() int
 	// GetDealerQualified ディーラークオリファイを取得する
 	GetDealerQualified() bool
 	// GetPlayerHandRank プレイヤーハンドランクを取得する

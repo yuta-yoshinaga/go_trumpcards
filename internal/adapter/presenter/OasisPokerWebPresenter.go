@@ -35,6 +35,7 @@ func (op *OasisPokerWebPresenter) Output(g interfaces.OasisPokerGame, lastErr er
 	resObj.PlayPayout = g.GetPlayPayout()
 	resObj.JackpotPayout = g.GetJackpotPayout()
 	resObj.TotalPayout = g.GetTotalPayout()
+	resObj.NetChange = g.GetNetChange()
 	resObj.DealerQualified = g.GetDealerQualified()
 	resObj.PlayerHandRank = g.GetPlayerHandRank()
 	resObj.DealerHandRank = g.GetDealerHandRank()

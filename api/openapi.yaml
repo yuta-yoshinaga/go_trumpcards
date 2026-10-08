@@ -66722,6 +66722,7 @@ components:
         - playPayout
         - jackpotPayout
         - totalPayout
+        - netChange
         - dealerQualified
         - playerHandRank
         - dealerHandRank
@@ -66794,6 +66795,10 @@ components:
         totalPayout:
           type: integer
           description: Total payout for the current round (sum of all payouts)
+          example: 0
+        netChange:
+          type: integer
+          description: Net chip change for the current round after bets and exchange fees
           example: 0
         dealerQualified:
           type: boolean
