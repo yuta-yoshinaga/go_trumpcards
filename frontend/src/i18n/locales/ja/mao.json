@@ -18,6 +18,7 @@
   "drawPile": "山札: {{count}}枚",
   "direction": "方向: {{dir}}",
   "discardTop": "捨て札",
+  "handLabel": "あなたの手札",
   "chosenSuit": "指定スート",
   "cards": "{{count}}枚",
   "cumulativeScore": "累計: {{score}}",

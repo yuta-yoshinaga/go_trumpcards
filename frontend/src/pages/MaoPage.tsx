@@ -432,7 +432,11 @@ function MaoPageContent() {
 
           <GameFooter className={`${gameTheme.mao.footer} px-4 py-2.5`}>
             {humanPlayer && (
-              <div className="flex flex-wrap gap-1 mb-2" data-tutorial="mao-player-hand">
+              <section
+                className="flex flex-wrap gap-1 mb-2"
+                data-tutorial="mao-player-hand"
+                aria-label={t('handLabel')}
+              >
                 {humanPlayer.cards.map((card, idx) => (
                   <button
                     type="button"
@@ -452,7 +456,7 @@ function MaoPageContent() {
                     <AnimatedCard card={card} width={cardWidth} />
                   </button>
                 ))}
-              </div>
+              </section>
             )}
 
             <ErrorAlert message={error} onRetry={retry} />
