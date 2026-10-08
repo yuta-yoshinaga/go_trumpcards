@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { crazyPineappleApi, irishPokerApi, pineappleApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { PineappleResponse } from '../types/card';
@@ -780,7 +781,28 @@ describe('PineapplePage', () => {
     // **残す2枚と役の両方を読ませる。** どちらが欠けても選択を確認できない。
     expect(live.textContent).toContain('♠ A');
     expect(live.textContent).toContain('♥ A');
+    expect(live.textContent).toContain('♠ A、♥ A');
     expect(live.textContent).toContain('ワンペア');
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    expect(live.textContent).toContain('♠ A, ♥ A');
+    await i18n.changeLanguage(previousLanguage);
+  });
+
+  it('separates kept cards in the Pineapple discard announcement', async () => {
+    const pineappleTranslations = structuredClone(i18n.getResourceBundle('ja', 'pineapple'));
+    i18n.addResource('ja', 'pineapple', 'discard.cpPreviewAriaRecommended', '{{kept}}');
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♦ 7').closest('button') as HTMLButtonElement);
+
+    const live = await screen.findByTestId('cp-discard-preview-announce');
+    expect(live.textContent).toContain('♠ A、♥ K');
+    expect(live.textContent).not.toContain('listSeparator');
+    i18n.removeResourceBundle('ja', 'pineapple');
+    i18n.addResourceBundle('ja', 'pineapple', pineappleTranslations);
   });
 
   // 1枚しか選んでいない間は出さない。確定した選択だけを読み上げる。

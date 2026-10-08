@@ -12,6 +12,7 @@
   },
   "communityCards": "Community Cards",
   "yourHand": "Your Hand",
+  "listSeparator": ", ",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "discard": {
     "prompt": "Discard one card.",
