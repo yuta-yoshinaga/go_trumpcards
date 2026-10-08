@@ -50,6 +50,8 @@ type DoudizhuGame interface {
 	GetBidValues() [domain.DoudizhuPlayerCnt]int
 	// GetHighestBid 現在の最高ビッド値を取得する
 	GetHighestBid() int
+	// GetHighestBidder 現在の最高ビッドプレイヤーインデックスを取得する
+	GetHighestBidder() int
 	// GetCpuActions CPU行動記録一覧を取得する
 	GetCpuActions() []*domain.DoudizhuCpuAction
 	// GetHumanAction 人間の最後の行動記録を取得する

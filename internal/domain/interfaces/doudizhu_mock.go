@@ -151,6 +151,12 @@ func (_m *MockDoudizhuGame) GetHighestBid() int {
 	return ret.Int(0)
 }
 
+// GetHighestBidder モック
+func (_m *MockDoudizhuGame) GetHighestBidder() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 // GetCpuActions モック
 func (_m *MockDoudizhuGame) GetCpuActions() []*domain.DoudizhuCpuAction {
 	ret := _m.Called()

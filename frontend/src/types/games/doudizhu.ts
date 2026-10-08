@@ -38,6 +38,7 @@ export interface DoudizhuResponse extends BaseGameResponse {
   landlordIdx: number;
   baseBid: number;
   highestBid: number;
+  highestBidder: number;
   bombCount: number;
   scores: number[];
   gameEndFlag: boolean;

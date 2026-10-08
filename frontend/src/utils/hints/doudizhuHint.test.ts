@@ -18,6 +18,7 @@ function makeState(overrides: Partial<DoudizhuResponse> = {}): DoudizhuResponse 
     landlordIdx: 0,
     baseBid: 1,
     highestBid: 1,
+    highestBidder: 0,
     bombCount: 0,
     scores: [0, 0, 0],
     gameEndFlag: false,
