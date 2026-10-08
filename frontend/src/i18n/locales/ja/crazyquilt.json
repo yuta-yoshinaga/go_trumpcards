@@ -9,6 +9,7 @@
   "stock": "山札",
   "waste": "捨て札",
   "draw": "めくる",
+  "redealAction": "組み直し",
   "moveCount": "手数",
   "giveup": "ギブアップ",
   "empty": "空",

@@ -282,6 +282,31 @@ describe('CrazyQuiltPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 
+  it('redeals from the operation control when the stock is empty', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0, redealsLeft: 1 });
+    renderWithProviders(<CrazyQuiltPage />);
+    const redeal = await screen.findByRole('button', { name: '組み直し' });
+    expect(redeal).toBeEnabled();
+    mockExec.mockClear();
+    fireEvent.click(redeal);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+  });
+
+  it('localizes the operation control redeal name in English', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0, redealsLeft: 1 });
+    const { unmount } = renderWithProviders(<CrazyQuiltPage />);
+    expect(await screen.findByRole('button', { name: 'Redeal' })).toBeEnabled();
+    unmount();
+    await i18n.changeLanguage('ja');
+  });
+
+  it('disables the operation control when the stock and redeals are empty', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0, redealsLeft: 0 });
+    renderWithProviders(<CrazyQuiltPage />);
+    expect(await screen.findByRole('button', { name: 'めくる' })).toBeDisabled();
+  });
+
   // The stock button doubles as the redeal, so an empty stock with a redeal
   // left must stay pressable.
   it('keeps the stock pressable while a redeal remains', async () => {
