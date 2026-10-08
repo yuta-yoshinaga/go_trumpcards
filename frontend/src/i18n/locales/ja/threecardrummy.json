@@ -51,7 +51,10 @@
   "betSummary": {
     "total": "合計: {{amount}}",
     "remaining": "残りチップ: {{amount}}",
-    "shortfall": "不足チップ: {{amount}}"
+    "shortfall": "不足チップ: {{amount}}",
+    "additionalPlayAnte": "プレイ時の追加アンテ: {{amount}}",
+    "playShortfall": "プレイベット不足: {{amount}}",
+    "foldStillAvailable": "不足時もフォールドできます"
   },
   "foldConsequence": "フォールドするとアンテ {{ante}} を失います。ローボーナス {{lowBonus}} は独立して評価されます。",
   "foldConsequenceNoLowBonus": "フォールドするとアンテ {{ante}} を失います。",

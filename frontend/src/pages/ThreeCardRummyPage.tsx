@@ -143,6 +143,7 @@ function ThreeCardRummyPageContent() {
   const phaseName = isBetPhase ? t('phase.bet') : isActionPhase ? t('phase.action') : t('phase.end');
   const betTotal = anteAmount + lowBonusAmount;
   const betShortfall = Math.max(0, betTotal - state.chips);
+  const playShortfall = Math.max(0, betTotal + anteAmount - state.chips);
 
   return (
     <GamePageShell
@@ -367,6 +368,13 @@ function ThreeCardRummyPageContent() {
                     <p className="text-ds-error-text">{t('betSummary.shortfall', { amount: betShortfall })}</p>
                   ) : (
                     <p>{t('betSummary.remaining', { amount: state.chips - betTotal })}</p>
+                  )}
+                  <p>{t('betSummary.additionalPlayAnte', { amount: anteAmount })}</p>
+                  {playShortfall > 0 && (
+                    <>
+                      <p className="text-ds-error-text">{t('betSummary.playShortfall', { amount: playShortfall })}</p>
+                      <p>{t('betSummary.foldStillAvailable')}</p>
+                    </>
                   )}
                 </div>
                 <button
