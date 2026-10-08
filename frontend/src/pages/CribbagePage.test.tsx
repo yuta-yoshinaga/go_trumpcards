@@ -1085,4 +1085,30 @@ describe('CribbagePage', () => {
     fireEvent.pointerEnter(screen.getByLabelText('♥ J'));
     expect(region).toHaveTextContent('ペグカウントが9に更新されました');
   });
+
+  it('announces score table updates without announcing the initial scores', async () => {
+    mockExec.mockResolvedValueOnce(discardPhaseState).mockResolvedValue({
+      ...discardPhaseState,
+      players: [
+        { ...discardPhaseState.players[0], roundScore: 5, cumulativeScore: 12 },
+        { ...discardPhaseState.players[1], roundScore: 2, cumulativeScore: 8 },
+      ],
+    });
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => expect(screen.getByTestId('cb-score-live')).toBeInTheDocument());
+
+    const region = screen.getByTestId('cb-score-live');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ A' }));
+    fireEvent.click(screen.getByRole('button', { name: '♥ J' }));
+    fireEvent.click(screen.getByRole('button', { name: 'クリブに捨てる' }));
+
+    await waitFor(() => expect(region).toHaveTextContent('あなたのラウンド得点は5点、累計得点は12点'));
+    expect(region).toHaveTextContent('CPU 1のラウンド得点は2点、累計得点は8点');
+    fireEvent.pointerEnter(screen.getByRole('button', { name: '♠ A' }));
+    expect(region).toHaveTextContent('あなたのラウンド得点は5点、累計得点は12点');
+  });
 });

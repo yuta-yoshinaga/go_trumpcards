@@ -259,6 +259,35 @@ function CribbagePageContent() {
   const [hoveredPegValue, setHoveredPegValue] = useState<number | null>(null);
   const previousPegCountRef = useRef<number | null>(null);
   const [pegCountAnnouncement, setPegCountAnnouncement] = useState('');
+  const previousScoresRef = useRef<{ id: number; roundScore: number; cumulativeScore: number }[] | null>(null);
+  const [scoreAnnouncement, setScoreAnnouncement] = useState('');
+  useEffect(() => {
+    if (!state) return;
+    const previousScores = previousScoresRef.current;
+    if (previousScores) {
+      const changedScores = state.players
+        .filter((player) => {
+          const previous = previousScores.find((score) => score.id === player.id);
+          return (
+            previous &&
+            (previous.roundScore !== player.roundScore || previous.cumulativeScore !== player.cumulativeScore)
+          );
+        })
+        .map((player) =>
+          t('scoreUpdateAnnouncement', {
+            name: playerName(player.id, player.isHuman),
+            roundScore: player.roundScore,
+            cumulativeScore: player.cumulativeScore,
+          }),
+        );
+      if (changedScores.length > 0) setScoreAnnouncement(changedScores.join(t('listSeparator')));
+    }
+    previousScoresRef.current = state.players.map(({ id, roundScore, cumulativeScore }) => ({
+      id,
+      roundScore,
+      cumulativeScore,
+    }));
+  }, [state, t]);
   const pegScoreAnnouncements = (state?.pegScoreEvents ?? []).map((event) => {
     const reasons: string[] = [];
     if (event.fifteen) reasons.push(t('pegScoreReasons.fifteen'));
@@ -670,6 +699,9 @@ function CribbagePageContent() {
               data-testid="cb-peg-score-live"
             >
               {pegScoreAnnouncements.join(t('listSeparator'))}
+            </div>
+            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="cb-score-live">
+              {scoreAnnouncement}
             </div>
 
             <ActionLogSection
