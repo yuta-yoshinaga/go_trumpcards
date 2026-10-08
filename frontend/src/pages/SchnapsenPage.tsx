@@ -184,6 +184,18 @@ function SchnapsenPageContent() {
               </span>
             </div>
 
+            <details
+              className="mb-3 rounded bg-ds-surface px-3 py-2 text-sm text-ds-text-primary"
+              data-testid="schnapsen-card-guide"
+            >
+              <summary className="cursor-pointer font-medium">{t('cardGuide.title')}</summary>
+              <ul className="mt-2 space-y-1 text-ds-text-muted">
+                <li>{t('cardGuide.points')}</li>
+                <li>{t('cardGuide.strength')}</li>
+                <li>{t('cardGuide.trump')}</li>
+              </ul>
+            </details>
+
             {/* CPU info + trump upcard */}
             <div className="flex flex-wrap items-start gap-4 mb-4">
               <div className="p-2 rounded bg-black/30 text-ds-text-muted text-sm">
