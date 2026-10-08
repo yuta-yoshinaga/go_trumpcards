@@ -22,6 +22,7 @@
   "foundationAriaProgress": "、{{progress}}",
   "foundationEligibleSuffix": "、ここに置けます",
   "emptyTableauAriaLabel": "列{{col}}、空列",
+  "tableauCardAriaLabel": "{{card}}、列{{col}}、{{position}}枚目",
   "tableauEligibleSuffix": "、選択したカードの移動先候補",
   "landscapeBanner": "横画面での表示を推奨します",
   "hint": "ヒント",
