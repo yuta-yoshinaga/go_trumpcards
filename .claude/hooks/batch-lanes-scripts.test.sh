@@ -119,6 +119,29 @@ if PATH="$PATH" BATCH_REPO="$tmp/repo" BATCH_WT_ROOT="$tmp" \
   bash "$SCRIPTS/fx.sh" fix target >"$tmp/fx-dirty.out" 2>&1; then fail "fx.sh accepted a dirty worktree on target"; fi
 grep -q "$tmp/other" "$tmp/fx-dirty.out" || fail "fx.sh did not report the dirty worktree path"
 
+# e2echeck should ignore removed locale text found only on comment lines.
+for case_name in comment locator; do
+  repo="$tmp/e2echeck-$case_name"
+  git init -q "$repo"
+  git -C "$repo" config user.email test@example.com
+  git -C "$repo" config user.name test
+  mkdir -p "$repo/frontend/src/i18n/locales/ja" "$repo/frontend/e2e"
+  printf '{\n  "message": "削除対象の文言です"\n}\n' > "$repo/frontend/src/i18n/locales/ja/bura.json"
+  if [ "$case_name" = comment ]; then
+    printf '// 削除対象の文言です\n' > "$repo/frontend/e2e/bura.spec.ts"
+  else
+    printf 'getByText("削除対象の文言です");\n' > "$repo/frontend/e2e/bura.spec.ts"
+  fi
+  git -C "$repo" add .
+  printf '{\n}\n' > "$repo/frontend/src/i18n/locales/ja/bura.json"
+  output="$(python3 "$SCRIPTS/e2echeck.py" "$repo")" || fail "e2echeck failed for $case_name case"
+  if [ "$case_name" = comment ]; then
+    [ -z "$output" ] || fail "e2echeck warned for comment-only hit: $output"
+  else
+    [[ "$output" == *"E2ECHECK WARN"* ]] || fail "e2echeck missed locator hit"
+  fi
+done
+
 BATCH_TESTING=1 source "$SCRIPTS/receipt.sh"
 BATCH_STATE="$tmp/testing-state" BATCH_TESTING=1 bash "$SCRIPTS/receipt.sh" 1 || fail "receipt.sh testing mode failed when executed directly"
 [ "$(page_test_for frontend/src/pages/ExamplePage.tsx)" = "frontend/src/pages/ExamplePage.test.tsx" ] || fail "page test mapping"

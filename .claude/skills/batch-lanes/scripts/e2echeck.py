@@ -24,6 +24,8 @@ for frag in sorted(set(removed)):
         continue
     if not specs:
         continue
-    hits = subprocess.run(['git','grep','-n','-F',frag,'--',*specs],capture_output=True,text=True).stdout.strip()
+    hits = subprocess.run(['git','grep','-n','-F',frag,'--',*specs],capture_output=True,text=True).stdout.splitlines()
+    hits = [hit for hit in hits if len(hit.split(':', 2)) == 3 and
+            not hit.split(':', 2)[2].lstrip().startswith(('//', '*', '/*'))]
     if hits:
-        print(f'E2ECHECK WARN: removed ja text "{frag}" still in e2e: ' + hits.splitlines()[0])
+        print(f'E2ECHECK WARN: removed ja text "{frag}" still in e2e: ' + hits[0])
