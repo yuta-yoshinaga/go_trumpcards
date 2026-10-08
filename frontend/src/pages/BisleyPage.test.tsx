@@ -289,6 +289,24 @@ describe('BisleyPage', () => {
     expect(btn.className).toContain('animate-pulse');
   });
 
+  it('shows and announces the ready badge beside the auto-complete button', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      aceFoundations: [
+        [card('SPADE', 1), card('SPADE', 2)],
+        [card('CLOVER', 1)],
+        [card('HEART', 1)],
+        [card('DIAMOND', 1)],
+      ],
+    });
+    renderWithProviders(<BisleyPage />);
+    const button = await screen.findByTestId('autocomplete-button');
+    const badge = await screen.findByTestId('bisley-autocomplete-ready-badge');
+    expect(button.parentElement).toContainElement(badge);
+    expect(badge).toHaveAttribute('aria-live', 'polite');
+    expect(badge).toHaveTextContent('オートコンプリート可能！');
+  });
+
   it('announces auto-complete start and completion in a persistent live region', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     mockExec.mockResolvedValue({
