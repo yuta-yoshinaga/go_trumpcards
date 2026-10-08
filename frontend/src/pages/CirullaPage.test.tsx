@@ -26,6 +26,16 @@ beforeEach(() => {
 });
 
 describe('CirullaPage', () => {
+  it.each([11, 21, 31, 51])('uses the active %i-point target in the scores tutorial step', async (targetScore) => {
+    mockExec.mockResolvedValue(makeCirullaState({ config: { cpuDifficulty: 1, targetScore } }));
+    localStorage.removeItem('tutorial_progress_cirulla');
+    localStorage.removeItem('tutorial_completed_cirulla');
+    renderWithProviders(<CirullaPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'チュートリアル' }));
+    fireEvent.click(await screen.findByRole('button', { name: '次へ' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toHaveTextContent(`${targetScore} 点`));
+  });
+
   it('marks every hand card that has a server-provided capture', async () => {
     renderWithProviders(<CirullaPage />);
     const hand = await screen.findByTestId('cirulla-capture-markers');
