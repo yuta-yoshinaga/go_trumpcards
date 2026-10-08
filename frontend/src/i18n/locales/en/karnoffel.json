@@ -18,6 +18,7 @@
   "tricksWon": "tricks {{n}}",
   "handsWon": "{{n}} hands",
   "targetNote": "First to {{n}} hands wins. A hand goes to whoever takes {{need}} tricks.",
+  "targetHandsLabel": "Hands to win",
   "ladderTitle": "Ranking",
   "ladderLine": "J (Karnöffel) > 7 (devil, ONLY WHEN LED) > 6 (Pope) > 2 (Kaiser) > 3 > 4 > 5 > K > Q > 10 > 9 > 8",
   "ladderNote": "THE THREE LOSES TO KINGS, THE FOUR TO KINGS AND QUEENS, THE FIVE TO EVERY FACE CARD. A seven played in follow loses to every card.",
