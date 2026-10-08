@@ -889,7 +889,11 @@ describe('OmahaPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false, bettingLimit: 0 }),
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        cpuMetaAI: false,
+        bettingLimit: 0,
+        tournamentMode: false,
+      }),
     );
   });
 
@@ -1088,6 +1092,23 @@ describe('OmahaPage', () => {
   });
 
   // ---- tournament mode ----
+  it('sends tournament mode when resetting with the setting enabled', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<OmahaPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByLabelText('トーナメントモード'));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        cpuMetaAI: false,
+        bettingLimit: 0,
+        tournamentMode: true,
+      }),
+    );
+  });
+
   it('shows tournament info when tournamentMode is true', async () => {
     mockExec.mockResolvedValue({
       ...preFlopState,
@@ -1333,7 +1354,11 @@ describe('OmahaPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false, bettingLimit: 0 }),
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        cpuMetaAI: false,
+        bettingLimit: 0,
+        tournamentMode: false,
+      }),
     );
   });
 
@@ -1349,7 +1374,11 @@ describe('OmahaPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: true, bettingLimit: 0 }),
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        cpuMetaAI: true,
+        bettingLimit: 0,
+        tournamentMode: false,
+      }),
     );
   });
 
@@ -1572,14 +1601,17 @@ describe('OmahaPage', () => {
   // Clicking the label's *text* must therefore flip the checkbox -- that is the
   // behaviour the tap target buys, and it was previously untested here.
   describe('settings toggles are driven by their full label row', () => {
-    it.each(['ヒント表示', 'メタAI（CPUがプレイスタイルを学習）'])('toggles %s', async (label) => {
-      mockExec.mockResolvedValue(preFlopState);
-      renderWithProviders(<OmahaPage />);
-      const box = await waitFor(() => screen.getByLabelText(label) as HTMLInputElement);
-      const before = box.checked;
-      fireEvent.click(screen.getByText(label));
-      expect((screen.getByLabelText(label) as HTMLInputElement).checked).toBe(!before);
-    });
+    it.each(['ヒント表示', 'メタAI（CPUがプレイスタイルを学習）', 'トーナメントモード'])(
+      'toggles %s',
+      async (label) => {
+        mockExec.mockResolvedValue(preFlopState);
+        renderWithProviders(<OmahaPage />);
+        const box = await waitFor(() => screen.getByLabelText(label) as HTMLInputElement);
+        const before = box.checked;
+        fireEvent.click(screen.getByText(label));
+        expect((screen.getByLabelText(label) as HTMLInputElement).checked).toBe(!before);
+      },
+    );
   });
 
   it('renders tutorial button', async () => {
@@ -1691,7 +1723,11 @@ describe('OmahaPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     // The selector is only worth having if the value reaches the reset call.
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.objectContaining({ bettingLimit: 2 })),
+      expect(mockExec).toHaveBeenCalledWith(
+        'reset',
+        undefined,
+        expect.objectContaining({ bettingLimit: 2, tournamentMode: false }),
+      ),
     );
   });
 });
