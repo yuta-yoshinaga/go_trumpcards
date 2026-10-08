@@ -151,6 +151,38 @@ describe('Auld Lang Syne tutorial', () => {
   });
 });
 
+describe('Auld Lang Syne waste selection announcement', () => {
+  it('announces the selected waste and clears the announcement after canceling', async () => {
+    renderWithProviders(<AuldLangSynePage />);
+
+    const liveRegion = await screen.findByTestId('auldlangsyne-selection-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByTestId('als-waste-button-0'));
+    expect(liveRegion).toHaveTextContent('移動先を選択してください: ウェイスト 0');
+    expect(liveRegion.firstElementChild).toHaveClass('sr-only');
+
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(liveRegion).toBeEmptyDOMElement();
+  });
+
+  it('clears the announcement after moving a selected waste', async () => {
+    renderWithProviders(<AuldLangSynePage />);
+
+    const liveRegion = await screen.findByTestId('auldlangsyne-selection-live');
+    fireEvent.click(screen.getByTestId('als-waste-button-0'));
+    expect(liveRegion).toHaveTextContent('移動先を選択してください: ウェイスト 0');
+
+    fireEvent.click(screen.getByTestId('als-foundation-next-1').closest('button') as HTMLButtonElement);
+    expect(liveRegion).toBeEmptyDOMElement();
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste', idx: 0 }, { zone: 'foundation', idx: 1 }),
+    );
+  });
+});
+
 describe('Auld Lang Syne foundation accessible names', () => {
   it('announces each top card and distinguishes empty from complete foundations', async () => {
     const stateWithFoundationVariants: AuldLangSyneResponse = {
