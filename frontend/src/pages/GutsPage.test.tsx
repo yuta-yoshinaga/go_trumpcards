@@ -241,6 +241,8 @@ describe('GutsPage', () => {
     const guide = await screen.findByTestId('guts-declare-guide');
     expect(guide).toHaveTextContent('手役: ペア');
     expect(screen.getByTestId('guts-guide-tier')).toHaveTextContent('高い');
+    expect(screen.getByTestId('guts-guide-probability')).toHaveTextContent(/推定勝率: \d+\.\d+%/);
+    expect(screen.getByText(/残っているCPUはランダムな手札/)).toBeInTheDocument();
     // The maximum match-loss payment is the smaller of the pot and chip balance.
     expect(screen.getByTestId('guts-guide-risk')).toHaveTextContent('敗北時の最大支払額: 40');
   });
@@ -284,6 +286,7 @@ describe('GutsPage', () => {
     const guide = await screen.findByTestId('guts-declare-guide');
     expect(guide).toHaveTextContent('手役: ハイカード');
     expect(screen.getByTestId('guts-guide-tier')).toHaveTextContent('低い');
+    expect(screen.getByTestId('guts-guide-probability')).toHaveTextContent(/推定勝率: \d+\.\d+%/);
   });
 
   it('hides the declaration guideline on the result phase', async () => {
