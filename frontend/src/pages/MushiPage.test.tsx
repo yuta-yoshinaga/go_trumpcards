@@ -87,6 +87,28 @@ describe('MushiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('shows the initial load error and lets the player retry into the game', async () => {
+    let finishRetry: (state: MushiResponse) => void = () => {};
+    mockExec.mockRejectedValueOnce(new Error('network unavailable')).mockImplementationOnce(
+      () =>
+        new Promise<MushiResponse>((resolve) => {
+          finishRetry = resolve;
+        }),
+    );
+    const { container } = renderWithProviders(<MushiPage />);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('通信エラーが発生しました');
+    expect(screen.getByRole('button', { name: '再試行' })).toBeInTheDocument();
+    expect(container.querySelector('[data-skeleton-section]')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '再試行' }));
+    await waitFor(() => expect(container.querySelector('[data-skeleton-section]')).toBeInTheDocument());
+    await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(2));
+    finishRetry(makeState());
+    expect(await screen.findByText('あなたの取り札 (5 pt)')).toBeInTheDocument();
+  });
+
   it('shows both seats captures but never the opponent hand', async () => {
     renderWithProviders(<MushiPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
