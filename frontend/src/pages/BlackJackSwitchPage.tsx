@@ -265,6 +265,14 @@ function BlackJackSwitchPageContent() {
                             {t('badge.doubled')}
                           </span>
                         )}
+                        {hand.stood && (
+                          <span
+                            data-testid={`hand-${idx}-stood-badge`}
+                            className={`ml-1 inline-block rounded px-1.5 py-0.5 text-[10px] ${badgeInfoColors}`}
+                          >
+                            {t('badge.stood')}
+                          </span>
+                        )}
                         {isCurrent && (
                           <span
                             data-testid={`hand-${idx}-acting-badge`}

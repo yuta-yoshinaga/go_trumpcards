@@ -37,7 +37,8 @@
     "bust": "バースト",
     "bj": "BJ",
     "doubled": "ダブルダウン済み",
-    "acting": "操作中"
+    "acting": "操作中",
+    "stood": "スタンド済み"
   },
   "result": {
     "handWin": "勝ち",
