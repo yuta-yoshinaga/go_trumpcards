@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { doubleattackApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -73,6 +73,26 @@ function DoubleAttackPageContent() {
   const isPlayPhase = phase === DoubleAttackPhase.PLAY;
   const isResultPhase = phase === DoubleAttackPhase.RESULT;
   const gameOver = !!state?.gameEndFlag;
+  const previousActiveHand = useRef<{ phase: DoubleAttackResponse['phase'] | undefined; index: number | undefined }>({
+    phase,
+    index: state?.activeHand,
+  });
+  const [activeHandAnnouncement, setActiveHandAnnouncement] = useState('');
+
+  useEffect(() => {
+    const previous = previousActiveHand.current;
+    if (state && isPlayPhase && previous.phase === DoubleAttackPhase.PLAY && state.activeHand !== previous.index) {
+      const activeHand = state.hands[state.activeHand];
+      setActiveHandAnnouncement(
+        t('label.activeHandAnnouncement', {
+          idx: state.activeHand + 1,
+          score: activeHand.score,
+          count: activeHand.score,
+        }),
+      );
+    }
+    previousActiveHand.current = { phase, index: state?.activeHand };
+  }, [isPlayPhase, phase, state, t]);
 
   const handleDeal = useCallback(() => execApi('bet', { ante, bustIt }), [execApi, ante, bustIt]);
   const handleAttack = useCallback(() => execApi('attack', { amount: attack }), [execApi, attack]);
@@ -154,6 +174,9 @@ function DoubleAttackPageContent() {
         </>
       }
     >
+      <span className="sr-only" aria-live="polite" aria-atomic="true" data-testid="da-active-hand-announcement">
+        {activeHandAnnouncement}
+      </span>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
