@@ -60,6 +60,33 @@ beforeEach(() => {
 });
 
 describe('TichuPage', () => {
+  it('shows each CPU play and pass with the acting player and cards', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        cpuActions: [
+          { playerIdx: 1, playedCards: [{ design: 'HEART', value: 7 }], declType: 0, isPass: false },
+          { playerIdx: 2, playedCards: null, declType: 0, isPass: true },
+          { playerIdx: 3, playedCards: null, declType: 0, isPass: false },
+        ],
+      }),
+    );
+
+    renderWithProviders(<TichuPage />);
+
+    expect(await screen.findByRole('region', { name: 'CPUの応手' })).toHaveTextContent('CPU 1: ♥ 7 を出しました');
+    expect(screen.getByRole('region', { name: 'CPUの応手' })).toHaveTextContent('CPU 2: パスしました');
+    expect(screen.getByRole('region', { name: 'CPUの応手' })).toHaveTextContent(/CPU 3:.*を出しました/);
+  });
+
+  it('does not show CPU responses when there are none', async () => {
+    mockExec.mockResolvedValue(makeState({ cpuActions: [] }));
+
+    renderWithProviders(<TichuPage />);
+
+    await screen.findByRole('button', { name: '出す' });
+    expect(screen.queryByRole('region', { name: 'CPUの応手' })).not.toBeInTheDocument();
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<TichuPage />);

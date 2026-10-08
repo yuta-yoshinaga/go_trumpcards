@@ -344,6 +344,27 @@ function TichuPageContent() {
             )}
           </div>
 
+          {state.cpuActions.length > 0 && (
+            <section aria-label={t('label.cpuActions')} className="rounded-lg bg-ds-surface p-3 text-sm">
+              <div className="font-bold text-ds-text-primary">{t('label.cpuActions')}</div>
+              {state.cpuActions.map((action, index) => {
+                const player = state.players[action.playerIdx];
+                const name = playerName(player.id, player.isHuman);
+                const description = action.isPass
+                  ? t('actionPassed', { player: name })
+                  : t('actionPlayed', {
+                      player: name,
+                      cards: action.playedCards ? action.playedCards.map(cardAlt).join(t('listSeparator')) : '',
+                    });
+                return (
+                  <div key={`cpu-action-${action.playerIdx}-${index}`} className="text-ds-text-primary">
+                    {description}
+                  </div>
+                );
+              })}
+            </section>
+          )}
+
           {/* Declaration phase buttons */}
           {phase === 'declare' && isHumanTurn && (
             <div className="flex justify-center gap-2" data-tutorial="tichu-declare">
