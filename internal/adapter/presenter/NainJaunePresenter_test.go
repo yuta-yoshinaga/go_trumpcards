@@ -87,6 +87,40 @@ func TestNainJauneWebPresenter_HidesTheCpuHandButNeverThePoints(t *testing.T) {
 	assert.Positive(t, cpu["points"], "and so is what it is worth")
 }
 
+func TestNainJauneWebPresenter_RevealsCPUHandsAfterDealEnd(t *testing.T) {
+	for _, tc := range []struct {
+		name       string
+		phase      domain.NainJaunePhase
+		gameEnd    bool
+		wantHidden bool
+	}{
+		{name: "during play", phase: domain.NainJaunePhasePlay, wantHidden: true},
+		{name: "deal end", phase: domain.NainJaunePhaseDealEnd},
+		{name: "game end", phase: domain.NainJaunePhaseGameEnd, gameEnd: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := njStub(tc.phase, tc.gameEnd, 0, nil)
+			players := []*domain.NainJaunePlayer{
+				domain.NewNainJaunePlayer(true),
+				domain.NewNainJaunePlayer(false),
+				domain.NewNainJaunePlayer(false),
+				domain.NewNainJaunePlayer(false),
+			}
+			players[1].AddCard(njpCard(domain.CardDesignHeart, 4))
+			g.On("GetPlayers").Unset()
+			g.On("GetPlayers").Return(players)
+			got := new(NainJauneWebPresenter).buildPlayersOutput(g)
+			assert.Equal(t, tc.wantHidden, got[1].Hidden)
+			if tc.wantHidden {
+				assert.Empty(t, got[1].Cards)
+			} else {
+				require.Len(t, got[1].Cards, 1)
+				assert.Equal(t, "HEART", got[1].Cards[0].Design)
+			}
+		})
+	}
+}
+
 // TestNainJauneWebPresenter_ShipsAllFiveBoxesWithTheirCard is what the board is
 // for. The card matters as much as the chips: **only the exact suit claims a
 // box**, and the issue named two of them with the wrong suit.
