@@ -109,6 +109,27 @@ function DeuceToSevenPageContent() {
   const [bettingLimit, setBettingLimit] = useState(0);
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
   const turnStartRef = useRef(0);
+  const previousCpuExchangeCountRef = useRef(0);
+  const [cpuExchangeAnnouncement, setCpuExchangeAnnouncement] = useState('');
+
+  useEffect(() => {
+    const cpuExchanges = state?.cpuExchanges ?? [];
+    const previousCount = previousCpuExchangeCountRef.current;
+    const newExchanges = cpuExchanges.length < previousCount ? cpuExchanges : cpuExchanges.slice(previousCount);
+    previousCpuExchangeCountRef.current = cpuExchanges.length;
+
+    setCpuExchangeAnnouncement(
+      newExchanges
+        .map((exchange) =>
+          t('cpuExchangeEntry', {
+            idx: exchange.playerIdx,
+            draw: exchange.drawIndex,
+            count: exchange.exchangeCount,
+          }),
+        )
+        .join(t('listSeparator')),
+    );
+  }, [state?.cpuExchanges, t]);
 
   useEffect(() => {
     if (state?.minRaise && state.minRaise > 0) {
@@ -277,6 +298,15 @@ function DeuceToSevenPageContent() {
             {isMobile ? <CpuActionToast actions={state?.cpuActions} /> : <CpuActionLog actions={state?.cpuActions} />}
 
             {/* CPU exchanges log */}
+            <div
+              className="sr-only"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              data-testid="d7-cpu-exchange-live"
+            >
+              {cpuExchangeAnnouncement}
+            </div>
             {state?.cpuExchanges && state.cpuExchanges.length > 0 && (
               <div className="bg-black/30 rounded p-2 mb-3 text-ds-text-primary text-xs">
                 <div className="font-bold mb-1">{t('cpuExchange')}</div>

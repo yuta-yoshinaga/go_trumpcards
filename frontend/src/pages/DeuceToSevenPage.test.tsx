@@ -100,6 +100,80 @@ describe('DeuceToSevenPage', () => {
     await waitFor(() => expect(screen.getByText('プリドロー')).toBeInTheDocument());
   });
 
+  it('announces the latest CPU exchange in a persistent live region while keeping the visible log', async () => {
+    mockExec.mockResolvedValue(baseState({ cpuExchanges: [{ playerIdx: 1, drawIndex: 2, exchangeCount: 3 }] }));
+    renderWithProviders(<DeuceToSevenPage />);
+
+    const liveRegion = await screen.findByTestId('d7-cpu-exchange-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toHaveClass('sr-only');
+    expect(liveRegion).toHaveTextContent('Player 1 (draw 2): 3枚交換');
+    expect(screen.getByText('CPUドロー:')).toBeInTheDocument();
+    expect(screen.getAllByText('Player 1 (draw 2): 3枚交換')).toHaveLength(2);
+  });
+
+  it('keeps the CPU exchange live region mounted before any exchanges', async () => {
+    mockExec.mockResolvedValue(baseState());
+    renderWithProviders(<DeuceToSevenPage />);
+
+    const liveRegion = await screen.findByTestId('d7-cpu-exchange-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
+  });
+
+  it('announces every CPU exchange added in one response in order', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        cpuExchanges: [
+          { playerIdx: 1, drawIndex: 1, exchangeCount: 2 },
+          { playerIdx: 2, drawIndex: 1, exchangeCount: 1 },
+        ],
+      }),
+    );
+    renderWithProviders(<DeuceToSevenPage />);
+
+    expect(await screen.findByTestId('d7-cpu-exchange-live')).toHaveTextContent(
+      'Player 1 (draw 1): 2枚交換、Player 2 (draw 1): 1枚交換',
+    );
+  });
+
+  it('clears the live announcement when a response adds no CPU exchanges', async () => {
+    const exchanges = [{ playerIdx: 1, drawIndex: 1, exchangeCount: 2 }];
+    mockExec
+      .mockResolvedValueOnce(baseState({ phase: DeuceToSevenPhase.DRAW, drawIndex: 1, cpuExchanges: exchanges }))
+      .mockResolvedValueOnce(baseState({ phase: DeuceToSevenPhase.DRAW, drawIndex: 1, cpuExchanges: [...exchanges] }));
+    renderWithProviders(<DeuceToSevenPage />);
+
+    const liveRegion = await screen.findByTestId('d7-cpu-exchange-live');
+    await waitFor(() => expect(liveRegion).toHaveTextContent('Player 1 (draw 1): 2枚交換'));
+    fireEvent.click(screen.getByRole('button', { name: '交換' }));
+    await waitFor(() => expect(liveRegion).toBeEmptyDOMElement());
+  });
+
+  it('starts from the beginning when the CPU exchange list has been reset', async () => {
+    const initialExchanges = [
+      { playerIdx: 1, drawIndex: 1, exchangeCount: 2 },
+      { playerIdx: 2, drawIndex: 1, exchangeCount: 1 },
+    ];
+    mockExec
+      .mockResolvedValueOnce(baseState({ phase: DeuceToSevenPhase.DRAW, drawIndex: 1, cpuExchanges: initialExchanges }))
+      .mockResolvedValueOnce(
+        baseState({
+          phase: DeuceToSevenPhase.DRAW,
+          drawIndex: 1,
+          cpuExchanges: [{ playerIdx: 3, drawIndex: 1, exchangeCount: 4 }],
+        }),
+      );
+    renderWithProviders(<DeuceToSevenPage />);
+
+    const liveRegion = await screen.findByTestId('d7-cpu-exchange-live');
+    await waitFor(() => expect(liveRegion).toHaveTextContent('Player 1 (draw 1): 2枚交換'));
+    fireEvent.click(screen.getByRole('button', { name: '交換' }));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('Player 3 (draw 1): 4枚交換'));
+  });
+
   it('renders the draw counter badge with the current draw and the max cap', async () => {
     mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.DRAW, drawIndex: 2 }));
     renderWithProviders(<DeuceToSevenPage />);
