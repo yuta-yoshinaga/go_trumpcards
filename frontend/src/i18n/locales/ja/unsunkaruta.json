@@ -31,6 +31,8 @@
   "cards": "{{count}}枚",
   "tricks": "{{count}}個",
   "currentTrick": "現在のトリック",
+  "trickPlay": "{{player}}: {{card}}",
+  "listSeparator": "、",
   "trickWinnerBadge": "勝者",
   "players": "プレイヤー",
   "you": "あなた",
