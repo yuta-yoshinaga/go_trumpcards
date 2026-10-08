@@ -487,6 +487,24 @@ describe('BlackJackSwitchPage', () => {
     expect(screen.queryByTestId('hand-1-acting-badge')).not.toBeInTheDocument();
   });
 
+  it('shows a stood badge only on hands that have stood', async () => {
+    mockApi.mockResolvedValue({
+      ...actionState,
+      hands: [{ ...actionState.hands[0], stood: true }, actionState.hands[1]],
+      currentHandIdx: 1,
+    });
+    renderWithProviders(<BlackJackSwitchPage />);
+    expect(await screen.findByTestId('hand-0-stood-badge')).toHaveTextContent('スタンド済み');
+    expect(screen.queryByTestId('hand-1-stood-badge')).not.toBeInTheDocument();
+  });
+
+  it('does not show a stood badge on an unstood acting hand', async () => {
+    mockApi.mockResolvedValue({ ...actionState, currentHandIdx: 0 });
+    renderWithProviders(<BlackJackSwitchPage />);
+    expect(await screen.findByTestId('hand-0-acting-badge')).toHaveTextContent('操作中');
+    expect(screen.queryByTestId('hand-0-stood-badge')).not.toBeInTheDocument();
+  });
+
   it('shows no acting badge outside the ACTION phase', async () => {
     mockApi.mockResolvedValue(switchState);
     renderWithProviders(<BlackJackSwitchPage />);
