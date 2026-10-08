@@ -177,6 +177,23 @@ describe('VintPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pass'));
   });
 
+  it('shows the selected bid trick value only on the human bidding turn', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: VintPhase.BID, highBid: null, declarerIdx: -1 }));
+    const { unmount } = renderWithProviders(<VintPage />);
+    await waitFor(() => expect(screen.getByTestId('vint-selected-trick-value')).toHaveTextContent('4'));
+
+    fireEvent.change(screen.getByLabelText(/レベル/), { target: { value: '3' } });
+    expect(screen.getByTestId('vint-selected-trick-value')).toHaveTextContent('24');
+    fireEvent.change(screen.getByLabelText(/スート/), { target: { value: '4' } });
+    expect(screen.getByTestId('vint-selected-trick-value')).toHaveTextContent('32');
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ phase: VintPhase.BID, bidPlayerIdx: 1 }));
+    renderWithProviders(<VintPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('vint-selected-trick-value')).not.toBeInTheDocument();
+  });
+
   // レベルはサーバーが送る範囲どおりに出す。
   it('offers only the levels the server allows', async () => {
     mockExec.mockResolvedValue(makeState({ phase: VintPhase.BID, highBid: null, declarerIdx: -1 }));
