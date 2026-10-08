@@ -121,9 +121,23 @@ describe('BigTwoPage', () => {
 
   it('renders the hand sort buttons', async () => {
     renderWithProviders(<BigTwoPage />);
-    expect(await screen.findByTestId('bt-sort-strength')).toBeInTheDocument();
-    expect(screen.getByTestId('bt-sort-suit')).toBeInTheDocument();
-    expect(screen.getByTestId('bt-sort-number')).toBeInTheDocument();
+    const strength = await screen.findByTestId('bt-sort-strength');
+    const suit = screen.getByTestId('bt-sort-suit');
+    const number = screen.getByTestId('bt-sort-number');
+
+    expect(strength).toHaveAttribute('aria-pressed', 'true');
+    expect(suit).toHaveAttribute('aria-pressed', 'false');
+    expect(number).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(suit);
+    expect(strength).toHaveAttribute('aria-pressed', 'false');
+    expect(suit).toHaveAttribute('aria-pressed', 'true');
+    expect(number).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(number);
+    expect(strength).toHaveAttribute('aria-pressed', 'false');
+    expect(suit).toHaveAttribute('aria-pressed', 'false');
+    expect(number).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('keeps the selected card index stable across hand sorting', async () => {
