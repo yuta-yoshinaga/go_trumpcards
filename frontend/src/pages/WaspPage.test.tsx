@@ -15,7 +15,9 @@ import { WaspPage } from './WaspPage';
  * from `glass-panel`, so the hint region is the other one.
  */
 const hintLiveRegion = () =>
-  screen.queryAllByRole('status').find((el) => !el.classList.contains('glass-panel')) ?? null;
+  screen
+    .queryAllByRole('status')
+    .find((el) => !el.classList.contains('glass-panel') && !el.classList.contains('sr-only')) ?? null;
 
 vi.mock('../api/gameApi', () => ({
   waspApi: { exec: vi.fn() },
@@ -197,7 +199,20 @@ describe('WaspPage', () => {
     await waitFor(() => {
       expect(screen.getByTestId('sc-empty-col-1').className).toContain('animate-shake');
     });
+    await waitFor(() =>
+      expect(screen.getAllByRole('status').find((el) => el.classList.contains('sr-only'))).toHaveTextContent(
+        '空の列をすべて埋めないと配れません',
+      ),
+    );
     expect(mockExec).not.toHaveBeenCalledWith('deal');
+  });
+
+  it('does not announce the empty-column reason when dealing is allowed', async () => {
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByRole('button', { name: '配る' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('deal'));
+    expect(screen.getAllByRole('status').find((el) => el.classList.contains('sr-only'))).toBeEmptyDOMElement();
   });
 
   it('keeps an empty move target focusable and explains the required source', async () => {

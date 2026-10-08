@@ -282,6 +282,7 @@ function WaspPageContent() {
 
   // Empty-column deal guard: surfaces a shake animation + tooltip instead of failing silently.
   const [emptyDealAttemptKey, setEmptyDealAttemptKey] = useState(0);
+  const [dealBlockAnnouncement, setDealBlockAnnouncement] = useState('');
   const hasEmptyColumn = useMemo(() => state?.tableau.some((col) => col.length === 0) ?? false, [state?.tableau]);
   // Columns the selected card may legally move onto (same suit, one rank higher).
   // **選ぶ前に行き先が見える (#4454)。** hover / フォーカス中の札にも、選択後と
@@ -298,12 +299,14 @@ function WaspPageContent() {
   const handleDealGuarded = useCallback(() => {
     if (dealBlockedByEmpty) {
       setEmptyDealAttemptKey((k) => k + 1);
+      setDealBlockAnnouncement('');
+      window.setTimeout(() => setDealBlockAnnouncement(t('cannotDealEmptyColExists')), 100);
       return;
     }
     // Reset on a successful deal so a future empty-column attempt can re-trigger the shake.
     setEmptyDealAttemptKey(0);
     handleDeal();
-  }, [dealBlockedByEmpty, handleDeal]);
+  }, [dealBlockedByEmpty, handleDeal, t]);
 
   const handleGiveUp = useCallback(() => {
     void apiCall('giveup');
@@ -570,6 +573,9 @@ function WaspPageContent() {
           </div>
 
           <div data-tutorial="sc-controls">
+            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+              {dealBlockAnnouncement}
+            </div>
             <GameMessageBox
               message={state.message}
               messageCode={state.messageCode}
