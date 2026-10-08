@@ -70,6 +70,11 @@
   "you": "あなた",
   "cpu": "CPU {{id}}",
   "score": "得点: {{score}}",
+  "listSeparator": "、",
+  "finalResult": {
+    "winner": "優勝: {{name}}",
+    "tie": "引き分け: {{names}}"
+  },
   "dealerBadge": "親",
   "playButton": "出す",
   "playPrompt": "あなたの番です — 出すカードを選んでください。",

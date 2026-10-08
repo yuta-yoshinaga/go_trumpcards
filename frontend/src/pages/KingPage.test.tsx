@@ -224,6 +224,29 @@ describe('KingPage', () => {
     await waitFor(() => expect(screen.getByText('ゲーム終了！')).toBeInTheDocument());
   });
 
+  it('shows the final winner by name', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<KingPage />);
+    expect(await screen.findByTestId('king-final-result')).toHaveTextContent('優勝: あなた');
+  });
+
+  it('shows all tied winners and labels the result as a tie', async () => {
+    mockExec.mockResolvedValue({ ...gameEndState, roundWinners: [0, 2] });
+    renderWithProviders(<KingPage />);
+    expect(await screen.findByTestId('king-final-result')).toHaveTextContent('引き分け: あなた、CPU 2');
+  });
+
+  it('localizes the final winner and tie result in English', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue({ ...gameEndState, roundWinners: [1, 3] });
+      renderWithProviders(<KingPage />);
+      expect(await screen.findByTestId('king-final-result')).toHaveTextContent('Tie: CPU 1, CPU 3');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('does not show the play button on a CPU turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<KingPage />);
