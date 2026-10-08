@@ -323,6 +323,19 @@ func TestMarjapussi_Pussi_AwardedToFinalTrickWinner(t *testing.T) {
 	assert.Equal(t, domain.MarjapussiPhaseRoundEnd, g.GetPhase(), "trick 8 transitions to RoundEnd")
 }
 
+func TestMarjapussi_GetPussiPoints(t *testing.T) {
+	g := newTestMarjapussi()
+	g.SetPussi([]*domain.Card{
+		marjapussiCard(domain.CardDesignSpade, 1),
+		marjapussiCard(domain.CardDesignHeart, 10),
+		marjapussiCard(domain.CardDesignClover, 13),
+		marjapussiCard(domain.CardDesignDiamond, 7),
+	})
+	assert.Equal(t, 25, g.GetPussiPoints())
+	g.SetPussi(nil)
+	assert.Zero(t, g.GetPussiPoints())
+}
+
 func TestMarjapussi_TrickResolution_TrumpBeatsNonTrump(t *testing.T) {
 	g := newTestMarjapussi()
 	g.SetTrumpSuit(domain.CardDesignDiamond)

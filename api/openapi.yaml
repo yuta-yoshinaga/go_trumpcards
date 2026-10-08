@@ -83465,6 +83465,9 @@ components:
             type: integer
         pussiCount:
           type: integer
+        pussiPoints:
+          type: integer
+          description: Total card points in the pussi, using Marjapussi card scoring rules.
         pussi:
           type: array
           items:
