@@ -111,12 +111,23 @@ describe('CalculationPage', () => {
     }
   });
 
-  it('labels a non-empty waste pile with its top ranks, not the empty text', async () => {
+  it('labels a non-empty waste pile with its top card and ranks, not the empty text', async () => {
     mockExec.mockResolvedValue({ ...playingState, wastes: [[card('HEART', 9)], [], [], []] });
     renderWithProviders(<CalculationPage />);
     const waste0 = await screen.findByTestId('calc-waste-button-0');
     await waitFor(() => expect(waste0.getAttribute('aria-label')).toContain('ウェイスト0'));
-    expect(waste0).not.toHaveAttribute('aria-label', 'ウェイスト0: 空');
+    expect(waste0).toHaveAttribute('aria-label', 'ウェイスト0: 最上段 ♥ 9。上3枚: 9');
+  });
+
+  it('includes the top card suit in a non-empty waste pile name in English', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue({ ...playingState, wastes: [[card('HEART', 9)], [], [], []] });
+      renderWithProviders(<CalculationPage />);
+      expect(await screen.findByRole('button', { name: 'Waste 0: top card ♥ 9. Top 3 ranks: 9' })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('shows move count', async () => {
@@ -262,7 +273,7 @@ describe('CalculationPage', () => {
     renderWithProviders(<CalculationPage />);
     const btn = await screen.findByTestId('calc-waste-button-0');
     expect(btn).toHaveAttribute('title', 'ウェイスト0（上3枚）: 5・K・A');
-    expect(btn).toHaveAttribute('aria-label', 'ウェイスト0（上3枚）: 5・K・A');
+    expect(btn).toHaveAttribute('aria-label', 'ウェイスト0: 最上段 ♣ A。上3枚: 5・K・A');
   });
 
   it('omits the rank tooltip on an empty waste pile but still names it for SR users', async () => {

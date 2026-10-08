@@ -31,6 +31,7 @@
   "upcomingRanksToggle": "先読みランク一覧",
   "upcomingRanksDetailAria": "組札{{idx}}の先読みランク一覧: {{sequence}}",
   "wasteRanksTooltip": "ウェイスト{{idx}}（上3枚）: {{ranks}}",
+  "wasteAria": "ウェイスト{{idx}}: 最上段 {{card}}。上3枚: {{ranks}}",
   "wasteEmptyAria": "ウェイスト{{idx}}: 空",
   "stockTopAria": "山札のトップ: {{card}}、残り{{count}}枚",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
