@@ -542,6 +542,26 @@ describe('SomersetPage destination preview', () => {
     expect(region.textContent).toBe('♥ 6を移動: タブロー列1 → 組札');
   });
 
+  it('does not announce a stale hint when its card is no longer on the tableau', async () => {
+    mockExec.mockResolvedValue({ ...playingState, tableau: makeTableau([]) });
+    renderWithProviders(<SomersetPage />);
+    await waitFor(() => expect(screen.getByText(/サマセット/)).toBeInTheDocument());
+
+    const region = screen.getByTestId('somerset-hint-live');
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([]),
+      hint: { fromCol: 1, cardIndex: 0, toZone: 'foundation', toCol: 2 },
+    });
+    const hintButton = screen.getByRole('button', { name: 'ヒント' });
+    await waitFor(() => expect(hintButton).toBeEnabled());
+    fireEvent.click(hintButton);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    await waitFor(() => expect(region).toBeInTheDocument());
+    expect(region).toBeEmptyDOMElement();
+  });
+
   // hover と選択で同じ集合を指す ── プレビューが嘘をつかないことの検証。
   it('previews exactly the set the selection then commits to', async () => {
     const spadeFive = await render();
