@@ -132,7 +132,14 @@ function AndarBaharPageContent() {
   const won = state.winner === state.betTarget;
 
   const columnBlock = (column: number, cards: AndarBaharResponse['andarCards'], label: string) => (
-    <div className="flex-1 min-w-0">
+    <section
+      aria-label={
+        state.firstColumn === column
+          ? t('label.columnGroupFirst', { column: label })
+          : t('label.columnGroupSecond', { column: label })
+      }
+      className="flex-1 min-w-0"
+    >
       <div className="flex items-center justify-center gap-2 mb-1">
         <span className="text-ds-text-primary text-sm font-bold">{label}</span>
         {state.firstColumn === column ? (
@@ -161,7 +168,7 @@ function AndarBaharPageContent() {
           ))
         )}
       </div>
-    </div>
+    </section>
   );
 
   return (

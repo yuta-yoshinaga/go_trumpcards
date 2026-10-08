@@ -7,6 +7,8 @@
     "joker": "基準札",
     "andar": "アンダー",
     "bahar": "バハール",
+    "columnGroupFirst": "{{column}}、先に配る列、配当 0.9:1（51.50%）",
+    "columnGroupSecond": "{{column}}、後に配る列",
     "firstColumn": "先に配る列",
     "dealtCount": "配った枚数",
     "road": "罫線",

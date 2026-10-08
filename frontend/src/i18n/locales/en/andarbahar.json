@@ -7,6 +7,8 @@
     "joker": "Joker",
     "andar": "Andar",
     "bahar": "Bahar",
+    "columnGroupFirst": "{{column}}, dealt first, pays 0.9:1 (51.50%)",
+    "columnGroupSecond": "{{column}}, dealt second",
     "firstColumn": "Dealt first",
     "dealtCount": "Cards dealt",
     "road": "Road",
