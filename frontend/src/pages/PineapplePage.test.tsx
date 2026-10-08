@@ -332,6 +332,32 @@ describe('PineapplePage', () => {
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
   });
 
+  it('shows only currently usable betting shortcuts on the human turn', async () => {
+    mockExec.mockResolvedValue({ ...preFlopState, lastBet: 10 });
+    renderWithProviders(<PineapplePage />);
+    const panel = await screen.findByTestId('pineapple-kbd-shortcuts');
+    fireEvent.click(screen.getByText('キーボードショートカット'));
+    expect(panel).toHaveTextContent('コール');
+    expect(panel).toHaveTextContent('レイズ / ベット');
+    expect(panel).not.toHaveTextContent('チェック');
+    expect(panel).toHaveTextContent('フォールド');
+    expect(panel).toHaveTextContent('オールイン');
+  });
+
+  it.each([
+    ['opponent turn', { ...preFlopState, currentTurn: 1 }],
+    ['discard phase', discardState],
+  ])('hides betting shortcuts during %s', async (_name, response) => {
+    mockExec.mockResolvedValue(response);
+    renderWithProviders(<PineapplePage />);
+    const panel = await screen.findByTestId('pineapple-kbd-shortcuts');
+    fireEvent.click(screen.getByText('キーボードショートカット'));
+    expect(panel).not.toHaveTextContent('コール');
+    expect(panel).not.toHaveTextContent('チェック');
+    expect(panel).not.toHaveTextContent('フォールド');
+    expect(panel).not.toHaveTextContent('オールイン');
+  });
+
   it('renders discard controls during discard phase', async () => {
     mockExec.mockResolvedValue(discardState);
     renderWithProviders(<PineapplePage />);
