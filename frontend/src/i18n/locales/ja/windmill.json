@@ -35,6 +35,7 @@
   "kingsOnly": "K のみ",
   "landscapeBanner": "横画面での表示を推奨します",
   "moveCount": "手数",
+  "moveAnnouncement": "{{source}}から{{target}}へ移動",
   "foundationProgress": "収納: {{count}}/{{total}} ({{percent}}%)",
   "noHint": "ヒントはありません",
   "phase": {

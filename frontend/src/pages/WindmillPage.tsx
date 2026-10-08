@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { windmillApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -85,6 +85,9 @@ function WindmillPageContent() {
   } = useGamePageSetup('windmill');
   const game = useWindmillGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
+  const [moveAnnouncement, setMoveAnnouncement] = useState('');
+  const pendingMove = useRef<{ source: WindmillMoveZone; target: WindmillMoveZone } | null>(null);
+  const previousMoveCount = useRef<number | null>(null);
 
   const {
     hint: frontendHint,
@@ -106,12 +109,58 @@ function WindmillPageContent() {
 
   const isPlayingForKbd = state?.phase === WindmillPhase.PLAYING;
 
-  const dispatchMove = useCallback(
+  const zoneLabel = useCallback(
+    (zone: WindmillMoveZone) => {
+      if (zone.zone === 'center') return t('frontendHint.center');
+      if (zone.zone === 'corner') return t('frontendHint.corner', { idx: zone.col });
+      if (zone.zone === 'sail') return t('frontendHint.sail', { idx: zone.col });
+      return t('frontendHint.waste');
+    },
+    [t],
+  );
+  const moveCards = useCallback(
     (source: WindmillMoveZone, target: WindmillMoveZone) => {
+      pendingMove.current = { source, target };
       void game.exec('move', source, target);
     },
     [game],
   );
+  const dispatchMove = useCallback(
+    (source: WindmillMoveZone, target: WindmillMoveZone) => {
+      void moveCards(source, target);
+    },
+    [moveCards],
+  );
+  const handleSelectedTarget = useCallback(
+    (source: WindmillMoveZone, target: WindmillMoveZone) => {
+      pendingMove.current = { source, target };
+      game.handleSelectTarget(target);
+    },
+    [game],
+  );
+  useEffect(() => {
+    if (!state) return;
+    if (previousMoveCount.current !== null && pendingMove.current) {
+      if (state.moveCount > previousMoveCount.current) {
+        const { source, target } = pendingMove.current;
+        pendingMove.current = null;
+        setMoveAnnouncement('');
+        window.setTimeout(
+          () =>
+            setMoveAnnouncement(
+              t('moveAnnouncement', {
+                source: zoneLabel(source),
+                target: zoneLabel(target),
+              }),
+            ),
+          0,
+        );
+      } else {
+        pendingMove.current = null;
+      }
+    }
+    previousMoveCount.current = state.moveCount;
+  }, [state, t, zoneLabel]);
   const dnd = useSolitaireDragDrop<WindmillMoveZone>({
     onMove: dispatchMove,
     isPlaying: !!isPlayingForKbd,
@@ -224,7 +273,7 @@ function WindmillPageContent() {
             <button
               type="button"
               onClick={() =>
-                selectedSource ? game.handleSelectTarget(cornerZone) : game.handleSelectSource(cornerZone)
+                selectedSource ? handleSelectedTarget(selectedSource, cornerZone) : game.handleSelectSource(cornerZone)
               }
               disabled={!isPlaying || loading || isAutoCompleting || blockedAsSource}
               title={blockedAsSource ? t('transferBlocked') : undefined}
@@ -256,7 +305,7 @@ function WindmillPageContent() {
               type="button"
               onClick={() => {
                 if (!selectedSource) return;
-                game.handleSelectTarget(cornerZone);
+                handleSelectedTarget(selectedSource, cornerZone);
               }}
               disabled={!isPlaying || loading || isAutoCompleting}
               aria-disabled={!selectedSource || undefined}
@@ -311,6 +360,9 @@ function WindmillPageContent() {
         {tc('label.selectSourceFirst')}
       </span>
       <LandscapeBanner message={t('landscapeBanner')} />
+      <div data-testid="wm-move-announcement" role="status" aria-live="polite" className="sr-only">
+        {moveAnnouncement}
+      </div>
 
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
@@ -331,7 +383,7 @@ function WindmillPageContent() {
                       type="button"
                       onClick={() => {
                         if (!selectedSource) return;
-                        game.handleSelectTarget(centerZone);
+                        handleSelectedTarget(selectedSource, centerZone);
                       }}
                       disabled={!isPlaying || loading || isAutoCompleting}
                       aria-disabled={!selectedSource || undefined}
@@ -346,7 +398,7 @@ function WindmillPageContent() {
                       type="button"
                       onClick={() => {
                         if (!selectedSource) return;
-                        game.handleSelectTarget(centerZone);
+                        handleSelectedTarget(selectedSource, centerZone);
                       }}
                       disabled={!isPlaying || loading || isAutoCompleting}
                       aria-disabled={!selectedSource || undefined}

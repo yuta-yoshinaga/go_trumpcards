@@ -95,6 +95,43 @@ describe('WindmillPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'sail', col: 0 }, { zone: 'center' }));
   });
 
+  it('announces each successful move with its source and destination', async () => {
+    mockExec
+      .mockResolvedValueOnce(playingState)
+      .mockResolvedValueOnce({ ...playingState, moveCount: 4 })
+      .mockResolvedValue({ ...playingState, moveCount: 5 });
+    renderWithProviders(<WindmillPage />);
+    const sail = await screen.findByRole('button', { name: /: ♠ 9$/ });
+    fireEvent.click(sail);
+    fireEvent.click(screen.getByRole('button', { name: '中央組札 1/52枚、一番上の札は♣ A' }));
+
+    const announcement = await screen.findByText('帆0から中央組札へ移動');
+    expect(announcement).toBeInTheDocument();
+    fireEvent.click(sail);
+    fireEvent.click(screen.getByRole('button', { name: '中央組札 1/52枚、一番上の札は♣ A' }));
+    await waitFor(() => expect(announcement).toBeEmptyDOMElement());
+    expect(await screen.findByText('帆0から中央組札へ移動')).toBeInTheDocument();
+  });
+
+  it('announces a successful corner pull-back', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValue({ ...playingState, moveCount: 4 });
+    renderWithProviders(<WindmillPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '四隅組札0 1/13枚、一番上の札は♦ K' }));
+    fireEvent.click(screen.getByRole('button', { name: '中央組札 1/52枚、一番上の札は♣ A' }));
+
+    expect(await screen.findByText('四隅組札0から中央組札へ移動')).toBeInTheDocument();
+  });
+
+  it('moves a selected card to an occupied corner', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<WindmillPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /: ♥ 4$/ }));
+    fireEvent.click(screen.getByRole('button', { name: '四隅組札0 1/13枚、一番上の札は♦ K' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'sail', col: 1 }, { zone: 'corner', col: 0 }),
+    );
+  });
+
   it('calls reset on initial render', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<WindmillPage />);
@@ -146,6 +183,14 @@ describe('WindmillPage', () => {
     );
   });
 
+  it('ignores an empty corner click until a source has been selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<WindmillPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '空の四隅組札1 (K のみ置けます)' }));
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('draws from the stock', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<WindmillPage />);
@@ -189,6 +234,26 @@ describe('WindmillPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'sail', col: 1 }, { zone: 'corner', col: 2 }),
     );
+  });
+
+  it('announces a successful move from the waste', async () => {
+    mockExec
+      .mockResolvedValueOnce({ ...playingState, waste: [card('DIAMOND', 2)] })
+      .mockResolvedValue({ ...playingState, moveCount: 4 });
+    renderWithProviders(<WindmillPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♦ 2' }));
+    fireEvent.click(screen.getByRole('button', { name: '中央組札 1/52枚、一番上の札は♣ A' }));
+
+    expect(await screen.findByText('捨て札から中央組札へ移動')).toBeInTheDocument();
+  });
+
+  it('does not announce a rejected move', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValue({ ...playingState, moveCount: 3 });
+    renderWithProviders(<WindmillPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /: ♠ 9$/ }));
+    fireEvent.click(screen.getByRole('button', { name: '中央組札 1/52枚、一番上の札は♣ A' }));
+    await waitFor(() => expect(screen.getByText(/手数: 3/)).toBeInTheDocument());
+    expect(screen.getByTestId('wm-move-announcement')).toBeEmptyDOMElement();
   });
 
   // An occupied corner is both a target for a descending card and the source of
