@@ -146,7 +146,7 @@ function CallBreakPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('callbreak', state);
   const { cardWidth, isMobile } = useCardDimensions();
-  const [bidValue, setBidValue] = useState(1);
+  const [bidSelection, setBidSelection] = useState({ roundNumber: 1, value: 1 });
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('callbreak');
   const cliConfig: CliGameConfig<CallBreakResponse, Parameters<typeof callBreakApi.exec>> = useMemo(
@@ -191,6 +191,7 @@ function CallBreakPageContent() {
     return <GameSkeleton gameKey="callbreak" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
+  const bidValue = bidSelection.roundNumber === state.roundNumber ? bidSelection.value : 1;
   const isBidPhase = state.phase === CallBreakPhase.BID;
   const isPlayPhase = state.phase === CallBreakPhase.PLAY;
   const isTrickEnd = state.phase === CallBreakPhase.TRICK_END;
@@ -525,7 +526,7 @@ function CallBreakPageContent() {
                       <button
                         key={n}
                         type="button"
-                        onClick={() => setBidValue(n)}
+                        onClick={() => setBidSelection({ roundNumber: state.roundNumber, value: n })}
                         disabled={loading}
                         aria-pressed={bidValue === n}
                         data-testid={`bid-option-${n}`}
