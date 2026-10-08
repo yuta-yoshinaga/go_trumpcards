@@ -36,6 +36,7 @@
   "gameOver": "Game Over",
   "noHint": "No hints available",
   "hintAvailable": "Hint available",
+  "removeHint": "Hint available: Remove {{card}} at row {{row}}, column {{col}}",
   "hintType": {
     "remove": "A card can be removed",
     "draw": "Draw a card from the stock"
