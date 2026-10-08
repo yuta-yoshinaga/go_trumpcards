@@ -12,6 +12,8 @@
     "take": "引き取り",
     "transfer": "転送"
   },
+  "cpuCardAction": "{{action}}: {{card}}",
+  "cpuDefendAction": "{{action}}: {{card}}（攻撃 {{attackIdx}}）",
   "trump": "切り札",
   "stock": "山札",
   "table": "テーブル",

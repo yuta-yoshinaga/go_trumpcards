@@ -12,6 +12,8 @@
     "take": "Take Cards",
     "transfer": "Transfer"
   },
+  "cpuCardAction": "{{action}}: {{card}}",
+  "cpuDefendAction": "{{action}}: {{card}} (attack {{attackIdx}})",
   "trump": "Trump",
   "stock": "Stock",
   "table": "Table",
