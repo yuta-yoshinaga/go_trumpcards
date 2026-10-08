@@ -207,7 +207,11 @@ function PutPageContent() {
         </details>
 
         {!isGameEnd && (
-          <table className="w-full max-w-md mx-auto mb-4 text-sm text-ds-text-primary" data-testid="put-player-counts">
+          <table
+            className="w-full max-w-md mx-auto mb-4 text-sm text-ds-text-primary"
+            aria-label={t('playerCountsTable')}
+            data-testid="put-player-counts"
+          >
             <thead className="text-ds-text-muted">
               <tr>
                 <th scope="col" className="text-left p-2"></th>
