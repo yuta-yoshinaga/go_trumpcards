@@ -312,6 +312,7 @@ function StealingBundlesPageContent() {
             {isHumanTurn && (
               <div
                 className="mt-3 text-center text-ds-text-muted"
+                id="sb-status"
                 role="status"
                 data-testid="sb-status"
                 data-tutorial="sb-status"
@@ -336,6 +337,7 @@ function StealingBundlesPageContent() {
                         key={`${card.design}-${card.value}-${idx}`}
                         type="button"
                         onClick={() => {
+                          if (!usable) return;
                           setSelected(idx);
                           setActionAnnouncement(
                             t('status.availableActions', {
@@ -345,9 +347,11 @@ function StealingBundlesPageContent() {
                           );
                         }}
                         disabled={loading || !isHumanTurn}
+                        aria-disabled={!usable}
+                        aria-describedby={!usable ? 'sb-status' : undefined}
                         aria-label={t('actions.selectAria', { card: cardAlt(card) })}
                         aria-pressed={selected === idx}
-                        className={`disabled:opacity-50 ${
+                        className={`disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50 ${
                           selected === idx
                             ? 'rounded-lg ring-2 ring-ds-accent'
                             : usable && isHumanTurn
