@@ -82,6 +82,19 @@ describe('ColoradoPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('includes the top card in non-empty tableau names without repeating the suit name', async () => {
+    renderWithProviders(<ColoradoPage />);
+    const pile = await screen.findByTestId('co-tableau-0');
+    expect(pile).toHaveAccessibleName('場札 0、1枚、一番上のカード ♠ A');
+    expect(pile.getAttribute('aria-label')).not.toContain('スペード');
+  });
+
+  it('keeps empty tableau names explicit', async () => {
+    renderWithProviders(<ColoradoPage />);
+    const pile = await screen.findByTestId('co-tableau-3');
+    expect(pile).toHaveAccessibleName('場札 3 空き山。山札か捨て札から埋められます');
+  });
+
   it('keeps a move status region in the DOM before the board loads', () => {
     mockExec.mockReturnValue(new Promise(() => {}));
     renderWithProviders(<ColoradoPage />);
@@ -190,7 +203,7 @@ describe('ColoradoPage', () => {
     renderWithProviders(<ColoradoPage />);
     await waitFor(() => expect(screen.getByTestId('co-tableau-0')).toBeInTheDocument());
     expect(screen.getByTestId(`co-tableau-${(TABLEAU_CNT - 1).toString()}`)).toBeInTheDocument();
-    expect(screen.getByTestId('co-tableau-0')).toHaveAccessibleName('場札 0 1枚');
+    expect(screen.getByTestId('co-tableau-0')).toHaveAccessibleName('場札 0、1枚、一番上のカード ♠ A');
     expect(screen.getByTestId('co-tableau-0').querySelectorAll('[data-testid="animated-card"]')).toHaveLength(1);
   });
 
@@ -201,7 +214,7 @@ describe('ColoradoPage', () => {
     renderWithProviders(<ColoradoPage />);
     await waitFor(() => expect(screen.getByTestId('co-tableau-7')).toBeInTheDocument());
     const pile = screen.getByTestId('co-tableau-7');
-    expect(pile).toHaveAccessibleName('場札 7 2枚');
+    expect(pile).toHaveAccessibleName('場札 7、2枚、一番上のカード ♥ Q');
     expect(pile.querySelectorAll('[data-testid="animated-card"]')).toHaveLength(2);
   });
 

@@ -29,6 +29,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { ColoradoMoveZone, ColoradoResponse } from '../types/card';
 import { ColoradoPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { parseColoradoCommand } from '../utils/cli/commands/coloradoCommands';
 import { formatColoradoState } from '../utils/cli/formatters/coloradoFormatter';
@@ -447,9 +448,13 @@ function ColoradoPageContent() {
                       aria-pressed={selected}
                       data-testid={`co-tableau-${idx.toString()}`}
                       aria-label={
-                        isEmpty
-                          ? `${t('tableau')} ${idx} ${t('emptyPileAria')}`
-                          : `${t('tableau')} ${idx} ${t('pileCountAria', { count: pile.length })}`
+                        top
+                          ? t('pileTopCardAria', {
+                              index: idx,
+                              count: pile.length,
+                              card: cardAlt(top),
+                            })
+                          : `${t('tableau')} ${idx} ${t('emptyPileAria')}`
                       }
                       className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${selected ? 'ring-2 ring-ds-warning' : ''} ${hintTableau === idx || hintTableauTarget === idx ? 'ring-2 ring-ds-success animate-pulse' : ''} ${isTarget && !selected ? 'ring-2 ring-ds-info/70' : ''}`}
                     >

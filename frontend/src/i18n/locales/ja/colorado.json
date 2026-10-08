@@ -30,7 +30,7 @@
   "nextRankAria": "次に置くべきカード {{rank}}",
   "foundationCompleteAria": "完成",
   "emptyPileAria": "空き山。山札か捨て札から埋められます",
-  "pileCountAria": "{{count}}枚",
+  "pileTopCardAria": "場札 {{index}}、{{count}}枚、一番上のカード {{card}}",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
   "playing": "プレイ中",
