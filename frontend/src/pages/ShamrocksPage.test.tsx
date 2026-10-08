@@ -199,6 +199,22 @@ describe('ShamrocksPage', () => {
     expect(screen.getByTestId('foundation-0')).toBeInTheDocument();
   });
 
+  it('gives every fan and foundation a non-overlapping 44px target on the nine-column board', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ fans: Array.from({ length: 9 }, (_, index) => [card('SPADE', 9 - index)]) }),
+    );
+    renderWithProviders(<ShamrocksPage />);
+
+    const fans = await screen.findAllByTestId(/^fan-/);
+    const foundations = screen.getAllByTestId(/^foundation-/);
+    for (const button of [...fans, ...foundations]) {
+      expect(button.className).toContain('min-w-[44px]');
+      expect(button.className).toContain('min-h-[44px]');
+    }
+    expect(screen.getByTestId('ll-fans')).toHaveClass('grid-cols-[repeat(9,max-content)]');
+    expect(screen.getByTestId('ll-fans').parentElement).toHaveClass('overflow-x-auto');
+  });
+
   it('selects a source fan then moves to another fan', async () => {
     renderWithProviders(<ShamrocksPage />);
     const src = await screen.findByTestId('fan-1');
