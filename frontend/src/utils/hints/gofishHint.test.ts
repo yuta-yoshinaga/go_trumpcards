@@ -63,6 +63,13 @@ describe('getGoFishHint', () => {
     expect(hint?.reason).toBe('hint.askMostCopies');
   });
 
+  it('handles a response with no cpuActions', () => {
+    const state = makeState();
+    delete state.cpuActions;
+
+    expect(getGoFishHint(state)?.reason).toBe('hint.askMostCopies');
+  });
+
   // #5518: 文言は「最も多く持っているランク」と言うのに、どのランクかは返って
   // いなかった。プレイヤーは助言を読んだあと自分で手札を数え直すことになる。
   it('names the rank it holds most copies of, and points at those cards', () => {

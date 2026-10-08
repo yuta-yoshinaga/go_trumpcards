@@ -80,7 +80,7 @@ function findOpponentKnownRank(state: GoFishResponse, humanIdx: number): number 
 
   const knownRanks = new Set<number>();
   collectFromLastAsk(state.lastAsk, humanIdx, knownRanks);
-  for (const action of state.cpuActions) {
+  for (const action of state.cpuActions ?? []) {
     collectFromCpuAction(action, humanIdx, knownRanks);
   }
 

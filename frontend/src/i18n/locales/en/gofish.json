@@ -23,6 +23,12 @@
     "miss": "{{asker}} asked {{target}} for rank {{rank}} → Go Fish!",
     "bookFormed": "Book complete! Rank {{rank}}"
   },
+  "cpuActions": {
+    "title": "CPU ask results",
+    "hit_one": "{{asker}} asked {{target}} for rank {{rank}} → got {{count}} card!",
+    "hit_other": "{{asker}} asked {{target}} for rank {{rank}} → got {{count}} cards!",
+    "miss": "{{asker}} asked {{target}} for rank {{rank}} → Go Fish!"
+  },
   "bubble": {
     "askHit": "{{rank}} → +{{count}}",
     "askMiss": "{{rank}}? → Go Fish!"

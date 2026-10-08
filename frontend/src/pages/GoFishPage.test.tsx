@@ -109,6 +109,89 @@ describe('GoFishPage', () => {
     await waitFor(() => expect(screen.getByText(/30/)).toBeInTheDocument());
   });
 
+  it('shows every CPU ask with its result, and hides the summary when there are no CPU actions', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      cpuActions: [
+        {
+          askPlayerIdx: 1,
+          askTargetIdx: 2,
+          askRank: 7,
+          success: true,
+          cardsReceived: 2,
+          drawnCard: null,
+          bookFormed: false,
+          bookRank: 0,
+        },
+        {
+          askPlayerIdx: 2,
+          askTargetIdx: 3,
+          askRank: 3,
+          success: false,
+          cardsReceived: 0,
+          drawnCard: null,
+          bookFormed: false,
+          bookRank: 0,
+        },
+        {
+          askPlayerIdx: 3,
+          askTargetIdx: 1,
+          askRank: 4,
+          success: true,
+          cardsReceived: 1,
+          drawnCard: null,
+          bookFormed: false,
+          bookRank: 0,
+        },
+      ],
+    });
+    renderWithProviders(<GoFishPage />);
+
+    const summary = await screen.findByTestId('gofish-cpu-actions');
+    expect(within(summary).getByText('CPU 1 が CPU 2 にランク 7 を要求 → 2枚もらった！')).toBeInTheDocument();
+    expect(within(summary).getByText('CPU 2 が CPU 3 にランク 3 を要求 → Go Fish!')).toBeInTheDocument();
+    expect(within(summary).getByText('CPU 3 が CPU 1 にランク 4 を要求 → 1枚もらった！')).toBeInTheDocument();
+  });
+
+  it('does not show the CPU action summary when there are no CPU actions', async () => {
+    renderWithProviders(<GoFishPage />);
+    await screen.findByText(/CPU 2/);
+    expect(screen.queryByTestId('gofish-cpu-actions')).not.toBeInTheDocument();
+  });
+
+  it('does not crash or show the CPU action summary when cpuActions is missing', async () => {
+    const response = { ...baseState };
+    delete (response as Partial<GoFishResponse>).cpuActions;
+    mockExec.mockResolvedValue(response);
+
+    renderWithProviders(<GoFishPage />);
+
+    await screen.findByText(/CPU 2/);
+    expect(screen.queryByTestId('gofish-cpu-actions')).not.toBeInTheDocument();
+  });
+
+  it('shows you when a CPU asks the human player', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      cpuActions: [
+        {
+          askPlayerIdx: 1,
+          askTargetIdx: 0,
+          askRank: 7,
+          success: true,
+          cardsReceived: 1,
+          drawnCard: null,
+          bookFormed: false,
+          bookRank: 0,
+        },
+      ],
+    });
+    renderWithProviders(<GoFishPage />);
+
+    const summary = await screen.findByTestId('gofish-cpu-actions');
+    expect(within(summary).getByText('CPU 1 が あなた にランク 7 を要求 → 1枚もらった！')).toBeInTheDocument();
+  });
+
   it('explains how to continue when the deck is empty on the human turn', async () => {
     mockExec.mockResolvedValue({ ...baseState, deckRemaining: 0 });
     renderWithProviders(<GoFishPage />);
