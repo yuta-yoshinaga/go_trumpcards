@@ -16,6 +16,8 @@
     "cpu": "CPU{{idx}}"
   },
   "pile": "The pile",
+  "pileChanged_one": "There is {{count}} card on the table.",
+  "pileChanged_other": "There are {{count}} cards on the table.",
   "trickCardByPlayer": "{{card}} played by {{name}}",
   "lastPickup": "{{name}} just picked up {{n}} cards.",
   "lastFinished": "{{name}} just finished in {{rank}} place.",

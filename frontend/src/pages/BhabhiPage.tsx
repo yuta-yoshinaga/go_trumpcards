@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { bhabhiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -66,6 +66,21 @@ function BhabhiPageContent() {
   } = useGameApi<BhabhiResponse, Parameters<typeof bhabhiApi.exec>>(bhabhiApi.exec);
   const { cardWidth } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('bhabhi', state);
+  const previousPileCount = useRef<number | null>(null);
+  const playPending = useRef(false);
+  const [pileChangeAnnouncement, setPileChangeAnnouncement] = useState('');
+
+  useEffect(() => {
+    if (!state) return;
+    const pileCount = state.pile.length;
+    if (previousPileCount.current !== null && playPending.current && previousPileCount.current !== pileCount) {
+      setPileChangeAnnouncement(t('pileChanged', { count: pileCount }));
+    } else if (playPending.current) {
+      setPileChangeAnnouncement('');
+    }
+    playPending.current = false;
+    previousPileCount.current = pileCount;
+  }, [state, t]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('bhabhi');
   const cliConfig: CliGameConfig<BhabhiResponse, Parameters<typeof bhabhiApi.exec>> = useMemo(
@@ -82,23 +97,27 @@ function BhabhiPageContent() {
   useMountReset(dispatch);
 
   const handleReset = useCallback(() => {
+    playPending.current = false;
     hideActionLog();
     void dispatch('reset');
   }, [dispatch, hideActionLog]);
 
   const handlePlay = useCallback(
     (idx: number) => {
+      playPending.current = true;
       void dispatch('play', idx);
     },
     [dispatch],
   );
 
   const handleGiveUp = useCallback(() => {
+    playPending.current = false;
     void dispatch('giveup');
   }, [dispatch]);
 
   const applyPlayerCnt = useCallback(
     (value: string) => {
+      playPending.current = false;
       hideActionLog();
       void dispatch('reset', undefined, { playerCnt: Number(value) });
     },
@@ -250,6 +269,8 @@ function BhabhiPageContent() {
                   : ''
               }
             />
+
+            <LiveAnnouncement message={pileChangeAnnouncement} testId="bh-pile-change-live" />
 
             <LiveAnnouncement
               message={
