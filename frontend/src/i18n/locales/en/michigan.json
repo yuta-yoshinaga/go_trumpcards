@@ -18,6 +18,7 @@
   "ante": "Ante: {{amount}}",
   "chips": "Chips: {{amount}}",
   "roundBet": "Round bet: {{amount}}",
+  "listSeparator": ", ",
   "handCount": "Hand: {{count}}",
   "deadHand": "Dead hand: {{count}}",
   "boodlesTitle": "Boodles (A♥ K♣ Q♦ J♠)",

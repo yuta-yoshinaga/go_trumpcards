@@ -186,6 +186,32 @@ function MichiganPageContent() {
   const playerBadge = (p: MichiganResponse['players'][number]): string =>
     p.isWinner ? t('badge.wentOut') : p.isCurrent ? t('badge.toPlay') : t('badge.waiting');
 
+  const roundResultAnnouncement = isResultPhase
+    ? [
+        ...(state.winnerIdx >= 0
+          ? [
+              t('roundResult.winner', {
+                name: playerLabel(
+                  state.winnerIdx,
+                  (state.players[state.winnerIdx] as MichiganResponse['players'][number]).isHuman,
+                ),
+              }),
+            ]
+          : []),
+        state.roundBoodleWins.length === 0
+          ? t('roundResult.noBoodleWins')
+          : state.roundBoodleWins
+              .map((win) =>
+                t('roundResult.boodleWin', {
+                  card: cardAlt(win.card),
+                  name: playerLabel(win.seat, (state.players[win.seat] as MichiganResponse['players'][number]).isHuman),
+                  amount: win.amount,
+                }),
+              )
+              .join(t('listSeparator')),
+      ].join(t('listSeparator'))
+    : '';
+
   const handleManualReset = () => {
     hideActionLog();
     reset();
@@ -302,6 +328,15 @@ function MichiganPageContent() {
               aria-atomic="true"
             >
               {isPlayPhase ? sequenceAnnouncement : ''}
+            </div>
+            <div
+              data-testid="michigan-round-result-live"
+              className="sr-only"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {roundResultAnnouncement}
             </div>
             <div className="mb-2 text-center text-ds-text-muted text-sm" aria-hidden="true">
               {sequenceAnnouncement}
