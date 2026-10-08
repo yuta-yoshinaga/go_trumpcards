@@ -116,6 +116,51 @@ describe('BakersGamePage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
   });
 
+  it('moves focus between board buttons with arrow keys and leaves outside controls alone', async () => {
+    renderWithProviders(<BakersGamePage />);
+    const firstCard = await screen.findByRole('button', { name: /♠ K/ });
+    const secondCard = screen.getByRole('button', { name: /♥ Q/ });
+    const emptyColumn = screen.getByTestId('bg-empty-col-2');
+    const rect = (left: number) => ({
+      x: left,
+      y: 0,
+      top: 0,
+      right: left + 50,
+      bottom: 70,
+      left,
+      width: 50,
+      height: 70,
+      toJSON: () => ({}),
+    });
+    vi.spyOn(firstCard, 'getBoundingClientRect').mockReturnValue(rect(0));
+    vi.spyOn(secondCard, 'getBoundingClientRect').mockReturnValue(rect(60));
+    vi.spyOn(emptyColumn, 'getBoundingClientRect').mockReturnValue(rect(100));
+    screen
+      .getAllByRole('button')
+      .filter((button) => button !== firstCard && button !== secondCard && button !== emptyColumn)
+      .forEach((button) => {
+        vi.spyOn(button, 'getBoundingClientRect').mockReturnValue(rect(0));
+      });
+
+    firstCard.focus();
+    fireEvent.keyDown(firstCard, { key: 'Enter' });
+    expect(firstCard).toHaveFocus();
+    const noLeftTarget = fireEvent.keyDown(firstCard, { key: 'ArrowLeft' });
+    expect(noLeftTarget).toBe(true);
+    expect(firstCard).toHaveFocus();
+
+    fireEvent.keyDown(firstCard, { key: 'ArrowRight' });
+    expect(secondCard).toHaveFocus();
+
+    fireEvent.keyDown(screen.getByRole('button', { name: 'ヒント' }), { key: 'ArrowRight' });
+
+    const outsideControl = screen.getByRole('checkbox');
+    outsideControl.focus();
+    const outsideArrow = fireEvent.keyDown(outsideControl, { key: 'ArrowRight' });
+    expect(outsideArrow).toBe(true);
+    expect(outsideControl).toHaveFocus();
+  });
+
   it('renders empty tableau columns with a neutral any-card placeholder, not a King-only "K"', async () => {
     renderWithProviders(<BakersGamePage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());

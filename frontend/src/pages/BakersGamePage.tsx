@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import type { bakersgameApi, FreeCellMoveZone } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -39,6 +39,12 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
+const BOARD_KEY_DIRECTIONS = {
+  ArrowLeft: { x: -1, y: 0, crossX: 0, crossY: 1 },
+  ArrowRight: { x: 1, y: 0, crossX: 0, crossY: 1 },
+  ArrowUp: { x: 0, y: -1, crossX: 1, crossY: 0 },
+  ArrowDown: { x: 0, y: 1, crossX: 1, crossY: 0 },
+} as const;
 
 /** Baker's Game tutorial step definitions. */
 const BG_TUTORIAL_STEPS: TutorialStep[] = [
@@ -186,6 +192,47 @@ function BakersGamePageContent() {
   });
 
   const [hoveredStack, setHoveredStack] = useState<{ col: number; cardIdx: number } | null>(null);
+  const handleBoardKeyDown = useCallback((event: KeyboardEvent) => {
+    if (!(event.key in BOARD_KEY_DIRECTIONS)) return;
+    const current = event.target;
+    if (
+      !(current instanceof HTMLButtonElement) ||
+      !current.closest('[data-tutorial="fc-free-cells"], [data-tutorial="fc-foundation"], [data-tutorial="fc-tableau"]')
+    ) {
+      return;
+    }
+
+    const direction = BOARD_KEY_DIRECTIONS[event.key as keyof typeof BOARD_KEY_DIRECTIONS];
+    const currentRect = current.getBoundingClientRect();
+    const currentX = currentRect.left + currentRect.width / 2;
+    const currentY = currentRect.top + currentRect.height / 2;
+    const candidates = Array.from(
+      document.querySelectorAll<HTMLButtonElement>(
+        '[data-tutorial="fc-free-cells"] button:not(:disabled), [data-tutorial="fc-foundation"] button:not(:disabled), [data-tutorial="fc-tableau"] button:not(:disabled)',
+      ),
+    )
+      .filter((button) => button !== current)
+      .map((button) => {
+        const rect = button.getBoundingClientRect();
+        const dx = rect.left + rect.width / 2 - currentX;
+        const dy = rect.top + rect.height / 2 - currentY;
+        const primary = dx * direction.x + dy * direction.y;
+        const secondary = Math.abs(dx * direction.crossX + dy * direction.crossY);
+        return { button, primary, secondary };
+      })
+      .filter(({ primary }) => primary > 0)
+      .sort((a, b) => a.secondary - b.secondary || a.primary - b.primary);
+
+    if (candidates[0]) {
+      event.preventDefault();
+      candidates[0].button.focus();
+    }
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleBoardKeyDown);
+    return () => window.removeEventListener('keydown', handleBoardKeyDown);
+  }, [handleBoardKeyDown]);
 
   if (!state) return <GameSkeleton gameKey="bakersgame" layout={{ kind: 'tableau', topRow: 8, tableau: 8 }} />;
 
@@ -278,6 +325,7 @@ function BakersGamePageContent() {
             <span id={selectSourceHintId} className="sr-only">
               {tc('label.selectSourceFirst')}
             </span>
+
             {/* Free cells + Foundation row */}
             <div className="flex gap-2 mb-3 items-start flex-wrap">
               {/* Free cells */}
