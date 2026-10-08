@@ -446,6 +446,26 @@ describe('YanivPage', () => {
 // Web は同じ値 (state.config.scoreLimit) をレスポンスで受け取りながら
 // 一度も読んでいなかった。
 describe('YanivPage near-elimination warning', () => {
+  it('shows points remaining before elimination for active human and CPU players only', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player(0, true, [card('SPADE', 3)], { score: 170 }),
+          player(1, false, [], { score: 100 }),
+          player(2, false, [], { score: 210, isEliminated: true }),
+          player(3, false, [], { score: 20 }),
+        ],
+        config: { cpuDifficulty: 1, scoreLimit: 250 },
+      }),
+    );
+    renderWithProviders(<YanivPage />);
+
+    expect(await screen.findByTestId('yv-points-remaining-0')).toHaveTextContent('上限まであと80点（超えると脱落）');
+    expect(screen.getByTestId('yv-points-remaining-1')).toHaveTextContent('上限まであと150点（超えると脱落）');
+    expect(screen.queryByTestId('yv-points-remaining-2')).not.toBeInTheDocument();
+    expect(screen.getByTestId('yv-points-remaining-3')).toHaveTextContent('上限まであと230点（超えると脱落）');
+  });
+
   it('warns the players who are close to the limit', async () => {
     mockExec.mockResolvedValue(
       makeState({
