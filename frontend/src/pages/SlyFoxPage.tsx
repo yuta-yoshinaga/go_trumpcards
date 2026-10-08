@@ -302,9 +302,16 @@ function SlyFoxPageContent() {
                     disabled={!isPlaying || loading || source === null}
                     data-testid={`co-foundation-${idx.toString()}`}
                     aria-label={
-                      nextRankLabel
-                        ? `${t('foundation')} ${idx} ${dirLabel} ${t('nextRankAria', { rank: nextRankLabel })}`
-                        : `${t('foundation')} ${idx} ${dirLabel} ${t('foundationCompleteAria')}`
+                      top
+                        ? nextRankLabel
+                          ? t('foundationTopAria', {
+                              index: idx,
+                              direction: dirLabel,
+                              card: cardAlt(top),
+                              rank: nextRankLabel,
+                            })
+                          : t('foundationTopCompleteAria', { index: idx, direction: dirLabel, card: cardAlt(top) })
+                        : t('foundationEmptyAria', { index: idx, direction: dirLabel, rank: nextRankLabel })
                     }
                   >
                     <span className="text-[11px] mb-0.5 text-ds-text-muted">
