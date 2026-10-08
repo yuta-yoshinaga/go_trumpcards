@@ -22,11 +22,13 @@ function highRank(value: number): number {
   return value === 1 ? 14 : value;
 }
 
+/** Convert a two-card hand to a comparable score, with pairs ranked above high cards. */
 function score(cards: readonly Card[]): number[] {
   const ranks = cards.map((card) => highRank(card.value)).sort((a, b) => b - a);
   return ranks[0] === ranks[1] ? [1, ranks[0]] : [0, ...ranks];
 }
 
+/** Compare two hand scores lexicographically; positive means `a` wins. */
 function compareScores(a: readonly number[], b: readonly number[]): number {
   for (let i = 0; i < a.length; i += 1) {
     if (a[i] !== b[i]) return a[i] - b[i];
@@ -34,12 +36,23 @@ function compareScores(a: readonly number[], b: readonly number[]): number {
   return 0;
 }
 
+/**
+ * Apply the CPU stay rule: same as `internal/domain/Guts.go`'s `cpuStays` (pair,
+ * or highest card at least `gutsCpuStayHighCard = 11`). Keep both rules aligned when changing this.
+ */
 function stays(cards: readonly Card[]): boolean {
   const ranks = cards.map((card) => highRank(card.value));
   return ranks[0] === ranks[1] || Math.max(...ranks) >= 11;
 }
 
-/** Estimate the win chance against CPUs following Guts' existing stay rule. */
+/** Estimate the win chance against opponents following Guts' CPU stay rule.
+ *
+ * @param cards - The human's two cards.
+ * @param opponents - Opponent seats and whether each opponent is already out.
+ * @param humanSeat - The human's seat, used to resolve tied scores.
+ * @returns The estimated win probability as a percentage, from a deterministic Monte Carlo
+ *   simulation with 20,000 trials seeded from the hand and table.
+ */
 export function estimateGutsWinChance(
   cards: readonly Card[],
   opponents: readonly { seat: number; out: boolean }[],
