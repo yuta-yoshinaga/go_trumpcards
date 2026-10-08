@@ -246,6 +246,36 @@ describe('ShitheadPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /ブラインドで出す/ })).toBeInTheDocument());
   });
 
+  it.each([
+    ['hand', '出すソース: 手札'],
+    ['faceup', '出すソース: 表向きの場札'],
+    ['facedown', '出すソース: 裏向きの場札'],
+  ])('translates the player source label for %s', async (currentSource, expectedLabel) => {
+    mockExec.mockResolvedValue({ ...humanTurnState, currentSource });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/shithead']}>
+        <ShitheadPage />
+      </MemoryRouter>,
+    );
+
+    expect(
+      await screen.findByText((_, element) => element?.getAttribute('data-tutorial') === 'sh-player-hand'),
+    ).toHaveTextContent(expectedLabel);
+  });
+
+  it('does not show the current source after the game ends', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/shithead']}>
+        <ShitheadPage />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText('あなた — 順位 1')).toBeInTheDocument();
+    expect(screen.queryByText(/出すソース/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/hand|faceup|facedown/)).not.toBeInTheDocument();
+  });
+
   it('shows the current-source banner on the human turn and reflects the source', async () => {
     mockExec.mockResolvedValue({ ...humanTurnState, currentSource: 'facedown' });
     renderWithProviders(
