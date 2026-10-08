@@ -60,6 +60,7 @@ function TuSacPageContent() {
   // どの 1 枚か決まらない。
   const [selected, setSelected] = useState<number[]>([]);
   const [selectionChanged, setSelectionChanged] = useState(false);
+  const [selectedRounds, setSelectedRounds] = useState<number | null>(null);
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(tusacApi.exec);
 
@@ -82,6 +83,7 @@ function TuSacPageContent() {
   const isDiscard = phase === TuSacPhase.DISCARD;
   const isRoundEnd = phase === TuSacPhase.ROUND_END;
   const gameOver = !!state?.gameEndFlag;
+  const configuredRounds = selectedRounds ?? state?.config?.rounds ?? state?.rounds ?? 5;
   const canAct = !!state?.isHumanTurn && !gameOver;
 
   const clearSelection = useCallback(() => {
@@ -318,7 +320,25 @@ function TuSacPageContent() {
             <ErrorAlert message={error} onRetry={retry} />
             <SettingsPanel
               title={tc('settings.title')}
-              groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+              groups={[
+                {
+                  items: [
+                    hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
+                    {
+                      type: 'select',
+                      id: 'tusac-rounds',
+                      label: t('settings.rounds'),
+                      value: configuredRounds,
+                      options: Array.from({ length: 20 }, (_, index) => ({
+                        value: index + 1,
+                        label: String(index + 1),
+                      })),
+                      testId: 'tusac-rounds',
+                      onSelect: (value) => setSelectedRounds(Number(value)),
+                    },
+                  ],
+                },
+              ]}
             />
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
@@ -407,7 +427,7 @@ function TuSacPageContent() {
                 </button>
                 <GameResetButton
                   isGameEnd={gameOver}
-                  onReset={() => execApi('reset')}
+                  onReset={() => execApi('reset', { config: { rounds: configuredRounds } })}
                   requestConfirm={requestConfirm}
                   loading={loading}
                 />

@@ -31855,6 +31855,12 @@ paths:
                     type: integer
                 sessionId:
                   type: string
+                config:
+                  type: object
+                  properties:
+                    rounds:
+                      type: integer
+                      description: "Rounds in the game (1-20, default 5). Read by `reset`."
               example:
                 command: meld
                 indexes: [0, 3, 6]

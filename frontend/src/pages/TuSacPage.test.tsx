@@ -63,6 +63,7 @@ const base: TuSacResponse = {
   handSize: 20,
   deckSize: 112,
   meldPointsByKind: [0, 2, 3, 5],
+  config: { seats: 4, rounds: 5 },
   winnerSeat: 0,
   gameEndFlag: false,
   message: '',
@@ -142,6 +143,18 @@ describe('TuSacPage', () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<TuSacPage />);
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
+  });
+
+  it('現在のラウンド設定を初期値にし、設定値をリセット時に送る', async () => {
+    mockApi.mockResolvedValue(withState({ gameEndFlag: true }));
+    renderWithProviders(<TuSacPage />);
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
+    const rounds = await screen.findByTestId('tusac-rounds');
+    expect(rounds).toHaveValue('5');
+    fireEvent.change(rounds, { target: { value: '8' } });
+    expect(screen.getByTestId('tusac-round')).toHaveTextContent('ラウンド 1 / 5');
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset', { config: { rounds: 8 } }));
   });
 
   it('自分の手札を出す', async () => {
