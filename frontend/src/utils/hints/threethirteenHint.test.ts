@@ -13,8 +13,28 @@ function base({
 }: Partial<ThreeThirteenResponse> & Extra = {}) {
   return {
     players: [
-      { id: 0, isHuman: true, cardCount: hand.length, cards: hand, deadwood: 0, roundScore: 0, cumulativeScore: 0 },
-      { id: 1, isHuman: false, cardCount: 5, cards: [], deadwood: 0, roundScore: 0, cumulativeScore: 0 },
+      {
+        id: 0,
+        isHuman: true,
+        cardCount: hand.length,
+        cards: hand,
+        deadwood: 0,
+        melds: [],
+        deadwoodIndices: [],
+        roundScore: 0,
+        cumulativeScore: 0,
+      },
+      {
+        id: 1,
+        isHuman: false,
+        cardCount: 5,
+        cards: [],
+        deadwood: 0,
+        melds: [],
+        deadwoodIndices: [],
+        roundScore: 0,
+        cumulativeScore: 0,
+      },
     ],
     phase: ThreeThirteenPhase.DISCARD,
     round: 1,
