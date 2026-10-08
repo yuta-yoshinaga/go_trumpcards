@@ -375,6 +375,7 @@ function BelotePageContent() {
                 </td>
               </tr>
               <tr>
+                <td />
                 {[0, 1].map((team) => (
                   <td key={team} className={`text-xs${team === 1 ? ' text-center' : ''}`}>
                     {t('roundPoints', { points: state.roundPoints[team] })}

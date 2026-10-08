@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { beloteApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -123,6 +123,17 @@ describe('BelotePage', () => {
     );
     expect(screen.getByRole('row', { name: /累計得点/ })).toHaveTextContent('0');
     expect(screen.getByRole('row', { name: /ラウンド: 0点/ })).toBeInTheDocument();
+  });
+
+  it('aligns round points cells under their team columns', async () => {
+    mockExec.mockResolvedValue(makeState({ roundPoints: [82, 70] }));
+    renderWithProviders(<BelotePage />);
+
+    const row = await screen.findByRole('row', { name: /ラウンド: 82点.*ラウンド: 70点/ });
+    const cells = within(row).getAllByRole('cell');
+    expect(cells).toHaveLength(3);
+    expect(cells[1]).toHaveTextContent('ラウンド: 82点');
+    expect(cells[2]).toHaveTextContent('ラウンド: 70点');
   });
 
   it('calls reset on mount with default config', async () => {
