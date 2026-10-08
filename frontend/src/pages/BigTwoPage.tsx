@@ -306,6 +306,7 @@ function BigTwoPageContent() {
                       key={mode}
                       type="button"
                       onClick={() => setSortMode(mode)}
+                      aria-pressed={sortMode === mode}
                       className={sortMode === mode ? `${btnPrimary} min-w-[64px]` : `${btnSecondary} min-w-[64px]`}
                       data-testid={`bt-sort-${mode}`}
                     >
