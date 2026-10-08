@@ -14,6 +14,8 @@
   "label.tableEmpty": "Empty",
   "label.takeCandidate": "take candidate",
   "label.builds": "Builds",
+  "listSeparator": ", ",
+  "build.groupSeparator": "; ",
   "build.label": "Value {{value}} ({{kind}}) / owner: {{owner}}",
   "build.single": "single",
   "build.multi": "multi",
