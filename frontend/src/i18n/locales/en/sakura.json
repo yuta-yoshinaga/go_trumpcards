@@ -18,6 +18,7 @@
   "listSeparator": ", ",
   "fieldPosition": "table card {{position}}",
   "fieldPoints": "{{points}} points",
+  "handCardPoints": "{{cardName}}, {{points}} points",
   "fieldChoiceCandidate": "available choice",
   "fieldChoiceUnavailable": "not a choice",
   "fieldChoiceDisabledReason": "This field card cannot be selected right now.",
