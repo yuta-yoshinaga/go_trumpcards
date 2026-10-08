@@ -39,7 +39,9 @@
     "resetButton": "Press this button to restart the game from the beginning."
   },
   "slotCardZone": "{{card}} ({{zone}})",
+  "slotCardZonePlaceable": "{{card}} ({{zone}}), available as a move destination",
   "slotEmptyZone": "{{zone}} (empty)",
+  "slotEmptyZonePlaceable": "{{zone}} (empty), available as a move destination",
   "foundationZone": "foundation {{n}}",
   "frontendHint": {
     "russianbankToFoundation": "This card can go to a foundation",
