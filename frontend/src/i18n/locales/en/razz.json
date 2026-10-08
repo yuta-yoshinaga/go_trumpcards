@@ -14,6 +14,7 @@
   "holeCards": "Hole Cards",
   "yourHand": "Your Hand",
   "currentLow": "Current low: {{low}}",
+  "bestLowCards": "Cards outlined are part of the best low",
   "currentLowIncomplete": "Low incomplete (fewer than 5 ranks)",
   "callPotOdds": "Call {{amount}} · Pot odds {{odds}}%",
   "anteBringIn": "Ante/Bring-in",
