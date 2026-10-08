@@ -109,6 +109,20 @@ describe('FourSeasonsPage', () => {
     expect(screen.getByTestId('fs-foundation-next-1')).toHaveTextContent('7');
   });
 
+  it('announces the top card and next rank for occupied foundations while keeping empty labels unchanged', async () => {
+    renderWithProviders(<FourSeasonsPage />);
+    const occupied = await screen.findByTestId('fs-foundation-0');
+    expect(occupied).toHaveAttribute('aria-label', '組札 0: ♠ 7。次に置くべきカード 8');
+    expect(screen.getByTestId('fs-foundation-1')).toHaveAttribute('aria-label', '組札 1 次に置くべきカード 7');
+  });
+
+  it('announces the top card when a foundation is complete', async () => {
+    const completePile = Array.from({ length: 13 }, (_, index) => card('SPADE', index + 1));
+    mockExec.mockResolvedValue(makeState({ foundation: [completePile, [], [], []] }));
+    renderWithProviders(<FourSeasonsPage />);
+    expect(await screen.findByTestId('fs-foundation-0')).toHaveAttribute('aria-label', '組札 0: ♠ K。完成');
+  });
+
   it('places the tableau cross and foundation corners in the wide board grid', async () => {
     renderWithProviders(<FourSeasonsPage />);
     await screen.findByTestId('fs-foundation-0');

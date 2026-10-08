@@ -301,9 +301,19 @@ function FourSeasonsPageContent() {
                     disabled={!isPlaying || loading || source === null}
                     data-testid={`fs-foundation-${idx.toString()}`}
                     aria-label={
-                      nextRankLabel
-                        ? `${t('foundation')} ${idx} ${t('nextRankAria', { rank: nextRankLabel })}`
-                        : `${t('foundation')} ${idx} ${t('foundationCompleteAria')}`
+                      top
+                        ? nextRankLabel
+                          ? t('foundationTopAria', {
+                              idx,
+                              top: cardAlt(top),
+                              next: t('nextRankAria', { rank: nextRankLabel }),
+                            })
+                          : t('foundationTopCompleteAria', {
+                              idx,
+                              top: cardAlt(top),
+                              complete: t('foundationCompleteAria'),
+                            })
+                        : `${t('foundation')} ${idx} ${t('nextRankAria', { rank: valueName(state.baseRank) })}`
                     }
                   >
                     <span className="text-[11px] mb-0.5 text-ds-text-muted">F{idx}</span>
