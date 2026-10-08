@@ -186,15 +186,28 @@ function LaughAndLieDownPageContent() {
                       </span>
                     )}
                   </div>
-                  <div
-                    className="flex gap-1 justify-center flex-wrap"
-                    role="img"
-                    aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
-                  >
-                    {Array.from({ length: o.cardCount }, (_, i) => (
-                      <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                    ))}
-                  </div>
+                  {ended ? (
+                    <div className="flex gap-1 justify-center flex-wrap">
+                      {o.cards.map((card, i) => (
+                        <AnimatedCard
+                          key={`opp-${o.id.toString()}-c${i.toString()}`}
+                          card={card}
+                          width={cardWidth}
+                          draggable={false}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div
+                      className="flex gap-1 justify-center flex-wrap"
+                      role="img"
+                      aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
+                    >
+                      {Array.from({ length: o.cardCount }, (_, i) => (
+                        <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
