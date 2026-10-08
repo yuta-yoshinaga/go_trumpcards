@@ -380,7 +380,7 @@ function PyramidPageContent() {
                     type="button"
                     onClick={() => handleSelectCard({ zone: 'waste' }, wasteTopCard.value)}
                     disabled={!isPlaying || loading}
-                    aria-label={`${cardAlt(wasteTopCard)}${isWasteExposedKing ? ` ${t('a11y.kingRemovable')}` : ''}`}
+                    aria-label={`${cardAlt(wasteTopCard)}${isWastePairCandidate ? ` ${t('a11y.pairCandidate')}` : ''}${isWasteExposedKing ? ` ${t('a11y.kingRemovable')}` : ''}`}
                     aria-describedby="pyramid-waste-count"
                     aria-pressed={isSelected('waste')}
                     data-pair-candidate={isWastePairCandidate ? 'true' : undefined}
