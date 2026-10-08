@@ -3,7 +3,8 @@
     "title": "Pig's Tail Settings",
     "start": "Start Game",
     "playerCount": "Players",
-    "playerCountUnit": "{{count}} players"
+    "playerCountUnit": "{{count}} players",
+    "playerCountAppliesAfterReset": "The selected player count will apply to the next game after reset."
   },
   "button": {
     "draw": "Draw from Circle",

@@ -222,6 +222,8 @@ function PigsTailPageContent() {
                     type: 'select' as const,
                     id: 'playerCount',
                     label: t('setup.playerCount'),
+                    description:
+                      playerCount !== state.players.length ? t('setup.playerCountAppliesAfterReset') : undefined,
                     value: playerCount,
                     options: PIGTAIL_PLAYER_COUNT_OPTIONS.map((n) => ({
                       value: n,
