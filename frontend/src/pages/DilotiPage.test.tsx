@@ -252,6 +252,7 @@ describe('DilotiPage', () => {
       makeDilotiState({
         phase: 'roundEnd',
         isHumanTurn: false,
+        lastCapturer: 1,
         players: makeDilotiState().players.map((player, idx) => ({ ...player, score: idx === 0 ? 37 : 22 })),
         lastResult: {
           lines: [
@@ -271,10 +272,25 @@ describe('DilotiPage', () => {
     expect(result).toHaveTextContent('14 - 0');
     expect(result).toHaveTextContent('あなた: 今回 14 / 累計 37');
     expect(result).toHaveTextContent('CPU 1: 今回 0 / 累計 22');
+    expect(result).toHaveTextContent('最後に取ったプレイヤー: CPU 1');
     expect(result).toHaveTextContent('ゲームは続きます');
 
     fireEvent.click(screen.getByTestId('diloti-next-round'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+
+  it('does not show a last capturer when there is none', async () => {
+    mockExec.mockResolvedValue(
+      makeDilotiState({
+        phase: 'roundEnd',
+        isHumanTurn: false,
+        lastCapturer: -1,
+        lastResult: { lines: [], totals: [0, 0], cardCounts: [0, 0], xeris: [0, 0] },
+      }),
+    );
+    renderWithProviders(<DilotiPage />);
+    const result = await screen.findByTestId('diloti-round-result');
+    expect(result).not.toHaveTextContent('最後に取ったプレイヤー');
   });
 
   it('shows the winner at game end', async () => {

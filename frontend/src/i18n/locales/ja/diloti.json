@@ -34,6 +34,7 @@
   "xeri": "クセリ {{n}}",
   "dealerBadge": "親",
   "roundResult": "この局の集計（あなた - CPU）",
+  "lastCapturer": "最後に取ったプレイヤー: {{name}}",
   "score.cards": "最多枚数",
   "score.aces": "エース",
   "score.tenOfDiamonds": "10♦",
