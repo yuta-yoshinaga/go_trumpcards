@@ -54,7 +54,7 @@
     "side": "Sides - reach either row",
     "bottom": "Bottom four - reach the ace row only"
   },
-  "restrictionsActive": "First deal: top 4 reach the king row, bottom 4 the ace row, sides either",
+  "restrictionsActive": "First deal: top columns {{topCols}} reach the king row only, bottom columns {{bottomCols}} reach the ace row only, and side columns {{sideCols}} reach either row",
   "restrictionsLifted": "The destination restriction has been lifted",
   "listSeparator": ", ",
   "foundationDestination": "{{suit}} {{direction}} foundation",
