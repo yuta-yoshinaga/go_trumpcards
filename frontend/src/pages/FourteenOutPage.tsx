@@ -65,7 +65,19 @@ function FourteenOutPageContent() {
     cancelGiveUp,
   } = useGamePageSetup('fourteenout');
   const { cardWidth } = useCardDimensions();
-  const { state, loading, error, exec: execApi, retry } = useGameApi(fourteenoutApi.exec);
+  const {
+    state,
+    loading,
+    error,
+    exec: execApi,
+    retry,
+  } = useGameApi(fourteenoutApi.exec, {
+    onSuccess: (response, args) => {
+      if (args[0] === 'remove' && state && response.removedCount > state.removedCount) {
+        flashPairRemoved();
+      }
+    },
+  });
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -152,11 +164,10 @@ function FourteenOutPageContent() {
       // clearing the selection when the pair is locally invalid.
       const isValidPair = partners.has(col);
       void execApi('remove', selected, col);
-      if (isValidPair) flashPairRemoved();
-      else flashInvalidPair(selected, col);
+      if (!isValidPair) flashInvalidPair(selected, col);
       setSelected(null);
     },
-    [execApi, flashInvalidPair, flashPairRemoved, isPlaying, partners, selected, state],
+    [execApi, flashInvalidPair, isPlaying, partners, selected, state],
   );
 
   const handleUndo = useCallback(() => {

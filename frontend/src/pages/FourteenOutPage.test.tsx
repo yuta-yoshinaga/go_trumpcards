@@ -224,10 +224,29 @@ describe('FourteenOutPage', () => {
 
   // 有効なペアを取り除いた直後は成功トーストを表示する。
   it('shows pair-removed toast when a valid pair is removed', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValue({ ...playingState, removedCount: 2 });
     renderWithProviders(<FourteenOutPage />);
     fireEvent.click(await screen.findByTestId('mc-col-0'));
     fireEvent.click(screen.getByTestId('mc-col-1'));
     await waitFor(() => expect(screen.getByTestId('mc-pair-toast')).toBeInTheDocument());
+  });
+
+  it('does not show pair-removed toast when the server rejects the pair', async () => {
+    mockExec.mockResolvedValue({ ...playingState, message: 'rejected', messageCode: '' });
+    renderWithProviders(<FourteenOutPage />);
+    fireEvent.click(await screen.findByTestId('mc-col-0'));
+    fireEvent.click(screen.getByTestId('mc-col-1'));
+    await waitFor(() => expect(screen.getByText('rejected')).toBeInTheDocument());
+    expect(screen.queryByTestId('mc-pair-toast')).not.toBeInTheDocument();
+  });
+
+  it('does not show pair-removed toast when removal fails over the network', async () => {
+    renderWithProviders(<FourteenOutPage />);
+    fireEvent.click(await screen.findByTestId('mc-col-0'));
+    mockExec.mockRejectedValueOnce(new Error('network error'));
+    fireEvent.click(screen.getByTestId('mc-col-1'));
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+    expect(screen.queryByTestId('mc-pair-toast')).not.toBeInTheDocument();
   });
 
   it('explains and briefly marks columns when the selected pair does not make 14', async () => {
@@ -246,6 +265,7 @@ describe('FourteenOutPage', () => {
   });
 
   it('clears the invalid-pair notice when a valid pair is removed', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({ ...playingState, removedCount: 2 });
     renderWithProviders(<FourteenOutPage />);
     await screen.findByTestId('mc-col-0');
     vi.useFakeTimers();
@@ -267,16 +287,14 @@ describe('FourteenOutPage', () => {
   });
 
   it('clears the pair-removed toast when an invalid pair is selected', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValue({ ...playingState, removedCount: 2 });
     renderWithProviders(<FourteenOutPage />);
     await screen.findByTestId('mc-col-0');
-    vi.useFakeTimers();
 
     act(() => fireEvent.click(screen.getByTestId('mc-col-0')));
     act(() => fireEvent.click(screen.getByTestId('mc-col-1')));
+    expect(await screen.findByTestId('mc-pair-toast')).toBeInTheDocument();
     expect(screen.getByTestId('mc-pair-toast')).toBeInTheDocument();
-    await act(async () => {
-      await Promise.resolve();
-    });
 
     act(() => fireEvent.click(screen.getByTestId('mc-col-0')));
     act(() => fireEvent.click(screen.getByTestId('mc-col-2')));
