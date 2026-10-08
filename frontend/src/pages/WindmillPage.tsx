@@ -119,9 +119,13 @@ function WindmillPageContent() {
     [t],
   );
   const moveCards = useCallback(
-    (source: WindmillMoveZone, target: WindmillMoveZone) => {
+    async (source: WindmillMoveZone, target: WindmillMoveZone) => {
       pendingMove.current = { source, target };
-      void game.exec('move', source, target);
+      try {
+        await game.exec('move', source, target);
+      } catch {
+        pendingMove.current = null;
+      }
     },
     [game],
   );
@@ -139,28 +143,29 @@ function WindmillPageContent() {
     [game],
   );
   useEffect(() => {
+    if (error) {
+      pendingMove.current = null;
+    }
     if (!state) return;
-    if (previousMoveCount.current !== null && pendingMove.current) {
-      if (state.moveCount > previousMoveCount.current) {
-        const { source, target } = pendingMove.current;
-        pendingMove.current = null;
+    if (pendingMove.current) {
+      const move = pendingMove.current;
+      pendingMove.current = null;
+      if (previousMoveCount.current !== null && state.moveCount > previousMoveCount.current) {
         setMoveAnnouncement('');
         window.setTimeout(
           () =>
             setMoveAnnouncement(
               t('moveAnnouncement', {
-                source: zoneLabel(source),
-                target: zoneLabel(target),
+                source: zoneLabel(move.source),
+                target: zoneLabel(move.target),
               }),
             ),
           0,
         );
-      } else {
-        pendingMove.current = null;
       }
     }
     previousMoveCount.current = state.moveCount;
-  }, [state, t, zoneLabel]);
+  }, [error, state, t, zoneLabel]);
   const dnd = useSolitaireDragDrop<WindmillMoveZone>({
     onMove: dispatchMove,
     isPlaying: !!isPlayingForKbd,

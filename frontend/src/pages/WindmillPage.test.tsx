@@ -256,6 +256,22 @@ describe('WindmillPage', () => {
     expect(screen.getByTestId('wm-move-announcement')).toBeEmptyDOMElement();
   });
 
+  it('does not announce a failed move when a later operation increases the move count', async () => {
+    mockExec
+      .mockResolvedValueOnce(playingState)
+      .mockRejectedValueOnce(new Error('network unavailable'))
+      .mockResolvedValueOnce({ ...playingState, moveCount: 4 });
+    renderWithProviders(<WindmillPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /: ♠ 9$/ }));
+    fireEvent.click(screen.getByRole('button', { name: '中央組札 1/52枚、一番上の札は♣ A' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'sail', col: 0 }, { zone: 'center' }));
+    await waitFor(() => expect(screen.getByText(/手数: 3/)).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('autocomplete-button'));
+    await waitFor(() => expect(screen.getByText(/手数: 4/)).toBeInTheDocument());
+    expect(screen.getByTestId('wm-move-announcement')).toBeEmptyDOMElement();
+  });
+
   // An occupied corner is both a target for a descending card and the source of
   // the pull-back, so clicking it does different things by selection state.
   it('pulls a corner card back onto the centre', async () => {
