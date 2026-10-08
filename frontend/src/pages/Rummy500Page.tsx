@@ -33,7 +33,7 @@ import { Rummy500Phase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { playerName } from '../utils/playerUtils';
-import { rummy500HandPenalty } from '../utils/rummy500HandPenalty';
+import { rummy500CardPenalty, rummy500HandPenalty } from '../utils/rummy500HandPenalty';
 import { rummy500MeldScore } from '../utils/rummy500MeldScore';
 import { classifyRummy500Meld } from '../utils/rummy500MeldValidator';
 import { rummy500PickupCount } from '../utils/rummy500PickupCount';
@@ -386,9 +386,22 @@ function Rummy500PageContent() {
                 <h2 className="mb-2 text-sm font-semibold text-ds-text-primary">{t('roundHandPenalties')}</h2>
                 <ul className="space-y-1 text-sm text-ds-text-muted">
                   {state.players.map((p) => (
-                    <li key={p.id} className="flex justify-between gap-4">
-                      <span>{playerName(p.id, p.isHuman)}</span>
-                      <span className="tabular-nums">{t('handPenalty', { points: rummy500HandPenalty(p.cards) })}</span>
+                    <li key={p.id} className="flex flex-col gap-1">
+                      <div className="flex justify-between gap-4">
+                        <span>{playerName(p.id, p.isHuman)}</span>
+                        <span className="tabular-nums">
+                          {t('handPenalty', { points: rummy500HandPenalty(p.cards) })}
+                        </span>
+                      </div>
+                      {p.cards.length > 0 && (
+                        <ul className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
+                          {p.cards.map((card, idx) => (
+                            <li key={`${card.design}-${card.value}-${idx}`}>
+                              {t('cardHandPenalty', { card: cardAlt(card), points: rummy500CardPenalty(card.value) })}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </li>
                   ))}
                 </ul>
