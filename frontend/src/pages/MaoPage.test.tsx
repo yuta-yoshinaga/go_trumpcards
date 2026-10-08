@@ -108,6 +108,21 @@ describe('MaoPage', () => {
     });
   });
 
+  it('labels the human hand as a named region and preserves card selection state', async () => {
+    renderWithProviders(<MaoPage />);
+    const hand = await screen.findByRole('region', { name: 'あなたの手札' });
+    const card = screen.getByRole('button', { name: '♠ A' });
+
+    expect(hand).toContainElement(card);
+    expect(card).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(card);
+    expect(card).toHaveAttribute('aria-pressed', 'true');
+
+    await i18n.changeLanguage('en');
+    expect(screen.getByRole('region', { name: 'Your hand' })).toContainElement(card);
+    await i18n.changeLanguage('ja');
+  });
+
   it('calls play when play button clicked', async () => {
     renderWithProviders(<MaoPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
