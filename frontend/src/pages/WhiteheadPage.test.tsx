@@ -166,6 +166,17 @@ describe('WhiteheadPage', () => {
     await i18n.changeLanguage('ja');
   });
 
+  it('announces empty tableau columns with zero-based indices in Japanese and English', async () => {
+    renderWithProviders(<WhiteheadPage />);
+    expect(await screen.findByRole('button', { name: '空の列 2（どの札でも置けます）' })).toBeInTheDocument();
+
+    await i18n.changeLanguage('en');
+    expect(
+      await screen.findByRole('button', { name: 'Empty column 2 (any card may be placed here)' }),
+    ).toBeInTheDocument();
+    await i18n.changeLanguage('ja');
+  });
+
   it('shows foundation progress when the game is over', async () => {
     mockExec.mockResolvedValue({ ...gameOverState, foundation: withFoundationState.foundation });
     renderWithProviders(<WhiteheadPage />);
@@ -284,20 +295,20 @@ describe('WhiteheadPage', () => {
     expect(kElements.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('empty tableau column buttons announce that any card can be placed and their 1-based column number', async () => {
+  it('empty tableau column buttons announce that any card can be placed and their zero-based column number', async () => {
     renderWithProviders(<WhiteheadPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
-    // In playingState, columns 3, 4, 5, 6, 7 (1-based) are empty.
+    // In playingState, columns 2, 3, 4, 5, 6 (0-based) are empty.
     // Each empty column must have a distinct aria-label containing its column number.
-    const col3Button = screen.getByRole('button', { name: '空の列 3（どの札でも置けます）' });
-    const col7Button = screen.getByRole('button', { name: '空の列 7（どの札でも置けます）' });
+    const col2Button = screen.getByRole('button', { name: '空の列 2（どの札でも置けます）' });
+    const col6Button = screen.getByRole('button', { name: '空の列 6（どの札でも置けます）' });
 
-    expect(col3Button).toBeInTheDocument();
-    expect(col7Button).toBeInTheDocument();
-    expect(col3Button).not.toBe(col7Button);
+    expect(col2Button).toBeInTheDocument();
+    expect(col6Button).toBeInTheDocument();
+    expect(col2Button).not.toBe(col6Button);
 
-    for (const colNum of [3, 4, 5, 6, 7]) {
+    for (const colNum of [2, 3, 4, 5, 6]) {
       const btn = screen.getByRole('button', { name: `空の列 ${colNum}（どの札でも置けます）` });
       expect(btn).toBeInTheDocument();
       const ariaLabel = btn.getAttribute('aria-label');
@@ -306,9 +317,9 @@ describe('WhiteheadPage', () => {
       expect(ariaLabel).not.toContain('}}');
     }
 
-    // Filled columns (1, 2) must not have empty-column buttons.
+    // Filled columns (0, 1) must not have empty-column buttons.
+    expect(screen.queryByRole('button', { name: '空の列 0（どの札でも置けます）' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '空の列 1（どの札でも置けます）' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: '空の列 2（どの札でも置けます）' })).not.toBeInTheDocument();
   });
 
   it('clicking draw button dispatches draw', async () => {
