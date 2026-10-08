@@ -105,6 +105,19 @@ describe('TysiacPage', () => {
     expect(banner).toHaveTextContent('♥ K-Q (+100)');
   });
 
+  it('does not show a marriage as available after the trick has been led', async () => {
+    mockExec.mockResolvedValue(
+      makeTysiacState({
+        currentTrick: [{ playerIdx: 1, card: { design: 'SPADE', value: 7 } }],
+      }),
+    );
+    renderWithProviders(<TysiacPage />);
+
+    await waitFor(() => expect(screen.getByTestId('tysiac-prompt-live')).toHaveTextContent('マリッジ候補なし'));
+    expect(screen.queryByTestId('tysiac-marriage')).not.toBeInTheDocument();
+    expect(screen.getByTestId('tysiac-marriage-announcement')).toHaveTextContent('マリッジ候補なし');
+  });
+
   it('renders the bid phase with raise and pass buttons', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<TysiacPage />);
