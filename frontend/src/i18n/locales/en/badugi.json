@@ -31,6 +31,7 @@
     "cpuMetaAIHelp": "Changing Meta-AI does not affect the current hand; it applies from the next reset (new hand)."
   },
   "bestCards": "Best cards",
+  "bestCardsHighlight": "Card used in the showdown hand",
   "tutorial": {
     "playerHand": "Your 4 cards. The best non-paired, non-suited subset is your hand.",
     "exchangeButton": "Click cards to discard and press Exchange. Up to three draws per hand.",

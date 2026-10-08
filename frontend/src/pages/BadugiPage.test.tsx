@@ -191,6 +191,33 @@ describe('BadugiPage', () => {
     await waitFor(() => expect(screen.getByText('あなたの勝ちです。')).toBeInTheDocument());
   });
 
+  it('highlights the showdown best cards for the human and revealed CPUs only', async () => {
+    const humanCards = humanPlayer().cards;
+    const humanBestCards = humanCards.filter((_, index) => index === 0 || index === 2);
+    const cpuCards = [
+      { design: 'SPADE' as const, value: 5 },
+      { design: 'HEART' as const, value: 6 },
+    ];
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: BadugiPhase.END,
+        gameEndFlag: true,
+        players: [
+          humanPlayer({ bestCards: humanBestCards }),
+          { ...cpuPlayer(1), cards: cpuCards, bestCards: cpuCards.slice(1) },
+          { ...cpuPlayer(2), folded: true, cards: cpuCards, bestCards: undefined },
+        ],
+      }),
+    );
+    renderWithProviders(<BadugiPage />);
+
+    const humanHighlightedCards = await screen.findAllByTestId('bg-showdown-best-card');
+    expect(humanHighlightedCards).toHaveLength(2);
+    expect(humanHighlightedCards[0]).toHaveAccessibleName(/ショーダウンの役を構成するカード/);
+    expect(screen.getAllByTestId('cpu-hole-used-indicator')).toHaveLength(1);
+    expect(screen.getByTestId('cpu-hole-used-indicator')).toHaveAccessibleName('ショーダウンの役を構成するカード');
+  });
+
   it('lists each showdown result with its hand name and winnings', async () => {
     mockExec.mockResolvedValue(
       baseState({
