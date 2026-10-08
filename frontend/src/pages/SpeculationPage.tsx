@@ -156,6 +156,31 @@ function SpeculationPageContent() {
   const humanSells = state.offerTo === SPECULATION_HUMAN_SEAT;
   const humanBuys = state.offerFrom === SPECULATION_HUMAN_SEAT;
   const offerOpen = isAuctionPhase && state.offerFrom !== SPECULATION_NO_SEAT && state.offerTo !== SPECULATION_NO_SEAT;
+  const liveAnnouncement = [
+    isFlipPhase && !gameOver
+      ? state.turnSeat === SPECULATION_HUMAN_SEAT
+        ? t('guide.yourTurn')
+        : t('guide.cpuTurn', { name: state.seats[state.turnSeat].name })
+      : '',
+    offerOpen
+      ? humanSells
+        ? t('live.sell', {
+            buyer: state.seats[state.offerFrom].name,
+            amount: state.offerAmount,
+            accept: t('button.accept'),
+            decline: t('button.decline'),
+          })
+        : t('live.buy', {
+            owner: state.seats[state.offerTo].name,
+            amount: state.offerAmount,
+            accept: t('button.accept'),
+            decline: t('button.decline'),
+            raise: t('button.raise'),
+          })
+      : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <GamePageShell
@@ -178,6 +203,9 @@ function SpeculationPageContent() {
         </>
       }
     >
+      <div role="status" aria-live="polite" className="sr-only">
+        {liveAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (

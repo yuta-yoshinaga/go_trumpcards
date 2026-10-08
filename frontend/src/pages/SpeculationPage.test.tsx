@@ -190,6 +190,45 @@ describe('SpeculationPage', () => {
     expect(screen.getByTestId('sp-seat-1').className).toContain('ring-ds-accent');
   });
 
+  it('常設の status で手番と競りの相手・提示額・操作を通知する', async () => {
+    mockApi.mockResolvedValue(buyingState);
+    renderWithProviders(<SpeculationPage />);
+    await waitFor(() =>
+      expect(screen.getAllByRole('status').some((element) => element.classList.contains('sr-only'))).toBe(true),
+    );
+    const status = screen.getAllByRole('status').find((element) => element.classList.contains('sr-only'));
+    if (!status) throw new Error('Speculation announcement status was not rendered');
+    expect(status).toHaveTextContent('CPU2');
+    expect(status).toHaveTextContent('25');
+    expect(status).toHaveTextContent('受ける');
+    expect(status).toHaveTextContent('断る');
+    expect(status).toHaveTextContent('上乗せして買う');
+    expect(status).toHaveClass('sr-only');
+  });
+
+  it('ゲーム終了時は flip の手番を status で通知しない', async () => {
+    mockApi.mockResolvedValue(withState({ gameEndFlag: true }));
+    renderWithProviders(<SpeculationPage />);
+    await waitFor(() =>
+      expect(screen.getAllByRole('status').some((element) => element.classList.contains('sr-only'))).toBe(true),
+    );
+    const status = screen.getAllByRole('status').find((element) => element.classList.contains('sr-only'));
+    if (!status) throw new Error('Speculation announcement status was not rendered');
+    expect(status).not.toHaveTextContent('あなたの番です。伏せ札を1枚めくってください');
+    expect(status).not.toHaveTextContent('CPU1 の番です');
+  });
+
+  it('案内のない局面でも status を DOM に残す', async () => {
+    mockApi.mockResolvedValue(withState({ phase: SpeculationPhase.RESULT }));
+    renderWithProviders(<SpeculationPage />);
+    await waitFor(() =>
+      expect(screen.getAllByRole('status').some((element) => element.classList.contains('sr-only'))).toBe(true),
+    );
+    const status = screen.getAllByRole('status').find((element) => element.classList.contains('sr-only'));
+    if (!status) throw new Error('Speculation announcement status was not rendered');
+    expect(status).toBeEmptyDOMElement();
+  });
+
   it('めくるボタンが flip を送る', async () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<SpeculationPage />);
