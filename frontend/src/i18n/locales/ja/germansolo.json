@@ -55,6 +55,7 @@
   "forehandBadge": "先手",
   "forehandAria": "このディールの先手（最初にビッドし、第1トリックをリード）",
   "score": "得点: {{score}}",
+  "matchRank": "{{rank}}位",
   "playerScore": "{{name}}: {{score}}点",
   "playButton": "出す",
   "nextTrick": "次のトリック",
