@@ -53,9 +53,29 @@ function BanLuckPageContent() {
 
   const [bet, setBet] = useState(50);
   const [turnAnnouncement, setTurnAnnouncement] = useState(false);
+  const [resultAnnouncement, setResultAnnouncement] = useState('');
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(banluckApi.exec);
   const previousHumanTurn = useRef<boolean | undefined>(undefined);
+  const announcedResult = useRef<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (!state || (state.phase !== BanLuckPhase.ROUND_END && state.phase !== BanLuckPhase.GAME_END)) return;
+    const resultKey = JSON.stringify([
+      state.roundNumber,
+      state.bankerSeat,
+      state.seats.map((seat) => [seat.name, seat.rank, seat.outcome, seat.delta]),
+    ]);
+    if (announcedResult.current === resultKey) return;
+    announcedResult.current = resultKey;
+    setResultAnnouncement(
+      state.seats
+        .map((seat) =>
+          t('result.seatAnnouncement', { name: seat.name, rank: t(`rank.${rankKeyOf(seat.rank)}`), delta: seat.delta }),
+        )
+        .join(t('listSeparator')),
+    );
+  }, [state, t]);
 
   useEffect(() => {
     // Before the first response there is nothing to compare against; recording
@@ -146,6 +166,9 @@ function BanLuckPageContent() {
           </span>
           <span className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="bl-turn-live">
             {turnAnnouncement ? t('yourTurn') : ''}
+          </span>
+          <span className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="bl-result-live">
+            {resultAnnouncement}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
