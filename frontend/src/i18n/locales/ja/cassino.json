@@ -14,6 +14,8 @@
   "label.tableEmpty": "なし",
   "label.takeCandidate": "テイク候補",
   "label.builds": "ビルド",
+  "listSeparator": "、",
+  "build.groupSeparator": "；",
   "build.label": "値{{value}} ({{kind}}) / 所有:{{owner}}",
   "build.single": "単一",
   "build.multi": "複合",
