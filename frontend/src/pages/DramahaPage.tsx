@@ -307,6 +307,8 @@ function DramahaPageContent() {
     () =>
       (state?.roundResults ?? []).map((r) => ({
         playerIdx: r.playerIdx,
+        omahaAmount: r.hiWonAmount ?? 0,
+        drawAmount: r.lowWonAmount ?? 0,
         omahaWon: (r.hiWonAmount ?? 0) > 0,
         drawWon: (r.lowWonAmount ?? 0) > 0,
       })),
@@ -481,6 +483,10 @@ function DramahaPageContent() {
                       {findPlayerName(state.players, r.playerIdx)}
                       {': '}
                       {halves.length > 0 ? t('result.wonHalves', { halves: halves.join(' + ') }) : t('result.wonNone')}
+                      {t('result.splitAmounts', {
+                        omahaAmount: r.omahaAmount,
+                        drawAmount: r.drawAmount,
+                      })}
                       {r.omahaWon && r.drawWon && (
                         <span className="ml-1 text-ds-warning font-bold" data-testid="dramaha-scoop">
                           {t('result.scoop')}
