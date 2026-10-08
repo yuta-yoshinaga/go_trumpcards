@@ -1895,6 +1895,15 @@ describe('BlackJackPage', () => {
 
   // --- Payout table collapsible tests ---
 
+  it('shows Spanish 21 bonus payouts and a clear payout table prompt before betting', async () => {
+    mockSpanish21Exec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<BlackJackPage variant="spanish21" />);
+
+    expect(await screen.findByText(/5枚で21.*3:2.*6枚で21.*2:1.*7枚以上で21.*3:1/)).toBeInTheDocument();
+    expect(screen.getByText(/6-7-8.*7-7-7/)).toBeInTheDocument();
+    expect(screen.getByText('配当表 (Spanish 21 ボーナス)')).toBeInTheDocument();
+  });
+
   it('payout table is rendered as a collapsible details element in bet phase', async () => {
     mockExec.mockResolvedValue(betPhaseState);
     const { container } = renderWithProviders(<BlackJackPage />);

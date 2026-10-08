@@ -155,5 +155,6 @@
     "push": "Push",
     "chips": "chips",
     "roundNetChange": "Round net: {{amount}} chips"
-  }
+  },
+  "betBonusGuide": "Spanish 21 pays bonuses for 5-card 21 (3:2), 6-card 21 (2:1), and 7+ card 21 (3:1), plus 6-7-8 and 7-7-7 hands. Open the payout table for suit conditions and details."
 }
