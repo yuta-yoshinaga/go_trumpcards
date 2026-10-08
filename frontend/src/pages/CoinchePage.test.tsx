@@ -92,6 +92,25 @@ beforeEach(() => {
 });
 
 describe('CoinchePage', () => {
+  it('includes each trick player’s team role and card name in the accessible card name', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: CoinchePhase.PLAY,
+        currentTrick: [
+          { playerIdx: 0, card: card('SPADE', 11) },
+          { playerIdx: 1, card: card('HEART', 10) },
+        ],
+      }),
+    );
+    renderWithProviders(<CoinchePage />);
+    await waitFor(() => expect(screen.getByTestId('trick-display-cards')).toBeInTheDocument());
+    const names = screen
+      .getAllByTestId('animated-card')
+      .map((element) => element.querySelector('img')?.getAttribute('alt'));
+    expect(names[0]).toBe('あなた、味方、♠ J');
+    expect(names[1]).toBe('CPU 1、相手、♥ 10');
+  });
+
   it('aligns team column headers with their score values after the row labels', async () => {
     renderWithProviders(<CoinchePage />);
     const cumulativeRowHeader = await screen.findByRole('rowheader', { name: '累計得点' });

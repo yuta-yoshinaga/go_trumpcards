@@ -25,6 +25,7 @@ import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { COINCHE_CAPOT_POINTS, CoinchePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { coincheLegalPlayIndices } from '../utils/coincheLegal';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -358,6 +359,13 @@ function CoinchePageContent() {
           cardWidth={cardWidth}
           label={t('currentTrick')}
           dataTutorial="be-trick-display"
+          cardAriaLabelFor={(player, card) =>
+            t('trickCardAria', {
+              player: playerName(player.id, player.isHuman),
+              relation: t(player.team === humanPlayer?.team ? 'ally' : 'opponent'),
+              card: cardAlt(card),
+            })
+          }
         />
 
         {/* Team scores */}
