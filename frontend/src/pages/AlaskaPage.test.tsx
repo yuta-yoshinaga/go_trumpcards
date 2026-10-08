@@ -454,6 +454,29 @@ describe('AlaskaPage keyboard shortcuts', () => {
 });
 
 describe('AlaskaPage deselect routing (#4439)', () => {
+  it('exposes source selection through the pressed state without adding it to the accessible label', async () => {
+    renderWithProviders(<AlaskaPage />);
+    const heart8 = await screen.findByRole('button', { name: '♥ 8、列1、上から2枚目' });
+    expect(heart8).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(heart8);
+    expect(heart8).toHaveAttribute('aria-pressed', 'true');
+    expect(heart8).toHaveAccessibleName('♥ 8、列1、上から2枚目');
+    expect(heart8).not.toHaveAccessibleName(/選択中/);
+    fireEvent.click(heart8);
+    expect(heart8).toHaveAttribute('aria-pressed', 'false');
+
+    try {
+      await i18n.changeLanguage('en');
+      const englishCard = screen.getByRole('button', { name: '♥ 8, column 1, card 2 from top' });
+      fireEvent.click(englishCard);
+      expect(englishCard).toHaveAttribute('aria-pressed', 'true');
+      expect(englishCard).toHaveAccessibleName('♥ 8, column 1, card 2 from top');
+      expect(englishCard).not.toHaveAccessibleName(/selected/);
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   // Clicking a selected card that is ALSO the last card in its column must
   // deselect it. It used to be routed to handleSelectTarget instead, dispatching a
   // move onto its own column, which the server rejects — so a player trying to
