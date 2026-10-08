@@ -251,6 +251,9 @@ function TeenPattiPageContent() {
                   >
                     {playerLabel(p.id, p.isHuman)} — {t('chips', { amount: p.chips })} ·{' '}
                     {t('roundBet', { amount: p.roundBet })} · [{badge}]{p.handName ? ` · ${handName(p.handName)}` : ''}
+                    {p.id === state.currentPlayerIdx && (
+                      <span className="ml-2 font-semibold">{t('turnIndicator')}</span>
+                    )}
                     {p.id === state.dealerIdx && (
                       <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
                         {t('dealerBadge')}

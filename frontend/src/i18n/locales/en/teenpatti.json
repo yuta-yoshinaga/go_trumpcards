@@ -25,6 +25,7 @@
   "handLabel": "Your hand",
   "blindHandDescription": "Your hand while blind. The cards are face down.",
   "currentTurn": "Current turn: {{name}}",
+  "turnIndicator": "On turn",
   "playersTitle": "Players",
   "dealerBadge": "Dealer",
   "badge": {
