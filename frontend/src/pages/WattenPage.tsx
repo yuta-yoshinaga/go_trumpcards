@@ -539,33 +539,37 @@ function WattenPageContent() {
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="watten-action-buttons">
               {canDeclare && (
                 <>
-                  <span className="text-ds-text-muted text-sm">{t('chooseSchlag')}:</span>
-                  {SCHLAG_CHOICES.map((c) => (
-                    <button
-                      key={c.value}
-                      type="button"
-                      className={selectedRank === c.value ? btnPrimary : btnSecondary}
-                      onClick={() => setSelectedRank(c.value)}
-                      disabled={loading}
-                      aria-pressed={selectedRank === c.value}
-                    >
-                      {c.label}
-                    </button>
-                  ))}
-                  <span className="text-ds-text-muted text-sm">{t('chooseCritical')}:</span>
-                  {SUIT_CHOICES.map((c) => (
-                    <button
-                      key={c.code}
-                      type="button"
-                      className={selectedSuit === c.code ? btnPrimary : btnSecondary}
-                      onClick={() => setSelectedSuit(c.code)}
-                      disabled={loading}
-                      aria-label={t(SUIT_KEYS[c.code])}
-                      aria-pressed={selectedSuit === c.code}
-                    >
-                      {c.symbol}
-                    </button>
-                  ))}
+                  <fieldset className="flex flex-wrap items-center gap-2 border-0 p-0 m-0 min-w-0">
+                    <legend className="text-ds-text-muted text-sm">{t('chooseSchlag')}</legend>
+                    {SCHLAG_CHOICES.map((c) => (
+                      <button
+                        key={c.value}
+                        type="button"
+                        className={selectedRank === c.value ? btnPrimary : btnSecondary}
+                        onClick={() => setSelectedRank(c.value)}
+                        disabled={loading}
+                        aria-pressed={selectedRank === c.value}
+                      >
+                        {c.label}
+                      </button>
+                    ))}
+                  </fieldset>
+                  <fieldset className="flex flex-wrap items-center gap-2 border-0 p-0 m-0 min-w-0">
+                    <legend className="text-ds-text-muted text-sm">{t('chooseCritical')}</legend>
+                    {SUIT_CHOICES.map((c) => (
+                      <button
+                        key={c.code}
+                        type="button"
+                        className={selectedSuit === c.code ? btnPrimary : btnSecondary}
+                        onClick={() => setSelectedSuit(c.code)}
+                        disabled={loading}
+                        aria-label={t(SUIT_KEYS[c.code])}
+                        aria-pressed={selectedSuit === c.code}
+                      >
+                        {c.symbol}
+                      </button>
+                    ))}
+                  </fieldset>
                   <button
                     type="button"
                     className={btnPrimary}
