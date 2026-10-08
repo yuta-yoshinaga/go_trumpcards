@@ -28,6 +28,7 @@
   "koikoiCount": "Koi-Koi: {{count}}",
   "field": "Field",
   "fieldEmpty": "(empty)",
+  "fieldCardCandidate": "{{card}} — capture candidate",
   "pickField": "Pick a field card to capture (two cards match).",
   "you": "You",
   "cpu": "CPU",

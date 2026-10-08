@@ -147,6 +147,24 @@ describe('KoiKoiPage', () => {
     expect(second).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('announces field capture candidates while keeping other field cards disabled', async () => {
+    const base = makeKoiKoiState();
+    mockExec.mockResolvedValue(
+      makeKoiKoiState({
+        fieldCards: [...base.fieldCards, base.fieldCards[1]],
+        captureOptions: { 0: [0, 2] },
+      }),
+    );
+    renderWithProviders(<KoiKoiPage />);
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+
+    const candidate = screen.getByTestId('field-card-0');
+    const other = screen.getByTestId('field-card-1');
+    expect(candidate).toHaveAccessibleName('3月 カス 🌸 — 捕獲候補');
+    expect(candidate).toBeEnabled();
+    expect(other).toBeDisabled();
+  });
+
   it('requires a field pick for a two-way match, then plays with fieldIndex', async () => {
     mockExec.mockResolvedValue(makeKoiKoiState({ captureOptions: { 0: [0, 1] } }));
     renderWithProviders(<KoiKoiPage />);
