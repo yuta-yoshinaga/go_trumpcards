@@ -194,8 +194,8 @@ func (pp *ChinesePokerCuiPresenter) frontRankStr(rank int) string {
 
 // fiveCardRankStr 5枚ハンドランク文字列
 func (pp *ChinesePokerCuiPresenter) fiveCardRankStr(rank int) string {
-	if rank >= 0 && rank < len(domain.PokerHandNames) {
-		return domain.PokerHandNames[rank]
+	if key := pokerHandKey(rank); key != "" {
+		return i18n.T("pokerhand." + key)
 	}
 	return i18n.T("chinesepoker.rankUnknown")
 }

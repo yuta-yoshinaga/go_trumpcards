@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestChinesePokerCuiPresenter_Output_BetPhase(t *testing.T) {
@@ -181,6 +182,19 @@ func TestChinesePokerCuiPresenter_FrontRankIsTranslated(t *testing.T) {
 	// 範囲外は未知ランクの文言に落ちる。キー文字列を出さない。
 	assert.NotContains(t, pp.frontRankStr(99), "pokerhand.")
 	assert.NotEmpty(t, pp.frontRankStr(99))
+}
+
+func TestChinesePokerCuiPresenter_FiveCardRankIsTranslated(t *testing.T) {
+	originalLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(originalLang) })
+	pp := new(ChinesePokerCuiPresenter)
+
+	i18n.SetLang("ja")
+	assert.Equal(t, "ハイカード", pp.fiveCardRankStr(domain.PokerHandHighCard))
+	assert.Equal(t, "ストレートフラッシュ", pp.fiveCardRankStr(domain.PokerHandStraightFlush))
+	i18n.SetLang("en")
+	assert.Equal(t, "High Card", pp.fiveCardRankStr(domain.PokerHandHighCard))
+	assert.Equal(t, "Straight Flush", pp.fiveCardRankStr(domain.PokerHandStraightFlush))
 }
 
 // **CUI には推奨分割もファウル警告も無かった (#4717)。**Web には
