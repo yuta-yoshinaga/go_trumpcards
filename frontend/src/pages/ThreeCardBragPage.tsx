@@ -291,6 +291,11 @@ function ThreeCardBragPageContent() {
                     className={`text-sm py-0.5 ${p.id === state.currentPlayerIdx ? 'text-ds-warning' : 'text-ds-text-muted'} ${p.isHuman ? 'font-semibold' : ''}`}
                   >
                     {playerLabel(p.id, p.isHuman)}
+                    {p.id === state.currentPlayerIdx && (
+                      <span className="ml-1 rounded-sm bg-ds-warning px-1 text-ds-text-on-accent">
+                        {t('turnBadge')}
+                      </span>
+                    )}
                     {p.id === state.dealerIdx && (
                       <span className="ml-1 rounded-sm bg-ds-surface px-1 text-ds-accent">{t('dealerBadge')}</span>
                     )}{' '}
