@@ -218,7 +218,7 @@ function KlaberjassPageContent() {
   const handleManualReset = () => {
     hideActionLog();
     setSelected(null);
-    exec('reset', { config: { targetScore } });
+    exec('reset', { config: { targetScore, allowSchmeiss } });
   };
 
   return (
