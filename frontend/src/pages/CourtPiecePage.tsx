@@ -44,6 +44,14 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 /** Tricks a team must take within a 13-trick round to win it (Sar); mirrors CourtPieceTricksToWin in internal/domain/CourtPiece.go. */
 const COURT_PIECE_TRICKS_TO_WIN = 7;
 
+/** Shared translation keys for card suit designs used by the trick display. */
+const SUIT_I18N_KEYS: Record<string, string> = {
+  SPADE: 'common.suit.spade',
+  CLOVER: 'common.suit.club',
+  HEART: 'common.suit.heart',
+  DIAMOND: 'common.suit.diamond',
+};
+
 /** Court Piece (Rang) tutorial step definitions. */
 const COURT_PIECE_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="courtpiece-info"]', messageKey: 'tutorial.info', placement: 'bottom', advanceOn: 'next' },
@@ -138,6 +146,7 @@ function CourtPiecePageContent() {
   const isTrickEnd = state.phase === CourtPiecePhase.TRICK_END;
   const isRoundEnd = state.phase === CourtPiecePhase.ROUND_END;
   const isGameEnd = state.phase === CourtPiecePhase.GAME_END || state.gameEndFlag;
+  const leadSuitKey = state.currentTrick[0] ? SUIT_I18N_KEYS[state.currentTrick[0].card.design] : undefined;
 
   // The web contract carries no explicit turn flags, so derive them from the
   // current seat: it is the human's turn whenever currentPlayerIdx is the human.
@@ -234,6 +243,8 @@ function CourtPiecePageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  leadSuit={leadSuitKey ? tc(leadSuitKey) : undefined}
+                  leadSuitLabel={t('leadSuit')}
                   dataTutorial="courtpiece-trick-display"
                   // ResolveTrick stores the winner in leadPlayerIdx and keeps it
                   // until NextTrick starts the following trick.
