@@ -49,7 +49,8 @@
   "mustBidLine": "45点以上のチームは、自分がビッドしない限り加点できません。",
   "settings": {
     "title": "設定",
-    "allowNoTrump": "ノートランプを許可"
+    "allowNoTrump": "ノートランプを許可",
+    "newHandNotice": "設定変更は次の局から適用されます。"
   },
   "phase": {
     "bid": "ビッド",
