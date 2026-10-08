@@ -516,9 +516,11 @@ function ConquianPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={btnPrimary}
-                    onClick={handleDiscard}
-                    disabled={loading || selectedCardIndices.length !== 1}
+                    className={`${btnPrimary} ${loading || selectedCardIndices.length !== 1 || state.tookDiscard ? 'opacity-70 cursor-not-allowed saturate-50' : ''}`}
+                    onClick={() => {
+                      if (!loading && selectedCardIndices.length === 1 && !state.tookDiscard) handleDiscard();
+                    }}
+                    aria-disabled={loading || selectedCardIndices.length !== 1 || state.tookDiscard || undefined}
                     data-tutorial="cq-discard-button"
                   >
                     {t('discardButton')}
