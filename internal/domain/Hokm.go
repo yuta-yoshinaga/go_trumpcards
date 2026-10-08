@@ -80,6 +80,8 @@ type Hokm struct {
 	hakemIdx int
 
 	currentTrick     []*TrickCard
+	lastTrick        []*TrickCard
+	lastTrickWinner  int
 	currentPlayerIdx int
 	leadPlayerIdx    int
 
@@ -102,7 +104,7 @@ type Hokm struct {
 
 // NewHokm コンストラクタ
 func NewHokm(trumpCards *TrumpCards, players []*HokmPlayer, config HokmConfig) *Hokm {
-	return &Hokm{trumpCards: trumpCards, players: players, config: config, winnerTeam: -1, lastHandWinner: -1}
+	return &Hokm{trumpCards: trumpCards, players: players, config: config, winnerTeam: -1, lastHandWinner: -1, lastTrickWinner: -1}
 }
 
 // NewDefaultHokm 既定構成（人間 1 + CPU 3）のコンストラクタ
@@ -139,6 +141,8 @@ func (h *Hokm) dealHand() {
 	h.phase = HokmPhaseTrump
 	h.trickNumber = 0
 	h.currentTrick = nil
+	h.lastTrick = nil
+	h.lastTrickWinner = -1
 	h.trumpSuit = 0
 	for _, p := range h.players {
 		p.ResetRound()
@@ -331,6 +335,8 @@ func (h *Hokm) GetValidPlayIndices(playerIdx int) []int {
 // resolveTrick トリックを解決し、7 トリックに達していればハンドを終える
 func (h *Hokm) resolveTrick() {
 	winner := h.trickWinner()
+	h.lastTrick = append([]*TrickCard(nil), h.currentTrick...)
+	h.lastTrickWinner = winner
 	cards := make([]*Card, 0, len(h.currentTrick))
 	for _, tc := range h.currentTrick {
 		cards = append(cards, tc.Card)
@@ -628,6 +634,9 @@ func (h *Hokm) GetLastHandWinner() int { return h.lastHandWinner }
 // GetCurrentTrick 現在のトリック
 func (h *Hokm) GetCurrentTrick() []*TrickCard { return h.currentTrick }
 
+// GetLastTrick returns the most recently resolved trick and its winning seat.
+func (h *Hokm) GetLastTrick() ([]*TrickCard, int) { return h.lastTrick, h.lastTrickWinner }
+
 // GetCurrentPlayerIdx 現在の手番
 func (h *Hokm) GetCurrentPlayerIdx() int { return h.currentPlayerIdx }
 
@@ -688,6 +697,8 @@ type hokmJSON struct {
 	TrumpSuit            int               `json:"ts"`
 	HakemIdx             int               `json:"hk"`
 	CurrentTrick         []*TrickCard      `json:"ct"`
+	LastTrick            []*TrickCard      `json:"lt"`
+	LastTrickWinner      int               `json:"ltw"`
 	CurrentPlayerIdx     int               `json:"cp"`
 	LeadPlayerIdx        int               `json:"lp"`
 	Scores               [HokmTeamCnt]int  `json:"sc"`
@@ -711,6 +722,8 @@ func (h *Hokm) MarshalJSON() ([]byte, error) {
 		TrumpSuit:            h.trumpSuit,
 		HakemIdx:             h.hakemIdx,
 		CurrentTrick:         h.currentTrick,
+		LastTrick:            h.lastTrick,
+		LastTrickWinner:      h.lastTrickWinner,
 		CurrentPlayerIdx:     h.currentPlayerIdx,
 		LeadPlayerIdx:        h.leadPlayerIdx,
 		Scores:               h.scores,
@@ -757,6 +770,12 @@ func (h *Hokm) UnmarshalJSON(data []byte) error {
 	if len(j.CurrentTrick) > HokmPlayerCnt {
 		return fmt.Errorf("current trick holds %d cards", len(j.CurrentTrick))
 	}
+	if len(j.LastTrick) > HokmPlayerCnt {
+		return fmt.Errorf("last trick holds %d cards", len(j.LastTrick))
+	}
+	if j.LastTrickWinner < -1 || j.LastTrickWinner >= HokmPlayerCnt {
+		return fmt.Errorf("invalid last trick winner: %d", j.LastTrickWinner)
+	}
 	for _, f := range []namedInt{{"current player", j.CurrentPlayerIdx}, {"lead player", j.LeadPlayerIdx}, {"hakem", j.HakemIdx}} {
 		if f.value < 0 || f.value >= HokmPlayerCnt {
 			return fmt.Errorf("invalid %s: %d", f.name, f.value)
@@ -780,6 +799,8 @@ func (h *Hokm) UnmarshalJSON(data []byte) error {
 	h.trumpSuit = j.TrumpSuit
 	h.hakemIdx = j.HakemIdx
 	h.currentTrick = j.CurrentTrick
+	h.lastTrick = j.LastTrick
+	h.lastTrickWinner = j.LastTrickWinner
 	h.currentPlayerIdx = j.CurrentPlayerIdx
 	h.leadPlayerIdx = j.LeadPlayerIdx
 	h.scores = j.Scores

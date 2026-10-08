@@ -58463,6 +58463,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/HokmTrickCard'
+        lastTrick:
+          type: array
+          description: Most recently completed trick, retained during the next trick.
+          items:
+            $ref: '#/components/schemas/HokmTrickCard'
+        lastTrickWinner:
+          type: integer
+          description: Winning seat of lastTrick, or -1 before the first trick.
         validPlays:
           type: array
           description: Hand indices you may legally play. Following suit is compulsory.
