@@ -240,9 +240,38 @@ describe('KingoPage', () => {
     renderWithProviders(<KingoPage />);
 
     await waitFor(() => expect(screen.getByTestId('kingo-bet-guide')).toHaveTextContent('25'));
-    // 案内文だけでなく入力欄も 25。既定の 10 のままなら落ちる。
-    expect(screen.getByLabelText('張り')).toHaveAttribute('min', '25');
+    // サーバの最低額25以上で、10刻みとなる最初の額を入力欄が受け付ける。
+    expect(screen.getByLabelText('張り')).toHaveAttribute('min', '30');
     expect(screen.getByLabelText('張り')).toHaveAttribute('max', '1000');
+  });
+
+  it('10刻みでない張り額を案内し、送信を抑止する', async () => {
+    mockApi.mockResolvedValue(withState({ seats: [seat({ chips: 105 }), ...base.seats.slice(1)] }));
+    renderWithProviders(<KingoPage />);
+
+    const input = await screen.findByLabelText('張り');
+    expect(input).toHaveAttribute('max', '100');
+    fireEvent.change(input, { target: { value: '13' } });
+    expect(screen.getByTestId('kingo-bet-step-error')).toHaveTextContent('10刻み');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    const button = screen.getByTestId('kingo-bet');
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+
+    mockApi.mockClear();
+    fireEvent.click(button);
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalledWith('bet', expect.anything());
+  });
+
+  it('残高が10刻みでなくても有効な上限を維持する', async () => {
+    mockApi.mockResolvedValue(withState({ seats: [seat({ chips: 105 }), ...base.seats.slice(1)] }));
+    renderWithProviders(<KingoPage />);
+    const input = await screen.findByLabelText('張り');
+    expect(input).toHaveAttribute('max', '100');
+    fireEvent.change(input, { target: { value: '100' } });
+    expect(screen.getByTestId('kingo-bet')).not.toHaveAttribute('aria-disabled');
+    fireEvent.click(screen.getByTestId('kingo-bet'));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', { amount: 100 }));
   });
 
   it('最低額を払えないときは理由を示し、張り操作を抑止する', async () => {
@@ -271,14 +300,14 @@ describe('KingoPage', () => {
     mockApi.mockResolvedValue(
       withState({
         config: { seats: 4, initialChips: 1000, minBet: 25, rounds: 10 },
-        seats: [seat({ chips: 25 }), ...base.seats.slice(1)],
+        seats: [seat({ chips: 30 }), ...base.seats.slice(1)],
       }),
     );
     renderWithProviders(<KingoPage />);
 
     const input = await screen.findByLabelText('張り');
-    expect(input).toHaveAttribute('min', '25');
-    expect(input).toHaveAttribute('max', '25');
+    expect(input).toHaveAttribute('min', '30');
+    expect(input).toHaveAttribute('max', '30');
     expect(screen.getByTestId('kingo-bet')).not.toHaveAttribute('aria-disabled');
     expect(screen.queryByTestId('kingo-bet-unavailable')).not.toBeInTheDocument();
   });
@@ -290,9 +319,9 @@ describe('KingoPage', () => {
     renderWithProviders(<KingoPage />);
 
     await waitFor(() => expect(screen.getByTestId('kingo-bet-guide')).toHaveTextContent('25'));
-    expect(screen.getByLabelText('張り')).toHaveValue('25');
+    expect(screen.getByLabelText('張り')).toHaveValue('30');
     fireEvent.click(screen.getByRole('button', { name: '張る' }));
-    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', { amount: 25 }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', { amount: 30 }));
   });
 
   it('親のときは配るを送る', async () => {
