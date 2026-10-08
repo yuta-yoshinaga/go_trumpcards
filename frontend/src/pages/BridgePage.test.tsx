@@ -367,6 +367,20 @@ describe('BridgePage', () => {
     });
   });
 
+  it('does not restrict hand cards during bidding or a CPU play turn', async () => {
+    const { unmount } = renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByAltText('\u2660 A')).toBeInTheDocument());
+    expect(screen.getByAltText('\u2660 A').closest('button')).not.toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByAltText('\u2665 K').closest('button')).not.toHaveAttribute('aria-disabled', 'true');
+
+    unmount();
+    mockExec.mockResolvedValue(cpuPlayTurnState);
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByAltText('\u2660 A')).toBeInTheDocument());
+    expect(screen.getByAltText('\u2660 A').closest('button')).not.toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByAltText('\u2665 K').closest('button')).not.toHaveAttribute('aria-disabled', 'true');
+  });
+
   it('renders the human hand via MobileHandGrid on a narrow mobile viewport', async () => {
     const original = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
