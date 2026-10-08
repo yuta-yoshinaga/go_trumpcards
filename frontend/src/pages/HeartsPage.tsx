@@ -130,6 +130,8 @@ function HeartsPageContent() {
   } = useHeartsGame();
   const previousHeartsBroken = useRef<boolean | null>(null);
   const [announceHeartsBroken, setAnnounceHeartsBroken] = useState(false);
+  const previousMoonAlertIdx = useRef<number | null | undefined>(undefined);
+  const [moonAlertAnnouncement, setMoonAlertAnnouncement] = useState('');
 
   useEffect(() => {
     if (!state) return;
@@ -140,6 +142,19 @@ function HeartsPageContent() {
     }
     previousHeartsBroken.current = state.heartsBroken;
   }, [state]);
+
+  const moonAlertIdx = useMemo(() => (state ? shootTheMoonAlertIdx(state.players) : null), [state]);
+
+  useEffect(() => {
+    if (previousMoonAlertIdx.current !== moonAlertIdx) {
+      if (moonAlertIdx === null) {
+        setMoonAlertAnnouncement('');
+      } else {
+        setMoonAlertAnnouncement(t('shootTheMoonAlertAnnouncement', { name: playerName(moonAlertIdx, false) }));
+      }
+      previousMoonAlertIdx.current = moonAlertIdx;
+    }
+  }, [moonAlertIdx, t]);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('hearts');
@@ -193,8 +208,6 @@ function HeartsPageContent() {
     });
   }, [exec, hideActionLog, heartsConfig.cpuDifficulty, heartsConfig.pointLimit, heartsConfig.omnibusJD]);
 
-  const moonAlertIdx = useMemo(() => (state ? shootTheMoonAlertIdx(state.players) : null), [state]);
-
   if (!state)
     return <GameSkeleton gameKey="hearts" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
@@ -232,6 +245,9 @@ function HeartsPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div className="sr-only" data-testid="hearts-shoot-the-moon-live" role="status" aria-live="polite">
+        {moonAlertAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
