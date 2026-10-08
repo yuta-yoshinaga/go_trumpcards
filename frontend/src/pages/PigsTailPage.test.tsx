@@ -557,6 +557,44 @@ describe('PigsTailPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 6));
   });
 
+  it('shows that the selected count applies after reset and keeps the active players unchanged', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<PigsTailPage />);
+    const select = await screen.findByTestId('pigtail-player-count');
+    fireEvent.change(select, { target: { value: '6' } });
+
+    expect(screen.getByText('リセットすると次のゲームから適用されます。')).toBeInTheDocument();
+    expect(screen.getByText('CPU 3')).toBeInTheDocument();
+    expect(screen.queryByText('CPU 5')).not.toBeInTheDocument();
+
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      players: [
+        ...baseState.players,
+        { id: 4, isHuman: false, cardCount: 0, cards: [] },
+        { id: 5, isHuman: false, cardCount: 0, cards: [] },
+      ],
+    });
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+
+    expect(await screen.findByText('CPU 5')).toBeInTheDocument();
+    expect(screen.queryByText('リセットすると次のゲームから適用されます。')).not.toBeInTheDocument();
+  });
+
+  it('shows the pending player count guidance in English', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<PigsTailPage />);
+      const select = await screen.findByTestId('pigtail-player-count');
+      fireEvent.change(select, { target: { value: '6' } });
+      expect(
+        screen.getByText('The selected player count will apply to the next game after reset.'),
+      ).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('places the action log section inside the scrollable area before the footer', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<PigsTailPage />);
