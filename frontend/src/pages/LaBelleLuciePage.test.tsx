@@ -1,7 +1,8 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { labellelucieApi } from '../api/gameApi';
 import i18n from '../i18n';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, LaBelleLucieResponse } from '../types/card';
 import { LaBelleLuciePage } from './LaBelleLuciePage';
@@ -36,6 +37,42 @@ beforeEach(() => {
 });
 
 describe('LaBelleLuciePage', () => {
+  it('blocks fan and foundation actions while a request is loading, then restores them', async () => {
+    renderWithProviders(<LaBelleLuciePage />);
+
+    const fan = await screen.findByTestId('fan-2');
+    fireEvent.click(fan);
+    const foundation = screen.getByTestId('foundation-0');
+    expect(foundation).not.toHaveAttribute('aria-disabled', 'true');
+
+    let finishRequest: (state: LaBelleLucieResponse) => void = () => {};
+    mockExec.mockImplementationOnce(
+      () =>
+        new Promise<LaBelleLucieResponse>((resolve) => {
+          finishRequest = resolve;
+        }),
+    );
+    fireEvent.click(screen.getByTestId('hint-button'));
+
+    await waitFor(() => {
+      expect(fan).toHaveAttribute('aria-disabled', 'true');
+      expect(fan).not.toBeDisabled();
+      expect(foundation).toHaveAttribute('aria-disabled', 'true');
+    });
+    fireEvent.click(fan);
+    fireEvent.click(foundation);
+    await flushPendingDispatch();
+    expect(mockExec).toHaveBeenCalledTimes(2);
+
+    await act(async () => finishRequest(makeState()));
+    await waitFor(() => {
+      expect(fan).toBeEnabled();
+      expect(foundation).not.toHaveAttribute('aria-disabled', 'true');
+    });
+    fireEvent.click(fan);
+    expect(foundation).toHaveAttribute('aria-disabled', 'true');
+  });
+
   it('announces the selection instruction and its change from source to destination', async () => {
     renderWithProviders(<LaBelleLuciePage />);
 
