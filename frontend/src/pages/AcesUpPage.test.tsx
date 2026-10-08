@@ -93,11 +93,28 @@ describe('AcesUpPage', () => {
 
     const callsBeforeActions = mockExec.mock.calls.length;
     fireEvent.click(screen.getAllByRole('button', { name: '配る' }).at(-1)!);
-    await waitFor(() => expect(liveRegion).toHaveTextContent('手数: 4、除去済み: 5'));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('手数: 4、除去済み: 5、山札: 44'));
 
     fireEvent.click(screen.getAllByRole('button', { name: '配る' }).at(-1)!);
     await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(callsBeforeActions + 2));
-    expect(liveRegion).toHaveTextContent('手数: 4、除去済み: 5');
+    expect(liveRegion).toHaveTextContent('手数: 4、除去済み: 5、山札: 44');
+  });
+
+  it('announces stock count changes and identifies an exhausted stock', async () => {
+    const updatedState = { ...playingState, stockCount: 40 };
+    const depletedState = { ...updatedState, stockCount: 0 };
+    mockExec
+      .mockResolvedValueOnce(playingState)
+      .mockResolvedValueOnce(updatedState)
+      .mockResolvedValueOnce(depletedState);
+    renderWithProviders(<AcesUpPage />);
+
+    const liveRegion = await screen.findByTestId('acesup-progress-live');
+    fireEvent.click(screen.getAllByRole('button', { name: '配る' }).at(-1)!);
+    await waitFor(() => expect(liveRegion).toHaveTextContent('山札: 40'));
+
+    fireEvent.click(screen.getAllByRole('button', { name: '配る' }).at(-1)!);
+    await waitFor(() => expect(liveRegion).toHaveTextContent('山札がなくなりました'));
   });
 
   it('renders the four columns', async () => {
