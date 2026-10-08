@@ -281,10 +281,10 @@ function JassPageContent() {
               <tr>
                 <th scope="col" className="sr-only" />
                 <th scope="col" className="text-left">
-                  {t('team', { n: 0 })}
+                  {t(humanPlayer?.team === 0 ? 'teamYou' : 'team', { n: 0 })}
                 </th>
                 <th scope="col" className="text-center">
-                  {t('team', { n: 1 })}
+                  {t(humanPlayer?.team === 1 ? 'teamYou' : 'team', { n: 1 })}
                 </th>
               </tr>
             </thead>
