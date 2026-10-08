@@ -17,6 +17,8 @@ type SalicLawGame interface {
 	MoveTableauToFoundation(pile int) error
 	// MoveTableauToTableau 「K だけの列」へ 1 枚移動する
 	MoveTableauToTableau(fromPile, toPile int) error
+	// CanAutoComplete reports whether a tableau card can currently be sent to a foundation.
+	CanAutoComplete() bool
 	// GetHint ヒントを取得する
 	GetHint() *domain.SalicLawHint
 	// GetPhase 現在のフェーズを取得する

@@ -270,13 +270,22 @@ func TestSalicLaw_AutoComplete(t *testing.T) {
 		assert.Len(t, c.GetFoundation()[0], 1)
 		assert.Len(t, c.GetFoundation()[1], 1)
 		assert.Len(t, c.GetTableau()[0], 1)
+		assert.False(t, c.CanAutoComplete())
 	})
 
 	t.Run("refuses when nothing can move", func(t *testing.T) {
 		c := newTestSalicLaw()
 		clearSalicLawBoard(c)
 		openAllSalicLawPiles(c)
+		assert.False(t, c.CanAutoComplete())
 		assert.Error(t, c.AutoComplete())
+	})
+	t.Run("reports a movable foundation card", func(t *testing.T) {
+		c := newTestSalicLaw()
+		clearSalicLawBoard(c)
+		openAllSalicLawPiles(c)
+		salicLawPush(c, 0, CardDesignHeart, 1)
+		assert.True(t, c.CanAutoComplete())
 	})
 }
 

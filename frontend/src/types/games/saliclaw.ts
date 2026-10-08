@@ -30,6 +30,8 @@ export interface SalicLawResponse extends BaseGameResponse {
   queens: Card[];
   /** How many columns have had their base king dealt. */
   openPiles: number;
+  /** Whether a tableau card can currently move to a foundation. */
+  canAutoComplete: boolean;
   phase: number;
   moveCount: number;
   canUndo: boolean;

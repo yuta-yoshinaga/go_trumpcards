@@ -80789,6 +80789,9 @@ components:
         openPiles:
           type: integer
           description: How many columns have had their base king dealt
+        canAutoComplete:
+          type: boolean
+          description: Whether any tableau card can currently move to a foundation
         phase:
           type: integer
           description: Current game phase (0=Playing, 1=GameClear, 2=GameOver)

@@ -177,7 +177,7 @@ function SalicLawPageContent() {
   const isGameOver = state.phase === SalicLawPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
   const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
-  const autoCompleteReady = state.foundation.some((pile) => pile.length > 0);
+  const autoCompleteReady = state.canAutoComplete;
   const selectedTargets =
     selectedSource?.zone === 'tableau' && selectedSource.col !== undefined
       ? listSalicLawTargets(state, selectedSource.col).map(({ zone, idx }) =>
