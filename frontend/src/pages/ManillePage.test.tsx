@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { manilleApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeManilleState } from '../test/stateFactories';
 import { ManillePhase } from '../types/phases';
@@ -47,6 +48,29 @@ beforeEach(() => {
 });
 
 describe('ManillePage', () => {
+  it('shows CPU difficulty choices in Japanese and keeps their English labels', async () => {
+    const previousLanguage = i18n.language;
+    try {
+      await i18n.changeLanguage('ja');
+      const { unmount } = renderWithProviders(<ManillePage />);
+      await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+      for (const label of ['やさしい', 'ふつう', 'むずかしい']) {
+        expect(screen.getByRole('option', { name: label })).toBeInTheDocument();
+      }
+      expect(screen.queryByRole('option', { name: 'Easy' })).not.toBeInTheDocument();
+      unmount();
+
+      await i18n.changeLanguage('en');
+      renderWithProviders(<ManillePage />);
+      await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+      for (const label of ['Easy', 'Normal', 'Hard']) {
+        expect(screen.getByRole('option', { name: label })).toBeInTheDocument();
+      }
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('shows remaining target points beside each team score and hides them when reached', async () => {
     mockExec.mockResolvedValue(
       makeManilleState({
