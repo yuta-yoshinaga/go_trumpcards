@@ -17,6 +17,8 @@
     "cpu": "CPU{{idx}}",
     "team": "T{{team}}",
     "tricksTaken": "{{count}} tricks",
+    "cardsLeft_one": "{{count}} card left",
+    "cardsLeft_other": "{{count}} cards left",
     "suitCounts": "Pre-bid hand suit counts: {{counts}}",
     "suitCount": "{{suit}} {{count}}",
     "suits": {
