@@ -178,6 +178,7 @@ function ScorpionPageContent() {
   useMountReset(apiCall);
 
   const [selectedSource, setSelectedSource] = useState<ScorpionMoveZone | null>(null);
+  const [undoCount, setUndoCount] = useState('1');
 
   const {
     hint: frontendHint,
@@ -292,6 +293,12 @@ function ScorpionPageContent() {
     },
     [apiCall],
   );
+
+  const handleUndoN = useCallback(() => {
+    const n = Number(undoCount);
+    if (!Number.isInteger(n) || n < 1) return;
+    void apiCall('undo_n', undefined, undefined, n);
+  }, [apiCall, undoCount]);
 
   const handleSelectSource = useCallback(
     (zone: string, col: number, cardIndex: number) => {
@@ -610,6 +617,21 @@ function ScorpionPageContent() {
                     disabled={loading || !state.canUndo}
                   >
                     {t('undo')}
+                  </button>
+                  <label className="inline-flex items-center gap-2">
+                    <span>{t('undoCount')}</span>
+                    <input
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={undoCount}
+                      onChange={(event) => setUndoCount(event.target.value)}
+                      aria-label={t('undoCount')}
+                      className="w-20 rounded border border-ds-border-subtle bg-ds-surface px-2 py-1 text-ds-text-primary"
+                    />
+                  </label>
+                  <button type="button" className={btnOutline} onClick={handleUndoN} disabled={loading}>
+                    {t('undoN')}
                   </button>
                   <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
                     {t('giveup')}
