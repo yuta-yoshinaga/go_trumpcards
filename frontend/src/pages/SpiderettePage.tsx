@@ -217,6 +217,7 @@ function SpiderettePageContent() {
     selectedSource.cardIndex === cardIndex;
 
   // Visual hint highlighting: ring the suggested source card and target column.
+  const hintedCard = hint ? (state.tableau[hint.fromCol]?.[hint.cardIndex]?.card ?? null) : null;
   const isHintSource = (col: number, cardIndex: number) =>
     hint != null && hint.fromCol === col && hint.cardIndex === cardIndex;
   const isHintTargetCol = (col: number) => hint != null && hint.toCol === col;
@@ -426,9 +427,14 @@ function SpiderettePageContent() {
               られないことがある (#5955)。
             */}
             <div data-testid="spiderette-hint-live" role="status" aria-live="polite">
-              {hint && (
+              {hint && hintedCard && (
                 <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t('tableau')} {hint.fromCol} [{hint.cardIndex}] → {t('tableau')} {hint.toCol}
+                  {t('hintMoveAnnouncement', {
+                    card: cardAlt(hintedCard),
+                    tableau: t('tableau'),
+                    fromCol: hint.fromCol,
+                    toCol: hint.toCol,
+                  })}
                 </div>
               )}
             </div>
