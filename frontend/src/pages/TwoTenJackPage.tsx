@@ -175,6 +175,7 @@ function TwoTenJackPageContent() {
   const isRoundEnd = state.phase === TwoTenJackPhase.ROUND_END;
   const trickWinner =
     (isTrickEnd || isRoundEnd) && state.leadPlayerIdx >= 0 ? state.players[state.leadPlayerIdx] : undefined;
+  const declarer = state.players[state.declarerIdx];
   const isGameEnd = state.phase === TwoTenJackPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanDeclarer = isDeclarePhase && state.players[state.declarerIdx]?.isHuman === true;
@@ -252,6 +253,14 @@ function TwoTenJackPageContent() {
                 {state.trumpSuit > 0 ? `${t('trump')}: ${trumpSymbol(state.trumpSuit)}` : t('trumpUndeclared')}
               </span>
             </div>
+            {declarer && (
+              <div className="text-ds-text-muted text-center mb-2">
+                {t('declarer', {
+                  name: playerName(declarer.id, declarer.isHuman),
+                  team: t(state.declarerIdx % 2 === 0 ? 'team0' : 'team1'),
+                })}
+              </div>
+            )}
 
             <div className={lgTwoColGrid}>
               <div>

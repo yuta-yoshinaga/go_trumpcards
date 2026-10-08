@@ -16,6 +16,7 @@
   },
   "round": "ラウンド {{n}}",
   "trick": "トリック {{n}}",
+  "declarer": "宣言者: {{name}}（{{team}}）",
   "trump": "切り札",
   "trumpUndeclared": "切り札未宣言",
   "cards": "{{count}}枚",
