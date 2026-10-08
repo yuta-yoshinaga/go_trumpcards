@@ -119,7 +119,7 @@ describe('BakersGamePage', () => {
   it('moves focus between board buttons with arrow keys and leaves outside controls alone', async () => {
     renderWithProviders(<BakersGamePage />);
     const firstCard = await screen.findByRole('button', { name: /♠ K/ });
-    const secondCard = screen.getByRole('button', { name: /♥ Q/ });
+    const secondCard = screen.getByRole('button', { name: /♥ Q/ }) as HTMLButtonElement;
     const emptyColumn = screen.getByTestId('bg-empty-col-2');
     const rect = (left: number) => ({
       x: left,
@@ -152,13 +152,60 @@ describe('BakersGamePage', () => {
     fireEvent.keyDown(firstCard, { key: 'ArrowRight' });
     expect(secondCard).toHaveFocus();
 
-    fireEvent.keyDown(screen.getByRole('button', { name: 'ヒント' }), { key: 'ArrowRight' });
+    const hintButton = screen.getByRole('button', { name: 'ヒント' });
+    hintButton.focus();
+    fireEvent.keyDown(hintButton, { key: 'ArrowRight' });
+    expect(hintButton).toHaveFocus();
 
     const outsideControl = screen.getByRole('checkbox');
     outsideControl.focus();
     const outsideArrow = fireEvent.keyDown(outsideControl, { key: 'ArrowRight' });
     expect(outsideArrow).toBe(true);
     expect(outsideControl).toHaveFocus();
+  });
+
+  it('does not intercept modified board arrows and moves vertically while skipping disabled buttons', async () => {
+    renderWithProviders(<BakersGamePage />);
+    const firstCard = await screen.findByRole('button', { name: /♠ K/ });
+    const secondCard = screen.getByRole('button', { name: /♥ Q/ }) as HTMLButtonElement;
+    const emptyColumn = screen.getByTestId('bg-empty-col-2');
+    const rect = (left: number, top: number) => ({
+      x: left,
+      y: top,
+      top,
+      right: left + 50,
+      bottom: top + 70,
+      left,
+      width: 50,
+      height: 70,
+      toJSON: () => ({}),
+    });
+    vi.spyOn(firstCard, 'getBoundingClientRect').mockReturnValue(rect(0, 0));
+    vi.spyOn(secondCard, 'getBoundingClientRect').mockReturnValue(rect(0, 100));
+    vi.spyOn(emptyColumn, 'getBoundingClientRect').mockReturnValue(rect(0, 200));
+    screen
+      .getAllByRole('button')
+      .filter((button) => button !== firstCard && button !== secondCard && button !== emptyColumn)
+      .forEach((button) => {
+        vi.spyOn(button, 'getBoundingClientRect').mockReturnValue(rect(300, 0));
+      });
+
+    firstCard.focus();
+    const altArrow = fireEvent.keyDown(firstCard, { key: 'ArrowRight', altKey: true });
+    expect(altArrow).toBe(true);
+    expect(firstCard).toHaveFocus();
+
+    fireEvent.keyDown(firstCard, { key: 'ArrowDown' });
+    expect(secondCard).toHaveFocus();
+    fireEvent.keyDown(secondCard, { key: 'ArrowDown' });
+    expect(emptyColumn).toHaveFocus();
+    fireEvent.keyDown(emptyColumn, { key: 'ArrowUp' });
+    expect(secondCard).toHaveFocus();
+
+    secondCard.disabled = true;
+    firstCard.focus();
+    fireEvent.keyDown(firstCard, { key: 'ArrowDown' });
+    expect(emptyColumn).toHaveFocus();
   });
 
   it('renders empty tableau columns with a neutral any-card placeholder, not a King-only "K"', async () => {

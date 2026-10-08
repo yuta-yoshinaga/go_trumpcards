@@ -39,6 +39,10 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
+const BOARD_REGION_SELECTOR =
+  '[data-tutorial="fc-free-cells"], [data-tutorial="fc-foundation"], [data-tutorial="fc-tableau"]';
+const BOARD_BUTTON_SELECTOR =
+  '[data-tutorial="fc-free-cells"] button:not(:disabled), [data-tutorial="fc-foundation"] button:not(:disabled), [data-tutorial="fc-tableau"] button:not(:disabled)';
 const BOARD_KEY_DIRECTIONS = {
   ArrowLeft: { x: -1, y: 0, crossX: 0, crossY: 1 },
   ArrowRight: { x: 1, y: 0, crossX: 0, crossY: 1 },
@@ -193,24 +197,23 @@ function BakersGamePageContent() {
 
   const [hoveredStack, setHoveredStack] = useState<{ col: number; cardIdx: number } | null>(null);
   const handleBoardKeyDown = useCallback((event: KeyboardEvent) => {
-    if (!(event.key in BOARD_KEY_DIRECTIONS)) return;
-    const current = event.target;
     if (
-      !(current instanceof HTMLButtonElement) ||
-      !current.closest('[data-tutorial="fc-free-cells"], [data-tutorial="fc-foundation"], [data-tutorial="fc-tableau"]')
-    ) {
+      event.defaultPrevented ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      !(event.key in BOARD_KEY_DIRECTIONS)
+    )
       return;
-    }
+    const current = event.target;
+    if (!(current instanceof HTMLButtonElement) || !current.closest(BOARD_REGION_SELECTOR)) return;
 
     const direction = BOARD_KEY_DIRECTIONS[event.key as keyof typeof BOARD_KEY_DIRECTIONS];
     const currentRect = current.getBoundingClientRect();
     const currentX = currentRect.left + currentRect.width / 2;
     const currentY = currentRect.top + currentRect.height / 2;
-    const candidates = Array.from(
-      document.querySelectorAll<HTMLButtonElement>(
-        '[data-tutorial="fc-free-cells"] button:not(:disabled), [data-tutorial="fc-foundation"] button:not(:disabled), [data-tutorial="fc-tableau"] button:not(:disabled)',
-      ),
-    )
+    const candidates = Array.from(document.querySelectorAll<HTMLButtonElement>(BOARD_BUTTON_SELECTOR))
       .filter((button) => button !== current)
       .map((button) => {
         const rect = button.getBoundingClientRect();
@@ -221,7 +224,7 @@ function BakersGamePageContent() {
         return { button, primary, secondary };
       })
       .filter(({ primary }) => primary > 0)
-      .sort((a, b) => a.secondary - b.secondary || a.primary - b.primary);
+      .sort((a, b) => a.primary + 2 * a.secondary - (b.primary + 2 * b.secondary) || a.primary - b.primary);
 
     if (candidates[0]) {
       event.preventDefault();
