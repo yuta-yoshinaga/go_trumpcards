@@ -702,14 +702,22 @@ function EightOffPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
-                    onClick={handleAutoComplete}
-                    disabled={loading || isAutoCompleting || !autoCompleteReady}
+                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''} aria-disabled:cursor-not-allowed aria-disabled:opacity-50`}
+                    onClick={() => {
+                      if (!loading && !isAutoCompleting && autoCompleteReady) handleAutoComplete();
+                    }}
+                    aria-disabled={loading || isAutoCompleting || !autoCompleteReady || undefined}
+                    aria-describedby={!autoCompleteReady ? 'autocomplete-unavailable-reason' : undefined}
                     data-testid="autocomplete-button"
                     title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
                   >
                     {t('autoComplete')}
                   </button>
+                  {!autoCompleteReady && (
+                    <span id="autocomplete-unavailable-reason" className="sr-only">
+                      {t('autoCompleteNotReady')}
+                    </span>
+                  )}
                   <button
                     type="button"
                     className={btnDanger}

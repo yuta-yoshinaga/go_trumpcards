@@ -10,7 +10,7 @@
   "giveup": "Give Up",
   "hint": "Hint",
   "autoComplete": "Auto Complete",
-  "autoCompleteNotReady": "Available once a card can be swept to a foundation",
+  "autoCompleteNotReady": "Available once a card can be moved to a foundation",
   "undo": "Undo",
   "moveCount": "Moves",
   "empty": "Empty",
