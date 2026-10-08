@@ -33,6 +33,8 @@
   "passNoticeTo": "Pass phase — choose {{count}} card(s) to pass to {{name}}.",
   "setNotice": "Set phase — keep your best 5 cards (discard 2).",
   "rollNotice": "Roll phase — {{revealed}}/5 revealed. Call, raise, or fold.",
+  "rollCardsRevealed": "{{name}} revealed: {{cards}}",
+  "listSeparator": ", ",
   "badge": {
     "folded": "Folded",
     "out": "Out",
