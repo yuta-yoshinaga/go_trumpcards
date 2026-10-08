@@ -12,6 +12,8 @@
   "highestBid": "最高ビッド: {{bid}}（{{bidder}}）",
   "playerBid": "直近のビッド: {{bid}}",
   "cpuHandAriaLabel": "{{player}}の手札 残り{{count}}枚",
+  "legalPlayReason": "このカードはプレイできます。",
+  "illegalPlayReason": "リードされたスートに従ってください。",
   "bidSuit": "{{tricks}}{{suit}} ({{value}}点)",
   "bidNoTrump": "{{tricks}}NT ({{value}}点)",
   "bidMisere": "ミゼール ({{value}}点)",
