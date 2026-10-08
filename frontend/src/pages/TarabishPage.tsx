@@ -243,6 +243,9 @@ function TarabishPageContent() {
                   <span className="ml-2" data-testid={`tb-seat-tricks-${p.id.toString()}`}>
                     {t('header.tricksTaken', { count: p.trickCount })}
                   </span>
+                  <span className="ml-2" data-testid={`tb-seat-cards-${p.id.toString()}`}>
+                    {t('header.cardsLeft', { count: p.cardCount })}
+                  </span>
                 </div>
               ))}
             </div>

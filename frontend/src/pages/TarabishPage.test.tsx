@@ -210,6 +210,25 @@ describe('TarabishPage', () => {
     expect(screen.getByTestId('tb-seat-tricks-3')).toHaveTextContent('獲得4');
   });
 
+  it('shows the remaining hand count for all four seats', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          seat(0, { cardCount: 5 }),
+          seat(1, { cardCount: 4 }),
+          seat(2, { cardCount: 2 }),
+          seat(3, { cardCount: 1 }),
+        ],
+      } as Partial<TarabishResponse>),
+    );
+    renderWithProviders(<TarabishPage />);
+
+    expect(await screen.findByTestId('tb-seat-cards-0')).toHaveTextContent('残り手札5枚');
+    expect(screen.getByTestId('tb-seat-cards-1')).toHaveTextContent('残り手札4枚');
+    expect(screen.getByTestId('tb-seat-cards-2')).toHaveTextContent('残り手札2枚');
+    expect(screen.getByTestId('tb-seat-cards-3')).toHaveTextContent('残り手札1枚');
+  });
+
   it('shows the running team scores', async () => {
     mockExec.mockResolvedValue(makeState({ scores: [220, 140] } as Partial<TarabishResponse>));
     renderWithProviders(<TarabishPage />);
