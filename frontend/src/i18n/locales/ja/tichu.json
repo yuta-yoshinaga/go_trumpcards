@@ -4,8 +4,12 @@
     "cpuDifficulty": "CPUの難易度"
   },
   "bombCardAriaLabel": "{{card}}（ボム構成カード）",
+  "actionPlayed": "{{player}}: {{cards}} を出しました",
+  "actionPassed": "{{player}}: パスしました",
+  "listSeparator": "、",
   "label": {
     "table": "場",
+    "cpuActions": "CPUの応手",
     "playedBy": "{{player}}（チーム {{team}}）",
     "bombs": "爆弾",
     "team": "チーム",
