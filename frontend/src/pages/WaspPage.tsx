@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { type WaspMoveZone, waspApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -272,9 +272,28 @@ function WaspPageContent() {
     disabled: loading,
   });
 
+  const dealBlockAnnouncementTimer = useRef<number | null>(null);
+  useEffect(
+    () => () => {
+      if (dealBlockAnnouncementTimer.current !== null) {
+        window.clearTimeout(dealBlockAnnouncementTimer.current);
+      }
+    },
+    [],
+  );
+
+  const clearDealBlockAnnouncement = useCallback(() => {
+    if (dealBlockAnnouncementTimer.current !== null) {
+      window.clearTimeout(dealBlockAnnouncementTimer.current);
+      dealBlockAnnouncementTimer.current = null;
+    }
+    setDealBlockAnnouncement('');
+  }, []);
+
   const handleManualReset = useCallback(() => {
+    clearDealBlockAnnouncement();
     void apiCall('reset');
-  }, [apiCall]);
+  }, [apiCall, clearDealBlockAnnouncement]);
 
   const handleDeal = useCallback(() => {
     void apiCall('deal');
@@ -298,15 +317,19 @@ function WaspPageContent() {
   // "not all cards are face up" で弾かれる — #5545 が直したはずの形に戻る。
   const handleDealGuarded = useCallback(() => {
     if (dealBlockedByEmpty) {
+      clearDealBlockAnnouncement();
       setEmptyDealAttemptKey((k) => k + 1);
-      setDealBlockAnnouncement('');
-      window.setTimeout(() => setDealBlockAnnouncement(t('cannotDealEmptyColExists')), 100);
+      dealBlockAnnouncementTimer.current = window.setTimeout(() => {
+        dealBlockAnnouncementTimer.current = null;
+        setDealBlockAnnouncement(t('cannotDealEmptyColExists'));
+      }, 100);
       return;
     }
     // Reset on a successful deal so a future empty-column attempt can re-trigger the shake.
+    clearDealBlockAnnouncement();
     setEmptyDealAttemptKey(0);
     handleDeal();
-  }, [dealBlockedByEmpty, handleDeal, t]);
+  }, [clearDealBlockAnnouncement, dealBlockedByEmpty, handleDeal, t]);
 
   const handleGiveUp = useCallback(() => {
     void apiCall('giveup');
