@@ -158,6 +158,8 @@ function FourCardPokerPageContent() {
   const anteInvalid = Number.isNaN(anteAmount) || anteAmount < 10 || anteAmount % 10 !== 0;
   const acesUpInvalid = Number.isNaN(acesUpAmount) || acesUpAmount < 0 || acesUpAmount % 10 !== 0;
   const betInvalid = anteInvalid || acesUpInvalid || anteAmount + acesUpAmount > (state?.chips ?? 0);
+  const maxPlayableMultiplier = state ? Math.min(3, Math.floor(state.chips / state.anteBet)) : 0;
+  const canPlayMultiplier = (mult: number) => mult <= maxPlayableMultiplier;
 
   const actionBindings = useMemo(
     () => [
@@ -167,13 +169,28 @@ function FourCardPokerPageContent() {
         enabled: isBetPhase && !betInvalid,
         label: 'bet',
       },
-      { key: '1', action: () => execApi('play', undefined, undefined, 1), enabled: isActionPhase, label: 'play' },
-      { key: '2', action: () => execApi('play', undefined, undefined, 2), enabled: isActionPhase, label: 'play' },
-      { key: '3', action: () => execApi('play', undefined, undefined, 3), enabled: isActionPhase, label: 'play' },
+      {
+        key: '1',
+        action: () => execApi('play', undefined, undefined, 1),
+        enabled: isActionPhase && maxPlayableMultiplier >= 1,
+        label: 'play',
+      },
+      {
+        key: '2',
+        action: () => execApi('play', undefined, undefined, 2),
+        enabled: isActionPhase && maxPlayableMultiplier >= 2,
+        label: 'play',
+      },
+      {
+        key: '3',
+        action: () => execApi('play', undefined, undefined, 3),
+        enabled: isActionPhase && maxPlayableMultiplier >= 3,
+        label: 'play',
+      },
       { key: 'f', action: () => execApi('fold'), enabled: isActionPhase, label: 'fold' },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, label: 'reset' },
     ],
-    [execApi, anteAmount, acesUpAmount, isBetPhase, betInvalid, isActionPhase, isEndPhase],
+    [execApi, anteAmount, acesUpAmount, isBetPhase, betInvalid, isActionPhase, isEndPhase, maxPlayableMultiplier],
   );
 
   useActionKeyboardNav({
@@ -188,6 +205,7 @@ function FourCardPokerPageContent() {
   };
 
   const handlePlay = (mult: number) => {
+    if (!canPlayMultiplier(mult)) return;
     execApi('play', undefined, undefined, mult);
   };
 
@@ -444,15 +462,20 @@ function FourCardPokerPageContent() {
                   {t('actionBets', { ante: state.anteBet, acesUp: state.acesUpBet })}
                 </p>
                 <p className="text-ds-warning text-sm text-center">{t('foldWarning', { amount: state.anteBet })}</p>
+                <p className="text-ds-text-muted text-sm">
+                  {t('maxPlayableMultiplier', { mult: maxPlayableMultiplier })}
+                </p>
                 <div className="flex flex-wrap justify-center gap-2">
                   {[1, 2, 3].map((mult) => (
                     <button
                       key={mult}
                       type="button"
-                      className={btnSuccess}
                       onClick={() => handlePlay(mult)}
                       disabled={loading}
+                      aria-disabled={!canPlayMultiplier(mult) || undefined}
+                      aria-describedby={!canPlayMultiplier(mult) ? 'fcp-play-unaffordable' : undefined}
                       data-testid={`play-${mult}x`}
+                      className={`${btnSuccess} ${!canPlayMultiplier(mult) ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       {t('button.playMult', { mult, amount: state.anteBet * mult })}
                     </button>
@@ -461,6 +484,9 @@ function FourCardPokerPageContent() {
                     {t('button.fold')}
                   </button>
                 </div>
+                <p id="fcp-play-unaffordable" className="sr-only">
+                  {t('playUnaffordable')}
+                </p>
               </div>
             )}
             {isEndPhase && (
