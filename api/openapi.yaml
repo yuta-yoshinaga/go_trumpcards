@@ -77843,6 +77843,9 @@ components:
                   $ref: '#/components/schemas/Card'
               trickCount:
                 type: integer
+              bouts:
+                type: integer
+                description: Bouts captured in this player's completed tricks this deal.
               cardPoints:
                 type: integer
               score:

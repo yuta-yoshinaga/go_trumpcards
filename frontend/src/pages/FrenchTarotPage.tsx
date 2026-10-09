@@ -374,7 +374,7 @@ function FrenchTarotPageContent() {
                       {state.players.map((p) => (
                         <div key={p.id} className="py-0.5">
                           {playerName(p.id, p.isHuman)}: {t('tricks', { count: p.trickCount })} |{' '}
-                          {t('points', { points: p.cardPoints })}
+                          {t('points', { points: p.cardPoints })} | {t('boutsWon', { count: p.bouts })}
                         </div>
                       ))}
                     </div>
@@ -396,13 +396,19 @@ function FrenchTarotPageContent() {
                     {state.players.map((p) => (
                       <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                         {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('tricks', { count: p.trickCount })} | {t('points', { points: p.cardPoints })}
+                        {t('tricks', { count: p.trickCount })} | {t('points', { points: p.cardPoints })} |{' '}
+                        {t('boutsWon', { count: p.bouts })}
                       </div>
                     ))}
                   </div>
                 )}
 
                 {/* Round result: the deal outcome (contract made / failed) */}
+                {(isPlayPhase || isTrickEnd) && state.declarerIdx >= 0 && (
+                  <div className="text-ds-text-muted text-sm" data-testid="frenchtarot-live-target">
+                    {t('roundResult.target', { points: state.target })}
+                  </div>
+                )}
                 {(isRoundEnd || isGameEnd) && state.outcome > 0 && (
                   <div
                     className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"

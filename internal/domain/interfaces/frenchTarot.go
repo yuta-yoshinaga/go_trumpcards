@@ -85,6 +85,8 @@ type FrenchTarotGame interface {
 	GetPlayerScores() [domain.FrenchTarotPlayerCnt]int
 	// GetCardPoints プレイヤー i の獲得ハーフポイントを取得する
 	GetCardPoints(i int) int
+	// GetBouts プレイヤー i が獲得したブー数を取得する
+	GetBouts(i int) int
 	// GetOutcome 直近ディールの結果を取得する
 	GetOutcome() domain.FrenchTarotOutcome
 	// GetResult 人間視点のマッチ結果を取得する

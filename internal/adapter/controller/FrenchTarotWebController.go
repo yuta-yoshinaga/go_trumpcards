@@ -36,6 +36,7 @@ type FrenchTarotWebOutputPlayer struct {
 	CardCount  int              `json:"cardCount"`
 	Cards      []*WebOutputCard `json:"cards"`
 	TrickCount int              `json:"trickCount"`
+	Bouts      int              `json:"bouts"`
 	CardPoints int              `json:"cardPoints"`
 	Score      int              `json:"score"`
 	IsDeclarer bool             `json:"isDeclarer"`

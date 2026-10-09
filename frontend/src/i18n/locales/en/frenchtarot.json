@@ -28,6 +28,8 @@
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "points": "{{points}} pts",
+  "boutsWon_one": "{{count}} bout",
+  "boutsWon_other": "{{count}} bouts",
   "score": "Score: {{score}}",
   "trickSummary_one": "This trick: {{points}} points, {{count}} bout",
   "trickSummary_other": "This trick: {{points}} points, {{count}} bouts",

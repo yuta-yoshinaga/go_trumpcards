@@ -1718,6 +1718,22 @@ func (g *FrenchTarot) GetCardPoints(i int) int {
 	return sum
 }
 
+// GetBouts プレイヤー i が獲得したブー数を返す。
+func (g *FrenchTarot) GetBouts(i int) int {
+	if i < 0 || i >= len(g.players) {
+		return 0
+	}
+	bouts := 0
+	for _, trick := range g.players[i].GetTricksTaken() {
+		for _, c := range trick {
+			if frenchTarotIsBout(c) {
+				bouts++
+			}
+		}
+	}
+	return bouts
+}
+
 // GetDeclarerCapturedPoints は勝敗判定に使う親の獲得点を整数点で返す。
 // declarerCaptured と同じ経路なので、犬 (stash) の分も含む。
 // ハーフポイントの端数は切り捨てる。勝敗判定の half >= target*2 と
