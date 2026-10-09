@@ -17,7 +17,6 @@ import { VideoPokerPhase } from '../types/phases';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig } from '../utils/cli/types';
 import { formatSignedDelta } from '../utils/formatSignedDelta';
-import { getVideoPokerBaseHint } from '../utils/hints/videoPokerBaseHint';
 import { evaluateVideoPokerMadeHand } from '../utils/jokerPokerMadeHand';
 import {
   VIDEO_POKER_MAX_BET,
@@ -235,22 +234,12 @@ export function VideoPokerGameContent({
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-apply auto-hold only on the phase transition into DRAW (a fresh hand). Adding autoHoldEnabled / state / gameName to the deps would overwrite the player's manual hold edits whenever any of those change mid-draw.
   useEffect(() => {
     if (!isDrawPhase) return;
-    // Default: nothing held. When auto-hold is enabled, compute the
-    // recommendation directly via getVideoPokerBaseHint so it works
-    // regardless of whether the player has the hint UI toggled on.
+    // Default: nothing held. Auto-hold consumes the same server recommendation as the hint.
     const next: boolean[] = [false, false, false, false, false];
     if (autoHoldEnabled && state) {
-      const autoHint = getVideoPokerBaseHint(state, WILD_CARD_PREDICATE[gameName]);
-      if (autoHint?.targetAction.startsWith('hold:')) {
-        const csv = autoHint.targetAction.slice('hold:'.length);
-        if (csv.length > 0) {
-          for (const raw of csv.split(',')) {
-            const idx = Number.parseInt(raw, 10);
-            if (Number.isInteger(idx) && idx >= 0 && idx < next.length) {
-              next[idx] = true;
-            }
-          }
-        }
+      // ?? []: a response from a server older than the strategy tables has no field.
+      for (const idx of state.recommendedHold ?? []) {
+        if (idx >= 0 && idx < next.length) next[idx] = true;
       }
     }
     setHeldCards(next);

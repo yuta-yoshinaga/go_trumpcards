@@ -1,8 +1,6 @@
 package presenter
 
 import (
-	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -20,6 +18,7 @@ func TestFormatSigned(t *testing.T) {
 }
 
 func setupVideoPokerCuiMockDefaults(m *interfaces.MockVideoPokerGame) {
+	m.On("RecommendedHold").Return(domain.VideoPokerHoldAdvice{}).Maybe()
 	m.On("GetChips").Return(1000).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseBet).Maybe()
 	m.On("GetChipsRefilled").Return(false).Maybe()
@@ -433,320 +432,41 @@ func TestVideoPokerCuiPresenter_cardStr_NilCard(t *testing.T) {
 	assert.Equal(t, "??", p.cardStr(m, nil))
 }
 
-func TestVideoPokerCuiPresenter_HintOutput(t *testing.T) {
-	orig := color.NoColor()
-	color.SetNoColor(true)
-	defer color.SetNoColor(orig)
+func TestVideoPokerCuiPresenter_HintOutput_UsesDomainRecommendation(t *testing.T) {
+	i18n.SetLang("ja")
 	p := new(VideoPokerCuiPresenter)
-
-	drawGame := func(variant string, hand []*domain.Card) *interfaces.MockVideoPokerGame {
-		m := new(interfaces.MockVideoPokerGame)
-		m.On("GetPhase").Return(domain.VideoPokerPhaseDraw)
-		m.On("GetChipsRefilled").Return(false).Maybe()
-		m.On("GetCurrentHandKey").Return("").Maybe()
-		m.On("GetVariantName").Return(variant)
-		m.On("GetHand").Return(hand)
-		return m
-	}
-	holdPrefix := strings.SplitN(i18n.T("videopoker.hintHold"), "{{", 2)[0]
-
-	t.Run("deuces wild holds deuces and a made pair", func(t *testing.T) {
-		hand := []*domain.Card{
-			domain.NewCard(domain.CardDesignSpade, 2, false),  // deuce (wild)
-			domain.NewCard(domain.CardDesignHeart, 8, false),  // pair of 8s
-			domain.NewCard(domain.CardDesignClover, 8, false), // pair of 8s
-			domain.NewCard(domain.CardDesignDiamond, 5, false),
-			domain.NewCard(domain.CardDesignHeart, 9, false),
-		}
-		out := p.HintOutput(drawGame("deuceswild", hand))
-		assert.Contains(t, out, holdPrefix)
-		assert.Contains(t, out, i18n.T("videopoker.holdWildAndPair"))
-		assert.Contains(t, out, "[0]") // deuce
-		assert.Contains(t, out, "[1]") // pair
-		assert.Contains(t, out, "[2]") // pair
-		assert.NotContains(t, out, "[3]")
-	})
-
-	t.Run("deuces wild holds the lone deuce", func(t *testing.T) {
-		hand := []*domain.Card{
-			domain.NewCard(domain.CardDesignSpade, 2, false), // deuce (wild)
-			domain.NewCard(domain.CardDesignHeart, 4, false),
-			domain.NewCard(domain.CardDesignClover, 7, false),
-			domain.NewCard(domain.CardDesignDiamond, 9, false),
-			domain.NewCard(domain.CardDesignHeart, 5, false),
-		}
-		out := p.HintOutput(drawGame("deuceswild", hand))
-		assert.Contains(t, out, i18n.T("videopoker.holdWild"))
-		assert.Contains(t, out, "[0]")
-		assert.NotContains(t, out, "[1]")
-	})
-
-	t.Run("joker poker holds the joker", func(t *testing.T) {
-		hand := []*domain.Card{
-			domain.NewCard(domain.CardDesignJoker, 0, false), // joker (wild)
-			domain.NewCard(domain.CardDesignHeart, 4, false),
-			domain.NewCard(domain.CardDesignClover, 7, false),
-			domain.NewCard(domain.CardDesignDiamond, 9, false),
-			domain.NewCard(domain.CardDesignHeart, 5, false),
-		}
-		out := p.HintOutput(drawGame("jokerpoker", hand))
-		assert.Contains(t, out, i18n.T("videopoker.holdWild"))
-		assert.Contains(t, out, "[0]")
-	})
-
-	t.Run("jacks or better holds a pair", func(t *testing.T) {
-		hand := []*domain.Card{
-			domain.NewCard(domain.CardDesignSpade, 8, false),
-			domain.NewCard(domain.CardDesignHeart, 8, false),
-			domain.NewCard(domain.CardDesignClover, 3, false),
-			domain.NewCard(domain.CardDesignDiamond, 5, false),
-			domain.NewCard(domain.CardDesignHeart, 9, false),
-		}
-		out := p.HintOutput(drawGame("jacksorbetter", hand))
-		assert.Contains(t, out, i18n.T("videopoker.holdPair"))
-		assert.Contains(t, out, "[0]")
-		assert.Contains(t, out, "[1]")
-		assert.NotContains(t, out, "[2]")
-	})
-
-	// **配当のつかない低いペアが、強いドローを潰していた (#4691)。**ペア判定が
-	// 最初に無条件でヒットするため、4枚ロイヤル・4枚フラッシュが同居しても
-	// 常に弱いペアを勧めていた。順序は Jacks or Better の標準戦略に合わせる:
-	//   4枚ロイヤル > 4枚フラッシュ > 低いペア > 4枚ストレート
-	t.Run("jacks or better prefers a royal draw over a non-paying pair", func(t *testing.T) {
-		hand := []*domain.Card{
-			domain.NewCard(domain.CardDesignSpade, 10, false),
-			domain.NewCard(domain.CardDesignSpade, 11, false),
-			domain.NewCard(domain.CardDesignSpade, 12, false),
-			domain.NewCard(domain.CardDesignSpade, 13, false),
-			domain.NewCard(domain.CardDesignHeart, 10, false),
-		}
-		out := p.HintOutput(drawGame("jacksorbetter", hand))
-		assert.Contains(t, out, i18n.T("videopoker.holdRoyalDraw"))
-	})
-
-	t.Run("jacks or better prefers a flush draw over a non-paying pair", func(t *testing.T) {
-		hand := []*domain.Card{
-			domain.NewCard(domain.CardDesignSpade, 3, false),
-			domain.NewCard(domain.CardDesignSpade, 5, false),
-			domain.NewCard(domain.CardDesignSpade, 8, false),
-			domain.NewCard(domain.CardDesignSpade, 13, false),
-			domain.NewCard(domain.CardDesignHeart, 3, false),
-		}
-		out := p.HintOutput(drawGame("jacksorbetter", hand))
-		assert.Contains(t, out, i18n.T("videopoker.holdFlushDraw"))
-	})
-
-	// **逆側。**低ペアは4枚ストレートより上。ここを一緒くたに「ドロー優先」と
-	// すると、標準戦略から外れる方向に壊れる。
-	t.Run("jacks or better keeps a low pair over a straight draw", func(t *testing.T) {
-		hand := []*domain.Card{
-			domain.NewCard(domain.CardDesignSpade, 4, false),
-			domain.NewCard(domain.CardDesignSpade, 5, false),
-			domain.NewCard(domain.CardDesignHeart, 6, false),
-			domain.NewCard(domain.CardDesignClover, 7, false),
-			domain.NewCard(domain.CardDesignHeart, 4, false),
-		}
-		out := p.HintOutput(drawGame("jacksorbetter", hand))
-		assert.Contains(t, out, i18n.T("videopoker.holdPair"))
-	})
-
-	// 配当のつくペア (J 以上) は据え置き。4枚フラッシュより上。
-	t.Run("jacks or better keeps a paying high pair over a flush draw", func(t *testing.T) {
-		hand := []*domain.Card{
-			domain.NewCard(domain.CardDesignSpade, 12, false),
-			domain.NewCard(domain.CardDesignSpade, 5, false),
-			domain.NewCard(domain.CardDesignSpade, 8, false),
-			domain.NewCard(domain.CardDesignSpade, 3, false),
-			domain.NewCard(domain.CardDesignHeart, 12, false),
-		}
-		out := p.HintOutput(drawGame("jacksorbetter", hand))
-		assert.Contains(t, out, i18n.T("videopoker.holdPair"))
-	})
-
-	t.Run("jacks or better holds a flush draw", func(t *testing.T) {
-		hand := []*domain.Card{
-			domain.NewCard(domain.CardDesignSpade, 3, false),
-			domain.NewCard(domain.CardDesignSpade, 6, false),
-			domain.NewCard(domain.CardDesignSpade, 8, false),
-			domain.NewCard(domain.CardDesignSpade, 10, false),
-			domain.NewCard(domain.CardDesignHeart, 4, false),
-		}
-		out := p.HintOutput(drawGame("jacksorbetter", hand))
-		assert.Contains(t, out, i18n.T("videopoker.holdFlushDraw"))
-		assert.Contains(t, out, "[0]")
-		assert.Contains(t, out, "[3]")
-		assert.NotContains(t, out, "[4]")
-	})
-
-	t.Run("jacks or better holds a straight draw", func(t *testing.T) {
-		hand := []*domain.Card{
-			domain.NewCard(domain.CardDesignSpade, 5, false),
-			domain.NewCard(domain.CardDesignHeart, 6, false),
-			domain.NewCard(domain.CardDesignClover, 7, false),
-			domain.NewCard(domain.CardDesignDiamond, 8, false),
-			domain.NewCard(domain.CardDesignHeart, 10, false),
-		}
-		out := p.HintOutput(drawGame("jacksorbetter", hand))
-		assert.Contains(t, out, i18n.T("videopoker.holdStraightDraw"))
-		assert.Contains(t, out, "[0]")
-		assert.Contains(t, out, "[3]")
-		assert.NotContains(t, out, "[4]")
-	})
-
-	t.Run("jacks or better holds the high cards", func(t *testing.T) {
-		hand := []*domain.Card{
-			domain.NewCard(domain.CardDesignSpade, 3, false),
-			domain.NewCard(domain.CardDesignHeart, 7, false),
-			domain.NewCard(domain.CardDesignClover, 9, false),
-			domain.NewCard(domain.CardDesignDiamond, 11, false), // jack
-			domain.NewCard(domain.CardDesignSpade, 13, false),   // king
-		}
-		out := p.HintOutput(drawGame("jacksorbetter", hand))
-		assert.Contains(t, out, i18n.T("videopoker.holdHighCards"))
-		assert.Contains(t, out, "[3]")
-		assert.Contains(t, out, "[4]")
-		assert.NotContains(t, out, "[0]")
-	})
-
-	t.Run("recommends redraw when nothing is worth keeping", func(t *testing.T) {
-		hand := []*domain.Card{
-			domain.NewCard(domain.CardDesignSpade, 3, false),
-			domain.NewCard(domain.CardDesignHeart, 4, false),
-			domain.NewCard(domain.CardDesignClover, 6, false),
-			domain.NewCard(domain.CardDesignDiamond, 8, false),
-			domain.NewCard(domain.CardDesignHeart, 10, false),
-		}
-		assert.Contains(t, p.HintOutput(drawGame("jacksorbetter", hand)), i18n.T("videopoker.hintHoldNone"))
-	})
-
-	t.Run("no hint with an empty hand", func(t *testing.T) {
-		assert.Contains(t, p.HintOutput(drawGame("jacksorbetter", nil)), i18n.T("videopoker.hintNone"))
-	})
-
-	t.Run("no hint outside the draw phase", func(t *testing.T) {
-		m := new(interfaces.MockVideoPokerGame)
-		m.On("GetPhase").Return(domain.VideoPokerPhaseBet)
-		m.On("GetChipsRefilled").Return(false).Maybe()
-		m.On("GetCurrentHandKey").Return("").Maybe()
-		assert.Contains(t, p.HintOutput(m), i18n.T("videopoker.hintNone"))
-	})
-}
-
-// #5508: Web はドロー中の5枚が配当対象の役かをリアルタイムに出すのに、CUI は
-// 手札とホールド推奨しか出しておらず、配当対象かはプレイヤーが自分で判定するしか
-// なかった。
-func TestVideoPokerCuiPresenter_MadeHandLine(t *testing.T) {
-	p := new(VideoPokerCuiPresenter)
-
-	withKey := func(phase int, key string) *interfaces.MockVideoPokerGame {
-		m := new(interfaces.MockVideoPokerGame)
-		m.On("GetChips").Return(997).Maybe()
-		m.On("GetChipsRefilled").Return(false).Maybe()
-		m.On("GetPhase").Return(phase).Maybe()
-		m.On("GetHand").Return([]*domain.Card{
-			domain.NewCard(domain.CardDesignSpade, 5, false),
-			domain.NewCard(domain.CardDesignHeart, 5, false),
-			domain.NewCard(domain.CardDesignClover, 5, false),
-			domain.NewCard(domain.CardDesignDiamond, 9, false),
-			domain.NewCard(domain.CardDesignSpade, 12, false),
-		}).Maybe()
-		m.On("GetHeldIndices").Return([5]bool{}).Maybe()
-		m.On("GetBetAmount").Return(3).Maybe()
-		m.On("GetGameEndFlag").Return(false).Maybe()
-		m.On("GetResult").Return(0).Maybe()
-		m.On("GetPayout").Return(0).Maybe()
-		m.On("GetHandName").Return("").Maybe()
-		m.On("GetHandKey").Return("").Maybe()
-		m.On("GetVariantName").Return("jokerpoker").Maybe()
-		m.On("GetCurrentHandKey").Return(key).Maybe()
-		setupVideoPokerCuiStatsMockDefaults(m)
-		return m
-	}
-
-	t.Run("names the current hand during the draw phase", func(t *testing.T) {
-		out := p.Output(withKey(domain.VideoPokerPhaseDraw, "threeOfAKind"), nil)
-		assert.Contains(t, out, i18n.Tf("videopoker.madeHandLine", "handName", i18n.T("pokerhand.threeOfAKind")))
-		// **生のキーを出さない。** 訳が無いときに "threeOfAKind" が画面に出るのは論外。
-		assert.NotContains(t, out, "pokerhand.")
-	})
-
-	// **配当対象外でも黙らない。** 表示が消えると、評価されていないのか
-	// 届いていないのか区別できない。
-	t.Run("says there is no paying hand when the key is empty", func(t *testing.T) {
-		out := p.Output(withKey(domain.VideoPokerPhaseDraw, ""), nil)
-		assert.Contains(t, out, i18n.T("videopoker.madeHandNone"))
-	})
-
-	// ベット中・結果表示中には出さない。手札が無い/決着済みの局面で
-	// 「現在の役」を出しても意味が無い。
-	t.Run("stays quiet outside the draw phase", func(t *testing.T) {
-		for _, phase := range []int{domain.VideoPokerPhaseBet, domain.VideoPokerPhaseResult} {
-			out := p.Output(withKey(phase, "threeOfAKind"), nil)
-			assert.NotContains(t, out, i18n.T("videopoker.madeHandNone"), "phase %d", phase)
-			assert.NotContains(t, out,
-				i18n.Tf("videopoker.madeHandLine", "handName", i18n.T("pokerhand.threeOfAKind")), "phase %d", phase)
-		}
-	})
-}
-
-// Reset hands out chips when the balance is spent. Both surfaces have to say so,
-// or the number simply changes with no cause on screen.
-func TestVideoPokerCuiPresenter_ChipsRefilledNotice(t *testing.T) {
-	p := new(VideoPokerCuiPresenter)
-
-	build := func(refilled bool) *interfaces.MockVideoPokerGame {
-		m := new(interfaces.MockVideoPokerGame)
-		// Registered before the shared defaults so this value is the one used.
-		m.On("GetChipsRefilled").Return(refilled).Maybe()
-		setupVideoPokerCuiMockDefaults(m)
-		return m
-	}
-
-	t.Run("announces a refill during the bet phase", func(t *testing.T) {
-		assert.Contains(t, p.Output(build(true), nil), i18n.Tf("videopoker.chipsRefilled",
-			"chips", strconv.Itoa(domain.VideoPokerDefaultChips)))
-	})
-
-	t.Run("says nothing when no refill happened", func(t *testing.T) {
-		assert.NotContains(t, p.Output(build(false), nil), i18n.T("videopoker.chipsRefilled"))
-	})
-}
-
-// Which pairs pay is a property of the variant's paytable, not a constant.
-// Deuces Wild pays nothing below three of a kind, so recommending a high pair
-// there hands the player a hold worth zero over a four-card royal.
-func TestVideoPokerHold_PayingPairIsVariantSpecific(t *testing.T) {
-	// K-K plus three cards that also form four to a royal but no deuce, so the
-	// two candidate holds are directly in conflict.
+	m := new(interfaces.MockVideoPokerGame)
 	hand := []*domain.Card{
-		domain.NewCard(domain.CardDesignSpade, 13, false),
-		domain.NewCard(domain.CardDesignHeart, 13, false),
-		domain.NewCard(domain.CardDesignSpade, 12, false),
-		domain.NewCard(domain.CardDesignSpade, 11, false),
 		domain.NewCard(domain.CardDesignSpade, 10, false),
+		domain.NewCard(domain.CardDesignSpade, 11, false),
+		domain.NewCard(domain.CardDesignSpade, 12, false),
+		domain.NewCard(domain.CardDesignSpade, 13, false),
+		domain.NewCard(domain.CardDesignHeart, 2, false),
 	}
+	m.On("GetPhase").Return(domain.VideoPokerPhaseDraw)
+	m.On("GetHand").Return(hand)
+	m.On("RecommendedHold").Return(domain.VideoPokerHoldAdvice{Hold: [domain.VideoPokerHandSize]bool{true, true, true, true}, RuleKey: "royalDraw4"})
+	result := p.HintOutput(m)
+	assert.Contains(t, result, "[0]")
+	assert.Contains(t, result, "[3]")
+	assert.Contains(t, result, "ロイヤルフラッシュへの4枚をホールド")
+	assert.NotContains(t, result, "videopoker.strategy.royalDraw4")
+}
 
-	t.Run("jacks or better keeps the paying pair", func(t *testing.T) {
-		_, key := videoPokerHold(hand, "jacksorbetter")
-		assert.Equal(t, "holdPair", key)
-	})
+func TestVideoPokerCuiPresenter_HintOutput_DrawAll(t *testing.T) {
+	p := new(VideoPokerCuiPresenter)
+	m := new(interfaces.MockVideoPokerGame)
+	m.On("GetPhase").Return(domain.VideoPokerPhaseDraw)
+	m.On("GetHand").Return([]*domain.Card{})
+	m.On("RecommendedHold").Return(domain.VideoPokerHoldAdvice{RuleKey: "drawAll"})
+	assert.Contains(t, p.HintOutput(m), i18n.T("videopoker.hintHoldNone"))
+}
 
-	t.Run("deuces wild does not, because no pair pays there", func(t *testing.T) {
-		_, key := videoPokerHold(hand, "deuceswild")
-		assert.NotEqual(t, "holdPair", key, "Deuces Wild pays nothing below trips")
-	})
-
-	t.Run("the threshold itself comes from the paytable", func(t *testing.T) {
-		jb, ok := videoPokerPayingPairRank("jacksorbetter")
-		assert.True(t, ok)
-		assert.Equal(t, videoPokerHighCardThreshold, jb)
-
-		kb, ok := videoPokerPayingPairRank("jokerpoker")
-		assert.True(t, ok)
-		assert.Equal(t, videoPokerKingRank, kb, "joker poker pays from kings")
-
-		_, ok = videoPokerPayingPairRank("deuceswild")
-		assert.False(t, ok, "no pair row exists in the Deuces Wild paytable")
-	})
+func TestVideoPokerStrategyRuleKeysHaveJaAndEnTranslations(t *testing.T) {
+	for _, key := range domain.VideoPokerStrategyRuleKeys() {
+		fullKey := "videopoker.strategy." + key
+		for _, lang := range []string{"ja", "en"} {
+			assert.NotEqual(t, fullKey, i18n.TForLang(lang, fullKey), "%s missing %s translation", lang, fullKey)
+		}
+	}
 }

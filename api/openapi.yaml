@@ -50123,6 +50123,16 @@ components:
           items:
             type: integer
           example: []
+        recommendedHold:
+          type: array
+          description: Indices recommended by the strategy table; empty outside the draw phase.
+          items:
+            type: integer
+          example: []
+        recommendedHoldRule:
+          type: string
+          description: Strategy table row key supporting the recommended hold; empty outside the draw phase.
+          example: ""
         message:
           type: string
           description: Game status message

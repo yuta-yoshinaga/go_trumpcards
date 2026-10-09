@@ -13,6 +13,8 @@ function makeState(overrides?: Partial<VideoPokerResponse>): VideoPokerResponse 
     handRank: 0,
     handName: '',
     heldIndices: [false, false, false, false, false],
+    recommendedHold: [],
+    recommendedHoldRule: '',
     variantName: 'jacksorbetter',
     hands: 0,
     winRate: 0,

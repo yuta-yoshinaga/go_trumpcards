@@ -293,6 +293,12 @@ classDiagram
         +Hold(indices []int) error
         +GetPhase() int
         +GetActionLog() []*ActionLogEntry
+        +RecommendedHold() VideoPokerHoldAdvice
+    }
+
+    class VideoPokerHoldAdvice {
+        +Hold [5]bool
+        +RuleKey string
     }
 
     class VideoPokerVariantConfig {
@@ -411,6 +417,8 @@ classDiagram
     VideoPoker --> "1" TrumpCards
     VideoPoker --> "1" ChipHolder
     VideoPoker --> "0..1" VideoPokerVariantConfig
+    VideoPoker ..> VideoPokerHoldAdvice
+    note for VideoPokerHoldAdvice "RecommendVideoPokerHold が種目ごとの戦略表 (優先順リスト) で決める。\n表の順序はオフラインの期待値検証器 (VideoPokerEV_vpev_test.go) で決めている"
 
     class RedDog {
         -trumpCards *TrumpCards
