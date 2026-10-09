@@ -235,6 +235,10 @@ func TestMinibridgeResolvedTrickWaitsForContinueAndSurvivesSnapshot(t *testing.T
 		{PlayerIdx: 2, Card: NewCard(CardDesignSpade, 1, false)},
 		{PlayerIdx: 3, Card: NewCard(CardDesignSpade, 7, false)},
 	}
+	// 配られた手札を捨て、出す札を ♠3 だけにする (配り依存を除く。申告 HCP は保存の検証に要るので残す)
+	for m.players[0].GetCardsSize() > 0 {
+		m.players[0].RemoveCard(0)
+	}
 	m.players[0].AddCard(NewCard(CardDesignSpade, 3, false))
 	require.NoError(t, m.PlayerPlay(0))
 	assert.True(t, m.IsTrickPaused())
