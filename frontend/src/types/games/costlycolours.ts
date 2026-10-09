@@ -7,7 +7,7 @@ import type { BaseGameResponse, Card } from '../common';
 export interface CostlyColoursPlayer {
   id: number;
   isHuman: boolean;
-  /** Hand cards. Populated only for the human. */
+  /** Hand cards. CPU hands are populated during the show and after the game. */
   cards: Card[];
   cardCount: number;
   /** Cards played this deal. The show counts these plus what is still held. */
