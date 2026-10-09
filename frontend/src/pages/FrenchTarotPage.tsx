@@ -403,12 +403,13 @@ function FrenchTarotPageContent() {
                   </div>
                 )}
 
-                {/* Round result: the deal outcome (contract made / failed) */}
+                {/* Live target: the declarer side's current target from the server */}
                 {(isPlayPhase || isTrickEnd) && state.declarerIdx >= 0 && (
                   <div className="text-ds-text-muted text-sm" data-testid="frenchtarot-live-target">
                     {t('roundResult.target', { points: state.target })}
                   </div>
                 )}
+                {/* Round result: the deal outcome (contract made / failed) */}
                 {(isRoundEnd || isGameEnd) && state.outcome > 0 && (
                   <div
                     className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"

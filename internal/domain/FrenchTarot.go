@@ -1718,7 +1718,8 @@ func (g *FrenchTarot) GetCardPoints(i int) int {
 	return sum
 }
 
-// GetBouts プレイヤー i が獲得したブー数を返す。
+// GetBouts プレイヤー i が獲得したブー数を返す。GetCardPoints と同じくトリックの山だけを数え、
+// 犬 (stash) は含めない。目標点 (GetTarget) はデクレアラー側の犬も含めて数える。
 func (g *FrenchTarot) GetBouts(i int) int {
 	if i < 0 || i >= len(g.players) {
 		return 0
