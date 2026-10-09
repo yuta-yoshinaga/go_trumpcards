@@ -32,17 +32,18 @@ func makeShengJiPlayers(hands ...[]*domain.Card) []*domain.ShengJiPlayer {
 
 // shengJiMockOpts tunes the parts of the stub that individual tests vary.
 type shengJiMockOpts struct {
-	phase       domain.ShengJiPhase
-	gameEnd     bool
-	winner      int
-	trumpSuit   int
-	declaration *domain.ShengJiDeclaration
-	kitty       []*domain.Card
-	trick       [][]*domain.Card
-	leadCombo   *domain.ShengJiCombo
-	lastResult  *domain.ShengJiHandResult
-	declarable  map[int]int
-	level       int
+	phase         domain.ShengJiPhase
+	gameEnd       bool
+	winner        int
+	currentWinner int
+	trumpSuit     int
+	declaration   *domain.ShengJiDeclaration
+	kitty         []*domain.Card
+	trick         [][]*domain.Card
+	leadCombo     *domain.ShengJiCombo
+	lastResult    *domain.ShengJiHandResult
+	declarable    map[int]int
+	level         int
 }
 
 func setupShengJiMock(o shengJiMockOpts) *interfaces.MockShengJiGame {
@@ -75,6 +76,7 @@ func setupShengJiMock(o shengJiMockOpts) *interfaces.MockShengJiGame {
 	m.On("GetLeadCombo").Return(o.leadCombo)
 	m.On("GetTrickCount").Return(4)
 	m.On("GetLastTrickWinner").Return(2)
+	m.On("GetCurrentTrickWinner").Return(o.currentWinner)
 	m.On("GetLastResult").Return(o.lastResult)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 	for i := range players {
@@ -88,11 +90,12 @@ func setupShengJiMock(o shengJiMockOpts) *interfaces.MockShengJiGame {
 
 func defaultShengJiOpts() shengJiMockOpts {
 	return shengJiMockOpts{
-		phase:     domain.ShengJiPhasePlay,
-		winner:    -1,
-		level:     5,
-		trumpSuit: domain.CardDesignSpade,
-		trick:     [][]*domain.Card{},
+		phase:         domain.ShengJiPhasePlay,
+		winner:        -1,
+		level:         5,
+		trumpSuit:     domain.CardDesignSpade,
+		trick:         [][]*domain.Card{},
+		currentWinner: -1,
 	}
 }
 
@@ -144,6 +147,14 @@ func TestShengJiWebPresenter_Output(t *testing.T) {
 		out = parseShengJiOutput(t, p.Output(setupShengJiMock(o), nil))
 		assert.Len(t, out.Kitty, 1)
 		assert.Equal(t, 1, out.KittySize)
+	})
+
+	// **80 点は 200 点の 4 割。**この 2 つが読めないと守備側の目標が伝わらない。
+	t.Run("the current trick winner is included", func(t *testing.T) {
+		o := defaultShengJiOpts()
+		o.currentWinner = 3
+		out := parseShengJiOutput(t, p.Output(setupShengJiMock(o), nil))
+		assert.Equal(t, 3, out.CurrentTrickWinner)
 	})
 
 	// **80 点は 200 点の 4 割。**この 2 つが読めないと守備側の目標が伝わらない。

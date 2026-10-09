@@ -38308,6 +38308,9 @@ components:
           type: integer
         lastTrickWinner:
           type: integer
+        currentTrickWinner:
+          type: integer
+          description: "Seat currently winning the trick; -1 when no cards have been played"
         lastResult:
           type: object
           nullable: true

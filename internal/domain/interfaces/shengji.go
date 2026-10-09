@@ -61,6 +61,8 @@ type ShengJiGame interface {
 	GetTrickCount() int
 	// GetLastTrickWinner 直前のトリックの勝者席を取得する
 	GetLastTrickWinner() int
+	// GetCurrentTrickWinner returns the seat currently winning the trick, or -1 when no play exists.
+	GetCurrentTrickWinner() int
 	// GetLastResult 直前の局の結果を取得する
 	GetLastResult() *domain.ShengJiHandResult
 	// GetHandNumber 現在の局番号を取得する
