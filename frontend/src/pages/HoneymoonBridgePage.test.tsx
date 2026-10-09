@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, honeymoonbridgeApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, HoneymoonBridgeResponse } from '../types/card';
 import { HoneymoonBridgePage } from './HoneymoonBridgePage';
@@ -84,6 +85,45 @@ beforeEach(() => {
 });
 
 describe('HoneymoonBridgePage', () => {
+  it('allows only valid hand indices during the human play turn', async () => {
+    mockExec.mockResolvedValue(playing({ validPlays: [1, 3] }));
+    renderWithProviders(<HoneymoonBridgePage />);
+    const cards = await screen.findAllByRole('button', { name: /^.+ を出す$/ });
+    expect(cards).toHaveLength(5);
+    expect(cards[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[0]).toHaveAttribute('aria-describedby', 'hb-illegal-play-reason');
+    expect(cards[1]).not.toHaveAttribute('aria-disabled');
+    expect(cards[3]).not.toHaveAttribute('aria-disabled');
+
+    mockExec.mockClear();
+    fireEvent.click(cards[0]);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+    fireEvent.click(cards[1]);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 1));
+  });
+
+  it('keeps every hand card disabled outside the human play turn and while loading', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+    renderWithProviders(<HoneymoonBridgePage />);
+    const cards = await screen.findAllByRole('button', { name: /^.+ を出す$/ });
+    expect(cards).toHaveLength(5);
+    expect(cards.every((button) => (button as HTMLButtonElement).disabled)).toBe(true);
+    expect(cards.every((button) => !button.hasAttribute('aria-disabled'))).toBe(true);
+  });
+
+  it('keeps every hand card disabled while a play request is pending', async () => {
+    mockExec.mockImplementation((command) => {
+      if (command === 'reset') return Promise.resolve(playing());
+      return new Promise(() => {});
+    });
+    renderWithProviders(<HoneymoonBridgePage />);
+    const cards = await screen.findAllByRole('button', { name: /^.+ を出す$/ });
+    fireEvent.click(cards[0]);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+    expect(cards.every((button) => (button as HTMLButtonElement).disabled)).toBe(true);
+  });
+
   it('marks drawn cards and leaves unmarked cards alone', async () => {
     mockExec.mockResolvedValue(makeState({ drawnIndices: [1] }));
     renderWithProviders(<HoneymoonBridgePage />);

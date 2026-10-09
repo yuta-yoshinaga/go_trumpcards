@@ -47,7 +47,8 @@
     "nextRound": "次のディールへ",
     "reset": "リセット",
     "giveUp": "投了",
-    "playAria": "{{card}} を出す"
+    "playAria": "{{card}} を出す",
+    "illegalPlayReason": "この札は今のルールでは出せません。"
   },
   "result": {
     "you": "あなたの勝ち！ 目標点に先に届きました。",
