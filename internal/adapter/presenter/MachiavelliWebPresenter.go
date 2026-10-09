@@ -78,7 +78,7 @@ func (p *MachiavelliWebPresenter) buildPlayersOutput(g interfaces.MachiavelliGam
 		player := g.GetPlayer(i)
 		showCards := player.GetIsHuman() || revealAll
 		deadwood := 0
-		if revealAll {
+		if player.GetIsHuman() || revealAll {
 			deadwood = g.PlayerDeadwoodValue(i)
 		}
 		pObj := &controller.MachiavelliWebOutputPlayer{
