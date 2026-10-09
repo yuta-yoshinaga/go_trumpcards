@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import { MINCHIATE_SURPLUS, type MinchiateResponse } from '../types/card';
 import { MinchiatePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { MINCHIATE_HELP, parseMinchiateCommand } from '../utils/cli/commands/minchiateCommands';
 import { formatMinchiateState } from '../utils/cli/formatters/minchiateFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -212,6 +213,18 @@ function MinchiatePageContent() {
             >
               {t('trumpCountNote')}
             </div>
+            <section
+              aria-label={t('trumpTracker')}
+              data-testid="minchiate-trump-tracker"
+              className="mb-2 text-center text-sm"
+            >
+              <div className="text-ds-text-primary">{t('remainingTrumps', { count: state.remainingTrumps })}</div>
+              <div className="text-ds-text-muted">
+                {state.playedTrumps.length > 0
+                  ? state.playedTrumps.map(cardAlt).join(t('listSeparator'))
+                  : t('noPlayedTrumps')}
+              </div>
+            </section>
             {/* マットだけが規則の外にいる (取らない・フォロー免除・リードを定めない)。
                 ヒントを切っていると伝わる場所がどこにも無かった (#5715)。 */}
             <div className="text-center mb-2 text-sm text-ds-text-muted" data-testid="minchiate-matto-note">

@@ -79382,6 +79382,14 @@ components:
         scartoCount:
           type: integer
           description: "Cards the dealer has buried so far this deal."
+        playedTrumps:
+          type: array
+          description: "Trumps played this round, ordered by rank."
+          items:
+            $ref: '#/components/schemas/Card'
+        remainingTrumps:
+          type: integer
+          description: "Trumps not yet played this round."
         isHumanScarto:
           type: boolean
           description: "True while the human seat is the dealer and owes the scarto."

@@ -78,6 +78,22 @@ describe('MinchiatePage', () => {
     expect(note).toHaveTextContent('切札は40枚');
   });
 
+  it('lists played trumps by rank and shows the remaining count', async () => {
+    const state = makeMinchiateState({
+      playedTrumps: [
+        { design: 'JOKER', value: 4, glyph: '✦', label: '4 Foco', color: 'purple', deck: 'tarot' },
+        { design: 'JOKER', value: 39, glyph: '✦', label: '39 Angelo', color: 'purple', deck: 'tarot' },
+      ],
+      remainingTrumps: 38,
+    });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<MinchiatePage />);
+    const tracker = await screen.findByTestId('minchiate-trump-tracker');
+    expect(tracker).toHaveTextContent('4 Foco');
+    expect(tracker).toHaveTextContent('39 Angelo');
+    expect(tracker).toHaveTextContent('38');
+  });
+
   // #5715: マットの特殊ルール (取らない・フォロー免除・リードを定めない) は
   // ヒント文言の中にしか無く、ヒントを切っていると知る手段が無かった。
   it('always explains the Matto', async () => {

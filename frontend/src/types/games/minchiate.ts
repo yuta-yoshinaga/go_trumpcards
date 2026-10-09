@@ -57,6 +57,10 @@ export interface MinchiateResponse extends BaseGameResponse {
   dealerIdx: number;
   /** Number of cards the dealer buried this round (0 until the scarto is done). */
   scartoCount: number;
+  /** Trumps played in this round, sorted from lowest to highest rank. */
+  playedTrumps: Card[];
+  /** Number of the 40 trumps not yet played this round. */
+  remainingTrumps: number;
   currentTrick: MinchiateTrickCard[];
   /** Cumulative match score per team — [team0, team1]. */
   teamScores: number[];

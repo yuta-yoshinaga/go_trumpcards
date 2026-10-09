@@ -59,6 +59,10 @@
   "hintRequested": "ヒントがあります",
   "noHint": "ヒントはありません",
   "trumpCountNote": "切札は40枚 —— 星座12・四大元素・美徳を含み、上に何枚残っているかが読みどころです",
+  "trumpTracker": "切札の記録",
+  "noPlayedTrumps": "まだ切札は出ていません",
+  "remainingTrumps": "残り{{count}}枚",
+  "listSeparator": "、",
   "mattoNote": "マット（愚者）は特別 —— トリックを取らず、フォロー義務も免れ、リードスートも定めません",
   "hintButton": "ヒント"
 }
