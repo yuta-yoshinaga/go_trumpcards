@@ -474,4 +474,25 @@ describe('SimpleSimonPage', () => {
     await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
     expect(screen.queryByTestId('hint-button')).not.toBeInTheDocument();
   });
+
+  it.each([1, 2])('allows undo after the game ends in phase %i when undo is available', async (phase) => {
+    mockExec.mockResolvedValue(makeState({ phase, canUndo: true }));
+    renderWithProviders(<SimpleSimonPage />);
+
+    const undoButton = await screen.findByTestId('undo-button');
+    expect(screen.queryByTestId('hint-button')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('giveup-button')).not.toBeInTheDocument();
+
+    mockExec.mockClear();
+    fireEvent.click(undoButton);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('u'));
+  });
+
+  it.each([1, 2])('hides undo after the game ends in phase %i when undo is unavailable', async (phase) => {
+    mockExec.mockResolvedValue(makeState({ phase, canUndo: false }));
+    renderWithProviders(<SimpleSimonPage />);
+
+    await screen.findByTestId('column-0');
+    expect(screen.queryByTestId('undo-button')).not.toBeInTheDocument();
+  });
 });
