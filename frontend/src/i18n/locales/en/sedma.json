@@ -28,6 +28,9 @@
     "a": "Team A",
     "b": "Team B"
   },
+  "ally": "ally",
+  "opponent": "opponent",
+  "trickCardLabel": "{{card}} · {{player}} · {{team}} · {{relation}}",
   "teamScore": "{{team}}: {{score}} pts",
   "remainingPoints_one": " ({{count}} point remaining)",
   "remainingPoints_other": " ({{count}} points remaining)",
