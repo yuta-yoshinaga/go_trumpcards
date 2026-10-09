@@ -237,7 +237,8 @@ export function VideoPokerGameContent({
     // Default: nothing held. Auto-hold consumes the same server recommendation as the hint.
     const next: boolean[] = [false, false, false, false, false];
     if (autoHoldEnabled && state) {
-      for (const idx of state.recommendedHold) {
+      // ?? []: a response from a server older than the strategy tables has no field.
+      for (const idx of state.recommendedHold ?? []) {
         if (idx >= 0 && idx < next.length) next[idx] = true;
       }
     }

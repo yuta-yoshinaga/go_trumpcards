@@ -105,3 +105,13 @@ func vpWindowValue(lo int, rng *rand.Rand) int {
 	}
 	return v
 }
+
+// TestVPStrategyKnowsEveryVariantConfig は、各種目の設定名が戦略表の分岐に
+// 届くことを確かめる。名前を変えると未知扱いで Jacks or Better の表に黙って落ちるため。
+func TestVPStrategyKnowsEveryVariantConfig(t *testing.T) {
+	for _, cfg := range []*VideoPokerVariantConfig{JacksOrBetterConfig(), DeucesWildConfig(), JokerPokerConfig()} {
+		if got := vpConfigFor(cfg.Name).Name; got != cfg.Name {
+			t.Errorf("variant %q resolves to the %q strategy", cfg.Name, got)
+		}
+	}
+}

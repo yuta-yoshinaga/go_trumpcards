@@ -381,6 +381,21 @@ describe('VideoPokerGameContent', () => {
     expect(screen.getByTestId('hint-tooltip')).toHaveTextContent('ペアを1組だけホールド');
   });
 
+  it('holds nothing when an older server response has no recommendedHold', async () => {
+    const { recommendedHold: _omit, ...withoutHold } = drawPhaseState;
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(withoutHold);
+    renderContent();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByRole('button', { name: /ディール/ }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /ドロー/ })).toBeInTheDocument());
+
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    expect(cardButtons).toHaveLength(5);
+    for (const btn of cardButtons) {
+      expect(btn).toHaveAttribute('aria-pressed', 'false');
+    }
+  });
+
   it('toggling auto-hold off then dealing leaves all cards unheld', async () => {
     mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(drawPhaseState);
     renderContent();
