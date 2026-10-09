@@ -13,6 +13,7 @@ run() {
   if [ "$blocked" = "$expect" ]; then echo "  ok $desc ($expect)"; else echo "  FAIL $desc expected=$expect got=$blocked $out"; fail=1; fi
   if [ "$blocked" = block ]; then
     printf '%s' "$out" | grep -q 'self\|shell\|pgrep -P' || { echo "  FAIL $desc missing explanation"; fail=1; }
+    case $desc in *wait\ loop*) printf '%s' "$out" | grep -q 'never ends' || { echo "  FAIL $desc missing wait-loop explanation"; fail=1; } ;; esac
     ! printf '%s' "$out" | grep -q '"continue" *: *false' || { echo "  FAIL $desc used continue false"; fail=1; }
   fi
 }
@@ -26,6 +27,12 @@ run block 'killall regex' 'killall -r worker.*'
 run block 'newline command separator' $'echo start\npkill -f worker'
 run block 'bash -c command' "bash -c 'pkill -f x'"
 run block 'sh -c command' 'sh -c "pkill -f x"'
+run block 'while pgrep -f wait loop' "while pgrep -f 'rcg.sh fx1' >/dev/null; do sleep 5; done"
+run block 'until ! pgrep -f wait loop' 'until ! pgrep -f worker; do sleep 5; done'
+run block 'full-flag wait loop inside bash -c' "bash -c 'while pgrep -af worker; do sleep 1; done'"
+run pass 'while pgrep by parent PID' 'while pgrep -P 1234 >/dev/null; do sleep 5; done'
+run pass 'while pgrep exact name' 'while pgrep -x worker >/dev/null; do sleep 5; done'
+run pass 'wait on a finish line' 'until grep -q RC_DONE log.txt; do sleep 5; done'
 run pass 'pkill exact' 'pkill -x worker'
 run pass 'pkill plain pattern' 'pkill worker'
 run pass 'kill PID' 'kill 1234'
