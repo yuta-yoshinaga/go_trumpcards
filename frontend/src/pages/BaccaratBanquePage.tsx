@@ -222,6 +222,12 @@ function BaccaratBanquePageContent() {
               <div>
                 {t('shoeAnalysis.winChance', { right: state.drawWinPercent[0], left: state.drawWinPercent[1] })}
               </div>
+              <div>
+                {t('shoeAnalysis.tieChance', { right: state.drawTiePercent[0], left: state.drawTiePercent[1] })}
+              </div>
+              <div>
+                {t('shoeAnalysis.loseChance', { right: state.drawLosePercent[0], left: state.drawLosePercent[1] })}
+              </div>
             </section>
 
             <div className="flex gap-3 mb-3 flex-wrap sm:flex-nowrap" data-tutorial="baccaratbanque-tableaux">

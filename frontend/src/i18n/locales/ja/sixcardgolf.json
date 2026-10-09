@@ -18,7 +18,9 @@
     "currentTurn": "現在の手番: {{name}}",
     "columnScore": "{{score}}pt",
     "columnScoreUncertain": "{{score}}+? pt",
-    "columnScorePair": "0pt (ペア)"
+    "columnScorePair": "0pt (ペア)",
+    "scoreHistory": "ラウンド別スコア",
+    "cumulativeRow": "累計"
   },
   "button": {
     "flipInitial": "めくる",

@@ -45,6 +45,8 @@ func (p *BaccaratBanqueWebPresenter) buildBase(g interfaces.BaccaratBanqueGame) 
 	resObj.ShoeRemaining = g.GetShoeRemaining()
 	resObj.ShoeComposition = g.GetShoeComposition()
 	resObj.DrawWinPercent = []int{g.GetDrawWinPercent(domain.BaccaratBanqueRightIdx), g.GetDrawWinPercent(domain.BaccaratBanqueLeftIdx)}
+	resObj.DrawTiePercent = []int{g.GetDrawTiePercent(domain.BaccaratBanqueRightIdx), g.GetDrawTiePercent(domain.BaccaratBanqueLeftIdx)}
+	resObj.DrawLosePercent = []int{g.GetDrawLosePercent(domain.BaccaratBanqueRightIdx), g.GetDrawLosePercent(domain.BaccaratBanqueLeftIdx)}
 	resObj.Retired = g.IsRetired()
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerIdx = g.GetWinnerIdx()

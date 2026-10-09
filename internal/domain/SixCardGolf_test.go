@@ -643,6 +643,50 @@ func TestSixCardGolf_NextRound(t *testing.T) {
 	assert.Equal(t, SixCardGolfPhaseSetup, g.GetPhase())
 }
 
+func TestSixCardGolf_RoundScoreHistoryResetAndJSONRoundtrip(t *testing.T) {
+	g := newTestSixCardGolf()
+	g.Reset()
+	for p := 0; p < g.GetPlayerCnt(); p++ {
+		grid := [SixCardGolfGridSize]SixCardGolfSlot{}
+		for i := range grid {
+			grid[i] = makeSlot(i+2+p, CardDesignSpade, true)
+		}
+		g.SetPlayerGrid(p, grid)
+	}
+	g.roundNumber = 1
+	g.config.Rounds = 1
+	g.scoreRound()
+	assert.Equal(t, [][]int{{27, 33}}, g.GetRoundScoreHistory())
+
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	restored := &SixCardGolf{}
+	require.NoError(t, json.Unmarshal(data, restored))
+	assert.Equal(t, g.GetRoundScoreHistory(), restored.GetRoundScoreHistory())
+
+	g.Reset()
+	assert.Empty(t, g.GetRoundScoreHistory())
+}
+
+func TestSixCardGolf_UnmarshalRejectsInvalidRoundScoreHistory(t *testing.T) {
+	g := newTestSixCardGolf()
+	g.Reset()
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var state map[string]any
+	require.NoError(t, json.Unmarshal(data, &state))
+
+	state["rh"] = [][]int{{-1, 0}}
+	invalidScore, err := json.Marshal(state)
+	require.NoError(t, err)
+	assert.Error(t, json.Unmarshal(invalidScore, &SixCardGolf{}))
+
+	state["rh"] = [][]int{{0}}
+	invalidPlayerCount, err := json.Marshal(state)
+	require.NoError(t, err)
+	assert.Error(t, json.Unmarshal(invalidPlayerCount, &SixCardGolf{}))
+}
+
 func TestSixCardGolf_NextRound_WrongPhase(t *testing.T) {
 	g := newTestSixCardGolf()
 	g.Reset()

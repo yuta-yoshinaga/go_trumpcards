@@ -31,6 +31,7 @@ export interface SixCardGolfResponse extends BaseGameResponse {
   players: SixCardGolfPlayerData[];
   phase: number;
   roundNumber: number;
+  roundScoreHistory: number[][];
   totalRounds: number;
   currentPlayerIdx: number;
   discardTop: Card | null;

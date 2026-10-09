@@ -283,6 +283,10 @@ func TestFollowTheQueen_WildsReachTheHandEvaluator(t *testing.T) {
 	rank, best := p.PeekBestHand()
 	assert.Equal(t, PokerHandThreeOfAKind, rank, "Q がワイルドなので A が 3 枚")
 	assert.Len(t, best, 5)
+	sourceRank, source := p.PeekBestHandSource()
+	assert.Equal(t, rank, sourceRank)
+	assert.Len(t, source, 5)
+	assert.Contains(t, source, p.GetDoorCards()[2], "元の Q を返す")
 
 	// **第2ワイルドも効くこと。**9 をワイルドにすると A が 4 枚になる。
 	p.SetWildRank(9)

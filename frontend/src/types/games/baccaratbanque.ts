@@ -85,6 +85,10 @@ export interface BaccaratBanqueResponse extends BaseGameResponse {
   shoeComposition: number[];
   /** Chance in percent that a draw beats right and left respectively. */
   drawWinPercent: number[];
+  /** Chance in percent that a draw ties each tableau. */
+  drawTiePercent: number[];
+  /** Chance in percent that a draw falls below each tableau. */
+  drawLosePercent: number[];
   /** Whether the banker gave the bank up rather than being broken or running out. */
   retired: boolean;
   lastResult?: BaccaratBanqueResult;

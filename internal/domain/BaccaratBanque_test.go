@@ -365,6 +365,7 @@ func TestBaccaratBanqueDrawWinPercentUsesBaccaratPoints(t *testing.T) {
 		{name: "face cards do not change a higher banker total", shoe: []int{11, 12, 13}, bankTotal: 5, seatTotal: 4, want: 100},
 		{name: "ten does not change an equal banker total", shoe: []int{10}, bankTotal: 4, seatTotal: 4, want: 0},
 		{name: "ace raises an equal banker total", shoe: []int{1}, bankTotal: 4, seatTotal: 4, want: 100},
+		{name: "tie and loss percentages complete the odds", shoe: []int{1, 10, 9}, bankTotal: 4, seatTotal: 5, want: 0},
 	}
 
 	for _, tt := range tests {
@@ -384,8 +385,60 @@ func TestBaccaratBanqueDrawWinPercentUsesBaccaratPoints(t *testing.T) {
 			seat.AddCard(NewCard(CardDesignHeart, tt.seatTotal, true))
 
 			assert.Equal(t, tt.want, b.GetDrawWinPercent(BaccaratBanqueRightIdx))
+			if tt.name == "tie and loss percentages complete the odds" {
+				assert.Equal(t, 33, b.GetDrawTiePercent(BaccaratBanqueRightIdx))
+				assert.Equal(t, 67, b.GetDrawLosePercent(BaccaratBanqueRightIdx))
+			}
+			assert.Equal(t, 100, b.GetDrawWinPercent(BaccaratBanqueRightIdx)+b.GetDrawTiePercent(BaccaratBanqueRightIdx)+b.GetDrawLosePercent(BaccaratBanqueRightIdx))
 		})
 	}
+}
+
+func TestBaccaratBanqueDrawOutcomePercentsUseLargestRemainder(t *testing.T) {
+	t.Run("two rounded up outcomes do not make lose negative", func(t *testing.T) {
+		b := NewDefaultBaccaratBanque()
+		b.Reset()
+		shoe := make([]*Card, 0, 8)
+		for i := 0; i < 8; i++ {
+			rank := 1 // banker total 1 becomes 2: win against 1
+			if i < 7 {
+				rank = 10 // banker total stays 1: tie against 1
+			}
+			shoe = append(shoe, NewCard(CardDesignSpade+i%4, rank, true))
+		}
+		b.SetShoeForTest(shoe)
+		banker := b.GetPlayer(BaccaratBanqueBankerIdx)
+		banker.ResetCoup()
+		banker.AddCard(NewCard(CardDesignSpade, 1, true))
+		seat := b.GetPlayer(BaccaratBanqueRightIdx)
+		seat.ResetCoup()
+		seat.AddCard(NewCard(CardDesignHeart, 1, true))
+
+		win, tie, lose := b.drawOutcomePercents(BaccaratBanqueRightIdx)
+		assert.GreaterOrEqual(t, lose, 0)
+		assert.Equal(t, 100, win+tie+lose)
+	})
+
+	t.Run("typical odds retain their existing percentages", func(t *testing.T) {
+		b := NewDefaultBaccaratBanque()
+		b.Reset()
+		b.SetShoeForTest([]*Card{
+			NewCard(CardDesignSpade, 1, true),
+			NewCard(CardDesignHeart, 10, true),
+			NewCard(CardDesignClover, 9, true),
+		})
+		banker := b.GetPlayer(BaccaratBanqueBankerIdx)
+		banker.ResetCoup()
+		banker.AddCard(NewCard(CardDesignSpade, 4, true))
+		seat := b.GetPlayer(BaccaratBanqueRightIdx)
+		seat.ResetCoup()
+		seat.AddCard(NewCard(CardDesignHeart, 5, true))
+
+		win, tie, lose := b.drawOutcomePercents(BaccaratBanqueRightIdx)
+		assert.Equal(t, 0, win)
+		assert.Equal(t, 33, tie)
+		assert.Equal(t, 67, lose)
+	})
 }
 
 func TestBaccaratBanqueDrawWinPercentReturnsZeroWithoutDrawOrForInvalidSeat(t *testing.T) {

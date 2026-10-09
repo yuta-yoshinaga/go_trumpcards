@@ -135,13 +135,20 @@ func (p *FollowTheQueenWebPresenter) buildPlayersOutput(s interfaces.FollowTheQu
 			pObj.HoleCards = make([]*controller.WebOutputCard, 0)
 		}
 
-		// ショーダウン時のハンド情報
+		// ショーダウン時は確定したハンド情報を使う。プレイ中の人間には
+		// 現在の最善5枚をドメインのワイルド判定込みで返す。
 		if isShowdown && !player.GetFolded() {
 			pObj.HandRank = player.GetHandRank()
 			pObj.HandName = p.getHandName(player.GetHandRank())
 			pObj.BestHand = cardsToOutput(player.GetBestHand())
+		} else if !isShowdown && player.GetIsHuman() && !player.GetFolded() {
+			_, best := player.PeekBestHand()
+			pObj.BestHand = cardsToOutput(best)
+			_, source := player.PeekBestHandSource()
+			pObj.BestHandSource = cardsToOutput(source)
 		} else {
 			pObj.BestHand = make([]*controller.WebOutputCard, 0)
+			pObj.BestHandSource = make([]*controller.WebOutputCard, 0)
 		}
 
 		out = append(out, pObj)

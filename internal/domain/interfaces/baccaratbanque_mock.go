@@ -97,6 +97,24 @@ func (_m *MockBaccaratBanqueGame) GetDrawWinPercent(seat int) int {
 	return ret.Get(0).(int)
 }
 
+// GetDrawTiePercent モック
+func (_m *MockBaccaratBanqueGame) GetDrawTiePercent(seat int) int {
+	ret := _m.Called(seat)
+	if v, ok := ret.Get(0).(int); ok {
+		return v
+	}
+	return 0
+}
+
+// GetDrawLosePercent モック
+func (_m *MockBaccaratBanqueGame) GetDrawLosePercent(seat int) int {
+	ret := _m.Called(seat)
+	if v, ok := ret.Get(0).(int); ok {
+		return v
+	}
+	return 0
+}
+
 // GetEndReason モック
 func (_m *MockBaccaratBanqueGame) GetEndReason() string {
 	ret := _m.Called()

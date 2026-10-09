@@ -43,6 +43,7 @@ function makeState(overrides: Partial<SixCardGolfResponse> = {}): SixCardGolfRes
     ],
     phase: 1,
     roundNumber: 1,
+    roundScoreHistory: [],
     totalRounds: 9,
     currentPlayerIdx: 0,
     discardTop: makeCard(7),

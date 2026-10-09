@@ -80,6 +80,8 @@ describe('BaccaratBanquePage', () => {
     const analysis = await screen.findByTestId('banque-shoe-analysis');
     expect(analysis).toHaveTextContent('ランクA〜Kの残り枚数: 40、12、12');
     expect(analysis).toHaveTextContent('右: 68%、左: 31%');
+    expect(analysis).toHaveTextContent('引き分ける確率 — 右: 0%、左: 0%');
+    expect(analysis).toHaveTextContent('下回る確率 — 右: 32%、左: 69%');
   });
 
   it('marks a natural, and only on a two-card 8 or 9', async () => {

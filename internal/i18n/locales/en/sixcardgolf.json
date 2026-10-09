@@ -56,5 +56,9 @@
   "log.flipCpu": "CPU {{player}} flips position {{position}}",
   "log.trigger": "Player {{player}} reveals all cards! Final turn begins",
   "log.gameOver": "Game over! Player {{player}} wins",
-  "log.roundOver": "Round {{round}} ends"
+  "log.roundOver": "Round {{round}} ends",
+  "scoreHistoryCumulative": "Cumulative scores",
+  "scoreHistoryRound": "Round {{round}}: {{scores}}",
+  "scoreHistoryPlayer": "{{player}}: {{score}} pts",
+  "listSeparator": ", "
 }

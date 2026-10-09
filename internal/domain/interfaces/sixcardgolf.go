@@ -40,6 +40,8 @@ type SixCardGolfGame interface {
 	IsHumanTurn() bool
 	// GetRoundNumber 現在のラウンド番号
 	GetRoundNumber() int
+	// GetRoundScoreHistory returns player scores for each completed round.
+	GetRoundScoreHistory() [][]int
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックス
 	GetCurrentPlayerIdx() int
 	// GetDiscardTop 捨て札の一番上
