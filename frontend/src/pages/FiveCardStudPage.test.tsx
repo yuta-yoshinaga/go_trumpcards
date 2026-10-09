@@ -332,6 +332,27 @@ describe('FiveCardStudPage', () => {
     expect(screen.queryByLabelText('♥ K、役の構成札')).not.toBeInTheDocument();
   });
 
+  it('shows side pot eligibility and showdown awards only when side pots exist', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      sidePots: [
+        { amount: 120, eligiblePlayers: [0, 1], winners: [{ playerIdx: 1, amount: 120 }] },
+        { amount: 80, eligiblePlayers: [1, 2], winners: [{ playerIdx: 2, amount: 80 }] },
+      ],
+    });
+    const { unmount } = renderWithProviders(<FiveCardStudPage />);
+    expect(await screen.findByText(/メインポット: 120チップ（対象: あなた、CPU 1）/)).toHaveTextContent(
+      '獲得: CPU 1 120',
+    );
+    expect(screen.getByText(/サイドポット1: 80チップ（対象: CPU 1、CPU 2）/)).toHaveTextContent('獲得: CPU 2 80');
+    unmount();
+
+    mockExec.mockResolvedValue({ ...showdownState, sidePots: [] });
+    renderWithProviders(<FiveCardStudPage />);
+    expect(screen.queryByText(/メインポット:|サイドポット/)).not.toBeInTheDocument();
+    unmount();
+  });
+
   it('marks only human hole cards in the best hand at showdown', async () => {
     mockExec.mockResolvedValue({
       ...showdownState,

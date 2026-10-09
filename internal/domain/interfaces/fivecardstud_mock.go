@@ -72,6 +72,14 @@ func (_m *MockFiveCardStudGame) GetSidePots() []domain.SidePot {
 	return nil
 }
 
+func (_m *MockFiveCardStudGame) GetPotAwards() [][]domain.PotAward {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).([][]domain.PotAward); ok {
+		return val
+	}
+	return nil
+}
+
 func (_m *MockFiveCardStudGame) GetDealerIdx() int {
 	ret := _m.Called()
 	return ret.Int(0)
