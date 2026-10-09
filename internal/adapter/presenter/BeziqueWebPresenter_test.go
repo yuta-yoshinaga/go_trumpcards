@@ -65,6 +65,8 @@ func TestBeziqueWebPresenter_Output_InitialState(t *testing.T) {
 	trump := domain.NewCard(domain.CardDesignSpade, 13, false)
 	m, players := setupBeziqueWebMockWithPlayers(trump)
 	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
 	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
 	players[0].SetRoundScore(18)
 	players[0].SetCumulativeScore(118)
@@ -109,19 +111,50 @@ func TestBeziqueWebPresenter_Output_HumanCardsShownCPUHidden(t *testing.T) {
 
 func TestBeziqueWebPresenter_Output_MeldPhaseListsMelds(t *testing.T) {
 	p := new(presenter.BeziqueWebPresenter)
-	m, _ := setupBeziqueWebMockWithPlayers(domain.NewCard(domain.CardDesignSpade, 13, false))
+	m, players := setupBeziqueWebMockWithPlayers(domain.NewCard(domain.CardDesignSpade, 13, false))
+	for _, card := range []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 13, false), domain.NewCard(domain.CardDesignSpade, 12, false),
+		domain.NewCard(domain.CardDesignDiamond, 11, false), domain.NewCard(domain.CardDesignSpade, 1, false),
+		domain.NewCard(domain.CardDesignClover, 1, false), domain.NewCard(domain.CardDesignHeart, 1, false),
+		domain.NewCard(domain.CardDesignDiamond, 1, false), domain.NewCard(domain.CardDesignClover, 13, false),
+		domain.NewCard(domain.CardDesignHeart, 13, false), domain.NewCard(domain.CardDesignDiamond, 13, false),
+		domain.NewCard(domain.CardDesignClover, 12, false), domain.NewCard(domain.CardDesignHeart, 12, false),
+		domain.NewCard(domain.CardDesignDiamond, 12, false), domain.NewCard(domain.CardDesignSpade, 11, false),
+		domain.NewCard(domain.CardDesignClover, 11, false), domain.NewCard(domain.CardDesignHeart, 11, false),
+	} {
+		players[0].AddCard(card)
+	}
 	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 	m.On("GetPhase").Return(domain.BeziquePhaseMeld)
 	m.On("GetAvailableMelds", 0).Return([]domain.BeziqueMeld{
 		{Type: domain.BeziqueMeldMarriage, Suit: domain.CardDesignSpade, Points: 40},
+		{Type: domain.BeziqueMeldBezique, Suit: -1, Points: 40},
+		{Type: domain.BeziqueMeldFourAces, Suit: -1, Points: 100},
+		{Type: domain.BeziqueMeldFourKings, Suit: -1, Points: 80},
+		{Type: domain.BeziqueMeldFourQueens, Suit: -1, Points: 60},
+		{Type: domain.BeziqueMeldFourJacks, Suit: -1, Points: 40},
 	})
+	melds := []domain.BeziqueMeld{
+		{Type: domain.BeziqueMeldMarriage, Suit: domain.CardDesignSpade, Points: 40},
+		{Type: domain.BeziqueMeldBezique, Suit: -1, Points: 40},
+		{Type: domain.BeziqueMeldFourAces, Suit: -1, Points: 100},
+		{Type: domain.BeziqueMeldFourKings, Suit: -1, Points: 80},
+		{Type: domain.BeziqueMeldFourQueens, Suit: -1, Points: 60},
+		{Type: domain.BeziqueMeldFourJacks, Suit: -1, Points: 40},
+	}
+	for i, indices := range [][]int{{9, 0}, {1, 2}, {3, 4, 5, 6}, {0, 7, 8, 9}, {1, 10, 11, 12}, {13, 14, 15, 2}} {
+		m.On("MeldCardIndices", 0, melds[i]).Return(indices)
+	}
 
 	got := p.Output(m, nil)
 	var out controller.BeziqueWebOutput
 	_ = json.Unmarshal([]byte(got), &out)
-	assert.Len(t, out.AvailableMelds, 1)
+	assert.Len(t, out.AvailableMelds, 6)
 	assert.Equal(t, []int{0, 0}, out.LastTrickBonus)
 	assert.Equal(t, 40, out.AvailableMelds[0].Points)
+	for i, want := range [][]int{{9, 0}, {1, 2}, {3, 4, 5, 6}, {0, 7, 8, 9}, {1, 10, 11, 12}, {13, 14, 15, 2}} {
+		assert.Equal(t, want, out.AvailableMelds[i].CardIndices)
+	}
 	assert.Equal(t, "bezique.meldPhase", out.MessageCode)
 }
 

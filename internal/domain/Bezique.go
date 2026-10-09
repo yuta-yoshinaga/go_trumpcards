@@ -22,6 +22,7 @@ package domain
 import (
 	"encoding/json"
 	"errors"
+	"slices"
 	"strconv"
 )
 
@@ -491,6 +492,55 @@ func (b *Bezique) GetAvailableMelds(playerIdx int) []BeziqueMeld {
 		return nil
 	}
 	return b.availableMelds(playerIdx)
+}
+
+// MeldCardIndices returns the hand positions that form a currently declarable meld.
+// It returns an empty slice when the player or meld is not currently declarable.
+func (b *Bezique) MeldCardIndices(playerIdx int, m BeziqueMeld) []int {
+	if playerIdx < 0 || playerIdx >= len(b.players) || playerIdx >= len(b.meldsDeclared) {
+		return []int{}
+	}
+	declarable := false
+	for _, available := range b.availableMelds(playerIdx) {
+		if available == m {
+			declarable = true
+			break
+		}
+	}
+	if !declarable {
+		return []int{}
+	}
+	p := b.players[playerIdx]
+	indices := make([]int, 0, 4)
+	add := func(suit, value int) {
+		for i := 0; i < p.GetCardsSize(); i++ {
+			c := p.GetCard(i)
+			if c.GetDesign() == suit && c.GetValue() == value && !slices.Contains(indices, i) {
+				indices = append(indices, i)
+				return
+			}
+		}
+	}
+	switch m.Type {
+	case BeziqueMeldMarriage:
+		add(m.Suit, 13)
+		add(m.Suit, 12)
+	case BeziqueMeldBezique:
+		add(CardDesignSpade, 12)
+		add(CardDesignDiamond, 11)
+	case BeziqueMeldFourAces, BeziqueMeldFourKings, BeziqueMeldFourQueens, BeziqueMeldFourJacks:
+		value := map[BeziqueMeldType]int{BeziqueMeldFourAces: 1, BeziqueMeldFourKings: 13, BeziqueMeldFourQueens: 12, BeziqueMeldFourJacks: 11}[m.Type]
+		for _, suit := range []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond} {
+			add(suit, value)
+		}
+		for i := 0; i < p.GetCardsSize() && len(indices) < 4; i++ {
+			if p.GetCard(i).GetValue() == value && !slices.Contains(indices, i) {
+				indices = append(indices, i)
+			}
+		}
+	}
+	// availableMelds で宣言可能と確かめた後なので、構成札は必ず揃う。
+	return indices
 }
 
 // GetHint 人間プレイヤーへのヒントを取得する

@@ -111,6 +111,13 @@ function BeziquePageContent() {
   } = useBeziqueGame();
   const previousEndgame = useRef<boolean | undefined>(undefined);
   const [endgameAnnouncement, setEndgameAnnouncement] = useState('');
+  // A meld selection belongs to the meld list it was made on, so a new list
+  // (another meld turn, a reset) drops it without an effect.
+  const availableMeldsKey = JSON.stringify(state?.availableMelds ?? []);
+  const [meldSelection, setMeldSelection] = useState<{ key: string; index: number } | null>(null);
+  const selectedMeldIndex = meldSelection?.key === availableMeldsKey ? meldSelection.index : null;
+  const setSelectedMeldIndex = (index: number | null) =>
+    setMeldSelection(index == null ? null : { key: availableMeldsKey, index });
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset is stable per render of the hook; run once on mount.
@@ -169,6 +176,8 @@ function BeziquePageContent() {
   const isHumanCurrent = state.currentPlayerIdx === humanIdx;
   const isHumanPlayTurn = isPlayPhase && isHumanCurrent;
   const isHumanMeldTurn = isMeldPhase && isHumanCurrent;
+  const selectedMeld = selectedMeldIndex == null ? undefined : state.availableMelds[selectedMeldIndex];
+  const meldCardIndices = isHumanMeldTurn ? selectedMeld?.cardIndices : undefined;
   const canPlay = isHumanPlayTurn;
 
   const trumpSymbol = state.trumpSuit >= 1 && state.trumpSuit <= 4 ? suitSymbolAt(state.trumpSuit, '') : t('noTrump');
@@ -384,6 +393,9 @@ function BeziquePageContent() {
                 dataTutorialPrefix="bezique"
                 restrictedTooltip={t('playButton')}
                 legalIndices={legalIndices}
+                trumpIndices={meldCardIndices}
+                trumpTitle={t('meldCardMarker')}
+                trumpAccessibleLabel={t('meldCardMarker')}
               />
             )}
 
@@ -432,19 +444,37 @@ function BeziquePageContent() {
                         key={`${m.type}-${m.suit}`}
                         type="button"
                         className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
-                        onClick={() => handleMeld(i)}
+                        onClick={() => setSelectedMeldIndex(i)}
                         disabled={loading}
                         data-testid={`meld-${i}`}
                         aria-label={meldAriaLabel(m)}
+                        aria-pressed={selectedMeldIndex === i}
                       >
                         {meldLabel(m)}
                       </button>
                     ))}
                   </fieldset>
+                  {selectedMeld && selectedMeldIndex != null && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() => {
+                        setSelectedMeldIndex(null);
+                        handleMeld(selectedMeldIndex);
+                      }}
+                      disabled={loading}
+                      data-testid="meld-declare-selected"
+                    >
+                      {t('declareSelectedMeld')}
+                    </button>
+                  )}
                   <button
                     type="button"
                     className={btnSuccess}
-                    onClick={handleSkipMeld}
+                    onClick={() => {
+                      setSelectedMeldIndex(null);
+                      handleSkipMeld();
+                    }}
                     disabled={loading}
                     data-testid="meld-skip"
                   >

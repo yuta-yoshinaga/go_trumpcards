@@ -101,9 +101,10 @@ func (p *BeziqueWebPresenter) buildMeldsOutput(b interfaces.BeziqueGame) []*cont
 	}
 	for _, m := range b.GetAvailableMelds(0) {
 		out = append(out, &controller.BeziqueWebOutputMeld{
-			Type:   int(m.Type),
-			Suit:   m.Suit,
-			Points: m.Points,
+			Type:        int(m.Type),
+			Suit:        m.Suit,
+			Points:      m.Points,
+			CardIndices: b.MeldCardIndices(0, m),
 		})
 	}
 	return out

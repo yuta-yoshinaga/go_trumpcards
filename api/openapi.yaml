@@ -70963,6 +70963,11 @@ components:
                 description: Meld name (e.g. Marriage, Royal Marriage, Bezique, Four Aces)
               points:
                 type: integer
+              cardIndices:
+                type: array
+                description: Hand indices of the cards that form this meld.
+                items:
+                  type: integer
               cards:
                 type: array
                 items:
