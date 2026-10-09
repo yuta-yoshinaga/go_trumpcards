@@ -126,6 +126,10 @@ function UltimateTexasHoldemPageContent() {
   const isFlopPhase = state?.phase === UltimateTexasHoldemPhase.FLOP;
   const isRiverPhase = state?.phase === UltimateTexasHoldemPhase.RIVER;
   const isEndPhase = state?.phase === UltimateTexasHoldemPhase.END;
+  const canPlay4x = !!state && state.chips >= state.anteBet * 4;
+  const canPlay3x = !!state && state.chips >= state.anteBet * 3;
+  const canPlay2x = !!state && state.chips >= state.anteBet * 2;
+  const canPlay1x = !!state && state.chips >= state.anteBet;
 
   // Ante (×2 for the matched Blind) + Trips must fit within chips. Drives the
   // trips cap, the combined-total readout, the over-balance alert, and submit gating.
@@ -139,11 +143,31 @@ function UltimateTexasHoldemPageContent() {
         enabled: isBetPhase && betBounds.valid,
         label: 'bet',
       },
-      { key: '4', action: () => execApi('play', undefined, undefined, 4), enabled: isPreFlopPhase, label: 'play' },
-      { key: '3', action: () => execApi('play', undefined, undefined, 3), enabled: isPreFlopPhase, label: 'play' },
+      {
+        key: '4',
+        action: () => execApi('play', undefined, undefined, 4),
+        enabled: isPreFlopPhase && canPlay4x,
+        label: 'play',
+      },
+      {
+        key: '3',
+        action: () => execApi('play', undefined, undefined, 3),
+        enabled: isPreFlopPhase && canPlay3x,
+        label: 'play',
+      },
       { key: 'c', action: () => execApi('check'), enabled: isPreFlopPhase || isFlopPhase, label: 'check' },
-      { key: '2', action: () => execApi('play', undefined, undefined, 2), enabled: isFlopPhase, label: 'play' },
-      { key: '1', action: () => execApi('play', undefined, undefined, 1), enabled: isRiverPhase, label: 'play' },
+      {
+        key: '2',
+        action: () => execApi('play', undefined, undefined, 2),
+        enabled: isFlopPhase && canPlay2x,
+        label: 'play',
+      },
+      {
+        key: '1',
+        action: () => execApi('play', undefined, undefined, 1),
+        enabled: isRiverPhase && canPlay1x,
+        label: 'play',
+      },
       { key: 'f', action: () => execApi('fold'), enabled: isRiverPhase, label: 'fold' },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, label: 'reset' },
     ],
@@ -157,6 +181,10 @@ function UltimateTexasHoldemPageContent() {
       isFlopPhase,
       isRiverPhase,
       isEndPhase,
+      canPlay4x,
+      canPlay3x,
+      canPlay2x,
+      canPlay1x,
     ],
   );
 
@@ -483,7 +511,7 @@ function UltimateTexasHoldemPageContent() {
                     type="button"
                     className={`${btnSuccess} ${strong ? 'ring-2 ring-ds-warning animate-pulse' : ''}`}
                     onClick={() => handlePlay(4)}
-                    disabled={loading}
+                    disabled={loading || !canPlay4x}
                     data-testid="play-4x"
                   >
                     {t('button.play4x', { playBet: t('label.playBet'), amount: anteAmount * 4 })}
@@ -492,7 +520,7 @@ function UltimateTexasHoldemPageContent() {
                     type="button"
                     className={`${btnSuccess} ${moderate ? 'ring-2 ring-ds-warning animate-pulse' : ''}`}
                     onClick={() => handlePlay(3)}
-                    disabled={loading}
+                    disabled={loading || !canPlay3x}
                     data-testid="play-3x"
                   >
                     {t('button.play3x', { playBet: t('label.playBet'), amount: anteAmount * 3 })}
@@ -506,7 +534,7 @@ function UltimateTexasHoldemPageContent() {
           })()}
         {isFlopPhase && (
           <div className="flex justify-center gap-2 pb-2" data-tutorial="uth-flop-buttons">
-            <button type="button" className={btnWarning} onClick={() => handlePlay(2)} disabled={loading}>
+            <button type="button" className={btnWarning} onClick={() => handlePlay(2)} disabled={loading || !canPlay2x}>
               {t('button.play2x', { playBet: t('label.playBet'), amount: anteAmount * 2 })}
             </button>
             <button type="button" className={btnSecondary} onClick={handleCheck} disabled={loading}>
@@ -516,7 +544,7 @@ function UltimateTexasHoldemPageContent() {
         )}
         {isRiverPhase && (
           <div className="flex justify-center gap-2 pb-2" data-tutorial="uth-river-buttons">
-            <button type="button" className={btnWarning} onClick={() => handlePlay(1)} disabled={loading}>
+            <button type="button" className={btnWarning} onClick={() => handlePlay(1)} disabled={loading || !canPlay1x}>
               {t('button.play1x', { playBet: t('label.playBet'), amount: anteAmount })}
             </button>
             <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
