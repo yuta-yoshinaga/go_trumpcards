@@ -404,9 +404,26 @@ func (b *BaccaratBanque) drawOutcomePercents(seat int) (int, int, int) {
 		}
 	}
 	remaining := b.remaining()
-	winPercent := (100*twins + remaining/2) / remaining
-	tiePercent := (100*ties + remaining/2) / remaining
-	return winPercent, tiePercent, 100 - winPercent - tiePercent
+	outcomeCounts := [3]int{twins, ties, remaining - twins - ties}
+	percents := [3]int{}
+	remainders := [3]int{}
+	allocated := 0
+	for i, count := range outcomeCounts {
+		percents[i] = 100 * count / remaining
+		remainders[i] = 100 * count % remaining
+		allocated += percents[i]
+	}
+	for left := 100 - allocated; left > 0; left-- {
+		best := len(remainders) - 1
+		for i := best - 1; i >= 0; i-- {
+			if remainders[i] > remainders[best] {
+				best = i
+			}
+		}
+		percents[best]++
+		remainders[best] = -1
+	}
+	return percents[0], percents[1], percents[2]
 }
 
 // IsRetired はバンカーが自分から降りたかを返す。
