@@ -48790,6 +48790,15 @@ components:
                 type: array
                 items: {$ref: '#/components/schemas/Card'}
               roundScore: {type: integer}
+              scoreBreakdown:
+                type: object
+                description: Components of the most recently completed Biriba round score
+                properties:
+                  meldCards: {type: integer, description: Points from melded cards}
+                  canastaBonus: {type: integer, description: Biriba bonus points}
+                  red3Bonus: {type: integer, description: Red three bonus points}
+                  goOutBonus: {type: integer, description: Going out bonus points}
+                  handPenalty: {type: integer, description: Points deducted for cards remaining in hand}
               cumulativeScore: {type: integer}
               hasBiriba: {type: boolean}
               hasInitMeld: {type: boolean}

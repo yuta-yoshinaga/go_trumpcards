@@ -116,6 +116,7 @@ func (p *BiribaWebPresenter) buildPlayersOutput(g interfaces.BiribaGame) []*cont
 			Red3Count:       len(player.GetRed3s()),
 			Red3s:           red3s,
 			RoundScore:      player.GetRoundScore(),
+			ScoreBreakdown:  player.GetScoreBreakdown(),
 			CumulativeScore: player.GetCumulativeScore(),
 			HasBiriba:       player.HasBiriba(),
 			HasInitMeld:     player.GetHasInitMeld(),

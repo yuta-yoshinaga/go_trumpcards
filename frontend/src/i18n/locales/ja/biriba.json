@@ -78,6 +78,13 @@
     "cpuWin": "CPU {{cpuId}} の勝利！"
   },
   "score": {
+    "breakdown": "ラウンド得点の内訳",
+    "meldCards": "メルドカード点",
+    "biribaBonus": "ビリバボーナス",
+    "red3Bonus": "赤3ボーナス",
+    "goingOutBonus": "上がりボーナス",
+    "handPenalty": "手札ペナルティ",
+    "noPoints": "得点なし",
     "cumulative": "累積",
     "round": "ラウンド"
   },

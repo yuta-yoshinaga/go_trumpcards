@@ -402,6 +402,25 @@ func TestBiribaWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestBiribaWebPresenter_IncludesScoreBreakdown(t *testing.T) {
+	m, players := setupBiribaWebMockWithPlayers()
+	meldCards := make([]*domain.Card, 7)
+	for i := range meldCards {
+		meldCards[i] = domain.NewCard(domain.CardDesignSpade, 5, false)
+	}
+	players[0].AddMeld(&domain.CanastaMeld{Cards: meldCards, IsNatural: true})
+	players[0].AddRed3(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+	domain.NewCanasta(nil, players, domain.DefaultBiribaConfig()).CanastaScoreRoundForTest(0, domain.CanastaGoingOutBonus)
+
+	var result controller.BiribaWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.BiribaWebPresenter).Output(m, nil)), &result))
+	assert.Equal(t, domain.CanastaScoreBreakdown{
+		MeldCards: 35, CanastaBonus: domain.CanastaPureBiribaBonus,
+		Red3Bonus: domain.CanastaRed3Bonus, GoOutBonus: domain.CanastaGoingOutBonus, HandPenalty: 5,
+	}, result.Players[0].ScoreBreakdown)
+}
+
 func TestBiribaWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.BiribaWebPresenter)
 
