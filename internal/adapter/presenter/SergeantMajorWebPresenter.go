@@ -46,6 +46,8 @@ func (p *SergeantMajorWebPresenter) buildBase(s interfaces.SergeantMajorGame) *c
 	resObj.GameEndFlag = s.GetGameEndFlag()
 	resObj.WinnerIdx = s.GetWinnerIdx()
 	resObj.CurrentTrick = trickCardsToOutput(s.GetCurrentTrick())
+	resObj.LastTrick = trickCardsToOutput(s.GetLastTrick())
+	resObj.LastTrickWinner = s.GetLastTrickWinner()
 	resObj.Players = p.buildPlayersOutput(s)
 	resObj.KittyIndices = sergeantMajorKittyIndices(s)
 	resObj.Config = controller.SergeantMajorWebOutputConfig{Rounds: s.GetConfig().Rounds}

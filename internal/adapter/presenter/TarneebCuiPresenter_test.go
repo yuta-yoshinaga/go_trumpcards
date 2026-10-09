@@ -119,6 +119,50 @@ func TestTarneebCuiPresenter_Output_RoundScore(t *testing.T) {
 	})
 }
 
+func TestTarneebCuiPresenter_Output_ContractResult(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.TarneebCuiPresenter)
+
+	t.Run("shows achieved contract and team trick total at round end", func(t *testing.T) {
+		tn := newTarneebForCuiTest()
+		tn.SetPhase(domain.TarneebPhaseRoundEnd)
+		tn.SetBidWinnerIdx(0)
+		tn.SetHighestBid(8)
+		for i := 0; i < 8; i++ {
+			tn.GetPlayer(0).AddTrick(nil)
+		}
+
+		out := p.Output(tn, nil)
+		assert.Contains(t, out, i18n.Tf("tarneeb.contractResult", "status", i18n.T("tarneeb.contractMade"), "bid", "8", "tricks", "8"))
+	})
+
+	t.Run("shows failed contract at round end", func(t *testing.T) {
+		tn := newTarneebForCuiTest()
+		tn.SetPhase(domain.TarneebPhaseRoundEnd)
+		tn.SetBidWinnerIdx(0)
+		tn.SetHighestBid(8)
+		tn.GetPlayer(0).AddTrick(nil)
+		tn.GetPlayer(2).AddTrick(nil)
+
+		out := p.Output(tn, nil)
+		assert.Contains(t, out, i18n.Tf("tarneeb.contractResult", "status", i18n.T("tarneeb.contractFailed"), "bid", "8", "tricks", "2"))
+	})
+
+	t.Run("does not show a result before the round ends or without a winning bid", func(t *testing.T) {
+		tn := newTarneebForCuiTest()
+		tn.SetBidWinnerIdx(0)
+		tn.SetHighestBid(8)
+		assert.NotContains(t, p.Output(tn, nil), i18n.T("tarneeb.contractMade"))
+
+		tn.SetPhase(domain.TarneebPhaseRoundEnd)
+		tn.SetBidWinnerIdx(-1) // 全員パスで再配布
+		assert.NotContains(t, p.Output(tn, nil), i18n.T("tarneeb.contractMade"))
+		assert.NotContains(t, p.Output(tn, nil), i18n.T("tarneeb.contractFailed"))
+	})
+}
+
 func TestTarneebCuiPresenter_HintOutput(t *testing.T) {
 	orig := color.NoColor()
 	color.SetNoColor(true)

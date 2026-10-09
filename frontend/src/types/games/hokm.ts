@@ -75,6 +75,10 @@ export interface HokmResponse extends BaseGameResponse {
   currentPlayerIdx: number;
   leadPlayerIdx: number;
   currentTrick: HokmTrickCard[];
+  /** Most recently completed trick, retained while the next trick is played. */
+  lastTrick: HokmTrickCard[];
+  /** Winning seat of lastTrick, or -1 before the first trick. */
+  lastTrickWinner: number;
   /** Hand indices you may legally play. Following suit is compulsory. */
   validPlays: number[];
   gameEndFlag: boolean;

@@ -18,6 +18,8 @@
   "cards": "{{count}}枚",
   "dealerBadge": "ディーラー",
   "teamScores": "チームスコア",
+  "target": "目標: {{points}}点",
+  "remainingTeam": "チーム{{n}}の残り: {{points}}点",
   "team": "チーム{{n}}",
   "teamYou": "チーム{{n}} (あなた)",
   "scoreRows": {

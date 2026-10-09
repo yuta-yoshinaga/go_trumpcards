@@ -140,26 +140,46 @@ function BassetPageContent() {
                   onChange={(e) => setAmount(Number(e.target.value))}
                 />
                 <button
-                  className="min-h-[44px] rounded bg-ds-accent px-4 text-black"
+                  aria-disabled={loading}
+                  className="min-h-[44px] rounded bg-ds-accent px-4 text-black aria-disabled:opacity-50 aria-disabled:cursor-not-allowed"
                   type="button"
-                  onClick={() => exec('bet', { rank, amount })}
+                  onClick={() => {
+                    if (!loading) void exec('bet', { rank, amount });
+                  }}
                 >
                   {t('placeBet')}
                 </button>
-                <button className="min-h-[44px] rounded bg-ds-surface px-4" type="button" onClick={() => exec('deal')}>
+                <button
+                  aria-disabled={loading}
+                  className="min-h-[44px] rounded bg-ds-surface px-4 aria-disabled:opacity-50 aria-disabled:cursor-not-allowed"
+                  type="button"
+                  onClick={() => {
+                    if (!loading) void exec('deal');
+                  }}
+                >
                   {t('deal')}
                 </button>
               </div>
             ) : null}
             {state.phase === BassetPhase.DECISION ? (
               <div className="flex justify-center gap-3">
-                <button className="min-h-[44px] rounded bg-ds-success px-4" type="button" onClick={() => exec('take')}>
+                <button
+                  aria-disabled={loading}
+                  className="min-h-[44px] rounded bg-ds-success px-4 aria-disabled:opacity-50 aria-disabled:cursor-not-allowed"
+                  type="button"
+                  onClick={() => {
+                    if (!loading) void exec('take');
+                  }}
+                >
                   {t('take')}
                 </button>
                 <button
-                  className="min-h-[44px] rounded bg-ds-warning px-4"
+                  aria-disabled={loading}
+                  className="min-h-[44px] rounded bg-ds-warning px-4 aria-disabled:opacity-50 aria-disabled:cursor-not-allowed"
                   type="button"
-                  onClick={() => exec('paroli')}
+                  onClick={() => {
+                    if (!loading) void exec('paroli');
+                  }}
                 >
                   {t('paroli')}
                 </button>
@@ -167,9 +187,12 @@ function BassetPageContent() {
             ) : null}
             {state.phase === BassetPhase.ROUND_END ? (
               <button
-                className="min-h-[44px] rounded bg-ds-accent px-4 text-black"
+                aria-disabled={loading}
+                className="min-h-[44px] rounded bg-ds-accent px-4 text-black aria-disabled:opacity-50 aria-disabled:cursor-not-allowed"
                 type="button"
-                onClick={() => exec('next')}
+                onClick={() => {
+                  if (!loading) void exec('next');
+                }}
               >
                 {t('next')}
               </button>

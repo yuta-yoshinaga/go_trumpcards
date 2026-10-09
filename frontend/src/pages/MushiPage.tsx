@@ -68,6 +68,13 @@ function MushiPageContent() {
   } = useGameHint('mushi', state);
 
   if (!state) {
+    if (error) {
+      return (
+        <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.mushi.bg}`}>
+          <ErrorAlert message={error} onRetry={retry} />
+        </div>
+      );
+    }
     return <GameSkeleton gameKey="mushi" layout={{ kind: 'tableau', topRow: 4, tableau: 4 }} />;
   }
 

@@ -18,6 +18,8 @@
   "cards": "{{count}} cards",
   "dealerBadge": "Dealer",
   "teamScores": "Team Scores",
+  "target": "Target: {{points}} pts",
+  "remainingTeam": "Team {{n}} remaining: {{points}} pts",
   "team": "Team {{n}}",
   "teamYou": "Team {{n}} (You)",
   "scoreRows": {

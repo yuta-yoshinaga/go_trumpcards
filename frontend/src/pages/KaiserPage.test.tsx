@@ -102,6 +102,39 @@ describe('KaiserPage', () => {
       expect(select.options).toHaveLength(1);
       expect(select.options[0]?.textContent).toBe('切札あり');
     });
+
+    it('sends the selected setting on reset and uses the returned contract options', async () => {
+      mockExec.mockResolvedValueOnce(biddingState(true)).mockResolvedValueOnce(biddingState(false));
+      renderWithProviders(<KaiserPage />);
+
+      await screen.findByLabelText(/契約/);
+      fireEvent.click(screen.getByText('設定'));
+      const setting = await screen.findByRole('checkbox', { name: 'ノートランプを許可' });
+      expect(setting).toBeChecked();
+      fireEvent.click(setting);
+      expect(screen.getByText('設定変更は次の局から適用されます。')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+      fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+      await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('reset', { config: { allowNoTrump: false } }));
+      await waitFor(() => expect((screen.getByLabelText(/契約/) as HTMLSelectElement).options).toHaveLength(1));
+    });
+
+    it('keeps the selected setting when a play response has the same config', async () => {
+      mockExec.mockResolvedValueOnce(makeState()).mockResolvedValueOnce(makeState());
+      renderWithProviders(<KaiserPage />);
+
+      await screen.findByTestId('kaiser-scores');
+      fireEvent.click(screen.getByText('設定'));
+      const setting = await screen.findByRole('checkbox', { name: 'ノートランプを許可' });
+      fireEvent.click(setting);
+      expect(setting).not.toBeChecked();
+
+      fireEvent.click(handButtons()[0]);
+      fireEvent.click(screen.getByRole('button', { name: '出す' }));
+      await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('play', expect.anything()));
+      expect(setting).not.toBeChecked();
+    });
   });
 
   beforeEach(() => {

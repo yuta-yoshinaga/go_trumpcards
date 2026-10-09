@@ -49,7 +49,8 @@
   "mustBidLine": "A side on 45 or more cannot score further unless it bids.",
   "settings": {
     "title": "Settings",
-    "allowNoTrump": "Allow no-trump bids"
+    "allowNoTrump": "Allow no-trump bids",
+    "newHandNotice": "Changes take effect from the next hand."
   },
   "phase": {
     "bid": "Bidding",

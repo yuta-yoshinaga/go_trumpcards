@@ -166,9 +166,22 @@ func (b *Boston) beginHand() {
 			}
 		}
 	}
+	b.sortAllHands()
 
 	b.bidIdx = (b.dealerIdx + 1) % BostonPlayerCnt
 	b.addLog(-1, "deal", "boston.log.deal", map[string]string{"cards": fmt.Sprintf("%d", BostonHandSize), "pattern": fmt.Sprintf("%v", bostonDealPattern)}, nil)
+}
+
+// sortAllHands は全員の手札をスート・ランク順 (A を最上位とする bostonCardRank) に整える。
+func (b *Boston) sortAllHands() {
+	for _, p := range b.players {
+		sortPlayerHand(p, func(ci, cj *Card) bool {
+			if ci.GetDesign() != cj.GetDesign() {
+				return ci.GetDesign() < cj.GetDesign()
+			}
+			return bostonCardRank(ci) < bostonCardRank(cj)
+		})
+	}
 }
 
 // newBostonDeck は 52 枚のデッキを返す。

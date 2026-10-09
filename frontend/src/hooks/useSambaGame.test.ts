@@ -95,6 +95,44 @@ describe('useSambaGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, undefined, [[0, 1, 2]]));
   });
 
+  it('submits multiple staged meld groups together', async () => {
+    const { result } = renderHook(() => useSambaGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.state).not.toBeNull());
+    act(() => {
+      for (const index of [0, 1, 2]) result.current.toggleCard(index);
+    });
+    act(() => result.current.handleAddMeldGroup());
+    act(() => {
+      for (const index of [3, 4, 5]) result.current.toggleCard(index);
+    });
+    act(() => result.current.handleAddMeldGroup());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(defaultState);
+    act(() => result.current.handleMeldSelected());
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, undefined, [
+        [0, 1, 2],
+        [3, 4, 5],
+      ]),
+    );
+  });
+
+  it('does not submit staged groups while another selection is pending', async () => {
+    const { result } = renderHook(() => useSambaGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.state).not.toBeNull());
+    act(() => {
+      for (const index of [0, 1, 2]) result.current.toggleCard(index);
+    });
+    act(() => result.current.handleAddMeldGroup());
+    act(() => {
+      for (const index of [3, 4, 5]) result.current.toggleCard(index);
+    });
+    mockExec.mockClear();
+    act(() => result.current.handleMeldSelected());
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
   it('handleMeldSelected does nothing with fewer than 3 cards', async () => {
     const { result } = renderHook(() => useSambaGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());

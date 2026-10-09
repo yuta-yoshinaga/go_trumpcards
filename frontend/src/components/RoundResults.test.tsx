@@ -175,5 +175,19 @@ describe('RoundResults', () => {
         'ショウダウン結果。あなた: フルハウス、+100チップ, CPU 1: ワンペア, CPU 2: マック',
       );
     });
+
+    it('appends optional game-specific result details with its localized separator', () => {
+      const results = [{ playerIdx: 0, handName: 'フルハウス', wonAmount: 100 }];
+      render(
+        <RoundResults
+          results={results}
+          players={players}
+          additionalAnnouncement={{ details: 'ハイ: あなた が 100 チップ獲得、スクープ達成', separator: '、' }}
+        />,
+      );
+      expect(liveRegion()).toHaveTextContent(
+        'ショウダウン結果。あなた: フルハウス、+100チップ、ハイ: あなた が 100 チップ獲得、スクープ達成',
+      );
+    });
   });
 });

@@ -132,6 +132,12 @@ func (_m *MockMarjapussiGame) GetPussi() []*domain.Card {
 	return nil
 }
 
+// GetPussiPoints モック
+func (_m *MockMarjapussiGame) GetPussiPoints() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 // GetTeamScores モック
 func (_m *MockMarjapussiGame) GetTeamScores() [domain.MarjapussiTeamCnt]int {
 	ret := _m.Called()

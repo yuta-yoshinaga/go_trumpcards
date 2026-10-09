@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { lobaApi } from '../api/gameApi';
-import { useGameApi } from './useGameApi';
+import { isRejectedAction, useGameApi } from './useGameApi';
 
 /**
  * Hook that manages Loba game state.
@@ -10,6 +10,7 @@ import { useGameApi } from './useGameApi';
  */
 export function useLobaGame() {
   const pendingDiscardIndex = useRef<number | null>(null);
+  const actionAccepted = useRef<boolean | null>(null);
   const [drawnDiscardIndex, setDrawnDiscardIndex] = useState<number | null>(null);
   const {
     state,
@@ -19,6 +20,7 @@ export function useLobaGame() {
     retry,
   } = useGameApi(lobaApi.exec, {
     onSuccess: (response, args) => {
+      if (args[0] === 'meld' || args[0] === 'layoff') actionAccepted.current = !isRejectedAction(response);
       const index = pendingDiscardIndex.current;
       pendingDiscardIndex.current = null;
       if (args[0] !== 'drawdiscard' || index === null) return;
@@ -49,15 +51,19 @@ export function useLobaGame() {
   }, [runApi, state]);
 
   const handleMeld = useCallback(
-    (cardIndices: number[]) => {
-      runApi('meld', undefined, undefined, cardIndices);
+    async (cardIndices: number[]) => {
+      actionAccepted.current = null;
+      await runApi('meld', undefined, undefined, cardIndices);
+      return actionAccepted.current === true;
     },
     [runApi],
   );
 
   const handleLayOff = useCallback(
-    (cardIndex: number, meldIndex: number) => {
-      runApi('layoff', cardIndex, meldIndex);
+    async (cardIndex: number, meldIndex: number) => {
+      actionAccepted.current = null;
+      await runApi('layoff', cardIndex, meldIndex);
+      return actionAccepted.current === true;
     },
     [runApi],
   );

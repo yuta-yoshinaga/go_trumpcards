@@ -55,7 +55,7 @@ func setupMachiavelliWebMock(phase domain.MachiavelliPhase, gameEnd bool) (*inte
 	m.On("GetPlayerCnt").Return(2)
 	m.On("GetPlayer", 0).Return(players[0])
 	m.On("GetPlayer", 1).Return(players[1])
-	m.On("PlayerDeadwoodValue", 0).Return(0)
+	m.On("PlayerDeadwoodValue", 0).Return(7)
 	m.On("PlayerDeadwoodValue", 1).Return(15)
 	return m, players
 }
@@ -73,6 +73,7 @@ func TestMachiavelliWebPresenter_Output(t *testing.T) {
 	t.Run("turn phase", func(t *testing.T) {
 		m, players := setupMachiavelliWebMock(domain.MachiavelliPhaseTurn, false)
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
 
 		out := unmarshalMachiavelli(t, p.Output(m, nil))
 		assert.Len(t, out.Players, 2)
@@ -83,6 +84,9 @@ func TestMachiavelliWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, []int{0, 15}, out.RoundScoreHistory[0].Scores)
 		assert.Equal(t, "machiavelli.turnPhase", out.MessageCode)
 		assert.Equal(t, domain.MachiavelliDefaultPlayerCount, out.Config.PlayerCount)
+		assert.Equal(t, 7, out.Players[0].Deadwood)
+		assert.Empty(t, out.Players[1].Cards)
+		assert.Equal(t, 0, out.Players[1].Deadwood)
 	})
 
 	t.Run("with error", func(t *testing.T) {

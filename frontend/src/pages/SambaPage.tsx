@@ -81,11 +81,14 @@ function SambaPageContent() {
     sambaConfig,
     handleConfigChange,
     selectedCardIndices,
+    meldGroups,
     toggleCard,
     clearSelection,
     handleDrawStock,
     handleDrawDiscard,
     handleMeldSelected,
+    handleAddMeldGroup,
+    handleRemoveMeldGroup,
     handleSkipMeld,
     handleDiscard,
     handleGoOut,
@@ -484,26 +487,40 @@ function SambaPageContent() {
           <GameFooter className={`${gameTheme.samba.footer} px-4 py-2.5`}>
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="sa-player-hand">
-                {humanPlayer.cards.map((card, idx) => (
-                  <button
-                    type="button"
-                    key={`${card.design}-${card.value}-${idx}`}
-                    onClick={() => toggleCard(idx)}
-                    aria-label={cardAlt(card)}
-                    aria-pressed={selectedCardIndices.includes(idx)}
-                    aria-describedby={isHumanTurn && meldPointInfo?.needInitial ? 'sa-meld-points' : undefined}
-                    className={`transition-transform ${focusRingCard}`}
-                    style={{
-                      background: 'none',
-                      padding: 0,
-                      borderRadius: 8,
-                      ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                      boxSizing: 'border-box',
-                    }}
-                  >
-                    <AnimatedCard card={card} width={cardWidth} />
-                  </button>
-                ))}
+                {humanPlayer.cards.map((card, idx) => {
+                  const isSelected = selectedCardIndices.includes(idx);
+                  const isGrouped = meldGroups.some((group) => group.includes(idx));
+                  return (
+                    <button
+                      type="button"
+                      key={`${card.design}-${card.value}-${idx}`}
+                      onClick={() => {
+                        if (!isGrouped) toggleCard(idx);
+                      }}
+                      aria-label={cardAlt(card)}
+                      aria-pressed={isSelected || isGrouped}
+                      aria-disabled={isGrouped || undefined}
+                      aria-describedby={
+                        [
+                          isGrouped ? 'sa-meld-card-assigned' : undefined,
+                          isHumanTurn && meldPointInfo?.needInitial ? 'sa-meld-points' : undefined,
+                        ]
+                          .filter(Boolean)
+                          .join(' ') || undefined
+                      }
+                      className={`transition-transform ${focusRingCard}`}
+                      style={{
+                        background: 'none',
+                        padding: 0,
+                        borderRadius: 8,
+                        ...selectedCardStyle(isSelected || isGrouped),
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      <AnimatedCard card={card} width={cardWidth} />
+                    </button>
+                  );
+                })}
               </div>
             )}
 
@@ -556,11 +573,61 @@ function SambaPageContent() {
               )}
               {isMeldPhase && isHumanTurn && (
                 <>
+                  {meldGroups.length > 0 && (
+                    <section aria-label={t('meldGroups.label')} className="w-full flex flex-wrap gap-2">
+                      <span id="sa-meld-card-assigned" className="sr-only">
+                        {t('meldGroups.cardAssigned')}
+                      </span>
+                      {meldGroups.map((group, groupIndex) => (
+                        <div
+                          key={`${groupIndex}-${group.join('-')}`}
+                          className="flex items-center gap-2 rounded-md bg-ds-surface px-2 py-1"
+                        >
+                          <span>
+                            {t('meldGroups.group', { n: groupIndex + 1 })} (
+                            {t('meldGroups.cardCount', { count: group.length })})
+                          </span>
+                          <button
+                            type="button"
+                            className={`${btnOutline} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+                            onClick={() => {
+                              if (!loading) handleRemoveMeldGroup(groupIndex);
+                            }}
+                            aria-disabled={loading || undefined}
+                          >
+                            {t('meldGroups.remove')}
+                          </button>
+                        </div>
+                      ))}
+                    </section>
+                  )}
                   <button
                     type="button"
-                    className={btnPrimary}
-                    onClick={handleMeldSelected}
-                    disabled={loading || selectedCardIndices.length < 3}
+                    className={`${btnOutline} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+                    onClick={() => {
+                      if (loading || selectedCardIndices.length < 3) return;
+                      handleAddMeldGroup();
+                    }}
+                    aria-disabled={loading || selectedCardIndices.length < 3 || undefined}
+                  >
+                    {t('meldGroups.add')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+                    onClick={() => {
+                      if (
+                        loading ||
+                        (meldGroups.length === 0 ? selectedCardIndices.length < 3 : selectedCardIndices.length > 0)
+                      )
+                        return;
+                      handleMeldSelected();
+                    }}
+                    aria-disabled={
+                      loading ||
+                      (meldGroups.length === 0 ? selectedCardIndices.length < 3 : selectedCardIndices.length > 0) ||
+                      undefined
+                    }
                     aria-describedby={isHumanTurn && meldPointInfo?.needInitial ? 'sa-meld-points' : undefined}
                   >
                     {t('meldButton')}

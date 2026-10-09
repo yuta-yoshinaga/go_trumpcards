@@ -12,6 +12,7 @@
   },
   "communityCards": "Community Cards",
   "yourHand": "Your Hand",
+  "callAmount": "({{amount}} chips)",
   "listSeparator": ", ",
   "discardUpcoming": "You will discard two cards after the flop betting round",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",

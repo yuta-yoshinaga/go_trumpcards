@@ -591,6 +591,33 @@ func (g *ThreeThirteen) GetPlayerDeadwoodValue(i int) int {
 	return threeThirteenDeadwoodValue(dead, g.WildRank())
 }
 
+// GetPlayerMeldSplit returns the best melds and deadwood as hand indexes.
+func (g *ThreeThirteen) GetPlayerMeldSplit(i int) ([][]int, []int) {
+	p := g.GetPlayer(i)
+	if p == nil {
+		return [][]int{}, []int{}
+	}
+	cards := collectThreeThirteenCards(p)
+	melds, deadwood := threeThirteenBestMelds(cards, g.WildRank())
+	indices := make(map[*Card]int, len(cards))
+	for idx, card := range cards {
+		indices[card] = idx
+	}
+	meldIndices := make([][]int, 0, len(melds))
+	for _, meld := range melds {
+		group := make([]int, 0, len(meld))
+		for _, card := range meld {
+			group = append(group, indices[card])
+		}
+		meldIndices = append(meldIndices, group)
+	}
+	deadwoodIndices := make([]int, 0, len(deadwood))
+	for _, card := range deadwood {
+		deadwoodIndices = append(deadwoodIndices, indices[card])
+	}
+	return meldIndices, deadwoodIndices
+}
+
 // GetDeadwoodAfterDiscard returns the deadwood the player would be left with if
 // they discarded the card at cardIndex, or -1 when the index is out of range.
 //

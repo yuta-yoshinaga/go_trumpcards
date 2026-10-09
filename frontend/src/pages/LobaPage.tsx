@@ -335,9 +335,8 @@ function LobaPageContent() {
                     data-hint-action="meld"
                     className={`${btnPrimary} min-h-11`}
                     disabled={selected.length < 3}
-                    onClick={() => {
-                      game.handleMeld(selected);
-                      setSelected([]);
+                    onClick={async () => {
+                      if (await game.handleMeld(selected)) setSelected([]);
                     }}
                   >
                     {t('meld')}
@@ -346,11 +345,12 @@ function LobaPageContent() {
                     type="button"
                     className={`${btnSecondary} min-h-11`}
                     disabled={selected.length !== 1 || meldTarget === null || !human?.hasMelded}
-                    onClick={() => {
+                    onClick={async () => {
                       if (selected.length === 1 && meldTarget !== null) {
-                        game.handleLayOff(selected[0], meldTarget);
-                        setSelected([]);
-                        setMeldTarget(null);
+                        if (await game.handleLayOff(selected[0], meldTarget)) {
+                          setSelected([]);
+                          setMeldTarget(null);
+                        }
                       }
                     }}
                   >

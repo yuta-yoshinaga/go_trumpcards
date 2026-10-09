@@ -223,6 +223,7 @@ function RazzPageContent() {
     (isActive || isShowdown) && humanPlayer && !humanPlayer.folded
       ? razzBestLow([...humanPlayer.doorCards, ...humanPlayer.holeCards])
       : null;
+  const selectedLowCards = new Set(humanLow?.complete ? humanLow.cardIndices : []);
   const minRaise = state?.minRaise ?? 0;
   const isMuckPhase = phase === SevenCardStudPhase.SHOWDOWN && state?.muckAvailable === true;
   const isRebuyPhase =
@@ -489,9 +490,13 @@ function RazzPageContent() {
                       data-testid={isShowdown ? 'razz-showdown-best-low' : 'razz-best-low'}
                       className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
                     >
-                      {humanLow.complete
-                        ? t('currentLow', { low: formatRazzLow(humanLow) })
-                        : t('currentLowIncomplete')}
+                      {humanLow.complete ? (
+                        <>
+                          {t('currentLow', { low: formatRazzLow(humanLow) })} · {t('bestLowCards')}
+                        </>
+                      ) : (
+                        t('currentLowIncomplete')
+                      )}
                     </span>
                   )}
                   {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
@@ -506,12 +511,15 @@ function RazzPageContent() {
                   className={`flex flex-wrap gap-1.5 mb-1 ${humanPlayer.id === bringInPlayerId ? bringInCardClass : ''}`}
                 >
                   {humanPlayer.doorCards?.length
-                    ? humanPlayer.doorCards.map((card) => (
+                    ? humanPlayer.doorCards.map((card, index) => (
                         <AnimatedCard
                           key={`${card.design}-${card.value}`}
                           card={card}
                           width={cardWidth}
                           style={placeholderCardStyle}
+                          wrapperClassName={
+                            selectedLowCards.has(index) ? 'rounded ring-2 ring-game-status-active' : undefined
+                          }
                         />
                       ))
                     : !humanPlayer.folded &&
@@ -521,12 +529,17 @@ function RazzPageContent() {
                 <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {humanPlayer.holeCards?.length
-                    ? humanPlayer.holeCards.map((card) => (
+                    ? humanPlayer.holeCards.map((card, index) => (
                         <AnimatedCard
                           key={`${card.design}-${card.value}`}
                           card={card}
                           width={cardWidth}
                           style={placeholderCardStyle}
+                          wrapperClassName={
+                            selectedLowCards.has(humanPlayer.doorCards.length + index)
+                              ? 'rounded ring-2 ring-game-status-active'
+                              : undefined
+                          }
                         />
                       ))
                     : !humanPlayer.folded &&

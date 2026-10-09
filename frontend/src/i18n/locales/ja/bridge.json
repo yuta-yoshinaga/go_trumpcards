@@ -36,6 +36,7 @@
   "bidButton": "ビッド",
   "doubleIllegal": "直前に相手側のビッドがないためダブルできません",
   "redoubleIllegal": "自側のビッドがダブルされていないためリダブルできません",
+  "followSuit": "リードスートを持つ場合はそのスートを出してください",
   "bidTooLow": "現在のコントラクト以下のビッドはできません",
   "playButton": "出す",
   "nextTrick": "次のトリック",

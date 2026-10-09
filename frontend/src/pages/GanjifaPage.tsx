@@ -315,8 +315,13 @@ function GanjifaPageContent() {
                 isMobile={isMobile}
                 dataTutorialPrefix="ganjifa"
                 validIndices={canPlay ? state.playableIndices : undefined}
-                restrictedTooltip={t('playButton')}
-                cardStatusFor={(idx) => ganjifaHandCardStatus(humanPlayer.cards[idx], t)}
+                restrictedTooltip={t('mustFollowSuit')}
+                cardStatusFor={(idx) => {
+                  const rankDirection = ganjifaHandCardStatus(humanPlayer.cards[idx], t);
+                  const mustFollow = canPlay && state.currentTrick.length > 0 && !state.playableIndices.includes(idx);
+                  if (!mustFollow) return rankDirection;
+                  return [rankDirection, t('mustFollowSuit')].filter(Boolean).join(' — ');
+                }}
               />
             )}
 

@@ -5,6 +5,7 @@ package presenter
 import (
 	"regexp"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -86,6 +87,31 @@ func TestCucumberCuiPresenterShowsTheThreshold(t *testing.T) {
 	assert.Contains(t, out, fixedPart("cucumber.promptBeat"))
 	assert.NotContains(t, out, i18n.T("cucumber.promptForced"))
 	assert.NotContains(t, out, i18n.T("cucumber.promptLead"))
+}
+
+func TestCucumberCuiPresenterShowsRemainingPenaltyInBothLanguages(t *testing.T) {
+	originalLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(originalLang) })
+	p := new(CucumberCuiPresenter)
+	for _, tc := range []struct {
+		lang      string
+		remaining string
+		reached   string
+	}{
+		{lang: "ja", remaining: "目標まで3点", reached: "目標到達"},
+		{lang: "en", remaining: "3 points remaining", reached: "Target reached"},
+	} {
+		t.Run(tc.lang, func(t *testing.T) {
+			i18n.SetLang(tc.lang)
+			c := newCucumberForCui(t)
+			c.GetPlayer(0).SetPenalty(c.GetConfig().TargetScore - 3)
+			c.GetPlayer(1).SetPenalty(c.GetConfig().TargetScore)
+			c.GetPlayer(2).SetPenalty(c.GetConfig().TargetScore + 2)
+			out := p.Output(c, nil)
+			assert.Contains(t, out, tc.remaining)
+			assert.Equal(t, 2, strings.Count(out, tc.reached))
+		})
+	}
 }
 
 // **合法手が 1 つ = 更新できない、ではありません。**

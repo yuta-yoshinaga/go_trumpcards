@@ -78,6 +78,7 @@ type BridgeWebOutput struct {
 	LeadPlayerIdx    int                        `json:"leadPlayerIdx"`
 	OpeningLeadDone  bool                       `json:"openingLeadDone"`
 	DummyHand        []*WebOutputCard           `json:"dummyHand"`
+	LegalPlayIndices []int                      `json:"legalPlayIndices"`
 	Hint             *BridgeWebOutputHint       `json:"hint,omitempty"`
 	WebOutputBase
 	Config BridgeWebOutputConfig `json:"config"`
@@ -111,14 +112,15 @@ var NewBridgeWebController, NewBridgeWebControllerWithProvider = webControllerPa
 
 func newBridgeDefaultOutput(msg string) *BridgeWebOutput {
 	return &BridgeWebOutput{
-		Players:       make([]*BridgeWebOutputPlayer, 0),
-		BidHistory:    make([]*BridgeWebOutputBidEntry, 0),
-		CurrentTrick:  make([]*WebOutputTrickCard, 0),
-		DummyHand:     make([]*WebOutputCard, 0),
-		WinnerTeam:    -1,
-		DeclarerIdx:   -1,
-		DummyIdx:      -1,
-		WebOutputBase: WebOutputBase{Message: msg},
+		Players:          make([]*BridgeWebOutputPlayer, 0),
+		BidHistory:       make([]*BridgeWebOutputBidEntry, 0),
+		CurrentTrick:     make([]*WebOutputTrickCard, 0),
+		DummyHand:        make([]*WebOutputCard, 0),
+		LegalPlayIndices: make([]int, 0),
+		WinnerTeam:       -1,
+		DeclarerIdx:      -1,
+		DummyIdx:         -1,
+		WebOutputBase:    WebOutputBase{Message: msg},
 	}
 }
 

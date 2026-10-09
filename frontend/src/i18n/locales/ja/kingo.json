@@ -9,6 +9,7 @@
   "label.payouts": "嵐 {{arashi}}倍 / 2枚そろい {{pair}}倍",
   "label.payoutMeaning": "倍率は張り額に掛かります（張り10・倍率3なら30）。勝てばその額を受け取り、負ければ親の役の倍率で支払います。勝ち額は決着時のチップ増減です。",
   "label.betPrompt": "張ってください（{{min}} から、10 刻み）",
+  "label.betStepError": "張り額は10刻みです。10の倍数に修正してください",
   "label.betUnavailable": "所持チップが最低額 {{min}} に足りないため、張れません",
   "label.bankerBetExcluded": "親はベット対象外です",
   "label.dealPrompt": "子の張りが出そろいました。配ってください",

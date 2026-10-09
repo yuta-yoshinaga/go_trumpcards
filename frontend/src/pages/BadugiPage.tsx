@@ -173,6 +173,12 @@ function BadugiPageContent() {
   // Hoisted so the empty case is a real state (no human seat) rather than an
   // unreachable fallback inside the guard: canExchange already implies a seat.
   const humanCards = humanPlayer?.cards ?? [];
+  const showdownBestCardIndices = (player: (typeof cpuPlayers)[number] | NonNullable<typeof humanPlayer>) =>
+    isEnd && !player.folded && player.bestCards
+      ? player.cards.flatMap((card, index) =>
+          player.bestCards?.some((best) => best.design === card.design && best.value === card.value) ? [index] : [],
+        )
+      : [];
   const subsetIndices = useMemo(
     () => (canExchange && hintEnabled ? new Set(badugiBestSubsetIndices(humanCards)) : null),
     [canExchange, hintEnabled, humanCards],
@@ -296,6 +302,8 @@ function BadugiPageContent() {
                       <span className="ml-2 text-xs">{t('exchangeCount', { count: p.drawCount })}</span>
                     ) : undefined
                   }
+                  usedHoleIdx={showdownBestCardIndices(p)}
+                  usedHoleLabel={t('bestCardsHighlight')}
                 />
               ));
               return isMobile ? <CpuAccordion playerCount={cpuPlayers.length}>{cpuCards}</CpuAccordion> : cpuCards;
@@ -361,6 +369,12 @@ function BadugiPageContent() {
                     // Only annotate cards during the draw phase; outside of it we don't want to
                     // distract the player with a "dead weight" hint they can't act on.
                     const inSubset = subsetIndices?.has(i) ?? false;
+                    const inShowdownBest =
+                      isEnd &&
+                      !humanPlayer.folded &&
+                      humanPlayer.bestCards?.some(
+                        (best) => best.design === card.design && best.value === card.value,
+                      ) === true;
                     const showSubsetHint = subsetIndices !== null;
                     let liftOrDim = '';
                     if (showSubsetHint) {
@@ -377,11 +391,13 @@ function BadugiPageContent() {
                         type="button"
                         aria-label={`${cardAlt(card)}${
                           canExchange ? ` ${t(isSelected ? 'cardSelected' : 'cardNotSelected')}` : ''
-                        }${subsetHint}`}
+                        }${subsetHint}${inShowdownBest ? ` ${t('bestCardsHighlight')}` : ''}`}
                         aria-pressed={canExchange ? isSelected : undefined}
                         onClick={() => toggleCard(i)}
                         data-badugi-subset={showSubsetHint && inSubset ? 'true' : undefined}
-                        className={`${focusRingAccent} rounded transition-transform ${liftOrDim}`}
+                        data-badugi-best-card={inShowdownBest ? 'true' : undefined}
+                        data-testid={inShowdownBest ? 'bg-showdown-best-card' : undefined}
+                        className={`${focusRingAccent} rounded transition-transform ${liftOrDim}${inShowdownBest ? ' ring-2 ring-ds-success motion-safe:animate-pulse' : ''}`}
                         style={{
                           background: 'none',
                           padding: 0,

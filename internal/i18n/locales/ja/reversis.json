@@ -29,6 +29,7 @@
   "helpExampleGiveUp": "  g                    この局を投了する",
   "helpHint": "  h                    助言を表示",
   "handCard": "[{{idx}}]{{card}}({{points}}点)",
+  "legalMark": "* 印の付いた札を今出せます。",
   "log.deal": "ラウンド{{round}} 開始（プール {{pool}}）",
   "log.play": "{{card}}",
   "log.marked": "{{name}} を取った（+{{penalty}}失点、プールへ {{stake}}）",

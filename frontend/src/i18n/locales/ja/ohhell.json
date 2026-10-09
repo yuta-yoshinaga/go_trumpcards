@@ -42,6 +42,7 @@
     "exact": "(ぴったり)"
   },
   "currentTrick": "現在のトリック",
+  "trickCardAriaLabel": "{{player}}、{{card}}",
   "trickWinnerBadge": "勝ち",
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",

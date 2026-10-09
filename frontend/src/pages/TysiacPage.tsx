@@ -166,7 +166,9 @@ function TysiacPageContent() {
   // Suits where the human holds both K (13) and Q (12) — a marriage that sets
   // trump when led and scores 40/60/80/100 by suit (♠/♣/♦/♥). Surfaced as a
   // banner during play so the bonus is visible while it can still be earned.
-  const marriages = isPlayPhase
+  // 結婚の宣言はリードするとき (場に札が無いとき) だけ。
+  const canLeadMarriage = isPlayPhase && state.currentTrick.length === 0;
+  const marriages = canLeadMarriage
     ? [1, 2, 3, 4]
         .filter((suit) => {
           const cards = humanPlayer?.cards ?? [];

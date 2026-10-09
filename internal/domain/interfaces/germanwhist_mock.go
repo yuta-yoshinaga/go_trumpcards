@@ -68,6 +68,16 @@ func (m *MockGermanWhistGame) GetCurrentTrick() []*domain.TrickCard {
 	return args.Get(0).([]*domain.TrickCard)
 }
 
+func (m *MockGermanWhistGame) GetLastTrick() []*domain.TrickCard {
+	args := m.Called()
+	if v := args.Get(0); v != nil {
+		return v.([]*domain.TrickCard)
+	}
+	return nil
+}
+
+func (m *MockGermanWhistGame) GetLastTrickWinner() int { return m.Called().Int(0) }
+
 func (m *MockGermanWhistGame) GetTrumpSuit() int {
 	args := m.Called()
 	return args.Int(0)

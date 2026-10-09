@@ -32,6 +32,7 @@ func setupBridgeWebMock() *interfaces.MockBridgeGame {
 	m.On("GetDoubled").Return(0)
 	m.On("GetDeclarerIdx").Return(0)
 	m.On("GetDummyIdx").Return(2)
+	m.On("GetValidPlayIndices", 0).Return([]int{0, 2})
 	m.On("GetBidHistory").Return([]*domain.BridgeBidEntry(nil))
 	m.On("GetVulnerability", 0).Return(false)
 	m.On("GetVulnerability", 1).Return(false)
@@ -76,6 +77,48 @@ func setupBridgeWebMockWithPlayers() (*interfaces.MockBridgeGame, []*domain.Brid
 
 func TestBridgeWebPresenter_Output(t *testing.T) {
 	p := new(presenter.BridgeWebPresenter)
+
+	t.Run("legal play indices for human turn", func(t *testing.T) {
+		m, _ := setupBridgeWebMockWithPlayers()
+		indices := []int{1, 3}
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", 0).Return(indices)
+
+		result := p.Output(m, nil)
+		var resObj controller.BridgeWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+
+		assert.NoError(t, err)
+		assert.Equal(t, indices, resObj.LegalPlayIndices)
+	})
+
+	t.Run("legal play indices for human declarer's dummy turn", func(t *testing.T) {
+		m, _ := setupBridgeWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetCurrentPlayerIdx").Return(2)
+		indices := []int{0, 4}
+		m.On("GetValidPlayIndices", 2).Return(indices)
+
+		result := p.Output(m, nil)
+		var resObj controller.BridgeWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+
+		assert.NoError(t, err)
+		assert.Equal(t, indices, resObj.LegalPlayIndices)
+	})
+
+	t.Run("no legal play indices for CPU turn", func(t *testing.T) {
+		m, _ := setupBridgeWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetCurrentPlayerIdx").Return(1)
+
+		result := p.Output(m, nil)
+		var resObj controller.BridgeWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+
+		assert.NoError(t, err)
+		assert.Empty(t, resObj.LegalPlayIndices)
+	})
 
 	t.Run("initial state", func(t *testing.T) {
 		m, players := setupBridgeWebMockWithPlayers()

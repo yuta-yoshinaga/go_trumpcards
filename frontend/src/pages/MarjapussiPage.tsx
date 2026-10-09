@@ -26,7 +26,7 @@ import { badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card, MarjapussiResponse } from '../types/card';
+import type { MarjapussiResponse } from '../types/card';
 import { MarjapussiPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { suitSymbolAt } from '../utils/cardAlt';
@@ -48,20 +48,6 @@ const NEAR_WIN_RATIO = 0.8;
 
 /** Card design string → suit number (1=♠ 2=♣ 3=♥ 4=♦), to align with suitSymbolAt / trumpSuit. */
 const DESIGN_TO_SUIT: Readonly<Record<string, number>> = { SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4 };
-
-/** Card points: A=11, 10=10, K=4, Q=3, J=2, others=0. */
-const CARD_POINTS: Readonly<Record<number, number>> = {
-  1: 11,
-  10: 10,
-  13: 4,
-  12: 3,
-  11: 2,
-};
-
-function calculateCardPoints(cards?: Card[]): number {
-  if (!cards) return 0;
-  return cards.reduce((sum, c) => sum + (CARD_POINTS[c.value] ?? 0), 0);
-}
 
 /** Marjapussi tutorial step definitions. */
 const MARJAPUSSI_TUTORIAL_STEPS: TutorialStep[] = [
@@ -231,7 +217,7 @@ function MarjapussiPageContent() {
     reset();
   };
 
-  const pussiPoints = calculateCardPoints(state.pussi);
+  const pussiPoints = state.pussiPoints;
   const target = state.config.targetPoints;
   const team0Score = state.teamScores[0];
   const team1Score = state.teamScores[1];

@@ -52,6 +52,7 @@ type MarjapussiWebOutput struct {
 	RoundCardPoints  [domain.MarjapussiTeamCnt]int   `json:"roundCardPoints"`
 	RoundMarriage    [domain.MarjapussiTeamCnt]int   `json:"roundMarriage"`
 	PussiCount       int                             `json:"pussiCount"`
+	PussiPoints      int                             `json:"pussiPoints"`
 	Pussi            []*WebOutputCard                `json:"pussi,omitempty"`
 	PussiWinnerTeam  int                             `json:"pussiWinnerTeam"`
 	LastTrickWinner  int                             `json:"lastTrickWinner"`

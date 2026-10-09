@@ -240,6 +240,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isActive && !humanFolded && !humanAllIn && !isDiscardPhase && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
+  const callAmount = (state?.lastBet ?? 0) - (humanPlayer?.currentBet ?? 0);
   // Best-5 highlight at showdown: after the discard, the hand is Hold'em-style
   // (2 hole + 5 board), so holdemBestFive marks the winning five cards. Indices
   // 0..1 map to the hole cards, 2..6 to the board.
@@ -966,6 +967,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                   maxBetAmount={state?.maxBetAmount}
                   potSize={state?.pot}
                   hasOutstandingBet={hasOutstandingBet}
+                  callAmountLabel={hasOutstandingBet ? t('callAmount', { amount: callAmount }) : undefined}
                   loading={loading}
                   onCall={() => apiExec('call', undefined, undefined, getElapsed())}
                   onRaise={() => apiExec('raise', betAmount, undefined, getElapsed())}

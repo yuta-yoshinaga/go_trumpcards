@@ -264,7 +264,10 @@ function GapsPageContent() {
         <span id={selectSourceHintId} className="sr-only">
           {tc('label.selectSourceFirst')}
         </span>
-        <div data-tutorial="gaps-grid" className="flex flex-col items-center gap-1 mb-3">
+        <div
+          data-tutorial="gaps-grid"
+          className="mx-auto mb-3 flex w-fit max-w-full flex-col items-start gap-1 overflow-x-auto p-1"
+        >
           {state.grid.map((row, rIdx) => {
             const lockedCount = lockedPrefixLengths[rIdx] ?? 0;
             return (

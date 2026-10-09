@@ -247,6 +247,35 @@ func TestSergeantMajor_TrickWinnerOrdering(t *testing.T) {
 	assert.Equal(t, 2, s.TrickWinnerForTest(), "切り札同士は A が最強")
 }
 
+func TestSergeantMajor_KeepsResolvedTrickUntilNextRound(t *testing.T) {
+	s := newTestSergeantMajor(t)
+	trick := []*TrickCard{
+		{PlayerIdx: 0, Card: NewCard(CardDesignSpade, 10, false)},
+		{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 13, false)},
+		{PlayerIdx: 2, Card: NewCard(CardDesignSpade, 2, false)},
+	}
+	s.SetCurrentTrickForTest(trick)
+	s.resolveTrick()
+	require.Empty(t, s.GetCurrentTrick())
+	assert.Equal(t, trick, s.GetLastTrick())
+	assert.Equal(t, 1, s.GetLastTrickWinner())
+	snapshot, err := json.Marshal(s)
+	require.NoError(t, err)
+	restored := newTestSergeantMajor(t)
+	require.NoError(t, json.Unmarshal(snapshot, restored))
+	assert.Equal(t, trick, restored.GetLastTrick())
+	assert.Equal(t, 1, restored.GetLastTrickWinner())
+	var invalidSnapshot map[string]any
+	require.NoError(t, json.Unmarshal(snapshot, &invalidSnapshot))
+	invalidSnapshot["lw"] = float64(SergeantMajorPlayerCnt)
+	invalidJSON, err := json.Marshal(invalidSnapshot)
+	require.NoError(t, err)
+	assert.Error(t, json.Unmarshal(invalidJSON, new(SergeantMajor)))
+	restored.startRound()
+	assert.Empty(t, restored.GetLastTrick())
+	assert.Equal(t, -1, restored.GetLastTrickWinner())
+}
+
 // **1 ラウンドはちょうど 16 トリック。**
 func TestSergeantMajor_ARoundIsExactlySixteenTricks(t *testing.T) {
 	s := newTestSergeantMajor(t)
@@ -708,6 +737,8 @@ func TestSergeantMajor_AccessorsAndBounds(t *testing.T) {
 	assert.Equal(t, SergeantMajorDefaultRounds, s.GetConfig().Rounds)
 	assert.NotEmpty(t, s.GetActionLog())
 	assert.Empty(t, s.GetCurrentTrick())
+	assert.Empty(t, s.GetLastTrick())
+	assert.Equal(t, -1, s.GetLastTrickWinner())
 	assert.Zero(t, s.GetLastExchange())
 	assert.Equal(t, s.GetDealerIdx(), s.GetLeadPlayerIdx())
 }

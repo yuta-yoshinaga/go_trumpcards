@@ -210,6 +210,24 @@ describe('TablanetPage', () => {
     expect(firstCard).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('clears the selected table cards when switching the selected hand card', async () => {
+    renderWithProviders(<TablanetPage />);
+    await screen.findByTestId('hand-card-0');
+
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    expect(screen.getByTestId('table-card-0')).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    expect(screen.getByTestId('hand-card-1')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('table-card-0')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.queryByTestId('tablanet-selected-total')).not.toBeInTheDocument();
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 1, tableIndices: [] }));
+  });
+
   it('shows the selected table-card rank total and updates it as cards are toggled', async () => {
     renderWithProviders(<TablanetPage />);
     await screen.findByTestId('hand-card-0');

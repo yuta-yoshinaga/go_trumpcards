@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 func newHokmForWeb(t *testing.T) *domain.Hokm {
@@ -47,6 +48,46 @@ func TestHokmWebPresenterOutput(t *testing.T) {
 	assert.False(t, players[1].(map[string]any)["isHakem"].(bool))
 	assert.Equal(t, float64(0), human["team"])
 	assert.Equal(t, float64(0), players[2].(map[string]any)["team"], "0 と 2 が味方")
+}
+
+func TestHokmWebPresenterOutputsLastTrick(t *testing.T) {
+	mock := new(interfaces.MockHokmGame)
+	mock.On("GetPhase").Return(domain.HokmPhasePlay).Maybe()
+	mock.On("GetHandNumber").Return(2)
+	mock.On("GetTrickNumber").Return(4)
+	mock.On("GetTrumpSuit").Return(domain.CardDesignSpade)
+	mock.On("GetHakemIdx").Return(0)
+	mock.On("GetLastHandKot").Return(false)
+	mock.On("GetLastHandHakemChanged").Return(false)
+	mock.On("GetLastHandWinner").Return(-1)
+	mock.On("GetCurrentPlayerIdx").Return(0)
+	mock.On("GetLeadPlayerIdx").Return(0)
+	mock.On("GetValidPlayIndices", 0).Return([]int{})
+	mock.On("GetGameEndFlag").Return(false)
+	mock.On("GetWinnerTeam").Return(-1)
+	mock.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
+	cards := []*domain.TrickCard{{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 2, false)}}
+	mock.On("GetLastTrick").Return(cards, 2).Once()
+	players := make([]*domain.HokmPlayer, domain.HokmPlayerCnt)
+	for i := range players {
+		players[i] = domain.NewHokmPlayer(i == 0)
+		mock.On("GetPlayer", i).Return(players[i])
+	}
+	mock.On("GetPlayerCnt").Return(domain.HokmPlayerCnt)
+	mock.On("GetScore", 0).Return(0)
+	mock.On("GetScore", 1).Return(0)
+	mock.On("TeamTricks", 0).Return(0)
+	mock.On("TeamTricks", 1).Return(0)
+	mock.On("GetConfig").Return(domain.DefaultHokmConfig())
+	mock.On("GetHint").Return(nil)
+
+	result := new(HokmWebPresenter).Output(mock, nil)
+	decoded := decodeHokm(t, result)
+	assert.Equal(t, float64(2), decoded["lastTrickWinner"])
+	lastTrick := decoded["lastTrick"].([]any)
+	require.Len(t, lastTrick, 1)
+	assert.Equal(t, float64(0), lastTrick[0].(map[string]any)["playerIdx"])
+	mock.AssertExpectations(t)
 }
 
 // **7 先取の進捗はトリック数のほうに出る。** 13 まで打たないので。

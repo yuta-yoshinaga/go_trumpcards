@@ -76,6 +76,7 @@ describe('formatFiveHundredState', () => {
     jokerLeadSuit: -1,
     kittyCount: 0,
     currentTrick: [{ playerIdx: 0, card: { design: 'SPADE', value: 5 } as never }],
+    validPlayIndices: [],
     teamScores: [120, 30],
     gameEndFlag: false,
     winnerTeam: -1,

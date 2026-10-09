@@ -17,6 +17,8 @@
   "trickLead": "場: {{combo}}（{{size}}枚）がリードされています",
   "trickAnnouncement": "{{lead}}。{{plays}}",
   "trickPlay": "{{seat}}: {{cards}}",
+  "provisionalWinner": "暫定勝者",
+  "trickWinnerAnnouncement": "暫定勝者は{{seat}}です。",
   "listSeparator": "、",
   "comboSingle": "単張",
   "comboPair": "対子",

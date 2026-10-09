@@ -73,6 +73,24 @@ func (p *TarneebCuiPresenter) Output(t interfaces.TarneebGame, lastErr error) st
 			b.WriteString(i18n.Tf("tarneeb.roundScoreLine",
 				"team0", cuiSignedScore(tarneebTeamRoundScore(t, 0)),
 				"team1", cuiSignedScore(tarneebTeamRoundScore(t, 1))) + "\n")
+			if t.GetBidWinnerIdx() >= 0 {
+				winner := t.GetPlayer(t.GetBidWinnerIdx())
+				teamTricks := 0
+				for i := 0; i < t.GetPlayerCnt(); i++ {
+					player := t.GetPlayer(i)
+					if player.GetTeam() == winner.GetTeam() {
+						teamTricks += player.GetTrickCount()
+					}
+				}
+				status := "tarneeb.contractFailed"
+				if teamTricks >= t.GetHighestBid() {
+					status = "tarneeb.contractMade"
+				}
+				b.WriteString(i18n.Tf("tarneeb.contractResult",
+					"status", i18n.T(status),
+					"bid", strconv.Itoa(t.GetHighestBid()),
+					"tricks", strconv.Itoa(teamTricks)) + "\n")
+			}
 		}
 		if t.GetBidWinnerIdx() >= 0 {
 			bw := t.GetPlayer(t.GetBidWinnerIdx())

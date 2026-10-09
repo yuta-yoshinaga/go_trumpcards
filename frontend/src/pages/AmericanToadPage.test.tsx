@@ -313,6 +313,64 @@ describe('AmericanToadPage', () => {
     renderWithProviders(<AmericanToadPage />);
     await waitFor(() => expect(screen.getAllByLabelText(/列\d+・上から\d+枚目/).length).toBeGreaterThan(0));
   });
+
+  it('keeps one tableau card in the Tab order and moves between cards with arrows', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<AmericanToadPage />);
+    const cards = await screen.findAllByRole('button', { name: /列\d+・上から\d+枚目/ });
+    expect(cards.filter((button) => button.getAttribute('tabindex') === '0')).toHaveLength(1);
+    const first = screen.getByRole('button', { name: /列0・上から1枚目/ });
+    const nextColumn = screen.getByRole('button', { name: /列1・上から1枚目/ });
+    first.focus();
+    fireEvent.keyDown(first, { key: 'ArrowRight' });
+    expect(nextColumn).toHaveFocus();
+    fireEvent.keyDown(nextColumn, { key: 'ArrowLeft' });
+    expect(first).toHaveFocus();
+  });
+
+  it('moves vertically within a column and stays at its top and bottom edges', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<AmericanToadPage />);
+    const top = await screen.findByRole('button', { name: /列0・上から1枚目/ });
+    const bottom = screen.getByRole('button', { name: /列0・上から2枚目/ });
+
+    top.focus();
+    fireEvent.keyDown(top, { key: 'ArrowUp' });
+    expect(top).toHaveFocus();
+    fireEvent.keyDown(top, { key: 'ArrowDown' });
+    expect(bottom).toHaveFocus();
+    fireEvent.keyDown(bottom, { key: 'ArrowDown' });
+    expect(bottom).toHaveFocus();
+    fireEvent.keyDown(bottom, { key: 'ArrowUp' });
+    expect(top).toHaveFocus();
+  });
+
+  it('ignores non-arrow keys and skips empty columns while moving horizontally', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([
+        playingState.tableau[0] ?? [],
+        playingState.tableau[1] ?? [],
+        [],
+        [{ card: card('HEART', 6), faceUp: true }],
+      ]),
+    });
+    renderWithProviders(<AmericanToadPage />);
+    const columnOne = await screen.findByRole('button', { name: /列1・上から1枚目/ });
+    const columnThree = screen.getByRole('button', { name: /列3・上から1枚目/ });
+
+    columnOne.focus();
+    expect(fireEvent.keyDown(columnOne, { key: 'Enter' })).toBe(true);
+    expect(columnOne).toHaveFocus();
+    fireEvent.keyDown(columnOne, { key: 'ArrowRight' });
+    expect(columnThree).toHaveFocus();
+  });
 });
 
 // Keyboard shortcuts are bound by useActionKeyboardNav and advertised by

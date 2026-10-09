@@ -36,6 +36,8 @@ func TestSergeantMajorWebPresenterOutput(t *testing.T) {
 	assert.Equal(t, float64(domain.SergeantMajorKittySize), m["kittySize"], "キティは 4 枚")
 	assert.Equal(t, float64(domain.SergeantMajorKittySize), m["discardCount"])
 	assert.Equal(t, float64(-1), m["winnerIdx"])
+	assert.Empty(t, m["lastTrick"])
+	assert.Equal(t, float64(-1), m["lastTrickWinner"])
 	assert.Equal(t, float64(0), m["lastExchange"])
 
 	players := m["players"].([]any)

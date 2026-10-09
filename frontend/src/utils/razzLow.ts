@@ -7,6 +7,8 @@ export interface RazzLow {
   ranks: number[];
   /** True when five distinct ranks are available (a complete low). */
   complete: boolean;
+  /** Indices of the selected cards in the input array, in ascending rank order. */
+  cardIndices: number[];
 }
 
 /**
@@ -18,9 +20,13 @@ export interface RazzLow {
  * @returns The chosen ranks (lowest first) and whether the low is complete.
  */
 export function razzBestLow(cards: Card[]): RazzLow {
-  const distinct = [...new Set(cards.map((c) => c.value))].sort((a, b) => a - b);
-  const ranks = distinct.slice(0, 5);
-  return { ranks, complete: ranks.length === 5 };
+  const selected = new Map<number, number>();
+  cards.forEach((card, index) => {
+    if (!selected.has(card.value)) selected.set(card.value, index);
+  });
+  const chosen = [...selected.entries()].sort(([a], [b]) => a - b).slice(0, 5);
+  const ranks = chosen.map(([rank]) => rank);
+  return { ranks, complete: ranks.length === 5, cardIndices: chosen.map(([, index]) => index) };
 }
 
 /** Formats a Razz low as a high-to-low rank string, e.g. "8-6-4-3-A". */

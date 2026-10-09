@@ -369,14 +369,34 @@ function ThreeThirteenPageContent() {
                       </div>
                       {/* Show CPU cards during round end / game end */}
                       {(isRoundEnd || isGameEnd) && p.cards.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {p.cards.map((card, idx) => (
-                            <AnimatedCard
-                              key={`cpu-${card.design}-${card.value}-${idx}`}
-                              card={card}
-                              width={cardWidth * 0.8}
-                            />
+                        <div className="mt-1 flex flex-col gap-1">
+                          {p.melds.map((meld, meldIdx) => (
+                            <div
+                              key={`cpu-${p.id}-meld-${meldIdx}`}
+                              className="flex flex-wrap gap-1 rounded border border-ds-border p-1"
+                            >
+                              <span className="w-full text-xs text-ds-text-muted">{t('meld')}</span>
+                              {meld.map((idx) => (
+                                <AnimatedCard
+                                  key={`cpu-${p.id}-meld-${meldIdx}-${idx}`}
+                                  card={p.cards[idx]}
+                                  width={cardWidth * 0.8}
+                                />
+                              ))}
+                            </div>
                           ))}
+                          {p.deadwoodIndices.length > 0 && (
+                            <div className="flex flex-wrap gap-1 rounded border border-ds-warning p-1">
+                              <span className="w-full text-xs text-ds-warning">{t('deadwoodCards')}</span>
+                              {p.deadwoodIndices.map((idx) => (
+                                <AnimatedCard
+                                  key={`cpu-${p.id}-deadwood-${idx}`}
+                                  card={p.cards[idx]}
+                                  width={cardWidth * 0.8}
+                                />
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

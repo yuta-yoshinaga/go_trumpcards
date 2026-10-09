@@ -228,6 +228,35 @@ describe('RazzPage', () => {
     expect(low).toHaveTextContent('現在のロー: 8-7-5-3-A');
   });
 
+  it('outlines the selected five cards and distinguishes duplicate ranks', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      players: [
+        humanPlayer({
+          doorCards: [
+            { design: 'CLOVER', value: 2 },
+            { design: 'HEART', value: 2 },
+            { design: 'SPADE', value: 4 },
+          ],
+          holeCards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 3 },
+            { design: 'DIAMOND', value: 5 },
+          ],
+        }),
+        ...thirdStreetState.players.slice(1),
+      ],
+    });
+    const { container } = renderWithProviders(<RazzPage />);
+    await screen.findByText(/枠で囲まれたカード/);
+    const hand = container.querySelector('[data-tutorial="razz-player-hand"]');
+    const images = [...(hand?.querySelectorAll('[data-testid="animated-card"]') ?? [])];
+    expect(images).toHaveLength(6);
+    expect(images.filter((image) => image.classList.contains('ring-2'))).toHaveLength(5);
+    expect(images[0]?.classList.contains('ring-2')).toBe(true);
+    expect(images[1]?.classList.contains('ring-2')).toBe(false);
+  });
+
   it('marks the low as incomplete when fewer than five distinct ranks are known', async () => {
     mockExec.mockResolvedValue({
       ...thirdStreetState,
@@ -238,9 +267,11 @@ describe('RazzPage', () => {
         thirdStreetState.players[3],
       ],
     });
-    renderWithProviders(<RazzPage />);
+    const { container } = renderWithProviders(<RazzPage />);
     const low = await screen.findByTestId('razz-best-low');
     expect(low).toHaveTextContent('未完成');
+    const handCards = container.querySelectorAll('[data-tutorial="razz-player-hand"] [data-testid="animated-card"]');
+    expect([...handCards].filter((card) => card.classList.contains('ring-2'))).toHaveLength(0);
   });
 
   // ---- info bar ----
@@ -306,7 +337,7 @@ describe('RazzPage', () => {
     const lows = await screen.findAllByTestId('razz-showdown-best-low');
     expect(lows).toHaveLength(2);
     expect(lows.map((low) => low.textContent)).toEqual(
-      expect.arrayContaining(['現在のロー: 8-7-5-3-A', '現在のロー: 8-7-5-4-2']),
+      expect.arrayContaining([expect.stringContaining('現在のロー: 8-7-5-3-A'), '現在のロー: 8-7-5-4-2']),
     );
 
     unmount();

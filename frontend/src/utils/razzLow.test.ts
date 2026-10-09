@@ -15,6 +15,7 @@ describe('razzBestLow', () => {
   it('ignores pairs (duplicate ranks do not help)', () => {
     const low = razzBestLow([c(2), c(2), c(5), c(5), c(9)]);
     expect(low.ranks).toEqual([2, 5, 9]);
+    expect(low.cardIndices).toEqual([0, 2, 4]);
     expect(low.complete).toBe(false);
   });
 

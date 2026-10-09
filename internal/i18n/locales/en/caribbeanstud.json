@@ -28,7 +28,6 @@
   "hintPlay": "play (raise)",
   "hintFold": "fold",
   "hintPairOrBetter": "you have one pair or better",
-  "hintAceKingHigh": "no made hand, but you hold an Ace and a King",
   "hintWeakHand": "no made hand and nothing as high as Ace-King",
   "helpExampleBet": "  b 10                 ante 10 and get a hand",
   "helpExamplePlay": "  p                    call, placing a play bet of 2x the ante",
@@ -42,5 +41,7 @@
   "log.deal": "dealt 5 cards each",
   "log.playerWins": "player wins",
   "log.push": "push",
-  "log.dealerWins": "dealer wins"
+  "log.dealerWins": "dealer wins",
+  "hintAceKingHighDealerLower": "no made hand, but you hold Ace-King and the dealer shows a Queen or lower",
+  "hintAceKingHighDealerHigh": "you hold Ace-King, but the dealer shows a King or Ace"
 }

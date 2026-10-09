@@ -26,6 +26,7 @@ func (p *ShengJiWebPresenter) Output(g interfaces.ShengJiGame, lastErr error) st
 	resObj.TrickLeader = g.GetTrickLeader()
 	resObj.TrickCount = g.GetTrickCount()
 	resObj.LastTrickWinner = g.GetLastTrickWinner()
+	resObj.CurrentTrickWinner = g.GetCurrentTrickWinner()
 	resObj.MinLevel = domain.ShengJiMinLevel
 	resObj.MaxLevel = domain.ShengJiMaxLevel
 	resObj.KittySizeMax = domain.ShengJiKittySize

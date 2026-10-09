@@ -19,6 +19,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
 import { btnDanger, btnPrimary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -52,8 +53,21 @@ const LINGERLONGER_TUTORIAL_STEPS: TutorialStep[] = [
  * bug, so an out player is told so directly.
  */
 function LingerLongerPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('lingerlonger');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('lingerlonger');
   const {
     state,
     loading,
@@ -122,6 +136,7 @@ function LingerLongerPageContent() {
   const handleGiveUp = useCallback(() => {
     void dispatch('giveup');
   }, [dispatch]);
+  const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
 
   if (!state) {
     return (
@@ -172,6 +187,9 @@ function LingerLongerPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
       {cliEnabled ? (
@@ -311,7 +329,7 @@ function LingerLongerPageContent() {
                 {t('actions.reset')}
               </button>
               {!isGameEnd && (
-                <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
                   {t('actions.giveUp')}
                 </button>
               )}

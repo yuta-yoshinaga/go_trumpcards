@@ -66,6 +66,8 @@ export interface MarjapussiResponse extends BaseGameResponse {
   roundMarriage: number[];
   /** Number of cards in the pussi (berry bag). */
   pussiCount: number;
+  /** Card points in the pussi, calculated by the game rules. */
+  pussiPoints: number;
   /** Cards in the pussi, revealed at RoundEnd / GameEnd. */
   pussi?: Card[];
   /** Team index that won the pussi (0 or 1), or -1 if not yet determined. */

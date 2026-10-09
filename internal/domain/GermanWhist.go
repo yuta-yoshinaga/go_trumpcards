@@ -66,6 +66,8 @@ type GermanWhist struct {
 	stock            []*Card
 	trumpSuit        int
 	currentTrick     []*TrickCard
+	lastTrick        []*TrickCard
+	lastTrickWinner  int
 	currentPlayerIdx int
 	leadPlayerIdx    int
 	gameEndFlag      bool
@@ -93,6 +95,8 @@ func (g *GermanWhist) Reset() {
 	g.phase = GermanWhistPhaseDraw
 	g.trickNumber = 0
 	g.currentTrick = nil
+	g.lastTrick = nil
+	g.lastTrickWinner = -1
 	g.stock = nil
 	g.upCard = nil
 	g.trumpSuit = 0
@@ -226,6 +230,8 @@ func (g *GermanWhist) canPlay(playerIdx int, card *Card) bool {
 // resolveTrick トリックを解決する
 func (g *GermanWhist) resolveTrick() {
 	winner := g.trickWinner()
+	g.lastTrick = append([]*TrickCard(nil), g.currentTrick...)
+	g.lastTrickWinner = winner
 	cards := make([]*Card, 0, len(g.currentTrick))
 	for _, tc := range g.currentTrick {
 		cards = append(cards, tc.Card)
@@ -416,6 +422,12 @@ func (g *GermanWhist) GetTrumpSuit() int { return g.trumpSuit }
 // GetCurrentTrick 場に出ている札
 func (g *GermanWhist) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
+// GetLastTrick returns the most recently resolved trick, if any.
+func (g *GermanWhist) GetLastTrick() []*TrickCard { return g.lastTrick }
+
+// GetLastTrickWinner returns the winner of the most recently resolved trick.
+func (g *GermanWhist) GetLastTrickWinner() int { return g.lastTrickWinner }
+
 // GetCurrentPlayerIdx 手番のプレイヤー
 func (g *GermanWhist) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 
@@ -519,6 +531,8 @@ type germanWhistJSON struct {
 	Stock            []*Card              `json:"st"`
 	TrumpSuit        int                  `json:"ts"`
 	CurrentTrick     []*TrickCard         `json:"ct"`
+	LastTrick        []*TrickCard         `json:"lt,omitempty"`
+	LastTrickWinner  *int                 `json:"lw,omitempty"`
 	CurrentPlayerIdx int                  `json:"cp"`
 	LeadPlayerIdx    int                  `json:"lp"`
 	GameEndFlag      bool                 `json:"ge"`
@@ -528,6 +542,10 @@ type germanWhistJSON struct {
 
 // MarshalJSON KV スナップショット用のシリアライズ
 func (g *GermanWhist) MarshalJSON() ([]byte, error) {
+	var lastTrickWinner *int
+	if g.lastTrickWinner >= 0 {
+		lastTrickWinner = &g.lastTrickWinner
+	}
 	return json.Marshal(&germanWhistJSON{
 		TrumpCards:       g.trumpCards,
 		Players:          g.players,
@@ -537,6 +555,8 @@ func (g *GermanWhist) MarshalJSON() ([]byte, error) {
 		Stock:            g.stock,
 		TrumpSuit:        g.trumpSuit,
 		CurrentTrick:     g.currentTrick,
+		LastTrick:        g.lastTrick,
+		LastTrickWinner:  lastTrickWinner,
 		CurrentPlayerIdx: g.currentPlayerIdx,
 		LeadPlayerIdx:    g.leadPlayerIdx,
 		GameEndFlag:      g.gameEndFlag,
@@ -564,6 +584,12 @@ func (g *GermanWhist) UnmarshalJSON(data []byte) error {
 	if len(j.CurrentTrick) > GermanWhistPlayerCnt {
 		return fmt.Errorf("current trick holds %d cards", len(j.CurrentTrick))
 	}
+	if len(j.LastTrick) > GermanWhistPlayerCnt {
+		return fmt.Errorf("last trick holds %d cards", len(j.LastTrick))
+	}
+	if j.LastTrickWinner != nil && (*j.LastTrickWinner < 0 || *j.LastTrickWinner >= GermanWhistPlayerCnt) {
+		return fmt.Errorf("invalid last trick winner: %d", *j.LastTrickWinner)
+	}
 	if j.CurrentPlayerIdx < 0 || j.CurrentPlayerIdx >= GermanWhistPlayerCnt {
 		return fmt.Errorf("invalid current player: %d", j.CurrentPlayerIdx)
 	}
@@ -585,6 +611,11 @@ func (g *GermanWhist) UnmarshalJSON(data []byte) error {
 	g.stock = j.Stock
 	g.trumpSuit = j.TrumpSuit
 	g.currentTrick = j.CurrentTrick
+	g.lastTrick = j.LastTrick
+	g.lastTrickWinner = -1
+	if j.LastTrickWinner != nil {
+		g.lastTrickWinner = *j.LastTrickWinner
+	}
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.gameEndFlag = j.GameEndFlag

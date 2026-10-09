@@ -98,13 +98,14 @@ type ShengJiWebOutput struct {
 	TrickLeader int                     `json:"trickLeader"`
 	LeadCombo   *ShengJiWebOutputCombo  `json:"leadCombo"`
 	// TeamPoints は各チームがこの局に集めた点。
-	TeamPoints      [domain.ShengJiTeamCnt]int `json:"teamPoints"`
-	TrickCount      int                        `json:"trickCount"`
-	LastTrickWinner int                        `json:"lastTrickWinner"`
-	LastResult      *ShengJiWebOutputResult    `json:"lastResult"`
-	MinLevel        int                        `json:"minLevel"`
-	MaxLevel        int                        `json:"maxLevel"`
-	KittySizeMax    int                        `json:"kittySizeMax"`
+	TeamPoints         [domain.ShengJiTeamCnt]int `json:"teamPoints"`
+	TrickCount         int                        `json:"trickCount"`
+	LastTrickWinner    int                        `json:"lastTrickWinner"`
+	CurrentTrickWinner int                        `json:"currentTrickWinner"`
+	LastResult         *ShengJiWebOutputResult    `json:"lastResult"`
+	MinLevel           int                        `json:"minLevel"`
+	MaxLevel           int                        `json:"maxLevel"`
+	KittySizeMax       int                        `json:"kittySizeMax"`
 	// TotalPoints は 1 局の総得点 (200)、DefenderTarget は守備側の目標 (80)。
 	TotalPoints    int  `json:"totalPoints"`
 	DefenderTarget int  `json:"defenderTarget"`

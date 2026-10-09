@@ -7192,7 +7192,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/SevenCardStudResponse'
+                  - $ref: '#/components/schemas/FiveCardStudResponse'
                   - $ref: '#/components/schemas/ActionLogResponse'
                 description: |
                   The shape depends on the command. Ordinary commands return the game
@@ -7202,7 +7202,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SevenCardStudResponse'
+                $ref: '#/components/schemas/FiveCardStudResponse'
               examples:
                 paramError:
                   value:
@@ -7281,7 +7281,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/SevenCardStudResponse'
+                  - $ref: '#/components/schemas/FiveCardStudResponse'
                   - $ref: '#/components/schemas/ActionLogResponse'
                 description: |
                   The shape depends on the command. Ordinary commands return the game
@@ -7291,7 +7291,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SevenCardStudResponse'
+                $ref: '#/components/schemas/FiveCardStudResponse'
 
 
   /fourseasons/exec:
@@ -11170,6 +11170,16 @@ paths:
                   description: Stake for bet and raise. Ignored by the other actions.
                 sessionId:
                   type: string
+                config:
+                  type: object
+                  description: Table settings applied when command is reset.
+                  properties:
+                    seats:
+                      type: integer
+                    initialChips:
+                      type: integer
+                    ante:
+                      type: integer
               example:
                 command: pay
                 sessionId: my-session-001
@@ -38298,6 +38308,9 @@ components:
           type: integer
         lastTrickWinner:
           type: integer
+        currentTrickWinner:
+          type: integer
+          description: "Seat currently winning the trick; -1 when no cards have been played"
         lastResult:
           type: object
           nullable: true
@@ -47113,6 +47126,18 @@ components:
                   $ref: '#/components/schemas/Card'
               deadwood:
                 type: integer
+              melds:
+                type: array
+                description: Meld groups represented by indexes into the player's cards array.
+                items:
+                  type: array
+                  items:
+                    type: integer
+              deadwoodIndices:
+                type: array
+                description: Indexes into the player's cards array that are deadwood.
+                items:
+                  type: integer
               roundScore:
                 type: integer
               cumulativeScore:
@@ -52384,6 +52409,11 @@ components:
       type: object
       description: Current state of the Contract Bridge game
       properties:
+        legalPlayIndices:
+          type: array
+          description: Legal card indices for the human-controlled hand during a play turn.
+          items:
+            type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -54003,6 +54033,17 @@ components:
           items:
             type: integer
           example: [0, 1, 2]
+        winners:
+          type: array
+          description: Players who won the pot at showdown and the amount received.
+          items:
+            type: object
+            required: [playerIdx, amount]
+            properties:
+              playerIdx:
+                type: integer
+              amount:
+                type: integer
 
     FollowTheQueenResponse:
       description: |
@@ -54046,6 +54087,36 @@ components:
         winners:
           type: array
           description: Players who won each pot at showdown and the amount received. Empty array outside showdown.
+          items:
+            type: object
+            required: [playerIdx, amount]
+            properties:
+              playerIdx:
+                type: integer
+              amount:
+                type: integer
+    FiveCardStudResponse:
+      allOf:
+        - $ref: '#/components/schemas/SevenCardStudResponse'
+        - type: object
+          properties:
+            sidePots:
+              type: array
+              items:
+                $ref: '#/components/schemas/FiveCardStudSidePot'
+    FiveCardStudSidePot:
+      type: object
+      required: [amount, eligiblePlayers, winners]
+      properties:
+        amount:
+          type: integer
+        eligiblePlayers:
+          type: array
+          items:
+            type: integer
+        winners:
+          type: array
+          description: Players who won the pot at showdown and the amount received. Empty outside showdown.
           items:
             type: object
             required: [playerIdx, amount]
@@ -56855,6 +56926,10 @@ components:
                 items:
                   $ref: '#/components/schemas/Card'
               capturedCount: { type: integer }
+              capturedCards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
               scopaCount: { type: integer }
               totalScore: { type: integer }
         currentTurn:
@@ -57023,6 +57098,11 @@ components:
                 items:
                   $ref: '#/components/schemas/Card'
               capturedCount: { type: integer }
+              capturedCards:
+                type: array
+                description: Captured cards for the human's team; empty for opponents to preserve hidden information.
+                items:
+                  $ref: '#/components/schemas/Card'
               scopaCount: { type: integer }
         currentTurn:
           type: integer
@@ -58453,6 +58533,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/HokmTrickCard'
+        lastTrick:
+          type: array
+          description: Most recently completed trick, retained during the next trick.
+          items:
+            $ref: '#/components/schemas/HokmTrickCard'
+        lastTrickWinner:
+          type: integer
+          description: Winning seat of lastTrick, or -1 before the first trick.
         validPlays:
           type: array
           description: Hand indices you may legally play. Following suit is compulsory.
@@ -59351,6 +59439,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SergeantMajorTrickCard'
+        lastTrick:
+          type: array
+          description: Most recently completed trick; cleared when a new round starts.
+          items:
+            $ref: '#/components/schemas/SergeantMajorTrickCard'
+        lastTrickWinner:
+          type: integer
+          description: Winning seat of the most recently completed trick, or -1 when none.
         validPlays:
           type: array
           description: Hand indices you may legally play. Following suit is compulsory.
@@ -59668,6 +59764,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MinibridgeTrickCard'
+        lastTrick:
+          type: array
+          description: Most recently resolved trick, kept visible until the user continues.
+          items:
+            $ref: '#/components/schemas/MinibridgeTrickCard'
+        lastTrickWinner:
+          type: integer
+          description: Seat that won lastTrick, or -1 when no trick has resolved.
+        trickPaused:
+          type: boolean
+          description: Whether play awaits user confirmation after resolving a trick.
         validPlays:
           type: array
           description: >-
@@ -60605,6 +60712,12 @@ components:
             the called trump is played.
         partnerRevealed:
           type: boolean
+        declarerTeamPoints:
+          type: integer
+          description: Present only after the partner is revealed in a Rufer contract.
+        defenderTeamPoints:
+          type: integer
+          description: Present only after the partner is revealed in a Rufer contract.
         talonCount:
           type: integer
         currentTrick:
@@ -63374,6 +63487,11 @@ components:
         - type: object
           description: Response payload for /julepe/exec
           properties:
+            roundAntes:
+              type: array
+              description: Ante paid by each seat at the start of this round.
+              items:
+                type: integer
             lastTrick:
               type: array
               description: Cards in the most recently completed trick; empty before the first trick.
@@ -63817,6 +63935,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/GermanWhistTrickCard'
+        lastTrick:
+          type: array
+          description: Most recently resolved trick; empty before the first resolution.
+          items:
+            $ref: '#/components/schemas/GermanWhistTrickCard'
+        lastTrickWinner:
+          type: integer
+          description: Winner of lastTrick, or -1 when no trick has resolved.
         trumpSuit:
           type: integer
           description: Suit of the first face-up card; trump for the whole hand.
@@ -77395,6 +77521,11 @@ components:
           type: integer
         currentTrick:
           type: array
+        validPlayIndices:
+          type: array
+          description: "Hand indices the human player may legally play during their play turn."
+          items:
+            type: integer
         teamScores:
           type: array
           items:
@@ -79346,6 +79477,14 @@ components:
         scartoCount:
           type: integer
           description: "Cards the dealer has buried so far this deal."
+        playedTrumps:
+          type: array
+          description: "Trumps played this round, ordered by rank."
+          items:
+            $ref: '#/components/schemas/Card'
+        remainingTrumps:
+          type: integer
+          description: "Trumps not yet played this round."
         isHumanScarto:
           type: boolean
           description: "True while the human seat is the dealer and owes the scarto."
@@ -83429,6 +83568,9 @@ components:
             type: integer
         pussiCount:
           type: integer
+        pussiPoints:
+          type: integer
+          description: Total card points in the pussi, using Marjapussi card scoring rules.
         pussi:
           type: array
           items:

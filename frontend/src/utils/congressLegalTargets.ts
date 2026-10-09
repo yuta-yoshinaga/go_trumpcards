@@ -8,6 +8,20 @@ export interface CongressLegalTargets {
   foundation: Set<number>;
 }
 
+/** Returns the movable card represented by a Congress source zone. */
+export function congressSourceCard(
+  tableau: readonly Card[][],
+  waste: readonly Card[],
+  sourceZone: { zone: string; col?: number },
+): Card | null | undefined {
+  if (sourceZone.zone === 'tableau') {
+    if (sourceZone.col === undefined) return undefined;
+    return tableau[sourceZone.col]?.at(-1);
+  }
+  if (sourceZone.zone === 'waste') return waste.at(-1);
+  return null;
+}
+
 const FOUNDATION_SUITS = ['SPADE', 'CLOVER', 'HEART', 'DIAMOND', 'SPADE', 'CLOVER', 'HEART', 'DIAMOND'] as const;
 const FOUNDATION_TARGET = 13;
 

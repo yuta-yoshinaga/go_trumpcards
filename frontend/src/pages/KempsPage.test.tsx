@@ -346,6 +346,26 @@ describe('KempsPage', () => {
     expect(cue).toHaveTextContent(/パートナーが合図/);
   });
 
+  it('does not call the human four of a kind a partner signal', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        isHumanTurn: false,
+        partnerSignaling: true,
+        fourHolderIdx: 0,
+        players: [
+          makePlayer({ isHuman: true, team: 0, hasFourOfAKind: true }),
+          makePlayer({ team: 1 }),
+          makePlayer({ team: 0 }),
+          makePlayer({ team: 1 }),
+        ],
+      }),
+    );
+    renderWithProviders(<KempsPage />);
+    expect(await screen.findByTestId('kemps-four-ready')).toBeInTheDocument();
+    expect(screen.queryByTestId('kemps-partner-signaling')).not.toBeInTheDocument();
+  });
+
   it('shows the opponent signaling cue in the declare window as a live region', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 1, isHumanTurn: false, opponentSignaling: true, fourHolderIdx: 1 }));
     renderWithProviders(<KempsPage />);

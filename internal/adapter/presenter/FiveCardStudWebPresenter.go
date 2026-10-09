@@ -82,11 +82,20 @@ func (p *FiveCardStudWebPresenter) buildOutput(s interfaces.FiveCardStudGame, la
 // buildSidePotsOutput サイドポット情報を構築
 func (p *FiveCardStudWebPresenter) buildSidePotsOutput(s interfaces.FiveCardStudGame) []*controller.FiveCardStudWebOutputSidePot {
 	out := make([]*controller.FiveCardStudWebOutputSidePot, 0)
-	for _, sp := range s.GetSidePots() {
-		out = append(out, &controller.FiveCardStudWebOutputSidePot{
+	isShowdown := s.GetPhase() == domain.FiveCardStudPhaseEnd || s.GetPhase() == domain.FiveCardStudPhaseShowdown
+	awards := s.GetPotAwards()
+	for i, sp := range s.GetSidePots() {
+		pot := &controller.FiveCardStudWebOutputSidePot{
 			Amount:          sp.Amount,
 			EligiblePlayers: sp.EligiblePlayers,
-		})
+			Winners:         make([]*controller.FiveCardStudWebOutputPotAward, 0),
+		}
+		if isShowdown && i < len(awards) {
+			for _, award := range awards[i] {
+				pot.Winners = append(pot.Winners, &controller.FiveCardStudWebOutputPotAward{PlayerIdx: award.PlayerIdx, Amount: award.Amount})
+			}
+		}
+		out = append(out, pot)
 	}
 	return out
 }

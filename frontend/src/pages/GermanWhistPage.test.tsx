@@ -39,6 +39,8 @@ function makeState(overrides: Partial<GermanWhistResponse> = {}): GermanWhistRes
     currentPlayerIdx: 0,
     leadPlayerIdx: 0,
     currentTrick: [],
+    lastTrick: [],
+    lastTrickWinner: -1,
     trumpSuit: 3,
     upCard: card('DIAMOND', 12),
     stockCount: 20,
@@ -57,6 +59,20 @@ beforeEach(() => {
 });
 
 describe('GermanWhistPage', () => {
+  it('shows the last resolved trick and winner until a new trick has cards', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        lastTrick: [
+          { playerIdx: 0, card: card('SPADE', 8) },
+          { playerIdx: 1, card: card('SPADE', 9) },
+        ],
+        lastTrickWinner: 1,
+      }),
+    );
+    renderWithProviders(<GermanWhistPage />);
+    expect(await screen.findByText('WIN')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /9/ })).toBeInTheDocument();
+  });
   it('announces the localized trump suit while keeping its symbol and updating with the suit', async () => {
     const previousLanguage = i18n.language;
     mockExec.mockResolvedValueOnce(makeState({ trumpSuit: 3 })).mockResolvedValueOnce(makeState({ trumpSuit: 4 }));

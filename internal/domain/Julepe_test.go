@@ -763,6 +763,7 @@ func TestJulepe_BeastDoublesTheNextAnte(t *testing.T) {
 	chipsBefore := r.GetPlayer(1).GetChips()
 	normalBefore := r.GetPlayer(0).GetChips()
 	r.DealRoundForTest()
+	assert.Equal(t, []int{JulepeAnte, JulepeAnte * 2, JulepeAnte * 2, JulepeAnte * 2}, r.GetRoundAntes())
 	assert.Equal(t, chipsBefore-JulepeAnte*2, r.GetPlayer(1).GetChips(), "beast は倍払い")
 	assert.Equal(t, normalBefore-JulepeAnte, r.GetPlayer(0).GetChips(), "beast でない席は通常のアンティ")
 

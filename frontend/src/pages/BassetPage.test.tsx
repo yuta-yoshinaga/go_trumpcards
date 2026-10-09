@@ -177,6 +177,37 @@ describe('BassetPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', { rank: 13, amount: 25 }));
   });
 
+  it.each([
+    ['bet', '賭ける', bettingState],
+    ['deal', '2枚めくる', bettingState],
+    ['take', '配当を受け取る', decisionState],
+    ['paroli', 'パロリ', decisionState],
+    ['next', '次のディール', roundEndState],
+  ] as const)(
+    'prevents duplicate %s requests while loading and re-enables it afterward',
+    async (command, label, state) => {
+      let resolveRequest: ((value: BassetResponse) => void) | undefined;
+      mockExec.mockResolvedValueOnce(state).mockReturnValueOnce(
+        new Promise<BassetResponse>((resolve) => {
+          resolveRequest = resolve;
+        }),
+      );
+      renderWithProviders(<BassetPage />);
+      const button = await screen.findByRole('button', { name: label });
+      mockExec.mockClear();
+
+      fireEvent.click(button);
+      await waitFor(() => expect(button).toHaveAttribute('aria-disabled', 'true'));
+      fireEvent.click(button);
+      await flushPendingDispatch();
+      expect(mockExec).toHaveBeenCalledTimes(1);
+      expect(mockExec).toHaveBeenCalledWith(command, ...(command === 'bet' ? [{ rank: 1, amount: 10 }] : []));
+
+      resolveRequest?.(state);
+      await waitFor(() => expect(button).toHaveAttribute('aria-disabled', 'false'));
+    },
+  );
+
   it('deals two cards and renders the turn result', async () => {
     mockExec.mockResolvedValueOnce(bettingState).mockResolvedValueOnce(turnState);
     renderWithProviders(<BassetPage />);

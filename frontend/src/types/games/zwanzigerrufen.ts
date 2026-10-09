@@ -94,6 +94,10 @@ export interface ZwanzigerrufenResponse extends BaseGameResponse {
   /** Partner seat — always -1 until `partnerRevealed`. */
   partnerIdx: number;
   partnerRevealed: boolean;
+  /** Present only after the partner is revealed in a Rufer contract. */
+  declarerTeamPoints?: number;
+  /** Present only after the partner is revealed in a Rufer contract. */
+  defenderTeamPoints?: number;
   talonCount: number;
   currentTrick: ZwanzigerrufenTrickCard[];
   lastTrickWinner: number;

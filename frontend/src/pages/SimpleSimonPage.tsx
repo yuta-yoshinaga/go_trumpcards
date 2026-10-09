@@ -379,7 +379,7 @@ function SimpleSimonPageContent() {
       <GameFooter className={`${gameTheme.simplesimon.footer} px-3 py-2.5`}>
         <ErrorAlert message={error} onRetry={retry} />
         <div className="flex flex-wrap gap-2 items-center" data-tutorial="ss-controls">
-          {canAct && state.canUndo && (
+          {state.canUndo && (
             <button
               type="button"
               className={btnSecondary}

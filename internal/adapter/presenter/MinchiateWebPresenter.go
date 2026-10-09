@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -92,6 +93,8 @@ func (p *MinchiateWebPresenter) buildBase(g interfaces.MinchiateGame) *controlle
 	resObj.LeadPlayerIdx = g.GetLeadPlayerIdx()
 	resObj.DealerIdx = g.GetDealerIdx()
 	resObj.ScartoCount = g.GetScartoSize()
+	resObj.PlayedTrumps = p.playedTrumps(g)
+	resObj.RemainingTrumps = domain.MinchiateMaxTrump - len(resObj.PlayedTrumps)
 	resObj.TeamScores = g.GetTeamScores()
 	resObj.RoundTricks = g.GetRoundTricks()
 	resObj.RoundBreakdown = g.GetRoundBreakdown()
@@ -111,6 +114,35 @@ func (p *MinchiateWebPresenter) buildBase(g interfaces.MinchiateGame) *controlle
 	resObj.CurrentTrick = trickCardsToOutputWithFace(g.GetCurrentTrick(), minchiateFace)
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
+}
+
+// playedTrumps はこのラウンドでプレイされた切札をランク順に返す。
+func (p *MinchiateWebPresenter) playedTrumps(g interfaces.MinchiateGame) []*controller.WebOutputCard {
+	cards := make([]*domain.Card, 0, domain.MinchiateMaxTrump)
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		player := g.GetPlayer(i)
+		if player == nil {
+			continue
+		}
+		for _, trick := range player.GetTricksTaken() {
+			for _, card := range trick {
+				if card != nil && card.GetDesign() == domain.MinchiateTrumpDesign {
+					cards = append(cards, card)
+				}
+			}
+		}
+	}
+	for _, trickCard := range g.GetCurrentTrick() {
+		if trickCard != nil && trickCard.Card != nil && trickCard.Card.GetDesign() == domain.MinchiateTrumpDesign {
+			cards = append(cards, trickCard.Card)
+		}
+	}
+	sort.Slice(cards, func(i, j int) bool { return cards[i].GetValue() < cards[j].GetValue() })
+	out := make([]*controller.WebOutputCard, 0, len(cards))
+	for _, card := range cards {
+		out = append(out, cardToOutputWithFace(card, minchiateFace))
+	}
+	return out
 }
 
 // playableIndices 人間プレイヤーがプレイできるカードのインデックスを返す

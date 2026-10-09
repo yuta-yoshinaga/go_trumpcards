@@ -15,6 +15,7 @@ type MinibridgeGame interface {
 	CpuSelectContract()
 	// PlayerPlay プレイヤーがカードを出す
 	PlayerPlay(cardIndex int) error
+	ContinueTrick()
 	// CpuPlay CPUプレイヤーが1枚出す
 	CpuPlay()
 	// NextRound 次のディールを開始する
@@ -67,6 +68,8 @@ type MinibridgeGame interface {
 	GetDealerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	GetLastTrick() ([]*domain.TrickCard, int)
+	IsTrickPaused() bool
 	// GetValidPlayIndices プレイ可能なカードのインデックスリストを返す
 	GetValidPlayIndices(playerIdx int) []int
 	// GetPlayerCnt プレイヤー数を取得する

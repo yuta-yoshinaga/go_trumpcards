@@ -49,6 +49,8 @@ type MarjapussiGame interface {
 	GetTrumpSuit() int
 	// GetPussi ベリー袋 (pussi) のカード一覧を取得する
 	GetPussi() []*domain.Card
+	// GetPussiPoints ベリー袋 (pussi) のカード得点を取得する
+	GetPussiPoints() int
 	// GetTeamScores チーム別累積点を取得する
 	GetTeamScores() [domain.MarjapussiTeamCnt]int
 	// GetPlayerScores プレイヤー別累積点を取得する

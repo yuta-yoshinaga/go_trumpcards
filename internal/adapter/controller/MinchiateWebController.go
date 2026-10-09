@@ -48,6 +48,8 @@ type MinchiateWebOutput struct {
 	LeadPlayerIdx    int                                   `json:"leadPlayerIdx"`
 	DealerIdx        int                                   `json:"dealerIdx"`
 	ScartoCount      int                                   `json:"scartoCount"`
+	PlayedTrumps     []*WebOutputCard                      `json:"playedTrumps"`
+	RemainingTrumps  int                                   `json:"remainingTrumps"`
 	CurrentTrick     []*WebOutputTrickCard                 `json:"currentTrick"`
 	TeamScores       [2]int                                `json:"teamScores"`
 	RoundTricks      [domain.MinchiatePlayerCnt]int        `json:"roundTricks"`
@@ -98,6 +100,8 @@ func newMinchiateDefaultOutput(msg string) *MinchiateWebOutput {
 	return &MinchiateWebOutput{
 		Players:         make([]*MinchiateWebOutputPlayer, 0),
 		CurrentTrick:    make([]*WebOutputTrickCard, 0),
+		PlayedTrumps:    make([]*WebOutputCard, 0),
+		RemainingTrumps: domain.MinchiateMaxTrump,
 		PlayableIndices: make([]int, 0),
 		LastTrickWinner: -1,
 		WinnerTeam:      -1,

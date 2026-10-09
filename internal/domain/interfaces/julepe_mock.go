@@ -49,6 +49,12 @@ func (m *MockJulepeGame) GetBeast() []bool {
 	}
 	return nil
 }
+func (m *MockJulepeGame) GetRoundAntes() []int {
+	if v := m.Called().Get(0); v != nil {
+		return v.([]int)
+	}
+	return nil
+}
 func (m *MockJulepeGame) GetTrumpSuit() int        { return m.Called().Int(0) }
 func (m *MockJulepeGame) GetCurrentPlayerIdx() int { return m.Called().Int(0) }
 func (m *MockJulepeGame) GetLeadPlayerIdx() int    { return m.Called().Int(0) }

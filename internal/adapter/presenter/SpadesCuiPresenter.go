@@ -60,6 +60,18 @@ func spadesPlayerStr(player *domain.SpadesPlayer, i, bagThreshold int) string {
 	return b.String()
 }
 
+func spadesScoreBreakdownStr(player *domain.SpadesPlayer, i int) string {
+	breakdown := player.GetScoreBreakdown()
+	return i18n.Tf("spades.scoreBreakdown",
+		"name", cuiPlayerName(player, i),
+		"bid", strconv.Itoa(breakdown.BidScore),
+		"overtrick", strconv.Itoa(breakdown.OvertrickScore),
+		"nil", strconv.Itoa(breakdown.NilScore),
+		"bagPenalty", strconv.Itoa(breakdown.BagPenalty),
+		"total", strconv.Itoa(breakdown.Total()),
+	)
+}
+
 // SpadesCuiPresenter renders the Spades CUI view.
 type SpadesCuiPresenter struct{}
 
@@ -129,6 +141,9 @@ func (p *SpadesCuiPresenter) Output(s interfaces.SpadesGame, lastErr error) stri
 			b.WriteString(i18n.T("spades.promptTrickEnd") + "\n")
 			b.WriteString(i18n.T("spades.promptTrickEndHelp") + "\n")
 		case domain.SpadesPhaseRoundEnd:
+			for i := 0; i < s.GetPlayerCnt(); i++ {
+				b.WriteString(spadesScoreBreakdownStr(s.GetPlayer(i), i) + "\n")
+			}
 			b.WriteString(i18n.T("spades.promptRoundEnd") + "\n")
 			b.WriteString(i18n.T("spades.promptRoundEndHelp") + "\n")
 		}

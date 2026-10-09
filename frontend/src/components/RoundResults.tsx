@@ -14,6 +14,8 @@ export interface RoundResultEntry {
 export interface RoundResultsProps {
   results: RoundResultEntry[] | undefined;
   players: { isHuman: boolean; netChange?: number }[];
+  /** Optional game-specific details derived from the same round results. */
+  additionalAnnouncement?: { details: string; separator: string };
 }
 
 /**
@@ -24,11 +26,11 @@ export interface RoundResultsProps {
  * (opponent hands, kickers, chips won) without having to navigate back to
  * the visible table after each hand.
  */
-export function RoundResults({ results, players }: RoundResultsProps) {
+export function RoundResults({ results, players, additionalAnnouncement }: RoundResultsProps) {
   const { t } = useTranslation('common');
   if (!results || results.length === 0) return null;
 
-  const announcement = results
+  const entriesAnnouncement = results
     .map((r) => {
       const name = players[r.playerIdx]?.isHuman ? t('player.you') : `CPU ${r.playerIdx}`;
       if (r.mucked) {
@@ -62,6 +64,9 @@ export function RoundResults({ results, players }: RoundResultsProps) {
       return t('roundResultsAnnouncement.entryHand', { name, handName });
     })
     .join(', ');
+  const announcement = additionalAnnouncement
+    ? `${entriesAnnouncement}${additionalAnnouncement.separator}${additionalAnnouncement.details}`
+    : entriesAnnouncement;
 
   return (
     <>

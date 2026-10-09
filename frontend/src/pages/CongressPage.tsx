@@ -34,7 +34,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { CONGRESS_HELP, parseCongressCommand } from '../utils/cli/commands/congressCommands';
 import { formatCongressState } from '../utils/cli/formatters/congressFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { congressLegalTargets } from '../utils/congressLegalTargets';
+import { congressLegalTargets, congressSourceCard } from '../utils/congressLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'] as const;
@@ -119,12 +119,17 @@ function CongressPageContent() {
 
   const dispatchMove = useCallback(
     (source: CongressMoveZone, target: CongressMoveZone) => {
-      // **空き山はタブローからは埋められない** (`MoveTableauToTableau` が拒否)。
-      // クリック経路はボタンを無効化して防いでいるが、**ドラッグ経路はここを
-      // 通る**ので、同じ規則をここでも見る (#4906)。
-      const targetIsEmptyPile =
-        target.zone === 'tableau' && target.col !== undefined && (state?.tableau[target.col]?.length ?? 0) === 0;
-      if (targetIsEmptyPile && source.zone === 'tableau') return;
+      // useSolitaireDragDrop only invokes onMove while isPlaying is true, which
+      // requires a loaded game state.
+      const currentState = state as CongressResponse;
+      const sourceCard = congressSourceCard(currentState.tableau, currentState.waste, source);
+      const legalTargets = congressLegalTargets(currentState.tableau, currentState.foundation, sourceCard, source.zone);
+      const isLegal =
+        target.col !== undefined &&
+        (target.zone === 'tableau'
+          ? legalTargets.tableau.has(target.col)
+          : target.zone === 'foundation' && legalTargets.foundation.has(target.col));
+      if (!isLegal) return;
       void game.exec('move', source, target);
     },
     [game, state],
@@ -171,19 +176,15 @@ function CongressPageContent() {
   const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
   const autoCompleteReady = state.foundation.some((pile) => pile.length > 0);
 
+  const activeSource = dnd.dragSource ?? selectedSource;
   const isSourceSelected = (zone: string, col?: number) =>
-    selectedSource !== null && selectedSource.zone === zone && selectedSource.col === col;
+    activeSource !== null && activeSource.zone === zone && activeSource.col === col;
 
   const wasteTop = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
   const wasteZone: CongressMoveZone = { zone: 'waste' };
   const stockZone: CongressMoveZone = { zone: 'stock' };
-  const selectedCard =
-    selectedSource?.zone === 'tableau'
-      ? state.tableau[selectedSource.col ?? -1]?.at(-1)
-      : selectedSource?.zone === 'waste'
-        ? wasteTop
-        : null;
-  const legalTargets = congressLegalTargets(state.tableau, state.foundation, selectedCard, selectedSource?.zone);
+  const selectedCard = activeSource ? congressSourceCard(state.tableau, state.waste, activeSource) : null;
+  const legalTargets = congressLegalTargets(state.tableau, state.foundation, selectedCard, activeSource?.zone);
   const targetRing = ' rounded ring-2 ring-ds-success';
 
   const renderPile = (pileIdx: number) => {

@@ -17,6 +17,8 @@
   "trickLead": "Trick: a {{combo}} ({{size}} cards) was led",
   "trickAnnouncement": "{{lead}}. {{plays}}",
   "trickPlay": "{{seat}}: {{cards}}",
+  "provisionalWinner": "Current winner",
+  "trickWinnerAnnouncement": "{{seat}} is currently winning.",
   "listSeparator": ", ",
   "comboSingle": "single",
   "comboPair": "pair",

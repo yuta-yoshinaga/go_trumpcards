@@ -43,6 +43,23 @@ export function getSevenbridgeHint(state: SevenBridgeResponse): HintResult | nul
         return { targetAction: 'meld', reason: 'frontendHint.sevenbridgeMeld', confidence: 'strong' };
       }
     }
+
+    const suitedValues = new Map<string, Set<number>>();
+    for (const card of human.cards) {
+      const values = suitedValues.get(card.design) ?? new Set<number>();
+      values.add(card.value);
+      suitedValues.set(card.design, values);
+    }
+    for (const values of suitedValues.values()) {
+      const sorted = [...values].sort((a, b) => a - b);
+      let runLength = 1;
+      for (let i = 1; i < sorted.length; i++) {
+        runLength = sorted[i] === sorted[i - 1] + 1 ? runLength + 1 : 1;
+        if (runLength >= 3) {
+          return { targetAction: 'meld', reason: 'frontendHint.sevenbridgeMeld', confidence: 'strong' };
+        }
+      }
+    }
   }
 
   return null;
