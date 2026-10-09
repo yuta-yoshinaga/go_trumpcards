@@ -62,6 +62,7 @@ function makeState(overrides?: Partial<ShengJiResponse>): ShengJiResponse {
     teamPoints: [0, 35],
     trickCount: 4,
     lastTrickWinner: 2,
+    currentTrickWinner: -1,
     lastResult: null,
     minLevel: 2,
     maxLevel: 14,
@@ -85,6 +86,18 @@ describe('ShengJiPage', () => {
   it('resets on mount', async () => {
     renderWithProviders(<ShengJiPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('marks and announces the provisional trick winner', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        trick: [{ seat: 1, cards: [card('SPADE', 10)] }],
+        currentTrickWinner: 1,
+      }),
+    );
+    renderWithProviders(<ShengJiPage />);
+    await waitFor(() => expect(screen.getByTestId('shengji-trick')).toHaveTextContent('暫定勝者'));
+    expect(screen.getByTestId('shengji-trick-status')).toHaveTextContent('暫定勝者は席1です');
   });
 
   // **切札は切札スートだけではない。**これが読めないと序列が分からない。

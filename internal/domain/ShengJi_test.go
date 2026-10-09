@@ -22,6 +22,18 @@ func sjiFresh(t *testing.T) *ShengJi {
 	return s
 }
 
+func TestShengJi_GetCurrentTrickWinner(t *testing.T) {
+	s := sjiFresh(t)
+	if got := s.GetCurrentTrickWinner(); got != -1 {
+		t.Fatalf("empty trick winner = %d, want -1", got)
+	}
+	s.trickLeader = 2
+	s.trick = [][]*Card{{sjiCard(CardDesignSpade, 4)}, {sjiCard(CardDesignSpade, 7)}}
+	if got := s.GetCurrentTrickWinner(); got != 3 {
+		t.Fatalf("current trick winner = %d, want 3", got)
+	}
+}
+
 // **108 は 4 で割り切れる。**それでも 27 枚ずつ配ってはいけない。
 func TestShengJiDealsTwentyFiveAndAnEightCardKitty(t *testing.T) {
 	s := NewDefaultShengJi()

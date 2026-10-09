@@ -1064,6 +1064,14 @@ func (s *ShengJi) GetTrickCount() int { return s.trickCount }
 // GetLastTrickWinner は直前のトリックの勝者席を返す。
 func (s *ShengJi) GetLastTrickWinner() int { return s.lastTrickWinner }
 
+// GetCurrentTrickWinner returns the seat currently winning the trick, or -1 when no play exists.
+func (s *ShengJi) GetCurrentTrickWinner() int {
+	if len(s.trick) == 0 {
+		return -1
+	}
+	return (s.trickLeader + s.trickWinnerOffset()) % ShengJiPlayerCnt
+}
+
 // GetLastResult は直前の局の結果を返す。
 func (s *ShengJi) GetLastResult() *ShengJiHandResult { return s.lastResult }
 

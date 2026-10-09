@@ -34,6 +34,7 @@ function makeState(overrides?: Partial<ShengJiResponse>): ShengJiResponse {
     kitty: [],
     trick: [],
     trickLeader: 0,
+    currentTrickWinner: -1,
     leadCombo: null,
     teamPoints: [0, 35],
     trickCount: 4,
