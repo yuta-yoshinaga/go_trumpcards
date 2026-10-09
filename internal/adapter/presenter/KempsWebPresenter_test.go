@@ -85,8 +85,11 @@ func TestKempsWebPresenter_Output(t *testing.T) {
 		kempsSetField(g, map[string]any{"ph": domain.KempsPhaseDeclare, "fh": 0})
 		var out controller.KempsWebOutput
 		_ = json.Unmarshal([]byte(p.Output(g, nil)), &out)
-		assert.True(t, out.PartnerSignaling)
+		assert.False(t, out.PartnerSignaling)
 		assert.False(t, out.OpponentSignaling)
+		kempsSetField(g, map[string]any{"fh": 2})
+		_ = json.Unmarshal([]byte(p.Output(g, nil)), &out)
+		assert.True(t, out.PartnerSignaling)
 	})
 
 	t.Run("opponent signaling cue in declare phase", func(t *testing.T) {
