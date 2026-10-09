@@ -67,6 +67,10 @@ type BaccaratBanqueWebOutput struct {
 	ShoeComposition []int `json:"shoeComposition"`
 	// DrawWinPercent は右・左を引いて上回る確率 (整数パーセント)。
 	DrawWinPercent []int `json:"drawWinPercent"`
+	// DrawTiePercent は右・左を引いて引き分ける確率 (整数パーセント)。
+	DrawTiePercent []int `json:"drawTiePercent"`
+	// DrawLosePercent は右・左を引いて下回る確率 (整数パーセント)。
+	DrawLosePercent []int `json:"drawLosePercent"`
 	// Retired はバンカーが自分から降りたか。
 	Retired     bool                           `json:"retired"`
 	LastResult  *BaccaratBanqueWebOutputResult `json:"lastResult,omitempty"`

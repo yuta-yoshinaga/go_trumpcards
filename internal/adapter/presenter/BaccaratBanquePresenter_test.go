@@ -254,6 +254,9 @@ func TestBaccaratBanqueWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, b.GetShoeRemaining(), out.ShoeRemaining)
 		assert.Equal(t, domain.BaccaratBanquePhaseBanker, out.Phase)
 		assert.True(t, out.IsHumanTurn)
+		for i := range out.DrawWinPercent {
+			assert.Equal(t, 100, out.DrawWinPercent[i]+out.DrawTiePercent[i]+out.DrawLosePercent[i])
+		}
 		assert.Equal(t, "baccaratbanque.bankerPhase", out.MessageCode)
 	})
 

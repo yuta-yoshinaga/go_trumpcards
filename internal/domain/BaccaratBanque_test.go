@@ -365,6 +365,7 @@ func TestBaccaratBanqueDrawWinPercentUsesBaccaratPoints(t *testing.T) {
 		{name: "face cards do not change a higher banker total", shoe: []int{11, 12, 13}, bankTotal: 5, seatTotal: 4, want: 100},
 		{name: "ten does not change an equal banker total", shoe: []int{10}, bankTotal: 4, seatTotal: 4, want: 0},
 		{name: "ace raises an equal banker total", shoe: []int{1}, bankTotal: 4, seatTotal: 4, want: 100},
+		{name: "tie and loss percentages complete the odds", shoe: []int{1, 10, 9}, bankTotal: 4, seatTotal: 5, want: 0},
 	}
 
 	for _, tt := range tests {
@@ -384,6 +385,11 @@ func TestBaccaratBanqueDrawWinPercentUsesBaccaratPoints(t *testing.T) {
 			seat.AddCard(NewCard(CardDesignHeart, tt.seatTotal, true))
 
 			assert.Equal(t, tt.want, b.GetDrawWinPercent(BaccaratBanqueRightIdx))
+			if tt.name == "tie and loss percentages complete the odds" {
+				assert.Equal(t, 33, b.GetDrawTiePercent(BaccaratBanqueRightIdx))
+				assert.Equal(t, 67, b.GetDrawLosePercent(BaccaratBanqueRightIdx))
+			}
+			assert.Equal(t, 100, b.GetDrawWinPercent(BaccaratBanqueRightIdx)+b.GetDrawTiePercent(BaccaratBanqueRightIdx)+b.GetDrawLosePercent(BaccaratBanqueRightIdx))
 		})
 	}
 }

@@ -37,6 +37,10 @@ type BaccaratBanqueGame interface {
 	GetShoeComposition() []int
 	// GetDrawWinPercent は指定タブローを引いて上回る確率を返す
 	GetDrawWinPercent(seat int) int
+	// GetDrawTiePercent は指定タブローと引き分ける確率を返す
+	GetDrawTiePercent(seat int) int
+	// GetDrawLosePercent は指定タブローを下回る確率を返す
+	GetDrawLosePercent(seat int) int
 	// IsRetired バンカーが自分から降りたかを取得する
 	IsRetired() bool
 	// GetEndReason バンクの終わり方を取得する ("retired" / "bankrupt" /

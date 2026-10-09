@@ -74456,6 +74456,20 @@ components:
           maxItems: 2
           items:
             type: integer
+        drawTiePercent:
+          type: array
+          description: Chance that the next card ties each tableau; index 0 = right, 1 = left.
+          minItems: 2
+          maxItems: 2
+          items:
+            type: integer
+        drawLosePercent:
+          type: array
+          description: Chance that the next card falls below each tableau; index 0 = right, 1 = left.
+          minItems: 2
+          maxItems: 2
+          items:
+            type: integer
         lastResult:
           type: object
           properties:

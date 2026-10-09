@@ -367,23 +367,46 @@ func (b *BaccaratBanque) GetShoeComposition() []int {
 
 // GetDrawWinPercent は、人間 (バンカー) が次の1枚を引いた後の合計が指定席の現合計を上回る確率を返す。
 func (b *BaccaratBanque) GetDrawWinPercent(seat int) int {
+	win, _, _ := b.drawOutcomePercents(seat)
+	return win
+}
+
+// GetDrawTiePercent は、引いた後に指定席と同点になる確率を返す。
+func (b *BaccaratBanque) GetDrawTiePercent(seat int) int {
+	_, tie, _ := b.drawOutcomePercents(seat)
+	return tie
+}
+
+// GetDrawLosePercent は、引いた後に指定席を下回る確率を返す。
+func (b *BaccaratBanque) GetDrawLosePercent(seat int) int {
+	_, _, lose := b.drawOutcomePercents(seat)
+	return lose
+}
+
+func (b *BaccaratBanque) drawOutcomePercents(seat int) (int, int, int) {
 	if seat < 0 || seat >= len(b.players) || b.remaining() == 0 {
-		return 0
+		return 0, 0, 0
 	}
 	counts := b.GetShoeComposition()
 	bankTotal := b.players[BaccaratBanqueBankerIdx].GetTotal()
 	target := b.players[seat].GetTotal()
-	twins := 0
+	twins, ties := 0, 0
 	for index, count := range counts {
 		pt := index + 1
 		if pt >= 10 {
 			pt = 0
 		}
-		if (bankTotal+pt)%10 > target {
+		total := (bankTotal + pt) % 10
+		if total > target {
 			twins += count
+		} else if total == target {
+			ties += count
 		}
 	}
-	return (100*twins + b.remaining()/2) / b.remaining()
+	remaining := b.remaining()
+	winPercent := (100*twins + remaining/2) / remaining
+	tiePercent := (100*ties + remaining/2) / remaining
+	return winPercent, tiePercent, 100 - winPercent - tiePercent
 }
 
 // IsRetired はバンカーが自分から降りたかを返す。
