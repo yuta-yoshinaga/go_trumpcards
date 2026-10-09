@@ -231,18 +231,22 @@ func JokerPokerConfig() *VideoPokerVariantConfig {
 	}
 }
 
-// isKingsOrBetterHand はペアがK以上かどうかを判定する（ジョーカーを除く）
+// isKingsOrBetterHand は自然なK/Aペア、またはジョーカーと自然なK/Aのペアかを判定する。
 func isKingsOrBetterHand(hand []*Card) bool {
 	valueCounts := make(map[int]int)
+	hasJoker := false
 	for _, card := range hand {
-		if card.GetDesign() != CardDesignJoker {
-			valueCounts[card.GetValue()]++
+		if card.GetDesign() == CardDesignJoker {
+			hasJoker = true
+			continue
 		}
+		valueCounts[card.GetValue()]++
 	}
 	for value, count := range valueCounts {
-		if count >= 2 {
-			// A=1, K=13
-			if value == 1 || value == 13 {
+		// A=1, K=13. A joker pairs with the best natural card when the
+		// evaluator has classified the hand as exactly one pair.
+		if value == 1 || value == 13 {
+			if count >= 2 || (hasJoker && count >= 1) {
 				return true
 			}
 		}

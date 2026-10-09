@@ -28,6 +28,15 @@ describe('evaluateJokerPokerMadeHand', () => {
     expect(evaluateJokerPokerMadeHand(hand)?.rowKey).toBe('kingsOrBetter');
   });
 
+  it.each([
+    ['king', 13, 'kingsOrBetter'],
+    ['ace', 1, 'kingsOrBetter'],
+    ['queen', 12, null],
+  ] as const)('handles joker + %s at the Kings or Better boundary', (_rank, value, rowKey) => {
+    const hand = [JOKER, c('SPADE', value), c('HEART', 3), c('DIAMOND', 7), c('SPADE', 9)];
+    expect(evaluateJokerPokerMadeHand(hand)?.rowKey).toBe(rowKey);
+  });
+
   it('does NOT pay a low pair (below kings)', () => {
     const hand = [c('HEART', 10), c('DIAMOND', 10), c('SPADE', 9), c('CLOVER', 5), c('HEART', 2)];
     expect(evaluateJokerPokerMadeHand(hand)?.rowKey).toBeNull();
