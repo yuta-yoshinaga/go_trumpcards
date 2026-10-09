@@ -98,6 +98,27 @@ func TestCincinnati_BestHandMayUseNoCommunityCards(t *testing.T) {
 	}
 }
 
+func TestCincinnatiPlayer_BestRankIsPureAndMatchesEvaluateBest(t *testing.T) {
+	t.Parallel()
+	p := NewCincinnatiPlayer("YOU", 1000, true)
+	for _, c := range []*Card{
+		cinCard(CardDesignSpade, 5), cinCard(CardDesignSpade, 6), cinCard(CardDesignSpade, 7),
+		cinCard(CardDesignSpade, 8), cinCard(CardDesignSpade, 9),
+	} {
+		p.AddCard(c)
+	}
+	community := []*Card{
+		cinCard(CardDesignHeart, 2), cinCard(CardDesignClover, 3), cinCard(CardDesignDiamond, 4),
+		cinCard(CardDesignHeart, 11), cinCard(CardDesignClover, 12),
+	}
+	originalRank := p.EvaluateBest(community)
+	originalBest := append([]*Card(nil), p.GetBestHand()...)
+
+	assert.Equal(t, originalRank, p.BestRank(community))
+	assert.Equal(t, originalRank, p.GetHandRank())
+	assert.Equal(t, originalBest, p.GetBestHand())
+}
+
 // **コミュニティだけで役が完成する場合も選べる。** 逆側も踏む。
 func TestCincinnati_BestHandMayUseOnlyCommunityCards(t *testing.T) {
 	t.Parallel()

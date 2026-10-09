@@ -85,6 +85,12 @@ beforeEach(() => {
 });
 
 describe('CincinnatiPage', () => {
+  it('賭け中に自分の現在の役名を表示する', async () => {
+    mockApi.mockResolvedValue(withState({ seats: [seat({ handRank: 2 }), base.seats[1]] }));
+    renderWithProviders(<CincinnatiPage />);
+    expect(await screen.findByTestId('cin-current-hand')).toHaveTextContent('ツーペア');
+  });
+
   it('ショーダウンで各席の符号付きチップ増減を表示する', async () => {
     mockApi.mockResolvedValue(
       withState({
