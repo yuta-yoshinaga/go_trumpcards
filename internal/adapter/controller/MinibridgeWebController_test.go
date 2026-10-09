@@ -18,16 +18,18 @@ func intPtrMb(v int) *int { return &v }
 
 func mustMinibridgeOutputJSON(msg string) string {
 	out := &controller.MinibridgeWebOutput{
-		Players:       []*controller.MinibridgeWebOutputPlayer{},
-		CurrentTrick:  []*controller.WebOutputTrickCard{},
-		ValidPlays:    []int{},
-		DummyHand:     []*controller.WebOutputCard{},
-		TeamScores:    []int{},
-		RoundDelta:    []int{},
-		DeclarerIdx:   -1,
-		DummyIdx:      -1,
-		WinnerTeam:    -1,
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Players:         []*controller.MinibridgeWebOutputPlayer{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
+		LastTrick:       []*controller.WebOutputTrickCard{},
+		LastTrickWinner: -1,
+		ValidPlays:      []int{},
+		DummyHand:       []*controller.WebOutputCard{},
+		TeamScores:      []int{},
+		RoundDelta:      []int{},
+		DeclarerIdx:     -1,
+		DummyIdx:        -1,
+		WinnerTeam:      -1,
+		WebOutputBase:   controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {
@@ -37,7 +39,7 @@ func mustMinibridgeOutputJSON(msg string) string {
 }
 
 func TestMinibridgeWebController_Method(t *testing.T) {
-	mockOutput := `{"players":[],"phase":0,"currentTrick":[],"validPlays":[],"message":""}`
+	mockOutput := `{"players":[],"phase":0,"currentTrick":[],"lastTrick":[],"lastTrickWinner":-1,"trickPaused":false,"validPlays":[],"message":""}`
 
 	miMock := new(usecase.MockMinibridgeInteractor)
 	miMock.On("ResetWithConfig", domain.DefaultMinibridgeConfig()).Return(mockOutput)
@@ -49,6 +51,7 @@ func TestMinibridgeWebController_Method(t *testing.T) {
 	miMock.On("Hint").Return(mockOutput)
 	miMock.On("ActionLog").Return(mockOutput)
 	miMock.On("Play", 4).Return(mockOutput)
+	miMock.On("ContinueTrick").Return(mockOutput)
 
 	ctrl := controller.NewMinibridgeWebController(func() uc.MinibridgeInteractorIF { return miMock })
 	defer ctrl.Stop()

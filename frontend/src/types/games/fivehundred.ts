@@ -84,6 +84,7 @@ export interface FiveHundredResponse extends BaseGameResponse {
   jokerLeadSuit: number;
   kittyCount: number;
   currentTrick: FiveHundredTrickCard[];
+  validPlayIndices: number[];
   teamScores: [number, number];
   /**
    * ラウンド終了時の得点内訳（それ以外のフェーズでは undefined）。

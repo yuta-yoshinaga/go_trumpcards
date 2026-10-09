@@ -367,7 +367,44 @@ function OmahaHiLoPageContent() {
             {isMobile ? <CpuActionToast actions={state?.cpuActions} /> : <CpuActionLog actions={state?.cpuActions} />}
 
             {/* Round results */}
-            {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
+            {isShowdown && (
+              <RoundResults
+                results={state.roundResults}
+                players={state.players}
+                additionalAnnouncement={(() => {
+                  const hiWinners = state.roundResults.flatMap((r) =>
+                    r.hiWonAmount ? [{ name: findPlayerName(state.players, r.playerIdx), amount: r.hiWonAmount }] : [],
+                  );
+                  const loWinners = state.roundResults.flatMap((r) =>
+                    r.lowWonAmount
+                      ? [{ name: findPlayerName(state.players, r.playerIdx), amount: r.lowWonAmount }]
+                      : [],
+                  );
+                  const details = [
+                    ...hiWinners.map((w) =>
+                      t('hiLo.announcementWinner', { half: t('hiLo.hi'), name: w.name, amount: w.amount }),
+                    ),
+                    ...loWinners.map((w) =>
+                      t('hiLo.announcementWinner', { half: t('hiLo.lo'), name: w.name, amount: w.amount }),
+                    ),
+                    ...state.roundResults.flatMap((r) =>
+                      r.hiWonAmount && r.lowWonAmount
+                        ? [
+                            t('scoop.announcement', {
+                              name: findPlayerName(state.players, r.playerIdx),
+                              total: r.hiWonAmount + r.lowWonAmount,
+                            }),
+                          ]
+                        : [],
+                    ),
+                    ...(loWinners.length === 0 && hiWinners.length > 0 ? [t('hiLo.hiTakesAll')] : []),
+                  ];
+                  return details.length
+                    ? { details: details.join(t('listSeparator')), separator: t('listSeparator') }
+                    : undefined;
+                })()}
+              />
+            )}
 
             {/* Hi/Lo split breakdown: green Hi badges + blue Lo badges (Lo omitted when nobody qualifies) */}
             {isShowdown &&

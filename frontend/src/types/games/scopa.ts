@@ -10,6 +10,7 @@ export interface ScopaPlayerData {
   cardCount: number;
   cards: Card[];
   capturedCount: number;
+  capturedCards: Card[];
   scopaCount: number;
   totalScore: number;
 }

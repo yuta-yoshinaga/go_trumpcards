@@ -109,6 +109,8 @@ type ZwanzigerrufenWebOutput struct {
 	CalledTrump        int                               `json:"calledTrump"`
 	PartnerIdx         int                               `json:"partnerIdx"`
 	PartnerRevealed    bool                              `json:"partnerRevealed"`
+	DeclarerTeamPoints *int                              `json:"declarerTeamPoints,omitempty"`
+	DefenderTeamPoints *int                              `json:"defenderTeamPoints,omitempty"`
 	TalonCount         int                               `json:"talonCount"`
 	CurrentTrick       []*WebOutputTrickCard             `json:"currentTrick"`
 	LastTrickWinner    int                               `json:"lastTrickWinner"`

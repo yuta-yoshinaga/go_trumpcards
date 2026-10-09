@@ -295,6 +295,9 @@ func (g *Kemps) IsPartnerSignaling() bool {
 	if g.phase != KempsPhaseDeclare || g.fourHolderIdx < 0 {
 		return false
 	}
+	if g.fourHolderIdx == 0 {
+		return false
+	}
 	return KempsTeamOf(g.fourHolderIdx) == KempsTeamOf(0)
 }
 

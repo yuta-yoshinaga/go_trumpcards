@@ -220,6 +220,7 @@ func TestCaribbeanStudCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetPhase").Return(phase)
 		m.On("GetPlayerHand").Return(hand).Maybe()
 		m.On("GetPlayerHandRank").Return(rank).Maybe()
+		m.On("GetDealerHand").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 12, false)}).Maybe()
 		return m
 	}
 	aceKing := []*domain.Card{
@@ -249,6 +250,19 @@ func TestCaribbeanStudCuiPresenter_HintOutput(t *testing.T) {
 		out := p.HintOutput(game(domain.CaribbeanStudPhaseAction, domain.PokerHandHighCard, aceKing))
 		assert.Contains(t, out, "プレイ")
 		assert.Contains(t, out, "A と K")
+		assert.Contains(t, out, "表向き札は Q 以下")
+	})
+
+	t.Run("folds Ace-King when dealer shows a King", func(t *testing.T) {
+		m := game(domain.CaribbeanStudPhaseAction, domain.PokerHandHighCard, aceKing)
+		m.ExpectedCalls = nil
+		m.On("GetPhase").Return(domain.CaribbeanStudPhaseAction)
+		m.On("GetPlayerHand").Return(aceKing).Maybe()
+		m.On("GetPlayerHandRank").Return(domain.PokerHandHighCard).Maybe()
+		m.On("GetDealerHand").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 13, false)}).Maybe()
+		out := p.HintOutput(m)
+		assert.Contains(t, out, "フォールド")
+		assert.Contains(t, out, "表向き札は K か A")
 	})
 
 	t.Run("recommends folding a hand below Ace-King", func(t *testing.T) {

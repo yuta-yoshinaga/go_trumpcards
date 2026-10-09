@@ -12,6 +12,8 @@
   "highestBid": "Highest bid: {{bid}} ({{bidder}})",
   "playerBid": "Last bid: {{bid}}",
   "cpuHandAriaLabel": "{{player}}'s hand, {{count}} cards remaining",
+  "legalPlayReason": "This card can be played.",
+  "illegalPlayReason": "You must follow the led suit.",
   "bidSuit": "{{tricks}}{{suit}} ({{value}} pts)",
   "bidNoTrump": "{{tricks}}NT ({{value}} pts)",
   "bidMisere": "Misere ({{value}} pts)",

@@ -757,6 +757,15 @@ func (g *Marjapussi) SetTrumpSuit(suit int) { g.trumpSuit = suit }
 // GetPussi ベリー袋 (pussi) のカード一覧を返す。
 func (g *Marjapussi) GetPussi() []*Card { return g.pussi }
 
+// GetPussiPoints returns the card points in the pussi using the game's card scoring rules.
+func (g *Marjapussi) GetPussiPoints() int {
+	points := 0
+	for _, card := range g.pussi {
+		points += AceTenCardPoints(card)
+	}
+	return points
+}
+
 // SetPussi ベリー袋 (pussi) を設定する (テスト用)。
 func (g *Marjapussi) SetPussi(pussi []*Card) { g.pussi = pussi }
 

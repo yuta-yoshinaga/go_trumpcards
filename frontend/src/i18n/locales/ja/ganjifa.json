@@ -29,6 +29,7 @@
   "score": "得点: {{score}}",
   "playerScore": "{{name}}: {{score}}点",
   "playButton": "出す",
+  "mustFollowSuit": "リードスートに従う必要があります",
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",
   "target": "全{{rounds}}ラウンド",

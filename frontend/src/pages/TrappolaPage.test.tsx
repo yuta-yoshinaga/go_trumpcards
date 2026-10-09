@@ -58,6 +58,23 @@ describe('TrappolaPage', () => {
     });
   });
 
+  it('highlights the hinted hand cards and dims the others', async () => {
+    renderWithProviders(<TrappolaPage />);
+
+    await screen.findByAltText('♠ A');
+    const cards = screen.getAllByRole('button').filter((button) => button.hasAttribute('aria-pressed'));
+    expect(cards[0]).not.toHaveClass('opacity-60');
+    expect(cards[1]).not.toHaveClass('opacity-60');
+
+    mockExec.mockResolvedValueOnce(makeTrappolaState({ hint: { cardIndices: [1], reason: 'follow_win' } }));
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => {
+      expect(cards[1].style.boxShadow).toContain('rgba(232, 146, 58');
+      expect(cards[0]).toHaveClass('opacity-60');
+    });
+  });
+
   it('exposes each team name as a row header for its score cells', async () => {
     renderWithProviders(<TrappolaPage />);
 

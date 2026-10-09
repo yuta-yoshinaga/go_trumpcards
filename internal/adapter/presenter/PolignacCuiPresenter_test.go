@@ -34,6 +34,32 @@ func TestPolignacCuiPresenterOutput(t *testing.T) {
 	assert.Contains(t, out, i18n.T("polignac.promptPlay"))
 }
 
+func TestPolignacCuiPresenterUnclaimedJacks(t *testing.T) {
+	p := new(PolignacCuiPresenter)
+	key := i18n.T("polignac.unclaimedJacks")
+	g := newPolignacForCui(t)
+	out := polignacPlain(p.Output(g, nil))
+	assert.Contains(t, out, i18n.Tf("polignac.unclaimedJacks", "suits", "♠"+i18n.T("polignac.listSeparator")+
+		"♣"+i18n.T("polignac.listSeparator")+"♥"+i18n.T("polignac.listSeparator")+"♦"))
+
+	g.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, domain.PolignacJackValue, true)})
+	g.GetPlayer(2).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignDiamond, domain.PolignacJackValue, true)})
+	out = polignacPlain(p.Output(g, nil))
+	assert.Contains(t, out, i18n.Tf("polignac.unclaimedJacks", "suits", "♣"+i18n.T("polignac.listSeparator")+"♥"))
+	assert.NotContains(t, out, i18n.Tf("polignac.unclaimedJacks", "suits", "♦"))
+
+	for _, suit := range []int{domain.CardDesignClover, domain.CardDesignHeart, domain.CardDesignDiamond, domain.CardDesignSpade} {
+		g.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(suit, domain.PolignacJackValue, true)})
+	}
+	assert.NotContains(t, p.Output(g, nil), key)
+
+	for _, phase := range []domain.PolignacPhase{domain.PolignacPhaseRoundEnd, domain.PolignacPhaseGameEnd} {
+		g := newPolignacForCui(t)
+		g.SetPhaseForTest(phase)
+		assert.NotContains(t, p.Output(g, nil), key)
+	}
+}
+
 // 宣言フェーズでは capot/pass を促し、打ち手は促さない。
 func TestPolignacCuiPresenterDeclarePhase(t *testing.T) {
 	p := new(PolignacCuiPresenter)

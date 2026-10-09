@@ -25,6 +25,8 @@
   "cumulativeScore": "累計: {{score}}",
   "roundScore": "ラウンド: {{score}}",
   "deadwood": "デッドウッド: {{score}}",
+  "meld": "メルド",
+  "deadwoodCards": "デッドウッド",
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",
   "scoresRound": "ラウンド",

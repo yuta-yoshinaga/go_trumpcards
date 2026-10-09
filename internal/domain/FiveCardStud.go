@@ -66,6 +66,7 @@ type FiveCardStud struct {
 	communityCard   *Card // カード不足時の共有カード
 	pot             int
 	sidePots        []SidePot
+	potAwards       [][]PotAward
 	dealerIdx       int
 	currentTurn     int
 	phase           int
@@ -98,6 +99,7 @@ func NewFiveCardStud(trumpCards *TrumpCards, players []*FiveCardStudPlayer, conf
 		trumpCards:       trumpCards,
 		players:          players,
 		sidePots:         make([]SidePot, 0),
+		potAwards:        make([][]PotAward, 0),
 		actedFlags:       make([]bool, n),
 		roundResults:     make([]FiveCardStudResult, 0),
 		cpuActions:       make([]FiveCardStudCpuAction, 0),
@@ -159,6 +161,7 @@ func (s *FiveCardStud) Reset() error {
 	s.phase = FiveCardStudPhaseInit
 	s.pot = 0
 	s.sidePots = make([]SidePot, 0)
+	s.potAwards = make([][]PotAward, 0)
 	s.communityCard = nil
 	s.gameEndFlag = false
 	s.lastBet = 0
@@ -692,7 +695,8 @@ func (s *FiveCardStud) resolveShowdown() {
 
 	bp := s.bettingPlayers()
 	s.sidePots = CalculateSidePots(bp, s.pot, s.startingChips)
-	wonAmounts := DistributePots(bp, s.sidePots)
+	wonAmounts, potAwards := DistributePotsWithAwards(bp, s.sidePots)
+	s.potAwards = potAwards
 
 	s.roundResults = make([]FiveCardStudResult, 0)
 	humanLost := false
@@ -830,6 +834,9 @@ func (s *FiveCardStud) GetPot() int { return s.pot }
 // GetSidePots サイドポット取得
 func (s *FiveCardStud) GetSidePots() []SidePot { return s.sidePots }
 
+// GetPotAwards returns the winners and amounts for each pot.
+func (s *FiveCardStud) GetPotAwards() [][]PotAward { return s.potAwards }
+
 // GetDealerIdx ディーラーインデックス取得
 func (s *FiveCardStud) GetDealerIdx() int { return s.dealerIdx }
 
@@ -925,6 +932,7 @@ type fiveCardStudJSON struct {
 	CommunityCard    *Card                    `json:"cc,omitempty"`
 	Pot              int                      `json:"pt"`
 	SidePots         []SidePot                `json:"sp"`
+	PotAwards        [][]PotAward             `json:"pa"`
 	DealerIdx        int                      `json:"di"`
 	CurrentTurn      int                      `json:"ct"`
 	Phase            int                      `json:"ph"`
@@ -961,6 +969,7 @@ func (s *FiveCardStud) MarshalJSON() ([]byte, error) {
 		CommunityCard:    s.communityCard,
 		Pot:              s.pot,
 		SidePots:         s.sidePots,
+		PotAwards:        s.potAwards,
 		DealerIdx:        s.dealerIdx,
 		CurrentTurn:      s.currentTurn,
 		Phase:            s.phase,
@@ -1026,6 +1035,10 @@ func (s *FiveCardStud) UnmarshalJSON(data []byte) error {
 	s.sidePots = j.SidePots
 	if s.sidePots == nil {
 		s.sidePots = make([]SidePot, 0)
+	}
+	s.potAwards = j.PotAwards
+	if s.potAwards == nil {
+		s.potAwards = make([][]PotAward, 0)
 	}
 	s.dealerIdx = j.DealerIdx
 	s.currentTurn = j.CurrentTurn

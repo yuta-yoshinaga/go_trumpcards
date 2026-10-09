@@ -42,6 +42,7 @@
     "exact": "(exact)"
   },
   "currentTrick": "Current Trick",
+  "trickCardAriaLabel": "{{player}}, {{card}}",
   "trickWinnerBadge": "WIN",
   "scores": "Scores",
   "scoresPlayer": "Player",

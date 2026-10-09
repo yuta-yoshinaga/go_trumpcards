@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mendikotApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import i18n from '../i18n';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, MendikotResponse } from '../types/card';
 import { MendikotPage } from './MendikotPage';
@@ -306,12 +307,27 @@ describe('MendikotPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
   });
 
-  it('gives up when the give-up button is pressed', async () => {
+  it('gives up only after confirming and keeps give-up confirmation separate from reset', async () => {
     renderWithProviders(<MendikotPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '投了' }));
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+    expect(screen.queryByText('投了確認')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByText('リセット確認')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+
+    fireEvent.click(screen.getByRole('button', { name: '投了' }));
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
   });
 

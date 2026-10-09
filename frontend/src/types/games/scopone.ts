@@ -11,6 +11,8 @@ export interface ScoponePlayerData {
   handCount: number;
   cards: Card[];
   capturedCount: number;
+  /** Captured cards are visible only for the human's team. */
+  capturedCards?: Card[];
   scopaCount: number;
 }
 

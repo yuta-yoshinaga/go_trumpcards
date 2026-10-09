@@ -43,6 +43,8 @@ type GermanWhistWebOutput struct {
 	CurrentPlayerIdx int                           `json:"currentPlayerIdx"`
 	LeadPlayerIdx    int                           `json:"leadPlayerIdx"`
 	CurrentTrick     []*WebOutputTrickCard         `json:"currentTrick"`
+	LastTrick        []*WebOutputTrickCard         `json:"lastTrick"`
+	LastTrickWinner  int                           `json:"lastTrickWinner"`
 	TrumpSuit        int                           `json:"trumpSuit"`
 	// UpCard は前半で奪い合う表向きの 1 枚。後半は無いので omitempty。
 	UpCard      *WebOutputCard            `json:"upCard,omitempty"`
@@ -65,11 +67,13 @@ var NewGermanWhistWebController, NewGermanWhistWebControllerWithProvider = webCo
 
 func newGermanWhistDefaultOutput(msg string) *GermanWhistWebOutput {
 	return &GermanWhistWebOutput{
-		Players:       make([]*GermanWhistWebOutputPlayer, 0),
-		CurrentTrick:  make([]*WebOutputTrickCard, 0),
-		ValidPlays:    make([]int, 0),
-		WinnerIdx:     -1,
-		WebOutputBase: WebOutputBase{Message: msg},
+		Players:         make([]*GermanWhistWebOutputPlayer, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
+		LastTrick:       make([]*WebOutputTrickCard, 0),
+		LastTrickWinner: -1,
+		ValidPlays:      make([]int, 0),
+		WinnerIdx:       -1,
+		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }
 

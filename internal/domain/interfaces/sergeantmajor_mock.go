@@ -87,6 +87,14 @@ func (m *MockSergeantMajorGame) GetCurrentTrick() []*domain.TrickCard {
 	return nil
 }
 
+func (m *MockSergeantMajorGame) GetLastTrick() []*domain.TrickCard {
+	args := m.Called()
+	if v := args.Get(0); v != nil {
+		return v.([]*domain.TrickCard)
+	}
+	return nil
+}
+func (m *MockSergeantMajorGame) GetLastTrickWinner() int { return m.Called().Int(0) }
 func (m *MockSergeantMajorGame) GetValidPlayIndices(playerIdx int) []int {
 	args := m.Called(playerIdx)
 	if v := args.Get(0); v != nil {

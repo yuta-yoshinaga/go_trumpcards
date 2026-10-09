@@ -70,6 +70,11 @@ func skatBonusStr(bd *domain.SkatScoreBreakdown) string {
 // 入札×2 に置き換わる。1 つの文に固定すると、負けたラウンド (全体のおよそ半分) で
 // 「11 × 3 = 66」という嘘の式が出る。
 func skatBreakdownLine(bd *domain.SkatScoreBreakdown) string {
+	if bd.Null {
+		return i18n.Tf("skat.scoreBreakdownLineNull",
+			"base", strconv.Itoa(bd.Base),
+			"value", strconv.Itoa(bd.Value))
+	}
 	if bd.Overbid {
 		return i18n.Tf("skat.scoreBreakdownLineOverbid",
 			"bid", strconv.Itoa(bd.Bid),
@@ -186,7 +191,7 @@ func (p *SkatCuiPresenter) Output(s interfaces.SkatGame, lastErr error) string {
 				"value", strconv.Itoa(s.GetGameValue())) + "\n")
 			// **なぜこの点数なのか。**マタドール (切り札の連続所持/不所持) は
 			// スカートで最も分かりにくい規則なのに、最終値しか出ていなかった (#5561)。
-			if bd := s.GetScoreBreakdown(); bd != nil && !bd.Null {
+			if bd := s.GetScoreBreakdown(); bd != nil {
 				b.WriteString(skatBreakdownLine(bd) + "\n")
 			}
 			b.WriteString(i18n.T("skat.promptNextRound") + "\n")

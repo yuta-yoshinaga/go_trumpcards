@@ -76,6 +76,24 @@ describe('WhistPage', () => {
     expect(screen.getByText('8')).toBeInTheDocument();
   });
 
+  it('announces round points separately from cumulative team scores, including zero-point rounds', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        teamScores: [12, 8],
+        players: makeState().players.map((player) => ({
+          ...player,
+          roundScore: player.team === 0 ? 0 : 3,
+        })),
+      }),
+    );
+    renderWithProviders(<WhistPage />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/ラウンド終了。チーム 0: \+0 \(合計 12\), チーム 1: \+3 \(合計 8\)/)).toBeInTheDocument(),
+    );
+  });
+
   it('shows the previous trick, its player and winner after advancing', async () => {
     const previous = [{ playerIdx: 0, card: card('SPADE', 1) }];
     mockExec.mockResolvedValue(makeState({ lastTrick: previous, lastTrickWinner: 0 }));

@@ -218,6 +218,19 @@ function ZwanzigerrufenPageContent() {
               </div>
             )}
 
+            {state.contractName === 'rufer' &&
+              state.partnerRevealed &&
+              state.declarerTeamPoints !== undefined &&
+              state.defenderTeamPoints !== undefined && (
+                <div
+                  className="flex justify-center gap-3 text-center text-xs text-ds-text-primary"
+                  data-testid="zw-team-points"
+                >
+                  <span>{t('declarerTeamPoints', { points: state.declarerTeamPoints })}</span>
+                  <span>{t('defenderTeamPoints', { points: state.defenderTeamPoints })}</span>
+                </div>
+              )}
+
             <div className="flex flex-wrap justify-center gap-3" data-testid="zw-seats">
               {state.players.map((p) => {
                 const isTurn =

@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bridgeApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BridgeResponse } from '../types/card';
 import { BridgePage } from './BridgePage';
@@ -53,6 +54,7 @@ const bidPhaseState: BridgeResponse = {
   leadPlayerIdx: -1,
   openingLeadDone: false,
   dummyHand: null,
+  legalPlayIndices: [0],
   message: '',
   config: { cpuDifficulty: 1 },
 };
@@ -71,6 +73,7 @@ const playPhaseState: BridgeResponse = {
     { design: 'DIAMOND', value: 10 },
     { design: 'CLOVER', value: 7 },
   ],
+  legalPlayIndices: [0],
 };
 
 const cpuBidTurnState: BridgeResponse = {
@@ -179,6 +182,23 @@ beforeEach(() => {
 });
 
 describe('BridgePage', () => {
+  it('marks illegal cards unavailable and ignores their clicks', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /♠ A/ })).toBeInTheDocument());
+    const legalCard = screen.getByRole('button', { name: /♠ A/ });
+    expect(legalCard).not.toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(legalCard);
+    expect(legalCard).toHaveAttribute('aria-pressed', 'true');
+    const illegalCard = screen.getByRole('button', { name: /♥ K/ });
+    expect(illegalCard).toHaveAttribute('aria-disabled', 'true');
+    mockExec.mockClear();
+    fireEvent.click(illegalCard);
+    expect(illegalCard).toHaveAttribute('aria-pressed', 'false');
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
   it('shows declarer team contract progress using completed tricks only', async () => {
     mockExec.mockResolvedValue({
       ...playPhaseState,
@@ -347,6 +367,20 @@ describe('BridgePage', () => {
     });
   });
 
+  it('does not restrict hand cards during bidding or a CPU play turn', async () => {
+    const { unmount } = renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByAltText('\u2660 A')).toBeInTheDocument());
+    expect(screen.getByAltText('\u2660 A').closest('button')).not.toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByAltText('\u2665 K').closest('button')).not.toHaveAttribute('aria-disabled', 'true');
+
+    unmount();
+    mockExec.mockResolvedValue(cpuPlayTurnState);
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByAltText('\u2660 A')).toBeInTheDocument());
+    expect(screen.getByAltText('\u2660 A').closest('button')).not.toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByAltText('\u2665 K').closest('button')).not.toHaveAttribute('aria-disabled', 'true');
+  });
+
   it('renders the human hand via MobileHandGrid on a narrow mobile viewport', async () => {
     const original = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
@@ -356,6 +390,28 @@ describe('BridgePage', () => {
       // MobileHandGrid lays the hand out in fanned rows instead of a scrolling strip.
       await waitFor(() => expect(screen.getAllByTestId('hand-row').length).toBeGreaterThan(0));
       expect(screen.getByAltText('\u2660 A')).toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+    }
+  });
+
+  it('only selects legal cards when tapping the mobile hand', async () => {
+    const original = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      mockExec.mockResolvedValue(playPhaseState);
+      renderWithProviders(<BridgePage />);
+      await waitFor(() => expect(screen.getByTestId('hand-row')).toBeInTheDocument());
+
+      const legalCard = screen.getByRole('button', { name: /♠ A/ });
+      const illegalCard = screen.getByRole('button', { name: /♥ K/ });
+      fireEvent.click(legalCard);
+      expect(legalCard).toHaveAttribute('aria-pressed', 'true');
+      expect(illegalCard).toHaveAttribute('aria-disabled', 'true');
+
+      fireEvent.click(illegalCard);
+      expect(illegalCard).toHaveAttribute('aria-pressed', 'false');
+      expect(legalCard).toHaveAttribute('aria-pressed', 'true');
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
     }

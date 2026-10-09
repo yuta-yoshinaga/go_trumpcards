@@ -29,6 +29,7 @@
   "score": "Score: {{score}}",
   "playerScore": "{{name}}: {{score}} pts",
   "playButton": "Play",
+  "mustFollowSuit": "Must follow the lead suit",
   "nextTrick": "Next Trick",
   "nextRound": "Next Round",
   "target": "{{rounds}} rounds total",

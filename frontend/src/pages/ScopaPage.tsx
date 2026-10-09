@@ -204,13 +204,27 @@ function ScopaPageContent() {
                   <div key={p.id} className="text-center">
                     <div className="text-xs text-ds-text-muted mb-1">
                       {tc('player.cpu', { id: p.id })} —{' '}
-                      {t('label.cpuStats', { cards: p.cardCount, score: p.totalScore })}
+                      {t('label.cpuStats', {
+                        count: p.capturedCount,
+                        cards: p.cardCount,
+                        captured: p.capturedCount,
+                        score: p.totalScore,
+                      })}
                     </div>
                     <div className="flex gap-0.5 justify-center">
                       {Array.from({ length: Math.min(p.cardCount, 8) }, (_, i) => (
                         <AnimatedCardBack key={i} width={cardWidth * 0.45} />
                       ))}
                     </div>
+                    <section aria-label={t('label.capturedCards')} className="mt-2">
+                      <div className="flex justify-center gap-0.5 flex-wrap">
+                        {p.capturedCards.map((c, i) => (
+                          <div key={i} data-testid={`sc-captured-card-${p.id}-${i}`}>
+                            <AnimatedCard card={c} width={cardWidth * 0.35} />
+                          </div>
+                        ))}
+                      </div>
+                    </section>
                   </div>
                 ))}
             </div>
@@ -260,6 +274,15 @@ function ScopaPageContent() {
                   })
                 )}
               </div>
+              <section aria-label={t('label.capturedCards')} className="mt-2">
+                <div className="flex justify-center gap-0.5 flex-wrap">
+                  {human.capturedCards.map((c, i) => (
+                    <div key={i} data-testid={`sc-captured-card-${human.id}-${i}`}>
+                      <AnimatedCard card={c} width={cardWidth * 0.45} />
+                    </div>
+                  ))}
+                </div>
+              </section>
             </div>
 
             {/* Human hand */}

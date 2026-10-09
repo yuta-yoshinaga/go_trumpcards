@@ -337,6 +337,24 @@ describe('ScorpionPage', () => {
     expect(screen.getByRole('button', { name: '元に戻す' })).toBeDisabled();
   });
 
+  it('undoes the selected positive integer number of moves', async () => {
+    renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.change(screen.getByRole('spinbutton', { name: '戻す回数' }), { target: { value: '3' } });
+    fireEvent.click(screen.getByRole('button', { name: 'まとめて戻す' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo_n', undefined, undefined, 3));
+  });
+
+  it.each(['0', '-1', '1.5', ''])('does not undo for invalid move count %j', async (value) => {
+    renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.change(screen.getByRole('spinbutton', { name: '戻す回数' }), { target: { value } });
+    fireEvent.click(screen.getByRole('button', { name: 'まとめて戻す' }));
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
   it('renders empty tableau column placeholder', async () => {
     const stateWithEmpty = {
       ...playingState,

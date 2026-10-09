@@ -90,6 +90,8 @@ export interface ShengJiResponse extends BaseGameResponse {
   teamPoints: [number, number];
   trickCount: number;
   lastTrickWinner: number;
+  /** Seat currently winning this trick, or -1 when it is empty. */
+  currentTrickWinner: number;
   lastResult: ShengJiHandResult | null;
   minLevel: number;
   maxLevel: number;

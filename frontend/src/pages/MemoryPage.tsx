@@ -285,6 +285,12 @@ function MemoryPageContent() {
   const isResult = state.phase === MemoryPhase.RESULT;
   const isGameEnd = state.phase === MemoryPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = (isFlip1 || isFlip2) && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const highestPairCount = Math.max(...state.players.map((player) => player.pairCount));
+  const leaders = state.players.filter((player) => player.pairCount === highestPairCount);
+  const soleWinner = leaders.length === 1 ? leaders[0] : undefined;
+  const humanIsSoleWinner = soleWinner?.isHuman === true;
+  const humanIsNotAmongLeaders = !leaders.some((player) => player.isHuman);
+  const resultNames = leaders.map((player) => playerName(player.id, player.isHuman)).join(t('listSeparator'));
 
   return (
     <GamePageShell
@@ -294,7 +300,8 @@ function MemoryPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/memory"
       gameEndFlag={!!isGameEnd}
-      winShow={!!state.gameEndFlag}
+      winShow={!!isGameEnd && humanIsSoleWinner}
+      lossShow={!!isGameEnd && leaders.length === 1 && humanIsNotAmongLeaders}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
@@ -393,6 +400,14 @@ function MemoryPageContent() {
                 })}
               </span>
             </div>
+
+            {isGameEnd && (
+              <p className="my-2 text-center font-bold text-ds-text-primary" data-testid="memory-game-result">
+                {leaders.length === 1
+                  ? t('winnerResult', { name: resultNames, count: highestPairCount })
+                  : t('tieResult', { names: resultNames, count: highestPairCount })}
+              </p>
+            )}
 
             {/* Captured pairs – mini cards per player. Collapsible on mobile so
                 the board grid keeps its full height (#3028). */}

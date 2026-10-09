@@ -911,6 +911,28 @@ func (g *Zwanzigerrufen) cardPointsOf(idx int) int {
 	return total
 }
 
+// GetLiveTeamPoints returns card points currently taken by the declarer side.
+func (g *Zwanzigerrufen) GetLiveTeamPoints() int {
+	total := 0
+	for i := range g.players {
+		if g.isDeclarerSide(i) {
+			total += g.cardPointsOf(i)
+		}
+	}
+	return total
+}
+
+// GetLiveDefenderPoints returns card points currently taken by the defender side.
+func (g *Zwanzigerrufen) GetLiveDefenderPoints() int {
+	total := 0
+	for i := range g.players {
+		if !g.isDeclarerSide(i) {
+			total += g.cardPointsOf(i)
+		}
+	}
+	return total
+}
+
 // isDeclarerSide 指定席がデクレアラー側か。
 func (g *Zwanzigerrufen) isDeclarerSide(idx int) bool {
 	if g.declarerIdx < 0 {
@@ -920,9 +942,6 @@ func (g *Zwanzigerrufen) isDeclarerSide(idx int) bool {
 }
 
 // zwanzigerrufenTotalPoints デッキ全体のカードポイントを返す。
-//
-// **表を書き写さず数える。** 閾値を定数で持つと、点数表を変えたときに片方だけが
-// ずれる。
 func zwanzigerrufenTotalPoints() int {
 	total := 0
 	for _, c := range buildKoenigrufenDeck() {
@@ -933,12 +952,7 @@ func zwanzigerrufenTotalPoints() int {
 
 // scoreContract Rufer / Solo の精算を行う (ゼロサム)。
 func (g *Zwanzigerrufen) scoreContract() *ZwanzigerrufenBreakdown {
-	team := 0
-	for i := range g.players {
-		if g.isDeclarerSide(i) {
-			team += g.cardPointsOf(i)
-		}
-	}
+	team := g.GetLiveTeamPoints()
 	total := zwanzigerrufenTotalPoints()
 	threshold := total / 2
 	won := 2*team > total

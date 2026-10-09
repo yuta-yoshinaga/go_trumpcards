@@ -40,6 +40,7 @@ function makeState(overrides?: Partial<BridgeResponse>): BridgeResponse {
     leadPlayerIdx: 0,
     openingLeadDone: true,
     dummyHand: null,
+    legalPlayIndices: [],
     config: { cpuDifficulty: 1 },
     message: '',
     ...overrides,

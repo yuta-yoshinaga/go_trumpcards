@@ -280,6 +280,8 @@ function SergeantMajorPageContent() {
             <div data-tutorial="sm-trick">
               <TrickDisplay
                 currentTrick={state.currentTrick}
+                lastTrick={state.lastTrick}
+                lastTrickWinner={state.lastTrickWinner}
                 players={state.players}
                 cardWidth={cardWidth}
                 label={t('currentTrick')}

@@ -56,6 +56,7 @@ func (swp *ScopaWebPresenter) Output(sg interfaces.ScopaGame, lastErr error) str
 			CardCount:     player.GetCardsSize(),
 			Cards:         playerCardsToOutput(player, player.GetIsHuman()),
 			CapturedCount: player.CapturedCount(),
+			CapturedCards: cardsToOutput(player.GetCapturedCards()),
 			ScopaCount:    player.GetScopaCount(),
 			TotalScore:    player.GetTotalScore(),
 		})

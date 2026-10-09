@@ -10,6 +10,7 @@ const player = (cards: Card[], overrides: Partial<ScopaPlayerData> = {}): ScopaP
   cardCount: cards.length,
   cards,
   capturedCount: 0,
+  capturedCards: [],
   scopaCount: 0,
   totalScore: 0,
   ...overrides,

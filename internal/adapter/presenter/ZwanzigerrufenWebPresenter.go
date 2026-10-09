@@ -63,6 +63,12 @@ func (p *ZwanzigerrufenWebPresenter) buildBase(g interfaces.ZwanzigerrufenGame) 
 	resObj.CalledTrump = g.GetCalledTrump()
 	resObj.PartnerRevealed = g.GetPartnerRevealed()
 	resObj.PartnerIdx = zwanzigerrufenVisiblePartner(g)
+	if g.GetContract() == domain.ZwanzigerrufenBidRufer && g.GetPartnerRevealed() {
+		teamPoints := g.GetLiveTeamPoints()
+		defenderPoints := g.GetLiveDefenderPoints()
+		resObj.DeclarerTeamPoints = &teamPoints
+		resObj.DefenderTeamPoints = &defenderPoints
+	}
 	resObj.TalonCount = g.GetTalonSize()
 	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.Outcome = int(g.GetOutcome())

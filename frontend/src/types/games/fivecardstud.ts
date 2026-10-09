@@ -47,6 +47,7 @@ export interface FiveCardStudResult {
 export interface FiveCardStudSidePot {
   amount: number;
   eligiblePlayers: number[];
+  winners: { playerIdx: number; amount: number }[];
 }
 
 /** Full Five Card Stud game state returned from the API. */

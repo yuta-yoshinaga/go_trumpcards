@@ -20,6 +20,22 @@ beforeEach(() => {
 });
 
 describe('UnsunKarutaPage', () => {
+  it('announces every card in the current trick with its player name', async () => {
+    mockExec.mockResolvedValue(
+      makeUnsunKarutaState({
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'JOKER', value: 1, deck: 'unsun', glyph: '杯', label: '1', color: 'red' } },
+          { playerIdx: 2, card: { design: 'JOKER', value: 3, deck: 'unsun', glyph: '刀', label: '3', color: 'black' } },
+        ],
+      }),
+    );
+    renderWithProviders(<UnsunKarutaPage />);
+
+    const announcement = await screen.findByTestId('unsunkaruta-trick-announcement');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toHaveTextContent('あなた: 1 杯、CPU 2: 3 刀');
+  });
+
   it('wraps all eight cards in the current trick', async () => {
     const state = makeUnsunKarutaState({
       currentTrick: Array.from({ length: 8 }, (_, playerIdx) => ({
@@ -78,6 +94,7 @@ describe('UnsunKarutaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
     expect(await screen.findByText('トリック 2/9')).toBeInTheDocument();
     expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
+    expect(screen.getByTestId('unsunkaruta-trick-announcement')).toBeEmptyDOMElement();
   });
 
   it('marks round suits in both the hand and trick with the reverse-rank explanation', async () => {

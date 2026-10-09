@@ -4,6 +4,7 @@
     "hi": "ハイ",
     "lo": "ロー",
     "winner": "{{name}} (+{{amount}})",
+    "announcementWinner": "{{half}}: {{name}} が {{amount}} チップ獲得",
     "hiTakesAll": "ロー該当者なし — ハイが総取り"
   },
   "phase": {
@@ -120,6 +121,7 @@
   },
   "scoop": {
     "badge": "🏆 スクープ! {{name}} がハイ・ロー総取り (+{{total}})",
-    "youBadge": "🏆 スクープ達成! ハイ・ローを総取り (+{{total}})"
+    "youBadge": "🏆 スクープ達成! ハイ・ローを総取り (+{{total}})",
+    "announcement": "スクープ: {{name}} が両方を取り {{total}} チップ獲得"
   }
 }

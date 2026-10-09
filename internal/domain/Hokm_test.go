@@ -487,6 +487,70 @@ func TestHokm_JSONRoundTrip(t *testing.T) {
 	}
 }
 
+func TestHokm_LastTrickIsRetainedUntilNextHand(t *testing.T) {
+	h := newTestHokm(t)
+	h.SetPhaseForTest(HokmPhasePlay)
+	h.SetTrumpSuitForTest(CardDesignDiamond)
+	hokmHandOf(h, 0, NewCard(CardDesignSpade, 2, false), NewCard(CardDesignHeart, 2, false))
+	hokmHandOf(h, 1, NewCard(CardDesignSpade, 3, false), NewCard(CardDesignHeart, 3, false))
+	hokmHandOf(h, 2, NewCard(CardDesignSpade, 4, false), NewCard(CardDesignHeart, 4, false))
+	hokmHandOf(h, 3, NewCard(CardDesignSpade, 5, false), NewCard(CardDesignHeart, 5, false))
+
+	for seat := range HokmPlayerCnt {
+		require.NoError(t, h.PlayForTest(seat, 0))
+	}
+	last, winner := h.GetLastTrick()
+	require.Len(t, last, HokmPlayerCnt)
+	assert.Equal(t, 3, winner)
+	for i, tc := range last {
+		assert.Equal(t, i, tc.PlayerIdx)
+		assert.Equal(t, i+2, tc.Card.GetValue())
+	}
+
+	// 次のトリックが始まっても、決着したトリックが維持される。
+	require.NoError(t, h.PlayForTest(winner, 0))
+	retained, retainedWinner := h.GetLastTrick()
+	assert.Equal(t, last, retained)
+	assert.Equal(t, winner, retainedWinner)
+
+	h.dealHand()
+	reset, resetWinner := h.GetLastTrick()
+	assert.Nil(t, reset)
+	assert.Equal(t, -1, resetWinner)
+}
+
+func TestHokm_LastTrickJSONRoundTripAndValidation(t *testing.T) {
+	h := newTestHokm(t)
+	h.lastTrick = []*TrickCard{
+		{PlayerIdx: 0, Card: NewCard(CardDesignSpade, 2, false)},
+		{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 3, false)},
+		{PlayerIdx: 2, Card: NewCard(CardDesignSpade, 4, false)},
+		{PlayerIdx: 3, Card: NewCard(CardDesignSpade, 5, false)},
+	}
+	h.lastTrickWinner = 3
+	data, err := json.Marshal(h)
+	require.NoError(t, err)
+	var got Hokm
+	require.NoError(t, json.Unmarshal(data, &got))
+	trick, winner := got.GetLastTrick()
+	assert.Equal(t, h.lastTrick, trick)
+	assert.Equal(t, 3, winner)
+
+	for name, mutate := range map[string]func(*hokmJSON){
+		"five cards":      func(j *hokmJSON) { j.LastTrick = make([]*TrickCard, HokmPlayerCnt+1) },
+		"winner too high": func(j *hokmJSON) { j.LastTrickWinner = HokmPlayerCnt },
+		"winner too low":  func(j *hokmJSON) { j.LastTrickWinner = -2 },
+	} {
+		t.Run(name, func(t *testing.T) {
+			j := hokmJSON{Config: DefaultHokmConfig(), Phase: HokmPhasePlay, HandNumber: 1, TrumpSuit: CardDesignSpade, WinnerTeam: -1, LastHandWinner: -1, LastTrickWinner: -1}
+			mutate(&j)
+			invalid, marshalErr := json.Marshal(j)
+			require.NoError(t, marshalErr)
+			assert.Error(t, json.Unmarshal(invalid, new(Hokm)))
+		})
+	}
+}
+
 func TestHokm_UnmarshalRejectsInvalid(t *testing.T) {
 	valid := func() hokmJSON {
 		return hokmJSON{

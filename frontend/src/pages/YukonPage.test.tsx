@@ -533,7 +533,6 @@ describe('YukonPage keyboard shortcuts', () => {
   it.each([
     ['h', 'hint'],
     ['a', 'autocomplete'],
-    ['z', 'undo'],
   ])('pressing %s dispatches %s', async (key, command) => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<YukonPage />);
@@ -542,6 +541,31 @@ describe('YukonPage keyboard shortcuts', () => {
     mockExec.mockResolvedValue(playingState);
     fireEvent.keyDown(document, { key });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith(command));
+  });
+
+  it('pressing z dispatches undo and advertises it only when canUndo is true', async () => {
+    mockExec.mockResolvedValue({ ...playingState, canUndo: true });
+    renderWithProviders(<YukonPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'z' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+
+    fireEvent.click(screen.getByText('キーボードショートカット'));
+    expect(screen.getByText('z', { selector: 'kbd' }).closest('li')).toHaveTextContent('一手戻す');
+  });
+
+  it('does not dispatch or advertise undo when canUndo is false', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<YukonPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'z' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByText('キーボードショートカット'));
+    expect(screen.queryByText('z', { selector: 'kbd' })).not.toBeInTheDocument();
   });
 
   it('pressing g asks for give-up confirmation rather than firing it', async () => {

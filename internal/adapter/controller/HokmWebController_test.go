@@ -18,15 +18,17 @@ func intPtrHk(v int) *int { return &v }
 
 func mustHokmOutputJSON(msg string) string {
 	out := &controller.HokmWebOutput{
-		Players:        []*controller.HokmWebOutputPlayer{},
-		CurrentTrick:   []*controller.WebOutputTrickCard{},
-		ValidPlays:     []int{},
-		Scores:         []int{},
-		TeamTricks:     []int{},
-		TricksToWin:    domain.HokmTricksToWin,
-		LastHandWinner: -1,
-		WinnerTeam:     -1,
-		WebOutputBase:  controller.WebOutputBase{Message: msg},
+		Players:         []*controller.HokmWebOutputPlayer{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
+		LastTrick:       []*controller.WebOutputTrickCard{},
+		ValidPlays:      []int{},
+		Scores:          []int{},
+		TeamTricks:      []int{},
+		TricksToWin:     domain.HokmTricksToWin,
+		LastHandWinner:  -1,
+		LastTrickWinner: -1,
+		WinnerTeam:      -1,
+		WebOutputBase:   controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

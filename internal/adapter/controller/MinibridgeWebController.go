@@ -70,6 +70,9 @@ type MinibridgeWebOutput struct {
 	LeadPlayerIdx    int                   `json:"leadPlayerIdx"`
 	DealerIdx        int                   `json:"dealerIdx"`
 	CurrentTrick     []*WebOutputTrickCard `json:"currentTrick"`
+	LastTrick        []*WebOutputTrickCard `json:"lastTrick"`
+	LastTrickWinner  int                   `json:"lastTrickWinner"`
+	TrickPaused      bool                  `json:"trickPaused"`
 	ValidPlays       []int                 `json:"validPlays"`
 	GameEndFlag      bool                  `json:"gameEndFlag"`
 	WinnerTeam       int                   `json:"winnerTeam"`
@@ -116,16 +119,18 @@ var NewMinibridgeWebController, NewMinibridgeWebControllerWithProvider = webCont
 
 func newMinibridgeDefaultOutput(msg string) *MinibridgeWebOutput {
 	return &MinibridgeWebOutput{
-		Players:       make([]*MinibridgeWebOutputPlayer, 0),
-		CurrentTrick:  make([]*WebOutputTrickCard, 0),
-		ValidPlays:    make([]int, 0),
-		DummyHand:     make([]*WebOutputCard, 0),
-		TeamScores:    make([]int, 0),
-		RoundDelta:    make([]int, 0),
-		DeclarerIdx:   -1,
-		DummyIdx:      -1,
-		WinnerTeam:    -1,
-		WebOutputBase: WebOutputBase{Message: msg},
+		Players:         make([]*MinibridgeWebOutputPlayer, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
+		LastTrick:       make([]*WebOutputTrickCard, 0),
+		LastTrickWinner: -1,
+		ValidPlays:      make([]int, 0),
+		DummyHand:       make([]*WebOutputCard, 0),
+		TeamScores:      make([]int, 0),
+		RoundDelta:      make([]int, 0),
+		DeclarerIdx:     -1,
+		DummyIdx:        -1,
+		WinnerTeam:      -1,
+		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }
 
@@ -150,6 +155,8 @@ func minibridgeDispatch(bc *baseController, w http.ResponseWriter, mi usecase.Mi
 		bc.writePresenterResponse(w, mi.Play(*param.CardIndex))
 	case "n", "next":
 		bc.writePresenterResponse(w, mi.NextRound())
+	case "continue":
+		bc.writePresenterResponse(w, mi.ContinueTrick())
 	case "g", "giveup":
 		bc.writePresenterResponse(w, mi.GiveUp())
 	default:

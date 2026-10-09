@@ -21,6 +21,7 @@
   "promptTrickEndHelp": "next — advance to the next trick",
   "promptRoundEnd": "Round ended",
   "promptRoundEndHelp": "nr / nextround — advance to the next round",
+  "scoreBreakdown": "{{name}} score breakdown: bid={{bid}} overtricks={{overtrick}} nil={{nil}} bag penalty=-{{bagPenalty}} total={{total}}",
   "hintNone": "No hint available.",
   "hintBid": "[HINT: bid {{bid}} ({{reason}})]",
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
