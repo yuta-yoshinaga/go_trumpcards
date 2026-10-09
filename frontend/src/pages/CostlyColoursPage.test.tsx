@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { costlycoloursApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeCostlyColoursState } from '../test/stateFactories';
+import type { Card } from '../types/card';
 import { CostlyColoursPage } from './CostlyColoursPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -21,6 +22,41 @@ beforeEach(() => {
 });
 
 describe('CostlyColoursPage', () => {
+  it('reveals both show hands beside their score rows only at show and game end', async () => {
+    const base = makeCostlyColoursState();
+    const cards: Card[] = [
+      { design: 'SPADE', value: 3 },
+      { design: 'HEART', value: 5 },
+      { design: 'CLOVER', value: 7 },
+    ];
+    mockExec.mockResolvedValue(
+      makeCostlyColoursState({
+        players: [base.players[0], { ...base.players[1], cards }],
+      }),
+    );
+    const hidden = renderWithProviders(<CostlyColoursPage />);
+    expect(await screen.findByTestId('costlycolours-scores')).toBeInTheDocument();
+    expect(screen.queryByTestId('costlycolours-show-hand-1')).not.toBeInTheDocument();
+    hidden.unmount();
+
+    for (const state of [
+      makeCostlyColoursState({ phase: 'show', players: [base.players[0], { ...base.players[1], cards }] }),
+      makeCostlyColoursState({
+        phase: 'gameEnd',
+        gameEndFlag: true,
+        players: [base.players[0], { ...base.players[1], cards }],
+      }),
+    ]) {
+      mockExec.mockResolvedValue(state);
+      const page = renderWithProviders(<CostlyColoursPage />);
+      const humanHand = await screen.findByTestId('costlycolours-show-hand-0');
+      const cpuHand = screen.getByTestId('costlycolours-show-hand-1');
+      expect(humanHand).toHaveTextContent('あなたの手札');
+      expect(cpuHand).toHaveTextContent('CPU 1の手札');
+      expect(cpuHand.querySelectorAll('img')).toHaveLength(4);
+      page.unmount();
+    }
+  });
   it('shows a waiting note only while another player acts', async () => {
     mockExec.mockResolvedValue(makeCostlyColoursState({ phase: 'play', isHumanTurn: false }));
     const { unmount } = renderWithProviders(<CostlyColoursPage />);

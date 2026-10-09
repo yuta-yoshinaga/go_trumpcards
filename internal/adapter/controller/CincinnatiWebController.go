@@ -34,7 +34,7 @@ type CincinnatiWebOutputSeat struct {
 	Folded bool             `json:"folded"`
 	AllIn  bool             `json:"allIn"`
 	IsTurn bool             `json:"isTurn"`
-	// HandRank と BestHand はショーダウン後のみ。
+	// HandRank はベッティング中の人間席とショーダウン後に、BestHand はショーダウン後に返す。
 	HandRank  int              `json:"handRank"`
 	BestHand  []*WebOutputCard `json:"bestHand"`
 	WonAmount int              `json:"wonAmount"`

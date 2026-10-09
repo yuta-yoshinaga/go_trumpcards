@@ -110,7 +110,7 @@ func (p *CostlyColoursWebPresenter) lastResult(g interfaces.CostlyColoursGame) *
 	return &controller.CostlyColoursWebOutputResult{Lines: lines, Totals: totals, Combos: combos}
 }
 
-// buildPlayersOutput は席の情報を構築する (人間のみ手札を公開)。
+// buildPlayersOutput は席の情報を構築する (ショー以降は全員の手札を公開)。
 func (p *CostlyColoursWebPresenter) buildPlayersOutput(g interfaces.CostlyColoursGame, human int) []*controller.CostlyColoursWebOutputPlayer {
 	dealer := g.GetDealerIdx()
 	out := make([]*controller.CostlyColoursWebOutputPlayer, 0)
@@ -125,7 +125,7 @@ func (p *CostlyColoursWebPresenter) buildPlayersOutput(g interfaces.CostlyColour
 		out = append(out, &controller.CostlyColoursWebOutputPlayer{
 			ID:        i,
 			IsHuman:   player.GetIsHuman(),
-			Cards:     playerCardsToOutput(player, i == human),
+			Cards:     playerCardsToOutput(player, i == human || g.GetGameEndFlag() || g.GetPhase() == domain.CostlyColoursPhaseShow || g.GetPhase() == domain.CostlyColoursPhaseGameEnd),
 			CardCount: player.GetCardsSize(),
 			Played:    played,
 			Score:     player.GetScore(),

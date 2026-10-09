@@ -79,4 +79,6 @@ type HorseGame interface {
 	GetDrawIndex() int
 	// GetMaxBetAmount いまの種目が受け付ける最大ベット額を取得する (ポットリミット上限、0 は上限なしまたは固定リミット)
 	GetMaxBetAmount() int
+	// GetForcedBets returns the forced-bet amounts for the current discipline.
+	GetForcedBets() domain.HorseForcedBets
 }

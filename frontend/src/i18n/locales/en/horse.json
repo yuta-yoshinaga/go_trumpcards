@@ -19,6 +19,13 @@
   "disciplineOrder": "Discipline {{position}}/{{total}}",
   "handTotal": "{{n}} overall",
   "pot": "Pot {{pot}}",
+  "listSeparator": ", ",
+  "forcedBets": {
+    "smallBlind": "Small blind {{amount}}",
+    "bigBlind": "Big blind {{amount}}",
+    "ante": "Ante {{amount}}",
+    "bringIn": "Bring-in {{amount}}"
+  },
   "callAmount": "({{amount}} chips to call)",
   "community": "Board",
   "chips": "{{chips}} chips",

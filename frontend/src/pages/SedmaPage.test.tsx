@@ -75,6 +75,30 @@ describe('SedmaPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
   });
 
+  it('identifies Sedma trick cards and players by team, including for screen readers', async () => {
+    mockExec.mockResolvedValue(
+      makeSedmaState({
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'HEART', value: 12 } },
+          { playerIdx: 1, card: { design: 'CLOVER', value: 7 } },
+          { playerIdx: 2, card: { design: 'SPADE', value: 1 } },
+          { playerIdx: 3, card: { design: 'DIAMOND', value: 10 } },
+        ],
+      }),
+    );
+    renderWithProviders(<SedmaPage />);
+
+    const playedCards = await screen.findByTestId('trick-display-cards');
+    expect(playedCards.querySelector('[data-player-idx="0"]')).toHaveAttribute('data-team', '0');
+    expect(playedCards.querySelector('[data-player-idx="2"]')).toHaveAttribute('data-team', '0');
+    expect(playedCards.querySelector('[data-player-idx="1"]')).toHaveAttribute('data-team', '1');
+    expect(playedCards.querySelector('[data-player-idx="3"]')).toHaveAttribute('data-team', '1');
+    expect(playedCards.querySelector('[data-player-idx="0"]')).toHaveTextContent('チームA');
+    expect(playedCards.querySelector('[data-player-idx="1"]')).toHaveTextContent('相手');
+    expect(playedCards.querySelector('img[alt*="チームA"]')).toBeInTheDocument();
+    expect(playedCards.querySelector('img[alt*="相手"]')).toBeInTheDocument();
+  });
+
   it('shows the live captured card points during play', async () => {
     mockExec.mockResolvedValue(makeSedmaState({ roundCardPoints: [40, 20] }));
     renderWithProviders(<SedmaPage />);

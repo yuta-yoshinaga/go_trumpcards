@@ -26,7 +26,11 @@
     "points_one": "、{{points}} 点獲得{{milestonePart}}",
     "points_other": "、{{points}} 点獲得{{milestonePart}}",
     "milestonePart": "（{{milestone}}）",
-    "milestone": { "15": "15 到達", "25": "25 到達", "31": "31 到達" }
+    "milestone": {
+      "15": "15 到達",
+      "25": "25 到達",
+      "31": "31 到達"
+    }
   },
   "score": "得点 {{n}}",
   "cards": "手札 {{n}} 枚",
@@ -66,5 +70,6 @@
     "playButton": "ディールの頭に**交換（mog）**を選びます。**断ると相手に 1 点**入るので、色役ができているときだけ断る価値があります。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
-  "mogDiscard": "交換すると {{card}} を手放します"
+  "mogDiscard": "交換すると {{card}} を手放します",
+  "showHand": "{{name}}の手札"
 }

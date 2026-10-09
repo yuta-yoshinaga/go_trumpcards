@@ -85,13 +85,24 @@ func (p *CincinnatiPlayer) SetHandStartChips(chips int) { p.handStartChips = chi
 // ホールカード 2 枚 + コミュニティ 5 枚に対して同じことをしている。**枚数に
 // 依存していないので、そのまま 10 枚に使える** ── 書き足したのは呼び出しだけ。
 func (p *CincinnatiPlayer) EvaluateBest(community []*Card) int {
+	rank, bestCards := p.evaluateBest(community)
+	p.handRank = rank
+	p.bestHand = bestCards
+	return rank
+}
+
+// BestRank は状態を変更せず、手札とコミュニティから役のランクを返す。
+func (p *CincinnatiPlayer) BestRank(community []*Card) int {
+	rank, _ := p.evaluateBest(community)
+	return rank
+}
+
+func (p *CincinnatiPlayer) evaluateBest(community []*Card) (int, []*Card) {
 	all := make([]*Card, 0, CincinnatiPoolSize)
 	all = append(all, p.cards...)
 	all = append(all, community...)
 	if len(all) < CincinnatiHandSize {
-		p.handRank = PokerHandHighCard
-		p.bestHand = nil
-		return p.handRank
+		return PokerHandHighCard, nil
 	}
 
 	bestRank := -1
@@ -104,9 +115,7 @@ func (p *CincinnatiPlayer) EvaluateBest(community []*Card) int {
 			copy(bestCards, combo)
 		}
 	}
-	p.handRank = bestRank
-	p.bestHand = bestCards
-	return p.handRank
+	return bestRank, bestCards
 }
 
 // ResetForHand は次のハンドに向けて席の状態を戻す。

@@ -125,6 +125,15 @@ type Horse struct {
 	turnNumber int
 }
 
+// HorseForcedBets contains the forced wagers used by the current discipline.
+// Inapplicable wager types are zero.
+type HorseForcedBets struct {
+	SmallBlind int
+	BigBlind   int
+	Ante       int
+	BringIn    int
+}
+
 // NewHorse は指定の設定で卓を構築する。席 0 が人間。
 func NewHorse(config HorseConfig) *Horse {
 	seats := make([]*horseSeat, 0, config.Seats)
@@ -910,6 +919,25 @@ func (g *Horse) GetMaxBetAmount() int {
 		return maxBet
 	default:
 		return 0
+	}
+}
+
+// GetForcedBets returns the forced wagers configured on the current table.
+func (g *Horse) GetForcedBets() HorseForcedBets {
+	switch t := g.table.(type) {
+	case *Holdem:
+		cfg := t.GetConfig()
+		return HorseForcedBets{SmallBlind: cfg.SmallBlind, BigBlind: cfg.BigBlind}
+	case *Omaha:
+		cfg := t.GetConfig()
+		return HorseForcedBets{SmallBlind: cfg.SmallBlind, BigBlind: cfg.BigBlind}
+	case *SevenCardStud:
+		cfg := t.GetConfig()
+		return HorseForcedBets{Ante: cfg.Ante, BringIn: cfg.BringIn}
+	case *DeuceToSeven:
+		return HorseForcedBets{Ante: t.GetAnte()}
+	default:
+		return HorseForcedBets{}
 	}
 }
 

@@ -14,6 +14,7 @@
   "label.callPotRatioUnavailable": "ポットが0のため比率を算出できません",
   "label.canCheck": "チェックできます",
   "label.yourHand": "あなたの手札",
+  "label.currentHand": "現在の役",
   "label.seats": "席",
   "label.hidden": "伏せ",
   "label.folded": "降り",

@@ -756,6 +756,14 @@ func (g *Pig) HasChosenPass(i int) bool {
 	return g.pendingPass[i] != nil
 }
 
+// GetPendingPassCard は席 i が渡すために選んだ札を返す (未選択なら nil)。
+func (g *Pig) GetPendingPassCard(i int) *Card {
+	if i < 0 || i >= len(g.pendingPass) {
+		return nil
+	}
+	return g.pendingPass[i]
+}
+
 // GetDeckSize はこの卓で使うデッキ枚数を返す。
 func (g *Pig) GetDeckSize() int { return PigDeckSize(len(g.activeSeats())) }
 

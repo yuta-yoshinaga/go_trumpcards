@@ -67,6 +67,12 @@ export interface HorseResponse extends BaseGameResponse {
   minRaise: number;
   /** Largest bet/raise the running discipline accepts (0 when uncapped or fixed limit). */
   maxBetAmount: number;
+  /** Small and big blinds used by blind based disciplines. */
+  smallBlind: number;
+  bigBlind: number;
+  /** Forced ante and stud bring-in for disciplines that use them. */
+  ante: number;
+  bringIn: number;
   /** Phase number reported by the running discipline. */
   tablePhase: number;
   gameEndFlag: boolean;

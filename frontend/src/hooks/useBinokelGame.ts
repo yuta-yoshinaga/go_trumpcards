@@ -28,9 +28,9 @@ export const DEFAULT_BINOKEL_CONFIG: BinokelConfig = {
 
 /** CPU difficulty level options for Binokel. */
 export const CPU_DIFFICULTY_OPTIONS = [
-  { value: 0, label: 'Easy' },
-  { value: 1, label: 'Normal' },
-  { value: 2, label: 'Hard' },
+  { value: 0, labelKey: 'difficulty.easy' },
+  { value: 1, labelKey: 'difficulty.normal' },
+  { value: 2, labelKey: 'difficulty.hard' },
 ] as const;
 
 /** Available point limit options for Binokel. */

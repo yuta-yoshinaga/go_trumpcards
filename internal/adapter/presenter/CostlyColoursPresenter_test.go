@@ -178,12 +178,26 @@ func TestCostlyColoursWebPresenter_Output(t *testing.T) {
 	players := res["players"].([]any)
 	human := players[0].(map[string]any)
 	assert.Len(t, human["cards"], domain.CostlyColoursHandSize)
-	// **相手の手札は伏せる。**
+	// **交換・数え上げ中は相手の手札を伏せる。**
 	cpu := players[1].(map[string]any)
 	assert.Empty(t, cpu["cards"], "CPU の手札が見えている")
 	assert.Equal(t, float64(domain.CostlyColoursHandSize), cpu["cardCount"])
 	// 交換フェーズでは出せる札を渡さない。
 	assert.Empty(t, res["playableIdxs"])
+
+	// ショーでは内訳を確かめられるよう CPU の手札も公開する。
+	c.SetPhaseForTest(domain.CostlyColoursPhaseShow)
+	require.NoError(t, json.Unmarshal([]byte(p.Output(c, nil)), &res))
+	players = res["players"].([]any)
+	cpu = players[1].(map[string]any)
+	assert.Len(t, cpu["cards"], domain.CostlyColoursHandSize)
+
+	// 終局後も同じく公開する。
+	c.SetPhaseForTest(domain.CostlyColoursPhaseGameEnd)
+	require.NoError(t, json.Unmarshal([]byte(p.Output(c, nil)), &res))
+	players = res["players"].([]any)
+	cpu = players[1].(map[string]any)
+	assert.Len(t, cpu["cards"], domain.CostlyColoursHandSize)
 }
 
 // **出せる札はサーバが数える。** 31 を超える札を並べると押しても弾かれる。

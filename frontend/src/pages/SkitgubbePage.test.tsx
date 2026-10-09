@@ -121,6 +121,34 @@ describe('SkitgubbePage', () => {
     expect(screen.getByText(/CPU2 の手札 3 枚/)).toBeInTheDocument();
   });
 
+  it('reveals CPU cards only after the game ends and keeps empty seats visible', async () => {
+    const revealedCard = card('DIAMOND', 7);
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        gameEndFlag: true,
+        loserIdx: 1,
+        players: [
+          human(),
+          cpu(1, { cards: [revealedCard], hidden: false }),
+          cpu(2, { cardCount: 0, cards: [], hidden: false }),
+        ],
+      }),
+    );
+    const { unmount } = renderWithProviders(<SkitgubbePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    expect(screen.getByAltText('♦ 7')).toBeInTheDocument();
+    expect(screen.getByText(/CPU2 の手札 0 枚/)).toBeInTheDocument();
+    expect(screen.getByTestId('sg-loser-seat')).toBeInTheDocument();
+
+    mockExec.mockResolvedValue(makeState({ players: [human(), cpu(1, { cards: [revealedCard] }), cpu(2)] }));
+    unmount();
+    renderWithProviders(<SkitgubbePage />);
+    await waitFor(() => expect(screen.getByRole('img', { name: 'CPU1 の手札 3 枚（裏向き）' })).toBeInTheDocument());
+    expect(screen.queryByAltText('♦ 7')).not.toBeInTheDocument();
+  });
+
   it('only plays the hand cards the server marked valid', async () => {
     // The beat rule lives on the server; the page must not accept a click on
     // a card it did not offer.

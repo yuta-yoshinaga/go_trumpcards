@@ -26,7 +26,11 @@
     "points_one": ", {{points}} point scored{{milestonePart}}",
     "points_other": ", {{points}} points scored{{milestonePart}}",
     "milestonePart": " ({{milestone}})",
-    "milestone": { "15": "reached 15", "25": "reached 25", "31": "reached 31" }
+    "milestone": {
+      "15": "reached 15",
+      "25": "reached 25",
+      "31": "reached 31"
+    }
   },
   "score": "score {{n}}",
   "cards": "{{n}} card(s)",
@@ -66,5 +70,6 @@
     "playButton": "Each deal opens with the **mog** - the exchange. **Refusing pegs 1 for your opponent**, so it is only worth it when you already hold a colour.",
     "resetButton": "The reset button starts a new game."
   },
-  "mogDiscard": "Accepting gives away {{card}}"
+  "mogDiscard": "Accepting gives away {{card}}",
+  "showHand": "{{name}}'s hand"
 }
