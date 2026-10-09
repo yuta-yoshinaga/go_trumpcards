@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { skitgubbeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardBack } from '../components/CardImage';
+import { CardBack, CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -124,7 +124,7 @@ function SkitgubbePageContent() {
               {collecting ? t('ruleCollect') : t('ruleShed')}
             </div>
 
-            {/* Opponent hands: backs only. The server withholds the cards. */}
+            {/* CPU cards stay hidden during play; the server reveals them at game end. */}
             <div className="flex justify-center gap-4 mb-3" data-tutorial="sg-seats">
               {opponents.map((o) => (
                 <div key={`opp-${o.id.toString()}`} className="text-center">
@@ -150,15 +150,23 @@ function SkitgubbePageContent() {
                       </span>
                     )}
                   </div>
-                  <div
-                    className="flex gap-1 justify-center flex-wrap"
-                    role="img"
-                    aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
-                  >
-                    {Array.from({ length: o.cardCount }, (_, i) => (
-                      <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                    ))}
-                  </div>
+                  {ended ? (
+                    <div className="flex gap-1 justify-center flex-wrap">
+                      {o.cards.map((card, i) => (
+                        <CardImage key={`opp-${o.id.toString()}-c${i.toString()}`} card={card} width={cardWidth} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div
+                      className="flex gap-1 justify-center flex-wrap"
+                      role="img"
+                      aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
+                    >
+                      {Array.from({ length: o.cardCount }, (_, i) => (
+                        <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
