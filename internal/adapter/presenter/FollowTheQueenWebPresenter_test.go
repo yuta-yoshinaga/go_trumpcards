@@ -35,6 +35,32 @@ func TestFollowTheQueenWebPresenter_Output(t *testing.T) {
 		return makeFollowTheQueenForPresenter()
 	}
 
+	t.Run("live human best hand is returned and cleared after folding", func(t *testing.T) {
+		s, players := setup()
+		s.SetPhase(domain.FollowTheQueenPhaseFifthStreet)
+		for _, card := range []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 12, false),
+			domain.NewCard(domain.CardDesignDiamond, 10, false),
+			domain.NewCard(domain.CardDesignClover, 10, false),
+			domain.NewCard(domain.CardDesignHeart, 3, false),
+			domain.NewCard(domain.CardDesignSpade, 8, false),
+		} {
+			players[0].AddDoorCard(card)
+		}
+		result := p.Output(s, nil)
+		var out controller.FollowTheQueenWebOutput
+		require.NoError(t, json.Unmarshal([]byte(result), &out))
+		require.Len(t, out.Players[0].BestHand, 5)
+		require.Len(t, out.Players[0].BestHandSource, 5)
+		assert.Equal(t, domain.PokerHandThreeOfAKind, out.HumanHandRank)
+
+		players[0].SetFolded(true)
+		result = p.Output(s, nil)
+		require.NoError(t, json.Unmarshal([]byte(result), &out))
+		assert.Empty(t, out.Players[0].BestHand)
+		assert.Equal(t, -1, out.HumanHandRank)
+	})
+
 	t.Run("initial state", func(t *testing.T) {
 		s, players := setup()
 		s.SetPhase(domain.FollowTheQueenPhaseThirdStreet)

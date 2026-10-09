@@ -16,6 +16,7 @@ export interface FollowTheQueenPlayerData {
   handRank: number;
   handName: string;
   bestHand: Card[];
+  bestHandSource: Card[];
   playStyleName: string;
   totalHands: number;
   vpip: number;

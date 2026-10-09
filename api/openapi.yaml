@@ -54072,7 +54072,23 @@ components:
               minimum: -1
               maximum: 10
               example: 3
+            players:
+              type: array
+              items:
+                $ref: '#/components/schemas/FollowTheQueenPlayerData'
         - $ref: '#/components/schemas/SevenCardStudResponse'
+
+    FollowTheQueenPlayerData:
+      description: Follow the Queen player data, including source cards selected for the live best hand.
+      allOf:
+        - $ref: '#/components/schemas/SevenCardStudPlayer'
+        - type: object
+          properties:
+            bestHandSource:
+              type: array
+              description: Original physical cards selected for the human's live best five before showdown; empty for other players or after showdown.
+              items:
+                $ref: '#/components/schemas/Card'
 
     FollowTheQueenSidePot:
       type: object
