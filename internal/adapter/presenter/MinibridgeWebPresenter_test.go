@@ -38,6 +38,9 @@ func TestMinibridgeWebPresenterOutput(t *testing.T) {
 	assert.Equal(t, float64(0), m["requiredTricks"])
 	assert.Equal(t, float64(-1), m["winnerTeam"])
 	assert.Empty(t, m["dummyHand"], "契約が決まるまでダミーは伏せる")
+	assert.Empty(t, m["lastTrick"])
+	assert.Equal(t, float64(-1), m["lastTrickWinner"])
+	assert.Equal(t, false, m["trickPaused"])
 	assert.Equal(t, []any{float64(0), float64(0)}, m["teamScores"])
 
 	players := m["players"].([]any)

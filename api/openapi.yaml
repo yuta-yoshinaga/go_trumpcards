@@ -59764,6 +59764,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MinibridgeTrickCard'
+        lastTrick:
+          type: array
+          description: Most recently resolved trick, kept visible until the user continues.
+          items:
+            $ref: '#/components/schemas/MinibridgeTrickCard'
+        lastTrickWinner:
+          type: integer
+          description: Seat that won lastTrick, or -1 when no trick has resolved.
+        trickPaused:
+          type: boolean
+          description: Whether play awaits user confirmation after resolving a trick.
         validPlays:
           type: array
           description: >-

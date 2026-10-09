@@ -60,6 +60,10 @@ func (p *MinibridgeWebPresenter) buildBase(s interfaces.MinibridgeGame) *control
 	resObj.WinnerTeam = s.GetWinnerTeam()
 	resObj.DeclarerByDealerTie = s.IsDeclarerByDealerTie()
 	resObj.CurrentTrick = trickCardsToOutput(s.GetCurrentTrick())
+	lastTrick, lastWinner := s.GetLastTrick()
+	resObj.LastTrick = trickCardsToOutput(lastTrick)
+	resObj.LastTrickWinner = lastWinner
+	resObj.TrickPaused = s.IsTrickPaused()
 	resObj.Players = p.buildPlayersOutput(s)
 	resObj.Config = controller.MinibridgeWebOutputConfig{Rounds: s.GetConfig().Rounds}
 	return resObj
