@@ -14,6 +14,7 @@
   "label.callPotRatioUnavailable": "Ratio unavailable because the pot is 0",
   "label.canCheck": "You may check",
   "label.yourHand": "Your hand",
+  "label.currentHand": "Current hand",
   "label.seats": "Seats",
   "label.hidden": "face down",
   "label.folded": "folded",

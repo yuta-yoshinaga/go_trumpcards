@@ -211,6 +211,11 @@ function CincinnatiPageContent() {
                       <span data-testid={`cin-won-${i}`}> · {t('label.won', { amount: seat.wonAmount })}</span>
                     )}
                   </span>
+                  {isBetting && seat.isHuman && !seat.folded && (
+                    <div className="text-ds-accent text-xs" data-testid="cin-current-hand">
+                      {t('label.currentHand')}: {handLabel(seat.handRank)}
+                    </div>
+                  )}
                   {/* **CPU の手札はサーバが送っていない。** 届いていれば開く。 */}
                   {!seat.isHuman && (
                     <div className="flex justify-center gap-1 flex-wrap mt-1" data-testid={`cin-seat-cards-${i}`}>

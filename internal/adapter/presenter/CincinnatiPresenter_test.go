@@ -331,6 +331,9 @@ func TestCincinnatiWebPresenter_BettingStateIsOnTheWire(t *testing.T) {
 		TurnSeat    int  `json:"turnSeat"`
 		HumanSeat   int  `json:"humanSeat"`
 		IsHumanTurn bool `json:"isHumanTurn"`
+		Seats       []struct {
+			HandRank int `json:"handRank"`
+		} `json:"seats"`
 	}
 	require.NoError(t, json.Unmarshal([]byte(cp.Output(g, nil)), &got))
 	assert.Equal(t, g.GetPot(), got.Pot)
@@ -340,6 +343,8 @@ func TestCincinnatiWebPresenter_BettingStateIsOnTheWire(t *testing.T) {
 	assert.Equal(t, g.HumanSeat(), got.HumanSeat)
 	assert.Equal(t, g.IsHumanTurn(), got.IsHumanTurn)
 	assert.Positive(t, got.Pot, "アンティがポットに入っていない")
+	require.NotEmpty(t, got.Seats)
+	assert.Equal(t, g.GetPlayers()[g.HumanSeat()].EvaluateBest(g.GetCommunityCards()), got.Seats[g.HumanSeat()].HandRank)
 }
 
 func TestCincinnatiWebPresenter_ErrorAndHint(t *testing.T) {
