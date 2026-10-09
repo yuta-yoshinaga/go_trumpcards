@@ -30,11 +30,13 @@
     "difficultyHard": "Fast",
     "reset": "Reset",
     "giveUp": "Give up",
-    "passAria": "Pass {{card}} to your left"
+    "passAria": "Pass {{card}} to your left",
+    "passSelectedAria": "Pass {{card}} to your left (selected)"
   },
   "status": {
     "passTarget": "Pass {{direction}} to {{name}}",
     "waiting": "You have chosen. Waiting for everyone else to choose.",
+    "chosenPass": "Card to pass:",
     "signal_one": "Somebody put a hand to their nose! {{count}} player has noticed. Say you noticed -- only the last to react takes a letter.",
     "signal_other": "Somebody put a hand to their nose! {{count}} players have noticed. Say you noticed -- only the last to react takes a letter.",
     "signalDone": "You said you noticed ({{n}} so far). Waiting for the rest.",

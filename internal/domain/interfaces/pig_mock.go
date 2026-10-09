@@ -34,6 +34,13 @@ func (m *MockPigGame) GetPhase() domain.PigPhase {
 func (m *MockPigGame) GetGameEndFlag() bool     { return m.Called().Bool(0) }
 func (m *MockPigGame) IsHumanTurn() bool        { return m.Called().Bool(0) }
 func (m *MockPigGame) HasChosenPass(i int) bool { return m.Called(i).Bool(0) }
+func (m *MockPigGame) GetPendingPassCard(i int) *domain.Card {
+	args := m.Called(i)
+	if card, ok := args.Get(0).(*domain.Card); ok {
+		return card
+	}
+	return nil
+}
 func (m *MockPigGame) GetCurrentPlayerIdx() int { return m.Called().Int(0) }
 func (m *MockPigGame) GetSignallerIdx() int     { return m.Called().Int(0) }
 func (m *MockPigGame) GetNoticedCnt() int       { return m.Called().Int(0) }

@@ -71,11 +71,19 @@ func TestPigWebPresenterPassTargetSkipsEliminatedSeat(t *testing.T) {
 func TestPigWebPresenterCarriesWhoHasChosen(t *testing.T) {
 	p := new(PigWebPresenter)
 	g := newPigForWeb(t)
+	chosen := g.GetPlayer(0).GetCard(0)
 	require.NoError(t, g.ChoosePassForTest(0, 0))
+	require.NoError(t, g.ChoosePassForTest(1, 0))
 
 	m := decodePig(t, p.Output(g, nil))
-	assert.True(t, m["players"].([]any)[0].(map[string]any)["hasChosenPass"].(bool))
-	assert.False(t, m["players"].([]any)[1].(map[string]any)["hasChosenPass"].(bool))
+	players := m["players"].([]any)
+	human := players[0].(map[string]any)
+	cpu := players[1].(map[string]any)
+	assert.True(t, human["hasChosenPass"].(bool))
+	assert.Equal(t, float64(chosen.GetValue()), human["chosenPassCard"].(map[string]any)["value"])
+	assert.True(t, cpu["hasChosenPass"].(bool))
+	assert.NotContains(t, cpu, "chosenPassCard", "CPU's selected card is private")
+	assert.NotContains(t, human, "chosenPassIndex")
 	assert.Equal(t, "pig.waiting", m["messageCode"], "全員が選ぶまで待つ")
 	assert.Empty(t, m["validPlays"], "選んだあとは渡せる札が無い")
 }

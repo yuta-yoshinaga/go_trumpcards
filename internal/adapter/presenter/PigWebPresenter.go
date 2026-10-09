@@ -72,17 +72,22 @@ func (p *PigWebPresenter) buildPlayersOutput(s interfaces.PigGame) []*controller
 	players := pigPlayers(s)
 	out := make([]*controller.PigWebOutputPlayer, 0, len(players))
 	for i, player := range players {
+		var chosenPassCard *controller.WebOutputCard
+		if player.GetIsHuman() {
+			chosenPassCard = cardToOutput(s.GetPendingPassCard(i))
+		}
 		out = append(out, &controller.PigWebOutputPlayer{
-			ID:            i,
-			IsHuman:       player.GetIsHuman(),
-			CardCount:     player.GetCardsSize(),
-			Cards:         playerCardsToOutput(player, player.GetIsHuman()),
-			Letters:       player.GetLetters(),
-			LetterWord:    player.GetLetterWord(),
-			Eliminated:    player.GetEliminated(),
-			HasSignalled:  player.GetHasSignalled(),
-			NoticedOrder:  player.GetNoticedOrder(),
-			HasChosenPass: s.HasChosenPass(i),
+			ID:             i,
+			IsHuman:        player.GetIsHuman(),
+			CardCount:      player.GetCardsSize(),
+			Cards:          playerCardsToOutput(player, player.GetIsHuman()),
+			Letters:        player.GetLetters(),
+			LetterWord:     player.GetLetterWord(),
+			Eliminated:     player.GetEliminated(),
+			HasSignalled:   player.GetHasSignalled(),
+			NoticedOrder:   player.GetNoticedOrder(),
+			HasChosenPass:  s.HasChosenPass(i),
+			ChosenPassCard: chosenPassCard,
 		})
 	}
 	return out
