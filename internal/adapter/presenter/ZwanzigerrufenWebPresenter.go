@@ -65,7 +65,7 @@ func (p *ZwanzigerrufenWebPresenter) buildBase(g interfaces.ZwanzigerrufenGame) 
 	resObj.PartnerIdx = zwanzigerrufenVisiblePartner(g)
 	if g.GetContract() == domain.ZwanzigerrufenBidRufer && g.GetPartnerRevealed() {
 		teamPoints := g.GetLiveTeamPoints()
-		defenderPoints := g.GetTotalCardPoints() - teamPoints
+		defenderPoints := g.GetLiveDefenderPoints()
 		resObj.DeclarerTeamPoints = &teamPoints
 		resObj.DefenderTeamPoints = &defenderPoints
 	}

@@ -38,7 +38,8 @@ func TestZwanzigerrufenGetLiveTeamPoints(t *testing.T) {
 	g.players[1].AddTrick([]*Card{NewCard(CardDesignClover, KoenigrufenKingValue, false)})
 
 	assert.Equal(t, g.GetCardPoints(0)+g.GetCardPoints(2), g.GetLiveTeamPoints())
-	assert.Equal(t, zwanzigerrufenTotalPoints(), g.GetTotalCardPoints())
+	assert.Equal(t, g.GetCardPoints(1), g.GetLiveDefenderPoints())
+	assert.Less(t, g.GetLiveTeamPoints()+g.GetLiveDefenderPoints(), zwanzigerrufenTotalPoints())
 }
 
 // zwanzigerrufenDrive は指定フェーズに達するか終局するまで CPU を進める。

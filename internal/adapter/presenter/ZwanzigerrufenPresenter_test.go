@@ -223,7 +223,7 @@ func newZwanzigerrufenPresenterMock() *interfaces.MockZwanzigerrufenGame {
 	gm.On("GetPlayerScore", mock.Anything).Return(0)
 	gm.On("GetCardPoints", mock.Anything).Return(0)
 	gm.On("GetLiveTeamPoints").Return(40)
-	gm.On("GetTotalCardPoints").Return(120)
+	gm.On("GetLiveDefenderPoints").Return(80)
 	gm.On("GetHint").Return((*domain.ZwanzigerrufenHint)(nil))
 	for i := range domain.ZwanzigerrufenPlayerCnt {
 		gm.On("GetPlayer", i).Return(domain.NewZwanzigerrufenPlayer(i == 0))

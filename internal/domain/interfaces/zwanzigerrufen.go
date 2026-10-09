@@ -83,8 +83,8 @@ type ZwanzigerrufenGame interface {
 	GetCardPoints(i int) int
 	// GetLiveTeamPoints returns card points currently taken by the declarer side.
 	GetLiveTeamPoints() int
-	// GetTotalCardPoints returns the total card points in the game deck.
-	GetTotalCardPoints() int
+	// GetLiveDefenderPoints returns card points currently taken by the defender side.
+	GetLiveDefenderPoints() int
 	// GetDiscardableIndices デクレアラーが伏せられる手札のインデックスを取得する
 	GetDiscardableIndices() []int
 	// GetValidPlayIndices 出せる手札のインデックスを取得する
