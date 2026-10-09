@@ -1,6 +1,11 @@
 {
   "table": "テーブル",
   "title": "ビノクル",
+  "difficulty": {
+    "easy": "やさしい",
+    "normal": "ふつう",
+    "hard": "むずかしい"
+  },
   "phase": {
     "bid": "ビッド",
     "dabb": "Dabb",

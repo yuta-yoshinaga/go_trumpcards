@@ -186,6 +186,29 @@ afterEach(() => {
 });
 
 describe('BinokelPage', () => {
+  it('translates CPU difficulty options while preserving their numeric values', async () => {
+    renderWithProviders(<BinokelPage />);
+    const difficulty = await screen.findByLabelText('CPU難易度');
+    expect(
+      within(difficulty)
+        .getAllByRole('option')
+        .map((option) => option.textContent),
+    ).toEqual(['やさしい', 'ふつう', 'むずかしい']);
+    expect(
+      within(difficulty)
+        .getAllByRole('option')
+        .map((option) => (option as HTMLOptionElement).value),
+    ).toEqual(['0', '1', '2']);
+
+    await i18n.changeLanguage('en');
+    expect(
+      within(difficulty)
+        .getAllByRole('option')
+        .map((option) => option.textContent),
+    ).toEqual(['Easy', 'Normal', 'Hard']);
+    expect(difficulty).toHaveValue('1');
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<BinokelPage />);
