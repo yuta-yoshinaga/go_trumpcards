@@ -28,23 +28,24 @@ type FollowTheQueenWebInput struct {
 
 // FollowTheQueenWebOutputPlayer フォロー・ザ・クイーンWebアウトプットプレイヤー
 type FollowTheQueenWebOutputPlayer struct {
-	ID            int              `json:"id"`
-	IsHuman       bool             `json:"isHuman"`
-	HoleCards     []*WebOutputCard `json:"holeCards"`
-	DoorCards     []*WebOutputCard `json:"doorCards"`
-	Chips         int              `json:"chips"`
-	CurrentBet    int              `json:"currentBet"`
-	Folded        bool             `json:"folded"`
-	AllIn         bool             `json:"allIn"`
-	HandRank      int              `json:"handRank"`
-	HandName      string           `json:"handName"`
-	BestHand      []*WebOutputCard `json:"bestHand"`
-	PlayStyleName string           `json:"playStyleName"`
-	TotalHands    int              `json:"totalHands"`
-	VPIP          int              `json:"vpip"`
-	PFR           int              `json:"pfr"`
-	ThreeBet      int              `json:"threeBet"`
-	AF            string           `json:"af"`
+	ID             int              `json:"id"`
+	IsHuman        bool             `json:"isHuman"`
+	HoleCards      []*WebOutputCard `json:"holeCards"`
+	DoorCards      []*WebOutputCard `json:"doorCards"`
+	Chips          int              `json:"chips"`
+	CurrentBet     int              `json:"currentBet"`
+	Folded         bool             `json:"folded"`
+	AllIn          bool             `json:"allIn"`
+	HandRank       int              `json:"handRank"`
+	HandName       string           `json:"handName"`
+	BestHand       []*WebOutputCard `json:"bestHand"`
+	BestHandSource []*WebOutputCard `json:"bestHandSource"`
+	PlayStyleName  string           `json:"playStyleName"`
+	TotalHands     int              `json:"totalHands"`
+	VPIP           int              `json:"vpip"`
+	PFR            int              `json:"pfr"`
+	ThreeBet       int              `json:"threeBet"`
+	AF             string           `json:"af"`
 }
 
 // FollowTheQueenWebOutputCpuAction フォロー・ザ・クイーンCPU行動記録
