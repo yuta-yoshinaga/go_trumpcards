@@ -40,6 +40,9 @@ func (_m *MockMinibridgeInteractor) Play(cardIndex int) string {
 	return _m.Called(cardIndex).String(0)
 }
 
+// ContinueTrick resumes after a resolved trick is reviewed.
+func (_m *MockMinibridgeInteractor) ContinueTrick() string { return _m.Called().String(0) }
+
 // NextRound モック
 func (_m *MockMinibridgeInteractor) NextRound() string { return _m.Called().String(0) }
 

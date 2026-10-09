@@ -40,6 +40,21 @@ const defaultState: PrsiResponse = {
   config: { cpuDifficulty: 1 },
 };
 
+const playableState: PrsiResponse = {
+  ...defaultState,
+  players: defaultState.players.map((player) =>
+    player.isHuman
+      ? {
+          ...player,
+          cards: [
+            { design: 'HEART', value: 10 },
+            { design: 'SPADE', value: 7 },
+          ],
+        }
+      : player,
+  ),
+};
+
 beforeEach(() => {
   mockExec.mockResolvedValue(defaultState);
 });
@@ -57,10 +72,11 @@ describe('usePrsiGame', () => {
 
   it('handlePlay dispatches play with single selected card', async () => {
     const { result } = renderHook(() => usePrsiGame(), { wrapper: createWrapper() });
+    mockExec.mockResolvedValue(playableState);
     await waitFor(() => expect(result.current.state).not.toBeNull());
 
     act(() => {
-      result.current.toggleCard(2);
+      result.current.toggleCard(0);
     });
 
     mockExec.mockClear();
@@ -69,7 +85,34 @@ describe('usePrsiGame', () => {
       result.current.handlePlay();
     });
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 2));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+  });
+
+  it('does not play a selected card that is illegal on the discard pile', async () => {
+    mockExec.mockResolvedValue(defaultState);
+    const { result } = renderHook(() => usePrsiGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.state).not.toBeNull());
+    act(() => result.current.toggleCard(0));
+    mockExec.mockClear();
+
+    act(() => result.current.handlePlay());
+
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('allows only a 7 while a penalty is active', async () => {
+    mockExec.mockResolvedValue({
+      ...playableState,
+      penaltyDrawCount: 2,
+    });
+    const { result } = renderHook(() => usePrsiGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.state).not.toBeNull());
+    act(() => result.current.toggleCard(0));
+    expect(result.current.canPlay).toBe(false);
+    act(() => result.current.toggleCard(0));
+    act(() => result.current.toggleCard(1));
+    expect(result.current.canPlay).toBe(true);
   });
 
   it('handlePlay does nothing when no card selected', async () => {
@@ -139,6 +182,7 @@ describe('usePrsiGame', () => {
   });
 
   it('clears selection on success', async () => {
+    mockExec.mockResolvedValue(playableState);
     const { result } = renderHook(() => usePrsiGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());
 
@@ -147,7 +191,7 @@ describe('usePrsiGame', () => {
     });
     expect(result.current.selectedCardIndices).toEqual([0]);
 
-    mockExec.mockResolvedValue(defaultState);
+    mockExec.mockResolvedValue(playableState);
     act(() => {
       result.current.handlePlay();
     });

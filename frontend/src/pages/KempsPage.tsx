@@ -329,7 +329,7 @@ function KempsPageContent() {
             </div>
 
             {/* Signal cues (human only) */}
-            {isDeclare && state.partnerSignaling && (
+            {isDeclare && state.partnerSignaling && !humanHasFour && (
               <div
                 className={`my-2 p-2 rounded text-sm font-semibold ${badgeSuccessColors}`}
                 role="status"

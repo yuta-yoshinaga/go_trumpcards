@@ -75,6 +75,7 @@ func (m *MockShengJiGame) GetLeadCombo() *domain.ShengJiCombo {
 func (m *MockShengJiGame) GetTeamPoints(team int) int { return m.Called(team).Int(0) }
 func (m *MockShengJiGame) GetTrickCount() int         { return m.Called().Int(0) }
 func (m *MockShengJiGame) GetLastTrickWinner() int    { return m.Called().Int(0) }
+func (m *MockShengJiGame) GetCurrentTrickWinner() int { return m.Called().Int(0) }
 func (m *MockShengJiGame) GetLastResult() *domain.ShengJiHandResult {
 	v := m.Called().Get(0)
 	if v == nil {

@@ -163,7 +163,9 @@ function OmiPageContent() {
         trick.length > previousTrick.length &&
         previousTrick.every((played, index) => JSON.stringify(played) === JSON.stringify(trick[index]));
       // A new trick (the previous one was taken in the same response) is read in full.
-      if (trick.length > 0) {
+      if (trick.length === 0) {
+        setTrickAnnouncement('');
+      } else {
         setTrickAnnouncement(
           trick
             .slice(isAppend ? previousTrick.length : 0)

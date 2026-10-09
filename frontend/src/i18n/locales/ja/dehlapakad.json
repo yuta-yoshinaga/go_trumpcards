@@ -25,6 +25,7 @@
     "unknown": "-"
   },
   "currentTrick": "現在のトリック",
+  "lastTrick": "直前のトリック",
   "centrePile": "中央に {{n}} 枚（うち 10 が {{tens}} 枚）",
   "pileGoesTo": "{{name}} が次のトリックも取れば、この山ごと引き取ります。",
   "teamTens": "10（デーラ）— 味方 {{a}} / 相手 {{b}}",

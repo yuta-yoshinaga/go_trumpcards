@@ -88,6 +88,8 @@
     "hi": "Hi",
     "lo": "Lo",
     "winner": "{{name}} +{{amount}}",
+    "announceHi": "High winners: {{winners}}",
+    "announceLo": "Low winners: {{winners}}",
     "scoop": "Scoop! {{name}} takes both, +{{total}}",
     "hiTakesAll": "Nobody made an eight-or-better low, so the high takes the whole pot"
   },

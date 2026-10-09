@@ -376,20 +376,27 @@ function FiveHundredPageContent() {
                 {human.cards.map((c, i) => {
                   const selected = selectedCardIndices.includes(i);
                   const selectable = isHumanPlayTurn || isHumanExchange;
+                  const playable = !isHumanPlayTurn || state.validPlayIndices.includes(i);
                   const cardClass = selected
                     ? selectable
                       ? 'rounded transition-all ring-2 ring-ds-info -translate-y-2 cursor-pointer hover:opacity-90'
                       : 'rounded transition-all ring-2 ring-ds-info -translate-y-2 cursor-default'
-                    : selectable
-                      ? 'rounded transition-all cursor-pointer hover:opacity-90'
-                      : 'rounded transition-all cursor-default';
+                    : selectable && !playable
+                      ? 'rounded transition-all cursor-not-allowed opacity-40'
+                      : selectable
+                        ? 'rounded transition-all cursor-pointer hover:opacity-90'
+                        : 'rounded transition-all cursor-default';
                   return (
                     <button
                       key={i}
                       type="button"
-                      onClick={() => selectable && toggleCard(i)}
+                      onClick={() => selectable && playable && toggleCard(i)}
                       disabled={!selectable}
                       aria-label={cardAlt(c)}
+                      aria-disabled={isHumanPlayTurn && !playable}
+                      aria-describedby={
+                        isHumanPlayTurn ? (playable ? 'fh-legal-play-reason' : 'fh-illegal-play-reason') : undefined
+                      }
                       aria-pressed={selected}
                       className={cardClass}
                       data-testid={`hand-card-${i}`}
@@ -399,6 +406,12 @@ function FiveHundredPageContent() {
                   );
                 })}
               </div>
+              <span id="fh-legal-play-reason" className="sr-only">
+                {t('legalPlayReason')}
+              </span>
+              <span id="fh-illegal-play-reason" className="sr-only" data-testid="fh-illegal-play-reason">
+                {t('illegalPlayReason')}
+              </span>
             </div>
 
             <GameMessageBox

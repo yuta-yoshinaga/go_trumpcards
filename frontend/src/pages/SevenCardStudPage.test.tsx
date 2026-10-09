@@ -183,6 +183,50 @@ describe('SevenCardStudPage', () => {
     expect(liveRegion).toBeEmptyDOMElement();
   });
 
+  it('keeps the Hi-Lo result live region mounted before showdown and announces the split at showdown', async () => {
+    vi.mocked(sevenCardStudHiLoApi.exec).mockResolvedValueOnce({
+      ...thirdStreetState,
+      isHiLo: true,
+    } as SevenCardStudResponse);
+    renderWithProviders(<SevenCardStudHiLoPage />);
+    const liveRegion = await screen.findByTestId('studhilo-live-region');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
+  });
+
+  it('announces Hi-Lo winners and payouts at showdown', async () => {
+    vi.mocked(sevenCardStudHiLoApi.exec).mockResolvedValueOnce({
+      ...showdownState,
+      isHiLo: true,
+      roundResults: [
+        {
+          playerIdx: 0,
+          handRank: 1,
+          handName: 'ワンペア',
+          kickers: '',
+          bestHand: [],
+          wonAmount: 200,
+          wonLow: 0,
+          mucked: false,
+        },
+        {
+          playerIdx: 1,
+          handRank: 2,
+          handName: 'ツーペア',
+          kickers: '',
+          bestHand: [],
+          wonAmount: 200,
+          wonLow: 200,
+          mucked: false,
+        },
+      ],
+    } as SevenCardStudResponse);
+    renderWithProviders(<SevenCardStudHiLoPage />);
+    const liveRegion = await screen.findByTestId('studhilo-live-region');
+    await waitFor(() => expect(liveRegion).toHaveTextContent('ハイの勝者: あなた +200'));
+    expect(liveRegion).toHaveTextContent('ローの勝者: CPU 1 +200');
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SevenCardStudPage />);
@@ -627,6 +671,24 @@ describe('SevenCardStudPage', () => {
     await waitFor(() => expect(screen.getByTestId('muck-controls')).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'マック' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'ショー' })).toBeInTheDocument();
+  });
+
+  it('moves focus to Chicago muck choices and back to the page heading after selection', async () => {
+    vi.mocked(chicagoApi.exec).mockResolvedValue({ ...showdownState, muckAvailable: true, phase: 6 });
+    renderWithProviders(<ChicagoPage />);
+    const muckButton = await screen.findByRole('button', { name: 'マック' });
+    await waitFor(() => expect(muckButton).toHaveFocus());
+
+    vi.mocked(chicagoApi.exec).mockResolvedValue({ ...showdownState, phase: 7, muckAvailable: false });
+    fireEvent.click(muckButton);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toHaveFocus());
+  });
+
+  it('does not move focus to muck choices in non-Chicago stud games', async () => {
+    mockExec.mockResolvedValue({ ...showdownState, muckAvailable: true, phase: 6 });
+    renderWithProviders(<SevenCardStudPage />);
+    const muckButton = await screen.findByRole('button', { name: 'マック' });
+    expect(muckButton).not.toHaveFocus();
   });
 
   it('calls muck command when muck button clicked', async () => {

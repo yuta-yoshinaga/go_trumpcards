@@ -59,6 +59,13 @@ func (p *BridgeWebPresenter) buildBase(b interfaces.BridgeGame) *controller.Brid
 	resObj.WinnerTeam = b.GetWinnerTeam()
 	resObj.LeadPlayerIdx = b.GetLeadPlayerIdx()
 	resObj.OpeningLeadDone = b.IsOpeningLeadDone()
+	if b.GetPhase() == domain.BridgePhasePlay {
+		playIdx := b.GetCurrentPlayerIdx()
+		player := b.GetPlayer(playIdx)
+		if player.GetIsHuman() || (playIdx == b.GetDummyIdx() && b.GetDeclarerIdx() >= 0 && b.GetPlayer(b.GetDeclarerIdx()).GetIsHuman()) {
+			resObj.LegalPlayIndices = b.GetValidPlayIndices(playIdx)
+		}
+	}
 
 	// ダミーの手札
 	resObj.DummyHand = cardsToOutputOrEmpty(b.GetDummyHand())

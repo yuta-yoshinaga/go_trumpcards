@@ -71,6 +71,21 @@ beforeEach(() => {
 });
 
 describe('GapsPage', () => {
+  it('keeps all 13 columns aligned in one horizontally scrollable board while the page remains vertically scrollable', async () => {
+    renderWithProviders(<GapsPage />);
+    const firstCell = await screen.findByTestId('gaps-locked-0-0');
+    const board = firstCell.closest('[data-tutorial="gaps-grid"]') as HTMLElement;
+    expect(board).toHaveClass('overflow-x-auto', 'max-w-full');
+    expect(board.querySelectorAll('.overflow-x-auto')).toHaveLength(0);
+    const rows = Array.from(board.querySelectorAll('.flex.gap-1')).filter((element) => element.children.length === 13);
+    expect(rows).toHaveLength(4);
+    for (const row of rows) {
+      expect(row).not.toHaveClass('overflow-x-auto');
+      expect(row.querySelectorAll('button')).toHaveLength(13);
+    }
+    expect(board.parentElement).toHaveClass('overflow-y-auto');
+  });
+
   it('moves button focus by row and column with arrow keys using roving tab stops', async () => {
     renderWithProviders(<GapsPage />);
     const first = await screen.findByTestId('gaps-locked-0-0');

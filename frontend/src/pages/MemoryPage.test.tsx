@@ -263,6 +263,40 @@ describe('MemoryPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument());
   });
 
+  describe('game end results', () => {
+    it('shows the human as the sole winner in the banner and result line', async () => {
+      mockExec.mockResolvedValue({
+        ...gameEndState,
+        players: flip1State.players.map((player) => ({ ...player, pairCount: player.isHuman ? 3 : 1 })),
+      });
+      renderWithProviders(<MemoryPage />);
+      await waitFor(() => expect(screen.getByTestId('memory-game-result')).toHaveTextContent('あなたの勝ち (3 ペア)'));
+      expect(await screen.findByTestId('win-celebration')).toBeInTheDocument();
+    });
+
+    it('shows a CPU sole winner as a loss with its name in the result line', async () => {
+      mockExec.mockResolvedValue({
+        ...gameEndState,
+        players: flip1State.players.map((player) => ({ ...player, pairCount: player.id === 1 ? 3 : 1 })),
+      });
+      renderWithProviders(<MemoryPage />);
+      await waitFor(() => expect(screen.getByTestId('memory-game-result')).toHaveTextContent('CPU 1の勝ち (3 ペア)'));
+      expect(document.querySelector('[data-testid="win-celebration"]')).not.toBeInTheDocument();
+    });
+
+    it('shows all tied leaders without win or loss banners', async () => {
+      mockExec.mockResolvedValue({
+        ...gameEndState,
+        players: flip1State.players.map((player) => ({ ...player, pairCount: player.id < 2 ? 3 : 1 })),
+      });
+      renderWithProviders(<MemoryPage />);
+      await waitFor(() =>
+        expect(screen.getByTestId('memory-game-result')).toHaveTextContent('引き分け: あなた、CPU 1 (各 3 ペア)'),
+      );
+      expect(document.querySelector('[data-testid="win-celebration"]')).not.toBeInTheDocument();
+    });
+  });
+
   it('game end by flag also shows action log', async () => {
     mockExec.mockResolvedValue(gameEndByFlagState);
     renderWithProviders(<MemoryPage />);

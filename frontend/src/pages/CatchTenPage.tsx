@@ -345,6 +345,11 @@ function CatchTenPageContent() {
                   cardAriaLabelFor={(player, card) =>
                     t('trickCardByPlayer', { card: cardAlt(card), name: playerName(player.id, player.isHuman) })
                   }
+                  cardDetailFor={(card) => {
+                    if (state.trumpSuit === 0) return '';
+                    const points = catchTenHonorPoints(card, state.trumpSuit);
+                    return points > 0 ? t('honorBadge', { points }) : '';
+                  }}
                   dataTutorial="ct-trick-display"
                 />
               </div>

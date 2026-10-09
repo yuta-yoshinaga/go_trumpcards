@@ -37,6 +37,7 @@ type ScoponeWebOutputPlayer struct {
 	HandCount     int              `json:"handCount"`
 	Cards         []*WebOutputCard `json:"cards"`
 	CapturedCount int              `json:"capturedCount"`
+	CapturedCards []*WebOutputCard `json:"capturedCards"`
 	ScopaCount    int              `json:"scopaCount"`
 }
 

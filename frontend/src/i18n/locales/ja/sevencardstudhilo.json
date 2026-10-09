@@ -88,6 +88,8 @@
     "hi": "ハイ",
     "lo": "ロー",
     "winner": "{{name}} +{{amount}}",
+    "announceHi": "ハイの勝者: {{winners}}",
+    "announceLo": "ローの勝者: {{winners}}",
     "scoop": "スクープ！ {{name}} が両取り +{{total}}",
     "hiTakesAll": "8以下のローが誰にも成立しなかったので、ハイの総取りです"
   },

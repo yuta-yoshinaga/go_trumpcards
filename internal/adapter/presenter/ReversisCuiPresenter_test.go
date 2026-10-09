@@ -216,6 +216,52 @@ func TestReversisCuiPresenterShowsCardPoints(t *testing.T) {
 	assert.NotContains(t, out, "{{")
 }
 
+func TestReversisCuiPresenterMarksLegalCards(t *testing.T) {
+	p := new(ReversisCuiPresenter)
+	r := newReversisForCui(t)
+	r.SetCurrentPlayerIdxForTest(0)
+	human := r.GetPlayer(0)
+	human.ResetRound()
+	human.AddCard(domain.NewCard(domain.CardDesignSpade, 1, true))
+	human.AddCard(domain.NewCard(domain.CardDesignHeart, 13, true))
+	r.SetCurrentTrickForTest([]*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 7, true)}})
+
+	out := reversisPlain(p.Output(r, nil))
+	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "0", "card", "♠1", "points", "4")+CuiLegalMark)
+	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "1", "card", "♥13", "points", "3"))
+	assert.Contains(t, out, i18n.T("reversis.legalMark"))
+	assert.Equal(t, []int{0}, r.GetValidPlayIndices(0))
+}
+
+func TestReversisCuiPresenterMarksEveryCardWhenLeading(t *testing.T) {
+	p := new(ReversisCuiPresenter)
+	r := newReversisForCui(t)
+	r.SetCurrentPlayerIdxForTest(0)
+	human := r.GetPlayer(0)
+	human.ResetRound()
+	human.AddCard(domain.NewCard(domain.CardDesignSpade, 1, true))
+	human.AddCard(domain.NewCard(domain.CardDesignHeart, 13, true))
+
+	out := reversisPlain(p.Output(r, nil))
+	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "0", "card", "♠1", "points", "4")+CuiLegalMark)
+	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "1", "card", "♥13", "points", "3")+CuiLegalMark)
+	assert.Contains(t, out, i18n.T("reversis.legalMark"))
+}
+
+func TestReversisCuiPresenterLegalMarkTranslations(t *testing.T) {
+	originalLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(originalLang) })
+	for _, tc := range []struct {
+		lang string
+		want string
+	}{{"ja", "印の付いた札を今出せます。"}, {"en", "marks cards you may play now."}} {
+		t.Run(tc.lang, func(t *testing.T) {
+			i18n.SetLang(tc.lang)
+			assert.Contains(t, i18n.T("reversis.legalMark"), tc.want)
+		})
+	}
+}
+
 // reversisPlain は色付けのエスケープを落とす。
 var reversisAnsi = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 

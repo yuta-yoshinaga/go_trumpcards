@@ -82,6 +82,12 @@ export interface MinibridgeResponse extends BaseGameResponse {
   leadPlayerIdx: number;
   dealerIdx: number;
   currentTrick: MinibridgeTrickCard[];
+  /** Most recently resolved trick, retained while awaiting confirmation. */
+  lastTrick: MinibridgeTrickCard[];
+  /** Seat that won lastTrick, or -1 when none has resolved. */
+  lastTrickWinner: number;
+  /** Play pauses after a trick until the user continues. */
+  trickPaused: boolean;
   /**
    * Hand indices you may legally play, **for the seat you are controlling** —
    * the dummy's when it is the dummy's turn and you are the declarer.

@@ -46,6 +46,8 @@ function makeState(overrides: Partial<HokmResponse> = {}): HokmResponse {
     currentPlayerIdx: 0,
     leadPlayerIdx: 0,
     currentTrick: [],
+    lastTrick: [],
+    lastTrickWinner: -1,
     validPlays: [0, 1, 2],
     gameEndFlag: false,
     winnerTeam: -1,
@@ -98,6 +100,23 @@ describe('HokmPage', () => {
     renderWithProviders(<HokmPage />);
 
     expect(await screen.findByRole('img', { name })).toBeInTheDocument();
+  });
+
+  it('keeps the previous trick and marks its winning seat while a new trick is in progress', async () => {
+    mockExec.mockResolvedValue(
+      playing({
+        currentTrick: [],
+        lastTrick: [
+          { playerIdx: 0, card: card('SPADE', 1) },
+          { playerIdx: 1, card: card('SPADE', 13) },
+        ],
+        lastTrickWinner: 1,
+      } as Partial<HokmResponse>),
+    );
+    renderWithProviders(<HokmPage />);
+    const winnerBadge = await screen.findByTestId('trick-winner-badge');
+    expect(winnerBadge.parentElement).toHaveAttribute('data-player-idx', '1');
+    expect(screen.getByTestId('trick-display-cards').querySelectorAll('[data-player-idx]')).toHaveLength(2);
   });
 
   it('announces the completed hand result', async () => {

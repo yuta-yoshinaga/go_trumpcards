@@ -13,7 +13,7 @@ import (
 )
 
 // reversisPlayerStr returns the display string for a single player.
-func reversisPlayerStr(player *domain.ReversisPlayer, idx int) string {
+func reversisPlayerStr(player *domain.ReversisPlayer, idx int, legal []int) string {
 	var b strings.Builder
 	b.WriteString(i18n.Tf("reversis.playerLine",
 		"name", cuiPlayerName(player, idx),
@@ -24,7 +24,7 @@ func reversisPlayerStr(player *domain.ReversisPlayer, idx int) string {
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(reversisHandStr(player) + "\n")
+		b.WriteString(reversisHandStr(player, legal) + "\n")
 	}
 	return b.String()
 }
@@ -34,14 +34,22 @@ func reversisPlayerStr(player *domain.ReversisPlayer, idx int) string {
 // **点を取り合うのが核なのに、どの札が何点かは画面に出ていなかった** (#5747)。
 // A=4 / K=3 / Q=2 / J=1 を暗算し続けることになる。値は
 // domain.ReversisCardPenalty から引き、表を写さない。
-func reversisHandStr(player *domain.ReversisPlayer) string {
+func reversisHandStr(player *domain.ReversisPlayer, legal []int) string {
+	playable := make(map[int]bool, len(legal))
+	for _, idx := range legal {
+		playable[idx] = true
+	}
 	parts := make([]string, 0, player.GetCardsSize())
 	for i := range player.GetCardsSize() {
 		card := player.GetCard(i)
-		parts = append(parts, i18n.Tf("reversis.handCard",
+		cardText := i18n.Tf("reversis.handCard",
 			"idx", strconv.Itoa(i),
 			"card", cuiCardStr(card),
-			"points", strconv.Itoa(domain.ReversisTotalCardPenalty(card))))
+			"points", strconv.Itoa(domain.ReversisTotalCardPenalty(card)))
+		if playable[i] {
+			cardText += CuiLegalMark
+		}
+		parts = append(parts, cardText)
 	}
 	return strings.Join(parts, "  ")
 }
@@ -78,7 +86,14 @@ func (p *ReversisCuiPresenter) Output(r interfaces.ReversisGame, lastErr error) 
 
 		for i := 0; i < r.GetPlayerCnt(); i++ {
 			player := r.GetPlayer(i)
-			sb.WriteString(reversisPlayerStr(player, i))
+			var legal []int
+			if r.GetPhase() == domain.ReversisPhasePlay && r.IsHumanTurn() && r.GetCurrentPlayerIdx() == i {
+				legal = r.GetValidPlayIndices(i)
+				if player.GetIsHuman() && player.GetCardsSize() > 0 {
+					sb.WriteString(i18n.T("reversis.legalMark") + "\n")
+				}
+			}
+			sb.WriteString(reversisPlayerStr(player, i, legal))
 			if r.GetPhase() == domain.ReversisPhaseRoundEnd || r.GetPhase() == domain.ReversisPhaseGameEnd {
 				special := player.GetMarkedPenalty()
 				sb.WriteString(i18n.Tf("reversis.penaltyBreakdown", "name", cuiPlayerName(player, i), "normal", strconv.Itoa(player.GetRoundPenalty()-special), "special", strconv.Itoa(special), "total", strconv.Itoa(player.GetRoundPenalty())) + "\n")

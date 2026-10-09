@@ -405,12 +405,12 @@ function WhistPageContent() {
                   entries={[
                     {
                       name: t('team', { n: 0 }),
-                      roundScore: state.teamScores[0],
+                      roundScore: state.players.find((player) => player.team === 0)!.roundScore,
                       cumulativeScore: state.teamScores[0],
                     },
                     {
                       name: t('team', { n: 1 }),
-                      roundScore: state.teamScores[1],
+                      roundScore: state.players.find((player) => player.team === 1)!.roundScore,
                       cumulativeScore: state.teamScores[1],
                     },
                   ]}

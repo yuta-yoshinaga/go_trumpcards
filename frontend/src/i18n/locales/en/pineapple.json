@@ -13,6 +13,7 @@
   "communityCards": "Community Cards",
   "yourHand": "Your Hand",
   "listSeparator": ", ",
+  "callAmount": "({{amount}} chips)",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "discard": {
     "prompt": "Discard one card.",

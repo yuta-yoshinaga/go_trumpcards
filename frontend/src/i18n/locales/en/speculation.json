@@ -28,6 +28,8 @@
   "guide.sell": "{{buyer}} offers {{amount}} for your best trump. Sell it?",
   "guide.buy": "{{owner}} will part with the best trump for {{amount}}. Buy it?",
   "guide.raiseHint": "A raise must be at least {{min}}",
+  "live.sell": "{{buyer}} offers {{amount}} for your best trump. Choose {{accept}} or {{decline}}",
+  "live.buy": "{{owner}} offers the best trump for {{amount}}. Choose {{accept}}, {{decline}}, or {{raise}}",
   "result.youWin": "You take the pot!",
   "result.seatWins": "{{name}} takes the pot",
   "result.void": "No trump appeared. The stakes are returned",

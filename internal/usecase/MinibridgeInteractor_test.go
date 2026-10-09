@@ -17,7 +17,9 @@ import (
 )
 
 func newMockMinibridgeGame() *interfaces.MockMinibridgeGame {
-	return new(interfaces.MockMinibridgeGame)
+	m := new(interfaces.MockMinibridgeGame)
+	m.On("IsTrickPaused").Return(false).Maybe()
+	return m
 }
 
 func newMockMinibridgePresenter() *presenter.MockMinibridgePresenter {
@@ -201,6 +203,21 @@ func TestMinibridgeInteractorNextRoundAndGiveUp(t *testing.T) {
 	assert.Equal(t, "out", i.GiveUp())
 	g.AssertNumberOfCalls(t, "NextRound", 1)
 	g.AssertNumberOfCalls(t, "GiveUp", 1)
+}
+
+func TestMinibridgeInteractorContinueTrickResumesCpuAdvance(t *testing.T) {
+	g := newMockMinibridgeGame()
+	p := newMockMinibridgePresenter()
+	i := NewMinibridgeInteractor(g, p)
+	g.On("ContinueTrick").Return()
+	g.On("GetGameEndFlag").Return(false)
+	g.On("GetPhase").Return(domain.MinibridgePhasePlay)
+	g.On("IsHumanTurn").Return(true)
+	p.On("Output", g, nil).Return("continued")
+
+	assert.Equal(t, "continued", i.ContinueTrick())
+	g.AssertNumberOfCalls(t, "ContinueTrick", 1)
+	g.AssertNotCalled(t, "CpuPlay")
 }
 
 // **4 の倍数でないラウンド数は弾き、ゲームを作り直さない。**

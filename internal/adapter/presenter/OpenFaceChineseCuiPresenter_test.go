@@ -37,6 +37,8 @@ func setupOpenFaceChineseCuiMock() *interfaces.MockOpenFaceChineseGame {
 	m.On("GetPlayer", 0).Return(human)
 	m.On("GetPlayer", 1).Return(cpu)
 	m.On("GetCurrentCard").Return(ofcCardP(domain.CardDesignSpade, 13))
+	m.On("RoundBreakdown", 0).Return(domain.OpenFaceChineseBreakdown{Rows: []domain.OpenFaceChineseRowBreakdown{}}).Maybe()
+	m.On("RoundBreakdown", 1).Return(domain.OpenFaceChineseBreakdown{Rows: []domain.OpenFaceChineseRowBreakdown{}}).Maybe()
 	return m
 }
 
@@ -245,4 +247,31 @@ func TestOpenFaceChineseCuiPresenter_ShowsRoyaltyAtRoundEnd(t *testing.T) {
 		assert.True(t, ok)
 		assert.NotContains(t, out, tail)
 	})
+}
+
+func TestOpenFaceChineseCuiPresenter_ShowsRoundBreakdown(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.OpenFaceChineseCuiPresenter)
+	m := setupOpenFaceChineseCuiMock()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "RoundBreakdown")
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "RoundBreakdown")
+	m.On("GetPhase").Return(domain.OpenFaceChinesePhaseRoundEnd)
+	m.On("RoundBreakdown", 0).Return(domain.OpenFaceChineseBreakdown{
+		Rows: []domain.OpenFaceChineseRowBreakdown{
+			{Row: domain.OpenFaceChineseRowFront, Rank: domain.ThreeCardHandPair, Comparisons: []domain.OpenFaceChineseRowComparison{{OpponentIdx: 1, Outcome: 1}}, Score: 1},
+			{Row: domain.OpenFaceChineseRowMiddle, Rank: domain.PokerHandTwoPair, Comparisons: []domain.OpenFaceChineseRowComparison{{OpponentIdx: 1, Outcome: 0}}, Score: 0},
+			{Row: domain.OpenFaceChineseRowBack, Rank: domain.PokerHandFlush, Comparisons: []domain.OpenFaceChineseRowComparison{{OpponentIdx: 1, Outcome: -1}}, Score: -1},
+		}, ScoopScore: 0, RoyaltyAdjustment: -2,
+	})
+	m.On("RoundBreakdown", 1).Return(domain.OpenFaceChineseBreakdown{Rows: []domain.OpenFaceChineseRowBreakdown{}})
+	out := p.Output(m, nil)
+	assert.Contains(t, out, i18n.T("openfacechinese.rowNameFront"))
+	assert.Contains(t, out, i18n.T("openfacechinese.resultWin"))
+	assert.Contains(t, out, i18n.T("openfacechinese.resultTie"))
+	assert.Contains(t, out, i18n.T("openfacechinese.resultLoss"))
+	assert.Contains(t, out, i18n.Tf("openfacechinese.roundBreakdownRow", "row", i18n.T("openfacechinese.rowNameFront"), "rank", i18n.T("pokerhand.pair"), "opponent", "CPU 1", "result", i18n.T("openfacechinese.resultWin"), "points", "+1"))
+	assert.Contains(t, out, i18n.Tf("openfacechinese.roundBreakdownBonuses", "scoop", "0", "royalty", "-2", "total", strconv.Itoa(m.GetPlayer(0).GetRoundScore())))
 }

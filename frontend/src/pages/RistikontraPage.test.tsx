@@ -102,6 +102,18 @@ describe('RistikontraPage', () => {
     renderWithProviders(<RistikontraPage />);
     await waitFor(() => expect(screen.getByText('プレイヤー')).toBeInTheDocument());
     expect(screen.getAllByText(/捕獲 0枚/).length).toBe(4);
+    expect(screen.getAllByText('手札 4枚')).toHaveLength(4);
+  });
+
+  it('shows each player hand count with English labels', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<RistikontraPage />);
+      expect(await screen.findAllByText('Hand: 4 cards')).toHaveLength(4);
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('renders the human hand cards', async () => {

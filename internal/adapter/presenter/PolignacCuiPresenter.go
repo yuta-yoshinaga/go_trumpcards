@@ -12,6 +12,25 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+func polignacUnclaimedJackStr(g interfaces.PolignacGame) string {
+	taken := make(map[int]bool, 4)
+	for playerIdx := 0; playerIdx < g.GetPlayerCnt(); playerIdx++ {
+		for _, suit := range g.GetPlayer(playerIdx).GetTakenJackSuits() {
+			taken[suit] = true
+		}
+	}
+	var suits []string
+	for _, suit := range []int{domain.CardDesignSpade, domain.CardDesignClover, domain.CardDesignHeart, domain.CardDesignDiamond} {
+		if !taken[suit] {
+			suits = append(suits, cardDesignSymbols[suit])
+		}
+	}
+	if len(suits) == 0 {
+		return ""
+	}
+	return i18n.Tf("polignac.unclaimedJacks", "suits", strings.Join(suits, i18n.T("polignac.listSeparator"))) + "\n"
+}
+
 // polignacPlayerStr returns the display string for a single player.
 func polignacPlayerStr(player *domain.PolignacPlayer, idx int, isCapot bool) string {
 	var b strings.Builder
@@ -70,6 +89,9 @@ func (p *PolignacCuiPresenter) Output(g interfaces.PolignacGame, lastErr error) 
 
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			sb.WriteString(polignacPlayerStr(g.GetPlayer(i), i, i == g.GetCapotIdx()))
+		}
+		if g.GetPhase() == domain.PolignacPhasePlay && !g.GetGameEndFlag() {
+			sb.WriteString(polignacUnclaimedJackStr(g))
 		}
 
 		sb.WriteString("----------\n")

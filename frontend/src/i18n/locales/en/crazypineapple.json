@@ -12,6 +12,7 @@
   },
   "communityCards": "Community Cards",
   "yourHand": "Your Hand",
+  "callAmount": "({{amount}} chips)",
   "discardUpcoming": "You will discard one card after the flop betting round",
   "cpuDiscard": {
     "logLabel": "CPU discards",

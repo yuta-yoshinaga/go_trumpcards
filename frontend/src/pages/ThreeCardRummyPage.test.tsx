@@ -172,10 +172,24 @@ describe('ThreeCardRummyPage', () => {
     fireEvent.change(screen.getByLabelText('アンテ'), { target: { value: '200' } });
     expect(screen.getByTestId('tcr-bet-summary')).toHaveTextContent('合計: 200');
     expect(screen.getByTestId('tcr-bet-summary')).toHaveTextContent('残りチップ: 50');
+    expect(screen.getByTestId('tcr-bet-summary')).toHaveTextContent('プレイ時の追加アンテ: 200');
+    expect(screen.getByTestId('tcr-bet-summary')).toHaveTextContent('プレイベット不足: 150');
+    expect(screen.getByTestId('tcr-bet-summary')).toHaveTextContent('不足時もフォールドできます');
     expect(screen.getByRole('button', { name: 'ベット' })).toHaveAttribute('aria-disabled', 'false');
 
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 200, 0));
+  });
+
+  it('shows the additional play ante without a shortfall when the bankroll covers both bets', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, chips: 500 });
+    renderWithProviders(<ThreeCardRummyPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 500')).toBeInTheDocument());
+
+    fireEvent.change(screen.getByLabelText('アンテ'), { target: { value: '200' } });
+    const summary = screen.getByTestId('tcr-bet-summary');
+    expect(summary).toHaveTextContent('プレイ時の追加アンテ: 200');
+    expect(summary).not.toHaveTextContent('プレイベット不足');
   });
 
   it('blocks an over-budget combined bet and shows the shortfall', async () => {

@@ -74,7 +74,8 @@
     "handOdds": "ハンドオッズ"
   },
   "settings": {
-    "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"
+    "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）",
+    "tournamentMode": "トーナメントモード"
   },
   "tutorial": {
     "communityCards": "コミュニティカードです。5枚が順次公開されます。",

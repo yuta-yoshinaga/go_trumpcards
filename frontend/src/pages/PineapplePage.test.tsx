@@ -333,6 +333,26 @@ describe('PineapplePage', () => {
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
   });
 
+  it('shows only the outstanding bet difference as the call amount', async () => {
+    mockCrazyExec.mockResolvedValue({
+      ...preFlopState,
+      lastBet: 35,
+      players: [humanPlayer({ currentBet: 15 }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+    });
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+
+    const callButton = await screen.findByRole('button', { name: /コール.*20チップ/ });
+    expect(callButton).toHaveTextContent(/コール\s+（20チップ）/);
+  });
+
+  it('does not show a call amount when there is no outstanding bet', async () => {
+    mockCrazyExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+
+    expect(await screen.findByRole('button', { name: 'チェック' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /コール/ })).not.toBeInTheDocument();
+  });
+
   it('shows only currently usable betting shortcuts on the human turn', async () => {
     mockExec.mockResolvedValue({ ...preFlopState, lastBet: 10 });
     renderWithProviders(<PineapplePage />);

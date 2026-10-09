@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -450,6 +451,20 @@ func TestFiveCardStudWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "Full House", cpu.HandName)
 		assert.Len(t, cpu.BestHand, 3)
 	})
+}
+
+func TestFiveCardStudWebPresenter_SidePotWinnersOnlyAtShowdown(t *testing.T) {
+	p := new(presenter.FiveCardStudWebPresenter)
+	s, _ := makeFiveCardStudForPresenter()
+	s.SetSidePots([]domain.SidePot{{Amount: 80, EligiblePlayers: []int{0, 1}}})
+	s.SetPotAwards([][]domain.PotAward{{{PlayerIdx: 1, Amount: 80}}})
+	s.SetPhase(domain.FiveCardStudPhaseFourthStreet)
+	var out controller.FiveCardStudWebOutput
+	require.NoError(t, json.Unmarshal([]byte(p.Output(s, nil)), &out))
+	assert.Empty(t, out.SidePots[0].Winners)
+	s.SetPhase(domain.FiveCardStudPhaseShowdown)
+	require.NoError(t, json.Unmarshal([]byte(p.Output(s, nil)), &out))
+	assert.Equal(t, []*controller.FiveCardStudWebOutputPotAward{{PlayerIdx: 1, Amount: 80}}, out.SidePots[0].Winners)
 }
 
 func TestFiveCardStudWebPresenter_ActionLogOutput(t *testing.T) {

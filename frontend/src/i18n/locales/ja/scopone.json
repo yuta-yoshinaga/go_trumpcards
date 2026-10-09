@@ -25,6 +25,11 @@
     "scopaBadge": "スコパ！",
     "scopaBadgeOwn": "スコパ！ あなたのチーム"
   },
+  "capturedCards": {
+    "title": "自チームの獲得札",
+    "empty": "まだ札を獲得していません"
+  },
+  "listSeparator": "、",
   "scoreRules": {
     "title": "得点カテゴリ（各1点）",
     "cards": "最多カード（1点）",

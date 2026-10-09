@@ -12,6 +12,7 @@ import (
 // BaseballPokerWebInput ベースボールポーカーWebインプット
 type BaseballPokerWebInput struct {
 	BaseWebInput
+	Config *BaseballPokerWebOutCfg `json:"config,omitempty"`
 	// Amount はベット / レイズの額。
 	Amount *int `json:"amount,omitempty"`
 }
@@ -146,6 +147,13 @@ func baseballPokerDispatch(bc *baseController, w http.ResponseWriter, ci usecase
 		bc.writePresenterResponse(w, ci.NextHand())
 	case "hint":
 		bc.writePresenterResponse(w, ci.Hint())
+	case "r", "reset":
+		if param.Config == nil {
+			bc.writePresenterResponse(w, ci.Reset())
+		} else {
+			cfg := domain.BaseballPokerConfig{Seats: param.Config.Seats, InitialChips: param.Config.InitialChips, Ante: param.Config.Ante}
+			bc.writePresenterResponse(w, ci.ResetWithConfig(cfg))
+		}
 	default:
 		return dispatchResetAndLog(param.Command, bc, w, ci.Reset, ci.ActionLog)
 	}

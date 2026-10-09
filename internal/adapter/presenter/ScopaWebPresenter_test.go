@@ -33,6 +33,29 @@ func TestScopaWebPresenter_OutputJSON(t *testing.T) {
 	}
 }
 
+func TestScopaWebPresenter_IncludesEachPlayersCapturedCards(t *testing.T) {
+	p := &presenter.ScopaWebPresenter{}
+	s := buildScoredScopa(t)
+	s.GetPlayer(0).AddCaptured([]*domain.Card{domain.NewCard(domain.CardDesignDiamond, 7, false)})
+	s.GetPlayer(1).AddCaptured([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 2, false)})
+	var got struct {
+		Players []struct {
+			CapturedCount int `json:"capturedCount"`
+			CapturedCards []struct {
+				Design string `json:"design"`
+				Value  int    `json:"value"`
+			} `json:"capturedCards"`
+		} `json:"players"`
+	}
+	if err := json.Unmarshal([]byte(p.Output(s, nil)), &got); err != nil {
+		t.Fatalf("output not valid JSON: %v", err)
+	}
+	assert.Equal(t, 1, got.Players[0].CapturedCount)
+	assert.Equal(t, "DIAMOND", got.Players[0].CapturedCards[0].Design)
+	assert.Equal(t, 1, got.Players[1].CapturedCount)
+	assert.Equal(t, "HEART", got.Players[1].CapturedCards[0].Design)
+}
+
 func TestScopaWebPresenter_HintOutput(t *testing.T) {
 	p := &presenter.ScopaWebPresenter{}
 	s := buildScoredScopa(t)

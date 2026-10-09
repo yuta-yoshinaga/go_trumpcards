@@ -95,6 +95,9 @@ export interface SergeantMajorResponse extends BaseGameResponse {
   /** The dealer. **This seat owes 8 and names trump.** */
   dealerIdx: number;
   currentTrick: SergeantMajorTrickCard[];
+  /** Most recently completed trick; cleared when a new round starts. */
+  lastTrick: SergeantMajorTrickCard[];
+  lastTrickWinner: number;
   /** Hand indices you may legally play. Following suit is compulsory. */
   validPlays: number[];
   gameEndFlag: boolean;

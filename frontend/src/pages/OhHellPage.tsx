@@ -370,6 +370,12 @@ function OhHellPageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="oh-trick-display"
+                  cardAriaLabelFor={(player, card) =>
+                    t('trickCardAriaLabel', {
+                      player: playerName(player.id, player.isHuman),
+                      card: cardAlt(card),
+                    })
+                  }
                   winnerIdx={isTrickEnd ? state.leadPlayerIdx : undefined}
                   winnerLabel={t('trickWinnerBadge')}
                 />

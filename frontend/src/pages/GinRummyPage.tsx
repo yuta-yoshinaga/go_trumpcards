@@ -493,11 +493,23 @@ function GinRummyPageContent() {
             )}
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="gr-player-hand">
+                {isLayoffPhase && (
+                  <span id="ginrummy-layoff-unavailable" className="sr-only">
+                    {t('notLayoffableCard')}
+                  </span>
+                )}
                 {humanPlayer.cards.map((card, idx) => (
                   <button
                     type="button"
                     key={`${card.design}-${card.value}-${idx}`}
-                    onClick={() => toggleCard(idx)}
+                    onClick={() => {
+                      if (isLayoffPhase && !layoffableIndices.has(idx)) return;
+                      toggleCard(idx);
+                    }}
+                    aria-disabled={isLayoffPhase && !layoffableIndices.has(idx) ? 'true' : undefined}
+                    aria-describedby={
+                      isLayoffPhase && !layoffableIndices.has(idx) ? 'ginrummy-layoff-unavailable' : undefined
+                    }
                     aria-label={
                       isDiscardPhase
                         ? t('cardStatus', {
@@ -518,7 +530,7 @@ function GinRummyPageContent() {
                     // メルド/デッドウッドを見せているのに、レイオフには補助が
                     // 無く、押してサーバーの応答で初めて成否が分かった (#4823)。
                     data-layoff={isLayoffPhase ? (layoffableIndices.has(idx) ? 'yes' : 'no') : undefined}
-                    className={`transition-transform ${focusRingCard}`}
+                    className={`transition-transform ${focusRingCard} ${isLayoffPhase && !layoffableIndices.has(idx) ? 'opacity-50 cursor-not-allowed' : ''}`}
                     style={{
                       background: 'none',
                       padding: 0,

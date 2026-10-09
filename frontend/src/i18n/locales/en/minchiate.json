@@ -59,6 +59,11 @@
   "hintRequested": "A hint is available",
   "noHint": "No hint available",
   "trumpCountNote": "40 trumps -- including the 12 zodiac signs, the four elements and the virtues; tracking what is still above you is the skill",
+  "trumpTracker": "Trump tracker",
+  "noPlayedTrumps": "No trumps played yet",
+  "remainingTrumps_one": "{{count}} trump remaining",
+  "remainingTrumps_other": "{{count}} trumps remaining",
+  "listSeparator": ", ",
   "mattoNote": "The Matto (Fool) is special: it never wins a trick, is exempt from following suit, and never sets the led suit",
   "hintButton": "Hint"
 }

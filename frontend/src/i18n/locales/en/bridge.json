@@ -36,6 +36,7 @@
   "bidButton": "Bid",
   "doubleIllegal": "Cannot double: the opponents have not made the latest bid",
   "redoubleIllegal": "Cannot redouble: your side's bid has not been doubled",
+  "followSuit": "Follow suit when you have a card in the lead suit",
   "bidTooLow": "Cannot bid at or below the current contract",
   "playButton": "Play",
   "nextTrick": "Next Trick",

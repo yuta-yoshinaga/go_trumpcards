@@ -13,6 +13,10 @@
   "latestDoorCard": "{{card}}、最新",
   "holeCards": "ホールカード",
   "bestHandCard": "役の構成札",
+  "mainPot": "メインポット: {{amount}}チップ（対象: {{eligiblePlayers}}）",
+  "sidePot": "サイドポット{{index}}: {{amount}}チップ（対象: {{eligiblePlayers}}）",
+  "awarded": "（獲得: {{winners}}）",
+  "listSeparator": "、",
   "yourHand": "あなたの手札",
   "anteBringIn": "アンティ/ブリングイン",
   "betting": {

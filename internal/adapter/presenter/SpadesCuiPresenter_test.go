@@ -1,6 +1,7 @@
 package presenter_test
 
 import (
+	"encoding/json"
 	"errors"
 	"testing"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // setupSpadesCuiMock creates a MockSpadesGame with sensible defaults for CUI tests.
@@ -282,6 +284,23 @@ func TestSpadesCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "ラウンド終了")
 		assert.Contains(t, result, "nr / nextround・・・次のラウンドへ")
+	})
+
+	t.Run("round end phase shows score breakdown in Japanese and English", func(t *testing.T) {
+		origLang := i18n.Lang()
+		t.Cleanup(func() { i18n.SetLang(origLang) })
+		m, players := setupSpadesCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.SpadesPhaseRoundEnd)
+		assert.NoError(t, json.Unmarshal([]byte(`{"sb":{"bidScore":30,"overtrickScore":2,"nilScore":-100,"bagPenalty":100}}`), players[0]))
+
+		i18n.SetLang("ja")
+		ja := p.Output(m, nil)
+		assert.Contains(t, ja, "CPU 0 得点内訳: ビッド=30 オーバートリック=2 ニル=-100 バッグペナルティ=-100 合計=-168")
+
+		i18n.SetLang("en")
+		en := p.Output(m, nil)
+		assert.Contains(t, en, "CPU 0 score breakdown: bid=30 overtricks=2 nil=-100 bag penalty=-100 total=-168")
 	})
 
 	t.Run("nil player at winnerIdx shows UNKNOWN", func(t *testing.T) {

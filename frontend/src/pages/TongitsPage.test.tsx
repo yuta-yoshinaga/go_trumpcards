@@ -65,6 +65,15 @@ beforeEach(() => {
 });
 
 describe('TongitsPage', () => {
+  it('labels the score table with a translated caption and keeps its column headers', async () => {
+    renderWithProviders(<TongitsPage />);
+
+    const scoreTable = await screen.findByRole('table', { name: '現在のスコア表' });
+    expect(within(scoreTable).getByRole('columnheader', { name: 'プレイヤー' })).toBeInTheDocument();
+    expect(within(scoreTable).getByRole('columnheader', { name: 'ラウンド' })).toBeInTheDocument();
+    expect(within(scoreTable).getByRole('columnheader', { name: '累計' })).toBeInTheDocument();
+  });
+
   it('uses the player ID to make public meld row keys unique', () => {
     expect(publicMeldRowKey(1, 0)).not.toBe(publicMeldRowKey(2, 0));
   });

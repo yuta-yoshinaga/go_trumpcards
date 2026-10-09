@@ -99,6 +99,26 @@ func TestFiveHundredWebPresenter_Hint(t *testing.T) {
 	}
 }
 
+func TestFiveHundredWebPresenter_ValidPlayIndicesFollowSuitAndJokerNomination(t *testing.T) {
+	g := newFiveHundredGame()
+	g.SetContract(domain.FiveHundredContractNoTrump, 0, -1)
+	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	g.SetJokerLeadSuit(domain.CardDesignHeart)
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignJoker, 0, false)}})
+	g.SetPhase(domain.FiveHundredPhasePlay)
+	g.SetCurrentPlayerIdx(0)
+
+	var parsed controller.FiveHundredWebOutput
+	require.NoError(t, json.Unmarshal([]byte((&presenter.FiveHundredWebPresenter{}).Output(g, nil)), &parsed))
+	assert.Equal(t, []int{0}, parsed.ValidPlayIndices)
+
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 8, false)}})
+	g.SetJokerLeadSuit(-1)
+	require.NoError(t, json.Unmarshal([]byte((&presenter.FiveHundredWebPresenter{}).Output(g, nil)), &parsed))
+	assert.Equal(t, []int{0, 1}, parsed.ValidPlayIndices)
+}
+
 func TestFiveHundredWebPresenter_ActionLog(t *testing.T) {
 	g := newFiveHundredGame()
 	g.Reset()

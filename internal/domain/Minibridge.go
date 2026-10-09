@@ -136,6 +136,9 @@ type Minibridge struct {
 	declarerByDealerTie bool
 
 	currentTrick     []*TrickCard
+	lastTrick        []*TrickCard
+	lastTrickWinner  int
+	trickPaused      bool
 	currentPlayerIdx int
 	leadPlayerIdx    int
 	dealerIdx        int
@@ -159,11 +162,12 @@ func NewMinibridge(players []*MinibridgePlayer, config MinibridgeConfig) *Minibr
 		players = newMinibridgeSeats()
 	}
 	return &Minibridge{
-		players:     players,
-		config:      config,
-		declarerIdx: -1,
-		dummyIdx:    -1,
-		winnerTeam:  -1,
+		players:         players,
+		config:          config,
+		declarerIdx:     -1,
+		dummyIdx:        -1,
+		winnerTeam:      -1,
+		lastTrickWinner: -1,
 	}
 }
 
@@ -220,6 +224,9 @@ func (m *Minibridge) startRound() {
 	m.contractLevel, m.contractSuit = 0, 0
 	m.trickNumber = 0
 	m.currentTrick = nil
+	m.lastTrick = nil
+	m.lastTrickWinner = -1
+	m.trickPaused = false
 	m.phase = MinibridgePhaseContract
 	m.currentPlayerIdx = m.declarerIdx
 	m.leadPlayerIdx = m.nextSeat(m.declarerIdx)
@@ -488,7 +495,7 @@ func (m *Minibridge) IsHumanContractTurn() bool {
 // `advance()` が CPU を進めないまま人間の入力待ちで止まります。
 // ダミーの手番を握るのは席の持ち主ではなく**落札者**です。
 func (m *Minibridge) IsHumanTurn() bool {
-	if m.gameEndFlag || m.phase != MinibridgePhasePlay {
+	if m.gameEndFlag || m.phase != MinibridgePhasePlay || m.trickPaused {
 		return false
 	}
 	if m.currentPlayerIdx == m.dummyIdx && m.declarerIdx >= 0 {
@@ -505,9 +512,16 @@ func (m *Minibridge) PlayerPlay(cardIndex int) error {
 	return m.play(m.currentPlayerIdx, cardIndex)
 }
 
+// ContinueTrick resumes play after a resolved trick has been reviewed.
+func (m *Minibridge) ContinueTrick() {
+	if m.trickPaused {
+		m.trickPaused = false
+	}
+}
+
 // CpuPlay は CPU が 1 枚出す。
 func (m *Minibridge) CpuPlay() {
-	if m.gameEndFlag || m.phase != MinibridgePhasePlay || m.IsHumanTurn() {
+	if m.gameEndFlag || m.phase != MinibridgePhasePlay || m.trickPaused || m.IsHumanTurn() {
 		return
 	}
 	_ = m.play(m.currentPlayerIdx, m.chooseCpuCard(m.currentPlayerIdx))
@@ -555,6 +569,9 @@ func (m *Minibridge) resolveTrick() {
 		cards = append(cards, tc.Card)
 	}
 	m.players[winner].AddTrick(cards)
+	m.lastTrick = slices.Clone(m.currentTrick)
+	m.lastTrickWinner = winner
+	m.trickPaused = true
 	m.addLog(winner, "trick", "minibridge.log.trick", nil, cards)
 
 	m.currentTrick = nil
@@ -563,6 +580,7 @@ func (m *Minibridge) resolveTrick() {
 	m.currentPlayerIdx = winner
 
 	if m.trickNumber >= MinibridgeTotalTricks {
+		m.trickPaused = false
 		m.finishRound()
 	}
 }
@@ -860,6 +878,12 @@ func (m *Minibridge) GetDealerIdx() int { return m.dealerIdx }
 // GetCurrentTrick は現在のトリックを返す。
 func (m *Minibridge) GetCurrentTrick() []*TrickCard { return m.currentTrick }
 
+// GetLastTrick returns the most recently resolved trick and its winner.
+func (m *Minibridge) GetLastTrick() ([]*TrickCard, int) { return m.lastTrick, m.lastTrickWinner }
+
+// IsTrickPaused reports whether play awaits confirmation after a resolved trick.
+func (m *Minibridge) IsTrickPaused() bool { return m.trickPaused }
+
 // GetLastMade は直前のディールで契約が成立したかを返す。
 func (m *Minibridge) GetLastMade() bool { return m.lastMade }
 
@@ -915,6 +939,9 @@ type minibridgeJSON struct {
 	DeclarerIdx         int                    `json:"di"`
 	DummyIdx            int                    `json:"dm"`
 	CurrentTrick        []*TrickCard           `json:"ct"`
+	LastTrick           []*TrickCard           `json:"ltc"`
+	LastTrickWinner     int                    `json:"ltw"`
+	TrickPaused         bool                   `json:"tp"`
 	CurrentPlayerIdx    int                    `json:"ci"`
 	LeadPlayerIdx       int                    `json:"li"`
 	DealerIdx           int                    `json:"dl"`
@@ -935,7 +962,8 @@ func (m *Minibridge) MarshalJSON() ([]byte, error) {
 		RoundNumber: m.roundNumber, TrickNumber: m.trickNumber,
 		ContractLevel: m.contractLevel, ContractSuit: m.contractSuit,
 		DeclarerIdx: m.declarerIdx, DummyIdx: m.dummyIdx,
-		CurrentTrick: m.currentTrick, CurrentPlayerIdx: m.currentPlayerIdx,
+		CurrentTrick: m.currentTrick, LastTrick: m.lastTrick, LastTrickWinner: m.lastTrickWinner,
+		TrickPaused: m.trickPaused, CurrentPlayerIdx: m.currentPlayerIdx,
 		LeadPlayerIdx: m.leadPlayerIdx, DealerIdx: m.dealerIdx,
 		TeamScores: m.teamScores, LastMade: m.lastMade, LastTricks: m.lastTricks, RoundDelta: m.roundDelta,
 		GameEndFlag: m.gameEndFlag, WinnerTeam: m.winnerTeam, DeclarerByDealerTie: m.declarerByDealerTie,
@@ -1022,10 +1050,24 @@ func (m *Minibridge) UnmarshalJSON(data []byte) error {
 	if len(j.CurrentTrick) > MinibridgePlayerCnt {
 		return fmt.Errorf("current trick holds %d cards", len(j.CurrentTrick))
 	}
+	if len(j.LastTrick) > MinibridgePlayerCnt {
+		return fmt.Errorf("last trick holds %d cards", len(j.LastTrick))
+	}
+	if j.LastTrickWinner < -1 || j.LastTrickWinner >= MinibridgePlayerCnt {
+		return fmt.Errorf("invalid last trick winner: %d", j.LastTrickWinner)
+	}
+	if j.TrickPaused && (j.Phase != MinibridgePhasePlay || len(j.CurrentTrick) != 0 || len(j.LastTrick) != MinibridgePlayerCnt) {
+		return errors.New("invalid paused trick state")
+	}
 	// **枚数だけでなく中身も見る (#5310 で踏んだ panic の再発防止)。**
 	for _, tc := range j.CurrentTrick {
 		if tc == nil || tc.Card == nil || tc.PlayerIdx < 0 || tc.PlayerIdx >= MinibridgePlayerCnt {
 			return errors.New("invalid current trick entry")
+		}
+	}
+	for _, tc := range j.LastTrick {
+		if tc == nil || tc.Card == nil || tc.PlayerIdx < 0 || tc.PlayerIdx >= MinibridgePlayerCnt {
+			return errors.New("invalid last trick entry")
 		}
 	}
 	if len(j.ActionLog) > minibridgeMaxSliceLen {
@@ -1055,6 +1097,7 @@ func (m *Minibridge) UnmarshalJSON(data []byte) error {
 	m.contractLevel, m.contractSuit = j.ContractLevel, j.ContractSuit
 	m.declarerIdx, m.dummyIdx = j.DeclarerIdx, j.DummyIdx
 	m.currentTrick, m.currentPlayerIdx = j.CurrentTrick, j.CurrentPlayerIdx
+	m.lastTrick, m.lastTrickWinner, m.trickPaused = j.LastTrick, j.LastTrickWinner, j.TrickPaused
 	m.leadPlayerIdx, m.dealerIdx = j.LeadPlayerIdx, j.DealerIdx
 	m.teamScores, m.lastMade, m.lastTricks, m.roundDelta = j.TeamScores, j.LastMade, j.LastTricks, j.RoundDelta
 	m.gameEndFlag, m.winnerTeam, m.actionLog = j.GameEndFlag, j.WinnerTeam, j.ActionLog

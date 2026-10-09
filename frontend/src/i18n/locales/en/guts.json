@@ -54,7 +54,9 @@
   },
   "guide": {
     "handLabel": "Hand",
-    "tierLabel": "Win chance",
+    "tierLabel": "Hand rating",
+    "probability": "Estimated win chance: {{percent}}%",
+    "assumptions": "Assumes remaining CPUs have random hands and stay with a pair or Jack-high or better. Ties go to the lower seat number.",
     "tier": {
       "high": "High",
       "medium": "Medium",

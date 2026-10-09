@@ -407,6 +407,12 @@ func TestThreeThirteen_GetPlayerDeadwoodValue(t *testing.T) {
 	ttSetHand(g.GetPlayer(0), ttCard(CardDesignSpade, 8), ttCard(CardDesignHeart, 8), ttCard(CardDesignDiamond, 8))
 	assert.Equal(t, 0, g.GetPlayerDeadwoodValue(0))
 	assert.Equal(t, 0, g.GetPlayerDeadwoodValue(99), "out of range → 0")
+	melds, deadwood := g.GetPlayerMeldSplit(0)
+	assert.Equal(t, [][]int{{0, 1, 2}}, melds)
+	assert.Empty(t, deadwood)
+	melds, deadwood = g.GetPlayerMeldSplit(99)
+	assert.Empty(t, melds)
+	assert.Empty(t, deadwood)
 }
 
 // **捨てる前の予測。**Web の bestThreeThirteenDeadwoodValue と同じ値になること。

@@ -119,6 +119,36 @@ describe('CatchTenPage', () => {
     }
   });
 
+  it('shows honor points for scoring trump cards in the trick, including in the accessible name', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        trumpSuit: 1,
+        currentTrick: [
+          { playerIdx: 1, card: card('SPADE', 11) },
+          { playerIdx: 2, card: card('HEART', 11) },
+          { playerIdx: 3, card: card('SPADE', 9) },
+        ],
+      }),
+    );
+    renderWithProviders(<CatchTenPage />);
+
+    const trickCards = await screen.findByTestId('trick-display-cards');
+    const played = trickCards.querySelectorAll('img');
+    expect(played[0]).toHaveAttribute('alt', 'CPU 1が出した♠ J · 名誉点: 11点');
+    expect(played[0]?.parentElement?.parentElement).toHaveTextContent('名誉点: 11点');
+    expect(played[1]).not.toHaveAttribute('alt', expect.stringContaining('名誉点'));
+    expect(played[2]).not.toHaveAttribute('alt', expect.stringContaining('名誉点'));
+  });
+
+  it('does not show trick honor points before trump is set', async () => {
+    mockExec.mockResolvedValue(makeState({ currentTrick: [{ playerIdx: 1, card: card('SPADE', 11) }] }));
+    renderWithProviders(<CatchTenPage />);
+
+    const trickCards = await screen.findByTestId('trick-display-cards');
+    expect(trickCards.querySelector('img')).not.toHaveAttribute('alt', expect.stringContaining('名誉点'));
+    expect(trickCards).not.toHaveTextContent('名誉点');
+  });
+
   it('shows the configured target score in the mobile team-score summary', async () => {
     mobileFlag.value = true;
     renderWithProviders(<CatchTenPage />);

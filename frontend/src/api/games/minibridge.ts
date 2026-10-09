@@ -13,7 +13,7 @@ import { gameExec } from '../gameExec';
  */
 export const minibridgeApi = {
   exec: (
-    command: 'reset' | 'contract' | 'play' | 'next' | 'giveup' | 'hint' | 'log',
+    command: 'reset' | 'contract' | 'play' | 'continue' | 'next' | 'giveup' | 'hint' | 'log',
     cardIndex?: number,
     config?: Partial<MinibridgeConfig>,
     level?: number,

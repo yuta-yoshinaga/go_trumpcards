@@ -150,6 +150,29 @@ describe('LobaPage', () => {
     selectCards([2]);
     fireEvent.click(screen.getByRole('button', { name: 'メルド' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, [0, 1, 2]));
+    await waitFor(() =>
+      expect(
+        screen
+          .getAllByRole('button')
+          .filter((b) => b.dataset.hintAction === 'discard')
+          .slice(0, 3)
+          .every((b) => b.getAttribute('aria-pressed') === 'false'),
+      ).toBe(true),
+    );
+  });
+
+  it('keeps selected cards after a rejected meld', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'illegal meld', messageCode: '' }));
+    renderWithProviders(<LobaPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    selectCards([0, 1, 2]);
+
+    fireEvent.click(screen.getByRole('button', { name: 'メルド' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, [0, 1, 2]));
+    await waitFor(() => {
+      const hand = screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'discard');
+      expect(hand.slice(0, 3).every((button) => button.getAttribute('aria-pressed') === 'true')).toBe(true);
+    });
   });
 
   it('lays off exactly one card onto a chosen meld', async () => {
@@ -169,6 +192,35 @@ describe('LobaPage', () => {
     fireEvent.click(screen.getAllByTestId('loba-meld')[0]);
     fireEvent.click(screen.getByRole('button', { name: '付ける' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('layoff', 3, 0));
+    await waitFor(() =>
+      expect(screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'discard')[3]).toHaveAttribute(
+        'aria-pressed',
+        'false',
+      ),
+    );
+  });
+
+  it('keeps the selected card and meld target after a rejected layoff', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        message: 'illegal layoff',
+        messageCode: '',
+        players: [seat(0, true, { hasMelded: true }), seat(1, false), seat(2, false), seat(3, false)],
+      }),
+    );
+    renderWithProviders(<LobaPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    selectCards([3]);
+    const meld = screen.getAllByTestId('loba-meld')[0];
+    fireEvent.click(meld);
+    fireEvent.click(screen.getByRole('button', { name: '付ける' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('layoff', 3, 0));
+    expect(screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'discard')[3]).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(meld).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('discards exactly one card', async () => {

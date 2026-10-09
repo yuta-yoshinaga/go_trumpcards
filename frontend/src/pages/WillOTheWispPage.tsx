@@ -113,7 +113,7 @@ function WillOTheWispPageContent() {
     handleUndo,
     handleUndoEscape,
     handleSelectSource,
-    handleSelectTarget,
+    handleSelectTarget: handleSelectTargetFromHook,
     isAutoCompleting,
   } = game;
   const runCmd = game.exec;
@@ -143,6 +143,7 @@ function WillOTheWispPageContent() {
   }, [handleAutoComplete, state]);
 
   const [emptyDealAttemptKey, setEmptyDealAttemptKey] = useState(0);
+  const pendingEmptyTargetFocus = useRef<number | null>(null);
   const hasEmptyColumn = useMemo(() => state?.tableau.some((col) => col.length === 0) ?? false, [state?.tableau]);
   const dealBlockedByEmpty = hasEmptyColumn && (state?.stockCount ?? 0) > 0;
   const handleDealGuarded = useCallback(() => {
@@ -156,15 +157,42 @@ function WillOTheWispPageContent() {
 
   const dispatchMove = useCallback(
     (source: WillOTheWispMoveZone, target: WillOTheWispMoveZone) => {
+      const colIdx = target.col as number;
+      if ((state as WillOTheWispResponse).tableau[colIdx].length === 0) {
+        pendingEmptyTargetFocus.current = colIdx;
+      }
       void runCmd('move', source, target);
     },
-    [runCmd],
+    [runCmd, state],
   );
   const dnd = useSolitaireDragDrop<WillOTheWispMoveZone>({
     onMove: dispatchMove,
     isPlaying: !!isPlayingForKbd,
     disabled: loading,
   });
+
+  const handleSelectTarget = useCallback(
+    (zone: WillOTheWispMoveZone) => {
+      const colIdx = zone.col as number;
+      if ((state as WillOTheWispResponse).tableau[colIdx].length === 0) {
+        pendingEmptyTargetFocus.current = colIdx;
+      }
+      handleSelectTargetFromHook(zone);
+    },
+    [handleSelectTargetFromHook, state],
+  );
+
+  useEffect(() => {
+    const colIdx = pendingEmptyTargetFocus.current;
+    if (colIdx === null || loading || !state) return;
+    pendingEmptyTargetFocus.current = null;
+    const target = state.tableau[colIdx];
+    const testId =
+      target.length > 0
+        ? `willothewisp-card-${colIdx.toString()}-${(target.length - 1).toString()}`
+        : `willothewisp-empty-col-${colIdx.toString()}`;
+    document.querySelector<HTMLButtonElement>(`[data-testid="${testId}"]`)?.focus();
+  }, [loading, state]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();

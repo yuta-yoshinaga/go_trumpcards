@@ -1884,9 +1884,28 @@ describe('DramahaPage showdown split', () => {
     renderWithProviders(<DramahaPage />);
     const table = await screen.findByTestId('dramaha-split-results');
     expect(within(table).getByTestId('dramaha-split-result-0')).toHaveTextContent('オマハ側');
-    expect(within(table).getByTestId('dramaha-split-result-0')).not.toHaveTextContent('ドロー側');
+    expect(within(table).getByTestId('dramaha-split-result-0')).toHaveTextContent('ドロー側: 0');
     expect(within(table).getByTestId('dramaha-split-result-1')).toHaveTextContent('ドロー側');
-    expect(within(table).getByTestId('dramaha-split-result-1')).not.toHaveTextContent('オマハ側');
+    expect(within(table).getByTestId('dramaha-split-result-1')).toHaveTextContent('オマハ側: 0');
+  });
+
+  it('shows each seat’s Omaha and draw winnings alongside the total', async () => {
+    mockExec.mockResolvedValue({
+      ...splitShowdown,
+      roundResults: [
+        { ...splitShowdown.roundResults[0], wonAmount: 125, hiWonAmount: 125, lowWonAmount: 0 },
+        { ...splitShowdown.roundResults[1], wonAmount: 125, hiWonAmount: 0, lowWonAmount: 125 },
+      ],
+    });
+    renderWithProviders(<DramahaPage />);
+    const table = await screen.findByTestId('dramaha-split-results');
+    const firstRow = within(table).getByTestId('dramaha-split-result-0');
+    const secondRow = within(table).getByTestId('dramaha-split-result-1');
+    expect(within(firstRow).getByTestId('dramaha-split-amounts-0').textContent).toBe('（オマハ側: 125、ドロー側: 0）');
+    expect(within(secondRow).getByTestId('dramaha-split-amounts-1').textContent).toBe('（オマハ側: 0、ドロー側: 125）');
+    expect(firstRow.textContent).not.toContain('オマハ側オマハ側');
+    expect(secondRow.textContent).not.toContain('ドロー側オマハ側');
+    expect(screen.getByTestId('round-results-visible')).toHaveTextContent('125');
   });
 
   it('shows both labelled CPU hand names only at showdown and hides them for folded CPUs', async () => {

@@ -163,6 +163,49 @@ func TestBouillotteCuiPresenter_ShowsCallAndRaiseAmounts(t *testing.T) {
 	})
 }
 
+func TestBouillotteCuiPresenter_HidesUnavailableRaise(t *testing.T) {
+	p := new(presenter.BouillotteCuiPresenter)
+	t.Cleanup(func() { i18n.SetLang("ja") })
+	for _, lang := range []string{"ja", "en"} {
+		t.Run(lang, func(t *testing.T) {
+			i18n.SetLang(lang)
+			for _, tc := range []struct {
+				name   string
+				setup  func() *domain.Bouillotte
+				reason string
+			}{
+				{name: "raise limit", setup: func() *domain.Bouillotte {
+					g := bouillotteCuiMatchGame()
+					g.SetRaiseCountForTest(g.GetMaxRaises())
+					return g
+				}, reason: "bouillotte.raiseUnavailableLimit"},
+				{name: "not enough chips", setup: func() *domain.Bouillotte {
+					g := bouillotteCuiMatchGame()
+					g.ClearBettingForTest()
+					human := g.GetPlayer(0)
+					human.SetChips(0)
+					g.SetCurrentBet(human.GetRoundBet() + g.GetAnte() + 1)
+					return g
+				}, reason: "bouillotte.raiseUnavailableChips"},
+			} {
+				t.Run(tc.name, func(t *testing.T) {
+					g := tc.setup()
+					require.False(t, g.CanRaise())
+					out := p.Output(g, nil)
+					human := g.GetPlayer(0)
+					need := g.GetCurrentBet() - human.GetRoundBet()
+					if need < 0 {
+						need = 0
+					}
+					assert.Contains(t, out, i18n.Tf("bouillotte.promptBettingNoRaise", "bet", strconv.Itoa(g.GetCurrentBet()), "need", strconv.Itoa(need), "raiseTo", strconv.Itoa(g.GetCurrentBet()+g.GetAnte())))
+					assert.NotContains(t, out, i18n.Tf("bouillotte.promptBetting", "bet", strconv.Itoa(g.GetCurrentBet()), "need", strconv.Itoa(need), "raiseTo", strconv.Itoa(g.GetCurrentBet()+g.GetAnte())))
+					assert.Contains(t, out, i18n.T(tc.reason))
+				})
+			}
+		})
+	}
+}
+
 // bouillotteCuiMatchGame は人間の手番のベットフェーズで、指定の手札を持つ卓を組む。
 // ルトゥルヌは 9♦ 固定 ── 配りに依存させないため手札は直接置く。
 func bouillotteCuiMatchGame(hand ...*domain.Card) *domain.Bouillotte {

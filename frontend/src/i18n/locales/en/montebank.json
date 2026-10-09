@@ -36,6 +36,7 @@
   "frontendHint.monteBankAllDuplicated": "every suit is showing at least twice, so no bet here is even",
   "label.remainingOfSuit": "{{count}} left in the deck",
   "label.nextGateProbability": "Next gate match probability {{probability}}",
+  "label.nextGateExpectedNet": "Expected net {{amount}} chips",
   "label.probabilityUnavailable": "—",
   "selection.changed": "Deselected {{prev}}, selected {{card}}"
 }

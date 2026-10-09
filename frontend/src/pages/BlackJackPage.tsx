@@ -162,6 +162,23 @@ const SPANISH21_TUTORIAL_STEPS: TutorialStep[] = [
   BJ_TUTORIAL_STEPS[6], // reset button
 ];
 
+/** Double Exposure tutorial: review its house rules before starting a bet. */
+const DOUBLEEXPOSURE_TUTORIAL_STEPS: TutorialStep[] = [
+  BJ_TUTORIAL_STEPS[0], // bet controls
+  {
+    target: '[data-tutorial="bj-payout-ref"]',
+    messageKey: 'tutorial.payoutRef',
+    placement: 'bottom',
+    advanceOn: 'click',
+  },
+  BJ_TUTORIAL_STEPS[1], // bet button
+  BJ_TUTORIAL_STEPS[2], // dealer hand
+  BJ_TUTORIAL_STEPS[3], // player hand
+  BJ_TUTORIAL_STEPS[4], // action buttons
+  BJ_TUTORIAL_STEPS[5], // result message
+  BJ_TUTORIAL_STEPS[6], // reset button
+];
+
 /** Variant identifier shared by BlackJack and its registered variants. */
 export type BlackJackVariant = 'blackjack' | 'spanish21' | 'doubleexposure';
 
@@ -173,7 +190,12 @@ export interface BlackJackPageProps {
 
 /** Renders the BlackJack game page with betting, action, and end phases. */
 export function BlackJackPage({ variant = 'blackjack' }: BlackJackPageProps) {
-  const steps = variant === 'spanish21' ? SPANISH21_TUTORIAL_STEPS : BJ_TUTORIAL_STEPS;
+  const steps =
+    variant === 'spanish21'
+      ? SPANISH21_TUTORIAL_STEPS
+      : variant === 'doubleexposure'
+        ? DOUBLEEXPOSURE_TUTORIAL_STEPS
+        : BJ_TUTORIAL_STEPS;
   return (
     <TutorialWrapper gameName={variant} steps={steps}>
       <BlackJackPageContent variant={variant} />

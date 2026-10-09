@@ -46,6 +46,8 @@ function makeState(overrides: Partial<SergeantMajorResponse> = {}): SergeantMajo
     leadPlayerIdx: 0,
     dealerIdx: 0,
     currentTrick: [],
+    lastTrick: [],
+    lastTrickWinner: -1,
     validPlays: [0, 1, 2],
     gameEndFlag: false,
     winnerIdx: -1,
@@ -87,6 +89,35 @@ describe('SergeantMajorPage', () => {
     ] as const) {
       expect(await screen.findByTestId(`sm-seat-${id}`)).toHaveTextContent(target);
     }
+  });
+
+  it('shows the last completed trick and winner when no trick is in progress', async () => {
+    const completed = playing({
+      currentTrick: [],
+      lastTrick: [
+        { playerIdx: 0, card: card('SPADE', 10) },
+        { playerIdx: 1, card: card('HEART', 13) },
+        { playerIdx: 2, card: card('CLOVER', 2) },
+      ],
+      lastTrickWinner: 1,
+    } as Partial<SergeantMajorResponse>);
+    mockExec.mockResolvedValue(completed);
+    renderWithProviders(<SergeantMajorPage />);
+    expect(await screen.findByTestId('trick-winner-badge')).toBeInTheDocument();
+    expect(screen.getAllByTestId('animated-card')).toHaveLength(3);
+  });
+
+  it('prefers the current trick over the retained completed trick', async () => {
+    mockExec.mockResolvedValue(
+      playing({
+        currentTrick: [{ playerIdx: 0, card: card('SPADE', 10) }],
+        lastTrick: [{ playerIdx: 1, card: card('HEART', 13) }],
+        lastTrickWinner: 1,
+      } as Partial<SergeantMajorResponse>),
+    );
+    renderWithProviders(<SergeantMajorPage />);
+    expect(await screen.findAllByTestId('animated-card')).toHaveLength(1);
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
   });
 
   it('marks the current seat during play', async () => {

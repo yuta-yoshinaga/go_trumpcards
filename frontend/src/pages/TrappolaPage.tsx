@@ -427,6 +427,7 @@ function TrappolaPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="tr"
+                highlightIndices={hint?.cardIndices}
                 validIndices={isHumanTurn ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}
               />

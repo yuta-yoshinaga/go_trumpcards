@@ -226,6 +226,7 @@ function BridgePageContent() {
   const isRoundEnd = state.phase === BridgePhase.ROUND_END;
   const isGameEnd = state.phase === BridgePhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && (state.players[state.currentPlayerIdx]?.isHuman === true || isDummyTurn);
+  const activeLegalIndices = isHumanTurn ? state.legalPlayIndices : undefined;
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
   const declarerTeam = state.players[state.declarerIdx]?.team;
   const declarerTricks =
@@ -615,31 +616,40 @@ function BridgePageContent() {
                   onToggle={toggleCard}
                   cardWidth={cardWidth}
                   dataTutorial="br-player-hand"
+                  validIndices={activeLegalIndices}
+                  legalIndices={activeLegalIndices}
+                  restrictedTooltip={t('followSuit')}
                 />
               ) : (
                 <div
                   className="flex flex-wrap gap-1 mb-2"
                   data-tutorial={isDummyTurn ? 'br-dummy-hand' : 'br-player-hand'}
                 >
-                  {activeHand.map((card, idx) => (
-                    <button
-                      type="button"
-                      key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
-                      aria-label={cardAlt(card)}
-                      aria-pressed={selectedCardIndices.includes(idx)}
-                      className={`transition-transform ${focusRingCard}`}
-                      style={{
-                        background: 'none',
-                        padding: 0,
-                        borderRadius: 8,
-                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} />
-                    </button>
-                  ))}
+                  {activeHand.map((card, idx) => {
+                    const isIllegal = activeLegalIndices?.includes(idx) === false;
+                    return (
+                      <button
+                        type="button"
+                        key={`${card.design}-${card.value}-${idx}`}
+                        onClick={() => {
+                          if (!isIllegal) toggleCard(idx);
+                        }}
+                        aria-label={cardAlt(card)}
+                        aria-disabled={isIllegal || undefined}
+                        aria-pressed={selectedCardIndices.includes(idx)}
+                        className={`transition-transform ${focusRingCard} ${isIllegal ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        style={{
+                          background: 'none',
+                          padding: 0,
+                          borderRadius: 8,
+                          ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} />
+                      </button>
+                    );
+                  })}
                 </div>
               ))}
 

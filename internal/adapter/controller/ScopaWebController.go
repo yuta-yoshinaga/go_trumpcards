@@ -38,6 +38,7 @@ type ScopaWebOutputPlayer struct {
 	CardCount     int              `json:"cardCount"`
 	Cards         []*WebOutputCard `json:"cards"`
 	CapturedCount int              `json:"capturedCount"`
+	CapturedCards []*WebOutputCard `json:"capturedCards"`
 	ScopaCount    int              `json:"scopaCount"`
 	TotalScore    int              `json:"totalScore"`
 }

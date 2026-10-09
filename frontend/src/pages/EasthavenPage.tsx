@@ -2,6 +2,7 @@ import { useCallback, useId, useMemo, useState } from 'react';
 import { type EasthavenMoveZone, easthavenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
+import { AutoCompleteReadyBadge } from '../components/AutoCompleteReadyBadge';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -655,6 +656,7 @@ function EasthavenPageContent() {
                   >
                     {t('autoComplete')}
                   </button>
+                  <AutoCompleteReadyBadge ready={autoCompleteReady} />
                   <button
                     type="button"
                     className={btnOutline}

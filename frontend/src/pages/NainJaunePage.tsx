@@ -224,9 +224,18 @@ function NainJaunePageContent() {
                     role="img"
                     aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
                   >
-                    {Array.from({ length: o.cardCount }, (_, i) => (
-                      <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                    ))}
+                    {o.hidden
+                      ? Array.from({ length: o.cardCount }, (_, i) => (
+                          <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                        ))
+                      : o.cards.map((card, i) => (
+                          <AnimatedCard
+                            key={`opp-${o.id.toString()}-c${i.toString()}`}
+                            card={card}
+                            width={cardWidth}
+                            draggable={false}
+                          />
+                        ))}
                   </div>
                 </div>
               ))}

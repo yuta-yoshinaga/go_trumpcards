@@ -32,6 +32,7 @@
     "drawHalf": "Draw half",
     "scoop": "🏆 Scoop! took both halves",
     "wonHalves": "Won: {{halves}}",
+    "splitAmounts": "(Omaha half: {{omahaAmount}}, Draw half: {{drawAmount}})",
     "wonNone": "Won nothing"
   },
   "hand": {

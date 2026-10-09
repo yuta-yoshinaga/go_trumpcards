@@ -13,6 +13,7 @@
   "communityCards": "コミュニティカード",
   "yourHand": "あなたの手札",
   "listSeparator": "、",
+  "callAmount": "（{{amount}}チップ）",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "discard": {
     "prompt": "1枚捨ててください。",

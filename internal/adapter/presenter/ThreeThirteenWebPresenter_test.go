@@ -41,6 +41,7 @@ func setupThreeThirteenWebMock(phase domain.ThreeThirteenPhase, gameEnd bool) (*
 	for i := 0; i < 2; i++ {
 		m.On("GetPlayer", i).Return(players[i])
 		m.On("GetPlayerDeadwoodValue", i).Return(7)
+		m.On("GetPlayerMeldSplit", i).Return([][]int{{0, 1, 2}}, []int{3})
 	}
 	return m, players
 }
@@ -77,6 +78,8 @@ func TestThreeThirteenWebPresenter_Output(t *testing.T) {
 		m, _ := setupThreeThirteenWebMock(domain.ThreeThirteenPhaseRoundEnd, false)
 		out := unmarshalThreeThirteen(t, p.Output(m, nil))
 		assert.Equal(t, "threethirteen.roundEnd", out.MessageCode)
+		assert.Equal(t, [][]int{{0, 1, 2}}, out.Players[0].Melds)
+		assert.Equal(t, []int{3}, out.Players[0].DeadwoodIndices)
 	})
 
 	t.Run("with error", func(t *testing.T) {
@@ -97,6 +100,7 @@ func TestThreeThirteenWebPresenter_Output(t *testing.T) {
 		m, _ := setupThreeThirteenWebMock(domain.ThreeThirteenPhaseGameEnd, true)
 		out := unmarshalThreeThirteen(t, p.Output(m, nil))
 		assert.True(t, out.GameEndFlag)
+		assert.Equal(t, [][]int{{0, 1, 2}}, out.Players[0].Melds)
 	})
 }
 

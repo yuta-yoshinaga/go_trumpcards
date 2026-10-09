@@ -51,6 +51,7 @@ func (p *MarjapussiWebPresenter) buildBase(g interfaces.MarjapussiGame) *control
 
 	pussiCards := g.GetPussi()
 	resObj.PussiCount = len(pussiCards)
+	resObj.PussiPoints = g.GetPussiPoints()
 	if g.GetPhase() == domain.MarjapussiPhaseRoundEnd || g.GetPhase() == domain.MarjapussiPhaseGameEnd {
 		resObj.Pussi = cardsToOutput(pussiCards)
 	}

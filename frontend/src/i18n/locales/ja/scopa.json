@@ -22,7 +22,8 @@
     "noTakeCandidate": "取り札候補はありません",
     "captureInstructions": "候補の場札を選び、「取る」で確定",
     "yourCaptures": "獲得カード",
-    "cpuStats": "{{cards}}枚 / {{score}}pt",
+    "capturedCards": "捕獲札",
+    "cpuStats": "手札{{cards}}枚 / 捕獲{{captured}}枚 / {{score}}pt",
     "humanStats": "手札{{cards}}枚 / 捕獲{{captured}}枚 / スコパ{{scopa}} / 累計{{score}}pt",
     "roundEnd": "ラウンド終了 — 得点を確認して「次のラウンド」へ進んでください"
   },

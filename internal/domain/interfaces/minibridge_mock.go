@@ -26,6 +26,7 @@ func (m *MockMinibridgeGame) PlayerSelectContract(level, suit int) error {
 func (m *MockMinibridgeGame) PlayerPlay(cardIndex int) error {
 	return m.Called(cardIndex).Error(0)
 }
+func (m *MockMinibridgeGame) ContinueTrick() { m.Called() }
 
 func (m *MockMinibridgeGame) GetConfig() domain.MinibridgeConfig {
 	return m.Called().Get(0).(domain.MinibridgeConfig)
@@ -77,6 +78,12 @@ func (m *MockMinibridgeGame) GetCurrentTrick() []*domain.TrickCard {
 	}
 	return nil
 }
+func (m *MockMinibridgeGame) GetLastTrick() ([]*domain.TrickCard, int) {
+	args := m.Called()
+	trick, _ := args.Get(0).([]*domain.TrickCard)
+	return trick, args.Int(1)
+}
+func (m *MockMinibridgeGame) IsTrickPaused() bool { return m.Called().Bool(0) }
 
 func (m *MockMinibridgeGame) GetValidPlayIndices(playerIdx int) []int {
 	args := m.Called(playerIdx)

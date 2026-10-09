@@ -113,6 +113,12 @@ function MinibridgePageContent() {
     void dispatch('next');
   }, [dispatch]);
 
+  const handleContinueTrick = useCallback(() => {
+    if (loading) return;
+    setCpuProcessing(true);
+    void dispatch('continue').finally(() => setCpuProcessing(false));
+  }, [dispatch, loading]);
+
   const handleGiveUp = useCallback(() => {
     void dispatch('giveup');
   }, [dispatch]);
@@ -297,11 +303,31 @@ function MinibridgePageContent() {
             <div data-tutorial="mb-trick">
               <TrickDisplay
                 currentTrick={state.currentTrick}
+                lastTrick={state.lastTrick}
+                lastTrickWinner={state.lastTrickWinner}
                 players={state.players}
                 cardWidth={cardWidth}
                 label={t('currentTrick')}
+                winnerLabel={t('trickWinner')}
               />
             </div>
+
+            {state.trickPaused && (
+              <div className="text-center my-3">
+                <button
+                  type="button"
+                  className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+                  onClick={handleContinueTrick}
+                  aria-disabled={loading}
+                  aria-describedby={loading ? 'mb-continue-loading' : undefined}
+                >
+                  {t('actions.continue')}
+                </button>
+                <span id="mb-continue-loading" className="sr-only">
+                  {t('header.cpuProcessing')}
+                </span>
+              </div>
+            )}
 
             {roundResult && (
               <div className="text-center my-3 text-ds-text-primary" role="status" data-testid="mb-round-result">

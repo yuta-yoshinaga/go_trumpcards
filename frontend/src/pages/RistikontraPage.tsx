@@ -307,6 +307,7 @@ function RistikontraPageContent() {
                   } ${p.isHuman ? 'font-semibold' : ''}`}
                 >
                   <span>{playerLabel(p.id, p.isHuman)}</span>
+                  <span>{t('handCount', { count: p.cardCount })}</span>
                   <span>{t('captured', { count: p.capturedCount })}</span>
                   <span className="text-ds-text-muted">{t('teamLabel', { team: (p.id % 2) + 1 })}</span>
                   {!isGameEnd && (

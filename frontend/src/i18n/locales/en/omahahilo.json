@@ -4,6 +4,7 @@
     "hi": "Hi",
     "lo": "Lo",
     "winner": "{{name}} (+{{amount}})",
+    "announcementWinner": "{{half}}: {{name}} wins {{amount}} chips",
     "hiTakesAll": "No qualifying low — Hi scoops the pot"
   },
   "phase": {
@@ -120,6 +121,7 @@
   },
   "scoop": {
     "badge": "🏆 Scoop! {{name}} takes both halves (+{{total}})",
-    "youBadge": "🏆 Scoop! You take both halves (+{{total}})"
+    "youBadge": "🏆 Scoop! You take both halves (+{{total}})",
+    "announcement": "Scoop: {{name}} wins both halves for {{total}} chips"
   }
 }
