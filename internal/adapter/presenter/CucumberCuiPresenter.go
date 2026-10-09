@@ -15,6 +15,11 @@ import (
 // cucumberPlayerStr returns the display string for a single seat.
 func cucumberPlayerStr(s interfaces.CucumberGame, idx int, current bool) string {
 	player := s.GetPlayer(idx)
+	targetScore := s.GetConfig().TargetScore
+	progress := i18n.Tf("cucumber.targetRemaining", "points", strconv.Itoa(targetScore-player.GetPenalty()))
+	if player.GetPenalty() >= targetScore {
+		progress = i18n.T("cucumber.targetReached")
+	}
 	var b strings.Builder
 	marker := " "
 	if current {
@@ -29,6 +34,7 @@ func cucumberPlayerStr(s interfaces.CucumberGame, idx int, current bool) string 
 		"role", role,
 		"cards", strconv.Itoa(player.GetCardsSize()),
 		"penalty", strconv.Itoa(player.GetPenalty()),
+		"progress", progress,
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
