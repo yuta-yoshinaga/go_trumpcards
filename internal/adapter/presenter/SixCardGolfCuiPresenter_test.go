@@ -3,6 +3,8 @@
 package presenter_test
 
 import (
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -179,4 +181,68 @@ func TestSixCardGolfCuiPresenter_Output(t *testing.T) {
 		g.Reset()
 		assert.NotEmpty(t, p.ActionLogOutput(g))
 	})
+}
+
+func TestSixCardGolfCuiPresenter_OutputRoundScoreHistory(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	g := domain.NewSixCardGolf(domain.NewTrumpCards(0), domain.SixCardGolfConfig{
+		PlayerCount: 2, CpuDifficulty: domain.SixCardGolfCpuNormal, Rounds: 2,
+	})
+	g.Reset()
+	p := new(presenter.SixCardGolfCuiPresenter)
+	assert.False(t, g.GetGameEndFlag())
+	assert.NotContains(t, p.Output(g, nil), i18n.T("sixcardgolf.scoreHistoryCumulative"))
+
+	for round := 0; round < 2; round++ {
+		for playerIdx := 0; playerIdx < g.GetPlayerCnt(); playerIdx++ {
+			var grid [domain.SixCardGolfGridSize]domain.SixCardGolfSlot
+			for pos := range grid {
+				value := 2 + pos + playerIdx + round
+				grid[pos] = domain.SixCardGolfSlot{
+					Card: domain.NewCard(domain.CardDesignSpade, value, false), FaceUp: true,
+				}
+			}
+			g.SetPlayerGrid(playerIdx, grid)
+		}
+		g.GetPlayer(0).Grid[5].FaceUp = false
+		g.SetCurrentPlayerIdx(0)
+		g.SetDrawnCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+		g.SetPhase(domain.SixCardGolfPhaseDrawPending)
+		assert.NoError(t, g.SwapCard(5))
+		g.CpuPlay()
+		if round == 0 {
+			assert.False(t, g.GetGameEndFlag())
+			g.NextRound()
+		}
+	}
+
+	assert.True(t, g.GetGameEndFlag())
+	history := g.GetRoundScoreHistory()
+	assert.Len(t, history, 2)
+	out := p.Output(g, nil)
+	for roundIdx, scores := range history {
+		parts := make([]string, len(scores))
+		for playerIdx, score := range scores {
+			playerName := i18n.T("cuiPlayerYou")
+			if g.GetPlayer(playerIdx).IsCpu {
+				playerName = i18n.Tf("cuiPlayerCpu", "idx", "1")
+			}
+			parts[playerIdx] = i18n.Tf("sixcardgolf.scoreHistoryPlayer", "player", playerName, "score", strconv.Itoa(score))
+		}
+		line := i18n.Tf("sixcardgolf.scoreHistoryRound", "round", strconv.Itoa(roundIdx+1), "scores", strings.Join(parts, i18n.T("sixcardgolf.listSeparator")))
+		assert.Contains(t, out, line)
+	}
+	assert.Contains(t, out, i18n.T("sixcardgolf.scoreHistoryCumulative"))
+	for playerIdx := 0; playerIdx < g.GetPlayerCnt(); playerIdx++ {
+		player := g.GetPlayer(playerIdx)
+		playerName := i18n.T("cuiPlayerYou")
+		if player.IsCpu {
+			playerName = i18n.Tf("cuiPlayerCpu", "idx", "1")
+		}
+		line := i18n.Tf("sixcardgolf.scoreHistoryPlayer", "player", playerName, "score", strconv.Itoa(player.CumulativeScore))
+		assert.Contains(t, out, line)
+	}
 }

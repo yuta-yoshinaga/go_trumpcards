@@ -18,7 +18,9 @@
     "currentTurn": "Current turn: {{name}}",
     "columnScore": "{{score}} pt",
     "columnScoreUncertain": "{{score}}+? pt",
-    "columnScorePair": "0 pt (pair)"
+    "columnScorePair": "0 pt (pair)",
+    "scoreHistory": "Round scores",
+    "cumulativeRow": "Cumulative"
   },
   "button": {
     "flipInitial": "Flip",

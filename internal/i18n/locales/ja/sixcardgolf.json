@@ -56,5 +56,9 @@
   "log.flipCpu": "CPU{{player}}が位置{{position}}をめくった",
   "log.trigger": "プレイヤー{{player}}が全カードを公開！最終ターン開始",
   "log.gameOver": "ゲーム終了！プレイヤー{{player}}の勝利",
-  "log.roundOver": "ラウンド{{round}}終了"
+  "log.roundOver": "ラウンド{{round}}終了",
+  "scoreHistoryCumulative": "累計スコア",
+  "scoreHistoryRound": "{{round}}ラウンド: {{scores}}",
+  "scoreHistoryPlayer": "{{player}}: {{score}}点",
+  "listSeparator": "、"
 }

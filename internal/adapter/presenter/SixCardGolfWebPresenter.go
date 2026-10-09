@@ -14,6 +14,7 @@ func (p *SixCardGolfWebPresenter) Output(g interfaces.SixCardGolfGame, lastErr e
 	resObj := new(controller.SixCardGolfWebOutput)
 	resObj.Phase = int(g.GetPhase())
 	resObj.RoundNumber = g.GetRoundNumber()
+	resObj.RoundScoreHistory = g.GetRoundScoreHistory()
 	resObj.CurrentPlayerIdx = g.GetCurrentPlayerIdx()
 	resObj.DrawPileCount = g.GetDrawPileCount()
 	resObj.GameEndFlag = g.GetGameEndFlag()

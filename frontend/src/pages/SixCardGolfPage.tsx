@@ -295,6 +295,43 @@ function SixCardGolfPageContent() {
               )}
             </div>
           ))}
+          {state.gameEndFlag && (
+            <section aria-label={t('label.scoreHistory')} className="rounded-lg bg-ds-surface p-3">
+              <h2 className="mb-2 font-bold">{t('label.scoreHistory')}</h2>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr>
+                    <th scope="col">{t('label.round')}</th>
+                    {state.players.map((p, i) => (
+                      <th scope="col" key={p.id}>
+                        {p.isHuman ? t('label.human') : t('label.cpu', { id: String(i) })}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {state.roundScoreHistory.map((scores, roundIdx) => (
+                    <tr key={roundIdx}>
+                      <th scope="row">{roundIdx + 1}</th>
+                      {scores.map((score, i) => (
+                        <td key={i} className="text-center">
+                          {score}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                  <tr>
+                    <th scope="row">{t('label.cumulativeRow')}</th>
+                    {state.players.map((p) => (
+                      <td key={p.id} className="text-center">
+                        {p.cumulativeScore}
+                      </td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+          )}
 
           {/* Stock / Discard / Drawn Card */}
           <div className="flex items-center gap-3 justify-center" data-tutorial="scg-stock">

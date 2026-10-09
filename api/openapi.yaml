@@ -81417,6 +81417,13 @@ components:
           type: integer
         roundNumber:
           type: integer
+        roundScoreHistory:
+          type: array
+          description: Completed round scores indexed by round and player.
+          items:
+            type: array
+            items:
+              type: integer
         totalRounds:
           type: integer
         currentPlayerIdx:
