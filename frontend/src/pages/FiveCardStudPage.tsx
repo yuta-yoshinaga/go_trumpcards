@@ -414,7 +414,7 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
 
             {/* Round results */}
             {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
-            {state?.sidePots.length > 0 && (
+            {state?.sidePots.length > 1 && (
               <div className="mt-3 space-y-1 text-center text-sm text-ds-text-primary">
                 {state.sidePots.map((sidePot, index) => (
                   <p key={index === 0 ? 'main-pot' : `side-pot-${index}`}>

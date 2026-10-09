@@ -347,6 +347,15 @@ describe('FiveCardStudPage', () => {
     expect(screen.getByText(/サイドポット1: 80チップ（対象: CPU 1、CPU 2）/)).toHaveTextContent('獲得: CPU 2 80');
     unmount();
 
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      sidePots: [{ amount: 200, eligiblePlayers: [0, 1, 2], winners: [{ playerIdx: 1, amount: 200 }] }],
+    });
+    renderWithProviders(<FiveCardStudPage />);
+    expect(await screen.findByText('結果:')).toBeInTheDocument();
+    expect(screen.queryByText(/メインポット:|サイドポット/)).not.toBeInTheDocument();
+    unmount();
+
     mockExec.mockResolvedValue({ ...showdownState, sidePots: [] });
     renderWithProviders(<FiveCardStudPage />);
     expect(screen.queryByText(/メインポット:|サイドポット/)).not.toBeInTheDocument();
