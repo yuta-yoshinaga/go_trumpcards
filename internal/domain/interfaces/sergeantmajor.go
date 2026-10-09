@@ -69,6 +69,10 @@ type SergeantMajorGame interface {
 	GetDealerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// GetLastTrick 直前に決着したトリックを取得する
+	GetLastTrick() []*domain.TrickCard
+	// GetLastTrickWinner 直前に決着したトリックの勝者を取得する
+	GetLastTrickWinner() int
 	// GetValidPlayIndices プレイ可能なカードのインデックスリストを返す
 	GetValidPlayIndices(playerIdx int) []int
 	// GetPlayerCnt プレイヤー数を取得する

@@ -84,6 +84,8 @@ type SergeantMajor struct {
 	// 添字ではなく札そのもので持つ。
 	absorbedKitty    []*Card
 	currentTrick     []*TrickCard
+	lastTrick        []*TrickCard
+	lastTrickWinner  int
 	currentPlayerIdx int
 	leadPlayerIdx    int
 	dealerIdx        int
@@ -104,10 +106,11 @@ type SergeantMajor struct {
 // NewSergeantMajor はコンストラクタ。
 func NewSergeantMajor(players []*SergeantMajorPlayer, config SergeantMajorConfig) *SergeantMajor {
 	return &SergeantMajor{
-		players:   players,
-		config:    config,
-		surplus:   make([]int, SergeantMajorPlayerCnt),
-		winnerIdx: -1,
+		players:         players,
+		config:          config,
+		surplus:         make([]int, SergeantMajorPlayerCnt),
+		winnerIdx:       -1,
+		lastTrickWinner: -1,
 	}
 }
 
@@ -152,6 +155,8 @@ func (s *SergeantMajor) startRound() {
 	s.trumpSuit = 0
 	s.trickNumber = 0
 	s.currentTrick = nil
+	s.lastTrick = nil
+	s.lastTrickWinner = -1
 	s.lastExchange = 0
 	s.lastExchangeLost = nil
 	s.lastExchangeReceived = nil
@@ -542,6 +547,8 @@ func (s *SergeantMajor) resolveTrick() {
 		cards = append(cards, tc.Card)
 	}
 	s.players[winner].AddTrick(cards)
+	s.lastTrick = slices.Clone(s.currentTrick)
+	s.lastTrickWinner = winner
 	s.currentTrick = nil
 	s.trickNumber++
 	s.leadPlayerIdx = winner
@@ -749,6 +756,12 @@ func (s *SergeantMajor) GetDealerIdx() int { return s.dealerIdx }
 // GetCurrentTrick は現在のトリックを返す。
 func (s *SergeantMajor) GetCurrentTrick() []*TrickCard { return s.currentTrick }
 
+// GetLastTrick は直前に決着したトリックを返す。
+func (s *SergeantMajor) GetLastTrick() []*TrickCard { return s.lastTrick }
+
+// GetLastTrickWinner は直前に決着したトリックの勝者を返す。
+func (s *SergeantMajor) GetLastTrickWinner() int { return s.lastTrickWinner }
+
 // GetLastExchange は直前のラウンド間で動いた札の枚数を返す。
 func (s *SergeantMajor) GetLastExchange() int { return s.lastExchange }
 
@@ -795,6 +808,8 @@ type sergeantMajorJSON struct {
 	TrickNumber          int                    `json:"tn"`
 	Kitty                []*Card                `json:"ki"`
 	CurrentTrick         []*TrickCard           `json:"ct"`
+	LastTrick            []*TrickCard           `json:"lt"`
+	LastTrickWinner      int                    `json:"lw"`
 	CurrentPlayerIdx     int                    `json:"ci"`
 	LeadPlayerIdx        int                    `json:"li"`
 	DealerIdx            int                    `json:"dl"`
@@ -812,7 +827,7 @@ func (s *SergeantMajor) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&sergeantMajorJSON{
 		TrumpCards: s.trumpCards, Players: s.players, Config: s.config, Phase: s.phase,
 		TrumpSuit: s.trumpSuit, RoundNumber: s.roundNumber, TrickNumber: s.trickNumber,
-		Kitty: s.kitty, CurrentTrick: s.currentTrick, CurrentPlayerIdx: s.currentPlayerIdx,
+		Kitty: s.kitty, CurrentTrick: s.currentTrick, LastTrick: s.lastTrick, LastTrickWinner: s.lastTrickWinner, CurrentPlayerIdx: s.currentPlayerIdx,
 		LeadPlayerIdx: s.leadPlayerIdx, DealerIdx: s.dealerIdx, Surplus: s.surplus,
 		LastExchange: s.lastExchange, LastExchangeLost: s.lastExchangeLost,
 		LastExchangeReceived: s.lastExchangeReceived, GameEndFlag: s.gameEndFlag, WinnerIdx: s.winnerIdx,
@@ -864,6 +879,17 @@ func (s *SergeantMajor) UnmarshalJSON(data []byte) error {
 			return errors.New("invalid current trick entry")
 		}
 	}
+	if len(j.LastTrick) > SergeantMajorPlayerCnt {
+		return fmt.Errorf("last trick holds %d cards", len(j.LastTrick))
+	}
+	for _, tc := range j.LastTrick {
+		if tc == nil || tc.Card == nil || tc.PlayerIdx < 0 || tc.PlayerIdx >= SergeantMajorPlayerCnt {
+			return errors.New("invalid last trick entry")
+		}
+	}
+	if j.LastTrickWinner < -1 || j.LastTrickWinner >= SergeantMajorPlayerCnt {
+		return fmt.Errorf("invalid last trick winner: %d", j.LastTrickWinner)
+	}
 	if len(j.ActionLog) > sergeantMajorMaxSliceLen {
 		return errors.New("sergeantmajor: input array exceeds maximum allowed size")
 	}
@@ -904,7 +930,8 @@ func (s *SergeantMajor) UnmarshalJSON(data []byte) error {
 	}
 	s.config, s.phase, s.trumpSuit = j.Config, j.Phase, j.TrumpSuit
 	s.roundNumber, s.trickNumber, s.kitty = j.RoundNumber, j.TrickNumber, j.Kitty
-	s.currentTrick, s.currentPlayerIdx = j.CurrentTrick, j.CurrentPlayerIdx
+	s.currentTrick, s.lastTrick, s.lastTrickWinner = j.CurrentTrick, j.LastTrick, j.LastTrickWinner
+	s.currentPlayerIdx = j.CurrentPlayerIdx
 	s.leadPlayerIdx, s.dealerIdx, s.surplus = j.LeadPlayerIdx, j.DealerIdx, j.Surplus
 	s.lastExchange, s.lastExchangeLost, s.lastExchangeReceived = j.LastExchange, j.LastExchangeLost, j.LastExchangeReceived
 	s.gameEndFlag, s.winnerIdx = j.GameEndFlag, j.WinnerIdx
