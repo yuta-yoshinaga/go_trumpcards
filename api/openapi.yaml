@@ -61062,6 +61062,18 @@ components:
         maxBetAmount:
           type: integer
           description: Maximum allowed bet/raise amount for Pot Limit mode. 0 means no limit (Fixed or No Limit mode).
+        smallBlind:
+          type: integer
+          description: Current small blind, or zero when the discipline does not use blinds.
+        bigBlind:
+          type: integer
+          description: Current big blind, or zero when the discipline does not use blinds.
+        ante:
+          type: integer
+          description: Current ante, or zero when the discipline does not use an ante.
+        bringIn:
+          type: integer
+          description: Current stud bring-in, or zero when the discipline does not use one.
         tablePhase:
           type: integer
           description: Phase number reported by the running discipline.

@@ -42,6 +42,26 @@ describe('HorsePage', () => {
     expect(screen.getByTestId('ho-pot')).toHaveTextContent('30');
   });
 
+  it('shows only forced wagers used by the current discipline beside betting controls', async () => {
+    renderWithProviders(<HorsePage />);
+    const forcedBets = await screen.findByTestId('ho-forced-bets');
+    expect(forcedBets).toHaveTextContent('スモールブラインド 5');
+    expect(forcedBets).toHaveTextContent('ビッグブラインド 10');
+    expect(forcedBets).not.toHaveTextContent('アンティ');
+    expect(forcedBets).not.toHaveTextContent('ブリングイン');
+  });
+
+  it('shows the stud ante and bring-in without blind amounts', async () => {
+    mockExec.mockResolvedValue(
+      makeHorseState({ discipline: 3, disciplineName: 'stud', smallBlind: 0, bigBlind: 0, ante: 2, bringIn: 4 }),
+    );
+    renderWithProviders(<HorsePage />);
+    const forcedBets = await screen.findByTestId('ho-forced-bets');
+    expect(forcedBets).toHaveTextContent('アンティ 2');
+    expect(forcedBets).toHaveTextContent('ブリングイン 4');
+    expect(forcedBets).not.toHaveTextContent('ブラインド');
+  });
+
   it('exposes the current Eight-Game discipline as a heading described by its rules', async () => {
     mockEightExec.mockResolvedValue(makeHorseState({ variant: 1 }));
     renderWithProviders(

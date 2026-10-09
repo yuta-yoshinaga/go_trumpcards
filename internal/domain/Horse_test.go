@@ -530,6 +530,27 @@ func TestHorse_GetMaxBetAmount(t *testing.T) {
 	assert.Equal(t, 0, gOmahaFixed.GetMaxBetAmount())
 }
 
+func TestHorse_GetForcedBets(t *testing.T) {
+	t.Parallel()
+	assert.Equal(t, HorseForcedBets{}, (&Horse{}).GetForcedBets())
+
+	holdemConfig := DefaultHoldemConfig()
+	holdem := NewHoldem(NewTrumpCards(0), NewPlayersForTable(4), holdemConfig)
+	assert.Equal(t, HorseForcedBets{SmallBlind: holdemConfig.SmallBlind, BigBlind: holdemConfig.BigBlind}, (&Horse{table: holdem}).GetForcedBets())
+
+	omahaConfig := DefaultOmahaConfig()
+	omaha := NewOmaha(NewTrumpCards(0), NewOmahaPlayersForTable(4), omahaConfig)
+	assert.Equal(t, HorseForcedBets{SmallBlind: omahaConfig.SmallBlind, BigBlind: omahaConfig.BigBlind}, (&Horse{table: omaha}).GetForcedBets())
+
+	studConfig := DefaultSevenCardStudConfig()
+	stud := NewSevenCardStud(NewTrumpCards(0), NewSevenCardStudPlayersForTable(4), studConfig)
+	assert.Equal(t, HorseForcedBets{Ante: studConfig.Ante, BringIn: studConfig.BringIn}, (&Horse{table: stud}).GetForcedBets())
+
+	drawConfig := DefaultDeuceToSevenConfig()
+	draw := NewDeuceToSeven(NewTrumpCards(0), newHorseDeuceToSevenPlayers(4), drawConfig)
+	assert.Equal(t, HorseForcedBets{Ante: drawConfig.Ante}, (&Horse{table: draw}).GetForcedBets())
+}
+
 // **人間が一度も打たないまま終わるハンドがある。**
 //
 // アンティで残りを出し切ると種目側は `SetAllIn(true)` と `actedFlags[i] = true`

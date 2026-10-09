@@ -97,6 +97,10 @@ type HorseWebOutput struct {
 	MinRaise int `json:"minRaise"`
 	// MaxBetAmount はいまの種目が受け付ける最大ベット額 (0 は上限なしまたは固定リミット)。
 	MaxBetAmount int  `json:"maxBetAmount"`
+	SmallBlind   int  `json:"smallBlind"`
+	BigBlind     int  `json:"bigBlind"`
+	Ante         int  `json:"ante"`
+	BringIn      int  `json:"bringIn"`
 	TablePhase   int  `json:"tablePhase"`
 	GameEndFlag  bool `json:"gameEndFlag"`
 	WinnerSeat   int  `json:"winnerSeat"`

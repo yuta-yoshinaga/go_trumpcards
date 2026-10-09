@@ -253,3 +253,9 @@ func (_m *MockHorseGame) GetMaxBetAmount() int {
 	ret := _m.Called()
 	return ret.Int(0)
 }
+
+// GetForcedBets モック
+func (_m *MockHorseGame) GetForcedBets() domain.HorseForcedBets {
+	ret := _m.Called()
+	return ret.Get(0).(domain.HorseForcedBets)
+}
