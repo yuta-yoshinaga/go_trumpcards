@@ -548,6 +548,34 @@ describe('UltimateTexasHoldemPage keyboard shortcuts', () => {
     await flushPendingDispatch();
     expect(mockApi).not.toHaveBeenCalled();
   });
+
+  it.each([
+    ['4', 4, preFlopState],
+    ['3', 3, preFlopState],
+    ['2', 2, flopState],
+    ['1', 1, riverState],
+  ] as const)('gates the %sx shortcut and button at the ante balance boundary', async (key, multiplier, baseState) => {
+    const threshold = baseState.anteBet * multiplier;
+    const buttonName = new RegExp(`プレイ ${multiplier}×`);
+
+    mockApi.mockResolvedValue({ ...baseState, chips: threshold - 1 });
+    const { unmount } = renderWithProviders(<UltimateTexasHoldemPage />);
+    const disabledButton = await screen.findByRole('button', { name: buttonName });
+    expect(disabledButton).toBeDisabled();
+    fireEvent.click(disabledButton);
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key });
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalled();
+    unmount();
+
+    mockApi.mockResolvedValue({ ...baseState, chips: threshold });
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    const enabledButton = await screen.findByRole('button', { name: buttonName });
+    expect(enabledButton).not.toBeDisabled();
+    fireEvent.keyDown(document, { key });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('play', undefined, undefined, multiplier));
+  });
   // 各ストリートで 4x/3x/2x/1x/チェック/フォールドを選ぶのに、今の役がどこにも
   // 出ていなかった。フロップとリバーの両方で出ること、プリフロップでは出ないことを見る。
   it('names the current made hand on the flop and the river', async () => {
