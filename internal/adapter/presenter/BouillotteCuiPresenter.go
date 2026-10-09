@@ -135,7 +135,17 @@ func (p *BouillotteCuiPresenter) Output(g interfaces.BouillotteGame, lastErr err
 			if g.IsHumanTurn() {
 				b.WriteString(bouillotteRetourneMatchStr(g.AnalyzeRetourneMatch(bouillotteHumanIdx)))
 			}
-			b.WriteString(i18n.Tf("bouillotte.promptBetting",
+			promptKey := "bouillotte.promptBetting"
+			if !g.CanRaise() {
+				promptKey = "bouillotte.promptBettingNoRaise"
+				switch {
+				case g.GetRaiseCount() >= g.GetMaxRaises():
+					b.WriteString(i18n.T("bouillotte.raiseUnavailableLimit") + "\n")
+				default:
+					b.WriteString(i18n.T("bouillotte.raiseUnavailableChips") + "\n")
+				}
+			}
+			b.WriteString(i18n.Tf(promptKey,
 				"bet", strconv.Itoa(g.GetCurrentBet()),
 				"need", strconv.Itoa(need),
 				"raiseTo", strconv.Itoa(g.GetCurrentBet()+g.GetAnte()),
