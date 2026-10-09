@@ -57,13 +57,19 @@ def dangerous(source, depth=0):
         else: segment.append(word)
     if segment: segments.append(segment)
     bad = False; pgrep_full = False; kill_sink = False; wait_loop = False
+    loop_depth = 0
     for seg in segments:
         if not seg: continue
         head = seg[0].rsplit('/', 1)[-1]
-        if head in ('while', 'until'):
-            cond = seg[1:]
-            if cond and cond[0] == '!': cond = cond[1:]
-            if cond and cond[0].rsplit('/', 1)[-1] == 'pgrep' and full_flag(leading_opts(cond[1:])): wait_loop = True
+        # Inside a while/until loop (its condition or its body), any `pgrep -f` is a wait
+        # signal that also matches this shell: `while pgrep -f x`, `while [ -n "$(pgrep -f x)" ]`,
+        # `while true; do pgrep -f x || break; done`.
+        if head in ('while', 'until'): loop_depth += 1
+        if loop_depth > 0:
+            for k, word in enumerate(seg):
+                if word.rsplit('/', 1)[-1] == 'pgrep' and full_flag(leading_opts(seg[k+1:])): wait_loop = True
+                if '$(' in word and re.search(r'\$\(\s*(?:\S*/)?pgrep\s+(?:-\S*\s+)*(?:--full|-[A-Za-z]*f)', word): wait_loop = True
+        if head == 'done' and loop_depth > 0: loop_depth -= 1
         if head in ('echo','printf','grep','rg','cat','sed','awk','head','tail','less','more'): continue
         for i, word in enumerate(seg):
             base = word.rsplit('/', 1)[-1]
@@ -91,7 +97,7 @@ print(dangerous(sys.argv[1]))
 PY
 )
 if [ "$blocked" = wait ]; then
-  jq -nc --arg msg 'Blocked: a `while pgrep -f …` / `until ! pgrep -f …` wait loop never ends, because `pgrep -f` also matches the shell running this loop (its command line contains the pattern). Wait on the work itself instead: poll for the line the job writes when it finishes (for example `until grep -q RC_DONE <log>; do sleep 5; done`), or for its PID (`while kill -0 <pid> 2>/dev/null; do sleep 5; done`).' '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$msg}}'
+  jq -nc --arg msg 'Blocked: a while/until wait loop that runs `pgrep -f` (in its condition, in `$(…)`, or in its body) never ends, because `pgrep -f` also matches the shell running this loop (its command line contains the pattern). Wait on the work itself instead: poll for the line the job writes when it finishes (for example `until grep -q RC_DONE <log>; do sleep 5; done`), or for its PID (`while kill -0 <pid> 2>/dev/null; do sleep 5; done`).' '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$msg}}'
 elif [ "$blocked" = kill ]; then
   jq -nc --arg msg 'Blocked: `pkill -f` / `pgrep -f` and regex process matching can match the shell running this command and kill that shell too. Identify the target PID, then walk its children with `pgrep -P <pid>` and kill those PIDs (for example: `parent=<pid>; pgrep -P "$parent" | xargs -r kill`).' '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$msg}}'
 else

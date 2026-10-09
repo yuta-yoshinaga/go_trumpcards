@@ -35,11 +35,13 @@ $CLAUDE_SESSION_URL"
     fi
     return
   fi
+  local closes="Closes #$n"
+  prbody_has_ref "$n" "$summ" && closes=''
   cat <<M
 ## Summary
 $summ
 
-Closes #$n
+$closes
 
 ## Test plan
 $tp_fe

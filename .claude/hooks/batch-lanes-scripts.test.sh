@@ -53,7 +53,15 @@ PY
     rm internal/x/b_test.go
     out=$(REPEAT_TESTS_COUNT=20 bash "$SCRIPTS/repeattests.sh" "$rt")
     [ -z "$out" ] || fail "repeattests.sh warned on stable tests: $out"
+    printf 'package x\n\nimport "testing"\n\nfunc TestBroken(t *testing.T) { undefinedName() }\n' > internal/x/c_test.go
+    out=$(REPEAT_TESTS_COUNT=2 bash "$SCRIPTS/repeattests.sh" "$rt")
+    grep -q '^WARN REPEAT_TESTS_ERROR internal/x ' <<<"$out" && ! grep -q DEAL_DEPENDENT <<<"$out" \
+      || fail "repeattests.sh labelled a compile error as deal-dependent: $out"
+    rm internal/x/c_test.go
   fi
+  git rm -qf internal/x/a_test.go
+  listed=$(bash "$SCRIPTS/repeattests.sh" --list "$rt")
+  [ -z "$listed" ] || fail "repeattests.sh listed tests from a deleted file: $listed"
 ) || exit 1
 # ship_pr_body: a full body (own "## " headings) must not get a second Summary,
 # Closes line or footer; plain summary lines still get the standard wrapper.
@@ -72,6 +80,8 @@ PY
   [ "$(count 'Closes #42' "$partof")" = 0 ] || fail "Part of body was given a Closes line: $partof"
   other=$(ship_pr_body 42 $'Closes #420\n\n## Summary' '' '')
   grep -qx 'Closes #42' <<<"$other" || fail "Closes #420 was taken as a reference to #42: $other"
+  plainref=$(ship_pr_body 42 $'- did it\n\nPart of #42' '' '')
+  [ "$(count 'Closes #42' "$plainref")" = 0 ] || fail "summary lines that already reference the issue got a Closes line: $plainref"
   plain=$(ship_pr_body 42 '- did it' '- [x] vitest' '')
   [ "$(count '## Summary' "$plain")" = 1 ] && [ "$(count 'Closes #42' "$plain")" = 1 ] && [ "$(count '## Test plan' "$plain")" = 1 ] || fail "summary lines lost the standard wrapper: $plain"
 ) || exit 1

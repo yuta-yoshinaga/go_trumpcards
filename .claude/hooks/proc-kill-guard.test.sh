@@ -30,6 +30,9 @@ run block 'sh -c command' 'sh -c "pkill -f x"'
 run block 'while pgrep -f wait loop' "while pgrep -f 'rcg.sh fx1' >/dev/null; do sleep 5; done"
 run block 'until ! pgrep -f wait loop' 'until ! pgrep -f worker; do sleep 5; done'
 run block 'full-flag wait loop inside bash -c' "bash -c 'while pgrep -af worker; do sleep 1; done'"
+run block 'test-bracket wait loop' 'while [ -n "$(pgrep -f worker)" ]; do sleep 5; done'
+run block 'pgrep -f in the body of a wait loop' 'while true; do pgrep -f worker >/dev/null || break; sleep 5; done'
+run pass 'pgrep -f after the loop ends' 'while read -r l; do echo "$l"; done < f; pgrep -f worker'
 run pass 'while pgrep by parent PID' 'while pgrep -P 1234 >/dev/null; do sleep 5; done'
 run pass 'while pgrep exact name' 'while pgrep -x worker >/dev/null; do sleep 5; done'
 run pass 'wait on a finish line' 'until grep -q RC_DONE log.txt; do sleep 5; done'

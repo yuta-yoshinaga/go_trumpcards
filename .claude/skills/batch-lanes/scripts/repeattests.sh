@@ -21,11 +21,20 @@ trap 'rm -f "$tests"' EXIT
 
 # Test names per package dir: new `func Test…` lines, plus functions whose body changed
 # (git puts the enclosing func in the hunk header), plus every test in untracked files.
+# Only internal/ is scanned: the game logic and its deal-dependent tests live there, and
+# cmd/ holds entry points. The awk is POSIX (no gawk-only 3-argument match) so it works
+# under mawk, Ubuntu's default awk.
 {
   git diff -U0 HEAD -- 'internal/*_test.go' | awk '
+    /^\+\+\+ \/dev\/null/ { f = ""; next }
     /^\+\+\+ b\// { f = substr($2, 3); next }
-    /^@@/ { if (match($0, /@@ func (Test[A-Za-z0-9_]+)\(/, m)) print f, m[1]; next }
-    /^\+func Test[A-Za-z0-9_]+\(/ { name = $2; sub(/\(.*/, "", name); print f, name }'
+    /^@@/ {
+      if (f != "" && match($0, /@@ func Test[A-Za-z0-9_]+\(/)) {
+        name = substr($0, RSTART + 8, RLENGTH - 9); print f, name
+      }
+      next
+    }
+    /^\+func Test[A-Za-z0-9_]+\(/ { if (f != "") { name = $2; sub(/\(.*/, "", name); print f, name } }'
   git ls-files -o --exclude-standard -- 'internal/*_test.go' | while IFS= read -r f; do
     grep -oE '^func Test[A-Za-z0-9_]+\(' "$f" | sed -E 's/^func //; s/\($//' | sed "s|^|$f |"
   done
@@ -39,7 +48,11 @@ for dir in $(cut -d' ' -f1 "$tests" | sort -u); do
   [[ -n "$names" ]] || continue
   out=$(go test -tags test "./$dir" -run "^($names)\$" -count="$count" 2>&1)
   if [[ $? -ne 0 ]]; then
-    echo "WARN DEAL_DEPENDENT $dir $names (failed within -count=$count; the test likely depends on the deal)"
-    grep -E -- '--- FAIL|Error:|_test\.go:[0-9]+' <<<"$out" | head -6 | sed 's/^/  /'
+    if grep -q -- '--- FAIL' <<<"$out"; then
+      echo "WARN DEAL_DEPENDENT $dir $names (failed within -count=$count; the test likely depends on the deal)"
+    else
+      echo "WARN REPEAT_TESTS_ERROR $dir $names (go test failed without a test failure: build or vet error)"
+    fi
+    grep -E -- '--- FAIL|Error:|_test\.go:[0-9]+|\.go:[0-9]+:[0-9]+:' <<<"$out" | head -6 | sed 's/^/  /'
   fi
 done
