@@ -30,6 +30,8 @@ const betPhaseState: VideoPokerResponse = {
   handRank: 0,
   handName: '',
   heldIndices: [false, false, false, false, false],
+  recommendedHold: [],
+  recommendedHoldRule: '',
   variantName: 'jokerpoker',
   hands: 0,
   winRate: 0,
@@ -43,6 +45,8 @@ const drawPhaseState: VideoPokerResponse = {
   phase: 2,
   betAmount: 1,
   heldIndices: [false, false, false, false, false],
+  recommendedHold: [],
+  recommendedHoldRule: '',
 };
 
 // Four eights + a joker → Five of a Kind (a paying, wild-formed hand).
@@ -78,6 +82,8 @@ const winResultState: VideoPokerResponse = {
   payout: 40,
   handName: 'Full House',
   heldIndices: [true, true, true, true, true],
+  recommendedHold: [],
+  recommendedHoldRule: '',
 };
 
 const loseResultState: VideoPokerResponse = {
@@ -89,6 +95,8 @@ const loseResultState: VideoPokerResponse = {
   payout: 0,
   handName: '',
   heldIndices: [false, false, false, false, false],
+  recommendedHold: [],
+  recommendedHoldRule: '',
 };
 
 /** Drive the page from mount through deal to the DRAW phase with the given hand. */

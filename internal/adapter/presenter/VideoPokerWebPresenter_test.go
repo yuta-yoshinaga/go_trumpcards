@@ -45,6 +45,7 @@ func parseVideoPokerOutput(t *testing.T, jsonStr string) *controller.VideoPokerW
 func TestVideoPokerWebPresenter_Output_BetPhase(t *testing.T) {
 	p := new(VideoPokerWebPresenter)
 	m := new(interfaces.MockVideoPokerGame)
+	m.On("RecommendedHold").Return(domain.VideoPokerHoldAdvice{}).Maybe()
 	setupVideoPokerWebMockDefaults(m)
 
 	result := parseVideoPokerOutput(t, p.Output(m, nil))
@@ -55,11 +56,49 @@ func TestVideoPokerWebPresenter_Output_BetPhase(t *testing.T) {
 	assert.Equal(t, 0, result.Hands)
 	assert.Equal(t, 0, result.WinRate)
 	assert.Equal(t, 0, result.Net)
+	assert.Equal(t, []int{}, result.RecommendedHold)
+	assert.Empty(t, result.RecommendedHoldRule)
+}
+
+func TestVideoPokerWebPresenter_RecommendedHold(t *testing.T) {
+	t.Run("draw phase exposes strategy advice", func(t *testing.T) {
+		m := new(interfaces.MockVideoPokerGame)
+		m.On("GetChips").Return(1000).Maybe()
+		m.On("GetChipsRefilled").Return(false).Maybe()
+		m.On("GetPhase").Return(domain.VideoPokerPhaseDraw).Maybe()
+		m.On("GetHand").Return(([]*domain.Card)(nil)).Maybe()
+		m.On("GetGameEndFlag").Return(false).Maybe()
+		m.On("GetBetAmount").Return(0).Maybe()
+		m.On("GetResult").Return(domain.GameResult(0)).Maybe()
+		m.On("GetPayout").Return(0).Maybe()
+		m.On("GetHandRank").Return(0).Maybe()
+		m.On("GetHandName").Return("").Maybe()
+		m.On("GetHandKey").Return("").Maybe()
+		m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
+		m.On("GetVariantName").Return("jacksorbetter").Maybe()
+		m.On("GetHands").Return(0).Maybe()
+		m.On("GetWins").Return(0).Maybe()
+		m.On("GetTotalBet").Return(0).Maybe()
+		m.On("GetTotalPayout").Return(0).Maybe()
+		m.On("RecommendedHold").Return(domain.VideoPokerHoldAdvice{Hold: [domain.VideoPokerHandSize]bool{true, false, true, false, true}, RuleKey: "royalDraw3"}).Maybe()
+		out := parseVideoPokerOutput(t, new(VideoPokerWebPresenter).Output(m, nil))
+		assert.Equal(t, []int{0, 2, 4}, out.RecommendedHold)
+		assert.Equal(t, "royalDraw3", out.RecommendedHoldRule)
+	})
+	t.Run("outside draw phase is empty", func(t *testing.T) {
+		m := new(interfaces.MockVideoPokerGame)
+		m.On("RecommendedHold").Return(domain.VideoPokerHoldAdvice{}).Maybe()
+		setupVideoPokerWebMockDefaults(m)
+		out := parseVideoPokerOutput(t, new(VideoPokerWebPresenter).Output(m, nil))
+		assert.Equal(t, []int{}, out.RecommendedHold)
+		assert.Empty(t, out.RecommendedHoldRule)
+	})
 }
 
 func TestVideoPokerWebPresenter_Output_Win(t *testing.T) {
 	p := new(VideoPokerWebPresenter)
 	m := new(interfaces.MockVideoPokerGame)
+	m.On("RecommendedHold").Return(domain.VideoPokerHoldAdvice{}).Maybe()
 	m.On("GetChips").Return(1025).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseResult).Maybe()
 	m.On("GetChipsRefilled").Return(false).Maybe()
@@ -101,6 +140,7 @@ func TestVideoPokerWebPresenter_Output_Win(t *testing.T) {
 func TestVideoPokerWebPresenter_Output_Lose(t *testing.T) {
 	p := new(VideoPokerWebPresenter)
 	m := new(interfaces.MockVideoPokerGame)
+	m.On("RecommendedHold").Return(domain.VideoPokerHoldAdvice{}).Maybe()
 	m.On("GetChips").Return(999).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseResult).Maybe()
 	m.On("GetChipsRefilled").Return(false).Maybe()
@@ -134,6 +174,7 @@ func TestVideoPokerWebPresenter_Output_Lose(t *testing.T) {
 func TestVideoPokerWebPresenter_Output_Error(t *testing.T) {
 	p := new(VideoPokerWebPresenter)
 	m := new(interfaces.MockVideoPokerGame)
+	m.On("RecommendedHold").Return(domain.VideoPokerHoldAdvice{}).Maybe()
 	setupVideoPokerWebMockDefaults(m)
 
 	result := parseVideoPokerOutput(t, p.Output(m, domain.NewDomainError(domain.ErrInvalidAmount, "Bet must be between 1 and 5 coins.")))
@@ -145,6 +186,7 @@ func TestVideoPokerWebPresenter_ActionLogOutput(t *testing.T) {
 
 	t.Run("game not ended", func(t *testing.T) {
 		m := new(interfaces.MockVideoPokerGame)
+		m.On("RecommendedHold").Return(domain.VideoPokerHoldAdvice{}).Maybe()
 		m.On("GetGameEndFlag").Return(false)
 		jsonStr := p.ActionLogOutput(m)
 		var out controller.ActionLogWebOutput
@@ -155,6 +197,7 @@ func TestVideoPokerWebPresenter_ActionLogOutput(t *testing.T) {
 
 	t.Run("game ended with log", func(t *testing.T) {
 		m := new(interfaces.MockVideoPokerGame)
+		m.On("RecommendedHold").Return(domain.VideoPokerHoldAdvice{}).Maybe()
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return([]*domain.ActionLogEntry{
 			{TurnNumber: 1, PlayerIdx: 0, ActionType: "bet", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
@@ -169,6 +212,7 @@ func TestVideoPokerWebPresenter_ActionLogOutput(t *testing.T) {
 
 func TestVideoPokerWebPresenter_HintOutput(t *testing.T) {
 	m := new(interfaces.MockVideoPokerGame)
+	m.On("RecommendedHold").Return(domain.VideoPokerHoldAdvice{}).Maybe()
 	setupVideoPokerWebMockDefaults(m)
 	p := new(VideoPokerWebPresenter)
 	// The web presenter computes hints client-side, so HintOutput mirrors Output.
@@ -180,6 +224,7 @@ func TestVideoPokerWebPresenter_HintOutput(t *testing.T) {
 func TestVideoPokerWebPresenter_ChipsRefilledMessage(t *testing.T) {
 	build := func(refilled bool) *interfaces.MockVideoPokerGame {
 		m := new(interfaces.MockVideoPokerGame)
+		m.On("RecommendedHold").Return(domain.VideoPokerHoldAdvice{}).Maybe()
 		m.On("GetChipsRefilled").Return(refilled).Maybe()
 		setupVideoPokerWebMockDefaults(m)
 		return m

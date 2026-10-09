@@ -249,6 +249,14 @@ func videoPokerHandKey(handName string) string {
 // GetHand ハンド取得
 func (vp *VideoPoker) GetHand() []*Card { return vp.hand }
 
+// RecommendedHold はドローフェーズでの戦略表による推奨ホールドを返す。
+func (vp *VideoPoker) RecommendedHold() VideoPokerHoldAdvice {
+	if vp.phase != VideoPokerPhaseDraw || vp.config == nil {
+		return VideoPokerHoldAdvice{}
+	}
+	return RecommendVideoPokerHold(vp.config.Name, vp.hand)
+}
+
 // GetPhase 現在のフェーズ
 func (vp *VideoPoker) GetPhase() int { return vp.phase }
 

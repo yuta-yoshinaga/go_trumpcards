@@ -30,6 +30,8 @@ const betPhaseState: VideoPokerResponse = {
   handRank: 0,
   handName: '',
   heldIndices: [false, false, false, false, false],
+  recommendedHold: [],
+  recommendedHoldRule: '',
   variantName: 'jacksorbetter',
   hands: 0,
   winRate: 0,
@@ -47,6 +49,8 @@ const drawPhaseState: VideoPokerResponse = {
   handRank: 0,
   handName: '',
   heldIndices: [false, false, false, false, false],
+  recommendedHold: [0, 1],
+  recommendedHoldRule: 'keepPair',
   variantName: 'jacksorbetter',
   hands: 0,
   winRate: 0,
@@ -64,6 +68,8 @@ const resultPhaseWin: VideoPokerResponse = {
   handRank: 1,
   handName: 'Jacks or Better',
   heldIndices: [true, true, false, false, false],
+  recommendedHold: [],
+  recommendedHoldRule: '',
   variantName: 'jacksorbetter',
   hands: 0,
   winRate: 0,
@@ -83,6 +89,8 @@ const resultPhaseLose: VideoPokerResponse = {
   handRank: 0,
   handName: '',
   heldIndices: [false, false, false, false, false],
+  recommendedHold: [],
+  recommendedHoldRule: '',
   variantName: 'jacksorbetter',
   hands: 0,
   winRate: 0,
@@ -180,6 +188,7 @@ describe('VideoPokerGameContent', () => {
     mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(drawPhaseState);
     renderContent();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByTestId('vp-auto-hold-toggle'));
     fireEvent.click(screen.getByRole('button', { name: /ディール/ }));
     await waitFor(() => expect(screen.getByRole('button', { name: /ドロー/ })).toBeInTheDocument());
 
@@ -354,9 +363,9 @@ describe('VideoPokerGameContent', () => {
     expect(screen.getByTestId('vp-result-announce')).toHaveTextContent('純増減 +4');
   });
 
-  it('auto-hold pre-selects the hint-recommended cards on entering draw phase', async () => {
-    // drawPhaseState hand = [A♠, J♥, 5♣, 8♦, K♠]. With no pairs/draws, the
-    // base hint engine recommends holding the high cards (J + K → idx 1, 4).
+  it('auto-hold and the visible hint use the same server-recommended cards', async () => {
+    localStorage.setItem('hint_enabled_videopoker', 'true');
+    // The server response recommends indices 0 and 1; auto-hold and hint use those same indices.
     mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(drawPhaseState);
     renderContent();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -364,11 +373,12 @@ describe('VideoPokerGameContent', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /ドロー/ })).toBeInTheDocument());
 
     const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
-    expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'false'); // A — not a high card under threshold=11
-    expect(cardButtons[1]).toHaveAttribute('aria-pressed', 'true'); // J
+    expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true'); // server recommendation
+    expect(cardButtons[1]).toHaveAttribute('aria-pressed', 'true'); // server recommendation
     expect(cardButtons[2]).toHaveAttribute('aria-pressed', 'false'); // 5
     expect(cardButtons[3]).toHaveAttribute('aria-pressed', 'false'); // 8
-    expect(cardButtons[4]).toHaveAttribute('aria-pressed', 'true'); // K
+    expect(cardButtons[4]).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByTestId('hint-tooltip')).toHaveTextContent('ペアを1組だけホールド');
   });
 
   it('toggling auto-hold off then dealing leaves all cards unheld', async () => {
@@ -481,6 +491,8 @@ describe('VideoPokerGameContent', () => {
     const resultNoHeld = {
       ...resultPhaseLose,
       heldIndices: undefined,
+      recommendedHold: [],
+      recommendedHoldRule: '',
     } as unknown as VideoPokerResponse;
     mockExec.mockResolvedValue(resultNoHeld);
     renderContent();

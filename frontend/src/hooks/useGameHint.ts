@@ -465,7 +465,6 @@ import { getCurdsAndWheyHint } from '../utils/hints/curdsandwheyHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDehlaPakadHint } from '../utils/hints/dehlaPakadHint';
 import { getDesmocheHint } from '../utils/hints/desmocheHint';
-import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getDeuceToSevenHint } from '../utils/hints/deuceToSevenHint';
 import { getDilotiHint } from '../utils/hints/dilotiHint';
 import { getDiplomatHint } from '../utils/hints/diplomatHint';
@@ -531,7 +530,6 @@ import { getIrishPokerHint } from '../utils/hints/irishPokerHint';
 import { getIroncrossHint } from '../utils/hints/ironcrossHint';
 import { getIsraeliWhistHint } from '../utils/hints/israeliwhistHint';
 import { getJassHint } from '../utils/hints/jassHint';
-import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
 import { getJulepeHint } from '../utils/hints/julepeHint';
 import { getKaiserHint } from '../utils/hints/kaiserHint';
 import { getKalookiHint } from '../utils/hints/kalookiHint';
@@ -726,7 +724,7 @@ import { getTysiacHint } from '../utils/hints/tysiacHint';
 import { getUltiHint } from '../utils/hints/ultiHint';
 import { getUltimateTexasHoldemHint } from '../utils/hints/ultimateTexasHoldemHint';
 import { getUnsunKarutaHint } from '../utils/hints/unsunKarutaHint';
-import { getVideoPokerHint } from '../utils/hints/videopokerHint';
+import { getVideoPokerStrategyHint } from '../utils/hints/videoPokerStrategyHint';
 import { getVintHint } from '../utils/hints/vintHint';
 import { getViraHint } from '../utils/hints/viraHint';
 import { getWarHint } from '../utils/hints/warHint';
@@ -780,9 +778,9 @@ export const hintFactories = {
   pineapple: (s) => getPineappleHint(s as PineappleResponse),
   crazypineapple: (s) => getCrazyPineappleHint(s as PineappleResponse),
   irishpoker: (s) => getIrishPokerHint(s as PineappleResponse),
-  videopoker: (s) => getVideoPokerHint(s as VideoPokerResponse),
-  deuceswild: (s) => getDeucesWildHint(s as VideoPokerResponse),
-  jokerpoker: (s) => getJokerPokerHint(s as VideoPokerResponse),
+  videopoker: (s) => getVideoPokerStrategyHint(s as VideoPokerResponse),
+  deuceswild: (s) => getVideoPokerStrategyHint(s as VideoPokerResponse),
+  jokerpoker: (s) => getVideoPokerStrategyHint(s as VideoPokerResponse),
   indianpoker: (s) => getIndianPokerHint(s as IndianPokerResponse),
   threecard: (s) => getThreeCardHint(s as ThreeCardResponse),
   threecardrummy: (s) => getThreeCardRummyHint(s as ThreeCardRummyResponse),

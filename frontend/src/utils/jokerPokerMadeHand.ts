@@ -186,15 +186,19 @@ function isJacksOrBetter(cards: readonly Card[]): boolean {
   return false;
 }
 
-/** Whether the (non-joker) pair is aces or kings — the Joker Poker pay minimum. */
+/** Whether the pair is natural aces/kings or a joker paired with a natural ace/king. */
 function isKingsOrBetter(cards: readonly Card[]): boolean {
   const counts = new Map<number, number>();
+  let hasJoker = false;
   for (const c of cards) {
-    if (c.design === 'JOKER') continue;
+    if (c.design === 'JOKER') {
+      hasJoker = true;
+      continue;
+    }
     counts.set(c.value, (counts.get(c.value) ?? 0) + 1);
   }
   for (const [value, count] of counts) {
-    if (count >= 2 && (value === ACE || value === KING)) return true;
+    if ((value === ACE || value === KING) && (count >= 2 || (hasJoker && count >= 1))) return true;
   }
   return false;
 }

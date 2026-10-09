@@ -21,6 +21,8 @@ export interface VideoPokerResponse extends BaseGameResponse {
    */
   handKey?: string;
   heldIndices: boolean[];
+  recommendedHold: number[];
+  recommendedHoldRule: string;
   variantName: string;
   hands: number;
   winRate: number;
