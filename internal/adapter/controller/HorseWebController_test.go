@@ -23,6 +23,10 @@ func mustHorseOutputJSON(msg string) string {
 	out := &controller.HorseWebOutput{
 		Seats:          []*controller.HorseWebOutputSeat{},
 		CommunityCards: []*controller.WebOutputCard{},
+		SmallBlind:     0,
+		BigBlind:       0,
+		Ante:           0,
+		BringIn:        0,
 		WinnerSeat:     -1,
 		WebOutputBase:  controller.WebOutputBase{Message: msg},
 	}

@@ -440,25 +440,37 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
                 </div>
               )}
               {isBetTurn && (
-                <BettingControls
-                  inputId="ho-bet"
-                  betAmount={betAmount}
-                  onBetAmountChange={setBetAmount}
-                  minRaise={Math.max(state.minRaise, 1)}
-                  maxBetAmount={state.maxBetAmount}
-                  potSize={state.pot}
-                  // **「賭けられているか」はサーバが決める。** 固定すると、
-                  // チェックできる場面でチェックが出ず、逆も起きる。
-                  hasOutstandingBet={state.toCall > 0}
-                  callAmountLabel={state.toCall > 0 ? t('callAmount', { amount: state.toCall }) : undefined}
-                  loading={loading}
-                  onCall={() => callApi('action', { action: 'call' })}
-                  onRaise={() => callApi('action', { action: 'raise', amount: betAmount })}
-                  onBet={() => callApi('action', { action: 'bet', amount: betAmount })}
-                  onCheck={() => callApi('action', { action: 'check' })}
-                  onFold={() => callApi('action', { action: 'fold' })}
-                  onAllIn={() => callApi('action', { action: 'allin' })}
-                />
+                <>
+                  <p className="text-sm text-ds-text-muted" data-testid="ho-forced-bets">
+                    {[
+                      state.smallBlind > 0 && t('forcedBets.smallBlind', { amount: state.smallBlind }),
+                      state.bigBlind > 0 && t('forcedBets.bigBlind', { amount: state.bigBlind }),
+                      state.ante > 0 && t('forcedBets.ante', { amount: state.ante }),
+                      state.bringIn > 0 && t('forcedBets.bringIn', { amount: state.bringIn }),
+                    ]
+                      .filter(Boolean)
+                      .join(t('listSeparator'))}
+                  </p>
+                  <BettingControls
+                    inputId="ho-bet"
+                    betAmount={betAmount}
+                    onBetAmountChange={setBetAmount}
+                    minRaise={Math.max(state.minRaise, 1)}
+                    maxBetAmount={state.maxBetAmount}
+                    potSize={state.pot}
+                    // **「賭けられているか」はサーバが決める。** 固定すると、
+                    // チェックできる場面でチェックが出ず、逆も起きる。
+                    hasOutstandingBet={state.toCall > 0}
+                    callAmountLabel={state.toCall > 0 ? t('callAmount', { amount: state.toCall }) : undefined}
+                    loading={loading}
+                    onCall={() => callApi('action', { action: 'call' })}
+                    onRaise={() => callApi('action', { action: 'raise', amount: betAmount })}
+                    onBet={() => callApi('action', { action: 'bet', amount: betAmount })}
+                    onCheck={() => callApi('action', { action: 'check' })}
+                    onFold={() => callApi('action', { action: 'fold' })}
+                    onAllIn={() => callApi('action', { action: 'allin' })}
+                  />
+                </>
               )}
               {isHandEnd && (
                 <button
