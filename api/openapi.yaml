@@ -60712,6 +60712,12 @@ components:
             the called trump is played.
         partnerRevealed:
           type: boolean
+        declarerTeamPoints:
+          type: integer
+          description: Present only after the partner is revealed in a Rufer contract.
+        defenderTeamPoints:
+          type: integer
+          description: Present only after the partner is revealed in a Rufer contract.
         talonCount:
           type: integer
         currentTrick:
