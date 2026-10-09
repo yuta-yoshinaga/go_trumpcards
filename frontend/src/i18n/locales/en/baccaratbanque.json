@@ -15,6 +15,8 @@
   "shoeAnalysis.title": "Remaining shoe and draw odds",
   "shoeAnalysis.composition": "Remaining cards by rank (A–K): {{counts}}",
   "shoeAnalysis.winChance": "Chance a draw beats the tableaux — right: {{right}}%, left: {{left}}%",
+  "shoeAnalysis.tieChance": "Chance a draw ties the tableaux — right: {{right}}%, left: {{left}}%",
+  "shoeAnalysis.loseChance": "Chance a draw falls below the tableaux — right: {{right}}%, left: {{left}}%",
   "label.chips": "Chips",
   "label.bet": "Stake",
   "role.banker": "Banker (you)",

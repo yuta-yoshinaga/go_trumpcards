@@ -15,6 +15,8 @@
   "shoeAnalysis.title": "シューの残り札と引いた場合",
   "shoeAnalysis.composition": "ランクA〜Kの残り枚数: {{counts}}",
   "shoeAnalysis.winChance": "引いた場合に上回る確率 — 右: {{right}}%、左: {{left}}%",
+  "shoeAnalysis.tieChance": "引いた場合に引き分ける確率 — 右: {{right}}%、左: {{left}}%",
+  "shoeAnalysis.loseChance": "引いた場合に下回る確率 — 右: {{right}}%、左: {{left}}%",
   "label.chips": "チップ",
   "label.bet": "賭け金",
   "role.banker": "バンカー（あなた）",
