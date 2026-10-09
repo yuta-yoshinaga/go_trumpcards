@@ -802,6 +802,46 @@ func TestBostonRoundTripsThroughJSON(t *testing.T) {
 	if got := restored.GetPlayer(0).GetCardsSize(); got != BostonHandSize {
 		t.Errorf("the restored hand holds %d, want %d", got, BostonHandSize)
 	}
+	assertBostonHandsSorted(t, &restored)
+}
+
+func TestBostonDealsHandsSortedBySuitAndRank(t *testing.T) {
+	b := NewDefaultBoston()
+	b.Reset()
+	assertBostonHandsSorted(t, b)
+}
+
+func assertBostonHandsSorted(t *testing.T, b *Boston) {
+	t.Helper()
+	seenAceSuit := make(map[[2]int]bool)
+	for seat := range BostonPlayerCnt {
+		p := b.GetPlayer(seat)
+		for i := 1; i < p.GetCardsSize(); i++ {
+			previous, current := p.GetCard(i-1), p.GetCard(i)
+			if previous.GetDesign() > current.GetDesign() ||
+				(previous.GetDesign() == current.GetDesign() && bostonCardRank(previous) > bostonCardRank(current)) {
+				t.Errorf("seat %d hand is not sorted at index %d: (%d,%d) before (%d,%d)", seat, i,
+					previous.GetDesign(), previous.GetValue(), current.GetDesign(), current.GetValue())
+			}
+		}
+		for i := 0; i < p.GetCardsSize(); i++ {
+			card := p.GetCard(i)
+			if card.GetValue() != 1 {
+				continue
+			}
+			key := [2]int{seat, card.GetDesign()}
+			seenAceSuit[key] = true
+			for j := i + 1; j < p.GetCardsSize(); j++ {
+				if p.GetCard(j).GetDesign() == card.GetDesign() {
+					t.Errorf("seat %d: ace of suit %d is not last in its suit", seat, card.GetDesign())
+					break
+				}
+			}
+		}
+	}
+	if len(seenAceSuit) == 0 {
+		t.Fatal("no ace found in dealt hands; cannot verify ace is last in its suit")
+	}
 }
 
 // **壊れた状態を弾く。**KV から戻る値なので、範囲外のまま受け入れると詰む。
