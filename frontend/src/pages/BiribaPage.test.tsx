@@ -37,6 +37,7 @@ const basePlayers: BiribaPlayerData[] = [
     red3Count: 0,
     red3s: [],
     roundScore: 0,
+    scoreBreakdown: { meldCards: 0, canastaBonus: 0, red3Bonus: 0, goOutBonus: 0, handPenalty: 0 },
     cumulativeScore: 0,
     hasBiriba: false,
     hasInitMeld: false,
@@ -51,6 +52,7 @@ const basePlayers: BiribaPlayerData[] = [
     red3Count: 0,
     red3s: [],
     roundScore: 0,
+    scoreBreakdown: { meldCards: 0, canastaBonus: 0, red3Bonus: 0, goOutBonus: 0, handPenalty: 0 },
     cumulativeScore: 0,
     hasBiriba: false,
     hasInitMeld: false,
@@ -109,6 +111,28 @@ describe('BiribaPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockExec.mockResolvedValue(drawPhaseState);
+  });
+
+  it('shows every round score component and labels zero values at round end', async () => {
+    mockExec.mockResolvedValue({
+      ...roundEndState,
+      players: [
+        {
+          ...basePlayers[0],
+          roundScore: 165,
+          scoreBreakdown: { meldCards: 60, canastaBonus: 200, red3Bonus: 100, goOutBonus: 100, handPenalty: 295 },
+        },
+        basePlayers[1],
+      ],
+    });
+    renderWithProviders(<BiribaPage />);
+    expect(await screen.findAllByText('ラウンド得点の内訳')).toHaveLength(2);
+    expect(screen.getByText(/メルドカード点: 60/)).toBeInTheDocument();
+    expect(screen.getByText(/ビリバボーナス: 200/)).toBeInTheDocument();
+    expect(screen.getByText(/赤3ボーナス: 100/)).toBeInTheDocument();
+    expect(screen.getByText(/上がりボーナス: 100/)).toBeInTheDocument();
+    expect(screen.getByText(/手札ペナルティ: −295/)).toBeInTheDocument();
+    expect(screen.getAllByText(/得点なし/)).toHaveLength(5);
   });
 
   it('renders skeleton before first API response', () => {

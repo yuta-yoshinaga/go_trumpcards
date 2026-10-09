@@ -27,18 +27,19 @@ type BiribaWebConfig struct {
 
 // BiribaWebOutputPlayer ビリバWebアウトプットプレイヤー
 type BiribaWebOutputPlayer struct {
-	ID              int                    `json:"id"`
-	IsHuman         bool                   `json:"isHuman"`
-	CardCount       int                    `json:"cardCount"`
-	Cards           []*WebOutputCard       `json:"cards"`
-	Melds           []*BiribaWebOutputMeld `json:"melds"`
-	Red3Count       int                    `json:"red3Count"`
-	Red3s           []*WebOutputCard       `json:"red3s"`
-	RoundScore      int                    `json:"roundScore"`
-	CumulativeScore int                    `json:"cumulativeScore"`
-	HasBiriba       bool                   `json:"hasBiriba"`
-	HasInitMeld     bool                   `json:"hasInitMeld"`
-	TookPozzetto    bool                   `json:"tookPozzetto"`
+	ID              int                          `json:"id"`
+	IsHuman         bool                         `json:"isHuman"`
+	CardCount       int                          `json:"cardCount"`
+	Cards           []*WebOutputCard             `json:"cards"`
+	Melds           []*BiribaWebOutputMeld       `json:"melds"`
+	Red3Count       int                          `json:"red3Count"`
+	Red3s           []*WebOutputCard             `json:"red3s"`
+	RoundScore      int                          `json:"roundScore"`
+	ScoreBreakdown  domain.CanastaScoreBreakdown `json:"scoreBreakdown"`
+	CumulativeScore int                          `json:"cumulativeScore"`
+	HasBiriba       bool                         `json:"hasBiriba"`
+	HasInitMeld     bool                         `json:"hasInitMeld"`
+	TookPozzetto    bool                         `json:"tookPozzetto"`
 }
 
 // BiribaWebOutputMeld メルドのアウトプット

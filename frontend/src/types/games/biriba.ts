@@ -27,6 +27,13 @@ export interface BiribaPlayerData {
   red3Count: number;
   red3s: Card[];
   roundScore: number;
+  scoreBreakdown: {
+    meldCards: number;
+    canastaBonus: number;
+    red3Bonus: number;
+    goOutBonus: number;
+    handPenalty: number;
+  };
   cumulativeScore: number;
   hasBiriba: boolean;
   hasInitMeld: boolean;
