@@ -3864,6 +3864,8 @@ const baseMinchiateState: MinchiateResponse = {
   leadPlayerIdx: 1,
   dealerIdx: 0,
   scartoCount: 13,
+  playedTrumps: [],
+  remainingTrumps: 40,
   currentTrick: [],
   teamScores: [0, 0],
   roundTricks: [0, 0, 0, 0],
