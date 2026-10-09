@@ -829,6 +829,14 @@ func TestFrenchTarotAccessors(t *testing.T) {
 	assert.Nil(t, g.GetPlayer(99))
 	assert.Nil(t, g.GetPlayableIndices(99))
 	assert.Equal(t, 0, g.GetCardPoints(99))
+	g.GetPlayer(1).AddTrick([]*domain.Card{
+		domain.NewCard(domain.FrenchTarotTrumpDesign, 1, false),
+		domain.NewCard(domain.FrenchTarotTrumpDesign, 21, false),
+		domain.NewCard(domain.FrenchTarotExcuseDesign, domain.FrenchTarotExcuseValue, false),
+	})
+	assert.Equal(t, 3, g.GetBouts(1))
+	assert.Equal(t, 0, g.GetBouts(0))
+	assert.Equal(t, 0, g.GetBouts(99))
 	assert.NotNil(t, g.GetActionLog())
 }
 

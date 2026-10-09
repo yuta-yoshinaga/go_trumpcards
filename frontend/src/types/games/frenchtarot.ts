@@ -13,6 +13,8 @@ export interface FrenchTarotPlayer {
   cardCount: number;
   cards: Card[];
   trickCount: number;
+  /** Bouts captured in this player's completed tricks this deal. */
+  bouts: number;
   /** Card-points captured in tricks so far this deal (French Tarot half-point card values). */
   cardPoints: number;
   /** Cumulative match score of this individual player. */

@@ -175,6 +175,7 @@ func (p *FrenchTarotWebPresenter) buildPlayersOutput(g interfaces.FrenchTarotGam
 			CardCount:  player.GetCardsSize(),
 			Cards:      playerCardsToOutputWithFace(player, player.GetIsHuman(), frenchTarotFace),
 			TrickCount: player.GetTrickCount(),
+			Bouts:      g.GetBouts(i),
 			CardPoints: g.GetCardPoints(i),
 			Score:      scores[i],
 			IsDeclarer: i == declarer,

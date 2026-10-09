@@ -159,6 +159,9 @@ func (_m *MockFrenchTarotGame) GetPlayerScores() [domain.FrenchTarotPlayerCnt]in
 // GetCardPoints モック
 func (_m *MockFrenchTarotGame) GetCardPoints(i int) int { return _m.Called(i).Int(0) }
 
+// GetBouts モック
+func (_m *MockFrenchTarotGame) GetBouts(i int) int { return _m.Called(i).Int(0) }
+
 // GetOutcome モック
 func (_m *MockFrenchTarotGame) GetOutcome() domain.FrenchTarotOutcome {
 	return _m.Called().Get(0).(domain.FrenchTarotOutcome)
