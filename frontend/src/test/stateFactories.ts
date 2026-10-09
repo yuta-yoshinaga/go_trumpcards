@@ -11,6 +11,7 @@ import type {
   BoliviaPlayerData,
   BoliviaResponse,
   BouillotteResponse,
+  BridgeResponse,
   CalabresellaResponse,
   CallBreakResponse,
   CasinoHoldemResponse,
@@ -310,6 +311,40 @@ export function makeSevenBridgeState(overrides: Partial<SevenBridgeResponse> = {
     roundWinnerIdx: -1,
     roundScoreHistory: [],
     config: { cpuDifficulty: 1, pointLimit: 1500 },
+    message: '',
+    ...overrides,
+  };
+}
+
+/** Creates a Bridge response with legal play defaults. */
+export function makeBridgeState(overrides: Partial<BridgeResponse> = {}): BridgeResponse {
+  return {
+    players: [],
+    phase: 0,
+    roundNumber: 1,
+    trickNumber: 0,
+    currentPlayerIdx: 0,
+    bidPlayerIdx: 0,
+    dealerIdx: 0,
+    trumpSuit: 0,
+    contractLevel: 0,
+    contractSuit: 0,
+    doubled: 0,
+    declarerIdx: -1,
+    dummyIdx: -1,
+    bidHistory: [],
+    vulnerability: [false, false],
+    currentTrick: [],
+    teamScores: [0, 0],
+    gamesWon: [0, 0],
+    belowLine: [0, 0],
+    gameEndFlag: false,
+    winnerTeam: -1,
+    leadPlayerIdx: -1,
+    openingLeadDone: false,
+    dummyHand: [],
+    legalPlayIndices: [],
+    config: { cpuDifficulty: 1 },
     message: '',
     ...overrides,
   };

@@ -67,6 +67,7 @@ export interface BridgeResponse extends BaseGameResponse {
   leadPlayerIdx: number;
   openingLeadDone: boolean;
   dummyHand: Card[] | null;
+  legalPlayIndices: number[];
   config: BridgeConfig;
   hint?: BridgeHint;
 }
