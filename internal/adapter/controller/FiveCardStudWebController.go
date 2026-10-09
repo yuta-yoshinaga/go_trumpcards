@@ -68,8 +68,15 @@ type FiveCardStudWebOutputResult struct {
 
 // FiveCardStudWebOutputSidePot ファイブカードスタッドサイドポット
 type FiveCardStudWebOutputSidePot struct {
-	Amount          int   `json:"amount"`
-	EligiblePlayers []int `json:"eligiblePlayers"`
+	Amount          int                              `json:"amount"`
+	EligiblePlayers []int                            `json:"eligiblePlayers"`
+	Winners         []*FiveCardStudWebOutputPotAward `json:"winners"`
+}
+
+// FiveCardStudWebOutputPotAward is one player's share of a pot.
+type FiveCardStudWebOutputPotAward struct {
+	PlayerIdx int `json:"playerIdx"`
+	Amount    int `json:"amount"`
 }
 
 // FiveCardStudWebOutputMetaAI メタAI情報

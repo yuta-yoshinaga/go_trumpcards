@@ -7192,7 +7192,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/SevenCardStudResponse'
+                  - $ref: '#/components/schemas/FiveCardStudResponse'
                   - $ref: '#/components/schemas/ActionLogResponse'
                 description: |
                   The shape depends on the command. Ordinary commands return the game
@@ -7202,7 +7202,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SevenCardStudResponse'
+                $ref: '#/components/schemas/FiveCardStudResponse'
               examples:
                 paramError:
                   value:
@@ -7281,7 +7281,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/SevenCardStudResponse'
+                  - $ref: '#/components/schemas/FiveCardStudResponse'
                   - $ref: '#/components/schemas/ActionLogResponse'
                 description: |
                   The shape depends on the command. Ordinary commands return the game
@@ -7291,7 +7291,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SevenCardStudResponse'
+                $ref: '#/components/schemas/FiveCardStudResponse'
 
 
   /fourseasons/exec:
@@ -54025,6 +54025,17 @@ components:
           items:
             type: integer
           example: [0, 1, 2]
+        winners:
+          type: array
+          description: Players who won the pot at showdown and the amount received.
+          items:
+            type: object
+            required: [playerIdx, amount]
+            properties:
+              playerIdx:
+                type: integer
+              amount:
+                type: integer
 
     FollowTheQueenResponse:
       description: |
@@ -54068,6 +54079,36 @@ components:
         winners:
           type: array
           description: Players who won each pot at showdown and the amount received. Empty array outside showdown.
+          items:
+            type: object
+            required: [playerIdx, amount]
+            properties:
+              playerIdx:
+                type: integer
+              amount:
+                type: integer
+    FiveCardStudResponse:
+      allOf:
+        - $ref: '#/components/schemas/SevenCardStudResponse'
+        - type: object
+          properties:
+            sidePots:
+              type: array
+              items:
+                $ref: '#/components/schemas/FiveCardStudSidePot'
+    FiveCardStudSidePot:
+      type: object
+      required: [amount, eligiblePlayers, winners]
+      properties:
+        amount:
+          type: integer
+        eligiblePlayers:
+          type: array
+          items:
+            type: integer
+        winners:
+          type: array
+          description: Players who won the pot at showdown and the amount received. Empty outside showdown.
           items:
             type: object
             required: [playerIdx, amount]

@@ -314,6 +314,8 @@ func TestFiveCardStud_Showdown_BestHandWins(t *testing.T) {
 		}
 	}
 	assert.Greater(t, p0Won, 0)
+	assert.NotEmpty(t, s.GetPotAwards())
+	assert.NotEmpty(t, s.GetPotAwards()[0])
 }
 
 func TestFiveCardStud_IsHumanTurn(t *testing.T) {
@@ -393,6 +395,7 @@ func TestFiveCardStud_JSON(t *testing.T) {
 		p.SetChips(1000)
 	}
 	require.NoError(t, s.Reset())
+	assert.Empty(t, s.GetPotAwards())
 
 	data, err := json.Marshal(s)
 	require.NoError(t, err)
@@ -405,6 +408,13 @@ func TestFiveCardStud_JSON(t *testing.T) {
 	assert.Equal(t, s.GetPlayerCnt(), restored.GetPlayerCnt())
 	assert.Equal(t, s.GetHandCount(), restored.GetHandCount())
 	assert.Equal(t, s.GetBringInPlayerIdx(), restored.GetBringInPlayerIdx())
+	s.potAwards = [][]PotAward{{{PlayerIdx: 1, Amount: 42}}}
+	data, err = json.Marshal(s)
+	require.NoError(t, err)
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Equal(t, s.GetPotAwards(), restored.GetPotAwards())
+	require.NoError(t, s.Reset())
+	assert.Empty(t, s.GetPotAwards())
 }
 
 func TestFiveCardStud_JSON_MaxSlice(t *testing.T) {

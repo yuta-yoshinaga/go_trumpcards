@@ -35,6 +35,9 @@ func (s *FiveCardStud) SetCpuActions(actions []FiveCardStudCpuAction) { s.cpuAct
 // SetSidePots サイドポット設定（テスト用）
 func (s *FiveCardStud) SetSidePots(pots []SidePot) { s.sidePots = pots }
 
+// SetPotAwards sets pot awards for presenter tests.
+func (s *FiveCardStud) SetPotAwards(awards [][]PotAward) { s.potAwards = awards }
+
 // SetHandCount ハンド数設定（テスト用）
 func (s *FiveCardStud) SetHandCount(count int) { s.handCount = count }
 
