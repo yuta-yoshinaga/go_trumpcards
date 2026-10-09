@@ -40,19 +40,20 @@ type SixCardGolfWebOutputPlayer struct {
 
 // SixCardGolfWebOutput SixCardGolf Webアウトプット
 type SixCardGolfWebOutput struct {
-	Players          []*SixCardGolfWebOutputPlayer `json:"players"`
-	Phase            int                           `json:"phase"`
-	RoundNumber      int                           `json:"roundNumber"`
-	TotalRounds      int                           `json:"totalRounds"`
-	CurrentPlayerIdx int                           `json:"currentPlayerIdx"`
-	DiscardTop       *WebOutputCard                `json:"discardTop"`
-	DrawPileCount    int                           `json:"drawPileCount"`
-	DrawnCard        *WebOutputCard                `json:"drawnCard"`
-	DrawnFromDiscard bool                          `json:"drawnFromDiscard"`
-	CanFlip          bool                          `json:"canFlip"`
-	FinalTurnTrigger int                           `json:"finalTurnTrigger"`
-	GameEndFlag      bool                          `json:"gameEndFlag"`
-	WinnerIdx        int                           `json:"winnerIdx"`
+	Players           []*SixCardGolfWebOutputPlayer `json:"players"`
+	Phase             int                           `json:"phase"`
+	RoundNumber       int                           `json:"roundNumber"`
+	RoundScoreHistory [][]int                       `json:"roundScoreHistory"`
+	TotalRounds       int                           `json:"totalRounds"`
+	CurrentPlayerIdx  int                           `json:"currentPlayerIdx"`
+	DiscardTop        *WebOutputCard                `json:"discardTop"`
+	DrawPileCount     int                           `json:"drawPileCount"`
+	DrawnCard         *WebOutputCard                `json:"drawnCard"`
+	DrawnFromDiscard  bool                          `json:"drawnFromDiscard"`
+	CanFlip           bool                          `json:"canFlip"`
+	FinalTurnTrigger  int                           `json:"finalTurnTrigger"`
+	GameEndFlag       bool                          `json:"gameEndFlag"`
+	WinnerIdx         int                           `json:"winnerIdx"`
 	WebOutputBase
 	Config SixCardGolfWebOutputConfig `json:"config"`
 }

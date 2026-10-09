@@ -39,6 +39,18 @@ func (p *SixCardGolfCuiPresenter) Output(g interfaces.SixCardGolfGame, lastErr e
 		cuiErrorBlock(b, lastErr)
 
 		if g.GetGameEndFlag() {
+			for roundIdx, scores := range g.GetRoundScoreHistory() {
+				parts := make([]string, len(scores))
+				for i, score := range scores {
+					parts[i] = i18n.Tf("sixcardgolf.scoreHistoryPlayer", "player", scgPlayerName(g.GetPlayer(i), i), "score", strconv.Itoa(score))
+				}
+				b.WriteString(i18n.Tf("sixcardgolf.scoreHistoryRound", "round", strconv.Itoa(roundIdx+1), "scores", strings.Join(parts, i18n.T("sixcardgolf.listSeparator"))) + "\n")
+			}
+			b.WriteString(i18n.T("sixcardgolf.scoreHistoryCumulative") + "\n")
+			for i := 0; i < g.GetPlayerCnt(); i++ {
+				player := g.GetPlayer(i)
+				b.WriteString(i18n.Tf("sixcardgolf.scoreHistoryPlayer", "player", scgPlayerName(player, i), "score", strconv.Itoa(player.CumulativeScore)) + "\n")
+			}
 			winnerIdx := g.GetWinnerIdx()
 			banner := i18n.Tf("sixcardgolf.gameEnd",
 				"name", scgPlayerName(g.GetPlayer(winnerIdx), winnerIdx))
