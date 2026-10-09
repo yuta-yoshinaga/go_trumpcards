@@ -47123,6 +47123,18 @@ components:
                   $ref: '#/components/schemas/Card'
               deadwood:
                 type: integer
+              melds:
+                type: array
+                description: Meld groups represented by indexes into the player's cards array.
+                items:
+                  type: array
+                  items:
+                    type: integer
+              deadwoodIndices:
+                type: array
+                description: Indexes into the player's cards array that are deadwood.
+                items:
+                  type: integer
               roundScore:
                 type: integer
               cumulativeScore:

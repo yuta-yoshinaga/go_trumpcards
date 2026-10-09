@@ -48,6 +48,10 @@ func (m *MockThreeThirteenGame) GetPlayer(i int) *domain.ThreeThirteenPlayer {
 	return m.Called(i).Get(0).(*domain.ThreeThirteenPlayer)
 }
 func (m *MockThreeThirteenGame) GetPlayerDeadwoodValue(i int) int { return m.Called(i).Int(0) }
+func (m *MockThreeThirteenGame) GetPlayerMeldSplit(i int) ([][]int, []int) {
+	args := m.Called(i)
+	return args.Get(0).([][]int), args.Get(1).([]int)
+}
 
 func (m *MockThreeThirteenGame) GetDeadwoodAfterDiscard(playerIdx, cardIndex int) int {
 	return m.Called(playerIdx, cardIndex).Int(0)

@@ -51,12 +51,19 @@ func (p *ThreeThirteenWebPresenter) buildPlayersOutput(g interfaces.ThreeThirtee
 	for i := 0; i < g.GetPlayerCnt(); i++ {
 		player := g.GetPlayer(i)
 		showCards := player.GetIsHuman() || revealAll
+		melds := make([][]int, 0)
+		deadwoodIndices := make([]int, 0)
+		if revealAll {
+			melds, deadwoodIndices = g.GetPlayerMeldSplit(i)
+		}
 		pObj := &controller.ThreeThirteenWebOutputPlayer{
 			ID:              i,
 			IsHuman:         player.GetIsHuman(),
 			CardCount:       player.GetCardsSize(),
 			Cards:           playerCardsToOutput(player, showCards),
 			Deadwood:        g.GetPlayerDeadwoodValue(i),
+			Melds:           melds,
+			DeadwoodIndices: deadwoodIndices,
 			RoundScore:      player.GetRoundScore(),
 			CumulativeScore: player.GetCumulativeScore(),
 		}
