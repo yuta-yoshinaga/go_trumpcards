@@ -71,6 +71,8 @@ type BeziqueGame interface {
 	GetValidPlayIndices(playerIdx int) []int
 	// GetAvailableMelds トリック勝者が宣言できる役の一覧を返す
 	GetAvailableMelds(playerIdx int) []domain.BeziqueMeld
+	// MeldCardIndices 宣言可能なメルドを構成する手札インデックスを返す
+	MeldCardIndices(playerIdx int, meld domain.BeziqueMeld) []int
 	// GetHint ヒントを取得する
 	GetHint() *domain.BeziqueHint
 }

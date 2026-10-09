@@ -49,8 +49,8 @@ describe('formatBeziqueState', () => {
       makeBeziqueState({
         phase: 1,
         availableMelds: [
-          { type: 0, suit: 1, points: 20 },
-          { type: 2, suit: -1, points: 100 },
+          { type: 0, suit: 1, points: 20, cardIndices: [0, 1] },
+          { type: 2, suit: -1, points: 100, cardIndices: [0, 1, 2, 3] },
         ],
       }),
     );

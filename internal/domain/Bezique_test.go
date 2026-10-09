@@ -147,6 +147,29 @@ func TestBezique_AvailableMelds(t *testing.T) {
 	assert.True(t, sawBezique, "bezique")
 }
 
+func TestBezique_MeldCardIndices(t *testing.T) {
+	tests := []struct {
+		name  string
+		meld  domain.BeziqueMeld
+		cards []*domain.Card
+		want  []int
+	}{
+		{"marriage", domain.BeziqueMeld{Type: domain.BeziqueMeldMarriage, Suit: domain.CardDesignSpade, Points: domain.BeziqueMarriagePoints}, []*domain.Card{bzCard(domain.CardDesignHeart, 1), bzCard(domain.CardDesignSpade, 13), bzCard(domain.CardDesignSpade, 12)}, []int{1, 2}},
+		{"bezique", domain.BeziqueMeld{Type: domain.BeziqueMeldBezique, Suit: -1, Points: domain.BeziqueBeziquePoints}, []*domain.Card{bzCard(domain.CardDesignSpade, 12), bzCard(domain.CardDesignDiamond, 11)}, []int{0, 1}},
+		{"four of a kind with duplicate suit", domain.BeziqueMeld{Type: domain.BeziqueMeldFourQueens, Suit: -1, Points: domain.BeziqueFourQueensPoints}, []*domain.Card{bzCard(domain.CardDesignSpade, 12), bzCard(domain.CardDesignSpade, 12), bzCard(domain.CardDesignClover, 12), bzCard(domain.CardDesignHeart, 12)}, []int{0, 2, 3, 1}},
+		{"insufficient cards", domain.BeziqueMeld{Type: domain.BeziqueMeldFourAces, Suit: -1, Points: domain.BeziqueFourAcesPoints}, []*domain.Card{bzCard(domain.CardDesignSpade, 1), bzCard(domain.CardDesignClover, 1), bzCard(domain.CardDesignHeart, 1)}, []int{}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			b := newTestBezique(true)
+			bzSetHand(b.GetPlayer(0), tt.cards...)
+			assert.Equal(t, tt.want, b.MeldCardIndices(0, tt.meld))
+		})
+	}
+	b := newTestBezique(true)
+	assert.Equal(t, []int{}, b.MeldCardIndices(-1, domain.BeziqueMeld{}))
+}
+
 func TestBezique_MeldLogSplitsMarriageFromTheRest(t *testing.T) {
 	t.Run("plain marriage", func(t *testing.T) {
 		b := newTestBezique(true)

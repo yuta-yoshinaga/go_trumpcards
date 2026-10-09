@@ -33,8 +33,10 @@
   "nextRound": "Next Deal",
   "target": "Target: {{points}} pts",
   "meldPrompt": "Choose a meld to declare:",
+  "declareSelectedMeld": "Declare selected meld",
+  "meldCardMarker": "Card in the selected meld",
   "meldMarriageName": "{{suit}} {{name}}",
-  "meldDeclareLabel": "Declare {{name}} +{{points}} pts",
+  "meldDeclareLabel": "Select {{name}} (+{{points}} pts)",
   "suitName": {
     "spade": "Spade",
     "club": "Club",
