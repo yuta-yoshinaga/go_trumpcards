@@ -63036,6 +63036,9 @@ components:
         hasChosenPass:
           type: boolean
           description: Whether this seat has chosen its card. Everyone passes at once.
+        chosenPassCard:
+          $ref: '#/components/schemas/Card'
+          description: The human's selected card while waiting. Never present for CPU seats.
     PigResponse:
       type: object
       description: Response payload for /pig/exec

@@ -40,6 +40,8 @@ type PigWebOutputPlayer struct {
 	NoticedOrder int `json:"noticedOrder"`
 	// HasChosenPass は渡す札を選び終えたか。**同時に渡すので順番待ちが出ます。**
 	HasChosenPass bool `json:"hasChosenPass"`
+	// ChosenPassCard は人間が選んだ渡し札。CPU の札は公開しない。
+	ChosenPassCard *WebOutputCard `json:"chosenPassCard,omitempty"`
 }
 
 // PigWebOutputHint ヒント出力
