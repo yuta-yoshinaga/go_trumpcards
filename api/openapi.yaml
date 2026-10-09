@@ -59439,6 +59439,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SergeantMajorTrickCard'
+        lastTrick:
+          type: array
+          description: Most recently completed trick; cleared when a new round starts.
+          items:
+            $ref: '#/components/schemas/SergeantMajorTrickCard'
+        lastTrickWinner:
+          type: integer
+          description: Winning seat of the most recently completed trick, or -1 when none.
         validPlays:
           type: array
           description: Hand indices you may legally play. Following suit is compulsory.
