@@ -99,6 +99,26 @@ func TestZwanzigerrufenWebPresenter_Output(t *testing.T) {
 	assert.Contains(t, decoded, "playableIndices")
 }
 
+func TestZwanzigerrufenWebPresenter_LiveRuferTeamPointsOnlyAfterReveal(t *testing.T) {
+	gm := newZwanzigerrufenPresenterMock()
+	gm.On("GetPartnerRevealed").Return(true)
+	gm.On("GetPartnerIdx").Return(2)
+
+	var got controller.ZwanzigerrufenWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.ZwanzigerrufenWebPresenter).Output(gm, nil)), &got))
+	require.NotNil(t, got.DeclarerTeamPoints)
+	require.NotNil(t, got.DefenderTeamPoints)
+	assert.Equal(t, 40, *got.DeclarerTeamPoints)
+	assert.Equal(t, 80, *got.DefenderTeamPoints)
+
+	gm = newZwanzigerrufenPresenterMock()
+	gm.On("GetPartnerRevealed").Return(false)
+	var hidden map[string]any
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.ZwanzigerrufenWebPresenter).Output(gm, nil)), &hidden))
+	assert.NotContains(t, hidden, "declarerTeamPoints")
+	assert.NotContains(t, hidden, "defenderTeamPoints")
+}
+
 // **相手の手札はワイヤに乗せない。** 枚数だけを出す。
 func TestZwanzigerrufenWebPresenter_HidesOpponentHands(t *testing.T) {
 	g := newZwanzigerrufenGame()
@@ -202,6 +222,8 @@ func newZwanzigerrufenPresenterMock() *interfaces.MockZwanzigerrufenGame {
 	gm.On("GetPlayerCnt").Return(domain.ZwanzigerrufenPlayerCnt)
 	gm.On("GetPlayerScore", mock.Anything).Return(0)
 	gm.On("GetCardPoints", mock.Anything).Return(0)
+	gm.On("GetLiveTeamPoints").Return(40)
+	gm.On("GetTotalCardPoints").Return(120)
 	gm.On("GetHint").Return((*domain.ZwanzigerrufenHint)(nil))
 	for i := range domain.ZwanzigerrufenPlayerCnt {
 		gm.On("GetPlayer", i).Return(domain.NewZwanzigerrufenPlayer(i == 0))

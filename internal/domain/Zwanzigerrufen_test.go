@@ -29,6 +29,18 @@ func newZwanzigerrufenForTest(t *testing.T) *Zwanzigerrufen {
 	return g
 }
 
+func TestZwanzigerrufenGetLiveTeamPoints(t *testing.T) {
+	g := newZwanzigerrufenForTest(t)
+	g.declarerIdx = 0
+	g.partnerIdx = 2
+	g.players[0].AddTrick([]*Card{NewCard(CardDesignHeart, KoenigrufenKingValue, false)})
+	g.players[2].AddTrick([]*Card{NewCard(CardDesignSpade, KoenigrufenKingValue, false)})
+	g.players[1].AddTrick([]*Card{NewCard(CardDesignClover, KoenigrufenKingValue, false)})
+
+	assert.Equal(t, g.GetCardPoints(0)+g.GetCardPoints(2), g.GetLiveTeamPoints())
+	assert.Equal(t, zwanzigerrufenTotalPoints(), g.GetTotalCardPoints())
+}
+
 // zwanzigerrufenDrive は指定フェーズに達するか終局するまで CPU を進める。
 func zwanzigerrufenDrive(t *testing.T, g *Zwanzigerrufen) {
 	t.Helper()
