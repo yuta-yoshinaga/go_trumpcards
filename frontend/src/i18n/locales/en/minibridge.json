@@ -31,6 +31,7 @@
     "teamFoeAria": "the opposing team"
   },
   "currentTrick": "Current trick",
+  "trickWinner": "Winner",
   "roundResult": {
     "made": "Contract made: {{took}} of the {{need}} tricks needed.",
     "down": "Contract down: only {{took}} of the {{need}} tricks needed.",
@@ -40,6 +41,7 @@
     "level": "Level",
     "contract": "Contract {{level}}{{suit}}",
     "nextRound": "Next deal",
+    "continue": "Continue",
     "reset": "Reset",
     "giveUp": "Give up",
     "playAria": "Play {{card}}",

@@ -20,6 +20,7 @@ type MinibridgeInteractorIF interface {
 	Contract(level, suit int) string
 	// Play カードをプレイ
 	Play(cardIndex int) string
+	ContinueTrick() string
 	// NextRound 次のディールへ進む
 	NextRound() string
 	// GiveUp 投了する
@@ -73,6 +74,13 @@ func (mi *MinibridgeInteractor) Play(cardIndex int) string {
 	return humanAction(mi.Game, mi.sp, func() error { return mi.Game.PlayerPlay(cardIndex) }, mi.advance)
 }
 
+// ContinueTrick resumes play after the user has reviewed the completed trick.
+func (mi *MinibridgeInteractor) ContinueTrick() string {
+	mi.Game.ContinueTrick()
+	mi.advance()
+	return mi.sp.Output(mi.Game, nil)
+}
+
 // NextRound 次のディールへ進む
 func (mi *MinibridgeInteractor) NextRound() string {
 	if out, blocked := guardGameEnd(mi.Game, mi.sp); blocked {
@@ -111,6 +119,9 @@ func (mi *MinibridgeInteractor) ActionLog() string { return mi.sp.ActionLogOutpu
 func (mi *MinibridgeInteractor) advance() {
 	for turns := 0; turns < maxCpuTurnsPerCall; turns++ {
 		if mi.Game.GetGameEndFlag() {
+			return
+		}
+		if mi.Game.IsTrickPaused() {
 			return
 		}
 		switch mi.Game.GetPhase() {

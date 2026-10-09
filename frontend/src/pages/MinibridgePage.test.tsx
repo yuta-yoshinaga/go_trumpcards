@@ -53,6 +53,9 @@ function makeState(overrides: Partial<MinibridgeResponse> = {}): MinibridgeRespo
     leadPlayerIdx: 0,
     dealerIdx: 0,
     currentTrick: [],
+    lastTrick: [],
+    lastTrickWinner: -1,
+    trickPaused: false,
     validPlays: [0, 1, 2],
     gameEndFlag: false,
     winnerTeam: -1,
@@ -82,6 +85,48 @@ beforeEach(() => {
 });
 
 describe('MinibridgePage', () => {
+  it('shows the last trick winner and lets the user continue', async () => {
+    mockExec.mockResolvedValue(
+      playing({
+        currentTrick: [],
+        lastTrick: [
+          { playerIdx: 0, card: card('SPADE', 1) },
+          { playerIdx: 1, card: card('SPADE', 9) },
+        ],
+        lastTrickWinner: 0,
+        trickPaused: true,
+      }),
+    );
+    renderWithProviders(<MinibridgePage />);
+    expect(await screen.findByTestId('trick-winner-badge')).toHaveTextContent('勝者');
+    fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('continue'));
+  });
+
+  it('does not send another continue request while one is pending', async () => {
+    let resolveContinue!: (state: MinibridgeResponse) => void;
+    mockExec.mockImplementation((command) => {
+      if (command === 'reset') {
+        return Promise.resolve(playing({ trickPaused: true }));
+      }
+      if (command === 'continue') {
+        return new Promise((resolve) => {
+          resolveContinue = resolve;
+        });
+      }
+      return Promise.resolve(makeState());
+    });
+
+    renderWithProviders(<MinibridgePage />);
+    const continueButton = await screen.findByRole('button', { name: '次へ' });
+    fireEvent.click(continueButton);
+    await waitFor(() => expect(continueButton).toHaveAttribute('aria-disabled', 'true'));
+    fireEvent.click(continueButton);
+
+    expect(mockExec.mock.calls.filter(([command]) => command === 'continue')).toHaveLength(1);
+    resolveContinue(makeState());
+  });
+
   it('shows server-provided round deltas with signs', async () => {
     mockExec.mockResolvedValue(
       makeState({
