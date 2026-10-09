@@ -321,6 +321,9 @@ func TestCincinnatiWebPresenter_ShowsEveryHandAtShowdown(t *testing.T) {
 func TestCincinnatiWebPresenter_BettingStateIsOnTheWire(t *testing.T) {
 	cp := new(CincinnatiWebPresenter)
 	g := newCincinnatiForPresenter(t)
+	human := g.GetPlayers()[g.HumanSeat()]
+	rankBefore := human.GetHandRank()
+	bestBefore := append([]*domain.Card(nil), human.GetBestHand()...)
 
 	var got struct {
 		Pot         int  `json:"pot"`
@@ -344,7 +347,9 @@ func TestCincinnatiWebPresenter_BettingStateIsOnTheWire(t *testing.T) {
 	assert.Equal(t, g.IsHumanTurn(), got.IsHumanTurn)
 	assert.Positive(t, got.Pot, "アンティがポットに入っていない")
 	require.NotEmpty(t, got.Seats)
-	assert.Equal(t, g.GetPlayers()[g.HumanSeat()].EvaluateBest(g.GetCommunityCards()), got.Seats[g.HumanSeat()].HandRank)
+	assert.Equal(t, human.BestRank(g.GetCommunityCards()), got.Seats[g.HumanSeat()].HandRank)
+	assert.Equal(t, rankBefore, human.GetHandRank())
+	assert.Equal(t, bestBefore, human.GetBestHand())
 }
 
 func TestCincinnatiWebPresenter_ErrorAndHint(t *testing.T) {

@@ -80,7 +80,7 @@ func cincinnatiSeatsToOutput(c interfaces.CincinnatiGame) []*controller.Cincinna
 			seat.Cards = cardsToOutputOrEmpty(p.GetCards())
 		}
 		if p.GetIsHuman() && !showdown && c.GetPhase() == domain.CincinnatiPhaseBetting && !p.GetFolded() {
-			seat.HandRank = p.EvaluateBest(c.GetCommunityCards())
+			seat.HandRank = p.BestRank(c.GetCommunityCards())
 		}
 		if showdown {
 			seat.HandRank = p.GetHandRank()
