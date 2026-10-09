@@ -16,6 +16,10 @@ if [[ "${ALLOW_WORKER_BUILD:-}" != 1 ]]; then
   bash "$B/workerbuild.sh" "$wt" >> "$BATCH_STATE/rc$1.txt" 2>&1
 fi
 bash "$B/unusedsym.sh" "$wt" >> "$BATCH_STATE/rc$1.txt" 2>&1
+# Rerun the Go tests this change adds or edits; a deal-dependent test fails here, not on develop.
+if [[ "${REPEAT_TESTS_COUNT:-50}" != 0 ]]; then
+  bash "$B/repeattests.sh" "$wt" >> "$BATCH_STATE/rc$1.txt" 2>&1
+fi
 if [[ "${ALLOW_PATCH_GAPS:-}" != 1 ]] && git -C "$wt" diff --name-only HEAD -- frontend/src/{pages,components,utils,hooks,api} \
   | grep -E '^frontend/src/(pages|components|utils|hooks|api)/.*\.(ts|tsx)$' | grep -qvE '\.test\.tsx?$'; then
   gap_status=0; gap_output="$(cd "$wt" && timeout 600 bash .claude/skills/patch-branch-gaps/scripts/patch-branch-gaps.sh 2>&1)" || gap_status=$?

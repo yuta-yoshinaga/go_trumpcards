@@ -44,8 +44,9 @@ The flows require `dele`, `gh`, `jq`, `flock`, `bun`, `go`, and `golangci-lint`,
 - `receipt.sh`: run relevant Vitest files plus frontend and backend checks for a worktree.
 - `rc.sh`: save a concise receipt with test shrink and dead-code warnings.
 - `rc.sh` also records `WARN WORKER_BUILD`, `WARN UNUSED_NEW_SYMBOL`, and `WARN PATCH_BRANCH_GAP`; set `ALLOW_WORKER_BUILD=1`, `ALLOW_UNUSED="name ..."`, or `ALLOW_PATCH_GAPS=1` to allow known exceptions.
+- `rc.sh` also reruns the Go test functions the change adds or edits (`repeattests.sh`, `-count=50`) and records `WARN DEAL_DEPENDENT` when one fails, which usually means it depends on the deal. Set `REPEAT_TESTS_COUNT` to change the count, or `0` to skip.
 - `rcg.sh`: serialize receipt gates with `flock` and write a fresh slot result.
-- `ship.sh`: commit a gated issue worktree and create a PR.
+- `ship.sh`: commit a gated issue worktree and create a PR. The 4th argument is either summary lines (wrapped in `## Summary` / `Closes` / `## Test plan` / footer) or a complete body with its own `## ` headings, which is used as written. In that case only a missing `Closes #n` and a missing footer are added (`prbody.sh`).
 - `fixpush.sh`: commit and push a gated fix and comment on its PR.
 - `sweep.sh`: land eligible reviewed batch PRs and report blocked ones.
 - `sweep.sh` reports `UNSWEPT` for open PRs outside `BATCH_BRANCH_RE`; set `BATCH_UNSWEPT_IGNORE="<pr ...>"` to ignore intentional non-batch PRs.
