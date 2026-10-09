@@ -15,3 +15,6 @@ func (g *Bouillotte) ClearBettingForTest() {
 	g.state.actedSinceRaise = 0
 	g.state.actionCount = 0
 }
+
+// SetRaiseCountForTest sets the round's raise count for presenter tests.
+func (g *Bouillotte) SetRaiseCountForTest(count int) { g.state.raiseCount = count }
