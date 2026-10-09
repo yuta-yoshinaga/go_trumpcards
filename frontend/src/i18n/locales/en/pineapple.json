@@ -12,6 +12,7 @@
   },
   "communityCards": "Community Cards",
   "yourHand": "Your Hand",
+  "listSeparator": ", ",
   "callAmount": "({{amount}} chips)",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "discard": {
@@ -20,6 +21,8 @@
     "confirm": "Discard {{card}}?",
     "confirmYes": "Confirm",
     "confirmNo": "Cancel",
+    "cpPreviewAria": "Discard {{card}}. Keep: {{kept}}. Resulting hand: {{hand}}",
+    "cpPreviewAriaRecommended": "Discard {{card}}. Keep: {{kept}}. Resulting hand: {{hand}} (Recommended)",
     "limitReached": "You can select up to {{count}} card(s). Deselect one first.",
     "limitDescription": "You can select at most {{count}} card(s) to discard.",
     "keepLabel": "Keep",

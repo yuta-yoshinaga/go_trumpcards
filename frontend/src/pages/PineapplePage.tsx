@@ -806,12 +806,12 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                     >
                       {discardPreview.handKey
                         ? t('discard.previewAriaWithHand', {
-                            cards: discardPreview.kept.map((c) => cardAlt(c)).join(', '),
+                            cards: discardPreview.kept.map((c) => cardAlt(c)).join(t('listSeparator')),
                             hand: t(`hand.${discardPreview.handKey}`),
                             strength: discardPreview.strengthCards.map(cardAlt).join(t('listSeparator')),
                           })
                         : t('discard.previewAria', {
-                            cards: discardPreview.kept.map((c) => cardAlt(c)).join(', '),
+                            cards: discardPreview.kept.map((c) => cardAlt(c)).join(t('listSeparator')),
                           })}
                     </div>
                     <span className="text-ds-text-muted">{`${t('discard.keepLabel')}: `}</span>

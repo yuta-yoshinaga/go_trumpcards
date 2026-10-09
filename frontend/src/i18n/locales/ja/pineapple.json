@@ -12,6 +12,7 @@
   },
   "communityCards": "コミュニティカード",
   "yourHand": "あなたの手札",
+  "listSeparator": "、",
   "callAmount": "（{{amount}}チップ）",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "discard": {
@@ -20,6 +21,8 @@
     "confirm": "{{card}} を捨てますか？",
     "confirmYes": "確定",
     "confirmNo": "キャンセル",
+    "cpPreviewAria": "{{card}}を捨てる。残すカード: {{kept}}。残す役: {{hand}}",
+    "cpPreviewAriaRecommended": "{{card}}を捨てる。残すカード: {{kept}}。残す役: {{hand}}（おすすめ）",
     "limitReached": "選択できるのは{{count}}枚までです。先に選択を解除してください",
     "limitDescription": "ディスカードで選択できるのは最大{{count}}枚です",
     "keepLabel": "残り2枚",
