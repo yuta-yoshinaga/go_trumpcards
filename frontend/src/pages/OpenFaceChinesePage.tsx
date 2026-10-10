@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { openfacechineseApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -217,6 +218,8 @@ function OpenFaceChinesePageContent() {
 
   const playerName = (player: OpenFaceChinesePlayer) => (player.isHuman ? t('you') : t('cpu', { n: player.id }));
   const playersById = new Map(state.players.map((player) => [player.id, player]));
+  const wrapCpu = (player: OpenFaceChinesePlayer, board: React.ReactNode) =>
+    player.isHuman ? board : <CpuAccordion playerCount={state.players.length - 1}>{board}</CpuAccordion>;
 
   /**
    * Renders a single row of a player's board, padding empty slots up to `capacity`.
@@ -428,96 +431,106 @@ function OpenFaceChinesePageContent() {
 
             {/* Player boards */}
             <div className="grid gap-3 sm:grid-cols-2" data-tutorial="ofc-rows">
-              {state.players.map((p) => (
-                <div
-                  key={`player-${p.id}`}
-                  className={`p-3 rounded bg-black/20 ${p.id === state.currentPlayerIdx && isPlacing ? 'ring-1 ring-ds-warning' : ''}`}
-                  data-testid={`player-${p.id}`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-ds-text-primary text-sm font-semibold">{playerName(p)}</span>
-                    <div className="flex items-center gap-2 text-xs">
-                      {p.fouled && (
-                        <span className="text-ds-error-text font-semibold" role="status">
-                          {t('fouled')}
-                        </span>
+              {state.players.map((p) =>
+                wrapCpu(
+                  p,
+                  <div
+                    key={`player-${p.id}`}
+                    className={`p-3 rounded bg-black/20 ${p.id === state.currentPlayerIdx && isPlacing ? 'ring-1 ring-ds-warning' : ''}`}
+                    data-testid={`player-${p.id}`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-ds-text-primary text-sm font-semibold">{playerName(p)}</span>
+                      <div className="flex items-center gap-2 text-xs">
+                        {p.fouled && (
+                          <span className="text-ds-error-text font-semibold" role="status">
+                            {t('fouled')}
+                          </span>
+                        )}
+                        {p.fantasyland && (
+                          <span className="text-ds-accent font-semibold" role="status">
+                            {t('fantasyland')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {p.fantasyland && (isPlacing || isRoundEnd || isGameEnd) && (
+                      <p className="text-ds-text-primary text-xs mb-2">
+                        {t(isPlacing ? 'fantasylandRound' : 'fantasylandEarned')}
+                      </p>
+                    )}
+                    <div className="flex flex-col gap-2">
+                      {renderRow(
+                        t('rows.front'),
+                        p.front,
+                        3,
+                        `front-${p.id}`,
+                        canPlace && p.isHuman ? { row: ROW_FRONT, full: frontFull } : undefined,
                       )}
-                      {p.fantasyland && (
-                        <span className="text-ds-accent font-semibold" role="status">
-                          {t('fantasyland')}
-                        </span>
+                      {renderRow(
+                        t('rows.middle'),
+                        p.middle,
+                        5,
+                        `middle-${p.id}`,
+                        canPlace && p.isHuman ? { row: ROW_MIDDLE, full: middleFull } : undefined,
+                      )}
+                      {renderRow(
+                        t('rows.back'),
+                        p.back,
+                        5,
+                        `back-${p.id}`,
+                        canPlace && p.isHuman ? { row: ROW_BACK, full: backFull } : undefined,
                       )}
                     </div>
-                  </div>
-                  {p.fantasyland && (isPlacing || isRoundEnd || isGameEnd) && (
-                    <p className="text-ds-text-primary text-xs mb-2">
-                      {t(isPlacing ? 'fantasylandRound' : 'fantasylandEarned')}
-                    </p>
-                  )}
-                  <div className="flex flex-col gap-2">
-                    {renderRow(
-                      t('rows.front'),
-                      p.front,
-                      3,
-                      `front-${p.id}`,
-                      canPlace && p.isHuman ? { row: ROW_FRONT, full: frontFull } : undefined,
-                    )}
-                    {renderRow(
-                      t('rows.middle'),
-                      p.middle,
-                      5,
-                      `middle-${p.id}`,
-                      canPlace && p.isHuman ? { row: ROW_MIDDLE, full: middleFull } : undefined,
-                    )}
-                    {renderRow(
-                      t('rows.back'),
-                      p.back,
-                      5,
-                      `back-${p.id}`,
-                      canPlace && p.isHuman ? { row: ROW_BACK, full: backFull } : undefined,
-                    )}
-                  </div>
-                  {isRoundEnd && (
-                    <div className="mt-2 flex flex-col gap-1 text-xs" data-testid={`round-score-breakdown-${p.id}`}>
-                      {p.rowDetails.map((detail) => {
-                        const row = rowNames[detail.row];
-                        const rankKey = (detail.row === ROW_FRONT ? FRONT_RANK_KEYS : FIVE_CARD_RANK_KEYS)[detail.rank];
-                        const outcome = detail.comparisons.map((comparison) => {
-                          const opponentName = playerName(
-                            playersById.get(comparison.opponentId) as OpenFaceChinesePlayer,
-                          );
-                          return t(comparison.outcome > 0 ? 'rowWin' : comparison.outcome < 0 ? 'rowLoss' : 'rowDraw', {
-                            opponent: opponentName,
+                    {isRoundEnd && (
+                      <div className="mt-2 flex flex-col gap-1 text-xs" data-testid={`round-score-breakdown-${p.id}`}>
+                        {p.rowDetails.map((detail) => {
+                          const row = rowNames[detail.row];
+                          const rankKey = (detail.row === ROW_FRONT ? FRONT_RANK_KEYS : FIVE_CARD_RANK_KEYS)[
+                            detail.rank
+                          ];
+                          const outcome = detail.comparisons.map((comparison) => {
+                            const opponentName = playerName(
+                              playersById.get(comparison.opponentId) as OpenFaceChinesePlayer,
+                            );
+                            return t(
+                              comparison.outcome > 0 ? 'rowWin' : comparison.outcome < 0 ? 'rowLoss' : 'rowDraw',
+                              {
+                                opponent: opponentName,
+                              },
+                            );
                           });
-                        });
-                        return (
-                          <div key={detail.row} data-testid={`row-result-${p.id}-${row}`}>
-                            {t('rowScoreDetail', {
-                              row: t(`rows.${row}`),
-                              rank: t(`handRanks.${rankKey}`),
-                              result: outcome.join(t('listSeparator')),
-                              score: detail.score,
-                            })}
-                          </div>
-                        );
-                      })}
-                      <span data-testid={`round-score-total-${p.id}`}>
-                        {t('roundScoreEquation', {
-                          rows: p.rowDetails.reduce((sum, detail) => sum + detail.score, 0),
-                          scoop: p.scoopScore,
-                          royalty: p.royaltyAdjustment,
-                          round: p.roundScore,
+                          return (
+                            <div key={detail.row} data-testid={`row-result-${p.id}-${row}`}>
+                              {t('rowScoreDetail', {
+                                row: t(`rows.${row}`),
+                                rank: t(`handRanks.${rankKey}`),
+                                result: outcome.join(t('listSeparator')),
+                                score: detail.score,
+                              })}
+                            </div>
+                          );
                         })}
-                      </span>
-                      <span className="text-ds-text-primary" data-testid={`round-score-${p.id}`}>
-                        {t('roundScore', { score: p.roundScore })}
-                      </span>
-                      {p.royalty > 0 && <span className="text-ds-success">{t('royalty', { points: p.royalty })}</span>}
-                      <span className="text-ds-text-muted">{t('totalScore', { score: p.totalScore })}</span>
-                    </div>
-                  )}
-                </div>
-              ))}
+                        <span data-testid={`round-score-total-${p.id}`}>
+                          {t('roundScoreEquation', {
+                            rows: p.rowDetails.reduce((sum, detail) => sum + detail.score, 0),
+                            scoop: p.scoopScore,
+                            royalty: p.royaltyAdjustment,
+                            round: p.roundScore,
+                          })}
+                        </span>
+                        <span className="text-ds-text-primary" data-testid={`round-score-${p.id}`}>
+                          {t('roundScore', { score: p.roundScore })}
+                        </span>
+                        {p.royalty > 0 && (
+                          <span className="text-ds-success">{t('royalty', { points: p.royalty })}</span>
+                        )}
+                        <span className="text-ds-text-muted">{t('totalScore', { score: p.totalScore })}</span>
+                      </div>
+                    )}
+                  </div>,
+                ),
+              )}
             </div>
 
             {isRoundEnd && (

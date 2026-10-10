@@ -15,7 +15,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useBoliviaGame } from '../hooks/useBoliviaGame';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -71,6 +71,7 @@ const SA_TUTORIAL_STEPS: TutorialStep[] = [
 export const BoliviaPage = withTutorial(BoliviaPageContent, 'bolivia', SA_TUTORIAL_STEPS);
 /** Inner content of the Bolivia page. */
 function BoliviaPageContent() {
+  const isMobile = useIsMobile();
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('bolivia');
   const {
@@ -298,9 +299,10 @@ function BoliviaPageContent() {
             {/* **上がりの条件を書いておく。** カナスタ 2 個では上がれず、
                 最低 1 本のエスカレラが要る ── それが画面のどこにも無いと、
                 揃えたのに「上がる」が押せない理由が分からない。 */}
-            <div className="text-ds-text-muted text-center mb-2 text-xs" data-testid="bo-goout-rule">
-              {t('goOutRule')}
-            </div>
+            <details className="text-ds-text-muted text-center mb-2 text-xs" data-testid="bo-goout-rule">
+              <summary className="cursor-pointer select-none">{t('rules')}</summary>
+              <div className="mt-1">{t('goOutRule')}</div>
+            </details>
 
             <div className={lgTwoColGrid}>
               {/* Left: game play area */}
@@ -438,7 +440,14 @@ function BoliviaPageContent() {
               {/* Right: info sidebar */}
               <div>
                 {/* Score table */}
-                <div className="my-3 p-2 rounded bg-black/30">
+                <details
+                  className="my-3 p-2 rounded bg-black/30"
+                  data-testid="bo-score-table"
+                  open={!isMobile || undefined}
+                >
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                    {tc('button.score')}
+                  </summary>
                   <table className="w-full text-sm text-ds-text-muted">
                     <thead>
                       <tr>
@@ -506,7 +515,7 @@ function BoliviaPageContent() {
                           ))}
                     </tbody>
                   </table>
-                </div>
+                </details>
 
                 {/* CPU hands (shown at round/game end) */}
                 {(isRoundEnd || isGameEnd) &&

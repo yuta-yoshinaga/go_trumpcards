@@ -133,6 +133,23 @@ describe('OpenFaceChinesePage', () => {
     expect(screen.queryByText(/次のラウンドは13枚/)).not.toBeInTheDocument();
   });
 
+  it('collapses only the CPU board on mobile and leaves it open on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    const { unmount } = renderWithProviders(<OpenFaceChinesePage />);
+    const mobileCpu = await screen.findByTestId('cpu-accordion');
+    expect(mobileCpu).not.toHaveAttribute('open');
+    expect(mobileCpu).toContainElement(screen.getByTestId('player-1'));
+    expect(document.querySelector('[data-tutorial="ofc-rows"]')).toContainElement(screen.getByTestId('player-0'));
+    expect(mobileCpu).not.toContainElement(screen.getByTestId('player-0'));
+
+    unmount();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
+    renderWithProviders(<OpenFaceChinesePage />);
+    expect(await screen.findByTestId('cpu-accordion')).toHaveAttribute('open');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
   it('explains Fantasyland earned at round end', async () => {
     mockExec.mockResolvedValue(
       makeState({

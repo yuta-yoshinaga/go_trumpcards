@@ -14,6 +14,12 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(nainjauneApi.exec);
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 const card = (design: CardDesign, value: number) => ({ design, value });
 
@@ -67,6 +73,7 @@ function pickHand(i: number) {
 
 describe('NainJaunePage', () => {
   beforeEach(() => {
+    mobileState.isMobile = true;
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
   });
@@ -76,11 +83,34 @@ describe('NainJaunePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  it('shows both rules permanently', async () => {
+  it('collapses rule and board explanations and CPU seats on mobile', async () => {
     renderWithProviders(<NainJaunePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    expect(screen.getByText(/スート無関係/)).toBeInTheDocument();
-    expect(screen.getByText(/枚数ではなく【点数】/)).toBeInTheDocument();
+    const rules = screen.getByTestId('nj-rule-details');
+    expect(rules).not.toHaveAttribute('open');
+    const ruleText = rules.querySelector('[data-tutorial="nj-rule"]');
+    expect(ruleText).not.toBeVisible();
+    const ruleSummary = rules.querySelector('summary');
+    expect(ruleSummary).toBeInTheDocument();
+    if (ruleSummary) fireEvent.click(ruleSummary);
+    expect(ruleText).toBeVisible();
+    expect(ruleText).toHaveTextContent(/スート無関係.*枚数ではなく【点数】/);
+
+    const board = screen.getAllByTestId('nainjaune-box')[0].closest('[data-tutorial="nj-board"]');
+    expect(board).toBeInTheDocument();
+    const boardDetails = board?.querySelector('details');
+    expect(boardDetails).not.toHaveAttribute('open');
+    expect(boardDetails?.querySelector('span')).not.toBeVisible();
+    const cpus = screen.getByTestId('cpu-accordion');
+    expect(cpus).not.toHaveAttribute('open');
+    expect(cpus.querySelector('.flex.flex-wrap')).toBeInTheDocument();
+  });
+
+  it('opens the CPU accordion on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<NainJaunePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
   });
 
   it('reveals CPU hands only after a deal ends, while preserving the game-end reveal', async () => {

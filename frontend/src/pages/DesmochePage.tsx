@@ -3,6 +3,7 @@ import type { desmocheApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -16,7 +17,7 @@ import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useDesmocheGame } from '../hooks/useDesmocheGame';
@@ -77,6 +78,7 @@ function DesmochePageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -177,34 +179,44 @@ function DesmochePageContent() {
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             {/* Permanent, not tutorial-only: "exactly ten, not the nine dealt"
                 and "poker rankings play no part" are what a player gets wrong. */}
-            <div className="text-center text-xs text-ds-warning mb-3 font-medium" data-tutorial="ds-rule">
-              {t('ruleLine', { n: state.goOutSize })}
-            </div>
+            <details
+              open={!isMobile || undefined}
+              className="mb-2 p-2 rounded bg-ds-surface"
+              data-testid="ds-rule-details"
+              data-tutorial="ds-rule"
+            >
+              <summary className="cursor-pointer select-none text-center text-xs text-ds-warning font-medium">
+                {t('rulesLabel')}
+              </summary>
+              <p className="mt-2 text-center text-xs text-ds-warning">{t('ruleLine', { n: state.goOutSize })}</p>
+            </details>
 
-            <div className="flex justify-center gap-4 mb-3 flex-wrap" data-tutorial="ds-seats">
-              {opponents.map((o) => (
-                <div key={`opp-${o.id.toString()}`} className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">
-                    {t('opponentHand', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
-                    {' · '}
-                    {t('melded', { n: o.meldedCount, goal: state.goOutSize })}
-                    {' · '}
-                    <span data-testid={`desmoche-score-${o.id.toString()}`}>
-                      {t('seatScore', { name: `CPU${o.id.toString()}`, score: o.score })}
-                    </span>
+            <CpuAccordion playerCount={opponents.length} dataTutorial="ds-seats">
+              <div className="flex flex-wrap sm:flex-nowrap justify-center gap-4 mb-3">
+                {opponents.map((o) => (
+                  <div key={`opp-${o.id.toString()}`} className="text-center">
+                    <div className="text-game-text-muted text-xs mb-1">
+                      {t('opponentHand', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
+                      {' · '}
+                      {t('melded', { n: o.meldedCount, goal: state.goOutSize })}
+                      {' · '}
+                      <span data-testid={`desmoche-score-${o.id.toString()}`}>
+                        {t('seatScore', { name: `CPU${o.id.toString()}`, score: o.score })}
+                      </span>
+                    </div>
+                    <div
+                      className="flex gap-1 justify-center flex-wrap"
+                      role="img"
+                      aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
+                    >
+                      {Array.from({ length: o.cardCount }, (_, i) => (
+                        <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                      ))}
+                    </div>
                   </div>
-                  <div
-                    className="flex gap-1 justify-center flex-wrap"
-                    role="img"
-                    aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
-                  >
-                    {Array.from({ length: o.cardCount }, (_, i) => (
-                      <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </CpuAccordion>
 
             <div className="text-center mb-3">
               <div className="text-game-text-muted text-xs mb-1">{t('discard')}</div>

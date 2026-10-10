@@ -7,6 +7,7 @@ test.describe('Desmoche E2E', () => {
 
     // Permanent, not tutorial-only: going out takes ten rather than the nine
     // dealt, and poker rankings play no part.
+    await page.getByText('ルール', { exact: true }).click();
     await expect(page.getByText(/ちょうど10枚/)).toBeVisible();
     await expect(page.getByText(/ポーカーの役は使いません/)).toBeVisible();
     await expect(page.getByText(/ポット/)).toBeVisible();

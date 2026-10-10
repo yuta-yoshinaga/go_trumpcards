@@ -7,6 +7,13 @@ import type { Card, CardDesign, DesmochePlayer, DesmocheResponse } from '../type
 import { DesmochePhase } from '../types/phases';
 import { DesmochePage } from './DesmochePage';
 
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
+
 vi.mock('../api/gameApi', () => ({
   desmocheApi: { exec: vi.fn() },
   actionLogApi: { desmoche: vi.fn() },
@@ -79,13 +86,31 @@ describe('DesmochePage', () => {
     );
   });
 
-  it('shows both rules permanently and the pot', async () => {
+  it('shows both rules on demand and keeps the pot visible', async () => {
     renderWithProviders(<DesmochePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    fireEvent.click(screen.getByText('ルール', { exact: true }));
     // 上がりは配札 9 枚ではなく 10 枚、そしてポーカーの役は使わない。
     expect(screen.getByText(/ちょうど10枚/)).toBeInTheDocument();
     expect(screen.getByText(/ポーカーの役は使いません/)).toBeInTheDocument();
     expect(screen.getByText(/ポット40/)).toBeInTheDocument();
+  });
+
+  it('collapses the rules and CPU seats on mobile and opens them on desktop', async () => {
+    mobileState.isMobile = true;
+    const { unmount } = renderWithProviders(<DesmochePage />);
+    const mobileRule = await screen.findByTestId('ds-rule-details');
+    expect(mobileRule).not.toHaveAttribute('open');
+    expect(screen.getByText(/ちょうど10枚/)).not.toBeVisible();
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+
+    unmount();
+    mobileState.isMobile = false;
+    renderWithProviders(<DesmochePage />);
+    const desktopRule = await screen.findByTestId('ds-rule-details');
+    expect(desktopRule).toHaveAttribute('open');
+    expect(screen.getByText(/ちょうど10枚/)).toBeVisible();
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
   });
 
   it.each([
