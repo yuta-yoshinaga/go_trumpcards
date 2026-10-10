@@ -18,12 +18,14 @@ test.describe('Cucumber E2E', () => {
   // **スート無関係が規則そのもの。**
   test('always states that suits are irrelevant', async ({ page }) => {
     await navigateTo(page, '/cucumber');
+    await page.getByTestId('cu-rule-details').locator('summary').click();
     await expect(page.getByTestId('cu-rule')).toContainText(/スート|[Ss]uits/, { timeout: TIMEOUT_TRANSITION });
   });
 
   // **7 枚固定。** 人数で割りません。
   test('deals seven cards to each of the four seats', async ({ page }) => {
     await navigateTo(page, '/cucumber');
+    await page.getByTestId('cpu-accordion').locator('summary').click();
     for (const id of [0, 1, 2, 3]) {
       await expect(page.getByTestId(`cu-seat-${id}`)).toContainText('7', { timeout: TIMEOUT_TRANSITION });
     }

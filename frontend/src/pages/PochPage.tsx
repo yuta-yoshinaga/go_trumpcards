@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { pochApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -15,7 +16,7 @@ import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -42,6 +43,7 @@ const PC_TUTORIAL_STEPS: TutorialStep[] = [
 export const PochPage = withTutorial(PochPageContent, 'poch', PC_TUTORIAL_STEPS);
 
 function PochPageContent() {
+  const isMobile = useIsMobile();
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('poch');
   const [turnAnnouncement, setTurnAnnouncement] = useState('');
@@ -208,9 +210,15 @@ function PochPageContent() {
             {/* Permanent, not tutorial-only: "only the pay suit pays" and
                 "pochen is a comparison, not a declaration" are what a player
                 gets wrong. */}
-            <div className="text-center text-xs text-ds-warning mb-3 font-medium" data-tutorial="pc-rule">
-              {t('ruleLine')}
-            </div>
+            <details
+              open={!isMobile || undefined}
+              className="mb-3 text-center"
+              data-testid="poch-rules"
+              data-tutorial="pc-rule"
+            >
+              <summary className="cursor-pointer select-none text-xs text-ds-warning font-medium">{t('rules')}</summary>
+              <div className="pt-1 text-xs text-ds-warning font-medium">{t('ruleLine')}</div>
+            </details>
 
             <div className="text-center mb-3">
               <div className="text-ds-text-muted text-xs mb-1">{t('turnUp')}</div>
@@ -264,39 +272,41 @@ function PochPageContent() {
               </div>
             )}
 
-            <div className="flex justify-center gap-4 mb-3 flex-wrap">
-              {opponents.map((o) => (
-                <div key={`opp-${o.id.toString()}`} className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">
-                    {t('seat', { name: `CPU${o.id.toString()}`, chips: o.chips, n: o.cardCount })}
-                    {o.folded && ` · ${t('folded')}`}
+            <CpuAccordion playerCount={opponents.length}>
+              <div className="flex justify-center gap-4 mb-3 flex-wrap">
+                {opponents.map((o) => (
+                  <div key={`opp-${o.id.toString()}`} className="text-center">
+                    <div className="text-game-text-muted text-xs mb-1">
+                      {t('seat', { name: `CPU${o.id.toString()}`, chips: o.chips, n: o.cardCount })}
+                      {o.folded && ` · ${t('folded')}`}
+                    </div>
+                    <div
+                      className="flex gap-1 justify-center flex-wrap"
+                      {...(!state.gameEndFlag && {
+                        role: 'img',
+                        'aria-label': t('opponentHandAriaLabel', {
+                          name: `CPU${o.id.toString()}`,
+                          n: o.cardCount,
+                        }),
+                      })}
+                    >
+                      {state.gameEndFlag
+                        ? o.cards.map((card, i) => (
+                            <AnimatedCard
+                              key={`opp-${o.id.toString()}-c${i.toString()}`}
+                              card={card}
+                              width={cardWidth}
+                              draggable={false}
+                            />
+                          ))
+                        : Array.from({ length: o.cardCount }, (_, i) => (
+                            <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                          ))}
+                    </div>
                   </div>
-                  <div
-                    className="flex gap-1 justify-center flex-wrap"
-                    {...(!state.gameEndFlag && {
-                      role: 'img',
-                      'aria-label': t('opponentHandAriaLabel', {
-                        name: `CPU${o.id.toString()}`,
-                        n: o.cardCount,
-                      }),
-                    })}
-                  >
-                    {state.gameEndFlag
-                      ? o.cards.map((card, i) => (
-                          <AnimatedCard
-                            key={`opp-${o.id.toString()}-c${i.toString()}`}
-                            card={card}
-                            width={cardWidth}
-                            draggable={false}
-                          />
-                        ))
-                      : Array.from({ length: o.cardCount }, (_, i) => (
-                          <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                        ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </CpuAccordion>
 
             {state.playedPile.length > 0 && (
               <div className="text-center mb-3">

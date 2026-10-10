@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { cariocaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -338,7 +339,10 @@ function CariocaPageContent() {
           content grew the document by 333px at 375x667; the pinned action row,
           message box and footer below stay reachable. See issue #4373. */}
           <div className="flex-1 overflow-y-auto min-h-0">
-            <section className="px-4 py-2 flex flex-wrap gap-3 items-center text-white" data-tutorial="ca-contract">
+            <section
+              className="px-4 py-1 flex flex-wrap gap-x-3 gap-y-1 items-center text-white text-sm"
+              data-tutorial="ca-contract"
+            >
               <span className="font-semibold">
                 {t('roundLabel', { round: state.roundNumber, total: state.totalRounds })}
               </span>
@@ -394,71 +398,131 @@ function CariocaPageContent() {
               </section>
             )}
 
-            <section className="px-4 py-2 grid gap-2 md:grid-cols-3">
-              {state.players.map((p) => (
-                <div
-                  key={p.id}
-                  className={`p-3 rounded border ${
-                    state.currentPlayerIdx === p.id ? 'border-ds-warning' : 'border-white/30'
-                  } text-white text-sm bg-black/20`}
-                >
-                  <div className="flex justify-between font-semibold">
-                    <span>
-                      {p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id })}
-                      {p.contractMet ? ` ✓` : ''}
-                    </span>
-                    <span>
-                      {t('cards')}: {p.cardCount}
-                    </span>
-                  </div>
-                  <div className="text-xs opacity-75">
-                    {t('scoreLabel')}: {p.cumulativeScore} (+{p.roundScore})
-                  </div>
-                  {p.melds.length > 0 && (
-                    <div className="mt-2">
-                      {p.melds.map((m, mi) => {
-                        const isLayoffTarget = layoffTarget?.playerIdx === p.id && layoffTarget?.meldIdx === mi;
-                        const playerLabel = p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id });
-                        // The meld is only a selectable layoff target once both contracts are met.
-                        const canLayoff = humanPlayer?.contractMet === true && p.contractMet;
-                        // Preview: does the staged card fit this meld? `null` when no preview applies.
-                        const accepts = canLayoff && layoffCard ? canLayoffCariocaMeld(m.cards, layoffCard) : null;
-                        // The selection highlight (warning) wins; otherwise the acceptance preview
-                        // marks the meld green (accepts) or dims + reds it (rejects).
-                        const previewRing = isLayoffTarget
-                          ? 'ring-2 ring-ds-warning bg-ds-warning/20'
-                          : accepts === true
-                            ? 'ring-2 ring-ds-success'
-                            : accepts === false
-                              ? 'ring-2 ring-ds-error opacity-50'
-                              : '';
-                        return (
-                          <button
-                            type="button"
-                            key={`${p.id}-${mi}`}
-                            onClick={() => {
-                              if (canLayoff) {
-                                setLayoffTarget({ playerIdx: p.id, meldIdx: mi });
-                              }
-                            }}
-                            aria-label={t('meldAria', { player: playerLabel, meld: mi + 1 })}
-                            // Only expose the toggle semantics when the meld is actually actionable.
-                            aria-pressed={canLayoff ? isLayoffTarget : undefined}
-                            data-testid={`ca-meld-${p.id}-${mi}`}
-                            data-layoff-accepts={accepts === null ? undefined : String(accepts)}
-                            className={`flex flex-wrap gap-1 mb-1 px-1 rounded ${focusRingWhite} ${previewRing}`}
-                          >
-                            {m.cards.map((c, ci) => (
-                              <AnimatedCard key={`${p.id}-${mi}-${ci}`} card={c} width={cardWidth * 0.6} />
-                            ))}
-                          </button>
-                        );
-                      })}
+            <section className="px-4 py-1">
+              {state.players
+                .filter((p) => p.isHuman)
+                .map((p) => (
+                  <div
+                    key={p.id}
+                    className={`p-3 rounded border ${
+                      state.currentPlayerIdx === p.id ? 'border-ds-warning' : 'border-white/30'
+                    } text-white text-sm bg-black/20`}
+                  >
+                    <div className="flex justify-between font-semibold">
+                      <span>
+                        {p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id })}
+                        {p.contractMet ? ` ✓` : ''}
+                      </span>
+                      <span>
+                        {t('cards')}: {p.cardCount}
+                      </span>
                     </div>
-                  )}
-                </div>
-              ))}
+                    <div className="text-xs opacity-75">
+                      {t('scoreLabel')}: {p.cumulativeScore} (+{p.roundScore})
+                    </div>
+                    {p.melds.length > 0 && (
+                      <div className="mt-2">
+                        {p.melds.map((m, mi) => {
+                          const isLayoffTarget = layoffTarget?.playerIdx === p.id && layoffTarget?.meldIdx === mi;
+                          const playerLabel = p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id });
+                          // The meld is only a selectable layoff target once both contracts are met.
+                          const canLayoff = humanPlayer?.contractMet === true && p.contractMet;
+                          // Preview: does the staged card fit this meld? `null` when no preview applies.
+                          const accepts = canLayoff && layoffCard ? canLayoffCariocaMeld(m.cards, layoffCard) : null;
+                          // The selection highlight (warning) wins; otherwise the acceptance preview
+                          // marks the meld green (accepts) or dims + reds it (rejects).
+                          const previewRing = isLayoffTarget
+                            ? 'ring-2 ring-ds-warning bg-ds-warning/20'
+                            : accepts === true
+                              ? 'ring-2 ring-ds-success'
+                              : accepts === false
+                                ? 'ring-2 ring-ds-error opacity-50'
+                                : '';
+                          return (
+                            <button
+                              type="button"
+                              key={`${p.id}-${mi}`}
+                              onClick={() => {
+                                if (canLayoff) {
+                                  setLayoffTarget({ playerIdx: p.id, meldIdx: mi });
+                                }
+                              }}
+                              aria-label={t('meldAria', { player: playerLabel, meld: mi + 1 })}
+                              // Only expose the toggle semantics when the meld is actually actionable.
+                              aria-pressed={canLayoff ? isLayoffTarget : undefined}
+                              data-testid={`ca-meld-${p.id}-${mi}`}
+                              data-layoff-accepts={accepts === null ? undefined : String(accepts)}
+                              className={`flex flex-wrap gap-1 mb-1 px-1 rounded ${focusRingWhite} ${previewRing}`}
+                            >
+                              {m.cards.map((c, ci) => (
+                                <AnimatedCard key={`${p.id}-${mi}-${ci}`} card={c} width={cardWidth * 0.6} />
+                              ))}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                ))}
             </section>
+
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+              <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <div
+                      key={p.id}
+                      className={`p-3 rounded border ${state.currentPlayerIdx === p.id ? 'border-ds-warning' : 'border-white/30'} text-white text-sm bg-black/20`}
+                    >
+                      <div className="flex justify-between font-semibold">
+                        <span>
+                          {tc('player.cpu', { id: p.id })}
+                          {p.contractMet ? ' ✓' : ''}
+                        </span>
+                        <span>
+                          {t('cards')}: {p.cardCount}
+                        </span>
+                      </div>
+                      <div className="text-xs opacity-75">
+                        {t('scoreLabel')}: {p.cumulativeScore} (+{p.roundScore})
+                      </div>
+                      {p.melds.length > 0 && (
+                        <div className="mt-2">
+                          {p.melds.map((m, mi) => {
+                            const isLayoffTarget = layoffTarget?.playerIdx === p.id && layoffTarget?.meldIdx === mi;
+                            const canLayoff = humanPlayer?.contractMet === true && p.contractMet;
+                            const accepts = canLayoff && layoffCard ? canLayoffCariocaMeld(m.cards, layoffCard) : null;
+                            const previewRing = isLayoffTarget
+                              ? 'ring-2 ring-ds-warning bg-ds-warning/20'
+                              : accepts === true
+                                ? 'ring-2 ring-ds-success'
+                                : accepts === false
+                                  ? 'ring-2 ring-ds-error opacity-50'
+                                  : '';
+                            return (
+                              <button
+                                type="button"
+                                key={`${p.id}-${mi}`}
+                                onClick={() => canLayoff && setLayoffTarget({ playerIdx: p.id, meldIdx: mi })}
+                                aria-label={t('meldAria', { player: tc('player.cpu', { id: p.id }), meld: mi + 1 })}
+                                aria-pressed={canLayoff ? isLayoffTarget : undefined}
+                                data-testid={`ca-meld-${p.id}-${mi}`}
+                                data-layoff-accepts={accepts === null ? undefined : String(accepts)}
+                                className={`flex flex-wrap gap-1 mb-1 px-1 rounded ${focusRingWhite} ${previewRing}`}
+                              >
+                                {m.cards.map((c, ci) => (
+                                  <AnimatedCard key={`${p.id}-${mi}-${ci}`} card={c} width={cardWidth * 0.6} />
+                                ))}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+              </section>
+            </CpuAccordion>
 
             {/* **誰がラウンドを終わらせたかは点数表からは読めない。**サーバは
                 roundWinnerIdx を毎回送っているのに、Web も CUI も読んでいなかった
@@ -476,9 +540,7 @@ function CariocaPageContent() {
             )}
 
             <details className="mx-4 mb-1 rounded bg-black/30 p-2" data-testid="ca-joker-penalty-help">
-              <summary className="cursor-pointer select-none text-ds-text-muted text-xs">
-                {t('jokerRule.title')}
-              </summary>
+              <summary className="cursor-pointer select-none text-ds-text-muted text-xs">{t('rules')}</summary>
               <p className="mt-1 text-ds-text-muted text-xs">
                 {t('jokerRule.body', { points: state.config.jokerPenalty })}
               </p>

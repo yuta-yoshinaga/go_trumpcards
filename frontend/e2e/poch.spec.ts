@@ -8,6 +8,8 @@ test.describe('Poch E2E', () => {
     // Permanent, not tutorial-only: paying only on the turn-up's suit and
     // pochen being a comparison rather than a declaration are the two rules a
     // player gets wrong.
+    const rules = page.getByTestId('poch-rules');
+    await rules.locator('summary').click();
     await expect(page.getByText(/めくり札と同じスート/)).toBeVisible();
     await expect(page.getByText(/宣言ではなく同ランクの組の比べ合い/)).toBeVisible();
 

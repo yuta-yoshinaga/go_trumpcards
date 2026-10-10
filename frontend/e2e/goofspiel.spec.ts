@@ -15,6 +15,7 @@ test.describe('Goofspiel E2E', () => {
   // **同時入札であることが規則そのもの。**
   test('always states that bids are simultaneous', async ({ page }) => {
     await navigateTo(page, '/goofspiel');
+    await page.getByText('ルール', { exact: true }).click();
     await expect(page.getByTestId('gs-rule')).toContainText(/同時|same time/, { timeout: TIMEOUT_TRANSITION });
   });
 

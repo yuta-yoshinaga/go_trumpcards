@@ -405,49 +405,60 @@ function MarriagePageContent() {
                 </CpuAccordion>
 
                 {/* Score table */}
-                <div className="my-3 p-2 rounded bg-black/30" data-tutorial="marriage-score-table">
-                  <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
-                  <details open={!isMobile || undefined} className="mb-2 p-2 rounded bg-ds-surface">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('rules')}</summary>
-                    <p className="text-ds-text-muted text-xs mt-1" data-testid="marriage-maal-rule">
-                      {t('maalRule')}
-                    </p>
-                  </details>
-                  <table className="w-full text-sm text-ds-text-muted">
-                    <thead>
-                      <tr>
-                        <th scope="col" className="text-left">
-                          {t('scoresPlayer')}
-                        </th>
-                        <th scope="col">{t('scoresRound')}</th>
-                        <th scope="col">{t('scoresTotal')}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {state.players.map((p, playerIdx) => (
-                        <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                          <td>
-                            {playerName(p.id, p.isHuman)}
-                            {playerIdx === state.dealerIdx && (
-                              <span className="ml-2 text-ds-warning" data-testid="marriage-dealer-badge">
-                                {t('dealerBadge')}
-                              </span>
-                            )}
-                          </td>
-                          <td className="text-center">{p.roundScore}</td>
-                          <td className="text-center">
-                            {p.cumulativeScore}
-                            {p.maal > 0 && (
-                              <span className="ml-1" data-testid="marriage-maal">
-                                {t('maalShort', { score: p.maal })}
-                              </span>
-                            )}
-                          </td>
+                <details
+                  open={!isMobile || undefined}
+                  className="my-3 p-2 rounded bg-black/30"
+                  data-testid="marriage-score-table"
+                >
+                  <summary
+                    className="cursor-pointer select-none text-ds-text-muted text-sm mb-1"
+                    data-tutorial="marriage-score-table"
+                  >
+                    {t('scores')}
+                  </summary>
+                  <div>
+                    <details open={!isMobile || undefined} className="mb-2 p-2 rounded bg-ds-surface">
+                      <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('rules')}</summary>
+                      <p className="text-ds-text-muted text-xs mt-1" data-testid="marriage-maal-rule">
+                        {t('maalRule')}
+                      </p>
+                    </details>
+                    <table className="w-full text-sm text-ds-text-muted">
+                      <thead>
+                        <tr>
+                          <th scope="col" className="text-left">
+                            {t('scoresPlayer')}
+                          </th>
+                          <th scope="col">{t('scoresRound')}</th>
+                          <th scope="col">{t('scoresTotal')}</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {state.players.map((p, playerIdx) => (
+                          <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
+                            <td>
+                              {playerName(p.id, p.isHuman)}
+                              {playerIdx === state.dealerIdx && (
+                                <span className="ml-2 text-ds-warning" data-testid="marriage-dealer-badge">
+                                  {t('dealerBadge')}
+                                </span>
+                              )}
+                            </td>
+                            <td className="text-center">{p.roundScore}</td>
+                            <td className="text-center">
+                              {p.cumulativeScore}
+                              {p.maal > 0 && (
+                                <span className="ml-1" data-testid="marriage-maal">
+                                  {t('maalShort', { score: p.maal })}
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </details>
               </div>
             </div>
 

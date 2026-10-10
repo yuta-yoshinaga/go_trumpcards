@@ -49,6 +49,15 @@ describe('OldMaidPlayerArea compactNonTarget', () => {
     expect(backs.length).toBeGreaterThanOrEqual(1);
   });
 
+  it('keeps selectable CPU card backs compact and at least 44px wide', () => {
+    render(<OldMaidPlayerArea {...defaultProps} player={makeCpuPlayer(7)} isTarget isHumanTurn />);
+    const cards = screen.getAllByRole('button', { name: /カード \d+ 枚目を引く/ });
+    expect(cards).toHaveLength(7);
+    for (const card of cards) {
+      expect(card.querySelector('img')).toHaveStyle({ width: '44px' });
+    }
+  });
+
   it('shows card backs for non-target CPU when compactNonTarget is false', () => {
     render(<OldMaidPlayerArea {...defaultProps} player={makeCpuPlayer(5)} />);
     const backs = screen.getAllByAltText('カード裏面');

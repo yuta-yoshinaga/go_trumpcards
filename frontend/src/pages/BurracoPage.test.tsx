@@ -276,10 +276,76 @@ describe('BurracoPage', () => {
       'ポゼットは11枚の予備手札です。最初に手札をすべて出し切ったプレイヤーが新しい手札として獲得します。ポゼットを獲得しないと上がれません。';
 
     expect(count).toHaveAttribute('title', explanation);
-    // toHaveTextContent does not account for CSS, so sr-only text would pass this check too.
     expect(description).toHaveTextContent(explanation);
-    expect(description).not.toHaveClass('sr-only');
+    expect(screen.getByTestId('bu-rules')).not.toHaveAttribute('open');
+    expect(description).not.toBeVisible();
     expect(count).toHaveAttribute('aria-describedby', description.id);
+  });
+
+  it('keeps the score and discard pile details collapsed on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    renderWithProviders(<BurracoPage />);
+    expect(await screen.findByTestId('bu-score-table')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('ca-discard-pile-viewer')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('bu-score-table').querySelector('table')).not.toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('keeps the state summary on one line and uses compact overlapping meld cards on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      players: [
+        {
+          ...basePlayers[0],
+          melds: [{ cards: basePlayers[0].cards.slice(0, 3), isNatural: true, isBurraco: false, rank: 7 }],
+        },
+        basePlayers[1],
+      ],
+    });
+    renderWithProviders(<BurracoPage />);
+
+    const summary = await screen.findByTestId('bu-pozzetto-count');
+    const summaryRow = summary.parentElement;
+    expect(summaryRow).toHaveClass('whitespace-nowrap');
+    const meldCards = within(screen.getByTestId('bu-meld-cards')).getAllByTestId('animated-card');
+    expect(meldCards[0].querySelector('img')).toHaveStyle({ width: '36px' });
+    expect(meldCards[1].querySelector('img')).toHaveStyle({ width: '36px' });
+    expect(meldCards[1]).toHaveClass('-ml-[22px]');
+    expect(screen.getByTestId('bu-meld-cards')).toHaveClass('flex-nowrap');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('renders the discard top and discard pile cards at 36px on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      discardPile: [
+        { design: 'SPADE', value: 3 },
+        { design: 'HEART', value: 7 },
+      ],
+      discardPileCount: 2,
+    });
+    renderWithProviders(<BurracoPage />);
+
+    expect((await screen.findByTestId('ca-discard-pile')).querySelector('img')).toHaveStyle({ width: '36px' });
+    fireEvent.click(within(screen.getByTestId('ca-discard-pile-viewer')).getByText(/捨て札の山を見る/));
+    const pileCards = await screen.findByTestId('ca-discard-pile-cards');
+    for (const card of within(pileCards).getAllByTestId('animated-card')) {
+      expect(card.querySelector('img')).toHaveStyle({ width: '36px' });
+    }
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('opens the score table on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    renderWithProviders(<BurracoPage />);
+    expect(await screen.findByTestId('bu-score-table')).toHaveAttribute('open');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
 
   it('shows HintTooltip when hint is enabled in draw phase', async () => {

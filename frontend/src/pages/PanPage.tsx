@@ -307,7 +307,10 @@ function PanPageContent() {
                 )}
 
                 {/* Table melds (all players) with layoff targets */}
-                <div className="my-3 p-2 rounded bg-black/30" data-tutorial="pan-meld-area">
+                <div
+                  className={`${isMobile ? 'my-1 p-1' : 'my-3 p-2'} rounded bg-black/30`}
+                  data-tutorial="pan-meld-area"
+                >
                   <div className="text-ds-text-muted text-sm mb-1">{t('meldsTitle')}</div>
                   {state.players.every((p) => p.laidMelds.length === 0) ? (
                     <div className="text-ds-text-muted text-sm">{t('noMelds')}</div>
@@ -315,14 +318,14 @@ function PanPageContent() {
                     state.players
                       .filter((p) => p.laidMelds.length > 0)
                       .map((p) => (
-                        <div key={`melds-${p.id}`} className="mb-2">
+                        <div key={`melds-${p.id}`} className={isMobile ? 'mb-1' : 'mb-2'}>
                           <div className="text-ds-text-muted text-xs mb-1">
                             {t('meldOwner', { name: playerName(p.id, p.isHuman) })}
                           </div>
                           {p.laidMelds.map((meld, meldIdx) => (
                             <fieldset
                               key={`meld-${p.id}-${meldIdx}-${meld.cards.map((c) => `${c.design}${c.value}`).join('')}`}
-                              className="border-0 p-0 m-0 min-w-0 flex flex-wrap items-center gap-1 mb-1"
+                              className={`border-0 p-0 m-0 min-w-0 flex flex-wrap items-center gap-1 ${isMobile ? 'mb-0' : 'mb-1'}`}
                               aria-label={t('a11y.meldGroup', {
                                 name: playerName(p.id, p.isHuman),
                                 cards: meld.cards.map(cardAlt).join(t('listSeparator')),
@@ -332,7 +335,8 @@ function PanPageContent() {
                                 <AnimatedCard
                                   key={`meldcard-${p.id}-${meldIdx}-${card.design}-${card.value}-${idx}`}
                                   card={card}
-                                  width={cardWidth * 0.7}
+                                  width={cardWidth * (isMobile ? 0.48 : 0.5)}
+                                  wrapperClassName={idx > 0 ? 'inline-block -ml-[60%]' : 'inline-block'}
                                 />
                               ))}
                               {/* バジェ (3/5/7 のセット) は全員にチップを配る。どのメルドが

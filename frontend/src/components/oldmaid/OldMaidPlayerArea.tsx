@@ -38,6 +38,8 @@ export interface PlayerAreaProps {
   drawnCardIdx?: number;
   /** When true, non-target CPU players hide card back images to save space. */
   compactNonTarget?: boolean;
+  /** Render CPU card backs at compact desktop dimensions. */
+  compactCpuCards?: boolean;
   /**
    * When set, a transient floating bubble is shown at the top of the area
    * (e.g. "just drew a card") with live-region semantics for screen readers.
@@ -72,6 +74,7 @@ export function OldMaidPlayerArea({
   onReorder,
   drawnCardIdx = -1,
   compactNonTarget,
+  compactCpuCards = false,
   bubble,
 }: PlayerAreaProps) {
   const { t } = useTranslation('oldmaid');
@@ -227,7 +230,7 @@ export function OldMaidPlayerArea({
         </>
       )}
       <div
-        className="flex flex-wrap gap-0.5 justify-center"
+        className={`flex ${compactCpuCards && !player.isHuman ? 'flex-nowrap justify-start' : 'flex-wrap gap-0.5 justify-center'}`}
         {...(player.isHuman && !player.isFinished && onReorder
           ? { tabIndex: 0, onKeyDown: handleKeyDown, 'data-testid': 'human-card-container' }
           : {})}
@@ -306,10 +309,23 @@ export function OldMaidPlayerArea({
           <>
             {Array.from({ length: showCount }, (_, i) => {
               // 全カードを同一スタイルで描く。罠の位置を光らせない (#5476)。
-              return (
+              // Keep each selectable card at least 44px wide while fitting a
+              // CPU's hand on one compact row on desktop.
+              return compactCpuCards ? (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => onDraw(i)}
+                  aria-label={t('drawCardAriaLabel', { idx: i + 1 })}
+                  className="relative z-0 -mr-2 flex h-[54px] min-w-[44px] shrink-0 items-center justify-center rounded-md focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ds-accent"
+                  style={NEUTRAL_CARD_STYLE}
+                >
+                  <CardBack width={36} />
+                </button>
+              ) : (
                 <CardBack
                   key={i}
-                  width={cardWidth}
+                  width={44}
                   style={NEUTRAL_CARD_STYLE}
                   onClick={() => onDraw(i)}
                   ariaLabel={t('drawCardAriaLabel', { idx: i + 1 })}
@@ -323,7 +339,11 @@ export function OldMaidPlayerArea({
         ) : compactNonTarget && !isTarget && !player.isHuman ? null : (
           <>
             {Array.from({ length: showCount }).map((_, i) => (
-              <CardBack key={i} width={cardWidth} />
+              <CardBack
+                key={i}
+                width={compactCpuCards ? 36 : cardWidth}
+                className={compactCpuCards ? '-mr-2 relative' : undefined}
+              />
             ))}
             {player.cardCount > 10 && (
               <span className="text-ds-text-primary self-center ml-0.5 text-xs">+{player.cardCount - 10}</span>

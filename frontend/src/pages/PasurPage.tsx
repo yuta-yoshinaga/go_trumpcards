@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { pasurApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -11,7 +12,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -59,6 +60,7 @@ function PasurPageContent() {
     retry,
   } = useGameApi<PasurResponse, Parameters<typeof pasurApi.exec>>(pasurApi.exec);
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('pasur', state);
   const [picked, setPicked] = useState<number | null>(null);
 
@@ -144,13 +146,16 @@ function PasurPageContent() {
             </div>
 
             {/* **11 の合計と絵札の扱いが規則そのもの。** 先に出す。 */}
-            <div
-              className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center"
-              data-testid="ps-rule"
-              data-tutorial="ps-rule"
-            >
-              {t('header.rule')}
-            </div>
+            <details open={!isMobile || undefined} className="mb-3 text-ds-text-primary" data-testid="ps-rule-details">
+              <summary
+                className="cursor-pointer select-none rounded px-3 py-2 text-center"
+                data-testid="ps-rule"
+                data-tutorial="ps-rule"
+              >
+                {tc('label.rules')}
+              </summary>
+              <div className="rounded px-3 py-2 text-center">{t('header.rule')}</div>
+            </details>
 
             <div className="mb-4" data-testid="ps-table" data-tutorial="ps-table">
               <div className="text-ds-text-muted text-sm mb-1">
@@ -170,39 +175,41 @@ function PasurPageContent() {
               </div>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="ps-seats">
-              {state.players.map((p) => (
-                <div
-                  key={p.id}
-                  className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
-                    isHumanTurn && p.id === state.currentPlayerIdx ? 'ring-2 ring-ds-accent' : ''
-                  }`}
-                  data-testid={`ps-seat-${p.id.toString()}`}
-                >
-                  <span className="text-ds-text-primary">
-                    {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                  </span>
-                  {isHumanTurn && p.id === state.currentPlayerIdx && (
-                    <span
-                      className="ml-1 text-ds-accent"
-                      aria-current="step"
-                      data-testid={`ps-turn-${p.id.toString()}`}
-                    >
-                      {t('header.currentTurn')}
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="ps-seats">
+              <div className="flex flex-wrap justify-center gap-2 mb-4 sm:flex-nowrap" data-tutorial="ps-seats">
+                {state.players.map((p) => (
+                  <div
+                    key={p.id}
+                    className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
+                      isHumanTurn && p.id === state.currentPlayerIdx ? 'ring-2 ring-ds-accent' : ''
+                    }`}
+                    data-testid={`ps-seat-${p.id.toString()}`}
+                  >
+                    <span className="text-ds-text-primary">
+                      {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
                     </span>
-                  )}
-                  {p.id === state.lastCaptureIdx && (
-                    <span className="ml-1 text-ds-accent">{t('header.lastCapture')}</span>
-                  )}
-                  {': '}
-                  {t('header.captured', { n: String(p.capturedCount) })}
-                  {' / '}
-                  <span className="text-ds-accent">{t('header.soors', { n: String(p.soors) })}</span>
-                  {' / '}
-                  {t('header.score', { n: String(p.score) })}
-                </div>
-              ))}
-            </div>
+                    {isHumanTurn && p.id === state.currentPlayerIdx && (
+                      <span
+                        className="ml-1 text-ds-accent"
+                        aria-current="step"
+                        data-testid={`ps-turn-${p.id.toString()}`}
+                      >
+                        {t('header.currentTurn')}
+                      </span>
+                    )}
+                    {p.id === state.lastCaptureIdx && (
+                      <span className="ml-1 text-ds-accent">{t('header.lastCapture')}</span>
+                    )}
+                    {': '}
+                    {t('header.captured', { n: String(p.capturedCount) })}
+                    {' / '}
+                    <span className="text-ds-accent">{t('header.soors', { n: String(p.soors) })}</span>
+                    {' / '}
+                    {t('header.score', { n: String(p.score) })}
+                  </div>
+                ))}
+              </div>
+            </CpuAccordion>
 
             {resultBanner && (
               <div className="my-4" data-testid="ps-final-result">

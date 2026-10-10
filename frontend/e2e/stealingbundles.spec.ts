@@ -17,6 +17,7 @@ test.describe('Stealing Bundles E2E', () => {
   // **束の一番上が弱点、というのが規則そのもの。**
   test('always states that a bundle can be taken whole', async ({ page }) => {
     await navigateTo(page, '/stealingbundles');
+    await page.getByTestId('sb-rule').locator('summary').click();
     await expect(page.getByTestId('sb-rule')).toContainText(/束|bundle/, { timeout: TIMEOUT_TRANSITION });
   });
 
@@ -24,6 +25,7 @@ test.describe('Stealing Bundles E2E', () => {
   test('deals four to the table and four to each of the four seats', async ({ page }) => {
     await navigateTo(page, '/stealingbundles');
     await expect(page.getByTestId('sb-header')).toContainText('32', { timeout: TIMEOUT_TRANSITION });
+    await page.getByTestId('cpu-accordion').locator('summary').click();
     for (const id of [0, 1, 2, 3]) {
       await expect(page.getByTestId(`sb-seat-${id}`)).toContainText('4', { timeout: TIMEOUT_TRANSITION });
     }

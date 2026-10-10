@@ -1064,6 +1064,7 @@
     "play": "{{card}} を出す"
   },
   "label": {
+    "rules": "ルール",
     "tutorial": "チュートリアル",
     "result": "結果:",
     "cpuAction": "CPU行動:",

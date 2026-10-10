@@ -76,6 +76,7 @@
   "roundEnd": "Round over. Proceed to the next round.",
   "samba": "Samba",
   "score": {
+    "title": "Scores",
     "cumulative": "Total",
     "round": "Round",
     "team": "Team"

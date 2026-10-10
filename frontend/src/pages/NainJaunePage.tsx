@@ -231,13 +231,17 @@ function NainJaunePageContent() {
                       {t('seat', { name: `CPU${o.id.toString()}`, chips: o.chips, n: o.cardCount, pts: o.points })}
                     </div>
                     <div
-                      className="flex gap-1 justify-center flex-wrap"
+                      className={`flex justify-center ${o.hidden ? 'flex-nowrap' : 'gap-1 flex-wrap'}`}
                       role="img"
                       aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
                     >
                       {o.hidden
                         ? Array.from({ length: o.cardCount }, (_, i) => (
-                            <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                            <CardBack
+                              key={`opp-${o.id.toString()}-c${i.toString()}`}
+                              width={18}
+                              className={i > 0 ? '-ml-3' : undefined}
+                            />
                           ))
                         : o.cards.map((card, i) => (
                             <AnimatedCard

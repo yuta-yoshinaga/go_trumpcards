@@ -266,7 +266,7 @@ function PopeJoanPageContent() {
               </section>
             )}
 
-            <CpuAccordion playerCount={opponents.length}>
+            <CpuAccordion playerCount={opponents.length} desktopOpen={false}>
               <div className="flex flex-wrap sm:flex-nowrap justify-center gap-4 mb-3">
                 {opponents.map((o) => (
                   <div key={`opp-${o.id.toString()}`} className="text-center">

@@ -96,16 +96,19 @@ describe('TrexPage', () => {
     const cpuDetails = screen.getByTestId('cpu-accordion');
     expect(cpuDetails).not.toHaveAttribute('open');
     expect(cpuDetails.querySelector('[role="img"]')).toBeInTheDocument();
+    expect(cpuDetails.querySelector('[role="img"]')).not.toBeVisible();
     const seatRow = cpuDetails.querySelector('.flex.flex-wrap');
     expect(seatRow).toBeInTheDocument();
     expect(seatRow?.classList.contains('sm:flex-nowrap')).toBe(true);
   });
 
-  it('keeps CPU seats open on desktop', async () => {
+  it('keeps CPU seats collapsed on desktop to preserve play-area space', async () => {
     mobileState.isMobile = false;
     renderWithProviders(<TrexPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+    const cpuDetails = screen.getByTestId('cpu-accordion');
+    expect(cpuDetails).not.toHaveAttribute('open');
+    expect(cpuDetails.querySelector('[role="img"]')).not.toBeVisible();
   });
 
   it('resets on mount', async () => {

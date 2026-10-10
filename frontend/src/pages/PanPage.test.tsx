@@ -156,7 +156,10 @@ describe('PanPage', () => {
     const accordion = await screen.findByTestId('cpu-accordion');
     expect(accordion).not.toHaveAttribute('open');
     expect(accordion).toHaveTextContent('CPU');
-    expect(screen.getByTestId('pan-score-table')).not.toHaveAttribute('open');
+    expect(within(accordion).getByText(/10枚/)).not.toBeVisible();
+    const scoreTable = screen.getByTestId('pan-score-table');
+    expect(scoreTable).not.toHaveAttribute('open');
+    expect(within(scoreTable).getByRole('table')).not.toBeVisible();
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
 
@@ -164,7 +167,9 @@ describe('PanPage', () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
     renderWithProviders(<PanPage />);
-    expect(await screen.findByTestId('pan-score-table')).toHaveAttribute('open');
+    const scoreTable = await screen.findByTestId('pan-score-table');
+    expect(scoreTable).toHaveAttribute('open');
+    expect(within(scoreTable).getByRole('table')).toBeVisible();
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
 
@@ -671,6 +676,34 @@ describe('PanPage meld candidates', () => {
     expect(firstMeld).toBeInTheDocument();
     expect(secondMeld).toBeInTheDocument();
     expect(firstMeld).not.toBe(secondMeld);
+  });
+  it('overlaps only the second and later meld cards on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<PanPage />);
+    const meld = await screen.findByRole('group', { name: 'CPU 1 のメルド: ♦ 4、♥ 4、♣ 4' });
+    const images = within(meld).getAllByRole('img');
+    const wrappers = images.map((image) => image.closest('.inline-block'));
+    expect(wrappers[0]).toHaveClass('inline-block');
+    expect(wrappers[0]).not.toHaveClass('-ml-[60%]');
+    expect(wrappers[1]).toHaveClass('-ml-[60%]');
+    expect(wrappers[2]).toHaveClass('-ml-[60%]');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+  it('uses compact overlapping meld cards on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<PanPage />);
+    const meld = await screen.findByRole('group', { name: 'CPU 1 のメルド: ♦ 4、♥ 4、♣ 4' });
+    const images = within(meld).getAllByRole('img');
+    expect(images[0]).toHaveStyle({ width: '50px' });
+    const wrappers = images.map((image) => image.closest('.inline-block'));
+    expect(wrappers[0]).not.toHaveClass('-ml-[60%]');
+    expect(wrappers[1]).toHaveClass('-ml-[60%]');
+    expect(wrappers[2]).toHaveClass('-ml-[60%]');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
   // **同じ「レイオフ」が卓の上に何個も並ぶ。**読み上げではどのプレイヤーの
   // どのメルド宛かが区別できなかった (#6502)。姉妹ゲーム Machiavelli は

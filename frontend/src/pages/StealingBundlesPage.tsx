@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { stealingbundlesApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -229,9 +230,10 @@ function StealingBundlesPageContent() {
             </div>
 
             {/* **束の一番上が弱点、というのが規則そのもの。** 先に出す。 */}
-            <div className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center" data-testid="sb-rule">
-              {t('header.rule')}
-            </div>
+            <details className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-primary" data-testid="sb-rule">
+              <summary className="cursor-pointer">{t('header.rules')}</summary>
+              <p className="mt-2 text-center">{t('header.rule')}</p>
+            </details>
 
             {/* **空の場も情報。** 消さずに「なし」と書きます。 */}
             <div className="mb-4" data-testid="sb-table" data-tutorial="sb-table">
@@ -248,48 +250,50 @@ function StealingBundlesPageContent() {
             </div>
 
             {/* **束の一番上は全員に見えます。** そこが狙われる場所だからです。 */}
-            <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="sb-seats">
-              {state.players.map((p) => (
-                <div
-                  key={p.id}
-                  className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
-                  data-testid={`sb-seat-${p.id.toString()}`}
-                >
-                  <span className="text-ds-text-primary">{seatName(p.id)}</span>
-                  {/* **盗みは相手の束を丸ごと消す。** 場から取っただけの手と
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="sb-seats">
+              <div className="flex flex-wrap justify-center gap-2 mb-4">
+                {state.players.map((p) => (
+                  <div
+                    key={p.id}
+                    className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                    data-testid={`sb-seat-${p.id.toString()}`}
+                  >
+                    <span className="text-ds-text-primary">{seatName(p.id)}</span>
+                    {/* **盗みは相手の束を丸ごと消す。** 場から取っただけの手と
                       同じ印にすると、痕跡の残らないこの盤面では区別が付かない
                       (#5767)。 */}
-                  {p.id === state.lastCaptureIdx && (
-                    <span className="ml-1 text-ds-warning" data-testid={`sb-capture-${p.id.toString()}`}>
-                      {state.lastCaptureKind === 'steal'
-                        ? t('header.lastCaptureSteal', { name: seatName(state.lastCaptureVictimIdx) })
-                        : t('header.lastCaptureTake')}
-                    </span>
-                  )}
-                  {': '}
-                  <span>{t('header.cards', { n: String(p.cardCount) })}</span>
-                  {' / '}
-                  <span className="text-ds-accent">{t('header.bundle', { n: String(p.bundleSize) })}</span>
-                  {' / '}
-                  <span data-testid={`sb-bundle-gap-${p.id.toString()}`}>
-                    {p.bundleSize === maxBundleSize
-                      ? leadersCount > 1
-                        ? t('header.tiedLead')
-                        : t('header.lead')
-                      : t('header.bundleGap', { count: maxBundleSize - p.bundleSize })}
-                  </span>
-                  {' / '}
-                  <span>
-                    {t('header.bundleTop')}:{' '}
-                    {p.bundleTop ? (
-                      <span className="text-ds-accent">{cardAlt(p.bundleTop)}</span>
-                    ) : (
-                      t('header.bundleEmpty')
+                    {p.id === state.lastCaptureIdx && (
+                      <span className="ml-1 text-ds-warning" data-testid={`sb-capture-${p.id.toString()}`}>
+                        {state.lastCaptureKind === 'steal'
+                          ? t('header.lastCaptureSteal', { name: seatName(state.lastCaptureVictimIdx) })
+                          : t('header.lastCaptureTake')}
+                      </span>
                     )}
-                  </span>
-                </div>
-              ))}
-            </div>
+                    {': '}
+                    <span>{t('header.cards', { n: String(p.cardCount) })}</span>
+                    {' / '}
+                    <span className="text-ds-accent">{t('header.bundle', { n: String(p.bundleSize) })}</span>
+                    {' / '}
+                    <span data-testid={`sb-bundle-gap-${p.id.toString()}`}>
+                      {p.bundleSize === maxBundleSize
+                        ? leadersCount > 1
+                          ? t('header.tiedLead')
+                          : t('header.lead')
+                        : t('header.bundleGap', { count: maxBundleSize - p.bundleSize })}
+                    </span>
+                    {' / '}
+                    <span>
+                      {t('header.bundleTop')}:{' '}
+                      {p.bundleTop ? (
+                        <span className="text-ds-accent">{cardAlt(p.bundleTop)}</span>
+                      ) : (
+                        t('header.bundleEmpty')
+                      )}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CpuAccordion>
 
             {resultBanner && (
               <div

@@ -17,6 +17,12 @@ vi.mock('../hooks/useGameHint', () => ({
 }));
 
 const mockExec = vi.mocked(cucumberApi.exec);
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
@@ -58,6 +64,7 @@ function makeState(overrides: Partial<CucumberResponse> = {}): CucumberResponse 
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mobileState.isMobile = true;
   mockExec.mockResolvedValue(makeState());
 });
 
@@ -135,9 +142,19 @@ describe('CucumberPage', () => {
 
   it('states the comparison rule and that only the last trick scores', async () => {
     renderWithProviders(<CucumberPage />);
+    await screen.findByTestId('cu-header');
+    expect(screen.getByTestId('cu-rule-details')).not.toHaveAttribute('open');
+    expect(await screen.findByTestId('cu-rule')).not.toBeVisible();
+  });
+
+  it('opens the rule explanation on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<CucumberPage />);
     const rule = await screen.findByTestId('cu-rule');
+    expect(screen.getByTestId('cu-rule-details')).toHaveAttribute('open');
     expect(rule).toHaveTextContent(/スートは一切関係ありません/);
     expect(rule).toHaveTextContent(/最終トリックを取った1人だけ/);
+    mobileState.isMobile = true;
   });
 
   // **超えるべきランクが盤面の全て。** スートが無い以上、唯一の手がかり。
@@ -157,6 +174,22 @@ describe('CucumberPage', () => {
     const s0 = await screen.findByTestId('cu-seat-0');
     expect(s0).toHaveTextContent('手札7枚');
     expect(s0).toHaveTextContent('失点12点');
+  });
+
+  it('collapses CPU seats on mobile and opens them on desktop', async () => {
+    const mobileRender = renderWithProviders(<CucumberPage />);
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).not.toHaveAttribute('open');
+    expect(screen.getByTestId('cu-seat-1')).not.toBeVisible();
+    expect(screen.getByTestId('cu-seat-0')).not.toBeVisible();
+    mobileRender.unmount();
+
+    mobileState.isMobile = false;
+    const { unmount } = renderWithProviders(<CucumberPage />);
+    await screen.findByTestId('cu-header');
+    expect(await screen.findByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByTestId('cu-seat-1')).toBeVisible();
+    unmount();
   });
 
   it('shows penalty points remaining to the target and marks reached seats', async () => {

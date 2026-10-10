@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { goofspielApi } from '../api/gameApi';
+import * as cardDimensions from '../hooks/useCardDimensions';
 import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -72,7 +73,27 @@ describe('GoofspielPage', () => {
   // **同時入札であることが規則そのもの。**
   it('states that everyone bids at the same time', async () => {
     renderWithProviders(<GoofspielPage />);
+    fireEvent.click(await screen.findByText('ルール'));
     expect(await screen.findByTestId('gs-rule')).toHaveTextContent(/同時に入札します/);
+  });
+
+  it('collapses rules and CPU seats on mobile, and opens them on desktop', async () => {
+    vi.spyOn(cardDimensions, 'useIsMobile').mockReturnValue(true);
+    const { unmount } = renderWithProviders(<GoofspielPage />);
+    await screen.findByTestId('gs-seat-1');
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('gs-seat-1')).not.toBeVisible();
+    const ruleDetails = screen.getByText('ルール').closest('details');
+    expect(ruleDetails).not.toHaveAttribute('open');
+    expect(screen.getByTestId('gs-rule')).not.toBeVisible();
+    unmount();
+
+    vi.spyOn(cardDimensions, 'useIsMobile').mockReturnValue(false);
+    renderWithProviders(<GoofspielPage />);
+    await screen.findByTestId('gs-seat-1');
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByTestId('gs-rule')).not.toBeVisible();
+    vi.restoreAllMocks();
   });
 
   it('shows the prize and the points at stake', async () => {

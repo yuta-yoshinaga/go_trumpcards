@@ -1064,6 +1064,7 @@
     "play": "Play {{card}}"
   },
   "label": {
+    "rules": "Rules",
     "tutorial": "Tutorial",
     "result": "Result:",
     "cpuAction": "CPU Actions:",

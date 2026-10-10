@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pochApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -7,6 +7,13 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { CardDesign, PochPlayer, PochResponse } from '../types/card';
 import { PochPhase } from '../types/phases';
 import { PochPage } from './PochPage';
+
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 vi.mock('../api/gameApi', () => ({
   pochApi: { exec: vi.fn() },
@@ -69,6 +76,7 @@ function pickHand(i: number) {
 
 describe('PochPage', () => {
   beforeEach(() => {
+    mobileState.isMobile = true;
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
   });
@@ -87,11 +95,31 @@ describe('PochPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 2 }));
   });
 
-  it('shows both rules permanently', async () => {
+  it('keeps the rules collapsed on mobile and opens them on desktop', async () => {
     renderWithProviders(<PochPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    expect(screen.getByText(/めくり札と同じスート/)).toBeInTheDocument();
-    expect(screen.getByText(/宣言ではなく同ランクの組の比べ合い/)).toBeInTheDocument();
+    const rules = screen.getByTestId('poch-rules');
+    expect(rules).not.toHaveAttribute('open');
+    expect(screen.getByText(/めくり札と同じスート/)).not.toBeVisible();
+
+    cleanup();
+    mobileState.isMobile = false;
+    renderWithProviders(<PochPage />);
+    await screen.findAllByTestId('poch-pool');
+    expect(screen.getByTestId('poch-rules')).toHaveAttribute('open');
+    expect(screen.getByText(/宣言ではなく同ランクの組の比べ合い/)).toBeVisible();
+  });
+
+  it('collapses CPU seats on mobile and opens them on desktop', async () => {
+    renderWithProviders(<PochPage />);
+    await screen.findAllByTestId('poch-pool');
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+
+    cleanup();
+    mobileState.isMobile = false;
+    renderWithProviders(<PochPage />);
+    await screen.findAllByTestId('poch-pool');
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
   });
 
   it('reveals CPU cards with alt text after the game ends', async () => {
