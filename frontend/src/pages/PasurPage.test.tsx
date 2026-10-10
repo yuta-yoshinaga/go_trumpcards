@@ -173,11 +173,16 @@ describe('PasurPage', () => {
     );
     renderWithProviders(<PasurPage />);
     const s0 = await screen.findByTestId('ps-seat-0');
+    const cpuAccordion = screen.getByTestId('cpu-accordion');
+    expect(s0).toBeVisible();
     expect(s0.closest('details')).toBeNull();
+    expect(screen.getByTestId('ps-human-seat')).toHaveAttribute('data-tutorial', 'ps-seats');
+    expect(screen.getByTestId('ps-turn-0')).toHaveAttribute('aria-current', 'step');
     expect(s0).toHaveTextContent('捕獲6枚');
     expect(s0).toHaveTextContent('スール2');
     expect(s0).toHaveTextContent('得点9');
-    expect(screen.getByTestId('ps-seat-3')).toBeInTheDocument();
+    const cpuSeat = screen.getByTestId('ps-seat-3');
+    expect(cpuSeat.closest('[data-testid="cpu-accordion"]')).toBe(cpuAccordion);
   });
 
   it('marks the current human seat', async () => {

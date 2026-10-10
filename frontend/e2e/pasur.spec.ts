@@ -24,8 +24,9 @@ test.describe('Pasur E2E', () => {
 
   test('shows every seat', async ({ page }) => {
     await navigateTo(page, '/pasur');
+    await expect(page.getByTestId('ps-seat-0')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
     await page.getByTestId('cpu-accordion').locator('summary').click();
-    for (const id of [0, 1, 2, 3]) {
+    for (const id of [1, 2, 3]) {
       await expect(page.getByTestId(`ps-seat-${id}`)).toBeVisible({ timeout: TIMEOUT_TRANSITION });
     }
     await expect(page.getByTestId('ps-seat-4')).toHaveCount(0);

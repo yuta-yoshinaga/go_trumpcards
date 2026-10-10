@@ -201,7 +201,7 @@ function PasurPageContent() {
               </div>
             </div>
 
-            <div className="flex justify-center mb-2" data-tutorial="ps-seats">
+            <div className="flex justify-center mb-2" data-tutorial="ps-seats" data-testid="ps-human-seat">
               {human && renderSeat(human)}
             </div>
             <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
