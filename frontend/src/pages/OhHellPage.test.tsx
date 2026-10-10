@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, ohHellApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -164,6 +164,7 @@ describe('OhHellPage', () => {
       expect(screen.getByAltText('\u2660 A')).toBeInTheDocument();
       expect(screen.getByAltText('\u2665 J')).toBeInTheDocument();
     });
+    expect(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '出す' })).toBeInTheDocument();
   });
 
   it('includes each player name in the trick card accessible name', async () => {

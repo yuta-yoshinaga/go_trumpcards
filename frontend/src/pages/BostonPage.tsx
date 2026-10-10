@@ -370,7 +370,116 @@ function BostonPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.boston.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.boston.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex flex-wrap gap-2 items-center" data-tutorial="boston-actions">
+                {isHumanBid && (
+                  <>
+                    <label className="text-ds-text-muted text-xs flex items-center gap-1" htmlFor="boston-bid-select">
+                      {t('contract')}
+                      <select
+                        id="boston-bid-select"
+                        className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
+                        value={bidLevel ?? ''}
+                        onChange={(e) => setBidLevel(e.target.value === '' ? null : Number(e.target.value))}
+                      >
+                        <option value="">—</option>
+                        {selectable.map((o) => (
+                          <option key={o.level} value={o.level}>
+                            {o.level}. {bidLabel(o.name)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    {/* **切札が要るのはトリック宣言だけ。**ミゼールでは出さない。 */}
+                    {chosen?.needsTrump && (
+                      <label
+                        className="text-ds-text-muted text-xs flex items-center gap-1"
+                        htmlFor="boston-suit-select"
+                      >
+                        {t('suitLabel')}
+                        <select
+                          id="boston-suit-select"
+                          className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
+                          value={bidSuit}
+                          onChange={(e) => setBidSuit(Number(e.target.value))}
+                        >
+                          {[1, 2, 3, 4].map((s) => (
+                            <option key={s} value={s}>
+                              {SUIT_GLYPHS[s]}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    )}
+
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleBid}
+                      disabled={loading || bidLevel === null}
+                    >
+                      {t('bidButton')}
+                    </button>
+                    <button type="button" className={btnWarning} onClick={() => exec('pass')} disabled={loading}>
+                      {t('passButton')}
+                    </button>
+                  </>
+                )}
+
+                {isHumanCallPartner && (
+                  <>
+                    {state.players
+                      .filter((p) => p.id !== state.declarerIdx)
+                      .map((p) => (
+                        <button
+                          key={`partner-${p.id}`}
+                          type="button"
+                          className={btnPrimary}
+                          onClick={() => exec('callpartner', { partner: p.id })}
+                          disabled={loading}
+                        >
+                          {t('callButton', { name: playerLabel(p.id, p.isHuman) })}
+                        </button>
+                      ))}
+                    <button
+                      type="button"
+                      className={btnWarning}
+                      onClick={() => exec('callpartner', { partner: -1 })}
+                      disabled={loading}
+                    >
+                      {t('aloneButton')}
+                    </button>
+                  </>
+                )}
+
+                {isHumanPlay && (
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={handlePlay}
+                    disabled={loading || selected === null}
+                  >
+                    {t('playButton')}
+                  </button>
+                )}
+
+                {isHandEnd && !isGameEnd && (
+                  <button type="button" className={btnSuccess} onClick={() => exec('next')} disabled={loading}>
+                    {t('nextHand')}
+                  </button>
+                )}
+
+                {isGameEnd && (
+                  <span className="text-ds-text-primary text-sm font-semibold mr-1">
+                    {humanWon ? t('win') : t('lose', { name: playerLabel(state.winnerIdx, state.winnerIdx === 0) })}
+                  </span>
+                )}
+              </div>
+            }
+          >
             <div className="mb-2" data-tutorial="boston-hand">
               <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
               <div className="flex flex-wrap gap-1">
@@ -420,108 +529,7 @@ function BostonPageContent() {
             </label>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="boston-actions">
-              {isHumanBid && (
-                <>
-                  <label className="text-ds-text-muted text-xs flex items-center gap-1" htmlFor="boston-bid-select">
-                    {t('contract')}
-                    <select
-                      id="boston-bid-select"
-                      className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
-                      value={bidLevel ?? ''}
-                      onChange={(e) => setBidLevel(e.target.value === '' ? null : Number(e.target.value))}
-                    >
-                      <option value="">—</option>
-                      {selectable.map((o) => (
-                        <option key={o.level} value={o.level}>
-                          {o.level}. {bidLabel(o.name)}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  {/* **切札が要るのはトリック宣言だけ。**ミゼールでは出さない。 */}
-                  {chosen?.needsTrump && (
-                    <label className="text-ds-text-muted text-xs flex items-center gap-1" htmlFor="boston-suit-select">
-                      {t('suitLabel')}
-                      <select
-                        id="boston-suit-select"
-                        className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
-                        value={bidSuit}
-                        onChange={(e) => setBidSuit(Number(e.target.value))}
-                      >
-                        {[1, 2, 3, 4].map((s) => (
-                          <option key={s} value={s}>
-                            {SUIT_GLYPHS[s]}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  )}
-
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleBid}
-                    disabled={loading || bidLevel === null}
-                  >
-                    {t('bidButton')}
-                  </button>
-                  <button type="button" className={btnWarning} onClick={() => exec('pass')} disabled={loading}>
-                    {t('passButton')}
-                  </button>
-                </>
-              )}
-
-              {isHumanCallPartner && (
-                <>
-                  {state.players
-                    .filter((p) => p.id !== state.declarerIdx)
-                    .map((p) => (
-                      <button
-                        key={`partner-${p.id}`}
-                        type="button"
-                        className={btnPrimary}
-                        onClick={() => exec('callpartner', { partner: p.id })}
-                        disabled={loading}
-                      >
-                        {t('callButton', { name: playerLabel(p.id, p.isHuman) })}
-                      </button>
-                    ))}
-                  <button
-                    type="button"
-                    className={btnWarning}
-                    onClick={() => exec('callpartner', { partner: -1 })}
-                    disabled={loading}
-                  >
-                    {t('aloneButton')}
-                  </button>
-                </>
-              )}
-
-              {isHumanPlay && (
-                <button
-                  type="button"
-                  className={btnSuccess}
-                  onClick={handlePlay}
-                  disabled={loading || selected === null}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-
-              {isHandEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={() => exec('next')} disabled={loading}>
-                  {t('nextHand')}
-                </button>
-              )}
-
-              {isGameEnd && (
-                <span className="text-ds-text-primary text-sm font-semibold mr-1">
-                  {humanWon ? t('win') : t('lose', { name: playerLabel(state.winnerIdx, state.winnerIdx === 0) })}
-                </span>
-              )}
-
+            <div className="flex justify-end">
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={handleManualReset}

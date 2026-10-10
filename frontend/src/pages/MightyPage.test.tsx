@@ -1133,4 +1133,20 @@ describe('MightyPage aria-labels are translated', () => {
       expect(screen.queryByLabelText(raw)).not.toBeInTheDocument();
     }
   });
+
+  it('keeps the primary control in the pinned footer actions', async () => {
+    mockCall.mockResolvedValue(playPhaseState);
+    renderWithProviders(<MightyPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
+  });
+
+  it('keeps bid selection in the scrollable footer content', async () => {
+    mockCall.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<MightyPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: 'ビッド' })).toBeInTheDocument();
+    expect(within(actions).queryByTestId('mighty-bid-grid')).not.toBeInTheDocument();
+    expect(screen.getByTestId('mighty-bid-grid')).toBeInTheDocument();
+  });
 });

@@ -911,4 +911,11 @@ describe('BinokelPage meld reference', () => {
     expect(hintBox).not.toHaveTextContent('推奨ビッド');
     expect(hintBox).not.toHaveTextContent('{{');
   });
+
+  it('keeps the primary control in the pinned footer actions', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<BinokelPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: 'ビッド' })).toBeInTheDocument();
+  });
 });

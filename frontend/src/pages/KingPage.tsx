@@ -401,7 +401,78 @@ function KingPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.king.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.king.footer} px-4 py-2.5`}
+            actions={
+              isSelectPhase ? null : (
+                <div className="flex flex-wrap gap-2 items-center" data-tutorial="king-action-buttons">
+                  {canPlay && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isDealEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextDeal} disabled={loading}>
+                      {t('nextDeal')}
+                    </button>
+                  )}
+                </div>
+              )
+            }
+          >
+            {canSelect && pendingTrumpContract === null && (
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-1" data-testid="king-contract-buttons">
+                {state.usedContracts.map((used, contract) => {
+                  const isAchieve = contract === KING_TRUMP_CONTRACT;
+                  return (
+                    <button
+                      key={contract}
+                      type="button"
+                      className={`${btnSecondary} flex flex-col items-center justify-center gap-0.5 px-1.5 py-1 text-xs`}
+                      onClick={() => handleContractClick(contract)}
+                      disabled={loading || used}
+                      title={t(`contractDesc.${contract}`)}
+                      aria-label={`${t(`contracts.${contract}`)} — ${t(`contractType.${isAchieve ? 'achieve' : 'avoid'}`)}${used ? ` — ${t('contractUnavailable')}` : ''}`}
+                      aria-describedby={`king-contract-desc-${contract}`}
+                      data-testid={`king-contract-${contract}`}
+                    >
+                      <span className={used ? 'line-through opacity-60' : ''}>{t(`contracts.${contract}`)}</span>
+                      <span
+                        className="flex items-center gap-1 text-xs"
+                        aria-hidden="true"
+                        data-testid={`king-contract-badge-${contract}`}
+                      >
+                        <span className={`rounded px-1 py-0.5 ${isAchieve ? badgeSuccessColors : badgeErrorColors}`}>
+                          {t(`contractType.${isAchieve ? 'achieve' : 'avoid'}`)}
+                        </span>
+                        <span>{t(`contractIcon.${contract}`)}</span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {canSelect && pendingTrumpContract !== null && (
+              <div className="flex flex-wrap gap-2" data-testid="king-trump-buttons">
+                {TRUMP_SUITS.map((suit) => (
+                  <button
+                    key={suit}
+                    type="button"
+                    className={btnPrimary}
+                    onClick={() => handleTrumpClick(suit)}
+                    disabled={loading}
+                    aria-label={t(`trumpSuit.${suit}`)}
+                  >
+                    {suitSymbolAt(suit, '-')}
+                  </button>
+                ))}
+              </div>
+            )}
             {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
                 変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
             <div data-testid="king-prompt-live" role="status" aria-live="polite">
@@ -421,6 +492,20 @@ function KingPageContent() {
                 </div>
               )}
             </div>
+            {isSelectPhase && (
+              <div className="mb-2 text-sm" data-testid="king-contract-descriptions">
+                <p className="font-semibold">契約の説明</p>
+                <ul className="list-disc pl-5">
+                  {state.usedContracts.map((used, contract) => (
+                    <li key={contract} id={`king-contract-desc-${contract}`}>
+                      <span className="font-medium">{t(`contracts.${contract}`)}:</span>{' '}
+                      {used && `${t('contractUnavailable')}. `}
+                      {t(`contractDesc.${contract}`)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}
@@ -458,80 +543,7 @@ function KingPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="king-action-buttons">
-              {canSelect && pendingTrumpContract === null && (
-                <div className="flex flex-wrap gap-2" data-testid="king-contract-buttons">
-                  {state.usedContracts.map((used, contract) => {
-                    // Contract 6 (King/Trump) rewards taking tricks; every other
-                    // contract penalises capturing its target cards. See
-                    // internal/domain/King.go for the authoritative classification.
-                    const isAchieve = contract === KING_TRUMP_CONTRACT;
-                    return (
-                      <button
-                        key={contract}
-                        type="button"
-                        className={`${btnSecondary} flex flex-col items-center gap-1`}
-                        onClick={() => handleContractClick(contract)}
-                        disabled={loading || used}
-                        title={t(`contractDesc.${contract}`)}
-                        // The badge below is aria-hidden (it is icon + colour), so
-                        // the achieve/avoid distinction has to be restated here or a
-                        // screen reader hears only the contract's name (#4844).
-                        aria-label={`${t(`contracts.${contract}`)} — ${t(`contractType.${isAchieve ? 'achieve' : 'avoid'}`)}${used ? ` — ${t('contractUnavailable')}` : ''}`}
-                        aria-describedby={`king-contract-desc-${contract}`}
-                        data-testid={`king-contract-${contract}`}
-                      >
-                        <span className={used ? 'line-through opacity-60' : ''}>{t(`contracts.${contract}`)}</span>
-                        <span
-                          className="flex items-center gap-1 text-xs"
-                          aria-hidden="true"
-                          data-testid={`king-contract-badge-${contract}`}
-                        >
-                          <span className={`rounded px-1 py-0.5 ${isAchieve ? badgeSuccessColors : badgeErrorColors}`}>
-                            {t(`contractType.${isAchieve ? 'achieve' : 'avoid'}`)}
-                          </span>
-                          <span>{t(`contractIcon.${contract}`)}</span>
-                        </span>
-                        <span id={`king-contract-desc-${contract}`} className="sr-only">
-                          {used && `${t('contractUnavailable')}. `}
-                          {t(`contractDesc.${contract}`)}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-              {canSelect && pendingTrumpContract !== null && (
-                <div className="flex flex-wrap gap-2" data-testid="king-trump-buttons">
-                  {TRUMP_SUITS.map((suit) => (
-                    <button
-                      key={suit}
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => handleTrumpClick(suit)}
-                      disabled={loading}
-                      aria-label={t(`trumpSuit.${suit}`)}
-                    >
-                      {suitSymbolAt(suit, '-')}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isDealEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextDeal} disabled={loading}>
-                  {t('nextDeal')}
-                </button>
-              )}
+            <div className="flex flex-wrap gap-2 items-center">
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={handleManualReset}

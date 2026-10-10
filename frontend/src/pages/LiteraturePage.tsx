@@ -385,30 +385,28 @@ function LiteraturePageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.literature.footer} px-4 py-2.5`}>
-            <div className="mb-2" data-tutorial="literature-hand">
-              <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
-              <div className="flex flex-wrap gap-1">
-                {(human?.cards ?? []).map((c, i) => (
-                  <CardImage key={`hand-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />
-                ))}
-              </div>
-            </div>
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            <label className="flex items-center gap-1 text-ds-text-primary text-xs cursor-pointer min-h-[44px]">
-              <input
-                type="checkbox"
-                checked={frontendHintEnabled}
-                onChange={(e) => setFrontendHintEnabled(e.target.checked)}
-              />
-              {tc('hint.toggle', { ns: 'tutorial' })}
-            </label>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
+          <GameFooter
+            className={`${gameTheme.literature.footer} px-4 py-2.5`}
+            actions={
+              isHumanTurn ? (
+                <div className="flex flex-wrap gap-2" data-tutorial="literature-actions">
+                  <button type="button" className={btnPrimary} onClick={handleAsk} disabled={loading || !selectedCard}>
+                    {t('askButton')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={() => setClaimConfirmOpen(true)}
+                    disabled={loading}
+                  >
+                    {t('claimButton')}
+                  </button>
+                </div>
+              ) : null
+            }
+          >
             {isHumanTurn && (
-              <div className="flex flex-col gap-2" data-tutorial="literature-actions">
+              <div className="mb-2 flex flex-col gap-2">
                 {/* Ask — opponents only. */}
                 <div className="text-ds-text-muted text-xs" data-testid="literature-ask-rules">
                   {t('askRules')}
@@ -448,9 +446,6 @@ function LiteraturePageContent() {
                       ))}
                     </select>
                   </label>
-                  <button type="button" className={btnPrimary} onClick={handleAsk} disabled={loading || !selectedCard}>
-                    {t('askButton')}
-                  </button>
                 </fieldset>
                 <p
                   className={askableCards.length === 0 ? 'text-ds-warning text-sm' : undefined}
@@ -503,17 +498,29 @@ function LiteraturePageContent() {
                       </select>
                     </label>
                   ))}
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={() => setClaimConfirmOpen(true)}
-                    disabled={loading}
-                  >
-                    {t('claimButton')}
-                  </button>
                 </div>
               </div>
             )}
+            <div className="mb-2" data-tutorial="literature-hand">
+              <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
+              <div className="flex flex-wrap gap-1">
+                {(human?.cards ?? []).map((c, i) => (
+                  <CardImage key={`hand-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />
+                ))}
+              </div>
+            </div>
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <label className="flex items-center gap-1 text-ds-text-primary text-xs cursor-pointer min-h-[44px]">
+              <input
+                type="checkbox"
+                checked={frontendHintEnabled}
+                onChange={(e) => setFrontendHintEnabled(e.target.checked)}
+              />
+              {tc('hint.toggle', { ns: 'tutorial' })}
+            </label>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center mt-2">
               {isGameEnd && (

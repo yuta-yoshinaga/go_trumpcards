@@ -517,7 +517,77 @@ function OhHellPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.ohhell.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.ohhell.footer} px-4 py-2.5`}
+            actions={
+              (isHumanBidTurn || isHumanTurn || isTrickEnd || isRoundEnd) && (
+                <div className="flex gap-2 items-center" data-tutorial="oh-play-button">
+                  {(isHumanBidTurn || isHumanTurn) && (
+                    <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
+                      {tc('button.hint')}
+                    </button>
+                  )}
+                  {isHumanBidTurn && (
+                    <fieldset className="border-0 p-0 m-0 min-w-0 flex flex-wrap gap-1.5">
+                      <legend className="sr-only">{t('bidOptions', { max: state.handSize })}</legend>
+                      {Array.from({ length: state.handSize + 1 }, (_, i) => i).map((i) => {
+                        const isRestricted = state.restrictedBid === i;
+                        return (
+                          <button
+                            key={i}
+                            type="button"
+                            // Restricted bids use aria-disabled (not the HTML disabled
+                            // attribute) so they stay focusable and a screen reader can
+                            // read why they can't be chosen; the click is guarded instead.
+                            // Mirrors the Cribbage pegRestricted / Call Break pattern.
+                            // Neutralize btnPrimary's interactive feedback (press-scale,
+                            // hover shadow) when restricted so it doesn't feel clickable.
+                            // **ヒントは数字をテキストで言うだけで、どのボタンを
+                            // 押せばよいか視覚的に示していなかった。**制限ビッドとは
+                            // 別状態なので、強調は制限が無いときだけ付ける。
+                            className={`${btnPrimary}${
+                              isRestricted ? ' opacity-50 cursor-not-allowed active:scale-100 hover:shadow-none' : ''
+                            }${!isRestricted && hint?.bid === i ? ' ring-2 ring-ds-warning' : ''}`}
+                            onClick={() => {
+                              if (!isRestricted) handleBid(i);
+                            }}
+                            disabled={loading}
+                            aria-disabled={isRestricted || undefined}
+                            title={isRestricted ? t('restrictedBidTooltip') : undefined}
+                            aria-label={isRestricted ? t('restrictedBidAria', { n: i }) : t('bid', { n: i })}
+                            data-testid={isRestricted ? 'ohhell-restricted-bid' : undefined}
+                            data-hint-suggested={!isRestricted && hint?.bid === i ? 'true' : undefined}
+                          >
+                            {i}
+                          </button>
+                        );
+                      })}
+                    </fieldset>
+                  )}
+                  {isHumanTurn && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              )
+            }
+          >
             <span id="ohhell-illegal-card-description" className="sr-only">
               {t('illegalCardStatus')}
             </span>
@@ -593,69 +663,7 @@ function OhHellPageContent() {
               )}
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-            <div className="flex gap-2 items-center" data-tutorial="oh-play-button">
-              {(isHumanBidTurn || isHumanTurn) && (
-                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-                  {tc('button.hint')}
-                </button>
-              )}
-              {isHumanBidTurn && (
-                <fieldset className="border-0 p-0 m-0 min-w-0 flex flex-wrap gap-1.5">
-                  <legend className="sr-only">{t('bidOptions', { max: state.handSize })}</legend>
-                  {Array.from({ length: state.handSize + 1 }, (_, i) => i).map((i) => {
-                    const isRestricted = state.restrictedBid === i;
-                    return (
-                      <button
-                        key={i}
-                        type="button"
-                        // Restricted bids use aria-disabled (not the HTML disabled
-                        // attribute) so they stay focusable and a screen reader can
-                        // read why they can't be chosen; the click is guarded instead.
-                        // Mirrors the Cribbage pegRestricted / Call Break pattern.
-                        // Neutralize btnPrimary's interactive feedback (press-scale,
-                        // hover shadow) when restricted so it doesn't feel clickable.
-                        // **ヒントは数字をテキストで言うだけで、どのボタンを
-                        // 押せばよいか視覚的に示していなかった。**制限ビッドとは
-                        // 別状態なので、強調は制限が無いときだけ付ける。
-                        className={`${btnPrimary}${
-                          isRestricted ? ' opacity-50 cursor-not-allowed active:scale-100 hover:shadow-none' : ''
-                        }${!isRestricted && hint?.bid === i ? ' ring-2 ring-ds-warning' : ''}`}
-                        onClick={() => {
-                          if (!isRestricted) handleBid(i);
-                        }}
-                        disabled={loading}
-                        aria-disabled={isRestricted || undefined}
-                        title={isRestricted ? t('restrictedBidTooltip') : undefined}
-                        aria-label={isRestricted ? t('restrictedBidAria', { n: i }) : t('bid', { n: i })}
-                        data-testid={isRestricted ? 'ohhell-restricted-bid' : undefined}
-                        data-hint-suggested={!isRestricted && hint?.bid === i ? 'true' : undefined}
-                      >
-                        {i}
-                      </button>
-                    );
-                  })}
-                </fieldset>
-              )}
-              {isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
+            <div className="flex items-center">
               <GameResetButton
                 isGameEnd={!!isGameEnd}
                 onReset={handleManualReset}

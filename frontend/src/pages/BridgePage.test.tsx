@@ -182,6 +182,13 @@ beforeEach(() => {
 });
 
 describe('BridgePage', () => {
+  it('keeps bidding controls in the fixed footer actions row', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<BridgePage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByTestId('br-bid-submit')).toBeInTheDocument();
+  });
+
   it('marks illegal cards unavailable and ignores their clicks', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<BridgePage />);

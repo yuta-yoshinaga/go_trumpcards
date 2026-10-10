@@ -469,7 +469,63 @@ function FrenchTarotPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.frenchtarot.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.frenchtarot.footer} px-4 py-2.5`}
+            actions={
+              canBid || canDiscard || canPlay || isTrickEnd || isRoundEnd ? (
+                <div className="flex flex-wrap gap-2 items-center" data-tutorial="frenchtarot-action-buttons">
+                  {canBid && (
+                    <>
+                      <button type="button" className={btnSecondary} onClick={handlePass} disabled={loading}>
+                        {t('bidPass')}
+                      </button>
+                      {BID_CHOICES.map((c) => (
+                        <button
+                          key={c.contract}
+                          type="button"
+                          className={btnPrimary}
+                          onClick={() => handleBid(c.contract)}
+                          disabled={loading || c.value <= state.highestBid}
+                        >
+                          {t(c.labelKey)}
+                        </button>
+                      ))}
+                    </>
+                  )}
+                  {canDiscard && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleDiscard}
+                      disabled={loading || selectedCardIndices.length !== FRENCH_TAROT_ECART_COUNT}
+                    >
+                      {t('discardButton', { count: selectedCardIndices.length })}
+                    </button>
+                  )}
+                  {canPlay && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
                 変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
             <div data-testid="frenchtarot-prompt-live" role="status" aria-live="polite">
@@ -524,63 +580,13 @@ function FrenchTarotPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="frenchtarot-action-buttons">
-              {canBid && (
-                <>
-                  <button type="button" className={btnSecondary} onClick={handlePass} disabled={loading}>
-                    {t('bidPass')}
-                  </button>
-                  {BID_CHOICES.map((c) => (
-                    <button
-                      key={c.contract}
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => handleBid(c.contract)}
-                      disabled={loading || c.value <= state.highestBid}
-                    >
-                      {t(c.labelKey)}
-                    </button>
-                  ))}
-                </>
-              )}
-              {canDiscard && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handleDiscard}
-                  disabled={loading || selectedCardIndices.length !== FRENCH_TAROT_ECART_COUNT}
-                >
-                  {t('discardButton', { count: selectedCardIndices.length })}
-                </button>
-              )}
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="frenchtarot-reset-button"
-              />
-            </div>
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="frenchtarot-reset-button"
+            />
           </GameFooter>
         </>
       )}

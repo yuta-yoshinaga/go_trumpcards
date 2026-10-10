@@ -504,7 +504,130 @@ function BinokelPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.binokel.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.binokel.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex gap-2 items-center flex-wrap" data-tutorial="bn-action-buttons">
+                {/* Server hint button */}
+                {(isBidTurn || isDabbTurn || isTrumpTurn || isPlayTurn) && (
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    data-testid="bn-hint-button"
+                    onClick={handleHint}
+                    disabled={loading || hintLoading}
+                  >
+                    {tc('button.hint')}
+                  </button>
+                )}
+
+                {/* Bid: discrete buttons from minLegalBid upwards */}
+                {isBidTurn && (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => handleBid(bidAmount)}
+                        disabled={loading || bidAmount < minLegalBid}
+                      >
+                        {t('bid')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnOutline}
+                        onClick={handlePass}
+                        disabled={loading}
+                        data-testid="bid-pass"
+                      >
+                        {t('pass')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Dabb discard: discard 3 cards */}
+                {isDabbTurn && (
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    data-testid="discard-dabb-button"
+                    onClick={() => handleDiscard(selectedCardIndices)}
+                    disabled={loading || selectedCardIndices.length !== 3}
+                  >
+                    {t('discardDabb', { count: selectedCardIndices.length })}
+                  </button>
+                )}
+
+                {/* Trump */}
+                {isTrumpTurn &&
+                  [1, 2, 3, 4].map((suit) => (
+                    <button
+                      key={suit}
+                      type="button"
+                      className={btnPrimary}
+                      aria-label={t('trumpButtonLabel', { suit: t(`suits.${suit}`) })}
+                      onClick={() => handleCallTrump(suit)}
+                      disabled={loading}
+                    >
+                      {SUIT_LABELS[suit]}
+                    </button>
+                  ))}
+
+                {/* Meld confirm */}
+                {phase === BinokelPhase.MELD && (
+                  <button type="button" className={btnSuccess} onClick={handleConfirmMelds} disabled={loading}>
+                    {t('confirmMelds')}
+                  </button>
+                )}
+
+                {/* Trick End */}
+                {phase === BinokelPhase.TRICK_END && (
+                  <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                    {t('nextTrick')}
+                  </button>
+                )}
+
+                {/* Round End */}
+                {phase === BinokelPhase.ROUND_END && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('nextRound')}
+                  </button>
+                )}
+
+                {/* Reset */}
+              </div>
+            }
+          >
+            {isBidTurn && (
+              <div className="mb-2 flex flex-col items-start gap-2">
+                <fieldset
+                  className="grid grid-cols-4 sm:grid-cols-6 max-h-36 overflow-y-auto gap-1 border-0 p-1 bg-black/20 rounded"
+                  aria-label={t('bidSelectLabel')}
+                >
+                  {bidOptions.map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setBidAmount(n)}
+                      disabled={loading}
+                      aria-pressed={bidAmount === n}
+                      data-testid={`bid-option-${n}`}
+                      className={`h-9 px-2 rounded-lg font-medium text-sm transition-all ${
+                        bidAmount === n
+                          ? 'bg-ds-accent text-white ring-2 ring-ds-accent'
+                          : 'bg-white/20 text-ds-text-primary hover:bg-white/30'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </fieldset>
+                <span className="sr-only" role="status" aria-live="polite" data-testid="bn-bid-selected">
+                  {t('bidSelected', { n: bidAmount })}
+                </span>
+              </div>
+            )}
             {/* Hand */}
             {humanPlayer && humanPlayer.cards.length > 0 && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="bn-player-hand">
@@ -616,120 +739,7 @@ function BinokelPageContent() {
               )}
             </div>
 
-            <div className="flex gap-2 items-center flex-wrap" data-tutorial="bn-action-buttons">
-              {/* Server hint button */}
-              {(isBidTurn || isDabbTurn || isTrumpTurn || isPlayTurn) && (
-                <button
-                  type="button"
-                  className={btnSuccess}
-                  data-testid="bn-hint-button"
-                  onClick={handleHint}
-                  disabled={loading || hintLoading}
-                >
-                  {tc('button.hint')}
-                </button>
-              )}
-
-              {/* Bid: discrete buttons from minLegalBid upwards */}
-              {isBidTurn && (
-                <div className="flex flex-col items-center gap-2">
-                  <fieldset
-                    className="grid grid-cols-4 sm:grid-cols-6 max-h-36 overflow-y-auto gap-1 border-0 p-1 bg-black/20 rounded"
-                    aria-label={t('bidSelectLabel')}
-                  >
-                    {bidOptions.map((n) => (
-                      <button
-                        key={n}
-                        type="button"
-                        onClick={() => setBidAmount(n)}
-                        disabled={loading}
-                        aria-pressed={bidAmount === n}
-                        data-testid={`bid-option-${n}`}
-                        className={`h-9 px-2 rounded-lg font-medium text-sm transition-all ${
-                          bidAmount === n
-                            ? 'bg-ds-accent text-white ring-2 ring-ds-accent'
-                            : 'bg-white/20 text-ds-text-primary hover:bg-white/30'
-                        }`}
-                      >
-                        {n}
-                      </button>
-                    ))}
-                  </fieldset>
-                  <span className="sr-only" role="status" aria-live="polite" data-testid="bn-bid-selected">
-                    {t('bidSelected', { n: bidAmount })}
-                  </span>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => handleBid(bidAmount)}
-                      disabled={loading || bidAmount < minLegalBid}
-                    >
-                      {t('bid')}
-                    </button>
-                    <button
-                      type="button"
-                      className={btnOutline}
-                      onClick={handlePass}
-                      disabled={loading}
-                      data-testid="bid-pass"
-                    >
-                      {t('pass')}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Dabb discard: discard 3 cards */}
-              {isDabbTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  data-testid="discard-dabb-button"
-                  onClick={() => handleDiscard(selectedCardIndices)}
-                  disabled={loading || selectedCardIndices.length !== 3}
-                >
-                  {t('discardDabb', { count: selectedCardIndices.length })}
-                </button>
-              )}
-
-              {/* Trump */}
-              {isTrumpTurn &&
-                [1, 2, 3, 4].map((suit) => (
-                  <button
-                    key={suit}
-                    type="button"
-                    className={btnPrimary}
-                    aria-label={t('trumpButtonLabel', { suit: t(`suits.${suit}`) })}
-                    onClick={() => handleCallTrump(suit)}
-                    disabled={loading}
-                  >
-                    {SUIT_LABELS[suit]}
-                  </button>
-                ))}
-
-              {/* Meld confirm */}
-              {phase === BinokelPhase.MELD && (
-                <button type="button" className={btnSuccess} onClick={handleConfirmMelds} disabled={loading}>
-                  {t('confirmMelds')}
-                </button>
-              )}
-
-              {/* Trick End */}
-              {phase === BinokelPhase.TRICK_END && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-
-              {/* Round End */}
-              {phase === BinokelPhase.ROUND_END && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-
-              {/* Reset */}
+            <div className="flex justify-end">
               <GameResetButton
                 isGameEnd={!!isGameEnd}
                 onReset={handleManualReset}

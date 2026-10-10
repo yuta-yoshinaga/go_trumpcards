@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { kaiserApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -488,5 +488,12 @@ describe('KaiserPage', () => {
     mockExec.mockResolvedValue(makeState({ trick: [] }));
     renderWithProviders(<KaiserPage />);
     await waitFor(() => expect(screen.queryByTestId('kaiser-trick')).not.toBeInTheDocument());
+  });
+
+  it('keeps the primary control in the pinned footer actions', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<KaiserPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
   });
 });

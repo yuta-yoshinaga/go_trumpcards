@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { kingApi } from '../api/gameApi';
@@ -76,6 +76,23 @@ describe('KingPage', () => {
     renderWithProviders(<KingPage />);
     await waitFor(() => expect(screen.getByTestId('king-select-prompt')).toBeInTheDocument());
     expect(screen.getByRole('button', { name: /^ノートリック —/ })).toBeInTheDocument();
+  });
+
+  it('keeps contract buttons in footer content without rendering footer actions', async () => {
+    mockExec.mockResolvedValue(selectPhaseState);
+    renderWithProviders(<KingPage />);
+    const content = await screen.findByTestId('game-footer-content');
+    const contractButtons = within(content).getByTestId('king-contract-buttons');
+    expect(content.firstElementChild).toBe(contractButtons);
+    expect(within(contractButtons).getByTestId('king-contract-0')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
+    const descriptions = screen.getByTestId('king-contract-descriptions');
+    expect(content).toContainElement(descriptions);
+    expect(descriptions).toHaveTextContent(i18n.t('king:contractDesc.0'));
+    expect(within(contractButtons).getByTestId('king-contract-0')).toHaveAttribute(
+      'aria-describedby',
+      'king-contract-desc-0',
+    );
   });
 
   it('shows achieve/avoid badges on the contract buttons', async () => {
@@ -397,5 +414,14 @@ describe('KingPage', () => {
     renderWithProviders(<KingPage />);
     await waitFor(() => expect(screen.getByTestId('king-contract-buttons')).toBeInTheDocument());
     expect(screen.queryByTestId('king-trump-buttons')).not.toBeInTheDocument();
+  });
+
+  it('keeps the primary control in the pinned footer actions', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<KingPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
+    const content = screen.getByTestId('game-footer-content');
+    expect(within(content).getByAltText('♥ Q')).toBeInTheDocument();
   });
 });

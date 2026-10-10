@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cinchApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -77,6 +77,14 @@ beforeEach(() => {
 });
 
 describe('CinchPage', () => {
+  it('keeps bidding controls in the fixed footer actions row', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<CinchPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByTestId('cinch-bid-buttons')).toBeInTheDocument();
+    expect(within(actions).getByRole('button', { name: /パス/ })).toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<CinchPage />);
