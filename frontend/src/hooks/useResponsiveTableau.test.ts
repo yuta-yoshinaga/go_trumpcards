@@ -122,6 +122,13 @@ describe('useResponsiveTableau', () => {
       expect(tallestCol).toBeLessThanOrEqual(667 - 300);
     });
 
+    it('honors a game-specific 14px minimum overlap', () => {
+      setWidth(375);
+      setHeight(300);
+      const { result } = renderHook(() => useResponsiveTableau(8, { maxColCards: 30, minVerticalOverlap: 14 }));
+      expect(result.current.co).toBeGreaterThanOrEqual(14);
+    });
+
     it('does not trigger compression when maxColCards is 1 (single-card column)', () => {
       setWidth(375);
       setHeight(667);

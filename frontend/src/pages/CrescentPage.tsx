@@ -153,11 +153,17 @@ function CrescentPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('crescent', state);
 
-  const tableauDim = useResponsiveTableau(8);
+  const maxColumnDepth = Math.max(0, ...(state?.tableau.map((col) => col.length) ?? []));
+  const tableauDim = useResponsiveTableau(8, {
+    maxColCards: maxColumnDepth,
+    minVerticalOverlap: 14,
+    reservedHeightPx: 420,
+  });
+  const isMobile = useIsMobile();
+  const foundationCardWidth = isMobile ? 36 : tableauDim.cw;
   // Mobile renders the tableau as a 4-column grid, which makes the per-column arc translate Y
   // create a zigzag instead of a crescent silhouette. Skip the offset there. We read the breakpoint
   // from useIsMobile because ResponsiveTableauDimensions doesn't expose it on its public type.
-  const isMobile = useIsMobile();
 
   const isPlayingForKbd = state?.phase === CrescentPhase.PLAYING;
 
@@ -353,7 +359,11 @@ function CrescentPageContent() {
                                 })}
                                 className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${selectedCard !== null && !isFoundationTarget(idx) ? 'opacity-40' : ''}`}
                               >
-                                <AnimatedCard card={pile[pile.length - 1]} width={tableauDim.cw} draggable={false} />
+                                <AnimatedCard
+                                  card={pile[pile.length - 1]}
+                                  width={foundationCardWidth}
+                                  draggable={false}
+                                />
                               </button>
                             ) : (
                               <button
@@ -363,7 +373,7 @@ function CrescentPageContent() {
                                 aria-disabled={!selectedSource || undefined}
                                 aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                                 aria-label={t('emptyFoundationAriaLabel', { suit, direction: directionKey })}
-                                style={{ width: tableauDim.cw, height: tableauDim.ch }}
+                                style={{ width: foundationCardWidth, height: foundationCardWidth * 1.5 }}
                                 className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                               >
                                 {directionKey === 'asc' ? 'A' : 'K'}
@@ -380,14 +390,20 @@ function CrescentPageContent() {
 
             {/* 他のソリティアと違う規則なので常設で出す。初回だけのチュートリアルに
                 書いてあっても、読み飛ばした後は盤面に手掛かりが無い (#6386)。 */}
-            <div className="mb-1 text-center text-ds-text-muted text-xs" data-testid="cr-rules-note">
-              {t('rulesNote')}
-            </div>
+            <details className="mb-1 text-center text-ds-text-muted text-xs">
+              <summary className="cursor-pointer">{t('rulesSummary')}</summary>
+              <div className="text-ds-text-muted" data-testid="cr-rules-note">
+                {t('rulesNote')}
+              </div>
+            </details>
 
-            {/* Tableau (16 piles, 4-col mobile / 8-col desktop).
+            {/* Tableau (16 piles, 8-col mobile / desktop).
                 Desktop adds a translateY arch per column to suggest the crescent shape (#1937).
                 Mobile keeps a flat grid because the 4-col layout would turn the arch into a zigzag. */}
-            <div className="grid grid-cols-4 sm:grid-cols-8 gap-1 sm:gap-2 mb-3" data-tutorial="crescent-tableau">
+            <div
+              className={`grid ${isMobile ? 'grid-cols-8 sm:grid-cols-8' : 'grid-cols-4 sm:grid-cols-8'} gap-1 sm:gap-2 mb-3`}
+              data-tutorial="crescent-tableau"
+            >
               {state.tableau.map((col, colIdx) => {
                 // Distance from the center of an 8-column row: yields 0..3 then back to 0.
                 const centerDist = Math.abs((colIdx % 8) - 3.5);

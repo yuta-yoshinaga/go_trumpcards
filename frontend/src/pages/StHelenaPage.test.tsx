@@ -18,6 +18,7 @@ vi.mock('../hooks/useGameHint', () => ({
 }));
 
 const mockExec = vi.mocked(stHelenaApi.exec);
+const originalViewportWidth = window.innerWidth;
 
 // **12 列。**クローン元のクレセントは 16 列なので、16 で埋めると存在しない列を
 // 描いた盤でテストすることになる。
@@ -112,9 +113,51 @@ beforeEach(() => {
 
 afterEach(async () => {
   await i18n.changeLanguage('ja');
+  Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalViewportWidth });
+  window.dispatchEvent(new Event('resize'));
 });
 
 describe('StHelenaPage', () => {
+  it('uses 40px mobile tableau columns while retaining the grouped desktop layout', async () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    const { container } = renderWithProviders(<StHelenaPage />);
+    await screen.findByTestId('phase-indicator');
+    const band = container.querySelector('[data-testid="sthelena-band-top"]');
+    expect(band).toHaveClass('grid-cols-4');
+    expect(container.querySelector('[data-tutorial="sthelena-foundations"]')).toHaveClass('flex-row');
+    const tableau = container.querySelector('[data-tutorial="sthelena-tableau"]');
+    expect(tableau).toHaveClass('grid-cols-8');
+    expect(container.querySelector('[data-testid="sthelena-band-top"]')?.parentElement).toHaveClass('col-span-4');
+    expect(container.querySelector('[data-testid="sthelena-band-side"]')?.parentElement).toHaveClass('col-span-4');
+    expect(container.querySelector('[data-testid="sthelena-band-bottom"]')?.parentElement).toHaveClass('col-span-8');
+    expect(
+      container.querySelectorAll('[data-tutorial="sthelena-foundations"] [data-testid^="foundation-dir-"]'),
+    ).toHaveLength(8);
+    expect(container.querySelector('[data-testid="sthelena-col-badge-0"]')?.parentElement).toHaveStyle({
+      width: '40px',
+    });
+  });
+
+  it('compresses deep mobile tableau stacks while retaining the 14px card step', async () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    const deepStack = Array.from({ length: 20 }, (_, index) => ({
+      card: card('SPADE', (index % 13) + 1),
+      faceUp: true,
+    }));
+    mockExec.mockResolvedValue({ ...playingState, tableau: makeTableau({ 0: deepStack }) });
+    const { container } = renderWithProviders(<StHelenaPage />);
+    await waitFor(() =>
+      expect(container.querySelector('[data-tutorial="sthelena-tableau"] button')).toBeInTheDocument(),
+    );
+    const firstColumn = container.querySelector('[data-testid="sthelena-col-badge-0"]')?.parentElement;
+    const cards = Array.from(firstColumn?.querySelectorAll<HTMLButtonElement>('button') ?? []);
+    const top = Number.parseInt(cards.at(-1)?.parentElement?.style.top ?? '0', 10);
+    expect(top / 19).toBeGreaterThanOrEqual(14);
+    expect(top / 19).toBeLessThan(23);
+  });
+
   it('announces the first-deal destinations with zero-based column numbers', async () => {
     renderWithProviders(<StHelenaPage />);
     const status = await screen.findByTestId('sthelena-restriction-status');

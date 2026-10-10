@@ -25,6 +25,8 @@ export interface ResponsiveTableauConfig {
    * Omit for layouts where columns can never grow tall enough to overflow (#1861).
    */
   maxColCards?: number;
+  /** Smallest card-to-card vertical step when compressing a tall stack. */
+  minVerticalOverlap?: number;
   /**
    * Vertical pixels reserved for non-tableau chrome (header, stock row, footer, settings, message
    * box). Subtracted from `window.innerHeight` to derive the tableau's vertical budget. Defaults
@@ -83,6 +85,7 @@ export function useResponsiveTableau(
   const padX = config.padX ?? DEFAULT_PAD_X;
   const gapPx = config.gapPx ?? DEFAULT_GAP_PX;
   const maxColCards = config.maxColCards;
+  const minVerticalOverlap = config.minVerticalOverlap ?? MIN_VERTICAL_OVERLAP;
   const reservedHeightPx = config.reservedHeightPx ?? DEFAULT_RESERVED_HEIGHT_PX;
 
   return useMemo<ResponsiveTableauDimensions>(() => {
@@ -98,7 +101,7 @@ export function useResponsiveTableau(
     if (maxColCards !== undefined && maxColCards > 1) {
       const availableHeight = windowHeight - reservedHeightPx;
       const fittingCo = Math.floor((availableHeight - ch) / (maxColCards - 1));
-      co = Math.max(MIN_VERTICAL_OVERLAP, Math.min(naturalCo, fittingCo));
+      co = Math.max(minVerticalOverlap, Math.min(naturalCo, fittingCo));
     }
     const wasteFan = Math.round(cw * 0.3);
     return { cw, ch, co, wasteFan };
@@ -110,6 +113,7 @@ export function useResponsiveTableau(
     padX,
     gapPx,
     maxColCards,
+    minVerticalOverlap,
     reservedHeightPx,
     cardWidth,
     cardHeight,
