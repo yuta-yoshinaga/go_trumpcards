@@ -187,12 +187,12 @@ function PopeJoanPageContent() {
                 out, so a run always dies at the 7" are what a player gets
                 wrong. */}
             <details className="mb-2 p-2 rounded bg-ds-surface" data-testid="pj-rule-details">
-              <summary
-                className="cursor-pointer select-none text-center text-xs text-ds-warning font-medium"
-                data-tutorial="pj-rule"
-              >
-                {t('ruleLine')}
+              <summary className="cursor-pointer select-none text-center text-xs text-ds-warning font-medium">
+                {t('rulesLabel')}
               </summary>
+              <p className="mt-2 text-center text-xs text-ds-warning" data-tutorial="pj-rule">
+                {t('ruleLine')}
+              </p>
             </details>
 
             <div className="text-center mb-3">
@@ -267,7 +267,7 @@ function PopeJoanPageContent() {
             )}
 
             <CpuAccordion playerCount={opponents.length}>
-              <div className="flex flex-nowrap justify-center gap-4 mb-3">
+              <div className="flex flex-wrap sm:flex-nowrap justify-center gap-4 mb-3">
                 {opponents.map((o) => (
                   <div key={`opp-${o.id.toString()}`} className="text-center">
                     <div className="text-game-text-muted text-xs mb-1">

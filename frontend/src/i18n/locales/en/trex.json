@@ -46,5 +46,6 @@
   "tutorial.dominoes": "The dominoes build out from the JACK, not the seven, one run per suit. If you cannot play you pass, and going out first pays +200/+150/+100/+50.",
   "tutorial.score": "The 500 in penalties and the 500 the dominoes pay out cancel, so all four scores sum to zero. The highest total wins.",
   "penaltyCardWithPoints": "Penalty card ({{points}})",
-  "trickCardPenaltyAria": "{{card}}, penalty {{points}} points"
+  "trickCardPenaltyAria": "{{card}}, penalty {{points}} points",
+  "rulesLabel": "Rules"
 }

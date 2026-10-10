@@ -9,9 +9,11 @@ import type { CardDesign, PopeJoanPlayer, PopeJoanResponse } from '../types/card
 import { PopeJoanPhase } from '../types/phases';
 import { PopeJoanPage } from './PopeJoanPage';
 
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
 vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
-  useIsMobile: () => true,
+  useIsMobile: () => mobileState.isMobile,
 }));
 
 vi.mock('../api/gameApi', () => ({
@@ -71,6 +73,7 @@ function pickHand(i: number) {
 
 describe('PopeJoanPage', () => {
   beforeEach(() => {
+    mobileState.isMobile = true;
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
   });
@@ -80,11 +83,26 @@ describe('PopeJoanPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     const ruleDetails = screen.getByTestId('pj-rule-details');
     expect(ruleDetails).not.toHaveAttribute('open');
-    expect(ruleDetails.querySelector('[data-tutorial="pj-rule"]')).toBeInTheDocument();
+    const ruleText = ruleDetails.querySelector('[data-tutorial="pj-rule"]');
+    expect(ruleText).toBeInTheDocument();
+    expect(ruleText?.parentElement?.tagName).not.toBe('SUMMARY');
+    expect(ruleText).not.toBeVisible();
+    fireEvent.click(ruleDetails.querySelector('summary')!);
+    expect(ruleDetails).toHaveAttribute('open');
+    expect(ruleText).toBeVisible();
     const cpuDetails = screen.getByTestId('cpu-accordion');
     expect(cpuDetails).not.toHaveAttribute('open');
     expect(cpuDetails.querySelector('[role="img"]')).toBeInTheDocument();
-    expect(cpuDetails.querySelector('.flex.flex-nowrap')).toBeInTheDocument();
+    const seatRow = cpuDetails.querySelector('.flex.flex-wrap');
+    expect(seatRow).toBeInTheDocument();
+    expect(seatRow?.classList.contains('sm:flex-nowrap')).toBe(true);
+  });
+
+  it('keeps CPU seats open on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<PopeJoanPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
   });
 
   it('resets on mount', async () => {
@@ -150,6 +168,7 @@ describe('PopeJoanPage', () => {
   it('shows both rules permanently', async () => {
     renderWithProviders(<PopeJoanPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    fireEvent.click(screen.getByTestId('pj-rule-details').querySelector('summary')!);
     expect(screen.getByText(/トランプの札でしか取れません/)).toBeInTheDocument();
     expect(screen.getByText(/♦8 が抜いてあるので/)).toBeInTheDocument();
     expect(screen.getByText(/めくり札がポープ.*ディーラーが対応する区画を即時に獲得/)).toBeInTheDocument();

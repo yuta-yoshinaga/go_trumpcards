@@ -8,9 +8,11 @@ import type { Card, CardDesign, TrexPlayer, TrexResponse } from '../types/card';
 import { TrexContract, TrexPhase } from '../types/phases';
 import { TrexPage } from './TrexPage';
 
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
 vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
-  useIsMobile: () => true,
+  useIsMobile: () => mobileState.isMobile,
 }));
 
 vi.mock('../api/gameApi', () => ({
@@ -74,6 +76,7 @@ function makeState(overrides?: Partial<TrexResponse>): TrexResponse {
 
 describe('TrexPage', () => {
   beforeEach(() => {
+    mobileState.isMobile = true;
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
   });
@@ -83,11 +86,26 @@ describe('TrexPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     const ruleDetails = screen.getByTestId('tx-rule-details');
     expect(ruleDetails).not.toHaveAttribute('open');
-    expect(ruleDetails.querySelector('[data-tutorial="tx-rule"]')).toBeInTheDocument();
+    const ruleText = ruleDetails.querySelector('[data-tutorial="tx-rule"]');
+    expect(ruleText).toBeInTheDocument();
+    expect(ruleText?.parentElement?.tagName).not.toBe('SUMMARY');
+    expect(ruleText).not.toBeVisible();
+    fireEvent.click(ruleDetails.querySelector('summary')!);
+    expect(ruleDetails).toHaveAttribute('open');
+    expect(ruleText).toBeVisible();
     const cpuDetails = screen.getByTestId('cpu-accordion');
     expect(cpuDetails).not.toHaveAttribute('open');
     expect(cpuDetails.querySelector('[role="img"]')).toBeInTheDocument();
-    expect(cpuDetails.querySelector('.flex.flex-nowrap')).toBeInTheDocument();
+    const seatRow = cpuDetails.querySelector('.flex.flex-wrap');
+    expect(seatRow).toBeInTheDocument();
+    expect(seatRow?.classList.contains('sm:flex-nowrap')).toBe(true);
+  });
+
+  it('keeps CPU seats open on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<TrexPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
   });
 
   it('resets on mount', async () => {
@@ -98,6 +116,7 @@ describe('TrexPage', () => {
   it('shows both rules permanently and the deal counter', async () => {
     renderWithProviders(<TrexPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    fireEvent.click(screen.getByTestId('tx-rule-details').querySelector('summary')!);
     expect(screen.getByText(/同じ契約は1王国に1度だけ/)).toBeInTheDocument();
     expect(screen.getByText(/Jを起点/)).toBeInTheDocument();
     expect(screen.getByText(/ディール: 0\/20/)).toBeInTheDocument();
