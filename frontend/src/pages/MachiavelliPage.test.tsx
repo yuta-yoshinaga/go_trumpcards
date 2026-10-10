@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, machiavelliApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -169,6 +169,9 @@ describe('MachiavelliPage', () => {
       expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'メルドを出す' })).toBeInTheDocument();
     });
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '山札から引く' }),
+    ).toBeInTheDocument();
   });
 
   it('new-meld button disabled until 3 cards selected', async () => {

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, indianRummyApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -261,6 +261,9 @@ describe('IndianRummyPage', () => {
     renderWithProviders(<IndianRummyPage />);
     await waitFor(() => {
       expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument();
+      expect(
+        within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '山札から引く' }),
+      ).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '捨て札から引く' })).toBeInTheDocument();
     });
     expect(screen.getByTestId('indianrummy-discard-draw-target')).toHaveTextContent('対象: ♥ 7');

@@ -177,6 +177,9 @@ describe('CanastaPage', () => {
   it('shows draw phase buttons', async () => {
     renderWithProviders(<CanastaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '山札から引く' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument();
   });
 

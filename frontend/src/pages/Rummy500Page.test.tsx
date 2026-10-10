@@ -184,9 +184,8 @@ describe('Rummy500Page', () => {
 
   it('shows draw stock button in Draw phase', async () => {
     renderWithProviders(<Rummy500Page />);
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /山札から引く/ })).toBeInTheDocument();
-    });
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: /山札から引く/ })).toBeInTheDocument();
   });
 
   it('uses card digits for discard draws and an action key for stock draws', async () => {

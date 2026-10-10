@@ -428,7 +428,80 @@ function ConquianPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.conquian.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.conquian.footer} px-4 py-2.5`}
+            actions={
+              (isDrawPhase && isHumanTurn) || (isMeldPhase && isHumanTurn) || isRoundEnd ? (
+                <div className="flex gap-2 items-center flex-wrap">
+                  {isDrawPhase && isHumanTurn && (
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDrawStock}
+                        disabled={loading}
+                        aria-keyshortcuts="s"
+                      >
+                        {t('drawStockButton')}
+                        <KbdBadge label={t('kbd.stock')} />
+                      </button>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDrawDiscard}
+                        disabled={loading || !state.discardTop}
+                        aria-keyshortcuts="d"
+                      >
+                        {t('drawDiscardButton')}
+                        <KbdBadge label={t('kbd.discard')} />
+                      </button>
+                    </div>
+                  )}
+                  {isMeldPhase && isHumanTurn && (
+                    <>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => handleMeldSelected()}
+                        disabled={loading || selectedCardIndices.length < 3}
+                        data-tutorial="cq-meld-button"
+                        data-testid="conquian-meld-button"
+                      >
+                        {t('meldButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnPrimary} ${selectedCardCanLayoff && !loading ? '' : 'opacity-70 cursor-not-allowed saturate-50'}`}
+                        onClick={() => {
+                          if (!loading && selectedCardCanLayoff) handleMeldSelected();
+                        }}
+                        aria-disabled={!selectedCardCanLayoff || loading}
+                        data-testid="conquian-layoff-button"
+                      >
+                        {t('layoffButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnPrimary} ${loading || selectedCardIndices.length !== 1 || state.tookDiscard ? 'opacity-70 cursor-not-allowed saturate-50' : ''}`}
+                        onClick={() => {
+                          if (!loading && selectedCardIndices.length === 1 && !state.tookDiscard) handleDiscard();
+                        }}
+                        aria-disabled={loading || selectedCardIndices.length !== 1 || state.tookDiscard || undefined}
+                        data-tutorial="cq-discard-button"
+                      >
+                        {t('discardButton')}
+                      </button>
+                    </>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             <div
               className="text-xs font-bold mb-1 text-ds-info"
               data-testid="conquian-forced-use"
@@ -466,80 +539,13 @@ function ConquianPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            <div className="flex gap-2 items-center flex-wrap">
-              {isDrawPhase && isHumanTurn && (
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDrawStock}
-                    disabled={loading}
-                    aria-keyshortcuts="s"
-                  >
-                    {t('drawStockButton')}
-                    <KbdBadge label={t('kbd.stock')} />
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDrawDiscard}
-                    disabled={loading || !state.discardTop}
-                    aria-keyshortcuts="d"
-                  >
-                    {t('drawDiscardButton')}
-                    <KbdBadge label={t('kbd.discard')} />
-                  </button>
-                </div>
-              )}
-              {isMeldPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => handleMeldSelected()}
-                    disabled={loading || selectedCardIndices.length < 3}
-                    data-tutorial="cq-meld-button"
-                    data-testid="conquian-meld-button"
-                  >
-                    {t('meldButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnPrimary} ${selectedCardCanLayoff && !loading ? '' : 'opacity-70 cursor-not-allowed saturate-50'}`}
-                    onClick={() => {
-                      if (!loading && selectedCardCanLayoff) handleMeldSelected();
-                    }}
-                    aria-disabled={!selectedCardCanLayoff || loading}
-                    data-testid="conquian-layoff-button"
-                  >
-                    {t('layoffButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnPrimary} ${loading || selectedCardIndices.length !== 1 || state.tookDiscard ? 'opacity-70 cursor-not-allowed saturate-50' : ''}`}
-                    onClick={() => {
-                      if (!loading && selectedCardIndices.length === 1 && !state.tookDiscard) handleDiscard();
-                    }}
-                    aria-disabled={loading || selectedCardIndices.length !== 1 || state.tookDiscard || undefined}
-                    data-tutorial="cq-discard-button"
-                  >
-                    {t('discardButton')}
-                  </button>
-                </>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="cq-reset-button"
-              />
-            </div>
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="cq-reset-button"
+            />
           </GameFooter>
         </>
       )}

@@ -401,7 +401,66 @@ function IndianRummyPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.indianrummy.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.indianrummy.footer} px-4 py-2.5`}
+            actions={
+              (isDrawPhase && isHumanTurn) || (isDiscardPhase && isHumanTurn) || isRoundEnd ? (
+                <div className="flex gap-2 items-center flex-wrap">
+                  {isDrawPhase && isHumanTurn && (
+                    <div className="flex gap-2" data-tutorial="ir-draw-area">
+                      <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                        {t('drawStockButton')}
+                      </button>
+                      {state.discardTop && (
+                        <span
+                          className="self-center text-ds-text-muted text-sm"
+                          data-testid="indianrummy-discard-draw-target"
+                        >
+                          {t('drawDiscardTarget', { card: cardAlt(state.discardTop) })}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDrawDiscard}
+                        disabled={loading || !state.discardTop}
+                      >
+                        {t('drawDiscardButton')}
+                      </button>
+                    </div>
+                  )}
+                  {isDiscardPhase && isHumanTurn && (
+                    <>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDiscard}
+                        disabled={loading || selectedCardIndices.length !== 1}
+                        data-tutorial="ir-discard-button"
+                      >
+                        {t('discardButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDeclare}
+                        disabled={loading || selectedCardIndices.length !== 1}
+                        data-tutorial="ir-declare-button"
+                        data-testid="indianrummy-declare-button"
+                      >
+                        {t('declareButton')}
+                      </button>
+                    </>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ir-player-hand">
                 {humanPlayer.cards.map((card, idx) => {
@@ -488,66 +547,13 @@ function IndianRummyPageContent() {
               )}
             </div>
 
-            <div className="flex gap-2 items-center flex-wrap">
-              {isDrawPhase && isHumanTurn && (
-                <div className="flex gap-2" data-tutorial="ir-draw-area">
-                  <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                    {t('drawStockButton')}
-                  </button>
-                  {state.discardTop && (
-                    <span
-                      className="self-center text-ds-text-muted text-sm"
-                      data-testid="indianrummy-discard-draw-target"
-                    >
-                      {t('drawDiscardTarget', { card: cardAlt(state.discardTop) })}
-                    </span>
-                  )}
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDrawDiscard}
-                    disabled={loading || !state.discardTop}
-                  >
-                    {t('drawDiscardButton')}
-                  </button>
-                </div>
-              )}
-              {isDiscardPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDiscard}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                    data-tutorial="ir-discard-button"
-                  >
-                    {t('discardButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDeclare}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                    data-tutorial="ir-declare-button"
-                    data-testid="indianrummy-declare-button"
-                  >
-                    {t('declareButton')}
-                  </button>
-                </>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="ir-reset-button"
-              />
-            </div>
+            <GameResetButton
+              isGameEnd={!!isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="ir-reset-button"
+            />
             <CardNavShortcutsPanel arrowSelection data-testid="indian-rummy-kbd-shortcuts" />
           </GameFooter>
         </>

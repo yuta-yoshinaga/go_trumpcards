@@ -484,7 +484,138 @@ function SambaPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.samba.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.samba.footer} px-4 py-2.5`}
+            actions={
+              isHumanTurn || isRoundEnd ? (
+                <div className="flex gap-2 items-center flex-wrap" data-tutorial="sa-actions">
+                  {isDrawPhase && isHumanTurn && (
+                    <div className="flex gap-2 flex-col">
+                      <div className="flex gap-2">
+                        <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                          {t('drawStockButton')}
+                        </button>
+                        <button
+                          type="button"
+                          className={btnPrimary}
+                          onClick={handleDrawDiscard}
+                          disabled={loading || selectedCardIndices.length !== 2}
+                          title={drawDiscardReason || undefined}
+                          aria-describedby={drawDiscardReason ? 'sa-draw-discard-reason' : undefined}
+                        >
+                          {t('drawDiscardButton')}
+                        </button>
+                      </div>
+                      {drawDiscardReason && (
+                        <div
+                          id="sa-draw-discard-reason"
+                          data-testid="sa-draw-discard-reason"
+                          className="text-xs text-ds-text-muted"
+                        >
+                          {drawDiscardReason}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {isMeldPhase && isHumanTurn && (
+                    <>
+                      {meldGroups.length > 0 && (
+                        <section aria-label={t('meldGroups.label')} className="w-full flex flex-wrap gap-2">
+                          <span id="sa-meld-card-assigned" className="sr-only">
+                            {t('meldGroups.cardAssigned')}
+                          </span>
+                          {meldGroups.map((group, groupIndex) => (
+                            <div
+                              key={`${groupIndex}-${group.join('-')}`}
+                              className="flex items-center gap-2 rounded-md bg-ds-surface px-2 py-1"
+                            >
+                              <span>
+                                {t('meldGroups.group', { n: groupIndex + 1 })} (
+                                {t('meldGroups.cardCount', { count: group.length })})
+                              </span>
+                              <button
+                                type="button"
+                                className={`${btnOutline} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+                                onClick={() => {
+                                  if (!loading) handleRemoveMeldGroup(groupIndex);
+                                }}
+                                aria-disabled={loading || undefined}
+                              >
+                                {t('meldGroups.remove')}
+                              </button>
+                            </div>
+                          ))}
+                        </section>
+                      )}
+                      <button
+                        type="button"
+                        className={`${btnOutline} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+                        onClick={() => {
+                          if (loading || selectedCardIndices.length < 3) return;
+                          handleAddMeldGroup();
+                        }}
+                        aria-disabled={loading || selectedCardIndices.length < 3 || undefined}
+                      >
+                        {t('meldGroups.add')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+                        onClick={() => {
+                          if (
+                            loading ||
+                            (meldGroups.length === 0 ? selectedCardIndices.length < 3 : selectedCardIndices.length > 0)
+                          )
+                            return;
+                          handleMeldSelected();
+                        }}
+                        aria-disabled={
+                          loading ||
+                          (meldGroups.length === 0 ? selectedCardIndices.length < 3 : selectedCardIndices.length > 0) ||
+                          undefined
+                        }
+                        aria-describedby={isHumanTurn && meldPointInfo?.needInitial ? 'sa-meld-points' : undefined}
+                      >
+                        {t('meldButton')}
+                      </button>
+                      <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
+                        {t('skipMeldButton')}
+                      </button>
+                    </>
+                  )}
+                  {isDiscardPhase && isHumanTurn && (
+                    <>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDiscard}
+                        disabled={loading || selectedCardIndices.length !== 1}
+                      >
+                        {t('discardButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnSuccess} aria-disabled:cursor-not-allowed aria-disabled:opacity-50`}
+                        onClick={() => {
+                          if (!loading && canGoOut) handleGoOut();
+                        }}
+                        aria-disabled={loading || !canGoOut}
+                        aria-describedby={goOutUnavailableReason ? 'sa-go-out-guidance' : undefined}
+                        title={goOutUnavailableReason || undefined}
+                      >
+                        {t('goOutButton')}
+                      </button>
+                    </>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="sa-player-hand">
                 {humanPlayer.cards.map((card, idx) => {
@@ -540,152 +671,32 @@ function SambaPageContent() {
               )}
             </div>
 
+            {isDiscardPhase && isHumanTurn && (
+              <>
+                <div
+                  className={`w-full text-xs ${canGoOut ? 'text-ds-success' : 'text-ds-warning'}`}
+                  data-testid="sa-go-out-progress"
+                >
+                  {t('goOutProgress', { completed: completedMelds, required: goOutRequiredMelds })}
+                </div>
+                <div
+                  id="sa-go-out-guidance"
+                  className="w-full text-xs text-ds-warning"
+                  data-testid="sa-go-out-guidance"
+                >
+                  {goOutUnavailableReason}
+                </div>
+              </>
+            )}
+
             <ErrorAlert message={error} onRetry={retry} />
 
-            <div className="flex gap-2 items-center flex-wrap" data-tutorial="sa-actions">
-              {isDrawPhase && isHumanTurn && (
-                <div className="flex gap-2 flex-col">
-                  <div className="flex gap-2">
-                    <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                      {t('drawStockButton')}
-                    </button>
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={handleDrawDiscard}
-                      disabled={loading || selectedCardIndices.length !== 2}
-                      title={drawDiscardReason || undefined}
-                      aria-describedby={drawDiscardReason ? 'sa-draw-discard-reason' : undefined}
-                    >
-                      {t('drawDiscardButton')}
-                    </button>
-                  </div>
-                  {drawDiscardReason && (
-                    <div
-                      id="sa-draw-discard-reason"
-                      data-testid="sa-draw-discard-reason"
-                      className="text-xs text-ds-text-muted"
-                    >
-                      {drawDiscardReason}
-                    </div>
-                  )}
-                </div>
-              )}
-              {isMeldPhase && isHumanTurn && (
-                <>
-                  {meldGroups.length > 0 && (
-                    <section aria-label={t('meldGroups.label')} className="w-full flex flex-wrap gap-2">
-                      <span id="sa-meld-card-assigned" className="sr-only">
-                        {t('meldGroups.cardAssigned')}
-                      </span>
-                      {meldGroups.map((group, groupIndex) => (
-                        <div
-                          key={`${groupIndex}-${group.join('-')}`}
-                          className="flex items-center gap-2 rounded-md bg-ds-surface px-2 py-1"
-                        >
-                          <span>
-                            {t('meldGroups.group', { n: groupIndex + 1 })} (
-                            {t('meldGroups.cardCount', { count: group.length })})
-                          </span>
-                          <button
-                            type="button"
-                            className={`${btnOutline} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
-                            onClick={() => {
-                              if (!loading) handleRemoveMeldGroup(groupIndex);
-                            }}
-                            aria-disabled={loading || undefined}
-                          >
-                            {t('meldGroups.remove')}
-                          </button>
-                        </div>
-                      ))}
-                    </section>
-                  )}
-                  <button
-                    type="button"
-                    className={`${btnOutline} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
-                    onClick={() => {
-                      if (loading || selectedCardIndices.length < 3) return;
-                      handleAddMeldGroup();
-                    }}
-                    aria-disabled={loading || selectedCardIndices.length < 3 || undefined}
-                  >
-                    {t('meldGroups.add')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
-                    onClick={() => {
-                      if (
-                        loading ||
-                        (meldGroups.length === 0 ? selectedCardIndices.length < 3 : selectedCardIndices.length > 0)
-                      )
-                        return;
-                      handleMeldSelected();
-                    }}
-                    aria-disabled={
-                      loading ||
-                      (meldGroups.length === 0 ? selectedCardIndices.length < 3 : selectedCardIndices.length > 0) ||
-                      undefined
-                    }
-                    aria-describedby={isHumanTurn && meldPointInfo?.needInitial ? 'sa-meld-points' : undefined}
-                  >
-                    {t('meldButton')}
-                  </button>
-                  <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
-                    {t('skipMeldButton')}
-                  </button>
-                </>
-              )}
-              {isDiscardPhase && isHumanTurn && (
-                <>
-                  <div
-                    className={`w-full text-xs ${canGoOut ? 'text-ds-success' : 'text-ds-warning'}`}
-                    data-testid="sa-go-out-progress"
-                  >
-                    {t('goOutProgress', { completed: completedMelds, required: goOutRequiredMelds })}
-                  </div>
-                  <div
-                    id="sa-go-out-guidance"
-                    className="w-full text-xs text-ds-warning"
-                    data-testid="sa-go-out-guidance"
-                  >
-                    {goOutUnavailableReason}
-                  </div>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDiscard}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                  >
-                    {t('discardButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSuccess} aria-disabled:cursor-not-allowed aria-disabled:opacity-50`}
-                    onClick={() => {
-                      if (!loading && canGoOut) handleGoOut();
-                    }}
-                    aria-disabled={loading || !canGoOut}
-                    aria-describedby={goOutUnavailableReason ? 'sa-go-out-guidance' : undefined}
-                    title={goOutUnavailableReason || undefined}
-                  >
-                    {t('goOutButton')}
-                  </button>
-                </>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-              />
-            </div>
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+            />
             <CardNavShortcutsPanel data-testid="samba-kbd-shortcuts" />
           </GameFooter>
         </>

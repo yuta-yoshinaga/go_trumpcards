@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sambaApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -46,7 +46,8 @@ describe('SambaPage', () => {
 
   it('shows draw phase buttons and team scores', async () => {
     renderWithProviders(<SambaPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '山札から引く' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument();
     expect(screen.getByTestId('sa-team-scores')).toBeInTheDocument();
     expect(screen.getByTestId('sa-meld-points')).toHaveAttribute('aria-live', 'polite');

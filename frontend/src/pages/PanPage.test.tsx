@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, panApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -199,6 +199,13 @@ describe('PanPage', () => {
       expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '捨て札から引く' })).toBeInTheDocument();
       expect(screen.getByTestId('pan-draw-pile-count')).toHaveTextContent('山札: 250枚');
+      const actions = screen.getByTestId('game-footer-actions');
+      expect(within(actions).getByRole('button', { name: '山札から引く' })).toBeInTheDocument();
+      expect(within(actions).getByRole('button', { name: '捨て札から引く' })).toBeInTheDocument();
+      expect(actions.querySelector('[data-tutorial="pan-draw-area"]')).toBeInTheDocument();
+      expect(
+        actions.querySelector('[data-tutorial="pan-draw-area"] [data-testid="pan-draw-pile-count"]'),
+      ).toBeInTheDocument();
     });
   });
 

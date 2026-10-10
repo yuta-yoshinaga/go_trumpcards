@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { boliviaApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -59,6 +59,9 @@ describe('BoliviaPage', () => {
   it('shows draw phase buttons and team scores', async () => {
     renderWithProviders(<BoliviaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '山札から引く' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument();
     expect(screen.getByTestId('sa-team-scores')).toBeInTheDocument();
   });

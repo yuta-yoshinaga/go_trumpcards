@@ -368,6 +368,9 @@ describe('HandAndFootPage', () => {
     mockExec.mockResolvedValue(discardPhaseState);
     renderWithProviders(<HandAndFootPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '捨てる' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '捨てる' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '上がる' })).toBeInTheDocument();
   });
 
