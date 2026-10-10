@@ -338,10 +338,18 @@ describe('HoneymoonBridgePage', () => {
     mockExec.mockResolvedValue(playing({ declarerIdx: 1 } as Partial<HoneymoonBridgeResponse>));
     renderWithProviders(<HoneymoonBridgePage />);
     const cpuAccordion = await screen.findByTestId('cpu-accordion');
-    expect(cpuAccordion).not.toContainElement(screen.getByTestId('hb-seat-0'));
-    expect(screen.getByTestId('hb-seat-0')).toBeVisible();
-    expect(await screen.findByTestId('hb-seat-1')).toHaveTextContent(/落札者/);
-    expect(screen.getByTestId('hb-seat-0')).not.toHaveTextContent(/落札者/);
+    const humanSeat = screen.getByTestId('hb-seat-0');
+    const cpuSeat = await screen.findByTestId('hb-seat-1');
+
+    // モバイルでは CPU アコーディオンが閉じていても、人間の情報は見える。
+    expect(cpuAccordion).not.toHaveAttribute('open');
+    expect(humanSeat).toBeVisible();
+    expect(cpuAccordion).not.toContainElement(humanSeat);
+    expect(cpuAccordion).toContainElement(cpuSeat);
+    expect(cpuSeat).not.toBeVisible();
+
+    expect(cpuSeat).toHaveTextContent(/落札者/);
+    expect(humanSeat).not.toHaveTextContent(/落札者/);
   });
 
   it('shows the current hand size for every seat during draw and contract play', async () => {
