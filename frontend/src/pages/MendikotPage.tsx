@@ -168,6 +168,17 @@ function MendikotPageContent() {
                   : t('header.trumpUndecided')}
               </span>
             </div>
+            <details className="mb-2 rounded-lg bg-ds-surface px-3 py-2 text-center text-ds-text-muted text-sm">
+              <summary className="cursor-pointer select-none">{t('header.rules')}</summary>
+              <div className="mt-1">{t('header.trumpRule')}</div>
+              <div className="mt-1" data-testid="md-tens-rule">
+                {t('header.tensRule', { total: String(state.tensInDeck) })}
+              </div>
+              <div className="mt-1" data-testid="md-bonus-rule">
+                {t('header.bonusRule')}
+              </div>
+              <div className="mt-1">{t('header.tricksRule')}</div>
+            </details>
 
             {/* **切り札は宣言ではなく事故で決まる** (#5755)。フォローできない
                 手番はハンド全体を左右する一度きりの選択なのに、警告が無かった。 */}
@@ -184,35 +195,39 @@ function MendikotPageContent() {
 
             {/* **勝敗は 10 の枚数で決まる。** 盤面から読めないので先頭に出す。 */}
             <div
-              className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center"
+              className="mb-1 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center"
               data-testid="md-tens"
               data-tutorial="md-tens"
             >
-              {t('header.tens', {
-                t0: String(state.teamTens[0] ?? 0),
-                t1: String(state.teamTens[1] ?? 0),
-                total: String(state.tensInDeck),
-              })}
+              <div className="whitespace-nowrap">
+                {t('header.tensCount', {
+                  t0: String(state.teamTens[0] ?? 0),
+                  t1: String(state.teamTens[1] ?? 0),
+                  total: String(state.tensInDeck),
+                })}
+              </div>
               {/* **4枚独占と全トリック独占は追加点。**ハンドが終わってから
                   handEnd で初めて出るので、対局中は 10 を4枚とも追う価値が
                   分からないままだった。CUI の rule と同じ内容を常時出す。 */}
-              <div className="mt-1 text-ds-text-muted text-sm" data-testid="md-bonus-rule">
-                {t('header.bonusRule')}
-              </div>
             </div>
 
-            <div className="text-ds-text-muted text-sm text-center mb-1" data-testid="md-tricks">
-              {t('header.tricks', {
-                t0: String(state.teamTricks[0] ?? 0),
-                t1: String(state.teamTricks[1] ?? 0),
-              })}
+            <div className="text-ds-text-muted text-sm text-center" data-testid="md-tricks">
+              <div className="whitespace-nowrap">
+                {t('header.tricksCount', {
+                  t0: String(state.teamTricks[0] ?? 0),
+                  t1: String(state.teamTricks[1] ?? 0),
+                })}
+              </div>
             </div>
 
             <div className="text-ds-text-muted text-sm text-center mb-3" data-testid="md-score">
               {t('header.score', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
             </div>
 
-            <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="md-seats">
+            <div
+              className="grid grid-cols-2 gap-1 mb-4 sm:flex sm:flex-wrap sm:justify-center sm:gap-2"
+              data-tutorial="md-seats"
+            >
               {state.players.map((p) => {
                 const isCurrentPlayer = p.id === state.currentPlayerIdx && !isGameEnd && !isHandEnd;
                 const isTrumpDecider = isCurrentPlayer && state.trumpSuit === 0 && state.willSetTrump;

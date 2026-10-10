@@ -195,7 +195,11 @@ describe('MinibridgePage', () => {
   // **競りが無いこと自体が規則。**
   it('states that there is no auction', async () => {
     renderWithProviders(<MinibridgePage />);
-    expect(await screen.findByTestId('mb-rule')).toHaveTextContent(/競りはありません/);
+    const rule = await screen.findByTestId('mb-rule');
+    expect(rule).toHaveTextContent(/競りはありません/);
+    const disclosure = rule.closest('details');
+    expect(disclosure).not.toHaveAttribute('open');
+    expect(disclosure).toContainElement(rule);
   });
 
   // **HCP は公開情報。** 4 席ぶん出て、合計は 40。

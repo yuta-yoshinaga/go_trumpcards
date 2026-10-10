@@ -213,13 +213,12 @@ function MinibridgePageContent() {
             </div>
 
             {/* **競りが無いこと自体が規則。** 先に出す。 */}
-            <div
-              className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center"
-              data-testid="mb-rule"
-              data-tutorial="mb-rule"
-            >
-              {t('header.rule')}
-            </div>
+            <details className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center">
+              <summary className="cursor-pointer select-none">{t('header.rules')}</summary>
+              <div className="mt-1" data-testid="mb-rule" data-tutorial="mb-rule">
+                {t('header.rule')}
+              </div>
+            </details>
 
             <div
               className="text-center mb-3 text-ds-text-primary"
@@ -250,7 +249,10 @@ function MinibridgePageContent() {
             )}
 
             {/* **HCP は公開情報。** 4 席ぶん常に出す。 */}
-            <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="mb-seats">
+            <div
+              className="grid grid-cols-2 gap-1 mb-4 sm:flex sm:flex-wrap sm:justify-center sm:gap-2"
+              data-tutorial="mb-seats"
+            >
               {state.players.map((p) => (
                 <div
                   key={p.id}

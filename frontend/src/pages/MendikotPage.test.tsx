@@ -193,7 +193,9 @@ describe('MendikotPage', () => {
     const tens = await screen.findByTestId('md-tens');
     expect(tens).toHaveTextContent('2');
     expect(tens).toHaveTextContent('1');
-    expect(tens).toHaveTextContent('4');
+    expect(tens.querySelector('details')).toBeNull();
+    expect(screen.getByTestId('md-tens-rule')).toHaveTextContent('全4枚。3枚取れば');
+    expect(screen.getAllByText('ルール')).toHaveLength(1);
   });
 
   // **4枚独占と全トリック独占は追加点。**ハンドが終わるまで出てこないと、
@@ -203,6 +205,8 @@ describe('MendikotPage', () => {
     renderWithProviders(<MendikotPage />);
 
     const rule = await screen.findByTestId('md-bonus-rule');
+    expect(rule.closest('details')).not.toHaveAttribute('open');
+    expect(rule).toBeInTheDocument();
     expect(rule).toHaveTextContent('Mendikot で +2');
     expect(rule).toHaveTextContent('Whitewash で +3');
     // 通常勝利の +1 と取り違えないよう、そちらも同じ行で名指しされている。
@@ -216,6 +220,15 @@ describe('MendikotPage', () => {
     const tricks = await screen.findByTestId('md-tricks');
     expect(tricks).toHaveTextContent('7');
     expect(tricks).toHaveTextContent('3');
+    expect(tricks.querySelector('details')).toBeNull();
+    expect(screen.getByText(/10 が2枚ずつのときだけ/)).toBeInTheDocument();
+  });
+
+  it('shows zero counts when the response count arrays are empty', async () => {
+    mockExec.mockResolvedValue(makeState({ teamTens: [], teamTricks: [] } as unknown as Partial<MendikotResponse>));
+    renderWithProviders(<MendikotPage />);
+    expect(await screen.findByTestId('md-tens')).toHaveTextContent('0');
+    expect(screen.getByTestId('md-tricks')).toHaveTextContent('0');
   });
 
   // **切り札を選ぶボタンは存在しない。** 出すとサーバが受けない操作を勧めることになる。
@@ -228,6 +241,12 @@ describe('MendikotPage', () => {
     // 負のコントロール: 札のボタンは確かに描かれている
     expect(await screen.findAllByRole('button', { name: /を出す/ })).not.toHaveLength(0);
     expect(screen.queryByRole('button', { name: /^切り札/ })).not.toBeInTheDocument();
+    const trumpRule = screen.getByText(
+      '最初にフォローできなかった人が出した札のスートが、このハンドの切り札になります。',
+    );
+    expect(trumpRule.closest('details')).not.toHaveAttribute('open');
+    expect(screen.getAllByText('ルール')).toHaveLength(1);
+    expect(screen.getByTestId('md-trump')).toHaveTextContent('切り札: 未定');
 
     // **切り札はスートを名指すコマンドで届かない。** 送るのは札のインデックスだけ。
     const cards = screen.getAllByRole('button', { name: /を出す/ });
