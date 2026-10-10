@@ -17,6 +17,12 @@ vi.mock('../hooks/useGameHint', () => ({
 }));
 
 const mockExec = vi.mocked(hasenpfefferApi.exec);
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
@@ -72,6 +78,7 @@ const playing = (over: Partial<HasenpfefferResponse> = {}) =>
   } as Partial<HasenpfefferResponse>);
 
 beforeEach(() => {
+  mobileState.isMobile = true;
   vi.clearAllMocks();
   mockExec.mockResolvedValue(makeState());
 });
@@ -152,9 +159,33 @@ describe('HasenpfefferPage', () => {
   });
 
   // **ジョーカーが最強という序列は知らないと打ち方が変わる。**
-  it('states the joker ranking', async () => {
+  it('keeps the rule details closed until requested', async () => {
     renderWithProviders(<HasenpfefferPage />);
-    expect(await screen.findByTestId('hpf-rule')).toHaveTextContent(/Best Bower/);
+    const details = await screen.findByTestId('hpf-rule');
+    expect(details).not.toHaveAttribute('open');
+    expect(details.querySelector('div')).not.toBeVisible();
+    fireEvent.click(details.querySelector('summary') as HTMLElement);
+    expect(details.querySelector('div')).toBeVisible();
+    expect(details).toHaveTextContent(/Best Bower/);
+  });
+
+  it('closes the seat accordion on mobile and opens it on desktop', async () => {
+    const { unmount } = renderWithProviders(<HasenpfefferPage />);
+    const mobileSeats = await screen.findByTestId('cpu-accordion');
+    expect(mobileSeats).not.toHaveAttribute('open');
+    const humanSeat = screen.getByTestId('hpf-seat-0');
+    const cpuSeat = screen.getByTestId('hpf-seat-1');
+    expect(humanSeat).toBeVisible();
+    expect(humanSeat.closest('[data-testid="cpu-accordion"]')).toBeNull();
+    expect(cpuSeat.closest('[data-testid="cpu-accordion"]')).toBe(mobileSeats);
+    expect(screen.getByTestId('hpf-seat-1')).not.toBeVisible();
+
+    unmount();
+    mobileState.isMobile = false;
+    renderWithProviders(<HasenpfefferPage />);
+    const desktopSeats = await screen.findByTestId('cpu-accordion');
+    expect(desktopSeats).toHaveAttribute('open');
+    expect(screen.getByTestId('hpf-seat-1')).toBeVisible();
   });
 
   // **サーバが必ず拒否する額は出さない (#5304)。**
@@ -264,14 +295,16 @@ describe('HasenpfefferPage', () => {
       } as Partial<HasenpfefferResponse>),
     );
     renderWithProviders(<HasenpfefferPage />);
+    fireEvent.click((await screen.findByTestId('cpu-accordion')).querySelector('summary') as HTMLElement);
 
-    const rows = await screen.findAllByRole('group');
-    expect(rows[0]).toHaveAccessibleName('あなた');
-    expect(rows[0]).toHaveTextContent('宣言4');
-    expect(rows[0]).toHaveTextContent('獲得2');
-    expect(rows[1]).toHaveAccessibleName('CPU1');
-    expect(rows[1]).toHaveTextContent('降り');
-    expect(rows[1]).toHaveTextContent('獲得1');
+    const humanSeat = await screen.findByTestId('hpf-seat-0');
+    const cpuSeat = screen.getByTestId('hpf-seat-1');
+    expect(humanSeat).toHaveAccessibleName('あなた');
+    expect(humanSeat).toHaveTextContent('宣言4');
+    expect(humanSeat).toHaveTextContent('獲得2');
+    expect(cpuSeat).toHaveAccessibleName('CPU1');
+    expect(cpuSeat).toHaveTextContent('降り');
+    expect(cpuSeat).toHaveTextContent('獲得1');
   });
 
   it('shows tricks taken by each team during the hand', async () => {

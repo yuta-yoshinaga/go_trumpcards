@@ -167,7 +167,14 @@ function StHelenaPageContent() {
   } = useGameHint('sthelena', state);
 
   const isMobile = useIsMobile();
-  const tableauDim = useResponsiveTableau(8, mobileTableauConfig(isMobile, FIXED_TABLEAU_DEPTH.sthelena));
+  const tableauDim = useResponsiveTableau(8, {
+    ...mobileTableauConfig(isMobile, FIXED_TABLEAU_DEPTH.sthelena),
+    maxColCards: FIXED_TABLEAU_DEPTH.sthelena,
+    minVerticalOverlap: isMobile ? 12 : 20,
+    reservedHeightPx: isMobile ? 520 : 630,
+    maxCardWidthPx: 60,
+    compressDesktop: true,
+  });
   const foundationCardWidth = tableauDim.cw;
 
   const isPlayingForKbd = state?.phase === StHelenaPhase.PLAYING;
@@ -358,7 +365,7 @@ function StHelenaPageContent() {
               {tc('label.selectSourceFirst')}
             </span>
             {/* Foundations (4 ascending + 4 descending in two rows) */}
-            <div className="flex flex-row sm:flex-col gap-2 mb-4" data-tutorial="sthelena-foundations">
+            <div className="flex flex-row gap-2 mb-1 sm:mb-4" data-tutorial="sthelena-foundations">
               {([0, 1] as const).map((rowIdx) => {
                 const startIdx = rowIdx * 4;
                 const directionKey = rowIdx === 0 ? 'asc' : 'desc';
@@ -455,11 +462,14 @@ function StHelenaPageContent() {
                 beside, so rendering them as one undifferentiated grid would hide the
                 only thing that decides where a card can go. (The clone source draws a
                 sixteen-column crescent arc; that silhouette belongs to Crescent.) */}
-            <div className="grid grid-cols-8 gap-1 sm:flex sm:flex-col sm:gap-2 mb-3" data-tutorial="sthelena-tableau">
-              {STHELENA_BANDS.map((band, bandIdx) => (
-                <div key={band.key} className={bandIdx === 2 ? 'col-span-8 sm:col-span-1' : 'col-span-4 sm:col-span-1'}>
+            <div className="grid grid-cols-8 gap-1 sm:gap-2 mb-3" data-tutorial="sthelena-tableau">
+              {STHELENA_BANDS.map((band) => (
+                <div
+                  key={band.key}
+                  className={`min-w-0 ${band.key === 'bottom' ? 'col-span-8 mx-auto w-1/2' : 'col-span-4'}`}
+                >
                   <div className="text-center text-[10px] text-ds-text-muted mb-0.5" aria-hidden="true">
-                    {t(`band.${band.key}`)}
+                    {t(`bandLabel.${band.key}`)}
                   </div>
                   <div className="grid grid-cols-4 gap-1 sm:gap-2" data-testid={`sthelena-band-${band.key}`}>
                     {band.cols.map((colIdx) => {
@@ -554,6 +564,11 @@ function StHelenaPageContent() {
                 </div>
               ))}
             </div>
+
+            <details className="mb-2 text-center text-ds-text-muted text-xs" open={!isMobile}>
+              <summary className="cursor-pointer">{t('rulesSummary')}</summary>
+              <p className="mt-1">{t('rulesNote')}</p>
+            </details>
 
             {/* Hint display */}
             {/*

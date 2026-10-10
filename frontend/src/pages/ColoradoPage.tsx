@@ -16,7 +16,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { isRejectedAction, useGameApi } from '../hooks/useGameApi';
@@ -40,6 +40,7 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 const TABLEAU_CNT = 20;
 const FOUNDATION_CNT = 8;
 const FOUNDATION_PILE_FULL = 13;
+const MOBILE_PLAY_CARD_WIDTH = 32;
 
 /**
  * The rank a foundation needs next. Half the piles build up from the Ace and
@@ -145,6 +146,9 @@ function ColoradoPageContent() {
   const { handleCommand } = useCliGame(runApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const { cardWidth, cardHeight } = useCardDimensions();
+  const isMobile = useIsMobile();
+  const playCardWidth = isMobile ? MOBILE_PLAY_CARD_WIDTH : cardWidth;
+  const playCardHeight = isMobile ? Math.round(playCardWidth * 1.5) : cardHeight;
 
   const handleManualReset = useCallback(() => {
     void runApi('reset');
@@ -297,8 +301,8 @@ function ColoradoPageContent() {
             <span id={selectSourceHintId} className="sr-only">
               {tc('label.selectSourceFirst')}
             </span>
-            <div className="mb-2 text-xs text-ds-text-muted">{t('foundations')}</div>
-            <div className="flex gap-2 mb-5 flex-wrap" data-tutorial="co-foundations">
+            <div className="mb-1 text-xs text-ds-text-muted">{t('foundations')}</div>
+            <div className="flex gap-1 mb-2 flex-nowrap sm:gap-2 sm:mb-5 sm:flex-wrap" data-tutorial="co-foundations">
               {Array.from({ length: FOUNDATION_CNT }, (_, idx) => {
                 const pile = state.foundation[idx] ?? [];
                 const top = pile[pile.length - 1];
@@ -310,7 +314,7 @@ function ColoradoPageContent() {
                   <button
                     key={`f-${idx.toString()}`}
                     type="button"
-                    className={`flex flex-col items-center p-1 rounded ${focusRingWhite} ${hintFoundation === idx ? 'ring-2 ring-ds-success animate-pulse' : ''} ${source && source.kind !== 'stock' ? 'cursor-pointer' : 'cursor-default'}`}
+                    className={`flex flex-col items-center p-0 sm:p-1 rounded ${focusRingWhite} ${hintFoundation === idx ? 'ring-2 ring-ds-success animate-pulse' : ''} ${source && source.kind !== 'stock' ? 'cursor-pointer' : 'cursor-default'}`}
                     onClick={placeOnFoundation}
                     disabled={!isPlaying || loading}
                     aria-disabled={source === null || source.kind === 'stock' || undefined}
@@ -325,12 +329,12 @@ function ColoradoPageContent() {
                     <span className="text-[11px] mb-0.5 text-ds-text-muted">
                       {ascending ? '↑' : '↓'}F{idx}
                     </span>
-                    <div className="relative" style={{ width: cardWidth, height: cardHeight }}>
+                    <div className="relative" style={{ width: playCardWidth, height: playCardHeight }}>
                       {top ? (
-                        <AnimatedCard card={top} width={cardWidth} />
+                        <AnimatedCard card={top} width={playCardWidth} />
                       ) : (
                         <div
-                          style={{ width: cardWidth, height: cardHeight }}
+                          style={{ width: playCardWidth, height: playCardHeight }}
                           className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
                         >
                           {t('empty')}
@@ -354,7 +358,7 @@ function ColoradoPageContent() {
               })}
             </div>
 
-            <div className="flex gap-3 flex-wrap items-start mb-5" data-tutorial="co-stock">
+            <div className="flex gap-3 flex-wrap items-start mb-2 sm:mb-5" data-tutorial="co-stock">
               <div className="flex flex-col items-center">
                 <div className="text-[11px] mb-0.5 text-ds-text-muted">
                   {t('stock')}:{' '}
@@ -372,10 +376,10 @@ function ColoradoPageContent() {
                   className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${hintStock ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
                 >
                   {state.stockCount > 0 ? (
-                    <AnimatedCardBack width={cardWidth} />
+                    <AnimatedCardBack width={playCardWidth} />
                   ) : (
                     <div
-                      style={{ width: cardWidth, height: cardHeight }}
+                      style={{ width: playCardWidth, height: playCardHeight }}
                       className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
                     >
                       {t('empty')}
@@ -411,10 +415,10 @@ function ColoradoPageContent() {
                   className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${source?.kind === 'waste' ? 'ring-2 ring-ds-warning' : ''} ${hintWaste ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
                 >
                   {wasteTop ? (
-                    <AnimatedCard card={wasteTop} width={cardWidth} />
+                    <AnimatedCard card={wasteTop} width={playCardWidth} />
                   ) : (
                     <div
-                      style={{ width: cardWidth, height: cardHeight }}
+                      style={{ width: playCardWidth, height: playCardHeight }}
                       className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
                     >
                       {t('empty')}
@@ -464,14 +468,22 @@ function ColoradoPageContent() {
                             <AnimatedCard
                               key={`t-${idx.toString()}-card-${cardIndex.toString()}`}
                               card={card}
-                              width={cardWidth}
-                              style={cardIndex === 0 ? undefined : { marginTop: -Math.round(cardWidth * 1.15) }}
+                              width={playCardWidth}
+                              style={
+                                cardIndex === 0
+                                  ? undefined
+                                  : {
+                                      marginTop: isMobile
+                                        ? -Math.max(14, playCardHeight - 14)
+                                        : -Math.round(playCardWidth * 1.15),
+                                    }
+                              }
                             />
                           ))}
                         </div>
                       ) : (
                         <div
-                          style={{ width: cardWidth, height: cardHeight }}
+                          style={{ width: playCardWidth, height: playCardHeight }}
                           className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
                         >
                           {t('empty')}

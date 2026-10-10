@@ -12,7 +12,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { CARD_DIMENSIONS, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { CARD_DIMENSIONS, useCardDimensions, useIsMobile, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -83,19 +83,15 @@ function PokerSquaresPageContent() {
     cancelGiveUp,
   } = useGamePageSetup('pokersquares');
   const { cardWidth: baseCardWidth, isMobile } = useCardDimensions();
+  const isMobileViewport = useIsMobile();
   const windowWidth = useWindowWidth();
-  // On mobile the 5-column board plus its row-score column wastes horizontal
-  // space at the fixed 40px card width. Grow cards to fill the viewport width
-  // (accounting for page padding, inter-card gaps, and the row-score column),
-  // clamped to [baseCardWidth, desktop width] so they never shrink below the
-  // current size or overflow. Desktop keeps the fixed preset.
+  // Keep the board compact enough to fit during play. Mobile cards use a
+  // reduced width, while desktop cards stay at the standard 60px preset even
+  // on large displays.
   const PS_BOARD_CHROME_PX = 112;
   const cardWidth = isMobile
-    ? Math.max(
-        baseCardWidth,
-        Math.min(CARD_DIMENSIONS.desktop.cardWidth, Math.floor((windowWidth - PS_BOARD_CHROME_PX) / 5)),
-      )
-    : baseCardWidth;
+    ? Math.min(CARD_DIMENSIONS.mobile.cardWidth - 8, Math.floor((windowWidth - PS_BOARD_CHROME_PX) / 5))
+    : Math.min(baseCardWidth, CARD_DIMENSIONS.desktop.cardWidth);
   const [confirmedAnnouncement, setConfirmedAnnouncement] = useState('');
   const previousStateRef = useRef<PokerSquaresResponse | null>(null);
   const {
@@ -331,9 +327,9 @@ function PokerSquaresPageContent() {
           />
 
           {isPlaying && (
-            <details className="px-4 pt-2">
+            <details className="px-4 pt-2" open={!isMobileViewport}>
               <summary className="text-ds-text-primary text-sm cursor-pointer select-none inline-flex items-center gap-1.5 hover:text-ds-accent transition-colors py-1">
-                {t('scoreReference.title')}
+                {t('scoreReference.label')}
               </summary>
               <div className="glass-panel rounded-lg p-3 mt-1 text-sm text-ds-text-primary overflow-x-auto">
                 <table data-testid="ps-score-table" className="w-full text-left">

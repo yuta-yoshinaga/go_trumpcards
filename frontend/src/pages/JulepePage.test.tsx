@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { julepeApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -6,6 +6,13 @@ import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, JulepeResponse } from '../types/card';
 import { JulepePage } from './JulepePage';
+
+const mobileState = { isMobile: true };
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 vi.mock('../api/gameApi', () => ({
   julepeApi: { exec: vi.fn() },
@@ -73,6 +80,7 @@ const playing = (over: Partial<JulepeResponse> = {}) =>
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mobileState.isMobile = true;
   mockExec.mockResolvedValue(makeState());
 });
 
@@ -181,6 +189,21 @@ describe('JulepePage', () => {
     expect(await screen.findByTestId('rm-pot')).toHaveTextContent('12');
     expect(screen.getByTestId('rm-trump')).toBeInTheDocument();
     expect(screen.getByTestId('rm-risk')).toHaveTextContent('5');
+    expect(screen.getByTestId('rm-risk')).toHaveTextContent('2');
+    expect(within(screen.getByTestId('rm-risk')).getByText(/参加して規定トリック数に届かないと/)).not.toBeVisible();
+  });
+
+  it('collapses the seat list on mobile and opens it on desktop', async () => {
+    const { unmount } = renderWithProviders(<JulepePage />);
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).not.toHaveAttribute('open');
+    expect(screen.getByTestId('rm-seat-0')).not.toBeVisible();
+
+    unmount();
+    mobileState.isMobile = false;
+    renderWithProviders(<JulepePage />);
+    expect(await screen.findByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByTestId('rm-seat-0')).toBeVisible();
   });
 
   // **人数は可変。** 何人卓かを必ず出す。

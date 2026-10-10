@@ -56,6 +56,7 @@
     "royalFlush": "Royal Flush"
   },
   "scoreReference": {
+    "label": "Score table",
     "title": "Hands and scores",
     "hand": "Hand",
     "score": "Score"

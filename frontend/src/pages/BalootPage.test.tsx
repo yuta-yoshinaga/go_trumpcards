@@ -7,6 +7,13 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { BalootResponse, Card } from '../types/card';
 import { BalootPage } from './BalootPage';
 
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
+
 vi.mock('../api/gameApi', () => ({
   balootApi: { exec: vi.fn() },
   actionLogApi: { baloot: vi.fn() },
@@ -67,6 +74,26 @@ beforeEach(() => {
 });
 
 describe('BalootPage', () => {
+  it('collapses rules and CPU seats on mobile and opens them on desktop', async () => {
+    mobileState.isMobile = true;
+    mockExec.mockResolvedValue(makeState({ mode: 1, declarerIdx: 0 } as Partial<BalootResponse>));
+    const { unmount } = renderWithProviders(<BalootPage />);
+    const mobileRules = await screen.findByTestId('bl-rules');
+    expect(mobileRules).not.toHaveAttribute('open');
+    expect(screen.getByText(/A=11 > 10/)).not.toBeVisible();
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('bl-seat-0')).toBeVisible();
+    expect(screen.getByTestId('bl-seat-1')).not.toBeVisible();
+
+    unmount();
+    mobileState.isMobile = false;
+    renderWithProviders(<BalootPage />);
+    expect(await screen.findByTestId('bl-rules')).toHaveAttribute('open');
+    expect(screen.getByText(/A=11 > 10/)).toBeVisible();
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByTestId('bl-seat-1')).toBeVisible();
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<BalootPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

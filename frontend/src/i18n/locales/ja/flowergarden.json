@@ -35,6 +35,7 @@
   "reserve": "ブーケ",
   "reserveSelectionHint": "カードのある枠を選択できます",
   "reserveCardAriaLabel": "{{card}}（リザーブ枠 {{idx}}）",
+  "rules": "ルール",
   "rulesNote": "スートは無視。1つ下のランクだけ重ねられます（空のベッドには任意のカード）。",
   "stalemate": "手詰まりです",
   "tableau": "フラワーベッド",

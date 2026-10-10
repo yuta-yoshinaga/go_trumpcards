@@ -80,6 +80,23 @@ describe('OsmosisPage', () => {
     await waitFor(() => expect(screen.getByText(/ベースランク/)).toBeInTheDocument());
   });
 
+  it('uses compact cards on mobile while keeping the foundation rows playable', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    try {
+      renderWithProviders(<OsmosisPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+      const foundation = screen.getByTestId('os-allowed-0').closest('[data-tutorial="os-foundation"]');
+      expect(foundation).toBeInTheDocument();
+      const foundationButton = within(foundation as HTMLElement).getByRole('button', { name: /^組札 0/ });
+      expect(foundationButton.querySelector('.relative')).toHaveStyle({ width: '30px', height: '45px' });
+      expect(screen.getByRole('button', { name: /山札/ })).toHaveStyle({ width: '30px', height: '45px' });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    }
+  });
+
   it('shows the allowed-rank guide per foundation row', async () => {
     // foundation [[♠5],[],[],[]], baseRank 5.
     renderWithProviders(<OsmosisPage />);

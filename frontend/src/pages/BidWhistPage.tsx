@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -12,7 +13,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useBidWhistGame } from '../hooks/useBidWhistGame';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -113,6 +114,7 @@ function BidWhistPageContent() {
     reset,
   } = useBidWhistGame();
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -274,32 +276,34 @@ function BidWhistPageContent() {
             </div>
 
             {/* CPU players */}
-            <div className="flex justify-center gap-6 flex-wrap">
-              {state.players
-                .filter((p) => !p.isHuman)
-                .map((p) => (
-                  <div key={p.id} className="text-center">
-                    <div className="text-xs text-ds-text-muted mb-1 flex items-center justify-center gap-1">
-                      <span>{tc('player.cpu', { id: p.id })}</span>
-                      <span>
-                        ({t('teamShort', { team: p.team })}) {p.trickCount}🂠
-                      </span>
-                      {state.dealerIdx === p.id && (
-                        <span className="text-ds-accent" data-testid="bidwhist-dealer-badge">
-                          [{t('dealerBadge')}]
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+              <div className="flex justify-center gap-6 flex-wrap">
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <div key={p.id} className="text-center">
+                      <div className="text-xs text-ds-text-muted mb-1 flex items-center justify-center gap-1">
+                        <span>{tc('player.cpu', { id: p.id })}</span>
+                        <span>
+                          ({t('teamShort', { team: p.team })}) {p.trickCount}🂠
                         </span>
-                      )}
-                      {p.isDeclarer && <span className="font-bold text-ds-warning">★</span>}
-                      {p.passed && <span className="opacity-60">{t('passed')}</span>}
+                        {state.dealerIdx === p.id && (
+                          <span className="text-ds-accent" data-testid="bidwhist-dealer-badge">
+                            [{t('dealerBadge')}]
+                          </span>
+                        )}
+                        {p.isDeclarer && <span className="font-bold text-ds-warning">★</span>}
+                        {p.passed && <span className="opacity-60">{t('passed')}</span>}
+                      </div>
+                      <div className="flex gap-0.5 justify-center">
+                        {Array.from({ length: Math.min(p.cardCount, 13) }, (_, i) => (
+                          <AnimatedCardBack key={i} width={cardWidth * 0.4} />
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex gap-0.5 justify-center">
-                      {Array.from({ length: Math.min(p.cardCount, 13) }, (_, i) => (
-                        <AnimatedCardBack key={i} width={cardWidth * 0.4} />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-            </div>
+                  ))}
+              </div>
+            </CpuAccordion>
 
             {/* Current trick */}
             <div className="py-3 bg-black/20 rounded-lg" data-tutorial="bw-trick">
@@ -462,13 +466,16 @@ function BidWhistPageContent() {
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="bw-actions">
               {isHumanBidTurn && (
                 <>
-                  <div className="w-full text-center text-xs text-ds-text-muted" data-testid="bid-direction-help">
-                    {DIRECTIONS.map((d) => (
-                      <span key={d.id} className="mx-1 inline-block">
-                        {t(d.key)}: {t(d.meaningKey)}
-                      </span>
-                    ))}
-                  </div>
+                  <details open={!isMobile || undefined} className="w-full text-center text-xs text-ds-text-muted">
+                    <summary className="cursor-pointer">{t('rules')}</summary>
+                    <div data-testid="bid-direction-help">
+                      {DIRECTIONS.map((d) => (
+                        <span key={d.id} className="mx-1 inline-block">
+                          {t(d.key)}: {t(d.meaningKey)}
+                        </span>
+                      ))}
+                    </div>
+                  </details>
                   <label
                     htmlFor="bw-bid-tricks"
                     className="text-xs text-ds-text-muted self-center"

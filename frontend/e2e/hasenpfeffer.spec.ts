@@ -28,6 +28,7 @@ test.describe('Hasenpfeffer E2E', () => {
   // **ジョーカーが最強という序列は知らないと打ち方が変わる。**
   test('always states the joker ranking', async ({ page }) => {
     await navigateTo(page, '/hasenpfeffer');
+    await page.getByTestId('hpf-rule').locator('summary').click();
     await expect(page.getByTestId('hpf-rule')).toContainText(/Best Bower/, { timeout: TIMEOUT_TRANSITION });
   });
 

@@ -7,6 +7,13 @@ import type { BidWhistResponse, Card } from '../types/card';
 import { BidWhistPhase } from '../types/phases';
 import { BidWhistPage } from './BidWhistPage';
 
+const mobileState = vi.hoisted(() => ({ isMobile: false }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
+
 vi.mock('../api/gameApi', () => ({
   bidWhistApi: { exec: vi.fn() },
   actionLogApi: { bidwhist: vi.fn() },
@@ -69,12 +76,31 @@ function makeState(overrides: Partial<BidWhistResponse> = {}): BidWhistResponse 
 }
 
 beforeEach(() => {
+  mobileState.isMobile = false;
   localStorage.clear();
   mockExec.mockReset();
   mockExec.mockResolvedValue(makeState());
 });
 
 describe('BidWhistPage', () => {
+  it('collapses CPU seats and bid direction rules on mobile, and opens them on desktop', async () => {
+    mobileState.isMobile = true;
+    const { unmount } = renderWithProviders(<BidWhistPage />);
+    const cpuAccordion = await screen.findByTestId('cpu-accordion');
+    expect(cpuAccordion).not.toHaveAttribute('open');
+    expect(within(cpuAccordion).queryByText('CPU 1')).not.toBeVisible();
+    const rules = screen.getByText('ルール').closest('details');
+    expect(rules).not.toHaveAttribute('open');
+    expect(screen.getByTestId('bid-direction-help')).not.toBeVisible();
+
+    unmount();
+    mobileState.isMobile = false;
+    renderWithProviders(<BidWhistPage />);
+    expect(await screen.findByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByText('ルール').closest('details')).toHaveAttribute('open');
+    expect(screen.getByTestId('bid-direction-help')).toBeVisible();
+  });
+
   it('announces every card played by the human and CPUs in play order', async () => {
     const wonState = makeState({
       phase: BidWhistPhase.TRICK_END,

@@ -9,6 +9,7 @@
   "header": {
     "round": "ディール {{round}}",
     "target": "目標 {{n}}点",
+    "rules": "ルール",
     "stock": "山札 残り{{n}}枚（前半のトリックは得点になりません）",
     "contract": "契約: {{level}}{{suit}}（{{name}}）／必要 {{need}}トリック",
     "contractUndecided": "契約: 未決定",

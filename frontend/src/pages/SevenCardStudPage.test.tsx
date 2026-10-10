@@ -267,6 +267,24 @@ describe('SevenCardStudPage', () => {
     await waitFor(() => expect(screen.getByText('サードストリート')).toBeInTheDocument());
   });
 
+  it.each([
+    ['mobile', 375],
+    ['desktop', 1280],
+  ] as const)('keeps CPU seat details collapsed by default on %s', async (_viewport, width) => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<SevenCardStudPage />);
+    const accordion = await screen.findByTestId('cpu-accordion');
+    await waitFor(() => expect(screen.getByText('サードストリート')).toBeInTheDocument());
+    expect(accordion).not.toHaveAttribute('open');
+    expect(screen.getByText('CPU 1')).not.toBeVisible();
+    fireEvent.click(within(accordion).getByText(/CPU対戦相手/));
+    expect(screen.getByText('CPU 1')).toBeVisible();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
   // ---- info bar ----
   it('shows pot and the dealer name via playerName (CPU dealer)', async () => {
     mockExec.mockResolvedValue(thirdStreetState);

@@ -46,7 +46,7 @@ describe('CpuAccordion', () => {
   it('can start closed on desktop', () => {
     mockUseIsMobile.mockReturnValue(false);
     render(
-      <CpuAccordion playerCount={2} desktopOpen={false}>
+      <CpuAccordion playerCount={2} openOnDesktop={false}>
         <div>content</div>
       </CpuAccordion>,
     );
@@ -64,16 +64,13 @@ describe('CpuAccordion', () => {
     expect(details).not.toHaveAttribute('open');
   });
 
-  it('places the data-tutorial target on the always-visible summary', () => {
+  it('places the data-tutorial target on the details element', () => {
     render(
       <CpuAccordion playerCount={3} dataTutorial="oh-cpu-area">
         <div>content</div>
       </CpuAccordion>,
     );
     const details = screen.getByTestId('cpu-accordion');
-    expect(details).not.toHaveAttribute('data-tutorial');
-    const summary = details.querySelector('summary');
-    expect(summary).toHaveAttribute('data-tutorial', 'oh-cpu-area');
-    expect(summary).toBeVisible();
+    expect(details).toHaveAttribute('data-tutorial', 'oh-cpu-area');
   });
 });

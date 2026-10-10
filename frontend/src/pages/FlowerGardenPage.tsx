@@ -157,6 +157,9 @@ function FlowerGardenPageContent() {
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+  const reserveDims = isMobile
+    ? { cw: Math.min(dims.cw, 32), ch: Math.round(Math.min(dims.cw, 32) * 1.5) }
+    : { cw: dims.cw, ch: dims.ch };
 
   const isPlayingForKbd = state?.phase === FlowerGardenPhase.PLAYING;
 
@@ -336,14 +339,14 @@ function FlowerGardenPageContent() {
             onDragEnd={dnd.handleDragEnd}
             className={`p-0 border-0 bg-transparent rounded cursor-pointer ${focusRingWhite} ${isSourceSelected('reserve', cellIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(reserveZone) ? 'opacity-50' : ''}`}
           >
-            <AnimatedCard card={reserveCard} width={dims.cw} draggable={false} />
+            <AnimatedCard card={reserveCard} width={reserveDims.cw} draggable={false} />
           </button>
         ) : (
           <div
             role="img"
             aria-label={t('emptyReserveSlot', { idx: cellIdx })}
             className="rounded border border-dashed border-white/10"
-            style={{ width: dims.cw, height: dims.ch }}
+            style={{ width: reserveDims.cw, height: reserveDims.ch }}
           />
         )}
         <span className="text-xs text-ds-text-muted mt-0.5" aria-hidden="true">
@@ -470,11 +473,10 @@ function FlowerGardenPageContent() {
               </div>
             </div>
 
-            {/* 他のソリティアと違う規則なので常設で出す。初回だけのチュートリアルに
-                書いてあっても、読み飛ばした後は盤面に手掛かりが無い (#5599)。 */}
-            <div className="mb-1 text-center text-ds-text-muted text-xs" data-testid="fg-rules-note">
-              {t('rulesNote')}
-            </div>
+            <details className="mb-1 text-center text-ds-text-muted text-xs">
+              <summary className="cursor-pointer">{t('rules')}</summary>
+              <p data-testid="fg-rules-note">{t('rulesNote')}</p>
+            </details>
 
             <div className="flex gap-1 sm:gap-2" data-tutorial="fg-tableau">
               {[0, 1, 2, 3, 4, 5].map(renderTableauColumn)}

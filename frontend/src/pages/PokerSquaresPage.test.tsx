@@ -25,6 +25,24 @@ vi.mock('../hooks/useCliMode', () => ({
   })),
 }));
 
+vi.mock('../hooks/useCardDimensions', async () => ({
+  ...(await vi.importActual<typeof import('../hooks/useCardDimensions')>('../hooks/useCardDimensions')),
+  useCardDimensions: vi.fn(() => ({
+    cardWidth: 100,
+    cardHeight: 150,
+    cardOverlap: 34,
+    cpuCardWidth: 82,
+    footerCardWidth: 90,
+    solitaireMinColWidth: 0,
+    isMobile: false,
+  })),
+  useIsMobile: vi.fn(() => false),
+}));
+
+const { useCardDimensions, useIsMobile } = await import('../hooks/useCardDimensions');
+const mockUseCardDimensions = vi.mocked(useCardDimensions);
+const mockUseIsMobile = vi.mocked(useIsMobile);
+
 const mockApi = vi.mocked(pokersquaresApi.exec);
 const mockUseCliMode = vi.mocked(useCliMode);
 
@@ -83,6 +101,16 @@ const completeState: PokerSquaresResponse = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockUseCardDimensions.mockReturnValue({
+    cardWidth: 100,
+    cardHeight: 150,
+    cardOverlap: 34,
+    cpuCardWidth: 82,
+    footerCardWidth: 90,
+    solitaireMinColWidth: 0,
+    isMobile: false,
+  });
+  mockUseIsMobile.mockReturnValue(false);
   mockUseCliMode.mockReturnValue({
     cliEnabled: false,
     toggleCli: vi.fn(),
@@ -135,6 +163,9 @@ describe('PokerSquaresPage', () => {
     mockApi.mockResolvedValue(playingState);
     renderWithProviders(<PokerSquaresPage />);
 
+    const summary = await screen.findByText('スコア表');
+    const details = summary.closest('details');
+    expect(details).toHaveAttribute('open');
     const table = await screen.findByTestId('ps-score-table');
     expect(table).toHaveTextContent('ハイカード');
     expect(table).toHaveTextContent('0');
@@ -143,6 +174,44 @@ describe('PokerSquaresPage', () => {
     expect(table).toHaveTextContent('ロイヤルフラッシュ');
     expect(table).toHaveTextContent('100');
     expect(table.querySelectorAll('tbody tr')).toHaveLength(10);
+  });
+
+  it('collapses the scoring reference on mobile and opens it on desktop', async () => {
+    mockUseIsMobile.mockReturnValue(true);
+    mockApi.mockResolvedValue(playingState);
+    const { unmount } = renderWithProviders(<PokerSquaresPage />);
+    const mobileDetails = await screen.findByText('スコア表');
+    expect(mobileDetails.closest('details')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('ps-score-table')).not.toBeVisible();
+
+    unmount();
+    mockUseIsMobile.mockReturnValue(false);
+    renderWithProviders(<PokerSquaresPage />);
+    const desktopDetails = await screen.findByText('スコア表');
+    expect(desktopDetails.closest('details')).toHaveAttribute('open');
+    expect(screen.getByTestId('ps-score-table')).toBeVisible();
+  });
+
+  it('keeps the board cards compact on mobile and caps large desktop cards at 60px', async () => {
+    mockApi.mockResolvedValue(playingState);
+    const { unmount } = renderWithProviders(<PokerSquaresPage />);
+    await screen.findByTestId('ps-board-wrapper');
+    expect(screen.getByTestId('animated-card').querySelector('img')).toHaveStyle({ width: '60px' });
+
+    unmount();
+    mockUseCardDimensions.mockReturnValue({
+      cardWidth: 40,
+      cardHeight: 60,
+      cardOverlap: 20,
+      cpuCardWidth: 34,
+      footerCardWidth: 36,
+      solitaireMinColWidth: 52,
+      isMobile: true,
+    });
+    mockUseIsMobile.mockReturnValue(true);
+    renderWithProviders(<PokerSquaresPage />);
+    await screen.findByTestId('ps-board-wrapper');
+    expect(screen.getByTestId('animated-card').querySelector('img')).toHaveStyle({ width: '32px' });
   });
 
   it('announces zero-based row and column coordinates for empty and filled cells', async () => {
@@ -155,15 +224,24 @@ describe('PokerSquaresPage', () => {
     expect(screen.getByTestId('cell-2-3')).toHaveAttribute('aria-label', '♠ A、行 2、列 3');
   });
 
-  it('grows the card width to fill the viewport on a 375px mobile screen', async () => {
+  it('keeps the card width compact on a 375px mobile screen', async () => {
     const original = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
     try {
+      mockUseCardDimensions.mockReturnValue({
+        cardWidth: 40,
+        cardHeight: 60,
+        cardOverlap: 20,
+        cpuCardWidth: 34,
+        footerCardWidth: 36,
+        solitaireMinColWidth: 52,
+        isMobile: true,
+      });
+      mockUseIsMobile.mockReturnValue(true);
       mockApi.mockResolvedValue(playingState);
       renderWithProviders(<PokerSquaresPage />);
       const cell = await screen.findByTestId('cell-0-0');
-      // floor((375 - 112) / 5) = 52, clamped to [40, 60] → 52px (> the fixed 40px mobile preset).
-      expect(cell.querySelector('div')).toHaveStyle({ width: '52px' });
+      expect(cell.querySelector('div')).toHaveStyle({ width: '32px' });
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
     }

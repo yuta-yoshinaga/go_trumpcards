@@ -6,25 +6,22 @@ export interface CpuAccordionProps {
   children: React.ReactNode;
   playerCount: number;
   dataTutorial?: string;
-  /** Whether the accordion starts open on desktop. Defaults to true. */
-  desktopOpen?: boolean;
+  openOnDesktop?: boolean;
 }
 
 /** Collapsible wrapper for CPU player cards. Closed by default on mobile to reduce scroll. */
-export function CpuAccordion({ children, playerCount, dataTutorial, desktopOpen = true }: CpuAccordionProps) {
+export function CpuAccordion({ children, playerCount, dataTutorial, openOnDesktop = true }: CpuAccordionProps) {
   const { t } = useTranslation('common');
   const isMobile = useIsMobile();
 
   return (
     <details
-      open={(!isMobile && desktopOpen) || undefined}
+      open={(!isMobile && openOnDesktop) || undefined}
       className="mb-3 rounded-lg bg-black/20 border border-white/10"
       data-testid="cpu-accordion"
+      {...(dataTutorial ? { 'data-tutorial': dataTutorial } : {})}
     >
-      <summary
-        className="cursor-pointer select-none px-2 py-1.5 text-ds-text-primary text-sm font-bold"
-        {...(dataTutorial ? { 'data-tutorial': dataTutorial } : {})}
-      >
+      <summary className="cursor-pointer select-none px-2 py-1.5 text-ds-text-primary text-sm font-bold">
         {t('label.cpuOpponents', { count: playerCount })}
       </summary>
       <div className="px-1 pb-1">{children}</div>

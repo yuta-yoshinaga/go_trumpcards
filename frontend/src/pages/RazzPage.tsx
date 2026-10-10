@@ -96,7 +96,7 @@ function RazzPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('razz');
   const phaseNames = usePhaseNames('razz', RAZZ_PHASE_KEYS);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, cpuCardWidth } = useCardDimensions();
   const isMobile = useIsMobile();
   const { state, loading, error, exec: execApi, retry } = useGameApi(razzApi.exec);
 
@@ -324,84 +324,88 @@ function RazzPageContent() {
           <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
             {/* CPU players */}
             <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="razz-cpu-area">
-              {cpuPlayers.map((p) => (
-                <div key={p.id} className="mb-3 p-2 rounded bg-black/30">
-                  <div className="text-ds-text-primary text-sm mb-1">
-                    CPU {p.id}
-                    <span className="ml-2 text-xs text-ds-text-muted">{p.playStyleName}</span>
-                    <span className="ml-2 text-xs">
-                      {tc('betting.chips')} {p.chips}
-                    </span>
-                    {p.currentBet > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {cpuPlayers.map((p) => (
+                  <div key={p.id} className="mb-1 w-full p-2 rounded bg-black/30 sm:w-[calc(33.333%-0.34rem)]">
+                    <div className="text-ds-text-primary text-sm mb-1">
+                      CPU {p.id}
+                      <span className="ml-2 text-xs text-ds-text-muted">{p.playStyleName}</span>
                       <span className="ml-2 text-xs">
-                        {tc('betting.currentBet')} {p.currentBet}
+                        {tc('betting.chips')} {p.chips}
                       </span>
-                    )}
-                    {p.folded && <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>}
-                    {p.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
-                    {p.id === bringInPlayerId && (
-                      <span data-testid={`razz-bringin-badge-${p.id}`} className={bringInBadgeClass}>
-                        {t('bringIn')}
-                      </span>
-                    )}
-                    {isShowdown && !p.folded && (
-                      <span
-                        data-testid="razz-showdown-best-low"
-                        className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
-                      >
-                        {(() => {
-                          const low = razzBestLow([...p.doorCards, ...p.holeCards]);
-                          return low.complete
-                            ? t('currentLow', { low: formatRazzLow(low) })
-                            : t('currentLowIncomplete');
-                        })()}
-                      </span>
-                    )}
-                    {isShowdown && !p.folded && p.handName && (
-                      <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
-                        {p.handName}
-                      </span>
-                    )}
-                    {/* CUI は GetTotalHands() > 0 のときだけ出している (#6337)。
+                      {p.currentBet > 0 && (
+                        <span className="ml-2 text-xs">
+                          {tc('betting.currentBet')} {p.currentBet}
+                        </span>
+                      )}
+                      {p.folded && <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>}
+                      {p.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
+                      {p.id === bringInPlayerId && (
+                        <span data-testid={`razz-bringin-badge-${p.id}`} className={bringInBadgeClass}>
+                          {t('bringIn')}
+                        </span>
+                      )}
+                      {isShowdown && !p.folded && (
+                        <span
+                          data-testid="razz-showdown-best-low"
+                          className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
+                        >
+                          {(() => {
+                            const low = razzBestLow([...p.doorCards, ...p.holeCards]);
+                            return low.complete
+                              ? t('currentLow', { low: formatRazzLow(low) })
+                              : t('currentLowIncomplete');
+                          })()}
+                        </span>
+                      )}
+                      {isShowdown && !p.folded && p.handName && (
+                        <span
+                          className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
+                        >
+                          {p.handName}
+                        </span>
+                      )}
+                      {/* CUI は GetTotalHands() > 0 のときだけ出している (#6337)。
                         手が始まっていない席に 0% を並べても読み違いを招くだけ。 */}
-                    {p.totalHands > 0 && (
-                      <HudStats namespace="razz" vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} />
-                    )}
+                      {p.totalHands > 0 && (
+                        <HudStats namespace="razz" vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} />
+                      )}
+                    </div>
+                    {/* Door cards (always visible) */}
+                    <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
+                    <div className={`flex flex-wrap gap-1 mb-1 ${p.id === bringInPlayerId ? bringInCardClass : ''}`}>
+                      {p.doorCards?.length
+                        ? p.doorCards.map((card) => (
+                            <AnimatedCard
+                              key={`${card.design}-${card.value}`}
+                              card={card}
+                              width={cpuCardWidth}
+                              style={placeholderCardStyle}
+                            />
+                          ))
+                        : !p.folded &&
+                          Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cpuCardWidth} />)}
+                    </div>
+                    {/* Hole cards (face-down unless showdown) */}
+                    <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {isShowdown && !p.folded && p.holeCards?.length
+                        ? p.holeCards.map((card) => (
+                            <AnimatedCard
+                              key={`${card.design}-${card.value}`}
+                              card={card}
+                              width={cpuCardWidth}
+                              style={placeholderCardStyle}
+                            />
+                          ))
+                        : !p.folded &&
+                          Array.from({
+                            length: (state?.phase ?? 0) >= SevenCardStudPhase.SEVENTH_STREET ? 3 : 2,
+                          }).map((_, i) => <AnimatedCardBack key={i} width={cpuCardWidth} />)}
+                    </div>
                   </div>
-                  {/* Door cards (always visible) */}
-                  <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
-                  <div className={`flex flex-wrap gap-1 mb-1 ${p.id === bringInPlayerId ? bringInCardClass : ''}`}>
-                    {p.doorCards?.length
-                      ? p.doorCards.map((card) => (
-                          <AnimatedCard
-                            key={`${card.design}-${card.value}`}
-                            card={card}
-                            width={cardWidth}
-                            style={placeholderCardStyle}
-                          />
-                        ))
-                      : !p.folded &&
-                        Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
-                  </div>
-                  {/* Hole cards (face-down unless showdown) */}
-                  <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
-                  <div className="flex flex-wrap gap-1">
-                    {isShowdown && !p.folded && p.holeCards?.length
-                      ? p.holeCards.map((card) => (
-                          <AnimatedCard
-                            key={`${card.design}-${card.value}`}
-                            card={card}
-                            width={cardWidth}
-                            style={placeholderCardStyle}
-                          />
-                        ))
-                      : !p.folded &&
-                        Array.from({
-                          length: (state?.phase ?? 0) >= SevenCardStudPhase.SEVENTH_STREET ? 3 : 2,
-                        }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </CpuAccordion>
 
             {/* CPU actions: toast on mobile, inline log on desktop */}

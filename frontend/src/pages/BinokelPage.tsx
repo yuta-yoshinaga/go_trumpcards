@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { binokelApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -14,7 +15,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useBinokelGame } from '../hooks/useBinokelGame';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -124,6 +125,7 @@ function BinokelPageContent() {
   } = useBinokelGame();
 
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
   const phaseNames = usePhaseNames('binokel', BINOKEL_PHASE_KEYS);
 
   // Selected card indices for Dabb discard phase (3 cards required).
@@ -331,49 +333,93 @@ function BinokelPageContent() {
             </div>
 
             {/* Players Info: 3 individual seats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3" data-tutorial="bn-player-info">
-              {state.players?.map((p) => {
-                const onTurn =
-                  phase === BinokelPhase.BID
-                    ? p.id === state.bidPlayerIdx
-                    : (phase === BinokelPhase.DABB ||
-                        phase === BinokelPhase.TRUMP ||
-                        phase === BinokelPhase.MELD ||
-                        phase === BinokelPhase.PLAY) &&
-                      p.id === state.currentPlayerIdx;
-                const isDeclarer = state.highestBidder === p.id;
-                const bidDisplay = p.hasPassed
-                  ? t('bidStatus.passed')
-                  : p.bid > 0
-                    ? t('bidStatus.bid', { amount: p.bid })
-                    : t('bidStatus.waiting');
-                const scoreVal = state.scores ? state.scores[p.id] : p.score;
-                return (
-                  <div
-                    key={p.id}
-                    data-on-turn={onTurn || undefined}
-                    className={`rounded p-2 text-sm ${
-                      p.isHuman ? 'bg-ds-accent/20 text-ds-accent' : 'bg-black/30 text-ds-text-muted'
-                    } ${onTurn ? 'ring-2 ring-ds-warning' : ''}`}
-                  >
-                    <div className="font-bold flex items-center justify-between">
-                      <span>{playerName(p.id, p.isHuman)}</span>
-                      {isDeclarer && (
-                        <span className="text-xs px-1.5 py-0.5 rounded bg-ds-accent text-black font-semibold">
-                          {t('declarer')}
-                        </span>
-                      )}
-                    </div>
-                    <div>
-                      {t('scores')}: {scoreVal} | {t('bid')}: {bidDisplay}
-                    </div>
-                    <div>
-                      {t('meldScore')}: {p.meldScore} | {t('trickCount')}: {p.trickCount} (
-                      {t('points', { points: p.trickPoints })})
-                    </div>
+            <div className="mb-3" data-tutorial="bn-player-info">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {state.players
+                  ?.filter((p) => p.isHuman)
+                  .map((p) => {
+                    const onTurn =
+                      phase === BinokelPhase.BID
+                        ? p.id === state.bidPlayerIdx
+                        : (phase === BinokelPhase.DABB ||
+                            phase === BinokelPhase.TRUMP ||
+                            phase === BinokelPhase.MELD ||
+                            phase === BinokelPhase.PLAY) &&
+                          p.id === state.currentPlayerIdx;
+                    const isDeclarer = state.highestBidder === p.id;
+                    const bidDisplay = p.hasPassed
+                      ? t('bidStatus.passed')
+                      : p.bid > 0
+                        ? t('bidStatus.bid', { amount: p.bid })
+                        : t('bidStatus.waiting');
+                    const scoreVal = state.scores ? state.scores[p.id] : p.score;
+                    return (
+                      <div
+                        key={p.id}
+                        data-on-turn={onTurn || undefined}
+                        className={`rounded p-2 text-sm ${
+                          p.isHuman ? 'bg-ds-accent/20 text-ds-accent' : 'bg-black/30 text-ds-text-muted'
+                        } ${onTurn ? 'ring-2 ring-ds-warning' : ''}`}
+                      >
+                        <div className="font-bold flex items-center justify-between">
+                          <span>{playerName(p.id, p.isHuman)}</span>
+                          {isDeclarer && (
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-ds-accent text-black font-semibold">
+                              {t('declarer')}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs">
+                          {t('scores')}: {scoreVal} | {t('bid')}: {bidDisplay} | {t('meldScore')}: {p.meldScore} |{' '}
+                          {t('trickCount')}: {p.trickCount} ({t('points', { points: p.trickPoints })})
+                        </div>
+                      </div>
+                    );
+                  })}
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {state.players
+                      ?.filter((p) => !p.isHuman)
+                      .map((p) => {
+                        const onTurn =
+                          phase === BinokelPhase.BID
+                            ? p.id === state.bidPlayerIdx
+                            : (phase === BinokelPhase.DABB ||
+                                phase === BinokelPhase.TRUMP ||
+                                phase === BinokelPhase.MELD ||
+                                phase === BinokelPhase.PLAY) &&
+                              p.id === state.currentPlayerIdx;
+                        const isDeclarer = state.highestBidder === p.id;
+                        const bidDisplay = p.hasPassed
+                          ? t('bidStatus.passed')
+                          : p.bid > 0
+                            ? t('bidStatus.bid', { amount: p.bid })
+                            : t('bidStatus.waiting');
+                        const scoreVal = state.scores ? state.scores[p.id] : p.score;
+                        return (
+                          <div
+                            key={p.id}
+                            data-on-turn={onTurn || undefined}
+                            className={`rounded p-2 text-sm bg-black/30 text-ds-text-muted ${onTurn ? 'ring-2 ring-ds-warning' : ''}`}
+                          >
+                            <div className="font-bold flex items-center justify-between">
+                              <span>{playerName(p.id, p.isHuman)}</span>
+                              {isDeclarer && (
+                                <span className="text-xs px-1.5 py-0.5 rounded bg-ds-accent text-black font-semibold">
+                                  {t('declarer')}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs">
+                              {t('scores')}: {scoreVal} | {t('bid')}: {bidDisplay} | {t('meldScore')}: {p.meldScore} |{' '}
+                              {t('trickCount')}: {p.trickCount} ({t('points', { points: p.trickPoints })})
+                            </div>
+                          </div>
+                        );
+                      })}
                   </div>
-                );
-              })}
+                </CpuAccordion>
+              </div>
             </div>
 
             {/* Dabb Cards Display */}
@@ -424,7 +470,7 @@ function BinokelPageContent() {
 
             {/* Meld reference: server-provided domain values */}
             {meldTable && (
-              <details data-testid="bn-meld-table" className="mb-3 rounded bg-black/30">
+              <details data-testid="bn-meld-table" className="mb-3 rounded bg-black/30" open={!isMobile || undefined}>
                 <summary className="cursor-pointer select-none px-3 py-2 text-ds-text-primary font-bold text-sm">
                   {t('meldTableTitle')}
                 </summary>

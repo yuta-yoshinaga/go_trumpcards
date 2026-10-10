@@ -29,6 +29,7 @@
     "hidden": "unknown"
   },
   "currentTrick": "Current trick",
+  "rulesLabel": "Rules",
   "actions": {
     "sun": "Sun (no trump)",
     "hokom": "Hokom {{suit}}",

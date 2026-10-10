@@ -184,6 +184,7 @@ describe('CucumberPage', () => {
     expect(accordion).not.toContainElement(humanSeat);
     expect(humanSeat).toBeVisible();
     expect(humanSeat).toHaveAttribute('data-tutorial', 'cu-seats');
+    expect(humanSeat).toHaveClass('bg-ds-surface');
     expect(screen.getByTestId('cu-seat-1')).not.toBeVisible();
     expect(accordion).toContainElement(screen.getByTestId('cu-seat-1'));
     mobileRender.unmount();

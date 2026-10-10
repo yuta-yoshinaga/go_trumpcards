@@ -11,7 +11,9 @@
     "players": "{{count}} players",
     "pot": "Pot: {{pot}} chips (shared out by tricks taken)",
     "trump": "Trump",
-    "risk": "Enter and take fewer than {{required}} trick(s) and you pay an extra {{penalty}} into the pot — and your ante doubles next hand.",
+    "riskSummary": "Short of {{required}} tricks: extra {{penalty}} chips",
+    "riskDetails": "Risk",
+    "risk": "If you enter and fall short of the required tricks, you pay extra into the pot and your ante doubles next hand.",
     "you": "You",
     "cpu": "CPU{{idx}}",
     "seat": "{{chips}} chips / {{tricks}} taken"

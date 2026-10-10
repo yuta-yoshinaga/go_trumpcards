@@ -43,12 +43,26 @@ describe('useResponsiveTableau', () => {
     expect(result.current.co).toBe(CARD_DIMENSIONS.largeDesktop.cardOverlap);
   });
 
+  it('caps desktop card width and derives height when maxCardWidthPx is specified', () => {
+    setWidth(800);
+    const { result } = renderHook(() => useResponsiveTableau(10, { maxCardWidthPx: 40 }));
+    expect(result.current.cw).toBe(40);
+    expect(result.current.ch).toBe(Math.round(40 * 1.5));
+  });
+
   it('shrinks card width to fit 10 columns on a 375px mobile viewport (default px-2/gap-1)', () => {
     setWidth(375);
     const { result } = renderHook(() => useResponsiveTableau(10));
     // floor((375 - 16 padX - 9 * 4 gap) / 10) = floor(32.3) = 32, clamped to [24, mobile.cardWidth].
     expect(result.current.cw).toBe(32);
     expect(result.current.cw).toBeLessThanOrEqual(CARD_DIMENSIONS.mobile.cardWidth);
+    expect(result.current.ch).toBe(Math.round(result.current.cw * 1.5));
+  });
+
+  it('caps mobile card width and derives height from the capped width', () => {
+    setWidth(375);
+    const { result } = renderHook(() => useResponsiveTableau(10, { maxCardWidthPx: 20 }));
+    expect(result.current.cw).toBe(20);
     expect(result.current.ch).toBe(Math.round(result.current.cw * 1.5));
   });
 

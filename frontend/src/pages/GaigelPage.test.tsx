@@ -187,6 +187,32 @@ describe('GaigelPage', () => {
     }
   });
 
+  it('collapses CPU seats on mobile while keeping the human seat visible', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    try {
+      renderWithProviders(<GaigelPage />);
+      const accordion = await screen.findByTestId('cpu-accordion');
+      expect(accordion).not.toHaveAttribute('open');
+      expect(screen.getByTestId('gaigel-player-0')).toBeVisible();
+      expect(screen.getByTestId('gaigel-player-1')).not.toBeVisible();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    }
+  });
+
+  it('keeps CPU seats expanded on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    try {
+      renderWithProviders(<GaigelPage />);
+      expect(await screen.findByTestId('cpu-accordion')).toHaveAttribute('open');
+      expect(screen.getByTestId('gaigel-player-1')).toBeVisible();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    }
+  });
+
   it('labels score rows and relates each team score to its column header', async () => {
     mockExec.mockResolvedValue(makeState({ teamScores: [21, 34], roundPoints: [11, 17], roundMarriage: [20, 0] }));
     renderWithProviders(<GaigelPage />);

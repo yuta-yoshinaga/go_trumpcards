@@ -234,7 +234,7 @@ function CucumberPageContent() {
             {/* **失点がそのまま順位。** 少ないほうが良い。 */}
             {human && (
               <div
-                className={`mb-2 rounded bg-black/30 px-2 py-1 text-center text-sm text-ds-text-muted ${
+                className={`mb-2 rounded bg-ds-surface px-2 py-1 text-center text-sm text-ds-text-muted ${
                   human.id === state.currentPlayerIdx && !isGameEnd ? 'ring-1 ring-ds-warning' : ''
                 }`}
                 data-testid={`cu-seat-${human.id.toString()}`}

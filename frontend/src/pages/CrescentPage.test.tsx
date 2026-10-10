@@ -86,6 +86,19 @@ beforeEach(() => {
 });
 
 describe('CrescentPage', () => {
+  it('renders all eight ascending and descending foundations in one row', async () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    const { container } = renderWithProviders(<CrescentPage />);
+    await screen.findByTestId('phase-indicator');
+
+    const foundations = container.querySelector('[data-tutorial="crescent-foundations"]');
+    expect(foundations?.children).toHaveLength(8);
+    expect(foundations?.querySelectorAll('[data-testid^="foundation-dir-"]')).toHaveLength(8);
+    expect(screen.getByTestId('foundation-dir-0')).toHaveTextContent('♠ ↑');
+    expect(screen.getByTestId('foundation-dir-4')).toHaveTextContent('♠ ↓');
+  });
+
   it('uses eight tableau columns on mobile and retains the desktop grid class', async () => {
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
     window.dispatchEvent(new Event('resize'));
@@ -95,6 +108,9 @@ describe('CrescentPage', () => {
       .then(() => container.querySelector('[data-tutorial="crescent-tableau"]'));
     expect(tableau).toHaveClass('grid-cols-8');
     expect(tableau).not.toHaveClass('grid-cols-4');
+    const mobileCard = tableau?.querySelector('img[alt]');
+    expect(mobileCard).toBeInTheDocument();
+    expect(tableau?.querySelector('.relative[style*="min-height"]')).toHaveStyle({ minHeight: '45px' });
     unmount();
 
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
@@ -476,7 +492,7 @@ describe('CrescentPage', () => {
       ...document.querySelectorAll<HTMLButtonElement>('[data-tutorial="crescent-tableau"] button'),
     ].filter((button) => button.getAttribute('aria-label')?.startsWith('タブロー列0、'));
     const top = Number.parseInt(columnCards.at(-1)?.parentElement?.style.top ?? '0', 10);
-    expect(top / 19).toBe(23);
+    expect(top / 14).toBe(19);
   });
 
   it('announces how many legal destinations the selected card has', async () => {

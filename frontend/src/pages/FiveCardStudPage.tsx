@@ -116,7 +116,7 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup(gameKey);
   const phaseNames = usePhaseNames(gameKey, FCS_PHASE_KEYS);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, cpuCardWidth } = useCardDimensions();
   const isMobile = useIsMobile();
   // Annotated rather than inferred: both clients are created from the same
   // factory with the same generics, but a union of the two exec signatures
@@ -188,9 +188,9 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
     isShowdown &&
     !player.folded &&
     player.bestHandCore.some((best) => best.design === card.design && best.value === card.value);
-  const renderPlayerCard = (player: FiveCardStudResponse['players'][number], card: Card) => {
+  const renderPlayerCard = (player: FiveCardStudResponse['players'][number], card: Card, width: number = cardWidth) => {
     const inBestHand = isBestHandCard(player, card);
-    const image = <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />;
+    const image = <AnimatedCard card={card} width={width} style={placeholderCardStyle} />;
     return inBestHand ? (
       <span
         role="img"
@@ -217,6 +217,7 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
   const humanIdx = state?.players?.findIndex((p) => p.isHuman) ?? 0;
   const humanRebuyCount = state?.rebuyCounts?.[humanIdx] ?? 0;
   const cpuPlayers = useMemo(() => state?.players?.filter((p) => !p.isHuman) ?? [], [state?.players]);
+  const compactCpuCardWidth = isMobile ? cpuCardWidth : 32;
 
   // Door cards revealed so far: Second Street shows 1, then +1 each street up to 4 on Fifth Street.
   const doorCount = Math.min(Math.max(phase - FiveCardStudPhase.SECOND_STREET + 1, 1), 4);
@@ -334,79 +335,95 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
               (#5737), so keep the table on the page for Soko only.
             */}
             {gameKey === 'soko' && (
-              <div className="mb-3 p-2 rounded bg-black/30 text-xs" data-testid="soko-hand-ranking">
-                <div className="mb-1 text-ds-text-primary">{t('ranking.title')}</div>
-                <ol className="flex flex-wrap gap-x-2 gap-y-0.5 text-ds-text-muted">
-                  {(t('ranking.hands', { returnObjects: true }) as string[]).map((name, i) => (
-                    <li key={name} className={SOKO_INSERTED_RANKS.includes(i) ? 'font-bold text-ds-accent' : ''}>
-                      {i + 1}. {name}
-                      {/* **太字と色だけでは非視覚の利用者に届かない。**Soko 固有の 2 役はテキストでも名乗る。 */}
-                      {SOKO_INSERTED_RANKS.includes(i) && <span className="sr-only">{t('ranking.sokoOnly')}</span>}
-                    </li>
-                  ))}
-                </ol>
-                <div className="mt-1 text-ds-text-muted">{t('ranking.note')}</div>
-              </div>
+              <details className="mb-3 rounded bg-black/30 p-2 text-xs" data-testid="soko-hand-ranking">
+                <summary className="cursor-pointer text-ds-text-primary">{t('ranking.summary')}</summary>
+                <div className="pt-2">
+                  <div className="mb-1 text-ds-text-primary">{t('ranking.title')}</div>
+                  <ol className="flex flex-wrap gap-x-2 gap-y-0.5 text-ds-text-muted">
+                    {(t('ranking.hands', { returnObjects: true }) as string[]).map((name, i) => (
+                      <li key={name} className={SOKO_INSERTED_RANKS.includes(i) ? 'font-bold text-ds-accent' : ''}>
+                        {i + 1}. {name}
+                        {/* **太字と色だけでは非視覚の利用者に届かない。**Soko 固有の 2 役はテキストでも名乗る。 */}
+                        {SOKO_INSERTED_RANKS.includes(i) && <span className="sr-only">{t('ranking.sokoOnly')}</span>}
+                      </li>
+                    ))}
+                  </ol>
+                  <div className="mt-1 text-ds-text-muted">{t('ranking.note')}</div>
+                </div>
+              </details>
             )}
             {/* CPU players */}
             <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="fcs-cpu-area">
-              {cpuPlayers.map((p) => (
-                <div key={p.id} className="mb-3 p-2 rounded bg-black/30">
-                  <div className="text-ds-text-primary text-sm mb-1">
-                    CPU {p.id}
-                    <span className="ml-2 text-xs text-ds-text-muted">{p.playStyleName}</span>
-                    {p.totalHands > 0 && (
-                      <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} namespace={gameKey} />
-                    )}
-                    <span className="ml-2 text-xs">
-                      {tc('betting.chips')} {p.chips}
-                    </span>
-                    {p.currentBet > 0 && (
+              <div className="flex flex-wrap gap-2 sm:grid sm:grid-cols-3">
+                {cpuPlayers.map((p) => (
+                  <div key={p.id} className="mb-1 w-full p-2 rounded bg-black/30 sm:mb-0">
+                    <div className="text-ds-text-primary text-sm mb-1">
+                      CPU {p.id}
+                      <span
+                        className="ml-2 inline-block max-w-[8rem] truncate align-bottom text-xs text-ds-text-muted"
+                        title={p.playStyleName}
+                      >
+                        {p.playStyleName}
+                      </span>
+                      {p.totalHands > 0 && (
+                        <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} namespace={gameKey} />
+                      )}
                       <span className="ml-2 text-xs">
-                        {tc('betting.currentBet')} {p.currentBet}
+                        {tc('betting.chips')} {p.chips}
                       </span>
-                    )}
-                    {p.folded && <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>}
-                    {p.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
-                    {isShowdown && !p.folded && p.handName && (
-                      <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
-                        {p.handName}
-                      </span>
-                    )}
-                  </div>
-                  {/* Door cards (always visible) */}
-                  <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
-                  <div className="flex flex-wrap gap-1 mb-1">
-                    {p.doorCards?.length
-                      ? p.doorCards.map((card, i, arr) =>
-                          i === arr.length - 1 ? (
-                            <span
-                              key={`${card.design}-${card.value}`}
-                              className="inline-block rounded ring-2 ring-ds-accent motion-safe:animate-pulse"
-                              data-testid={`latest-door-cpu-${p.id}`}
-                              role="img"
-                              aria-label={t('latestDoorCard', { card: cardAlt(card) })}
-                            >
-                              {renderPlayerCard(p, card)}
-                            </span>
-                          ) : (
+                      {p.currentBet > 0 && (
+                        <span className="ml-2 text-xs">
+                          {tc('betting.currentBet')} {p.currentBet}
+                        </span>
+                      )}
+                      {p.folded && <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>}
+                      {p.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
+                      {isShowdown && !p.folded && p.handName && (
+                        <span
+                          className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
+                        >
+                          {p.handName}
+                        </span>
+                      )}
+                    </div>
+                    {/* Door cards (always visible) */}
+                    <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
+                    <div className="flex flex-wrap gap-1 mb-1">
+                      {p.doorCards?.length
+                        ? p.doorCards.map((card, i, arr) =>
+                            i === arr.length - 1 ? (
+                              <span
+                                key={`${card.design}-${card.value}`}
+                                className="inline-block rounded ring-2 ring-ds-accent motion-safe:animate-pulse"
+                                data-testid={`latest-door-cpu-${p.id}`}
+                                role="img"
+                                aria-label={t('latestDoorCard', { card: cardAlt(card) })}
+                              >
+                                {renderPlayerCard(p, card, compactCpuCardWidth)}
+                              </span>
+                            ) : (
+                              <span key={`${card.design}-${card.value}`}>
+                                {renderPlayerCard(p, card, compactCpuCardWidth)}
+                              </span>
+                            ),
+                          )
+                        : !p.folded &&
+                          Array.from({ length: doorCount }).map((_, i) => (
+                            <AnimatedCardBack key={i} width={compactCpuCardWidth} />
+                          ))}
+                    </div>
+                    {/* Hole card (face-down unless showdown) */}
+                    <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {isShowdown && !p.folded && p.holeCards?.length
+                        ? p.holeCards.map((card) => (
                             <span key={`${card.design}-${card.value}`}>{renderPlayerCard(p, card)}</span>
-                          ),
-                        )
-                      : !p.folded &&
-                        Array.from({ length: doorCount }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                          ))
+                        : !p.folded && <AnimatedCardBack width={compactCpuCardWidth} />}
+                    </div>
                   </div>
-                  {/* Hole card (face-down unless showdown) */}
-                  <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
-                  <div className="flex flex-wrap gap-1">
-                    {isShowdown && !p.folded && p.holeCards?.length
-                      ? p.holeCards.map((card) => (
-                          <span key={`${card.design}-${card.value}`}>{renderPlayerCard(p, card)}</span>
-                        ))
-                      : !p.folded && <AnimatedCardBack width={cardWidth} />}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </CpuAccordion>
 
             {/* CPU actions: toast on mobile, inline log on desktop */}

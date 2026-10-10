@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -315,7 +316,7 @@ function BelotePageContent() {
         )}
 
         {/* CPU players */}
-        <div className="mb-3">
+        <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
           {state.players
             .filter((p) => !p.isHuman)
             .map((p) => (
@@ -324,7 +325,7 @@ function BelotePageContent() {
                 {t('trickCount', { count: p.trickCount })}
               </div>
             ))}
-        </div>
+        </CpuAccordion>
 
         {/* Current trick */}
         <TrickDisplay
@@ -336,68 +337,78 @@ function BelotePageContent() {
         />
 
         {/* Team scores */}
-        <div className="my-3 p-2 rounded bg-black/30" data-tutorial="be-score-table">
-          <div className="text-ds-text-muted text-sm mb-1">{t('teamScores')}</div>
-          <table className="w-full table-fixed text-sm text-ds-text-muted">
-            <thead>
-              <tr>
-                <td />
-                <th id="belote-team-0-header" scope="col" className="text-left break-words">
-                  {t('team', { n: 0 })}
-                  <span className="block text-xs leading-tight">
-                    {state.players
-                      .filter((player) => player.team === 0)
-                      .map((player) => playerName(player.id, player.isHuman))
-                      .join(t('listSeparator'))}
-                  </span>
-                </th>
-                <th id="belote-team-1-header" scope="col" className="text-center break-words">
-                  {t('team', { n: 1 })}
-                  <span className="block text-xs leading-tight">
-                    {state.players
-                      .filter((player) => player.team === 1)
-                      .map((player) => playerName(player.id, player.isHuman))
-                      .join(t('listSeparator'))}
-                  </span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th id="belote-cumulative-score-header" scope="row" className="text-left">
-                  {t('cumulativeScore')}
-                </th>
-                <td headers="belote-team-0-header belote-cumulative-score-header" className="text-ds-accent">
-                  {state.teamScores[0]}
-                </td>
-                <td headers="belote-team-1-header belote-cumulative-score-header" className="text-center">
-                  {state.teamScores[1]}
-                </td>
-              </tr>
-              <tr>
-                <td />
-                {[0, 1].map((team) => (
-                  <td key={team} className={`text-xs${team === 1 ? ' text-center' : ''}`}>
-                    {t('roundPoints', { points: state.roundPoints[team] })}
-                    {state.roundBeloteBonus[team] > 0 && (
-                      <span className="block text-ds-warning">
-                        {t('tracker.beloteAwarded', {
-                          team: t('team', { n: team }),
-                          points: state.roundBeloteBonus[team],
-                        })}
-                      </span>
-                    )}
+        <div className="my-3 p-2 rounded bg-black/30">
+          <div className="text-ds-text-muted text-sm mb-1 sm:hidden" data-testid="belote-team-score-summary">
+            {t('teamScores')}: {t('team', { n: 0 })} {state.teamScores[0]} · {t('team', { n: 1 })} {state.teamScores[1]}
+          </div>
+          <details data-testid="belote-score-details" open={!isMobile || undefined}>
+            <summary className="cursor-pointer select-none text-ds-text-muted text-sm" data-tutorial="be-score-table">
+              {t('teamScores')}
+            </summary>
+            <table className="w-full table-fixed text-sm text-ds-text-muted">
+              <thead>
+                <tr>
+                  <td />
+                  <th id="belote-team-0-header" scope="col" className="text-left break-words">
+                    {t('team', { n: 0 })}
+                    <span className="block text-xs leading-tight">
+                      {state.players
+                        .filter((player) => player.team === 0)
+                        .map((player) => playerName(player.id, player.isHuman))
+                        .join(t('listSeparator'))}
+                    </span>
+                  </th>
+                  <th id="belote-team-1-header" scope="col" className="text-center break-words">
+                    {t('team', { n: 1 })}
+                    <span className="block text-xs leading-tight">
+                      {state.players
+                        .filter((player) => player.team === 1)
+                        .map((player) => playerName(player.id, player.isHuman))
+                        .join(t('listSeparator'))}
+                    </span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th id="belote-cumulative-score-header" scope="row" className="text-left">
+                    {t('cumulativeScore')}
+                  </th>
+                  <td headers="belote-team-0-header belote-cumulative-score-header" className="text-ds-accent">
+                    {state.teamScores[0]}
                   </td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
+                  <td headers="belote-team-1-header belote-cumulative-score-header" className="text-center">
+                    {state.teamScores[1]}
+                  </td>
+                </tr>
+                <tr>
+                  <td />
+                  {[0, 1].map((team) => (
+                    <td key={team} className={`text-xs${team === 1 ? ' text-center' : ''}`}>
+                      {t('roundPoints', { points: state.roundPoints[team] })}
+                      {state.roundBeloteBonus[team] > 0 && (
+                        <span className="block text-ds-warning">
+                          {t('tracker.beloteAwarded', {
+                            team: t('team', { n: team }),
+                            points: state.roundBeloteBonus[team],
+                          })}
+                        </span>
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </details>
           <div className="text-ds-text-muted text-sm mt-1" data-testid="belote-target-score">
             {t('targetScore', { score: state.config.targetScore })}
           </div>
-          <p className="text-ds-text-muted text-xs mt-2" data-testid="belote-scoring-explanation">
-            {t('scoringExplanation', { dixDeDer: state.config.dixDeDer })}
-          </p>
+          <details className="mt-1">
+            <summary className="cursor-pointer select-none text-ds-text-muted text-xs">{t('rules')}</summary>
+            <p className="text-ds-text-muted text-xs mt-1" data-testid="belote-scoring-explanation">
+              {t('scoringExplanation', { dixDeDer: state.config.dixDeDer })}
+            </p>
+          </details>
         </div>
 
         <RoundScoreAnnouncement

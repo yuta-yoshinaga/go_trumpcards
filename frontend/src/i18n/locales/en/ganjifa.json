@@ -17,6 +17,7 @@
   "trick": "Trick {{n}}",
   "trump": "Trump: {{suit}}",
   "dealer": "Dealer: {{name}}",
+  "rules": "Rules",
   "trumpAutoNote": "Trump is automatically set to the suit most common in the dealer's hand (there is no choice)",
   "noTrump": "None",
   "cards": "{{count}} cards",

@@ -165,6 +165,11 @@ describe('CrazyQuiltPage', () => {
     renderWithProviders(<CrazyQuiltPage />);
     expect(await screen.findByTestId('cq-cell-0')).toHaveStyle({ width: '60px', height: '84px' });
 
+    window.innerWidth = 1280;
+    window.dispatchEvent(new Event('resize'));
+    renderWithProviders(<CrazyQuiltPage />);
+    await waitFor(() => expect(screen.getByTestId('cq-cell-0')).toHaveStyle({ width: '52px', height: '78px' }));
+
     window.innerWidth = originalWidth;
     window.dispatchEvent(new Event('resize'));
   });

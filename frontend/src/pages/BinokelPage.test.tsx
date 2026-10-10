@@ -13,6 +13,12 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(binokelApi.exec);
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 const makePlayers = (overrides?: Partial<BinokelResponse['players'][number]>[]) =>
   [0, 1, 2].map((id) => ({
@@ -177,6 +183,7 @@ const gameEndState: BinokelResponse = {
 };
 
 beforeEach(() => {
+  mobileState.isMobile = true;
   mockExec.mockResolvedValue(bidPhaseState);
 });
 
@@ -186,6 +193,26 @@ afterEach(() => {
 });
 
 describe('BinokelPage', () => {
+  it('collapses CPU seats and meld reference on mobile while keeping the human seat visible', async () => {
+    renderWithProviders(<BinokelPage />);
+    const cpu = await screen.findByTestId('cpu-accordion');
+    const meldTable = screen.getByTestId('bn-meld-table');
+    expect(cpu).not.toHaveAttribute('open');
+    expect(within(cpu).getByText('CPU対戦相手 (2)')).toBeVisible();
+    expect(within(cpu).getByText('CPU 1').closest('.rounded')).not.toBeVisible();
+    expect(screen.getByText('あなた').closest('.rounded')).toBeVisible();
+    expect(meldTable).not.toHaveAttribute('open');
+    expect(within(meldTable).getByText('ディクス 10')).not.toBeVisible();
+  });
+
+  it('opens CPU seats and meld reference on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<BinokelPage />);
+    expect(await screen.findByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByTestId('bn-meld-table')).toHaveAttribute('open');
+    expect(within(screen.getByTestId('bn-meld-table')).getByText('ディクス 10')).toBeVisible();
+  });
+
   it('translates CPU difficulty options while preserving their numeric values', async () => {
     renderWithProviders(<BinokelPage />);
     const difficulty = await screen.findByLabelText('CPU難易度');

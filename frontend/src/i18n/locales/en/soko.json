@@ -83,6 +83,7 @@
   },
   "helpTitle": "Soko (Canadian Stud)",
   "ranking": {
+    "summary": "Hand ranking",
     "title": "Hand ranking (strongest first)",
     "note": "The two highlighted hands are Soko's own: STRONGER THAN ONE PAIR, WEAKER THAN TWO PAIR, so hands you would fold in standard poker can fight here.",
     "sokoOnly": "(Soko's own hand)",

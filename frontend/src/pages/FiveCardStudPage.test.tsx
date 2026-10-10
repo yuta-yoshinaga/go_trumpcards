@@ -667,7 +667,25 @@ describe('FiveCardStudPage keyboard shortcuts', () => {
         <FiveCardStudPageContent gameKey="soko" />
       </TutorialWrapper>,
     );
-    await waitFor(() => expect(screen.getByTestId('soko-hand-ranking')).toBeInTheDocument());
+    const ranking = await screen.findByTestId('soko-hand-ranking');
+    expect(ranking).not.toHaveAttribute('open');
+    expect(within(ranking).getByText('役の強さ（強い順）')).not.toBeVisible();
+    fireEvent.click(within(ranking).getByText('役一覧'));
+    expect(within(ranking).getByText('役の強さ（強い順）')).toBeVisible();
+  });
+
+  it('keeps the CPU accordion open on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    mockExec.mockResolvedValue(secondStreetState);
+    renderWithProviders(<FiveCardStudPage />);
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).toHaveAttribute('open');
+    const cpuCards = within(accordion).getAllByText(/^CPU [0-9]+$/);
+    expect(cpuCards.length).toBeGreaterThan(0);
+    expect(cpuCards[0].parentElement?.parentElement).toHaveClass('sm:grid-cols-3');
+    expect(cpuCards[0].parentElement).toHaveClass('sm:mb-0');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
   });
 
   // 通常のファイブカードスタッドではソッコ役順位リファレンスを表示しない。

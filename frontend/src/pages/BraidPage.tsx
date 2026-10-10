@@ -325,7 +325,7 @@ function BraidPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+          <div className="flex-1 overflow-y-auto pt-1 sm:pt-3 px-2 sm:px-4 lg:px-8">
             {/* **一度きりで取り消せない選択**なのに、画面に現れたことが
                 読み上げられていなかった (#5564)。見えている案内はそのまま、
                 読み上げ用の領域を別に持つ。assertive なのは、方向を決めるまで
@@ -336,7 +336,7 @@ function BraidPageContent() {
             />
 
             {state.awaitingDirection && isPlaying && (
-              <div className="text-center mb-2" data-tutorial="br-direction">
+              <div className="text-center mb-1 sm:mb-2" data-tutorial="br-direction">
                 <p className="text-ds-warning text-sm mb-1">{t('chooseDirectionBanner', { rank: state.baseRank })}</p>
                 <div className="flex gap-2 justify-center">
                   <button
@@ -364,7 +364,7 @@ function BraidPageContent() {
             <span id={selectSourceHintId} className="sr-only">
               {tc('label.selectSourceFirst')}
             </span>
-            <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
+            <div className="flex flex-wrap justify-center items-start gap-1 sm:gap-6 mb-1 sm:mb-3">
               <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="br-foundation">
                 {Array.from({ length: FOUNDATIONS }, (_, idx) => {
                   const pile = state.foundation[idx] ?? [];
@@ -474,7 +474,7 @@ function BraidPageContent() {
               </div>
             </div>
 
-            <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
+            <div className="flex flex-wrap justify-center items-start gap-1 sm:gap-6 mb-1 sm:mb-3">
               <div className="text-center" data-tutorial="br-braid">
                 <div className="text-game-text-muted text-xs mb-1">{t('braid')}</div>
                 {braidTail ? (
@@ -539,11 +539,13 @@ function BraidPageContent() {
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled && !hint} t={t} />
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {!state.awaitingDirection && (
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            )}
 
             {isGameOver && (
               <p data-testid="br-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">

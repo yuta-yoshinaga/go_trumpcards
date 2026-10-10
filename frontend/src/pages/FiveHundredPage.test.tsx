@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fiveHundredApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -15,6 +15,12 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(fiveHundredApi.exec);
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
@@ -83,6 +89,20 @@ afterEach(async () => {
 });
 
 describe('FiveHundredPage', () => {
+  it('collapses CPU seats on mobile and opens them on desktop', async () => {
+    renderWithProviders(<FiveHundredPage />);
+    const mobileAccordion = await screen.findByTestId('cpu-accordion');
+    expect(mobileAccordion).not.toHaveAttribute('open');
+    const cpuSeat = within(mobileAccordion).getByRole('group', { name: 'CPU 1の手札 残り0枚' });
+    expect(cpuSeat).not.toBeVisible();
+
+    cleanup();
+    mobileState.isMobile = false;
+    renderWithProviders(<FiveHundredPage />);
+    expect(await screen.findByTestId('cpu-accordion')).toHaveAttribute('open');
+    mobileState.isMobile = true;
+  });
+
   it('uses the active game target from the server response in the tutorial', async () => {
     mockExec.mockResolvedValue(makeState({ config: { cpuDifficulty: 1, targetScore: 700 } }));
     renderWithProviders(<FiveHundredPage />);

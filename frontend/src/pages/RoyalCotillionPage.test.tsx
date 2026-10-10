@@ -85,6 +85,36 @@ describe('RoyalCotillionPage', () => {
     }
   });
 
+  it('fits the sixteen tableau slots into two rows on mobile', async () => {
+    const previousWidth = window.innerWidth;
+    window.innerWidth = 375;
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<RoyalCotillionPage />);
+
+    const tableau = await screen.findByTestId('rc-tableau');
+    expect(tableau).toHaveStyle({ gridTemplateColumns: 'repeat(8, minmax(0, 1fr))' });
+
+    window.innerWidth = previousWidth;
+    window.dispatchEvent(new Event('resize'));
+  });
+
+  it('uses compact desktop cards and keeps foundations beside the stock', async () => {
+    const previousWidth = window.innerWidth;
+    window.innerWidth = 1280;
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<RoyalCotillionPage />);
+
+    const stock = await screen.findByRole('button', { name: /山札 残り76枚/ });
+    expect(stock).toHaveStyle({ width: '60px', height: '90px' });
+    const topRow = document.querySelector('[data-tutorial="cg-foundation"]')?.parentElement;
+    expect(topRow).toHaveClass('sm:flex-nowrap');
+
+    window.innerWidth = previousWidth;
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('shows the waste count and describes the waste card for assistive technology', async () => {
     mockExec.mockResolvedValue({ ...playingState, waste: [card('DIAMOND', 4), card('HEART', 8)] });
     renderWithProviders(<RoyalCotillionPage />);

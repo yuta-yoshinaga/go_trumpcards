@@ -43,8 +43,9 @@ const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'
 const TABLEAU_SLOTS = 16;
 /** Four reserve piles of three; an emptied one is never refilled. */
 const RESERVE_PILES = 4;
-/** Slots per row in the 4x4 board. */
-const SLOTS_PER_ROW = 4;
+/** Desktop uses a 4x4 board; mobile uses two compact rows of eight. */
+const DESKTOP_SLOTS_PER_ROW = 4;
+const MOBILE_SLOTS_PER_ROW = 8;
 const TOTAL_CARDS = 104;
 
 const CG_TUTORIAL_STEPS: TutorialStep[] = [
@@ -119,17 +120,23 @@ function RoyalCotillionPageContent() {
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
   const windowWidth = useWindowWidth();
+  const slotsPerRow = isMobile ? MOBILE_SLOTS_PER_ROW : DESKTOP_SLOTS_PER_ROW;
 
   const dims = useMemo(() => {
-    if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: cardOverlap };
+    if (!isMobile) {
+      const cw = Math.min(cardWidth, 60);
+      const ch = Math.min(cardHeight, 90);
+      const co = Math.min(cardOverlap, 20);
+      return { cw, ch, co };
+    }
     const padX = 16;
     const gapPx = 4;
-    const colW = Math.floor((windowWidth - padX - (SLOTS_PER_ROW - 1) * gapPx) / SLOTS_PER_ROW);
+    const colW = Math.floor((windowWidth - padX - (slotsPerRow - 1) * gapPx) / slotsPerRow);
     const cw = Math.min(Math.max(colW, 30), cardWidth);
     const ch = Math.round(cw * 1.5);
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
-  }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+  }, [isMobile, windowWidth, slotsPerRow, cardWidth, cardHeight, cardOverlap]);
 
   const isPlayingForKbd = state?.phase === RoyalCotillionPhase.PLAYING;
 
@@ -175,7 +182,7 @@ function RoyalCotillionPageContent() {
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading });
 
   if (!state) {
-    return <GameSkeleton gameKey="royalcotillion" layout={{ kind: 'tableau', topRow: 8, tableau: SLOTS_PER_ROW }} />;
+    return <GameSkeleton gameKey="royalcotillion" layout={{ kind: 'tableau', topRow: 8, tableau: slotsPerRow }} />;
   }
 
   const isPlaying = state.phase === RoyalCotillionPhase.PLAYING;
@@ -346,7 +353,7 @@ function RoyalCotillionPageContent() {
             <span id={selectSourceHintId} className="sr-only">
               {tc('label.selectSourceFirst')}
             </span>
-            <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
+            <div className="flex flex-wrap sm:flex-nowrap justify-center items-start gap-3 sm:gap-3 mb-3">
               <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="cg-foundation">
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: RoyalCotillionMoveZone = { zone: 'foundation', col: idx };
@@ -489,7 +496,7 @@ function RoyalCotillionPageContent() {
 
             <div
               className="grid gap-1 sm:gap-2 justify-center"
-              style={{ gridTemplateColumns: `repeat(${SLOTS_PER_ROW}, minmax(0, 1fr))` }}
+              style={{ gridTemplateColumns: `repeat(${slotsPerRow}, minmax(0, 1fr))` }}
               data-tutorial="cg-tableau"
               data-testid="rc-tableau"
             >

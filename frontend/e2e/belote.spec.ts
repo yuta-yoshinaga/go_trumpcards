@@ -13,7 +13,7 @@ test.describe('Belote E2E', () => {
 
     await expect(page.getByText(/^ラウンド \d+$/).first()).toBeVisible();
     await expect(page.getByText(/^トリック \d+$/).first()).toBeVisible();
-    await expect(page.getByText('チームスコア').first()).toBeVisible();
+    await expect(page.getByText('チームスコア').last()).toBeVisible();
 
     const orderUpButton = page.getByRole('button', { name: '取る', exact: true });
     const passButton = gameButton(page, 'パス');
