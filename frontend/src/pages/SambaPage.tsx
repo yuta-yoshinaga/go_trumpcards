@@ -355,66 +355,140 @@ function SambaPageContent() {
                   </div>
                 )}
 
-                {/* Player melds */}
-                {state.players.map((p, pi) => {
-                  if (p.melds.length === 0 && p.red3s.length === 0) return null;
-                  return (
-                    <div
-                      key={pi}
-                      className="my-2 p-2 rounded bg-black/30"
-                      data-tutorial={pi === 0 ? 'sa-meld-area' : undefined}
-                    >
-                      <div className="text-ds-text-muted text-sm mb-1">
-                        {playerName(p.id, p.isHuman)} ({t('teamLabel', { n: p.team })}) - {t('melds')}
-                        {p.hasCanasta && <span className="ml-2 text-ds-warning">★</span>}
-                        {p.hasSamba && <span className="ml-1 text-ds-accent">▲</span>}
-                      </div>
-                      {p.melds.map((m, mi) => {
-                        // Progress toward the 7-card canasta (set) / samba (sequence)
-                        // milestone, derived purely from `cards.length` and `kind`.
-                        const remaining = SAMBA_CANASTA_SIZE - m.cards.length;
-                        const toSamba = m.kind === 1;
-                        const complete = remaining <= 0;
-                        return (
-                          <div key={mi} className="flex flex-wrap gap-1 mb-1">
-                            <span className="text-xs text-ds-text-muted self-center mr-1">
-                              {m.kind === 1
-                                ? m.isSamba
-                                  ? t('samba')
-                                  : t('sequence')
-                                : m.isCanasta
-                                  ? m.isNatural
-                                    ? t('naturalCanasta')
-                                    : t('mixedCanasta')
-                                  : `(${m.cards.length})`}
-                            </span>
-                            <span
-                              data-testid={`sa-meld-progress-${pi}-${mi}`}
-                              className={`text-xs self-center mr-1 ${
-                                complete ? 'text-ds-success font-bold motion-safe:animate-pulse' : 'text-ds-info'
-                              }`}
-                            >
-                              {complete
-                                ? t(toSamba ? 'meldProgress.sambaComplete' : 'meldProgress.canastaComplete')
-                                : t(toSamba ? 'meldProgress.toSamba' : 'meldProgress.toCanasta', { n: remaining })}
-                            </span>
-                            {m.cards.map((card, ci) => (
-                              <AnimatedCard key={`meld-${pi}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
+                {/* Human-team melds stay visible; opponents' melds are available on demand. */}
+                {state.players
+                  .filter((p) => p.team === state.players[0]?.team)
+                  .map((p, pi) => {
+                    if (p.melds.length === 0 && p.red3s.length === 0) return null;
+                    return (
+                      <div
+                        key={p.id}
+                        className="my-2 p-2 rounded bg-ds-surface"
+                        data-tutorial={p.isHuman ? 'sa-meld-area' : undefined}
+                      >
+                        <div className="text-ds-text-muted text-sm mb-1">
+                          {playerName(p.id, p.isHuman)} ({t('teamLabel', { n: p.team })}) - {t('melds')}
+                          {p.hasCanasta && <span className="ml-2 text-ds-warning">★</span>}
+                          {p.hasSamba && <span className="ml-1 text-ds-accent">▲</span>}
+                        </div>
+                        {p.melds.map((m, mi) => {
+                          // Progress toward the 7-card canasta (set) / samba (sequence)
+                          // milestone, derived purely from `cards.length` and `kind`.
+                          const remaining = SAMBA_CANASTA_SIZE - m.cards.length;
+                          const toSamba = m.kind === 1;
+                          const complete = remaining <= 0;
+                          return (
+                            <div key={mi} className="flex flex-wrap gap-1 mb-1">
+                              <span className="text-xs text-ds-text-muted self-center mr-1">
+                                {m.kind === 1
+                                  ? m.isSamba
+                                    ? t('samba')
+                                    : t('sequence')
+                                  : m.isCanasta
+                                    ? m.isNatural
+                                      ? t('naturalCanasta')
+                                      : t('mixedCanasta')
+                                    : `(${m.cards.length})`}
+                              </span>
+                              <span
+                                data-testid={`sa-meld-progress-${pi}-${mi}`}
+                                className={`text-xs self-center mr-1 ${
+                                  complete ? 'text-ds-success font-bold motion-safe:animate-pulse' : 'text-ds-info'
+                                }`}
+                              >
+                                {complete
+                                  ? t(toSamba ? 'meldProgress.sambaComplete' : 'meldProgress.canastaComplete')
+                                  : t(toSamba ? 'meldProgress.toSamba' : 'meldProgress.toCanasta', { n: remaining })}
+                              </span>
+                              {m.cards.map((card, ci) => (
+                                <AnimatedCard key={`meld-${pi}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
+                              ))}
+                            </div>
+                          );
+                        })}
+                        {p.red3s.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            <span className="text-xs text-ds-error-text self-center mr-1">{t('red3s')}</span>
+                            {p.red3s.map((card, ri) => (
+                              <AnimatedCard key={`red3-${pi}-${ri}`} card={card} width={cardWidth * 0.6} />
                             ))}
                           </div>
-                        );
+                        )}
+                      </div>
+                    );
+                  })}
+                {state.players.some(
+                  (p) => p.team !== state.players[0]?.team && (p.melds.length > 0 || p.red3s.length > 0),
+                ) && (
+                  <details
+                    data-testid="sa-opponent-meld-details"
+                    open={!isMobile || undefined}
+                    className="my-2 p-2 rounded bg-ds-surface"
+                  >
+                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                      {t('opponentMelds', {
+                        count: state.players
+                          .filter((p) => p.team !== state.players[0]?.team)
+                          .reduce((count, p) => count + p.melds.length, 0),
                       })}
-                      {p.red3s.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          <span className="text-xs text-ds-error-text self-center mr-1">{t('red3s')}</span>
-                          {p.red3s.map((card, ri) => (
-                            <AnimatedCard key={`red3-${pi}-${ri}`} card={card} width={cardWidth * 0.6} />
-                          ))}
+                    </summary>
+                    {state.players.map((p, pi) => {
+                      if (p.team === state.players[0]?.team || (p.melds.length === 0 && p.red3s.length === 0))
+                        return null;
+                      return (
+                        <div key={p.id} className="my-2 p-2 rounded bg-ds-surface">
+                          <div className="text-ds-text-muted text-sm mb-1">
+                            {playerName(p.id, p.isHuman)} ({t('teamLabel', { n: p.team })}) - {t('melds')}
+                            {p.hasCanasta && <span className="ml-2 text-ds-warning">★</span>}
+                            {p.hasSamba && <span className="ml-1 text-ds-accent">▲</span>}
+                          </div>
+                          {p.melds.map((m, mi) => {
+                            const remaining = SAMBA_CANASTA_SIZE - m.cards.length;
+                            const toSamba = m.kind === 1;
+                            const complete = remaining <= 0;
+                            return (
+                              <div key={mi} className="flex flex-wrap gap-1 mb-1">
+                                <span className="text-xs text-ds-text-muted self-center mr-1">
+                                  {m.kind === 1
+                                    ? m.isSamba
+                                      ? t('samba')
+                                      : t('sequence')
+                                    : m.isCanasta
+                                      ? m.isNatural
+                                        ? t('naturalCanasta')
+                                        : t('mixedCanasta')
+                                      : `(${m.cards.length})`}
+                                </span>
+                                <span
+                                  className={`text-xs self-center mr-1 ${complete ? 'text-ds-success font-bold motion-safe:animate-pulse' : 'text-ds-info'}`}
+                                >
+                                  {complete
+                                    ? t(toSamba ? 'meldProgress.sambaComplete' : 'meldProgress.canastaComplete')
+                                    : t(toSamba ? 'meldProgress.toSamba' : 'meldProgress.toCanasta', { n: remaining })}
+                                </span>
+                                {m.cards.map((card, ci) => (
+                                  <AnimatedCard
+                                    key={`opponent-meld-${pi}-${mi}-${ci}`}
+                                    card={card}
+                                    width={cardWidth * 0.6}
+                                  />
+                                ))}
+                              </div>
+                            );
+                          })}
+                          {p.red3s.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              <span className="text-xs text-ds-error-text self-center mr-1">{t('red3s')}</span>
+                              {p.red3s.map((card, ri) => (
+                                <AnimatedCard key={`opponent-red3-${pi}-${ri}`} card={card} width={cardWidth * 0.6} />
+                              ))}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
+                      );
+                    })}
+                  </details>
+                )}
               </div>
 
               {/* Right: info sidebar */}

@@ -154,45 +154,54 @@ function LobaPageContent() {
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             {/* Permanent, not tutorial-only: "three different suits" and "jokers
                 only in runs" are the two rules a player gets wrong. */}
-            <details className="mb-2 p-2 rounded bg-ds-surface" data-testid="lb-rule-details">
-              <summary className="cursor-pointer select-none text-center text-xs text-ds-warning font-medium">
-                {t('rulesLabel')}
-              </summary>
-              <p className="mt-2 text-center text-xs text-ds-warning" data-tutorial="lb-rule">
-                {t('ruleLine')}
-              </p>
-            </details>
+            <div className="flex flex-wrap items-start gap-2 sm:block">
+              <details
+                className="mb-2 p-2 rounded bg-ds-surface flex-1 open:basis-full sm:flex-none"
+                data-testid="lb-rule-details"
+              >
+                <summary className="cursor-pointer select-none text-center text-xs text-ds-warning font-medium">
+                  {t('rulesLabel')}
+                </summary>
+                <p className="mt-2 text-center text-xs text-ds-warning" data-tutorial="lb-rule">
+                  {t('ruleLine')}
+                </p>
+              </details>
 
-            <CpuAccordion playerCount={opponents.length} dataTutorial="lb-seats">
-              <div className="grid grid-cols-2 sm:grid-cols-3 justify-items-center gap-4 mb-3">
-                {opponents.map((o) => (
-                  <div key={`opp-${o.id.toString()}`} className="text-center">
-                    <div className="text-game-text-muted text-xs mb-1">
-                      {t('opponentHand', { name: playerName(o.id, false), n: o.cardCount })}
-                      {' · '}
-                      {t('score', { n: o.score })}
-                      {o.eliminated && ` · ${t('eliminated')}`}
+              <CpuAccordion
+                playerCount={opponents.length}
+                dataTutorial="lb-seats"
+                className="mb-3 flex-1 open:basis-full sm:flex-none"
+              >
+                <div className="flex flex-wrap gap-2 sm:grid sm:grid-cols-3 sm:justify-items-center sm:gap-4 mb-3">
+                  {opponents.map((o) => (
+                    <div key={`opp-${o.id.toString()}`} className="flex-1 text-center">
+                      <div className="text-game-text-muted text-xs mb-1">
+                        {t('opponentHand', { name: playerName(o.id, false), n: o.cardCount })}
+                        {' · '}
+                        {t('score', { n: o.score })}
+                        {o.eliminated && ` · ${t('eliminated')}`}
+                      </div>
+                      <div
+                        className="flex gap-1 justify-center flex-wrap"
+                        role="img"
+                        aria-label={t('opponentHandAriaLabel', { name: playerName(o.id, false), n: o.cardCount })}
+                      >
+                        {Array.from({ length: o.cardCount }, (_, i) => (
+                          <CardBack
+                            key={`opp-${o.id.toString()}-c${i.toString()}`}
+                            width={Math.round(cardWidth * OPPONENT_CARD_WIDTH_RATIO)}
+                            className={i > 0 ? '-ml-5' : undefined}
+                          />
+                        ))}
+                      </div>
                     </div>
-                    <div
-                      className="flex gap-1 justify-center flex-wrap"
-                      role="img"
-                      aria-label={t('opponentHandAriaLabel', { name: playerName(o.id, false), n: o.cardCount })}
-                    >
-                      {Array.from({ length: o.cardCount }, (_, i) => (
-                        <CardBack
-                          key={`opp-${o.id.toString()}-c${i.toString()}`}
-                          width={Math.round(cardWidth * OPPONENT_CARD_WIDTH_RATIO)}
-                          className={i > 0 ? '-ml-5' : undefined}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CpuAccordion>
+                  ))}
+                </div>
+              </CpuAccordion>
+            </div>
 
-            <div className="text-center mb-3">
-              <div className="text-game-text-muted text-xs mb-1">{t('discard')}</div>
+            <div className="text-center mb-1 sm:mb-3">
+              <div className="text-game-text-muted text-xs mb-0 sm:mb-1">{t('discard')}</div>
               {state.discardTop ? (
                 <div className="flex justify-center">
                   <AnimatedCard

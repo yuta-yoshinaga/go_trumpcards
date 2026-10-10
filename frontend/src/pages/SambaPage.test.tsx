@@ -38,6 +38,57 @@ describe('SambaPage', () => {
     localStorage.clear();
   });
 
+  it('collapses opponents melds on mobile while keeping the human team visible', async () => {
+    const base = makeSambaState();
+    const opponentMeld = {
+      cards: Array.from({ length: 3 }, () => ({ design: 'SPADE' as const, value: 4 })),
+      kind: 0,
+      isNatural: true,
+      isCanasta: false,
+      isSamba: false,
+      rank: 4,
+    };
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        players: [
+          { ...base.players[0], melds: [opponentMeld] },
+          { ...base.players[1], melds: [opponentMeld] },
+          ...base.players.slice(2),
+        ],
+      }),
+    );
+    renderWithProviders(<SambaPage />);
+
+    const details = await screen.findByTestId('sa-opponent-meld-details');
+    expect(details).not.toHaveAttribute('open');
+    expect(within(details).getByText('相手チームのメルド (1)')).toBeInTheDocument();
+    expect(within(details).getByText('あと4枚でカナスタ')).not.toBeVisible();
+    expect(screen.getByTestId('sa-meld-progress-0-0')).toBeVisible();
+  });
+
+  it('expands opponents melds on desktop', async () => {
+    mobileState.isMobile = false;
+    const base = makeSambaState();
+    const opponentMeld = {
+      cards: Array.from({ length: 3 }, () => ({ design: 'SPADE' as const, value: 4 })),
+      kind: 0,
+      isNatural: true,
+      isCanasta: false,
+      isSamba: false,
+      rank: 4,
+    };
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        players: [base.players[0], { ...base.players[1], melds: [opponentMeld] }, ...base.players.slice(2)],
+      }),
+    );
+    renderWithProviders(<SambaPage />);
+
+    const details = await screen.findByTestId('sa-opponent-meld-details');
+    expect(details).toHaveAttribute('open');
+    expect(within(details).getByText('あと4枚でカナスタ')).toBeVisible();
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SambaPage />);

@@ -53,6 +53,35 @@ describe('CpuAccordion', () => {
     expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
   });
 
+  it('uses mb-3 only when className is not provided', () => {
+    const { rerender } = render(<CpuAccordion playerCount={2}>content</CpuAccordion>);
+    expect(screen.getByTestId('cpu-accordion')).toHaveClass('mb-3');
+
+    rerender(
+      <CpuAccordion playerCount={2} className="mb-3 flex-1">
+        content
+      </CpuAccordion>,
+    );
+    expect(screen.getByTestId('cpu-accordion')).toHaveClass('mb-3', 'flex-1');
+
+    rerender(
+      <CpuAccordion playerCount={2} className="flex-1">
+        content
+      </CpuAccordion>,
+    );
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveClass('mb-3');
+  });
+
+  it('can be forced open on mobile', () => {
+    mockUseIsMobile.mockReturnValue(true);
+    render(
+      <CpuAccordion playerCount={2} forceOpen>
+        content
+      </CpuAccordion>,
+    );
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+  });
+
   it('is closed by default on mobile', () => {
     mockUseIsMobile.mockReturnValue(true);
     render(
