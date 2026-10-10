@@ -81,8 +81,12 @@ describe('GoofspielPage', () => {
     vi.spyOn(cardDimensions, 'useIsMobile').mockReturnValue(true);
     const { unmount } = renderWithProviders(<GoofspielPage />);
     await screen.findByTestId('gs-seat-1');
-    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+    const accordion = screen.getByTestId('cpu-accordion');
+    expect(accordion).not.toHaveAttribute('open');
+    expect(screen.getByTestId('gs-seat-0')).toBeVisible();
+    expect(accordion).not.toContainElement(screen.getByTestId('gs-seat-0'));
     expect(screen.getByTestId('gs-seat-1')).not.toBeVisible();
+    expect(accordion).toContainElement(screen.getByTestId('gs-seat-1'));
     const ruleDetails = screen.getByText('ルール').closest('details');
     expect(ruleDetails).not.toHaveAttribute('open');
     expect(screen.getByTestId('gs-rule')).not.toBeVisible();
