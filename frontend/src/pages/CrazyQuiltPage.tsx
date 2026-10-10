@@ -282,7 +282,10 @@ function CrazyQuiltPageContent() {
           </span>
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
-              <div className="flex flex-nowrap justify-center gap-1 sm:gap-2" data-tutorial="cg-foundation">
+              <div
+                className="flex flex-nowrap sm:flex-wrap justify-center gap-1 sm:gap-2"
+                data-tutorial="cg-foundation"
+              >
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: CrazyQuiltMoveZone = { zone: 'foundation', col: idx };
                   // **A 始まりと K 始まりが混在する。**向きが出ていないと、

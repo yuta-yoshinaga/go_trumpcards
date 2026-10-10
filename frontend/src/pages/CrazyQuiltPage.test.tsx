@@ -151,6 +151,16 @@ describe('CrazyQuiltPage', () => {
     expect(foundations).toHaveClass('flex-nowrap');
     unmount();
 
+    window.innerWidth = 320;
+    const { unmount: unmountNarrow } = renderWithProviders(<CrazyQuiltPage />);
+    const narrowCell = await screen.findByTestId('cq-cell-0');
+    const narrowFoundations = document.querySelector('[data-tutorial="cg-foundation"]');
+    const cardWidth = Number.parseInt(narrowCell.style.width, 10);
+    expect(cardWidth).toBe(24);
+    expect(8 * cardWidth + 7 * 4 + 16).toBeLessThanOrEqual(320);
+    expect(narrowFoundations).toHaveClass('flex-nowrap', 'sm:flex-wrap');
+    unmountNarrow();
+
     window.innerWidth = 800;
     renderWithProviders(<CrazyQuiltPage />);
     expect(await screen.findByTestId('cq-cell-0')).toHaveStyle({ width: '60px', height: '84px' });

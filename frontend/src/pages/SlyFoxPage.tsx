@@ -36,6 +36,7 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
+const MOBILE_PLAY_CARD_WIDTH = 32;
 const TABLEAU_CNT = 20;
 const FOUNDATION_CNT = 8;
 const FOUNDATION_PILE_FULL = 13;
@@ -134,8 +135,8 @@ function SlyFoxPageContent() {
   const { handleCommand } = useCliGame(runApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const { cardWidth, cardHeight, isMobile } = useCardDimensions();
-  const playCardWidth = isMobile ? 32 : cardWidth;
-  const playCardHeight = isMobile ? 48 : cardHeight;
+  const playCardWidth = isMobile ? MOBILE_PLAY_CARD_WIDTH : cardWidth;
+  const playCardHeight = isMobile ? Math.round(playCardWidth * 1.5) : cardHeight;
 
   const handleManualReset = useCallback(() => {
     void runApi('reset');
