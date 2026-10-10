@@ -469,6 +469,8 @@ function StHelenaPageContent() {
                         <div
                           key={`col-${colIdx.toString()}`}
                           className="min-w-0"
+                          // Phones pin each column to the small card width so the 8-column rows
+                          // fit 375px; desktop keeps the grid-sized columns it had before.
                           style={isMobile ? { width: tableauDim.cw } : undefined}
                         >
                           {/* Explicit mobile width fits eight columns; desktop keeps its legacy sizing. */}
