@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { marriageApi } from '../api/games/marriage';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -360,53 +361,58 @@ function MarriagePageContent() {
               {/* Right: info sidebar */}
               <div>
                 {/* CPU players */}
-                {state.players
-                  .filter((p) => !p.isHuman)
-                  .map((p) => (
-                    <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                      <div className="text-ds-text-muted text-sm">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('cumulativeScore', { score: p.cumulativeScore })}
-                        {revealCpu && (
-                          <>
-                            {' '}
-                            | {t('deadwoodShort', { score: p.deadwood })}
-                            {p.maal > 0 && (
-                              <span className="ml-1" data-testid="marriage-maal">
-                                {t('maalShort', { score: p.maal })}
-                              </span>
-                            )}
-                            {p.hasPureSequence && (
-                              <span className="ml-1 text-ds-success">{t('pureSequenceBadge')}</span>
-                            )}
-                          </>
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                  {state.players
+                    .filter((p) => !p.isHuman)
+                    .map((p) => (
+                      <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                        <div className="text-ds-text-muted text-sm">
+                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                          {t('cumulativeScore', { score: p.cumulativeScore })}
+                          {revealCpu && (
+                            <>
+                              {' '}
+                              | {t('deadwoodShort', { score: p.deadwood })}
+                              {p.maal > 0 && (
+                                <span className="ml-1" data-testid="marriage-maal">
+                                  {t('maalShort', { score: p.maal })}
+                                </span>
+                              )}
+                              {p.hasPureSequence && (
+                                <span className="ml-1 text-ds-success">{t('pureSequenceBadge')}</span>
+                              )}
+                            </>
+                          )}
+                        </div>
+                        {revealCpu && p.cards.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {p.cards.map((card, idx) => (
+                              <div
+                                key={`cpu-${p.id}-${card.design}-${card.value}-${idx}`}
+                                className={`relative inline-block rounded ${
+                                  isWildCard(card) ? 'ring-2 ring-ds-info' : ''
+                                }`}
+                              >
+                                <AnimatedCard card={card} width={cardWidth * 0.8} />
+                                {isWildCard(card) && <span className="sr-only">{t('wildAria')}</span>}
+                                {wildBadge(card)}
+                              </div>
+                            ))}
+                          </div>
                         )}
                       </div>
-                      {revealCpu && p.cards.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {p.cards.map((card, idx) => (
-                            <div
-                              key={`cpu-${p.id}-${card.design}-${card.value}-${idx}`}
-                              className={`relative inline-block rounded ${
-                                isWildCard(card) ? 'ring-2 ring-ds-info' : ''
-                              }`}
-                            >
-                              <AnimatedCard card={card} width={cardWidth * 0.8} />
-                              {isWildCard(card) && <span className="sr-only">{t('wildAria')}</span>}
-                              {wildBadge(card)}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                    ))}
+                </CpuAccordion>
 
                 {/* Score table */}
                 <div className="my-3 p-2 rounded bg-black/30" data-tutorial="marriage-score-table">
                   <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
-                  <p className="text-ds-text-muted text-xs mb-2" data-testid="marriage-maal-rule">
-                    {t('maalRule')}
-                  </p>
+                  <details className="mb-2 p-2 rounded bg-ds-surface">
+                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('rules')}</summary>
+                    <p className="text-ds-text-muted text-xs mt-1" data-testid="marriage-maal-rule">
+                      {t('maalRule')}
+                    </p>
+                  </details>
                   <table className="w-full text-sm text-ds-text-muted">
                     <thead>
                       <tr>

@@ -212,6 +212,32 @@ beforeEach(() => {
 });
 
 describe('MarriagePage', () => {
+  it('shows maal for a CPU with a positive maal score at round end', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      phase: 2,
+      players: [drawPhaseState.players[0], player({ id: 1, isHuman: false, maal: 20 })],
+    });
+    renderWithProviders(<MarriagePage />);
+    const cpuMaal = await screen.findAllByTestId('marriage-maal');
+    expect(cpuMaal.length).toBeGreaterThan(0);
+    expect(cpuMaal[0]).toHaveTextContent('20');
+  });
+
+  it('collapses CPU details and rules on mobile while keeping their content in the DOM', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    renderWithProviders(<MarriagePage />);
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).not.toHaveAttribute('open');
+    expect(accordion).toHaveTextContent('CPU');
+    const rules = screen.getByTestId('marriage-maal-rule').closest('details');
+    expect(rules).not.toHaveAttribute('open');
+    expect(screen.getByTestId('marriage-maal-rule')).toBeInTheDocument();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    mockExec.mockClear();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<MarriagePage />);
