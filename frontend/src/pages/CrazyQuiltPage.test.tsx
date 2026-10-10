@@ -140,6 +140,25 @@ describe('CrazyQuiltPage', () => {
     expect(horizontal.querySelector('.rotate-90')).not.toBeInTheDocument();
   });
 
+  it('uses compact mobile quilt cards and keeps all foundations in one row', async () => {
+    const originalWidth = window.innerWidth;
+    window.innerWidth = 375;
+    const { unmount } = renderWithProviders(<CrazyQuiltPage />);
+
+    const cell = await screen.findByTestId('cq-cell-0');
+    const foundations = document.querySelector('[data-tutorial="cg-foundation"]');
+    expect(cell).toHaveStyle({ width: '24px', height: '36px' });
+    expect(foundations).toHaveClass('flex-nowrap');
+    unmount();
+
+    window.innerWidth = 800;
+    renderWithProviders(<CrazyQuiltPage />);
+    expect(await screen.findByTestId('cq-cell-0')).toHaveStyle({ width: '60px', height: '84px' });
+
+    window.innerWidth = originalWidth;
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('shows effective orientation corner shapes on both cards and empty cells', async () => {
     const quilt = makeQuilt();
     quilt[0] = null;

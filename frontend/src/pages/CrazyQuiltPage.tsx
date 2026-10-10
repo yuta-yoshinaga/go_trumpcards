@@ -18,7 +18,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useCrazyQuiltGame } from '../hooks/useCrazyQuiltGame';
@@ -104,18 +104,15 @@ function CrazyQuiltPageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
-  const windowWidth = useWindowWidth();
-
   const dims = useMemo(() => {
     if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: cardOverlap };
-    const padX = 16;
-    const gapPx = 4;
-    const colW = Math.floor((windowWidth - padX - (QUILT_SIZE - 1) * gapPx) / QUILT_SIZE);
-    const cw = Math.min(Math.max(colW, 30), cardWidth);
+    // The 8×8 quilt needs a vertical budget as well as a horizontal fit. Keep
+    // mobile cards at the same 24px floor used by responsive solitaire tableaux.
+    const cw = Math.min(24, cardWidth);
     const ch = Math.round(cw * 1.5);
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
-  }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+  }, [isMobile, cardWidth, cardHeight, cardOverlap]);
 
   const isPlayingForKbd = state?.phase === CrazyQuiltPhase.PLAYING;
 
@@ -285,7 +282,7 @@ function CrazyQuiltPageContent() {
           </span>
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
-              <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="cg-foundation">
+              <div className="flex flex-nowrap justify-center gap-1 sm:gap-2" data-tutorial="cg-foundation">
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: CrazyQuiltMoveZone = { zone: 'foundation', col: idx };
                   // **A 始まりと K 始まりが混在する。**向きが出ていないと、
