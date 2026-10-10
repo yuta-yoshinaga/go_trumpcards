@@ -125,6 +125,16 @@ describe('PlayerHandSection (desktop)', () => {
     expect(buttons[2]).toHaveAttribute('aria-pressed', 'true');
   });
 
+  it('does not raise selected cards above neighboring cards', () => {
+    render(<PlayerHandSection {...baseProps} isMobile={false} selectedCardIndices={[0]} />);
+
+    const buttons = screen.getAllByRole('button');
+    expect(buttons[0]).toHaveAttribute('aria-pressed', 'true');
+    expect(buttons[0]).not.toHaveStyle({ zIndex: '3' });
+    expect(buttons[1]).toHaveAttribute('aria-pressed', 'false');
+    expect(buttons[1]).not.toHaveStyle({ zIndex: '3' });
+  });
+
   it('calls toggleCard with correct index on click', () => {
     const toggleCard = vi.fn();
     render(<PlayerHandSection {...baseProps} isMobile={false} toggleCard={toggleCard} />);
@@ -149,6 +159,22 @@ describe('PlayerHandSection (desktop)', () => {
     expect(screen.getAllByRole('button')[1].style.marginLeft).toMatch(/-/);
     rerender(<PlayerHandSection {...baseProps} isMobile={false} />);
     expect(screen.getAllByRole('button')[1].style.marginLeft).toBe('4px');
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1200 });
+    window.dispatchEvent(new Event('resize'));
+  });
+
+  it('keeps overlapped desktop cards out of the hover stacking order but raises focused cards', () => {
+    observedHandWidth = 120;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1050 });
+    window.dispatchEvent(new Event('resize'));
+
+    render(<PlayerHandSection {...baseProps} isMobile={false} />);
+
+    const card = screen.getAllByRole('button')[0];
+    expect(card).not.toHaveClass('hover:z-10');
+    expect(card).toHaveClass('focus-visible:z-10');
+
+    observedHandWidth = 640;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1200 });
     window.dispatchEvent(new Event('resize'));
   });

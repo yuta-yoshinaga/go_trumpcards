@@ -179,6 +179,7 @@ export function PlayerHandSection({
               // When a highlight list is active, dim the non-highlighted (and unselected) cards.
               // Skip already-restricted cards so the two opacity classes never collide.
               const dimmed = highlightIndices != null && !highlighted && !isSelected && !restricted;
+              const overlapped = desktop && overlap < 0;
               const badge = cardBadgeFor?.(idx);
               const status = cardStatusFor?.(idx);
               return (
@@ -201,7 +202,7 @@ export function PlayerHandSection({
                   title={cardTitleFor?.(idx) ?? (restricted ? restrictedTooltip : trump ? trumpTitle : undefined)}
                   data-trump={trump || undefined}
                   data-legal={legal || undefined}
-                  className={`transition-transform ${focusRingCard} hover:z-10 focus-visible:z-10 ${legal ? 'rounded-lg ring-2 ring-ds-success' : ''} ${restricted ? 'opacity-50 cursor-not-allowed' : ''} ${dimmed ? 'opacity-60' : ''}`}
+                  className={`transition-transform ${focusRingCard} ${overlapped ? '' : 'hover:z-10'} focus-visible:z-10 ${legal ? 'rounded-lg ring-2 ring-ds-success' : ''} ${restricted ? 'opacity-50 cursor-not-allowed' : ''} ${dimmed ? 'opacity-60' : ''}`}
                   data-hand-card-index={idx}
                   style={{
                     background: 'none',
@@ -217,9 +218,7 @@ export function PlayerHandSection({
                     // Trump ring stacks additively (outline) on top of the border above.
                     ...(trump ? trumpRingStyle() : {}),
                     boxSizing: 'border-box',
-                    ...(desktop
-                      ? { marginLeft: rowCardIdx === 0 ? 0 : overlap, zIndex: isSelected ? 3 : undefined }
-                      : {}),
+                    ...(desktop ? { marginLeft: rowCardIdx === 0 ? 0 : overlap } : {}),
                   }}
                 >
                   <AnimatedCard card={card} width={cardWidth} />
